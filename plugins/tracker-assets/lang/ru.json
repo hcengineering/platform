@@ -287,7 +287,9 @@
     "IssueStatus": "Статус",
     "Extensions": "Дополнительно",
     "RoleLabel": "Роль: {role}",
-    "UnsetParentIssue": "Снять родительскую задачу"
+    "UnsetParentIssue": "Снять родительскую задачу",
+    "CreateProjectPermission": "Создавать проект",
+    "CreateProjectPermissionDescription": "Дает пользователям разрешение создавать новые проекты"
   },
   "status": {}
 }

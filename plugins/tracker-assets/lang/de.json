@@ -287,7 +287,9 @@
     "IssueStatus": "Status",
     "Extensions": "Erweiterungen",
     "RoleLabel": "Rolle: {role}",
-    "UnsetParentIssue": "Übergeordnete Aufgabe entfernen"
+    "UnsetParentIssue": "Übergeordnete Aufgabe entfernen",
+    "CreateProjectPermission": "Projekt erstellen",
+    "CreateProjectPermissionDescription": "Gewährt Benutzern die Möglichkeit, neue Projekte zu erstellen"
   },
   "status": {}
 }

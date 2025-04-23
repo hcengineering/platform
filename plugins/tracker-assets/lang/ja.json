@@ -270,7 +270,9 @@
     "IssueStatus": "ステータス",
     "Extensions": "拡張機能",
     "RoleLabel": "役割: {role}",
-    "UnsetParentIssue": "親イシューの設定を解除"
+    "UnsetParentIssue": "親イシューの設定を解除",
+    "CreateProjectPermission": "プロジェクト作成",
+    "CreateProjectPermissionDescription": "ユーザーが新しいプロジェクトを作成することを許可します"
   },
   "status": {}
 }

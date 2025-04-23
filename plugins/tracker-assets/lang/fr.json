@@ -270,7 +270,9 @@
     "IssueStatus": "Statut",
     "Extensions": "Extensions",
     "RoleLabel": "Rôle : {role}",
-    "UnsetParentIssue": "Désélectionner l'issue parent"
+    "UnsetParentIssue": "Désélectionner l'issue parent",
+    "CreateProjectPermission": "Créer un projet",
+    "CreateProjectPermissionDescription": "Accorde aux utilisateurs la capacité de créer de nouveaux projets"
   },
   "status": {}
 }
