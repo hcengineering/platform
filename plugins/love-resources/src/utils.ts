@@ -640,21 +640,17 @@ export async function setCam (value: boolean): Promise<void> {
     try {
       const opt: VideoCaptureOptions = {}
       const selectedDevice = getSelectedCamId()
-      if (selectedDevice !== media.ids.NoCam) {
-        const devices = await LKRoom.getLocalDevices('videoinput')
-        isCamAllowed.set(devices.length > 0)
-        if (selectedDevice !== null) {
-          const available = devices.find((p) => p.deviceId === selectedDevice)
-          if (available !== undefined) {
-            // We need to use exact device id to avoid issues with Firefox
-            // that can switch to another device when using just deviceId
-            opt.deviceId = { exact: available.deviceId }
-          }
+      const devices = await LKRoom.getLocalDevices('videoinput')
+      isCamAllowed.set(devices.length > 0)
+      if (selectedDevice !== null) {
+        const available = devices.find((p) => p.deviceId === selectedDevice)
+        if (available !== undefined) {
+          // We need to use exact device id to avoid issues with Firefox
+          // that can switch to another device when using just deviceId
+          opt.deviceId = { exact: available.deviceId }
         }
-        await lk.localParticipant.setCameraEnabled(value, opt)
-      } else {
-        isCamAllowed.set(false)
       }
+      await lk.localParticipant.setCameraEnabled(value, opt)
     } catch (err) {
       console.error(err)
       isCamAllowed.set(false)

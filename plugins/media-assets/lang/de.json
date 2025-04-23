@@ -6,7 +6,6 @@
     "DefaultCam": "Standard-Kamera",
     "DefaultMic": "Standard-Mikrofon",
     "DefaultSpeaker": "Standard-Lautsprecher",
-    "NoCam": "Keine Kamera",
     "TurnOnCam": "Kamera einschalten",
     "TurnOffCam": "Kamera ausschalten",
     "TurnOnMic": "Mikrofon einschalten",

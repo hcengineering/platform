@@ -45,7 +45,7 @@
   async function updateStream (device: MediaDeviceInfo | null): Promise<void> {
     await releaseStream(stream)
     if (device != null) {
-      const constraints = device !== null ? { video: { deviceId: device.deviceId } } : { video: true }
+      const constraints = device !== null ? { video: { deviceId: { exact: device.deviceId } } } : { video: true }
       try {
         const newStream = await navigator.mediaDevices.getUserMedia(constraints)
         if (current?.deviceId === device.deviceId) {
@@ -63,13 +63,11 @@
     }
   }
 
-  function handleDeviceChange (device: MediaDeviceInfo | null): void {
+  function handleDeviceChange (device: MediaDeviceInfo): void {
     if (current?.deviceId === device?.deviceId) return
 
     if (device === undefined) {
       dispatch('update', undefined)
-    } else if (device === null) {
-      dispatch('update', media.ids.NoCam)
     } else {
       dispatch('update', device.deviceId)
     }
@@ -100,66 +98,67 @@
       <Label label={media.string.Camera} />
     </div>
 
-    {#if stream !== null}
-      <div class="ap-space x2" />
+    <div class="ap-space x2" />
 
-      <div class="preview">
-        <!-- svelte-ignore a11y-media-has-caption -->
-        <video bind:this={video} width="100%" height="100%" autoplay muted disablepictureinpicture />
-      </div>
-    {/if}
+    <div class="preview">
+      <!-- svelte-ignore a11y-media-has-caption -->
+      <video bind:this={video} width="100%" height="100%" autoplay muted disablepictureinpicture />
+    </div>
   </div>
 
   <div class="ap-space" />
 
   <div class="ap-scroll">
     <div class="ap-box">
-      {#each devices as device}
+      {#if devices.length > 0}
+        {#each devices as device}
+          <div class="ap-menuItem separator halfMargin" />
+
+          <button
+            class="ap-menuItem noMargin withIcon flex-row-center flex-grow"
+            on:click={() => {
+              handleDeviceChange(device)
+            }}
+          >
+            <div class="flex-between flex-grow flex-gap-2">
+              <div class="flex-row-center">
+                <span class="label overflow-label font-medium">{cleanupDeviceLabel(device.label)}</span>
+              </div>
+
+              {#if current?.deviceId === device.deviceId}
+                <div class="check">
+                  <IconCheck size={'small'} />
+                </div>
+              {/if}
+            </div>
+          </button>
+        {/each}
+      {:else}
+        <!--  -->
         <div class="ap-menuItem separator halfMargin" />
 
         <button
           class="ap-menuItem noMargin withIcon flex-row-center flex-grow"
           on:click={() => {
-            handleDeviceChange(device)
+            // handleDeviceChange(null)
           }}
         >
           <div class="flex-between flex-grow flex-gap-2">
-            <div class="flex-row-center">
-              <span class="label overflow-label font-medium">{cleanupDeviceLabel(device.label)}</span>
+            <div class="flex-row-center flex-gap-2">
+              <StatusIcon icon={IconCamOff} size={'small'} status={current === null ? 'off' : undefined} />
+              <span class="label overflow-label font-medium">
+                <Label label={media.string.NoCam} />
+              </span>
             </div>
 
-            {#if current?.deviceId === device.deviceId}
+            {#if current === null}
               <div class="check">
                 <IconCheck size={'small'} />
               </div>
             {/if}
           </div>
         </button>
-      {/each}
-
-      <div class="ap-menuItem separator halfMargin" />
-
-      <button
-        class="ap-menuItem noMargin withIcon flex-row-center flex-grow"
-        on:click={() => {
-          handleDeviceChange(null)
-        }}
-      >
-        <div class="flex-between flex-grow flex-gap-2">
-          <div class="flex-row-center flex-gap-2">
-            <StatusIcon icon={IconCamOff} size={'small'} status={current === null ? 'off' : undefined} />
-            <span class="label overflow-label font-medium">
-              <Label label={media.string.NoCam} />
-            </span>
-          </div>
-
-          {#if current === null}
-            <div class="check">
-              <IconCheck size={'small'} />
-            </div>
-          {/if}
-        </div>
-      </button>
+      {/if}
 
       <div class="ap-space" />
     </div>

@@ -26,7 +26,7 @@
   export let status: 'on' | 'off' | undefined = undefined
 </script>
 
-<button class="ap-menuItem withIcon noMargin flex-row-center flex-grow" {disabled} on:click>
+<button class="ap-menuItem withIcon flex-row-center flex-grow" {disabled} on:click>
   <div class="flex-between flex-grow flex-gap-2">
     <div class="flex-row-center flex-gap-2">
       <div class="icon">
@@ -54,8 +54,6 @@
 
 <style lang="scss">
   button {
-    height: 2.25rem;
-
     .status {
       &.on {
         color: var(--theme-state-positive-color);

@@ -27,14 +27,7 @@ export const mediaPlugin = plugin(mediaId, {
   },
   icon: {
     Mic: '' as Asset,
-    MicEnabled: '' as Asset,
-    MicDisabled: '' as Asset,
-    Cam: '' as Asset,
-    CamEnabled: '' as Asset,
-    CamDisabled: '' as Asset
-  },
-  ids: {
-    NoCam: '' as string
+    Cam: '' as Asset
   }
 })
 

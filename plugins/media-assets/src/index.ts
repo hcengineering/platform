@@ -19,10 +19,6 @@ import { loadMetadata } from '@hcengineering/platform'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 
 loadMetadata(media.icon, {
-  CamEnabled: `${icons}#cameraOn`,
-  CamDisabled: `${icons}#cameraOff`,
-  Cam: `${icons}#camera`,
   Mic: `${icons}#mic`,
-  MicEnabled: `${icons}#micOn`,
-  MicDisabled: `${icons}#micOff`
+  Cam: `${icons}#camera`
 })

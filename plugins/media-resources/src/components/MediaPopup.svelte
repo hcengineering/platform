@@ -31,9 +31,9 @@
   import CamSettingsPopup from './CamSettingsPopup.svelte'
   import MediaPopupButton from './MediaPopupButton.svelte'
   import NextSelectPopup from './NextSelectPopup.svelte'
-  import IconCam from './icons/Cam.svelte'
+  import IconCamOn from './icons/CamOn.svelte'
   import IconCamOff from './icons/CamOff.svelte'
-  import IconMic from './icons/Mic.svelte'
+  import IconMicOn from './icons/MicOn.svelte'
   import IconMicOff from './icons/MicOff.svelte'
   import IconSpeaker from './icons/Speaker.svelte'
 
@@ -68,13 +68,12 @@
       }
     })
 
-    const onSelect = (res: string): void => {
-      const deviceId = res ?? 'default'
+    const onSelect = (deviceId: string | undefined): void => {
       updateSelectedMicId(deviceId)
       void fetchSelectedMic()
 
       $sessions.forEach((p) => {
-        p.emit('selected-microphone', deviceId)
+        p.emit('selected-microphone', deviceId ?? 'default')
       })
     }
 
@@ -100,12 +99,11 @@
       }
     })
 
-    const onSelect = (res: string): void => {
-      const deviceId = res ?? 'default'
+    const onSelect = (deviceId: string | undefined): void => {
       updateSelectedSpeakerId(deviceId)
       void fetchSelectedSpk()
       $sessions.forEach((p) => {
-        p.emit('selected-speaker', deviceId)
+        p.emit('selected-speaker', deviceId ?? 'default')
       })
     }
 
@@ -130,12 +128,11 @@
       { devices, selected },
       eventToHTMLElement(ev),
       () => {},
-      (res) => {
-        const deviceId = res !== null ? (res as string) : media.ids.NoCam
+      (deviceId: string | undefined) => {
         updateSelectedCamId(deviceId)
         void fetchSelectedCam()
         $sessions.forEach((p) => {
-          p.emit('selected-camera', deviceId)
+          p.emit('selected-camera', deviceId ?? 'default')
         })
       }
     )
@@ -155,7 +152,7 @@
     <div class="ap-box">
       <MediaPopupButton
         label={selectedMic == null ? media.string.DefaultMic : getDeviceLabel(selectedMic)}
-        icon={selectedMic !== null ? IconMic : IconMicOff}
+        icon={selectedMic !== null ? IconMicOn : IconMicOff}
         disabled={$micAccess.state === 'denied'}
         status={$state.microphone === undefined ? undefined : $state.microphone.enabled ? 'on' : 'off'}
         submenu
@@ -175,12 +172,8 @@
       <div class="ap-menuItem separator halfMargin" />
 
       <MediaPopupButton
-        label={selectedCam === null
-          ? media.string.NoCam
-          : selectedCam === undefined
-            ? media.string.DefaultCam
-            : getDeviceLabel(selectedCam)}
-        icon={selectedCam !== null ? IconCam : IconCamOff}
+        label={selectedCam == null ? media.string.DefaultCam : getDeviceLabel(selectedCam)}
+        icon={selectedCam !== null ? IconCamOn : IconCamOff}
         disabled={$camAccess.state === 'denied'}
         status={$state.camera === undefined ? undefined : $state.camera.enabled ? 'on' : 'off'}
         submenu

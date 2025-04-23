@@ -25,6 +25,7 @@ export default mergeIds(mediaId, media, {
     Camera: '' as IntlString,
     Microphone: '' as IntlString,
     Speaker: '' as IntlString,
+    NoMic: '' as IntlString,
     NoCam: '' as IntlString,
     DefaultCam: '' as IntlString,
     DefaultMic: '' as IntlString,

@@ -19,7 +19,7 @@
   import media from '../plugin'
   import { sessions } from '../stores'
 
-  import IconMic from './icons/Mic.svelte'
+  import IconMicOn from './icons/MicOn.svelte'
 
   export let state: MicState | undefined
 
@@ -34,7 +34,7 @@
 {#if state != null}
   <Button
     noFocus
-    icon={IconMic}
+    icon={IconMicOn}
     iconProps={{
       fill: state.enabled ? 'var(--theme-state-positive-color)' : 'var(--theme-state-negative-color)'
     }}
