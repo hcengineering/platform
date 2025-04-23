@@ -153,7 +153,12 @@
     weekInfoFirstDay
 </script>
 
-<svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
+<svelte:window
+  bind:innerWidth={docWidth}
+  bind:innerHeight={docHeight}
+  on:dragover|preventDefault
+  on:drop|preventDefault
+/>
 
 <Theme>
   <div id="ui-root" class:mobile-theme={isMobile}>

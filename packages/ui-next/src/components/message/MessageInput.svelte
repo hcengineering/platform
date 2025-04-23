@@ -145,53 +145,111 @@
     }
     files = []
   }
+
+  async function loadFiles (evt: ClipboardEvent): Promise<void> {
+    progress = true
+    const files = (evt.clipboardData?.files ?? []) as File[]
+
+    for (const file of files) {
+      await addFile(file)
+    }
+
+    progress = false
+  }
+
+  function pasteAction (_: any, evt: ClipboardEvent): boolean {
+    let target: HTMLElement | null = evt.target as HTMLElement
+    let allowed = false
+    while (target != null) {
+      target = target.parentElement
+      if (target === inputElement) {
+        allowed = true
+      }
+    }
+    if (!allowed) {
+      return false
+    }
+    const hasFiles = Array.from(evt.clipboardData?.items ?? []).some((i) => i.kind === 'file')
+
+    if (hasFiles) {
+      void loadFiles(evt)
+      return true
+    }
+
+    return allowed
+  }
+
+  async function fileDrop (e: DragEvent): Promise<void> {
+    const list = e.dataTransfer?.files
+    const limiter = new RateLimiter(10)
+
+    if (list === undefined || list.length === 0) return
+    progress = true
+    for (let index = 0; index < list.length; index++) {
+      const file = list.item(index)
+      if (file !== null) {
+        await limiter.add(() => addFile(file))
+      }
+    }
+    await limiter.waitProcessing()
+    progress = false
+  }
 </script>
 
-<input
-  bind:this={inputElement}
-  disabled={inputElement == null}
-  multiple
-  type="file"
-  name="file"
-  id="file"
-  style="display: none"
-  on:change={fileSelected}
-/>
-<TextInput
-  {content}
-  {placeholder}
-  {placeholderParams}
-  loading={progress}
-  hasNonTextContent={files.length > 0}
-  actions={[...defaultMessageInputActions, attachAction]}
-  on:submit={handleSubmit}
-  onCancel={onCancel ? handleCancel : undefined}
+<div
+  class="flex-col no-print w-full"
+  on:dragover|preventDefault={() => {}}
+  on:dragleave={() => {}}
+  on:drop|preventDefault|stopPropagation={fileDrop}
 >
-  <div slot="header" class="header">
-    {#if files.length > 0}
-      <div class="flex-row-center files-list scroll-divider-color flex-gap-2">
-        {#each files as file (file.blobId)}
-          <div class="item flex">
-            <AttachmentPresenter
-              value={{
-                file: file.blobId,
-                name: file.filename,
-                type: file.type
-              }}
-              removable
-              on:remove={(result) => {
-                if (result !== undefined) {
-                  files = files.filter((it) => it.blobId !== file.blobId)
-                  void deleteFile(file.blobId)
-                }
-              }}
-            />
-          </div>
-        {/each}
-      </div>
-    {/if}
-  </div>
-</TextInput>
+  <input
+    bind:this={inputElement}
+    disabled={inputElement == null}
+    multiple
+    type="file"
+    name="file"
+    id="file"
+    style="display: none"
+    on:change={fileSelected}
+  />
+  <TextInput
+    {content}
+    {placeholder}
+    {placeholderParams}
+    loading={progress}
+    hasNonTextContent={files.length > 0}
+    actions={[...defaultMessageInputActions, attachAction]}
+    on:submit={handleSubmit}
+    onCancel={onCancel ? handleCancel : undefined}
+    onPaste={pasteAction}
+  >
+    <div slot="header" class="header">
+      {#if files.length > 0}
+        <div class="flex-row-center files-list scroll-divider-color flex-gap-2">
+          {#each files as file (file.blobId)}
+            <div class="item flex">
+              <AttachmentPresenter
+                value={{
+                  file: file.blobId,
+                  name: file.filename,
+                  type: file.type,
+                  size: file.size
+                }}
+                removable
+                on:remove={(result) => {
+                  if (result !== undefined) {
+                    files = files.filter((it) => it.blobId !== file.blobId)
+                    void deleteFile(file.blobId)
+                  }
+                }}
+              />
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </div>
+  </TextInput>
+</div>
 
 <style lang="scss">
   .header {

@@ -162,6 +162,7 @@
       {boundary}
       {canEmbedFiles}
       {canEmbedImages}
+      dropcursor={false}
       on:content={(ev) => {
         if (canSubmit) {
           dispatch('message', ev.detail)

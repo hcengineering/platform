@@ -41,6 +41,7 @@
   export let autofocus: FocusPosition = false
   export let canEmbedFiles = true
   export let canEmbedImages = true
+  export let dropcursor: false | undefined = undefined
   export let onPaste: ((view: EditorView, event: ClipboardEvent) => boolean) | undefined = undefined
 
   let element: HTMLElement
@@ -167,6 +168,7 @@
           (await getEditorKit()).configure({
             mode: 'compact',
             file: canEmbedFiles ? {} : false,
+            dropcursor,
             image: canEmbedImages
               ? {
                   toolbar: {
