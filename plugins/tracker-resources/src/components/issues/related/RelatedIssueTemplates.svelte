@@ -25,7 +25,7 @@
   let templates: IssueTemplate[] = []
 
   let query: DocumentQuery<IssueTemplate>
-  $: query = { 'relations._id': object._id, 'relations._class': object._class }
+  $: query = { relations: { _id: object._id, _class: object._class } }
 
   const templatesQ = createQuery()
   $: templatesQ.query(tracker.class.IssueTemplate, query, async (result) => {
