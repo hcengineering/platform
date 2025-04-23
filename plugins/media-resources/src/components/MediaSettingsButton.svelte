@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { requestMediaAccess } from '@hcengineering/media'
-  import { Button, IconMoreH, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, IconMoreH, StatusBarButton, showPopup } from '@hcengineering/ui'
 
   import { camAccess, micAccess, sessions } from '../stores'
 
@@ -24,7 +24,6 @@
   export let disabled = false
 
   $: active = $sessions.length > 0
-  // $: active = state.camera != null || state.microphone != null || state.recording != null || state.sharing != null
 
   async function ensureMediaAccess (): Promise<void> {
     await $camAccess.ready
@@ -37,19 +36,30 @@
     }
   }
 
-  async function openPopup (ev: MouseEvent): Promise<void> {
+  let element: HTMLElement
+  let pressed = false
+
+  async function openPopup (): Promise<void> {
+    pressed = true
+
     await ensureMediaAccess()
-    showPopup(MediaPopup, {}, eventToHTMLElement(ev))
+    showPopup(MediaPopup, {}, element, () => {
+      pressed = false
+    })
   }
 </script>
 
-<Button
-  noFocus
-  icon={active ? IconMoreH : IconCam}
-  kind={'icon'}
-  size={'x-small'}
-  padding={'0 .5rem'}
-  borderStyle={'none'}
-  {disabled}
-  on:click={openPopup}
-/>
+{#if active}
+  <Button
+    noFocus
+    icon={IconMoreH}
+    kind={'icon'}
+    size={'x-small'}
+    padding={'0 .5rem'}
+    borderStyle={'none'}
+    {disabled}
+    on:click={openPopup}
+  />
+{:else}
+  <StatusBarButton bind:element icon={IconCam} {pressed} on:click={openPopup} />
+{/if}

@@ -14,11 +14,10 @@
 -->
 <script lang="ts">
   import { type Asset, type IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent, IconRight, Label } from '@hcengineering/ui'
+  import { AnySvelteComponent, Icon, IconRight, Label } from '@hcengineering/ui'
   import { ComponentType } from 'svelte'
 
   import media from '../plugin'
-  import StatusIcon from './StatusIcon.svelte'
 
   export let label: IntlString
   export let disabled: boolean
@@ -30,7 +29,9 @@
 <button class="ap-menuItem withIcon noMargin flex-row-center flex-grow" {disabled} on:click>
   <div class="flex-between flex-grow flex-gap-2">
     <div class="flex-row-center flex-gap-2">
-      <StatusIcon {icon} size={'small'} />
+      <div class="icon">
+        <Icon {icon} size={'small'} />
+      </div>
       <span class="flex-col">
         <div class="label overflow-label font-medium">
           <Label {label} />
@@ -44,7 +45,9 @@
     </div>
 
     {#if submenu}
-      <IconRight size={'tiny'} />
+      <div class="icon">
+        <IconRight size={'tiny'} />
+      </div>
     {/if}
   </div>
 </button>

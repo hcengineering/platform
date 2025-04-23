@@ -1,18 +1,10 @@
 <script lang="ts">
-  import { IconSearch } from '@hcengineering/ui'
-  import { showPopup } from '@hcengineering/ui/src/popups'
+  import { IconSearch, StatusBarButton, showPopup } from '@hcengineering/ui'
   import ActionsPopup from './ActionsPopup.svelte'
 
-  function openPopup () {
+  function openPopup (): void {
     showPopup(ActionsPopup, {}, 'top')
   }
 </script>
 
-<button
-  id="statusbar-search"
-  class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
-  on:click={openPopup}
-  style:color={'var(--theme-dark-color)'}
->
-  <IconSearch size={'small'} />
-</button>
+<StatusBarButton on:click={openPopup} icon={IconSearch} />
