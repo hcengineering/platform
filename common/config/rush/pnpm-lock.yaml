@@ -4278,7 +4278,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/importer@file:projects/importer.tgz':
-    resolution: {integrity: sha512-DecPpuedBGqrUXATVoljf098pHTQ9zqylXrUKbWiibuuFy5i9zzw/9HY8hM4Zg1Ku8ZOm1AGBUoSmgmGPJ13Cg==, tarball: file:projects/importer.tgz}
+    resolution: {integrity: sha512-jHYiFzufHPGNpZCX3FJYgMap16pZjwjtFYJHuW1avqGDlvEn/CH5MiwLeLOEbS7OVTMtV+7sruiBSAdQrqgd1g==, tarball: file:projects/importer.tgz}
     version: 0.0.0
 
   '@rush-temp/inbox-assets@file:projects/inbox-assets.tgz':
@@ -4366,7 +4366,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/media-resources@file:projects/media-resources.tgz':
-    resolution: {integrity: sha512-vjlR5DA8Lpfu3sRIlbBRzb+Wbi9V2//Omp3qvag+23FHOuupaQlJuixrz1dlsj4V7PpmBaYOmbjNkrjjBFteJw==, tarball: file:projects/media-resources.tgz}
+    resolution: {integrity: sha512-Uza2fxOD/VorSVHo3iKbMf3+YYiR2k0WumuOYRtWduzpYyqZDsX4kb92I5rMKkwEZ84CKexAX6pah4me6cFPgA==, tarball: file:projects/media-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/media@file:projects/media.tgz':
@@ -4486,7 +4486,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-love@file:projects/model-love.tgz':
-    resolution: {integrity: sha512-7bncZHfFYZKaCX+Wv+mcOHFU328pUC8qmqDw2V/o4Ee+fZAMCpudJuevAwtjf9uIu3fuyf1E+SLCgz8YXjyQBQ==, tarball: file:projects/model-love.tgz}
+    resolution: {integrity: sha512-Zr8PnNM+7u2fmQyw/ibXfvSAcg9FT/b21M64zCVOD6u+TwazUFVDNm6ACpJhFCu0cic53X97PUp6oo78ucqNfw==, tarball: file:projects/model-love.tgz}
     version: 0.0.0
 
   '@rush-temp/model-mail@file:projects/model-mail.tgz':
@@ -4974,7 +4974,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/recorder-resources@file:projects/recorder-resources.tgz':
-    resolution: {integrity: sha512-0YO9b+5LtqxTPKH6dEckbhFee5m3pTvyIxSxjGHhn9hDQeBC4LfowHsE0/ysMDnh4YD70Y5YBmAICfJv+PRG8g==, tarball: file:projects/recorder-resources.tgz}
+    resolution: {integrity: sha512-Juvy2FmXIbOQdKI94A3Q/2UTQ0aLuMRiCMni/o1Xdwg5g14Pm5TC0ZjkHairKYm1LMDmmUWiRtxOiud+klTSmQ==, tarball: file:projects/recorder-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/recorder@file:projects/recorder.tgz':
@@ -5214,7 +5214,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-process-resources@file:projects/server-process-resources.tgz':
-    resolution: {integrity: sha512-18lhcf0ItTSGWFJ1Ghdme7MRclB21yyKg5/bNqOaXEIuis0iBamjX8yx6og34QaOZgXdJ6VGLAf2eOObSNIqYg==, tarball: file:projects/server-process-resources.tgz}
+    resolution: {integrity: sha512-PKxImxV6lGipjcFVH9Kws7rVz8dULQy8rkXoO2ci7HFS1e4szZGvtkLhu6VxqDGZeZRcBHbeCJXu9115HxETsw==, tarball: file:projects/server-process-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/server-process@file:projects/server-process.tgz':
@@ -19095,6 +19095,7 @@ snapshots:
       '@types/js-yaml': 4.0.9
       '@types/mime-types': 2.1.4
       '@types/node': 20.11.19
+      '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
       commander: 8.3.0
@@ -19111,6 +19112,7 @@ snapshots:
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
       typescript: 5.6.2
+      uuid: 8.3.2
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
