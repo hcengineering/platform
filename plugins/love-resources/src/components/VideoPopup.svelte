@@ -16,10 +16,8 @@
   import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
   import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
-  import { RoomType, Room as TypeRoom } from '@hcengineering/love'
-  import { MessageBox } from '@hcengineering/presentation'
-  import { ActionIcon, Scroller, showPopup } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Room as TypeRoom } from '@hcengineering/love'
+  import { Scroller } from '@hcengineering/ui'
   import {
     LocalParticipant,
     LocalTrackPublication,
@@ -33,29 +31,12 @@
   } from 'livekit-client'
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
 
-  import love from '../plugin'
-  import { currentRoom, infos, myInfo, myOffice } from '../stores'
-  import {
-    awaitConnect,
-    isCamAllowed,
-    isCameraEnabled,
-    isConnected,
-    isMicAllowed,
-    isMicEnabled,
-    isShareWithSound,
-    isSharingEnabled,
-    leaveRoom,
-    lk,
-    screenSharing,
-    setCam,
-    setMic,
-    setShare
-  } from '../utils'
+  import { infos } from '../stores'
+  import { awaitConnect, isSharingEnabled, lk, screenSharing } from '../utils'
   import ParticipantView from './ParticipantView.svelte'
 
   export let isDock: boolean = false
   export let room: Ref<TypeRoom>
-  export let canUnpin: boolean = true
 
   interface ParticipantData {
     _id: string
@@ -259,41 +240,9 @@
   })
 
   let divScroll: HTMLElement
-  let allowCam: boolean = false
-  let allowLeave: boolean = false
-
-  $: allowCam = $currentRoom?.type === RoomType.Video
-  $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? love.ids.Reception)
-
-  async function changeMute (): Promise<void> {
-    if (!$isConnected) return
-    await setMic(!$isMicEnabled)
-  }
-
-  async function changeCam (): Promise<void> {
-    if (!$isConnected || !allowCam) return
-    await setCam(!$isCameraEnabled)
-  }
 
   export function canClose (): boolean {
     return false
-  }
-
-  async function leave (): Promise<void> {
-    showPopup(MessageBox, {
-      label: love.string.LeaveRoom,
-      message: love.string.LeaveRoomConfirmation,
-      action: async () => {
-        await leaveRoom($myInfo, $myOffice)
-      }
-    })
-  }
-
-  async function changeShare (): Promise<void> {
-    if (!$isConnected) return
-    const newValue = !$isSharingEnabled
-    const audio = newValue && $isShareWithSound
-    await setShare(newValue, audio)
   }
 
   $: dispatchFit($isSharingEnabled)
@@ -315,58 +264,6 @@
 </script>
 
 <div class="antiPopup videoPopup-container" class:isDock>
-  <div class="header">
-    <div class="flex-row-center flex-gap-2">
-      <ActionIcon
-        icon={!$isConnected ? love.icon.Mic : $isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
-        label={!$isMicAllowed ? love.string.MicPermission : $isMicEnabled ? love.string.Mute : love.string.UnMute}
-        size={'small'}
-        action={changeMute}
-        disabled={!$isConnected || !$isMicAllowed}
-      />
-      <ActionIcon
-        icon={!$isConnected ? love.icon.Cam : $isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
-        label={!$isCamAllowed
-          ? love.string.CamPermission
-          : $isCameraEnabled
-            ? love.string.StopVideo
-            : love.string.StartVideo}
-        size={'small'}
-        action={changeCam}
-        disabled={!$isConnected || !allowCam || !$isCamAllowed}
-      />
-      {#if $isConnected}
-        <ActionIcon
-          icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}
-          label={$isSharingEnabled ? love.string.StopShare : love.string.Share}
-          disabled={$screenSharing && !$isSharingEnabled}
-          size={'small'}
-          action={changeShare}
-        />
-      {/if}
-    </div>
-    <div class="flex-row-center flex-gap-2">
-      {#if canUnpin}
-        <ActionIcon
-          icon={view.icon.Pin}
-          label={isDock ? view.string.Unpin : view.string.Pin}
-          size={'small'}
-          action={() => {
-            dispatch('dock')
-          }}
-        />
-      {/if}
-      {#if allowLeave}
-        <ActionIcon
-          icon={love.icon.LeaveRoom}
-          iconProps={{ color: '#FF6711' }}
-          label={love.string.LeaveRoom}
-          size={'small'}
-          action={leave}
-        />
-      {/if}
-    </div>
-  </div>
   <div class="screenContainer" class:hidden={!$screenSharing || $isSharingEnabled}>
     <video class="screen" bind:this={screen}></video>
   </div>

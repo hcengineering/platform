@@ -104,7 +104,9 @@
   $: language = langs.find((lang) => lang.id === $currentLanguage) ?? langs[0]
 </script>
 
-<div class="antiPopup">
+<div class="antiPopup thinStyle">
+  <div class="ap-space" />
+
   <div class="ap-scroll">
     <div class="ap-box">
       <div class="flex-row-center m-4">
@@ -130,7 +132,7 @@
       <div class="ap-menuItem separator halfMargin" />
 
       <button
-        class="ap-menuItem antiPopup-submenu withIcon flex-row-center flex-grow"
+        class="ap-menuItem antiPopup-submenu withIcon noMargin flex-row-center flex-grow"
         on:click={(ev) => {
           const items = fontsizes.map((p) => {
             return {
@@ -162,7 +164,7 @@
       <div class="ap-menuItem separator halfMargin" />
 
       <button
-        class="ap-menuItem antiPopup-submenu withIcon flex-row-center flex-grow"
+        class="ap-menuItem antiPopup-submenu withIcon noMargin flex-row-center flex-grow"
         on:click={(ev) => {
           const items = langs.map((p) => {
             return {
@@ -194,4 +196,6 @@
       </button>
     </div>
   </div>
+
+  <div class="ap-space" />
 </div>

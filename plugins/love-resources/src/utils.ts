@@ -42,6 +42,8 @@ import {
   RoomType,
   TranscriptionStatus
 } from '@hcengineering/love'
+import media, { getSelectedCamId, getSelectedMicId, getSelectedSpeakerId } from '@hcengineering/media'
+import { useMedia } from '@hcengineering/media-resources'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {
   copyTextToClipboard,
@@ -82,22 +84,25 @@ import {
   type RemoteTrack,
   type RemoteTrackPublication,
   RoomEvent,
-  type ScreenShareCaptureOptions,
   Track,
   type VideoCaptureOptions,
-  type Participant
+  type Participant,
+  type ScreenShareCaptureOptions
 } from 'livekit-client'
 import { get, writable } from 'svelte/store'
 
 import { sendMessage } from './broadcast'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 import love from './plugin'
-import { $myPreferences, currentMeetingMinutes, currentRoom, myOffice, selectedRoomPlace } from './stores'
+import {
+  $myPreferences,
+  currentMeetingMinutes,
+  currentSession,
+  currentRoom,
+  myOffice,
+  selectedRoomPlace
+} from './stores'
 import MeetingMinutesSearchItem from './components/MeetingMinutesSearchItem.svelte'
-
-export const selectedCamId = 'selectedDevice_cam'
-export const selectedMicId = 'selectedDevice_mic'
-export const selectedSpeakerId = 'selectedDevice_speaker'
 
 export async function getToken (
   roomName: string,
@@ -146,7 +151,7 @@ export const lk: LKRoom = new LKRoom({
     noiseSuppression: true
   },
   audioOutput: {
-    deviceId: localStorage.getItem(selectedSpeakerId) ?? undefined
+    deviceId: getSelectedSpeakerId()
   },
   videoCaptureDefaults: {
     facingMode: 'user',
@@ -213,31 +218,41 @@ function handleTrackUnsubscribed (
 
 lk.on(RoomEvent.TrackSubscribed, handleTrackSubscribed)
 lk.on(RoomEvent.LocalTrackPublished, (pub, part) => {
+  const session = get(currentSession)
+  const track = pub.track?.mediaStreamTrack
+  const deviceId = track?.getSettings().deviceId
   if (pub.track?.kind === Track.Kind.Video) {
     if (pub.track.source === Track.Source.ScreenShare) {
+      session?.setFeature('sharing', { enabled: true, track, deviceId })
       screenSharing.set(true)
       isSharingEnabled.set(true)
       sendMessage({ type: 'share', value: true })
     } else {
+      session?.setCamera({ enabled: true, track, deviceId })
       isCameraEnabled.set(true)
       sendMessage({ type: 'cam', value: true })
     }
   } else if (pub.track?.kind === Track.Kind.Audio) {
+    session?.setMicrophone({ enabled: true, track, deviceId })
     isMicEnabled.set(!pub.track?.isMuted)
     sendMessage({ type: 'mic', value: !pub.track?.isMuted })
   }
 })
 lk.on(RoomEvent.LocalTrackUnpublished, (pub, part) => {
+  const session = get(currentSession)
   if (pub.track?.kind === Track.Kind.Video) {
     if (pub.track.source === Track.Source.ScreenShare) {
+      session?.setFeature('sharing', { enabled: false })
       screenSharing.set(false)
       isSharingEnabled.set(false)
       sendMessage({ type: 'share', value: false })
     } else {
+      session?.setCamera({ enabled: false })
       isCameraEnabled.set(false)
       sendMessage({ type: 'cam', value: false })
     }
   } else if (pub.track?.kind === Track.Kind.Audio) {
+    session?.setMicrophone({ enabled: false })
     isMicEnabled.set(false)
     sendMessage({ type: 'mic', value: false })
   }
@@ -245,16 +260,20 @@ lk.on(RoomEvent.LocalTrackUnpublished, (pub, part) => {
 lk.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
 lk.on(RoomEvent.TrackMuted, (pub, participant) => {
   if (participant.isLocal) {
+    const session = get(currentSession)
     if (pub.track?.kind === Track.Kind.Video) {
       if (pub.track.source === Track.Source.ScreenShare) {
+        session?.setFeature('sharing', { enabled: false })
         screenSharing.set(false)
         isSharingEnabled.set(false)
         sendMessage({ type: 'share', value: false })
       } else {
+        session?.setCamera({ enabled: false })
         isCameraEnabled.set(false)
         sendMessage({ type: 'cam', value: false })
       }
     } else if (pub.track?.kind === Track.Kind.Audio) {
+      session?.setMicrophone({ enabled: false })
       isMicEnabled.set(false)
       sendMessage({ type: 'mic', value: false })
     }
@@ -262,16 +281,22 @@ lk.on(RoomEvent.TrackMuted, (pub, participant) => {
 })
 lk.on(RoomEvent.TrackUnmuted, (pub, participant) => {
   if (participant.isLocal) {
+    const session = get(currentSession)
+    const track = pub.track?.mediaStreamTrack
+    const deviceId = track?.getSettings().deviceId
     if (pub.track?.kind === Track.Kind.Video) {
       if (pub.track.source === Track.Source.ScreenShare) {
+        session?.setFeature('sharing', { enabled: true })
         screenSharing.set(true)
         isSharingEnabled.set(true)
         sendMessage({ type: 'share', value: true })
       } else {
+        session?.setCamera({ enabled: true, track, deviceId })
         isCameraEnabled.set(true)
         sendMessage({ type: 'cam', value: true })
       }
     } else if (pub.track?.kind === Track.Kind.Audio) {
+      session?.setMicrophone({ enabled: true, track, deviceId })
       isMicEnabled.set(true)
       sendMessage({ type: 'mic', value: true })
     }
@@ -406,6 +431,57 @@ lk.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
 })
 
 lk.on(RoomEvent.Connected, () => {
+  const current = get(currentRoom)
+
+  const session = useMedia({
+    state: {
+      camera: { enabled: false },
+      microphone: current?.type === RoomType.Video ? { enabled: false } : undefined
+    },
+    autoDestroy: false
+  })
+
+  session.on('camera', (enabled) => {
+    void setCam(enabled)
+  })
+
+  session.on('microphone', (enabled) => {
+    void setMic(enabled)
+  })
+
+  session.on('selected-camera', (deviceId) => {
+    if (deviceId === null) {
+      if (lk.localParticipant.isCameraEnabled) {
+        void setCam(false)
+      }
+    } else {
+      if (lk.localParticipant.isCameraEnabled) {
+        void lk.switchActiveDevice('videoinput', deviceId)
+      } else {
+        void setCam(true)
+      }
+    }
+  })
+
+  session.on('selected-microphone', (deviceId) => {
+    if (lk.localParticipant.isMicrophoneEnabled) {
+      void lk.switchActiveDevice('audioinput', deviceId)
+    } else {
+      void setMic(true)
+    }
+  })
+
+  session.on('selected-speaker', (deviceId) => {
+    void lk.switchActiveDevice('audiooutput', deviceId)
+  })
+
+  session.on('feature', (feature, enabled) => {
+    if (feature === 'sharing') {
+      void setShare(enabled)
+    }
+  })
+
+  currentSession.set(session)
   isConnected.set(true)
   currentRoomAudioLevels.set(new Map())
   sendMessage({ type: 'connect', value: true })
@@ -415,6 +491,10 @@ lk.on(RoomEvent.Connected, () => {
   Analytics.handleEvent(LoveEvents.ConnectedToRoom)
 })
 lk.on(RoomEvent.Disconnected, () => {
+  const session = get(currentSession)
+  session?.close()
+  session?.removeAllListeners()
+  currentSession.set(undefined)
   isConnected.set(false)
   sendMessage({ type: 'connect', value: true })
   isCurrentInstanceConnected.set(false)
@@ -507,6 +587,7 @@ export async function disconnect (): Promise<void> {
   sendMessage({ type: 'cam', value: false })
   sendMessage({ type: 'share', value: false })
   sendMessage({ type: 'connect', value: false })
+  get(currentSession)?.close()
 }
 
 export async function leaveRoom (ownInfo: ParticipantInfo | undefined, ownOffice: Office | undefined): Promise<void> {
@@ -558,16 +639,22 @@ export async function setCam (value: boolean): Promise<void> {
   if ($isCurrentInstanceConnected) {
     try {
       const opt: VideoCaptureOptions = {}
-      const selectedDevice = localStorage.getItem(selectedCamId)
-      const devices = await LKRoom.getLocalDevices('videoinput')
-      isCamAllowed.set(devices.length > 0)
-      if (selectedDevice !== null) {
-        const available = devices.find((p) => p.deviceId === selectedDevice)
-        if (available !== undefined) {
-          opt.deviceId = available.deviceId
+      const selectedDevice = getSelectedCamId()
+      if (selectedDevice !== media.ids.NoCam) {
+        const devices = await LKRoom.getLocalDevices('videoinput')
+        isCamAllowed.set(devices.length > 0)
+        if (selectedDevice !== null) {
+          const available = devices.find((p) => p.deviceId === selectedDevice)
+          if (available !== undefined) {
+            // We need to use exact device id to avoid issues with Firefox
+            // that can switch to another device when using just deviceId
+            opt.deviceId = { exact: available.deviceId }
+          }
         }
+        await lk.localParticipant.setCameraEnabled(value, opt)
+      } else {
+        isCamAllowed.set(false)
       }
-      await lk.localParticipant.setCameraEnabled(value, opt)
     } catch (err) {
       console.error(err)
       isCamAllowed.set(false)
@@ -580,8 +667,8 @@ export async function setCam (value: boolean): Promise<void> {
 export async function setMic (value: boolean): Promise<void> {
   if ($isCurrentInstanceConnected) {
     try {
-      const speaker = localStorage.getItem(selectedSpeakerId)
-      if (speaker !== null) {
+      const speaker = getSelectedSpeakerId()
+      if (speaker !== undefined) {
         const devices = await LKRoom.getLocalDevices('audiooutput')
         const available = devices.find((p) => p.deviceId === speaker)
         if (available !== undefined) {
@@ -593,13 +680,15 @@ export async function setMic (value: boolean): Promise<void> {
     }
     try {
       const opt: AudioCaptureOptions = {}
-      const selectedDevice = localStorage.getItem(selectedMicId)
+      const selectedDevice = getSelectedMicId()
       const devices = await LKRoom.getLocalDevices('audioinput')
       isMicAllowed.set(devices.length > 0)
       if (selectedDevice !== null) {
         const available = devices.find((p) => p.deviceId === selectedDevice)
         if (available !== undefined) {
-          opt.deviceId = available.deviceId
+          // We need to use exact device id to avoid issues with Firefox
+          // that can switch to another device when using just deviceId
+          opt.deviceId = { exact: available.deviceId }
         }
       }
       await lk.localParticipant.setMicrophoneEnabled(value, opt)
