@@ -89,7 +89,7 @@
       label: tracker.string.CreateProject,
       accountRole: AccountRole.Maintainer,
       permission: {
-        id: core.permission.CreateProject,
+        id: core.permission.CreateObject,
         space: core.space.Space
       },
       callback: newProject
