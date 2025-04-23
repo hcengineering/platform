@@ -14,6 +14,9 @@
 -->
 
 <script lang="ts">
+  import { tooltip } from '@hcengineering/ui'
+
+  import ReactionsTooltip from './ReactionsTooltip.svelte'
   import Icon from './Icon.svelte'
   import { IconSize, IconComponent } from '../types'
 
@@ -23,13 +26,20 @@
   export let count: number | undefined = undefined
   export let selected: boolean = false
   export let active: boolean = false
+  export let socialIds: PersonId[] = []
 </script>
 
 <!--TODO: add users tooltip-->
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="reaction" class:selected class:active on:click>
+<div
+  class="reaction"
+  class:selected
+  class:active
+  on:click
+  use:tooltip={{ component: ReactionsTooltip, props: { socialIds } }}
+>
   <div class="reaction__emoji" class:foreground={icon != null}>
     {#if icon}
       <Icon {icon} size={iconSize} />

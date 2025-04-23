@@ -79,7 +79,7 @@
   .date-separator__date {
     color: var(--next-text-color-secondary);
     font-size: 0.813rem;
-    font-weight: 500;
+    font-weight: 400;
     padding: 0 1rem;
   }
 </style>

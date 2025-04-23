@@ -171,18 +171,25 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="message" id={message.id.toString()} on:contextmenu={handleContextMenu} class:active={isActionsOpened}>
-  <div class="message__actions" class:opened={isActionsOpened}>
-    <MessageActionsPanel
-      {message}
-      editable={canEdit()}
-      bind:isOpened={isActionsOpened}
-      on:edit={handleEdit}
-      on:reply={() => {
-        dispatch('reply', message)
-      }}
-    />
-  </div>
+<div
+  class="message"
+  id={message.id.toString()}
+  on:contextmenu={handleContextMenu}
+  class:active={isActionsOpened && !isEditing}
+>
+  {#if !isEditing}
+    <div class="message__actions" class:opened={isActionsOpened}>
+      <MessageActionsPanel
+        {message}
+        editable={canEdit()}
+        bind:isOpened={isActionsOpened}
+        on:edit={handleEdit}
+        on:reply={() => {
+          dispatch('reply', message)
+        }}
+      />
+    </div>
+  {/if}
   <div class="message__body">
     <div class="message__avatar">
       <PersonPreviewProvider value={author}>

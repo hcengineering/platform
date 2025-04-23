@@ -131,7 +131,9 @@
 
   <div class="replies__last-reply">
     <Label label={uiNext.string.LastReply} />
-    {displayDate}
+    <span class="lower">
+      {displayDate}
+    </span>
   </div>
 </div>
 
