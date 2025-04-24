@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -38,7 +38,7 @@ import core, {
 } from '@hcengineering/core'
 import serverCalendar from '@hcengineering/server-calendar'
 import { getMetadata, getResource } from '@hcengineering/platform'
-import { TriggerControl } from '@hcengineering/server-core'
+import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
 import { getPerson, getSocialStrings, getSocialIds } from '@hcengineering/server-contact'
 import { getHTMLPresenter, getTextPresenter } from '@hcengineering/server-notification-resources'
 import { generateToken } from '@hcengineering/server-token'
@@ -183,7 +183,7 @@ async function getEventPerson (
 ): Promise<Ref<Person> | undefined> {
   const calendar = calendars.find((c) => c._id === current.calendar)
   if (calendar === undefined) return
-  const person = await getPerson(control, current.createdBy ?? current.modifiedBy)
+  const person = await getPerson(control, current.user ?? current.createdBy ?? current.modifiedBy)
 
   return person?._id
 }
@@ -209,6 +209,7 @@ async function OnEvent (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
 async function onEventMixin (ctx: TxMixin<Event, Event>, control: TriggerControl): Promise<Tx[]> {
   const ops = ctx.attributes
   const event = (await control.findAll(control.ctx, calendar.class.Event, { _id: ctx.objectId }, { limit: 1 }))[0]
+  void putEventToQueue(control, 'mixin', event, ctx.modifiedBy, ops)
   if (event === undefined) return []
   if (event.access !== 'owner') return []
   const events = await control.findAll(control.ctx, calendar.class.Event, { eventId: event.eventId })
@@ -237,6 +238,7 @@ async function onEventUpdate (ctx: TxUpdateDoc<Event>, control: TriggerControl):
   if (ctx.modifiedBy !== core.account.System) {
     void sendEventToService(event, 'update', control)
   }
+  void putEventToQueue(control, 'update', event, ctx.modifiedBy, ops)
   if (event.access !== 'owner') return []
   const events = await control.findAll(control.ctx, calendar.class.Event, { eventId: event.eventId })
   const res: Tx[] = []
@@ -287,7 +289,7 @@ async function eventForNewParticipants (
     const socialIds = await getSocialIds(control, part)
     if (socialIds.length === 0) continue
     const socialStrings = socialIds.map((si) => si._id)
-    if (socialStrings.includes(event.createdBy ?? event.modifiedBy)) continue
+    if (socialStrings.includes(event.user ?? event.createdBy ?? event.modifiedBy)) continue
 
     const primarySocialString = pickPrimarySocialId(socialIds)._id
     const user = primarySocialString
@@ -299,7 +301,7 @@ async function eventForNewParticipants (
       { ...data, calendar, access, user },
       undefined,
       undefined,
-      primarySocialString
+      event.modifiedBy
     )
     const outerTx = control.txFactory.createTxCollectionCUD(
       attachedToClass,
@@ -308,7 +310,7 @@ async function eventForNewParticipants (
       collection,
       innerTx,
       undefined,
-      primarySocialString
+      event.modifiedBy
     )
     res.push(outerTx)
   }
@@ -347,11 +349,40 @@ async function sendEventToService (
   }
 }
 
+type EventCUDType = 'create' | 'update' | 'delete' | 'mixin'
+interface EventCUDMessage {
+  action: EventCUDType
+  event: Event
+  modifiedBy: PersonId
+  changes?: Record<string, any>
+}
+
+async function putEventToQueue (
+  control: TriggerControl,
+  action: EventCUDType,
+  event: Event,
+  modifiedBy: PersonId,
+  changes?: Record<string, any>
+): Promise<void> {
+  if (control.queue === undefined) return
+  const producer = control.queue.getProducer<EventCUDMessage>(
+    control.ctx.newChild('queue', {}),
+    QueueTopic.CalendarEventCUD
+  )
+
+  try {
+    await producer.send(control.workspace.uuid, [{ action, event, modifiedBy, changes }])
+  } catch (err) {
+    control.ctx.error('Could not queue calendar event', { err, action, event })
+  }
+}
+
 async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl): Promise<Tx[]> {
   const event = TxProcessor.createDoc2Doc(ctx)
   if (ctx.modifiedBy !== core.account.System) {
     void sendEventToService(event, 'create', control)
   }
+  void putEventToQueue(control, 'create', event, ctx.modifiedBy)
   if (event.access !== 'owner') return []
   const res: Tx[] = []
   const { _class, space, attachedTo, attachedToClass, collection, ...attr } = event
@@ -362,7 +393,7 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
     const socialIds = await getSocialIds(control, part as Ref<Person>)
     if (socialIds.length === 0) continue
     const socialStrings = socialIds.map((si) => si._id)
-    if (socialStrings.includes(event.createdBy ?? event.modifiedBy)) continue
+    if (socialStrings.includes(event.user ?? event.createdBy ?? event.modifiedBy)) continue
     const primarySocialString = pickPrimarySocialId(socialIds)._id
     const user = primarySocialString
     const calendar = getCalendar(calendars, socialStrings)
@@ -373,7 +404,7 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
       { ...data, calendar, access, user },
       undefined,
       undefined,
-      primarySocialString
+      ctx.modifiedBy
     )
     const outerTx = control.txFactory.createTxCollectionCUD(
       attachedToClass,
@@ -382,7 +413,7 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
       collection,
       innerTx,
       undefined,
-      primarySocialString
+      ctx.modifiedBy
     )
     res.push(outerTx)
   }
@@ -396,6 +427,7 @@ async function onRemoveEvent (ctx: TxRemoveDoc<Event>, control: TriggerControl):
     if (ctx.modifiedBy !== core.account.System) {
       void sendEventToService(removed, 'delete', control)
     }
+    void putEventToQueue(control, 'delete', removed, ctx.modifiedBy)
     if (removed.access !== 'owner') return []
     const current = await control.findAll(control.ctx, calendar.class.Event, { eventId: removed.eventId })
     for (const cur of current) {

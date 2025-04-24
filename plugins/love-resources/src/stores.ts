@@ -14,6 +14,7 @@ import {
 import { createQuery, onClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
 import { aiBotPersonRefStore } from '@hcengineering/ai-bot-resources'
+import { type MediaSession } from '@hcengineering/media'
 
 import love from './plugin'
 
@@ -58,6 +59,7 @@ export let $myPreferences: DevicesPreference | undefined
 
 export const currentMeetingMinutes = writable<MeetingMinutes | undefined>(undefined)
 export const selectedRoomPlace = writable<{ _id: Ref<Room>, x: number, y: number } | undefined>(undefined)
+export const currentSession = writable<MediaSession | undefined>(undefined)
 
 function filterParticipantInfo (value: ParticipantInfo[]): ParticipantInfo[] {
   const map = new Map<string, ParticipantInfo>()

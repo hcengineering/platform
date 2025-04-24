@@ -153,7 +153,8 @@ export default plugin(presentationId, {
     PreviewConfig: '' as Metadata<PreviewConfig | undefined>,
     ClientHook: '' as Metadata<ClientHook>,
     SessionId: '' as Metadata<string>,
-    StatsUrl: '' as Metadata<string>
+    StatsUrl: '' as Metadata<string>,
+    MailUrl: '' as Metadata<string>
   },
   status: {
     FileTooLarge: '' as StatusCode

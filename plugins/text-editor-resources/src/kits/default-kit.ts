@@ -40,6 +40,7 @@ export interface DefaultKitOptions {
     levels?: Level[]
   }
   history?: false
+  dropcursor?: false
 }
 
 export const DefaultKit = Extension.create<DefaultKitOptions>({
@@ -59,7 +60,8 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
         heading: this.options.heading,
         history: this.options.history,
         bulletList: false,
-        orderedList: false
+        orderedList: false,
+        dropcursor: this.options.dropcursor
       }),
       ListItem.extend({ group: 'listItems' }),
       BulletList.extend({ content: 'listItems+' }),

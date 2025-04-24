@@ -15,6 +15,7 @@
 
 export const LoginEvents = {
   SignUpEmail: 'signup.viaEmail',
+  SignUpOtp: 'signup.viaOtp',
   SignUpGoogle: 'signup.viaGoogle',
   SignUpGithub: 'signup.viaGitHub',
 

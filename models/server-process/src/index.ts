@@ -95,6 +95,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.FirstWorkingDayAfter
   })
 
+  builder.mixin(process.function.RoleContext, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.RoleContext
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverProcess.trigger.OnExecutionContinue,
     txMatch: {

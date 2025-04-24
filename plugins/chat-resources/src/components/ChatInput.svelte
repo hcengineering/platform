@@ -14,17 +14,19 @@
 -->
 
 <script lang="ts">
-  import { MessageInput } from '@hcengineering/ui-next'
+  import { MessageInput, UploadedFile } from '@hcengineering/ui-next'
   import { Card } from '@hcengineering/card'
 
   import chat from '../plugin'
 
-  export let card: Card
+  export let card: Card | undefined
+  export let onSubmit: ((markdown: string, files: UploadedFile[]) => Promise<void>) | undefined = undefined
 </script>
 
 <MessageInput
-  cardId={card._id}
-  cardType={card._class}
+  cardId={card?._id}
+  cardType={card?._class}
   placeholder={chat.string.MessageIn}
-  placeholderParams={{ title: card.title }}
+  placeholderParams={{ title: card?.title ?? '' }}
+  {onSubmit}
 />

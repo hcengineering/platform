@@ -30,7 +30,7 @@ import {
   MarkDerivedEntryMiddleware,
   ModelMiddleware,
   ModifiedMiddleware,
-  NotificationsMiddleware,
+  PluginConfigurationMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
   QueueMiddleware,
@@ -119,8 +119,8 @@ export function createServerPipeline (
       LookupMiddleware.create,
       IdentityMiddleware.create,
       ModifiedMiddleware.create,
+      PluginConfigurationMiddleware.create,
       PrivateMiddleware.create,
-      NotificationsMiddleware.create,
       (ctx: MeasureContext, context: PipelineContext, next?: Middleware) =>
         SpaceSecurityMiddleware.create(opt.adapterSecurity ?? false, ctx, context, next),
       SpacePermissionsMiddleware.create,

@@ -358,6 +358,10 @@ export function createModel (builder: Builder): void {
       { state: 1 }
     ]
   })
+
+  builder.mixin(calendar.class.Event, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: calendar.function.EventTitleProvider
+  })
 }
 
 export default calendar

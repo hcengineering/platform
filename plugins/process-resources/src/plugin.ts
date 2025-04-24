@@ -46,7 +46,8 @@ export default mergeIds(processId, process, {
     NumberOffsetEditor: '' as AnyComponent,
     ErrorPresenter: '' as AnyComponent,
     RequestUserInput: '' as AnyComponent,
-    ResultInput: '' as AnyComponent
+    ResultInput: '' as AnyComponent,
+    RoleEditor: '' as AnyComponent
   },
   function: {
     ShowDoneQuery: '' as ViewQueryAction,

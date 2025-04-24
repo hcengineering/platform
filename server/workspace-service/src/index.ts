@@ -123,7 +123,7 @@ export function serveWorkspaceAccount (
 
   let canceled = false
 
-  const wsProducer = queue.createProducer<QueueWorkspaceMessage>(measureCtx, QueueTopic.Workspace)
+  const wsProducer = queue.getProducer<QueueWorkspaceMessage>(measureCtx, QueueTopic.Workspace)
   const worker = new WorkspaceWorker(
     wsProducer,
     version,
@@ -158,7 +158,6 @@ export function serveWorkspaceAccount (
 
   const close = (): void => {
     canceled = true
-    void wsProducer.close()
     void queue.shutdown()
     onClose?.()
   }

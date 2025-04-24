@@ -20,6 +20,7 @@
   import { handler, registerFocus } from '@hcengineering/ui'
   import { FocusPosition } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
+  import { EditorView } from '@tiptap/pm/view'
   import {
     EmojiExtension,
     IsEmptyContentExtension,
@@ -45,6 +46,7 @@
   export let boundary: HTMLElement | undefined = undefined
   export let autofocus: FocusPosition = false
   export let onCancel: (() => void) | undefined = undefined
+  export let onPaste: ((view: EditorView, event: ClipboardEvent) => boolean) | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -148,9 +150,11 @@
       {boundary}
       canEmbedFiles={false}
       canEmbedImages={false}
+      dropcursor={false}
       editorAttributes={{ class: 'next-text-editor-view' }}
       {placeholder}
       {placeholderParams}
+      {onPaste}
       on:content={(ev) => {
         if (canSubmit(loading, content, hasNonTextContent)) {
           dispatch('submit', ev.detail)

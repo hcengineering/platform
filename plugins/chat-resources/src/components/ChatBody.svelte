@@ -32,6 +32,7 @@
   export let bottomStart: boolean = true
   export let footerHeight: number | undefined = undefined
   export let showDates: boolean = true
+  export let overlyColor: string | undefined = undefined
 
   const me = getCurrentAccount()
   const communicationClient = getCommunicationClient()
@@ -244,8 +245,9 @@
   }
 
   async function handleReply (event: CustomEvent<Message>): Promise<void> {
+    if (card == null) return
     const message = event.detail
-    await replyToThread(message)
+    await replyToThread(message, card)
   }
 
   $: void initializeScroll(isLoading, separatorDiv)
@@ -267,6 +269,9 @@
     if (separatorDiv != null) {
       await tick() // Wait for the DOM to update
       separatorDiv.scrollIntoView({ behavior: 'instant', block: 'start' })
+      if (scrollDiv && scrollDiv.scrollTop < -100) {
+        scroller?.scrollBy(-50)
+      }
       isScrollInitialized = true
       updateShouldScrollToNew()
     }
@@ -283,6 +288,7 @@
   bind:scrollDiv
   bind:scroller
   bind:contentDiv
+  {overlyColor}
   isLoading={card != null && (isLoading || !isScrollInitialized)}
   {bottomStart}
   onScroll={handleScroll}

@@ -166,66 +166,6 @@ async function fillAccountUuids (client: MigrationClient): Promise<void> {
   }
 }
 
-async function fillSocialIdentitiesIds (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('contact fillSocialIdentitiesIds', {})
-  ctx.info('filling social identities genenrated ids...')
-  const socialIdBySocialKey = new Map<string, PersonId | null>()
-  const iterator = await client.traverse<SocialIdentity>(DOMAIN_CHANNEL, { _class: contact.class.SocialIdentity })
-  let count = 0
-
-  try {
-    let newSids: SocialIdentity[] = []
-    let newSidIds = new Set<Ref<SocialIdentity>>()
-    let deleteSids: Ref<SocialIdentity>[] = []
-
-    while (true) {
-      const socialIdentities = await iterator.next(200)
-      if (socialIdentities === null || socialIdentities.length === 0) {
-        break
-      }
-
-      for (const socialIdentity of socialIdentities) {
-        const socialId = await getSocialIdBySocialKey(client, socialIdentity.key, socialIdBySocialKey)
-
-        if (socialId == null || socialId === socialIdentity._id) continue
-
-        const socialIdRef = socialId as SocialIdentityRef
-        // Some old data might contain duplicate accounts for github users
-        // so need to filter just in case
-        if (!newSidIds.has(socialIdRef)) {
-          newSidIds.add(socialIdRef)
-          newSids.push({
-            ...socialIdentity,
-            _id: socialIdRef
-          })
-        }
-
-        deleteSids.push(socialIdentity._id)
-        count++
-
-        if (newSids.length > 50) {
-          await client.create(DOMAIN_CHANNEL, newSids)
-          await client.deleteMany(DOMAIN_CHANNEL, { _id: { $in: deleteSids } })
-          newSids = []
-          newSidIds = new Set()
-          deleteSids = []
-        }
-      }
-    }
-
-    if (newSids.length > 0) {
-      await client.create(DOMAIN_CHANNEL, newSids)
-      await client.deleteMany(DOMAIN_CHANNEL, { _id: { $in: deleteSids } })
-      newSids = []
-      newSidIds = new Set()
-      deleteSids = []
-    }
-    ctx.info('finished filling social identities genenrated ids. Updated count: ', { count })
-  } finally {
-    await iterator.close()
-  }
-}
-
 async function assignWorkspaceRoles (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('contact assignWorkspaceRoles', {})
   ctx.info('assigning workspace roles...')
@@ -605,12 +545,6 @@ export const contactOperation: MigrateOperation = {
         state: 'assign-employee-roles-v1',
         mode: 'upgrade',
         func: assignEmployeeRoles
-      },
-      // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
-      {
-        state: 'fill-social-identities-ids-v2',
-        mode: 'upgrade',
-        func: fillSocialIdentitiesIds
       },
       {
         state: 'create-user-profiles',

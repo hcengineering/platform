@@ -66,6 +66,8 @@ export function getContext (
   if (attr !== undefined && category === 'object') {
     attributes = attributes.filter((it) => it._id !== attr)
   }
+
+  const functions = getContextFunctions(client, process.masterTag, target, category)
   const nested: Record<string, NestedContext> = {}
   const relations: Record<string, RelatedContext> = {}
 
@@ -119,10 +121,53 @@ export function getContext (
   }
 
   return {
+    functions,
     attributes,
     nested,
     relations
   }
+}
+
+function getContextFunctions (
+  client: Client,
+  _class: Ref<Class<Doc>>,
+  target: Ref<Class<Type<any>>>,
+  category: AttributeCategory
+): Array<Ref<ProcessFunction>> {
+  const matched: Array<Ref<ProcessFunction>> = []
+  const hierarchy = client.getHierarchy()
+  const funcs = client.getModel().findAllSync(process.class.ProcessFunction, { type: 'context' })
+  for (const func of funcs) {
+    switch (category) {
+      case 'object': {
+        if (func.category === 'array') {
+          if (hierarchy.isDerived(func.of, target)) {
+            matched.push(func._id)
+          }
+        }
+        if (func.category === 'object') {
+          if (hierarchy.isDerived(func.of, target)) {
+            matched.push(func._id)
+          }
+        }
+        break
+      }
+      case 'array': {
+        if (func.category === 'array') {
+          if (hierarchy.isDerived(func.of, target)) {
+            matched.push(func._id)
+          }
+        }
+        break
+      }
+      default: {
+        if (func.of === target) {
+          matched.push(func._id)
+        }
+      }
+    }
+  }
+  return matched
 }
 
 function getClassAttributes (
@@ -188,6 +233,15 @@ export function getRelationReduceFunc (
 
 export function getValueReduceFunc (source: AnyAttribute, target: AnyAttribute): Ref<ProcessFunction> | undefined {
   if (source.type._class !== core.class.ArrOf) return undefined
+  if (target.type._class === core.class.ArrOf) return undefined
+  return process.function.FirstValue
+}
+
+export function getContextFunctionReduce (
+  func: ProcessFunction,
+  target: AnyAttribute
+): Ref<ProcessFunction> | undefined {
+  if (func.category !== 'array') return undefined
   if (target.type._class === core.class.ArrOf) return undefined
   return process.function.FirstValue
 }

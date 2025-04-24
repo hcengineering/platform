@@ -798,6 +798,8 @@ export class PlatformWorker {
     return this.integrations.map((it) => it.workspace)
   }
 
+  checkedWorkspaces = new Set<string>()
+
   async checkWorkspaceIsActive (
     token: string,
     workspace: WorkspaceUuid
@@ -825,7 +827,10 @@ export class PlatformWorker {
     const lastVisit = (Date.now() - (workspaceInfo.lastVisit ?? 0)) / (3600 * 24 * 1000) // In days
 
     if (config.WorkspaceInactivityInterval > 0 && lastVisit > config.WorkspaceInactivityInterval) {
-      this.ctx.warn('Workspace is inactive for too long, skipping for now.', { workspace })
+      if (!this.checkedWorkspaces.has(workspace)) {
+        this.checkedWorkspaces.add(workspace)
+        this.ctx.warn('Workspace is inactive for too long, skipping for now.', { workspace })
+      }
       return { workspaceInfo: undefined, needRecheck: true }
     }
     return { workspaceInfo, needRecheck: true }

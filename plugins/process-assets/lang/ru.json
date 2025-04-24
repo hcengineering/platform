@@ -65,6 +65,7 @@
     "UserRequestedValueNotProvided": "Знвчение не предоставлено пользователем: {attr}",
     "ObjectNotFound": "Объект не найден: {_id}",
     "AttributeNotExists": "Атрибут не существует: {key}",
-    "ResultNotProvided": "Результат не предоставлен"
+    "ResultNotProvided": "Результат не предоставлен",
+    "EmptyFunctionResult": "Отсутствуют результат функции {func}"
   }
 }

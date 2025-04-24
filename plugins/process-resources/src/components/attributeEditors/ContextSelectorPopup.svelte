@@ -13,13 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AnyAttribute, generateId } from '@hcengineering/core'
-  import { Context, SelectedContext } from '@hcengineering/process'
+  import { AnyAttribute, generateId, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Context, ProcessFunction, SelectedContext } from '@hcengineering/process'
   import { Label, resizeObserver, Scroller, Submenu } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import { getValueReduceFunc } from '../../utils'
+  import { MasterTag, Tag } from '@hcengineering/card'
 
+  export let masterTag: Ref<MasterTag | Tag>
   export let context: Context
   export let attribute: AnyAttribute
   export let onSelect: (val: SelectedContext | null) => void
@@ -58,20 +61,20 @@
     dispatch('close')
   }
 
-  function getIndex (ownIndex: number, kind: 'attribute' | 'relation' | 'nested' | 'total'): number {
-    if (kind === 'attribute') {
-      return ownIndex + 1
-    }
-    if (kind === 'nested') {
-      return ownIndex + context.attributes.length + 1
-    }
-    if (kind === 'relation') {
-      return ownIndex + context.attributes.length + nested.length + 1
-    }
-    if (kind === 'total') {
-      return ownIndex + context.attributes.length + relations.length + nested.length + 1
-    }
-    return ownIndex
+  function onFunc (func: Ref<ProcessFunction>): void {
+    onSelect({
+      type: 'function',
+      key: attribute.name,
+      func,
+      props: {}
+    })
+    dispatch('close')
+  }
+
+  function getFunc (func: Ref<ProcessFunction>): ProcessFunction {
+    const client = getClient()
+    const f = client.getModel().getObject(func)
+    return f
   }
 </script>
 
@@ -89,8 +92,38 @@
       </span>
     </button>
     <div class="menu-separator" />
+    {#if context.functions.length > 0}
+      {#each context.functions as f}
+        {@const func = getFunc(f)}
+        {#if func.editor !== undefined}
+          <Submenu
+            label={func.label}
+            props={{
+              masterTag,
+              context: func,
+              target: attribute,
+              onSelect: onClick
+            }}
+            options={{ component: func.editor }}
+            withHover
+          />
+        {:else}
+          <button
+            on:click={() => {
+              onFunc(func._id)
+            }}
+            class="menu-item"
+          >
+            <span class="overflow-label pr-1">
+              <Label label={func.label} />
+            </span>
+          </button>
+        {/if}
+      {/each}
+      <div class="menu-separator" />
+    {/if}
     {#if context.attributes.length > 0}
-      {#each context.attributes as attr, i}
+      {#each context.attributes as attr}
         <button
           on:click={() => {
             onAttribute(attr)
@@ -105,8 +138,7 @@
       <div class="menu-separator" />
     {/if}
     {#if nested.length > 0}
-      {#each nested as object, i}
-        {@const index = getIndex(i, 'nested')}
+      {#each nested as object}
         <Submenu
           label={object.attribute.label}
           props={{
@@ -121,8 +153,7 @@
       <div class="menu-separator" />
     {/if}
     {#if relations.length > 0}
-      {#each relations as object, i}
-        {@const index = getIndex(i, 'relation')}
+      {#each relations as object}
         <Submenu
           text={object[0]}
           props={{

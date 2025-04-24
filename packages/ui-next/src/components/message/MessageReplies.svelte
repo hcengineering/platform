@@ -125,40 +125,49 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="replies" on:click>
-  <div class="replies__count">
-    <Label label={uiNext.string.RepliesCount} params={{ count }} />
-  </div>
+  <span class="text overflow-label">
+    <span class="replies__count">
+      <Label label={uiNext.string.RepliesCount} params={{ count }} />
+    </span>
 
-  <div class="replies__last-reply">
-    <Label label={uiNext.string.LastReply} />
-    {displayDate}
-  </div>
+    <span class="replies__last-reply">
+      <Label label={uiNext.string.LastReply} />
+      <span class="lower">
+        {displayDate}
+      </span>
+    </span>
+  </span>
 </div>
 
 <style lang="scss">
   .replies {
     display: flex;
-    padding: 8px 4px;
+    padding: 0.5rem 0.5rem;
     align-items: center;
-    gap: 8px;
-    flex: 1 0 0;
-    border-radius: 8px;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
     cursor: pointer;
+    min-width: 0;
 
     &:hover {
-      background: var(--color-huly-off-white-5);
+      background: var(--next-button-menu-ghost-background-color-hover);
     }
   }
 
   .replies__count {
     color: var(--next-text-color-secondary);
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 500;
+  }
+
+  .text {
+    flex: 1 1 auto;
   }
 
   .replies__last-reply {
     color: var(--next-text-color-tertiary);
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 0.75rem;
+    font-weight: 400;
   }
 </style>

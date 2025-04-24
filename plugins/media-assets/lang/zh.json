@@ -1,0 +1,17 @@
+{
+  "string": {
+    "Camera": "摄像头",
+    "Microphone": "麦克风",
+    "Speaker": "扬声器",
+    "DefaultCam": "默认摄像头",
+    "DefaultMic": "默认麦克风",
+    "DefaultSpeaker": "默认扬声器",
+    "NoCam": "没有摄像头",
+    "TurnOnCam": "打开摄像头",
+    "TurnOffCam": "关闭摄像头",
+    "TurnOnMic": "打开麦克风",
+    "TurnOffMic": "关闭麦克风",
+    "On": "开",
+    "Off": "关"
+  }
+}

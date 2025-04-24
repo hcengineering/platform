@@ -57,6 +57,7 @@ import tracker, { trackerId } from '@hcengineering/tracker'
 import { trainingId } from '@hcengineering/training'
 import uiPlugin, { getCurrentLocation, locationStorageKeyId, navigate, setLocationStorageKey } from '@hcengineering/ui'
 import { uiNextId } from '@hcengineering/ui-next'
+import { mediaId } from '@hcengineering/media'
 import { uploaderId } from '@hcengineering/uploader'
 import recorder, { recorderId } from '@hcengineering/recorder'
 import { viewId } from '@hcengineering/view'
@@ -115,6 +116,7 @@ import '@hcengineering/mail-assets'
 import '@hcengineering/chat-assets'
 import '@hcengineering/inbox-assets'
 import '@hcengineering/achievement-assets'
+import '@hcengineering/media-assets'
 
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import { coreId } from '@hcengineering/core'
@@ -154,6 +156,7 @@ function configureI18n (): void {
   addStringsLoader(textEditorId, async (lang: string) => await import(`@hcengineering/text-editor-assets/lang/${lang}.json`))
   addStringsLoader(uiId, async (lang: string) => await import(`@hcengineering/ui/lang/${lang}.json`))
   addStringsLoader(uiNextId, async (lang: string) => await import(`@hcengineering/ui-next/lang/${lang}.json`))
+  addStringsLoader(mediaId, async (lang: string) => await import(`@hcengineering/media-assets/lang/${lang}.json`))
   addStringsLoader(uploaderId, async (lang: string) => await import(`@hcengineering/uploader-assets/lang/${lang}.json`))
   addStringsLoader(recorderId, async (lang: string) => await import(`@hcengineering/recorder-assets/lang/${lang}.json`))
   addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
@@ -251,6 +254,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.LinkPreviewUrl, config.LINK_PREVIEW_URL ?? '')
+  setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)
   setMetadata(recorder.metadata.StreamUrl, config.STREAM_URL ?? '')
   setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
 
@@ -344,6 +348,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(trainingId, async () => await import('@hcengineering/training-resources'))
   addLocation(productsId, async () => await import('@hcengineering/products-resources'))
   addLocation(documentsId, async () => await import('@hcengineering/controlled-documents-resources'))
+  addLocation(mediaId, async () => await import('@hcengineering/media-resources'))
   addLocation(uploaderId, async () => await import('@hcengineering/uploader-resources'))
   addLocation(recorderId, async () => await import('@hcengineering/recorder-resources'))
   addLocation(presenceId, async () => await import('@hcengineering/presence-resources'))

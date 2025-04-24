@@ -75,6 +75,7 @@ import { timeId, createModel as timeModel } from '@hcengineering/model-time'
 import tracker, { trackerId, createModel as trackerModel } from '@hcengineering/model-tracker'
 import { uploaderId, createModel as uploaderModel } from '@hcengineering/model-uploader'
 import { recorderId, createModel as recorderModel } from '@hcengineering/model-recorder'
+import { mediaId, createModel as mediaModel } from '@hcengineering/model-media'
 import view, { viewId, createModel as viewModel } from '@hcengineering/model-view'
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
 import card, { cardId, createModel as cardModel } from '@hcengineering/model-card'
@@ -278,6 +279,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [textEditorModel, textEditorId],
     [uploaderModel, uploaderId],
     [recorderModel, recorderId],
+    [mediaModel, mediaId],
     [notificationModel, notificationId],
     [preferenceModel, preferenceId],
     [analyticsCollectorModel, analyticsCollectorId],
@@ -321,7 +323,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       boardModel,
       boardId,
       {
-        label: board.string.ConfigLabel,
+        label: undefined, // board.string.ConfigLabel,
         description: board.string.ConfigDescription,
         enabled: false,
         beta: true,
@@ -333,7 +335,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       bitrixModel,
       bitrixId,
       {
-        label: bitrix.string.ConfigLabel,
+        label: undefined, // bitrix.string.ConfigLabel,
         description: bitrix.string.ConfigDescription,
         enabled: false,
         beta: true,

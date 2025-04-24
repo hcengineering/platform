@@ -24,11 +24,7 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import setting, { type Integration, settingId } from '@hcengineering/setting'
-import {
-  getSocialKeyByOldAccount,
-  getUniqueAccounts,
-  getUniqueAccountsFromOldAccounts
-} from '@hcengineering/model-core'
+import { getSocialKeyByOldAccount, getUniqueAccountsFromOldAccounts } from '@hcengineering/model-core'
 
 import { DOMAIN_SETTING } from '.'
 
@@ -89,58 +85,6 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
   ctx.info('finished processing setting integration shared ', {})
 }
 
-/**
- * Migrates social ids to new accounts where needed.
- * Should only be applied to staging where old accounts have already been migrated to social ids.
- * REMOVE IT BEFORE MERGING TO PRODUCTION
- * @param client
- * @returns
- */
-async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('setting migrateAccounts', {})
-  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
-
-  ctx.info('processing setting integration shared ', {})
-  const iterator = await client.traverse(DOMAIN_SETTING, { _class: setting.class.Integration })
-
-  try {
-    let processed = 0
-    while (true) {
-      const docs = await iterator.next(200)
-      if (docs === null || docs.length === 0) {
-        break
-      }
-
-      const operations: { filter: MigrationDocumentQuery<Integration>, update: MigrateUpdate<Integration> }[] = []
-
-      for (const doc of docs) {
-        const integration = doc as Integration
-
-        if (integration.shared === undefined || integration.shared.length === 0) continue
-
-        const newShared = await getUniqueAccounts(client, integration.shared, accountUuidBySocialKey)
-
-        operations.push({
-          filter: { _id: integration._id },
-          update: {
-            shared: newShared
-          }
-        })
-      }
-
-      if (operations.length > 0) {
-        await client.bulk(DOMAIN_SETTING, operations)
-      }
-
-      processed += docs.length
-      ctx.info('...processed', { count: processed })
-    }
-  } finally {
-    await iterator.close()
-  }
-  ctx.info('finished processing setting integration shared ', {})
-}
-
 export const settingOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
     await tryMigrate(mode, client, settingId, [
@@ -155,12 +99,6 @@ export const settingOperation: MigrateOperation = {
         state: 'accounts-to-social-ids',
         mode: 'upgrade',
         func: migrateAccounts
-      },
-      // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
-      {
-        state: 'migrate-social-ids-to-account-uuids',
-        mode: 'upgrade',
-        func: migrateSocialIdsToAccountUuids
       }
     ])
   },

@@ -22,11 +22,12 @@
     "Minor": "Nebenversion",
     "Patch": "Patch",
     "ValidationWorkflow": "Validierungsworkflow",
-    "ChangeOwner": "Dokumentenbesitzer ändern",
-    "ChangeOwnerHintBeginning": "Übertragen Sie den Besitz des",
+    "Creator": "Ersteller",
+    "ChangeOwner": "Dokumentautor ändern",
+    "ChangeOwnerHintBeginning": "Autorschaft des Dokuments übertragen",
     "ChangeOwnerHintEnd": "an eine andere Person.",
     "ChangeOwnerWarning": "Sie können dieses Dokument nach dieser Aktion nicht mehr bearbeiten.",
-    "SelectOwner": "Neuen Besitzer auswählen",
+    "SelectOwner": "Neuen Autor auswählen",
     "CreateDocument": "Neues Dokument erstellen",
     "CreateTemplate": "Neue Vorlage erstellen",
     "Documents": "Dokumente",
@@ -313,7 +314,9 @@
     "LatestVersionHint": "neueste",
 
     "CannotDeleteFolder": "Der Ordner kann nicht gelöscht werden",
-    "CannotDeleteFolderHint": "Bitte verschieben Sie alle untergeordneten Dokumente an einen anderen Ort, bevor Sie den Ordner löschen."
+    "CannotDeleteFolderHint": "Bitte verschieben Sie alle untergeordneten Dokumente an einen anderen Ort, bevor Sie den Ordner löschen.",
+
+    "AllDocumentSpaces": "Alle Dokumentbereiche"
   },
   "controlledDocStates": {
     "Empty": "",

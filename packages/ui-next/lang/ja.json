@@ -26,6 +26,8 @@
     "WeekdayAt": "{weekday}・{time}",
     "YearAt": "{year}・{time}",
     "Yesterday": "昨日",
-    "YesterdayAt": "昨日・{time}"
+    "YesterdayAt": "昨日・{time}",
+    "AndMore": "および{count}件の他",
+    "IsTyping": "{count, plural, =1 {入力中} other {入力中}}"
   }
 }

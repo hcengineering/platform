@@ -268,6 +268,7 @@ export interface PluginConfiguration extends Doc {
   pluginId: Plugin
   transactions: Ref<Doc>[]
 
+  // If not set will not be shown in configuration UI
   label?: IntlString
   icon?: Asset
   description?: IntlString

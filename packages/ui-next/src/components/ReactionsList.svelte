@@ -58,6 +58,7 @@
     <ReactionPresenter
       {emoji}
       selected={reactions.some((it) => me.socialIds.includes(it.creator))}
+      socialIds={reactions.map((it) => it.creator)}
       count={reactions.length}
       on:click={() => dispatch('click', emoji)}
     />

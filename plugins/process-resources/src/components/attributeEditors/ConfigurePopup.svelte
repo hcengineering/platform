@@ -13,6 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Context, Func, ProcessFunction, SelectedContext } from '@hcengineering/process'
   import {
     ButtonIcon,
     CheckBox,
@@ -26,14 +29,13 @@
     showPopup,
     Submenu
   } from '@hcengineering/ui'
+  import { AttributeCategory } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import core, { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
-  import { Context, Func, ProcessFunction, SelectedContext } from '@hcengineering/process'
-  import { getClient } from '@hcengineering/presentation'
-  import { AttributeCategory } from '@hcengineering/view'
   import FallbackEditor from '../contextEditors/FallbackEditor.svelte'
+  import { MasterTag, Tag } from '@hcengineering/card'
 
+  export let masterTag: Ref<MasterTag | Tag>
   export let contextValue: SelectedContext
   export let context: Context
   export let attribute: AnyAttribute
@@ -63,7 +65,7 @@
 
   const reduceFuncs = client
     .getModel()
-    .findAllSync(plugin.class.ProcessFunction, { of: core.class.ArrOf })
+    .findAllSync(plugin.class.ProcessFunction, { type: 'reduce' })
     .map((it) => it._id)
 
   $: availableFunctions = getAvailableFunctions(context, contextValue.functions, attrClass, category)
@@ -77,7 +79,9 @@
     category: AttributeCategory
   ): Ref<ProcessFunction>[] {
     const result: Ref<ProcessFunction>[] = []
-    const allFunctions = client.getModel().findAllSync(plugin.class.ProcessFunction, { of: attrClass, category })
+    const allFunctions = client
+      .getModel()
+      .findAllSync(plugin.class.ProcessFunction, { of: attrClass, category, type: 'transform' })
     for (const f of allFunctions) {
       if (functions === undefined || f.allowMany === true || functions.findIndex((p) => p.func === f._id) === -1) {
         result.push(f._id)
@@ -179,6 +183,7 @@
       func.editor,
       {
         func,
+        masterTag,
         context,
         attribute,
         props: val?.props ?? {}
@@ -192,7 +197,6 @@
             func.props = res
             contextValue.functions[pos] = func
             contextValue.functions = contextValue.functions
-            console.log(contextValue.functions)
             onChange(contextValue)
           }
         }
@@ -309,8 +313,8 @@
         />
         <!-- <div class="menu-separator" /> -->
       {/if}
+      <div class="menu-separator" />
     {/if}
-    <div class="menu-separator" />
     <!-- svelte-ignore a11y-mouse-events-have-key-events -->
     <button
       bind:this={elements[functionButtonIndex + 1]}

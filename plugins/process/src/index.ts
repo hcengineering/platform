@@ -91,6 +91,7 @@ export interface Method<T extends Doc> extends Doc {
 }
 
 export interface ProcessFunction extends Doc {
+  type: 'transform' | 'reduce' | 'context'
   of: Ref<Class<Doc>>
   editor?: AnyComponent
   category: AttributeCategory | undefined
@@ -134,7 +135,8 @@ export default plugin(processId, {
     ObjectNotFound: '' as IntlString,
     AttributeNotExists: '' as IntlString,
     UserRequestedValueNotProvided: '' as IntlString,
-    ResultNotProvided: '' as IntlString
+    ResultNotProvided: '' as IntlString,
+    EmptyFunctionResult: '' as IntlString
   },
   icon: {
     Process: '' as Asset,
@@ -153,6 +155,7 @@ export default plugin(processId, {
     Add: '' as Ref<ProcessFunction>,
     Subtract: '' as Ref<ProcessFunction>,
     Offset: '' as Ref<ProcessFunction>,
-    FirstWorkingDayAfter: '' as Ref<ProcessFunction>
+    FirstWorkingDayAfter: '' as Ref<ProcessFunction>,
+    RoleContext: '' as Ref<ProcessFunction>
   }
 })

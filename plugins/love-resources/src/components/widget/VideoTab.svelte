@@ -24,7 +24,7 @@
 
 <MeetingWidgetHeader {doc} {room} on:close />
 <div class="root">
-  <VideoPopup room={room._id} isDock canUnpin={false} />
+  <VideoPopup room={room._id} isDock />
 </div>
 
 <style lang="scss">

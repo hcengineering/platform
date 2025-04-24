@@ -885,23 +885,29 @@ export async function loginOtp (email: string): Promise<[Status, OtpInfo | null]
   }
 }
 
-export async function validateOtpLogin (email: string, code: string): Promise<[Status, LoginInfo | null]> {
+export async function doValidateOtp (
+  isSignUp: boolean,
+  email: string,
+  code: string,
+  password?: string
+): Promise<[Status, LoginInfo | null]> {
+  const telemetryEvent = isSignUp ? LoginEvents.SignUpOtp : LoginEvents.LoginOtp
   try {
-    const loginInfo = await getAccountClient(null).validateOtp(email, code)
+    const loginInfo = await getAccountClient(null).validateOtp(email, code, password)
 
-    Analytics.handleEvent(LoginEvents.LoginOtp, { email, ok: true })
+    Analytics.handleEvent(telemetryEvent, { email, ok: true })
     Analytics.setUser(email)
 
     return [OK, loginInfo]
   } catch (err: any) {
     if (err instanceof PlatformError) {
-      Analytics.handleEvent(LoginEvents.LoginOtp, { email, ok: false })
+      Analytics.handleEvent(telemetryEvent, { email, ok: false })
       await handleStatusError('Login with otp error', err.status)
 
       return [err.status, null]
     } else {
       console.error('Login with otp error', err)
-      Analytics.handleEvent(LoginEvents.LoginOtp, { email, ok: false })
+      Analytics.handleEvent(telemetryEvent, { email, ok: false })
       Analytics.handleError(err)
       return [unknownError(err), null]
     }

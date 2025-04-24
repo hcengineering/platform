@@ -24,6 +24,7 @@ import { openWidget } from '@hcengineering/workbench-resources'
 
 import chat from './plugin'
 import { type ChatWidgetData } from './types'
+import { createThreadTitle } from './utils'
 
 export function decodeURI (value: string): ['type', Ref<MasterTag>] | ['card', Ref<Card>] {
   return decodeURIComponent(value).split('|') as any
@@ -75,7 +76,7 @@ export function navigateToType (_id: Ref<MasterTag>): void {
   navigate(loc)
 }
 
-export async function openThreadInSidebar (message: Message): Promise<void> {
+export async function openThreadInSidebar (message: Message, parent: Card): Promise<void> {
   const client = getClient()
 
   const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: chat.ids.ChatWidget })[0]
@@ -83,9 +84,10 @@ export async function openThreadInSidebar (message: Message): Promise<void> {
 
   const data: ChatWidgetData = {
     id: `${message.card}-${message.id}`,
-    name: 'Thread',
+    name: createThreadTitle(message, parent),
     message: message.id,
-    card: message.card as Ref<Card>
+    created: message.created,
+    card: message.card
   }
 
   openWidget(widget, data)

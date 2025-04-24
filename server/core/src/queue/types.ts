@@ -13,7 +13,10 @@ export enum QueueTopic {
   // A topic about user activity.
   Users = 'users',
 
-  TelegramBot = 'telegramBot'
+  TelegramBot = 'telegramBot',
+
+  // A topic about calendar events.
+  CalendarEventCUD = 'calendarEventCUD'
 }
 
 export interface ConsumerHandle {
@@ -32,7 +35,7 @@ export interface ConsumerControl {
 }
 
 export interface PlatformQueue {
-  createProducer: <T>(ctx: MeasureContext, topic: QueueTopic | string) => PlatformQueueProducer<T>
+  getProducer: <T>(ctx: MeasureContext, topic: QueueTopic | string) => PlatformQueueProducer<T>
 
   /**
    * Create a consumer for a topic.

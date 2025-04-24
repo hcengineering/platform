@@ -51,7 +51,7 @@ export class WorkspaceManager {
       this.sysHierarchy.tx(tx)
     }
 
-    this.workspaceProducer = this.opt.queue.createProducer<QueueWorkspaceMessage>(this.ctx, QueueTopic.Workspace)
+    this.workspaceProducer = this.opt.queue.getProducer<QueueWorkspaceMessage>(this.ctx, QueueTopic.Workspace)
   }
 
   shutdownInterval: any

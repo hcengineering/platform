@@ -14,9 +14,10 @@
 //
 
 import { type Message } from '@hcengineering/communication-types'
+import { type Card } from '@hcengineering/card'
 
 import { openThreadInSidebar } from './location'
 
-export async function replyToThread (message: Message): Promise<void> {
-  await openThreadInSidebar(message)
+export async function replyToThread (message: Message, parent: Card): Promise<void> {
+  await openThreadInSidebar(message, parent)
 }

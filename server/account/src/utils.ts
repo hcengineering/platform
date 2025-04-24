@@ -61,6 +61,7 @@ import {
   type SocialId,
   type Workspace
 } from './types'
+import { isAdminEmail } from './admin'
 
 export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
 
@@ -1075,80 +1076,90 @@ export async function loginOrSignUpWithProvider (
   socialId: SocialKey,
   signUpDisabled = false
 ): Promise<LoginInfo | null> {
-  const normalizedEmail = cleanEmail(email)
+  try {
+    const normalizedEmail = cleanEmail(email)
 
-  // Find if any of the target/email social ids exist
-  const targetSocialId = await db.socialId.findOne(socialId)
-  const emailSocialId =
-    normalizedEmail !== '' ? await db.socialId.findOne({ type: SocialIdType.EMAIL, value: normalizedEmail }) : undefined
-  let personUuid = targetSocialId?.personUuid ?? emailSocialId?.personUuid
+    // Find if any of the target/email social ids exist
+    const targetSocialId = await db.socialId.findOne(socialId)
+    const emailSocialId =
+      normalizedEmail !== ''
+        ? await db.socialId.findOne({ type: SocialIdType.EMAIL, value: normalizedEmail })
+        : undefined
+    let personUuid = targetSocialId?.personUuid ?? emailSocialId?.personUuid
 
-  if (personUuid == null) {
-    if (signUpDisabled) {
-      return null
+    if (personUuid == null) {
+      if (signUpDisabled) {
+        return null
+      }
+
+      personUuid = await db.person.insertOne({ firstName: first, lastName: last })
     }
 
-    personUuid = await db.person.insertOne({ firstName: first, lastName: last })
-  }
-
-  if (personUuid == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
-  }
-
-  const person = await db.person.findOne({ uuid: personUuid })
-
-  if (person == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
-  }
-
-  const account = await db.account.findOne({ uuid: personUuid as AccountUuid })
-
-  if (account == null) {
-    if (signUpDisabled) {
-      return null
+    if (personUuid == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
     }
 
-    await createAccount(db, personUuid, true)
-    await db.person.updateOne({ uuid: personUuid }, { firstName: first, lastName: last })
-  }
+    const person = await db.person.findOne({ uuid: personUuid })
 
-  // We should check and reset password if there's an account with password but no social ids have been
-  // confirmed yet
-  const confirmedSocialId = await db.socialId.findOne({ personUuid, verifiedOn: { $gt: 0 } })
-
-  if (confirmedSocialId == null) {
-    await db.resetPassword(personUuid as AccountUuid)
-  }
-
-  let socialIdId: PersonId | undefined
-  // Create and/or confirm missing social ids
-  if (targetSocialId == null) {
-    socialIdId = await db.socialId.insertOne({ ...socialId, personUuid, verifiedOn: Date.now() })
-  } else if (targetSocialId.verifiedOn == null) {
-    await db.socialId.updateOne({ key: targetSocialId.key }, { verifiedOn: Date.now() })
-    socialIdId = targetSocialId._id
-  }
-
-  if (emailSocialId == null) {
-    if (normalizedEmail !== '') {
-      await db.socialId.insertOne({
-        type: SocialIdType.EMAIL,
-        value: normalizedEmail,
-        personUuid,
-        verifiedOn: Date.now()
-      })
+    if (person == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
     }
-  } else if (emailSocialId.verifiedOn == null) {
-    await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
-  }
 
-  await confirmHulyIds(ctx, db, personUuid as AccountUuid)
+    const account = await db.account.findOne({ uuid: personUuid as AccountUuid })
 
-  return {
-    account: personUuid as AccountUuid,
-    socialId: socialIdId,
-    name: getPersonName(person),
-    token: generateToken(personUuid)
+    if (account == null) {
+      if (signUpDisabled) {
+        return null
+      }
+
+      await createAccount(db, personUuid, true)
+      await db.person.updateOne({ uuid: personUuid }, { firstName: first, lastName: last })
+    }
+
+    // We should check and reset password if there's an account with password but no social ids have been
+    // confirmed yet
+    const confirmedSocialId = await db.socialId.findOne({ personUuid, verifiedOn: { $gt: 0 } })
+
+    if (confirmedSocialId == null) {
+      await db.resetPassword(personUuid as AccountUuid)
+    }
+
+    let socialIdId: PersonId | undefined
+    // Create and/or confirm missing social ids
+    if (targetSocialId == null) {
+      socialIdId = await db.socialId.insertOne({ ...socialId, personUuid, verifiedOn: Date.now() })
+    } else if (targetSocialId.verifiedOn == null) {
+      await db.socialId.updateOne({ key: targetSocialId.key }, { verifiedOn: Date.now() })
+      socialIdId = targetSocialId._id
+    }
+
+    if (emailSocialId == null) {
+      if (normalizedEmail !== '') {
+        await db.socialId.insertOne({
+          type: SocialIdType.EMAIL,
+          value: normalizedEmail,
+          personUuid,
+          verifiedOn: Date.now()
+        })
+      }
+    } else if (emailSocialId.verifiedOn == null) {
+      await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
+    }
+
+    await confirmHulyIds(ctx, db, personUuid as AccountUuid)
+    const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
+    ctx.info('Provider login succeeded', { email, normalizedEmail, emailSocialId, ...extraToken })
+
+    return {
+      account: personUuid as AccountUuid,
+      socialId: socialIdId,
+      name: getPersonName(person),
+      token: generateToken(personUuid, undefined, extraToken)
+    }
+  } catch (err: any) {
+    Analytics.handleError(err)
+    ctx.error('Provider login failed', { email, err })
+    throw err
   }
 }
 

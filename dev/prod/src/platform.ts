@@ -65,6 +65,7 @@ import { trainingId } from '@hcengineering/training'
 import uiPlugin from '@hcengineering/ui'
 import {uiNextId} from '@hcengineering/ui-next'
 import { uploaderId } from '@hcengineering/uploader'
+import { mediaId } from '@hcengineering/media'
 import recorder, { recorderId } from '@hcengineering/recorder'
 import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
@@ -119,6 +120,7 @@ import '@hcengineering/tracker-assets'
 import '@hcengineering/training-assets'
 import '@hcengineering/uploader-assets'
 import '@hcengineering/recorder-assets'
+import '@hcengineering/media-assets'
 import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
 import '@hcengineering/chat-assets'
@@ -186,6 +188,7 @@ export interface Config {
   PUBLIC_SCHEDULE_URL?: string
   CALDAV_SERVER_URL?: string
   EXPORT_URL?: string
+  MAIL_URL?: string
 }
 
 export interface Branding {
@@ -275,6 +278,7 @@ function configureI18n(): void {
   addStringsLoader(uiNextId, async (lang: string) => await import(`@hcengineering/ui-next/lang/${lang}.json`))
   addStringsLoader(uploaderId, async (lang: string) => await import(`@hcengineering/uploader-assets/lang/${lang}.json`))
   addStringsLoader(recorderId, async (lang: string) => await import(`@hcengineering/recorder-assets/lang/${lang}.json`))
+  addStringsLoader(mediaId, async (lang: string) => await import(`@hcengineering/media-assets/lang/${lang}.json`))
   addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
   addStringsLoader(
     attachmentId,
@@ -428,6 +432,7 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
   setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
   setMetadata(presentation.metadata.LinkPreviewUrl, config.LINK_PREVIEW_URL)
+  setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)
   setMetadata(recorder.metadata.StreamUrl, config.STREAM_URL)
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
 
@@ -545,6 +550,7 @@ export async function configurePlatform() {
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
   addLocation(recorderId, () => import(/* webpackChunkName: "recorder" */ '@hcengineering/recorder-resources'))
+  addLocation(mediaId, () => import(/* webpackChunkName: "media" */ '@hcengineering/media-resources'))
   
   addLocation(
     testManagementId,

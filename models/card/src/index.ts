@@ -19,7 +19,8 @@ import {
   type Card,
   type MasterTag,
   type ParentInfo,
-  type Tag
+  type Tag,
+  type Role
 } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
 import core, {
@@ -47,7 +48,7 @@ import {
   type Builder
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import { TClass, TDoc, TMixin, TSpace } from '@hcengineering/model-core'
+import { TAttachedDoc, TClass, TDoc, TMixin, TSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
 import view, { createAction } from '@hcengineering/model-view'
@@ -113,6 +114,13 @@ export class MasterTagEditorSection extends TDoc implements MasterTagEditorSecti
   id!: string
   label!: IntlString
   component!: AnyComponent
+}
+
+@Model(card.class.Role, core.class.AttachedDoc, DOMAIN_MODEL)
+export class TRole extends TAttachedDoc implements Role {
+  name!: string
+  declare attachedTo: Ref<MasterTag | Tag>
+  declare collection: 'roles'
 }
 
 export * from './migration'
@@ -204,7 +212,7 @@ export function createSystemType (
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection, TCardSpace)
+  builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection, TCardSpace, TRole)
 
   createSystemType(builder, card.types.File, card.icon.File, attachment.string.File, attachment.string.Files)
   createSystemType(builder, card.types.Document, card.icon.Document, card.string.Document, card.string.Documents)
@@ -679,6 +687,12 @@ export function createModel (builder: Builder): void {
     id: 'relations',
     label: core.string.Relations,
     component: card.component.RelationsSection
+  })
+
+  builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
+    id: 'roles',
+    label: core.string.Roles,
+    component: card.component.RolesSection
   })
 
   builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
