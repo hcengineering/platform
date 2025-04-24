@@ -65,8 +65,10 @@ function archiveDocs (docs: ControlledDocument[], txFactory: TxFactory): Tx[] {
   for (const doc of docs) {
     res.push(
       txFactory.createTxUpdateDoc<ControlledDocument>(doc._class, doc.space, doc._id, {
-        state: DocumentState.Archived,
-        controlledState: undefined
+        state: DocumentState.Archived
+      }),
+      txFactory.createTxUpdateDoc<ControlledDocument>(doc._class, doc.space, doc._id, {
+        $unset: { controlledState: true }
       })
     )
   }
@@ -289,7 +291,10 @@ export async function OnDocHasBecomeEffective (
   return result
 }
 
-export async function OnDocDeleted (txes: TxUpdateDoc<ControlledDocument>[], control: TriggerControl): Promise<Tx[]> {
+export async function OnDocEnteredNonActionableState (
+  txes: TxUpdateDoc<ControlledDocument>[],
+  control: TriggerControl
+): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
     const requests = await control.findAll(control.ctx, documents.class.DocumentRequest, {
@@ -304,7 +309,7 @@ export async function OnDocDeleted (txes: TxUpdateDoc<ControlledDocument>[], con
     await control.apply(control.ctx, [
       ...cancelTxes,
       control.txFactory.createTxUpdateDoc<ControlledDocument>(tx.objectClass, tx.objectSpace, tx.objectId, {
-        controlledState: undefined
+        $unset: { controlledState: true }
       })
     ])
   }
@@ -444,7 +449,7 @@ function CoAuthorsTypeMatch (
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnDocDeleted,
+    OnDocEnteredNonActionableState,
     OnDocPlannedEffectiveDateChanged,
     OnDocApprovalRequestApproved,
     OnDocHasBecomeEffective,
