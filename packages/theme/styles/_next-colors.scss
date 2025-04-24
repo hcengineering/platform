@@ -107,6 +107,9 @@
   //MessageInput
   --next-message-input-color-background: var(--color-global-dark-gray);
   --next-message-input-color-stroke: var(--color-global-charcoal-black);
+
+  //Message
+  --next-message-hover-color-background: var(--color-huly-off-white-5)
 }
 
 
@@ -165,4 +168,8 @@
   //MessageInput
   --next-message-input-color-background: var(--color-global-light-gray);
   --next-message-input-color-stroke: var(--color-global-white-100);
+
+
+  //Message
+  --next-message-hover-color-background: var(--color-huly-dark-grey-5)
 }

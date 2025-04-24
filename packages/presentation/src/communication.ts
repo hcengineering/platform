@@ -47,6 +47,7 @@ import {
   type RequestEvent,
   type ResponseEvent,
   type UpdateNotificationContextEvent,
+  type AddCollaboratorsEvent,
   MessageRequestEventType,
   NotificationRequestEventType
 } from '@hcengineering/communication-sdk-types'
@@ -177,6 +178,16 @@ class Client {
       messageCreated,
       reaction,
       creator: this.getSocialId()
+    }
+    await this.sendEvent(event)
+  }
+
+  async addCollaborators (card: CardID, cardType: CardType, collaborators: AccountID[]): Promise<void> {
+    const event: AddCollaboratorsEvent = {
+      type: NotificationRequestEventType.AddCollaborators,
+      card,
+      cardType,
+      collaborators
     }
     await this.sendEvent(event)
   }

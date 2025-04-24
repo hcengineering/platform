@@ -50,6 +50,7 @@
     flex-direction: row;
     min-width: 25rem;
     border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
+    border-bottom: 1px solid transparent; // adjust the side panel body height to match the main panel
 
     &.mini {
       justify-content: flex-end;
