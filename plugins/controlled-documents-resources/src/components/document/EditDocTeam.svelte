@@ -13,37 +13,92 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Scroller } from '@hcengineering/ui'
+  import { Employee, Person } from '@hcengineering/contact'
+  import {
+    ControlledDocument,
+    ControlledDocumentState,
+    DocumentApprovalRequest,
+    DocumentReviewRequest,
+    DocumentState
+  } from '@hcengineering/controlled-documents'
   import { Ref } from '@hcengineering/core'
-  import { ControlledDocument, ControlledDocumentState, DocumentState } from '@hcengineering/controlled-documents'
-  import { Employee } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
+  import { Scroller } from '@hcengineering/ui'
 
   import DocTeam from './DocTeam.svelte'
 
   export let controlledDoc: ControlledDocument
   export let editable: boolean = true
+  export let reviewRequest: DocumentReviewRequest | undefined
+  export let approvalRequest: DocumentApprovalRequest | undefined
 
-  $: canChangeCoAuthors =
-    editable && controlledDoc.state === DocumentState.Draft && controlledDoc.controlledState == null
-  $: canChangeReviewers =
-    editable && controlledDoc.state === DocumentState.Draft && controlledDoc.controlledState == null
-  $: canChangeApprovers =
-    editable &&
-    ((controlledDoc.state === DocumentState.Draft && controlledDoc.controlledState == null) ||
-      controlledDoc.controlledState === ControlledDocumentState.InReview ||
-      controlledDoc.controlledState === ControlledDocumentState.Reviewed)
+  $: controlledState = controlledDoc.controlledState ?? null
+
+  $: isEditableDraft = editable && controlledDoc.state === DocumentState.Draft
+
+  $: inCleanState = controlledState === null
+  $: inReview = controlledState === ControlledDocumentState.InReview && reviewRequest !== undefined
+  $: inApproval = controlledState === ControlledDocumentState.InApproval && approvalRequest !== undefined
+  $: isReviewed = controlledState === ControlledDocumentState.Reviewed
+
+  $: canChangeCoAuthors = isEditableDraft && inCleanState
+  $: canChangeReviewers = isEditableDraft && (inCleanState || inReview)
+  $: canChangeApprovers = isEditableDraft && (inCleanState || inApproval || inReview || isReviewed)
+
+  $: reviewers = (reviewRequest?.requested as Ref<Employee>[]) ?? controlledDoc.reviewers
+  $: approvers = (reviewRequest?.requested as Ref<Employee>[]) ?? controlledDoc.approvers
+  $: coAuthors = controlledDoc.coAuthors
 
   const client = getClient()
 
   async function handleUpdate ({
     detail
   }: {
-    detail: { type: 'reviewers' | 'approvers', users: Ref<Employee>[] }
+    detail: { type: 'reviewers' | 'approvers', users: Ref<Person>[] }
   }): Promise<void> {
     const { type, users } = detail
 
-    await client.update(controlledDoc, { [type]: users })
+    const request = detail.type === 'reviewers' ? reviewRequest : approvalRequest
+
+    const ops = client.apply()
+
+    if (request?._id !== undefined) {
+      const requested = request.requested?.slice() ?? []
+      const requestedSet = new Set<Ref<Person>>(requested)
+
+      const addedPersons = new Set<Ref<Person>>()
+      const removedPersons = new Set<Ref<Person>>(requested)
+
+      for (const u of users) {
+        if (requestedSet.has(u)) {
+          removedPersons.delete(u)
+        } else {
+          addedPersons.add(u)
+        }
+      }
+
+      const approved = request.approved?.slice() ?? []
+      const approvedDates = request.approvedDates?.slice() ?? []
+
+      for (const u of removedPersons) {
+        const idx = approved.indexOf(u)
+        if (idx === -1) continue
+        approved.splice(idx, 1)
+        approvedDates.splice(idx, 1)
+      }
+
+      const requiredApprovesCount = users.length
+
+      await ops.update(request, {
+        requested: users,
+        approved,
+        approvedDates,
+        requiredApprovesCount
+      })
+    }
+
+    await ops.update(controlledDoc, { [type]: users })
+    await ops.commit()
   }
 </script>
 
@@ -56,6 +111,9 @@
         {canChangeCoAuthors}
         {canChangeReviewers}
         {canChangeApprovers}
+        {reviewers}
+        {approvers}
+        {coAuthors}
         on:update={handleUpdate}
       />
     </div>
