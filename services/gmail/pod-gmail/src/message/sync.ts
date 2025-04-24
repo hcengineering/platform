@@ -16,7 +16,7 @@ import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 
 import { type MeasureContext, PersonId } from '@hcengineering/core'
-import { type KeyValueClient } from '@hcengineering/key-value-client'
+import { type KeyValueClient } from '@hcengineering/kvs-client'
 
 import { RateLimiter } from '../rateLimiter'
 import { MessageManager } from './message'
@@ -27,10 +27,38 @@ interface History {
   workspace: string
 }
 
+export class SyncMutex {
+  private readonly locks = new Map<string, Promise<void>>()
+
+  async lock (key: string): Promise<() => void> {
+    // Wait for any existing lock to be released
+    const currentLock = this.locks.get(key)
+    if (currentLock != null) {
+      await currentLock
+    }
+
+    // Create a new lock
+    let releaseFn!: () => void
+    const newLock = new Promise<void>((resolve) => {
+      releaseFn = resolve
+    })
+
+    // Store the lock
+    this.locks.set(key, newLock)
+
+    // Return the release function
+    return () => {
+      if (this.locks.get(key) === newLock) {
+        this.locks.delete(key)
+      }
+      releaseFn()
+    }
+  }
+}
+
 export class SyncManager {
   private readonly rateLimiter = new RateLimiter(1000, 200)
-  private syncPromise: Promise<void> | undefined = undefined
-  private readonly kvNamespace = 'gmail'
+  private readonly syncMutex = new SyncMutex()
 
   constructor (
     private readonly ctx: MeasureContext,
@@ -42,12 +70,12 @@ export class SyncManager {
 
   private async getHistory (userId: PersonId): Promise<History | null> {
     const historyKey = this.getHistoryKey(userId)
-    return await this.keyValueClient.getValue<History>(this.kvNamespace, historyKey)
+    return await this.keyValueClient.getValue<History>(historyKey)
   }
 
   private async clearHistory (userId: PersonId): Promise<void> {
     const historyKey = this.getHistoryKey(userId)
-    await this.keyValueClient.deleteKey(this.kvNamespace, historyKey)
+    await this.keyValueClient.deleteKey(historyKey)
   }
 
   private async setHistoryId (userId: PersonId, historyId: string): Promise<void> {
@@ -57,7 +85,7 @@ export class SyncManager {
       userId,
       workspace: this.workspace
     }
-    await this.keyValueClient.setValue(this.kvNamespace, historyKey, history)
+    await this.keyValueClient.setValue(historyKey, history)
   }
 
   private async partSync (userId: PersonId, userEmail: string | undefined, historyId: string): Promise<void> {
@@ -111,7 +139,7 @@ export class SyncManager {
           pageToken = nextPageToken
         }
       } catch (err) {
-        this.ctx.error('Part sync error', { workspaceUuid: this.workspace, userId, err })
+        this.ctx.error('Part sync error', { workspaceUuid: this.workspace, userId, historyId, err })
         return
       }
     }
@@ -189,21 +217,25 @@ export class SyncManager {
   }
 
   async sync (userId: PersonId, userEmail?: string): Promise<void> {
-    this.ctx.info('Sync history', { workspaceUuid: this.workspace, userId, userEmail })
-    if (this.syncPromise !== undefined) {
-      await this.syncPromise
-    }
-    const history = await this.getHistory(userId)
+    const mutexKey = `${this.workspace}:${userId}`
+    const releaseLock = await this.syncMutex.lock(mutexKey)
+
     try {
+      this.ctx.info('Sync history', { workspaceUuid: this.workspace, userId, userEmail })
+
+      const history = await this.getHistory(userId)
+
       if (history?.historyId != null && history?.historyId !== '') {
-        this.syncPromise = this.partSync(userId, userEmail, history.historyId)
-        await this.syncPromise
+        this.ctx.info('Start part sync', { workspaceUuid: this.workspace, userId, historyId: history.historyId })
+        await this.partSync(userId, userEmail, history.historyId)
       } else {
-        this.syncPromise = this.fullSync(userId, userEmail)
-        await this.syncPromise
+        this.ctx.info('Start full sync', { workspaceUuid: this.workspace, userId })
+        await this.fullSync(userId, userEmail)
       }
     } catch (err) {
       this.ctx.error('Sync error', { workspace: this.workspace, userId, err })
+    } finally {
+      releaseLock()
     }
   }
 

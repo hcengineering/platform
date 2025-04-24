@@ -30,6 +30,7 @@ import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 import core from '@hcengineering/core'
 import attachment, { Attachment } from '@hcengineering/attachment'
+import sanitizeHtml from 'sanitize-html'
 
 import { type Channel } from '../types'
 import { AttachmentHandler } from './attachments'
@@ -154,6 +155,16 @@ function getPartsMessage (parts: gmail_v1.Schema$MessagePart[] | undefined, mime
   return result
 }
 
+const sanitizeOptions: sanitizeHtml.IOptions = {
+  allowedTags: [],
+  allowedAttributes: {}
+}
+
+export function sanitizeText (input: string): string {
+  if (input == null) return ''
+  return sanitizeHtml(input, sanitizeOptions)
+}
+
 function getPartMessage (part: gmail_v1.Schema$MessagePart | undefined, mime: string): string {
   if (part === undefined) return ''
   if (part.body?.data != null) {
@@ -179,8 +190,8 @@ function convertMessage (
     messageId: getHeaderValue(message.data.payload, 'Message-ID') ?? '',
     replyTo: getHeaderValue(message.data.payload, 'In-Reply-To'),
     copy,
-    content: getPartMessage(message.data.payload, 'text/html'),
-    textContent: getPartMessage(message.data.payload, 'text/plain').replace(/<[^>]*>/g, ''),
+    content: sanitizeHtml(getPartMessage(message.data.payload, 'text/html')),
+    textContent: sanitizeText(getPartMessage(message.data.payload, 'text/plain')),
     from,
     to,
     incoming,

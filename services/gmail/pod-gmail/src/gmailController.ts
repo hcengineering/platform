@@ -127,6 +127,7 @@ export class GmailController {
         })
       }
     }
+    this.ctx.info('Start clients sync', { workspaceUuid: workspace, count: clients.length })
     for (const client of clients) {
       void this.initLimitter.add(async () => {
         await client.startSync()

@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/key-value-client",
+  "name": "@hcengineering/kvs-client",
   "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",

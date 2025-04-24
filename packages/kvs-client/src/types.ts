@@ -20,34 +20,30 @@
 export interface KeyValueClient {
   /**
    * Store a value for a key in a namespace
-   * @param namespace - The namespace to store the value in
    * @param key - The key to store the value under
    * @param value - The value to store
    * @returns Promise that resolves when the value is stored
    */
-  setValue: <T>(namespace: string, key: string, value: T) => Promise<void>
+  setValue: <T>(key: string, value: T) => Promise<void>
 
   /**
    * Retrieve a value for a key in a namespace
-   * @param namespace - The namespace to retrieve the value from
    * @param key - The key to retrieve the value for
    * @returns Promise that resolves to the value, or null if not found
    */
-  getValue: <T>(namespace: string, key: string) => Promise<T | null>
+  getValue: <T>(key: string) => Promise<T | null>
 
   /**
    * Delete a key-value pair in a namespace
-   * @param namespace - The namespace to delete the key from
    * @param key - The key to delete
    * @returns Promise that resolves when the key is deleted
    */
-  deleteKey: (namespace: string, key: string) => Promise<void>
+  deleteKey: (key: string) => Promise<void>
 
   /**
    * List all key-value pairs in a namespace, optionally filtered by prefix
-   * @param namespace - The namespace to list keys from
    * @param prefix - Optional prefix to filter keys by
    * @returns Promise that resolves to an object with keys and their values
    */
-  listKeys: <T>(namespace: string, prefix?: string) => Promise<Record<string, T> | null>
+  listKeys: <T>(prefix?: string) => Promise<Record<string, T> | null>
 }

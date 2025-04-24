@@ -2449,8 +2449,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/key-value-client",
-      "projectFolder": "packages/key-value-client",
+      "packageName": "@hcengineering/kvs-client",
+      "projectFolder": "packages/kvs-client",
       "shouldPublish": false
     }
   ]

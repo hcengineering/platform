@@ -385,9 +385,9 @@ importers:
       '@rush-temp/kanban':
         specifier: file:./projects/kanban.tgz
         version: file:projects/kanban.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      '@rush-temp/key-value-client':
-        specifier: file:./projects/key-value-client.tgz
-        version: file:projects/key-value-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/kvs-client':
+        specifier: file:./projects/kvs-client.tgz
+        version: file:projects/kvs-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/lead':
         specifier: file:./projects/lead.tgz
         version: file:projects/lead.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -4295,8 +4295,8 @@ packages:
     resolution: {integrity: sha512-a1aAx7zBxeZjaejI86Ho69hHcEm7F4dkdD9rVCv2BVHzjG/1C8mq7pv+QWHFGoxkiQwwm9MatVV4IMCSjDjAZw==, tarball: file:projects/kanban.tgz}
     version: 0.0.0
 
-  '@rush-temp/key-value-client@file:projects/key-value-client.tgz':
-    resolution: {integrity: sha512-kGzfWT++N0WFmaPI+EvBq4gdpgjBx1bHvSUaavnGpnr+fU7VOrQzGlXZOARiNRAL6MzWrPFW+7nP1ALlTGf1+w==, tarball: file:projects/key-value-client.tgz}
+  '@rush-temp/kvs-client@file:projects/kvs-client.tgz':
+    resolution: {integrity: sha512-UHZpGqCKncG8BGVHJPeceusj86Knh9SjhNvp972sLvA/FY89ph6Rpz+34X6aI3D5Cu3048ePmwszH81PKphNrQ==, tarball: file:projects/kvs-client.tgz}
     version: 0.0.0
 
   '@rush-temp/lead-assets@file:projects/lead-assets.tgz':
@@ -4792,7 +4792,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
-    resolution: {integrity: sha512-lXsRdTr/ptzCE161p4q9Z3Z9fonVawnopGSCDvQp/nDOBJc5TaEoHCITLqvq2JKX2A/tLLPM6FL4TvU5osGH5A==, tarball: file:projects/pod-gmail.tgz}
+    resolution: {integrity: sha512-mWpD7TVaoiHBcGFgqt2KoPioV7Uc/9Y7DXu3LKiwZBrUX6X+WR/77RcKq/gNGPbwNxCKOc+dDsscF5NKMhIqSg==, tarball: file:projects/pod-gmail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
@@ -12183,6 +12183,9 @@ packages:
   sanitize-html@2.15.0:
     resolution: {integrity: sha512-wIjst57vJGpLyBP8ioUbg6ThwJie5SuSIjHxJg53v5Fg+kUK+AXlb7bK3RNXpp315MvwM+0OBGCV6h5pPHsVhA==}
 
+  sanitize-html@2.16.0:
+    resolution: {integrity: sha512-0s4caLuHHaZFVxFTG74oW91+j6vW7gKbGD6CD2+miP73CE6z6YtOBN0ArtLd2UGyi4IC7K47v3ENUbQX4jV3Mg==}
+
   sass-loader@13.3.3:
     resolution: {integrity: sha512-mt5YN2F1MOZr3d/wBRcZxeFgwgkH44wVc2zohO2YF6JiOMkiXe4BYRZpSu2sO1g71mo/j16txzUhsKZlqjVGzA==}
     engines: {node: '>= 14.15.0'}
@@ -19339,7 +19342,7 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/key-value-client@file:projects/key-value-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+  '@rush-temp/kvs-client@file:projects/kvs-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
@@ -21914,6 +21917,7 @@ snapshots:
       '@types/express': 4.17.21
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
+      '@types/sanitize-html': 2.15.0
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -21937,6 +21941,7 @@ snapshots:
       jwt-simple: 0.5.6
       mongodb: 6.12.0(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)
       prettier: 3.2.5
+      sanitize-html: 2.16.0
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       ts-node-dev: 2.0.0(@types/node@20.11.19)(typescript@5.3.3)
@@ -35568,6 +35573,15 @@ snapshots:
       truncate-utf8-bytes: 1.0.2
 
   sanitize-html@2.15.0:
+    dependencies:
+      deepmerge: 4.3.1
+      escape-string-regexp: 4.0.0
+      htmlparser2: 8.0.2
+      is-plain-object: 5.0.0
+      parse-srcset: 1.0.2
+      postcss: 8.5.3
+
+  sanitize-html@2.16.0:
     dependencies:
       deepmerge: 4.3.1
       escape-string-regexp: 4.0.0

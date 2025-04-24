@@ -7,6 +7,7 @@ fetchMock.enableMocks()
 
 describe('KeyValueClient', () => {
   let client: KeyValueClient
+  const namespace = 'test-ns'
 
   beforeEach(() => {
     // Reset fetch mocks for each test
@@ -18,7 +19,7 @@ describe('KeyValueClient', () => {
       headers: { 'Content-Type': 'application/json' }
     })
 
-    client = getClient('https://api.example.com', 'test-token')
+    client = getClient(namespace, 'https://api.example.com', 'test-token')
   })
 
   afterEach(() => {
@@ -26,11 +27,15 @@ describe('KeyValueClient', () => {
   })
 
   it('should throw error when baseUrl is undefined', () => {
-    expect(() => getClient(undefined)).toThrow('Key-value API URL not specified')
+    expect(() => getClient('test-ns', undefined)).toThrow('Key-value API URL not specified')
   })
 
   it('should throw error when baseUrl is empty', () => {
-    expect(() => getClient('')).toThrow('Key-value API URL not specified')
+    expect(() => getClient('test-ns', '')).toThrow('Key-value API URL not specified')
+  })
+
+  it('should throw error when namespace is empty', () => {
+    expect(() => getClient('', 'https://api.example.com')).toThrow('Namespace not specified')
   })
 
   describe('setValue', () => {
@@ -38,11 +43,10 @@ describe('KeyValueClient', () => {
       // Mock 204 response for setValue
       fetchMock.mockResponseOnce('', { status: 204 })
 
-      const namespace = 'test-ns'
       const key = 'test-key'
       const value = { data: 'test-value' }
 
-      await client.setValue(namespace, key, value)
+      await client.setValue(key, value)
 
       expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(fetchMock).toHaveBeenCalledWith(
@@ -62,7 +66,7 @@ describe('KeyValueClient', () => {
     it('should throw error when response status is not 204', async () => {
       fetchMock.mockResponseOnce(JSON.stringify({ error: 'Server error' }), { status: 500 })
 
-      await expect(client.setValue('ns', 'key', 'value')).rejects.toThrow('Failed to store value')
+      await expect(client.setValue('key', 'value')).rejects.toThrow('Failed to store value')
     })
   })
 
@@ -74,11 +78,11 @@ describe('KeyValueClient', () => {
         headers: { 'Content-Type': 'application/json' }
       })
 
-      const result = await client.getValue('ns', 'key')
+      const result = await client.getValue('key')
 
       expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.example.com/api/ns/key',
+        'https://api.example.com/api/test-ns/key',
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
@@ -93,7 +97,7 @@ describe('KeyValueClient', () => {
     it('should return null when key does not exist (404)', async () => {
       fetchMock.mockResponseOnce('', { status: 404 })
 
-      const result = await client.getValue('ns', 'key')
+      const result = await client.getValue('key')
 
       expect(result).toBeNull()
     })
@@ -101,7 +105,7 @@ describe('KeyValueClient', () => {
     it('should throw error for non-404 error status', async () => {
       fetchMock.mockResponseOnce(JSON.stringify({ error: 'Server error' }), { status: 500 })
 
-      await expect(client.getValue('ns', 'key')).rejects.toThrow('Request failed')
+      await expect(client.getValue('key')).rejects.toThrow('Request failed')
     })
   })
 
@@ -109,11 +113,11 @@ describe('KeyValueClient', () => {
     it('should send DELETE request with correct headers', async () => {
       fetchMock.mockResponseOnce('', { status: 204 })
 
-      await client.deleteKey('ns', 'key')
+      await client.deleteKey('key')
 
       expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.example.com/api/ns/key',
+        'https://api.example.com/api/test-ns/key',
         expect.objectContaining({
           method: 'DELETE',
           headers: expect.objectContaining({
@@ -127,13 +131,13 @@ describe('KeyValueClient', () => {
     it('should not throw error when key does not exist (404)', async () => {
       fetchMock.mockResponseOnce('', { status: 404 })
 
-      await expect(client.deleteKey('ns', 'key')).resolves.toBeUndefined()
+      await expect(client.deleteKey('key')).resolves.toBeUndefined()
     })
 
     it('should throw error for status other than 204 or 404', async () => {
       fetchMock.mockResponseOnce(JSON.stringify({ error: 'Server error' }), { status: 500 })
 
-      await expect(client.deleteKey('ns', 'key')).rejects.toThrow('Failed to delete key')
+      await expect(client.deleteKey('key')).rejects.toThrow('Failed to delete key')
     })
   })
 
@@ -145,11 +149,11 @@ describe('KeyValueClient', () => {
         headers: { 'Content-Type': 'application/json' }
       })
 
-      const result = await client.listKeys('ns')
+      const result = await client.listKeys()
 
       expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.example.com/api/ns',
+        'https://api.example.com/api/test-ns',
         expect.objectContaining({ method: 'GET' })
       )
       expect(result).toEqual(testData)
@@ -161,18 +165,21 @@ describe('KeyValueClient', () => {
         headers: { 'Content-Type': 'application/json' }
       })
 
-      await client.listKeys('ns', 'prefix')
+      await client.listKeys('prefix')
 
-      expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/api/ns?prefix=prefix', expect.anything())
+      expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/api/test-ns?prefix=prefix', expect.anything())
     })
 
     it('should encode namespace and prefix properly', async () => {
+      // Create client with a namespace that needs encoding
+      const specialClient = getClient('name/space', 'https://api.example.com', 'test-token')
+
       fetchMock.mockResponseOnce(JSON.stringify({}), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
       })
 
-      await client.listKeys('name/space', 'pre/fix')
+      await specialClient.listKeys('pre/fix')
 
       expect(fetchMock).toHaveBeenCalledWith(
         'https://api.example.com/api/name%2Fspace?prefix=pre%2Ffix',
@@ -189,7 +196,7 @@ describe('KeyValueClient', () => {
         headers: { 'Content-Type': 'application/json' }
       })
 
-      const result = await client.getValue('ns', 'key')
+      const result = await client.getValue('key')
 
       expect(fetchMock).toHaveBeenCalledTimes(2)
       expect(result).toEqual({ key: 'value' })

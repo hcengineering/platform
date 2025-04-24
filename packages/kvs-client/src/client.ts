@@ -18,30 +18,36 @@ import { KeyValueClient } from './types'
 
 /**
  * Get a KeyValueClient instance
+ * @param namespace - Namespace for the key-value operations
  * @param baseUrl - URL of the key-value API server
  * @param token - Optional authorization token
  * @param retryTimeoutMs - Optional timeout for retrying failed requests
  * @returns KeyValueClient instance
  * @public
  */
-export function getClient (baseUrl?: string, token?: string, retryTimeoutMs?: number): KeyValueClient {
+export function getClient (namespace: string, baseUrl: string, token?: string, retryTimeoutMs?: number): KeyValueClient {
   if (baseUrl === undefined) {
     throw new Error('Key-value API URL not specified')
   }
 
-  return new KeyValueClientImpl(baseUrl, token, retryTimeoutMs)
+  return new KeyValueClientImpl(namespace, baseUrl, token, retryTimeoutMs)
 }
 
 class KeyValueClientImpl implements KeyValueClient {
   private readonly requestInit: RequestInit
 
   constructor (
+    private readonly namespace: string,
     private readonly baseUrl: string,
     private readonly token?: string,
     private readonly retryTimeoutMs: number = 5000
   ) {
     if (baseUrl === '') {
       throw new Error('Key-value API URL not specified')
+    }
+
+    if (namespace === '' || namespace === undefined) {
+      throw new Error('Namespace not specified')
     }
 
     const isBrowser = typeof window !== 'undefined'
@@ -59,8 +65,8 @@ class KeyValueClientImpl implements KeyValueClient {
     }
   }
 
-  async setValue<T>(namespace: string, key: string, value: T): Promise<void> {
-    const url = this.buildUrl(namespace, key)
+  async setValue<T>(key: string, value: T): Promise<void> {
+    const url = this.buildUrl(key)
     await this.sendRequest(url, {
       method: 'POST',
       body: JSON.stringify(value),
@@ -69,16 +75,16 @@ class KeyValueClientImpl implements KeyValueClient {
     })
   }
 
-  async getValue<T>(namespace: string, key: string): Promise<T | null> {
-    const url = this.buildUrl(namespace, key)
+  async getValue<T>(key: string): Promise<T | null> {
+    const url = this.buildUrl(key)
     return await this.sendRequest<T>(url, {
       method: 'GET',
       returnNullOn404: true
     })
   }
 
-  async deleteKey (namespace: string, key: string): Promise<void> {
-    const url = this.buildUrl(namespace, key)
+  async deleteKey (key: string): Promise<void> {
+    const url = this.buildUrl(key)
     await this.sendRequest(url, {
       method: 'DELETE',
       acceptNotFound: true,
@@ -86,8 +92,8 @@ class KeyValueClientImpl implements KeyValueClient {
     })
   }
 
-  async listKeys<T>(namespace: string, prefix?: string): Promise<Record<string, T> | null> {
-    let url = this.buildUrl(namespace)
+  async listKeys<T>(prefix?: string): Promise<Record<string, T> | null> {
+    let url = this.buildUrl()
     if (prefix !== undefined) {
       url += `?prefix=${encodeURIComponent(prefix)}`
     }
@@ -97,8 +103,8 @@ class KeyValueClientImpl implements KeyValueClient {
     })
   }
 
-  private buildUrl (namespace: string, key?: string): string {
-    const baseApiUrl = concatLink(this.baseUrl, `/api/${encodeURIComponent(namespace)}`)
+  private buildUrl (key?: string): string {
+    const baseApiUrl = concatLink(this.baseUrl, `/api/${encodeURIComponent(this.namespace)}`)
     return key !== undefined ? concatLink(baseApiUrl, encodeURIComponent(key)) : baseApiUrl
   }
 
