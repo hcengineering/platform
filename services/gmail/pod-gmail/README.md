@@ -13,7 +13,6 @@ The pod-gmail service is responsible for:
 ## Prerequisites
 
 - Node.js 16 or higher
-- MongoDB
 - Gmail API credentials
 - Hardcore Engineering Platform dependencies
 
@@ -26,8 +25,25 @@ npm install
 
 2. Configure environment variables:
 - Create a `.env` file with necessary credentials
-- Ensure MongoDB connection string is properly set
 - Configure Gmail API credentials
+
+## Example .env Configuration
+
+Below is an example `.env` file for running the service locally:
+
+```env
+PORT=8093
+ACCOUNTS_URL="http://127.0.0.1:3000"
+SECRET="secret"
+WATCH_TOPIC_NAME="test"
+Credentials={"web":{"client_id":"get_from_your_gmail_account","client_secret":"get_from_your_gmail_account","redirect_uris":["http://localhost:8088/signin/code"]}}
+MINIO_ENDPOINT="localhost"
+MINIO_ACCESS_KEY="minioadmin"
+MINIO_SECRET_KEY="minioadmin"
+KVS_URL="http://localhost:8098"
+```
+
+Make sure to replace the values with your actual credentials and configuration.
 
 ## Development
 
@@ -61,7 +77,6 @@ rushx docker:build
 ## Configuration
 
 The service requires the following configurations:
-- MongoDB connection settings
 - Gmail API credentials
 - Workspace-specific settings
 - Rate limiting configurations
@@ -70,7 +85,6 @@ The service requires the following configurations:
 
 The service integrates with:
 - Gmail API for email operations
-- MongoDB for data persistence
 - Hardcore Engineering Platform core services
 - Server core components
 
@@ -86,7 +100,6 @@ The service integrates with:
 ### External Dependencies
 - googleapis
 - google-auth-library
-- mongodb
 - express
 - cors
 
@@ -100,4 +113,4 @@ Contributions are welcome! Please read our contributing guidelines before submit
 
 ## Support
 
-For support, please contact the Hardcore Engineering team or open an issue in the repository. 
+For support, please contact the Hardcore Engineering team or open an issue in the repository.

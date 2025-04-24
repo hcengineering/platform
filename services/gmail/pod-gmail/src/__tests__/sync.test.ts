@@ -109,7 +109,14 @@ describe('SyncManager', () => {
     }
 
     // Create SyncManager instance
-    syncManager = new SyncManager(mockCtx, mockMessageManager, mockGmail, workspace, mockKeyValueClient as any, new RateLimiter(100, 100))
+    syncManager = new SyncManager(
+      mockCtx,
+      mockMessageManager,
+      mockGmail,
+      workspace,
+      mockKeyValueClient as any,
+      new RateLimiter(100, 100)
+    )
   })
 
   afterEach(() => {

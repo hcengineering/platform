@@ -163,14 +163,7 @@
     {:else if currentMessage}
       <FullMessage {currentMessage} bind:newMessage on:close={back} />
     {:else}
-      <Chats
-        {object}
-        {channel}
-        bind:newMessage
-        {allIntegrations}
-        enabled={integrations.length > 0}
-        on:select={selectHandler}
-      />
+      <Chats {object} {channel} bind:newMessage enabled={integrations.length > 0} on:select={selectHandler} />
     {/if}
   </Dialog>
 {/if}

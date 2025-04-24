@@ -53,7 +53,7 @@ export class AttachmentHandler {
         data
       )
     } catch (err: any) {
-      console.log('Add attachment error', err.message)
+      this.ctx.error('Add attachment error', { error: err.message })
     }
   }
 
