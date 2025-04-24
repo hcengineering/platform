@@ -61,7 +61,7 @@ import platform, {
   UNAUTHORIZED
 } from '@hcengineering/platform'
 import { uncompress } from 'snappyjs'
-import { HelloRequest, HelloResponse, ReqId, type Response, RPCHandler } from '@hcengineering/rpc'
+import { HelloRequest, HelloResponse, ReqId, type Response, RPCHandler, type RateLimitInfo } from '@hcengineering/rpc'
 import { EventResult } from '@hcengineering/communication-sdk-types'
 import {
   FindLabelsParams,
@@ -87,9 +87,14 @@ class RequestPromise {
   resolve!: (value?: any) => void
   reject!: (reason?: any) => void
   reconnect?: () => void
+
+  // Required to proeprly handle rate limits
+  sendData: () => void = () => {}
+
   constructor (
     readonly method: string,
     readonly params: any[],
+
     readonly handleResult?: (result: any) => Promise<void>
   ) {
     this.promise = new Promise((resolve, reject) => {
@@ -285,9 +290,28 @@ class Connection implements ClientConnection {
     }
   }
 
+  currentRateLimit: RateLimitInfo | undefined
+  slowDownTimer = 0
+
   handleMsg (socketId: number, resp: Response<any>): void {
     if (this.closed) {
       return
+    }
+
+    if (resp.rateLimit !== undefined) {
+      console.log(
+        'Rate limits:',
+        resp.rateLimit.remaining,
+        resp.rateLimit.limit,
+        resp.rateLimit.reset,
+        resp.rateLimit.retryAfter
+      )
+      this.currentRateLimit = resp.rateLimit
+      if (this.currentRateLimit.remaining < this.currentRateLimit.limit / 3) {
+        this.slowDownTimer++
+      } else if (this.slowDownTimer > 0) {
+        this.slowDownTimer--
+      }
     }
 
     if (resp.error !== undefined) {
@@ -308,6 +332,20 @@ class Connection implements ClientConnection {
 
       if (resp.id !== undefined) {
         const promise = this.requests.get(resp.id)
+
+        // Support rate limits
+        if (resp.rateLimit !== undefined) {
+          const { remaining, retryAfter } = resp.rateLimit
+          if (remaining === 0) {
+            console.log('Rate limit exceed:', resp.rateLimit)
+            void new Promise((resolve) => setTimeout(resolve, retryAfter ?? 1)).then(() => {
+              // Retry after a while, so rate limits allow to call more.
+              promise?.sendData()
+            })
+            return
+          }
+        }
+
         if (promise !== undefined) {
           promise.reject(new PlatformError(resp.error))
         }
@@ -382,6 +420,7 @@ class Connection implements ClientConnection {
     }
     if (resp.id !== undefined) {
       const promise = this.requests.get(resp.id)
+
       if (promise === undefined) {
         console.error(
           new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.user}`),
@@ -680,6 +719,11 @@ class Connection implements ClientConnection {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.ConnectionClosed, {}))
       }
 
+      if (this.slowDownTimer > 0) {
+        // We need to wait a bit to avoid ban.
+        await new Promise((resolve) => setTimeout(resolve, this.slowDownTimer))
+      }
+
       if (data.once === true) {
         // Check if has same request already then skip
         const dparams = JSON.stringify(data.params)
@@ -702,7 +746,7 @@ class Connection implements ClientConnection {
       if (data.method !== pingConst) {
         this.requests.set(id, promise)
       }
-      const sendData = (): void => {
+      promise.sendData = (): void => {
         if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
           promise.startTime = Date.now()
 
@@ -730,13 +774,13 @@ class Connection implements ClientConnection {
           setTimeout(async () => {
             // In case we don't have response yet.
             if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
-              sendData()
+              promise.sendData()
             }
           }, 50)
         }
       }
       ctx.withSync('send-data', {}, () => {
-        sendData()
+        promise.sendData()
       })
       void ctx
         .with('broadcast-event', {}, () => broadcastEvent(client.event.NetworkRequests, this.requests.size))

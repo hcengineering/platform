@@ -1,6 +1,6 @@
 import { uncompress } from 'snappyjs'
 
-export async function withRetry<T> (fn: () => Promise<T>): Promise<T> {
+export async function withRetry<T> (fn: () => Promise<T>, ignoreAttemptCheck?: (err: any) => boolean): Promise<T> {
   const maxRetries = 3
   let lastError: any
 
@@ -8,9 +8,13 @@ export async function withRetry<T> (fn: () => Promise<T>): Promise<T> {
     try {
       return await fn()
     } catch (err: any) {
-      lastError = err
+      if (ignoreAttemptCheck !== undefined && ignoreAttemptCheck(err)) {
+        // Do not decrement attempt
+        attempt--
+      } else {
+        lastError = err
+      }
       if (attempt === maxRetries - 1) {
-        console.error('Failed to execute query', err)
         throw lastError
       }
       await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100))

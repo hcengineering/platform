@@ -51,7 +51,14 @@ import core, {
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { unknownError, type Status } from '@hcengineering/platform'
-import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
+import {
+  SlidingWindowRateLimitter,
+  type HelloRequest,
+  type HelloResponse,
+  type RateLimitInfo,
+  type Request,
+  type Response
+} from '@hcengineering/rpc'
 import {
   CommunicationApiFactory,
   LOGGING_ENABLED,
@@ -111,6 +118,9 @@ export class TSessionManager implements SessionManager {
 
   workspaceProducer: PlatformQueueProducer<QueueWorkspaceMessage>
   usersProducer: PlatformQueueProducer<QueueUserMessage>
+
+  now: number = Date.now()
+
   constructor (
     readonly ctx: MeasureContext,
     readonly timeouts: Timeouts,
@@ -823,7 +833,7 @@ export class TSessionManager implements SessionManager {
         user: sessionRef.session.getSocialIds().find((it) => it.type !== SocialIdType.HULY)?.value,
         binary: sessionRef.session.binaryMode,
         compression: sessionRef.session.useCompression,
-        totalTime: Date.now() - sessionRef.session.createTime,
+        totalTime: this.now - sessionRef.session.createTime,
         workspaceUsers: workspace?.sessions?.size,
         totalUsers: this.sessions.size
       })
@@ -1006,7 +1016,8 @@ export class TSessionManager implements SessionManager {
     communicationApi: CommunicationApi,
     requestId: Request<any>['id'],
     service: Session,
-    ws: ConnectionSocket
+    ws: ConnectionSocket,
+    rateLimit: RateLimitInfo | undefined
   ): ClientSessionCtx {
     const st = platformNow()
     return {
@@ -1019,8 +1030,9 @@ export class TSessionManager implements SessionManager {
           id: reqId,
           result: msg,
           time: platformNowDiff(st),
-          bfst: Date.now(),
-          queue: service.requests.size
+          bfst: this.now,
+          queue: service.requests.size,
+          rateLimit
         }),
       sendPong: () => {
         ws.sendPong()
@@ -1032,7 +1044,8 @@ export class TSessionManager implements SessionManager {
           result: msg,
           error,
           time: platformNowDiff(st),
-          bfst: Date.now(),
+          rateLimit,
+          bfst: this.now,
           queue: service.requests.size
         })
     }
@@ -1044,7 +1057,6 @@ export class TSessionManager implements SessionManager {
     if (ws === undefined) {
       return new Map()
     }
-
     const res = new Map<PersonId, AccountUuid>()
     for (const s of [...Array.from(ws.sessions.values()).map((it) => it.session), ...extra]) {
       const sessionAccount = s.getUser()
@@ -1059,6 +1071,12 @@ export class TSessionManager implements SessionManager {
     return res
   }
 
+  limitter = new SlidingWindowRateLimitter(
+    parseInt(process.env.RATE_LIMIT_MAX ?? '250'),
+    parseInt(process.env.RATE_LIMIT_WINDOW ?? '30000'),
+    () => Date.now()
+  )
+
   handleRequest<S extends Session>(
     requestCtx: MeasureContext,
     service: S,
@@ -1067,15 +1085,30 @@ export class TSessionManager implements SessionManager {
     workspaceId: WorkspaceUuid
   ): Promise<void> {
     const userCtx = requestCtx.newChild('📞 client', {})
+    const rateLimit = this.limitter.checkRateLimit(service.getUser())
+    // If remaining is 0, rate limit is exceeded
+    if (rateLimit?.remaining === 0) {
+      void ws.send(
+        userCtx,
+        {
+          id: request.id,
+          rateLimit,
+          error: unknownError('Rate limit')
+        },
+        service.binaryMode,
+        service.useCompression
+      )
+      return Promise.resolve()
+    }
 
     // Calculate total number of clients
     const reqId = generateId()
 
-    const st = platformNow()
+    const st = Date.now()
     return userCtx
       .with('🧭 handleRequest', {}, async (ctx) => {
         if (request.time != null) {
-          const delta = platformNow() - request.time
+          const delta = Date.now() - request.time
           requestCtx.measure('msg-receive-delta', delta)
         }
         const workspace = this.workspaces.get(workspaceId)
@@ -1134,7 +1167,7 @@ export class TSessionManager implements SessionManager {
           await workspace.with(async (pipeline, communicationApi) => {
             await ctx.with('🧨 process', {}, (callTx) =>
               f.apply(service, [
-                this.createOpContext(callTx, userCtx, pipeline, communicationApi, request.id, service, ws),
+                this.createOpContext(callTx, userCtx, pipeline, communicationApi, request.id, service, ws, rateLimit),
                 ...params
               ])
             )
@@ -1167,7 +1200,13 @@ export class TSessionManager implements SessionManager {
     service: S,
     ws: ConnectionSocket,
     operation: (ctx: ClientSessionCtx) => Promise<void>
-  ): Promise<void> {
+  ): Promise<RateLimitInfo | undefined> {
+    const rateLimitStatus = this.limitter.checkRateLimit(service.getUser())
+    // If remaining is 0, rate limit is exceeded
+    if (rateLimitStatus?.remaining === 0) {
+      return Promise.resolve(rateLimitStatus)
+    }
+
     const userCtx = requestCtx.newChild('📞 client', {})
 
     // Calculate total number of clients
@@ -1189,7 +1228,16 @@ export class TSessionManager implements SessionManager {
 
         try {
           await workspace.with(async (pipeline, communicationApi) => {
-            const uctx = this.createOpContext(ctx, userCtx, pipeline, communicationApi, reqId, service, ws)
+            const uctx = this.createOpContext(
+              ctx,
+              userCtx,
+              pipeline,
+              communicationApi,
+              reqId,
+              service,
+              ws,
+              rateLimitStatus
+            )
             await operation(uctx)
           })
         } catch (err: any) {
@@ -1209,6 +1257,7 @@ export class TSessionManager implements SessionManager {
           )
           throw err
         }
+        return undefined
       })
       .finally(() => {
         userCtx.end()
