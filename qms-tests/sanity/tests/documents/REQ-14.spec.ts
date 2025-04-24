@@ -44,7 +44,7 @@ test.describe('QMS. Documents tests for Control of documents ISO 13485, 4.2.4 FS
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v0.1',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -60,7 +60,7 @@ test.describe('QMS. Documents tests for Control of documents ISO 13485, 4.2.4 FS
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.IN_APPROVAL,
-        version: 'v0.1'
+        version: 'v1.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
     })
@@ -77,7 +77,7 @@ test.describe('QMS. Documents tests for Control of documents ISO 13485, 4.2.4 FS
       await documentContentPageSecond.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v0.1'
+        version: 'v1.0'
       })
       await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
 
@@ -89,7 +89,7 @@ test.describe('QMS. Documents tests for Control of documents ISO 13485, 4.2.4 FS
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v0.1'
+        version: 'v1.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
 
@@ -101,14 +101,14 @@ test.describe('QMS. Documents tests for Control of documents ISO 13485, 4.2.4 FS
       await documentHistoryPage.checkHistoryEventExist('New document creation')
       await attachScreenshot('TESTS-384_check_history_tab.png', page)
     })
-    await test.step('6. Send for Approval v0.2', async () => {
+    await test.step('6. Send for Approval v1.1', async () => {
       await documentContentPage.sendForApproval(
         'Minor',
-        'v0.2',
-        'Reason 0.2',
-        'impact 0.2',
-        'v0.1',
-        'v0.2',
+        'v1.1',
+        'Reason 1.1',
+        'impact 1.1',
+        'v1.0',
+        'v1.1',
         userSecondPage,
         completeDocument,
         documentDetails
@@ -116,12 +116,12 @@ test.describe('QMS. Documents tests for Control of documents ISO 13485, 4.2.4 FS
     })
     await test.step('7. Check archived status', async () => {
       const documentContentPageSecond = new DocumentContentPage(userSecondPage)
-      await documentContentPage.clickPreviousVersionHeader(userSecondPage, completeDocument, 'v0.2')
-      await documentContentPage.clickPreviousVersionHeader(userSecondPage, completeDocument, 'v0.1')
+      await documentContentPage.clickPreviousVersionHeader(userSecondPage, completeDocument, 'v1.1')
+      await documentContentPage.clickPreviousVersionHeader(userSecondPage, completeDocument, 'v1.0')
       await documentContentPageSecond.checkDocument({
         ...documentDetails,
         status: DocumentStatus.ARCHIVED,
-        version: 'v0.1'
+        version: 'v1.0'
       })
       await attachScreenshot('TESTS-384_archived_status.png', page)
     })

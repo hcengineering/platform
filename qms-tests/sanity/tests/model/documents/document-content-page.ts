@@ -679,7 +679,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   async checkIfHistoryVersionExists (description: string): Promise<void> {
     await this.page.waitForTimeout(200)
     await expect(this.page.getByText(description)).toBeVisible()
-    await expect(this.page.getByText('v0.1', { exact: true })).toBeVisible()
+    await expect(this.page.getByText('v1.0', { exact: true })).toBeVisible()
   }
 
   async checkDocumentStatus (status: DocumentStatus): Promise<void> {
