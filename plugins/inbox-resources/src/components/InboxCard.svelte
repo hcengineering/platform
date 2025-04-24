@@ -97,7 +97,6 @@
     min-width: 0;
     flex-direction: column;
     margin-top: var(--spacing-1);
-    margin-left: var(--spacing-2_5);
   }
 
   .labels {
@@ -105,7 +104,6 @@
     flex-direction: column;
     justify-content: space-between;
     color: var(--global-primary-TextColor);
-    font-weight: 600;
     font-size: 0.875rem;
     gap: 0.25rem;
     min-width: 0;

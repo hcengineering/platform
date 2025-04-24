@@ -25,11 +25,12 @@
   export let icon: IconComponent
   export let selected: boolean = false
   export let notificationsCount: number = 0
+  export let paddingLeft: string | undefined = undefined
 </script>
 
-<button class="nav-item" class:selected on:click>
+<button class="nav-item" class:selected on:click style:padding-left={paddingLeft}>
   <span class="nav-item__icon">
-    <Icon {icon} size="medium" />
+    <Icon {icon} size="small" />
   </span>
   <span class="nav-item__label next-label-overflow">
     {#if label}

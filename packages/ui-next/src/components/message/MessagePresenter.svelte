@@ -174,10 +174,11 @@
 <div
   class="message"
   id={message.id.toString()}
-  on:contextmenu={handleContextMenu}
+  on:contextmenu={editable && !isEditing ? handleContextMenu : undefined}
   class:active={isActionsOpened && !isEditing}
+  class:noHover={!editable}
 >
-  {#if !isEditing}
+  {#if !isEditing && editable}
     <div class="message__actions" class:opened={isActionsOpened}>
       <MessageActionsPanel
         {message}
@@ -262,7 +263,7 @@
     position: relative;
     padding: 1rem 2rem;
 
-    &:hover {
+    &:hover:not(.noHover) {
       background: var(--next-message-hover-color-background);
       .message__actions {
         visibility: visible;

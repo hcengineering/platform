@@ -51,6 +51,9 @@ import RolesSection from './components/settings/RolesSection.svelte'
 import EditRole from './components/settings/EditRole.svelte'
 
 export { default as CardSelector } from './components/CardSelector.svelte'
+export { default as Navigator } from './components/navigator-next/Navigator.svelte'
+
+export * from './types'
 
 export default async (): Promise<Resources> => ({
   component: {

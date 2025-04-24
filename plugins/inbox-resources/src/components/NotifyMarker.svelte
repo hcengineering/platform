@@ -41,7 +41,7 @@
     justify-content: center;
     flex-shrink: 0;
     border-radius: 50%;
-    font-weight: 700;
+    font-weight: 500;
 
     &.simple,
     &.primary {
