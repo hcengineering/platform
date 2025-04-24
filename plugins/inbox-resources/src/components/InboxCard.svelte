@@ -97,7 +97,6 @@
     min-width: 0;
     flex-direction: column;
     margin-top: var(--spacing-1);
-    margin-left: var(--spacing-2_5);
   }
 
   .labels {

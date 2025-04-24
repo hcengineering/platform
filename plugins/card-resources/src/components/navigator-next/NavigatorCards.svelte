@@ -49,6 +49,7 @@
   let contexts: NotificationContext[] = []
   let labels: Label[] = []
   let isLabelsLoaded = false
+  let isLoading: boolean = true
 
   let limit = config.limit
 
@@ -82,6 +83,7 @@
       (res) => {
         cards = res
         total = res.total
+        isLoading = false
       },
       { total: true, limit, sort: { title: SortingOrder.Ascending } }
     )
@@ -109,38 +111,40 @@
   $: empty = total === 0
 </script>
 
-{#if !empty || config.hideEmpty !== true || config.fixedTypes?.includes(type._id)}
-  <NavigatorType {type} {config} {space} {selectedType} {empty} bold on:selectType on:selectCard>
-    {#each cards as card (card._id)}
-      {@const clazz = hierarchy.getClass(card._class)}
-      {@const context = contexts.find((c) => c.card === card._id)}
-      <NavItem
-        label={card.title}
-        icon={clazz.icon ?? cardPlugin.icon.Card}
-        selected={selectedCard === card._id}
-        paddingLeft="1.75rem"
-        notificationsCount={context?.notifications?.length ?? 0}
-        on:click={(e) => {
-          e.stopPropagation()
-          e.preventDefault()
-          dispatch('selectCard', card)
-        }}
-      />
-    {/each}
-
-    {#if total > cards.length}
-      <div class="all-button">
-        <Button
-          labelIntl={uiNext.string.All}
-          labelParams={{ count: total }}
-          variant={ButtonVariant.Ghost}
-          on:click={() => {
-            limit += config.limit
+{#if !isLoading}
+  {#if !empty || config.hideEmpty !== true || config.fixedTypes?.includes(type._id)}
+    <NavigatorType {type} {config} {space} {selectedType} {empty} bold on:selectType on:selectCard>
+      {#each cards as card (card._id)}
+        {@const clazz = hierarchy.getClass(card._class)}
+        {@const context = contexts.find((c) => c.card === card._id)}
+        <NavItem
+          label={card.title}
+          icon={clazz.icon ?? cardPlugin.icon.Card}
+          selected={selectedCard === card._id}
+          paddingLeft="1.75rem"
+          notificationsCount={context?.notifications?.length ?? 0}
+          on:click={(e) => {
+            e.stopPropagation()
+            e.preventDefault()
+            dispatch('selectCard', card)
           }}
         />
-      </div>
-    {/if}
-  </NavigatorType>
+      {/each}
+
+      {#if total > cards.length}
+        <div class="all-button">
+          <Button
+            labelIntl={uiNext.string.All}
+            labelParams={{ count: total }}
+            variant={ButtonVariant.Ghost}
+            on:click={() => {
+              limit += config.limit
+            }}
+          />
+        </div>
+      {/if}
+    </NavigatorType>
+  {/if}
 {/if}
 
 <style lang="scss">

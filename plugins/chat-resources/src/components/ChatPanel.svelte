@@ -30,8 +30,15 @@
   let footerHeight: number | undefined = undefined
   let context: NotificationContext | undefined = undefined
   let isLoaded = false
+  let cardId = card._id
 
-  $: contextsQuery.query({ card: card._id, limit: 1 }, (res) => {
+  $: if (cardId !== card._id) {
+    cardId = card._id
+    context = undefined
+    isLoaded = false
+  }
+
+  $: contextsQuery.query({ card: cardId, limit: 1 }, (res) => {
     context = res.getResult()[0]
     isLoaded = true
   })
@@ -45,6 +52,3 @@
   {/key}
 {/if}
 <ChatFooter {card} bind:height={footerHeight} />
-
-<style lang="scss">
-</style>

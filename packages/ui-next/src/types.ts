@@ -81,15 +81,6 @@ export interface TextInputAction {
   disabled?: boolean
 }
 
-export interface Action {
-  id: string
-  label: IntlString
-  icon: IconComponent
-  action: (event: MouseEvent) => void
-  order: number
-  disabled?: boolean
-}
-
 export interface UploadedFile {
   blobId: BlobID
   type: string
