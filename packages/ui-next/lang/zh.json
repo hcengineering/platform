@@ -26,6 +26,8 @@
     "WeekdayAt": "{weekday} 于 {time}",
     "YearAt": "{year} 于 {time}",
     "Yesterday": "昨天",
-    "YesterdayAt": "昨天 于 {time}"
+    "YesterdayAt": "昨天 于 {time}",
+    "AndMore": "和其他 {count} 条",
+    "IsTyping": "{count, plural, =1 {正在输入} other {正在输入}}"
   }
 }

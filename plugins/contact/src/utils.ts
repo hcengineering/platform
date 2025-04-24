@@ -302,6 +302,14 @@ export async function getPersonBySocialId (client: Client, socialIdString: Perso
   return await client.findOne(contact.class.Person, { _id: socialId?.attachedTo, _class: socialId?.attachedToClass })
 }
 
+export async function getEmployeeBySocialId (client: Client, socialIdString: PersonId): Promise<Employee | undefined> {
+  const socialId = await client.findOne(contact.class.SocialIdentity, { _id: socialIdString as SocialIdentityRef })
+
+  if (socialId === undefined) return undefined
+
+  return await client.findOne(contact.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> })
+}
+
 export async function getPersonRefBySocialId (
   client: Client,
   socialIdString: PersonId

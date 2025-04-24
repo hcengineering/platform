@@ -17,6 +17,7 @@
   import { Card } from '@hcengineering/card'
   import { NotificationContext } from '@hcengineering/communication-types'
   import { createNotificationContextsQuery } from '@hcengineering/presentation'
+  import { Presence } from '@hcengineering/presence-resources'
 
   import ChatHeader from './ChatHeader.svelte'
   import ChatBody from './ChatBody.svelte'
@@ -36,6 +37,7 @@
   })
 </script>
 
+<Presence object={card} />
 <ChatHeader {card} />
 {#if isLoaded}
   {#key card._id}

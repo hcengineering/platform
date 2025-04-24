@@ -21,12 +21,15 @@
   import { MessagePresenter, MessageInput, Divider, UploadedFile } from '@hcengineering/ui-next'
   import { fillDefaults, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
   import { makeRank } from '@hcengineering/rank'
+  import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
+  import { getEmployeeBySocialId } from '@hcengineering/contact'
 
   import { ChatWidgetData } from '../types'
   import chat from '../plugin'
   import ChatHeader from './ChatHeader.svelte'
   import ChatBody from './ChatBody.svelte'
   import { createThreadTitle } from '../utils'
+  import ChatFooter from './ChatFooter.svelte'
 
   export let widget: Widget | undefined
   export let widgetState: WidgetState | undefined
@@ -105,6 +108,8 @@
 
     let threadId: CardID | undefined = message.thread?.thread
     if (threadId == null) {
+      const author =
+        $employeeByPersonIdStore.get(message.creator) ?? (await getEmployeeBySocialId(client, message.creator))
       const lastOne = await client.findOne(cardPlugin.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
       const title = createThreadTitle(message, parentCard)
       const data = fillDefaults(
@@ -120,6 +125,9 @@
       threadId = (await client.createDoc(chat.masterTag.Thread, cardPlugin.space.Default, data)) as CardID
 
       await communicationClient.createThread(card, message.id, message.created, threadId)
+      if (author?.active === true && author?.personUuid !== undefined) {
+        await communicationClient.addCollaborators(threadId, chat.masterTag.Thread, [author.personUuid])
+      }
     }
 
     if (threadId != null) {
@@ -129,23 +137,27 @@
       }
     }
   }
+  let footerHeight: number | undefined = undefined
 </script>
 
 {#if widget && data && data.message}
   <div class="chat-widget" style:width style:height>
     <ChatHeader card={threadCard} icon={chat.icon.Thread} title={data.name} canClose on:close />
     {#if message && parentCard}
-      <div style:padding="1rem">
-        <MessagePresenter {message} card={parentCard} replies={false} />
-      </div>
+      <div class="mt-4" />
+      <MessagePresenter {message} card={parentCard} replies={false} />
       <Divider />
 
       <div class="messages">
-        <ChatBody card={threadCard} bottomStart={false} showDates={false} overlyColor="var(--next-background-color)" />
+        <ChatBody
+          card={threadCard}
+          bottomStart={false}
+          showDates={false}
+          overlyColor="var(--next-background-color)"
+          {footerHeight}
+        />
       </div>
-      <div style:padding="1rem">
-        <MessageInput onSubmit={handleSubmit} />
-      </div>
+      <ChatFooter card={threadCard} bind:height={footerHeight} onSubmit={handleSubmit} />
     {/if}
   </div>
 {/if}
@@ -165,5 +177,10 @@
     flex-direction: column;
     width: 100%;
     overflow: hidden;
+  }
+
+  .footer {
+    border-top: 1px solid var(--next-divider-color);
+    padding: 1.25rem 1rem 0 1rem;
   }
 </style>
