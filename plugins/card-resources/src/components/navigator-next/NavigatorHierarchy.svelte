@@ -36,9 +36,9 @@
     const result: MasterTag[] = []
     const desc = hierarchy.getDescendants(_class)
     for (const clazz of desc) {
-      const cls = hierarchy.getClass(clazz)
-      if (cls.extends === _class && cls._class === card.class.MasterTag) {
-        result.push(cls)
+      const type = hierarchy.getClass(clazz) as MasterTag
+      if (type.extends === _class && type._class === card.class.MasterTag && type.removed !== true) {
+        result.push(type)
       }
     }
     return result.sort((a, b) => a.label.localeCompare(b.label))
