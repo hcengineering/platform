@@ -459,6 +459,17 @@ function getLastTxTime (txes: Tx[]): number {
 }
 
 function compareTxes (a: Tx, b: Tx): number {
-  const result = a._id.localeCompare(b._id)
-  return result !== 0 ? result : a.modifiedOn - b.modifiedOn
+  const result = a.modifiedOn - b.modifiedOn
+  if (result !== 0) {
+    return result
+  }
+  if (a._class !== b._class) {
+    if (a._class === core.class.TxCreateDoc) {
+      return -1
+    }
+    if (b._class === core.class.TxCreateDoc) {
+      return 1
+    }
+  }
+  return a._id.localeCompare(b._id)
 }
