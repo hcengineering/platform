@@ -1,0 +1,17 @@
+{
+  "string": {
+    "Camera": "Câmera",
+    "Microphone": "Microfone",
+    "Speaker": "Alto-falante",
+    "DefaultCam": "Câmera padrão",
+    "DefaultMic": "Microfone padrão",
+    "DefaultSpeaker": "Alto-falante padrão",
+    "NoCam": "Sem câmera",
+    "TurnOnCam": "Ligar câmera",
+    "TurnOffCam": "Desligar câmera",
+    "TurnOnMic": "Ligar microfone",
+    "TurnOffMic": "Desligar microfone",
+    "On": "Ligado",
+    "Off": "Desligado"
+  }
+}

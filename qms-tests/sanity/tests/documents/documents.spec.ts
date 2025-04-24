@@ -133,13 +133,13 @@ test.describe('QMS. Documents tests', () => {
     await attachScreenshot('TESTS-125_create_child_document.png', page)
   })
 
-  test('TESTS-126. Change document owner', async ({ page }) => {
-    await allure.description('Requirement\nUsers need to change document owner')
+  test('TESTS-126. Change document author', async ({ page }) => {
+    await allure.description('Requirement\nUsers need to change document author')
     await allure.tms('TESTS-126', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-126')
     const changeDocument: NewDocument = {
       template: 'HR (HR)',
-      title: `Change document owner Document-${generateId()}`,
-      description: `Change document owner Document description-${generateId()}`
+      title: `Change document author Document-${generateId()}`,
+      description: `Change document author Document description-${generateId()}`
     }
     const documentDetails: DocumentDetails = {
       type: 'HR',
@@ -152,11 +152,11 @@ test.describe('QMS. Documents tests', () => {
     await prepareDocumentStep(page, changeDocument)
 
     const documentContentPage = new DocumentContentPage(page)
-    await test.step('2. Change document owner', async () => {
+    await test.step('2. Change document author', async () => {
       await documentContentPage.checkDocumentTitle(changeDocument.title)
       await documentContentPage.checkDocument(documentDetails)
-      await documentContentPage.executeMoreActions('Change document owner')
-      await documentContentPage.fillChangeDocumentOwnerPopup('Dirak Kainin')
+      await documentContentPage.executeMoreActions('Change document author')
+      await documentContentPage.fillChangeDocumentAuthorPopup('Dirak Kainin')
     })
 
     await test.step('3. Check the updated document information', async () => {
@@ -681,7 +681,7 @@ test.describe('QMS. Documents tests', () => {
     })
   })
 
-  test('TESTS-155. Change document owner. QARA user changes owner from one user to another', async ({
+  test('TESTS-155. Change document author. QARA user changes owner from one user to another', async ({
     page,
     browser
   }) => {
@@ -691,8 +691,8 @@ test.describe('QMS. Documents tests', () => {
     const newDocumentOwner = 'Dirak Kainin'
     const changeQaraDocument: NewDocument = {
       template: 'HR (HR)',
-      title: `Change document owner by QARA user Document-${generateId()}`,
-      description: `Change document owner by QARA user Document description-${generateId()}`
+      title: `Change document author by QARA user Document-${generateId()}`,
+      description: `Change document author by QARA user Document description-${generateId()}`
     }
     const documentDetails: DocumentDetails = {
       type: 'HR',
@@ -720,8 +720,8 @@ test.describe('QMS. Documents tests', () => {
       const documentsPageQara = new DocumentsPage(qaraManagerPage)
       await documentsPageQara.openDocument(changeQaraDocument.title)
 
-      await documentContentPageQara.executeMoreActions('Change document owner')
-      await documentContentPageQara.fillChangeDocumentOwnerPopupByQaraManager(newDocumentOwner)
+      await documentContentPageQara.executeMoreActions('Change document author')
+      await documentContentPageQara.fillChangeDocumentAuthorPopupByQaraManager(newDocumentOwner)
     })
 
     await test.step('4. As QARA manager Check the updated document information', async () => {

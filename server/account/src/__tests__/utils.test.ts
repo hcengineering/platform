@@ -1715,6 +1715,7 @@ describe('account utils', () => {
 
   describe('loginOrSignUpWithProvider', () => {
     const mockCtx = {
+      info: jest.fn(),
       error: jest.fn()
     } as unknown as MeasureContext
 

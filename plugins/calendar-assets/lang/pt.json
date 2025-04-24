@@ -105,6 +105,9 @@
     "CalDavAccessServer": "Servidor CalDAV",
     "CalDavAccessAccount": "Conta Huly",
     "CalDavAccessPassword": "Password",
-    "CalDavAccessPasswordWarning": "Não será possível ver esta palavra-passe novamente. Guarde-a num local seguro."
+    "CalDavAccessPasswordWarning": "Não será possível ver esta palavra-passe novamente. Guarde-a num local seguro.",
+    "MeetingScheduledNotification": "Reunião agendada",
+    "MeetingRescheduledNotification": "Horário da reunião alterado",
+    "MeetingCanceledNotification": "Reunião cancelada: {title}"
   }
 }

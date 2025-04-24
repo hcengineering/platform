@@ -22,11 +22,12 @@
     "Minor": "Минорная",
     "Patch": "Патч",
     "ValidationWorkflow": "Процесс валидации",
-    "ChangeOwner": "Изменить владельца документа",
-    "ChangeOwnerHintBeginning": "Передайте права владельца документа",
+    "Creator": "Создатель",
+    "ChangeOwner": "Сменить автора документа",
+    "ChangeOwnerHintBeginning": "Передать авторство документа",
     "ChangeOwnerHintEnd": "другому лицу.",
     "ChangeOwnerWarning": "Вы не сможете редактировать документ после этой операции.",
-    "SelectOwner": "Выберите нового владельца",
+    "SelectOwner": "Выберите нового автора",
     "CreateDocument": "Создать документ",
     "CreateTemplate": "Создать шаблон",
     "Documents": "Документы",
@@ -315,7 +316,9 @@
     "LatestVersionHint": "последняя",
 
     "CannotDeleteFolder": "Папка не может быть удалена",
-    "CannotDeleteFolderHint": "Пожалуйста, переместите все дочерние документы в другое место перед удалением папки."
+    "CannotDeleteFolderHint": "Пожалуйста, переместите все дочерние документы в другое место перед удалением папки.",
+
+    "AllDocumentSpaces": "Все пространства документов"
   },
   "controlledDocStates": {
     "Empty": "",

@@ -70,6 +70,8 @@
     "Hello": "Hallo {name},",
     "ProcessingInvite": "Einladung wird bearbeitet, bitte warten...",
     "SignToProceed": "Bitte melden Sie sich an, um fortzufahren",
-    "Proceed": "Fortfahren"
+    "Proceed": "Fortfahren",
+    "SetPasswordLater": "Ich werde später ein Passwort festlegen",
+    "SetPasswordNow": "Ich werde jetzt ein Passwort festlegen"
   }
 }

@@ -30,7 +30,7 @@ import {
 import { IntlString, plugin } from '@hcengineering/platform'
 import { Event, Visibility } from '@hcengineering/calendar'
 import { AnyComponent } from '@hcengineering/ui'
-import { Person } from '@hcengineering/contact'
+import { Employee } from '@hcengineering/contact'
 import type { Rank } from '@hcengineering/rank'
 
 export * from './analytics'
@@ -61,7 +61,7 @@ export interface ToDo extends AttachedDoc {
   priority: ToDoPriority
   visibility: Visibility
   doneOn?: Timestamp | null
-  user: Ref<Person>
+  user: Ref<Employee>
   attachedSpace?: Ref<Space>
   labels?: number
   rank: Rank

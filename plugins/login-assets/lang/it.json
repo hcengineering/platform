@@ -69,6 +69,8 @@
     "Hello": "Ciao {name},",
     "ProcessingInvite": "Elaborazione invito, attendere prego...",
     "SignToProceed": "Accedi per procedere",
-    "Proceed": "Procedere"
+    "Proceed": "Procedere",
+    "SetPasswordLater": "Imposterò una password più tardi",
+    "SetPasswordNow": "Imposterò una password ora"
   }
 }

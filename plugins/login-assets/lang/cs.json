@@ -70,6 +70,8 @@
     "Hello": "Ahoj {name},",
     "ProcessingInvite": "Zpracovávám pozvánku, čekejte prosím...",
     "SignToProceed": "Přihlaste se, abyste mohli pokračovat",
-    "Proceed": "Pokračovat"
+    "Proceed": "Pokračovat",
+    "SetPasswordLater": "Nastavím heslo později",
+    "SetPasswordNow": "Nastavím heslo nyní"
   }
 }

@@ -80,6 +80,7 @@
   let showDeleted: boolean = false
   let showOther: boolean = true
   let showGrAttempts: boolean = true
+  let showSelectedRegionOnly: boolean = false
 
   $: sortedWorkspaces = workspaces
     .filter(
@@ -88,6 +89,7 @@
           (it.url?.includes(search) ?? false) ||
           it.uuid?.includes(search) ||
           it.createdBy?.includes(search)) &&
+        (showSelectedRegionOnly ? it.region === selectedRegionId : true) &&
         ((showActive && isActiveMode(it.mode)) ||
           (showArchived && isArchivingMode(it.mode)) ||
           (showDeleted && isDeletingMode(it.mode)) ||
@@ -180,9 +182,11 @@
   const dayRanges = {
     Today: [-1, 1],
     Week: [1, 7],
-    Weeks: [7, 30],
-    Month: [30, 90],
-    Months: [90, 180],
+    Weeks: [7, 14],
+    Month: [14, 30],
+    Months1: [30, 60],
+    Months2: [60, 90],
+    Months3: [90, 180],
     'Six Month': [180, 270],
     'Nine Months': [270, 365],
     Years: [365, 10000000]
@@ -290,6 +294,10 @@
       <div class="flex-row-center">
         <span class="mr-2">Show attempts >=0 workspaces:</span>
         <CheckBox bind:checked={showGrAttempts} />
+      </div>
+      <div class="flex-row-center">
+        <span class="mr-2">Show selected region only:</span>
+        <CheckBox bind:checked={showSelectedRegionOnly} />
       </div>
     </div>
 

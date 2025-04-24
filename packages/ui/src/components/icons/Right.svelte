@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let size: 'small' | 'medium' | 'large'
+  export let size: 'tiny' | 'small' | 'medium' | 'large'
   export let fill: string = 'currentColor'
 </script>
 

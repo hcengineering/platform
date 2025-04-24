@@ -20,12 +20,17 @@
   import { uploadFile, deleteFile, getCommunicationClient } from '@hcengineering/presentation'
   import { CardID, CardType, Message } from '@hcengineering/communication-types'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
+  import { isEmptyMarkup } from '@hcengineering/text'
+  import { updateMyPresence } from '@hcengineering/presence-resources'
+  import { ThrottledCaller } from '@hcengineering/ui'
+  import { getCurrentEmployee } from '@hcengineering/contact'
 
   import TextInput from '../TextInput.svelte'
   import { defaultMessageInputActions, toMarkdown } from '../../utils'
   import uiNext from '../../plugin'
   import IconPlus from '../icons/IconPlus.svelte'
-  import { type TextInputAction, UploadedFile } from '../../types'
+  import { type TextInputAction, UploadedFile, type PresenceTyping } from '../../types'
+  import TypingPresenter from '../TypingPresenter.svelte'
 
   export let cardId: CardID | undefined = undefined
   export let cardType: CardType | undefined = undefined
@@ -36,13 +41,15 @@
   export let onCancel: (() => void) | undefined = undefined
   export let onSubmit: ((markdown: string, files: UploadedFile[]) => Promise<void>) | undefined = undefined
 
+  const throttle = new ThrottledCaller(500)
+  const dispatch = createEventDispatcher()
+  const communicationClient = getCommunicationClient()
+  const me = getCurrentEmployee()
+
   let files: UploadedFile[] = []
   let inputElement: HTMLInputElement
 
   let progress = false
-
-  const dispatch = createEventDispatcher()
-  const communicationClient = getCommunicationClient()
 
   async function handleSubmit (event: CustomEvent<Markup>): Promise<void> {
     event.preventDefault()
@@ -57,6 +64,7 @@
 
     if (onSubmit !== undefined) {
       await onSubmit(markdown, filesToLoad)
+      return
     }
 
     if (message === undefined) {
@@ -90,6 +98,8 @@
         file.size
       )
     }
+
+    dispatch('edited')
   }
 
   async function fileSelected (): Promise<void> {
@@ -143,53 +153,129 @@
     }
     files = []
   }
+
+  async function loadFiles (evt: ClipboardEvent): Promise<void> {
+    progress = true
+    const files = (evt.clipboardData?.files ?? []) as File[]
+
+    for (const file of files) {
+      await addFile(file)
+    }
+
+    progress = false
+  }
+
+  function pasteAction (_: any, evt: ClipboardEvent): boolean {
+    let target: HTMLElement | null = evt.target as HTMLElement
+    let allowed = false
+    while (target != null) {
+      target = target.parentElement
+      if (target === inputElement) {
+        allowed = true
+      }
+    }
+    if (!allowed) {
+      return false
+    }
+    const hasFiles = Array.from(evt.clipboardData?.items ?? []).some((i) => i.kind === 'file')
+
+    if (hasFiles) {
+      void loadFiles(evt)
+      return true
+    }
+
+    return allowed
+  }
+
+  async function fileDrop (e: DragEvent): Promise<void> {
+    const list = e.dataTransfer?.files
+    const limiter = new RateLimiter(10)
+
+    if (list === undefined || list.length === 0) return
+    progress = true
+    for (let index = 0; index < list.length; index++) {
+      const file = list.item(index)
+      if (file !== null) {
+        await limiter.add(() => addFile(file))
+      }
+    }
+    await limiter.waitProcessing()
+    progress = false
+  }
+
+  async function onUpdate (event: CustomEvent<Markup>): Promise<void> {
+    if (cardId === undefined || cardType === undefined) return
+    if (message !== undefined) return
+    const markup = event.detail
+    if (!isEmptyMarkup(markup)) {
+      throttle.call(() => {
+        const room = { objectId: cardId, objectClass: cardType }
+        const typing: PresenceTyping = { person: me, lastTyping: Date.now() }
+        updateMyPresence(room, { typing })
+      })
+    }
+  }
 </script>
 
-<input
-  bind:this={inputElement}
-  disabled={inputElement == null}
-  multiple
-  type="file"
-  name="file"
-  id="file"
-  style="display: none"
-  on:change={fileSelected}
-/>
-<TextInput
-  {content}
-  {placeholder}
-  {placeholderParams}
-  loading={progress}
-  hasNonTextContent={files.length > 0}
-  actions={[...defaultMessageInputActions, attachAction]}
-  on:submit={handleSubmit}
-  onCancel={onCancel ? handleCancel : undefined}
+<div
+  class="flex-col no-print w-full"
+  on:dragover|preventDefault={() => {}}
+  on:dragleave={() => {}}
+  on:drop|preventDefault|stopPropagation={fileDrop}
 >
-  <div slot="header" class="header">
-    {#if files.length > 0}
-      <div class="flex-row-center files-list scroll-divider-color flex-gap-2">
-        {#each files as file (file.blobId)}
-          <div class="item flex">
-            <AttachmentPresenter
-              value={{
-                file: file.blobId,
-                name: file.filename,
-                type: file.type
-              }}
-              removable
-              on:remove={(result) => {
-                if (result !== undefined) {
-                  files = files.filter((it) => it.blobId !== file.blobId)
-                  void deleteFile(file.blobId)
-                }
-              }}
-            />
-          </div>
-        {/each}
-      </div>
-    {/if}
-  </div>
-</TextInput>
+  <input
+    bind:this={inputElement}
+    disabled={inputElement == null}
+    multiple
+    type="file"
+    name="file"
+    id="file"
+    style="display: none"
+    on:change={fileSelected}
+  />
+  <TextInput
+    {content}
+    {placeholder}
+    {placeholderParams}
+    loading={progress}
+    hasNonTextContent={files.length > 0}
+    actions={[...defaultMessageInputActions, attachAction]}
+    on:submit={handleSubmit}
+    on:update={onUpdate}
+    onCancel={onCancel ? handleCancel : undefined}
+    onPaste={pasteAction}
+  >
+    <div slot="header" class="header">
+      {#if files.length > 0}
+        <div class="flex-row-center files-list scroll-divider-color flex-gap-2">
+          {#each files as file (file.blobId)}
+            <div class="item flex">
+              <AttachmentPresenter
+                value={{
+                  file: file.blobId,
+                  name: file.filename,
+                  type: file.type,
+                  size: file.size
+                }}
+                removable
+                on:remove={(result) => {
+                  if (result !== undefined) {
+                    files = files.filter((it) => it.blobId !== file.blobId)
+                    void deleteFile(file.blobId)
+                  }
+                }}
+              />
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </div>
+  </TextInput>
+</div>
+
+{#if cardId && message === undefined}
+  <TypingPresenter {cardId} />
+{/if}
 
 <style lang="scss">
   .header {

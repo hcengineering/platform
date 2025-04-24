@@ -84,7 +84,8 @@ async function createMessages (
         cardType: card._class,
         content: await getActivityContent(control, data, card),
         creator: tx.modifiedBy,
-        data
+        data,
+        created: new Date(tx.modifiedOn)
       }
     )
   }

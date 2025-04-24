@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { generateId, Ref } from '@hcengineering/core'
+  import core, { Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
-  import { Process, SelectedUserRequest, State } from '@hcengineering/process'
+  import { Process, State } from '@hcengineering/process'
   import { settingsStore } from '@hcengineering/setting-resources'
   import {
     Button,
@@ -29,21 +29,20 @@
     IconDescription,
     navigate,
     NavItem,
-    ToggleWithLabel,
     Scroller,
     secondNavSeparators,
     Separator,
-    showPopup
+    showPopup,
+    ToggleWithLabel
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import process from '../plugin'
+  import { getToDoEndAction } from '../utils'
   import Aside from './Aside.svelte'
   import ArrowEnd from './icons/ArrowEnd.svelte'
   import ArrowStart from './icons/ArrowStart.svelte'
   import StateEditor from './StateEditor.svelte'
   import TransitionEditor from './TransitionEditor.svelte'
-  import { getToDoEndAction } from '../utils'
-  import ExecutionResultEditor from './ExecutionResultEditor.svelte'
 
   export let _id: Ref<Process>
   export let visibleSecondNav: boolean = true

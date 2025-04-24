@@ -2,6 +2,7 @@ import { Class, Doc, type AnyAttribute, type Association, type Ref } from '@hcen
 import { ProcessFunction } from '.'
 
 export interface Context {
+  functions: Ref<ProcessFunction>[]
   attributes: AnyAttribute[]
   nested: Record<string, NestedContext>
   relations: Record<string, RelatedContext>
@@ -25,7 +26,7 @@ export interface Func {
 }
 
 interface BaseSelectedContext {
-  type: 'attribute' | 'relation' | 'nested' | 'userRequest'
+  type: 'attribute' | 'relation' | 'nested' | 'userRequest' | 'function'
   // attribute key
   key: string
 
@@ -60,4 +61,15 @@ export interface SelectedUserRequest extends BaseSelectedContext {
   id: string
 }
 
-export type SelectedContext = SelectedAttribute | SelectedRelation | SelectedNested | SelectedUserRequest
+export interface SelectedContextFunc extends BaseSelectedContext {
+  type: 'function'
+  func: Ref<ProcessFunction>
+  props: Record<string, any>
+}
+
+export type SelectedContext =
+  | SelectedAttribute
+  | SelectedRelation
+  | SelectedNested
+  | SelectedUserRequest
+  | SelectedContextFunc

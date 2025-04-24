@@ -1,0 +1,17 @@
+{
+  "string": {
+    "Camera": "カメラ",
+    "Microphone": "マイク",
+    "Speaker": "スピーカー",
+    "DefaultCam": "デフォルトカメラ",
+    "DefaultMic": "デフォルトマイク",
+    "DefaultSpeaker": "デフォルトスピーカー",
+    "NoCam": "カメラなし",
+    "TurnOnCam": "カメラをオンにする",
+    "TurnOffCam": "カメラをオフにする",
+    "TurnOnMic": "マイクをオンにする",
+    "TurnOffMic": "マイクをオフにする",
+    "On": "オン",
+    "Off": "オフ"
+  }
+}

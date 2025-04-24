@@ -45,7 +45,9 @@ export const uiNext = plugin(uiNextId, {
     WeekdayAt: '' as IntlString,
     YearAt: '' as IntlString,
     Yesterday: '' as IntlString,
-    YesterdayAt: '' as IntlString
+    YesterdayAt: '' as IntlString,
+    AndMore: '' as IntlString,
+    IsTyping: '' as IntlString
   }
 })
 

@@ -35,10 +35,15 @@
   import uiNext from '../../plugin'
   import MessageReplies from './MessageReplies.svelte'
   import { toMarkup, toggleReaction } from '../../utils'
+  import MessageActionsPanel from './MessageActionsPanel.svelte'
+  import IconEmoji from '../icons/IconEmoji.svelte'
+  import IconMessageMultiple from '../icons/IconMessageMultiple.svelte'
+  import IconPen from '../icons/IconPen.svelte'
 
   export let card: Card
   export let message: Message
   export let editable: boolean = true
+  export let replies: boolean = true
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -80,62 +85,113 @@
     isEditing = false
   }
 
-  function handleContextMenu (event: MouseEvent): void {
-    event.preventDefault()
-    event.stopPropagation()
-
-    const actions: MenuAction[] = [
-      {
-        label: uiNext.string.Emoji,
-        action: async (): Promise<void> => {
-          showPopup(
-            EmojiPopup,
-            {},
-            event.target as HTMLElement,
-            async (result) => {
-              const emoji = result?.emoji
-              if (emoji == null) {
-                return
-              }
-
-              await toggleReaction(message, emoji)
-            },
-            () => {}
-          )
-        }
-      },
-      {
-        label: uiNext.string.Reply,
-        action: async (): Promise<void> => {
-          dispatch('reply', message)
-        }
-      }
-    ]
-
-    if (canEdit()) {
-      actions.unshift({
-        label: uiNext.string.Edit,
-        action: handleEdit
-      })
-    }
-
-    showPopup(Menu, { actions }, getEventPositionElement(event), () => {})
-  }
-
   async function handleReaction (event: CustomEvent<string>): Promise<void> {
     event.preventDefault()
     event.stopPropagation()
     const emoji = event.detail
     await toggleReaction(message, emoji)
   }
+
+  function isInside (x: number, y: number, rect: DOMRect): boolean {
+    return x >= rect.left && y >= rect.top && x <= rect.right && y <= rect.bottom
+  }
+
+  function isContentClicked (element: HTMLElement | null, x: number, y: number): boolean {
+    if (element == null) {
+      return false
+    }
+
+    const nodes = element.childNodes
+    const range = document.createRange()
+
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i]
+
+      if (node.nodeType !== Node.TEXT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue
+
+      range.selectNodeContents(node)
+
+      if (isInside(x, y, range.getBoundingClientRect())) {
+        return true
+      }
+    }
+    return false
+  }
+
+  function handleContextMenu (event: MouseEvent): void {
+    const showCustomPopup = !isContentClicked(event.target as HTMLElement, event.clientX, event.clientY)
+    if (showCustomPopup) {
+      event.preventDefault()
+      event.stopPropagation()
+
+      const actions: MenuAction[] = [
+        {
+          label: uiNext.string.Emoji,
+          icon: IconEmoji,
+          action: async (): Promise<void> => {
+            showPopup(
+              EmojiPopup,
+              {},
+              event.target as HTMLElement,
+              async (result) => {
+                const emoji = result?.emoji
+                if (emoji == null) {
+                  return
+                }
+
+                await toggleReaction(message, emoji)
+              },
+              () => {}
+            )
+          }
+        },
+        {
+          label: uiNext.string.Reply,
+          icon: IconMessageMultiple,
+          action: async (): Promise<void> => {
+            dispatch('reply', message)
+          }
+        }
+      ]
+
+      if (canEdit()) {
+        actions.unshift({
+          label: uiNext.string.Edit,
+          icon: IconPen,
+          action: handleEdit
+        })
+      }
+
+      showPopup(Menu, { actions }, getEventPositionElement(event), () => {})
+    }
+  }
+
+  let isActionsOpened = false
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="message" id={message.id.toString()}>
+<div
+  class="message"
+  id={message.id.toString()}
+  on:contextmenu={handleContextMenu}
+  class:active={isActionsOpened && !isEditing}
+>
+  {#if !isEditing}
+    <div class="message__actions" class:opened={isActionsOpened}>
+      <MessageActionsPanel
+        {message}
+        editable={canEdit()}
+        bind:isOpened={isActionsOpened}
+        on:edit={handleEdit}
+        on:reply={() => {
+          dispatch('reply', message)
+        }}
+      />
+    </div>
+  {/if}
   <div class="message__body">
-    <!--TODO: remove  on:contextmenu-->
-    <div class="message__avatar" on:contextmenu={handleContextMenu}>
+    <div class="message__avatar">
       <PersonPreviewProvider value={author}>
         <Avatar name={author?.name} avatar={author} size={AvatarSize.Small} />
       </PersonPreviewProvider>
@@ -157,11 +213,19 @@
         {/if}
       </div>
       {#if !isEditing}
-        <div class="message__text overflow-label">
+        <div class="message__text">
           <MessageContentViewer {message} {card} />
         </div>
       {:else}
-        <MessageInput cardId={message.card} {message} content={toMarkup(message.content)} onCancel={handleCancelEdit} />
+        <MessageInput
+          cardId={message.card}
+          {message}
+          content={toMarkup(message.content)}
+          onCancel={handleCancelEdit}
+          on:edited={() => {
+            isEditing = false
+          }}
+        />
       {/if}
     </div>
   </div>
@@ -177,8 +241,8 @@
       <ReactionsList reactions={message.reactions} on:click={handleReaction} />
     </div>
   {/if}
-  {#if message.thread && message.thread.repliesCount > 0}
-    <div class="message__replies">
+  {#if replies && message.thread && message.thread.repliesCount > 0}
+    <div class="message__replies overflow-label">
       <MessageReplies
         count={message.thread.repliesCount}
         lastReply={message.thread.lastReply}
@@ -195,7 +259,19 @@
     align-items: flex-start;
     align-self: stretch;
     min-width: 0;
-    overflow: hidden;
+    position: relative;
+    padding: 1rem 2rem;
+
+    &:hover {
+      background: var(--next-message-hover-color-background);
+      .message__actions {
+        visibility: visible;
+      }
+    }
+
+    &.active {
+      background: var(--next-message-hover-color-background);
+    }
   }
 
   .message__body {
@@ -204,6 +280,7 @@
     gap: 0.75rem;
     align-self: stretch;
     min-width: 0;
+    overflow: hidden;
   }
 
   .message__avatar {
@@ -260,6 +337,7 @@
     overflow: hidden;
     min-width: 0;
     max-width: 100%;
+    user-select: text;
   }
 
   .message__reactions {
@@ -269,12 +347,29 @@
 
   .message__replies {
     padding-top: 0.5rem;
-    margin-left: 2.75rem;
+    margin-left: 2.25rem;
     padding-bottom: 0;
+    display: flex;
+    align-items: flex-start;
+    align-self: stretch;
+    overflow: hidden;
   }
+
   .message__files {
     display: flex;
     gap: 0.375rem;
     overflow-x: auto;
+    margin-left: 2.75rem;
+  }
+
+  .message__actions {
+    position: absolute;
+    top: -0.75rem;
+    right: 1rem;
+    visibility: hidden;
+
+    &.opened {
+      visibility: visible;
+    }
   }
 </style>

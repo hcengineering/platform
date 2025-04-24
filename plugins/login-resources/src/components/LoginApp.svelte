@@ -55,6 +55,7 @@
   export let page: Pages = 'signup'
 
   const signUpDisabled = getMetadata(login.metadata.DisableSignUp) ?? false
+  const useOTP = getMetadata(presentation.metadata.MailUrl) != null && getMetadata(presentation.metadata.MailUrl) !== ''
   let navigateUrl: string | undefined
 
   onDestroy(location.subscribe(updatePageLoc))
@@ -149,9 +150,9 @@
         <Scroller padding={'1rem 0'}>
           <div class="form-content">
             {#if page === 'login'}
-              <LoginForm {navigateUrl} {signUpDisabled} />
+              <LoginForm {navigateUrl} {signUpDisabled} {useOTP} />
             {:else if page === 'signup'}
-              <SignupForm {navigateUrl} {signUpDisabled} />
+              <SignupForm {navigateUrl} {signUpDisabled} {useOTP} />
             {:else if page === 'createWorkspace'}
               <CreateWorkspaceForm />
             {:else if page === 'password'}

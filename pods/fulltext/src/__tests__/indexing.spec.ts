@@ -127,7 +127,7 @@ describe('full-text-indexing', () => {
     const queue = new TestQueue(toolCtx)
     await queue.start()
     try {
-      const txProducer = queue.queue.createProducer<Tx>(toolCtx, QueueTopic.Tx)
+      const txProducer = queue.queue.getProducer<Tx>(toolCtx, QueueTopic.Tx)
       const personId = randomUUID().toString() as PersonUuid
       const wsId: WorkspaceUuid = randomUUID().toString() as WorkspaceUuid
       const token = generateToken(personId, wsId)
@@ -184,7 +184,7 @@ describe('full-text-indexing', () => {
     const queue = new TestQueue(toolCtx)
     await queue.start()
     const { pipeline, wsIds } = await preparePipeline(toolCtx, queue.queue, false) // Do not use broadcast
-    const wsProcessor = queue.queue.createProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
+    const wsProcessor = queue.queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
     try {
       const pipelineClient = wrapPipeline(toolCtx, pipeline, wsIds)
 

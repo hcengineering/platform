@@ -36,6 +36,7 @@
     "@hcengineering/drive": "^0.6.0",
     "@hcengineering/love": "^0.6.0",
     "@hcengineering/love-resources": "^0.6.0",
+    "@hcengineering/media": "^0.6.0",
     "@hcengineering/model": "^0.6.11",
     "@hcengineering/model-calendar": "^0.6.0",
     "@hcengineering/model-core": "^0.6.0",

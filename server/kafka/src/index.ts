@@ -57,7 +57,7 @@ function getKafkaTopicId (topic: QueueTopic | string, config: QueueConfig): stri
 
 class PlatformQueueImpl implements PlatformQueue {
   consumers: ConsumerHandle[] = []
-  producers: PlatformQueueProducerImpl[] = []
+  producers = new Map<QueueTopic | string, PlatformQueueProducerImpl>()
   constructor (
     private readonly kafka: Kafka,
     readonly config: QueueConfig
@@ -68,7 +68,7 @@ class PlatformQueueImpl implements PlatformQueue {
   }
 
   async shutdown (): Promise<void> {
-    for (const p of this.producers) {
+    for (const [, p] of this.producers) {
       try {
         await p.close()
       } catch (err: any) {
@@ -84,10 +84,14 @@ class PlatformQueueImpl implements PlatformQueue {
     }
   }
 
-  createProducer<T>(ctx: MeasureContext, topic: QueueTopic | string): PlatformQueueProducer<T> {
-    const result = new PlatformQueueProducerImpl(ctx, this.kafka, getKafkaTopicId(topic, this.config), this)
-    this.producers.push(result)
-    return result
+  getProducer<T>(ctx: MeasureContext, topic: QueueTopic | string): PlatformQueueProducer<T> {
+    const producer = this.producers.get(topic)
+    if (producer !== undefined && !producer.isClosed()) return producer
+
+    const created = new PlatformQueueProducerImpl(ctx, this.kafka, getKafkaTopicId(topic, this.config), this)
+    this.producers.set(topic, created)
+
+    return created
   }
 
   createConsumer<T>(
@@ -152,6 +156,8 @@ class PlatformQueueImpl implements PlatformQueue {
 class PlatformQueueProducerImpl implements PlatformQueueProducer<any> {
   txProducer: Producer
   connected: Promise<void> | undefined
+  private closed = false
+
   constructor (
     readonly ctx: MeasureContext,
     kafka: Kafka,
@@ -185,7 +191,12 @@ class PlatformQueueProducerImpl implements PlatformQueueProducer<any> {
     )
   }
 
+  isClosed (): boolean {
+    return this.closed
+  }
+
   async close (): Promise<void> {
+    this.closed = true
     await this.ctx.with('disconnect', {}, () => this.txProducer.disconnect())
   }
 }

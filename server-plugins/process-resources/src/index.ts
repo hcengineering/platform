@@ -14,6 +14,7 @@
 //
 
 import card, { Card } from '@hcengineering/card'
+import contact, { Employee } from '@hcengineering/contact'
 import core, {
   ArrOf,
   Doc,
@@ -40,6 +41,7 @@ import process, {
   ProcessError,
   ProcessToDo,
   SelectedContext,
+  SelectedContextFunc,
   SelectedNested,
   SelectedRelation,
   SelectedUserRequest,
@@ -342,6 +344,8 @@ async function getContextValue (value: any, control: TriggerControl, execution: 
         value = await getNestedValue(control, execution, context)
       } else if (context.type === 'userRequest') {
         value = getUserRequestValue(control, execution, context)
+      } else if (context.type === 'function') {
+        value = await getFunctionValue(control, execution, context)
       }
       return await fillValue(value, context, control, execution)
     } catch (err: any) {
@@ -353,6 +357,39 @@ async function getContextValue (value: any, control: TriggerControl, execution: 
   } else {
     return value
   }
+}
+
+async function getFunctionValue (
+  control: TriggerControl,
+  execution: Execution,
+  context: SelectedContextFunc
+): Promise<any> {
+  const func = control.modelDb.findObject(context.func)
+  if (func === undefined) throw processError(process.error.MethodNotFound, { methodId: context.func }, {}, true)
+  const impl = control.hierarchy.as(func, serverProcess.mixin.FuncImpl)
+  if (impl === undefined) throw processError(process.error.MethodNotFound, { methodId: context.func }, {}, true)
+  const f = await getResource(impl.func)
+  const res = await f(null, context.props, control, execution)
+  if (context.sourceFunction !== undefined) {
+    const transform = control.modelDb.findObject(context.sourceFunction)
+    if (transform === undefined) {
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+    }
+    if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) {
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+    }
+    const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
+    const f = await getResource(funcImpl.func)
+    const val = await f(res, {}, control, execution)
+    if (val == null) {
+      throw processError(process.error.EmptyFunctionResult, {}, { func: func.label })
+    }
+    return val
+  }
+  if (res == null) {
+    throw processError(process.error.EmptyFunctionResult, {}, { func: func.label })
+  }
+  return res
 }
 
 function getUserRequestValue (control: TriggerControl, execution: Execution, context: SelectedUserRequest): any {
@@ -682,6 +719,18 @@ export function Trim (value: string): string {
   return value.trim()
 }
 
+export async function RoleContext (
+  value: null,
+  props: Record<string, any>,
+  control: TriggerControl,
+  execution: Execution
+): Promise<Ref<Employee>[]> {
+  const targetRole = props.target
+  if (targetRole === undefined) return []
+  const users = await control.findAll(control.ctx, contact.class.UserRole, { role: targetRole })
+  return users.map((it) => it.user)
+}
+
 export async function Add (
   value: number,
   props: Record<string, any>,
@@ -787,7 +836,8 @@ export default async () => ({
     Add,
     Subtract,
     Offset,
-    FirstWorkingDayAfter
+    FirstWorkingDayAfter,
+    RoleContext
   },
   trigger: {
     OnExecutionCreate,

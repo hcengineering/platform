@@ -34,7 +34,7 @@
   $: action = message.data.action
 </script>
 
-<span class="flex-center flex-gap-1">
+<span class="flex flex-gap-1 overflow-label">
   {#if clazz.icon}
     <span class="icon mr-1">
       <Icon icon={clazz.icon} size="small" />
@@ -54,7 +54,7 @@
     disabled={action === 'remove'}
     accent={true}
     component={objectPanel?.component ?? view.component.EditDoc}
-    shrink={0}
+    shrink={1}
   >
     {card.title}
   </DocNavLink>

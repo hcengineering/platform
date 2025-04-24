@@ -24,7 +24,7 @@ describe('queue', () => {
         })
       })
 
-      const producer = queue.createProducer<string>(testCtx, 'qtest')
+      const producer = queue.getProducer<string>(testCtx, 'qtest')
       for (let i = 0; i < docsCount; i++) {
         await producer.send(genId, ['msg' + i])
       }
@@ -54,7 +54,7 @@ describe('queue', () => {
         })
       })
 
-      const producer = queue.createProducer<string>(testCtx, 'test')
+      const producer = queue.getProducer<string>(testCtx, 'test')
       await producer.send(genId, ['msg'])
 
       await p

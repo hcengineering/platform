@@ -62,6 +62,7 @@
   {attribute}
   {presenterClass}
   {value}
+  masterTag={process.masterTag}
   {allowRemove}
   on:remove
   on:change={(e) => {

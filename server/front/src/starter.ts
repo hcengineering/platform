@@ -119,6 +119,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   const disableSignUp = process.env.DISABLE_SIGNUP
 
+  const mailUrl = process.env.MAIL_URL
+
   const config = {
     storageAdapter,
     accountsUrl,
@@ -139,7 +141,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     pushPublicKey,
     disableSignUp,
     linkPreviewUrl,
-    streamUrl
+    streamUrl,
+    mailUrl
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)

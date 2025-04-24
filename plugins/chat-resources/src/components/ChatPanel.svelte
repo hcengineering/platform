@@ -16,6 +16,7 @@
 <script lang="ts">
   import { Card } from '@hcengineering/card'
   import { NotificationContext } from '@hcengineering/communication-types'
+  import { Presence } from '@hcengineering/presence-resources'
 
   import ChatHeader from './ChatHeader.svelte'
   import ChatBody from './ChatBody.svelte'
@@ -27,6 +28,7 @@
   let footerHeight: number | undefined = undefined
 </script>
 
+<Presence object={card} />
 <ChatHeader {card} />
 {#key card._id}
   <ChatBody {card} {footerHeight} {context} />
