@@ -66,7 +66,6 @@ export async function getOrCreateSocialId (account: AccountUuid, email: string):
     }
   }
 
-  // TODO: proper handle if connected to other account
   if (socialId.personUuid !== account) {
     throw new Error('Social id connected to another account')
   }

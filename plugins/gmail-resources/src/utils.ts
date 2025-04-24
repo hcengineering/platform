@@ -1,6 +1,8 @@
+import { get } from 'svelte/store'
 import { getName as getContactName } from '@hcengineering/contact'
 import contact, { type Channel, type Contact } from '@hcengineering/contact'
-import { type Client, type Doc, type Ref } from '@hcengineering/core'
+import { personByPersonIdStore, employeeBySocialKeyStore } from '@hcengineering/contact-resources'
+import { buildSocialIdString, type PersonId, SocialIdType, type Client, type Doc, type Ref } from '@hcengineering/core'
 import { type Message, type SharedMessage } from '@hcengineering/gmail'
 import { getClient } from '@hcengineering/presentation'
 import gmail from './plugin'
@@ -60,6 +62,9 @@ export async function checkHasEmail (doc: Doc | Doc[] | undefined): Promise<bool
   return true
 }
 
+const EMAIL_REGEX =
+  /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
+
 export function convertMessages (object: Contact, channel: Channel, messages: Message[]): SharedMessage[] {
   return messages.map((m) => {
     return {
@@ -84,13 +89,26 @@ export function getName (object: Contact, channel: Channel, message: Message, se
   const h = getClient().getHierarchy()
   if (message._class === gmail.class.NewMessage) {
     if (!sender) return `${getContactName(h, object)} (${channel.value})`
-    return message.from ?? message.createdBy ?? message.modifiedBy
+    return getPersonName(message.from ?? message.createdBy ?? message.modifiedBy)
   }
   if (message.incoming === sender) {
     return `${getContactName(h, object)} (${channel.value})`
   } else {
-    return message.modifiedBy
+    return getPersonName(message.modifiedBy)
   }
+}
+
+export function getPersonName (emailOrId: string): string {
+  const personName = get(personByPersonIdStore).get(emailOrId as PersonId)?.name
+  if (personName != null) return personName
+  const emailSearch = emailOrId.match(EMAIL_REGEX)
+  const email = emailSearch?.[0]
+  if (email != null && email !== '') {
+    const socialId = buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
+    const name = get(employeeBySocialKeyStore).get(socialId)?.name
+    if (name != null) return name
+  }
+  return emailOrId
 }
 
 export async function MessageTitleProvider (client: Client, ref: Ref<Message>, doc?: Message): Promise<string> {
