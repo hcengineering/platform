@@ -42,7 +42,7 @@
 
   let selectedVisibilityId = visibilityOptions[0].id
   let channelName = ''
-  let description = ''
+  let topic = ''
   let canSave = true
 
   $: visibilityIcon = visibilityOptions.find(({ id }) => id === selectedVisibilityId)?.icon ?? visibilityOptions[0].icon
@@ -65,7 +65,7 @@
       private: selectedVisibilityId === 'private',
       archived: false,
       members: [account._id],
-      topic: description,
+      topic,
       owners: [account._id]
     })
 
@@ -89,12 +89,12 @@
   <div class="hulyModal-content__titleGroup" style="padding: 0">
     <ModernEditbox bind:value={channelName} label={chunter.string.NewChannel} size="large" kind="ghost" />
     <TextArea
-      placeholder={chunter.string.DescriptionOptional}
+      placeholder={chunter.string.TopicOptional}
       width="100%"
       height="6.5rem"
       margin="var(--spacing-1) var(--spacing-2)"
       noFocusBorder
-      bind:value={description}
+      bind:value={topic}
     />
   </div>
   <div class="hulyModal-content__settingsSet">
