@@ -42,7 +42,7 @@ import {
   RoomType,
   TranscriptionStatus
 } from '@hcengineering/love'
-import media, { getSelectedCamId, getSelectedMicId, getSelectedSpeakerId } from '@hcengineering/media'
+import { getSelectedCamId, getSelectedMicId, getSelectedSpeakerId } from '@hcengineering/media'
 import { useMedia } from '@hcengineering/media-resources'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {

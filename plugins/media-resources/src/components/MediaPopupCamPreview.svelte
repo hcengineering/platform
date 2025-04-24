@@ -21,7 +21,7 @@
   let stream: MediaStream | null = null
   let video: HTMLVideoElement | null = null
 
-  async function releaseStream (stream: MediaStream): Promise<void> {
+  async function releaseStream (stream: MediaStream | null): Promise<void> {
     if (stream !== null) {
       stream.getTracks().forEach((track) => {
         track.stop()
