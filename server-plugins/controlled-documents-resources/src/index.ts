@@ -66,8 +66,13 @@ function archiveDocs (docs: ControlledDocument[], txFactory: TxFactory): Tx[] {
 
   for (const doc of docs) {
     res.push(
-      txFactory.createTxUpdateDoc<ControlledDocument>(doc._class, doc.space, doc._id, { state: DocumentState.Archived }),
-      txFactory.createTxUpdateDoc<ControlledDocument>(doc._class, doc.space, doc._id, { $unset: { controlledState: true } }))
+      txFactory.createTxUpdateDoc<ControlledDocument>(doc._class, doc.space, doc._id, {
+        state: DocumentState.Archived
+      }),
+      txFactory.createTxUpdateDoc<ControlledDocument>(doc._class, doc.space, doc._id, {
+        $unset: { controlledState: true }
+      })
+    )
   }
 
   return res
@@ -279,7 +284,10 @@ export async function OnDocHasBecomeEffective (
   return result
 }
 
-export async function OnDocEnteredNonActionableState (txes: TxUpdateDoc<ControlledDocument>[], control: TriggerControl): Promise<Tx[]> {
+export async function OnDocEnteredNonActionableState (
+  txes: TxUpdateDoc<ControlledDocument>[],
+  control: TriggerControl
+): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
     const requests = await control.findAll(control.ctx, documents.class.DocumentRequest, {
