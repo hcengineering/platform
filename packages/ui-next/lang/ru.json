@@ -25,6 +25,8 @@
     "WeekdayAt": "{weekday} в {time}",
     "YearAt": "{year} в {time}",
     "Yesterday": "Вчера",
-    "YesterdayAt": "Вчера в {time}"
+    "YesterdayAt": "Вчера в {time}",
+    "AndMore": "и еще {count}",
+    "IsTyping": "{count, plural, =1 {печатает} other {печатают}}..."
   }
 }

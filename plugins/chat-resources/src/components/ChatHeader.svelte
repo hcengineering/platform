@@ -18,6 +18,7 @@
   import { Header, Icon } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import { Asset } from '@hcengineering/platform'
+  import { PresenceAvatars } from '@hcengineering/presence-resources'
 
   export let card: Card | undefined = undefined
   export let canClose: boolean = false
@@ -46,6 +47,12 @@
       >{card?.title ?? title}</span
     >
   </div>
+
+  <svelte:fragment slot="presence">
+    {#if card}
+      <PresenceAvatars object={card} size="x-small" limit={5} />
+    {/if}
+  </svelte:fragment>
 </Header>
 
 <style lang="scss">

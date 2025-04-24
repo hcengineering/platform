@@ -15,11 +15,13 @@
 
 <script lang="ts">
   import { Card } from '@hcengineering/card'
+  import { UploadedFile } from '@hcengineering/ui-next'
 
   import ChatInput from './ChatInput.svelte'
 
-  export let card: Card
+  export let card: Card | undefined = undefined
   export let height: number | undefined = undefined
+  export let onSubmit: ((markdown: string, files: UploadedFile[]) => Promise<void>) | undefined = undefined
 
   let _height: number | undefined | null
 
@@ -30,7 +32,7 @@
 </script>
 
 <div class="chat__footer" bind:clientHeight={_height}>
-  <ChatInput {card} />
+  <ChatInput {card} {onSubmit} />
 </div>
 
 <style lang="scss">
@@ -39,7 +41,8 @@
     width: 100%;
     flex-direction: column;
     align-items: flex-start;
-    padding: 12px;
+    padding: 1.25rem 0.75rem;
+    padding-bottom: 0;
 
     border-top: 1px solid var(--next-divider-color);
     backdrop-filter: blur(5px);
