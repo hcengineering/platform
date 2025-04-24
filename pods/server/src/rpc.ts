@@ -133,7 +133,12 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
   async function withSession (
     req: Request,
     res: ExpressResponse,
-    operation: (ctx: ClientSessionCtx, session: Session, rateLimit: RateLimitInfo | undefined, token: string) => Promise<void>
+    operation: (
+      ctx: ClientSessionCtx,
+      session: Session,
+      rateLimit: RateLimitInfo | undefined,
+      token: string
+    ) => Promise<void>
   ): Promise<void> {
     try {
       if (req.params.workspaceId === undefined || req.params.workspaceId === '') {
