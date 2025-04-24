@@ -13,172 +13,55 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import {
-    cleanupDeviceLabel,
-    enumerateDevices,
-    updateSelectedCamId,
-    updateSelectedMicId,
-    updateSelectedSpeakerId
-  } from '@hcengineering/media'
-  import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import { ComponentExtensions } from '@hcengineering/presentation'
-  import { DropdownIntlItem, eventToHTMLElement, showPopup } from '@hcengineering/ui'
 
   import media from '../plugin'
-  import { camAccess, micAccess, state, sessions } from '../stores'
-  import { getSelectedCam, getSelectedMic, getSelectedSpeaker } from '../utils'
 
-  import CamSettingsPopup from './CamSettingsPopup.svelte'
-  import MediaPopupButton from './MediaPopupButton.svelte'
-  import NextSelectPopup from './NextSelectPopup.svelte'
-  import IconCamOn from './icons/CamOn.svelte'
-  import IconCamOff from './icons/CamOff.svelte'
-  import IconMicOn from './icons/MicOn.svelte'
-  import IconMicOff from './icons/MicOff.svelte'
-  import IconSpeaker from './icons/Speaker.svelte'
+  import MediaPopupCamSelector from './MediaPopupCamSelector.svelte'
+  import MediaPopupMicSelector from './MediaPopupMicSelector.svelte'
+  import MediaPopupSpkSelector from './MediaPopupSpkSelector.svelte'
 
-  let selectedMic: MediaDeviceInfo | null | undefined = undefined
-  let selectedCam: MediaDeviceInfo | null | undefined = undefined
-  let selectedSpk: MediaDeviceInfo | null | undefined = undefined
+  let micOpened = false
+  let camOpened = false
+  let spkOpened = false
 
-  function getDeviceLabel (device: MediaDeviceInfo): IntlString {
-    return getEmbeddedLabel(cleanupDeviceLabel(device.label))
-  }
-
-  async function fetchSelectedMic (): Promise<void> {
-    selectedMic = await getSelectedMic()
-  }
-
-  async function fetchSelectedCam (): Promise<void> {
-    selectedCam = await getSelectedCam()
-  }
-
-  async function fetchSelectedSpk (): Promise<void> {
-    selectedSpk = await getSelectedSpeaker()
-  }
-
-  async function showMicSettings (ev: MouseEvent): Promise<void> {
-    // TODO We should list all devices while requesting some device so we can have all names
-    const devices = await enumerateDevices('audioinput', $micAccess.state !== 'granted')
-
-    const items: DropdownIntlItem[] = devices.map((p) => {
-      return {
-        id: p.deviceId,
-        label: getDeviceLabel(p)
-      }
-    })
-
-    const onSelect = (deviceId: string | undefined): void => {
-      updateSelectedMicId(deviceId)
-      void fetchSelectedMic()
-
-      $sessions.forEach((p) => {
-        p.emit('selected-microphone', deviceId ?? 'default')
-      })
+  function handleMicExpanded (ev: CustomEvent<boolean>): void {
+    micOpened = ev.detail
+    if (micOpened) {
+      camOpened = false
+      spkOpened = false
     }
-
-    showPopup(
-      NextSelectPopup,
-      {
-        label: media.string.Microphone,
-        items,
-        selected: selectedMic?.deviceId,
-        onSelect
-      },
-      eventToHTMLElement(ev)
-    )
   }
 
-  async function showSpkSettings (ev: MouseEvent): Promise<void> {
-    const devices = await enumerateDevices('audiooutput', $micAccess.state !== 'granted')
-
-    const items: DropdownIntlItem[] = devices.map((p) => {
-      return {
-        id: p.deviceId,
-        label: getDeviceLabel(p)
-      }
-    })
-
-    const onSelect = (deviceId: string | undefined): void => {
-      updateSelectedSpeakerId(deviceId)
-      void fetchSelectedSpk()
-      $sessions.forEach((p) => {
-        p.emit('selected-speaker', deviceId ?? 'default')
-      })
+  function handleCamExpanded (ev: CustomEvent<boolean>): void {
+    camOpened = ev.detail
+    if (camOpened) {
+      micOpened = false
+      spkOpened = false
     }
-
-    showPopup(
-      NextSelectPopup,
-      {
-        label: media.string.Speaker,
-        items,
-        selected: selectedSpk?.deviceId,
-        onSelect
-      },
-      eventToHTMLElement(ev)
-    )
   }
 
-  async function showCamSettings (ev: MouseEvent): Promise<void> {
-    const devices = await enumerateDevices('videoinput', $camAccess.state !== 'granted')
-
-    const selected = selectedCam
-    showPopup(
-      CamSettingsPopup,
-      { devices, selected },
-      eventToHTMLElement(ev),
-      () => {},
-      (deviceId: string | undefined) => {
-        updateSelectedCamId(deviceId)
-        void fetchSelectedCam()
-        $sessions.forEach((p) => {
-          p.emit('selected-camera', deviceId ?? 'default')
-        })
-      }
-    )
+  function handleSpkExpanded (ev: CustomEvent<boolean>): void {
+    spkOpened = ev.detail
+    if (spkOpened) {
+      micOpened = false
+      camOpened = false
+    }
   }
-
-  $: void fetchSelectedCam()
-  $: void fetchSelectedMic()
-  $: void fetchSelectedSpk()
 </script>
 
-<div class="antiPopup thinStyle">
+<div class="antiPopup mediaPopup">
   <div class="ap-space" />
 
   <ComponentExtensions extension={media.extension.StateContext} />
 
   <div class="ap-scroll">
     <div class="ap-box">
-      <MediaPopupButton
-        label={selectedMic == null ? media.string.DefaultMic : getDeviceLabel(selectedMic)}
-        icon={selectedMic !== null ? IconMicOn : IconMicOff}
-        disabled={$micAccess.state === 'denied'}
-        status={$state.microphone === undefined ? undefined : $state.microphone.enabled ? 'on' : 'off'}
-        submenu
-        on:click={showMicSettings}
-      />
-
-      <div class="ap-menuItem separator halfMargin" />
-
-      <MediaPopupButton
-        label={selectedSpk == null ? media.string.DefaultSpeaker : getDeviceLabel(selectedSpk)}
-        icon={IconSpeaker}
-        disabled={$micAccess.state === 'denied'}
-        submenu
-        on:click={showSpkSettings}
-      />
-
-      <div class="ap-menuItem separator halfMargin" />
-
-      <MediaPopupButton
-        label={selectedCam == null ? media.string.DefaultCam : getDeviceLabel(selectedCam)}
-        icon={selectedCam !== null ? IconCamOn : IconCamOff}
-        disabled={$camAccess.state === 'denied'}
-        status={$state.camera === undefined ? undefined : $state.camera.enabled ? 'on' : 'off'}
-        submenu
-        on:click={showCamSettings}
-      />
+      <MediaPopupMicSelector bind:expanded={micOpened} on:expand={handleMicExpanded} />
+      <div class="separator" />
+      <MediaPopupSpkSelector bind:expanded={spkOpened} on:expand={handleSpkExpanded} />
+      <div class="separator" />
+      <MediaPopupCamSelector bind:expanded={camOpened} on:expand={handleCamExpanded} />
     </div>
   </div>
 
@@ -186,7 +69,12 @@
 </div>
 
 <style lang="scss">
-  .antiPopup {
+  .mediaPopup {
     width: 20rem;
+  }
+
+  .separator {
+    border-top: 1px solid var(--theme-divider-color);
+    width: 100%;
   }
 </style>

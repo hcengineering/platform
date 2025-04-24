@@ -10,6 +10,9 @@
     "TurnOffCam": "カメラをオフにする",
     "TurnOnMic": "マイクをオンにする",
     "TurnOffMic": "マイクをオフにする",
+    "NoCam": "カメラなし",
+    "NoMic": "マイクなし",
+    "NoSpeaker": "スピーカーなし",
     "On": "オン",
     "Off": "オフ"
   }

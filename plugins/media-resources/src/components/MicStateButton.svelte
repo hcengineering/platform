@@ -41,7 +41,7 @@
     kind={'icon'}
     size={'x-small'}
     padding={'0 .5rem'}
-    showTooltip={{ label: state.enabled ? media.string.TurnOffMic : media.string.TurnOnMic }}
+    showTooltip={{ label: state.enabled ? media.string.TurnOffMic : media.string.TurnOnMic, direction: 'bottom' }}
     on:click={handleClick}
   />
 {/if}

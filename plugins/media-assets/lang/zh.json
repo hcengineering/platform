@@ -10,6 +10,9 @@
     "TurnOffCam": "关闭摄像头",
     "TurnOnMic": "打开麦克风",
     "TurnOffMic": "关闭麦克风",
+    "NoCam": "没有摄像头",
+    "NoMic": "没有麦克风",
+    "NoSpeaker": "没有扬声器",
     "On": "开",
     "Off": "关"
   }

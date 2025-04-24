@@ -10,6 +10,9 @@
     "TurnOffCam": "Éteindre la caméra",
     "TurnOnMic": "Allumer le microphone",
     "TurnOffMic": "Éteindre le microphone",
+    "NoCam": "Aucune caméra",
+    "NoMic": "Aucun microphone",
+    "NoSpeaker": "Aucun haut-parleur",
     "On": "Allumé",
     "Off": "Éteint"
   }

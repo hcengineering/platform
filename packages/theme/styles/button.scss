@@ -54,6 +54,7 @@
   }
   &.extra-small {
     height: var(--global-extra-small-Size);
+    gap: var(--spacing-0_5);
     border-radius: var(--extra-small-BorderRadius);
 
     &.round { border-radius: var(--large-BorderRadius); }
@@ -323,7 +324,7 @@
     &:active,
     &.pressed,
     &.pressed:hover { background-color: var(--theme-button-pressed); }
-    &:focus {
+    &:not(.no-focus):focus {
       background-color: var(--theme-button-focused);
       outline: 2px solid var(--global-focus-BorderColor);
       outline-offset: 2px;
@@ -447,7 +448,7 @@
     &:active,
     &.pressed,
     &.pressed:hover { background-color: var(--primary-button-pressed); }
-    &:focus { background-color: var(--primary-button-focused); }
+    &:not(.no-focus):focus { background-color: var(--primary-button-focused); }
     &:disabled {
       color: var(--primary-button-disabled-color);
       background-color: var(--primary-button-disabled);
@@ -463,7 +464,7 @@
     &:active,
     &.pressed,
     &.pressed:hover { background-color: var(--secondary-button-pressed); }
-    &:focus { background-color: var(--secondary-button-focused); }
+    &:not(.no-focus):focus { background-color: var(--secondary-button-focused); }
     &:disabled {
       color: var(--secondary-button-disabled-color);
       background-color: var(--secondary-button-disabled);
@@ -475,7 +476,7 @@
     &:active,
     &.pressed,
     &.pressed:hover { background-color: var(--positive-button-pressed); }
-    &:focus { background-color: var(--positive-button-focused); }
+    &:not(.no-focus):focus { background-color: var(--positive-button-focused); }
     &:disabled {
       color: var(--positive-button-disabled-color);
       background-color: var(--positive-button-disabled);
@@ -487,7 +488,7 @@
     &:active,
     &.pressed,
     &.pressed:hover { background-color: var(--negative-button-pressed); }
-    &:focus { background-color: var(--negative-button-focused); }
+    &:not(.no-focus):focus { background-color: var(--negative-button-focused); }
     &:disabled {
       color: var(--negative-button-disabled-color);
       background-color: var(--negative-button-disabled);
@@ -507,7 +508,7 @@
     &:active,
     &.pressed,
     &.pressed:hover { background-color: var(--theme-button-contrast-pressed); }
-    &:focus { background-color: var(--theme-button-contrast-hovered); }
+    &:not(.no-focus):focus { background-color: var(--theme-button-contrast-hovered); }
     &:disabled {
       color: var(--theme-button-contrast-disabled-color);
       background-color: var(--theme-button-contrast-disabled);
@@ -571,7 +572,7 @@
 
     .btn-icon { color: var(--theme-dark-color); }
 
-    &:hover, &:focus, &.selected { background-color: var(--theme-button-icon-hovered); }
+    &:hover, &:not(.no-focus):focus, &.selected { background-color: var(--theme-button-icon-hovered); }
     &:active { background-color: var(--theme-button-icon-pressed); }
     &:hover, &:focus, &.selected, &:active {
       .btn-icon { color: var(--theme-caption-color); }
@@ -759,7 +760,7 @@
         &.pressed:hover {
           background-color: var(--button-secondary-active-BackgroundColor);
         }
-        &:focus {
+        &:not(.no-focus):focus {
           color: var(--theme-caption-color);
           background-color: var(--theme-button-focused);
         }
@@ -795,7 +796,7 @@
         &.pressed:hover {
           background-color: var(--primary-button-pressed);
         }
-        &:focus {
+        &:not(.no-focus):focus {
           background-color: var(--primary-button-focused);
         }
       }

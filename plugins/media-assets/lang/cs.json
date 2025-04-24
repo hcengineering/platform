@@ -10,6 +10,9 @@
     "TurnOffCam": "Vypnout kameru",
     "TurnOnMic": "Zapnout mikrofon",
     "TurnOffMic": "Vypnout mikrofon",
+    "NoCam": "Žádná kamera",
+    "NoMic": "Žádný mikrofon",
+    "NoSpeaker": "Žádný reproduktor",
     "On": "Zapnuto",
     "Off": "Vypnuto"
   }

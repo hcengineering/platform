@@ -14,11 +14,15 @@
   $: isMyOffice = $myInfo?.room === $myOffice?._id
   $: allowLeave = !isMyOffice && $myInfo?.room !== love.ids.Reception
 
+  let leaving = false
   async function handleLeaveClick (): Promise<void> {
+    leaving = true
     await leaveRoom($myInfo, $myOffice)
   }
 
+  let ending = false
   async function handleEndMeetingClick (): Promise<void> {
+    ending = true
     const room = $currentRoom
     if (room !== undefined && isOffice(room) && $myInfo !== undefined) {
       await endMeeting(room, $rooms, $infos, $myInfo)
@@ -53,7 +57,7 @@
   {@const participants = $infos.filter((p) => p.room === $currentRoom._id)}
   {@const overLimit = participants.length > limit}
 
-  <div class="pt-1 pr-4 pb-2 pl-4">
+  <div class="mx-2 p-2">
     <div class="flex-col flex-grow flex-gap-1">
       <!-- subtitle -->
       {#if $currentMeetingMinutes !== undefined}
@@ -113,7 +117,7 @@
         {/if}
 
         <!-- Leave Button -->
-        {#if allowLeave}
+        {#if allowLeave || leaving}
           <Button
             icon={love.icon.LeaveRoom}
             kind={'negative'}
@@ -123,7 +127,7 @@
             padding={'0 .5rem'}
             on:click={handleLeaveClick}
           />
-        {:else if isMyOffice}
+        {:else if isMyOffice || ending}
           <Button
             icon={love.icon.LeaveRoom}
             kind={'negative'}
@@ -138,5 +142,12 @@
     </div>
   </div>
 
-  <div class="ap-menuItem separator halfMargin" />
+  <div class="separator" />
 {/if}
+
+<style lang="scss">
+  .separator {
+    border-top: 1px solid var(--theme-divider-color);
+    width: 100%;
+  }
+</style>
