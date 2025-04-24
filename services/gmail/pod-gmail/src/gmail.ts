@@ -112,7 +112,7 @@ export class GmailClient {
       this.workspace
     )
     const keyValueClient = getKvsClient(this.integrationToken)
-    this.syncManager = new SyncManager(ctx, this.messageManager, this.gmail, this.user.workspace, keyValueClient)
+    this.syncManager = new SyncManager(ctx, this.messageManager, this.gmail, this.user.workspace, keyValueClient, this.rateLimiter)
   }
 
   static async create (

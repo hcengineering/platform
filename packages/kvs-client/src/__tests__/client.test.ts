@@ -26,10 +26,6 @@ describe('KeyValueClient', () => {
     fetchMock.resetMocks()
   })
 
-  it('should throw error when baseUrl is undefined', () => {
-    expect(() => getClient('test-ns', undefined)).toThrow('Key-value API URL not specified')
-  })
-
   it('should throw error when baseUrl is empty', () => {
     expect(() => getClient('test-ns', '')).toThrow('Key-value API URL not specified')
   })

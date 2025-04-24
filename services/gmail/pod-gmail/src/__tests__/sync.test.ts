@@ -15,6 +15,7 @@
 import { MeasureContext, PersonId } from '@hcengineering/core'
 import { SyncManager, SyncMutex } from '../message/sync'
 import { MessageManager } from '../message/message'
+import { RateLimiter } from '../rateLimiter'
 
 jest.mock('../config')
 jest.mock('../message/message')
@@ -108,7 +109,7 @@ describe('SyncManager', () => {
     }
 
     // Create SyncManager instance
-    syncManager = new SyncManager(mockCtx, mockMessageManager, mockGmail, workspace, mockKeyValueClient as any)
+    syncManager = new SyncManager(mockCtx, mockMessageManager, mockGmail, workspace, mockKeyValueClient as any, new RateLimiter(100, 100))
   })
 
   afterEach(() => {

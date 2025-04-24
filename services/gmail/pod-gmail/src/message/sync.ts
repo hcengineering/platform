@@ -57,7 +57,6 @@ export class SyncMutex {
 }
 
 export class SyncManager {
-  private readonly rateLimiter = new RateLimiter(1000, 200)
   private readonly syncMutex = new SyncMutex()
 
   constructor (
@@ -65,7 +64,8 @@ export class SyncManager {
     private readonly messageManager: MessageManager,
     private readonly gmail: gmail_v1.Resource$Users,
     private readonly workspace: string,
-    private readonly keyValueClient: KeyValueClient
+    private readonly keyValueClient: KeyValueClient,
+    private readonly rateLimiter: RateLimiter
   ) {}
 
   private async getHistory (userId: PersonId): Promise<History | null> {
@@ -106,11 +106,12 @@ export class SyncManager {
       } catch (err: any) {
         this.ctx.error('Part sync get history error', { workspaceUuid: this.workspace, userId, error: err.message })
         await this.clearHistory(userId)
-        await this.sync(userId)
+        void this.sync(userId)
         return
       }
       const nextPageToken = histories.data.nextPageToken
       const array = histories.data.history ?? []
+      this.ctx.info('Messages to migrate', { count: array.length })
       try {
         for (const history of array) {
           for (const message of history.messagesAdded ?? []) {
@@ -202,6 +203,7 @@ export class SyncManager {
           this.ctx.error('Full sync message error', { workspace: this.workspace, userId, err })
         }
       }
+      this.ctx.info('Full sync finished', { workspaceUuid: this.workspace, userId, userEmail })
     } catch (err) {
       this.ctx.error('Full sync error', { workspace: this.workspace, userId, err })
     }
@@ -224,7 +226,6 @@ export class SyncManager {
       this.ctx.info('Sync history', { workspaceUuid: this.workspace, userId, userEmail })
 
       const history = await this.getHistory(userId)
-
       if (history?.historyId != null && history?.historyId !== '') {
         this.ctx.info('Start part sync', { workspaceUuid: this.workspace, userId, historyId: history.historyId })
         await this.partSync(userId, userEmail, history.historyId)
