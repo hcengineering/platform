@@ -46,7 +46,7 @@
   $: canChangeApprovers = isEditableDraft && (inCleanState || inApproval || inReview || isReviewed)
 
   $: reviewers = (reviewRequest?.requested as Ref<Employee>[]) ?? controlledDoc.reviewers
-  $: approvers = (reviewRequest?.requested as Ref<Employee>[]) ?? controlledDoc.approvers
+  $: approvers = (approvalRequest?.requested as Ref<Employee>[]) ?? controlledDoc.approvers
   $: coAuthors = controlledDoc.coAuthors
 
   const client = getClient()
