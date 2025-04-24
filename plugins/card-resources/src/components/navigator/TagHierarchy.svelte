@@ -35,8 +35,8 @@
     const result: MasterTag[] = []
     const desc = hierarchy.getDescendants(_class)
     for (const clazz of desc) {
-      const cls = hierarchy.getClass(clazz)
-      if (cls.extends === _class && cls._class === card.class.MasterTag) {
+      const cls = hierarchy.getClass(clazz) as MasterTag
+      if (cls.extends === _class && cls._class === card.class.MasterTag && cls.removed !== true) {
         result.push(cls)
       }
     }
