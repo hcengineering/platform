@@ -60,9 +60,6 @@ export async function checkHasEmail (doc: Doc | Doc[] | undefined): Promise<bool
   return true
 }
 
-// const EMAIL_REGEX =
-//   /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
-
 export function convertMessages (object: Contact, channel: Channel, messages: Message[]): SharedMessage[] {
   return messages.map((m) => {
     return {
@@ -95,38 +92,6 @@ export function getName (object: Contact, channel: Channel, message: Message, se
     return message.modifiedBy
   }
 }
-/*
-export function getName (
-  object: Contact,
-  channel: Channel,
-  message: Message,
-  integrations: Integration[],
-  accounts: any,
-  employees: IdMap<Employee>,
-  sender: boolean
-): string {
-  const h = getClient().getHierarchy()
-  if (message._class === gmail.class.NewMessage) {
-    if (!sender) return `${getContactName(h, object)} (${channel.value})`
-    const from = message.from ?? message.createdBy ?? message.modifiedBy
-    const account = accounts.get(from)
-    const emp = account != null ? employees.get(account?.person as Ref<Employee>) : undefined
-    const integration = integrations.find((p) => p.createdBy === from)
-    const email = integration?.value ?? integrations[0]?.value
-    return emp != null ? `${getContactName(h, emp)} (${email})` : email
-  }
-  if (message.incoming === sender) {
-    return `${getContactName(h, object)} (${channel.value})`
-  } else {
-    const account = accounts.get(message.modifiedBy)
-    const emp = account != null ? employees.get(account?.person as Ref<Employee>) : undefined
-    const value = message.incoming ? message.to : message.from
-    const email = value.match(EMAIL_REGEX)
-    const emailVal = email?.[0] ?? value
-    return emp != null ? `${getContactName(h, emp)} (${emailVal})` : emailVal
-  }
-}
-*/
 
 export async function MessageTitleProvider (client: Client, ref: Ref<Message>, doc?: Message): Promise<string> {
   const object = doc ?? (await client.findOne(gmail.class.Message, { _id: ref }))
