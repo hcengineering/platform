@@ -14,6 +14,9 @@
 //
 
 import {
+  PersonId,
+  PersonUuid,
+  SocialIdType,
   type Account,
   type Class,
   type Doc,
@@ -36,4 +39,10 @@ export interface RestClient extends Storage {
   ) => Promise<WithLookup<T> | undefined>
 
   getModel: () => Promise<{ hierarchy: Hierarchy, model: ModelDb }>
+  ensurePerson: (
+    socialType: SocialIdType,
+    socialValue: string,
+    firstName: string,
+    lastName: string
+  ) => Promise<{ uuid: PersonUuid, socialId: PersonId, localPerson: string }>
 }

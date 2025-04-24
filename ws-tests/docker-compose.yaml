@@ -384,7 +384,6 @@ services:
       - STATS_URL=http://huly.local:4901
       - REKONI_URL=http://huly.local:4007
       - ACCOUNTS_URL=http://huly.local:3003
-      - SERVER_SECRET=secret
     restart: unless-stopped
   aiBot:
     image: hardcoreeng/ai-bot

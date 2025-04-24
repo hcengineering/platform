@@ -136,9 +136,10 @@ function hookOpenWindow (window: BrowserWindow): void {
 }
 
 function setupCookieHandler (config: Config): void {
+  const normalizedAccountsUrl = config.ACCOUNTS_URL.endsWith('/') ? config.ACCOUNTS_URL : config.ACCOUNTS_URL + '/'
   const urls = [
-    config.ACCOUNTS_URL,
-    config.ACCOUNTS_URL + '*'
+    normalizedAccountsUrl,
+    normalizedAccountsUrl + '*'
   ]
 
   session.defaultSession.webRequest.onHeadersReceived({ urls }, handleSetCookie)

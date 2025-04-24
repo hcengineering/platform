@@ -25,10 +25,13 @@ import {
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
+  PersonId,
+  PersonUuid,
   type Ref,
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
+  SocialIdType,
   type Tx,
   type TxResult,
   type WithLookup
@@ -236,5 +239,29 @@ export class RestClientImpl implements RestClient {
       throw new PlatformError(unknownError(response.statusText))
     }
     return await extractJson<TxResult>(response)
+  }
+
+  async ensurePerson (
+    socialType: SocialIdType,
+    socialValue: string,
+    firstName: string,
+    lastName: string
+  ): Promise<{ uuid: PersonUuid, socialId: PersonId, localPerson: string }> {
+    const requestUrl = concatLink(this.endpoint, `/api/v1/ensure-person/${this.workspace}`)
+    const response = await fetch(requestUrl, {
+      method: 'POST',
+      headers: this.jsonHeaders(),
+      keepalive: true,
+      body: JSON.stringify({
+        socialType,
+        socialValue,
+        firstName,
+        lastName
+      })
+    })
+    if (!response.ok) {
+      throw new PlatformError(unknownError(response.statusText))
+    }
+    return await extractJson<{ uuid: PersonUuid, socialId: PersonId, localPerson: string }>(response)
   }
 }

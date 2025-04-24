@@ -1,6 +1,11 @@
 import core, {
+  buildSocialIdString,
   generateId,
+  pickPrimarySocialId,
+  TxFactory,
   TxProcessor,
+  type AttachedData,
+  type Data,
   type Class,
   type Doc,
   type MeasureContext,
@@ -11,8 +16,16 @@ import core, {
 } from '@hcengineering/core'
 import type { ClientSessionCtx, ConnectionSocket, Session, SessionManager } from '@hcengineering/server-core'
 import { decodeToken } from '@hcengineering/server-token'
-
 import { rpcJSONReplacer, type RateLimitInfo } from '@hcengineering/rpc'
+import contact, {
+  AvatarType,
+  combineName,
+  type SocialIdentity,
+  type Person,
+  type SocialIdentityRef
+} from '@hcengineering/contact'
+import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
+
 import { createHash } from 'crypto'
 import { type Express, type Response as ExpressResponse, type Request } from 'express'
 import type { OutgoingHttpHeaders } from 'http2'
@@ -110,13 +123,17 @@ async function sendJson (
   res.end(body)
 }
 
-export function registerRPC (app: Express, sessions: SessionManager, ctx: MeasureContext): void {
+export function registerRPC (app: Express, sessions: SessionManager, ctx: MeasureContext, accountsUrl: string): void {
   const rpcSessions = new Map<string, RPCClientInfo>()
+
+  function getAccountClient (token?: string): AccountClient {
+    return getAccountClientRaw(accountsUrl, token)
+  }
 
   async function withSession (
     req: Request,
     res: ExpressResponse,
-    operation: (ctx: ClientSessionCtx, session: Session, rateLimit?: RateLimitInfo) => Promise<void>
+    operation: (ctx: ClientSessionCtx, session: Session, rateLimit: RateLimitInfo | undefined, token: string) => Promise<void>
   ): Promise<void> {
     try {
       if (req.params.workspaceId === undefined || req.params.workspaceId === '') {
@@ -156,7 +173,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
 
       const rpc = transactorRpc
       const rateLimit = await sessions.handleRPC(ctx, rpc.session, rpc.client, async (ctx, rateLimit) => {
-        await operation(ctx, rpc.session, rateLimit)
+        await operation(ctx, rpc.session, rateLimit, token)
       })
       if (rateLimit !== undefined) {
         const { remaining, limit, reset, retryAfter } = rateLimit
@@ -299,6 +316,69 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
 
       const result = await session.eventRaw(ctx, event)
       await sendJson(req, res, result)
+    })
+  })
+
+  app.post('/api/v1/ensure-person/:workspaceId', (req, res) => {
+    void withSession(req, res, async (ctx, session, rateLimit, token) => {
+      const { socialType, socialValue, firstName, lastName } = (await retrieveJson(req)) ?? {}
+      const accountClient = getAccountClient(token)
+
+      const { uuid, socialId } = await accountClient.ensurePerson(socialType, socialValue, firstName, lastName)
+      const primaryPersonId = pickPrimarySocialId(session.getSocialIds())
+      const txFactory: TxFactory = new TxFactory(primaryPersonId._id)
+
+      const [person] = await session.findAllRaw(ctx, contact.class.Person, { personUuid: uuid }, { limit: 1 })
+      let personRef: Ref<Person> = person?._id
+
+      if (personRef === undefined) {
+        const createPersonTx = txFactory.createTxCreateDoc(contact.class.Person, contact.space.Contacts, {
+          avatarType: AvatarType.COLOR,
+          name: combineName(firstName, lastName),
+          personUuid: uuid
+        })
+
+        await session.txRaw(ctx, createPersonTx)
+        personRef = createPersonTx.objectId
+      }
+
+      const [socialIdentity] = await session.findAllRaw(
+        ctx,
+        contact.class.SocialIdentity,
+        {
+          attachedTo: personRef,
+          type: socialType,
+          value: socialValue
+        },
+        { limit: 1 }
+      )
+
+      if (socialIdentity === undefined) {
+        const data: AttachedData<SocialIdentity> = {
+          key: buildSocialIdString({ type: socialType, value: socialValue }),
+          type: socialType,
+          value: socialValue
+        }
+
+        const addSocialIdentityTx = txFactory.createTxCollectionCUD(
+          contact.class.Person,
+          personRef,
+          contact.space.Contacts,
+          'socialIds',
+          txFactory.createTxCreateDoc(
+            contact.class.SocialIdentity,
+            contact.space.Contacts,
+            data as Data<SocialIdentity>,
+            socialId as SocialIdentityRef
+          )
+        )
+
+        await session.txRaw(ctx, addSocialIdentityTx)
+      }
+
+      const result = { uuid, socialId, localPerson: personRef }
+
+      await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
     })
   })
 
