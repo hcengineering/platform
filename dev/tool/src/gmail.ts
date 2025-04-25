@@ -109,62 +109,64 @@ async function migrateGmailIntegrations (
         const socialKey = buildSocialIdString(getSocialKeyByOldEmail(token.userId))
         const socialId =
           socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
-        if (socialId !== undefined) {
-          // Check/create integration in account
-          const existing = await gmailAccountClient.getIntegration({
+        if (socialId == null) {
+          console.error('No socialId found for token', token)
+          continue
+        }
+        // Check/create integration in account
+        const existing = await gmailAccountClient.getIntegration({
+          kind: GMAIL_INTEGRATION,
+          workspaceUuid: ws?.uuid,
+          socialId: socialId._id
+        })
+
+        if (existing == null) {
+          await gmailAccountClient.createIntegration({
             kind: GMAIL_INTEGRATION,
             workspaceUuid: ws?.uuid,
             socialId: socialId._id
           })
+        }
 
-          if (existing == null) {
-            await gmailAccountClient.createIntegration({
-              kind: GMAIL_INTEGRATION,
-              workspaceUuid: ws?.uuid,
-              socialId: socialId._id
-            })
-          }
-
-          const existingToken = await gmailAccountClient.getIntegrationSecret({
+        const existingToken = await gmailAccountClient.getIntegrationSecret({
+          key: TOKEN_TYPE,
+          kind: GMAIL_INTEGRATION,
+          socialId: socialId._id,
+          workspaceUuid: ws?.uuid
+        })
+        const newToken: TokenV2 = {
+          ...token,
+          workspace: ws?.uuid,
+          email: token.userId,
+          userId: socialId.personUuid as AccountUuid,
+          socialId
+        }
+        if (existingToken == null) {
+          await gmailAccountClient.addIntegrationSecret({
             key: TOKEN_TYPE,
             kind: GMAIL_INTEGRATION,
             socialId: socialId._id,
-            workspaceUuid: ws?.uuid
+            secret: JSON.stringify(newToken),
+            workspaceUuid: token.workspace
           })
-          const newToken: TokenV2 = {
-            ...token,
-            workspace: ws?.uuid,
-            email: token.userId,
-            userId: socialId.personUuid as AccountUuid,
-            socialId
+        } else {
+          const updatedToken = {
+            ...existingToken,
+            ...newToken
           }
-          if (existingToken == null) {
-            await gmailAccountClient.addIntegrationSecret({
-              key: TOKEN_TYPE,
-              kind: GMAIL_INTEGRATION,
-              socialId: socialId._id,
-              secret: JSON.stringify(newToken),
-              workspaceUuid: token.workspace
-            })
-          } else {
-            const updatedToken = {
-              ...existingToken,
-              ...newToken
-            }
-            await gmailAccountClient.updateIntegrationSecret({
-              key: TOKEN_TYPE,
-              kind: GMAIL_INTEGRATION,
-              socialId: socialId._id,
-              secret: JSON.stringify(updatedToken),
-              workspaceUuid: token.workspace
-            })
-          }
+          await gmailAccountClient.updateIntegrationSecret({
+            key: TOKEN_TYPE,
+            kind: GMAIL_INTEGRATION,
+            socialId: socialId._id,
+            secret: JSON.stringify(updatedToken),
+            workspaceUuid: token.workspace
+          })
         }
       } catch (e) {
         console.error('Error migrating token', token, e)
       }
     }
-    console.log('Gmail integrations migrations done')
+    console.log('Gmail integrations migrations done, integration count:', allTokens.length)
   } catch (e) {
     console.error('Error migrating tokens', e)
   }
@@ -189,28 +191,30 @@ async function migrateGmailHistory (
         const socialKey = buildSocialIdString(getSocialKeyByOldEmail(history.userId))
         const socialId =
           socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
-        if (socialId !== undefined) {
-          // Update/create history in KVS
-          const ws = await workspaceProvider.getWorkspaceInfo(history.workspace as any)
-          if (ws == null) {
-            continue
-          }
-          const historyKey = getHistoryKey(ws.uuid, socialId._id)
-          const existingHistory = await kvsClient.getValue<HistoryV2>(historyKey)
-          const updatedHistory: HistoryV2 = {
-            ...(existingHistory ?? history),
-            email: history.userId,
-            workspace: ws.uuid,
-            userId: socialId.personUuid as AccountUuid,
-            socialId
-          }
-          await kvsClient.setValue(historyKey, updatedHistory)
+        if (socialId == null) {
+          console.error('No socialId found for history', history)
+          continue
         }
+        // Update/create history in KVS
+        const ws = await workspaceProvider.getWorkspaceInfo(history.workspace as any)
+        if (ws == null) {
+          continue
+        }
+        const historyKey = getHistoryKey(ws.uuid, socialId._id)
+        const existingHistory = await kvsClient.getValue<HistoryV2>(historyKey)
+        const updatedHistory: HistoryV2 = {
+          ...(existingHistory ?? history),
+          email: history.userId,
+          workspace: ws.uuid,
+          userId: socialId.personUuid as AccountUuid,
+          socialId
+        }
+        await kvsClient.setValue(historyKey, updatedHistory)
       } catch (e) {
         console.error('Error migrating history', history, e)
       }
     }
-    console.log('Finished migrating gmail history')
+    console.log('Finished migrating gmail history, count:', allHistories.length)
   } catch (e) {
     console.error('Error migrating gmail history', e)
   }
