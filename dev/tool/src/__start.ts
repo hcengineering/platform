@@ -103,4 +103,13 @@ export function getAccountDBUrl (): string {
   return url
 }
 
+export function getKvsUrl (): string {
+  const url = process.env.KVS_URL
+  if (url === undefined) {
+    console.error('please provide KVS_URL')
+    process.exit(1)
+  }
+  return url
+}
+
 devTool(prepareTools)

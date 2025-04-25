@@ -160,6 +160,7 @@
     "@hcengineering/collaboration": "^0.6.0",
     "@hcengineering/datalake": "^0.6.0",
     "@hcengineering/s3": "^0.6.0",
+    "@hcengineering/kvs-client": "^0.6.0",
     "commander": "^8.1.0",
     "csv-parse": "~5.1.0",
     "email-addresses": "^5.0.0",
