@@ -2432,8 +2432,8 @@ export function devTool (
 
   program
     .command('migrate-gmail-account')
-    .option('--db <db>', 'DB URL', '')
-    .option('--region <region>', 'Region', '')
+    .option('--db <db>', 'DB name', 'gmail-service')
+    .option('--region <region>', 'DB region')
     .action(async (cmd: { db: string, region?: string }) => {
       const mongodbUri = getMongoDBUrl()
       const client = getMongoClient(mongodbUri)

@@ -80,7 +80,11 @@ export async function performGmailAccountMigrations (db: Db, region: string | nu
   console.log('Finished Gmail migrations')
 }
 
-async function migrateGmailIntegrations (db: Db, token: string, workspaceProvider: WorkspaceInfoProvider): Promise<void> {
+async function migrateGmailIntegrations (
+  db: Db,
+  token: string,
+  workspaceProvider: WorkspaceInfoProvider
+): Promise<void> {
   try {
     console.log('Start Gmail account migrations')
     const gmailToken = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'gmail' })
@@ -101,7 +105,8 @@ async function migrateGmailIntegrations (db: Db, token: string, workspaceProvide
         token.workspace = ws.uuid
 
         const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: token.userId })
-        const socialId = socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
+        const socialId =
+          socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
         if (socialId !== undefined) {
           // Check/create integration in account
           const existing = await gmailAccountClient.getIntegration({
@@ -163,7 +168,12 @@ async function migrateGmailIntegrations (db: Db, token: string, workspaceProvide
   }
 }
 
-async function migrateGmailHistory (db: Db, token: string, kvsUrl: string, workspaceProvider: WorkspaceInfoProvider): Promise<void> {
+async function migrateGmailHistory (
+  db: Db,
+  token: string,
+  kvsUrl: string,
+  workspaceProvider: WorkspaceInfoProvider
+): Promise<void> {
   try {
     console.log('Start Gmail history migrations')
     const accountClient = getAccountClient(token)
@@ -175,7 +185,8 @@ async function migrateGmailHistory (db: Db, token: string, kvsUrl: string, works
     for (const history of allHistories) {
       try {
         const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: history.userId })
-        const socialId = socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
+        const socialId =
+          socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
         if (socialId !== undefined) {
           // Update/create history in KVS
           const ws = await workspaceProvider.getWorkspaceInfo(history.workspace as any)
