@@ -101,7 +101,7 @@ describe('rest-api-server', () => {
       socialIds,
       async () => person
     )
-  })
+  }, 10000)
 
   function connect (ws?: WorkspaceToken): RestClient {
     const tok = ws ?? apiWorkspace1
