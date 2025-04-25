@@ -26,6 +26,33 @@ import { TemporaryDir } from '../tempdir'
 const cacheControl = 'public, max-age=31536000, immutable'
 const prefferedImageFormats = ['webp', 'avif', 'jpeg', 'png']
 
+const QualityConfig = {
+  jpeg: {
+    quality: 85, // default + 5
+    progressive: true,
+    chromaSubsampling: '4:4:4'
+  } satisfies sharp.JpegOptions,
+  avif: {
+    quality: 60, // default + 10
+    effort: 5, // default + 1
+    chromaSubsampling: '4:4:4' // default
+  } satisfies sharp.AvifOptions,
+  webp: {
+    quality: 80, // default
+    alphaQuality: 100, // default
+    smartSubsample: true, // Better sharpness
+    effort: 5 // default + 1
+  } satisfies sharp.WebpOptions,
+  heif: {
+    quality: 80, // default + 30
+    effort: 5 // default + 1
+  } satisfies sharp.HeifOptions,
+  png: {
+    quality: 100, // default
+    effort: 7 // default
+  } satisfies sharp.PngOptions
+}
+
 interface ImageTransform {
   format: string
   dpr?: number
@@ -153,34 +180,23 @@ async function runPipeline (
     let contentType = 'image/jpeg'
     switch (format) {
       case 'jpeg':
-        pipeline = pipeline.jpeg({
-          progressive: true
-        })
+        pipeline = pipeline.jpeg(QualityConfig.jpeg)
         contentType = 'image/jpeg'
         break
       case 'avif':
-        pipeline = pipeline.avif({
-          lossless: false,
-          effort: 0
-        })
+        pipeline = pipeline.avif(QualityConfig.avif)
         contentType = 'image/avif'
         break
       case 'heif':
-        pipeline = pipeline.heif({
-          effort: 0
-        })
+        pipeline = pipeline.heif(QualityConfig.heif)
         contentType = 'image/heif'
         break
       case 'webp':
-        pipeline = pipeline.webp({
-          effort: 0
-        })
+        pipeline = pipeline.webp(QualityConfig.webp)
         contentType = 'image/webp'
         break
       case 'png':
-        pipeline = pipeline.png({
-          effort: 0
-        })
+        pipeline = pipeline.png(QualityConfig.png)
         contentType = 'image/png'
         break
     }
