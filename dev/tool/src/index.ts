@@ -146,6 +146,7 @@ import {
 } from './clean'
 import { changeConfiguration } from './configuration'
 import {
+  applyMissingTxMongoToPG,
   generateUuidMissingWorkspaces,
   moveAccountDbFromMongoToPG,
   moveFromMongoToPG,
@@ -2354,6 +2355,38 @@ export function devTool (
       await withAccountDatabase(async (db) => {
         await fillGithubUsers(toolCtx, db, cmd.token)
       })
+    })
+
+  program
+    .command('apply-missing-tx-mongo-to-pg')
+    .option('-w, --workspace <workspace>', 'A selected "workspace" only', '')
+    .option('-d, --dryrun', 'Dry run', false)
+    .option('-v, --verbose', 'Verbose', false)
+    .option('-f, --force', 'Force', false)
+    .description('applies missing transactions from mongo to pg')
+    .action(async (cmd: { workspace?: string, dryrun: boolean, verbose: boolean, force: boolean }) => {
+      let workspaces: Workspace[] = []
+
+      await withAccountDatabase(async (db) => {
+        workspaces = await listWorkspacesPure(db)
+        workspaces = workspaces
+          .filter((p) => isActiveMode(p.mode))
+          .filter((p) => p.region === 'europe' && p.targetRegion === 'europe' && p.message === 'restore-done done')
+          .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+          .sort((a, b) => b.lastVisit - a.lastVisit)
+      })
+
+      if (workspaces.length === 0) {
+        console.log('no workspaces found')
+        return
+      }
+
+      console.log('found workspaces', workspaces.length)
+
+      const mongodbUri = getMongoDBUrl()
+      for (const ws of workspaces) {
+        await applyMissingTxMongoToPG(toolCtx, mongodbUri, ws, cmd.dryrun, cmd.verbose, cmd.force)
+      }
     })
 
   extendProgram?.(program)

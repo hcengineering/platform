@@ -9,13 +9,19 @@ import {
   getAccount,
   getWorkspaceById
 } from '@hcengineering/account'
-import {
+import core, {
   type BackupClient,
   type Client,
   getWorkspaceId,
   MeasureMetricsContext,
   systemAccountEmail,
-  type Doc
+  type Doc,
+  TxOperations,
+  type MeasureContext,
+  type Client as CoreClient,
+  DOMAIN_TX,
+  type Tx,
+  type Ref
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import {
@@ -366,5 +372,87 @@ export async function updateDataWorkspaceIdToUuid (
     ctx.info('Done updating workspaceId to uuid')
   } finally {
     pg.close()
+  }
+}
+
+export async function applyMissingTxMongoToPG (
+  ctx: MeasureContext,
+  mongoUrl: string,
+  ws: Workspace,
+  dryRun: boolean,
+  verbose: boolean,
+  force: boolean
+): Promise<void> {
+  const wsid = getWorkspaceId(ws.workspace)
+  const pgTransactorUrl = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+  const connectionPg = (await connect(pgTransactorUrl, wsid, undefined, {
+    mode: 'backup',
+    model: 'upgrade'
+  })) as unknown as CoreClient & BackupClient
+
+  try {
+    if (verbose) {
+      ctx.info('Processing workspace', ws)
+    }
+
+    const ops = new TxOperations(connectionPg, core.account.System)
+
+    const mongoClient = getMongoClient(mongoUrl)
+    try {
+      const _mongoClient = await mongoClient.getClient()
+      const mongoDb = getWorkspaceMongoDB(_mongoClient, wsid)
+
+      const txes: Tx[] = []
+      const iterator = mongoDb.collection(DOMAIN_TX).find({}, { sort: { modifiedOn: 'descending' } })
+      let restored = false
+      while (true) {
+        const doc = await iterator.next()
+        if (doc == null) {
+          break
+        }
+
+        const pgTx = await ops.findOne(core.class.Tx, { _id: doc._id as unknown as Ref<Tx> })
+
+        if (pgTx == null) {
+          txes.push(doc as unknown as Tx)
+        } else {
+          for (const tx of txes) {
+            if (verbose) {
+              ctx.info('Restoring tx', tx)
+            }
+
+            if (!dryRun) {
+              // TODO: actually restore
+            }
+          }
+          restored = true
+          break
+        }
+
+        if (txes.length > 5000 && !force) {
+          ctx.warn('Skipping because there are more than 5000 transactions to restore. Use --force to force restore.')
+          break
+        }
+      }
+
+      if (txes.length > 0) {
+        if (restored) {
+          ctx.info('Restored missing transactions for workspace', { workspace: ws.workspace, count: txes.length })
+        } else {
+          ctx.error('Failed to restore missing transactions for workspace', {
+            workspace: ws.workspace,
+            count: txes.length
+          })
+        }
+      } else if (verbose) {
+        ctx.info('No missing transactions found for workspace', { workspace: ws.workspace })
+      }
+    } finally {
+      mongoClient.close()
+    }
+  } catch (err: any) {
+    console.trace(err)
+  } finally {
+    await connectionPg.close()
   }
 }
