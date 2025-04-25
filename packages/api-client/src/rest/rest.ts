@@ -25,10 +25,13 @@ import {
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
+  PersonId,
+  PersonUuid,
   type Ref,
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
+  SocialIdType,
   type Tx,
   type TxResult,
   type WithLookup
@@ -42,8 +45,19 @@ export function createRestClient (endpoint: string, workspaceId: string, token: 
   return new RestClientImpl(endpoint, workspaceId, token)
 }
 
+const rateLimitError = 'rate-limit'
+
+function isRLE (err: any): boolean {
+  return err.message === rateLimitError
+}
+
 export class RestClientImpl implements RestClient {
   endpoint: string
+
+  slowDownTimer = 0
+
+  remaining: number = 1000
+  limit: number = 1000
   constructor (
     endpoint: string,
     readonly workspace: string,
@@ -85,10 +99,15 @@ export class RestClientImpl implements RestClient {
     const result = await withRetry(async () => {
       const response = await fetch(requestUrl, this.requestInit())
       if (!response.ok) {
+        await this.checkRateLimits(response)
         throw new PlatformError(unknownError(response.statusText))
       }
       return await extractJson<FindResult<T>>(response)
-    })
+    }, isRLE)
+
+    if (result.error !== undefined) {
+      throw new PlatformError(result.error)
+    }
 
     if (result.lookupMap !== undefined) {
       // We need to extract lookup map to document lookups
@@ -122,6 +141,25 @@ export class RestClientImpl implements RestClient {
     }
 
     return result
+  }
+
+  private async checkRateLimits (response: Response): Promise<void> {
+    if (response.status === 429) {
+      // Extract rate limit information from headers
+      const retryAfter = response.headers.get('Retry-After')
+      const rateLimitReset = response.headers.get('X-RateLimit-Reset')
+      // const rateLimitLimit: string | null = response.headers.get('X-RateLimit-Limit')
+      const waitTime =
+        retryAfter != null
+          ? parseInt(retryAfter)
+          : rateLimitReset != null
+            ? new Date(parseInt(rateLimitReset)).getTime() - Date.now()
+            : 1000 // Default to 1 seconds if no headers are provided
+
+      console.warn(`Rate limit exceeded. Waiting ${Math.round((10 * waitTime) / 1000) / 10} seconds before retrying...`)
+      await new Promise((resolve) => setTimeout(resolve, waitTime))
+      throw new Error(rateLimitError)
+    }
   }
 
   async getAccount (): Promise<Account> {
@@ -160,16 +198,23 @@ export class RestClientImpl implements RestClient {
 
   async tx (tx: Tx): Promise<TxResult> {
     const requestUrl = concatLink(this.endpoint, `/api/v1/tx/${this.workspace}`)
-    const response = await fetch(requestUrl, {
-      method: 'POST',
-      headers: this.jsonHeaders(),
-      keepalive: true,
-      body: JSON.stringify(tx)
-    })
-    if (!response.ok) {
-      throw new PlatformError(unknownError(response.statusText))
+    const result = await withRetry(async () => {
+      const response = await fetch(requestUrl, {
+        method: 'POST',
+        headers: this.jsonHeaders(),
+        keepalive: true,
+        body: JSON.stringify(tx)
+      })
+      if (!response.ok) {
+        await this.checkRateLimits(response)
+        throw new PlatformError(unknownError(response.statusText))
+      }
+      return await extractJson<TxResult>(response)
+    }, isRLE)
+    if (result.error !== undefined) {
+      throw new PlatformError(result.error)
     }
-    return await extractJson<TxResult>(response)
+    return result
   }
 
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
@@ -194,5 +239,29 @@ export class RestClientImpl implements RestClient {
       throw new PlatformError(unknownError(response.statusText))
     }
     return await extractJson<TxResult>(response)
+  }
+
+  async ensurePerson (
+    socialType: SocialIdType,
+    socialValue: string,
+    firstName: string,
+    lastName: string
+  ): Promise<{ uuid: PersonUuid, socialId: PersonId, localPerson: string }> {
+    const requestUrl = concatLink(this.endpoint, `/api/v1/ensure-person/${this.workspace}`)
+    const response = await fetch(requestUrl, {
+      method: 'POST',
+      headers: this.jsonHeaders(),
+      keepalive: true,
+      body: JSON.stringify({
+        socialType,
+        socialValue,
+        firstName,
+        lastName
+      })
+    })
+    if (!response.ok) {
+      throw new PlatformError(unknownError(response.statusText))
+    }
+    return await extractJson<{ uuid: PersonUuid, socialId: PersonId, localPerson: string }>(response)
   }
 }

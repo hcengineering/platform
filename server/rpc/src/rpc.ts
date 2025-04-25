@@ -75,6 +75,15 @@ export function rpcJSONReceiver (key: string, value: any): any {
   return value
 }
 
+export interface RateLimitInfo {
+  remaining: number
+  limit: number
+
+  current: number // in milliseconds
+  reset: number // in milliseconds
+  retryAfter?: number // in milliseconds
+}
+
 /**
  * Response object define a server response on transaction request.
  * Also used to inform other clients about operations being performed by server.
@@ -86,6 +95,8 @@ export interface Response<R> {
   id?: ReqId
   error?: Status
   terminate?: boolean
+
+  rateLimit?: RateLimitInfo
   chunk?: {
     index: number
     final: boolean

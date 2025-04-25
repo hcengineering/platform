@@ -18,6 +18,7 @@
   import { IconSize, IconComponent } from '../types'
 
   export let icon: IconComponent
+  export let iconProps: any | undefined = undefined
   export let size: IconSize = 'small'
 
   function isAsset (icon: IconComponent): boolean {
@@ -33,9 +34,9 @@
 </script>
 
 {#if isAsset(icon) && url}
-  <svg class="next-svg__{size}">
+  <svg class="next-svg__{size}" {...iconProps}>
     <use href={url} />
   </svg>
 {:else if typeof icon !== 'string'}
-  <svelte:component this={icon} {size} />
+  <svelte:component this={icon} {size} {...iconProps} />
 {/if}

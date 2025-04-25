@@ -212,6 +212,8 @@ services:
       - FULLTEXT_URL=http://fulltext:4710
       - STATS_URL=http://stats:4901
       - ENABLE_COMPRESSION=true
+      - RATE_LIMIT_MAX=25000
+      - RATE_LIMIT_WINDOW=1000
   collaborator:
     image: hardcoreeng/collaborator
     links:

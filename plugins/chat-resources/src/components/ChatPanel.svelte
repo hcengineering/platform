@@ -16,6 +16,7 @@
 <script lang="ts">
   import { Card } from '@hcengineering/card'
   import { NotificationContext } from '@hcengineering/communication-types'
+  import { createNotificationContextsQuery } from '@hcengineering/presentation'
   import { Presence } from '@hcengineering/presence-resources'
 
   import ChatHeader from './ChatHeader.svelte'
@@ -23,17 +24,31 @@
   import ChatFooter from './ChatFooter.svelte'
 
   export let card: Card
-  export let context: NotificationContext | undefined = undefined
+
+  const contextsQuery = createNotificationContextsQuery()
 
   let footerHeight: number | undefined = undefined
+  let context: NotificationContext | undefined = undefined
+  let isLoaded = false
+  let cardId = card._id
+
+  $: if (cardId !== card._id) {
+    cardId = card._id
+    context = undefined
+    isLoaded = false
+  }
+
+  $: contextsQuery.query({ card: cardId, limit: 1 }, (res) => {
+    context = res.getResult()[0]
+    isLoaded = true
+  })
 </script>
 
 <Presence object={card} />
 <ChatHeader {card} />
-{#key card._id}
-  <ChatBody {card} {footerHeight} {context} />
-{/key}
+{#if isLoaded}
+  {#key card._id}
+    <ChatBody {card} {footerHeight} {context} />
+  {/key}
+{/if}
 <ChatFooter {card} bind:height={footerHeight} />
-
-<style lang="scss">
-</style>

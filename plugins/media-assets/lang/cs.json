@@ -6,11 +6,13 @@
     "DefaultCam": "Výchozí kamera",
     "DefaultMic": "Výchozí mikrofon",
     "DefaultSpeaker": "Výchozí reproduktor",
-    "NoCam": "Není kamera",
     "TurnOnCam": "Zapnout kameru",
     "TurnOffCam": "Vypnout kameru",
     "TurnOnMic": "Zapnout mikrofon",
     "TurnOffMic": "Vypnout mikrofon",
+    "NoCam": "Žádná kamera",
+    "NoMic": "Žádný mikrofon",
+    "NoSpeaker": "Žádný reproduktor",
     "On": "Zapnuto",
     "Off": "Vypnuto"
   }

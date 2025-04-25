@@ -22,11 +22,12 @@ import {
   getSelectedCamId,
   getSelectedMicId,
   getSelectedSpeakerId,
-  enumerateDevices
+  enumerateDevices,
+  cleanupDeviceLabel
 } from '@hcengineering/media'
-import media from './plugin'
-import { onDestroy } from 'svelte'
+import { type IntlString, getEmbeddedLabel } from '@hcengineering/platform'
 import EventEmitter from 'events'
+import { onDestroy } from 'svelte'
 import type TypedEventEmitter from 'typed-emitter'
 import { registerSession, unregisterSession } from './stores'
 
@@ -41,10 +42,6 @@ export async function getSelectedMic (): Promise<MediaDeviceInfo | undefined> {
 /** @public */
 export async function getSelectedCam (): Promise<MediaDeviceInfo | null | undefined> {
   const deviceId = getSelectedCamId()
-
-  if (deviceId === media.ids.NoCam) {
-    return null
-  }
 
   const devices = await enumerateDevices('videoinput')
   return deviceId !== undefined ? devices.find((it) => it.deviceId === deviceId) ?? null : devices[0] ?? undefined // default
@@ -63,6 +60,11 @@ export async function checkMediaAccess (kind: MediaDeviceKind): Promise<Permissi
   const name = (kind === 'audioinput' ? 'microphone' : 'camera') as PermissionName
   const status = await navigator.permissions.query({ name })
   return status.state
+}
+
+/** @public */
+export function getDeviceLabel (device: MediaDeviceInfo): IntlString {
+  return getEmbeddedLabel(cleanupDeviceLabel(device.label))
 }
 
 export interface UseMediaOptions {

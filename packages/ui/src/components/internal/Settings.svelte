@@ -14,26 +14,19 @@
 -->
 <script lang="ts">
   import { showPopup } from '../..'
+  import StatusBarButton from '../StatusBarButton.svelte'
   import SettingsPopup from './SettingsPopup.svelte'
   import Settings from './icons/Settings.svelte'
 
   let pressed: boolean = false
-  let btn: HTMLButtonElement
+  let element: HTMLElement
 
   function showSettings (): void {
     pressed = true
-    showPopup(SettingsPopup, {}, btn, () => {
+    showPopup(SettingsPopup, {}, element, () => {
       pressed = false
     })
   }
 </script>
 
-<button
-  bind:this={btn}
-  class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
-  class:pressed
-  style:color={'var(--theme-dark-color)'}
-  on:click={showSettings}
->
-  <Settings />
-</button>
+<StatusBarButton bind:element icon={Settings} {pressed} on:click={showSettings} />

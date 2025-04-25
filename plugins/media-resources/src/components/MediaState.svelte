@@ -28,25 +28,25 @@
   $: active = $sessions.length > 0
 </script>
 
-<div class="flex-row-center container flex-gap-0-5" class:active>
-  <MicStateButton state={$state.microphone} />
-  <CamStateButton state={$state.camera} />
+{#if active}
+  <div class="flex-row-center container flex-gap-0-5">
+    <MicStateButton state={$state.microphone} />
+    <CamStateButton state={$state.camera} />
 
-  <ComponentExtensions extension={media.extension.StateIndicator} />
+    <ComponentExtensions extension={media.extension.StateIndicator} />
 
+    <MediaSettingsButton disabled={!hasMediaDevices} />
+  </div>
+{:else}
   <MediaSettingsButton disabled={!hasMediaDevices} />
-</div>
+{/if}
 
 <style lang="scss">
   .container {
     padding: 0.125rem;
     height: 1.75rem;
-    background-color: var(--theme-button-hovered);
+    background-color: var(--theme-state-positive-background-color);
     border-radius: 0.25rem;
     cursor: pointer;
-
-    &.active {
-      background-color: var(--theme-state-positive-background-color);
-    }
   }
 </style>
