@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import attachment, { Drawing, type Attachment } from '@hcengineering/attachment'
+import attachment, { type Attachment, Drawing } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { Employee, type Person } from '@hcengineering/contact'
 import documents, {
@@ -30,7 +30,9 @@ import documents, {
   useDocumentTemplate
 } from '@hcengineering/controlled-documents'
 import core, {
+  type AccountUuid,
   type AttachedData,
+  AttachedDoc,
   type Class,
   type CollaborativeDoc,
   type Data,
@@ -39,6 +41,7 @@ import core, {
   generateId,
   makeCollabId,
   type Mixin,
+  type PersonId,
   type Blob as PlatformBlob,
   type Ref,
   RolesAssignment,
@@ -46,9 +49,7 @@ import core, {
   type Space,
   type Status,
   type Timestamp,
-  type TxOperations,
-  type PersonId,
-  type AccountUuid
+  type TxOperations
 } from '@hcengineering/core'
 import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
 import task, {
@@ -69,14 +70,18 @@ import tracker, {
   TimeReportDayType
 } from '@hcengineering/tracker'
 import view from '@hcengineering/view'
+import { Props, UnifiedDoc, UnifiedFile, UnifiedMixin } from '../types'
+import { Logger } from './logger'
 import { type MarkdownPreprocessor, NoopMarkdownPreprocessor } from './preprocessor'
 import { type FileUploader } from './uploader'
-import { Logger } from './logger'
-
 export interface ImportWorkspace {
   projectTypes?: ImportProjectType[]
   spaces?: ImportSpace<ImportDoc>[]
   attachments?: ImportAttachment[]
+
+  unifiedDocs?: UnifiedDoc<Doc<Space>>[]
+  mixins?: UnifiedMixin<Doc<Space>, Doc<Space>>[]
+  files?: UnifiedFile[]
 }
 
 export interface ImportProjectType {
@@ -241,6 +246,10 @@ export class WorkspaceImporter {
     await this.importProjectTypes()
     await this.importSpaces()
     await this.importAttachments()
+
+    await this.importUnifiedDocs()
+    await this.importUnifiedMixins()
+    await this.uploadFiles()
   }
 
   private async importProjectTypes (): Promise<void> {
@@ -1128,5 +1137,74 @@ export class WorkspaceImporter {
     }
 
     return await this.client.createDoc(documents.class.ChangeControl, spaceId, changeControlData)
+  }
+
+  private async importUnifiedDocs (): Promise<void> {
+    if (this.workspaceData.unifiedDocs === undefined) return
+
+    for (const unifiedDoc of this.workspaceData.unifiedDocs) {
+      await this.createUnifiedDoc(unifiedDoc)
+    }
+  }
+
+  private async createUnifiedDoc (unifiedDoc: UnifiedDoc<Doc<Space>>): Promise<void> {
+    const { _class, props } = unifiedDoc
+    const _id = props._id ?? generateId<Doc<Space>>()
+    if (unifiedDoc.collabField !== undefined) {
+      const collabId = makeCollabId(_class, _id, unifiedDoc.collabField)
+      const collabContent = await unifiedDoc.contentProvider?.() ?? ''
+      const res = await this.createCollaborativeContent(_id, collabId, collabContent, props.space)
+      ;(props as any)[unifiedDoc.collabField] = res
+    }
+
+    const hierarchy = this.client.getHierarchy()
+    if (hierarchy.isDerived(_class, core.class.AttachedDoc)) {
+      const { space, attachedTo, attachedToClass, collection, ...data } = props as unknown as Props<AttachedDoc>
+      if (
+        attachedTo === undefined ||
+        space === undefined ||
+        attachedToClass === undefined ||
+        collection === undefined
+      ) {
+        throw new Error('Add collection step must have attachedTo, attachedToClass, collection and space')
+      }
+      await this.client.addCollection(
+        _class,
+        space,
+        attachedTo,
+        attachedToClass,
+        collection,
+        data,
+        _id as Ref<AttachedDoc> | undefined
+      )
+    } else {
+      await this.client.createDoc(_class, props.space, props as Data<Doc<Space>>, _id)
+    }
+  }
+
+  private async importUnifiedMixins (): Promise<void> {
+    if (this.workspaceData.mixins === undefined) return
+
+    for (const mixin of this.workspaceData.mixins) {
+      await this.createUnifiedMixin(mixin)
+    }
+  }
+
+  private async createUnifiedMixin (mixin: UnifiedMixin<Doc<Space>, Doc<Space>>): Promise<void> {
+    const { _class, mixin: mixinClass, props } = mixin
+    const { _id, space, ...data } = props
+    await this.client.createMixin(_id ?? generateId<Doc<Space>>(), _class, space, mixinClass, data as Data<Doc<Space>>)
+  }
+
+  private async uploadFiles (): Promise<void> {
+    if (this.workspaceData.files === undefined) return
+
+    for (const file of this.workspaceData.files) {
+      const id = file._id ?? generateId<PlatformBlob>()
+      const uploadResult = await this.fileUploader.uploadFile(id, await file.blobProvider())
+      if (!uploadResult.success) {
+        throw new Error('Failed to upload attachment file: ' + file.name)
+      }
+    }
   }
 }

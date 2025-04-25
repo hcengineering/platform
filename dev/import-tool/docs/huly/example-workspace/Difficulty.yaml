@@ -1,0 +1,9 @@
+class: core:class:Enum
+title: Difficulty
+values:
+  - Easy
+  - Medium
+  - Hard
+  - Expert
+  - Impossible
+  

@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import documents, { ControlledDocument, DocumentState } from '@hcengineering/controlled-documents'
-import { type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
+import core, { Association, Attribute, Doc, Enum, Relation, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
 import document from '@hcengineering/document'
 import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
@@ -28,6 +29,8 @@ import {
   type ImportTeamspace,
   type ImportWorkspace
 } from './importer'
+import { UnifiedDoc, UnifiedFile, UnifiedMixin } from '../types'
+import { Attachment } from '@hcengineering/attachment'
 
 export interface ValidationError {
   path: string
@@ -55,6 +58,17 @@ export class ImportWorkspaceBuilder {
   private readonly qmsTemplates = new Map<Ref<ControlledDocument>, string>()
   private readonly qmsDocsBySpace = new Map<string, Map<string, ImportControlledDoc>>()
   private readonly qmsDocsParents = new Map<string, string>()
+
+  private readonly masterTags = new Map<string, UnifiedDoc<MasterTag>>()
+  private readonly masterTagAttributes = new Map<string, UnifiedDoc<Attribute<MasterTag>>>()
+  private readonly tags = new Map<string, UnifiedDoc<Tag>>()
+  private readonly cards = new Map<string, UnifiedDoc<Card>>()
+  private readonly associations = new Map<string, UnifiedDoc<Association>>()
+  private readonly relations = new Map<string, UnifiedDoc<Relation>>()
+  private readonly enums = new Map<string, UnifiedDoc<Enum>>()
+  private readonly attachments = new Map<string, UnifiedDoc<Attachment>>()
+  private readonly mixins = new Map<string, UnifiedMixin<Doc, Doc>>()
+  private readonly files = new Map<string, UnifiedFile>()
 
   private readonly projectTypes = new Map<string, ImportProjectType>()
   private readonly issueStatusCache = new Map<string, Ref<IssueStatus>>()
@@ -221,10 +235,65 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
+  addMasterTag (path: string, masterTag: UnifiedDoc<MasterTag>): this {
+    this.validateAndAdd('masterTag', path, masterTag, (mt) => this.validateMasterTag(mt), this.masterTags, path)
+    return this
+  }
+
+  addTag (path: string, tag: UnifiedDoc<Tag>): this {
+    this.validateAndAdd('tag', path, tag, (t) => this.validateTag(t), this.tags, path)
+    return this
+  }
+
+  addMasterTagAttributes (path: string, attributes: UnifiedDoc<Attribute<MasterTag>>[]): this {
+    for (const attribute of attributes) {
+      const key = path + '/' + attribute.props.name
+      this.validateAndAdd('masterTagAttribute', key, attribute, (a) => this.validateMasterTagAttribute(a), this.masterTagAttributes, key)
+    }
+    return this
+  }
+
+  addCard (path: string, card: UnifiedDoc<Card>): this {
+    this.validateAndAdd('card', path, card, (c) => this.validateCard(c), this.cards, path)
+    return this
+  }
+
+  addAssociation (path: string, association: UnifiedDoc<Association>): this {
+    this.validateAndAdd('association', path, association, (a) => this.validateAssociation(a), this.associations, path)
+    return this
+  }
+
+  addRelation (path: string, relation: UnifiedDoc<Relation>): this {
+    this.validateAndAdd('relation', path, relation, (r) => this.validateRelation(r), this.relations, path)
+    return this
+  }
+
+  addEnum (path: string, enumDoc: UnifiedDoc<Enum>): this {
+    this.validateAndAdd('enum', path, enumDoc, (e) => this.validateEnum(e), this.enums, path)
+    return this
+  }
+
+  addAttachment (path: string, attachment: UnifiedDoc<Attachment>): this {
+    this.validateAndAdd('attachment', path, attachment, (a) => this.validateAttachment(a), this.attachments, path)
+    return this
+  }
+
+  addTagMixin (path: string, mixin: UnifiedMixin<Doc, Doc>): this {
+    this.validateAndAdd('tagMixin', path, mixin, (m) => this.validateTagMixin(m), this.mixins, path + '/' + mixin.mixin) // todo: fix mixin key
+    return this
+  }
+
+  addFile (path: string, file: UnifiedFile): this {
+    this.validateAndAdd('file', path, file, (f) => this.validateFile(f), this.files, path)
+    return this
+  }
+
   validate (): ValidationResult {
     // Perform cross-entity validation
     this.validateSpacesReferences()
     this.validateDocumentsReferences()
+    this.validateTagsReferences()
+    this.validateCardsReferences()
 
     return {
       isValid: this.errors.size === 0,
@@ -289,6 +358,18 @@ export class ImportWorkspaceBuilder {
         ...Array.from(this.teamspaces.values()),
         ...Array.from(this.qmsSpaces.values())
       ],
+      unifiedDocs: [
+        ...Array.from(this.masterTags.values()),
+        ...Array.from(this.masterTagAttributes.values()),
+        ...Array.from(this.tags.values()),
+        ...Array.from(this.cards.values()),
+        ...Array.from(this.associations.values()),
+        ...Array.from(this.relations.values()),
+        ...Array.from(this.enums.values()),
+        ...Array.from(this.attachments.values())
+      ],
+      mixins: Array.from(this.mixins.values()),
+      files: Array.from(this.files.values()),
       attachments: []
     }
   }
@@ -570,6 +651,75 @@ export class ImportWorkspaceBuilder {
     }
   }
 
+  private validateCardsReferences (): void {
+    // Проверка существования атрибутов
+    for (const [cardPath, card] of this.cards) {
+      if (card._class !== undefined) {
+        const masterTag = this.masterTags.get(card._class)
+        if (masterTag !== undefined) {
+          const attributes = Array.from(this.masterTagAttributes.values())
+            .filter(a => a.props.attributeOf === card._class)
+
+          // Проверяем, что все используемые атрибуты существуют
+          for (const [attrName] of Object.entries(card.props)) {
+            if (attrName !== 'title' && !attributes.some(a => a.props.name === attrName)) {
+              this.addError(cardPath, `Card uses non-existent attribute: ${attrName}`)
+            }
+          }
+        }
+      }
+
+      // todo: check if tags are valid
+      // if (card.props.tags !== undefined) {
+      //   for (const tagId of card.props.tags) {
+      //     const tagExists = Array.from(this.tags.values()).some(t => t.props._id === tagId)
+      //     if (!tagExists) {
+      //       this.addError(cardPath, `Card references non-existent tag: ${tagId}`)
+      //     }
+      //   }
+      // }
+    }
+  }
+
+  private validateTagsReferences (): void {
+    // Проверка ссылок MasterTag
+    // for (const [path, masterTag] of this.masterTags) {
+    //   if (masterTag.props.extends !== undefined) {
+    //     if (masterTag.props.extends !== card.class.Card &&
+    //         !this.masterTags.has(masterTag.props.extends)) {
+    //       this.addError(path, `Invalid extends reference: ${masterTag.props.extends}`)
+    //     }
+    //   }
+    // }
+
+    // // Проверка ссылок Tag
+    // for (const [path, tag] of this.tags) {
+    //   if (tag.props.extends === undefined) {
+    //     this.addError(path, 'extends (MasterTag reference) is required')
+    //   } else if (!this.masterTags.has(tag.props.extends)) {
+    //     this.addError(path, `Invalid MasterTag reference: ${tag.props.extends}`)
+    //   }
+    // }
+
+    // // Проверка ссылок атрибутов
+    // for (const [path, attribute] of this.masterTagAttributes) {
+    //   if (attribute.props.attributeOf === undefined) {
+    //     this.addError(path, 'attributeOf (MasterTag reference) is required')
+    //   } else if (!this.masterTags.has(attribute.props.attributeOf)) {
+    //     this.addError(path, `Invalid MasterTag reference: ${attribute.props.attributeOf}`)
+    //   }
+    // }
+
+    // // Проверка ссылок карточек
+    // for (const [path, card] of this.cards) {
+    //   if (card._class === undefined) {
+    //     this.addError(path, 'class (MasterTag reference) is required')
+    //   } else if (!this.masterTags.has(card._class)) {
+    //     this.addError(path, `Invalid MasterTag reference: ${card._class}`)
+    //   }
+    // }
+  }
+
   private addError (path: string, error: string): void {
     this.errors.set(path, { path, error })
   }
@@ -672,6 +822,213 @@ export class ImportWorkspaceBuilder {
           break
       }
     }
+    return errors
+  }
+
+  private validateMasterTag (masterTag: UnifiedDoc<MasterTag>): string[] {
+    const errors: string[] = []
+
+    // Проверка класса
+    if (masterTag._class !== card.class.MasterTag) {
+      errors.push('Invalid class: ' + masterTag._class)
+    }
+
+    // Проверка обязательных полей
+    if (!this.validateStringDefined(masterTag.props.label)) {
+      errors.push('label is required')
+    }
+
+    // Проверка уникальности имени
+    const existingTags = Array.from(this.masterTags.values())
+      .filter(tag => tag.props.label === masterTag.props.label)
+    if (existingTags.length > 0) {
+      errors.push(`MasterTag with label "${masterTag.props.label}" already exists`)
+    }
+
+    return errors
+  }
+
+  private validateTag (tag: UnifiedDoc<Tag>): string[] {
+    const errors: string[] = []
+
+    // Проверка класса
+    if (tag._class !== card.class.Tag) {
+      errors.push('Invalid class: ' + tag._class)
+    }
+
+    // Проверка обязательных полей
+    if (!this.validateStringDefined(tag.props.label)) {
+      errors.push('label is required')
+    }
+
+    // Проверка уникальности имени в рамках MasterTag
+    const existingTags = Array.from(this.tags.values())
+      .filter(t => t.props.extends === tag.props.extends &&
+                   t.props.label === tag.props.label)
+    if (existingTags.length > 0) {
+      errors.push(`Tag with label "${tag.props.label}" already exists for this MasterTag`)
+    }
+
+    return errors
+  }
+
+  private validateMasterTagAttribute (attribute: UnifiedDoc<Attribute<MasterTag>>): string[] {
+    const errors: string[] = []
+
+    // Проверка класса
+    if (attribute._class !== core.class.Attribute) {
+      errors.push('Invalid class: ' + attribute._class)
+    }
+
+    // Проверка обязательных полей
+    if (!this.validateStringDefined(attribute.props.name)) {
+      errors.push('name is required')
+    }
+    if (!this.validateStringDefined(attribute.props.label)) {
+      errors.push('label is required')
+    }
+
+    // todo: fix Проверка связи с MasterTag
+    // if (attribute.props.attributeOf === undefined) {
+    //   errors.push('attributeOf (MasterTag reference) is required')
+    // } else if (!this.masterTags.has(attribute.props.attributeOf)) {
+    //   errors.push(`Invalid MasterTag reference: ${attribute.props.attributeOf}`)
+    // }
+
+    // todo: fix Проверка типа атрибута
+    // if (attribute.props.type === undefined) {
+    //   errors.push('type is required')
+    // } else {
+    //   const validTypes = [ // todo: double check valid types
+    //     'TypeString', 'TypeNumber', 'TypeBoolean', 'TypeDate',
+    //     'TypeHyperlink', 'TypeEnum', 'TypeFileSize', 'TypeIntlString',
+    //     'TypeMarkup', 'TypeTimestamp', 'TypeRef', 'TypeCollection'
+    //   ]
+    //   if (!validTypes.includes(attribute.props.type)) {
+    //     errors.push(`Invalid attribute type: ${attribute.props.type}`)
+    //   }
+    // }
+
+    // Проверка уникальности имени атрибута в рамках MasterTag
+    const existingAttributes = Array.from(this.masterTagAttributes.values())
+      .filter(a => a.props.attributeOf === attribute.props.attributeOf &&
+                   a.props.name === attribute.props.name)
+    if (existingAttributes.length > 0) {
+      errors.push(`Attribute with name "${attribute.props.name}" already exists for this MasterTag`)
+    }
+
+    return errors
+  }
+
+  private validateAssociation (association: UnifiedDoc<Association>): string[] {
+    const errors: string[] = []
+
+    // todo: validate association
+
+    return errors
+  }
+
+  private validateRelation (relation: UnifiedDoc<Relation>): string[] {
+    const errors: string[] = []
+
+    // todo: validate relation
+
+    return errors
+  }
+
+  private validateEnum (enumDoc: UnifiedDoc<Enum>): string[] {
+    const errors: string[] = []
+
+    // todo: validate enum
+
+    return errors
+  }
+
+  private validateAttachment (attachment: UnifiedDoc<Attachment>): string[] {
+    const errors: string[] = []
+
+    // todo: validate attachment
+
+    return errors
+  }
+
+  private validateCard (card: UnifiedDoc<Card>): string[] {
+    const errors: string[] = []
+
+    // Проверка класса (должен быть ссылкой на MasterTag)
+    // if (card._class === undefined) {
+    //   errors.push('class (MasterTag reference) is required')
+    // } else if (!this.masterTags.has(card._class)) {
+    //   errors.push(`Invalid MasterTag reference: ${card._class}`)
+    // }
+
+    // Проверка обязательных полей
+    if (!this.validateStringDefined(card.props.title)) {
+      errors.push('title is required')
+    }
+
+    // Получаем MasterTag и его атрибуты
+    const masterTag = this.masterTags.get(card._class)
+    if (masterTag !== undefined) {
+      const attributes = Array.from(this.masterTagAttributes.values())
+        .filter(a => a.props.attributeOf === card._class)
+
+      // Проверяем значения атрибутов
+      for (const attribute of attributes) {
+        const value = (card.props as Record<string, unknown>)[attribute.props.name]
+
+        // Проверка обязательных атрибутов
+        // todo: check if required attribute is missing
+        // if (attribute.props.required && value === undefined) {
+        //   errors.push(`Required attribute "${attribute.props.label}" is missing`)
+        //   continue
+        // }
+
+        // Проверка типов данных
+        if (value !== undefined) {
+          switch (attribute.props.type) {
+            case 'TypeString':
+              if (typeof value !== 'string') {
+                errors.push(`Attribute "${attribute.props.label}" must be a string`)
+              }
+              break
+            case 'TypeNumber':
+              if (typeof value !== 'number') {
+                errors.push(`Attribute "${attribute.props.label}" must be a number`)
+              }
+              break
+            case 'TypeBoolean':
+              if (typeof value !== 'boolean') {
+                errors.push(`Attribute "${attribute.props.label}" must be a boolean`)
+              }
+              break
+            case 'TypeDate':
+              if (!(value instanceof Date)) {
+                errors.push(`Attribute "${attribute.props.label}" must be a date`)
+              }
+              break
+            // todo: add other types as needed
+          }
+        }
+      }
+    }
+
+    return errors
+  }
+
+  private validateTagMixin (mixin: UnifiedMixin<Doc, Doc>): string[] {
+    const errors: string[] = []
+
+    // todo: validate tag mixin
+
+    return errors
+  }
+
+  private validateFile (file: UnifiedFile): string[] {
+    const errors: string[] = []
+
+    // todo: validate file
+
     return errors
   }
 

@@ -1,0 +1,5 @@
+class: core:class:Enum
+title: AlphaBeta
+values:
+  - Alpha
+  - Beta

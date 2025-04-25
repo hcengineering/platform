@@ -14,15 +14,26 @@
 //
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Attachment } from '@hcengineering/attachment'
-import contact, { Employee, SocialIdentity, type Person } from '@hcengineering/contact'
-import {
+import card, { Card, MasterTag, Tag } from '@hcengineering/card'
+import contact, { Employee, type Person, SocialIdentity } from '@hcengineering/contact'
+import documents, {
+  ControlledDocument,
+  DocumentCategory,
+  DocumentMeta,
+  DocumentState
+} from '@hcengineering/controlled-documents'
+import core, {
   AccountUuid,
-  buildSocialIdString,
+  Association,
+  Attribute,
   type Class,
   type Doc,
+  Enum,
   generateId,
+  isId,
   PersonId,
   type Ref,
+  Relation,
   SocialIdType,
   type Space,
   type TxOperations
@@ -44,22 +55,20 @@ import {
   type ImportDocument,
   ImportDrawing,
   type ImportIssue,
+  ImportOrgSpace,
   type ImportProject,
   type ImportProjectType,
   type ImportTeamspace,
   type ImportWorkspace,
-  WorkspaceImporter,
-  ImportOrgSpace
+  WorkspaceImporter
 } from '../importer/importer'
 import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
-import documents, {
-  DocumentState,
-  DocumentCategory,
-  ControlledDocument,
-  DocumentMeta
-} from '@hcengineering/controlled-documents'
+import { UnifiedDoc } from '../types'
+import { readMarkdownContent, readYamlHeader } from './parsing'
+import { UnifiedDocProcessor } from './unified'
+import attachment from '@hcengineering/model-attachment'
 
 export interface HulyComment {
   author: string
@@ -335,6 +344,7 @@ interface AttachmentMetadata {
 export class HulyFormatImporter {
   private readonly importerEmailPlaceholder = 'newuser@huly.io'
   private readonly importerNamePlaceholder = 'New User'
+
   private readonly pathById = new Map<Ref<Doc>, string>()
   private readonly refMetaByPath = new Map<string, ReferenceMetadata>()
   private readonly fileMetaByPath = new Map<string, AttachmentMetadata>()
@@ -343,7 +353,10 @@ export class HulyFormatImporter {
   private personsByName = new Map<string, Ref<Person>>()
   private employeesByName = new Map<string, Ref<Employee>>()
   private accountsByEmail = new Map<string, AccountUuid>()
+
   private readonly personIdByEmail = new Map<string, PersonId>()
+
+  private readonly unifiedDocImporter = new UnifiedDocProcessor()
 
   constructor (
     private readonly client: TxOperations,
@@ -351,7 +364,8 @@ export class HulyFormatImporter {
     private readonly logger: Logger,
     private readonly importerSocialId?: PersonId,
     private readonly importerPerson?: Ref<Person>
-  ) {}
+  ) {
+  }
 
   private async initCaches (): Promise<void> {
     await this.cachePersonsByNames()
@@ -476,6 +490,56 @@ export class HulyFormatImporter {
       }
     }
 
+    // Импортируем UnifiedDoc сущности
+    const { docs: unifiedDocs, mixins: unifiedMixins, files } = await this.unifiedDocImporter.importFromDirectory(folderPath)
+
+    // Разбираем и добавляем в билдер по классу
+    for (const [path, docs] of unifiedDocs.entries()) {
+      for (const doc of docs) {
+        switch (doc._class) {
+          case card.class.MasterTag:
+            builder.addMasterTag(path, doc as UnifiedDoc<MasterTag>)
+            break
+          case card.class.Tag:
+            builder.addTag(path, doc as UnifiedDoc<Tag>)
+            break
+          case core.class.Attribute:
+            builder.addMasterTagAttributes(path, [doc as UnifiedDoc<Attribute<MasterTag>>])
+            break
+          case core.class.Association:
+            builder.addAssociation(path, doc as UnifiedDoc<Association>)
+            break
+          case core.class.Relation:
+            builder.addRelation(path, doc as UnifiedDoc<Relation>)
+            break
+          case core.class.Enum:
+            builder.addEnum(path, doc as UnifiedDoc<Enum>)
+            break
+          case attachment.class.Attachment:
+            builder.addAttachment(path, doc as UnifiedDoc<Attachment>)
+            break
+          default:
+            if (isId(doc._class) || (doc._class as string).startsWith('card:types:')) { // todo: fix system cards validation
+              builder.addCard(path, doc as UnifiedDoc<Card>)
+            } else {
+              this.logger.error(`Unknown doc class ${String(doc._class)} for path ${path}`)
+            }
+        }
+      }
+    }
+
+    // todo: attachments
+
+    for (const [path, mixins] of unifiedMixins.entries()) {
+      for (const mixin of mixins) {
+        builder.addTagMixin(path, mixin)
+      }
+    }
+
+    for (const [path, file] of files.entries()) {
+      builder.addFile(path, file)
+    }
+
     // Process all yaml files first
     const yamlFiles = fs.readdirSync(folderPath).filter((f) => f.endsWith('.yaml') && f !== 'settings.yaml')
 
@@ -521,6 +585,13 @@ export class HulyFormatImporter {
             break
           }
 
+          case core.class.Enum:
+          case core.class.Association:
+          case card.class.MasterTag: {
+            this.logger.log(`Skipping ${spaceName}: master tag already processed`)
+            break
+          }
+
           default: {
             throw new Error(`Unknown space class ${spaceConfig.class} in ${spaceName}`)
           }
@@ -545,7 +616,7 @@ export class HulyFormatImporter {
 
     for (const issueFile of issueFiles) {
       const issuePath = path.join(currentPath, issueFile)
-      const issueHeader = (await this.readYamlHeader(issuePath)) as HulyIssueHeader
+      const issueHeader = (await readYamlHeader(issuePath)) as HulyIssueHeader
 
       if (issueHeader.class === undefined) {
         this.logger.error(`Skipping ${issueFile}: not an issue`)
@@ -569,7 +640,7 @@ export class HulyFormatImporter {
           class: tracker.class.Issue,
           title: issueHeader.title,
           number: parseInt(issueNumber ?? 'NaN'),
-          descrProvider: async () => await this.readMarkdownContent(issuePath),
+          descrProvider: async () => await readMarkdownContent(issuePath),
           status: { name: issueHeader.status },
           priority: issueHeader.priority,
           estimation: issueHeader.estimation,
@@ -657,7 +728,7 @@ export class HulyFormatImporter {
 
     for (const docFile of docFiles) {
       const docPath = path.join(currentPath, docFile)
-      const docHeader = (await this.readYamlHeader(docPath)) as HulyDocumentHeader
+      const docHeader = (await readYamlHeader(docPath)) as HulyDocumentHeader
 
       if (docHeader.class === undefined) {
         this.logger.error(`Skipping ${docFile}: not a document`)
@@ -678,7 +749,7 @@ export class HulyFormatImporter {
           id: docMeta.id as Ref<Document>,
           class: document.class.Document,
           title: docHeader.title,
-          descrProvider: async () => await this.readMarkdownContent(docPath),
+          descrProvider: async () => await readMarkdownContent(docPath),
           subdocs: [] // Will be added via builder
         }
 
@@ -705,7 +776,7 @@ export class HulyFormatImporter {
 
     for (const docFile of docFiles) {
       const docPath = path.join(currentPath, docFile)
-      const docHeader = (await this.readYamlHeader(docPath)) as
+      const docHeader = (await readYamlHeader(docPath)) as
         | HulyControlledDocumentHeader
         | HulyDocumentTemplateHeader
 
@@ -906,7 +977,7 @@ export class HulyFormatImporter {
       reviewers: header.reviewers?.map((email) => this.findEmployeeByName(email)) ?? [],
       approvers: header.approvers?.map((email) => this.findEmployeeByName(email)) ?? [],
       coAuthors: header.coAuthors?.map((email) => this.findEmployeeByName(email)) ?? [],
-      descrProvider: async () => await this.readMarkdownContent(docPath),
+      descrProvider: async () => await readMarkdownContent(docPath),
       ccReason: header.changeControl?.reason,
       ccImpact: header.changeControl?.impact,
       ccDescription: header.changeControl?.description,
@@ -944,28 +1015,12 @@ export class HulyFormatImporter {
       reviewers: header.reviewers?.map((email) => this.findEmployeeByName(email)) ?? [],
       approvers: header.approvers?.map((email) => this.findEmployeeByName(email)) ?? [],
       coAuthors: header.coAuthors?.map((email) => this.findEmployeeByName(email)) ?? [],
-      descrProvider: async () => await this.readMarkdownContent(docPath),
+      descrProvider: async () => await readMarkdownContent(docPath),
       ccReason: header.changeControl?.reason,
       ccImpact: header.changeControl?.impact,
       ccDescription: header.changeControl?.description,
       subdocs: []
     }
-  }
-
-  private async readYamlHeader (filePath: string): Promise<any> {
-    this.logger.log('Read YAML header from: ' + filePath)
-    const content = fs.readFileSync(filePath, 'utf8')
-    const match = content.match(/^---\n([\s\S]*?)\n---/)
-    if (match != null) {
-      return yaml.load(match[1])
-    }
-    return {}
-  }
-
-  private async readMarkdownContent (filePath: string): Promise<string> {
-    const content = fs.readFileSync(filePath, 'utf8')
-    const match = content.match(/^---\n[\s\S]*?\n---\n(.*)$/s)
-    return match != null ? match[1] : content
   }
 
   private async cacheAccountsByEmails (): Promise<void> {
