@@ -22,6 +22,7 @@ import {
   type Doc,
   type DocumentQuery,
   type FindOptions,
+  type FulltextStorage,
   type Hierarchy,
   type ModelDb,
   type Ref,
@@ -29,7 +30,7 @@ import {
   type WithLookup
 } from '@hcengineering/core'
 
-export interface RestClient extends Storage {
+export interface RestClient extends Storage, FulltextStorage {
   getAccount: () => Promise<Account>
 
   findOne: <T extends Doc>(
