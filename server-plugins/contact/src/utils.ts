@@ -102,29 +102,6 @@ export async function getPerson (control: TriggerControl, personId: PersonId): P
   return (await control.findAll(control.ctx, contact.class.Person, { _id: socialId.attachedTo }))[0]
 }
 
-export async function getPersonsBySocialIds (
-  control: TriggerControl,
-  personIds: PersonId[]
-): Promise<Record<PersonId, Person>> {
-  const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, {
-    _id: { $in: personIds as SocialIdentityRef[] }
-  })
-  const persons = toIdMap(
-    await control.findAll(control.ctx, contact.class.Person, { _id: { $in: socialIds.map((s) => s.attachedTo) } })
-  )
-
-  return socialIds.reduce<Record<PersonId, Person>>((acc, s) => {
-    const person = persons.get(s.attachedTo)
-    if (person !== undefined) {
-      acc[s._id] = person
-    } else {
-      console.error('No person found for social id', s.key)
-    }
-
-    return acc
-  }, {})
-}
-
 export async function getEmployee (control: TriggerControl, personId: PersonId): Promise<Employee | undefined> {
   const socialId = (
     await control.findAll(control.ctx, contact.class.SocialIdentity, { _id: personId as SocialIdentityRef })

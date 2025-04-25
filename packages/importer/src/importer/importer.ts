@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import attachment, { Drawing, type Attachment } from '@hcengineering/attachment'
+import attachment, { type Attachment, Drawing } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { Employee, type Person } from '@hcengineering/contact'
 import documents, {
@@ -31,6 +31,7 @@ import documents, {
 } from '@hcengineering/controlled-documents'
 import core, {
   type AttachedData,
+  AttachedDoc,
   type Class,
   type CollaborativeDoc,
   type Data,
@@ -69,14 +70,20 @@ import tracker, {
   TimeReportDayType
 } from '@hcengineering/tracker'
 import view from '@hcengineering/view'
+import { Props, UnifiedUpdate, UnifiedDoc, UnifiedFile, UnifiedMixin } from '../types'
+import { Logger } from './logger'
 import { type MarkdownPreprocessor, NoopMarkdownPreprocessor } from './preprocessor'
 import { type FileUploader } from './uploader'
-import { Logger } from './logger'
-
 export interface ImportWorkspace {
   projectTypes?: ImportProjectType[]
   spaces?: ImportSpace<ImportDoc>[]
   attachments?: ImportAttachment[]
+  unifiedDocs?: {
+    docs?: UnifiedDoc<Doc<Space>>[]
+    mixins?: UnifiedMixin<Doc<Space>, Doc<Space>>[]
+    updates?: UnifiedUpdate<Doc<Space>>[]
+    files?: UnifiedFile[]
+  }
 }
 
 export interface ImportProjectType {
@@ -174,8 +181,8 @@ export interface ImportDrawing {
   contentProvider: () => Promise<string>
 }
 
-export type ImportControlledDoc = ImportControlledDocument | ImportControlledDocumentTemplate // todo: rename
-export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
+export type ImportControlledDocOrTemplate = ImportControlledDocument | ImportControlledDocumentTemplate
+export interface ImportOrgSpace extends ImportSpace<ImportControlledDocOrTemplate> {
   class: Ref<Class<DocumentSpace>>
   qualified?: AccountUuid
   manager?: AccountUuid
@@ -191,7 +198,7 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   major: number
   minor: number
   state: DocumentState
-  category?: Ref<DocumentCategory>
+  category: Ref<DocumentCategory>
   author?: Ref<Employee>
   owner?: Ref<Employee>
   abstract?: string
@@ -201,18 +208,19 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   ccReason?: string
   ccImpact?: string
   ccDescription?: string
-  subdocs: ImportControlledDoc[]
+  subdocs: ImportControlledDocOrTemplate[]
 }
 
 export interface ImportControlledDocument extends ImportDoc {
   id: Ref<ControlledDocument>
   metaId: Ref<DocumentMeta>
   class: Ref<Class<ControlledDocument>>
-  template: Ref<ControlledDocument> // todo: test (it was Ref<DocumentTemplate>)
+  template: Ref<ControlledDocument>
   code?: string
   major: number
   minor: number
   state: DocumentState
+  category?: Ref<DocumentCategory>
   reviewers?: Ref<Employee>[]
   approvers?: Ref<Employee>[]
   coAuthors?: Ref<Employee>[]
@@ -222,7 +230,7 @@ export interface ImportControlledDocument extends ImportDoc {
   ccReason?: string
   ccImpact?: string
   ccDescription?: string
-  subdocs: ImportControlledDoc[]
+  subdocs: ImportControlledDocOrTemplate[]
 }
 
 export class WorkspaceImporter {
@@ -238,6 +246,13 @@ export class WorkspaceImporter {
   ) {}
 
   public async performImport (): Promise<void> {
+    if (this.workspaceData.unifiedDocs !== undefined) {
+      await this.importUnifiedDocs()
+      await this.importUnifiedMixins()
+      await this.importUnifiedUpdates()
+      await this.uploadFiles()
+    }
+
     await this.importProjectTypes()
     await this.importSpaces()
     await this.importAttachments()
@@ -841,7 +856,7 @@ export class WorkspaceImporter {
   }
 
   private partitionTemplatesFromDocuments (
-    doc: ImportControlledDoc,
+    doc: ImportControlledDocOrTemplate,
     documentMap: Map<Ref<ControlledDocument>, ImportControlledDocument>,
     templateMap: Map<Ref<ControlledDocument>, ImportControlledDocumentTemplate>
   ): void {
@@ -904,19 +919,23 @@ export class WorkspaceImporter {
     this.logger.log('Creating document template: ' + template.title)
     const templateId = template.id ?? generateId<ControlledDocument>()
 
-    const { seqNumber, code, projectDocumentId } = await createDocumentTemplateMetadata(
+    const { seqNumber, code, projectDocumentId, success } = await createDocumentTemplateMetadata(
       this.client,
       documents.class.Document,
       spaceId,
       documents.mixin.DocumentTemplate,
       undefined,
       parentProjectDocumentId,
-      templateId as unknown as Ref<ControlledDocument>, // todo: suspisios place
+      templateId as unknown as Ref<ControlledDocument>,
       template.docPrefix,
       template.code ?? '',
       template.title,
       template.metaId
     )
+
+    if (!success) {
+      throw new Error('Failed to create document template: ' + template.title)
+    }
 
     templateMetaMap.set(templateId, { seqNumber, code })
 
@@ -954,10 +973,12 @@ export class WorkspaceImporter {
     const collabId = makeCollabId(documents.class.Document, template.id, 'content')
     const contentId = await this.createCollaborativeContent(template.id, collabId, content, spaceId)
 
-    const changeControlId =
-      template.ccReason !== undefined || template.ccImpact !== undefined || template.ccDescription !== undefined
-        ? await this.createChangeControl(spaceId, template.ccDescription, template.ccReason, template.ccImpact)
-        : ('' as Ref<ChangeControl>)
+    const changeControlId = await this.createChangeControl(
+      spaceId,
+      template.ccDescription,
+      template.ccReason,
+      template.ccImpact
+    )
 
     const ops = this.client.apply()
     const result = await ops.addCollection(
@@ -974,19 +995,20 @@ export class WorkspaceImporter {
         author: template.author,
         owner: template.owner,
         abstract: template.abstract,
+        category: template.category,
         reviewers: template.reviewers ?? [],
         approvers: template.approvers ?? [],
         coAuthors: template.coAuthors ?? [],
         code,
         seqNumber,
-        prefix: template.docPrefix, // todo: or TEMPLATE_PREFIX?s
+        prefix: template.docPrefix,
         content: contentId,
         changeControl: changeControlId,
         commentSequence: 0,
         requests: 0,
         labels: 0
       },
-      template.id as unknown as Ref<ControlledDocument> // todo: make sure it's not used anywhere as mixin id
+      template.id as unknown as Ref<ControlledDocument>
     )
 
     await ops.createMixin(template.id, documents.class.Document, spaceId, documents.mixin.DocumentTemplate, {
@@ -1012,10 +1034,9 @@ export class WorkspaceImporter {
     this.logger.log('Creating controlled document: ' + doc.title)
     const documentId = doc.id ?? generateId<ControlledDocument>()
 
-    // const { seqNumber, prefix, category } = await useDocumentTemplate(this.client, doc.template as unknown as Ref<DocumentTemplate>)
     const result = await createControlledDocMetadata(
       this.client,
-      documents.template.ProductChangeControl, // todo: make it dynamic - wtf, commit missed?
+      documents.template.ProductChangeControl,
       documentId,
       spaceId,
       undefined, // project
@@ -1026,6 +1047,10 @@ export class WorkspaceImporter {
       doc.title,
       doc.metaId
     )
+
+    if (!result.success) {
+      throw new Error('Failed to create controlled document: ' + doc.title)
+    }
 
     // Process subdocs recursively
     for (const subdoc of doc.subdocs) {
@@ -1060,18 +1085,22 @@ export class WorkspaceImporter {
     const contentId = await this.createCollaborativeContent(document.id, collabId, content, spaceId)
 
     const templateId = document.template
-    const { seqNumber, prefix, category } = await useDocumentTemplate(
-      this.client,
-      templateId as unknown as Ref<DocumentTemplate>
-    )
+    const {
+      seqNumber,
+      prefix,
+      category: templateCategory
+    } = await useDocumentTemplate(this.client, templateId as unknown as Ref<DocumentTemplate>)
 
     const ops = this.client.apply()
 
-    const changeControlId =
-      document.ccReason !== undefined || document.ccImpact !== undefined
-        ? await this.createChangeControl(spaceId, document.ccDescription, document.ccReason, document.ccImpact)
-        : ('' as Ref<ChangeControl>)
+    const changeControlId = await this.createChangeControl(
+      spaceId,
+      document.ccDescription,
+      document.ccReason,
+      document.ccImpact
+    )
 
+    const code = document.code ?? `${prefix}-${seqNumber}`
     const result = await ops.addCollection(
       documents.class.ControlledDocument,
       spaceId,
@@ -1090,9 +1119,9 @@ export class WorkspaceImporter {
         approvers: document.approvers ?? [],
         coAuthors: document.coAuthors ?? [],
         changeControl: changeControlId,
-        code: document.code ?? `${prefix}-${seqNumber}`,
+        code,
         prefix,
-        category,
+        category: document.category ?? templateCategory,
         seqNumber,
         content: contentId,
         template: templateId as unknown as Ref<DocumentTemplate>,
@@ -1104,7 +1133,7 @@ export class WorkspaceImporter {
 
     await ops.updateDoc(documents.class.DocumentMeta, spaceId, document.metaId, {
       documents: 0,
-      title: `${prefix}-${seqNumber} ${document.title}`
+      title: `${code} ${document.title}`
     })
 
     await ops.commit()
@@ -1128,5 +1157,89 @@ export class WorkspaceImporter {
     }
 
     return await this.client.createDoc(documents.class.ChangeControl, spaceId, changeControlData)
+  }
+
+  private async importUnifiedDocs (): Promise<void> {
+    const { docs } = this.workspaceData?.unifiedDocs ?? {}
+    if (docs === undefined) return
+
+    for (const doc of docs) {
+      await this.createUnifiedDoc(doc)
+    }
+  }
+
+  private async createUnifiedDoc (unifiedDoc: UnifiedDoc<Doc<Space>>): Promise<void> {
+    const { _class, props } = unifiedDoc
+    const _id = props._id ?? generateId<Doc<Space>>()
+    if (unifiedDoc.collabField !== undefined) {
+      const collabId = makeCollabId(_class, _id, unifiedDoc.collabField)
+      const collabContent = (await unifiedDoc.contentProvider?.()) ?? ''
+      const res = await this.createCollaborativeContent(_id, collabId, collabContent, props.space)
+      ;(props as any)[unifiedDoc.collabField] = res
+    }
+
+    const hierarchy = this.client.getHierarchy()
+    if (hierarchy.isDerived(_class, core.class.AttachedDoc)) {
+      const { space, attachedTo, attachedToClass, collection, ...data } = props as unknown as Props<AttachedDoc>
+      if (
+        attachedTo === undefined ||
+        space === undefined ||
+        attachedToClass === undefined ||
+        collection === undefined
+      ) {
+        throw new Error('Add collection step must have attachedTo, attachedToClass, collection and space')
+      }
+      await this.client.addCollection(
+        _class,
+        space,
+        attachedTo,
+        attachedToClass,
+        collection,
+        data,
+        _id as Ref<AttachedDoc> | undefined
+      )
+    } else {
+      await this.client.createDoc(_class, props.space, props as Data<Doc<Space>>, _id)
+    }
+  }
+
+  private async importUnifiedUpdates (): Promise<void> {
+    const { updates } = this.workspaceData?.unifiedDocs ?? {}
+    if (updates === undefined) return
+
+    for (const update of updates) {
+      const { _class, _id, space, props } = update
+      await this.client.updateDoc(_class, space, _id, props)
+    }
+  }
+
+  private async importUnifiedMixins (): Promise<void> {
+    const { mixins } = this.workspaceData?.unifiedDocs ?? {}
+    if (mixins === undefined) return
+
+    for (const mixin of mixins) {
+      const { _class, mixin: mixinClass, props } = mixin
+      const { _id, space, ...data } = props
+      await this.client.createMixin(
+        _id ?? generateId<Doc<Space>>(),
+        _class,
+        space,
+        mixinClass,
+        data as Data<Doc<Space>>
+      )
+    }
+  }
+
+  private async uploadFiles (): Promise<void> {
+    const { files } = this.workspaceData?.unifiedDocs ?? {}
+    if (files === undefined) return
+
+    for (const file of files) {
+      const id = file._id ?? generateId<PlatformBlob>()
+      const uploadResult = await this.fileUploader.uploadFile(id, await file.blobProvider())
+      if (!uploadResult.success) {
+        throw new Error('Failed to upload attachment file: ' + file.name)
+      }
+    }
   }
 }

@@ -20,7 +20,7 @@ import {
   ImportControlledDocument,
   ImportControlledDocumentTemplate,
   ImportOrgSpace,
-  type ImportControlledDoc,
+  type ImportControlledDocOrTemplate,
   type ImportDocument,
   type ImportIssue,
   type ImportProject,
@@ -43,6 +43,8 @@ const MAX_PROJECT_IDENTIFIER_LENGTH = 5
 const PROJECT_IDENTIFIER_REGEX = /^[a-zA-Z_][a-zA-Z0-9_]*$/
 
 export class ImportWorkspaceBuilder {
+  private readonly projectTypes = new Map<string, ImportProjectType>()
+
   private readonly projects = new Map<string, ImportProject>()
   private readonly issuesByProject = new Map<string, Map<string, ImportIssue>>()
   private readonly issueParents = new Map<string, string>()
@@ -53,11 +55,15 @@ export class ImportWorkspaceBuilder {
 
   private readonly qmsSpaces = new Map<string, ImportOrgSpace>()
   private readonly qmsTemplates = new Map<Ref<ControlledDocument>, string>()
-  private readonly qmsDocsBySpace = new Map<string, Map<string, ImportControlledDoc>>()
+  private readonly qmsDocsBySpace = new Map<string, Map<string, ImportControlledDocOrTemplate>>()
   private readonly qmsDocsParents = new Map<string, string>()
+  private readonly qmsDocCodes = new Set<string>()
+  private readonly qmsTemplatePrefixes = new Set<string>()
 
-  private readonly projectTypes = new Map<string, ImportProjectType>()
   private readonly issueStatusCache = new Map<string, Ref<IssueStatus>>()
+  private readonly qmsDocCodeCache = new Set<string>()
+  private readonly qmsTemplatePrefixCache = new Set<string>()
+
   private readonly errors = new Map<string, ValidationError>()
 
   constructor (
@@ -67,6 +73,7 @@ export class ImportWorkspaceBuilder {
 
   async initCache (): Promise<this> {
     await this.cacheIssueStatuses()
+    await this.cacheControlledDocumentCodes()
     return this
   }
 
@@ -156,13 +163,6 @@ export class ImportWorkspaceBuilder {
       throw new Error(`Document space ${spacePath} not found`)
     }
 
-    if (doc.code !== undefined) {
-      const duplicateDoc = Array.from(docs.values()).find((existingDoc) => existingDoc.code === doc.code)
-      if (duplicateDoc !== undefined) {
-        throw new Error(`Duplicate document code ${doc.code} in space ${spacePath}`)
-      }
-    }
-
     this.validateAndAdd(
       'controlledDocument',
       docPath,
@@ -192,13 +192,6 @@ export class ImportWorkspaceBuilder {
     const qmsDocs = this.qmsDocsBySpace.get(spacePath)
     if (qmsDocs === undefined) {
       throw new Error(`Document space ${spacePath} not found`)
-    }
-
-    if (template.code !== undefined) {
-      const duplicate = Array.from(qmsDocs.values()).find((existingDoc) => existingDoc.code === template.code)
-      if (duplicate !== undefined) {
-        throw new Error(`Duplicate document code ${template.code} in space ${spacePath}`)
-      }
     }
 
     this.validateAndAdd(
@@ -301,6 +294,22 @@ export class ImportWorkspaceBuilder {
     const statuses = await this.client.findAll(tracker.class.IssueStatus, query)
     for (const status of statuses) {
       this.issueStatusCache.set(status.name, status._id)
+    }
+  }
+
+  async cacheControlledDocumentCodes (): Promise<void> {
+    const existingDocs = await this.client.findAll(documents.class.Document, {})
+    for (const doc of existingDocs) {
+      if (doc.code !== undefined) {
+        this.qmsDocCodeCache.add(doc.code)
+      }
+    }
+
+    const existingTemplates = await this.client.findAll(documents.mixin.DocumentTemplate, {})
+    for (const template of existingTemplates) {
+      if (template.docPrefix !== undefined) {
+        this.qmsTemplatePrefixCache.add(template.docPrefix)
+      }
     }
   }
 
@@ -602,7 +611,7 @@ export class ImportWorkspaceBuilder {
     issue.subdocs = childIssues
   }
 
-  private buildControlledDocumentHierarchy (docPath: string, allDocs: Map<string, ImportControlledDoc>): void {
+  private buildControlledDocumentHierarchy (docPath: string, allDocs: Map<string, ImportControlledDocOrTemplate>): void {
     const doc = allDocs.get(docPath)
     if (doc === undefined) return
 
@@ -707,8 +716,21 @@ export class ImportWorkspaceBuilder {
     errors.push(...this.validateType(doc.class, 'string', 'class'))
     errors.push(...this.validateType(doc.template, 'string', 'template'))
     errors.push(...this.validateType(doc.state, 'string', 'state'))
+
     if (doc.code !== undefined) {
       errors.push(...this.validateType(doc.code, 'string', 'code'))
+
+      // Validate if document code exists in the database
+      if (this.qmsDocCodeCache.has(doc.code)) {
+        errors.push(`Document with code ${doc.code} already exists in the database`)
+      }
+
+      // Validate if document code is unique among imported documents
+      if (this.qmsDocCodes.has(doc.code)) {
+        errors.push(`Duplicate document code ${doc.code} in import`)
+      } else {
+        this.qmsDocCodes.add(doc.code)
+      }
     }
 
     // Validate required string fields are defined
@@ -754,8 +776,6 @@ export class ImportWorkspaceBuilder {
       errors.push('invalid state: ' + doc.state)
     }
 
-    // todo: validate seqNumber is not duplicated (unique prefix? code?)
-
     return errors
   }
 
@@ -767,13 +787,37 @@ export class ImportWorkspaceBuilder {
     errors.push(...this.validateType(template.class, 'string', 'class'))
     errors.push(...this.validateType(template.docPrefix, 'string', 'docPrefix'))
     errors.push(...this.validateType(template.state, 'string', 'state'))
+
     if (template.code !== undefined) {
       errors.push(...this.validateType(template.code, 'string', 'code'))
+
+      // Validate if template code exists in the database
+      if (this.qmsDocCodeCache.has(template.code)) {
+        errors.push(`Template with code ${template.code} already exists in the database`)
+      }
+
+      // Validate if template code is unique among imported templates
+      if (this.qmsDocCodes.has(template.code)) {
+        errors.push(`Duplicate template code ${template.code} in import`)
+      } else {
+        this.qmsDocCodes.add(template.code)
+      }
     }
 
     // Validate required string fields are defined
     if (!this.validateStringDefined(template.title)) errors.push('title is required')
     if (!this.validateStringDefined(template.docPrefix)) errors.push('docPrefix is required')
+    // Validate if template prefix exists in the database
+    if (this.qmsTemplatePrefixCache.has(template.docPrefix)) {
+      errors.push(`Template with documents prefix ${template.docPrefix} already exists in the database`)
+    }
+
+    // Validate if template prefix is unique among imported templates
+    if (this.qmsTemplatePrefixes.has(template.docPrefix)) {
+      errors.push(`Duplicate template documents prefix ${template.docPrefix} in import`)
+    } else {
+      this.qmsTemplatePrefixes.add(template.docPrefix)
+    }
 
     // Validate numbers are positive
     if (!this.validatePossitiveNumber(template.major)) errors.push('invalid value for field "major"')
@@ -814,25 +858,6 @@ export class ImportWorkspaceBuilder {
       errors.push('invalid state: ' + template.state)
     }
 
-    // todo: validate seqNumber no duplicated
     return errors
-  }
-
-  private validateControlledDocumentSpaces (): void {
-    // Validate document spaces
-    for (const [spacePath] of this.qmsSpaces) {
-      // Validate controlled documents
-      const docs = this.qmsDocsBySpace.get(spacePath)
-      if (docs !== undefined) {
-        // for (const [docPath, doc] of docs) {
-        for (const docPath of docs.keys()) {
-          // Check parent document exists
-          const parentPath = this.documentParents.get(docPath)
-          if (parentPath !== undefined && !docs.has(parentPath)) {
-            this.addError(docPath, `Parent document not found: ${parentPath}`)
-          }
-        }
-      }
-    }
   }
 }

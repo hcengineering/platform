@@ -2,7 +2,7 @@
 class: documents:mixin:DocumentTemplate
 title: 'Standard Operating Procedure Template'
 docPrefix: SOP
-category: DOC
+category: DC
 author: John Appleseed
 owner: John Appleseed
 abstract: Template for Standard Operating Procedures
