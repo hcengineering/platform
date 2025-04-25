@@ -148,12 +148,12 @@
   $: snapshots = backupInfo?.info?.snapshots ?? []
 </script>
 
-<div class="hulyComponent p-2 flex-no-shrink">
+<div class="hulyComponent flex-no-shrink">
   <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.Setting} label={setting.string.Backup} size={'large'} isCurrent />
   </Header>
 
-  <Scroller noStretch>
+  <Scroller padding={'1.5rem'} noStretch>
     {#if loading}
       <Loading size={'small'} />
     {:else if backupInfo == null}

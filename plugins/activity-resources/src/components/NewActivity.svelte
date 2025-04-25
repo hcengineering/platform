@@ -74,34 +74,32 @@
   })
 </script>
 
-<div class="step-tb-6">
-  <Section label={activity.string.Activity} icon={activity.icon.Activity}>
-    <svelte:fragment slot="header">
-      {#if isLoading}
-        <div class="ml-1">
-          <Spinner size="small" />
-        </div>
-      {/if}
-    </svelte:fragment>
-
-    <svelte:fragment slot="content">
-      <div class="p-activity select-text" id={activity.string.Activity}>
-        {#if messages.length}
-          <Grid column={1} rowGap={1}>
-            {#each messages as message (message.id)}
-              <MessagePresenter {message} card={object} />
-            {/each}
-          </Grid>
-        {/if}
+<Section label={activity.string.Activity} icon={activity.icon.Activity}>
+  <svelte:fragment slot="header">
+    {#if isLoading}
+      <div class="ml-1">
+        <Spinner size="small" />
       </div>
-      {#if showInput}
-        <div class="ref-input oldest-first">
-          <MessageInput cardId={object._id} cardType={object._class} placeholder={activity.string.Message} />
-        </div>
+    {/if}
+  </svelte:fragment>
+
+  <svelte:fragment slot="content">
+    <div class="p-activity select-text" id={activity.string.Activity}>
+      {#if messages.length}
+        <Grid column={1} rowGap={1}>
+          {#each messages as message (message.id)}
+            <MessagePresenter {message} card={object} />
+          {/each}
+        </Grid>
       {/if}
-    </svelte:fragment>
-  </Section>
-</div>
+    </div>
+    {#if showInput}
+      <div class="ref-input oldest-first">
+        <MessageInput cardId={object._id} cardType={object._class} placeholder={activity.string.Message} />
+      </div>
+    {/if}
+  </svelte:fragment>
+</Section>
 
 <style lang="scss">
   .ref-input {

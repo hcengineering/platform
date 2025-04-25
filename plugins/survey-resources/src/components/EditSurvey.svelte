@@ -17,7 +17,7 @@
 <script lang="ts">
   import { MessageBox } from '@hcengineering/presentation'
   import { Question, QuestionKind, Survey } from '@hcengineering/survey'
-  import { createFocusManager, EditBox, FocusHandler, Icon, Label, showPopup } from '@hcengineering/ui'
+  import { createFocusManager, EditBox, FocusHandler, showPopup, Section } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import survey from '../plugin'
   import EditQuestion from './EditQuestion.svelte'
@@ -144,53 +144,47 @@
       }}
     />
   </div>
-  <div class="antiSection step-tb-6">
-    <div class="antiSection-header mb-3">
-      <div class="antiSection-header__icon">
-        <Icon icon={IconQuestion} size={'small'} />
-      </div>
-      <span class="antiSection-header__title">
-        <Label label={survey.string.Questions} />
-      </span>
-    </div>
-    {#each questionList as question, index (index)}
-      {@const isNewQuestion = index === questionList.length - 1}
-      <div
-        role="listitem"
-        on:dragover={(ev) => {
-          onQuestionDragOver(ev, index)
-        }}
-        on:dragleave={(ev) => {
-          onQuestionDragLeave(ev, index)
-        }}
-        on:drop={onQuestionDrop}
-        class:dragged-over={draggedIndex !== undefined &&
-          draggedOverIndex === index &&
-          draggedOverIndex !== draggedIndex &&
-          draggedOverIndex !== draggedIndex + 1}
-      >
-        <EditQuestion
-          bind:this={questionComponents[index]}
-          {question}
-          {isNewQuestion}
-          on:delete={() => {
-            deleteQuestion(index)
+  <Section label={survey.string.Questions} icon={IconQuestion} spaceBeforeContent>
+    <svelte:fragment slot="content">
+      {#each questionList as question, index (index)}
+        {@const isNewQuestion = index === questionList.length - 1}
+        <div
+          role="listitem"
+          on:dragover={(ev) => {
+            onQuestionDragOver(ev, index)
           }}
-          on:change={(e) => {
-            isNewQuestion ? handleNewQuestionChange(e.detail) : handleQuestionChange(index, e.detail)
+          on:dragleave={(ev) => {
+            onQuestionDragLeave(ev, index)
           }}
-          {readonly}
-          on:dragStart={() => {
-            draggedIndex = index
-          }}
-          on:dragEnd={() => {
-            draggedIndex = undefined
-            draggedOverIndex = undefined
-          }}
-        />
-      </div>
-    {/each}
-  </div>
+          on:drop={onQuestionDrop}
+          class:dragged-over={draggedIndex !== undefined &&
+            draggedOverIndex === index &&
+            draggedOverIndex !== draggedIndex &&
+            draggedOverIndex !== draggedIndex + 1}
+        >
+          <EditQuestion
+            bind:this={questionComponents[index]}
+            {question}
+            {isNewQuestion}
+            on:delete={() => {
+              deleteQuestion(index)
+            }}
+            on:change={(e) => {
+              isNewQuestion ? handleNewQuestionChange(e.detail) : handleQuestionChange(index, e.detail)
+            }}
+            {readonly}
+            on:dragStart={() => {
+              draggedIndex = index
+            }}
+            on:dragEnd={() => {
+              draggedIndex = undefined
+              draggedOverIndex = undefined
+            }}
+          />
+        </div>
+      {/each}
+    </svelte:fragment>
+  </Section>
 {/if}
 
 <style lang="scss">

@@ -24,13 +24,14 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
   export let showHeader: boolean = true
+  export let spaceBeforeContent: boolean = false
   export let high: boolean = false
   export let invisible: boolean = false
 </script>
 
 <div class="antiSection" {id}>
   {#if showHeader}
-    <div class="antiSection-header" class:high class:invisible>
+    <div class="antiSection-header" class:high class:invisible class:spaceBeforeContent>
       {#if icon}
         <div class="antiSection-header__icon">
           <Icon {icon} size={'small'} />

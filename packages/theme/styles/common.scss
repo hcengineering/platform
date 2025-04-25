@@ -598,6 +598,9 @@
       height: 3.5rem;
       min-height: 3.5rem;
     }
+    &.spaceBeforeContent {
+      margin-bottom: .75rem;
+    }
     &__icon {
       display: flex;
       justify-content: center;
@@ -657,14 +660,22 @@
   .invisible { display: none; }
   &-empty {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    font-size: .75rem;
-    color: var(--dark-color);
-    border: 1px dashed var(--divider-color);
-    border-radius: 0.75rem;
-
+    min-width: 0;
+    min-height: 0;
+    
+    &:not(.none-appearance) {
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 1rem;
+      font-size: .75rem;
+      color: var(--dark-color);
+      border: 1px dashed var(--divider-color);
+      border-radius: 0.75rem;
+    }
+    &.none-appearance {
+      flex-direction: column;
+    }
     &.solid { border-style: solid; }
     &.items {
       justify-content: start;
@@ -676,6 +687,9 @@
       .item { border-style: solid; }
     }
   }
+}
+:is(.antiSection, .step-tb-6, .mt-6) + :is(.antiSection, .step-tb-6) {
+  margin-top: 1.5rem;
 }
 
 // Button on selected card in Kanban
