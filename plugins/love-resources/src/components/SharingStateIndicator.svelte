@@ -34,7 +34,7 @@
     kind={'icon'}
     size={'x-small'}
     padding={'0 .25rem'}
-    showTooltip={{ label: love.string.Sharing }}
+    showTooltip={{ label: love.string.Sharing, direction: 'bottom' }}
     on:click={handleClick}
   />
 {/if}
