@@ -4,13 +4,13 @@ import {
   type SocialId,
   type WorkspaceInfoWithStatus,
   type WorkspaceUuid,
-  SocialIdType,
   buildSocialIdString,
   systemAccountUuid
 } from '@hcengineering/core'
 import { getAccountClient } from '@hcengineering/server-client'
-import { createClient as createKvsClient } from '@hcengineering/server-kvs'
+import { getClient as getKvsClient } from '@hcengineering/kvs-client'
 import { generateToken } from '@hcengineering/server-token'
+import { getSocialKeyByOldEmail } from '@hcengineering/model-core'
 import type { Db } from 'mongodb'
 
 // Old token and history types
@@ -106,7 +106,7 @@ async function migrateGmailIntegrations (
         }
         token.workspace = ws.uuid
 
-        const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: token.userId })
+        const socialKey = buildSocialIdString(getSocialKeyByOldEmail(token.userId))
         const socialId =
           socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
         if (socialId !== undefined) {
@@ -182,11 +182,11 @@ async function migrateGmailHistory (
     const history = db.collection<History>('histories')
     const allHistories = await history.find({}).toArray()
 
-    const kvsClient = createKvsClient(kvsUrl, token)
+    const kvsClient = getKvsClient(kvsUrl, token)
 
     for (const history of allHistories) {
       try {
-        const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: history.userId })
+        const socialKey = buildSocialIdString(getSocialKeyByOldEmail(history.userId))
         const socialId =
           socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
         if (socialId !== undefined) {
@@ -196,7 +196,7 @@ async function migrateGmailHistory (
             continue
           }
           const historyKey = getHistoryKey(ws.uuid, socialId._id)
-          const existingHistory = kvsClient.getValue<HistoryV2>(historyKey)
+          const existingHistory = await kvsClient.getValue<HistoryV2>(historyKey)
           const updatedHistory: HistoryV2 = {
             ...(existingHistory ?? history),
             email: history.userId,
