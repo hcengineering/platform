@@ -229,7 +229,7 @@ export class RestClientImpl implements RestClient {
     if (options.limit != null) {
       params.append('limit', `${options.limit}`)
     }
-    const requestUrl = concatLink(this.endpoint, `/api/v1/search-fulltext/${this.workspace}?${params}`)
+    const requestUrl = concatLink(this.endpoint, `/api/v1/search-fulltext/${this.workspace}?${params.toString()}`)
     const response = await fetch(requestUrl, {
       method: 'GET',
       headers: this.jsonHeaders(),
