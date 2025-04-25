@@ -7,4 +7,4 @@
   }
 </script>
 
-<StatusBarButton on:click={openPopup} icon={IconSearch} />
+<StatusBarButton id={'statusbar-search'} on:click={openPopup} icon={IconSearch} />
