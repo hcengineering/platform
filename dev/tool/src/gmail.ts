@@ -103,8 +103,7 @@ async function migrateGmailIntegrations (db: Db, token: string, workspaceProvide
         const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: token.userId })
         const socialId = socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
         if (socialId !== undefined) {
-          // Check/create integeration in account
-
+          // Check/create integration in account
           const existing = await gmailAccountClient.getIntegration({
             kind: GMAIL_INTEGRATION,
             workspaceUuid: ws?.uuid,

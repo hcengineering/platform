@@ -89,7 +89,6 @@ import {
   type QueueWorkspaceMessage,
   type StorageAdapter
 } from '@hcengineering/server-core'
-import { getClient as getKvsClient } from '@hcengineering/kvs-client'
 import { getAccountDBUrl, getKvsUrl, getMongoDBUrl } from './__start'
 // import { fillGithubUsers, fixAccountEmails, renameAccount } from './account'
 import { changeConfiguration } from './configuration'
@@ -98,7 +97,6 @@ import { performGithubAccountMigrations } from './github'
 import { migrateCreatedModifiedBy, ensureGlobalPersonsForLocalAccounts, moveAccountDbFromMongoToPG } from './db'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 import { performGmailAccountMigrations } from './gmail'
-import { get } from 'http'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -2434,8 +2432,8 @@ export function devTool (
 
   program
     .command('migrate-gmail-account')
-    .option('--db <db>', 'Github DB', '%github')
-    .option('--region <region>', 'Github DB')
+    .option('--db <db>', 'DB URL', '')
+    .option('--region <region>', 'Region', '')
     .action(async (cmd: { db: string, region?: string }) => {
       const mongodbUri = getMongoDBUrl()
       const client = getMongoClient(mongodbUri)
