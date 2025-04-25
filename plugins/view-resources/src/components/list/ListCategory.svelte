@@ -441,7 +441,11 @@
   in:fade|local={{ duration: 50 }}
   bind:this={div}
   class="category-container"
+  class:collapsed
+  class:category-one={oneCat}
+  class:category-last={lastCat}
   class:zero-container={level === 0}
+  class:disableHeader
   on:drop|preventDefault={drop}
   on:dragover={dragOverCat}
   on:dragenter={dragEnterCat}
