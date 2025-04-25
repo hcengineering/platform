@@ -1,0 +1,7 @@
+# RecipeRelations.yaml
+class: core:class:Association
+typeA: "./Recipes.yaml"
+typeB: "./Recipes.yaml"
+nameA: recommendedDesserts
+nameB: recommendedMainDishes
+type: "N:N" # 1:1, 1:N, N:N
