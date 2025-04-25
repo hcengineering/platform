@@ -2359,20 +2359,21 @@ export function devTool (
 
   program
     .command('apply-missing-tx-mongo-to-pg')
-    .option('-w, --workspace <workspace>', 'A selected "workspace" only', '')
+    .option('-w, --workspace <workspace>', 'Selected "workspaces" only, comma separated', '')
     .option('-d, --dryrun', 'Dry run', false)
     .option('-v, --verbose', 'Verbose', false)
     .option('-f, --force', 'Force', false)
     .description('applies missing transactions from mongo to pg')
-    .action(async (cmd: { workspace?: string, dryrun: boolean, verbose: boolean, force: boolean }) => {
+    .action(async (cmd: { workspace: string, dryrun: boolean, verbose: boolean, force: boolean }) => {
       let workspaces: Workspace[] = []
+      const targetWorkspaces = cmd.workspace.split(',')
 
       await withAccountDatabase(async (db) => {
         workspaces = await listWorkspacesPure(db)
         workspaces = workspaces
           .filter((p) => isActiveMode(p.mode))
           .filter((p) => p.region === 'europe' && p.targetRegion === 'europe' && p.message === 'restore-done done')
-          .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+          .filter((p) => cmd.workspace === '' || targetWorkspaces.includes(p.workspace))
           .sort((a, b) => b.lastVisit - a.lastVisit)
       })
 

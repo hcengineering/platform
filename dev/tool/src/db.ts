@@ -386,8 +386,7 @@ export async function applyMissingTxMongoToPG (
   const wsid = getWorkspaceId(ws.workspace)
   const pgTransactorUrl = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
   const connectionPg = (await connect(pgTransactorUrl, wsid, undefined, {
-    mode: 'backup',
-    model: 'upgrade'
+    mode: 'backup'
   })) as unknown as CoreClient & BackupClient
 
   try {
@@ -405,6 +404,7 @@ export async function applyMissingTxMongoToPG (
       const txes: Tx[] = []
       const iterator = mongoDb.collection(DOMAIN_TX).find({}, { sort: { modifiedOn: 'descending' } })
       let restored = false
+      let errors = 0
       while (true) {
         const doc = await iterator.next()
         if (doc == null) {
@@ -416,13 +416,19 @@ export async function applyMissingTxMongoToPG (
         if (pgTx == null) {
           txes.push(doc as unknown as Tx)
         } else {
-          for (const tx of txes) {
+          // Applying in reverse order (so in ascending)
+          for (const tx of txes.reverse()) {
             if (verbose) {
               ctx.info('Restoring tx', tx)
             }
 
             if (!dryRun) {
-              // TODO: actually restore
+              try {
+                await ops.tx(tx)
+              } catch (err: any) {
+                errors++
+                ctx.error('Failed to restore tx', { tx, err })
+              }
             }
           }
           restored = true
@@ -437,7 +443,11 @@ export async function applyMissingTxMongoToPG (
 
       if (txes.length > 0) {
         if (restored) {
-          ctx.info('Restored missing transactions for workspace', { workspace: ws.workspace, count: txes.length })
+          ctx.info('Restored missing transactions for workspace', {
+            workspace: ws.workspace,
+            count: txes.length,
+            errors
+          })
         } else {
           ctx.error('Failed to restore missing transactions for workspace', {
             workspace: ws.workspace,
