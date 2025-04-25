@@ -13,6 +13,7 @@ import { createClient as createKvsClient } from '@hcengineering/server-kvs'
 import { generateToken } from '@hcengineering/server-token'
 import type { Db } from 'mongodb'
 
+// Old token and history types
 interface Credentials {
   refresh_token?: string | null
   expiry_date?: number | null
@@ -32,6 +33,7 @@ type History = User & {
   historyId: string
 }
 
+// Updated token and history types
 interface UserV2 {
   userId: AccountUuid
   email?: string
