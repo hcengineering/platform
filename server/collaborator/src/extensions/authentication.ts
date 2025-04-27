@@ -40,7 +40,12 @@ export class AuthenticationExtension implements Extension {
       const token = decodeToken(data.token)
       const readonly = isGuest(token)
 
-      ctx.info('authenticate', { workspaceId, mode: token.extra?.mode ?? '', readonly })
+      ctx.info('authenticate', {
+        workspaceId,
+        account: token.account,
+        mode: token.extra?.mode ?? '',
+        readonly
+      })
 
       if (readonly) {
         data.connection.readOnly = true
