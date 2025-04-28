@@ -173,10 +173,10 @@ function crossWith (a: EventVars, b: EventVars): EventVars[] {
 /**
  *
  * @param events - without overlaps
- * @param event -
+ * @param event - any object with date and dueDate properties
  * @returns
  */
-function calcOverlap (events: EventVars[], event: Event): { events: EventVars[], total: number } {
+function calcOverlap (events: EventVars[], event: EventVars): { events: EventVars[], total: number } {
   let tmp: EventVars[] = [{ date: event.date, dueDate: event.dueDate }]
   for (const a of events) {
     const newTmp: EventVars[] = []
