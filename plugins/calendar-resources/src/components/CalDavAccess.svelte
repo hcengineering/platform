@@ -8,11 +8,11 @@
   import { Label, Modal, CheckBox, Spinner, Button, IconCopy, EditBox } from '@hcengineering/ui'
   import calendar from '@hcengineering/calendar'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { slide } from 'svelte/transition'
+  import { quintOut } from 'svelte/easing'
   import { getMetadata } from '@hcengineering/platform'
   import { getCurrentAccount, pickPrimarySocialId, SocialId, SocialIdType } from '@hcengineering/core'
   import { getAccountClient } from '../utils'
-  import { slide } from 'svelte/transition'
-  import { quintOut } from 'svelte/easing'
 
   const workspaceUuid = getCurrentWorkspaceUuid()
 
