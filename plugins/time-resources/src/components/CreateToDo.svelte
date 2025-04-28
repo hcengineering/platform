@@ -10,7 +10,7 @@
   import { Analytics } from '@hcengineering/analytics'
 
   export let fullSize: boolean = false
-  let value: string = ''
+  export let value: string = ''
   let disabled: boolean = false
 
   const client = getClient()
@@ -53,12 +53,12 @@
     clear()
   }
 
-  function clear () {
+  function clear (): void {
     value = ''
   }
 
-  function openPopup () {
-    showPopup(CreateToDoPopup, {}, 'top')
+  function openPopup (): void {
+    showPopup(CreateToDoPopup, { value }, 'top')
   }
 </script>
 
