@@ -46,5 +46,6 @@
     padding: 0.625rem 0.5rem 0 0.5rem;
 
     order: 1;
+    margin-bottom: -0.5rem;
   }
 </style>

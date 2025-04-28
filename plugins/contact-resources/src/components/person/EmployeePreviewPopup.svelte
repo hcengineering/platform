@@ -74,7 +74,7 @@
   </div>
   <div slot="content">
     {#if !disabled}
-      <div class="flex-presenter cursor-default flex-gap-2 p-2">
+      <div class="flex-presenter cursor-default flex-gap-2 p-3">
         <Avatar
           size="large"
           person={employee}
@@ -86,7 +86,7 @@
           clickable
           on:click={viewProfile}
         />
-        <div class="flex-col flex-gap-0-5">
+        <div class="flex-col flex-gap-0-5 pl-1">
           <div class="status-container" />
           <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact accent />
           <span class="flex-presenter cursor-default">
