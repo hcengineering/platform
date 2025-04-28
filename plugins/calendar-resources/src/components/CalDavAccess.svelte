@@ -11,6 +11,8 @@
   import { getMetadata } from '@hcengineering/platform'
   import { getCurrentAccount, pickPrimarySocialId, SocialId, SocialIdType } from '@hcengineering/core'
   import { getAccountClient } from '../utils'
+  import { slide } from 'svelte/transition'
+  import { quintOut } from 'svelte/easing'
 
   const workspaceUuid = getCurrentWorkspaceUuid()
 
@@ -221,8 +223,12 @@
       </div>
     </div>
 
-    {#if !wasAccessEnabled}
-      <div class="flex-col-stretch flex-gap-1-5" class:accessDisabled={!accessEnabled}>
+    {#if !wasAccessEnabled && !loading}
+      <div
+        class="flex-col-stretch flex-gap-1-5"
+        class:accessDisabled={!accessEnabled}
+        transition:slide={{ duration: 300, easing: quintOut }}
+      >
         <Label label={calendar.string.CalDavAccessPassword} />
         <div class="flex-row-center flex-gap-1">
           <EditBox bind:value={password} kind="ghost" format="password" fullSize focusable disabled={true} />
@@ -236,7 +242,12 @@
           />
         </div>
         {#if canSave}
-          <Label label={calendar.string.CalDavAccessPasswordWarning} />
+          <div
+            class:accessDisabled={!accessEnabled}
+            transition:slide={{ duration: 300, easing: quintOut }}
+          >
+            <Label label={calendar.string.CalDavAccessPasswordWarning} />
+          </div>
         {/if}
       </div>
     {/if}
