@@ -458,9 +458,12 @@ export function start (
         try {
           const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
+          const authorization = ((req?.headers?.authorization as string) ?? '').split(' ')
+          const authorizationToken = authorization.at(0)?.toLowerCase() === 'bearer' ? authorization.at(1) : undefined
           const token =
             cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1] ??
             (req.query.token as string | undefined) ??
+            authorizationToken ??
             ''
           const wsIds = await getWorkspaceIds(ctx, token, req.path)
           if (wsIds === null) {
@@ -489,6 +492,7 @@ export function start (
               'accept-ranges': 'bytes',
               connection: 'keep-alive',
               'Keep-Alive': 'timeout=5',
+              'content-type': blobInfo.contentType,
               'content-length': blobInfo.size,
               'content-security-policy': "default-src 'none';",
               Etag: blobInfo.etag,
