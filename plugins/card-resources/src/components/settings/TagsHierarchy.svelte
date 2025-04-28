@@ -35,7 +35,13 @@
     const desc = hierarchy.getDescendants(_class)
     for (const clazz of desc) {
       const cls = hierarchy.getClass(clazz)
-      if (cls.extends === _class && !cls.hidden && kind === cls.kind && cls.label !== undefined) {
+      if (
+        cls.extends === _class &&
+        !cls.hidden &&
+        kind === cls.kind &&
+        cls.label !== undefined &&
+        (cls as MasterTag).removed !== true
+      ) {
         result.push(clazz)
       }
     }
