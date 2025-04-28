@@ -271,8 +271,8 @@
     "Extensions": "Estensioni",
     "RoleLabel": "Ruolo: {role}",
     "UnsetParentIssue": "Annulla l'issue genitore",
-    "CreateProjectPermission": "Crea progetto",
-    "CreateProjectPermissionDescription": "Concede agli utenti la possibilità di creare nuovi progetti"
+    "ForbidCreateProjectPermission": "Vieta creazione progetto",
+    "ForbidCreateProjectPermissionDescription": "Vieta agli utenti di creare nuovi progetti"
   },
   "status": {}
 }

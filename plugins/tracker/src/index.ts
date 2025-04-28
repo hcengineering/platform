@@ -520,8 +520,8 @@ const pluginState = plugin(trackerId, {
     Issue: '' as IntlString,
     NewProject: '' as IntlString,
     UnsetParentIssue: '' as IntlString,
-    CreateProjectPermission: '' as IntlString,
-    CreateProjectPermissionDescription: '' as IntlString
+    ForbidCreateProjectPermission: '' as IntlString,
+    ForbidCreateProjectPermissionDescription: '' as IntlString
   },
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,
@@ -533,7 +533,7 @@ const pluginState = plugin(trackerId, {
     SubIssue: '' as Ref<TaskType>
   },
   permission: {
-    CreateProject: '' as Ref<Permission>
+    ForbidCreateProject: '' as Ref<Permission>
   }
 })
 export default pluginState

@@ -288,8 +288,8 @@
     "Extensions": "扩展",
     "RoleLabel": "角色：{role}",
     "UnsetParentIssue": "取消父问题",
-    "CreateProjectPermission": "创建项目",
-    "CreateProjectPermissionDescription": "授予用户创建新项目的权限"
+    "ForbidCreateProjectPermission": "禁止创建项目",
+    "ForbidCreateProjectPermissionDescription": "禁止用户创建新项目"
   },
   "status": {}
 }

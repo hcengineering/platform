@@ -288,8 +288,8 @@
     "Extensions": "Дополнительно",
     "RoleLabel": "Роль: {role}",
     "UnsetParentIssue": "Снять родительскую задачу",
-    "CreateProjectPermission": "Создавать проект",
-    "CreateProjectPermissionDescription": "Дает пользователям разрешение создавать новые проекты"
+    "ForbidCreateProjectPermission": "Запретить создание проекта",
+    "ForbidCreateProjectPermissionDescription": "Запрещает пользователям создавать новые проекты"
   },
   "status": {}
 }

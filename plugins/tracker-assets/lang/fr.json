@@ -271,8 +271,8 @@
     "Extensions": "Extensions",
     "RoleLabel": "Rôle : {role}",
     "UnsetParentIssue": "Désélectionner l'issue parent",
-    "CreateProjectPermission": "Créer un projet",
-    "CreateProjectPermissionDescription": "Accorde aux utilisateurs la capacité de créer de nouveaux projets"
+    "ForbidCreateProjectPermission": "Interdire la création de projet",
+    "ForbidCreateProjectPermissionDescription": "Interdit aux utilisateurs de créer de nouveaux projets"
   },
   "status": {}
 }

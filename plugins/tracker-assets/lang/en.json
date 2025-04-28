@@ -288,8 +288,8 @@
     "Extensions": "Extensions",
     "RoleLabel": "Role: {role}",
     "UnsetParentIssue": "Unset parent issue",
-    "CreateProjectPermission": "Create project",
-    "CreateProjectPermissionDescription": "Grants users ability to create new projects"
+    "ForbidCreateProjectPermission": "Forbid create project",
+    "ForbidCreateProjectPermissionDescription": "Forbid users creating new projects"
   },
   "status": {}
 }

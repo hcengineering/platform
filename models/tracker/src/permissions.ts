@@ -7,10 +7,13 @@ export function definePermissions (builder: Builder): void {
     core.class.Permission,
     core.space.Model,
     {
-      label: tracker.string.CreateProjectPermission,
+      label: tracker.string.ForbidCreateProjectPermission,
+      txClass: core.class.TxCreateDoc,
+      objectClass: tracker.class.Project,
+      forbid: true,
       scope: 'workspace',
-      description: tracker.string.CreateProjectPermissionDescription
+      description: tracker.string.ForbidCreateProjectPermissionDescription
     },
-    tracker.permission.CreateProject
+    tracker.permission.ForbidCreateProject
   )
 }
