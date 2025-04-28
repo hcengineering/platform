@@ -55,6 +55,7 @@ import serverClientPlugin, {
   BlobClient,
   createClient,
   getTransactorEndpoint,
+  getWorkspaceInfo,
   listAccountWorkspaces,
   updateBackupInfo
 } from '@hcengineering/server-client'
@@ -91,6 +92,7 @@ import core, {
   RateLimiter,
   systemAccountEmail,
   versionToString,
+  type ClientWorkspaceInfo,
   type Data,
   type Doc,
   type Ref,
@@ -146,6 +148,7 @@ import {
 } from './clean'
 import { changeConfiguration } from './configuration'
 import {
+  checkFromMongoToPG,
   generateUuidMissingWorkspaces,
   moveAccountDbFromMongoToPG,
   moveFromMongoToPG,
@@ -2154,6 +2157,17 @@ export function devTool (
         region
       )
     })
+  })
+
+  program.command('check-move-mongo-to-pg <workspace>').action(async (workspaceId: string) => {
+    const { dbUrl, txes } = prepareTools()
+    const mongodbUri = getMongoDBUrl()
+    const sysToken = generateToken(systemAccountEmail, getWorkspaceId(workspaceId))
+    const info = await getWorkspaceInfo(sysToken, false)
+    if (info == null) {
+      return
+    }
+    await checkFromMongoToPG(mongodbUri, dbUrl, txes, info as ClientWorkspaceInfo)
   })
 
   program

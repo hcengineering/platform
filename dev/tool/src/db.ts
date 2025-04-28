@@ -1,21 +1,26 @@
 import {
   type AccountDB,
-  listAccounts,
-  listWorkspacesPure,
-  listInvites,
-  updateWorkspace,
-  type Workspace,
-  type ObjectId,
   getAccount,
-  getWorkspaceById
+  getWorkspaceById,
+  listAccounts,
+  listInvites,
+  listWorkspacesPure,
+  type ObjectId,
+  updateWorkspace,
+  type Workspace
 } from '@hcengineering/account'
 import {
   type BackupClient,
   type Client,
+  type ClientWorkspaceInfo,
+  type Doc,
+  type Domain,
+  getDiffUpdate,
   getWorkspaceId,
+  type LowLevelStorage,
   MeasureMetricsContext,
   systemAccountEmail,
-  type Doc
+  type Tx
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import {
@@ -28,7 +33,8 @@ import {
 } from '@hcengineering/postgres'
 import { type DBDoc } from '@hcengineering/postgres/types/utils'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
-import { sharedPipelineContextVars } from '@hcengineering/server-pipeline'
+import { createDummyStorageAdapter } from '@hcengineering/server-core'
+import { createBackupPipeline, sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import { type MongoClient, UUID } from 'mongodb'
@@ -60,6 +66,27 @@ export async function moveFromMongoToPG (
     }
   }
   pg.close()
+  client.close()
+}
+
+export async function checkFromMongoToPG (
+  mongoUrl: string,
+  dbUrl: string | undefined,
+  txes: Tx[],
+  workspace: ClientWorkspaceInfo
+): Promise<void> {
+  if (dbUrl === undefined) {
+    throw new Error('dbUrl is required')
+  }
+  const client = getMongoClient(mongoUrl)
+  const mongo = await client.getClient()
+
+  try {
+    await checkMoveMissingWorkspace(mongo, dbUrl, txes, workspace)
+  } catch (err) {
+    console.log('Error when move workspace', workspace.workspaceName ?? workspace.workspace, err)
+    throw err
+  }
   client.close()
 }
 
@@ -149,6 +176,116 @@ async function moveWorkspace (
     await updateWorkspace(accountDb, ws, { region })
     await connection.sendForceClose()
     await connection.close()
+  } catch (err) {
+    console.log('Error when move workspace', ws.workspaceName ?? ws.workspace, err)
+    throw err
+  }
+}
+
+async function checkMoveMissingWorkspace (
+  mongo: MongoClient,
+  dbUrl: string,
+  txes: Tx[],
+  ws: ClientWorkspaceInfo
+): Promise<void> {
+  try {
+    const ctx = new MeasureMetricsContext('', {})
+    console.log('move workspace', ws.workspaceName ?? ws.workspace)
+    const wsId = getWorkspaceId(ws.workspaceId)
+    const mongoDB = getWorkspaceMongoDB(mongo, wsId)
+    const collections = await mongoDB.collections()
+
+    const backupPipeline = createBackupPipeline(ctx, dbUrl, txes, {
+      externalStorage: createDummyStorageAdapter()
+    })
+
+    const pipeline = await backupPipeline(
+      ctx,
+      {
+        name: ws.workspace,
+        workspaceName: ws.workspaceName ?? '',
+        workspaceUrl: '',
+        uuid: ws.uuid ?? ''
+      },
+      false,
+      () => {},
+      null
+    )
+
+    const lowLevel = pipeline.context.lowLevelStorage as LowLevelStorage
+
+    try {
+      for (const collection of collections) {
+        if (
+          collection.collectionName === 'tx' ||
+          collection.collectionName === 'blob' ||
+          collection.collectionName === 'doc-index-state'
+        ) {
+          continue
+        }
+        console.log('checking domain', collection.collectionName)
+        const cursor = collection.find()
+
+        const docs: Doc[] = []
+        while (true) {
+          while (docs.length < 5000) {
+            const doc = (await cursor.next()) as Doc | null
+            if (doc === null) break
+            docs.push(doc)
+          }
+          if (docs.length === 0) break
+          while (docs.length > 0) {
+            const part = docs.splice(0, 100)
+
+            const pgDocs = await lowLevel.load(
+              ctx,
+              collection.collectionName as Domain,
+              part.map((it) => it._id)
+            )
+
+            for (const p of part) {
+              const pgP = pgDocs.find((it) => it._id === p._id)
+              if (pgP === undefined) {
+                console.log('missing document', p._class, p._id)
+                continue
+              }
+              const { '%hash%': _, ...rest } = p as any
+              const diff = getDiffUpdate(pgP, rest)
+              if (
+                rest._class === 'notification:class:ActivityInboxNotification' ||
+                rest._class === 'notification:class:CommonInboxNotification' ||
+                rest._class === 'notification:class:MentionInboxNotification'
+              ) {
+                delete diff.isViewed
+              }
+              if (rest._class === 'notification:class:DocNotifyContext') {
+                delete diff.lastViewedTimestamp
+              }
+              if (Object.keys(diff).length > 0) {
+                console.log(
+                  'Documents mismatch',
+                  p._class,
+                  p._id,
+                  'keys',
+                  Object.keys(diff),
+                  'mongo',
+                  Object.keys(diff).map((it) => rest[it]),
+                  'PG',
+                  Object.keys(diff).map((it) => (pgP as any)[it])
+                )
+                if (rest.modifiedOn === pgP?.modifiedOn) {
+                  console.log('Upload update')
+                  // Same modifiedOn, but we have modification, we need to apply it.
+                  await lowLevel.upload(ctx, collection.collectionName as Domain, [rest])
+                }
+              }
+            }
+          }
+        }
+      }
+    } finally {
+      await pipeline.close()
+    }
   } catch (err) {
     console.log('Error when move workspace', ws.workspaceName ?? ws.workspace, err)
     throw err
