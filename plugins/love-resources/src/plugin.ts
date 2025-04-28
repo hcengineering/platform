@@ -34,10 +34,13 @@ export default mergeIds(loveId, love, {
     FloorView: '' as AnyComponent,
     PanelControlBar: '' as AnyComponent,
     MeetingMinutesDocEditor: '' as AnyComponent,
-    MeetingMinutesStatusPresenter: '' as AnyComponent
+    MeetingMinutesStatusPresenter: '' as AnyComponent,
+    MeetingScheduleData: '' as AnyComponent,
+    EditMeetingScheduleData: '' as AnyComponent
   },
   function: {
     CreateMeeting: '' as Resource<DocCreateFunction>,
+    CreateMeetingSchedule: '' as Resource<DocCreateFunction>,
     CanShowRoomSettings: '' as Resource<ViewActionAvailabilityFunction>,
     CanCopyGuestLink: '' as Resource<ViewActionAvailabilityFunction>
   },

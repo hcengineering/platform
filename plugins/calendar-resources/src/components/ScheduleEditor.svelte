@@ -15,8 +15,14 @@
 //
 -->
 <script lang="ts">
-  import { Data, generateUuid, Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import core, { Data, generateId, generateUuid, Ref, Space } from '@hcengineering/core'
+  import {
+    ComponentExtensions,
+    createQuery,
+    DocCreateExtComponent,
+    DocCreateExtensionManager,
+    getClient
+  } from '@hcengineering/presentation'
   import type { Schedule, ScheduleAvailability } from '@hcengineering/calendar'
   import ui, {
     Button,
@@ -51,11 +57,19 @@
 
   export let schedule: Schedule | undefined
 
+  const docCreateManager = DocCreateExtensionManager.create(calendar.class.Schedule)
+
   type EditableAvailability = Record<number, { start: Date, end: Date }[]>
 
   const manager = createFocusManager()
   const dispatch = createEventDispatcher()
   const client = getClient()
+
+  const spaceQ = createQuery()
+  let space: Space | undefined = undefined
+  spaceQ.query(core.class.Space, { _id: calendar.space.Calendar }, (res) => {
+    space = res[0]
+  })
 
   let title = schedule?.title ?? ''
   let description = schedule?.description ?? ''
@@ -175,6 +189,7 @@
 
   async function saveSchedule (): Promise<void> {
     if (schedule === undefined) {
+      const _id = generateId<Schedule>()
       const currentUser = getCurrentEmployee()
       const data: Data<Schedule> = {
         owner: currentUser,
@@ -185,8 +200,10 @@
         availability: getStorableAvailability(),
         timeZone
       }
-      const id = generateUuid() as Ref<Schedule>
-      await client.createDoc(calendar.class.Schedule, calendar.space.Calendar, data, id)
+      await client.createDoc(calendar.class.Schedule, calendar.space.Calendar, data, _id)
+      if (space !== undefined) {
+        await docCreateManager.commit(client, _id, space, {}, 'post')
+      }
     } else {
       await client.update(schedule, {
         title,
@@ -299,7 +316,7 @@
         bind:content={description}
       />
     </div>
-    <div class="block rightCropPadding">
+    <div class="block">
       <div class="flex-row-top flex-gap-1">
         <Icon icon={calendar.icon.Duration} size={'small'} />
         <div class="prop">
@@ -312,7 +329,7 @@
             on:click={showDurationVariants}
           />
         </div>
-        <div class="prop">
+        <div class="prop" style="margin-left: 2rem; margin-right: 1rem">
           <Label label={calendar.string.MeetingInterval} />
           <Button
             focusIndex={10005}
@@ -324,18 +341,18 @@
         </div>
       </div>
     </div>
-    <div class="block rightCropPadding">
+    <div class="block">
       <div class="flex-row-center flex-gap-1-5">
         <Icon icon={calendar.icon.Globe} size={'small'} />
-        <TimeZoneSelector bind:timeZone />
+        <TimeZoneSelector bind:timeZone flex="1" />
       </div>
     </div>
-    <div class="block rightCropPadding">
+    <div class="block">
       <div class="flex-row-top flex-gap-1">
         <Icon icon={calendar.icon.Timer} size={'small'} />
         <div class="prop">
           <Label label={calendar.string.ScheduleAvailability} />
-          {#each getWeekDayNames() as { weekDay, dayName }, i}
+          {#each getWeekDayNames() as { weekDay, dayName }}
             <div class="flex-row-center flex-gap-1 availability">
               <span class="weekDay">
                 {dayName}
@@ -375,6 +392,13 @@
         </div>
       </div>
     </div>
+    <div class="block">
+      {#if schedule === undefined}
+        <DocCreateExtComponent manager={docCreateManager} kind={'body'} />
+      {:else}
+        <ComponentExtensions extension={calendar.extensions.EditScheduleExtensions} props={{ value: schedule }} />
+      {/if}
+    </div>
   </Scroller>
   <div class="antiDivider noMargin" />
   <div class="flex-between p-5 flex-no-shrink">
@@ -410,18 +434,15 @@
       flex-shrink: 0;
       min-width: 0;
       min-height: 0;
+      flex-direction: column;
+      padding: 0.75rem 1rem 0.75rem 1.25rem;
 
       &:not(:last-child) {
         border-bottom: 1px solid var(--theme-divider-color);
       }
-      &:not(.rightCropPadding) {
-        padding: 0.75rem 1.25rem;
-      }
-      &.rightCropPadding {
-        padding: 0.75rem 1rem 0.75rem 1.25rem;
-      }
       &.row {
         padding: 0 1.25rem 0.5rem;
+        flex-direction: row;
       }
     }
 
@@ -429,10 +450,14 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      padding: 0rem 0.75rem 0rem 0.75rem;
+      flex: 1;
+      padding: 0rem 0rem 0rem 0.75rem;
       gap: 0.5rem;
 
       .availability {
+        width: 100%;
+        justify-content: space-between;
+
         &:first-child {
           margin-top: 0.5rem;
         }
@@ -441,7 +466,6 @@
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          width: 11rem;
         }
       }
     }
@@ -453,7 +477,7 @@
     }
 
     .weekDay {
-      width: 3rem;
+      width: 2.25rem;
     }
   }
 </style>

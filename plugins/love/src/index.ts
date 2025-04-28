@@ -1,4 +1,4 @@
-import { Event } from '@hcengineering/calendar'
+import { Event, Schedule } from '@hcengineering/calendar'
 import { Person } from '@hcengineering/contact'
 import { AttachedDoc, Class, MarkupBlobRef, Doc, Mixin, Ref, Timestamp } from '@hcengineering/core'
 import { Drive } from '@hcengineering/drive'
@@ -134,6 +134,10 @@ export interface Meeting extends Event {
   room: Ref<Room>
 }
 
+export interface MeetingSchedule extends Schedule {
+  room: Ref<Room>
+}
+
 export enum RequestStatus {
   Pending,
   Approved,
@@ -192,7 +196,8 @@ const love = plugin(loveId, {
     MeetingMinutes: '' as Ref<Class<MeetingMinutes>>
   },
   mixin: {
-    Meeting: '' as Ref<Mixin<Meeting>>
+    Meeting: '' as Ref<Mixin<Meeting>>,
+    MeetingSchedule: '' as Ref<Mixin<MeetingSchedule>>
   },
   action: {
     ToggleMic: '' as Ref<Action>,
