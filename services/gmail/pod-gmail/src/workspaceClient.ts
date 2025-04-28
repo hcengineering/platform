@@ -14,10 +14,9 @@
 // limitations under the License.
 //
 
-import contact, { type Employee, type Channel as PlatformChannel } from '@hcengineering/contact'
+import contact, { type Channel as PlatformChannel, type Person, Employee } from '@hcengineering/contact'
 import core, {
   type WorkspaceUuid,
-  type PersonId,
   type Client,
   type Doc,
   MeasureContext,
@@ -27,15 +26,19 @@ import core, {
   type TxCreateDoc,
   TxProcessor,
   type TxRemoveDoc,
-  type TxUpdateDoc
+  type TxUpdateDoc,
+  PersonId,
+  AccountUuid,
+  TxOperations
 } from '@hcengineering/core'
 import gmailP, { type NewMessage } from '@hcengineering/gmail'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
-import { type Db } from 'mongodb'
 import { getClient } from './client'
 import { GmailClient } from './gmail'
 import { type Channel, type ProjectCredentials, type User } from './types'
+import { getAccountSocialIds } from './accounts'
+import { cleanIntegrations } from './integrations'
 
 export class WorkspaceClient {
   private messageSubscribed: boolean = false
@@ -49,7 +52,6 @@ export class WorkspaceClient {
   private constructor (
     private readonly ctx: MeasureContext,
     private readonly credentials: ProjectCredentials,
-    private readonly mongo: Db,
     private readonly storageAdapter: StorageAdapter,
     private readonly workspace: WorkspaceUuid
   ) {}
@@ -57,29 +59,30 @@ export class WorkspaceClient {
   static async create (
     ctx: MeasureContext,
     credentials: ProjectCredentials,
-    mongo: Db,
     storageAdapter: StorageAdapter,
     workspace: WorkspaceUuid
   ): Promise<WorkspaceClient> {
-    const instance = new WorkspaceClient(ctx, credentials, mongo, storageAdapter, workspace)
+    const instance = new WorkspaceClient(ctx, credentials, storageAdapter, workspace)
     await instance.initClient(workspace)
     return instance
   }
 
-  async createGmailClient (user: User): Promise<GmailClient> {
-    const current = this.getGmailClient(user.userId)
+  async createGmailClient (user: User, authCode?: string): Promise<GmailClient> {
+    const current = user.socialId?._id !== undefined ? this.getGmailClient(user.socialId?._id) : undefined
     if (current !== undefined) return current
+    this.ctx.info('Creating new gmail client', { workspaceUuid: this.workspace, userId: user.userId })
+    this.ctx.info('Creating new gmail user', { user })
     const newClient = await GmailClient.create(
       this.ctx,
       this.credentials,
       user,
-      this.mongo,
       this.client,
       this,
       this.workspace,
-      this.storageAdapter
+      this.storageAdapter,
+      authCode
     )
-    this.clients.set(user.userId, newClient)
+    this.clients.set(user.socialId._id, newClient)
     return newClient
   }
 
@@ -91,32 +94,34 @@ export class WorkspaceClient {
     await this.client?.close()
   }
 
-  async getUserId (email: string): Promise<PersonId> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const user = this.client.getModel().getAccountByEmail(email)
-    // if (user === undefined) {
-    //   throw new Error('User not found')
-    // }
-    // return user._id
-  }
-
-  async signout (email: string, byError: boolean = false): Promise<number> {
-    const userId = await this.getUserId(email)
-    const client = this.clients.get(userId)
-    if (client !== undefined) {
-      await client.signout(byError)
+  async signoutByAccountId (userId: AccountUuid, byError: boolean = false): Promise<number> {
+    const socialIds = await getAccountSocialIds(userId)
+    this.ctx.info('socialIds', { socialIds })
+    this.ctx.info('clients', { clients: this.clients })
+    let deleted = false
+    for (const socialId of socialIds) {
+      const client = this.clients.get(socialId._id)
+      if (client !== undefined) {
+        await client.signout(byError)
+        this.clients.delete(socialId._id)
+        deleted = true
+      }
     }
-    this.clients.delete(userId)
+    if (!deleted && socialIds.length > 0) {
+      this.ctx.info('Clean up integrations without clients')
+      const tx = new TxOperations(this.client, socialIds[0]._id)
+      await cleanIntegrations(this.ctx, tx, userId, this.workspace)
+    }
+
     return this.clients.size
   }
 
-  async signoutByUserId (userId: PersonId, byError: boolean = false): Promise<number> {
-    const client = this.clients.get(userId)
+  async signoutBySocialId (socialId: PersonId, byError: boolean = false): Promise<number> {
+    const client = this.clients.get(socialId)
     if (client !== undefined) {
       await client.signout(byError)
+      this.clients.delete(socialId)
     }
-    this.clients.delete(userId)
     return this.clients.size
   }
 
@@ -126,7 +131,7 @@ export class WorkspaceClient {
 
   private async initClient (workspace: WorkspaceUuid): Promise<Client> {
     const token = generateToken(systemAccountUuid, workspace, { service: 'gmail' })
-    console.log('token', token, workspace)
+    this.ctx.info('Init client', { workspaceUuid: workspace })
     const client = await getClient(token)
     client.notify = (...tx: Tx[]) => {
       void this.txHandler(...tx)
@@ -161,7 +166,7 @@ export class WorkspaceClient {
     const newMessages = await this.client.findAll(gmailP.class.NewMessage, {
       status: 'new'
     })
-    console.log('get new messages, recieved', this.workspace, newMessages.length)
+    this.ctx.info('get new messages', { workspaceUuid: this.workspace, count: newMessages.length })
     await this.subscribeMessages()
     for (const message of newMessages) {
       const from = message.from ?? message.createdBy ?? message.modifiedBy
@@ -169,7 +174,11 @@ export class WorkspaceClient {
       if (client !== undefined) {
         await client.createMessage(message)
       } else {
-        console.log('client not found, skip message', this.workspace, from, message._id)
+        this.ctx.error('client not found, skip message', {
+          workspaceUuid: this.workspace,
+          from,
+          messageId: message._id
+        })
       }
     }
   }
@@ -326,41 +335,36 @@ export class WorkspaceClient {
   // #region Users
 
   async checkUsers (): Promise<void> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const removedEmployees = await this.client.findAll(contact.mixin.Employee, {
-    //   active: false
-    // })
-    // const accounts = await this.client.findAll(contact.class.PersonAccount, {
-    //   person: { $in: removedEmployees.map((p) => p._id) }
-    // })
-    // for (const acc of accounts) {
-    //   await this.deactivateUser(acc)
-    // }
-    // this.txHandlers.push(async (...txes: Tx[]) => {
-    //   for (const tx of txes) {
-    //     await this.txEmployeeHandler(tx)
-    //   }
-    // })
-    // console.log('deactivate users', this.workspace, accounts.length)
+    const removedEmployees = await this.client.findAll(contact.mixin.Employee, {
+      active: false
+    })
+
+    for (const person of removedEmployees) {
+      await this.deactivateUser(person)
+    }
+    this.txHandlers.push(async (...txes: Tx[]) => {
+      for (const tx of txes) {
+        await this.txEmployeeHandler(tx)
+      }
+    })
+    this.ctx.info('deactivate users', { workspaceUuid: this.workspace, count: removedEmployees.length })
   }
 
-  // private async deactivateUser (acc: PersonAccount): Promise<void> {
-  //   await this.signout(acc.email, true)
-  // }
+  private async deactivateUser (acc: Person): Promise<void> {
+    if (acc.personUuid === undefined) return
+    await this.signoutByAccountId(acc.personUuid as AccountUuid, true)
+  }
 
   private async txEmployeeHandler (tx: Tx): Promise<void> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // if (tx._class !== core.class.TxUpdateDoc) return
-    // const ctx = tx as TxUpdateDoc<Employee>
-    // if (!this.client.getHierarchy().isDerived(ctx.objectClass, contact.mixin.Employee)) return
-    // if (ctx.operations.active === false) {
-    //   const acc = await this.client.findOne(contact.class.PersonAccount, { person: ctx.objectId })
-    //   if (acc !== undefined) {
-    //     await this.deactivateUser(acc)
-    //   }
-    // }
+    if (tx._class !== core.class.TxUpdateDoc) return
+    const ctx = tx as TxUpdateDoc<Employee>
+    if (!this.client.getHierarchy().isDerived(ctx.objectClass, contact.mixin.Employee)) return
+    if (ctx.operations.active === false) {
+      const acc = await this.client.findOne(contact.class.Person, { _id: ctx.objectId })
+      if (acc !== undefined) {
+        await this.deactivateUser(acc)
+      }
+    }
   }
 
   // #endregion

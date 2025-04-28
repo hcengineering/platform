@@ -549,7 +549,7 @@ export async function addSocialIdToPerson (
   const { person, type, value, confirmed, displayValue } = params
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  verifyAllowedServices(['github', 'telegram-bot'], extra)
+  verifyAllowedServices(['github', 'telegram-bot', 'gmail'], extra)
 
   return await addSocialId(db, person, type, value, confirmed, displayValue)
 }
@@ -564,7 +564,7 @@ export async function updateSocialId (
   const { personId, displayValue } = params
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  verifyAllowedServices(['telegram-bot'], extra)
+  verifyAllowedServices(['telegram-bot', 'gmail'], extra)
 
   const socialId = await db.socialId.findOne({ _id: personId })
   if (socialId != null) {
@@ -815,7 +815,7 @@ export async function findFullSocialIdBySocialKey (
   params: { socialKey: string }
 ): Promise<SocialId | null> {
   const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['telegram-bot'], extra)
+  verifyAllowedServices(['telegram-bot', 'gmail'], extra)
 
   const { socialKey } = params
 

@@ -32,13 +32,14 @@
   import Workslots from './Workslots.svelte'
 
   export let object: Doc | undefined
+  export let value: string = ''
 
   const me = getCurrentEmployee()
   const myAccount = getCurrentAccount()
 
   const todo: AttachedData<ToDo> = {
     workslots: 0,
-    title: '',
+    title: value,
     description: '',
     priority: ToDoPriority.NoPriority,
     attachedSpace: object?.space,

@@ -2472,6 +2472,11 @@
       "packageName": "@hcengineering/model-achievement",
       "projectFolder": "models/achievement",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/kvs-client",
+      "projectFolder": "packages/kvs-client",
+      "shouldPublish": false
     }
   ]
 }

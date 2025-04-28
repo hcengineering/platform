@@ -16,8 +16,7 @@
 <script lang="ts">
   /* eslint-disable @typescript-eslint/no-unused-vars */
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
-  import { Ref } from '@hcengineering/core'
+  import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
@@ -49,8 +48,8 @@
   let currentMessage: SharedMessage | undefined = undefined
 
   let newMessage: boolean = false
-  const allIntegrations: Integration[] = []
-  const integrations: Integration[] = []
+  let allIntegrations: Integration[] = []
+  let integrations: Integration[] = []
   let selectedIntegration: Integration | undefined = undefined
 
   channel && inboxClient.forceReadDoc(channel._id, channel._class)
@@ -96,20 +95,30 @@
 
   $: templateProvider && selectedIntegration && templateProvider.set(setting.class.Integration, selectedIntegration)
 
-  // TODO: FIXME
-  settingsQuery.query(setting.class.Integration, { type: gmail.integrationType.Gmail }, (res) => {
-    // allIntegrations = res.filter((p) => !p.disabled && p.value !== '')
-    // integrations = allIntegrations.filter((p) => p.createdBy === me || p.shared?.includes(me))
-    // selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
-  })
+  settingsQuery.query(
+    setting.class.Integration,
+    {
+      type: gmail.integrationType.Gmail,
+      disabled: false
+    },
+    (res) => {
+      allIntegrations = res.filter((p) => !p.disabled && p.value !== '')
+      const account = getCurrentAccount()
+      const socialIds = getCurrentAccount().socialIds
+      const isAvailable = (p: Integration): boolean => {
+        const isOwner = p.createdBy !== undefined && socialIds.includes(p.createdBy)
+        const shared = p.shared?.includes(account.uuid) ?? false
+        return isOwner || shared
+      }
+      integrations = allIntegrations.filter(isAvailable)
+      selectedIntegration = integrations.find((p) => p.createdBy === account.primarySocialId) ?? integrations[0]
+    }
+  )
 
-  // TODO: FIXME
-  // $: gmailMessage &&
-  //   channel &&
-  //   object &&
-  //   convertMessage(object, channel, gmailMessage, allIntegrations, $personAccountByIdStore, $employeeByIdStore).then(
-  //     (p) => (currentMessage = p)
-  //   )
+  $: gmailMessage &&
+    channel &&
+    object &&
+    convertMessage(object, channel, gmailMessage).then((p) => (currentMessage = p))
 </script>
 
 {#if channel && object}
@@ -154,14 +163,7 @@
     {:else if currentMessage}
       <FullMessage {currentMessage} bind:newMessage on:close={back} />
     {:else}
-      <Chats
-        {object}
-        {channel}
-        bind:newMessage
-        {allIntegrations}
-        enabled={integrations.length > 0}
-        on:select={selectHandler}
-      />
+      <Chats {object} {channel} bind:newMessage enabled={integrations.length > 0} on:select={selectHandler} />
     {/if}
   </Dialog>
 {/if}

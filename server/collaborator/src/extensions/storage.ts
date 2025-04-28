@@ -43,7 +43,7 @@ type ConnectionId = string
 
 interface DocumentUpdates {
   context: Context
-  collaborators: Set<ConnectionId>
+  collaborators: Map<ConnectionId, number>
 }
 
 export class StorageExtension implements Extension {
@@ -55,16 +55,21 @@ export class StorageExtension implements Extension {
     this.configuration = configuration
   }
 
-  async onChange ({ context, documentName }: withContext<onChangePayload>): Promise<any> {
+  async onChange ({ context, document, documentName }: withContext<onChangePayload>): Promise<any> {
     const { connectionId } = context
+
+    if (document.isLoading) {
+      console.warn('document changed while is loading', { documentName, connectionId })
+      return
+    }
 
     const updates = this.updates.get(documentName)
     if (updates === undefined) {
-      const collaborators = new Set([connectionId])
+      const collaborators = new Map([[connectionId, Date.now()]])
       this.updates.set(documentName, { context, collaborators })
     } else {
       updates.context = context
-      updates.collaborators.add(connectionId)
+      updates.collaborators.set(connectionId, Date.now())
     }
   }
 
@@ -92,15 +97,17 @@ export class StorageExtension implements Extension {
     const { ctx } = this.configuration
     const { connectionId } = context
 
-    ctx.info('store document', { documentName, connectionId })
-
     const updates = this.updates.get(documentName)
+    const connections = document.getConnectionsCount()
+    const collaborators = updates?.collaborators.size ?? 0
+    ctx.info('store document', { documentName, connectionId, connections, collaborators })
+
     if (updates === undefined || updates.collaborators.size === 0) {
       ctx.info('no changes for document', { documentName, connectionId })
       return
     }
 
-    updates.collaborators = new Set()
+    updates.collaborators.clear()
     await this.storeDocument(documentName, document, updates.context)
   }
 
@@ -114,16 +121,23 @@ export class StorageExtension implements Extension {
     const { ctx } = this.configuration
     const { connectionId } = context
 
-    const params = { documentName, connectionId, connections: document.getConnectionsCount() }
-    ctx.info('disconnect from document', params)
-
     const updates = this.updates.get(documentName)
+    const connections = document.getConnectionsCount()
+    const collaborators = updates?.collaborators.size ?? 0
+    const updatedAt = updates?.collaborators.get(connectionId)
+    ctx.info('disconnect from document', { documentName, connectionId, connections, collaborators, updatedAt })
+
     if (updates === undefined || !updates.collaborators.has(connectionId)) {
       ctx.info('no changes for document', { documentName, connectionId })
       return
     }
 
-    updates.collaborators = new Set()
+    if (document.isLoading) {
+      ctx.warn('document is loading', { documentName, connectionId })
+      return
+    }
+
+    updates.collaborators.clear()
     await this.storeDocument(documentName, document, context)
   }
 

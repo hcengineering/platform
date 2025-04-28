@@ -255,6 +255,10 @@ async function writeFileToResponse (ctx: MeasureContext, path: string, res: Resp
 
   pipeline(stream, res, (err) => {
     if (err != null) {
+      // ignore abort errors to avoid flooding the logs
+      if (err.name === 'AbortError' || err.code === 'ERR_STREAM_PREMATURE_CLOSE') {
+        return
+      }
       Analytics.handleError(err)
       const error = err instanceof Error ? err.message : String(err)
       ctx.error('error writing response', { error })

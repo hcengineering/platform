@@ -13,41 +13,52 @@
 // limitations under the License.
 //
 
-import { isActiveMode, MeasureContext, RateLimiter, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
+import {
+  AccountUuid,
+  isActiveMode,
+  MeasureContext,
+  RateLimiter,
+  WorkspaceUuid,
+  type PersonId
+} from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 
-import { type Db } from 'mongodb'
 import { decode64 } from './base64'
 import config from './config'
 import { type GmailClient } from './gmail'
 import { type ProjectCredentials, type Token, type User } from './types'
 import { WorkspaceClient } from './workspaceClient'
-import { generateToken } from '@hcengineering/server-token'
 import { getAccountClient } from '@hcengineering/server-client'
+import { getIntegrations } from './integrations'
+import { serviceToken } from './utils'
+import { getWorkspaceTokens } from './tokens'
+
+import { AuthProvider } from './gmail/auth'
 
 export class GmailController {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
 
   private readonly credentials: ProjectCredentials
-  private readonly clients: Map<string, GmailClient[]> = new Map<string, GmailClient[]>()
+  private readonly clients: Map<PersonId, GmailClient[]> = new Map<PersonId, GmailClient[]>()
   private readonly initLimitter = new RateLimiter(config.InitLimit)
+  private readonly authProvider
 
   protected static _instance: GmailController
 
   private constructor (
     private readonly ctx: MeasureContext,
-    private readonly mongo: Db,
     private readonly storageAdapter: StorageAdapter
   ) {
     this.credentials = JSON.parse(config.Credentials)
+    this.authProvider = new AuthProvider(this.credentials)
     GmailController._instance = this
   }
 
-  static create (ctx: MeasureContext, mongo: Db, storageAdapter: StorageAdapter): GmailController {
+  static create (ctx: MeasureContext, storageAdapter: StorageAdapter): GmailController {
     if (GmailController._instance !== undefined) {
       throw new Error('GmailController already exists')
     }
-    return new GmailController(ctx, mongo, storageAdapter)
+    return new GmailController(ctx, storageAdapter)
   }
 
   static getGmailController (): GmailController {
@@ -58,45 +69,43 @@ export class GmailController {
   }
 
   async startAll (): Promise<void> {
-    const tokens = await this.mongo.collection<Token>('tokens').find().toArray()
-    const groups = new Map<string, Token[]>()
-    console.log('start gmail service', tokens.length)
-    for (const token of tokens) {
-      const group = groups.get(token.workspace)
-      if (group === undefined) {
-        groups.set(token.workspace, [token])
-      } else {
-        group.push(token)
-        groups.set(token.workspace, group)
-      }
-    }
+    try {
+      const token = serviceToken()
+      const integrations = await getIntegrations(token)
+      this.ctx.info('Start integrations', { count: integrations.length })
 
-    const limiter = new RateLimiter(config.InitLimit)
-    for (const [workspace, tokens] of groups) {
-      await limiter.add(async () => {
-        const wstok = generateToken(systemAccountUuid, workspace as any) // TODO: FIXME
-        const accountClient = getAccountClient(wstok)
-        const info = await accountClient.getWorkspaceInfo()
+      const limiter = new RateLimiter(config.InitLimit)
+      for (const integration of integrations) {
+        if (integration.workspaceUuid === null) continue
+        await limiter.add(async () => {
+          if (integration.workspaceUuid === null) return
+          const accountClient = getAccountClient(token)
+          const info = await accountClient.getWorkspaceInfo()
 
-        if (info === undefined) {
-          console.log('workspace not found', workspace)
-          return
-        }
-        if (!isActiveMode(info.mode)) {
-          console.log('workspace is not active', workspace)
-          return
-        }
-        const startPromise = this.startWorkspace(workspace as any, tokens) // TODO: FIXME
-        const timeoutPromise = new Promise<void>((resolve) => {
-          setTimeout(() => {
-            resolve()
-          }, 60000)
+          if (info === undefined) {
+            this.ctx.info('workspace not found', { workspaceUuid: integration.workspaceUuid })
+            return
+          }
+          if (!isActiveMode(info.mode)) {
+            this.ctx.info('workspace is not active', { workspaceUuid: integration.workspaceUuid })
+            return
+          }
+          const tokens = await getWorkspaceTokens(accountClient, integration.workspaceUuid)
+          this.ctx.info('Use stored tokens', { count: tokens.length })
+          const startPromise = this.startWorkspace(integration.workspaceUuid, tokens)
+          const timeoutPromise = new Promise<void>((resolve) => {
+            setTimeout(() => {
+              resolve()
+            }, 60000)
+          })
+          await Promise.race([startPromise, timeoutPromise])
         })
-        await Promise.race([startPromise, timeoutPromise])
-      })
-    }
+      }
 
-    await limiter.waitProcessing()
+      await limiter.waitProcessing()
+    } catch (err: any) {
+      this.ctx.error('Failed to start existing integrations', err)
+    }
   }
 
   async startWorkspace (workspace: WorkspaceUuid, tokens: Token[]): Promise<void> {
@@ -105,15 +114,20 @@ export class GmailController {
     for (const token of tokens) {
       try {
         const timeout = setTimeout(() => {
-          console.log('init client hang', token.workspace, token.userId)
+          this.ctx.info('init client hang', { workspaceUuid: token.workspace, userId: token.userId })
         }, 60000)
         const client = await workspaceClient.createGmailClient(token)
         clearTimeout(timeout)
         clients.push(client)
-      } catch (err) {
-        console.error(`Couldn't create client for ${workspace} ${token.userId}`)
+      } catch (err: any) {
+        this.ctx.error("Couldn't create client", {
+          workspaceUuid: workspace,
+          userId: token.userId,
+          message: err.message
+        })
       }
     }
+    this.ctx.info('Start clients sync', { workspaceUuid: workspace, count: clients.length })
     for (const client of clients) {
       void this.initLimitter.add(async () => {
         await client.startSync()
@@ -133,25 +147,30 @@ export class GmailController {
     }
   }
 
-  addClient (email: string, client: GmailClient): void {
-    const clients = this.clients.get(email)
+  addClient (socialId: PersonId, client: GmailClient): void {
+    const clients = this.clients.get(socialId)
     if (clients === undefined) {
-      this.clients.set(email, [client])
+      this.clients.set(socialId, [client])
     } else {
       clients.push(client)
-      this.clients.set(email, clients)
+      this.clients.set(socialId, clients)
     }
   }
 
-  async getGmailClient (email: string, workspace: WorkspaceUuid, token: string): Promise<GmailClient> {
+  /*
+  async getGmailClient (userId: AccountUuid, workspace: WorkspaceUuid, token: string): Promise<GmailClient> {
     const workspaceClient = await this.getWorkspaceClient(workspace)
-    const userId = await workspaceClient.getUserId(email)
     return await workspaceClient.createGmailClient({ userId, workspace, token })
   }
+  */
 
-  async signout (workspace: WorkspaceUuid, email: string): Promise<void> {
+  getAuthProvider (): AuthProvider {
+    return this.authProvider
+  }
+
+  async signout (workspace: WorkspaceUuid, account: AccountUuid): Promise<void> {
     const workspaceClient = await this.getWorkspaceClient(workspace)
-    const clients = await workspaceClient.signout(email)
+    const clients = await workspaceClient.signoutByAccountId(account)
     if (clients === 0) {
       this.workspaces.delete(workspace)
     }
@@ -164,9 +183,9 @@ export class GmailController {
     this.workspaces.clear()
   }
 
-  async createClient (user: User | Token): Promise<GmailClient> {
+  async createClient (user: User | Token, authCode?: string): Promise<GmailClient> {
     const workspace = await this.getWorkspaceClient(user.workspace)
-    const newClient = await workspace.createGmailClient(user)
+    const newClient = await workspace.createGmailClient(user, authCode)
     return newClient
   }
 
@@ -174,12 +193,12 @@ export class GmailController {
     let res = this.workspaces.get(workspace)
     if (res === undefined) {
       try {
-        console.log('create workspace worker for', workspace)
-        res = await WorkspaceClient.create(this.ctx, this.credentials, this.mongo, this.storageAdapter, workspace)
+        this.ctx.info('create workspace worker', { workspaceUuid: workspace })
+        res = await WorkspaceClient.create(this.ctx, this.credentials, this.storageAdapter, workspace)
         this.workspaces.set(workspace, res)
-        console.log('created workspace worker for', workspace)
+        this.ctx.info('created workspace worker', { workspaceUuid: workspace })
       } catch (err) {
-        console.error(`Couldn't create workspace worker for ${workspace}, reason: `, err)
+        this.ctx.error("Couldn't create workspace worker", { workspaceUuid: workspace, reason: err })
         throw err
       }
     }

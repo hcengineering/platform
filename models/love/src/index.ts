@@ -35,6 +35,7 @@ import {
   type Meeting,
   type MeetingMinutes,
   type MeetingStatus,
+  type MeetingSchedule,
   type Office,
   type ParticipantInfo,
   type RequestStatus,
@@ -61,7 +62,7 @@ import {
   UX,
   TypeBoolean
 } from '@hcengineering/model'
-import calendar, { TEvent } from '@hcengineering/model-calendar'
+import calendar, { TEvent, TSchedule } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
@@ -252,6 +253,11 @@ export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes, Tod
     todos?: CollectionSize<ToDo>
 }
 
+@Mixin(love.mixin.MeetingSchedule, calendar.class.Schedule)
+export class TMeetingSchedule extends TSchedule implements MeetingSchedule {
+  room!: Ref<Room>
+}
+
 export default love
 
 export function createModel (builder: Builder): void {
@@ -265,7 +271,8 @@ export function createModel (builder: Builder): void {
     TRoomInfo,
     TInvite,
     TMeeting,
-    TMeetingMinutes
+    TMeetingMinutes,
+    TMeetingSchedule
   )
 
   builder.createDoc(
@@ -323,6 +330,19 @@ export function createModel (builder: Builder): void {
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: calendar.extensions.EditEventExtensions,
     component: love.component.EditMeetingData
+  })
+
+  builder.createDoc(presentation.class.DocCreateExtension, core.space.Model, {
+    ofClass: calendar.class.Schedule,
+    apply: love.function.CreateMeetingSchedule,
+    components: {
+      body: love.component.MeetingScheduleData
+    }
+  })
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: calendar.extensions.EditScheduleExtensions,
+    component: love.component.EditMeetingScheduleData
   })
 
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {

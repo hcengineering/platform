@@ -108,7 +108,7 @@
   >
     {#if url && !imgError}
       <img
-        class="hulyAvatarSize-{size} ava-image {disabled ? 'disabled' : ''}"
+        class="hulyAvatarSize-{size} ava-image {disabled ? 'disabled' : ''} {style}"
         src={url}
         {srcset}
         alt={''}

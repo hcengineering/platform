@@ -50,7 +50,7 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 0;
-    width: 22.5rem;
+    width: 20rem;
   }
   .content,
   .content {
@@ -80,7 +80,7 @@
   .image-container {
     /* image-container */
     width: 100%;
-    min-height: 9rem;
+    min-height: 8rem;
     display: flex;
 
     /* Inside auto layout */
@@ -88,7 +88,7 @@
     order: 0;
     align-self: stretch;
     flex-grow: 0;
-    margin: -1.875rem 0;
+    margin: -1.75rem 0;
     z-index: -100;
   }
 
@@ -110,7 +110,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    height: 9rem;
+    height: 7.25rem;
 
     border-radius: 0;
     background-size: contain;

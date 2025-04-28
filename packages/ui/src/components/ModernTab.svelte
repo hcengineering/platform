@@ -107,14 +107,14 @@
 
     &.horizontal {
       padding: 0.125rem 0.125rem 0.125rem 0.5rem;
-      height: 1.625rem;
-      min-height: 1.625rem;
+      height: 1.75rem;
+      min-height: 1.75rem;
       min-width: 4rem;
     }
 
     &.vertical {
       padding: 0.5rem 0.125rem 0.125rem 0.125rem;
-      width: 1.625rem;
+      width: 1.75rem;
       min-height: 4rem;
       writing-mode: vertical-rl;
       text-orientation: sideways;
