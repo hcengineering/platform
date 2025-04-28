@@ -86,17 +86,7 @@
     {
       id: document.string.CreateTeamspace,
       label: document.string.CreateTeamspace,
-      accountRole: AccountRole.Maintainer,
-      permissions: [
-        {
-          id: core.permission.CreateObject,
-          space: core.space.Space
-        },
-        {
-          id: document.permission.CreateTeamspace,
-          space: core.space.Space
-        }
-      ],
+      accountRole: AccountRole.User,
       callback: newTeamspace
     },
     {

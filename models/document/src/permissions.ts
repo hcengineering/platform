@@ -7,10 +7,13 @@ export function definePermissions (builder: Builder): void {
     core.class.Permission,
     core.space.Model,
     {
-      label: document.string.CreateTeamspacePermission,
+      label: document.string.ForbidCreateTeamspacePermission,
       scope: 'workspace',
-      description: document.string.CreateTeamspacePermissionDescription
+      txClass: core.class.TxCreateDoc,
+      objectClass: document.class.Teamspace,
+      forbid: true,
+      description: document.string.ForbidCreateTeamspacePermissionDescription
     },
-    document.permission.CreateTeamspace
+    document.permission.ForbidCreateTeamspace
   )
 }

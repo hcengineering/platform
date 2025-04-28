@@ -71,8 +71,8 @@ export const documentPlugin = plugin(documentId, {
     ConfigLabel: '' as IntlString,
     CreateDocument: '' as IntlString,
     Documents: '' as IntlString,
-    CreateTeamspacePermission: '' as IntlString,
-    CreateTeamspacePermissionDescription: '' as IntlString
+    ForbidCreateTeamspacePermission: '' as IntlString,
+    ForbidCreateTeamspacePermissionDescription: '' as IntlString
   },
   ids: {
     NoParent: '' as Ref<Document>,
@@ -86,7 +86,7 @@ export const documentPlugin = plugin(documentId, {
     DefaultTeamspaceType: '' as Ref<SpaceType>
   },
   permission: {
-    CreateTeamspace: '' as Ref<Permission>
+    ForbidCreateTeamspace: '' as Ref<Permission>
   }
 })
 
