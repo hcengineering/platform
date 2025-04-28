@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { cardId, DOMAIN_CARD } from '@hcengineering/card'
+import { type Card, cardId, DOMAIN_CARD } from '@hcengineering/card'
 import core, { TxOperations, type Client, type Data, type Doc } from '@hcengineering/core'
 import {
   tryMigrate,
@@ -37,6 +37,11 @@ export const cardOperation: MigrateOperation = {
         state: 'migrate-spaces',
         mode: 'upgrade',
         func: migrateSpaces
+      },
+      {
+        state: 'migrate-childs-spaces',
+        mode: 'upgrade',
+        func: migrateChildsSpaces
       }
     ])
   },
@@ -150,6 +155,14 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
       },
       card.space.Default
     )
+  }
+}
+
+async function migrateChildsSpaces (client: MigrationClient): Promise<void> {
+  const toUpdate = await client.find<Card>(DOMAIN_CARD, { space: core.space.Workspace })
+  for (const doc of toUpdate) {
+    const parent = doc.parent != null ? (await client.find(DOMAIN_CARD, { _id: doc.parent }))[0] : undefined
+    await client.update(DOMAIN_CARD, { _id: doc._id }, { space: parent?.space ?? card.space.Default })
   }
 }
 
