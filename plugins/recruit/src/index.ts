@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Attribute, Class, Doc, Mixin, Ref, Status } from '@hcengineering/core'
+import type { Attribute, Class, Doc, Mixin, Permission, Ref, Status } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { ProjectTypeDescriptor, TaskType } from '@hcengineering/task'
@@ -67,7 +67,9 @@ const recruit = plugin(recruitId, {
     Application: '' as IntlString,
     Vacancy: '' as IntlString,
     Review: '' as IntlString,
-    Talent: '' as IntlString
+    Talent: '' as IntlString,
+    ForbidCreateVacancyPermission: '' as IntlString,
+    ForbidCreateVacancyPermissionDescription: '' as IntlString
   },
   icon: {
     RecruitApplication: '' as Asset,
@@ -91,6 +93,9 @@ const recruit = plugin(recruitId, {
   },
   taskTypes: {
     Applicant: '' as Ref<TaskType>
+  },
+  permission: {
+    ForbidCreateVacancy: '' as Ref<Permission>
   }
 })
 

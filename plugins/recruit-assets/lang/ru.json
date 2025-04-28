@@ -122,7 +122,9 @@
     "HideArchivedVacancies": "Скрыть архивные вакансии",
     "HideApplicantsFromArchivedVacancies": "Скрыть из архивных вакансии",
     "CreateNewSkills": "Создать навыки, если не найдены существующие",
-    "SwapFirstAndLastNames": "Поменять местами имя и фамилию"
+    "SwapFirstAndLastNames": "Поменять местами имя и фамилию",
+    "ForbidCreateVacancyPermission": "Запретить создание вакансии",
+    "ForbidCreateVacancyPermissionDescription": "Запрещает пользователям создавать новые вакансии"
   },
   "status": {
     "ApplicationExists": "Кандидат уже существует",
