@@ -11,14 +11,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Card, cardId, type CardSpace, type MasterTag } from '@hcengineering/card'
+import { type Card, CardEvents, cardId, type CardSpace, type MasterTag } from '@hcengineering/card'
 import {
   type Class,
   type Client,
+  type Data,
   type Doc,
   type DocumentQuery,
+  fillDefaults,
+  type Hierarchy,
+  type MarkupBlobRef,
   type Ref,
   type RelatedDocument,
+  SortingOrder,
+  type Space,
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
@@ -33,9 +39,14 @@ import {
 import view from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import { type LocationData } from '@hcengineering/workbench'
+import { translate } from '@hcengineering/platform'
+import { makeRank } from '@hcengineering/rank'
+import { Analytics } from '@hcengineering/analytics'
+
 import CardSearchItem from './components/CardSearchItem.svelte'
-import card from './plugin'
 import CreateSpace from './components/navigator/CreateSpace.svelte'
+import card from './plugin'
+import { type NavigatorConfig } from './types'
 
 export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: () => void): Promise<void> {
   if (tag !== undefined) {
@@ -174,3 +185,45 @@ const toCardObjectSearchResult = (e: WithLookup<Card>): ObjectSearchResult => ({
   icon: card.icon.Card,
   component: CardSearchItem
 })
+
+export async function createCard (type: Ref<MasterTag>, space: Ref<Space>): Promise<Ref<Card>> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
+  const title = await translate(card.string.Card, {})
+
+  const data: Data<Card> = {
+    title,
+    rank: makeRank(lastOne?.rank, undefined),
+    content: '' as MarkupBlobRef,
+    parentInfo: [],
+    blobs: {}
+  }
+
+  const filledData = fillDefaults(hierarchy, data, type)
+
+  const _id = await client.createDoc(type, space, filledData)
+
+  Analytics.handleEvent(CardEvents.CardCreated)
+  return _id
+}
+
+export function getRootType (hierarchy: Hierarchy, type: Ref<MasterTag>): Ref<MasterTag> {
+  const ancestors = hierarchy.getAncestors(type)
+  const idx = ancestors.indexOf(card.class.Card)
+
+  return idx > 0 ? ancestors[idx - 1] : type
+}
+
+export function sortNavigatorTypes (types: MasterTag[], config: NavigatorConfig): MasterTag[] {
+  return types.sort((a, b) => {
+    const aOrder = config.preorder?.find((it) => it.type === a._id)?.order ?? Infinity
+    const bOrder = config.preorder?.find((it) => it.type === b._id)?.order ?? Infinity
+
+    if (aOrder !== bOrder) {
+      return aOrder - bOrder
+    }
+
+    return a.label.localeCompare(b.label)
+  })
+}

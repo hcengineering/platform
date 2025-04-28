@@ -2270,7 +2270,8 @@
     border-bottom: 1px solid var(--theme-list-subheader-divider);
   }
   &.row.lastCat {
-    border-radius: 0 0 0.25rem 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
     border-bottom: 1px solid var(--theme-list-border-color);
   }
 
@@ -2395,12 +2396,24 @@
 }
 
 /* ListView - global style */
+.category-container.disableHeader .listGrid.row:first-child {
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+  border-top: 1px solid var(--theme-list-border-color);
+}
+.list-container .category-container.collapsed:not(.category-last, .category-one) .categoryHeader.subLevel,
+.list-container .category-container:not(.category-last, .category-one, .zero-container) .category-container.category-last .listGrid.last.lastCat,
+.list-container .category-container:not(.category-last, .category-one, .zero-container) .category-container.category-last .categoryHeader.subLevel.lastCat {
+  border-radius: 0;
+}
 .list-container .category-container .categoryHeader.subLevel.closed {
-  border-radius: 0 0 0.25rem 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
   border-bottom: 1px solid var(--theme-list-border-color);
 }
 .list-container .category-container .categoryHeader.closed:not(.subLevel) {
-  border-radius: 0 0 0.25rem 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
 
   &::before,
   &::after {

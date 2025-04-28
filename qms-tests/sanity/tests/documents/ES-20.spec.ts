@@ -39,7 +39,7 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v0.1',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -72,7 +72,7 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v0.1'
+        version: 'v1.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
 

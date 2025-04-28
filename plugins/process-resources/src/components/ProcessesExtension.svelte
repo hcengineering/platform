@@ -102,7 +102,7 @@
   let docsProvided = false
 </script>
 
-<Section icon={process.icon.Process} label={process.string.Processes}>
+<Section icon={process.icon.Process} label={process.string.Processes} spaceBeforeContent>
   <svelte:fragment slot="header">
     <div class="buttons-group xsmall-gap">
       <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
@@ -112,7 +112,7 @@
 
   <svelte:fragment slot="content">
     <div
-      class="antiSection-empty solid flex-col flex-gap-2 mt-3"
+      class="antiSection-empty {docsProvided && docs.length === 0 ? 'solid' : 'none-appearance flex-gap-2'}"
       use:resizeObserver={(evt) => {
         listWidth = evt.clientWidth
       }}
@@ -146,10 +146,8 @@
           }}
         />
         {#if docsProvided && docs.length === 0}
-          <div class="flex-col-center">
-            <div class="caption-color">
-              <Label label={process.string.NoProcesses} />
-            </div>
+          <div class="flex-center content-color">
+            <Label label={process.string.NoProcesses} />
           </div>
         {/if}
       {/if}

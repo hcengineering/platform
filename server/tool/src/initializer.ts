@@ -8,7 +8,6 @@ import core, {
   makeCollabId,
   MeasureContext,
   Mixin,
-  parseSocialIdString,
   Ref,
   SocialIdType,
   Space,
@@ -16,7 +15,8 @@ import core, {
   pickPrimarySocialId,
   type PersonId,
   type PersonInfo,
-  type WorkspaceIds
+  type WorkspaceIds,
+  buildSocialIdString
 } from '@hcengineering/core'
 import { ModelLogger } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
@@ -41,6 +41,7 @@ export type InitStep<T extends Doc> =
   | DefaultStep<T>
   | MixinStep<T, T>
   | UpdateStep<T>
+  | BulkUpdateStep<T>
   | FindStep<T>
   | UploadStep
   | ImportStep
@@ -76,6 +77,15 @@ export interface UpdateStep<T extends Doc> {
   data: Props<T>
 }
 
+export interface BulkUpdateStep<T extends Doc> {
+  type: 'bulkUpdate'
+  _class: Ref<Class<T>>
+  query: Partial<T>
+  markdownFields?: string[]
+  collabFields?: string[]
+  data: Props<T>
+}
+
 export interface FindStep<T extends Doc> {
   type: 'find'
   _class: Ref<Class<T>>
@@ -102,7 +112,8 @@ export class WorkspaceInitializer {
   private readonly nextRank = '#nextRank'
   private readonly now = '#now'
   private readonly creatorPersonVar = 'creatorPerson'
-  private readonly socialKey: PersonId
+  private readonly socialId: PersonId
+  private readonly socialKey: string
   private readonly socialType: SocialIdType
   private readonly socialValue: string
 
@@ -114,10 +125,11 @@ export class WorkspaceInitializer {
     private readonly initRepoDir: string,
     private readonly creator: PersonInfo
   ) {
-    this.socialKey = pickPrimarySocialId(creator.socialIds)._id
-    const socialKeyObj = parseSocialIdString(this.socialKey)
-    this.socialType = socialKeyObj.type
-    this.socialValue = socialKeyObj.value
+    const primarySocialId = pickPrimarySocialId(creator.socialIds)
+    this.socialId = primarySocialId._id
+    this.socialKey = buildSocialIdString(primarySocialId)
+    this.socialType = primarySocialId.type
+    this.socialValue = primarySocialId.value
   }
 
   async processScript (
@@ -128,6 +140,7 @@ export class WorkspaceInitializer {
     const vars: Record<string, any> = {
       '${creatorName@global}': this.creator.name, // eslint-disable-line no-template-curly-in-string
       '${creatorUuid@global}': this.creator.personUuid, // eslint-disable-line no-template-curly-in-string
+      '${creatorSocialId@global}': this.socialId, // eslint-disable-line no-template-curly-in-string
       '${creatorSocialKey@global}': this.socialKey, // eslint-disable-line no-template-curly-in-string
       '${creatorSocialType@global}': this.socialType, // eslint-disable-line no-template-curly-in-string
       '${creatorSocialValue@global}': this.socialValue // eslint-disable-line no-template-curly-in-string
@@ -143,6 +156,8 @@ export class WorkspaceInitializer {
           await this.processCreate(step, vars, defaults)
         } else if (step.type === 'update') {
           await this.processUpdate(step, vars)
+        } else if (step.type === 'bulkUpdate') {
+          await this.processBulkUpdate(step, vars)
         } else if (step.type === 'mixin') {
           await this.processMixin(step, vars)
         } else if (step.type === 'find') {
@@ -192,7 +207,7 @@ export class WorkspaceInitializer {
       const initPath = path.resolve(this.initRepoDir, step.path)
       // eslint-disable-next-line no-template-curly-in-string
       const initPerson = vars[`\${${this.creatorPersonVar}}`]
-      const importer = new HulyFormatImporter(this.client, uploader, logger, this.socialKey, initPerson)
+      const importer = new HulyFormatImporter(this.client, uploader, logger, this.socialId, initPerson)
       await importer.importFolder(initPath)
     } catch (error) {
       logger.error('Import failed', error)
@@ -229,20 +244,32 @@ export class WorkspaceInitializer {
     await this.client.updateDoc(step._class, space, _id as Ref<Doc>, props)
   }
 
+  private async processBulkUpdate<T extends Doc>(step: BulkUpdateStep<T>, vars: Record<string, any>): Promise<void> {
+    const ops = this.client.apply()
+    const docs = await this.client.findAll(step._class, { ...(step.query as any) })
+    const data = await this.fillPropsWithMarkdown(step.data, vars, step.markdownFields)
+    for (const doc of docs) {
+      await ops.updateDoc(step._class, doc.space, doc._id, data)
+    }
+    await ops.commit()
+  }
+
   private async processCreate<T extends Doc>(
     step: CreateStep<T>,
     vars: Record<string, any>,
     defaults: Map<Ref<Class<T>>, Props<T>>
   ): Promise<void> {
-    const _id = generateId<T>()
-    if (step.resultVariable !== undefined) {
-      vars[`\${${step.resultVariable}}`] = _id
-    }
     const data = await this.fillPropsWithMarkdown(
       { ...(defaults.get(step._class) ?? {}), ...step.data },
       vars,
       step.markdownFields
     )
+
+    const _id = (data._id as Ref<T>) ?? generateId<T>()
+
+    if (step.resultVariable !== undefined) {
+      vars[`\${${step.resultVariable}}`] = _id
+    }
 
     if (step.collabFields !== undefined) {
       for (const field of step.collabFields) {

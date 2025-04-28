@@ -14,11 +14,15 @@
 //
 
 import {
+  PersonId,
+  PersonUuid,
+  SocialIdType,
   type Account,
   type Class,
   type Doc,
   type DocumentQuery,
   type FindOptions,
+  type FulltextStorage,
   type Hierarchy,
   type ModelDb,
   type Ref,
@@ -26,7 +30,7 @@ import {
   type WithLookup
 } from '@hcengineering/core'
 
-export interface RestClient extends Storage {
+export interface RestClient extends Storage, FulltextStorage {
   getAccount: () => Promise<Account>
 
   findOne: <T extends Doc>(
@@ -36,4 +40,10 @@ export interface RestClient extends Storage {
   ) => Promise<WithLookup<T> | undefined>
 
   getModel: () => Promise<{ hierarchy: Hierarchy, model: ModelDb }>
+  ensurePerson: (
+    socialType: SocialIdType,
+    socialValue: string,
+    firstName: string,
+    lastName: string
+  ) => Promise<{ uuid: PersonUuid, socialId: PersonId, localPerson: string }>
 }

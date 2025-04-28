@@ -349,6 +349,8 @@ services:
       - AI_BOT_URL=http://huly.local:4010
       - MSG2FILE_URL=http://huly.local:9087
       - COMMUNICATION_TIME_LOGGING_ENABLED=true
+      - RATE_LIMIT_MAX=250 # 250 requests per 30 seconds
+      - RATE_LIMIT_WINDOW=30000
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
@@ -472,8 +474,8 @@ services:
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://huly.local:4900
-#      - LOVE_ENDPOINT=http://huly.local:8096
-#      - OPENAI_API_KEY=token
+  #      - LOVE_ENDPOINT=http://huly.local:8096
+  #      - OPENAI_API_KEY=token
   msg2file:
     image: hardcoreeng/msg2file
     ports:

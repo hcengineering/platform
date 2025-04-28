@@ -563,7 +563,13 @@ jobs:
           mkdir logs
           cd logs
           docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
-      - name: Upload test results
+      - name: Upload API test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-api
+          path: ./ws-tests/api-tests/playwright-report/
+      - name: Upload UI test results
         if: always()
         uses: actions/upload-artifact@v4
         with:

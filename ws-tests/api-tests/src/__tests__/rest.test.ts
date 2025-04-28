@@ -22,25 +22,27 @@ import {
   type WorkspaceToken
 } from '@hcengineering/api-client'
 import core, {
+  buildSocialIdString,
   generateId,
   MeasureMetricsContext,
   pickPrimarySocialId,
+  SocialIdType,
+  type Ref,
   type SocialId,
   type Space,
   type TxCreateDoc,
   type TxOperations
 } from '@hcengineering/core'
-
-import { getClient as getAccountClient } from '@hcengineering/account-client'
-
+import { type AccountClient, getClient as getAccountClient } from '@hcengineering/account-client'
 import chunter from '@hcengineering/chunter'
-import contact, { ensureEmployee } from '@hcengineering/contact'
+import contact, { ensureEmployee, type SocialIdentityRef, type Person } from '@hcengineering/contact'
 
 describe('rest-api-server', () => {
   const testCtx = new MeasureMetricsContext('test', {})
   const wsName = 'api-tests'
   let apiWorkspace1: WorkspaceToken
   let apiWorkspace2: WorkspaceToken
+  let accountClient: AccountClient
 
   beforeAll(async () => {
     const config = await loadServerConfig('http://huly.local:8083')
@@ -65,10 +67,10 @@ describe('rest-api-server', () => {
       config
     )
 
-    const account = getAccountClient(config.ACCOUNTS_URL, apiWorkspace1.token)
-    const person = await account.getPerson()
+    accountClient = getAccountClient(config.ACCOUNTS_URL, apiWorkspace1.token)
+    const person = await accountClient.getPerson()
 
-    const socialIds: SocialId[] = await account.getSocialIds()
+    const socialIds: SocialId[] = await accountClient.getSocialIds()
 
     // Ensure employee is created
 
@@ -99,7 +101,7 @@ describe('rest-api-server', () => {
       socialIds,
       async () => person
     )
-  })
+  }, 10000)
 
   function connect (ws?: WorkspaceToken): RestClient {
     const tok = ws ?? apiWorkspace1
@@ -214,7 +216,35 @@ describe('rest-api-server', () => {
     expect(employee.length).toBeGreaterThanOrEqual(1)
     expect(employee[0].active).toBe(true)
   })
+
+  it('ensure-person', async () => {
+    const socialType = SocialIdType.TELEGRAM
+    const socialValue = '123456789'
+    const first = 'John'
+    const last = 'Doe'
+    const conn = connect()
+    const { uuid, socialId, localPerson } = await conn.ensurePerson(socialType, socialValue, first, last)
+    const globalPerson = await accountClient.findPersonBySocialKey(
+      buildSocialIdString({ type: socialType, value: socialValue })
+    )
+
+    expect(globalPerson).toBe(uuid)
+
+    const person = await conn.findOne(contact.class.Person, { _id: localPerson as Ref<Person>, personUuid: uuid })
+
+    expect(person).not.toBeNull()
+
+    const socialIdObj = await conn.findOne(contact.class.SocialIdentity, {
+      type: socialType,
+      value: socialValue,
+      attachedTo: person?._id,
+      _id: socialId as SocialIdentityRef
+    })
+
+    expect(socialIdObj).not.toBeNull()
+  })
 })
+
 async function checkFindPerformance (conn: RestClient): Promise<void> {
   let ops = 0
   let total = 0

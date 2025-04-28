@@ -23,8 +23,6 @@
 
   export let upload: Upload
 
-  $: console.log(upload.progress / Math.max(upload.files.size, 1))
-
   function handleClick (ev: MouseEvent): void {
     showPopup(FileUploadStatusPopup, { uploadId: upload.uuid }, ev.currentTarget as HTMLElement)
   }

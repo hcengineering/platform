@@ -1,9 +1,9 @@
-version: "3"
+version: '3'
 services:
   mongodb:
     image: 'mongo:7-jammy'
     extra_hosts:
-      - "huly.local:host-gateway"
+      - 'huly.local:host-gateway'
     command: mongod --port 27018
     environment:
       - PUID=1000
@@ -90,7 +90,7 @@ services:
   account:
     image: hardcoreeng/account
     extra_hosts:
-      - "huly.local:host-gateway"
+      - 'huly.local:host-gateway'
     pull_policy: never
     links:
       - mongodb
@@ -112,7 +112,7 @@ services:
   workspace:
     image: hardcoreeng/workspace
     extra_hosts:
-      - "huly.local:host-gateway"
+      - 'huly.local:host-gateway'
     links:
       - mongodb
       - minio
@@ -132,7 +132,7 @@ services:
   front:
     image: hardcoreeng/front
     extra_hosts:
-      - "huly.local:host-gateway"
+      - 'huly.local:host-gateway'
     pull_policy: never
     links:
       - account
@@ -163,7 +163,7 @@ services:
   transactor:
     image: hardcoreeng/transactor
     extra_hosts:
-      - "huly.local:host-gateway"
+      - 'huly.local:host-gateway'
     pull_policy: never
     links:
       - mongodb
@@ -189,10 +189,12 @@ services:
       - LAST_NAME_FIRST=true
       - FULLTEXT_URL=http://fulltext:4710
       - BRANDING_PATH=/var/cfg/branding-test.json
+      - RATE_LIMIT_MAX=25000
+      - RATE_LIMIT_WINDOW=1000
   collaborator:
     image: hardcoreeng/collaborator
     extra_hosts:
-      - "huly.local:host-gateway"
+      - 'huly.local:host-gateway'
     links:
       - mongodb
       - minio
@@ -206,7 +208,7 @@ services:
       - UPLOAD_URL=/files
       - MONGO_URL=mongodb://mongodb:27018
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-    restart: unless-stopped 
+    restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
     restart: on-failure
@@ -215,7 +217,7 @@ services:
   print:
     image: hardcoreeng/print
     extra_hosts:
-      - "huly.local:host-gateway"
+      - 'huly.local:host-gateway'
     restart: unless-stopped
     ports:
       - 4003:4005
@@ -232,7 +234,7 @@ services:
   sign:
     image: hardcoreeng/sign
     extra_hosts:
-      - "huly.local:host-gateway"
+      - 'huly.local:host-gateway'
     restart: unless-stopped
     ports:
       - 4008:4006
@@ -248,7 +250,7 @@ services:
       - ACCOUNTS_URL=http://account:3003
       - MINIO_SECRET_KEY=minioadmin
       - CERTIFICATE_PATH=/var/cfg/certificate.p12
-      - SERVICE_ID=sign-service      
+      - SERVICE_ID=sign-service
       - BRANDING_PATH=/var/cfg/branding.json
     deploy:
       resources:
@@ -272,4 +274,4 @@ services:
       - ELASTIC_INDEX_NAME=local_storage_index
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - REKONI_URL=http://rekoni:4007
-      - ACCOUNTS_URL=http://account:3003          
+      - ACCOUNTS_URL=http://account:3003

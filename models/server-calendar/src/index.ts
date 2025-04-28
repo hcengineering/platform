@@ -34,14 +34,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverCalendar.trigger.OnSocialIdentityCreate,
-    txMatch: {
-      _class: core.class.TxCreateDoc,
-      objectClass: contact.class.SocialIdentity
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverCalendar.trigger.OnEmployee,
     txMatch: {
       _class: core.class.TxMixin,

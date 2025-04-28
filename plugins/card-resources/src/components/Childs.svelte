@@ -19,7 +19,7 @@
   import {
     Label,
     Scroller,
-    Button,
+    ModernButton,
     getCurrentLocation,
     IconAdd,
     navigate,
@@ -142,21 +142,24 @@
   const selection = listProvider.selection
 </script>
 
-<Section label={card.string.Children} icon={card.icon.Card}>
+<Section label={card.string.Children} icon={card.icon.Card} spaceBeforeContent>
   <svelte:fragment slot="header">
-    <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
-    {#if !$restrictionStore.readonly && !readonly}
-      <Button
-        id="add-child-card"
-        icon={IconAdd}
-        label={card.string.CreateChild}
-        kind={'ghost'}
-        showTooltip={{ label: card.string.CreateChild, direction: 'bottom' }}
-        on:click={() => {
-          void createCard()
-        }}
-      />
-    {/if}
+    <div class="buttons-group xsmall-gap">
+      <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
+      {#if !$restrictionStore.readonly && !readonly}
+        <ModernButton
+          id="add-child-card"
+          icon={IconAdd}
+          label={card.string.CreateChild}
+          size={'small'}
+          kind={'tertiary'}
+          tooltip={{ label: card.string.CreateChild, direction: 'bottom' }}
+          on:click={() => {
+            void createCard()
+          }}
+        />
+      {/if}
+    </div>
   </svelte:fragment>
   <svelte:fragment slot="content">
     {#if (object?.children ?? 0) > 0 && viewOptions !== undefined && viewlet}
@@ -194,7 +197,7 @@
         </div>
       </Scroller>
     {:else if !readonly}
-      <div class="antiSection-empty solid clear-mins mt-3">
+      <div class="antiSection-empty solid">
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <span class="over-underline content-color" on:click={createCard}>

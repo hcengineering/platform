@@ -6,11 +6,13 @@
     "DefaultCam": "デフォルトカメラ",
     "DefaultMic": "デフォルトマイク",
     "DefaultSpeaker": "デフォルトスピーカー",
-    "NoCam": "カメラなし",
     "TurnOnCam": "カメラをオンにする",
     "TurnOffCam": "カメラをオフにする",
     "TurnOnMic": "マイクをオンにする",
     "TurnOffMic": "マイクをオフにする",
+    "NoCam": "カメラなし",
+    "NoMic": "マイクなし",
+    "NoSpeaker": "スピーカーなし",
     "On": "オン",
     "Off": "オフ"
   }

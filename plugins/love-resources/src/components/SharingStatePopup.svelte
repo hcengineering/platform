@@ -115,8 +115,6 @@
 <style lang="scss">
   .icon {
     padding: 0.25rem;
-    border-radius: 0.25rem;
-    background-color: var(--theme-bg-color);
   }
 
   .preview {

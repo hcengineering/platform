@@ -44,6 +44,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       })
 
       if (ydoc !== undefined) {
+        ctx.info('loaded from storage', { documentName })
         return ydoc
       }
     } catch (err: any) {
@@ -69,6 +70,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
           // it to ensure the next time we load it from the ydoc document
           await saveCollabYdoc(ctx, this.storage, wsIds, documentId, ydoc)
 
+          ctx.info('loaded from initial content', { documentName, content })
           return ydoc
         }
       } catch (err: any) {

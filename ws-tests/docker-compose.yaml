@@ -295,6 +295,8 @@ services:
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
       - AI_BOT_URL=http://huly.local:4011
+      - RATE_LIMIT_MAX=25000
+      - RATE_LIMIT_WINDOW=1000
   transactor-europe:
     image: hardcoreeng/transactor
     extra_hosts:
@@ -326,6 +328,8 @@ services:
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
       - AI_BOT_URL=http://huly.local:4011
+      - RATE_LIMIT_MAX=25000
+      - RATE_LIMIT_WINDOW=1000
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
@@ -380,7 +384,6 @@ services:
       - STATS_URL=http://huly.local:4901
       - REKONI_URL=http://huly.local:4007
       - ACCOUNTS_URL=http://huly.local:3003
-      - SERVER_SECRET=secret
     restart: unless-stopped
   aiBot:
     image: hardcoreeng/ai-bot

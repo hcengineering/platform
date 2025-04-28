@@ -6,11 +6,13 @@
     "DefaultCam": "Default camera",
     "DefaultMic": "Default microphone",
     "DefaultSpeaker": "Default speaker",
-    "NoCam": "No camera",
     "TurnOnCam": "Turn on camera",
     "TurnOffCam": "Turn off camera",
     "TurnOnMic": "Turn on microphone",
     "TurnOffMic": "Turn off microphone",
+    "NoCam": "No camera",
+    "NoMic": "No microphone",
+    "NoSpeaker": "No speaker",
     "On": "On",
     "Off": "Off"
   }
