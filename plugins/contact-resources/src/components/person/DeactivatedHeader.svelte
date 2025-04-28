@@ -57,7 +57,7 @@
   }
 
   .deactivated-header {
-    width: 22.5rem;
+    width: 20rem;
     align-self: stretch;
     padding-left: 1rem;
     padding-right: 1rem;
