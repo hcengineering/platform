@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { config as dotenvConfig } from 'dotenv'
+
+dotenvConfig()
 
 interface Config {
   Port: number
-
-  MongoURI: string
-  MongoDB: string
   AccountsURL: string
   ServiceID: string
   Secret: string
@@ -26,21 +26,19 @@ interface Config {
   WATCH_TOPIC_NAME: string
   FooterMessage: string
   InitLimit: number
+  KvsUrl: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
   Port: 'PORT',
-
-  MongoURI: 'MONGO_URI',
-  MongoDB: 'MONGO_DB',
-
   AccountsURL: 'ACCOUNTS_URL',
   ServiceID: 'SERVICE_ID',
   Secret: 'SECRET',
   Credentials: 'Credentials',
   WATCH_TOPIC_NAME: 'WATCH_TOPIC_NAME',
   FooterMessage: 'FOOTER_MESSAGE',
-  InitLimit: 'INIT_LIMIT'
+  InitLimit: 'INIT_LIMIT',
+  KvsUrl: 'KVS_URL'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -48,15 +46,14 @@ const parseNumber = (str: string | undefined): number | undefined => (str !== un
 const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env[envMap.Port]) ?? 8087,
-    MongoDB: process.env[envMap.MongoDB] ?? 'gmail-service',
-    MongoURI: process.env[envMap.MongoURI],
     AccountsURL: process.env[envMap.AccountsURL],
     ServiceID: process.env[envMap.ServiceID] ?? 'gmail-service',
     Secret: process.env[envMap.Secret],
     Credentials: process.env[envMap.Credentials],
     WATCH_TOPIC_NAME: process.env[envMap.WATCH_TOPIC_NAME],
     InitLimit: parseNumber(process.env[envMap.InitLimit]) ?? 50,
-    FooterMessage: process.env[envMap.FooterMessage] ?? '<br><br><p>Sent via <a href="https://huly.io">Huly</a></p>'
+    FooterMessage: process.env[envMap.FooterMessage] ?? '<br><br><p>Sent via <a href="https://huly.io">Huly</a></p>',
+    KvsUrl: process.env[envMap.KvsUrl]
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)

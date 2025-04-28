@@ -18,17 +18,17 @@
 import { SplitLogger } from '@hcengineering/analytics-service'
 import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
-import serverClient from '@hcengineering/server-client'
+import serverClient, { getAccountClient } from '@hcengineering/server-client'
+import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import serverToken from '@hcengineering/server-token'
+import serverToken, { decodeToken } from '@hcengineering/server-token'
 import { type IncomingHttpHeaders } from 'http'
 import { join } from 'path'
 import { decode64 } from './base64'
 import config from './config'
 import { GmailController } from './gmailController'
 import { createServer, listen } from './server'
-import { closeDB, getDB } from './storage'
 import { type Endpoint, type State } from './types'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
@@ -61,8 +61,7 @@ export const main = async (): Promise<void> => {
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
   const storageAdapter = buildStorageFromConfig(storageConfig)
 
-  const db = await getDB()
-  const gmailController = GmailController.create(ctx, db, storageAdapter)
+  const gmailController = GmailController.create(ctx, storageAdapter)
   await gmailController.startAll()
   const endpoints: Endpoint[] = [
     {
@@ -70,22 +69,30 @@ export const main = async (): Promise<void> => {
       type: 'get',
       handler: async (req, res) => {
         try {
-          // TODO: FIXME
-          throw new Error('Not implemented')
-          // const token = extractToken(req.headers)
+          ctx.info('Signin request received')
+          const token = extractToken(req.headers)
 
-          // if (token === undefined) {
-          //   res.status(401).send()
-          //   return
-          // }
-          // const redirectURL = req.query.redirectURL as string
+          if (token === undefined) {
+            res.status(401).send()
+            return
+          }
+          const redirectURL = req.query.redirectURL as string
 
-          // const { workspace } = decodeToken(token)
-          // const gmail = await gmailController.getGmailClient(email, workspace, token)
-          // const url = gmail.getAutUrl(redirectURL)
-          // res.send(url)
+          const accountClient = getAccountClient(token)
+          const wsLoginInfo = await accountClient.getLoginInfoByToken()
+          if (!isWorkspaceLoginInfo(wsLoginInfo)) {
+            res.status(400).send({ err: "Couldn't find workspace with the provided token" })
+            return
+          }
+
+          const authProvider = gmailController.getAuthProvider()
+          const url = authProvider.getAuthUrl(redirectURL, {
+            workspace: wsLoginInfo.workspace,
+            userId: wsLoginInfo.account
+          })
+          res.send(url)
         } catch (err) {
-          console.log('signin error', (err as any).message)
+          ctx.error('signin error', { message: (err as any).message })
           res.status(500).send()
         }
       }
@@ -94,31 +101,36 @@ export const main = async (): Promise<void> => {
       endpoint: '/signin/code',
       type: 'get',
       handler: async (req, res) => {
-        const code = req.query.code as string
-        const state = JSON.parse(decode64(req.query.state as string)) as unknown as State
-        const gmail = await gmailController.createClient(state)
-        await gmail.authorize(code)
-        res.redirect(state.redirectURL)
+        try {
+          ctx.info('Signin code request received')
+          const code = req.query.code as string
+          const state = JSON.parse(decode64(req.query.state as string)) as unknown as State
+          await gmailController.createClient(state, code)
+          res.redirect(state.redirectURL)
+        } catch (err) {
+          ctx.error('Failed to process signin code', { message: (err as any).message })
+          res.status(500).send()
+        }
       }
     },
     {
       endpoint: '/signout',
       type: 'get',
       handler: async (req, res) => {
+        ctx.info('Signout request received')
         try {
-          // TODO: FIXME
-          throw new Error('Not implemented')
-          // const token = extractToken(req.headers)
+          const token = extractToken(req.headers)
 
-          // if (token === undefined) {
-          //   res.status(401).send()
-          //   return
-          // }
+          if (token === undefined) {
+            res.status(401).send()
+            return
+          }
 
-          // const { email, workspace } = decodeToken(token)
-          // await gmailController.signout(workspace.name, email)
+          const { account, workspace } = decodeToken(token)
+
+          await gmailController.signout(workspace, account)
         } catch (err) {
-          console.log('signout error', JSON.stringify(err))
+          ctx.error('signout error', { message: JSON.stringify(err) })
         }
 
         res.send()
@@ -128,14 +140,19 @@ export const main = async (): Promise<void> => {
       endpoint: '/push',
       type: 'post',
       handler: async (req, res) => {
-        const data = req.body?.message?.data
-        if (data === undefined) {
-          res.status(400).send({ err: "'data' is missing" })
-          return
-        }
-        gmailController.push(data)
+        try {
+          const data = req.body?.message?.data
+          if (data === undefined) {
+            res.status(400).send({ err: "'data' is missing" })
+            return
+          }
+          gmailController.push(data)
 
-        res.send()
+          res.send()
+        } catch (err) {
+          ctx.error('Push request failed', { message: JSON.stringify(err) })
+          res.status(500).send()
+        }
       }
     }
   ]
@@ -145,7 +162,6 @@ export const main = async (): Promise<void> => {
   const asyncClose = async (): Promise<void> => {
     await gmailController.close()
     await storageAdapter.close()
-    await closeDB()
   }
 
   const shutdown = (): void => {

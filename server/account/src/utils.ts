@@ -583,7 +583,7 @@ export async function selectWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
   }
 
-  if (accountUuid !== systemAccountUuid) {
+  if (accountUuid !== systemAccountUuid && meta !== undefined) {
     void setTimezoneIfNotDefined(ctx, db, accountUuid, account, meta)
   }
 
@@ -1475,7 +1475,7 @@ export async function setTimezoneIfNotDefined (
 }
 
 // Move to config?
-export const integrationServices = ['github', 'telegram-bot', 'telegram', 'mailbox', 'caldav']
+export const integrationServices = ['github', 'telegram-bot', 'telegram', 'mailbox', 'caldav', 'gmail']
 
 export async function findExistingIntegration (
   account: AccountUuid,

@@ -55,7 +55,8 @@
     "@types/request": "~2.48.8",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
-    "@types/jest": "^29.5.5"
+    "@types/jest": "^29.5.5",
+    "mongodb-memory-server": "^10.1.4"
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.17.14",
@@ -160,6 +161,7 @@
     "@hcengineering/collaboration": "^0.6.0",
     "@hcengineering/datalake": "^0.6.0",
     "@hcengineering/s3": "^0.6.0",
+    "@hcengineering/kvs-client": "^0.6.0",
     "commander": "^8.1.0",
     "csv-parse": "~5.1.0",
     "email-addresses": "^5.0.0",
