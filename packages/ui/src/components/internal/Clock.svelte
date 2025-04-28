@@ -43,9 +43,9 @@
 <style lang="scss">
   @keyframes blink {
     50% {
-      opacity: 0.0;
+      opacity: 0;
     }
-}
+  }
   .blink {
     animation: blink 1s step-start 0s infinite;
   }
