@@ -16,6 +16,7 @@
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import type { DocumentQuery } from './storage'
+import { Tx } from './tx'
 
 /**
  * @public
@@ -476,6 +477,9 @@ export type RolesAssignment = Record<Ref<Role>, Ref<Account>[] | undefined>
  */
 export interface Permission extends Doc {
   label: IntlString
+  txClass?: Ref<Class<Tx>>
+  forbid?: boolean
+  objectClass?: Ref<Class<Doc>>
   scope?: 'space' | 'workspace'
   description?: IntlString
   icon?: Asset

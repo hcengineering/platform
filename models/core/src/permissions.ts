@@ -56,6 +56,8 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: core.string.ForbidDeleteObject,
+      txClass: core.class.TxRemoveDoc,
+      forbid: true,
       scope: 'space',
       description: core.string.ForbidDeleteObjectDescription
     },

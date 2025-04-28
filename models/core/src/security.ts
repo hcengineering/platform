@@ -29,7 +29,9 @@ import {
   type Space,
   type SpaceType,
   type SpaceTypeDescriptor,
-  type TypedSpace
+  type TypedSpace,
+  type Doc,
+  type Tx
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -155,6 +157,9 @@ export class TRole extends TAttachedDoc implements Role {
 @UX(core.string.Permission)
 export class TPermission extends TDoc implements Permission {
   label!: IntlString
+  txClass?: Ref<Class<Tx>>
+  forbid?: boolean
+  objectClass?: Ref<Class<Doc<Space>>>
   scope?: 'space' | 'workspace'
   description?: IntlString
   icon?: Asset
