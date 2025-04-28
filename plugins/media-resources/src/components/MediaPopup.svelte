@@ -51,8 +51,6 @@
 </script>
 
 <div class="antiPopup mediaPopup">
-  <div class="ap-space" />
-
   <ComponentExtensions extension={media.extension.StateContext} />
 
   <div class="ap-scroll">
@@ -64,8 +62,6 @@
       <MediaPopupCamSelector bind:expanded={camOpened} on:expand={handleCamExpanded} />
     </div>
   </div>
-
-  <div class="ap-space" />
 </div>
 
 <style lang="scss">
