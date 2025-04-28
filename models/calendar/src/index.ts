@@ -31,6 +31,7 @@ import {
   DateRangeMode,
   IndexKind,
   type SystemSpace,
+  type Doc,
   type Domain,
   type Markup,
   type Ref,

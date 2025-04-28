@@ -26,10 +26,13 @@ import MeetingMinutesStatusPresenter from './components/MeetingMinutesStatusPres
 import RoomLanguageEditor from './components/RoomLanguageEditor.svelte'
 import MediaPopupItemExt from './components/MediaPopupItemExt.svelte'
 import SharingStateIndicator from './components/SharingStateIndicator.svelte'
+import MeetingScheduleData from './components/MeetingScheduleData.svelte'
+import EditMeetingScheduleData from './components/EditMeetingScheduleData.svelte'
 
 import {
   copyGuestLink,
   createMeeting,
+  createMeetingSchedule,
   showRoomSettings,
   startTranscription,
   stopTranscription,
@@ -66,10 +69,13 @@ export default async (): Promise<Resources> => ({
     MeetingMinutesStatusPresenter,
     RoomLanguageEditor,
     MediaPopupItemExt,
-    SharingStateIndicator
+    SharingStateIndicator,
+    MeetingScheduleData,
+    EditMeetingScheduleData
   },
   function: {
     CreateMeeting: createMeeting,
+    CreateMeetingSchedule: createMeetingSchedule,
     CanShowRoomSettings: () => {
       if (!hasAccountRole(getCurrentAccount(), AccountRole.User)) {
         return

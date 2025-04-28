@@ -1,7 +1,7 @@
 import aiBot from '@hcengineering/ai-bot'
 import { connectMeeting, disconnectMeeting } from '@hcengineering/ai-bot-resources'
 import { Analytics } from '@hcengineering/analytics'
-import calendar, { type Event, getAllEvents } from '@hcengineering/calendar'
+import calendar, { type Event, type Schedule, getAllEvents } from '@hcengineering/calendar'
 import chunter from '@hcengineering/chunter'
 import contact, { type Employee, getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
 import { personByIdStore } from '@hcengineering/contact-resources'
@@ -32,6 +32,7 @@ import {
   loveId,
   type Meeting,
   type MeetingMinutes,
+  type MeetingSchedule,
   MeetingStatus,
   type Office,
   type ParticipantInfo,
@@ -1109,6 +1110,26 @@ export async function createMeeting (
     const func = await getResource(login.function.GetInviteLink)
     const link = await func(-1, '', -1, AccountRole.Guest, encodeURIComponent(JSON.stringify(navigateUrl)))
     await client.update(event, { location: link })
+  }
+}
+
+export async function createMeetingSchedule (
+  client: TxOperations,
+  _id: Ref<Schedule>,
+  space: Space,
+  data: Data<Schedule>,
+  store: Record<string, any>,
+  phase: DocCreatePhase
+): Promise<void> {
+  console.log('createMeetingSchedule-0', _id)
+  if (phase === 'post') {
+    console.log('createMeetingSchedule-1', _id)
+    const schedule = await client.findOne(calendar.class.Schedule, { _id })
+    console.log('createMeetingSchedule-2', schedule)
+    if (schedule === undefined) return
+    await client.createMixin<Schedule, MeetingSchedule>(schedule._id, calendar.class.Schedule, space._id, love.mixin.MeetingSchedule, {
+      room: store.room as Ref<Room>
+    })
   }
 }
 
