@@ -16,6 +16,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, Blob as PlatformBlob, WorkspaceIds, metricsAggregate, type Ref } from '@hcengineering/core'
+import platform, { PlatformError } from '@hcengineering/platform'
 import { TokenError, decodeToken } from '@hcengineering/server-token'
 import { StorageAdapter } from '@hcengineering/storage'
 import bp from 'body-parser'
@@ -527,7 +528,7 @@ export function start (
             )
           }
         } catch (error: any) {
-          if (error instanceof TokenError) {
+          if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
             res.status(401).send()
             return
           }
@@ -606,6 +607,10 @@ export function start (
             }
           ])
         } catch (error: any) {
+          if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
+            res.status(401).send()
+            return
+          }
           ctx.error('error-post-files', error)
           res.status(500).send()
         }
@@ -639,7 +644,7 @@ export function start (
 
       res.status(200).send()
     } catch (error: any) {
-      if (error instanceof TokenError) {
+      if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
         res.status(401).send()
         return
       }
@@ -727,6 +732,10 @@ export function start (
           res.status(500).send(e)
         })
     } catch (error: any) {
+      if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
+        res.status(401).send()
+        return
+      }
       Analytics.handleError(error)
       ctx.error('error', { error })
       res.status(500).send()
@@ -803,6 +812,10 @@ export function start (
           })
       })
     } catch (error: any) {
+      if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
+        res.status(401).send()
+        return
+      }
       Analytics.handleError(error)
       ctx.error('error', { error })
       res.status(500).send()
