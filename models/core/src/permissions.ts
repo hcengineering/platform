@@ -66,28 +66,6 @@ export function definePermissions (builder: Builder): void {
     core.class.Permission,
     core.space.Model,
     {
-      label: core.string.UpdateObject,
-      scope: 'space',
-      description: core.string.UpdateObjectDescription
-    },
-    core.permission.UpdateObject
-  )
-
-  builder.createDoc(
-    core.class.Permission,
-    core.space.Model,
-    {
-      label: core.string.DeleteObject,
-      scope: 'space',
-      description: core.string.DeleteObjectDescription
-    },
-    core.permission.DeleteObject
-  )
-
-  builder.createDoc(
-    core.class.Permission,
-    core.space.Model,
-    {
       label: core.string.UpdateSpace,
       scope: 'space',
       description: core.string.UpdateSpaceDescription
