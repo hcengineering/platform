@@ -13,11 +13,13 @@
 // limitations under the License.
 //
 import nodemailer, { type Transporter } from 'nodemailer'
-import aws from '@aws-sdk/client-ses'
 
 import { type Config, type SmtpConfig, type SesConfig, getTlsSettings } from './config'
 
+import * as aws from '@aws-sdk/client-ses'
+
 function smtp (config: SmtpConfig): Transporter {
+  console.log('Using SMTP transport')
   const auth =
     config.Username !== undefined && config.Password !== undefined
       ? {
@@ -37,6 +39,7 @@ function smtp (config: SmtpConfig): Transporter {
 }
 
 function ses (config: SesConfig): Transporter {
+  console.log('Using AWS SES transport', aws)
   const ses = new aws.SES({
     region: config.Region,
     credentials: {
