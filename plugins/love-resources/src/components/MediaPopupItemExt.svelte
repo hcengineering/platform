@@ -57,8 +57,8 @@
   {@const participants = $infos.filter((p) => p.room === $currentRoom._id)}
   {@const overLimit = participants.length > limit}
 
-  <div class="mx-2 p-2">
-    <div class="flex-col flex-grow flex-gap-1">
+  <div class="m-1 p-2">
+    <div class="flex-col flex-grow flex-gap-0-5">
       <!-- subtitle -->
       {#if $currentMeetingMinutes !== undefined}
         <div class="flex-between flex-gap-2">
@@ -87,7 +87,7 @@
         {/if}
       </div>
 
-      <div class="flex-between items-start flex-gap-2 mt-1">
+      <div class="flex-between items-start flex-gap-2 mt-2">
         <!-- Avatars -->
         {#if overLimit}
           <div class="hulyCombineAvatars-container">
@@ -120,7 +120,7 @@
         {#if allowLeave || leaving}
           <Button
             icon={love.icon.LeaveRoom}
-            kind={'negative'}
+            kind={'dangerous'}
             size={'x-small'}
             label={view.string.Leave}
             showTooltip={{ label: love.string.LeaveRoom }}
@@ -130,7 +130,7 @@
         {:else if isMyOffice || ending}
           <Button
             icon={love.icon.LeaveRoom}
-            kind={'negative'}
+            kind={'dangerous'}
             size={'x-small'}
             label={love.string.EndMeeting}
             showTooltip={{ label: love.string.EndMeeting }}
