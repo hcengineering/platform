@@ -57,7 +57,15 @@
   }
 </script>
 
-<Button {disabled} label={calendar.string.TimeZone} kind={'ghost'} padding={'0 .5rem'} justify={'left'} flex={flex} on:click={open}>
+<Button
+  {disabled}
+  label={calendar.string.TimeZone}
+  kind={'ghost'}
+  padding={'0 .5rem'}
+  justify={'left'}
+  {flex}
+  on:click={open}
+>
   <svelte:fragment slot="content">
     <span class="ml-2 content-darker-color">
       {getTimeZoneName(timeZone)}

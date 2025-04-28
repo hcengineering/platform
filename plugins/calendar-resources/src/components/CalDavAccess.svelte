@@ -242,10 +242,7 @@
           />
         </div>
         {#if canSave}
-          <div
-            class:accessDisabled={!accessEnabled}
-            transition:slide={{ duration: 300, easing: quintOut }}
-          >
+          <div class:accessDisabled={!accessEnabled} transition:slide={{ duration: 300, easing: quintOut }}>
             <Label label={calendar.string.CalDavAccessPasswordWarning} />
           </div>
         {/if}

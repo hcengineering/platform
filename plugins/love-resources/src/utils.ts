@@ -1127,9 +1127,15 @@ export async function createMeetingSchedule (
     const schedule = await client.findOne(calendar.class.Schedule, { _id })
     console.log('createMeetingSchedule-2', schedule)
     if (schedule === undefined) return
-    await client.createMixin<Schedule, MeetingSchedule>(schedule._id, calendar.class.Schedule, space._id, love.mixin.MeetingSchedule, {
-      room: store.room as Ref<Room>
-    })
+    await client.createMixin<Schedule, MeetingSchedule>(
+      schedule._id,
+      calendar.class.Schedule,
+      space._id,
+      love.mixin.MeetingSchedule,
+      {
+        room: store.room as Ref<Room>
+      }
+    )
   }
 }
 
