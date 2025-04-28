@@ -3,7 +3,7 @@ import { connectMeeting, disconnectMeeting } from '@hcengineering/ai-bot-resourc
 import { Analytics } from '@hcengineering/analytics'
 import calendar, { type Event, type Schedule, getAllEvents } from '@hcengineering/calendar'
 import chunter from '@hcengineering/chunter'
-import contact, { type Employee, getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
+import contact, { getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
 import { personByIdStore } from '@hcengineering/contact-resources'
 import core, {
   AccountRole,
