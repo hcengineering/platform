@@ -28,7 +28,7 @@
     "Restore": "Wiederherstellen",
     "RoleLabel": "Rolle",
     "Root": "/",
-    "CreateDrivePermission": "Laufwerk erstellen",
-    "CreateDrivePermissionDescription": "Erlaubt Benutzern die Erstellung neuer Laufwerke"
+    "ForbidCreateDrivePermission": "Laufwerkserstellung verbieten",
+    "ForbidCreateDrivePermissionDescription": "Verbietet Benutzern die Erstellung neuer Laufwerke"
   }
 }

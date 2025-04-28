@@ -28,7 +28,7 @@
     "Restore": "Restaurar",
     "RoleLabel": "Papel",
     "Root": "/",
-    "CreateDrivePermission": "Criar unidade",
-    "CreateDrivePermissionDescription": "Concede aos utilizadores a capacidade de criar novas unidades"
+    "ForbidCreateDrivePermission": "Proibir criação de unidade",
+    "ForbidCreateDrivePermissionDescription": "Proíbe os utilizadores de criar novas unidades"
   }
 }

@@ -28,7 +28,7 @@
     "Restore": "Восстановить",
     "RoleLabel": "Роль",
     "Root": "/",
-    "CreateDrivePermission": "Создать диск",
-    "CreateDrivePermissionDescription": "Предоставляет пользователям возможность создавать новые диски"
+    "ForbidCreateDrivePermission": "Запретить создание диска",
+    "ForbidCreateDrivePermissionDescription": "Запрещает пользователям создавать новые диски"
   }
 }

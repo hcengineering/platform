@@ -28,7 +28,7 @@
     "Restore": "恢复",
     "RoleLabel": "角色",
     "Root": "/",
-    "CreateDrivePermission": "创建磁盘",
-    "CreateDrivePermissionDescription": "授予用户创建新磁盘的权限"
+    "ForbidCreateDrivePermission": "禁止创建磁盘",
+    "ForbidCreateDrivePermissionDescription": "禁止用户创建新磁盘"
   }
 }

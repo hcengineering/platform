@@ -80,17 +80,7 @@
       id: drive.string.CreateDrive,
       label: drive.string.CreateDrive,
       icon: drive.icon.Drive,
-      accountRole: AccountRole.Maintainer,
-      permissions: [
-        {
-          id: core.permission.CreateObject,
-          space: core.space.Space
-        },
-        {
-          id: drive.permission.CreateDrive,
-          space: core.space.Space
-        }
-      ],
+      accountRole: AccountRole.User,
       callback: handleCreateDrive
     },
     {

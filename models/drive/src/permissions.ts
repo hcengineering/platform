@@ -7,10 +7,13 @@ export function definePermissions (builder: Builder): void {
     core.class.Permission,
     core.space.Model,
     {
-      label: drive.string.CreateDrivePermission,
+      label: drive.string.ForbidCreateDrivePermission,
       scope: 'workspace',
-      description: drive.string.CreateDrivePermissionDescription
+      txClass: core.class.TxCreateDoc,
+      objectClass: drive.class.Drive,
+      forbid: true,
+      description: drive.string.ForbidCreateDrivePermissionDescription
     },
-    drive.permission.CreateDrive
+    drive.permission.ForbidCreateDrive
   )
 }

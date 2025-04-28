@@ -28,7 +28,7 @@
     "Restore": "Ripristina",
     "RoleLabel": "Ruolo",
     "Root": "/",
-    "CreateDrivePermission": "Crea drive",
-    "CreateDrivePermissionDescription": "Concede agli utenti la possibilità di creare nuovi drive"
+    "ForbidCreateDrivePermission": "Vieta creazione drive",
+    "ForbidCreateDrivePermissionDescription": "Vieta agli utenti di creare nuovi drive"
   }
 }

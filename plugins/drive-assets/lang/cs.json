@@ -28,7 +28,7 @@
     "Restore": "Obnovit",
     "RoleLabel": "Role",
     "Root": "/",
-    "CreateDrivePermission": "Vytvořit disk",
-    "CreateDrivePermissionDescription": "Uděluje uživatelům právo vytvářet nové disky"
+    "ForbidCreateDrivePermission": "Zakázat vytvoření disku",
+    "ForbidCreateDrivePermissionDescription": "Zakazuje uživatelům vytvářet nové disky"
   }
 }

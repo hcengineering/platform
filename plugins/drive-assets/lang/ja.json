@@ -28,7 +28,7 @@
     "Restore": "復元",
     "RoleLabel": "ロール",
     "Root": "/",
-    "CreateDrivePermission": "ドライブを作成",
-    "CreateDrivePermissionDescription": "ユーザーが新しいドライブを作成する権限を付与します"
+    "ForbidCreateDrivePermission": "ドライブの作成禁止",
+    "ForbidCreateDrivePermissionDescription": "ユーザーが新しいドライブを作成することを禁止します"
   }
 }

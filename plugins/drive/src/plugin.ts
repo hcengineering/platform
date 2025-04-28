@@ -65,8 +65,8 @@ export const drivePlugin = plugin(driveId, {
     FileVersion: '' as IntlString,
     Folder: '' as IntlString,
     Resource: '' as IntlString,
-    CreateDrivePermission: '' as IntlString,
-    CreateDrivePermissionDescription: '' as IntlString
+    ForbidCreateDrivePermission: '' as IntlString,
+    ForbidCreateDrivePermissionDescription: '' as IntlString
   },
   descriptor: {
     DriveType: '' as Ref<SpaceTypeDescriptor>
@@ -75,7 +75,7 @@ export const drivePlugin = plugin(driveId, {
     DefaultDrive: '' as Ref<SpaceType>
   },
   permission: {
-    CreateDrive: '' as Ref<Permission>
+    ForbidCreateDrive: '' as Ref<Permission>
   }
 })
 
