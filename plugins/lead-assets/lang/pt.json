@@ -34,6 +34,8 @@
     "ConfigDescription": "Extensão para gestão de relacionamento com o Cliente",
     "EditFunnel": "Editar Funil",
     "FunnelMembers": "Membros",
-    "RoleLabel": "Cargo: {role}"
+    "RoleLabel": "Cargo: {role}",
+    "ForbidCreateFunnelPermission": "Proibir criação de funil",
+    "ForbidCreateFunnelPermissionDescription": "Proíbe os utilizadores de criar novos funis"
   }
 }

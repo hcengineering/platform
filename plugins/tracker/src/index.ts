@@ -29,7 +29,8 @@ import {
   Space,
   Status,
   Timestamp,
-  Type, type Permission
+  Type,
+  type Permission
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'

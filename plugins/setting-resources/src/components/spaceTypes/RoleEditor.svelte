@@ -46,7 +46,7 @@
   if (spaceType._class === core.class.SpaceType) {
     const additionalPermissionsQuery = createQuery()
     additionalPermissionsQuery.query(core.class.Permission, { scope: 'workspace' }, (res) => {
-      spacePermissions = descriptor.availablePermissions.concat(res.map(r => r._id))
+      spacePermissions = descriptor.availablePermissions.concat(res.map((r) => r._id))
     })
   }
 

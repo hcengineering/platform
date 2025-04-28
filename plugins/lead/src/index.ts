@@ -15,7 +15,17 @@
 //
 
 import type { Contact } from '@hcengineering/contact'
-import type { Attribute, Class, MarkupBlobRef, Doc, Markup, Ref, Status, Timestamp } from '@hcengineering/core'
+import type {
+  Attribute,
+  Class,
+  MarkupBlobRef,
+  Doc,
+  Markup,
+  Ref,
+  Status,
+  Timestamp,
+  Permission
+} from '@hcengineering/core'
 import { Mixin } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -73,7 +83,9 @@ const lead = plugin(leadId, {
   },
   string: {
     Lead: '' as IntlString,
-    ConfigLabel: '' as IntlString
+    ConfigLabel: '' as IntlString,
+    ForbidCreateFunnelPermission: '' as IntlString,
+    ForbidCreateFunnelPermissionDescription: '' as IntlString
   },
   attribute: {
     State: '' as Ref<Attribute<Status>>
@@ -96,6 +108,9 @@ const lead = plugin(leadId, {
   },
   space: {
     DefaultFunnel: '' as Ref<Funnel>
+  },
+  permission: {
+    ForbidCreateFunnel: '' as Ref<Permission>
   }
 })
 

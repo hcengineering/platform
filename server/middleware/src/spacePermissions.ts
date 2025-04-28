@@ -81,14 +81,19 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
   }
 
   private getPermissions (): Permission[] {
-    return this.context.modelDb.findAllSync(core.class.Permission, { })
+    return this.context.modelDb.findAllSync(core.class.Permission, {})
   }
 
   private getRoles (spaceTypeId: Ref<SpaceType>): Role[] {
     return this.context.modelDb.findAllSync(core.class.Role, { attachedTo: spaceTypeId })
   }
 
-  private setPermissions (spaceId: Ref<Space>, roles: Role[], assignment: RolesAssignment, permissions: Permission[]): void {
+  private setPermissions (
+    spaceId: Ref<Space>,
+    roles: Role[],
+    assignment: RolesAssignment,
+    permissions: Permission[]
+  ): void {
     for (const role of roles) {
       const roleMembers: Ref<Account>[] = assignment[role._id] ?? []
 
@@ -98,7 +103,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
         }
 
         for (const permission of role.permissions) {
-          const p = permissions.find(p => p._id === permission)
+          const p = permissions.find((p) => p._id === permission)
           if (p === undefined) continue
           this.permissionsBySpace[spaceId][member].add(p)
         }

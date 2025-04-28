@@ -34,6 +34,8 @@
     "ConfigDescription": "Erweiterung für Customer Relationship Management",
     "EditFunnel": "Trichter bearbeiten",
     "FunnelMembers": "Mitglieder",
-    "RoleLabel": "Rolle: {role}"
+    "RoleLabel": "Rolle: {role}",
+    "ForbidCreateFunnelPermission": "Trichtererstellung verbieten",
+    "ForbidCreateFunnelPermissionDescription": "Verbietet Benutzern das Erstellen neuer Trichter"
   }
 }

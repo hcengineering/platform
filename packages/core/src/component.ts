@@ -267,7 +267,7 @@ export default plugin(coreId, {
     DeleteObject: '' as Ref<Permission>,
     ForbidDeleteObject: '' as Ref<Permission>,
     UpdateSpace: '' as Ref<Permission>,
-    ArchiveSpace: '' as Ref<Permission>,
+    ArchiveSpace: '' as Ref<Permission>
   },
   role: {
     Admin: '' as Ref<Role>

@@ -34,6 +34,8 @@
     "ConfigDescription": "用于客户关系管理的扩展",
     "EditFunnel": "编辑漏斗",
     "FunnelMembers": "成员",
-    "RoleLabel": "角色：{role}"
+    "RoleLabel": "角色：{role}",
+    "ForbidCreateFunnelPermission": "禁止创建漏斗",
+    "ForbidCreateFunnelPermissionDescription": "禁止用户创建新漏斗"
   }
 }
