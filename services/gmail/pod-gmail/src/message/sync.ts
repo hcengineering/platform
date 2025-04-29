@@ -224,11 +224,9 @@ export class SyncManager {
       if (currentHistoryId != null) {
         await this.setHistoryId(userId, currentHistoryId)
       }
-      await this.keyValueClient.deleteKey(this.getPageTokenKey(userId))
       this.ctx.info('Full sync finished', { workspaceUuid: this.workspace, userId, userEmail })
     } catch (err) {
       this.ctx.error('Full sync error', { workspace: this.workspace, userId, err })
-      // Keep the page token in the store to resume later
     }
   }
 
@@ -249,7 +247,6 @@ export class SyncManager {
       this.ctx.info('Sync history', { workspaceUuid: this.workspace, userId, userEmail })
 
       const history = await this.getHistory(userId)
-
       if (history?.historyId != null && history?.historyId !== '') {
         this.ctx.info('Start part sync', { workspaceUuid: this.workspace, userId, historyId: history.historyId })
         await this.partSync(userId, userEmail, history.historyId)
