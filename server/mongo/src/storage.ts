@@ -1427,7 +1427,8 @@ class MongoAdapter extends MongoAdapterBase {
     const filter = { _id: tx.objectId }
     const modifyOp = {
       modifiedBy: tx.modifiedBy,
-      modifiedOn: tx.modifiedOn
+      modifiedOn: tx.modifiedOn,
+      '%hash%': this.curHash()
     }
     if (isOperator(tx.attributes)) {
       const update = { ...this.translateMixinAttrs(tx.mixin, tx.attributes), $set: { ...modifyOp } }
