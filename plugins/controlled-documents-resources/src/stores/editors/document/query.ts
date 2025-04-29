@@ -18,7 +18,8 @@ import {
   type ControlledDocument,
   type DocumentComment,
   type DocumentTraining,
-  type Project
+  type Project,
+  type DocumentTemplate
 } from '@hcengineering/controlled-documents'
 import attachment from '@hcengineering/attachment'
 import { type Class, type DocumentQuery, type Ref, SortingOrder } from '@hcengineering/core'
@@ -94,7 +95,7 @@ const queryDocumentVersionsFx = createEffect((payload: ControlledDocument) => {
     documents.class.ControlledDocument,
     {
       seqNumber: payload.seqNumber,
-      template: payload.template
+      template: (payload.template ?? null) as Ref<DocumentTemplate>
     },
     (result) => {
       documentAllVersionsUpdated(result ?? [])
