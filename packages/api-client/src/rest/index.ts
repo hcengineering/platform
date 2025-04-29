@@ -13,6 +13,6 @@
 // limitations under the License.
 //
 
-export { createRestClient } from './rest'
+export { createRestClient, connectRest } from './rest'
 export { createRestTxOperations } from './tx'
 export * from './types'
