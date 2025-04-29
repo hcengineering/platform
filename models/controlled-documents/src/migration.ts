@@ -483,8 +483,6 @@ async function migrateInvalidDocumentState (client: MigrationClient): Promise<vo
 async function migrateInvalidPlannedEffectiveDate (client: MigrationClient): Promise<void> {
   const docs = await client.find<ControlledDocument>(DOMAIN_DOCUMENTS, {
     _class: documents.class.ControlledDocument,
-    state: DocumentState.Draft,
-    controlledState: ControlledDocumentState.Approved,
     plannedEffectiveDate: { $exists: false }
   })
 
@@ -495,16 +493,23 @@ async function migrateInvalidPlannedEffectiveDate (client: MigrationClient): Pro
   for (const doc of docs) {
     operations.push({
       filter: { _id: doc._id },
-      update: { $unset: { controlledState: true } }
-    })
-    operations.push({
-      filter: { _id: doc._id },
       update: {
-        plannedEffectiveDate: 0,
-        state: DocumentState.Effective,
-        effectiveDate: Date.now()
+        plannedEffectiveDate: 0
       }
     })
+    if (doc.state === DocumentState.Draft && doc.controlledState === ControlledDocumentState.Approved) {
+      operations.push({
+        filter: { _id: doc._id },
+        update: { $unset: { controlledState: true } }
+      })
+      operations.push({
+        filter: { _id: doc._id },
+        update: {
+          state: DocumentState.Effective,
+          effectiveDate: Date.now()
+        }
+      })
+    }
   }
 
   await client.bulk(DOMAIN_DOCUMENTS, operations)
