@@ -355,7 +355,7 @@ export async function OnDocApprovalRequestApproved (
         _id: tx.attachedTo as Ref<ControlledDocument>
       })
     )[0]
-    if (doc == null || doc.plannedEffectiveDate !== 0) {
+    if (doc == null || (typeof doc.plannedEffectiveDate === 'number' && doc.plannedEffectiveDate !== 0)) {
       continue
     }
 

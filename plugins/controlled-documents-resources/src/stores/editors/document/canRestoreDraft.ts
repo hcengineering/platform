@@ -24,6 +24,6 @@ export const $canRestoreDraft = combine(
   $canCreateNewDraft,
   (document, latest, canCreateNewDraft) => {
     if (latest === null || document == null) return false
-    return canCreateNewDraft && latest._id === document._id && document.state === DocumentState.Deleted
+    return canCreateNewDraft && latest?._id === document._id && document.state === DocumentState.Deleted
   }
 )
