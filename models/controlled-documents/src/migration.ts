@@ -14,6 +14,7 @@ import {
 import {
   type ChangeControl,
   type ControlledDocument,
+  ControlledDocumentState,
   createChangeControl,
   createDocumentTemplate,
   type DocumentCategory,
@@ -479,6 +480,41 @@ async function migrateInvalidDocumentState (client: MigrationClient): Promise<vo
   await client.bulk(DOMAIN_DOCUMENTS, operations)
 }
 
+async function migrateInvalidPlannedEffectiveDate (client: MigrationClient): Promise<void> {
+  const docs = await client.find<ControlledDocument>(DOMAIN_DOCUMENTS, {
+    _class: documents.class.ControlledDocument,
+    plannedEffectiveDate: { $exists: false }
+  })
+
+  const operations: {
+    filter: MigrationDocumentQuery<ControlledDocument>
+    update: MigrateUpdate<ControlledDocument>
+  }[] = []
+  for (const doc of docs) {
+    operations.push({
+      filter: { _id: doc._id },
+      update: {
+        plannedEffectiveDate: 0
+      }
+    })
+    if (doc.state === DocumentState.Draft && doc.controlledState === ControlledDocumentState.Approved) {
+      operations.push({
+        filter: { _id: doc._id },
+        update: { $unset: { controlledState: true } }
+      })
+      operations.push({
+        filter: { _id: doc._id },
+        update: {
+          state: DocumentState.Effective,
+          effectiveDate: Date.now()
+        }
+      })
+    }
+  }
+
+  await client.bulk(DOMAIN_DOCUMENTS, operations)
+}
+
 export const documentsOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
     await tryMigrate(mode, client, documentsId, [
@@ -512,6 +548,10 @@ export const documentsOperation: MigrateOperation = {
       {
         state: 'migrateInvalidDocumentState',
         func: migrateInvalidDocumentState
+      },
+      {
+        state: 'migrateInvalidPlannedEffectiveDate',
+        func: migrateInvalidPlannedEffectiveDate
       }
     ])
   },

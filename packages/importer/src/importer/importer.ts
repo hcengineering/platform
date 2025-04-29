@@ -1004,7 +1004,8 @@ export class WorkspaceImporter {
         changeControl: changeControlId,
         commentSequence: 0,
         requests: 0,
-        labels: 0
+        labels: 0,
+        plannedEffectiveDate: 0
       },
       template.id as unknown as Ref<ControlledDocument>
     )
@@ -1124,7 +1125,8 @@ export class WorkspaceImporter {
         content: contentId,
         template: templateId as unknown as Ref<DocumentTemplate>,
         commentSequence: 0,
-        requests: 0
+        requests: 0,
+        plannedEffectiveDate: 0
       },
       document.id
     )
