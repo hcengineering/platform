@@ -15,7 +15,8 @@
   import documentsRes from '../../../plugin'
   import {
     $controlledDocument as controlledDocument,
-    $documentSnapshots as documentSnapshots
+    $documentSnapshots as documentSnapshots,
+    $isDocumentOwner as isDocumentOwner
   } from '../../../stores/editors/document'
   import DocumentApprovalGuideItem from './DocumentApprovalGuideItem.svelte'
   import DocumentApprovalItem from './DocumentApprovalItem.svelte'
@@ -62,7 +63,8 @@
     ControlledDocumentState.Rejected,
     ControlledDocumentState.InApproval
   ]
-  $: hasGuide = doc && doc.state === DocumentState.Draft && !noGuideStates.includes(doc.controlledState)
+  $: hasGuide =
+    doc && doc.state === DocumentState.Draft && !noGuideStates.includes(doc.controlledState) && $isDocumentOwner
 </script>
 
 <RightPanelTabHeader>

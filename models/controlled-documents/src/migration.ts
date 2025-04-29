@@ -147,8 +147,8 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
         coAuthors: [],
         code: `TMPL-${seq.sequence + 1}`,
         seqNumber: 0,
-        major: 0,
-        minor: 1,
+        major: 1,
+        minor: 0,
         state: DocumentState.Effective,
         commentSequence: 0,
         content: null
@@ -458,6 +458,27 @@ async function migrateDocumentMetaInternalCode (client: MigrationClient): Promis
   )
 }
 
+async function migrateInvalidDocumentState (client: MigrationClient): Promise<void> {
+  const docs = await client.find<ControlledDocument>(DOMAIN_DOCUMENTS, {
+    _class: documents.class.ControlledDocument,
+    state: { $nin: [DocumentState.Draft] },
+    controlledState: { $exists: true }
+  })
+
+  const operations: {
+    filter: MigrationDocumentQuery<ControlledDocument>
+    update: MigrateUpdate<ControlledDocument>
+  }[] = []
+  for (const doc of docs) {
+    operations.push({
+      filter: { _id: doc._id },
+      update: { $unset: { controlledState: true } }
+    })
+  }
+
+  await client.bulk(DOMAIN_DOCUMENTS, operations)
+}
+
 export const documentsOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
     await tryMigrate(mode, client, documentsId, [
@@ -487,6 +508,10 @@ export const documentsOperation: MigrateOperation = {
       {
         state: 'migrateDocumentMetaInternalCode',
         func: migrateDocumentMetaInternalCode
+      },
+      {
+        state: 'migrateInvalidDocumentState',
+        func: migrateInvalidDocumentState
       }
     ])
   },
