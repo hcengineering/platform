@@ -39,10 +39,17 @@ import {
 import { PlatformError, unknownError } from '@hcengineering/platform'
 
 import type { RestClient } from './types'
+import { AuthOptions } from '../types'
 import { extractJson, withRetry } from './utils'
+import { getWorkspaceToken } from '../utils'
 
 export function createRestClient (endpoint: string, workspaceId: string, token: string): RestClient {
   return new RestClientImpl(endpoint, workspaceId, token)
+}
+
+export async function connectRest (url: string, options: AuthOptions): Promise<RestClient> {
+  const { endpoint, token, workspaceId } = await getWorkspaceToken(url, options)
+  return createRestClient(endpoint, workspaceId, token)
 }
 
 const rateLimitError = 'rate-limit'

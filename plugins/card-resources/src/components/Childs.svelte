@@ -83,7 +83,6 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
-        space: core.space.Workspace,
         attachedTo: viewletId
       },
       (res) => {
@@ -129,7 +128,7 @@
 
     const filledData = fillDefaults(hierarchy, data, object._class)
 
-    const _id = await client.createDoc(object._class, core.space.Workspace, filledData)
+    const _id = await client.createDoc(object._class, object.space, filledData)
 
     Analytics.handleEvent(CardEvents.CardCreated)
 

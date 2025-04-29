@@ -45,6 +45,8 @@
   import { getProjectDocumentLink } from '../navigation'
   import documentRes from '../plugin'
   import {
+    $approvalRequest as approvalRequest,
+    $reviewRequest as reviewRequest,
     $activeRightPanelTab as activeRightPanelTab,
     $availableEditorModes as availableEditorModes,
     $availableRightPanelTabs as availableRightPanelTabs,
@@ -140,7 +142,12 @@
     {
       label: documentRes.string.TeamTab,
       component: EditDocTeam,
-      props: { controlledDoc: $controlledDocument, editable: $isDocumentOwner }
+      props: {
+        controlledDoc: $controlledDocument,
+        editable: $isDocumentOwner,
+        reviewRequest: $reviewRequest,
+        approvalRequest: $approvalRequest
+      }
     },
     {
       label: documentRes.string.ReleaseTab,

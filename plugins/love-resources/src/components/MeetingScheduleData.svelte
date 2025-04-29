@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,8 +11,23 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Ref } from '@hcengineering/core'
+  import { Room } from '@hcengineering/love'
+  import { Writable } from 'svelte/store'
+  import RoomSelector from './RoomSelector.svelte'
 
-export { createRestClient, connectRest } from './rest'
-export { createRestTxOperations } from './tx'
-export * from './types'
+  export let state: Writable<Record<string, any>>
+
+  function changeRoom (val: Ref<Room>): void {
+    $state.room = val
+  }
+</script>
+
+<RoomSelector
+  value={$state.room}
+  on:change={(ev) => {
+    changeRoom(ev.detail)
+  }}
+/>

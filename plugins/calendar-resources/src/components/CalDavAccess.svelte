@@ -8,6 +8,8 @@
   import { Label, Modal, CheckBox, Spinner, Button, IconCopy, EditBox } from '@hcengineering/ui'
   import calendar from '@hcengineering/calendar'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { slide } from 'svelte/transition'
+  import { quintOut } from 'svelte/easing'
   import { getMetadata } from '@hcengineering/platform'
   import { getCurrentAccount, pickPrimarySocialId, SocialId, SocialIdType } from '@hcengineering/core'
   import { getAccountClient } from '../utils'
@@ -221,8 +223,12 @@
       </div>
     </div>
 
-    {#if !wasAccessEnabled}
-      <div class="flex-col-stretch flex-gap-1-5" class:accessDisabled={!accessEnabled}>
+    {#if !wasAccessEnabled && !loading}
+      <div
+        class="flex-col-stretch flex-gap-1-5"
+        class:accessDisabled={!accessEnabled}
+        transition:slide={{ duration: 300, easing: quintOut }}
+      >
         <Label label={calendar.string.CalDavAccessPassword} />
         <div class="flex-row-center flex-gap-1">
           <EditBox bind:value={password} kind="ghost" format="password" fullSize focusable disabled={true} />
@@ -236,7 +242,9 @@
           />
         </div>
         {#if canSave}
-          <Label label={calendar.string.CalDavAccessPasswordWarning} />
+          <div class:accessDisabled={!accessEnabled} transition:slide={{ duration: 300, easing: quintOut }}>
+            <Label label={calendar.string.CalDavAccessPasswordWarning} />
+          </div>
         {/if}
       </div>
     {/if}

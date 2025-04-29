@@ -26,6 +26,7 @@
 
   export let timeZone: string
   export let disabled: boolean = false
+  export let flex: string | undefined = undefined
 
   function open (e: MouseEvent) {
     if (disabled) {
@@ -56,7 +57,15 @@
   }
 </script>
 
-<Button {disabled} label={calendar.string.TimeZone} kind={'ghost'} padding={'0 .5rem'} justify={'left'} on:click={open}>
+<Button
+  {disabled}
+  label={calendar.string.TimeZone}
+  kind={'ghost'}
+  padding={'0 .5rem'}
+  justify={'left'}
+  {flex}
+  on:click={open}
+>
   <svelte:fragment slot="content">
     <span class="ml-2 content-darker-color">
       {getTimeZoneName(timeZone)}

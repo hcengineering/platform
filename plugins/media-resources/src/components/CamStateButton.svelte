@@ -20,6 +20,7 @@
   import { sessions } from '../stores'
 
   import IconCamOn from './icons/CamOn.svelte'
+  import IconCamOff from './icons/CamOff.svelte'
 
   export let state: CamState | undefined
 
@@ -34,7 +35,7 @@
 {#if state != null}
   <Button
     noFocus
-    icon={IconCamOn}
+    icon={state.enabled ? IconCamOn : IconCamOff}
     iconProps={{
       fill: state.enabled ? 'var(--theme-state-positive-color)' : 'var(--theme-state-negative-color)'
     }}
