@@ -24,12 +24,7 @@ import aiBot from '@hcengineering/ai-bot'
 import { summarizeMessages as aiSummarizeMessages, translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
 import contact, { getCurrentEmployee, getName, type Employee, type Person } from '@hcengineering/contact'
-import {
-  employeeByAccountStore,
-  employeeByIdStore,
-  PersonIcon,
-  personRefByAccountUuidStore
-} from '@hcengineering/contact-resources'
+import { employeeByAccountStore, employeeByIdStore, PersonIcon } from '@hcengineering/contact-resources'
 import core, {
   getCurrentAccount,
   notEmpty,
@@ -562,29 +557,29 @@ export async function startConversationAction (docs?: Employee | Employee[]): Pr
   }
 }
 
-export async function createDirect (employeeIds: Array<Ref<Person>>): Promise<Ref<DirectMessage>> {
+export async function createDirect (employeeIds: Array<Ref<Employee>>): Promise<Ref<DirectMessage>> {
   const client = getClient()
   const me = getCurrentEmployee()
   const myAcc = getCurrentAccount()
 
   const existingDms = await client.findAll(chunter.class.DirectMessage, {})
-  const newDirectPersons = employeeIds.includes(me) ? employeeIds : [...employeeIds, me]
-  const newPersonsSet = new Set(newDirectPersons)
+  const newDirectEmployeeIds = Array.from(new Set([...employeeIds, me]))
 
   let direct: DirectMessage | undefined
-  const personRefByAccountUuid = get(personRefByAccountUuidStore)
+
   const employeeById = get(employeeByIdStore)
+  const newDirectAccounts = new Set(newDirectEmployeeIds.map((it) => employeeById.get(it)?.personUuid).filter(notEmpty))
 
   for (const dm of existingDms) {
-    const existPersonsSet = new Set(dm.members.map((acc) => personRefByAccountUuid.get(acc)).filter(notEmpty))
+    const existAccounts = new Set(dm.members)
 
-    if (existPersonsSet.size !== newPersonsSet.size) {
+    if (existAccounts.size !== newDirectAccounts.size) {
       continue
     }
 
     let match = true
-    for (const person of existPersonsSet) {
-      if (!newPersonsSet.has(person as Ref<Person>)) {
+    for (const acc of existAccounts) {
+      if (!newDirectAccounts.has(acc)) {
         match = false
         break
       }
@@ -603,15 +598,7 @@ export async function createDirect (employeeIds: Array<Ref<Person>>): Promise<Re
       description: '',
       private: true,
       archived: false,
-      members: newDirectPersons.map((person) => {
-        const employee = employeeById.get(person as Ref<Employee>)
-
-        if (employee?.personUuid === undefined) {
-          throw new Error(`Account id not found for person ${person}`)
-        }
-
-        return employee.personUuid
-      })
+      members: Array.from(newDirectAccounts)
     }))
 
   const context = await client.findOne(notification.class.DocNotifyContext, {
