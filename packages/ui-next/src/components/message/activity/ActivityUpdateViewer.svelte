@@ -14,17 +14,18 @@
 -->
 <script lang="ts">
   import { AttributeModel } from '@hcengineering/view'
-  import { ActivityUpdate, ActivityUpdateType } from '@hcengineering/communication-types'
+  import { ActivityUpdate, ActivityUpdateType, RichText } from '@hcengineering/communication-types'
 
   import ActivityUpdateTagViewer from './ActivityUpdateTagViewer.svelte'
   import ActivityUpdateAttributeViewer from './ActivityUpdateAttributeViewer.svelte'
 
   export let model: AttributeModel | undefined = undefined
   export let update: ActivityUpdate
+  export let content: RichText
 </script>
 
 {#if update.type === ActivityUpdateType.Attribute && model}
   <ActivityUpdateAttributeViewer {model} {update} />
 {:else if update.type === ActivityUpdateType.Tag}
-  <ActivityUpdateTagViewer {update} />
+  <ActivityUpdateTagViewer {update} {content} />
 {/if}

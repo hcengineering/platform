@@ -15,7 +15,7 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import { IconDelete } from '@hcengineering/ui'
-  import { ActivityTagUpdate } from '@hcengineering/communication-types'
+  import { ActivityTagUpdate, RichText } from '@hcengineering/communication-types'
   import cardPlugin from '@hcengineering/card'
 
   import Icon from '../../Icon.svelte'
@@ -24,30 +24,42 @@
   import uiNext from '../../../plugin'
 
   export let update: ActivityTagUpdate
+  export let content: RichText
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: mixin = hierarchy.getClass(update.tag)
+  $: mixin = hierarchy.hasClass(update.tag) ? hierarchy.getClass(update.tag) : undefined
 </script>
 
-{#if update.action === 'add'}
-  <div class="flex-presenter overflow-label flex-gap-2">
-    <Icon icon={IconPlus} size="small" />
-    <Label label={uiNext.string.Added} />
-    <span class="lower"><Label label={cardPlugin.string.Tag} /></span>
-    <div class="tag no-word-wrap">
-      <Label label={mixin.label} />
+{#if mixin !== undefined}
+  {#if update.action === 'add'}
+    <div class="flex-presenter overflow-label flex-gap-2">
+      <Icon icon={IconPlus} size="small" />
+      <Label label={uiNext.string.Added} />
+      <span class="lower"><Label label={cardPlugin.string.Tag} /></span>
+      <div class="tag no-word-wrap">
+        <Label label={mixin.label} />
+      </div>
     </div>
-  </div>
-{:else if update.action === 'remove'}
-  <div class="flex-presenter overflow-label flex-gap-2">
-    <Icon icon={IconDelete} size="small" />
-    <Label label={uiNext.string.Removed} />
-    <span class="lower"><Label label={cardPlugin.string.Tag} /></span>
-    <div class="tag no-word-wrap">
-      <Label label={mixin.label} />
+  {:else if update.action === 'remove'}
+    <div class="flex-presenter overflow-label flex-gap-2">
+      <Icon icon={IconDelete} size="small" />
+      <Label label={uiNext.string.Removed} />
+      <span class="lower"><Label label={cardPlugin.string.Tag} /></span>
+      <div class="tag no-word-wrap">
+        <Label label={mixin.label} />
+      </div>
     </div>
+  {/if}
+{:else}
+  <div class="flex-presenter overflow-label flex-gap-2">
+    {#if update.action === 'add'}
+      <Icon icon={IconPlus} size="small" />
+    {:else if update.action === 'remove'}
+      <Icon icon={IconDelete} size="small" />
+    {/if}
+    {content}
   </div>
 {/if}
 
