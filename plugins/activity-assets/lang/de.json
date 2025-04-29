@@ -53,6 +53,8 @@
     "UpdatedObject": "{object} aktualisiert",
     "NewObjectType": "Neues {objectType}",
     "RemovedObjectType": "{objectType} entfernt",
-    "AttributeSetTo": "{attribute} auf {value} gesetzt"
+    "AttributeSetTo": "{attribute} auf {value} gesetzt",
+    "AddedTag": "Tag hinzugefügt: {title}",
+    "RemovedTag": "Tag entfernt: {title}"
   }
 }

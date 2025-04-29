@@ -53,6 +53,8 @@
     "UpdatedObject": "更新 {object}",
     "NewObjectType": "新 {type}: {title}",
     "RemovedObjectType": "移除 {type} : {title}",
-    "AttributeSetTo": "{name} 设置为 {value}"
+    "AttributeSetTo": "{name} 设置为 {value}",
+    "AddedTag": "添加标签: {title}",
+    "RemovedTag": "移除标签: {title}"
   }
 }

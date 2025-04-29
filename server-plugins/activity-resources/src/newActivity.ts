@@ -162,11 +162,11 @@ async function getUpdateText (update: ActivityUpdate, card: Card, hierarchy: Hie
     const clazz = hierarchy.getClass(update.tag)
     if (update.action === 'add') {
       const tagName = await translate(clazz.label, {})
-      return await translate(activity.string.NewObjectType, { type: 'tag', title: tagName })
+      return await translate(activity.string.AddedTag, { title: tagName })
     }
     if (update.action === 'remove') {
       const tagName = await translate(clazz.label, {})
-      return await translate(activity.string.RemovedObjectType, { type: 'tag', title: tagName })
+      return await translate(activity.string.RemovedTag, { title: tagName })
     }
   }
   return undefined
