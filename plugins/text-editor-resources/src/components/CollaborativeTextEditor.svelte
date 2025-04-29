@@ -178,6 +178,9 @@
     insertText: (text) => {
       editor?.commands.insertContent(text)
     },
+    insertEmoji: (emoji) => {
+      editor?.commands.insertEmoji(emoji)
+    },
     insertMarkup: (markup) => {
       editor?.commands.insertContent(markupToJSON(markup))
     },

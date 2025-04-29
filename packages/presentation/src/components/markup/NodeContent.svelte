@@ -22,6 +22,7 @@
   import Node from './Node.svelte'
 
   export let node: MarkupNode
+  export let single = true
   export let preview = false
 
   function toRef (objectId: string): Ref<Doc> {
@@ -78,11 +79,13 @@
     {/if}
   {:else if node.type === MarkupNodeType.text}
     {node.text}
+  {:else if node.type === MarkupNodeType.emoji}
+    <span class="emoji" class:emojiOnly={single}>{node.attrs?.emoji}</span>
   {:else if node.type === MarkupNodeType.paragraph}
     <p class="p-inline contrast" class:overflow-label={preview} class:emojiOnly={checkEmoji(nodes)}>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {node} {preview} />
+          <Node {node} {preview} single={nodes.length === 1} />
         {/each}
       {/if}
     </p>

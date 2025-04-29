@@ -1,4 +1,4 @@
-import { Extension } from '@tiptap/core'
+import { EmojiNode, type EmojiNodeOptions } from '@hcengineering/text'
 import { type ResolvedPos } from '@tiptap/pm/model'
 
 const emojiReplaceDict = {
@@ -63,7 +63,7 @@ function isValidEmojiPosition ($pos: ResolvedPos): boolean {
   return true
 }
 
-export const EmojiExtension = Extension.create({
+export const EmojiExtension = EmojiNode.extend<EmojiNodeOptions>({
   addInputRules () {
     return Object.keys(emojiReplaceDict).map((pattern) => {
       return {

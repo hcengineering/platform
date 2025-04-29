@@ -96,6 +96,10 @@
     return editor
   }
 
+  export function insertEmoji (emoji: string): void {
+    editor?.commands.insertEmoji(emoji)
+  }
+
   export function insertText (text: string): void {
     editor?.commands.insertContent(text)
   }
