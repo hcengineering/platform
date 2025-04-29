@@ -43,7 +43,9 @@
 {/each}
 
 {#each gitem.events as event}
-  <EventItem item={event} showTime={expanded} />
+  {#if event.overlap === 0}
+    <EventItem item={event} showTime={expanded} />
+  {/if}
 {/each}
 
 {#if gitem.busy.slots.length > 0}

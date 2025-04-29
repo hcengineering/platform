@@ -16,8 +16,12 @@
   import calendar, { Event, getAllEvents } from '@hcengineering/calendar'
   import { calendarByIdStore } from '@hcengineering/calendar-resources'
   import { getCurrentEmployee, Person } from '@hcengineering/contact'
-  import { socialIdsByPersonRefStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
-  import core, { Doc, IdMap, Ref, Timestamp, Tx, TxCUD, TxCreateDoc, TxUpdateDoc } from '@hcengineering/core'
+  import {
+    personRefByAccountUuidStore,
+    personRefByPersonIdStore,
+    socialIdsByPersonRefStore
+  } from '@hcengineering/contact-resources'
+  import core, { Doc, IdMap, Ref, Timestamp, Tx, TxCreateDoc, TxCUD, TxUpdateDoc } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/task'
@@ -43,7 +47,10 @@
   let slots: WorkSlot[] = []
   let events: Event[] = []
   let todos: IdMap<ToDo> = new Map()
-  let persons: Ref<Person>[] = []
+
+  $: persons = (project?.members ?? [])
+    .map((it) => $personRefByAccountUuidStore.get(it))
+    .filter((it) => it !== undefined)
 
   const txCreateQuery = createQuery()
 

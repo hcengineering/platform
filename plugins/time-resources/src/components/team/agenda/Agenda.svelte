@@ -8,6 +8,7 @@
   import WithTeamData from '../WithTeamData.svelte'
   import { toSlots } from '../utils'
   import DayPlan from './DayPlan.svelte'
+  import { personRefByAccountUuidStore } from '@hcengineering/contact-resources'
 
   export let space: Ref<Project>
   export let currentDate: Date
@@ -36,9 +37,22 @@
     todayFrom,
     todayTo
   )
+
+  $: persons = (project?.members ?? [])
+    .map((it) => $personRefByAccountUuidStore.get(it))
+    .filter((it) => it !== undefined)
 </script>
 
-<WithTeamData {space} fromDate={yesterdayFrom} toDate={todayTo} bind:project bind:todos bind:slots bind:events />
+<WithTeamData
+  {space}
+  fromDate={yesterdayFrom}
+  toDate={todayTo}
+  bind:project
+  bind:todos
+  bind:slots
+  bind:events
+  {persons}
+/>
 
 <Header bind:currentDate />
 {#if project}
