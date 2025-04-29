@@ -20,5 +20,7 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 
 loadMetadata(media.icon, {
   Mic: `${icons}#mic`,
-  Cam: `${icons}#camera`
+  Cam: `${icons}#cam`,
+  MicOff: `${icons}#micoff`,
+  CamOff: `${icons}#camoff`
 })

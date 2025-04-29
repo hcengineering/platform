@@ -5,6 +5,11 @@
     "Stop": "Стоп",
     "Resume": "Продолжить",
     "Record": "Запись",
+    "CancelRecording": "Отменить запись",
+    "CancelRecordingConfirm": "Вы уверены, что хотите отменить запись?",
+    "RestartRecording": "Перезапустить запись",
+    "RestartRecordingConfirm": "Вы уверены, что хотите перезапустить запись?",
+    "RecordingTitle": "Запись экрана {date}",
     "ClickToSkip": "Нажмите для пропуска"
   }
 }

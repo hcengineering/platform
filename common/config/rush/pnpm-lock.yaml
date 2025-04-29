@@ -55,6 +55,9 @@ importers:
       '@hcengineering/communication-yaml':
         specifier: 0.1.172
         version: 0.1.172(typescript@5.3.3)
+      '@hcengineering/drive':
+        specifier: ^0.6.32
+        version: 0.6.490
       '@hocuspocus/provider':
         specifier: ^2.15.2
         version: 2.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
@@ -2083,9 +2086,6 @@ importers:
       snappyjs:
         specifier: ^0.7.0
         version: 0.7.0
-      stream-browserify:
-        specifier: ^3.0.0
-        version: 3.0.0
       style-loader:
         specifier: ^3.3.1
         version: 3.3.4(webpack@5.97.1)
@@ -2985,6 +2985,9 @@ packages:
   '@hcengineering/account-client@0.7.28':
     resolution: {integrity: sha512-k1dkioX+jYrLyAXLLLsBYVCdZKf3WjhnDHw/yeAQgLQQ/9W2ffLtDMZ8lYWV3XMQ3eWrUCodtTDOiAQgXd/LEQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/account-client/0.7.28/32c9bc0dd297f00f4d5461467f25e072d01b9c76}
 
+  '@hcengineering/analytics@0.6.490':
+    resolution: {integrity: sha512-Jcdj9LXiIUxm75jRIaOrNlvTW48bd59ul2I0WB5NE3WHfAXKmk5FIBUd2dtTDhHMQUOZwUOKzVcxfYWIUs5HFQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/analytics/0.6.490/e2ed2bc32ca04e170e2907e6b0c44a3b725d36bd}
+
   '@hcengineering/analytics@0.7.28':
     resolution: {integrity: sha512-+CI/wJ8zgop+3mEcvhlB1UJBU6tIKq2Y7qTichZjGli8BckEIEwbD4j2beu2qXRSoTT2yUGWM9zpS9+fmH/DAw==, tarball: https://npm.pkg.github.com/download/@hcengineering/analytics/0.7.28/a8faf3d575bb28b9682b659495e738f8e0ca596e}
 
@@ -3036,11 +3039,23 @@ packages:
     peerDependencies:
       typescript: ^5.6.3
 
+  '@hcengineering/core@0.6.490':
+    resolution: {integrity: sha512-BnYeOeSBxjYcwAwGcXcTcmLbNo0ft2Pt7QoDlHV4KLuDCQkU0Xw6hUvDgMyz6irHKciCa0jBdZ2vOgvBTTe3ug==, tarball: https://npm.pkg.github.com/download/@hcengineering/core/0.6.490/562815e33c0dca6833a43d71745ebb12fa6e7cb9}
+
   '@hcengineering/core@0.7.28':
     resolution: {integrity: sha512-qv4QE7mkect6JYlGMljW5CQ2uU80hFGq0E17lZ5rO79h1boWEKLJpINv+w3J2BdR/nNG7taIsdZg3yfl9fY4bg==, tarball: https://npm.pkg.github.com/download/@hcengineering/core/0.7.28/43b84c63262e2b8fe5554c1967812e2ce6bb56e1}
 
+  '@hcengineering/drive@0.6.490':
+    resolution: {integrity: sha512-UCcs/SQeXSP/PinDmyh/F6qMW3Ji4CI1nQYCLsxcMei6XHwXyMqfVppeqKpbmGVV+5HJOjAsbSaJe2EiLy6l5Q==, tarball: https://npm.pkg.github.com/download/@hcengineering/drive/0.6.490/270638c5412bb3cf2ac5f2a207896b069f87adb9}
+
+  '@hcengineering/platform@0.6.490':
+    resolution: {integrity: sha512-jtCHMznMpbPJQaX2RTbKN0tR5e2YgSrIYWHREXgi8VIAIygMLNtzkkNkVX/2FgcOHK+Gs1aF3mf4gsikiKyyKw==, tarball: https://npm.pkg.github.com/download/@hcengineering/platform/0.6.490/45e5e6cbd7fcb12cf241c5ace3c027689052f454}
+
   '@hcengineering/platform@0.7.28':
     resolution: {integrity: sha512-0zEifwsLdOs/M6TZ9xnPrQTTlhwW28sooiyL4ZfQsiC2AJUy05vLP5/W8V9eDLta+EiR5bjtlulGsg1GfPjUoQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/platform/0.7.28/2126ff97284b679ceab3c86f24febd73a3a28712}
+
+  '@hcengineering/preference@0.6.490':
+    resolution: {integrity: sha512-gwX9U1T2H3A/yDoT2DLFn4SPD9Ki1mQ4bp3MhbPc6uc/cv8Dm2eD/nFM1viT2j03TrM8caKIpB0epONH3qj12g==, tarball: https://npm.pkg.github.com/download/@hcengineering/preference/0.6.490/9e1a4219a1cbec866faf43f7584abcda8fb9b6c2}
 
   '@hcengineering/preference@0.7.28':
     resolution: {integrity: sha512-WwwOfjZ1TLdTfPhQGvSjo8dS63HyuE7BDVhfstxP8D+H4BI5UKYoev/6vlwQf/3d+jI1S4f2ivO//IDJAD7sGg==, tarball: https://npm.pkg.github.com/download/@hcengineering/preference/0.7.28/f1739991cc012d194fa18f99565ae5bd64f0ad07}
@@ -3051,8 +3066,14 @@ packages:
   '@hcengineering/tags@0.7.28':
     resolution: {integrity: sha512-2KCVUu5N/GAkDsDRbdUi7gnBq4ze1Z3eCLoc8nz2G/zeAjAga8gmWkZEbXqAC8rNVqBQv72EKeJFGJyqnev6Xw==, tarball: https://npm.pkg.github.com/download/@hcengineering/tags/0.7.28/42545cc43e3c61e32ce96be87c245fa929f5cbb6}
 
+  '@hcengineering/theme@0.6.490':
+    resolution: {integrity: sha512-avJpw+/Sx0xZDctrFImANYBGK4TXdOphI158jcWgpC1ys6IBiRHKeeUtquTKud8q9mE06jb7TjOt9Oo/wrCGWg==, tarball: https://npm.pkg.github.com/download/@hcengineering/theme/0.6.490/2f8704cc5a089ce66e7d6dae4aa3ade6f3ea9b7a}
+
   '@hcengineering/theme@0.7.28':
     resolution: {integrity: sha512-Hv3wQKHr327TC7wMHCBiG4bMtg8vSlb7+UFwdKI8ztEs3359meqkXu+exqi7Nl5334voXIz5ZFxjwZwOMzNSFA==, tarball: https://npm.pkg.github.com/download/@hcengineering/theme/0.7.28/557640a7ba2ffaa4d6e5411a54577f60dc528300}
+
+  '@hcengineering/ui@0.6.490':
+    resolution: {integrity: sha512-W/7ljW5a/nSfzHQjJRknlnUkKC9vGRkXUjOiBKIjMiJxw7NZwNyfv5quQxNswdARMYRrAfcfdxUOhEmIZYC2Lg==, tarball: https://npm.pkg.github.com/download/@hcengineering/ui/0.6.490/27bb6fcefc46410988abe75404bbd0465d0dd2a1}
 
   '@hcengineering/ui@0.7.28':
     resolution: {integrity: sha512-QsUpO0+Idu1n2dC6KtorPJ6SSp30It8FHSuG3Y+Awv4td/ftVocOSFqhskbk+us9Yw9KqOYgkqhGYEHbfRfw4Q==, tarball: https://npm.pkg.github.com/download/@hcengineering/ui/0.7.28/82025fc775702ea8c8569611356662bfbf28eb74}
@@ -4543,7 +4564,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-recorder@file:projects/model-recorder.tgz':
-    resolution: {integrity: sha512-fRjS1msAMkf33rDm+7u/ywsOHfF0lu9VWivQjWiSnxBwakrn0Ztx3ZU/+XDNkj4CJMPd+lMPTdNx6gtuKUbZ6Q==, tarball: file:projects/model-recorder.tgz}
+    resolution: {integrity: sha512-zYwcCJVba+KhkMPQhgD7+ePk4S+zv9VyJ4h5PdIGgxfafKhugx5hcwVUthjVlgjyTs4merYQoTFl4ys30KatZA==, tarball: file:projects/model-recorder.tgz}
     version: 0.0.0
 
   '@rush-temp/model-recruit@file:projects/model-recruit.tgz':
@@ -4987,11 +5008,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/recorder-resources@file:projects/recorder-resources.tgz':
-    resolution: {integrity: sha512-Juvy2FmXIbOQdKI94A3Q/2UTQ0aLuMRiCMni/o1Xdwg5g14Pm5TC0ZjkHairKYm1LMDmmUWiRtxOiud+klTSmQ==, tarball: file:projects/recorder-resources.tgz}
+    resolution: {integrity: sha512-LiFazTORRWULjLfy0S9ycqsfJejlenpfjZ2EBswBl5BNBDSuyJPUHC6ykOn/j3GYgeY/gibIrDs/KFcQq7I4rA==, tarball: file:projects/recorder-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/recorder@file:projects/recorder.tgz':
-    resolution: {integrity: sha512-vth2EZ1eZjV91sZVk3POK0QGcb6uoyMX7K2tiJcLWeIABOMfs4vaviuekXGqggE8awr51zxI8I7y+/SfYxEGoA==, tarball: file:projects/recorder.tgz}
+    resolution: {integrity: sha512-/Oi8ZzFzINaPy13dn0+UfkU+0VdCVzBOgXmArnYDqAq2ow503KqMf8Zv3/rW8oQOlYeS6Jdy6TlGp+IMX2CQuQ==, tarball: file:projects/recorder.tgz}
     version: 0.0.0
 
   '@rush-temp/recruit-assets@file:projects/recruit-assets.tgz':
@@ -5535,7 +5556,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/uploader-resources@file:projects/uploader-resources.tgz':
-    resolution: {integrity: sha512-gsRiOemRCAlhK0K5xzASMWgbIQpVAY8cYqKCms/N4rCDUDVtJL/jTKixLhjZDfUdSe+J537cRsHoP+xm19JrUQ==, tarball: file:projects/uploader-resources.tgz}
+    resolution: {integrity: sha512-FyPfNKvLhjTBhJwTqdKd0eq1snWLDYrHxxCWwoByt671DiuP+eRd3SKL7WnALLYBGZCxlkNTVvoDrFHPFeehYw==, tarball: file:projects/uploader-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader@file:projects/uploader.tgz':
@@ -14904,6 +14925,10 @@ snapshots:
       '@hcengineering/core': 0.7.28
       '@hcengineering/platform': 0.7.28
 
+  '@hcengineering/analytics@0.6.490':
+    dependencies:
+      '@hcengineering/platform': 0.6.490
+
   '@hcengineering/analytics@0.7.28':
     dependencies:
       '@hcengineering/platform': 0.7.28
@@ -15030,15 +15055,38 @@ snapshots:
       js-yaml: 4.1.0
       typescript: 5.7.3
 
+  '@hcengineering/core@0.6.490':
+    dependencies:
+      '@hcengineering/analytics': 0.6.490
+      '@hcengineering/platform': 0.6.490
+      fast-equals: 5.2.2
+
   '@hcengineering/core@0.7.28':
     dependencies:
       '@hcengineering/analytics': 0.7.28
       '@hcengineering/platform': 0.7.28
       fast-equals: 5.2.2
 
+  '@hcengineering/drive@0.6.490':
+    dependencies:
+      '@hcengineering/core': 0.6.490
+      '@hcengineering/platform': 0.6.490
+      '@hcengineering/preference': 0.6.490
+      '@hcengineering/ui': 0.6.490
+
+  '@hcengineering/platform@0.6.490':
+    dependencies:
+      intl-messageformat: 10.7.14
+
   '@hcengineering/platform@0.7.28':
     dependencies:
       intl-messageformat: 10.7.14
+
+  '@hcengineering/preference@0.6.490':
+    dependencies:
+      '@hcengineering/core': 0.6.490
+      '@hcengineering/platform': 0.6.490
+      '@hcengineering/ui': 0.6.490
 
   '@hcengineering/preference@0.7.28':
     dependencies:
@@ -15059,10 +15107,33 @@ snapshots:
       '@hcengineering/ui': 0.7.28
       '@hcengineering/view': 0.7.28
 
+  '@hcengineering/theme@0.6.490':
+    dependencies:
+      '@hcengineering/analytics': 0.6.490
+      '@hcengineering/platform': 0.6.490
+      svelte: 4.2.19
+
   '@hcengineering/theme@0.7.28':
     dependencies:
       '@hcengineering/analytics': 0.7.28
       '@hcengineering/platform': 0.7.28
+      svelte: 4.2.19
+
+  '@hcengineering/ui@0.6.490':
+    dependencies:
+      '@hcengineering/analytics': 0.6.490
+      '@hcengineering/core': 0.6.490
+      '@hcengineering/platform': 0.6.490
+      '@hcengineering/theme': 0.6.490
+      autolinker: 4.0.0
+      date-fns: 2.30.0
+      date-fns-tz: 2.0.0(date-fns@2.30.0)
+      dompurify: 3.2.3
+      emoji-regex: 10.3.0
+      emojibase: 16.0.0
+      fast-equals: 5.2.2
+      hls.js: 1.5.20
+      plyr: 3.7.8
       svelte: 4.2.19
 
   '@hcengineering/ui@0.7.28':
@@ -23492,7 +23563,6 @@ snapshots:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1
-      stream-browserify: 3.0.0
       svelte: 4.2.19
       svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)
       svelte-eslint-parser: 0.33.1(svelte@4.2.19)
@@ -23520,6 +23590,7 @@ snapshots:
 
   '@rush-temp/recorder@file:projects/recorder.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
+      '@hcengineering/drive': 0.6.490
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
@@ -27416,7 +27487,6 @@ snapshots:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1
-      stream-browserify: 3.0.0
       svelte: 4.2.19
       svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)
       svelte-eslint-parser: 0.33.1(svelte@4.2.19)

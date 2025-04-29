@@ -16,45 +16,70 @@
 import * as tus from 'tus-js-client'
 import type { ChunkReader } from './stream'
 
-interface IMap<T> {
-  [index: string]: T
-  [index: number]: T
+export interface UploadResult {
+  blobId?: string
+  error?: any
 }
 
-export interface Options {
-  fps?: number
+export interface Uploader {
+  start: () => void
+  cancel: () => Promise<void>
+  wait: () => Promise<UploadResult>
+}
+
+export interface TusUploaderOptions {
   endpoint: string
-  token: string
   workspace: string
-  metadata?: IMap<string>
-  onFinish?: (x: string) => Promise<void>
+  token: string
+  width: number
+  height: number
+  /** Optional callback invoked on successful upload with generated blobId */
+  onSuccess?: (blobId: string) => void
+  /** Optional callback invoked on upload error */
+  onError?: (error: any) => void
 }
 
-export abstract class Uploader {
-  public abstract start (): void
-  public abstract cancel (): Promise<void>
-  public abstract wait (): Promise<void>
-}
-
-export class TusUploader extends Uploader {
+export class TusUploader implements Uploader {
   private readonly upload: tus.Upload
-  private waiter: (() => void) | null = null
+  private readonly waiterPromise: Promise<UploadResult>
+  private waiterResolve: (value: UploadResult) => void = () => {}
 
-  constructor (target: ChunkReader, opts: Options) {
-    super()
-    this.upload = new tus.Upload(target, {
+  constructor (reader: ChunkReader, options: TusUploaderOptions) {
+    const { endpoint, workspace, token, width, height, onSuccess, onError } = options
+    const resolution = width + ':' + height
+
+    this.waiterPromise = new Promise<UploadResult>((resolve) => {
+      this.waiterResolve = resolve
+    })
+
+    console.debug('TusUploader: uploading', workspace, endpoint)
+
+    this.upload = new tus.Upload(reader, {
       retryDelays: [0, 1000, 1500, 2000, 2500, 3000],
       chunkSize: 2 * 1024 * 1024,
       uploadLengthDeferred: true,
-      endpoint: opts.endpoint,
-      metadata: { ...opts.metadata, token: opts.token, workspace: opts.workspace },
+      endpoint,
+      metadata: { resolution, token, workspace },
       onSuccess: () => {
-        if (this.waiter !== null) {
-          this.waiter()
+        const uploadId = this.upload.url?.split('/').pop()
+        console.debug('TusUploader: upload success:', uploadId)
+        if (uploadId === undefined) {
+          console.error('TusUploader: upload URL does not contain upload ID')
+          return
         }
-        if (this.upload.url !== null && opts.onFinish !== undefined) {
-          void opts.onFinish(this.upload.url.substring(this.upload.url.lastIndexOf('/') + 1))
-        }
+        const blobId = uploadId + '_master.m3u8'
+        // invoke callback if provided
+        onSuccess?.(blobId)
+        this.waiterResolve({ blobId })
+      },
+      onError: (error) => {
+        console.error('TusUploader: upload failed:', error)
+        // invoke error callback if provided
+        onError?.(error)
+        this.waiterResolve({ error })
+      },
+      onProgress: (progress) => {
+        console.debug('TusUploader: upload progress:', progress)
       }
     })
   }
@@ -63,10 +88,8 @@ export class TusUploader extends Uploader {
     this.upload.start()
   }
 
-  public async wait (): Promise<void> {
-    await new Promise<void>((resolve) => {
-      this.waiter = resolve
-    })
+  public async wait (): Promise<UploadResult> {
+    return await this.waiterPromise
   }
 
   public async cancel (): Promise<void> {
