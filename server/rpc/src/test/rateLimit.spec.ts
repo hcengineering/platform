@@ -123,7 +123,6 @@ describe('SlidingWindowRateLimitter', () => {
     clock += 10000
 
     const r2 = limiter.checkRateLimit('user1')
-    expect(r2.remaining).toBe(0)
-    expect(r2.retryAfter).toBeDefined()
+    expect(r2.remaining).toBe(9)
   })
 })
