@@ -24,11 +24,7 @@ import aiBot from '@hcengineering/ai-bot'
 import { summarizeMessages as aiSummarizeMessages, translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
 import contact, { getCurrentEmployee, getName, type Employee, type Person } from '@hcengineering/contact'
-import {
-  employeeByAccountStore,
-  employeeByIdStore,
-  PersonIcon
-} from '@hcengineering/contact-resources'
+import { employeeByAccountStore, employeeByIdStore, PersonIcon } from '@hcengineering/contact-resources'
 import core, {
   getCurrentAccount,
   notEmpty,
