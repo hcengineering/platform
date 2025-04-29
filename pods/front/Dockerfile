@@ -1,4 +1,4 @@
-FROM hardcoreeng/front-base:v20250113a
+FROM hardcoreeng/front-base:v20250310
 WORKDIR /app
 
 COPY bundle/bundle.js ./
