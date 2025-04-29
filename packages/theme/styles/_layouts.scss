@@ -127,9 +127,9 @@ p {
   user-select:inherit;
   
   a {
-    word-break: break-all;
-    word-break: break-word;
-    hyphens: auto;
+    // word-break: break-all;
+    // word-break: break-word;
+    // hyphens: auto;
     color: var(--theme-link-color);
 
     &:hover,
