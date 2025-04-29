@@ -2477,6 +2477,11 @@
       "packageName": "@hcengineering/kvs-client",
       "projectFolder": "packages/kvs-client",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-gmail-v2",
+      "projectFolder": "services/gmail/pod-gmail-v2",
+      "shouldPublish": false
     }
   ]
 }
