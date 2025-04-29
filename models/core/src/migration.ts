@@ -21,12 +21,14 @@ import core, {
   DOMAIN_STATUS,
   DOMAIN_TX,
   generateId,
+  groupByArray,
   makeCollabJsonId,
   makeCollabYdocId,
   makeDocCollabId,
   MeasureMetricsContext,
   RateLimiter,
   type AnyAttribute,
+  type AttachedDoc,
   type Blob,
   type Class,
   type Doc,
@@ -36,7 +38,8 @@ import core, {
   type Space,
   type Status,
   type TxCreateDoc,
-  type TxCUD
+  type TxCUD,
+  type TxMixin
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -252,6 +255,41 @@ async function processMigrateContentFor (
 
     processed += docs.length
     ctx.info('...processed', { count: processed })
+  }
+}
+
+async function migrateBackupMixins (client: MigrationClient): Promise<void> {
+  // Go via classes with domain and check if mixin exists and need to flush %hash%
+  const hierarchy = client.hierarchy
+  const curHash = Date.now().toString(16) // Current hash value
+
+  const txIterator = await client.traverse<TxMixin<Doc, AttachedDoc>>(DOMAIN_TX, { _class: core.class.TxMixin })
+
+  while (true) {
+    const mixinOps = await txIterator.next(500)
+    if (mixinOps === null || mixinOps.length === 0) break
+    const _classes = groupByArray(mixinOps, (it) => it.objectClass)
+
+    for (const [_class, ops] of _classes.entries()) {
+      const domain = hierarchy.findDomain(_class)
+      if (domain === undefined) continue
+      let docs = await client.find(domain, { _id: { $in: ops.map((it) => it.objectId) } })
+
+      docs = docs.filter((it) => {
+        // Check if mixin is last operation by modifiedOn
+        const mops = ops.filter((mi) => mi.objectId === it._id)
+        if (mops.length === 0) return false
+        return mops.some((mi) => mi.modifiedOn === it.modifiedOn && mi.modifiedBy === it.modifiedBy)
+      })
+
+      if (docs.length > 0) {
+        // Check if docs has mixins from list
+        const toUpdate = docs.filter((it) => hierarchy.findAllMixins(it).length > 0)
+        if (toUpdate.length > 0) {
+          await client.update(domain, { _id: { $in: toUpdate.map((it) => it._id) } }, { '%hash%': curHash })
+        }
+      }
+    }
   }
 }
 
@@ -494,6 +532,11 @@ export const coreOperation: MigrateOperation = {
         state: 'collaborative-docs-to-json',
         mode: 'upgrade',
         func: migrateCollaborativeDocsToJson
+      },
+      {
+        state: 'migrate-backup-mixins',
+        mode: 'upgrade',
+        func: migrateBackupMixins
       }
     ])
   },
