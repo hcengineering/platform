@@ -80,7 +80,7 @@
   .image-container {
     /* image-container */
     width: 100%;
-    min-height: 8rem;
+    min-height: 6.75rem;
     display: flex;
 
     /* Inside auto layout */
@@ -110,7 +110,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    height: 7.25rem;
+    height: 5.75rem;
 
     border-radius: 0;
     background-size: contain;
