@@ -235,7 +235,7 @@ export class MinioService implements StorageAdapter {
                   size: data.size,
                   provider: this.opt.name,
                   space: core.space.Configuration,
-                  modifiedBy: core.account.ConfigUser,
+                  modifiedBy: core.account.System,
                   modifiedOn: data.lastModified.getTime()
                 })
               }

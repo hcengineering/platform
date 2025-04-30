@@ -267,7 +267,7 @@ async function processMigrateContentFor (
   }
 }
 
-async function migrateBackupMixins (client: MigrationClient): Promise<void> {
+export async function migrateBackupMixins (client: MigrationClient): Promise<void> {
   // Go via classes with domain and check if mixin exists and need to flush %hash%
   const hierarchy = client.hierarchy
   const curHash = Date.now().toString(16) // Current hash value
@@ -959,12 +959,13 @@ export const coreOperation: MigrateOperation = {
         state: 'accounts-to-social-ids',
         mode: 'upgrade',
         func: migrateAccounts
-      },
-      {
-        state: 'migrate-backup-mixins',
-        mode: 'upgrade',
-        func: migrateBackupMixins
       }
+      // ,
+      // {
+      //   state: 'migrate-backup-mixins',
+      //   mode: 'upgrade',
+      //   func: migrateBackupMixins
+      // }
     ])
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
