@@ -118,7 +118,7 @@ export class DatalakeService implements StorageAdapter {
                 size: (typeof blob.size === 'string' ? parseInt(blob.size) : blob.size) ?? 0,
                 provider: this.opt.name,
                 space: core.space.Configuration,
-                modifiedBy: core.account.ConfigUser,
+                modifiedBy: core.account.System,
                 modifiedOn: 0
               })
             }
