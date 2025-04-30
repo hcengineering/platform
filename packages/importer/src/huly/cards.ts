@@ -66,7 +66,7 @@ export class CardsProcessor {
   ) {}
 
   async processDirectory (directoryPath: string): Promise<UnifiedDocProcessResult> {
-    this.logger.log('Start looking for cards stuff in:', directoryPath)
+    this.logger.log('Start looking for cards stuff in:' + directoryPath)
 
     const result: UnifiedDocProcessResult = {
       docs: new Map(),
@@ -128,7 +128,7 @@ export class CardsProcessor {
 
     for (const entry of yamlFiles) {
       const yamlPath = path.resolve(currentPath, entry.name)
-      this.logger.log('Reading yaml file:', yamlPath)
+      this.logger.log('Reading yaml file: ' + yamlPath)
       const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
 
       switch (yamlConfig?.class) {
@@ -253,7 +253,7 @@ export class CardsProcessor {
     masterTagAttributes: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
   ): Promise<void> {
-    this.logger.log('Processing card:', cardPath)
+    this.logger.log('Processing card: ' + cardPath)
 
     if (cardProps.blobs !== undefined) {
       await this.createBlobs(cardProps.blobs, cardPath, result)
