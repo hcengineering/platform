@@ -29,19 +29,6 @@ import config from '../config.js'
 
 const KEEP_ALIVE_INTERVAL = 10 * 1000
 
-const dgSchema: LiveSchema = {
-  model: config.DeepgramModel,
-  encoding: 'linear16',
-  smart_format: true,
-  endpointing: 500,
-  interim_results: true,
-  vad_events: true,
-  utterance_end_ms: 1000,
-
-  punctuate: true,
-  language: 'en'
-}
-
 export class STT implements Stt {
   private readonly deepgram: DeepgramClient
 
@@ -134,6 +121,47 @@ export class STT implements Stt {
     }
   }
 
+  getOptions (stream: AudioStream): LiveSchema {
+    const options: Partial<LiveSchema> = {}
+
+    if (config.DgEndpointing !== 0) {
+      options.endpointing = config.DgEndpointing
+    }
+
+    if (config.DgInterimResults) {
+      options.interim_results = true
+    }
+
+    if (config.DgVadEvents) {
+      options.vad_events = true
+    }
+
+    if (config.DgUtteranceEndMs !== 0) {
+      options.utterance_end_ms = config.DgUtteranceEndMs
+    }
+
+    if (config.DgPunctuate) {
+      options.punctuate = true
+    }
+
+    if (config.DgSmartFormat) {
+      options.smart_format = true
+    }
+
+    if (config.DgNoDelay) {
+      options.no_delay = true
+    }
+
+    return {
+      ...options,
+      encoding: 'linear16',
+      channels: stream.numChannels,
+      sample_rate: stream.sampleRate,
+      language: 'multi',
+      model: config.DeepgramModel
+    }
+  }
+
   processTrack (sid: string): void {
     const track = this.trackBySid.get(sid)
     if (track === undefined) return
@@ -141,14 +169,9 @@ export class STT implements Stt {
 
     const stream = new AudioStream(track)
     // const language = this.language ?? 'en'
-    const dgConnection = this.deepgram.listen.live({
-      ...dgSchema,
-      channels: stream.numChannels,
-      sample_rate: stream.sampleRate,
-      language: 'multi',
-      model: config.DeepgramModel
-    })
-    console.log('Starting deepgram for track', this.room.name, sid)
+    const options = this.getOptions(stream)
+    const dgConnection = this.deepgram.listen.live(options)
+    console.log('Starting deepgram for track', this.room.name, sid, options)
 
     const interval = setInterval(() => {
       dgConnection.keepAlive()
@@ -167,14 +190,13 @@ export class STT implements Stt {
           return
         }
 
-        if (data.speech_final === true) {
-          void this.sendToPlatform(transcript, sid)
-        } else if (data.is_final === true) {
+        if (data.speech_final === true || data.is_final === true) {
           void this.sendToPlatform(transcript, sid)
         }
       })
 
-      dgConnection.on(LiveTranscriptionEvents.Close, (d) => {
+      dgConnection.on(LiveTranscriptionEvents.Close, (data) => {
+        console.log('Deepgram closed', data)
         this.stopDeepgram(sid)
       })
 
