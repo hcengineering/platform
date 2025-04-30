@@ -158,7 +158,6 @@ services:
       - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://huly.local:8087
-      - MODEL_ENABLED=*
       - LAST_NAME_FIRST=true
       # - WS_LIVENESS_DAYS=1
       - ACCOUNTS_URL=http://huly.local:3000
@@ -193,7 +192,6 @@ services:
       - STATS_URL=http://huly.local:4900
       - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - REGION=
       - ACCOUNTS_URL=http://huly.local:3000
       - BRANDING_PATH=/var/cfg/branding.json
@@ -219,7 +217,6 @@ services:
       - DB_URL=${DB_CR_URL}
       - STATS_URL=http://huly.local:4900
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://huly.local:3000
       - BRANDING_PATH=/var/cfg/branding.json
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}

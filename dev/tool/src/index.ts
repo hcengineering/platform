@@ -992,9 +992,11 @@ export function devTool (
     .command('backup-find <dirName> <fileId>')
     .description('dump workspace transactions and minio resources')
     .option('-d, --domain <domain>', 'Check only domain')
-    .action(async (dirName: string, fileId: string, cmd: { domain: string | undefined }) => {
+    .option('-a, --all', 'Show all versions', false)
+    .action(async (dirName: string, fileId: string, cmd: { domain: string | undefined, all: boolean }) => {
       const storage = await createFileBackupStorage(dirName)
-      await backupFind(storage, fileId as unknown as Ref<Doc>, cmd.domain)
+      console.log(cmd.all)
+      await backupFind(storage, fileId as unknown as Ref<Doc>, cmd.all, cmd.domain)
     })
 
   program

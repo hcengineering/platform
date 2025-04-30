@@ -504,7 +504,7 @@ export class WorkspaceWorker {
       case 'migration-backup':
         await sendEvent('migrate-backup-started', 0)
         await this.sendTransactorMaitenance(token, workspace.uuid)
-        if (await this.doBackup(ctx, workspace, opt, false)) {
+        if (await this.doBackup(ctx, workspace, opt, true)) {
           await sendEvent('migrate-backup-done', 100)
         }
         break
