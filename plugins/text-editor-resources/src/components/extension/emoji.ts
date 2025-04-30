@@ -28,7 +28,7 @@ function handleEmoji (
   range: Range,
   match: ExtendedRegExpMatchArray,
   commands: SingleCommands,
-  getEmojiFunction: (emoticon: string | undefined) => string | undefined
+  getEmojiFunction: (key: string | undefined) => string | undefined
 ): void {
   const $from = state.doc.resolve(range.from)
   if (!isValidEmojiPosition($from)) {

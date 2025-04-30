@@ -26,11 +26,11 @@ import type { EmojiWithGroup, EmojiHierarchy } from '.'
 export const emojiRegex = EMOJI_REGEX
 export const emojiGlobalRegex = new RegExp(EMOJI_REGEX.source, EMOJI_REGEX.flags + 'g')
 
-export const emoticonRegex = EMOTICON_REGEX
-export const emoticonGlobalRegex = new RegExp(EMOTICON_REGEX.source, EMOTICON_REGEX.flags + 'g')
+export const emoticonRegex = new RegExp(`(?:^|\\s)(${EMOTICON_REGEX.source})$`)
+export const emoticonGlobalRegex = new RegExp(`(?<!\\S)${EMOTICON_REGEX.source}(?!\\S)`, EMOTICON_REGEX.flags + 'g')
 
-export const shortcodeRegex = SHORTCODE_REGEX
-export const shortcodeGlobalRegex = new RegExp(SHORTCODE_REGEX.source, SHORTCODE_REGEX.flags + 'g')
+export const shortcodeRegex = new RegExp(`(?:^|\\s)(${SHORTCODE_REGEX.source})$`)
+export const shortcodeGlobalRegex = new RegExp(`(?<!\\S)${SHORTCODE_REGEX.source}(?!\\S)`, SHORTCODE_REGEX.flags + 'g')
 
 let availableEmojis: Emoji[]
 
@@ -82,12 +82,9 @@ export async function updateEmojis (lang?: string): Promise<void> {
 }
 
 export function getEmojiForShortCode (shortcode: string | undefined): string | undefined {
-  console.log('getEmojiForShortCode', shortcode)
+  shortcode = shortcode?.slice(1, -1)
   if (shortcode === undefined) return undefined
-  shortcode = shortcode.slice(1, -1)
-  console.log(shortcode)
   const result = availableEmojis.find(e => e.shortcodes?.includes(shortcode))
-  console.log(result)
   return result === undefined ? undefined : result.emoji
 }
 
