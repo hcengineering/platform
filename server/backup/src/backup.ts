@@ -196,7 +196,7 @@ async function loadDigest (
       break
     }
   }
-  ctx.info('load-digest', { domain, snapshots: snapshots.length, documents: result.size })
+  // ctx.info('load-digest', { domain, snapshots: snapshots.length, documents: result.size })
   return result
 }
 async function verifyDigest (
@@ -1646,7 +1646,12 @@ export async function backupDownload (storage: BackupStorage, storeIn: string): 
 /**
  * @public
  */
-export async function backupFind (storage: BackupStorage, id: Ref<Doc>, domain?: string): Promise<void> {
+export async function backupFind (
+  storage: BackupStorage,
+  id: Ref<Doc>,
+  showAll: boolean,
+  domain?: string
+): Promise<void> {
   const infoFile = 'backup.json.gz'
 
   if (!(await storage.exists(infoFile))) {
@@ -1676,25 +1681,42 @@ export async function backupFind (storage: BackupStorage, id: Ref<Doc>, domain?:
       console.log('we found file')
       let found = false
       for (const sn of rnapshots) {
+        const ssDigest = await loadDigest(toolCtx, storage, [sn], dd)
+        if (!ssDigest.has(id)) {
+          continue
+        }
         const d = sn.domains[dd]
-        if (found) {
+        if (found && !showAll) {
           break
         }
         for (const sf of d?.storage ?? []) {
-          if (found) {
+          if (found && !showAll) {
             break
           }
           console.log('processing', sf)
           const readStream = await storage.load(sf)
           const ex = extract()
-
           ex.on('entry', (headers, stream, next) => {
             if (headers.name === id + '.json') {
               console.log('file found in:', sf)
+
+              const chunks: Buffer[] = []
+              stream.on('data', (chunk) => {
+                chunks.push(chunk)
+              })
+              stream.on('end', () => {
+                const bf = Buffer.concat(chunks as any)
+                console.log('>>>>>>>>>>>')
+                console.log(JSON.stringify(JSON.parse(bf.toString()), undefined, 2))
+                console.log('>>>>>>>>>>>')
+                next()
+              })
+
               found = true
+            } else {
+              stream.resume() // auto drain for non-matching entries
+              next() // continue to the next entry
             }
-            next()
-            stream.resume() // just auto drain the stream
           })
 
           const endPromise = new Promise((resolve) => {
