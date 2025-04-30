@@ -184,7 +184,7 @@ async function migrateGmailHistory (
     const history = db.collection<History>('histories')
     const allHistories = await history.find({}).toArray()
 
-    const kvsClient = getKvsClient(kvsUrl, token)
+    const kvsClient = getKvsClient('gmail', kvsUrl, token)
 
     for (const history of allHistories) {
       try {
