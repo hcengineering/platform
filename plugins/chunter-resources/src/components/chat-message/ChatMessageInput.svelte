@@ -241,6 +241,7 @@
   on:update={onUpdate}
   on:focus
   on:blur
+  on:keydown
   bind:loading
 />
 

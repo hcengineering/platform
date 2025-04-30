@@ -30,5 +30,6 @@
     on:close
     on:open
     on:submit
+    on:keydown
   />
 {/if}

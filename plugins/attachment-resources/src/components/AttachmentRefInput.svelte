@@ -462,6 +462,7 @@
       on:message={onMessage}
       on:update={onUpdate}
       onPaste={pasteAction}
+      on:keydown
       {placeholder}
     >
       <div slot="header">

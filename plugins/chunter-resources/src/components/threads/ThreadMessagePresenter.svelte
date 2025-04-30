@@ -41,6 +41,7 @@
   export let videoPreload = false
   export let readonly = false
   export let onClick: (() => void) | undefined = undefined
+  export let isEditing = false
 
   const client = getClient()
 </script>
@@ -76,5 +77,6 @@
     {videoPreload}
     {onClick}
     {readonly}
+    {isEditing}
   />
 {/if}

@@ -179,6 +179,7 @@
         updateFocus()
         dispatch('focus')
       }}
+      on:keydown
       extensions={[
         completionPlugin,
         EmojiExtension.configure(),

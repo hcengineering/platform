@@ -13,6 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { personByPersonIdStore } from '@hcengineering/contact-resources'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { ActivityMessagePresenter, canGroupMessages, messageInFocus } from '@hcengineering/activity-resources'
   import core, { Doc, generateId, getCurrentAccount, Ref, Space, Timestamp, Tx, TxCUD } from '@hcengineering/core'
@@ -58,6 +60,8 @@
   const contextByDocStore = inboxClient.contextByDoc
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
 
+  const me = getCurrentEmployee()
+
   // Stores
   const metadataStore = provider.metadataStore
   const messagesStore = provider.messagesStore
@@ -73,6 +77,8 @@
 
   let messages: ActivityMessage[] = []
   let messagesCount = 0
+
+  let editingMessageId: Ref<ActivityMessage> | undefined = undefined
 
   // Elements
   let scroller: Scroller | undefined | null = undefined
@@ -127,6 +133,15 @@
   $: void initializeScroll($isLoadingStore, separatorDiv, separatorIndex)
   $: adjustScrollPosition(selectedMessageId)
   $: void handleMessagesUpdated(messages.length)
+
+  function getLastOwnMessage (): ActivityMessage | undefined {
+    return [...messages].reverse().find((message) => {
+      const personId = message.createdBy
+      if (personId === undefined) return false
+      const person = $personByPersonIdStore.get(personId)
+      return person?._id === me
+    })
+  }
 
   function adjustScrollPosition (selectedMessageId?: Ref<ActivityMessage>): void {
     if ($isLoadingStore || !isScrollInitialized) {
@@ -537,6 +552,21 @@
     loadMore()
   }
 
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code !== 'ArrowUp') return
+
+    const target = key.target as HTMLElement
+    const isEmpty = target.textContent?.trim() === ''
+    if (isEmpty) {
+      const ownLastMessage = getLastOwnMessage()
+      if (ownLastMessage !== undefined) {
+        key.preventDefault()
+        key.stopPropagation()
+        editingMessageId = ownLastMessage._id
+      }
+    }
+  }
+
   const newMessageTxListener = (txes: Tx[]): void => {
     const ctx = txes
       .map((it) => it as TxCUD<ActivityMessage>)
@@ -603,6 +633,7 @@
 
     {#each messages as message, index (message._id)}
       {@const isSelected = message._id === selectedMessageId}
+      {@const isEditing = message._id === editingMessageId}
       {@const canGroup = canGroupChatMessages(message, messages[index - 1])}
       {#if separatorIndex === index}
         <ActivityMessagesSeparator bind:element={separatorDiv} label={activity.string.New} />
@@ -626,6 +657,12 @@
         type={canGroup ? 'short' : 'default'}
         isHighlighted={isSelected}
         shouldScroll={false}
+        isEditing={isEditing}
+        on:editingEnded={() => {
+          if (editingMessageId === message._id) {
+            editingMessageId = undefined
+          }
+        }}
         {readonly}
         {onReply}
       />
@@ -639,7 +676,7 @@
       <HistoryLoading isLoading={$isLoadingMoreStore} />
     {/if}
     {#if !fixedInput && withInput && !readonly}
-      <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} />
+      <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} on:keydown={(event) => { onKeydown(event) }}/>
     {/if}
   </BaseChatScroller>
   {#if !isThread && isLatestMessageButtonVisible}
@@ -656,7 +693,7 @@
 </div>
 
 {#if fixedInput && withInput && !readonly}
-  <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} />
+  <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} on:keydown={(event) => { onKeydown(event) }} />
 {/if}
 
 {#if readonly}
