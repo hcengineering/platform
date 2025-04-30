@@ -9,10 +9,7 @@ import { initStatisticsContext, loadBrandingMap } from '@hcengineering/server-co
 import { serveWorkspaceAccount } from '@hcengineering/workspace-service'
 import { join } from 'path'
 
-const enabled = (process.env.MODEL_ENABLED ?? '*').split(',').map((it) => it.trim())
-const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.trim())
-
-const txes = JSON.parse(JSON.stringify(builder(enabled, disabled).getTxes())) as Tx[]
+const txes = JSON.parse(JSON.stringify(builder().getTxes())) as Tx[]
 
 configureAnalytics(process.env.SENTRY_DSN, {})
 Analytics.setTag('application', 'workspace')

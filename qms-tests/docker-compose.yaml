@@ -1,9 +1,9 @@
-version: "3"
+version: '3'
 services:
   mongodb:
     image: 'mongo:7-jammy'
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     command: mongod --port 27018
     environment:
       - PUID=1000
@@ -41,7 +41,7 @@ services:
   account:
     image: hardcoreeng/account
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     pull_policy: never
     links:
       - mongodb
@@ -57,12 +57,11 @@ services:
       - DB_URL=mongodb://mongodb:27018
       - TRANSACTOR_URL=ws://transactor:3334;ws://host.docker.internal:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - BRANDING_PATH=/var/cfg/branding-test.json
   workspace:
     image: hardcoreeng/workspace
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     links:
       - mongodb
       - minio
@@ -74,14 +73,13 @@ services:
       - MONGO_URL=mongodb://mongodb:27018
       - TRANSACTOR_URL=ws://transactor:3334;ws://host.docker.internal:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://account:3003
       - BRANDING_PATH=/var/cfg/branding.json
     restart: unless-stopped
   front:
     image: hardcoreeng/front
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     pull_policy: never
     links:
       - account
@@ -112,7 +110,7 @@ services:
   transactor:
     image: hardcoreeng/transactor
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     pull_policy: never
     links:
       - mongodb
@@ -140,7 +138,7 @@ services:
   collaborator:
     image: hardcoreeng/collaborator
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     links:
       - mongodb
       - minio
@@ -154,7 +152,7 @@ services:
       - UPLOAD_URL=/files
       - MONGO_URL=mongodb://mongodb:27018
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-    restart: unless-stopped 
+    restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
     restart: on-failure
@@ -163,7 +161,7 @@ services:
   print:
     image: hardcoreeng/print
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     restart: unless-stopped
     ports:
       - 4003:4005
@@ -179,7 +177,7 @@ services:
   sign:
     image: hardcoreeng/sign
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     restart: unless-stopped
     ports:
       - 4008:4006
@@ -195,7 +193,7 @@ services:
       - ACCOUNTS_URL=http://account:3003
       - MINIO_SECRET_KEY=minioadmin
       - CERTIFICATE_PATH=/var/cfg/certificate.p12
-      - SERVICE_ID=sign-service      
+      - SERVICE_ID=sign-service
       - BRANDING_PATH=/var/cfg/branding.json
     deploy:
       resources:
@@ -218,4 +216,4 @@ services:
       - ELASTIC_INDEX_NAME=local_storage_index
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - REKONI_URL=http://rekoni:4007
-      - ACCOUNTS_URL=http://account:3003          
+      - ACCOUNTS_URL=http://account:3003
