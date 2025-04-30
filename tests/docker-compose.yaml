@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
     healthcheck:
       #CHANGE 1: this command checks if the database is ready, right on the source db server
-      test: [ "CMD-SHELL", "pg_isready" ]
+      test: ['CMD-SHELL', 'pg_isready']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -62,7 +62,6 @@ services:
       - DB_URL=mongodb://mongodb:27018
       - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://stats:4901
   workspace:
@@ -78,7 +77,6 @@ services:
       - DB_URL=mongodb://mongodb:27018
       - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://account:3003
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://stats:4901
@@ -128,7 +126,7 @@ services:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
       - SERVER_PORT=3334
-      - SERVER_SECRET=secret      
+      - SERVER_SECRET=secret
       - DB_URL=mongodb://mongodb:27018
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
@@ -164,7 +162,7 @@ services:
       - 4007:4004
     environment:
       - STATS_URL=http://stats:4901
-    
+
   fulltext:
     image: hardcoreeng/fulltext
     restart: unless-stopped
@@ -192,4 +190,4 @@ services:
     environment:
       - PORT=4901
       - SERVER_SECRET=secret
-    restart: unless-stopped      
+    restart: unless-stopped

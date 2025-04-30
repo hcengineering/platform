@@ -23,7 +23,7 @@ services:
     image: postgres
     container_name: postgres
     extra_hosts:
-      - "host.docker.internal:host-gateway"    
+      - 'host.docker.internal:host-gateway'
     environment:
       - POSTGRES_PASSWORD=example
     volumes:
@@ -98,7 +98,6 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://host.docker.internal:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
-      - MODEL_ENABLED=*
       - LAST_NAME_FIRST=true
       # - WS_LIVENESS_DAYS=1
       - ACCOUNTS_URL=http://host.docker.internal:3000
@@ -135,7 +134,6 @@ services:
       - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - RESERVED_DB_NAMES=telegram,gmail,github
-      - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - PARALLEL=2
@@ -163,7 +161,6 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://host.docker.internal:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
-      - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - PARALLEL=2
@@ -190,7 +187,6 @@ services:
       - REGION=cockroach
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - RESERVED_DB_NAMES=telegram,gmail,github
-      - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - PARALLEL=2
@@ -372,7 +368,7 @@ services:
       - AUTH_TOKEN=secret
       - STATS_URL=http://host.docker.internal:4900
       - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable
-    restart: unless-stopped    
+    restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
     restart: unless-stopped
@@ -503,23 +499,23 @@ services:
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://host.docker.internal:4900
-#      - LOVE_ENDPOINT=http://host.docker.internal:8096
-#      - OPENAI_API_KEY=token
-#  telegram-bot:
-#    image: hardcoreeng/telegram-bot
-#   extra_hosts:
-#     - "host.docker.internal:host-gateway"
-#    restart: unless-stopped
-#    environment:
-#      - PORT=4020
-#      - BOT_TOKEN=token
-#      - MONGO_URL=${MONGO_URL}
-#      - MONGO_DB=telegram-bot
-#      - SECRET=secret
-#      - DOMAIN=domain
-#      - ACCOUNTS_URL=http://host.docker.internal:3000
-#      - SERVICE_ID=telegram-bot-service
-#      - STATS_URL=http://host.docker.internal:4900
+  #      - LOVE_ENDPOINT=http://host.docker.internal:8096
+  #      - OPENAI_API_KEY=token
+  #  telegram-bot:
+  #    image: hardcoreeng/telegram-bot
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #    restart: unless-stopped
+  #    environment:
+  #      - PORT=4020
+  #      - BOT_TOKEN=token
+  #      - MONGO_URL=${MONGO_URL}
+  #      - MONGO_DB=telegram-bot
+  #      - SECRET=secret
+  #      - DOMAIN=domain
+  #      - ACCOUNTS_URL=http://host.docker.internal:3000
+  #      - SERVICE_ID=telegram-bot-service
+  #      - STATS_URL=http://host.docker.internal:4900
   export:
     image: hardcoreeng/export
     extra_hosts:
