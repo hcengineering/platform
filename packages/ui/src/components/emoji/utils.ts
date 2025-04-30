@@ -14,11 +14,25 @@
 //
 import { get } from 'svelte/store'
 import { fetchEmojis, fetchMessages } from 'emojibase'
+import EMOJI_REGEX from 'emojibase-regex'
+import EMOTICON_REGEX from 'emojibase-regex/emoticon'
+import SHORTCODE_REGEX from 'emojibase-regex/shortcode'
 import type { Emoji, Locale } from 'emojibase'
 import { getCurrentAccount } from '@hcengineering/core'
 import { deviceOptionsStore as deviceInfo } from '../..'
 import { emojiStore, emojiComponents, emojiCategories, skinTonesCodes } from '.'
 import type { EmojiWithGroup, EmojiHierarchy } from '.'
+
+export const emojiRegex = EMOJI_REGEX
+export const emojiGlobalRegex = new RegExp(EMOJI_REGEX.source, EMOJI_REGEX.flags + 'g')
+
+export const emoticonRegex = EMOTICON_REGEX
+export const emoticonGlobalRegex = new RegExp(EMOTICON_REGEX.source, EMOTICON_REGEX.flags + 'g')
+
+export const shortcodeRegex = SHORTCODE_REGEX
+export const shortcodeGlobalRegex = new RegExp(SHORTCODE_REGEX.source, SHORTCODE_REGEX.flags + 'g')
+
+let availableEmojis: Emoji[]
 
 export async function loadEmojis (lang?: string): Promise<{
   emojis: EmojiWithGroup[]
@@ -27,9 +41,9 @@ export async function loadEmojis (lang?: string): Promise<{
   const local = lang ?? get(deviceInfo).language ?? 'en'
   const englishEmojis =
     local === 'en'
-      ? await fetchEmojis('en', { version: '15.0' })
-      : await fetchEmojis('en', { compact: true, version: '15.0' })
-  const languageEmojis = local === 'en' ? null : await fetchEmojis(local as Locale, { version: '15.0' })
+      ? await fetchEmojis('en', { version: '15.0', shortcodes: ['iamcal'] })
+      : await fetchEmojis('en', { compact: true, version: '15.0', shortcodes: ['iamcal'] })
+  const languageEmojis = local === 'en' ? null : await fetchEmojis(local as Locale, { version: '15.0', shortcodes: ['iamcal'] })
   const messages = await fetchMessages(local as Locale)
   const groups = messages.groups
   const groupKeys = new Map<number, string>(groups.map((group, index) => [index, group.key]))
@@ -62,8 +76,25 @@ export async function loadEmojis (lang?: string): Promise<{
 
 export async function updateEmojis (lang?: string): Promise<void> {
   const { emojis, components } = await loadEmojis(lang)
+  availableEmojis = emojis
   emojiStore.set(emojis)
   emojiComponents.set(components)
+}
+
+export function getEmojiForShortCode (shortcode: string | undefined): string | undefined {
+  console.log('getEmojiForShortCode', shortcode)
+  if (shortcode === undefined) return undefined
+  shortcode = shortcode.slice(1, -1)
+  console.log(shortcode)
+  const result = availableEmojis.find(e => e.shortcodes?.includes(shortcode))
+  console.log(result)
+  return result === undefined ? undefined : result.emoji
+}
+
+export function getEmojiForEmoticon (emoticon: string | undefined): string | undefined {
+  if (emoticon === undefined) return undefined
+  const result = availableEmojis.find(e => Array.isArray(e.emoticon) ? e.emoticon.includes(emoticon) : e.emoticon === emoticon)
+  return result === undefined ? undefined : result.emoji
 }
 
 function getEmojisLocalStorageKey (suffix: string = 'frequently'): string {
