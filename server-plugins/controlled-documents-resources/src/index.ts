@@ -298,14 +298,17 @@ export async function OnDocEnteredNonActionableState (
   const result: Tx[] = []
   for (const tx of txes) {
     const requests = await control.findAll(control.ctx, documents.class.DocumentRequest, {
-      attachedTo: tx.objectId,
-      status: RequestStatus.Active
+      attachedTo: tx.objectId
     })
-    const cancelTxes = requests.map((request) =>
-      control.txFactory.createTxUpdateDoc<DocumentRequest>(request._class, request.space, request._id, {
-        status: RequestStatus.Cancelled
+    const cancelTxes = requests
+      .filter((request) => {
+        return request.status === RequestStatus.Active || tx.operations.state === DocumentState.Deleted
       })
-    )
+      .map((request) =>
+        control.txFactory.createTxUpdateDoc<DocumentRequest>(request._class, request.space, request._id, {
+          status: RequestStatus.Cancelled
+        })
+      )
     await control.apply(control.ctx, [
       ...cancelTxes,
       control.txFactory.createTxUpdateDoc<ControlledDocument>(tx.objectClass, tx.objectSpace, tx.objectId, {
