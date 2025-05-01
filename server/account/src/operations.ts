@@ -1635,12 +1635,30 @@ export async function getInviteLink (
     )
   }
   ctx.info('Getting invite link', { workspace: workspace.name, emailMask, limit })
+  const targetRole = role ?? AccountRole.User
+
+  if (email !== systemAccountEmail) {
+    const connection = await connect(
+      getEndpoint(ctx, wsPromise, EndpointKind.Internal),
+      getWorkspaceId(wsPromise.workspace)
+    )
+    try {
+      const ops = new TxOperations(connection, core.account.System)
+      const workspaceAccount = await ops.findOne(contact.class.PersonAccount, { email })
+      if (workspaceAccount?.role == null || roleOrder[workspaceAccount.role] < roleOrder[targetRole]) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      }
+    } finally {
+      await connection.close()
+    }
+  }
+
   const data: Omit<Invite, '_id'> = {
     workspace,
     exp: exp < 0 ? -1 : Date.now() + exp,
     emailMask,
     limit,
-    role: role ?? AccountRole.User
+    role: targetRole
   }
   if (personId !== undefined) {
     data.personId = personId
