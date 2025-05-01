@@ -5,6 +5,11 @@
     "Stop": "停止",
     "Resume": "继续",
     "Record": "录制",
+    "CancelRecording": "取消录制",
+    "CancelRecordingConfirm": "您确定要取消录制吗？",
+    "RestartRecording": "重新开始录制",
+    "RestartRecordingConfirm": "您确定要重新开始录制吗？",
+    "RecordingTitle": "屏幕录制 {date}",
     "ClickToSkip": "点击跳过"
   }
 }

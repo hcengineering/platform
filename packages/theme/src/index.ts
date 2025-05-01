@@ -18,6 +18,7 @@ import '@hcengineering/platform-rig/profiles/ui/svelte'
 import { derived, writable } from 'svelte/store'
 
 export { default as Theme } from './Theme.svelte'
+export { default as InvertedTheme } from './InvertedTheme.svelte'
 
 /**
  * @public

@@ -35,7 +35,6 @@
     await releaseStream(stream)
 
     try {
-      console.log('getUserMedia', constraints)
       const newStream = await navigator.mediaDevices.getUserMedia(constraints)
       if (selected.deviceId === device.deviceId) {
         stream = newStream

@@ -15,18 +15,25 @@
 
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
+import presentation from '@hcengineering/model-presentation'
+import uploader from '@hcengineering/uploader'
+import workbench from '@hcengineering/workbench'
 
 import recorder from './plugin'
 
-import uploader from '@hcengineering/uploader'
-
 export { recorderId } from '@hcengineering/recorder'
 export { recorder as default }
+export * from './migration'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(uploader.class.UploadHandlerDefinition, core.space.Model, {
     handler: recorder.function.Record,
     label: recorder.string.Record,
     icon: recorder.icon.Record
+  })
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: workbench.extensions.WorkbenchExtensions,
+    component: recorder.component.WorkbenchExtension
   })
 }

@@ -5,6 +5,11 @@
     "Stop": "停止",
     "Resume": "再開",
     "Record": "記録",
+    "CancelRecording": "録音をキャンセル",
+    "CancelRecordingConfirm": "録音をキャンセルしてもよろしいですか？",
+    "RestartRecording": "録音を再開",
+    "RestartRecordingConfirm": "録音を再開してもよろしいですか？",
+    "RecordingTitle": "画面録画 {date}",
     "ClickToSkip": "クリックしてスキップ"
   }
 }
