@@ -30,6 +30,7 @@ import core, {
   type TxUpdateDoc,
   type WorkspaceId,
   DOMAIN_TX,
+  type LowLevelStorage,
   SortingOrder,
   makeCollabId,
   makeCollabYdocId,
@@ -299,14 +300,17 @@ export async function restoreControlledDocContentForDoc (
   return true
 }
 
-export async function restoreMarkupRefsMongo (
+export async function restoreMarkupRefs (
   ctx: MeasureContext,
-  db: Db,
+  lowLevelStorage: LowLevelStorage,
   workspaceId: WorkspaceId,
   hierarchy: Hierarchy,
-  storageAdapter: StorageAdapter
+  storageAdapter: StorageAdapter,
+  dryRun: boolean
 ): Promise<void> {
   const classes = hierarchy.getDescendants(core.class.Doc)
+  let updatedCount = 0
+  const curHash = Date.now().toString(16) // Current hash value
   for (const _class of classes) {
     const domain = hierarchy.findDomain(_class)
     if (domain === undefined) continue
@@ -319,44 +323,60 @@ export async function restoreMarkupRefsMongo (
     if (attributes.length === 0) continue
     if (hierarchy.isMixin(_class) && attributes.every((p) => p.attributeOf !== _class)) continue
 
-    ctx.info('processing', { _class, attributes: attributes.map((p) => p.name) })
+    ctx.info('processing', { _class, domain, attributes: attributes.map((p) => p.name) })
 
-    const collection = db.collection<Doc>(domain)
-    const iterator = collection.find({ _class })
+    const iterator = await lowLevelStorage.traverse(domain, { _class })
     try {
       while (true) {
-        const doc = await iterator.next()
-        if (doc === null) {
+        // next's count param doesn't work for CR. Always returns all rows regardless of count param.
+        const docs = await iterator.next(20)
+        if (docs === null) {
           break
         }
+        for (const doc of docs) {
+          if (doc === null) continue
 
-        for (const attribute of attributes) {
-          const isMixin = hierarchy.isMixin(attribute.attributeOf)
+          for (const attribute of attributes) {
+            const isMixin = hierarchy.isMixin(attribute.attributeOf)
 
-          const attributeName = isMixin ? `${attribute.attributeOf}.${attribute.name}` : attribute.name
+            const attributeName = isMixin ? `${attribute.attributeOf}.${attribute.name}` : attribute.name
 
-          const value = isMixin
-            ? ((doc as any)[attribute.attributeOf]?.[attribute.name] as string)
-            : ((doc as any)[attribute.name] as string)
+            const value = isMixin
+              ? ((doc as any)[attribute.attributeOf]?.[attribute.name] as string)
+              : ((doc as any)[attribute.name] as string)
 
-          if (typeof value === 'string') {
-            continue
+            if (value != null && value !== '') {
+              continue
+            }
+
+            const collabId = makeCollabId(doc._class, doc._id, attribute.name)
+            const ydocId = makeCollabYdocId(collabId)
+
+            try {
+              // Note: read operation throws if not found so it won't update docs for which
+              // there's no blob.
+              const buffer = await storageAdapter.read(ctx, workspaceId, ydocId)
+              if (!dryRun) {
+                const ydoc = yDocFromBuffer(Buffer.concat(buffer as any))
+
+                const jsonId = await saveCollabJson(ctx, storageAdapter, workspaceId, collabId, ydoc)
+                await lowLevelStorage.rawUpdate(domain, { _id: doc._id }, {
+                  [attributeName]: jsonId,
+                  '%hash%': curHash
+                } as any)
+              }
+
+              ctx.info('Restored empty markup ref', { _class, attributeName, collabId, ydocId })
+              updatedCount++
+            } catch (err: any) {
+              ctx.error('Failed to restore markup ref', { _class, attributeName, collabId, ydocId, err })
+            }
           }
-
-          const collabId = makeCollabId(doc._class, doc._id, attribute.name)
-          const ydocId = makeCollabYdocId(collabId)
-
-          try {
-            const buffer = await storageAdapter.read(ctx, workspaceId, ydocId)
-            const ydoc = yDocFromBuffer(Buffer.concat(buffer as any))
-
-            const jsonId = await saveCollabJson(ctx, storageAdapter, workspaceId, collabId, ydoc)
-            await collection.updateOne({ _id: doc._id }, { $set: { [attributeName]: jsonId } })
-          } catch {}
         }
       }
     } finally {
       await iterator.close()
     }
   }
+  ctx.info('Restored markup refs', { updatedCount })
 }
