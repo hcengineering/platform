@@ -148,6 +148,9 @@
   --theme-bg-divider-color: #282834;
   --theme-mention-bg-color: rgba(55, 122, 230, 0.1);
   --theme-mention-focused-bg-color: rgba(55, 122, 230, 0.2);
+  --theme-broken-mention-bg-color: rgba(202, 66, 66, .2);
+  --theme-broken-mention-color: rgb(202, 66, 66);
+  --theme-broken-mention-focused-bg-color: rgba(202, 66, 66, .3);
 
   --theme-trans-color: rgba(255, 255, 255, .3);
   --theme-darker-color: rgba(255, 255, 255, .4);
@@ -358,8 +361,6 @@
   --theme-link-preview-bg-color: #2B2D41;
   --theme-link-preview-description-color: #C1C9D6;
   --theme-link-preview-text-color:#FFFFFF;
-  --theme-recorder-panel-bg: #2A2939;
-  --theme-recorder-active-button: #A5BDFF0D;
 
   --theme-dialog-border-color: rgba(255, 255, 255, 0.1);
   --theme-dialog-background-color: #2a2938;
@@ -449,6 +450,9 @@
   --theme-bg-divider-color: #E3E3E5;
   --theme-mention-bg-color: rgba(55, 122, 230, 0.1);
   --theme-mention-focused-bg-color: rgba(55, 122, 230, 0.2);
+  --theme-broken-mention-bg-color: rgba(202, 66, 66, .2);
+  --theme-broken-mention-color: rgb(202, 66, 66);
+  --theme-broken-mention-focused-bg-color: rgba(202, 66, 66, .3);
 
   --theme-link-preview-bg-color: #E5E8F0;
   --theme-link-preview-description-color: #5A667E;
@@ -469,8 +473,6 @@
   --theme-list-divider-color: rgba(0, 0, 0, .07);
   --theme-list-subheader-divider: rgba(0, 0, 0, .06);
 
-  --theme-recorder-panel-bg: #FFFFFF;
-  
   --theme-list-button-color: #F2F2F4;
   --theme-list-button-hover: #E8E8EA;
   --theme-link-button-color: #E5E5E7;

@@ -13,32 +13,31 @@
 // limitations under the License.
 //
 
-import { type FileUploadOptions, type FileUploadCallback } from '@hcengineering/uploader'
-import Recorder from './components/Recorder.svelte'
+import { getMetadata } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
-import { type Blob, type Ref } from '@hcengineering/core'
-import { getBlobUrl } from '@hcengineering/presentation'
+import { type FileUploadOptions } from '@hcengineering/uploader'
+import { get } from 'svelte/store'
 
-let recorderOppened = false
+import Recorder from './components/Recorder.svelte'
+import plugin from './plugin'
+import { recorder, recording } from './stores'
+import { createScreenRecorder } from './screen-recorder'
 
-export async function record (options: FileUploadOptions): Promise<void> {
-  if (recorderOppened) {
-    return
-  }
-  if (options.onFileUploaded === undefined) {
-    return
-  }
-  recorderOppened = true
-  const onUploaded = options.onFileUploaded
-  showPopup(
+export function record (options: FileUploadOptions): void {
+  const current = get(recorder)
+  if (current !== null) return
+
+  const { onFileUploaded } = options
+
+  const popup = showPopup(
     Recorder,
-    {},
+    {
+      onFileUploaded
+    },
     undefined,
-    async (status: any) => {
-      if (typeof status === 'string') {
-        await uploadRecording(status, onUploaded)
-      }
-      recorderOppened = false
+    () => {
+      recorder.set(null)
     },
     undefined,
     {
@@ -47,21 +46,152 @@ export async function record (options: FileUploadOptions): Promise<void> {
       fixed: true
     }
   )
+
+  recorder.set(popup)
 }
 
-async function uploadRecording (recordingName: string, onUploaded: FileUploadCallback): Promise<void> {
-  await onUploaded({
-    uuid: getBlobUrl(recordingName) as Ref<Blob>,
-    name: 'Recording-' + now(),
-    file: { ...new Blob(), type: 'video/x-mpegURL' },
-    type: 'video/x-mpegURL',
-    path: undefined,
-    metadata: undefined,
-    navigateOnUpload: true
+export interface RecordingOptions {
+  cameraStream: MediaStream | null
+  microphoneStream: MediaStream | null
+  fps?: number
+  onSuccess?: (uploadId: string) => Promise<void>
+  onError?: (uploadId: string) => void
+}
+
+export async function startRecording (options: RecordingOptions): Promise<void> {
+  const current = get(recording)
+  if (current !== null) {
+    console.warn('Recording already started', current)
+    return
+  }
+
+  const { cameraStream, microphoneStream, fps } = options
+
+  let displayStream: MediaStream
+  try {
+    displayStream = await navigator.mediaDevices.getDisplayMedia({
+      video: {
+        frameRate: { ideal: fps ?? 30 }
+      }
+    })
+    for (const track of displayStream.getVideoTracks()) {
+      track.onended = () => {
+        void stopRecording()
+      }
+    }
+  } catch (err: any) {
+    if (err.name === 'NotAllowedError') {
+      console.debug('User denied screen capture permission', err)
+    } else {
+      console.error('Failed to get display media', err)
+    }
+    return
+  }
+
+  const mediaStream = makeCombinedStream(displayStream, cameraStream, microphoneStream)
+
+  const token = getMetadata(presentation.metadata.Token) ?? ''
+  const workspace = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
+  const endpoint = getMetadata(plugin.metadata.StreamUrl) ?? ''
+
+  let width = 0
+  let height = 0
+
+  mediaStream.getVideoTracks().forEach((track) => {
+    width = Math.max(track.getSettings().width ?? width, width)
+    height = Math.max(track.getSettings().height ?? height, height)
   })
+
+  // Callback invoked when upload succeeds, passing blobId
+  const onSuccess = (blobId: string): void => {
+    console.debug('Recording upload success', { blobId })
+    void options.onSuccess?.(blobId)
+  }
+
+  // Callback invoked when upload fails, passing error
+  const onError = (error: any): void => {
+    console.error('Recording upload failed', error)
+    options.onError?.(error)
+  }
+
+  const recorder = createScreenRecorder(mediaStream, { token, endpoint, workspace, width, height, onSuccess, onError })
+  await recorder.start()
+  recording.set({ recorder, stream: recorder.stream, state: 'recording' })
 }
 
-function now (): string {
-  const date = new Date()
-  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
+export async function stopRecording (): Promise<void> {
+  const current = get(recording)
+  if (current !== null && current.state === 'recording') {
+    recording.set({ ...current, state: 'stopped' })
+    await current.recorder.stop()
+    recording.set(null)
+    get(recorder)?.close()
+  } else {
+    console.warn('Recording is not in `recording` state', current)
+  }
+}
+
+export async function pauseRecording (): Promise<void> {
+  const current = get(recording)
+  if (current !== null && current.state === 'recording') {
+    await current.recorder.pause()
+    recording.set({ ...current, state: 'paused' })
+  } else {
+    console.warn('Recording is not in `recording` state', current)
+  }
+}
+
+export async function restartRecording (): Promise<void> {
+  const current = get(recording)
+  if (current !== null) {
+    await current.recorder.cancel()
+    await current.recorder.start()
+    recording.set({ ...current, state: 'recording' })
+  } else {
+    console.warn('Recording is not in `paused` state', current)
+  }
+}
+
+export async function resumeRecording (): Promise<void> {
+  const current = get(recording)
+  if (current !== null && current.state === 'paused') {
+    await current.recorder.resume()
+    recording.set({ ...current, state: 'recording' })
+  } else {
+    console.warn('Recording is not in `paused` state', current)
+  }
+}
+
+export async function cancelRecording (): Promise<void> {
+  const current = get(recording)
+  if (current !== null) {
+    await current.recorder.cancel()
+    recording.set(null)
+  }
+}
+
+function makeCombinedStream (
+  screenStream: MediaStream,
+  cameraStream: MediaStream | null,
+  microphoneStream: MediaStream | null
+): MediaStream {
+  const tracks: MediaStreamTrack[] = []
+
+  // Add screen tracks
+  tracks.push(...screenStream.getTracks())
+
+  if (cameraStream != null && cameraStream.getVideoTracks().length > 0) {
+    // Don't add camera video to the recording, it will just be displayed
+    // in picture-in-picture style via UI
+  }
+
+  if (cameraStream != null && cameraStream.getAudioTracks().length > 0) {
+    tracks.push(...cameraStream.getAudioTracks())
+  }
+
+  if (microphoneStream != null && microphoneStream.getAudioTracks().length > 0) {
+    tracks.push(...microphoneStream.getAudioTracks())
+  }
+
+  return new MediaStream(tracks)
 }

@@ -14,10 +14,12 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Component, Icon } from '@hcengineering/ui'
+  import { Component, Icon, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
   import { createQuery, getClient } from '../../utils'
+  import MessageBox from '../MessageBox.svelte'
+  import presentation from '../../plugin'
 
   export let _id: Ref<Doc> | undefined = undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
@@ -28,18 +30,28 @@
   const docQuery = createQuery()
 
   let doc: Doc | undefined = undefined
+  let broken: boolean = false
 
   $: icon = _class !== undefined && hierarchy.hasClass(_class) ? hierarchy.getClass(_class).icon : null
 
   $: if (_class != null && _id != null && hierarchy.hasClass(_class)) {
     docQuery.query(_class, { _id }, (r) => {
       doc = r.shift()
+      broken = doc === undefined
+    })
+  }
+
+  function onBrokenLinkClick (event: MouseEvent): void {
+    showPopup(MessageBox, {
+      label: presentation.string.UnableToFollowMention,
+      message: presentation.string.AccessDenied,
+      canSubmit: false
     })
   }
 </script>
 
 {#if !doc && title}
-  <span class="antiMention">
+  <span class="antiMention" class:broken on:click={onBrokenLinkClick}>
     {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{title}
   </span>
 {:else if doc}

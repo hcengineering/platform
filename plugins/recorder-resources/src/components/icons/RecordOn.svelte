@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,11 +11,17 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
 
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+<script lang="ts">
+  export let size: 'small' | 'medium' | 'large'
+  export let fill: string = 'currentColor'
+</script>
 
-export const exportOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
-}
+<svg class="svg-{size}" {fill} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <path
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    d="M8 12C10.2091 12 12 10.2091 12 8C12 5.79086 10.2091 4 8 4C5.79086 4 4 5.79086 4 8C4 10.2091 5.79086 12 8 12Z"
+  />
+</svg>

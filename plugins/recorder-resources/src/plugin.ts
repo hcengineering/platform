@@ -13,7 +13,26 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@hcengineering/platform'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
 import plugin, { recorderId } from '@hcengineering/recorder'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 
-export default mergeIds(recorderId, plugin, {})
+export default mergeIds(recorderId, plugin, {
+  component: {
+    RecorderExt: '' as AnyComponent
+  },
+  string: {
+    Pause: '' as IntlString,
+    Stop: '' as IntlString,
+    Resume: '' as IntlString,
+    Record: '' as IntlString,
+    Cancel: '' as IntlString,
+    Restart: '' as IntlString,
+    CancelRecording: '' as IntlString,
+    CancelRecordingConfirm: '' as IntlString,
+    RestartRecording: '' as IntlString,
+    RestartRecordingConfirm: '' as IntlString,
+    RecordingTitle: '' as IntlString,
+    ClickToSkip: '' as IntlString
+  }
+})

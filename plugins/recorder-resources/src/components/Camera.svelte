@@ -14,125 +14,159 @@
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte'
-  import Camera from './icons/Camera.svelte'
-  import Close from './icons/Close.svelte'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { Button, IconClose } from '@hcengineering/ui'
+  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { createEventDispatcher } from 'svelte'
 
-  let showButtons = false
-  let showCamera = false
+  import IconCircleLarge from './icons/CircleLarge.svelte'
+  import IconCircleMedium from './icons/CircleMedium.svelte'
+  import IconCircleSmall from './icons/CircleSmall.svelte'
 
-  let videoElement: HTMLVideoElement
-  let stream: MediaStream | null = null
+  export let stream: MediaStream | null
+  export let isCamEnabled: boolean = true
+  export let size: 'small' | 'medium' | 'large' = 'medium'
 
-  const stopCamera = (): void => {
-    if (stream === null) {
-      return
-    }
-    stream.getTracks().forEach((track) => {
-      track.stop()
-    })
-    videoElement.srcObject = null
-    stream = null
-    showCamera = false
+  const me = getCurrentEmployee()
+  const meName = $personByIdStore.get(me)?.name
+  const meAvatar = $personByIdStore.get(me)
+
+  const dispatch = createEventDispatcher()
+
+  let video: HTMLVideoElement
+
+  $: if (video != null && video.srcObject !== stream) {
+    video.srcObject = stream
   }
 
-  const startCamera = async (): Promise<void> => {
-    stopCamera()
-    showCamera = true
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { frameRate: { ideal: 30 } } })
-      videoElement.srcObject = stream
-    } catch (err) {
-      console.log(err)
-    }
+  function handleCloseCamera (): void {
+    dispatch('close')
   }
 
-  onDestroy(async (): Promise<void> => {
-    stopCamera()
-  })
+  function handleCameraSizeSmall (): void {
+    size = 'small'
+  }
+
+  function handleCameraSizeMedium (): void {
+    size = 'medium'
+  }
+
+  function handleCameraSizeLarge (): void {
+    size = 'large'
+  }
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
-  class="movable"
-  on:mouseenter={() => {
-    showButtons = true
-  }}
-  on:mouseleave={() => {
-    showButtons = false
-  }}
->
-  {#if showCamera}
-    <video class="video video-container" bind:this={videoElement} autoplay muted playsinline> </video>
-    {#if showButtons}
-      <div
-        class="camera-control"
-        on:click={() => {
-          stopCamera()
-        }}
-      >
-        <Close size="full" />
-      </div>
-    {/if}
+<div class="container {size}">
+  {#if stream != null && isCamEnabled}
+    <!-- svelte-ignore a11y-media-has-caption -->
+    <video bind:this={video} autoplay muted playsinline />
   {:else}
-    <div class="control">
-      <span
-        class="control-button"
-        on:click={() => {
-          startCamera()
-        }}
-      >
-        <Camera size="medium" />
-      </span>
-    </div>
+    <Avatar variant={'circle'} size={'full'} name={meName} person={meAvatar} showStatus={false} adaptiveName />
   {/if}
+
+  <div class="controls">
+    <div class="buttons-panel">
+      <Button icon={IconClose} kind={'icon'} size={'small'} noFocus on:click={handleCloseCamera} />
+
+      <div class="divider" />
+
+      <Button
+        icon={IconCircleSmall}
+        kind={'icon'}
+        size={'small'}
+        selected={size === 'small'}
+        noFocus
+        on:click={handleCameraSizeSmall}
+      />
+
+      <Button
+        icon={IconCircleMedium}
+        kind={'icon'}
+        size={'small'}
+        selected={size === 'medium'}
+        noFocus
+        on:click={handleCameraSizeMedium}
+      />
+
+      <Button
+        icon={IconCircleLarge}
+        kind={'icon'}
+        size={'small'}
+        selected={size === 'large'}
+        noFocus
+        on:click={handleCameraSizeLarge}
+      />
+    </div>
+  </div>
 </div>
 
 <style lang="scss">
-  .video-container {
-    width: 350px;
-    height: 350px;
-    transform: rotateY(180deg);
+  .container {
+    position: relative;
+    transition: all 0.2s ease;
+
+    video {
+      border-radius: 50%;
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
+      background-color: var(--theme-bg-color);
+
+      transform: rotateY(180deg);
+    }
+
+    &.small {
+      width: 12rem;
+      height: 12rem;
+    }
+
+    &.medium {
+      width: 18rem;
+      height: 18rem;
+    }
+
+    &.large {
+      width: 27rem;
+      height: 27rem;
+    }
+
+    .controls {
+      visibility: hidden;
+    }
+
+    &:hover {
+      .controls {
+        visibility: visible;
+      }
+    }
   }
-  .video {
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  .control {
-    min-height: 2.8rem;
-    min-width: 2.8rem;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--theme-recorder-panel-bg);
-    padding-left: 0.25rem;
-    border-radius: 0.5rem;
-    transition:
-      max-width 0.4s ease-in-out,
-      padding 0.3s ease-in-out;
-    overflow: hidden;
-    border: 0.5px solid var(--button-border-color);
-  }
-  .camera-control {
+
+  .controls {
     position: absolute;
-    transform: translateY(-350px);
-    padding: 0.5rem 0.5rem;
-    border-radius: 0.5rem;
-    justify-content: center;
-    cursor: pointer;
+    width: 100%;
+    height: 25%;
+    bottom: 0;
+    z-index: auto;
+
     display: flex;
-    align-items: center;
+    flex-direction: col;
+    align-items: start;
+    justify-content: center;
   }
-  .control-button {
-    padding: 0.5rem 0.5rem;
-    border-radius: 0.5rem;
-    justify-content: center;
-    cursor: pointer;
+
+  .buttons-panel {
     display: flex;
-    flex-direction: row;
     align-items: center;
-    background: var(--theme-recorder-active-button);
+    border-radius: 0.5rem;
+    border: 1px solid var(--button-border-color);
+    background-color: var(--theme-bg-color);
+    gap: 0.125rem;
+    padding: 0.125rem;
+  }
+
+  .divider {
+    width: 1px;
+    background-color: var(--theme-divider-color);
+    align-self: stretch;
   }
 </style>

@@ -35,12 +35,12 @@ export interface MediaSession extends TypedEmitter<MediaSessionEvents> {
   /**
    * Enable or disable camera
    */
-  setCamera: (state: CamState) => void
+  setCamera: (state: CamState | undefined) => void
 
   /**
    * Enable or disable microphone
    */
-  setMicrophone: (state: MicState) => void
+  setMicrophone: (state: MicState | undefined) => void
 
   /**
    * Enable or disable media feature

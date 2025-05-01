@@ -16,9 +16,16 @@
 import { type Resources } from '@hcengineering/platform'
 import { record } from './recording'
 
+import RecorderExt from './components/RecorderExt.svelte'
+import WorkbenchExtension from './components/WorkbenchExtension.svelte'
+
 export { ScreenRecorder } from './screen-recorder'
 
 export default async (): Promise<Resources> => ({
+  component: {
+    RecorderExt,
+    WorkbenchExtension
+  },
   function: {
     Record: record
   }

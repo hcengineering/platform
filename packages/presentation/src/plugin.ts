@@ -130,7 +130,9 @@ export default plugin(presentationId, {
     ColorRemove: '' as IntlString,
     ColorReset: '' as IntlString,
     Copy: '' as IntlString,
-    CopyLink: '' as IntlString
+    CopyLink: '' as IntlString,
+    UnableToFollowMention: '' as IntlString,
+    AccessDenied: '' as IntlString
   },
   extension: {
     FilePreviewExtension: '' as ComponentExtensionId,

@@ -5,6 +5,11 @@
     "Stop": "Stop",
     "Resume": "Resume",
     "Record": "Record",
+    "CancelRecording": "Cancel recording",
+    "CancelRecordingConfirm": "Are you sure you want to cancel recording?",
+    "RestartRecording": "Restart recording",
+    "RestartRecordingConfirm": "Are you sure you want to restart recording?",
+    "RecordingTitle": "Screen Recording {date}",
     "ClickToSkip": "Click to skip"
   }
 }
