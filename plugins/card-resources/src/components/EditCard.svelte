@@ -15,15 +15,25 @@
 //
 -->
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
+  import { Card, CardEvents } from '@hcengineering/card'
   import { Ref } from '@hcengineering/core'
+  import { onMount } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
-  import EditCardOld from './EditCardOld.svelte'
+  import EditCardNew from './EditCardNew.svelte'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
   export let embedded: boolean = false
+  export let allowClose: boolean = true
 
+  export function canClose (): boolean {
+    return false
+  }
+
+  onMount(() => {
+    Analytics.handleEvent(CardEvents.CardOpened, { id: _id })
+  })
 </script>
 
-<EditCardOld {_id} {readonly} {embedded} />
+<EditCardNew {_id} {readonly} {embedded} {allowClose} on:close on:open />

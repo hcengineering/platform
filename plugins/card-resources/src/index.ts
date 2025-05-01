@@ -49,6 +49,14 @@ import SpacePresenter from './components/navigator/SpacePresenter.svelte'
 import LabelsPresenter from './components/LabelsPresenter.svelte'
 import RolesSection from './components/settings/RolesSection.svelte'
 import EditRole from './components/settings/EditRole.svelte'
+import CardWidget from './components/CardWidget.svelte'
+
+// Card Sections
+import AttachmentsCardSection from './components/sections/AttachmentsSection.svelte'
+import ChildrenCardSection from './components/sections/ChildrenSection.svelte'
+import ContentCardSection from './components/sections/ContentSection.svelte'
+import PropertiesCardSection from './components/sections/PropertiesSection.svelte'
+import RelationsCardSection from './components/sections/RelationsSection.svelte'
 
 export { default as CardSelector } from './components/CardSelector.svelte'
 export { default as Navigator } from './components/navigator-next/Navigator.svelte'
@@ -83,7 +91,15 @@ export default async (): Promise<Resources> => ({
     SpacePresenter,
     LabelsPresenter,
     RolesSection,
-    EditRole
+    EditRole,
+    CardWidget
+  },
+  sectionComponent: {
+    AttachmentsSection: AttachmentsCardSection,
+    ChildrenSection: ChildrenCardSection,
+    ContentSection: ContentCardSection,
+    PropertiesSection: PropertiesCardSection,
+    RelationsSection: RelationsCardSection
   },
   completion: {
     CardQuery: queryCard

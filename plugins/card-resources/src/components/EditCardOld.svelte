@@ -15,9 +15,8 @@
 //
 -->
 <script lang="ts">
-  import { Analytics } from '@hcengineering/analytics'
   import { Attachments } from '@hcengineering/attachment-resources'
-  import { Card, CardEvents } from '@hcengineering/card'
+  import { Card } from '@hcengineering/card'
   import { Doc, Mixin, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -34,7 +33,8 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ParentsNavigator, RelationsEditor, getDocMixins, showMenu } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
+
   import card from '../plugin'
   import CardAttributeEditor from './CardAttributeEditor.svelte'
   import CardPresenter from './CardPresenter.svelte'
@@ -48,10 +48,6 @@
 
   let useMaxWidth = getUseMaxWidth()
   $: saveUseMaxWidth(useMaxWidth)
-
-  export function canClose (): boolean {
-    return false
-  }
 
   let lastId: Ref<Doc> = _id
   const query = createQuery()
@@ -78,16 +74,16 @@
   })
 
   $: _id !== undefined &&
-  query.query(card.class.Card, { _id }, async (result) => {
-    if (result.length > 0) {
-      ;[doc] = result
-      title = doc?.title ?? ''
-    } else {
-      const loc = getCurrentLocation()
-      loc.path.length = 3
-      navigate(loc)
-    }
-  })
+    query.query(card.class.Card, { _id }, async (result) => {
+      if (result.length > 0) {
+        ;[doc] = result
+        title = doc?.title ?? ''
+      } else {
+        const loc = getCurrentLocation()
+        loc.path.length = 3
+        navigate(loc)
+      }
+    })
 
   $: canSave = title.trim().length > 0
 
@@ -114,10 +110,6 @@
     localStorage.setItem('document.useMaxWidth', useMaxWidth.toString())
   }
 
-  onMount(() => {
-    Analytics.handleEvent(CardEvents.CardOpened, { id: _id })
-  })
-
   let content: HTMLElement
 
   const manager = createFocusManager()
@@ -130,66 +122,65 @@
 <FocusHandler {manager} />
 
 {#if doc !== undefined}
-    <Panel
-            object={doc}
-            allowClose={!embedded}
-            isAside={false}
-            isHeader={false}
-            isSub={false}
-            bind:useMaxWidth
-            printHeader={false}
-            {embedded}
-            adaptive={'default'}
-            bind:content
-            bind:innerWidth
-            floatAside={false}
-            newActivity
-            on:open
-            on:close={() => dispatch('close')}
-    >
-        <svelte:fragment slot="title">
-            <ParentsNavigator element={doc} />
-            <CardPresenter value={doc} noUnderline />
-        </svelte:fragment>
+  <Panel
+    object={doc}
+    allowClose={!embedded}
+    isAside={false}
+    isHeader={false}
+    isSub={false}
+    bind:useMaxWidth
+    printHeader={false}
+    {embedded}
+    adaptive={'default'}
+    bind:content
+    bind:innerWidth
+    floatAside={false}
+    on:open
+    on:close={() => dispatch('close')}
+  >
+    <svelte:fragment slot="title">
+      <ParentsNavigator element={doc} />
+      <CardPresenter value={doc} noUnderline />
+    </svelte:fragment>
 
-        <div class="container">
-            <div class="title flex-row-center">
-                <EditBox focusIndex={1} bind:value={title} placeholder={card.string.Card} on:blur={(evt) => saveTitle(evt)} />
-            </div>
+    <div class="container">
+      <div class="title flex-row-center">
+        <EditBox focusIndex={1} bind:value={title} placeholder={card.string.Card} on:blur={(evt) => saveTitle(evt)} />
+      </div>
 
-            <TagsEditor {doc} />
+      <TagsEditor {doc} />
 
-            <CardAttributeEditor value={doc} {mixins} {readonly} ignoreKeys={['title', 'content', 'parent']} />
+      <CardAttributeEditor value={doc} {mixins} {readonly} ignoreKeys={['title', 'content', 'parent']} />
 
-            <Content {doc} {readonly} bind:content />
-        </div>
+      <Content {doc} {readonly} bind:content />
+    </div>
 
-        <ComponentExtensions
-                extension={card.extensions.EditCardExtension}
-                props={{
-                  card: doc
-                }}
+    <ComponentExtensions
+      extension={card.extensions.EditCardExtension}
+      props={{
+        card: doc
+      }}
+    />
+
+    <Childs object={doc} {readonly} />
+    <RelationsEditor object={doc} {readonly} />
+
+    <Attachments objectId={doc._id} _class={doc._class} space={doc.space} attachments={doc.attachments ?? 0} />
+
+    <svelte:fragment slot="utils">
+      {#if !readonly}
+        <Button
+          icon={IconMoreH}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          dataId={'btnMoreActions'}
+          on:click={(e) => {
+            showMenu(e, { object: doc, excludedActions: [view.action.Open] })
+          }}
         />
-
-        <Childs object={doc} {readonly} />
-        <RelationsEditor object={doc} {readonly} />
-
-        <Attachments objectId={doc._id} _class={doc._class} space={doc.space} attachments={doc.attachments ?? 0} />
-
-        <svelte:fragment slot="utils">
-            {#if !readonly}
-                <Button
-                        icon={IconMoreH}
-                        iconProps={{ size: 'medium' }}
-                        kind={'icon'}
-                        dataId={'btnMoreActions'}
-                        on:click={(e) => {
-                          showMenu(e, { object: doc, excludedActions: [view.action.Open] })
-                        }}
-                />
-            {/if}
-        </svelte:fragment>
-    </Panel>
+      {/if}
+    </svelte:fragment>
+  </Panel>
 {/if}
 
 <style lang="scss">

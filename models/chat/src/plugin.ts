@@ -17,10 +17,16 @@ import { chatId } from '@hcengineering/chat'
 import chat from '@hcengineering/chat-resources/src/plugin'
 import { type Ref } from '@hcengineering/core'
 import { type Application } from '@hcengineering/model-workbench'
-import { mergeIds } from '@hcengineering/platform'
+import { mergeIds, type Resource } from '@hcengineering/platform'
+import type { Location, ResolvedLocation } from '@hcengineering/ui'
+import type { LocationData } from '@hcengineering/workbench'
 
 export default mergeIds(chatId, chat, {
   app: {
     Chat: '' as Ref<Application>
+  },
+  resolver: {
+    Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>,
+    LocationData: '' as Resource<(loc: Location) => Promise<LocationData>>
   }
 })

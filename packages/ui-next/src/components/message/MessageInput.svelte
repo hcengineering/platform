@@ -14,7 +14,6 @@
 -->
 
 <script lang="ts">
-  import { IntlString } from '@hcengineering/platform'
   import { Markup, RateLimiter } from '@hcengineering/core'
   import { tick, createEventDispatcher, onDestroy } from 'svelte'
   import { uploadFile, deleteFile, getCommunicationClient } from '@hcengineering/presentation'
@@ -32,12 +31,11 @@
   import { type TextInputAction, UploadedFile, type PresenceTyping } from '../../types'
   import TypingPresenter from '../TypingPresenter.svelte'
 
-  export let cardId: CardID | undefined = undefined
-  export let cardType: CardType | undefined = undefined
+  export let cardId: CardID
+  export let cardType: CardType
   export let message: Message | undefined = undefined
   export let content: Markup | undefined = undefined
-  export let placeholder: IntlString | undefined = undefined
-  export let placeholderParams: Record<string, any> = {}
+  export let title: string = ''
   export let onCancel: (() => void) | undefined = undefined
   export let onSubmit: ((markdown: string, files: UploadedFile[]) => Promise<void>) | undefined = undefined
 
@@ -69,13 +67,13 @@
 
     if (message === undefined) {
       await createMessage(markdown, filesToLoad)
+      dispatch('sent')
     } else {
       await editMessage(message, markdown, filesToLoad)
     }
   }
 
   async function createMessage (markdown: string, files: UploadedFile[]): Promise<void> {
-    if (cardId === undefined || cardType === undefined) return
     const { id, created } = await communicationClient.createMessage(cardId, cardType, markdown)
 
     for (const file of files) {
@@ -84,7 +82,6 @@
   }
 
   async function editMessage (message: Message, markdown: string, files: UploadedFile[]): Promise<void> {
-    if (cardId === undefined) return
     await communicationClient.updateMessage(cardId, message.id, message.created, markdown)
 
     for (const file of files) {
@@ -204,7 +201,6 @@
   }
 
   async function onUpdate (event: CustomEvent<Markup>): Promise<void> {
-    if (cardId === undefined || cardType === undefined) return
     if (message !== undefined) return
     const markup = event.detail
     if (!isEmptyMarkup(markup)) {
@@ -235,8 +231,8 @@
   />
   <TextInput
     {content}
-    {placeholder}
-    {placeholderParams}
+    placeholder={title !== '' ? uiNext.string.MessageIn : undefined}
+    placeholderParams={title !== '' ? { title } : undefined}
     loading={progress}
     hasNonTextContent={files.length > 0}
     actions={[...defaultMessageInputActions, attachAction]}

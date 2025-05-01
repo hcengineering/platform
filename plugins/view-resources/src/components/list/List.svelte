@@ -173,6 +173,9 @@
   const dispatch = createEventDispatcher()
 
   $: dispatch('content', docs)
+  $: if (docs.length > 0) {
+    dispatch('docs', docs)
+  }
 
   function uncheckAll (): void {
     dispatch('check', { docs, value: false })

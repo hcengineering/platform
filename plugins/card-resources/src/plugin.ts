@@ -48,7 +48,15 @@ export default mergeIds(cardId, card, {
     SpacePresenter: '' as AnyComponent,
     LabelsPresenter: '' as AnyComponent,
     RolesSection: '' as AnyComponent,
-    EditRole: '' as AnyComponent
+    EditRole: '' as AnyComponent,
+    CardWidget: '' as AnyComponent
+  },
+  sectionComponent: {
+    AttachmentsSection: '' as AnyComponent,
+    ChildrenSection: '' as AnyComponent,
+    ContentSection: '' as AnyComponent,
+    PropertiesSection: '' as AnyComponent,
+    RelationsSection: '' as AnyComponent
   },
   completion: {
     CardQuery: '' as Resource<ObjectSearchFactory>,
@@ -90,6 +98,7 @@ export default mergeIds(cardId, card, {
     SelectType: '' as IntlString,
     CreateSpace: '' as IntlString,
     NumberTypes: '' as IntlString,
-    Labels: '' as IntlString
+    Labels: '' as IntlString,
+    Properties: '' as IntlString
   }
 })

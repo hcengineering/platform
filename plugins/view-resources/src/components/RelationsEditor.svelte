@@ -15,13 +15,16 @@
 <script lang="ts">
   import { createQuery, getClient } from '@hcengineering/presentation'
   import core, { Association, Doc, Ref } from '@hcengineering/core'
-  import RelationEditor from './RelationEditor.svelte'
   import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { createEventDispatcher } from 'svelte'
+
+  import RelationEditor from './RelationEditor.svelte'
 
   export let object: Doc
   export let readonly: boolean = false
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
   const h = client.getHierarchy()
 
   let associationsA: Association[] = []
@@ -49,6 +52,8 @@
 
   let relationsA: Record<Ref<Association>, Doc[]> = {}
   let relationsB: Record<Ref<Association>, Doc[]> = {}
+  let relationsALoaded = false
+  let relationsBLoaded = false
 
   const queryA = createQuery()
   $: queryA.query(
@@ -56,6 +61,7 @@
     { _id: object._id },
     (res) => {
       relationsA = res?.[0]?.$associations ?? {}
+      relationsALoaded = true
     },
     { associations: associationsA.map((a) => [a._id, -1]) }
   )
@@ -66,9 +72,14 @@
     { _id: object._id },
     (res) => {
       relationsB = res?.[0]?.$associations ?? {}
+      relationsBLoaded = true
     },
     { associations: associationsB.map((a) => [a._id, 1]) }
   )
+
+  $: if (relationsALoaded && relationsBLoaded) {
+    dispatch('loaded')
+  }
 </script>
 
 {#each associationsB as association (association._id)}

@@ -18,7 +18,7 @@
   import { getClient, createQuery, getCommunicationClient, createMessagesQuery } from '@hcengineering/presentation'
   import cardPlugin, { type Card } from '@hcengineering/card'
   import { Message, CardID } from '@hcengineering/communication-types'
-  import { MessagePresenter, MessageInput, Divider, UploadedFile } from '@hcengineering/ui-next'
+  import { UploadedFile } from '@hcengineering/ui-next'
   import { fillDefaults, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
   import { makeRank } from '@hcengineering/rank'
   import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
@@ -26,10 +26,7 @@
 
   import { ChatWidgetData } from '../types'
   import chat from '../plugin'
-  import ChatHeader from './ChatHeader.svelte'
-  import ChatBody from './ChatBody.svelte'
   import { createThreadTitle } from '../utils'
-  import ChatFooter from './ChatFooter.svelte'
 
   export let widget: Widget | undefined
   export let widgetState: WidgetState | undefined
@@ -137,30 +134,29 @@
       }
     }
   }
-  let footerHeight: number | undefined = undefined
 </script>
 
-{#if widget && data && data.message}
-  <div class="chat-widget" style:width style:height>
-    <ChatHeader card={threadCard} icon={chat.icon.Thread} title={data.name} canClose on:close />
-    {#if message && parentCard}
-      <div class="mt-4" />
-      <MessagePresenter {message} card={parentCard} replies={false} />
-      <Divider />
+<!--{#if widget && data && data.message}-->
+<!--  <div class="chat-widget" style:width style:height>-->
+<!--    <ChatHeader card={threadCard} icon={chat.icon.Thread} title={data.name} canClose on:close />-->
+<!--    {#if message && parentCard}-->
+<!--      <div class="mt-4" />-->
+<!--      <MessagePresenter {message} card={parentCard} replies={false} />-->
+<!--      <Divider />-->
 
-      <div class="messages">
-        <ChatBody
-          card={threadCard}
-          bottomStart={false}
-          showDates={false}
-          overlyColor="var(--next-background-color)"
-          {footerHeight}
-        />
-      </div>
-      <ChatFooter card={threadCard} bind:height={footerHeight} onSubmit={handleSubmit} />
-    {/if}
-  </div>
-{/if}
+<!--      <div class="messages">-->
+<!--        <ChatBody-->
+<!--          card={threadCard}-->
+<!--          bottomStart={false}-->
+<!--          showDates={false}-->
+<!--          overlyColor="var(&#45;&#45;next-background-color)"-->
+<!--          {footerHeight}-->
+<!--        />-->
+<!--      </div>-->
+<!--      <ChatFooter card={threadCard} bind:height={footerHeight} onSubmit={handleSubmit} />-->
+<!--    {/if}-->
+<!--  </div>-->
+<!--{/if}-->
 
 <style lang="scss">
   .chat-widget {
