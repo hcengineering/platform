@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import { type PopupResult } from '@hcengineering/ui'
+import { writable } from 'svelte/store'
+import { type RecordingState } from './types'
 
-export const exportOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
-}
+export const recorder = writable<PopupResult | null>(null)
+export const recording = writable<RecordingState | null>(null)

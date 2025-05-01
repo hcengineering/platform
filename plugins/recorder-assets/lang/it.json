@@ -1,10 +1,15 @@
 {
   "string": {
-    "Cancel": "Cancel",
-    "Pause": "Pause",
+    "Cancel": "Annulla",
+    "Pause": "Pausa",
     "Stop": "Stop",
-    "Resume": "Resume",
-    "Record": "Record",
-    "ClickToSkip": "Click to skip"
+    "Resume": "Riprendi",
+    "Record": "Registra",
+    "CancelRecording": "Annulla registrazione",
+    "CancelRecordingConfirm": "Sei sicuro di voler annullare la registrazione?",
+    "RestartRecording": "Riavvia registrazione",
+    "RestartRecordingConfirm": "Sei sicuro di voler riavviare la registrazione?",
+    "RecordingTitle": "Registrazione dello schermo {date}",
+    "ClickToSkip": "Fai clic per saltare"
   }
 }

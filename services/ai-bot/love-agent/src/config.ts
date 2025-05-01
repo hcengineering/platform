@@ -28,6 +28,15 @@ interface Config {
   VadSilenceDurationMs: number
   VadPrefixPaddingMs: number
   VadThreshold: number
+
+  DgEndpointing: number
+  DgUtteranceEndMs: number
+  DgInterimResults: boolean
+  DgVadEvents: boolean
+  DgPunctuate: boolean
+  DgSmartFormat: boolean
+  DgNoDelay: boolean,
+  DgSampleRate: number
 }
 
 const config: Config = (() => {
@@ -43,7 +52,16 @@ const config: Config = (() => {
     SttProvider: (process.env.STT_PROVIDER as SttProvider) ?? 'deepgram',
     VadSilenceDurationMs: parseInt(process.env.SILENCE_DURATION_MS ?? '1000'),
     VadPrefixPaddingMs: parseInt(process.env.PREFIX_PADDING_MS ?? '1000'),
-    VadThreshold: parseFloat(process.env.VAD_THRESHOLD ?? '0.5')
+    VadThreshold: parseFloat(process.env.VAD_THRESHOLD ?? '0.5'),
+
+    DgEndpointing: parseInt(process.env.DG_ENDPOINTING ?? '100'),
+    DgInterimResults: process.env.DG_INTERIM_RESULTS === 'true',
+    DgVadEvents: process.env.DG_VAD_EVENTS === 'true',
+    DgPunctuate: process.env.DG_PUNCTUATE === 'true',
+    DgSmartFormat: process.env.DG_SMART_FORMAT === 'true',
+    DgUtteranceEndMs: parseInt(process.env.DG_UTTERANCE_END_MS ?? '0'),
+    DgNoDelay: process.env.DG_NO_DELAY === 'true',
+    DgSampleRate: parseInt(process.env.DG_SAMPLE_RATE ?? '16000')
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

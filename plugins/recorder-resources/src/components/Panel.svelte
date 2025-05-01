@@ -14,55 +14,43 @@
 -->
 
 <script lang="ts">
-  import Record from './icons/Record.svelte'
-  import Play from './icons/Play.svelte'
-  import Stop from './icons/Stop.svelte'
-  import Trash from './icons/Trash.svelte'
-  import Pause from './icons/Pause.svelte'
-  import Expand from './icons/Expand.svelte'
-  import Collapse from './icons/Collapse.svelte'
-  import { ScreenRecorder } from '../screen-recorder'
-  import { createEventDispatcher } from 'svelte'
-  import { showPopup, Label } from '@hcengineering/ui'
-  import Countdown from './Countdown.svelte'
-  import { getMetadata } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
+  import { type Blob, type Ref } from '@hcengineering/core'
+  import media from '@hcengineering/media'
+  import { MessageBox } from '@hcengineering/presentation'
+  import { Button, IconClose, IconDelete, closeTooltip, showPopup } from '@hcengineering/ui'
+  import { type FileUploadCallback } from '@hcengineering/uploader'
+  import { createEventDispatcher, onMount } from 'svelte'
+
   import plugin from '../plugin'
+  import {
+    cancelRecording,
+    pauseRecording,
+    restartRecording,
+    resumeRecording,
+    startRecording,
+    stopRecording
+  } from '../recording'
+  import { recording } from '../stores'
+  import { formatElapsedTime, formatRecordingName } from '../utils'
 
-  let timer: number | undefined = undefined
-  let recorder: ScreenRecorder | null = null
-  let seconds = 0
-  let recordingId: string | null = null
+  import Countdown from './Countdown.svelte'
+  import IconRestart from './icons/Restart.svelte'
+  import IconPause from './icons/Pause.svelte'
+  import IconPlay from './icons/Play.svelte'
+  import IconStop from './icons/Stop.svelte'
+  import IconRecord from './icons/Record.svelte'
 
-  const distpacher = createEventDispatcher()
+  export let cameraStream: MediaStream | null = null
+  export let dragging = false
+  export let direction: 'top' | 'bottom' = 'bottom'
+  export let onFileUploaded: FileUploadCallback | undefined
 
-  enum RecordingState {
-    Recording = 'recording',
-    Paused = 'paused',
-    Inactive = 'inactive'
-  }
+  // expected to be bound outside
+  export let isMicEnabled = true
 
-  let state = RecordingState.Inactive
-  let expanded = true
-  let time = '0:00'
+  const dispatch = createEventDispatcher()
 
-  function formatTime (s: number): string {
-    const mins = Math.floor(s / 60)
-    const secs = s % 60
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`
-  }
-
-  async function createScreenRecorder (): Promise<void> {
-    recorder = await ScreenRecorder.fromNavigatorMediaDevices({
-      endpoint: getMetadata(plugin.metadata.StreamUrl) ?? '',
-      token: getMetadata(presentation.metadata.Token) ?? '',
-      workspace: getMetadata(presentation.metadata.WorkspaceUuid) ?? '',
-      onFinish: async (x) => {
-        recordingId = x + '_master.m3u8'
-      },
-      fps: 30
-    })
-  }
+  $: state = $recording
 
   async function showCountdown (): Promise<void> {
     const showPopupPromise = new Promise<void>((resolve) => {
@@ -84,170 +72,221 @@
     await showPopupPromise
   }
 
-  async function startRecording (): Promise<void> {
-    if (state === RecordingState.Recording) {
+  async function handleStartRecording (): Promise<void> {
+    if (state != null) {
+      console.warn('Recording already in progress', state)
       return
     }
-    if (state === RecordingState.Inactive) {
-      try {
-        await createScreenRecorder()
-      } catch (err) {
-        console.log('cant create screen recorder', err)
-        distpacher('close', true)
-        return
+
+    await startRecording({
+      cameraStream,
+      microphoneStream: null,
+      fps: 30,
+      onSuccess: async (blobId: string) => {
+        if (onFileUploaded !== undefined) {
+          const name = await formatRecordingName(new Date())
+          const blob = new Blob([], { type: 'video/x-mpegURL' })
+          await onFileUploaded({
+            uuid: blobId as Ref<Blob>,
+            name,
+            type: blob.type,
+            file: blob,
+            path: undefined,
+            metadata: undefined,
+            navigateOnUpload: true
+          })
+        }
+      },
+      onError: (error: any) => {
+        console.error('Recording upload failed', error)
       }
-      await showCountdown()
-      recorder?.start()
-    } else {
-      recorder?.resume()
-    }
-    timer = setInterval(() => {
-      seconds++
-      time = formatTime(seconds)
+    })
+  }
+
+  async function handleResumeRecording (): Promise<void> {
+    await resumeRecording()
+  }
+
+  async function handlePauseRecording (): Promise<void> {
+    await pauseRecording()
+  }
+
+  async function handleStopRecording (): Promise<void> {
+    await stopRecording()
+    dispatch('close')
+  }
+
+  async function handleRestartRecording (): Promise<void> {
+    await pauseRecording()
+    showPopup(
+      MessageBox,
+      {
+        label: plugin.string.RestartRecording,
+        message: plugin.string.RestartRecordingConfirm
+      },
+      undefined,
+      async (restart: boolean) => {
+        if (restart) {
+          await restartRecording()
+        } else {
+          await resumeRecording()
+        }
+      }
+    )
+  }
+
+  async function handleCancelRecording (): Promise<void> {
+    await cancelRecording()
+    dispatch('close', true)
+  }
+
+  async function handleDeleteRecording (): Promise<void> {
+    await pauseRecording()
+    showPopup(
+      MessageBox,
+      {
+        label: plugin.string.CancelRecording,
+        message: plugin.string.CancelRecordingConfirm
+      },
+      undefined,
+      async (restart: boolean) => {
+        if (restart) {
+          await cancelRecording()
+          dispatch('close', true)
+        } else {
+          await resumeRecording()
+        }
+      }
+    )
+  }
+
+  function handleToggleMic (): void {
+    isMicEnabled = !isMicEnabled
+  }
+
+  $: if (dragging) {
+    closeTooltip()
+  }
+
+  let elapsedTime = 0
+  onMount(() => {
+    const timer = setInterval(() => {
+      if ($recording !== null) {
+        elapsedTime = $recording.recorder.elapsedTime
+      }
     }, 1000)
-    state = RecordingState.Recording
-  }
-
-  function pauseRecording (): void {
-    state = RecordingState.Paused
-    clearInterval(timer)
-    recorder?.pause()
-  }
-
-  async function stopRecording (): Promise<void> {
-    state = RecordingState.Paused
-    clearInterval(timer)
-    await recorder?.stop()
-    distpacher('close', recordingId)
-  }
-
-  async function cancelRecording (): Promise<void> {
-    await recorder?.cancel()
-    distpacher('close', true)
-  }
-
-  async function deleteRecording (): Promise<void> {
-    state = RecordingState.Inactive
-    await recorder?.cancel()
-    clearInterval(timer)
-    time = '0:00'
-    seconds = 0
-  }
-
-  function toggleExpand (): void {
-    expanded = !expanded
-  }
+    return () => {
+      clearInterval(timer)
+    }
+  })
 </script>
 
-{#if state === RecordingState.Inactive}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="control-panel">
-    <span class="control-button play" on:click={startRecording}>
-      <Record size="medium" />
-      <Label label={plugin.string.Record} />
-    </span>
-    <span class="control-button" on:click={cancelRecording}>
-      <Label label={plugin.string.Cancel} />
-    </span>
-  </div>
-{:else}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="control-panel {!expanded ? 'collapsed' : ''}">
-    {#if expanded}
-      <span class="control-button {state === RecordingState.Recording ? 'stop' : ''}" on:click={stopRecording}>
-        <Stop size="small" />
-      </span>
+<div class="buttons-panel" class:pointer-events-none={dragging}>
+  <!-- Recording not started -->
+  {#if state == null}
+    <Button icon={IconRecord} kind={'primary'} label={plugin.string.Record} noFocus on:click={handleStartRecording} />
 
-      {#if state === RecordingState.Recording}
-        <span class="control-button" on:click={pauseRecording}>
-          <Pause size="medium" />
-        </span>
-      {:else}
-        <span class="control-button play" on:click={startRecording}>
-          <Play size="small" />
-        </span>
-      {/if}
+    <Button
+      icon={isMicEnabled ? media.icon.Mic : media.icon.MicOff}
+      kind={'icon'}
+      showTooltip={{ label: isMicEnabled ? media.string.TurnOffMic : media.string.TurnOnMic, direction }}
+      noFocus
+      on:click={handleToggleMic}
+    />
+
+    <Button
+      icon={IconClose}
+      kind={'icon'}
+      showTooltip={{ label: plugin.string.Cancel, direction }}
+      noFocus
+      on:click={handleCancelRecording}
+    />
+  {:else}
+    <Button
+      icon={IconStop}
+      kind={state.state === 'recording' ? 'dangerous' : 'icon'}
+      showTooltip={{ label: plugin.string.Stop, direction }}
+      disabled={state.state === 'stopped'}
+      noFocus
+      on:click={handleStopRecording}
+    />
+
+    <div class="divider" />
+
+    {#if state.state === 'recording'}
+      <Button
+        icon={IconPause}
+        kind={'icon'}
+        showTooltip={{ label: plugin.string.Pause, direction }}
+        noFocus
+        on:click={handlePauseRecording}
+      />
+    {:else if state.state === 'paused'}
+      <Button
+        icon={IconPlay}
+        kind={'primary'}
+        showTooltip={{ label: plugin.string.Resume, direction }}
+        noFocus
+        on:click={handleResumeRecording}
+      />
     {/if}
 
-    <span class="timer">{time}</span>
-    {#if expanded}
-      <span class="control-button" on:click={deleteRecording}>
-        <Trash size="medium" />
-      </span>
-    {/if}
+    <div
+      class="timer font-medium"
+      class:content-color={state.state === 'recording'}
+      class:content-dark-color={state.state !== 'recording'}
+    >
+      {formatElapsedTime(elapsedTime)}
+    </div>
 
-    <span class="control-button expand-toggle" on:click={toggleExpand}>
-      {#if expanded}
-        <Collapse size="small" />
-      {:else}
-        <Expand size="small" />
-      {/if}
-    </span>
-  </div>
-{/if}
+    <Button
+      icon={isMicEnabled ? media.icon.Mic : media.icon.MicOff}
+      kind={'icon'}
+      showTooltip={{ label: isMicEnabled ? media.string.TurnOffMic : media.string.TurnOnMic, direction }}
+      noFocus
+      on:click={handleToggleMic}
+    />
+
+    <div class="divider" />
+
+    <Button
+      icon={IconRestart}
+      kind={'icon'}
+      showTooltip={{ label: plugin.string.RestartRecording, direction }}
+      noFocus
+      on:click={handleRestartRecording}
+    />
+
+    <Button
+      icon={IconDelete}
+      kind={'icon'}
+      showTooltip={{ label: plugin.string.Cancel, direction }}
+      noFocus
+      on:click={handleDeleteRecording}
+    />
+  {/if}
+</div>
 
 <style lang="scss">
-  .control-button {
-    padding: 0.5rem 0.5rem;
-    gap: 0.25rem;
-    border-left: 0.5px solid var(--button-border-color);
-    color: var(--theme-text-primary-color);
-    cursor: pointer;
-    justify-content: center;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .control-panel {
-    min-height: 2.8rem;
+  .buttons-panel {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    background: var(--theme-recorder-panel-bg);
-    padding: 0.25rem;
-    border-radius: 0.5rem;
-    transition:
-      max-width 0.4s ease-in-out,
-      padding 0.3s ease-in-out;
-    overflow: hidden;
-    border: 0.5px solid var(--button-border-color);
-    transition:
-      opacity 0.3s ease,
-      transform 0.3s ease;
-  }
-
-  .collapsed {
-    max-width: 7.5rem;
-  }
-
-  .expand-toggle {
-    margin-left: auto;
-    padding-left: 0.5rem;
-  }
-
-  .stop {
-    border-radius: 0.5rem;
-    background-color: red;
-    color: #ffffffff;
-  }
-
-  .play {
-    border-radius: 0.5rem;
-    background-color: var(--primary-button-default);
-    color: #ffffffff;
+    border-radius: 0.75rem;
+    border: 1px solid var(--button-border-color);
+    background-color: var(--theme-bg-color);
+    gap: 0.375rem;
+    padding: 0.375rem;
   }
 
   .timer {
-    min-width: 0.4rem;
+    padding: 0 0.375rem;
+    min-width: 3.5rem;
     text-align: center;
   }
 
-  // .recording.collapsed .control-panel:not(.expand-toggle) {
-  //   opacity: 0;
-  //   transform: scale(0.8);
-  //   pointer-events: none;
-  // }
+  .divider {
+    width: 1px;
+    background-color: var(--theme-divider-color);
+    align-self: stretch;
+  }
 </style>

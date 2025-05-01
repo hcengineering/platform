@@ -2095,9 +2095,6 @@ importers:
       snappyjs:
         specifier: ^0.7.0
         version: 0.7.0
-      stream-browserify:
-        specifier: ^3.0.0
-        version: 3.0.0
       style-loader:
         specifier: ^3.3.1
         version: 3.3.4(webpack@5.97.1)
@@ -4571,7 +4568,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-recorder@file:projects/model-recorder.tgz':
-    resolution: {integrity: sha512-fRjS1msAMkf33rDm+7u/ywsOHfF0lu9VWivQjWiSnxBwakrn0Ztx3ZU/+XDNkj4CJMPd+lMPTdNx6gtuKUbZ6Q==, tarball: file:projects/model-recorder.tgz}
+    resolution: {integrity: sha512-qFjvdP1IJmVy2FJQ4YvRu/GeQCxxvLJKT39tBv1EIwL7/DV1eENAfSw2HNkanWAUtUKHGnqnmAm348KBVRNQNw==, tarball: file:projects/model-recorder.tgz}
     version: 0.0.0
 
   '@rush-temp/model-recruit@file:projects/model-recruit.tgz':
@@ -5015,11 +5012,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/recorder-resources@file:projects/recorder-resources.tgz':
-    resolution: {integrity: sha512-Juvy2FmXIbOQdKI94A3Q/2UTQ0aLuMRiCMni/o1Xdwg5g14Pm5TC0ZjkHairKYm1LMDmmUWiRtxOiud+klTSmQ==, tarball: file:projects/recorder-resources.tgz}
+    resolution: {integrity: sha512-LiFazTORRWULjLfy0S9ycqsfJejlenpfjZ2EBswBl5BNBDSuyJPUHC6ykOn/j3GYgeY/gibIrDs/KFcQq7I4rA==, tarball: file:projects/recorder-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/recorder@file:projects/recorder.tgz':
-    resolution: {integrity: sha512-vth2EZ1eZjV91sZVk3POK0QGcb6uoyMX7K2tiJcLWeIABOMfs4vaviuekXGqggE8awr51zxI8I7y+/SfYxEGoA==, tarball: file:projects/recorder.tgz}
+    resolution: {integrity: sha512-IPl6+cYfRw0rnCL5+4Eajn1zM7YTXPqzON6XGVvNDjEj2PkFJnaENne98ZYdcwYWU/X3kamnteOqx145wlrpJQ==, tarball: file:projects/recorder.tgz}
     version: 0.0.0
 
   '@rush-temp/recruit-assets@file:projects/recruit-assets.tgz':
@@ -5563,7 +5560,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/uploader-resources@file:projects/uploader-resources.tgz':
-    resolution: {integrity: sha512-gsRiOemRCAlhK0K5xzASMWgbIQpVAY8cYqKCms/N4rCDUDVtJL/jTKixLhjZDfUdSe+J537cRsHoP+xm19JrUQ==, tarball: file:projects/uploader-resources.tgz}
+    resolution: {integrity: sha512-FyPfNKvLhjTBhJwTqdKd0eq1snWLDYrHxxCWwoByt671DiuP+eRd3SKL7WnALLYBGZCxlkNTVvoDrFHPFeehYw==, tarball: file:projects/uploader-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader@file:projects/uploader.tgz':
@@ -23627,7 +23624,6 @@ snapshots:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1
-      stream-browserify: 3.0.0
       svelte: 4.2.19
       svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)
       svelte-eslint-parser: 0.33.1(svelte@4.2.19)
@@ -27551,7 +27547,6 @@ snapshots:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1
-      stream-browserify: 3.0.0
       svelte: 4.2.19
       svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)
       svelte-eslint-parser: 0.33.1(svelte@4.2.19)

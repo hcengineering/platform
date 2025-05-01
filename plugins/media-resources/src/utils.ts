@@ -99,12 +99,12 @@ class MediaSessionImpl
     registerSession(this)
   }
 
-  setCamera (state: CamState): void {
+  setCamera (state: CamState | undefined): void {
     this.state.camera = state
     this.emit('update', this.state)
   }
 
-  setMicrophone (state: MicState): void {
+  setMicrophone (state: MicState | undefined): void {
     this.state.microphone = state
     this.emit('update', this.state)
   }

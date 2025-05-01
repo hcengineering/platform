@@ -1,4 +1,3 @@
-//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,11 +10,13 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import { type ScreenRecorder } from './screen-recorder'
 
-export const exportOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
+export type CameraSize = 'small' | 'medium' | 'large'
+
+export interface RecordingState {
+  recorder: ScreenRecorder
+  stream: MediaStream
+  state: 'recording' | 'paused' | 'stopped'
 }

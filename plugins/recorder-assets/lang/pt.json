@@ -5,6 +5,11 @@
     "Stop": "Parar",
     "Resume": "Retomar",
     "Record": "Gravar",
+    "CancelRecording": "Cancelar gravação",
+    "CancelRecordingConfirm": "Tem certeza de que deseja cancelar a gravação?",
+    "RestartRecording": "Reiniciar gravação",
+    "RestartRecordingConfirm": "Tem certeza de que deseja reiniciar a gravação?",
+    "RecordingTitle": "Gravação de tela {date}",
     "ClickToSkip": "Clique para pular"
   }
 }
