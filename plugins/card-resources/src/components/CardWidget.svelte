@@ -1,4 +1,4 @@
-<!--
+s<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -20,11 +20,7 @@
   import { createEventDispatcher } from 'svelte'
   import { Card } from '@hcengineering/card'
   import { Ref } from '@hcengineering/core'
-  import {
-    Button,
-    Header,
-    IconClose
-  } from '@hcengineering/ui'
+  import { Button, Header, IconClose } from '@hcengineering/ui'
 
   import EditCardTableOfContents from './EditCardTableOfContents.svelte'
   import card from '../plugin'

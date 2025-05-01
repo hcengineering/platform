@@ -86,13 +86,13 @@
     }
   })
 
-$: if (contentDiv != null) {
-  mo.observe(contentDiv, {
-    childList: true,
-    subtree: true,
-    characterData: true
-  })
-}
+  $: if (contentDiv != null) {
+    mo.observe(contentDiv, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    })
+  }
 
   function reinit (position: MessagesNavigationAnchors): void {
     if (prevPosition === position) {
@@ -338,7 +338,11 @@ $: if (contentDiv != null) {
     dispatch('loaded')
   }
 
-  async function initializeScroll (isLoading: boolean, isLoadingBefore: boolean, separatorDiv?: HTMLDivElement | null): Promise<void> {
+  async function initializeScroll (
+    isLoading: boolean,
+    isLoadingBefore: boolean,
+    separatorDiv?: HTMLDivElement | null
+  ): Promise<void> {
     if (isLoading || isScrollInitialized) return
 
     if (position === MessagesNavigationAnchors.ConversationStart) {
@@ -354,9 +358,10 @@ $: if (contentDiv != null) {
     }
     if (isLoadingBefore) return
 
-    const separatorIndex = initialLastView !== undefined
-      ? messages.findIndex(({ created, creator }) => !me.socialIds.includes(creator) && created > initialLastView)
-      : -1
+    const separatorIndex =
+      initialLastView !== undefined
+        ? messages.findIndex(({ created, creator }) => !me.socialIds.includes(creator) && created > initialLastView)
+        : -1
 
     if (separatorIndex === -1) {
       await tick() // Wait for the DOM to update

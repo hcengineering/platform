@@ -18,15 +18,9 @@ import type { Class, Doc, Ref } from '@hcengineering/core'
 import { navigate, getCurrentResolvedLocation, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import { chatId } from '@hcengineering/chat'
 import { getClient } from '@hcengineering/presentation'
-import { type Message } from '@hcengineering/communication-types'
-import workbench, { type LocationData } from '@hcengineering/workbench'
-import { openWidget } from '@hcengineering/workbench-resources'
+import { type LocationData } from '@hcengineering/workbench'
 import { encodeObjectURI, decodeObjectURI } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
-
-import chat from './plugin'
-import { type ChatWidgetData } from './types'
-import { createThreadTitle } from './utils'
 
 export function getCardIdFromLocation (loc: Location): Ref<Card> | undefined {
   if (loc.path[2] !== chatId) {

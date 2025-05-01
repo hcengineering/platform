@@ -16,10 +16,7 @@
 -->
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import {
-    Ref,
-    WithLookup
-  } from '@hcengineering/core'
+  import { Ref, WithLookup } from '@hcengineering/core'
   import {
     Button,
     Component,
@@ -33,10 +30,7 @@
     Panel
   } from '@hcengineering/ui'
   import presence from '@hcengineering/presence'
-  import {
-    createQuery,
-    createNotificationContextsQuery, getClient,
-  } from '@hcengineering/presentation'
+  import { createQuery, createNotificationContextsQuery, getClient } from '@hcengineering/presentation'
   import { ParentsNavigator, showMenu } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
   import { NotificationContext } from '@hcengineering/communication-types'
@@ -47,7 +41,7 @@
   import EditCardTableOfContents from './EditCardTableOfContents.svelte'
   import { translate } from '@hcengineering/platform'
   import { makeRank } from '@hcengineering/rank'
-  import TagsEditor from "./TagsEditor.svelte";
+  import TagsEditor from './TagsEditor.svelte'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
@@ -114,7 +108,7 @@
     </div>
 
     <svelte:fragment slot="title">
-            <ParentsNavigator element={doc} />
+      <ParentsNavigator element={doc} />
       <div class="title flex-row-center">
         <EditBox focusIndex={1} bind:value={title} placeholder={card.string.Card} on:blur={saveTitle} />
       </div>
@@ -134,16 +128,16 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-<!--      <Button-->
-<!--        icon={IconDetailsFilled}-->
-<!--        iconProps={{ size: 'medium' }}-->
-<!--        kind="icon"-->
-<!--        on:click={() => {-->
-<!--          if (doc != null) {-->
-<!--            void openCardInSidebar(doc._id, doc)-->
-<!--          }-->
-<!--        }}-->
-<!--      />-->
+      <!--      <Button-->
+      <!--        icon={IconDetailsFilled}-->
+      <!--        iconProps={{ size: 'medium' }}-->
+      <!--        kind="icon"-->
+      <!--        on:click={() => {-->
+      <!--          if (doc != null) {-->
+      <!--            void openCardInSidebar(doc._id, doc)-->
+      <!--          }-->
+      <!--        }}-->
+      <!--      />-->
 
       {#if !readonly}
         <Button

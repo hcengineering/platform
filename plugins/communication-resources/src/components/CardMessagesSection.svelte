@@ -33,7 +33,10 @@
 
   const dispatch = createEventDispatcher()
 
-  let position: MessagesNavigationAnchors = navigation === MessagesNavigationAnchors.LatestMessages ? MessagesNavigationAnchors.LatestMessages : MessagesNavigationAnchors.ConversationStart
+  let position: MessagesNavigationAnchors =
+    navigation === MessagesNavigationAnchors.LatestMessages
+      ? MessagesNavigationAnchors.LatestMessages
+      : MessagesNavigationAnchors.ConversationStart
   let shouldScrollToStart = false
 
   export function navigate (id: MessagesNavigationAnchors) {
@@ -52,27 +55,25 @@
       dispatch('action', { id: 'overlay', show: true })
     }
   })
-
 </script>
 
 {#if scrollDiv != null && isContextLoaded && contentDiv != null}
   <div class="section-messages">
-            <Messages
-                    card={doc}
-                    {readonly}
-                    context={notificationContext}
-                    {scrollDiv}
-                    {contentDiv}
-                    {position}
-                    shouldScrollToStart={active && position === MessagesNavigationAnchors.ConversationStart && shouldScrollToStart}
-                    {isLoadingBefore}
-                    on:change
-                    on:loaded={() => {
-                      dispatch('action', { id: 'overlay', show: false })
-                      dispatch('loaded')
-                    }
-                       }
-            />
+    <Messages
+      card={doc}
+      {readonly}
+      context={notificationContext}
+      {scrollDiv}
+      {contentDiv}
+      {position}
+      shouldScrollToStart={active && position === MessagesNavigationAnchors.ConversationStart && shouldScrollToStart}
+      {isLoadingBefore}
+      on:change
+      on:loaded={() => {
+        dispatch('action', { id: 'overlay', show: false })
+        dispatch('loaded')
+      }}
+    />
   </div>
 {/if}
 
