@@ -32,15 +32,13 @@ export const emoticonGlobalRegex = new RegExp(`(?<!\\S)${EMOTICON_REGEX.source}(
 export const shortcodeRegex = new RegExp(`(?:^|\\s)(${SHORTCODE_REGEX.source})$`)
 export const shortcodeGlobalRegex = new RegExp(`(?<!\\S)${SHORTCODE_REGEX.source}(?!\\S)`, SHORTCODE_REGEX.flags + 'g')
 
-let availableEmojis: EmojiWithGroup[]
-
 export async function loadEmojis (lang?: string): Promise<EmojiWithGroup[]> {
   const local = lang ?? get(deviceInfo).language ?? 'en'
   const englishEmojis =
     local === 'en'
       ? await fetchEmojis('en', { version: '15.0', shortcodes: ['iamcal'] })
       : await fetchEmojis('en', { compact: true, version: '15.0', shortcodes: ['iamcal'] })
-  const languageEmojis = local === 'en' ? null : await fetchEmojis(local as Locale, { version: '15.0', shortcodes: ['iamcal'] })
+  const languageEmojis = local === 'en' ? null : await fetchEmojis(local as Locale, { version: '15.0' })
   const messages = await fetchMessages(local as Locale)
   const groups = messages.groups
   const groupKeys = new Map<number, string>(groups.map((group, index) => [index, group.key]))
@@ -56,7 +54,8 @@ export async function loadEmojis (lang?: string): Promise<EmojiWithGroup[]> {
       ? languageEmojis.map((langEmoji, index) => {
         return {
           ...langEmoji,
-          tags: [...(englishEmojis[index]?.tags ?? []), ...(langEmoji?.tags ?? [])]
+          tags: [...(englishEmojis[index]?.tags ?? []), ...(langEmoji?.tags ?? [])],
+          shortcodes: [...(englishEmojis[index]?.shortcodes ?? []), ...(langEmoji?.shortcodes ?? [])]
         }
       })
       : (englishEmojis as Emoji[])
@@ -70,14 +69,14 @@ export async function loadEmojis (lang?: string): Promise<EmojiWithGroup[]> {
 
 export async function updateEmojis (lang?: string): Promise<void> {
   const emojis = await loadEmojis(lang)
-  availableEmojis = emojis
   emojiStore.set(emojis)
 }
 
 export function getSkinnedEmoji (shortcode: string | undefined, skinTone?: number): Emoji | undefined {
   if (shortcode === undefined) return undefined
   const shortcodeSlice = shortcode.slice(1, -1)
-  const matchEmoji = availableEmojis.find((e) => e.shortcodes?.includes(shortcodeSlice))
+  const emojis = get(emojiStore)
+  const matchEmoji = emojis.find((e) => e.shortcodes?.includes(shortcodeSlice))
   if (skinTone === undefined || matchEmoji === undefined) return matchEmoji
   if (skinTone === 0) return matchEmoji
   return matchEmoji.skins === undefined ? undefined : matchEmoji.skins[skinTone - 1]
@@ -86,13 +85,15 @@ export function getSkinnedEmoji (shortcode: string | undefined, skinTone?: numbe
 export function getEmojiForShortCode (shortcode: string | undefined): string | undefined {
   if (shortcode === undefined) return undefined
   const shortcodeSlice = shortcode.slice(1, -1)
-  const result = availableEmojis.find(e => e.shortcodes?.includes(shortcodeSlice))
+  const emojis = get(emojiStore)
+  const result = emojis.find(e => e.shortcodes?.includes(shortcodeSlice))
   return result === undefined ? undefined : result.emoji
 }
 
 export function getEmojiForEmoticon (emoticon: string | undefined): string | undefined {
   if (emoticon === undefined) return undefined
-  const result = availableEmojis.find(e => Array.isArray(e.emoticon) ? e.emoticon.includes(emoticon) : e.emoticon === emoticon)
+  const emojis = get(emojiStore)
+  const result = emojis.find(e => Array.isArray(e.emoticon) ? e.emoticon.includes(emoticon) : e.emoticon === emoticon)
   return result === undefined ? undefined : result.emoji
 }
 
