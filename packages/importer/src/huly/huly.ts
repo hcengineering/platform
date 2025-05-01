@@ -15,7 +15,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Attachment } from '@hcengineering/attachment'
 import card from '@hcengineering/card'
-import contact, { Employee, type Person, SocialIdentity } from '@hcengineering/contact'
+import contact, { Employee, type Person } from '@hcengineering/contact'
 import documents, {
   ControlledDocument,
   DocumentCategory,
@@ -24,18 +24,14 @@ import documents, {
 } from '@hcengineering/controlled-documents'
 import {
   AccountUuid,
-  type Class,
-  type Doc,
   generateId,
   PersonId,
   type Ref,
   SocialIdType,
-  type Space,
   type TxOperations
 } from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
 import core from '@hcengineering/model-core'
-import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
 import tracker, { type Issue, Project } from '@hcengineering/tracker'
 import * as fs from 'fs'
 import sizeOf from 'image-size'
@@ -59,11 +55,11 @@ import {
   WorkspaceImporter
 } from '../importer/importer'
 import { type Logger } from '../importer/logger'
-import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
 import { CardsProcessor } from './cards'
-import { MetadataRegistry, MentionMetadata } from './registry'
-import { readMarkdownContent, readYamlHeader } from './parsing'
+import { UnifiedFormatParser } from './parser'
+import { HulyMarkdownPreprocessor, type AttachmentMetadata } from './preprocessor'
+import { MetadataRegistry } from './registry'
 export interface HulyComment {
   author: string
   text: string
@@ -165,175 +161,10 @@ export interface HulyOrgSpaceSettings extends HulySpaceSettings {
   qara?: string
 }
 
-class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
-  constructor (
-    private readonly urlProvider: (id: string) => string,
-    private readonly logger: Logger,
-    private readonly metadataRegistry: MetadataRegistry,
-    private readonly attachMetaByPath: Map<string, AttachmentMetadata>,
-    personsByName: Map<string, Ref<Person>>
-  ) {
-    super(personsByName)
-  }
-
-  process (json: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>): MarkupNode {
-    traverseNode(json, (node) => {
-      if (node.type === MarkupNodeType.image) {
-        this.processImageNode(node, id, spaceId)
-      } else {
-        this.processLinkMarks(node, id, spaceId)
-        this.processMentions(node)
-      }
-      return true
-    })
-    return json
-  }
-
-  private processImageNode (node: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>): void {
-    const src = node.attrs?.src
-    if (src === undefined) return
-
-    const sourcePath = this.getSourcePath(id)
-    if (sourcePath == null) return
-
-    const href = decodeURI(src as string)
-    const fullPath = path.resolve(path.dirname(sourcePath), href)
-    const attachmentMeta = this.attachMetaByPath.get(fullPath)
-
-    if (attachmentMeta === undefined) {
-      this.logger.error(`Attachment image not found for ${fullPath}`)
-      return
-    }
-
-    if (!this.metadataRegistry.hasRefMetadata(sourcePath)) {
-      this.logger.error(`Source metadata not found for ${sourcePath}`)
-      return
-    }
-
-    const sourceMeta = this.metadataRegistry.getRefMetadata(sourcePath)
-    this.updateAttachmentMetadata(fullPath, attachmentMeta, id, spaceId, sourceMeta)
-    this.alterImageNode(node, attachmentMeta.id, attachmentMeta.name)
-  }
-
-  private processLinkMarks (node: MarkupNode, id: Ref<Doc>, spaceId: Ref<Space>): void {
-    traverseNodeMarks(node, (mark) => {
-      if (mark.type !== MarkupMarkType.link) return
-
-      const sourcePath = this.getSourcePath(id)
-      if (sourcePath == null) return
-
-      const href = decodeURI(mark.attrs?.href ?? '')
-      const fullPath = path.resolve(path.dirname(sourcePath), href)
-
-      if (this.metadataRegistry.hasRefMetadata(fullPath)) {
-        const targetDocMeta = this.metadataRegistry.getRefMetadata(fullPath)
-        this.alterMentionNode(node, targetDocMeta)
-      } else if (this.attachMetaByPath.has(fullPath)) {
-        const attachmentMeta = this.attachMetaByPath.get(fullPath)
-        if (attachmentMeta !== undefined) {
-          this.alterAttachmentLinkNode(node, attachmentMeta)
-          if (this.metadataRegistry.hasRefMetadata(sourcePath)) {
-            const sourceMeta = this.metadataRegistry.getRefMetadata(sourcePath)
-            this.updateAttachmentMetadata(fullPath, attachmentMeta, id, spaceId, sourceMeta)
-          }
-        }
-      } else {
-        this.logger.log('Unknown link type, leave it as is: ' + href)
-      }
-    })
-  }
-
-  private alterImageNode (node: MarkupNode, id: string, name: string): void {
-    node.type = MarkupNodeType.image
-    if (node.attrs !== undefined) {
-      node.attrs = {
-        'file-id': id,
-        src: this.urlProvider(id),
-        width: node.attrs.width ?? null,
-        height: node.attrs.height ?? null,
-        align: node.attrs.align ?? null,
-        alt: name,
-        title: name
-      }
-      const mimeType = this.getContentType(name)
-      if (mimeType !== undefined) {
-        node.attrs['data-file-type'] = mimeType
-      }
-    }
-  }
-
-  private alterMentionNode (node: MarkupNode, targetMeta: MentionMetadata): void {
-    node.type = MarkupNodeType.reference
-    node.attrs = {
-      id: targetMeta.id,
-      label: targetMeta.refTitle,
-      objectclass: targetMeta.class,
-      text: '',
-      content: ''
-    }
-  }
-
-  private alterAttachmentLinkNode (node: MarkupNode, targetMeta: AttachmentMetadata): void {
-    const stats = fs.statSync(targetMeta.path)
-    node.type = MarkupNodeType.file
-    node.attrs = {
-      'file-id': targetMeta.id,
-      'data-file-name': targetMeta.name,
-      'data-file-size': stats.size,
-      'data-file-href': targetMeta.path
-    }
-    const mimeType = this.getContentType(targetMeta.name)
-    if (mimeType !== undefined) {
-      node.attrs['data-file-type'] = mimeType
-    }
-  }
-
-  private getContentType (fileName: string): string | undefined {
-    const mimeType = contentType(fileName)
-    return mimeType !== false ? mimeType : undefined
-  }
-
-  private getSourcePath (id: Ref<Doc>): string | null {
-    const sourcePath = this.metadataRegistry.getPath(id)
-    if (sourcePath === undefined) {
-      this.logger.error(`Source file path not found for ${id}`)
-      return null
-    }
-    return sourcePath
-  }
-
-  private updateAttachmentMetadata (
-    fullPath: string,
-    attachmentMeta: AttachmentMetadata,
-    id: Ref<Doc>,
-    spaceId: Ref<Space>,
-    sourceMeta: MentionMetadata
-  ): void {
-    this.attachMetaByPath.set(fullPath, {
-      ...attachmentMeta,
-      spaceId,
-      parentId: id,
-      parentClass: sourceMeta.class as Ref<Class<Doc<Space>>>
-    })
-  }
-}
-
-interface AttachmentMetadata {
-  id: Ref<Attachment>
-  name: string
-  path: string
-  parentId?: Ref<Doc>
-  parentClass?: Ref<Class<Doc<Space>>>
-  spaceId?: Ref<Space>
-}
-
 export class HulyFormatImporter {
-  private readonly importerEmailPlaceholder = 'newuser@huly.io'
-  private readonly importerNamePlaceholder = 'New User'
-
-  private personsByName = new Map<string, Ref<Person>>()
+  private readonly personsByName = new Map<string, Ref<Person>>()
   private employeesByName = new Map<string, Ref<Employee>>()
-  private accountsByEmail = new Map<string, AccountUuid>()
+  private readonly accountsByName = new Map<string, AccountUuid>()
   private readonly personIdByEmail = new Map<string, PersonId>()
   private controlledDocumentCategories = new Map<string, Ref<DocumentCategory>>()
 
@@ -341,20 +172,20 @@ export class HulyFormatImporter {
 
   private readonly metadataRegistry = new MetadataRegistry()
   private readonly cardsProcessor: CardsProcessor
+  private readonly parser: UnifiedFormatParser
 
   constructor (
     private readonly client: TxOperations,
     private readonly fileUploader: FileUploader,
     private readonly logger: Logger,
-    private readonly importerSocialId?: PersonId,
-    private readonly importerPerson?: Ref<Person>
+    variables?: Record<string, any>
   ) {
-    this.cardsProcessor = new CardsProcessor(this.metadataRegistry, this.logger)
+    this.parser = new UnifiedFormatParser(variables ?? {})
+    this.cardsProcessor = new CardsProcessor(this.metadataRegistry, this.parser, this.logger)
   }
 
   private async initCaches (): Promise<void> {
     await this.cachePersonsByNames()
-    await this.cacheAccountsByEmails()
     await this.cacheEmployeesByName()
     await this.cacheControlledDocumentCategories()
   }
@@ -485,7 +316,7 @@ export class HulyFormatImporter {
 
       try {
         this.logger.log(`Processing ${spaceName}...`)
-        const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as HulySpaceSettings
+        const spaceConfig = this.parser.readYaml(yamlPath) as HulySpaceSettings
 
         if (spaceConfig?.class === undefined) {
           this.logger.error(`Skipping ${spaceName}: not a space - no class specified`)
@@ -560,7 +391,7 @@ export class HulyFormatImporter {
 
     for (const issueFile of issueFiles) {
       const issuePath = path.join(currentPath, issueFile)
-      const issueHeader = (await readYamlHeader(issuePath)) as HulyIssueHeader
+      const issueHeader = this.parser.readYamlHeader(issuePath) as HulyIssueHeader
 
       if (issueHeader.class === undefined) {
         this.logger.error(`Skipping ${issueFile}: not an issue`)
@@ -578,7 +409,7 @@ export class HulyFormatImporter {
           class: tracker.class.Issue,
           title: issueHeader.title,
           number: parseInt(issueNumber ?? 'NaN'),
-          descrProvider: async () => await readMarkdownContent(issuePath),
+          descrProvider: () => Promise.resolve(this.parser.readMarkdownContent(issuePath)),
           status: { name: issueHeader.status },
           priority: issueHeader.priority,
           estimation: issueHeader.estimation,
@@ -606,9 +437,6 @@ export class HulyFormatImporter {
       return undefined
     }
 
-    if (name === this.importerNamePlaceholder && this.importerPerson != null) {
-      return this.importerPerson
-    }
     const person = this.personsByName.get(name)
     if (person === undefined) {
       throw new Error(`Person not found: ${name}`)
@@ -617,10 +445,6 @@ export class HulyFormatImporter {
   }
 
   private async getPersonIdByEmail (email: string): Promise<PersonId> {
-    if (email === this.importerEmailPlaceholder && this.importerSocialId != null) {
-      return this.importerSocialId
-    }
-
     const personId = this.personIdByEmail.get(email)
     if (personId !== undefined) {
       return personId
@@ -640,10 +464,10 @@ export class HulyFormatImporter {
     return socialId._id
   }
 
-  private findAccountByEmail (email: string): AccountUuid {
-    const account = this.accountsByEmail.get(email)
+  private findAccountByName (name: string): AccountUuid {
+    const account = this.accountsByName.get(name)
     if (account === undefined) {
-      throw new Error(`Account not found: ${email}`)
+      throw new Error(`Account not found: ${name}`)
     }
     return account
   }
@@ -666,7 +490,7 @@ export class HulyFormatImporter {
 
     for (const docFile of docFiles) {
       const docPath = path.join(currentPath, docFile)
-      const docHeader = (await readYamlHeader(docPath)) as HulyDocumentHeader
+      const docHeader = this.parser.readYamlHeader(docPath) as HulyDocumentHeader
 
       if (docHeader.class === undefined) {
         this.logger.error(`Skipping ${docFile}: not a document`)
@@ -680,7 +504,7 @@ export class HulyFormatImporter {
           id: this.metadataRegistry.getRef(docPath) as Ref<Document>,
           class: document.class.Document,
           title: docHeader.title,
-          descrProvider: async () => await readMarkdownContent(docPath),
+          descrProvider: () => Promise.resolve(this.parser.readMarkdownContent(docPath)),
           subdocs: [] // Will be added via builder
         }
 
@@ -707,7 +531,7 @@ export class HulyFormatImporter {
 
     for (const docFile of docFiles) {
       const docPath = path.join(currentPath, docFile)
-      const docHeader = (await readYamlHeader(docPath)) as HulyControlledDocumentHeader | HulyDocumentTemplateHeader
+      const docHeader = this.parser.readYamlHeader(docPath) as HulyControlledDocumentHeader | HulyDocumentTemplateHeader
 
       if (docHeader.class === undefined) {
         this.logger.error(`Skipping ${docFile}: not a document`)
@@ -788,55 +612,51 @@ export class HulyFormatImporter {
     )
   }
 
-  private async processProject (projectHeader: HulyProjectSettings): Promise<ImportProject> {
+  private async processProject (data: HulyProjectSettings): Promise<ImportProject> {
     return {
       class: tracker.class.Project,
-      id: projectHeader.id as Ref<Project>,
-      title: projectHeader.title,
-      identifier: projectHeader.identifier,
-      private: projectHeader.private ?? false,
-      autoJoin: projectHeader.autoJoin ?? true,
-      archived: projectHeader.archived ?? false,
-      description: projectHeader.description,
-      emoji: projectHeader.emoji,
-      defaultIssueStatus:
-        projectHeader.defaultIssueStatus !== undefined ? { name: projectHeader.defaultIssueStatus } : undefined,
-      owners:
-        projectHeader.owners !== undefined ? projectHeader.owners.map((email) => this.findAccountByEmail(email)) : [],
-      members:
-        projectHeader.members !== undefined ? projectHeader.members.map((email) => this.findAccountByEmail(email)) : [],
+      id: data.id as Ref<Project>,
+      title: data.title,
+      identifier: data.identifier,
+      private: data.private ?? false,
+      autoJoin: data.autoJoin ?? true,
+      archived: data.archived ?? false,
+      description: data.description,
+      emoji: data.emoji,
+      defaultIssueStatus: data.defaultIssueStatus !== undefined ? { name: data.defaultIssueStatus } : undefined,
+      owners: data.owners !== undefined ? data.owners.map((name) => this.findAccountByName(name)) : [],
+      members: data.members !== undefined ? data.members.map((name) => this.findAccountByName(name)) : [],
       docs: []
     }
   }
 
-  private async processTeamspace (spaceHeader: HulyTeamspaceSettings): Promise<ImportTeamspace> {
+  private async processTeamspace (data: HulyTeamspaceSettings): Promise<ImportTeamspace> {
     return {
       class: document.class.Teamspace,
-      title: spaceHeader.title,
-      private: spaceHeader.private ?? false,
-      autoJoin: spaceHeader.autoJoin ?? true,
-      archived: spaceHeader.archived ?? false,
-      description: spaceHeader.description,
-      emoji: spaceHeader.emoji,
-      owners: spaceHeader.owners !== undefined ? spaceHeader.owners.map((email) => this.findAccountByEmail(email)) : [],
-      members:
-        spaceHeader.members !== undefined ? spaceHeader.members.map((email) => this.findAccountByEmail(email)) : [],
+      title: data.title,
+      private: data.private ?? false,
+      autoJoin: data.autoJoin ?? true,
+      archived: data.archived ?? false,
+      description: data.description,
+      emoji: data.emoji,
+      owners: data.owners !== undefined ? data.owners.map((name) => this.findAccountByName(name)) : [],
+      members: data.members !== undefined ? data.members.map((name) => this.findAccountByName(name)) : [],
       docs: []
     }
   }
 
-  private async processOrgSpace (spaceHeader: HulyOrgSpaceSettings): Promise<ImportOrgSpace> {
+  private async processOrgSpace (data: HulyOrgSpaceSettings): Promise<ImportOrgSpace> {
     return {
       class: documents.class.OrgSpace,
-      title: spaceHeader.title,
-      private: spaceHeader.private ?? false,
-      archived: spaceHeader.archived ?? false,
-      description: spaceHeader.description,
-      owners: spaceHeader.owners?.map((email) => this.findAccountByEmail(email)) ?? [],
-      members: spaceHeader.members?.map((email) => this.findAccountByEmail(email)) ?? [],
-      qualified: spaceHeader.qualified !== undefined ? this.findAccountByEmail(spaceHeader.qualified) : undefined,
-      manager: spaceHeader.manager !== undefined ? this.findAccountByEmail(spaceHeader.manager) : undefined,
-      qara: spaceHeader.qara !== undefined ? this.findAccountByEmail(spaceHeader.qara) : undefined,
+      title: data.title,
+      private: data.private ?? false,
+      archived: data.archived ?? false,
+      description: data.description,
+      owners: data.owners?.map((name) => this.findAccountByName(name)) ?? [],
+      members: data.members?.map((name) => this.findAccountByName(name)) ?? [],
+      qualified: data.qualified !== undefined ? this.findAccountByName(data.qualified) : undefined,
+      manager: data.manager !== undefined ? this.findAccountByName(data.manager) : undefined,
+      qara: data.qara !== undefined ? this.findAccountByName(data.qara) : undefined,
       docs: []
     }
   }
@@ -876,10 +696,10 @@ export class HulyFormatImporter {
       author,
       owner,
       abstract: header.abstract,
-      reviewers: header.reviewers?.map((email) => this.findEmployeeByName(email)) ?? [],
-      approvers: header.approvers?.map((email) => this.findEmployeeByName(email)) ?? [],
-      coAuthors: header.coAuthors?.map((email) => this.findEmployeeByName(email)) ?? [],
-      descrProvider: async () => await readMarkdownContent(docPath),
+      reviewers: header.reviewers?.map((name) => this.findEmployeeByName(name)) ?? [],
+      approvers: header.approvers?.map((name) => this.findEmployeeByName(name)) ?? [],
+      coAuthors: header.coAuthors?.map((name) => this.findEmployeeByName(name)) ?? [],
+      descrProvider: () => Promise.resolve(this.parser.readMarkdownContent(docPath)),
       ccReason: header.changeControl?.reason,
       ccImpact: header.changeControl?.impact,
       ccDescription: header.changeControl?.description,
@@ -919,10 +739,10 @@ export class HulyFormatImporter {
       author,
       owner,
       abstract: header.abstract,
-      reviewers: header.reviewers?.map((email) => this.findEmployeeByName(email)) ?? [],
-      approvers: header.approvers?.map((email) => this.findEmployeeByName(email)) ?? [],
-      coAuthors: header.coAuthors?.map((email) => this.findEmployeeByName(email)) ?? [],
-      descrProvider: async () => await readMarkdownContent(docPath),
+      reviewers: header.reviewers?.map((name) => this.findEmployeeByName(name)) ?? [],
+      approvers: header.approvers?.map((name) => this.findEmployeeByName(name)) ?? [],
+      coAuthors: header.coAuthors?.map((name) => this.findEmployeeByName(name)) ?? [],
+      descrProvider: () => Promise.resolve(this.parser.readMarkdownContent(docPath)),
       ccReason: header.changeControl?.reason,
       ccImpact: header.changeControl?.impact,
       ccDescription: header.changeControl?.description,
@@ -930,54 +750,14 @@ export class HulyFormatImporter {
     }
   }
 
-  private async cacheAccountsByEmails (): Promise<void> {
-    const employees = await this.client.findAll(
-      contact.mixin.Employee,
-      { active: true },
-      { lookup: { _id: { socialIds: contact.class.SocialIdentity } } }
-    )
-
-    this.accountsByEmail = employees.reduce((map, employee) => {
-      employee.$lookup?.socialIds?.forEach((socialId) => {
-        if ((socialId as SocialIdentity).type === SocialIdType.EMAIL) {
-          map.set((socialId as SocialIdentity).value, employee.personUuid)
-        }
-      })
-
-      return map
-    }, new Map())
-  }
-
-  private async cachePersonIdsByEmails (): Promise<void> {
-    const employees = await this.client.findAll(
-      contact.mixin.Employee,
-      { active: true },
-      { lookup: { _id: { socialIds: contact.class.SocialIdentity } } }
-    )
-
-    this.accountsByEmail = employees.reduce((map, employee) => {
-      employee.$lookup?.socialIds?.forEach((socialId) => {
-        if ((socialId as SocialIdentity).type === SocialIdType.EMAIL) {
-          map.set((socialId as SocialIdentity).value, employee.personUuid)
-        }
-      })
-
-      return map
-    }, new Map())
-  }
-
   private async cachePersonsByNames (): Promise<void> {
-    this.personsByName = (await this.client.findAll(contact.class.Person, {}))
-      .map((person) => {
-        return {
-          _id: person._id,
-          name: person.name.split(',').reverse().join(' ')
-        }
-      })
-      .reduce((refByName, person) => {
-        refByName.set(person.name, person._id)
-        return refByName
-      }, new Map())
+    (await this.client.findAll(contact.class.Person, {})).forEach((person) => {
+      const name = person.name.split(',').reverse().join(' ')
+      this.personsByName.set(name, person._id)
+      if (person.personUuid !== undefined) {
+        this.accountsByName.set(name, person.personUuid as AccountUuid)
+      }
+    })
   }
 
   private async cacheEmployeesByName (): Promise<void> {

@@ -205,9 +205,7 @@ export class WorkspaceInitializer {
     try {
       const uploader = new StorageFileUploader(this.ctx, this.storageAdapter, this.wsIds)
       const initPath = path.resolve(this.initRepoDir, step.path)
-      // eslint-disable-next-line no-template-curly-in-string
-      const initPerson = vars[`\${${this.creatorPersonVar}}`]
-      const importer = new HulyFormatImporter(this.client, uploader, logger, this.socialId, initPerson)
+      const importer = new HulyFormatImporter(this.client, uploader, logger, vars)
       await importer.importFolder(initPath)
     } catch (error) {
       logger.error('Import failed', error)
