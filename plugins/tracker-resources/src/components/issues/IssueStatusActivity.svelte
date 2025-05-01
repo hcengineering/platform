@@ -86,6 +86,6 @@
   </span>
 </Row>
 {#each displaySt as st}
-  <StatusPresenter value={st.status} space={issue.space} />
+  <StatusPresenter value={st.status} taskType={issue.kind} space={issue.space} />
   <Duration value={st.duration} />
 {/each}
