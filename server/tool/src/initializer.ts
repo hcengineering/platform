@@ -230,7 +230,7 @@ export class WorkspaceInitializer {
     vars: Record<string, any>,
     defaults: Map<Ref<Class<T>>, Props<T>>
   ): Promise<void> {
-    const _id = generateId<T>()
+    const _id = step.data._id ?? generateId<T>()
     if (step.resultVariable !== undefined) {
       vars[`\${${step.resultVariable}}`] = _id
     }
@@ -249,7 +249,7 @@ export class WorkspaceInitializer {
       }
     }
 
-    await this.create(step._class, data, _id)
+    await this.create(step._class, data, _id as Ref<T>)
   }
 
   private parseMarkdown (text: string): string {
