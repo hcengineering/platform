@@ -13,14 +13,14 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
-    "@types/bun": "^1.2.10",
-    "bun-types": "^1.2.10",
+    "@types/bun": "^1.2.11",
+    "bun-types": "^1.2.11",
     "eslint": "^9.25.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.6",
     "prettier": "^3.5.3",
-    "typescript-eslint": "^8.31.0",
-    "turbo": "^2.5.0"
+    "typescript-eslint": "^8.31.1",
+    "turbo": "^2.5.2"
   },
   "packageManager": "bun@1.2.9"
 }
