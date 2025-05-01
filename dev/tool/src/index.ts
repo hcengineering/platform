@@ -1561,11 +1561,7 @@ export function devTool (
         workspaces = workspaces
           .filter((p) => isActiveMode(p.mode))
           .filter((p) => cmd.workspace === '' || targetWorkspaces.includes(p.workspace))
-          .filter(
-            (p) =>
-              !cmd.migrated ||
-              (p.region === 'europe' && p.targetRegion === 'europe' && p.message === 'restore-done done')
-          )
+          .filter((p) => !cmd.migrated || (p.region === 'europe' && p.targetRegion === 'europe'))
           .sort((a, b) => b.lastVisit - a.lastVisit)
       })
 
