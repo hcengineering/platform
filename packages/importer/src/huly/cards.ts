@@ -233,7 +233,7 @@ export class CardsProcessor {
         const cardPath = path.join(currentDir, entry.name)
         const { class: cardType, ...cardProps } = await readYamlHeader(cardPath)
 
-        if (cardType.startsWith('card:types:') === false) {
+        if (cardType !== undefined && cardType.startsWith('card:types:') === false) {
           throw new Error('Unsupported card type: ' + cardType + ' in ' + cardPath)
         }
 
