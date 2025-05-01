@@ -35,7 +35,8 @@ interface Config {
   DgVadEvents: boolean
   DgPunctuate: boolean
   DgSmartFormat: boolean
-  DgNoDelay: boolean
+  DgNoDelay: boolean,
+  DgSampleRate: number
 }
 
 const config: Config = (() => {
@@ -59,7 +60,8 @@ const config: Config = (() => {
     DgPunctuate: process.env.DG_PUNCTUATE === 'true',
     DgSmartFormat: process.env.DG_SMART_FORMAT === 'true',
     DgUtteranceEndMs: parseInt(process.env.DG_UTTERANCE_END_MS ?? '0'),
-    DgNoDelay: process.env.DG_NO_DELAY === 'true'
+    DgNoDelay: process.env.DG_NO_DELAY === 'true',
+    DgSampleRate: parseInt(process.env.DG_SAMPLE_RATE ?? '16000')
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)
