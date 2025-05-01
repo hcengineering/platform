@@ -17,7 +17,13 @@ import type { AnySvelteComponent } from '../..'
 import type { Emoji } from 'emojibase'
 
 export type EmojiWithGroup = Emoji & { key: string }
-export type Emojis = Emoji | EmojiWithGroup
+
+export interface CustomEmoji {
+  shortcode: string
+  label: string
+  url: string
+  tags?: string[]
+}
 
 export interface EmojiCategory {
   id: string

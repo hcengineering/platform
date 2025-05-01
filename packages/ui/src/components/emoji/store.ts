@@ -13,11 +13,9 @@
 // limitations under the License.
 //
 import { writable, derived } from 'svelte/store'
-import type { Emoji } from 'emojibase'
 import type { EmojiWithGroup } from '.'
 
 export const emojiStore = writable<EmojiWithGroup[]>([])
-export const emojiComponents = writable<Emoji[]>([])
 export const searchEmoji = writable<string>('')
 
 export const resultEmojis = derived([emojiStore, searchEmoji], ([emojis, search]) => {
@@ -28,17 +26,4 @@ export const resultEmojis = derived([emojiStore, searchEmoji], ([emojis, search]
           emoji.label.toLowerCase().includes(search.toLowerCase())
     )
     : emojis
-})
-
-export const groupsResultEmojis = derived(resultEmojis, (result) => {
-  const keys = new Set(result.map((res) => res?.key ?? ''))
-  const groups: string[] = keys?.size > 0 ? [...keys] : ['']
-  return {
-    emojis: new Map<string, EmojiWithGroup[]>(
-      groups.map((group) => {
-        return [group, result.filter((res) => res.key === group)]
-      })
-    ),
-    groups
-  }
 })

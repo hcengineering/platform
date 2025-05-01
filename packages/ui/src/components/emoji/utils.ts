@@ -13,15 +13,15 @@
 // limitations under the License.
 //
 import { get } from 'svelte/store'
+import type { Emoji, Locale } from 'emojibase'
 import { fetchEmojis, fetchMessages } from 'emojibase'
 import EMOJI_REGEX from 'emojibase-regex'
 import EMOTICON_REGEX from 'emojibase-regex/emoticon'
 import SHORTCODE_REGEX from 'emojibase-regex/shortcode'
-import type { Emoji, Locale } from 'emojibase'
 import { getCurrentAccount } from '@hcengineering/core'
 import { deviceOptionsStore as deviceInfo } from '../..'
-import { emojiStore, emojiComponents, emojiCategories, skinTonesCodes } from '.'
-import type { EmojiWithGroup, EmojiHierarchy } from '.'
+import type { EmojiWithGroup } from '.'
+import { emojiCategories, emojiStore } from '.'
 
 export const emojiRegex = EMOJI_REGEX
 export const emojiGlobalRegex = new RegExp(EMOJI_REGEX.source, EMOJI_REGEX.flags + 'g')
@@ -32,12 +32,9 @@ export const emoticonGlobalRegex = new RegExp(`(?<!\\S)${EMOTICON_REGEX.source}(
 export const shortcodeRegex = new RegExp(`(?:^|\\s)(${SHORTCODE_REGEX.source})$`)
 export const shortcodeGlobalRegex = new RegExp(`(?<!\\S)${SHORTCODE_REGEX.source}(?!\\S)`, SHORTCODE_REGEX.flags + 'g')
 
-let availableEmojis: Emoji[]
+let availableEmojis: EmojiWithGroup[]
 
-export async function loadEmojis (lang?: string): Promise<{
-  emojis: EmojiWithGroup[]
-  components: Emoji[]
-}> {
+export async function loadEmojis (lang?: string): Promise<EmojiWithGroup[]> {
   const local = lang ?? get(deviceInfo).language ?? 'en'
   const englishEmojis =
     local === 'en'
@@ -64,27 +61,32 @@ export async function loadEmojis (lang?: string): Promise<{
       })
       : (englishEmojis as Emoji[])
 
-  return {
-    emojis: emojis
-      .filter((e) => e.group !== 2 && e.group !== undefined)
-      .map((e) => {
-        return { ...e, key: categories.get(groupKeys.get(e?.group ?? 0) ?? '') ?? '' }
-      }),
-    components: emojis.filter((e) => e.group === 2)
-  }
+  return emojis
+    .filter((e) => e.group !== 2 && e.group !== undefined)
+    .map((e) => {
+      return { ...e, key: categories.get(groupKeys.get(e?.group ?? 0) ?? '') ?? '' }
+    })
 }
 
 export async function updateEmojis (lang?: string): Promise<void> {
-  const { emojis, components } = await loadEmojis(lang)
+  const emojis = await loadEmojis(lang)
   availableEmojis = emojis
   emojiStore.set(emojis)
-  emojiComponents.set(components)
+}
+
+export function getSkinnedEmoji (shortcode: string | undefined, skinTone?: number): Emoji | undefined {
+  if (shortcode === undefined) return undefined
+  const shortcodeSlice = shortcode.slice(1, -1)
+  const matchEmoji = availableEmojis.find((e) => e.shortcodes?.includes(shortcodeSlice))
+  if (skinTone === undefined || matchEmoji === undefined) return matchEmoji
+  if (skinTone === 0) return matchEmoji
+  return matchEmoji.skins === undefined ? undefined : matchEmoji.skins[skinTone - 1]
 }
 
 export function getEmojiForShortCode (shortcode: string | undefined): string | undefined {
-  shortcode = shortcode?.slice(1, -1)
   if (shortcode === undefined) return undefined
-  const result = availableEmojis.find(e => e.shortcodes?.includes(shortcode))
+  const shortcodeSlice = shortcode.slice(1, -1)
+  const result = availableEmojis.find(e => e.shortcodes?.includes(shortcodeSlice))
   return result === undefined ? undefined : result.emoji
 }
 
@@ -99,9 +101,8 @@ function getEmojisLocalStorageKey (suffix: string = 'frequently'): string {
   return `emojis.${suffix}.${me.uuid}`
 }
 
-export const removeFrequentlyEmojis = (_hexcode: string): void => {
-  const emoji = getEmoji(_hexcode)
-  const hexcode = emoji?.parent?.hexcode ?? emoji?.emoji.hexcode
+export const removeFrequentlyEmojis = (emoji: EmojiWithGroup): void => {
+  const hexcode = emoji.hexcode
   if (hexcode === undefined) return
 
   const frequentlyEmojisKey = getEmojisLocalStorageKey()
@@ -116,10 +117,9 @@ export const removeFrequentlyEmojis = (_hexcode: string): void => {
     }
   }
 }
-export const addFrequentlyEmojis = (_hexcode: string): void => {
-  const emoji = getEmoji(_hexcode)
-  const hexcode = emoji?.parent?.hexcode ?? emoji?.emoji.hexcode
-  if (hexcode === undefined) return
+export const addFrequentlyEmojis = (emoji: EmojiWithGroup): void => {
+  if (emoji === undefined) return
+  const hexcode = emoji.hexcode
 
   const frequentlyEmojisKey = getEmojisLocalStorageKey()
   const frequentlyEmojis = window.localStorage.getItem(frequentlyEmojisKey)
@@ -146,18 +146,8 @@ export const getFrequentlyEmojis = (): EmojiWithGroup[] | undefined => {
   try {
     const parsedEmojis = JSON.parse(frequentlyEmojis)
     if (!Array.isArray(parsedEmojis)) return undefined
-
-    const res: EmojiWithGroup[] = []
-
-    for (const val of parsedEmojis) {
-      const map = getEmoji(val.hexcode)
-      const emoji = map?.parent ?? map?.emoji
-      if (emoji !== undefined) {
-        res.push(emoji)
-      }
-    }
-
-    return res
+    const emojis = get(emojiStore)
+    return emojis.filter(e => parsedEmojis.find(pe => pe.hexcode === e.hexcode) !== undefined)
   } catch (e) {
     console.error(e)
     return undefined
@@ -179,32 +169,4 @@ export const getSkinTone = (): number => {
     console.error(e)
     return 0
   }
-}
-export const generateSkinToneEmojis = (baseEmoji: number | number[]): string[] => {
-  const isArray = Array.isArray(baseEmoji)
-  return [
-    String.fromCodePoint(...(isArray ? baseEmoji : [baseEmoji])),
-    ...skinTonesCodes.map((skinTone) => {
-      return String.fromCodePoint(...(isArray ? baseEmoji : [baseEmoji]), skinTone)
-    })
-  ]
-}
-
-export const getEmojiMap = (): Map<string, EmojiHierarchy> | undefined => {
-  const result = new Map<string, EmojiHierarchy>()
-  const emojis = get(emojiStore)
-
-  emojis.forEach((emoji) => {
-    result.set(emoji.hexcode, { emoji })
-    emoji.skins?.forEach((skin) => result.set(skin.hexcode, { emoji: { ...skin, key: emoji.key }, parent: emoji }))
-  })
-  return result
-}
-export const getEmoji = (hexcode: string): EmojiHierarchy | undefined => {
-  return getEmojiMap()?.get(hexcode)
-}
-export const getEmojiCode = (e: number | number[] | string | Emoji | EmojiWithGroup): number | number[] => {
-  return typeof e === 'number' || Array.isArray(e)
-    ? e
-    : (typeof e === 'object' ? e.hexcode : e).split('-').map((h) => parseInt(h, 16))
 }

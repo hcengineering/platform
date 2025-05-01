@@ -6,7 +6,6 @@
   import { createEventDispatcher } from 'svelte'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { tooltip, capitalizeFirstLetter, type EmojiWithGroup, type LabelAndProps } from '../../'
-  import { getEmoji } from '.'
   import { type Emoji } from 'emojibase'
 
   export let emoji: EmojiWithGroup
@@ -18,14 +17,13 @@
 
   const dispatch = createEventDispatcher()
 
-  const getSkinsCount = (e: Emoji | EmojiWithGroup): number | undefined => {
+  const getSkinsCount = (e: EmojiWithGroup): number | undefined => {
     return Array.isArray(e.skins) ? e.skins.length : undefined
   }
 
   let displayedEmoji: Emoji | EmojiWithGroup
-  $: _emoji = (getSkinsCount(emoji) ?? 0) > 0 ? emoji : getEmoji(emoji.hexcode)?.parent ?? emoji
-  $: skinIndex = _emoji?.skins?.findIndex((skin) => skin.tone === skinTone) ?? -1
-  $: displayedEmoji = skinTone > 0 && Array.isArray(_emoji.skins) && skinIndex > -1 ? _emoji.skins[skinIndex] : _emoji
+  $: skinIndex = emoji?.skins?.findIndex((skin) => skin.tone === skinTone) ?? -1
+  $: displayedEmoji = skinTone > 0 && Array.isArray(emoji.skins) && skinIndex > -1 ? emoji.skins[skinIndex] : emoji
 </script>
 
 {#if emoji}
@@ -34,9 +32,9 @@
     class="hulyPopupEmoji-button"
     class:preview
     class:selected
-    class:skins={_emoji?.skins !== undefined && _emoji.skins.length === 5}
-    class:constructor={_emoji?.skins !== undefined && _emoji.skins.length > 5}
-    data-skins={getSkinsCount(_emoji)}
+    class:skins={emoji?.skins !== undefined && emoji.skins.length === 5}
+    class:constructor={emoji?.skins !== undefined && emoji.skins.length > 5}
+    data-skins={getSkinsCount(emoji)}
     {disabled}
     on:touchstart
     on:contextmenu

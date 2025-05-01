@@ -4,7 +4,6 @@
   // Licensed under the Eclipse Public License v2.0 (SPDX: EPL-2.0).
   //
   import { createEventDispatcher, onMount, onDestroy } from 'svelte'
-  import type { Emoji } from 'emojibase'
   import {
     Scroller,
     SearchInput,
@@ -13,18 +12,16 @@
     showPopup,
     eventToHTMLElement,
     ButtonBase,
-    closeTooltip
+    closeTooltip, getSkinnedEmoji
   } from '../../'
   import plugin from '../../plugin'
   import {
     searchEmoji,
     emojiStore,
-    generateSkinToneEmojis,
     emojiCategories,
     getFrequentlyEmojis,
     addFrequentlyEmojis,
     removeFrequentlyEmojis,
-    getEmoji,
     getSkinTone,
     setSkinTone
   } from '.'
@@ -100,25 +97,23 @@
     if (selectedCategory !== undefined) currentCategory = selectedCategory
   }
 
-  const sendEmoji = (emoji: Emoji | EmojiWithGroup): void => {
+  const sendEmoji = (emoji: EmojiWithGroup): void => {
     selected = emoji.emoji
-    addFrequentlyEmojis(emoji.hexcode)
+    addFrequentlyEmojis(emoji)
     dispatch('close', {
       emoji: emoji.emoji,
       codes: emoji.hexcode.split('-').map((hc) => parseInt(hc, 16))
     })
   }
 
-  const selectedEmoji = (event: CustomEvent<{ detail: EmojiWithGroup }>): void => {
+  const selectedEmoji = (event: CustomEvent<EmojiWithGroup>): void => {
     if (event.detail === undefined || typeof event.detail !== 'object') return
-    const detail = event.detail as unknown as EmojiWithGroup
-    sendEmoji(detail)
+    sendEmoji(event.detail)
   }
 
   function openContextMenu (event: TouchEvent | MouseEvent, _emoji: EmojiWithGroup, remove: boolean): void {
     event.preventDefault()
-    const temp = getEmoji(_emoji.hexcode)
-    const emoji = temp?.parent ?? temp?.emoji
+    const emoji = _emoji
     if (emoji === undefined) return
 
     clearTimer()
@@ -127,9 +122,9 @@
       ActionsPopup,
       { emoji, remove },
       eventToHTMLElement(event),
-      (result: 'remove' | Emoji | EmojiWithGroup) => {
+      (result: 'remove' | EmojiWithGroup) => {
         if (result === 'remove') {
-          removeFrequentlyEmojis(emoji.hexcode)
+          removeFrequentlyEmojis(emoji)
           const index = emojisCat.findIndex((ec) => ec.id === 'frequently-used')
           if (index > -1) emojisCat[index].emojis = getFrequentlyEmojis()
           emojisCat = emojisCat.filter(
@@ -171,7 +166,7 @@
 
   const showSkinMenu = (event: MouseEvent): void => {
     shownSTM = true
-    showPopup(SkinTonePopup, { emoji: 0x1f590, selected: skinTone }, eventToHTMLElement(event), (result) => {
+    showPopup(SkinTonePopup, { emoji: getSkinnedEmoji(':hand:'), selected: skinTone }, eventToHTMLElement(event), (result) => {
       if (typeof result === 'number') {
         skinTone = result
         setSkinTone(skinTone)
@@ -270,7 +265,7 @@
       tooltip={{ label: plugin.string.DefaultSkinTone }}
       on:click={showSkinMenu}
     >
-      <span style:font-size={'1.5rem'}>{generateSkinToneEmojis(0x1f590)[skinTone]}</span>
+      <span style:font-size={'1.5rem'}>{getSkinnedEmoji(':hand:', skinTone)?.emoji}</span>
     </ButtonBase>
   </div>
   <Scroller

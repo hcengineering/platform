@@ -6,16 +6,16 @@
   import { createEventDispatcher } from 'svelte'
   import type { Emoji } from 'emojibase'
   import { Label, closeTooltip, ModernCheckbox } from '../../'
-  import { generateSkinToneEmojis, skinTones, getEmojiCode } from '.'
+  import { skinTones } from '.'
   import type { EmojiWithGroup } from '.'
 
-  export let emoji: number | number[] | string | Emoji | EmojiWithGroup
+  export let emoji: EmojiWithGroup
   export let selected: number
 
   const dispatch = createEventDispatcher()
   closeTooltip()
 
-  const skins: string[] = generateSkinToneEmojis(getEmojiCode(emoji))
+  const skins: Emoji[] = emoji.skins !== undefined ? [emoji, ...emoji.skins] : []
 </script>
 
 <div class="hulyPopup-container noPadding">
@@ -31,7 +31,7 @@
           dispatch('close', index)
         }}
       >
-        <span style:font-size={'1.5rem'}>{skin}</span>
+        <span style:font-size={'1.5rem'}>{skin.emoji}</span>
         {#if label}<span class="hulyPopup-row__label"><Label {label} /></span>{/if}
         {#if disabled}<span class="hulyPopup-row__keys"><ModernCheckbox checked disabled /></span>{/if}
       </button>

@@ -34,7 +34,7 @@ function handleEmoji (
   if (!isValidEmojiPosition($from)) {
     return
   }
-  const emoji = getEmojiFunction(match[0])
+  const emoji = getEmojiFunction(match.pop())
   if (emoji === undefined) return
   commands.insertContentAt(range, [
     {

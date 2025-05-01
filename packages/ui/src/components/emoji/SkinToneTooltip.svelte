@@ -4,16 +4,16 @@
   // Licensed under the Eclipse Public License v2.0 (SPDX: EPL-2.0).
   //
   import { createEventDispatcher } from 'svelte'
-  import type { Emoji } from 'emojibase'
-  import { generateSkinToneEmojis, getEmojiCode, type EmojiWithGroup } from '.'
+  import { type EmojiWithGroup } from '.'
   import { ButtonBase, closeTooltip } from '../..'
+  import { Emoji } from 'emojibase'
 
-  export let emoji: number | number[] | string | Emoji | EmojiWithGroup
+  export let emoji: EmojiWithGroup
   export let selected: number
 
   const dispatch = createEventDispatcher()
 
-  const skins: string[] = generateSkinToneEmojis(getEmojiCode(emoji))
+  const skins: Emoji[] = emoji.skins ?? []
 </script>
 
 <div class="flex-row-center flex-gap-1">
@@ -30,7 +30,7 @@
         closeTooltip()
       }}
     >
-      <span style:font-size={'1.5rem'}>{skin}</span>
+      <span style:font-size={'1.5rem'}>{skin.emoji}</span>
     </ButtonBase>
   {/each}
 </div>
