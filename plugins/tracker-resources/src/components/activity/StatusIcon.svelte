@@ -20,14 +20,14 @@
 
   export let tx: TxUpdateDoc<Issue>
   $: value = tx.operations.status
+  $: taskType = tx.operations.kind
 
   $: status = value && $statusStore.byId.get(value)
-
   $: space = tx.objectSpace as Ref<Project>
 </script>
 
 <div class="icon">
   {#if status}
-    <IssueStatusIcon value={status} {space} size="small" on:accent-color />
+    <IssueStatusIcon value={status} {taskType} {space} size="small" on:accent-color />
   {/if}
 </div>

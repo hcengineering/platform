@@ -139,7 +139,7 @@
   >
     <svelte:fragment slot="icon">
       {#if selectedStatus}
-        <IssueStatusIcon value={selectedStatus} size={iconSize} space={undefined} />
+        <IssueStatusIcon value={selectedStatus} {taskType} size={iconSize} space={undefined} />
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="content">

@@ -143,6 +143,7 @@
       <div class="flex-center flex-no-shrink square-4">
         {#if selectedStatus}<IssueStatusIcon
             value={selectedStatus}
+            taskType={value.kind}
             size={kind === 'list' ? 'small' : 'medium'}
             space={value.space}
           />{/if}
@@ -170,7 +171,7 @@
     >
       <svelte:fragment slot="icon">
         {#if selectedStatus}
-          <IssueStatusIcon value={selectedStatus} size={iconSize} space={value.space} />
+          <IssueStatusIcon value={selectedStatus} taskType={value.kind} size={iconSize} space={value.space} />
         {/if}
       </svelte:fragment>
       <svelte:fragment slot="content">
