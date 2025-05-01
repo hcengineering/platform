@@ -33,7 +33,7 @@
   }
 
   function handleHeadings (ev: CustomEvent<Heading[]>): void {
-    const headings = ev.detail.map((it) => ({ ...it, level: it.level }))
+    const headings = ev.detail
     const action: CardSectionAction = { id: 'toc', toc: headings }
     dispatch('action', action)
   }

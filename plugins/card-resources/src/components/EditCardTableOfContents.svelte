@@ -107,7 +107,7 @@
           ...section.navigation.map((nav) => ({
             id: nav.id,
             titleIntl: nav.label,
-            level: 1,
+            level: 0,
             group: section._id
           }))
         )
@@ -115,7 +115,7 @@
         newToc.push({
           id: section._id,
           titleIntl: section.label,
-          level: 1,
+          level: 0,
           group: section._id
         })
       }
