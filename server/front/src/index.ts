@@ -52,7 +52,7 @@ async function storageUpload (
   storageAdapter: StorageAdapter,
   wsIds: WorkspaceIds,
   file: UploadedFile
-): Promise<string> {
+): Promise<{ uuid: string, etag: string }> {
   const uuid = file.name
   const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
   const resp = await ctx.with(
@@ -63,7 +63,7 @@ async function storageUpload (
   )
 
   ctx.info('storage upload', resp)
-  return uuid
+  return { uuid, etag: resp.etag }
 }
 
 function getRange (range: string, size: number): [number, number] {
@@ -602,12 +602,19 @@ export function start (
             res.status(403).send()
             return
           }
-          const uuid = await storageUpload(ctx, config.storageAdapter, workspaceDataId, file)
+          const { uuid, etag } = await storageUpload(ctx, config.storageAdapter, workspaceDataId, file)
 
           res.status(200).send([
             {
               key: 'file',
-              id: uuid
+              id: uuid,
+              metadata: {
+                name: uuid,
+                etag,
+                size: file.size,
+                contentType: file.mimetype,
+                lastModified: Date.now()
+              }
             }
           ])
         } catch (error: any) {
