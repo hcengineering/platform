@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import core from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
 import { recorderId } from '@hcengineering/recorder'
 import recorder from '@hcengineering/recorder-resources/src/plugin'
