@@ -70,23 +70,6 @@ export function navigateToType (_id: Ref<MasterTag>): void {
   navigate(loc)
 }
 
-export async function openThreadInSidebar (message: Message, parent: Card): Promise<void> {
-  const client = getClient()
-
-  const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: chat.ids.ChatWidget })[0]
-  if (widget === undefined) return
-
-  const data: ChatWidgetData = {
-    id: `${message.card}-${message.id}`,
-    name: createThreadTitle(message, parent),
-    message: message.id,
-    created: message.created,
-    card: message.card
-  }
-
-  openWidget(widget, data)
-}
-
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== chatId) {
     return undefined

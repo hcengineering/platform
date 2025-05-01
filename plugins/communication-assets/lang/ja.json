@@ -1,4 +1,7 @@
 {
   "string": {
+    "Messages": "メッセージ",
+    "FirstMessages": "最初のメッセージ",
+    "LatestMessages": "最新のメッセージ"
   }
 }

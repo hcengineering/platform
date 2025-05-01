@@ -16,7 +16,4 @@
 import { addStringsLoader } from '@hcengineering/platform'
 import { communicationId } from '@hcengineering/communication'
 
-// loadMetadata(communication.icon, {
-// })
-
 addStringsLoader(communicationId, async (lang: string) => await import(`../lang/${lang}.json`))

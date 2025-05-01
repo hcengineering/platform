@@ -25,14 +25,6 @@ import { type TextInputAction } from './types'
 import uiNext from './plugin'
 
 export const defaultMessageInputActions: TextInputAction[] = [
-  // {
-  //   label: uiNext.string.ShowFormatting,
-  //   icon: IconTextFont,
-  //   action: (_element, editorHandler) => {
-  //     // TODO: implement
-  //   },
-  //   order: 2000
-  // },
   {
     label: uiNext.string.Emoji,
     icon: IconEmoji,

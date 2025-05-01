@@ -36,6 +36,7 @@
     "SelectType": "Sélectionner le type",
     "CreateSpace": "Créer un espace",
     "NumberTypes": "{count, plural, one {# type} other {# types}}",
-    "Labels": "Étiquettes"
+    "Labels": "Étiquettes",
+    "Properties": "Propriétés"
   }
 }
