@@ -167,7 +167,7 @@ export class STT implements Stt {
     if (track === undefined) return
     if (this.dgConnectionBySid.has(sid)) return
 
-    const stream = new AudioStream(track)
+    const stream = new AudioStream(track, config.DgSampleRate)
     // const language = this.language ?? 'en'
     const options = this.getOptions(stream)
     const dgConnection = this.deepgram.listen.live(options)
