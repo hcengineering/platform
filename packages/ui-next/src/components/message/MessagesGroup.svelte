@@ -25,9 +25,9 @@
   export let card: Card
   export let date: Timestamp
   export let messages: Message[]
-  export let showDates = true
   export let separatorDate: Date | undefined = undefined
   export let separatorDiv: HTMLDivElement | undefined | null = undefined
+  export let readonly = false
 
   const me = getCurrentAccount()
 
@@ -40,15 +40,16 @@
 </script>
 
 <div class="messages-group" id={date.toString()}>
-  {#if showDates}
-    <DateSeparator {date} />
+  {#if separatorIndex === 0}
+    <MessagesSeparator bind:element={separatorDiv} />
   {/if}
+  <DateSeparator {date} />
   <div class="messages-group__messages">
     {#each messages as message, index (message.id)}
-      {#if index === separatorIndex}
+      {#if separatorIndex !== 0 && index === separatorIndex}
         <MessagesSeparator bind:element={separatorDiv} />
       {/if}
-      <MessagePresenter {message} {card} on:reply />
+      <MessagePresenter {message} {card} editable={!readonly} on:reply />
     {/each}
   </div>
 </div>

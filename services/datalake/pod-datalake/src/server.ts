@@ -28,7 +28,7 @@ import onHeaders from 'on-headers'
 import { cacheControl } from './const'
 import { createDb } from './datalake/db'
 import { ApiError } from './error'
-import { keepAlive, withAuthorization, withBlob, withWorkspace } from './middleware'
+import { keepAlive, withAdminAuthorization, withAuthorization, withBlob, withWorkspace } from './middleware'
 import {
   handleBlobDelete,
   handleBlobDeleteList,
@@ -141,7 +141,7 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
 
   app.use(morgan('short', { stream: new LogStream() }))
 
-  app.get('/blob/:workspace', withAuthorization, withWorkspace, wrapRequest(ctx, 'listBlobs', handleBlobList))
+  app.get('/blob/:workspace', withAdminAuthorization, withWorkspace, wrapRequest(ctx, 'listBlobs', handleBlobList))
 
   app.head('/blob/:workspace/:name', withBlob, wrapRequest(ctx, 'headBlob', handleBlobHead))
 

@@ -57,8 +57,8 @@
   .date-separator {
     display: flex;
     width: 100%;
-    padding: 0 2rem;
-    background: var(--next-panel-color-background);
+    padding: 0 4rem;
+    background: var(--theme-panel-color);
 
     &.sticky {
       position: sticky;

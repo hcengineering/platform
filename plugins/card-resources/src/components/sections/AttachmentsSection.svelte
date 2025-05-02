@@ -12,25 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">
-  import { Label } from '@hcengineering/ui-next'
 
-  import chat from '../plugin'
+<script lang="ts">
+  import { Card } from '@hcengineering/card'
+  import { Attachments } from '@hcengineering/attachment-resources'
+  import { createEventDispatcher, onMount } from 'svelte'
+
+  export let readonly: boolean = false
+  export let doc: Card
+
+  const dispatch = createEventDispatcher()
+
+  onMount(() => {
+    if ((doc.attachments ?? 0) === 0) {
+      dispatch('loaded')
+    }
+  })
 </script>
 
-<div class="loader">
-  <Label label={chat.string.Loading} />
+<div class="section-attachments">
+  <Attachments
+    objectId={doc._id}
+    _class={doc._class}
+    space={doc.space}
+    attachments={doc.attachments ?? 0}
+    {readonly}
+    on:attachments={() => dispatch('loaded')}
+  />
 </div>
 
 <style lang="scss">
-  .loader {
-    width: 100%;
+  .section-attachments {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--next-text-color-secondary);
-    font-weight: 500;
-    height: 5rem;
-    min-height: 5rem;
+    flex-direction: column;
+    width: 100%;
+    padding: 0 4rem;
   }
 </style>

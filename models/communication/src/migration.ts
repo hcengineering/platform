@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,22 +11,11 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
+//
 
-<script lang="ts">
-  import { MessageInput, UploadedFile } from '@hcengineering/ui-next'
-  import { Card } from '@hcengineering/card'
+import { type MigrateOperation } from '@hcengineering/model'
 
-  import chat from '../plugin'
-
-  export let card: Card | undefined
-  export let onSubmit: ((markdown: string, files: UploadedFile[]) => Promise<void>) | undefined = undefined
-</script>
-
-<MessageInput
-  cardId={card?._id}
-  cardType={card?._class}
-  placeholder={chat.string.MessageIn}
-  placeholderParams={{ title: card?.title ?? '' }}
-  {onSubmit}
-/>
+export const communicationOperation: MigrateOperation = {
+  async migrate (): Promise<void> {},
+  async upgrade (): Promise<void> {}
+}

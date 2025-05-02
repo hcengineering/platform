@@ -50,14 +50,18 @@
       <button
         class="menu-item no-focus flex-row-center item enum{level + 1}"
         on:click={() => dispatch('close', item)}
-        use:tooltip={{ label: getEmbeddedLabel(item.title) }}
+        use:tooltip={{ label: item.titleIntl ? item.titleIntl : getEmbeddedLabel(item.title ?? '') }}
       >
         <div
           class="label overflow-label flex-grow"
           class:selected={item.id === selected?.id}
           style={`padding-left: ${level * 1.5}rem;`}
         >
-          {item.title}
+          {#if item.title}
+            {item.title}
+          {:else if item.titleIntl}
+            <Label label={item.titleIntl} />
+          {/if}
         </div>
       </button>
     {/each}

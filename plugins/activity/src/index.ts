@@ -326,7 +326,6 @@ export default plugin(activityId, {
   },
   component: {
     Activity: '' as AnyComponent,
-    NewActivity: '' as AnyComponent,
     ActivityMessagePresenter: '' as AnyComponent,
     DocUpdateMessagePresenter: '' as AnyComponent,
     ActivityInfoMessagePresenter: '' as AnyComponent,

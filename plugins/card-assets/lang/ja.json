@@ -36,6 +36,7 @@
     "SelectType": "タイプを選択",
     "CreateSpace": "スペースを作成",
     "NumberTypes": "{count, plural, one {# タイプ} other {# タイプ}}",
-    "Labels": "ラベル"
+    "Labels": "ラベル",
+    "Properties": "プロパティ"
   }
 }

@@ -25,8 +25,11 @@ import core, {
   buildSocialIdString,
   generateId,
   MeasureMetricsContext,
+  type PersonId,
+  type PersonUuid,
   pickPrimarySocialId,
   SocialIdType,
+  systemAccountUuid,
   type Ref,
   type SocialId,
   type Space,
@@ -36,6 +39,7 @@ import core, {
 import { type AccountClient, getClient as getAccountClient } from '@hcengineering/account-client'
 import chunter from '@hcengineering/chunter'
 import contact, { ensureEmployee, type SocialIdentityRef, type Person } from '@hcengineering/contact'
+import { generateToken } from '@hcengineering/server-token'
 
 describe('rest-api-server', () => {
   const testCtx = new MeasureMetricsContext('test', {})
@@ -103,9 +107,11 @@ describe('rest-api-server', () => {
     )
   }, 10000)
 
-  function connect (ws?: WorkspaceToken): RestClient {
+  function connect (ws?: WorkspaceToken, asSystem = false): RestClient {
     const tok = ws ?? apiWorkspace1
-    return createRestClient(tok.endpoint, tok.workspaceId, tok.token)
+    const token = asSystem ? generateToken(systemAccountUuid, tok.workspaceId, undefined, 'secret') : tok.token
+
+    return createRestClient(tok.endpoint, tok.workspaceId, token)
   }
 
   async function connectTx (ws?: WorkspaceToken): Promise<TxOperations> {
@@ -217,31 +223,57 @@ describe('rest-api-server', () => {
     expect(employee[0].active).toBe(true)
   })
 
-  it('ensure-person', async () => {
-    const socialType = SocialIdType.TELEGRAM
-    const socialValue = '123456789'
-    const first = 'John'
-    const last = 'Doe'
-    const conn = connect()
-    const { uuid, socialId, localPerson } = await conn.ensurePerson(socialType, socialValue, first, last)
-    const globalPerson = await accountClient.findPersonBySocialKey(
-      buildSocialIdString({ type: socialType, value: socialValue })
-    )
+  describe('ensure-person', () => {
+    const expectPerson = async (
+      conn: RestClient,
+      socialType: SocialIdType,
+      socialValue: string,
+      uuid: PersonUuid,
+      socialId: PersonId,
+      localPerson: string
+    ): Promise<void> => {
+      const globalPerson = await accountClient.findPersonBySocialKey(
+        buildSocialIdString({ type: socialType, value: socialValue })
+      )
 
-    expect(globalPerson).toBe(uuid)
+      expect(globalPerson).toBe(uuid)
 
-    const person = await conn.findOne(contact.class.Person, { _id: localPerson as Ref<Person>, personUuid: uuid })
+      const person = await conn.findOne(contact.class.Person, { _id: localPerson as Ref<Person>, personUuid: uuid })
 
-    expect(person).not.toBeNull()
+      expect(person).not.toBeNull()
 
-    const socialIdObj = await conn.findOne(contact.class.SocialIdentity, {
-      type: socialType,
-      value: socialValue,
-      attachedTo: person?._id,
-      _id: socialId as SocialIdentityRef
+      const socialIdObj = await conn.findOne(contact.class.SocialIdentity, {
+        type: socialType,
+        value: socialValue,
+        attachedTo: person?._id,
+        _id: socialId as SocialIdentityRef
+      })
+
+      expect(socialIdObj).not.toBeNull()
+    }
+
+    it('ensure-person', async () => {
+      const socialType = SocialIdType.TELEGRAM
+      const socialValue = '123456789'
+      const first = 'John'
+      const last = 'Doe'
+      const conn = connect()
+      const { uuid, socialId, localPerson } = await conn.ensurePerson(socialType, socialValue, first, last)
+
+      await expectPerson(conn, socialType, socialValue, uuid, socialId, localPerson)
     })
 
-    expect(socialIdObj).not.toBeNull()
+    it('ensure-person as system', async () => {
+      const socialType = SocialIdType.GITHUB
+      const socialValue = 'eodnhoj'
+      const first = 'John'
+      const last = 'Doe'
+      const conn = connect(apiWorkspace1, true)
+
+      const { uuid, socialId, localPerson } = await conn.ensurePerson(socialType, socialValue, first, last)
+
+      await expectPerson(conn, socialType, socialValue, uuid, socialId, localPerson)
+    })
   })
 })
 
