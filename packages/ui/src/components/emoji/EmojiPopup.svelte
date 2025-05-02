@@ -12,7 +12,7 @@
     showPopup,
     eventToHTMLElement,
     ButtonBase,
-    closeTooltip, getEmojiByShortCode
+    closeTooltip, getEmojiByShortCode, getEmojiSkins, getUnicodeEmojiByShortCode
   } from '../../'
   import plugin from '../../plugin'
   import {
@@ -30,6 +30,7 @@
   import SkinTonePopup from './SkinTonePopup.svelte'
   import IconSearch from './icons/Search.svelte'
   import EmojiGroup from './EmojiGroup.svelte'
+  import { isCustomEmoji } from './types'
 
   export let embedded = false
   export let selected: string | undefined
@@ -98,11 +99,12 @@
   }
 
   const sendEmoji = (emoji: EmojiWithGroup): void => {
-    selected = emoji.emoji
+    selected = isCustomEmoji(emoji) ? emoji.shortcode : emoji.emoji
     addFrequentlyEmojis(emoji)
     dispatch('close', {
-      emoji: emoji.emoji,
-      codes: emoji.hexcode.split('-').map((hc) => parseInt(hc, 16))
+      // TODO: send ExtendedEmoji
+      emoji: selected
+      // codes: emoji.hexcode.split('-').map((hc) => parseInt(hc, 16))
     })
   }
 
@@ -142,7 +144,8 @@
   }
   function handleContextMenu (event: MouseEvent, emoji: EmojiWithGroup, remove: boolean): void {
     event.preventDefault()
-    if (Array.isArray(emoji.skins) || remove) openContextMenu(event, emoji, remove)
+    const skins = getEmojiSkins(emoji)
+    if (Array.isArray(skins) || remove) openContextMenu(event, emoji, remove)
   }
   const clearTimer = (): void => {
     clearTimeout(timer)
@@ -155,7 +158,8 @@
     })
   }
   function clampedContextMenu (event: TouchEvent, emoji: EmojiWithGroup, remove: boolean): void {
-    if (timer == null && (Array.isArray(emoji?.skins) || remove)) {
+    const skins = getEmojiSkins(emoji)
+    if (timer == null && (Array.isArray(skins) || remove)) {
       touchObserver()
       timer = setTimeout(function () {
         if (!shownContext) openContextMenu(event, emoji, remove)
@@ -192,7 +196,7 @@
         const tempEmojis: string[] = em.emojisString
         const emojis: EmojiWithGroup[] = []
         tempEmojis.forEach((te) => {
-          const e = $emojiStore.find((es) => es.hexcode === te)
+          const e = $emojiStore.find((es) => isCustomEmoji(es) ? es.shortcode === te : es.hexcode === te)
           if (e !== undefined) emojis.push(e)
         })
         emojiCategories[index].emojis = emojis
@@ -265,7 +269,7 @@
       tooltip={{ label: plugin.string.DefaultSkinTone }}
       on:click={showSkinMenu}
     >
-      <span style:font-size={'1.5rem'}>{getEmojiByShortCode(':hand:', skinTone)?.emoji}</span>
+      <span style:font-size={'1.5rem'}>{getUnicodeEmojiByShortCode(':hand:', skinTone)?.emoji}</span>
     </ButtonBase>
   </div>
   <Scroller

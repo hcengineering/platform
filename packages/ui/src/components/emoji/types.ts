@@ -16,7 +16,7 @@ import type { IntlString } from '@hcengineering/platform'
 import type { AnySvelteComponent } from '../..'
 import type { Emoji } from 'emojibase'
 
-export type ExtendedEmoji = Emoji // | CustomEmoji
+export type ExtendedEmoji = Emoji | CustomEmoji
 export type EmojiWithGroup = ExtendedEmoji & { key: string }
 
 export interface CustomEmoji {
@@ -35,6 +35,10 @@ export interface EmojiCategory {
   emojis?: EmojiWithGroup[]
 }
 
-/* export function isCustomEmoji (emoji: EmojiWithGroup): emoji is CustomEmoji & { key: string } {
+export function isCustomEmoji (emoji: ExtendedEmoji): emoji is CustomEmoji {
   return 'url' in emoji
-}*/
+}
+
+/* export function isCustomEmoji (emoji: ExtendedEmoji): boolean {
+  return false
+} */

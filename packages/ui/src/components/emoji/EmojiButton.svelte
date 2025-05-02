@@ -5,25 +5,23 @@
   //
   import { createEventDispatcher } from 'svelte'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { tooltip, capitalizeFirstLetter, type EmojiWithGroup, type LabelAndProps } from '../../'
-  import { type Emoji } from 'emojibase'
+  import { tooltip, capitalizeFirstLetter, type LabelAndProps, type ExtendedEmoji, getEmojiSkins } from '../../'
+  import { isCustomEmoji } from './types'
 
-  export let emoji: EmojiWithGroup
+  export let emoji: ExtendedEmoji
   export let selected: boolean = false
   export let disabled: boolean = false
   export let preview: boolean = false
   export let skinTone: number = 0
   export let showTooltip: LabelAndProps | undefined = undefined
 
+  const skins = getEmojiSkins(emoji)
+
   const dispatch = createEventDispatcher()
 
-  const getSkinsCount = (e: EmojiWithGroup): number | undefined => {
-    return Array.isArray(e.skins) ? e.skins.length : undefined
-  }
-
-  let displayedEmoji: Emoji | EmojiWithGroup
-  $: skinIndex = emoji?.skins?.findIndex((skin) => skin.tone === skinTone) ?? -1
-  $: displayedEmoji = skinTone > 0 && Array.isArray(emoji.skins) && skinIndex > -1 ? emoji.skins[skinIndex] : emoji
+  let displayedEmoji: ExtendedEmoji
+  $: skinIndex = skins?.findIndex((skin) => skin.tone === skinTone) ?? -1
+  $: displayedEmoji = skinTone > 0 && skins !== undefined && skinIndex > -1 ? skins[skinIndex] : emoji
 </script>
 
 {#if emoji}
@@ -32,9 +30,9 @@
     class="hulyPopupEmoji-button"
     class:preview
     class:selected
-    class:skins={emoji?.skins !== undefined && emoji.skins.length === 5}
-    class:constructor={emoji?.skins !== undefined && emoji.skins.length > 5}
-    data-skins={getSkinsCount(emoji)}
+    class:skins={skins !== undefined && skins.length === 5}
+    class:constructor={skins !== undefined && skins.length > 5}
+    data-skins={skins?.length}
     {disabled}
     on:touchstart
     on:contextmenu
@@ -43,7 +41,7 @@
       dispatch('select', displayedEmoji)
     }}
   >
-    <span>{displayedEmoji.emoji}</span>
+    <span>{isCustomEmoji(displayedEmoji) ? displayedEmoji.shortcode : displayedEmoji.emoji}</span>
   </button>
 {/if}
 

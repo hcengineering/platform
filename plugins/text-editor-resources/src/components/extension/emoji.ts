@@ -8,7 +8,7 @@ import {
   getEmojiByShortCode,
   emojiRegex,
   emojiGlobalRegex,
-  type ExtendedEmoji
+  type ExtendedEmoji, isCustomEmoji
 } from '@hcengineering/ui'
 import { type ResolvedPos } from '@tiptap/pm/model'
 import { type ExtendedRegExpMatchArray, type SingleCommands, type Range, InputRule, PasteRule } from '@tiptap/core'
@@ -37,7 +37,8 @@ function handleEmoji (
   }
   const emoji = getEmojiFunction(match.pop())
   if (emoji === undefined) return
-  const unicodeEmoji = typeof emoji === 'string' ? emoji : emoji.emoji
+  // TODO: add custom emoji
+  const unicodeEmoji = typeof emoji === 'string' ? emoji : (isCustomEmoji(emoji) ? emoji.shortcode : emoji.emoji)
   commands.insertContentAt(range, [
     {
       type: 'emoji',

@@ -5,17 +5,17 @@
   //
   import { createEventDispatcher } from 'svelte'
   import type { Emoji } from 'emojibase'
-  import { Label, closeTooltip, ModernCheckbox } from '../../'
+  import { Label, closeTooltip, ModernCheckbox, getEmojiSkins } from '../../'
   import { skinTones } from '.'
-  import type { EmojiWithGroup } from '.'
 
-  export let emoji: EmojiWithGroup
+  export let emoji: Emoji
   export let selected: number
 
   const dispatch = createEventDispatcher()
   closeTooltip()
 
-  const skins: Emoji[] = emoji.skins !== undefined ? [emoji, ...emoji.skins] : []
+  const emojiSkins = getEmojiSkins(emoji)
+  const skins: Emoji[] = emojiSkins !== undefined ? [emoji, ...emojiSkins] : []
 </script>
 
 <div class="hulyPopup-container noPadding">

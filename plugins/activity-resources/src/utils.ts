@@ -8,7 +8,7 @@ import {
   getEventPositionElement,
   showPopup,
   type Location,
-  type EmojiWithGroup
+  type EmojiWithGroup, isCustomEmoji
 } from '@hcengineering/ui'
 import { type AttributeModel } from '@hcengineering/view'
 import { get } from 'svelte/store'
@@ -62,7 +62,8 @@ export async function addReactionAction (
   closePopup()
 
   showPopup(EmojiPopup, {}, element, (emoji: EmojiWithGroup) => {
-    if (emoji?.emoji !== undefined) void updateDocReactions(reactions, message, emoji.emoji)
+    // TODO: add custom emoji
+    if (!isCustomEmoji(emoji) && emoji?.emoji !== undefined) void updateDocReactions(reactions, message, emoji.emoji)
     params?.onClose?.()
   })
   params?.onOpen?.()

@@ -15,11 +15,12 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { EmojiWithGroup } from '.'
+  import type { ExtendedEmoji } from '.'
 
   import EmojiButton from './EmojiButton.svelte'
+  import { isCustomEmoji } from './types'
 
-  export let emojis: EmojiWithGroup[]
+  export let emojis: ExtendedEmoji[]
   export let selected: string | undefined
   export let disabled: boolean = false
   export let skinTone: number = 0
@@ -31,7 +32,7 @@
   {#each emojis as emoji}
     <EmojiButton
       {emoji}
-      selected={emoji.emoji === selected}
+      selected={isCustomEmoji(emoji) ? emoji.shortcode === selected : emoji.emoji === selected}
       {disabled}
       {skinTone}
       on:select

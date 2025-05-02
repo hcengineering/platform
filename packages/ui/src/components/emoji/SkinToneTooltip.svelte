@@ -4,16 +4,17 @@
   // Licensed under the Eclipse Public License v2.0 (SPDX: EPL-2.0).
   //
   import { createEventDispatcher } from 'svelte'
-  import { type EmojiWithGroup } from '.'
+  import { getEmojiSkins } from '.'
   import { ButtonBase, closeTooltip } from '../..'
   import { Emoji } from 'emojibase'
 
-  export let emoji: EmojiWithGroup
+  export let emoji: Emoji
   export let selected: number
 
   const dispatch = createEventDispatcher()
 
-  const skins: Emoji[] = emoji.skins !== undefined ? [emoji, ...emoji.skins] : []
+  const emojiSkins = getEmojiSkins(emoji)
+  const skins: Emoji[] = emojiSkins !== undefined ? [emoji, ...emojiSkins] : []
 </script>
 
 <div class="flex-row-center flex-gap-1">

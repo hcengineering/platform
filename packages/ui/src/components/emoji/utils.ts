@@ -19,7 +19,7 @@ import EMOJI_REGEX from 'emojibase-regex'
 import EMOTICON_REGEX from 'emojibase-regex/emoticon'
 import SHORTCODE_REGEX from 'emojibase-regex/shortcode'
 import { getCurrentAccount } from '@hcengineering/core'
-import { deviceOptionsStore as deviceInfo, type ExtendedEmoji } from '../..'
+import { deviceOptionsStore as deviceInfo, type ExtendedEmoji, isCustomEmoji } from '../..'
 import type { EmojiWithGroup } from '.'
 import { emojiCategories, emojiStore } from '.'
 
@@ -73,30 +73,41 @@ export async function updateEmojis (lang?: string): Promise<void> {
 }
 
 export function getEmojiByHexcode (hexcode: string): EmojiWithGroup | undefined {
-  return get(emojiStore).find((e) => e.hexcode === hexcode)
+  return get(emojiStore).find((e) => !isCustomEmoji(e) && e.hexcode === hexcode)
 }
 
 export function getEmojiByEmoticon (emoticon: string | undefined): string | undefined {
   if (emoticon === undefined) return undefined
-  return findEmoji(e => Array.isArray(e.emoticon) ? e.emoticon.includes(emoticon) : e.emoticon === emoticon)?.emoji
+  const matchEmoji = findEmoji(e => !isCustomEmoji(e) && (Array.isArray(e.emoticon) ? e.emoticon.includes(emoticon) : e.emoticon === emoticon))
+  if (matchEmoji === undefined) return undefined
+  return !isCustomEmoji(matchEmoji) ? matchEmoji.emoji : undefined
+}
+
+export function getUnicodeEmojiByShortCode (shortcode: string | undefined, skinTone?: number): Emoji | undefined {
+  const emoji = getEmojiByShortCode(shortcode, skinTone)
+  if (emoji === undefined || isCustomEmoji(emoji)) return undefined
 }
 
 export function getEmojiByShortCode (shortcode: string | undefined, skinTone?: number): ExtendedEmoji | undefined {
   if (shortcode === undefined) return undefined
-  return findEmoji((e) => e.shortcodes?.includes(shortcode.replaceAll(':', '')), skinTone)
+  return findEmoji((e) => {
+    if (isCustomEmoji(e)) return e.shortcode === shortcode
+    return e.shortcodes?.includes(shortcode.replaceAll(':', ''))
+  }, skinTone)
 }
 
 function findEmoji (predicate: (e: EmojiWithGroup) => boolean | undefined, skinTone?: number): ExtendedEmoji | undefined {
   const emojis = get(emojiStore)
   const matchEmoji = emojis.find(predicate)
   if (matchEmoji === undefined) return undefined
+  if (isCustomEmoji(matchEmoji)) return matchEmoji
   if (skinTone === undefined) skinTone = getSkinTone()
   if (skinTone === 0 || matchEmoji.skins === undefined) return matchEmoji
   return matchEmoji.skins[skinTone - 1]
 }
 
 export const removeFrequentlyEmojis = (emoji: EmojiWithGroup): void => {
-  const hexcode = emoji.hexcode
+  const hexcode = isCustomEmoji(emoji) ? emoji.shortcode : emoji.hexcode
   if (hexcode === undefined) return
 
   const frequentlyEmojisKey = getEmojisLocalStorageKey()
@@ -113,7 +124,7 @@ export const removeFrequentlyEmojis = (emoji: EmojiWithGroup): void => {
 }
 export const addFrequentlyEmojis = (emoji: EmojiWithGroup): void => {
   if (emoji === undefined) return
-  const hexcode = emoji.hexcode
+  const hexcode = isCustomEmoji(emoji) ? emoji.shortcode : emoji.hexcode
 
   const frequentlyEmojisKey = getEmojisLocalStorageKey()
   const frequentlyEmojis = window.localStorage.getItem(frequentlyEmojisKey)
@@ -141,11 +152,21 @@ export const getFrequentlyEmojis = (): EmojiWithGroup[] | undefined => {
     const parsedEmojis = JSON.parse(frequentlyEmojis)
     if (!Array.isArray(parsedEmojis)) return undefined
     const emojis = get(emojiStore)
-    return emojis.filter(e => parsedEmojis.find(pe => pe.hexcode === e.hexcode || e.skins?.find(s => s.hexcode === pe.hexcode) !== undefined) !== undefined)
+    return emojis.filter((e) => {
+      if (isCustomEmoji(e)) {
+        return parsedEmojis.find(pe => pe.hexcode === e.shortcode) !== undefined
+      }
+      return parsedEmojis.find(pe => pe.hexcode === e.hexcode || e.skins?.find(s => s.hexcode === pe.hexcode) !== undefined) !== undefined
+    })
   } catch (e) {
     console.error(e)
     return undefined
   }
+}
+
+export function getEmojiSkins (emoji: ExtendedEmoji): Emoji[] | undefined {
+  if (isCustomEmoji(emoji)) return undefined
+  return emoji.skins
 }
 
 export const setSkinTone = (skinTone: number): void => {
