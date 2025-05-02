@@ -16,7 +16,8 @@ import type { IntlString } from '@hcengineering/platform'
 import type { AnySvelteComponent } from '../..'
 import type { Emoji } from 'emojibase'
 
-export type EmojiWithGroup = Emoji & { key: string }
+export type ExtendedEmoji = Emoji // | CustomEmoji
+export type EmojiWithGroup = ExtendedEmoji & { key: string }
 
 export interface CustomEmoji {
   shortcode: string
@@ -34,7 +35,6 @@ export interface EmojiCategory {
   emojis?: EmojiWithGroup[]
 }
 
-export interface EmojiHierarchy {
-  emoji: EmojiWithGroup
-  parent?: EmojiWithGroup
-}
+/* export function isCustomEmoji (emoji: EmojiWithGroup): emoji is CustomEmoji & { key: string } {
+  return 'url' in emoji
+}*/

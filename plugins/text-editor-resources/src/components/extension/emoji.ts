@@ -4,10 +4,11 @@ import {
   emoticonGlobalRegex,
   shortcodeRegex,
   shortcodeGlobalRegex,
-  getEmojiForEmoticon,
-  getEmojiForShortCode,
+  getEmojiByEmoticon,
+  getEmojiByShortCode,
   emojiRegex,
-  emojiGlobalRegex
+  emojiGlobalRegex,
+  type ExtendedEmoji
 } from '@hcengineering/ui'
 import { type ResolvedPos } from '@tiptap/pm/model'
 import { type ExtendedRegExpMatchArray, type SingleCommands, type Range, InputRule, PasteRule } from '@tiptap/core'
@@ -28,7 +29,7 @@ function handleEmoji (
   range: Range,
   match: ExtendedRegExpMatchArray,
   commands: SingleCommands,
-  getEmojiFunction: (key: string | undefined) => string | undefined
+  getEmojiFunction: (key: string | undefined) => ExtendedEmoji | string | undefined
 ): void {
   const $from = state.doc.resolve(range.from)
   if (!isValidEmojiPosition($from)) {
@@ -36,10 +37,13 @@ function handleEmoji (
   }
   const emoji = getEmojiFunction(match.pop())
   if (emoji === undefined) return
+  const unicodeEmoji = typeof emoji === 'string' ? emoji : emoji.emoji
   commands.insertContentAt(range, [
     {
       type: 'emoji',
-      attrs: { emoji }
+      attrs: {
+        emoji: unicodeEmoji
+      }
     }
   ])
 }
@@ -50,7 +54,7 @@ export const EmojiExtension = EmojiNode.extend<EmojiNodeOptions>({
       new PasteRule({
         find: shortcodeGlobalRegex,
         handler: ({ state, range, match, commands }) => {
-          handleEmoji(state, range, match, commands, getEmojiForShortCode)
+          handleEmoji(state, range, match, commands, getEmojiByShortCode)
         }
       }),
       new PasteRule({
@@ -62,7 +66,7 @@ export const EmojiExtension = EmojiNode.extend<EmojiNodeOptions>({
       new PasteRule({
         find: emoticonGlobalRegex,
         handler: ({ state, range, match, commands }) => {
-          handleEmoji(state, range, match, commands, getEmojiForEmoticon)
+          handleEmoji(state, range, match, commands, getEmojiByEmoticon)
         }
       })
     ]
@@ -72,7 +76,7 @@ export const EmojiExtension = EmojiNode.extend<EmojiNodeOptions>({
       new InputRule({
         find: shortcodeRegex,
         handler: ({ state, range, match, commands }) => {
-          handleEmoji(state, range, match, commands, getEmojiForShortCode)
+          handleEmoji(state, range, match, commands, getEmojiByShortCode)
         }
       }),
       new InputRule({
@@ -84,7 +88,7 @@ export const EmojiExtension = EmojiNode.extend<EmojiNodeOptions>({
       new InputRule({
         find: emoticonRegex,
         handler: ({ state, range, match, commands }) => {
-          handleEmoji(state, range, match, commands, getEmojiForEmoticon)
+          handleEmoji(state, range, match, commands, getEmojiByEmoticon)
         }
       })
     ]

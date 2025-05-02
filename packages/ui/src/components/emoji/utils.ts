@@ -19,7 +19,7 @@ import EMOJI_REGEX from 'emojibase-regex'
 import EMOTICON_REGEX from 'emojibase-regex/emoticon'
 import SHORTCODE_REGEX from 'emojibase-regex/shortcode'
 import { getCurrentAccount } from '@hcengineering/core'
-import { deviceOptionsStore as deviceInfo } from '../..'
+import { deviceOptionsStore as deviceInfo, type ExtendedEmoji } from '../..'
 import type { EmojiWithGroup } from '.'
 import { emojiCategories, emojiStore } from '.'
 
@@ -72,38 +72,27 @@ export async function updateEmojis (lang?: string): Promise<void> {
   emojiStore.set(emojis)
 }
 
-export function getEmojiForHexcode (hexcode: string): EmojiWithGroup | undefined {
+export function getEmojiByHexcode (hexcode: string): EmojiWithGroup | undefined {
   return get(emojiStore).find((e) => e.hexcode === hexcode)
 }
 
-export function getSkinnedEmoji (shortcode: string | undefined, skinTone?: number): Emoji | undefined {
-  if (shortcode === undefined) return undefined
-  const shortcodeSlice = shortcode.slice(1, -1)
-  const emojis = get(emojiStore)
-  const matchEmoji = emojis.find((e) => e.shortcodes?.includes(shortcodeSlice))
-  if (skinTone === undefined || matchEmoji === undefined) return matchEmoji
-  if (skinTone === 0) return matchEmoji
-  return matchEmoji.skins === undefined ? undefined : matchEmoji.skins[skinTone - 1]
-}
-
-export function getEmojiForShortCode (shortcode: string | undefined): string | undefined {
-  if (shortcode === undefined) return undefined
-  const shortcodeSlice = shortcode.slice(1, -1)
-  const emojis = get(emojiStore)
-  const result = emojis.find(e => e.shortcodes?.includes(shortcodeSlice))
-  return result === undefined ? undefined : result.emoji
-}
-
-export function getEmojiForEmoticon (emoticon: string | undefined): string | undefined {
+export function getEmojiByEmoticon (emoticon: string | undefined): string | undefined {
   if (emoticon === undefined) return undefined
-  const emojis = get(emojiStore)
-  const result = emojis.find(e => Array.isArray(e.emoticon) ? e.emoticon.includes(emoticon) : e.emoticon === emoticon)
-  return result === undefined ? undefined : result.emoji
+  return findEmoji(e => Array.isArray(e.emoticon) ? e.emoticon.includes(emoticon) : e.emoticon === emoticon)?.emoji
 }
 
-function getEmojisLocalStorageKey (suffix: string = 'frequently'): string {
-  const me = getCurrentAccount()
-  return `emojis.${suffix}.${me.uuid}`
+export function getEmojiByShortCode (shortcode: string | undefined, skinTone?: number): ExtendedEmoji | undefined {
+  if (shortcode === undefined) return undefined
+  return findEmoji((e) => e.shortcodes?.includes(shortcode.replaceAll(':', '')), skinTone)
+}
+
+function findEmoji (predicate: (e: EmojiWithGroup) => boolean | undefined, skinTone?: number): ExtendedEmoji | undefined {
+  const emojis = get(emojiStore)
+  const matchEmoji = emojis.find(predicate)
+  if (matchEmoji === undefined) return undefined
+  if (skinTone === undefined) skinTone = getSkinTone()
+  if (skinTone === 0 || matchEmoji.skins === undefined) return matchEmoji
+  return matchEmoji.skins[skinTone - 1]
 }
 
 export const removeFrequentlyEmojis = (emoji: EmojiWithGroup): void => {
@@ -174,4 +163,9 @@ export const getSkinTone = (): number => {
     console.error(e)
     return 0
   }
+}
+
+function getEmojisLocalStorageKey (suffix: string = 'frequently'): string {
+  const me = getCurrentAccount()
+  return `emojis.${suffix}.${me.uuid}`
 }

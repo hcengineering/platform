@@ -12,7 +12,7 @@
     showPopup,
     eventToHTMLElement,
     ButtonBase,
-    closeTooltip, getSkinnedEmoji
+    closeTooltip, getEmojiByShortCode
   } from '../../'
   import plugin from '../../plugin'
   import {
@@ -166,7 +166,7 @@
 
   const showSkinMenu = (event: MouseEvent): void => {
     shownSTM = true
-    showPopup(SkinTonePopup, { emoji: getSkinnedEmoji(':hand:'), selected: skinTone }, eventToHTMLElement(event), (result) => {
+    showPopup(SkinTonePopup, { emoji: getEmojiByShortCode(':hand:', 0), selected: skinTone }, eventToHTMLElement(event), (result) => {
       if (typeof result === 'number') {
         skinTone = result
         setSkinTone(skinTone)
@@ -265,7 +265,7 @@
       tooltip={{ label: plugin.string.DefaultSkinTone }}
       on:click={showSkinMenu}
     >
-      <span style:font-size={'1.5rem'}>{getSkinnedEmoji(':hand:', skinTone)?.emoji}</span>
+      <span style:font-size={'1.5rem'}>{getEmojiByShortCode(':hand:', skinTone)?.emoji}</span>
     </ButtonBase>
   </div>
   <Scroller
