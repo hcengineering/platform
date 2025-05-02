@@ -35,8 +35,8 @@
     ? love.icon.SharingDisabled
     : $isConnected && allowCam && !$isCameraEnabled && !$isMicEnabled
       ? love.icon.CamDisabled
-      : $isConnected && !allowCam && !$isMicEnabled
-        ? love.icon.MicDisabled
+      : $isConnected && !allowCam && $isMicEnabled
+        ? love.icon.Mic
         : !allowCam || (!$isCameraEnabled && $isMicEnabled)
             ? love.icon.Mic
             : icon}
