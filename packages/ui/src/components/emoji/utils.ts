@@ -72,6 +72,10 @@ export async function updateEmojis (lang?: string): Promise<void> {
   emojiStore.set(emojis)
 }
 
+export function getEmojiForHexcode (hexcode: string): EmojiWithGroup | undefined {
+  return get(emojiStore).find((e) => e.hexcode === hexcode)
+}
+
 export function getSkinnedEmoji (shortcode: string | undefined, skinTone?: number): Emoji | undefined {
   if (shortcode === undefined) return undefined
   const shortcodeSlice = shortcode.slice(1, -1)
@@ -148,7 +152,7 @@ export const getFrequentlyEmojis = (): EmojiWithGroup[] | undefined => {
     const parsedEmojis = JSON.parse(frequentlyEmojis)
     if (!Array.isArray(parsedEmojis)) return undefined
     const emojis = get(emojiStore)
-    return emojis.filter(e => parsedEmojis.find(pe => pe.hexcode === e.hexcode) !== undefined)
+    return emojis.filter(e => parsedEmojis.find(pe => pe.hexcode === e.hexcode || e.skins?.find(s => s.hexcode === pe.hexcode) !== undefined) !== undefined)
   } catch (e) {
     console.error(e)
     return undefined

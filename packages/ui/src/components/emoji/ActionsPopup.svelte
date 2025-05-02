@@ -5,8 +5,8 @@
   //
   import { createEventDispatcher } from 'svelte'
   import type { Emoji } from 'emojibase'
-  import type { EmojiWithGroup } from '.'
-  import { EmojiButton, getEmoji, getSkinTone, emojiStore } from '.'
+  import { EmojiWithGroup, getEmojiForHexcode, getSkinnedEmojiTest } from '.'
+  import { EmojiButton, getSkinTone, emojiStore } from '.'
   import { Label, IconDelete, closeTooltip, ButtonBase } from '../..'
   import plugin from '../../plugin'
   import SkinToneTooltip from './SkinToneTooltip.svelte'
@@ -28,8 +28,8 @@
     const def = $emojiStore[168]
     const temp = e.skins?.find((skin) => Array.isArray(skin.tone) && skin.tone.length > 1)?.hexcode.split('-200D-')
     if (temp === undefined || temp.length < 2) return [def, def]
-    const firstEmoji = getEmoji(temp[0].slice(0, -6))?.emoji ?? def
-    const secondEmoji = getEmoji(temp[temp.length - 1].slice(0, -6))?.emoji ?? def
+    const firstEmoji = getEmojiForHexcode(temp[0].slice(0, -6)) ?? def
+    const secondEmoji = getEmojiForHexcode(temp[temp.length - 1].slice(0, -6)) ?? def
     return [firstEmoji, secondEmoji]
   }
   const emojiParts = getEmojiParts(emoji)

@@ -13,7 +13,7 @@
 
   const dispatch = createEventDispatcher()
 
-  const skins: Emoji[] = emoji.skins ?? []
+  const skins: Emoji[] = emoji.skins !== undefined ? [emoji, ...emoji.skins] : []
 </script>
 
 <div class="flex-row-center flex-gap-1">
