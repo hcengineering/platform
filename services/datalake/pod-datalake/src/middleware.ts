@@ -17,7 +17,7 @@ import { extractToken } from '@hcengineering/server-client'
 import { type Response, type Request, type NextFunction, RequestHandler } from 'express'
 import { ApiError } from './error'
 import { Token } from '@hcengineering/server-token'
-import { systemAccountUuid } from '@hcengineering/core'
+import { systemAccountEmail } from '@hcengineering/core'
 
 export interface KeepAliveOptions {
   timeout: number
@@ -40,7 +40,7 @@ export const keepAlive = (options: KeepAliveOptions): RequestHandler => {
 export const withAdminAuthorization = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
   try {
     const token = extractToken(req.headers)
-    if (token == null || !(token.account === systemAccountUuid || token.extra?.admin === 'true')) {
+    if (token == null || !(isSystem(token) || isAdmin(token))) {
       throw new ApiError(401, 'Unauthorized')
     }
     req.token = token
@@ -54,7 +54,7 @@ export const withAdminAuthorization = (req: RequestWithAuth, res: Response, next
 export const withAuthorization = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
   try {
     const token = extractToken(req.headers)
-    if (token == null || token.extra?.guest === 'true') {
+    if (token == null || isGuest(token)) {
       throw new ApiError(401, 'Unauthorized')
     }
     req.token = token
@@ -73,9 +73,7 @@ export const withWorkspace = (req: RequestWithAuth, res: Response, next: NextFun
   // If authorization is not enforced allow any workspace
   if (req.token != null) {
     const hasWorkspaceAccess =
-      (req.token.workspace as string) === req.params.workspace ||
-      req.token.account === systemAccountUuid ||
-      req.token.extra?.admin === 'true'
+      isWorkspaceToken(req.token, req.params.workspace) || isSystem(req.token) || isAdmin(req.token)
     if (!hasWorkspaceAccess) {
       throw new ApiError(401, 'Unauthorized')
     }
@@ -96,13 +94,27 @@ export const withBlob = (req: RequestWithAuth, res: Response, next: NextFunction
   // If authorization is not enforced allow any workspace
   if (req.token != null) {
     const hasWorkspaceAccess =
-      (req.token.workspace as string) === req.params.workspace ||
-      req.token.account === systemAccountUuid ||
-      req.token.extra?.admin === 'true'
+      isWorkspaceToken(req.token, req.params.workspace) || isSystem(req.token) || isAdmin(req.token)
     if (!hasWorkspaceAccess) {
       throw new ApiError(401, 'Unauthorized')
     }
   }
 
   next()
+}
+
+function isWorkspaceToken (token: Token, workspace: string): boolean {
+  return token.workspace.name === workspace
+}
+
+function isSystem (token: Token): boolean {
+  return token.email === systemAccountEmail
+}
+
+function isAdmin (token: Token): boolean {
+  return token.extra?.admin === 'true'
+}
+
+function isGuest (token: Token): boolean {
+  return token.extra?.guest === 'true'
 }
