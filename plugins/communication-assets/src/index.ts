@@ -13,11 +13,7 @@
 // limitations under the License.
 //
 
-import { type Message } from '@hcengineering/communication-types'
-import { type Card } from '@hcengineering/card'
+import { addStringsLoader } from '@hcengineering/platform'
+import { communicationId } from '@hcengineering/communication'
 
-import { openThreadInSidebar } from './location'
-
-export async function replyToThread (message: Message, parent: Card): Promise<void> {
-  await openThreadInSidebar(message, parent)
-}
+addStringsLoader(communicationId, async (lang: string) => await import(`../lang/${lang}.json`))

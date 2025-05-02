@@ -16,11 +16,15 @@
   export let element: HTMLDivElement | undefined | null = undefined
 </script>
 
-<div class="w-full text-sm flex-center whitespace-nowrap" bind:this={element}>
+<div class="w-full text-sm flex-center whitespace-nowrap container" bind:this={element}>
   <div class="line mr-3" />
 </div>
 
 <style lang="scss">
+  .container {
+    padding: 0 4rem;
+  }
+
   .line {
     position: relative;
     width: 100%;

@@ -16,7 +16,6 @@
 import { type Resources } from '@hcengineering/platform'
 
 import Activity from './components/Activity.svelte'
-import NewActivity from './components/NewActivity.svelte'
 import ActivityMessagePresenter from './components/activity-message/ActivityMessagePresenter.svelte'
 import DocUpdateMessagePresenter from './components/doc-update-message/DocUpdateMessagePresenter.svelte'
 import ActivityInfoMessagePresenter from './components/activity-info-message/ActivityInfoMessagePresenter.svelte'
@@ -68,7 +67,6 @@ export { default as BasePreview } from './components/BasePreview.svelte'
 export default async (): Promise<Resources> => ({
   component: {
     Activity,
-    NewActivity,
     ActivityMessagePresenter,
     DocUpdateMessagePresenter,
     ReactionPresenter,

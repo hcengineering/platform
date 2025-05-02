@@ -17,13 +17,14 @@
   import { formatName, getPersonBySocialId, Person } from '@hcengineering/contact'
   import { createEventDispatcher } from 'svelte'
   import { getClient } from '@hcengineering/presentation'
-  import { Card } from '@hcengineering/card'
-  import { getCurrentAccount } from '@hcengineering/core'
+  import cardPlugin, { Card } from '@hcengineering/card'
+  import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { EmojiPopup, getEventPositionElement, showPopup, Action as MenuAction } from '@hcengineering/ui'
   import { PersonPreviewProvider, personByPersonIdStore } from '@hcengineering/contact-resources'
   import type { SocialID } from '@hcengineering/communication-types'
   import { AttachmentPreview } from '@hcengineering/attachment-resources'
   import { Message, MessageType } from '@hcengineering/communication-types'
+  import { openDoc } from '@hcengineering/view-resources'
 
   import MessageContentViewer from './MessageContentViewer.svelte'
   import { AvatarSize } from '../../types'
@@ -167,6 +168,16 @@
   }
 
   let isActionsOpened = false
+
+  async function handleReply () {
+    const t = message.thread
+    if (t === undefined) return
+    const _id = t.thread
+    const client = getClient()
+    const c = await client.findOne(cardPlugin.class.Card, { _id: _id as Ref<Card> })
+    if (c === undefined) return
+    await openDoc(client.getHierarchy(), c)
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -219,7 +230,8 @@
         </div>
       {:else}
         <MessageInput
-          cardId={message.card}
+          cardId={card._id}
+          cardType={card._class}
           {message}
           content={toMarkup(message.content)}
           onCancel={handleCancelEdit}
@@ -244,11 +256,7 @@
   {/if}
   {#if replies && message.thread && message.thread.repliesCount > 0}
     <div class="message__replies overflow-label">
-      <MessageReplies
-        count={message.thread.repliesCount}
-        lastReply={message.thread.lastReply}
-        on:click={() => dispatch('reply', message)}
-      />
+      <MessageReplies count={message.thread.repliesCount} lastReply={message.thread.lastReply} on:click={handleReply} />
     </div>
   {/if}
 </div>
@@ -261,7 +269,7 @@
     align-self: stretch;
     min-width: 0;
     position: relative;
-    padding: 1rem 2rem;
+    padding: 1rem 4rem;
 
     &:hover:not(.noHover) {
       background: var(--next-message-hover-color-background);
@@ -361,6 +369,7 @@
     gap: 0.375rem;
     overflow-x: auto;
     margin-left: 2.75rem;
+    height: 18.75rem;
   }
 
   .message__actions {

@@ -16,11 +16,14 @@
 import { type Resources } from '@hcengineering/platform'
 
 import ChatApplication from './components/ChatApplication.svelte'
-import ChatWidget from './components/ChatWidget.svelte'
+import { resolveLocation, resolveLocationData } from './location'
 
 export default async (): Promise<Resources> => ({
   component: {
-    ChatApplication,
-    ChatWidget
+    ChatApplication
+  },
+  resolver: {
+    Location: resolveLocation,
+    LocationData: resolveLocationData
   }
 })

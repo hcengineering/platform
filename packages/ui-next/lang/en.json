@@ -28,6 +28,8 @@
     "Yesterday": "Yesterday",
     "YesterdayAt": "Yesterday at {time}",
     "AndMore": "and {count} more",
-    "IsTyping": "{count, plural, =1 {is typing} other {are typing}}..."
+    "IsTyping": "{count, plural, =1 {is typing} other {are typing}}...",
+    "Loading": "Loading...",
+    "MessageIn": "Message #{title}"
   }
 }

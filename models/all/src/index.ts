@@ -117,6 +117,7 @@ import { chatId, createModel as chatModel } from '@hcengineering/model-chat'
 import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
 import { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
 import { achievementId, createModel as achievementModel } from '@hcengineering/model-achievement'
+import { communicationId, createModel as communicationModel } from '@hcengineering/model-communication'
 import { type Plugin } from '@hcengineering/platform'
 
 interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' | 'transactions'> {}
@@ -458,6 +459,7 @@ export default function buildModel (): Builder {
     [chatModel, chatId],
     [inboxModel, inboxId],
     [achievementModel, achievementId],
+    [communicationModel, communicationId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],

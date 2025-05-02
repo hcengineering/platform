@@ -14,6 +14,7 @@
 import type { Ref } from '@hcengineering/core'
 import type { MasterTag } from '@hcengineering/card'
 import type { LabelID } from '@hcengineering/communication-types'
+import { type Heading } from '@hcengineering/text-editor'
 
 interface BaseNavigatorConfig {
   types: Array<Ref<MasterTag>>
@@ -37,3 +38,15 @@ export interface CardsNavigatorConfig extends BaseNavigatorConfig {
 }
 
 export type NavigatorConfig = TypesNavigatorConfig | CardsNavigatorConfig
+
+export interface CardTocAction {
+  id: 'toc'
+  toc: Heading[]
+}
+
+export interface CardOverlayAction {
+  id: 'overlay'
+  show: boolean
+}
+
+export type CardSectionAction = CardTocAction | CardOverlayAction

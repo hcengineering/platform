@@ -59,6 +59,7 @@ import { aiBotId, aiBotOperation } from '@hcengineering/model-ai-bot'
 import { chatId, chatOperation } from '@hcengineering/model-chat'
 import { inboxId, inboxOperation } from '@hcengineering/model-inbox'
 import { processId, processOperation } from '@hcengineering/model-process'
+import { communicationId, communicationOperation } from '@hcengineering/model-communication'
 import { recorderId, recorderOperation } from '@hcengineering/model-recorder'
 
 export const migrateOperations: [string, MigrateOperation][] = [
@@ -108,5 +109,6 @@ export const migrateOperations: [string, MigrateOperation][] = [
   [chatId, chatOperation],
   [inboxId, inboxOperation],
   [processId, processOperation],
+  [communicationId, communicationOperation],
   [recorderId, recorderOperation]
 ]
