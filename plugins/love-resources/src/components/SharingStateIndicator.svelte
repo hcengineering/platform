@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { tooltip, eventToHTMLElement, showPopup } from '@hcengineering/ui'
 
   import love from '../plugin'
   import { isSharingEnabled } from '../utils'
@@ -21,20 +21,22 @@
   import SharingStatePopup from './SharingStatePopup.svelte'
   import IconShare from './icons/Share.svelte'
 
+  let pressed: boolean = false
   function handleClick (ev: MouseEvent): void {
-    showPopup(SharingStatePopup, {}, eventToHTMLElement(ev))
+    pressed = true
+    showPopup(SharingStatePopup, {}, eventToHTMLElement(ev), () => {
+      pressed = false
+    })
   }
 </script>
 
 {#if $isSharingEnabled}
-  <Button
-    noFocus
-    icon={IconShare}
-    iconProps={{ fill: 'var(--theme-state-positive-color)' }}
-    kind={'icon'}
-    size={'x-small'}
-    padding={'0 .25rem'}
-    showTooltip={{ label: love.string.Sharing, direction: 'bottom' }}
+  <button
+    class="hulyStatusBarButton mini positive positiveContent"
+    class:pressed
+    use:tooltip={{ label: love.string.Sharing, direction: 'bottom' }}
     on:click={handleClick}
-  />
+  >
+    <IconShare size={'small'} />
+  </button>
 {/if}

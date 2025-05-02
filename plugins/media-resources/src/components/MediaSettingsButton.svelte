@@ -20,6 +20,7 @@
 
   import IconCamOn from './icons/CamOn.svelte'
   import MediaPopup from './MediaPopup.svelte'
+  import Icon from '@hcengineering/ui/src/components/Icon.svelte'
 
   export let disabled = false
 
@@ -49,16 +50,28 @@
 </script>
 
 {#if active}
-  <Button
-    noFocus
-    icon={IconMoreH}
-    kind={'icon'}
-    size={'x-small'}
-    padding={'0 .5rem'}
-    borderStyle={'none'}
-    {disabled}
-    on:click={openPopup}
-  />
+  <button class="options-button" class:pressed {disabled} on:click={openPopup}>
+    <IconMoreH size={'small'} />
+  </button>
 {:else}
   <StatusBarButton icon={IconCamOn} {pressed} on:click={openPopup} />
 {/if}
+
+<style lang="scss">
+  .options-button {
+    margin: 0;
+    padding: 0.375rem;
+    height: 1.75rem;
+    color: var(--theme-state-positive-color);
+    background-color: var(--theme-state-positive-background-color);
+    border: none;
+    border-radius: 0 0.375rem 0.375rem 0;
+    outline: none;
+
+    &.pressed,
+    &:hover {
+      color: var(--theme-state-positive-hover);
+      background-color: var(--theme-state-positive-background-hover);
+    }
+  }
+</style>

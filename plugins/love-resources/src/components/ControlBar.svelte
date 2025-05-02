@@ -15,7 +15,7 @@
 <script lang="ts">
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { Room, RoomType, isOffice, roomAccessIcon } from '@hcengineering/love'
+  import { Room, RoomType, isOffice, roomAccessIcon, RoomAccess } from '@hcengineering/love'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import {
@@ -193,6 +193,14 @@
     {#if room._id !== love.ids.Reception}
       <ModernButton
         icon={roomAccessIcon[room.access]}
+        iconProps={{
+          fill:
+            room.access === RoomAccess.Open
+              ? 'var(--bg-positive-default)'
+              : room.access === RoomAccess.DND
+                ? 'var(--bg-negative-default)'
+                : 'currentColor'
+        }}
         tooltip={{ label: love.string.ChangeAccess }}
         kind={'secondary'}
         size={'large'}
@@ -237,6 +245,9 @@
         <SplitButton
           size={'large'}
           icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}
+          iconProps={{
+            fill: $isSharingEnabled ? 'var(--bg-negative-default)' : 'var(--bg-positive-default)'
+          }}
           showTooltip={{ label: $isSharingEnabled ? love.string.StopShare : love.string.Share }}
           disabled={($screenSharing && !$isSharingEnabled) || !$isConnected}
           action={changeShare}

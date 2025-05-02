@@ -30,14 +30,21 @@
   --secondary-button-hovered: #BDD2F5;
   --secondary-button-pressed: #A7C3F1;
   --secondary-button-focused: #BDD2F5;
-  --positive-button-default: #26A869;
-  --positive-button-hovered: #2BBB75;
-  --positive-button-pressed: #21915B;
-  --positive-button-focused: #26A869;
-  --negative-button-default: #CA4242;
-  --negative-button-hovered: #D05858;
-  --negative-button-pressed: #BF3636;
-  --negative-button-focused: #CA4242;
+  --positive-button-default: #05A05C;
+  --positive-button-hovered: #05AD63;
+  --positive-button-pressed: #019253;
+  --positive-button-focused: #05AD63;
+  --positive-button-disabled: rgba(5, 160, 92, .15);
+  --positive-button-disabled-color: rgba(5, 160, 92, .5);
+  --negative-button-default: #CB4B42;
+  --negative-button-hovered: #DC5148;
+  --negative-button-pressed: #B34139;
+  --negative-button-focused: #DC5148;
+  --negative-button-disabled: rgba(203, 75, 66, .15);
+  --negative-button-disabled-color: rgba(203, 75, 66, .5);
+
+  --bg-positive-default: #05A05C;
+  --bg-negative-default: #CB4B42;
 
   --white-color: #fff;
   --duotone-color: rgba(126, 134, 158, .25);
@@ -61,9 +68,19 @@
   --primary-color-pink: #FA8DA1;
 
   --highlight-blue-01: #0084FF;
-  --highlight-red: #F96E50;
+  --highlight-red: #CB4B42;
   --highlight-red-hover: #ff967e;
   --highlight-red-press: #f96f50bd;
+
+  --theme-state-negative-color: #CB4B42;
+  --theme-state-negative-hover: #B2423A;
+  --theme-state-negative-background-color: rgba(203, 75, 66, .15);
+  --theme-state-negative-border-color: rgba(203, 75, 66, .15);
+  --theme-state-positive-color: #05A05C;
+  --theme-state-positive-hover: #04874E;
+  --theme-state-positive-background-color: rgba(5, 160, 92, .1);
+  --theme-state-positive-background-hover: rgba(5, 160, 92, .2);
+  --theme-state-positive-border-color: rgba(5, 160, 92, .15);
 
   --text-editor-selected-node-background: rgba(43, 81, 144, 0.1);
   --text-editor-selected-node-color: #93CAF3;
@@ -95,10 +112,6 @@
   --primary-button-disabled-color: rgba(255, 255, 255, .4);
   --secondary-button-disabled: rgba(255, 255, 255, .12);
   --secondary-button-disabled-color: rgba(255, 255, 255, .4);
-  --positive-button-disabled: rgba(38, 168, 105, .2);
-  --positive-button-disabled-color: rgba(38, 168, 105, .6);
-  --negative-button-disabled: rgba(202, 66, 66, .2);
-  --negative-button-disabled-color: rgba(202, 66, 66, .6);
 
   --theme-button-default: rgba(255, 255, 255, .02);
   --theme-button-hovered: rgba(255, 255, 255, .04);
@@ -369,12 +382,6 @@
   --theme-state-ghost-color: rgba(123, 123, 123, 0.6);
   --theme-state-ghost-background-color: rgba(123, 123, 123, 0.1);
   --theme-state-ghost-border-color: transparent;
-  --theme-state-negative-color: #dc5147;
-  --theme-state-negative-background-color: rgba(220, 81, 71, 0.1);
-  --theme-state-negative-border-color: rgba(220, 81, 71, 0.15);
-  --theme-state-positive-color: #139d4a;
-  --theme-state-positive-background-color: rgba(19, 157, 74, 0.1);
-  --theme-state-positive-border-color: rgba(19, 157, 74, 0.15);
   --theme-state-primary-color: #3070dc;
   --theme-state-primary-background-color: rgba(48, 112, 220, 0.1);
   --theme-state-primary-border-color: rgba(48, 112, 220, 0.15);
@@ -397,10 +404,6 @@
   --primary-button-disabled-color: rgba(0, 0, 0, .4);
   --secondary-button-disabled: rgba(0, 0, 0, .12);
   --secondary-button-disabled-color: rgba(0, 0, 0, .4);
-  --positive-button-disabled: rgba(38, 168, 105, .2);
-  --positive-button-disabled-color: rgba(33, 145, 91, .6);
-  --negative-button-disabled: rgba(202, 66, 66, .2);
-  --negative-button-disabled-color: rgba(202, 66, 66, .6);
 
   --theme-button-default: rgba(0, 0, 0, .02);
   --theme-button-hovered: rgba(0, 0, 0, .04);
@@ -671,12 +674,6 @@
   --theme-state-ghost-color: rgba(123, 123, 123, 0.6);
   --theme-state-ghost-background-color: rgba(123, 123, 123, 0.1);
   --theme-state-ghost-border-color: transparent;
-  --theme-state-negative-color: #dc5147;
-  --theme-state-negative-background-color: rgba(220, 81, 71, 0.1);
-  --theme-state-negative-border-color: rgba(220, 81, 71, 0.15);
-  --theme-state-positive-color: #139d4a;
-  --theme-state-positive-background-color: rgba(19, 157, 74, 0.1);
-  --theme-state-positive-border-color: rgba(19, 157, 74, 0.15);
   --theme-state-primary-color: #3070dc;
   --theme-state-primary-background-color: rgba(48, 112, 220, 0.1);
   --theme-state-primary-border-color: rgba(48, 112, 220, 0.15);
