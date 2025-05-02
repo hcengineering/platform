@@ -37,16 +37,28 @@ function handleEmoji (
   }
   const emoji = getEmojiFunction(match.pop())
   if (emoji === undefined) return
-  // TODO: add custom emoji
-  const unicodeEmoji = typeof emoji === 'string' ? emoji : (isCustomEmoji(emoji) ? emoji.shortcode : emoji.emoji)
-  commands.insertContentAt(range, [
-    {
-      type: 'emoji',
-      attrs: {
-        emoji: unicodeEmoji
+  if (typeof emoji === 'string' || !isCustomEmoji(emoji)) {
+    commands.insertContentAt(range, [
+      {
+        type: 'emoji',
+        attrs: {
+          emoji: typeof emoji === 'string' ? emoji : emoji.emoji,
+          kind: 'unicode'
+        }
       }
-    }
-  ])
+    ])
+  } else {
+    commands.insertContentAt(range, [
+      {
+        type: 'emoji',
+        attrs: {
+          emoji: emoji.shortcode,
+          kind: 'custom',
+          url: emoji.url
+        }
+      }
+    ])
+  }
 }
 
 export const EmojiExtension = EmojiNode.extend<EmojiNodeOptions>({

@@ -69,6 +69,13 @@ export async function loadEmojis (lang?: string): Promise<EmojiWithGroup[]> {
 
 export async function updateEmojis (lang?: string): Promise<void> {
   const emojis = await loadEmojis(lang)
+  emojis.push({
+    shortcode: 'huly',
+    label: 'huly',
+    url: 'https://fonts.gstatic.com/s/e/notoemoji/latest/1f979/512.gif',
+    tags: ['huly'],
+    key: 'flags'
+  })
   emojiStore.set(emojis)
 }
 
@@ -86,13 +93,15 @@ export function getEmojiByEmoticon (emoticon: string | undefined): string | unde
 export function getUnicodeEmojiByShortCode (shortcode: string | undefined, skinTone?: number): Emoji | undefined {
   const emoji = getEmojiByShortCode(shortcode, skinTone)
   if (emoji === undefined || isCustomEmoji(emoji)) return undefined
+  return emoji
 }
 
 export function getEmojiByShortCode (shortcode: string | undefined, skinTone?: number): ExtendedEmoji | undefined {
   if (shortcode === undefined) return undefined
+  const pureShortcode = shortcode.replaceAll(':', '')
   return findEmoji((e) => {
-    if (isCustomEmoji(e)) return e.shortcode === shortcode
-    return e.shortcodes?.includes(shortcode.replaceAll(':', ''))
+    if (isCustomEmoji(e)) return e.shortcode === pureShortcode
+    return e.shortcodes?.includes(pureShortcode)
   }, skinTone)
 }
 

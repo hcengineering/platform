@@ -77,8 +77,8 @@
     insertText: (text) => {
       editor?.insertText(text)
     },
-    insertEmoji: (emoji) => {
-      editor?.insertEmoji(emoji)
+    insertEmoji: (text: string, url?: string) => {
+      editor?.insertEmoji(text, url)
     },
     insertMarkup: (markup) => {
       editor?.insertMarkup(markup)

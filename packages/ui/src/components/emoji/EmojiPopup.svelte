@@ -102,9 +102,8 @@
     selected = isCustomEmoji(emoji) ? emoji.shortcode : emoji.emoji
     addFrequentlyEmojis(emoji)
     dispatch('close', {
-      // TODO: send ExtendedEmoji
-      emoji: selected
-      // codes: emoji.hexcode.split('-').map((hc) => parseInt(hc, 16))
+      text: selected,
+      url: isCustomEmoji(emoji) ? emoji.url : undefined
     })
   }
 

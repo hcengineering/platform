@@ -16,7 +16,7 @@ export type CollaboratorType = 'local' | 'cloud'
  */
 export interface TextEditorHandler {
   insertText: (html: string) => void
-  insertEmoji: (emoji: string) => void
+  insertEmoji: (text: string, url?: string) => void
   insertMarkup: (markup: Markup) => void
   insertTemplate: (name: string, markup: string) => void
   insertTable: (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => void

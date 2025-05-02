@@ -27,7 +27,7 @@ export const defaultRefActions: RefAction[] = [
           if (emoji === null || emoji === undefined) {
             return
           }
-          editorHandler.insertEmoji(emoji.emoji)
+          editorHandler.insertEmoji(emoji.text, emoji.url)
           editorHandler.focus()
         },
         () => {}

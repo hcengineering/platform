@@ -80,7 +80,15 @@
   {:else if node.type === MarkupNodeType.text}
     {node.text}
   {:else if node.type === MarkupNodeType.emoji}
-    <span class="emoji" class:emojiOnly={single}>{node.attrs?.emoji}</span>
+    <span class="emoji" class:emojiOnly={single}>
+      {#if node.attrs?.kind === 'custom'}
+        {@const src = toString(attrs.url)}
+        {@const alt = toString(attrs.emoji)}
+        <img {src} {alt}/>
+      {:else}
+        {node.attrs?.emoji}
+      {/if}
+    </span>
   {:else if node.type === MarkupNodeType.paragraph}
     <p class="p-inline contrast" class:overflow-label={preview} class:emojiOnly={checkEmoji(nodes)}>
       {#if nodes.length > 0}

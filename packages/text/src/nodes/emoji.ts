@@ -18,13 +18,15 @@ import { Node, mergeAttributes } from '@tiptap/core'
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     emoji: {
-      insertEmoji: (emoji: string) => ReturnType
+      insertEmoji: (emoji: string, kind: 'unicode' | 'custom', url?: string) => ReturnType
     }
   }
 }
 
 export interface EmojiNodeOptions {
   emoji: string
+  kind: 'unicode' | 'custom'
+  url?: string
 }
 
 export const EmojiNode = Node.create<EmojiNodeOptions>({
@@ -38,6 +40,12 @@ export const EmojiNode = Node.create<EmojiNodeOptions>({
     return {
       emoji: {
         default: ''
+      },
+      kind: {
+        default: 'unicode'
+      },
+      url: {
+        default: null
       }
     }
   },
@@ -45,11 +53,11 @@ export const EmojiNode = Node.create<EmojiNodeOptions>({
   addCommands () {
     return {
       insertEmoji:
-        (emoji: string) =>
+        (emoji: string, kind: 'unicode' | 'custom', url?: string) =>
           ({ commands }) => {
             return commands.insertContent({
               type: this.name,
-              attrs: { emoji }
+              attrs: { emoji, kind, url }
             })
           }
     }
@@ -64,6 +72,28 @@ export const EmojiNode = Node.create<EmojiNodeOptions>({
   },
 
   renderHTML ({ node, HTMLAttributes }) {
+    if (node.attrs.kind === 'custom') {
+      return [
+        'span',
+        mergeAttributes(
+          {
+            'data-type': this.name,
+            class: 'emoji'
+          },
+          HTMLAttributes
+        ),
+        [
+          'img',
+          mergeAttributes(
+            {
+              'data-type': this.name,
+              src: node.attrs.url,
+              alt: node.attrs.emoji
+            }
+          )
+        ]
+      ]
+    }
     return [
       'span',
       mergeAttributes(

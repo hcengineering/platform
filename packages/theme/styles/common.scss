@@ -1,14 +1,14 @@
 //
 // Copyright © 2021 Anticrm Platform Contributors.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
@@ -108,7 +108,7 @@
   justify-content: space-between;
   align-items: center;
   background-color: var(--theme-navpanel-color);
-  
+
   &.vertical {
     flex-direction: column;
     min-width: var(--app-panel-width);
@@ -132,7 +132,7 @@
   display: flex;
   height: 100%;
   min-height: 0;
-  
+
   &.header { background-color: var(--theme-comp-header-color); }
   &.filled { background-color: var(--theme-bg-color); }
   &.filledNav { background-color: var(--theme-navpanel-color) !important; }
@@ -144,13 +144,13 @@
   min-width: 12.5rem;
   max-width: 22.5rem;
   width: 17.5rem;
-  
+
   &:not(.second) { background-color: var(--theme-navpanel-color); }
   &.second.float {
     background-color: var(--theme-navpanel-color);
     filter: drop-shadow(2px 0 5px rgba(0, 0, 0, .2));
     z-index: 460;
-    
+
     &:not(.inner) {
       position: fixed;
       top: calc(var(--status-bar-height) + 3.5rem + 1px);
@@ -301,7 +301,7 @@
     width: 1rem;
     height: 1rem;
     border-radius: .25rem;
-    
+
     &.arrow {
       color: var(--theme-trans-color);
 
@@ -446,7 +446,7 @@
       width: 15rem;
       padding-right: 1rem;
       color: var(--theme-caption-color);
-      
+
       &.withDesciption {
         display: flex;
         flex-direction: column;
@@ -592,7 +592,7 @@
     height: 2.5rem;
     min-height: 2.5rem;
     border-bottom: 1px solid var(--theme-divider-color);
-    
+
     &.high {
       padding-right: 1rem;
       height: 3.5rem;
@@ -613,7 +613,7 @@
       min-width: 0;
       font-size: 1rem;
       color: var(--caption-color);
-      
+
       &:not(.short) { flex-grow: 1; }
     }
     &__header {
@@ -632,7 +632,7 @@
     }
     &__counter {
       color: var(--theme-darker-color);
-    }  
+    }
     &__tag {
       display: flex;
       align-items: center;
@@ -662,7 +662,7 @@
     display: flex;
     min-width: 0;
     min-height: 0;
-    
+
     &:not(.none-appearance) {
       justify-content: center;
       align-items: center;
@@ -818,7 +818,7 @@
       }
       &:hover .caption.hasAttachments { margin-bottom: .5rem; }
     }
-    
+
     &:first-child {
       border-top-left-radius: .75rem;
       border-top-right-radius: .75rem;
@@ -853,4 +853,14 @@
 .message-row-bg[data-type="out"] + .message-row-bg[data-type="out"] .message-row .message-container {
   padding-top: 0;
   .message.outcoming { border-radius: 0.75rem 0.125rem 0.125rem 0.75rem; }
+}
+
+.emoji > img {
+  display: inline-block;
+  vertical-align: sub;
+  height: 1.3em;
+  width: auto;
+  margin: 0 0.05em 0 0.1em;
+  padding: 0;
+  line-height: 1;
 }

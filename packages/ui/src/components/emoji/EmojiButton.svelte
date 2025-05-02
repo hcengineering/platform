@@ -41,7 +41,11 @@
       dispatch('select', displayedEmoji)
     }}
   >
-    <span>{isCustomEmoji(displayedEmoji) ? displayedEmoji.shortcode : displayedEmoji.emoji}</span>
+    {#if isCustomEmoji(displayedEmoji)}
+      <span><img src="{displayedEmoji.url}" alt="{displayedEmoji.shortcode}"></span>
+    {:else}
+      <span>{displayedEmoji.emoji}</span>
+    {/if}
   </button>
 {/if}
 
@@ -73,6 +77,10 @@
     span {
       transform: translateY(1%);
       pointer-events: none;
+    }
+    span > img {
+      height: 1em;
+      width: auto;
     }
     &:enabled:hover {
       background-color: var(--theme-popup-hover);

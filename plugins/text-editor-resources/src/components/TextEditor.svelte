@@ -96,8 +96,8 @@
     return editor
   }
 
-  export function insertEmoji (emoji: string): void {
-    editor?.commands.insertEmoji(emoji)
+  export function insertEmoji (text: string, url?: string): void {
+    editor?.commands.insertEmoji(text, url === undefined ? 'unicode' : 'custom', url)
   }
 
   export function insertText (text: string): void {
