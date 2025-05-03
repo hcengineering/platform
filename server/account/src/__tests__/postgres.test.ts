@@ -474,10 +474,13 @@ describe('PostgresAccountDB', () => {
 
       expect(mockClient.begin).toHaveBeenCalled()
       expect(mockClient).toHaveBeenCalledWith(
-        'global_account' // First call with schema name
+        'global_account' // Verify schema name
+      )
+      expect(mockClient.mock.calls[3][0].map((s: string) => s.replace(/\s+/g, ' ')).join('')).toBe(
+        ' INSERT INTO ._account_applied_migrations (identifier, ddl, last_processed_at) VALUES (, , NOW()) ON CONFLICT (identifier) DO NOTHING '
       )
       expect(mockClient).toHaveBeenCalledWith(
-        ['INSERT INTO ', '._account_applied_migrations (identifier, ddl) VALUES (', ', ', ') ON CONFLICT DO NOTHING'],
+        expect.anything(),
         expect.anything(),
         'test_migration',
         'CREATE TABLE test'
