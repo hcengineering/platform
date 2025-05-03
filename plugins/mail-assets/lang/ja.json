@@ -8,6 +8,8 @@
     "Reply": "返信",
     "Date": "日付",
     "MailMessage": "メッセージ",
-    "MailMessages": "メッセージ"
+    "MailMessages": "メッセージ",
+    "MailChannel": "メールチャンネル",
+    "MailChannels": "メールチャンネル"
   }
 }

@@ -16,6 +16,8 @@
 import core, { ClassifierKind, type Domain, IndexKind } from '@hcengineering/core'
 import { type Builder, Index, Model, Prop, TypeString } from '@hcengineering/model'
 import { TDoc } from '@hcengineering/model-core'
+import { createSystemType } from '@hcengineering/model-card'
+import chat from '@hcengineering/chat'
 
 import view, { type Viewlet } from '@hcengineering/model-view'
 import card from '@hcengineering/card'
@@ -46,6 +48,22 @@ export function createModel (builder: Builder): void {
   builder.createModel(TMailRoute)
 
   createMailTag(builder)
+  createSystemType(
+    builder,
+    mail.masterTag.MailThread,
+    chat.icon.Thread,
+    mail.string.MailThread,
+    mail.string.MailMessages,
+    chat.masterTag.Thread
+  )
+  createSystemType(
+    builder,
+    mail.masterTag.MailChannel,
+    chat.icon.Channel,
+    mail.string.MailChannel,
+    mail.string.MailChannels,
+    chat.masterTag.Channel
+  )
   createMailViewlet(builder)
 }
 

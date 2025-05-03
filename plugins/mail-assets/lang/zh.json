@@ -8,6 +8,8 @@
     "Reply": "回复",
     "Date": "日期",
     "MailMessage": "邮件",
-    "MailMessages": "邮件"
+    "MailMessages": "邮件",
+    "MailChannel": "邮件频道",
+    "MailChannels": "邮件频道"
   }
 }

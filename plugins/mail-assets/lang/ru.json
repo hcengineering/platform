@@ -8,6 +8,8 @@
     "Reply": "Ответить",
     "Date": "Дата",
     "MailMessage": "Сообщение",
-    "MailMessages": "Сообщения"
+    "MailMessages": "Сообщения",
+    "MailChannel": "Почтовый канал",
+    "MailChannels": "Почтовые каналы"
   }
 }

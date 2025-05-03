@@ -8,6 +8,8 @@
     "Reply": "Responder",
     "Date": "Fecha",
     "MailMessage": "Mensaje",
-    "MailMessages": "Mensajes"
+    "MailMessages": "Mensajes",
+    "MailChannel": "Canal de correo",
+    "MailChannels": "Canales de correo"
   }
 }

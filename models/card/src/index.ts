@@ -154,7 +154,8 @@ export function createSystemType (
   type: Ref<MasterTag>,
   icon: Asset = card.icon.MasterTag,
   label: IntlString,
-  pluralLabel?: IntlString
+  pluralLabel?: IntlString,
+  parent?: Ref<MasterTag>
 ): void {
   builder.createDoc(
     card.class.MasterTag,
@@ -162,7 +163,7 @@ export function createSystemType (
     {
       label,
       pluralLabel,
-      extends: card.class.Card,
+      extends: parent ?? card.class.Card,
       icon,
       kind: ClassifierKind.CLASS
     },

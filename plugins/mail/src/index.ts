@@ -33,6 +33,10 @@ export default plugin(mailId, {
     MailThread: '' as Ref<MasterTag>,
     MailRoute: '' as Ref<Class<MailRoute>>
   },
+  masterTag: {
+    MailChannel: '' as Ref<MasterTag>,
+    MailThread: '' as Ref<MasterTag>
+  },
   component: {
     CreateMail: '' as AnyComponent,
     MailThreadPresenter: '' as AnyComponent,
@@ -50,9 +54,12 @@ export default plugin(mailId, {
     From: '' as IntlString,
     CreateMail: '' as IntlString,
     Reply: '' as IntlString,
-    Date: '' as IntlString
+    Date: '' as IntlString,
+    MailChannel: '' as IntlString,
+    MailChannels: '' as IntlString
   },
   icon: {
+    Mail: '' as Asset,
     NewMail: '' as Asset,
     Inbox: '' as Asset,
     Done: '' as Asset,
