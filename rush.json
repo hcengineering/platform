@@ -2479,8 +2479,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-gmail-v2",
-      "projectFolder": "services/gmail/pod-gmail-v2",
+      "packageName": "@hcengineering/pod-gmail-next",
+      "projectFolder": "services/gmail/pod-gmail-next",
       "shouldPublish": false
     }
   ]

@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/pod-gmail-v2",
+  "name": "@hcengineering/pod-gmail-next",
   "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
