@@ -479,7 +479,17 @@ export function defineViewlets (builder: Builder): void {
       configOptions: {
         strict: true
       },
-      config: ['subIssues', 'priority', 'component', 'milestone', 'dueDate', 'labels', 'estimation', 'attachments', 'comments']
+      config: [
+        'subIssues',
+        'priority',
+        'component',
+        'milestone',
+        'dueDate',
+        'labels',
+        'estimation',
+        'attachments',
+        'comments'
+      ]
     },
     tracker.viewlet.IssueKanban
   )
