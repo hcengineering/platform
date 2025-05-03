@@ -80,6 +80,7 @@
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
   import EstimationEditor from './timereport/EstimationEditor.svelte'
+  import MilestoneEditor from '../milestones/MilestoneEditor.svelte'
 
   const _class = tracker.class.Issue
   export let space: Ref<Project> | undefined = undefined
@@ -429,6 +430,16 @@
             {/if}
             {#if enabledConfig(config, 'component')}
               <ComponentEditor
+                value={issue}
+                {space}
+                isEditable={true}
+                kind={'link-bordered'}
+                size={'small'}
+                justify={'center'}
+              />
+            {/if}
+            {#if enabledConfig(config, 'milestone')}
+              <MilestoneEditor
                 value={issue}
                 {space}
                 isEditable={true}
