@@ -96,7 +96,7 @@ const handleRequest = async (
   }
 }
 
-export function createServer (ctx: MeasureContext, config: Config): { app: Express, close: () => void } {
+export async function createServer (ctx: MeasureContext, config: Config): Promise<{ app: Express, close: () => void }> {
   const buckets: Array<{ location: Location, bucket: S3Bucket }> = []
   for (const bucket of config.Buckets) {
     const location = bucket.location as Location
@@ -114,7 +114,7 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
     }
   }
 
-  const db = createDb(ctx, config.DbUrl)
+  const db = await createDb(ctx, config.DbUrl)
   const datalake = new DatalakeImpl(db, buckets, { cacheControl })
   const tempDir = new TemporaryDir(ctx, 'datalake-', config.CleanupInterval)
 

@@ -48,7 +48,7 @@ export const main = async (): Promise<void> => {
       )
   })
 
-  const { app, close } = createServer(metricsContext, config)
+  const { app, close } = await createServer(metricsContext, config)
   const server = listen(app, config.Port)
 
   const shutdown = (): void => {
