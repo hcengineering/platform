@@ -24,19 +24,17 @@ import core, {
   Enum,
   generateId,
   Ref,
-  Relation,
-  Space
+  Relation
 } from '@hcengineering/core'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
 import { contentType } from 'mime-types'
 import * as path from 'path'
 import { IntlString } from '../../../platform/types'
-import { Props, UnifiedDoc, UnifiedUpdate, UnifiedFile, UnifiedMixin } from '../types'
-import { MetadataRegistry, AssociationMetadata } from './registry'
-import { readMarkdownContent, readYamlHeader } from './parsing'
 import { Logger } from '../importer/logger'
-import { validateSchema } from './validation'
+import { Props, UnifiedDoc, UnifiedFile, UnifiedMixin, UnifiedUpdate } from '../types'
+import { readMarkdownContent, readYamlHeader } from './parsing'
+import { AssociationMetadata, MetadataRegistry } from './registry'
 import {
   AssociationSchema,
   BaseFieldType,
@@ -51,6 +49,7 @@ import {
   StringFieldType,
   TagSchema
 } from './schema'
+import { validateSchema } from './validation'
 
 export interface UnifiedDocProcessResult {
   docs: Map<string, Array<UnifiedDoc<Doc>>>
@@ -527,7 +526,7 @@ export class CardsProcessor {
     const cardId = this.metadataRegistry.getRef(cardPath) as Ref<Card>
     const cardProps: Record<string, any> = {
       _id: cardId,
-      space: 'card:space:Default' as Ref<Space>,
+      space: card.space.Default,
       title,
       parent: parentCardId
     }
@@ -551,7 +550,7 @@ export class CardsProcessor {
       cardProps.blobs = blobProps
     }
 
-    const relations: UnifiedDoc<Doc>[] = []
+    const relations: UnifiedDoc<Relation>[] = []
     for (const [key, value] of Object.entries(customProperties)) {
       if (masterTagAttributes.has(key)) {
         const attr = masterTagAttributes.get(key)
@@ -584,8 +583,10 @@ export class CardsProcessor {
         for (const val of values) {
           const otherCardPath = path.resolve(path.dirname(cardPath), val)
           const otherCardId = this.metadataRegistry.getRef(otherCardPath) as Ref<Card>
-          const relation: UnifiedDoc<Relation> = this.createRelation(metadata, cardId, otherCardId)
-          relations.push(relation)
+          const relation = this.createRelation(metadata, cardId, otherCardId, relations)
+          if (relation !== undefined) {
+            relations.push(relation)
+          }
         }
       }
     }
@@ -604,18 +605,26 @@ export class CardsProcessor {
   private createRelation (
     metadata: AssociationMetadata,
     cardId: Ref<Card>,
-    otherCardId: Ref<Card>
-  ): UnifiedDoc<Relation> {
-    const otherCardField = metadata.field === 'docA' ? 'docB' : 'docA'
+    otherCardId: Ref<Card>,
+    relations: UnifiedDoc<Relation>[]
+  ): UnifiedDoc<Relation> | undefined {
+    const association = metadata.association
+    const docA = metadata.field === 'docA' ? cardId : otherCardId
+    const docB = metadata.field === 'docB' ? cardId : otherCardId
+
+    const exists = relations.find(
+      (p) => p.props.docA === docA && p.props.docB === docB && p.props.association === association
+    )
+    if (exists !== undefined) return
     const relation: UnifiedDoc<Relation> = {
       _class: core.class.Relation,
       props: {
         _id: generateId<Relation>(),
         space: core.space.Model,
-        [metadata.field]: cardId,
-        [otherCardField]: otherCardId,
-        association: metadata.association
-      } as unknown as Props<Relation>
+        docA,
+        docB,
+        association
+      }
     }
     return relation
   }

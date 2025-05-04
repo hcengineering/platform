@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Header, Breadcrumb } from '@hcengineering/ui'
+  import { Header, Breadcrumb, Scroller } from '@hcengineering/ui'
   import core, { Account, Ref, Role, RolesAssignment, SpaceType, TypedSpace, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
@@ -81,22 +81,24 @@
     <Breadcrumb icon={setting.icon.Views} label={setting.string.Spaces} size="large" isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
-    {#each roles as role}
-      <div class="antiGrid-row">
-        <div class="antiGrid-row__header">
-          {role.name}
+    <Scroller>
+      {#each roles as role}
+        <div class="antiGrid-row">
+          <div class="antiGrid-row__header">
+            {role.name}
+          </div>
+          <AccountArrayEditor
+            value={rolesAssignment?.[role._id] ?? []}
+            label={setting.string.Assignees}
+            onChange={async (refs) => {
+              await handleRoleAssignmentChanged(role._id, refs)
+            }}
+            kind="regular"
+            size="large"
+          />
         </div>
-        <AccountArrayEditor
-          value={rolesAssignment?.[role._id] ?? []}
-          label={setting.string.Assignees}
-          onChange={(refs) => {
-            handleRoleAssignmentChanged(role._id, refs)
-          }}
-          kind="regular"
-          size="large"
-        />
-      </div>
-    {/each}
+      {/each}
+    </Scroller>
   </div>
 </div>
 

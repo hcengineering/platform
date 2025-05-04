@@ -28,8 +28,8 @@
   export let allowDeselect: boolean = false
   export let titleDeselect: IntlString | undefined = undefined
   export let placeholder: IntlString = presentation.string.Search
-  export let selectedObjects: Array<Ref<Person>> = []
-  export let ignoreObjects: Array<Ref<Person>> = []
+  export let selectedObjects: Array<Ref<Doc>> = []
+  export let ignoreObjects: Array<Ref<Doc>> = []
   export let shadows: boolean = true
   export let create: ObjectCreate | undefined = undefined
   export let searchField: string = 'name'
