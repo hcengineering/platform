@@ -94,7 +94,7 @@ export async function createDb (ctx: MeasureContext, connectionString: string): 
     }
   })
 
-  const db = await PostgresDB.create(sql)
+  const db = await PostgresDB.create(ctx, sql)
   return new LoggedDB(ctx, new RetryDB(db, { retries: 5 }))
 }
 
@@ -117,9 +117,9 @@ export interface BlobDB {
 export class PostgresDB implements BlobDB {
   private constructor (private readonly sql: Sql) {}
 
-  static async create (sql: Sql): Promise<PostgresDB> {
+  static async create (ctx: MeasureContext, sql: Sql): Promise<PostgresDB> {
     const db = new PostgresDB(sql)
-    await db.initSchema()
+    await db.initSchema(ctx)
     return db
   }
 
@@ -128,7 +128,7 @@ export class PostgresDB implements BlobDB {
     return await this.sql.unsafe<T>(query)
   }
 
-  async initSchema (): Promise<void> {
+  async initSchema (ctx: MeasureContext): Promise<void> {
     await this.execute('CREATE SCHEMA IF NOT EXISTS blob')
     await this.execute(`CREATE TABLE IF NOT EXISTS blob.migrations
       (
@@ -137,16 +137,19 @@ export class PostgresDB implements BlobDB {
       )`)
 
     const appliedMigrations = (await this.execute<Row[]>('SELECT name FROM blob.migrations')).map((row) => row.name)
+    ctx.info('applied migrations', { migrations: appliedMigrations })
+
     for (const [name, sql] of getMigrations()) {
       if (appliedMigrations.includes(name)) {
         continue
       }
 
       try {
+        ctx.warn('applying migration', { migration: name })
         await this.execute(sql)
         await this.execute('INSERT INTO blob.migrations (name) VALUES ($1)', [name])
       } catch (err: any) {
-        console.error(`Failed to apply migration ${name}: ${err}`)
+        ctx.error('failed to apply migration', { migration: name, error: err })
         throw err
       }
     }

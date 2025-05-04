@@ -108,7 +108,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
       location === 'enam' ||
       location === 'apac'
     ) {
-      buckets.push({ location, bucket: createBucket(createClient(bucket), bucket.bucket) })
+      buckets.push({ location, bucket: await createBucket(ctx, createClient(bucket), bucket.bucket) })
     } else {
       ctx.warn('invalid bucket location', { location, bucket })
     }
