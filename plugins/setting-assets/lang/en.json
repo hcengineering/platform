@@ -75,6 +75,7 @@
     "Select": "Select",
     "AddOwner": "Add owner",
     "ReadonlyGuest": "Readonly",
+    "Guest": "Guest",
     "User": "User",
     "Maintainer": "Maintainer",
     "Owner": "Owner",
