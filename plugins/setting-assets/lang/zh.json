@@ -1,7 +1,7 @@
 {
   "string": {
     "Setting": "设置",
-    "Spaces": "空间", 
+    "Spaces": "空间",
     "Integrations": "集成",
     "Support": "支持",
     "Privacy": "隐私",
@@ -67,6 +67,7 @@
     "WorkspaceSettings": "工作区设置",
     "Select": "选择",
     "AddOwner": "添加所有者",
+    "Guest": "访客",
     "User": "用户",
     "Maintainer": "维护者",
     "Owner": "所有者",
