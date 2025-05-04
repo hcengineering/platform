@@ -266,8 +266,6 @@ services:
       - STATS_URL=http://stats:4901
   datalake:
     image: hardcoreeng/datalake
-    extra_hosts:
-      - 'huly.local:host-gateway'
     depends_on:
       minio:
         condition: service_healthy
@@ -282,11 +280,11 @@ services:
     environment:
       - PORT=4031
       - SECRET=secret
-      - ACCOUNTS_URL=http://huly.local:3003
-      - STATS_URL=http://huly.local:4901
-      - STREAM_URL=http://huly.local:1081/recording
+      - ACCOUNTS_URL=http://account:3003
+      - STATS_URL=http://stats:4901
+      - STREAM_URL=http://localhost:1081/recording
       - DB_URL=${DB_PG_URL}
-      - BUCKETS=blobs,eu|http://minio:9002?accessKey=minioadmin&secretKey=minioadmin
+      - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
     restart: unless-stopped
   stats:
     image: hardcoreeng/stats
