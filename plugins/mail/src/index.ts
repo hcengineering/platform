@@ -59,7 +59,6 @@ export default plugin(mailId, {
     MailChannels: '' as IntlString
   },
   icon: {
-    Mail: '' as Asset,
     NewMail: '' as Asset,
     Inbox: '' as Asset,
     Done: '' as Asset,

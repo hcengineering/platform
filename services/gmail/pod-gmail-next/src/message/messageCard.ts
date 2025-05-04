@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { getClient as getAccountClient } from '@hcengineering/account-client'
+import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
 import { type Card } from '@hcengineering/card'
 import {
@@ -29,42 +29,43 @@ import {
   type TxOperations,
   generateId,
   PersonUuid,
-  RateLimiter,
-  systemAccountUuid
+  RateLimiter
 } from '@hcengineering/core'
 import mail from '@hcengineering/mail'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import { generateToken } from '@hcengineering/server-token'
-import config from './config'
-import { ensureGlobalPerson, ensureLocalPerson } from './person'
 
-export interface Attachment {
-  id: string
-  name: string
-  data: Buffer
-  contentType: string
-}
+import config from '../config'
+import { ensureGlobalPerson, ensureLocalPerson } from './person'
+import { type AttachedFile } from './types'
+import { GooglePeopleClient } from '../gmail/peopleClient'
 
 export async function createMessages (
   ctx: MeasureContext,
+  peopleClient: GooglePeopleClient,
+  token: string,
   mailId: string,
-  from: { address: string, name: string },
-  tos: { address: string, name: string }[],
+  from: string,
+  tos: string[],
   subject: string,
   content: string,
-  attachments: Attachment[],
+  attachments: AttachedFile[],
   inReplyTo?: string
 ): Promise<void> {
-  ctx.info('Sending message', { mailId, from: from.address, to: tos.map((to) => to.address).join(',') })
+  ctx.info('Sending message', { mailId, from, to: tos.join(',') })
 
-  const token = generateToken(systemAccountUuid, undefined, { service: 'mail' })
-  const accountClient = getAccountClient(config.accountsUrl, token)
-  const wsInfo = await accountClient.selectWorkspace(config.workspaceUrl)
+  const accountClient = getAccountClient(config.AccountsURL, token)
+  const wsInfo = await accountClient.getLoginInfoByToken()
+
+  if (!isWorkspaceLoginInfo(wsInfo)) {
+    ctx.error('Unable to get workspace info', { mailId, from, tos })
+    return
+  }
+
   const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
   const txClient = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
   const msgClient = getCommunicationClient(wsInfo.endpoint, wsInfo.workspace, wsInfo.token)
 
-  const fromPerson = await ensureGlobalPerson(ctx, accountClient, mailId, from)
+  const fromPerson = await ensureGlobalPerson(ctx, accountClient, mailId, from, peopleClient)
   if (fromPerson === undefined) {
     ctx.error('Unable to create message without a proper FROM', { mailId })
     return
@@ -76,7 +77,7 @@ export async function createMessages (
       mailId,
       fromPerson.uuid,
       fromPerson.socialId,
-      from.address,
+      from,
       fromPerson.firstName,
       fromPerson.lastName
     )
@@ -88,7 +89,7 @@ export async function createMessages (
 
   const toPersons: { address: string, uuid: PersonUuid, socialId: PersonId }[] = []
   for (const to of tos) {
-    const toPerson = await ensureGlobalPerson(ctx, accountClient, mailId, to)
+    const toPerson = await ensureGlobalPerson(ctx, accountClient, mailId, to, peopleClient)
     if (toPerson === undefined) {
       continue
     }
@@ -99,7 +100,7 @@ export async function createMessages (
         mailId,
         toPerson.uuid,
         toPerson.socialId,
-        to.address,
+        to,
         toPerson.firstName,
         toPerson.lastName
       )
@@ -107,7 +108,7 @@ export async function createMessages (
       ctx.error('Failed to ensure local TO person, skip', { error, mailId })
       continue
     }
-    toPersons.push({ address: to.address, ...toPerson })
+    toPersons.push({ address: to, ...toPerson })
   }
   if (toPersons.length === 0) {
     ctx.error('Unable to create message without a proper TO', { mailId })
@@ -117,9 +118,9 @@ export async function createMessages (
   const modifiedBy = fromPerson.socialId
   const participants = [fromPerson.socialId, ...toPersons.map((p) => p.socialId)]
 
-  const attachedBlobs: Attachment[] = []
-  if (config.storageConfig !== undefined) {
-    const storageConfig = storageConfigFromEnv(config.storageConfig)
+  const attachedBlobs: AttachedFile[] = []
+  if (config.StorageConfig !== undefined) {
+    const storageConfig = storageConfigFromEnv(config.StorageConfig)
     const storageAdapter = buildStorageFromConfig(storageConfig)
     try {
       for (const a of attachments ?? []) {
@@ -147,7 +148,7 @@ export async function createMessages (
   }
 
   try {
-    const spaces = await getPersonSpaces(ctx, txClient, mailId, fromPerson.uuid, from.address)
+    const spaces = await getPersonSpaces(ctx, txClient, mailId, fromPerson.uuid, from)
     if (spaces.length > 0) {
       await saveMessageToSpaces(
         ctx,
@@ -168,7 +169,7 @@ export async function createMessages (
       error,
       mailId,
       personUuid: fromPerson.uuid,
-      email: from.address
+      email: from
     })
   }
 
@@ -222,7 +223,7 @@ async function saveMessageToSpaces (
   modifiedBy: PersonId,
   subject: string,
   content: string,
-  attachments: Attachment[],
+  attachments: AttachedFile[],
   inReplyTo?: string
 ): Promise<void> {
   const rateLimiter = new RateLimiter(10)

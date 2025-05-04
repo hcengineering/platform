@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { randomUUID } from 'crypto'
 import attachment, { Attachment } from '@hcengineering/attachment'
 import { AttachedData, Blob, MeasureContext, Ref, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { gmail_v1 } from 'googleapis'
 import { v4 as uuid } from 'uuid'
 import { encode64 } from '../base64'
-import type { AttachedFile } from '../types'
+import type { AttachedFile } from './types'
 import { addFooter } from '../utils'
 
 export class AttachmentHandler {
@@ -39,11 +40,11 @@ export class AttachmentHandler {
       const data: AttachedData<Attachment> = {
         name: file.name,
         file: id as Ref<Blob>,
-        type: file.type ?? 'undefined',
-        size: file.size ?? Buffer.from(file.file, 'base64').length,
+        type: file.data.toString('base64') ?? 'undefined',
+        size: file.size ?? file.data.length,
         lastModified: file.lastModified
       }
-      await this.storageAdapter.put(this.ctx, this.workspaceId as any, id, file.file, data.type, data.size) // TODO: FIXME
+      await this.storageAdapter.put(this.ctx, this.workspaceId as any, id, file.data, data.type, data.size) // TODO: FIXME
       await this.client.addCollection(
         attachment.class.Attachment,
         message.space,
@@ -65,9 +66,10 @@ export class AttachmentHandler {
         if (attachment.data == null) return []
         return [
           {
-            file: attachment.data,
+            id: randomUUID(),
             name: part.filename,
-            type: part.mimeType ?? undefined,
+            data: Buffer.from(attachment.data, 'base64'),
+            contentType: part.mimeType ?? 'application/octet-stream',
             size: attachment.size ?? undefined,
             lastModified: new Date().getTime()
           }
@@ -76,9 +78,10 @@ export class AttachmentHandler {
       if (part.body?.data == null) return []
       return [
         {
-          file: part.body.data,
+          id: randomUUID(),
+          data: Buffer.from(part.body.data, 'base64'),
           name: part.filename,
-          type: part.mimeType ?? undefined,
+          contentType: part.mimeType ?? 'application/octet-stream',
           size: part.body.size ?? undefined,
           lastModified: new Date().getTime()
         }

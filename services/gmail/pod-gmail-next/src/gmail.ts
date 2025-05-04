@@ -34,6 +34,7 @@ import { MessageManager } from './message/message'
 import { SyncManager } from './message/sync'
 import { getEmail } from './gmail/utils'
 import { Integration } from '@hcengineering/account-client'
+import { GooglePeopleClient } from './gmail/peopleClient'
 
 const SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
@@ -99,17 +100,16 @@ export class GmailClient {
     private socialId: SocialId
   ) {
     this.email = email
-    this.integrationToken = serviceToken()
+    this.integrationToken = serviceToken(workspaceId)
     this.tokenStorage = new TokenStorage(this.ctx, workspaceId, this.integrationToken)
     this.client = new TxOperations(client, this.socialId._id)
     this.account = this.user.userId
     this.attachmentHandler = new AttachmentHandler(ctx, workspaceId, storageAdapter, this.gmail, this.client)
     this.messageManager = new MessageManager(
       ctx,
-      this.client,
       this.attachmentHandler,
-      this.socialId._id,
-      this.workspace
+      this.integrationToken,
+      new GooglePeopleClient(oAuth2Client, ctx, this.rateLimiter)
     )
     const keyValueClient = getKvsClient(this.integrationToken)
     this.syncManager = new SyncManager(
@@ -361,10 +361,6 @@ export class GmailClient {
       return
     }
     this.socialId = await getOrCreateSocialId(this.account, this.email)
-  }
-
-  private async getCurrentToken (): Promise<Token | null> {
-    return await this.tokenStorage.getToken(this.socialId._id)
   }
 
   private async addClient (): Promise<void> {
