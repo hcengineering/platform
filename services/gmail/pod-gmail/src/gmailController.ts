@@ -39,7 +39,11 @@ export class GmailController {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
 
   private readonly credentials: ProjectCredentials
-  private readonly clients: Map<PersonId, GmailClient[]> = new Map<PersonId, GmailClient[]>()
+  private readonly clients: Map<PersonId, Map<WorkspaceUuid, GmailClient>> = new Map<
+  PersonId,
+  Map<WorkspaceUuid, GmailClient>
+  >()
+
   private readonly initLimitter = new RateLimiter(config.InitLimit)
   private readonly authProvider
 
@@ -75,24 +79,38 @@ export class GmailController {
       this.ctx.info('Start integrations', { count: integrations.length })
 
       const limiter = new RateLimiter(config.InitLimit)
-      for (const integration of integrations) {
-        if (integration.workspaceUuid === null) continue
+      const workspaceIds = new Set<WorkspaceUuid>(
+        integrations
+          .map((integration) => {
+            if (integration.workspaceUuid == null) {
+              this.ctx.info('No workspace found', { integration })
+              return undefined
+            }
+            return integration.workspaceUuid
+          })
+          .filter((id): id is WorkspaceUuid => id != null)
+      )
+      this.ctx.info('Workspaces with integrations', { count: workspaceIds.size })
+
+      for (const workspace of workspaceIds) {
+        const wsToken = serviceToken(workspace)
+        const accountClient = getAccountClient(wsToken)
+
+        const tokens = await getWorkspaceTokens(accountClient, workspace)
+        if (token == null) continue
         await limiter.add(async () => {
-          if (integration.workspaceUuid === null) return
-          const accountClient = getAccountClient(token)
           const info = await accountClient.getWorkspaceInfo()
 
           if (info === undefined) {
-            this.ctx.info('workspace not found', { workspaceUuid: integration.workspaceUuid })
+            this.ctx.info('workspace not found', { workspaceUuid: workspace })
             return
           }
           if (!isActiveMode(info.mode)) {
-            this.ctx.info('workspace is not active', { workspaceUuid: integration.workspaceUuid })
+            this.ctx.info('workspace is not active', { workspaceUuid: workspace })
             return
           }
-          const tokens = await getWorkspaceTokens(accountClient, integration.workspaceUuid)
           this.ctx.info('Use stored tokens', { count: tokens.length })
-          const startPromise = this.startWorkspace(integration.workspaceUuid, tokens)
+          const startPromise = this.startWorkspace(workspace, tokens)
           const timeoutPromise = new Promise<void>((resolve) => {
             setTimeout(() => {
               resolve()
@@ -142,27 +160,35 @@ export class GmailController {
     const data = JSON.parse(decode64(message))
     const email = data.emailAddress
     const clients = this.clients.get(email)
-    for (const client of clients ?? []) {
+    if (clients === undefined) {
+      this.ctx.info('No clients found', { email })
+      return
+    }
+    for (const client of clients.values()) {
       void client.sync()
     }
   }
 
-  addClient (socialId: PersonId, client: GmailClient): void {
-    const clients = this.clients.get(socialId)
-    if (clients === undefined) {
-      this.clients.set(socialId, [client])
-    } else {
-      clients.push(client)
-      this.clients.set(socialId, clients)
+  addClient (socialId: PersonId, workspace: WorkspaceUuid, client: GmailClient): void {
+    let userClients = this.clients.get(socialId)
+    if (userClients === undefined) {
+      userClients = new Map<WorkspaceUuid, GmailClient>()
+      this.clients.set(socialId, userClients)
     }
-  }
 
-  /*
-  async getGmailClient (userId: AccountUuid, workspace: WorkspaceUuid, token: string): Promise<GmailClient> {
-    const workspaceClient = await this.getWorkspaceClient(workspace)
-    return await workspaceClient.createGmailClient({ userId, workspace, token })
+    const existingClient = userClients.get(workspace)
+    if (existingClient != null) {
+      void existingClient.close().catch((err) => {
+        this.ctx.error('Error closing existing client', {
+          socialId,
+          workspace,
+          error: err.message
+        })
+      })
+    }
+
+    userClients.set(workspace, client)
   }
-  */
 
   getAuthProvider (): AuthProvider {
     return this.authProvider
