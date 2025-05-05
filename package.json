@@ -12,14 +12,14 @@
     "clean": "turbo run clean"
   },
   "devDependencies": {
-    "@eslint/js": "^9.25.1",
-    "@types/bun": "^1.2.11",
-    "bun-types": "^1.2.11",
-    "eslint": "^9.25.1",
+    "@eslint/js": "^9.26.0",
+    "@types/bun": "^1.2.12",
+    "bun-types": "^1.2.12",
+    "eslint": "^9.26.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-prettier": "^5.4.0",
     "prettier": "^3.5.3",
-    "typescript-eslint": "^8.31.1",
+    "typescript-eslint": "^8.32.0",
     "turbo": "^2.5.2"
   },
   "packageManager": "bun@1.2.9"

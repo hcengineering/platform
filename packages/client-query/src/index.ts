@@ -19,6 +19,8 @@ import type { FindClient } from '@hcengineering/communication-sdk-types'
 
 import { LabelsQuery, MessagesQuery, NotificationContextsQuery, NotificationsQuery } from './query'
 
+export type { MessageQueryParams } from '@hcengineering/communication-query'
+
 let lq: LiveQueries
 let onDestroy: (fn: () => void) => void = () => {}
 

@@ -14,39 +14,40 @@
 //
 
 import {
+  type BlobID,
+  type File,
+  type FindMessagesGroupsParams,
   type FindMessagesParams,
   type Message,
   type MessageID,
   type MessagesGroup,
+  MessageType,
   type ParsedFile,
   type Patch,
   PatchType,
   type Reaction,
   type SocialID,
   SortingOrder,
-  type WorkspaceID,
-  type File,
-  type BlobID,
-  MessageType
+  type WorkspaceID
 } from '@hcengineering/communication-types'
 import {
+  type CreateMessageEvent,
+  type CreateMessageResult,
+  type EventResult,
   type FileCreatedEvent,
   type FileRemovedEvent,
+  type FindClient,
   type MessageCreatedEvent,
+  MessageRequestEventType,
+  MessageResponseEventType,
   type MessagesRemovedEvent,
+  type PagedQueryCallback,
   type PatchCreatedEvent,
   type ReactionCreatedEvent,
   type ReactionRemovedEvent,
-  type CreateMessageEvent,
   type RequestEvent,
   type ResponseEvent,
-  type ThreadCreatedEvent,
-  type EventResult,
-  type CreateMessageResult,
-  MessageResponseEventType,
-  MessageRequestEventType,
-  type PagedQueryCallback,
-  type FindClient
+  type ThreadCreatedEvent
 } from '@hcengineering/communication-sdk-types'
 import { applyPatch, applyPatches } from '@hcengineering/communication-shared'
 import { loadGroupFile } from '@hcengineering/communication-yaml'
@@ -56,38 +57,43 @@ import { QueryResult } from '../result'
 import {
   defaultQueryParams,
   Direction,
-  type PagedQuery,
-  type QueryId,
   type MessageQueryParams,
-  type OneMessageQueryParams
+  type OneMessageQueryParams,
+  type PagedQuery,
+  type QueryId
 } from '../types'
 import { WindowImpl } from '../window'
 
-const GROUPS_LIMIT = 20
+const GROUPS_LIMIT = 4
 
 export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   private result: Promise<QueryResult<Message>> | QueryResult<Message>
-
-  private messagesFromFiles: Message[] = []
 
   private readonly groupsBuffer: MessagesGroup[] = []
 
   private firstGroup?: MessagesGroup
   private lastGroup?: MessagesGroup
+  private firstLoadedGroup?: MessagesGroup
+  private lastLoadedGroup?: MessagesGroup
+
+  private lastGroupsDirection?: Direction
 
   private readonly limit: number
+  private initialized = false
 
   private readonly next = {
     hasMessages: true,
-    hasGroups: true
+    hasGroups: true,
+    buffer: [] as Message[]
   }
 
   private readonly prev = {
     hasMessages: true,
-    hasGroups: true
+    hasGroups: true,
+    buffer: [] as Message[]
   }
 
-  private tmpMessages: Map<string, MessageID> = new Map()
+  private readonly tmpMessages = new Map<string, MessageID>()
 
   constructor(
     private readonly client: FindClient,
@@ -110,6 +116,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
       if (count < this.limit) {
         this.result = initialResult
+        this.initialized = true
       } else {
         if (this.params.order === SortingOrder.Ascending) {
           this.result = new QueryResult(messages.slice(0, baseLimit), (x) => x.id)
@@ -121,15 +128,16 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
           this.result.setTail(true)
         }
       }
+      this.initialized = true
       void this.notify()
     } else {
       this.result = new QueryResult([] as Message[], (x) => x.id)
 
       if (this.isInitLoadingForward()) {
-        this.result.setHead(this.params.created == null)
+        this.result.setHead(this.params.from == null)
         void this.requestLoadNextPage()
       } else {
-        this.result.setTail(this.params.created == null)
+        this.result.setTail(this.params.from == null)
         void this.requestLoadPrevPage()
       }
     }
@@ -209,8 +217,8 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
         resultId = result.id
         if (this.result instanceof Promise) this.result = await this.result
 
-        if (this.result.get(resultId)) {
-          if (this.result.delete(tmpId)) {
+        if (this.result.get(resultId) != null) {
+          if (this.result.delete(tmpId) != null) {
             await this.notify()
           }
         } else {
@@ -225,7 +233,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       .catch(async () => {
         if (this.result instanceof Promise) this.result = await this.result
         this.tmpMessages.delete(eventId)
-        if (this.result.delete(tmpId)) {
+        if (this.result.delete(tmpId) != null) {
           void this.notify()
         }
       })
@@ -319,13 +327,17 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     if (messages.length === this.limit && this.limit > 1) {
       const lastMessage = messages.pop()
       if (lastMessage != null && !fromDb) {
-        direction === Direction.Forward
-          ? this.messagesFromFiles.unshift(lastMessage)
-          : this.messagesFromFiles.push(lastMessage)
+        if (direction === Direction.Forward) {
+          this.next.buffer.unshift(lastMessage)
+        } else {
+          this.prev.buffer.push(lastMessage)
+        }
       }
     }
 
     if (this.params.order === SortingOrder.Ascending && direction === Direction.Backward) {
+      result.prepend(messages.reverse())
+    } else if (this.params.order === SortingOrder.Descending && direction === Direction.Forward) {
       result.prepend(messages.reverse())
     } else {
       result.append(messages)
@@ -336,14 +348,13 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   // Load next
   private async loadNextMessages(result: QueryResult<Message>): Promise<{ messages: Message[]; fromDb: boolean }> {
-    const messages: Message[] = this.messagesFromFiles.splice(0, this.limit)
-
+    const messages: Message[] = this.next.buffer.splice(0, this.limit)
     if (messages.length >= this.limit) return { messages, fromDb: false }
 
     while (this.next.hasGroups || this.groupsBuffer.length > 0) {
       await this.loadGroups(Direction.Forward, result)
 
-      messages.push(...this.messagesFromFiles.splice(0, this.limit - messages.length))
+      messages.push(...this.next.buffer.splice(0, this.limit - messages.length))
 
       if (messages.length >= this.limit) return { messages, fromDb: false }
     }
@@ -361,7 +372,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
     if (result.isTail()) return []
 
-    const last = result.getLast()
+    const last = this.params.order === SortingOrder.Ascending ? result.getLast() : result.getFirst()
 
     return await this.find({
       ...this.params,
@@ -370,35 +381,53 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
           ? {
               greater: last.created
             }
-          : this.params.created,
+          : this.params.from != null
+            ? { greaterOrEqual: this.params.from }
+            : undefined,
       limit,
       order: SortingOrder.Ascending
     })
   }
 
   // Load prev
-  private async loadPrevMessages(result: QueryResult<Message>): Promise<{ messages: Message[]; fromDb: boolean }> {
+  private async loadPrevMessages(
+    result: QueryResult<Message>
+  ): Promise<{ messages: Message[]; fromDb: boolean; hasNext?: boolean }> {
     const messages: Message[] = []
+    const prevBuffer = this.prev.buffer
+    const last = prevBuffer[prevBuffer.length - 1]
+
+    let fromDb = false
 
     if (this.prev.hasMessages) {
       const prevMessages = await this.findPrevMessages(this.limit, result)
+      const first = prevMessages[0]
       this.prev.hasMessages = prevMessages.length > 0
-      messages.push(...prevMessages)
+
+      if (last == null) {
+        messages.push(...prevMessages)
+        fromDb = true
+      } else if (first != null && first.created < last.created) {
+        messages.push(...prevMessages)
+        fromDb = true
+      } else {
+        const toPush = this.prev.buffer.splice(-this.limit).reverse()
+        messages.push(...toPush)
+      }
     }
 
-    if (messages.length >= this.limit) return { messages, fromDb: true }
+    if (messages.length >= this.limit) return { messages, fromDb }
 
     const restLimit = this.limit - messages.length
-    const fromBuffer = this.messagesFromFiles.splice(-restLimit, restLimit).reverse()
+    const fromBuffer = this.prev.buffer.splice(-restLimit).reverse()
     messages.push(...fromBuffer)
 
     if (messages.length >= this.limit) return { messages, fromDb: false }
-
     while (this.prev.hasGroups || this.groupsBuffer.length > 0) {
       await this.loadGroups(Direction.Backward, result)
 
       const rest = this.limit - messages.length
-      const fromBuffer2 = this.messagesFromFiles.splice(-rest, rest).reverse()
+      const fromBuffer2 = this.prev.buffer.splice(-rest).reverse()
 
       messages.push(...fromBuffer2)
       if (messages.length >= this.limit) return { messages, fromDb: false }
@@ -419,10 +448,52 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
           ? {
               less: first?.created
             }
-          : this.params.created,
+          : this.params.from != null
+            ? { lessOrEqual: this.params.from }
+            : undefined,
       limit,
       order: SortingOrder.Descending
     })
+  }
+
+  getLoadGroupsParams(direction: Direction): Pick<FindMessagesGroupsParams, 'fromDate' | 'toDate'> | undefined {
+    if (direction === Direction.Forward) {
+      if (this.lastGroup != null) {
+        return {
+          fromDate: {
+            greater: this.lastGroup.fromDate
+          }
+        }
+      }
+
+      if (this.params.from instanceof Date) {
+        return {
+          toDate: {
+            greaterOrEqual: this.params.from
+          }
+        }
+      }
+    }
+
+    if (direction === Direction.Backward) {
+      if (this.firstGroup != null) {
+        return {
+          fromDate: {
+            less: this.firstGroup.fromDate
+          }
+        }
+      }
+
+      if (this.params.from instanceof Date) {
+        return {
+          fromDate: {
+            lessOrEqual: this.params.from
+          }
+        }
+      }
+    }
+
+    return undefined
   }
 
   private async loadGroups(direction: Direction, result: QueryResult<Message>): Promise<void> {
@@ -432,17 +503,24 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     const toBuffer: MessagesGroup[] = []
 
     while (messagesCount < this.limit) {
+      if (this.lastGroupsDirection !== direction && this.groupsBuffer.length > 0) {
+        this.groupsBuffer.length = 0
+        this.lastGroup = this.lastLoadedGroup
+        this.firstGroup = this.firstLoadedGroup
+
+        if (this.lastGroupsDirection === Direction.Backward) {
+          this.prev.hasGroups = true
+        } else if (this.lastGroupsDirection === Direction.Forward) {
+          this.next.hasGroups = true
+        }
+      }
+      this.lastGroupsDirection = direction
       const currentGroups = this.groupsBuffer.splice(direction === Direction.Forward ? 0 : -GROUPS_LIMIT, GROUPS_LIMIT)
       const hasGroups = direction === Direction.Forward ? this.next.hasGroups : this.prev.hasGroups
       if (currentGroups.length === 0 && !hasGroups) break
 
       const groups =
-        currentGroups.length > 0
-          ? currentGroups
-          : await this.findGroups(
-              direction,
-              direction === Direction.Forward ? this.lastGroup?.fromDate : this.firstGroup?.fromDate
-            )
+        currentGroups.length > 0 ? currentGroups : await this.findGroups(direction, this.getLoadGroupsParams(direction))
 
       if (currentGroups.length === 0) {
         this.firstGroup = direction === Direction.Forward ? (this.firstGroup ?? groups[0]) : groups[groups.length - 1]
@@ -463,12 +541,20 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       }
 
       const orderedGroups = direction === Direction.Forward ? groups : groups.reverse()
+
       while (messagesCount < this.limit && orderedGroups.length > 0) {
         const group = direction === Direction.Forward ? orderedGroups.shift() : orderedGroups.pop()
         if (group == null) break
         toLoad.push(group)
         messagesCount += group.count
       }
+
+      this.firstLoadedGroup =
+        direction === Direction.Forward ? (this.firstLoadedGroup ?? toLoad[0]) : toLoad[toLoad.length - 1]
+      this.lastLoadedGroup =
+        direction === Direction.Forward
+          ? (toLoad[toLoad.length - 1] ?? this.lastLoadedGroup)
+          : (this.lastLoadedGroup ?? toLoad[0])
 
       while (orderedGroups.length > 0) {
         const group = direction === Direction.Forward ? orderedGroups.shift() : orderedGroups.pop()
@@ -492,17 +578,26 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
         const firstInFile = file.messages[0]
         const queryDate =
           lastResult != null && firstInFile.created < lastResult?.created ? lastResult?.created : undefined
-        this.messagesFromFiles.push(...this.matchFileMessages(file, queryDate))
+        const { next, prev } = this.matchFileMessages(file, direction, result, queryDate)
+        this.next.buffer.push(...next)
+        this.prev.buffer.push(...prev)
       } else {
         const lastInFile = file.messages[file.messages.length - 1]
         const queryDate =
           lastResult != null && lastInFile.created > lastResult?.created ? lastResult?.created : undefined
-        this.messagesFromFiles.unshift(...this.matchFileMessages(file, queryDate))
+        const matched = this.matchFileMessages(file, direction, result, queryDate)
+        this.prev.buffer.unshift(...matched.prev)
+        this.next.buffer.push(...matched.next)
       }
     }
   }
 
-  private matchFileMessages(file: ParsedFile, created?: Date): Message[] {
+  private matchFileMessages(
+    file: ParsedFile,
+    direction: Direction,
+    queryResult: QueryResult<Message>,
+    filterDate?: Date
+  ): { next: Message[]; prev: Message[] } {
     let result: Message[] = file.messages
     const params = this.params
     if (this.isOneMessageQuery(params)) {
@@ -510,14 +605,40 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       result = msg != null ? [msg] : []
     }
 
-    if (created != null) {
+    if (filterDate != null) {
       result =
         this.params.order === SortingOrder.Ascending
-          ? result.filter((it) => it.created > created)
-          : result.filter((it) => it.created < created)
+          ? result.filter((it) => it.created > filterDate)
+          : result.filter((it) => it.created < filterDate)
     }
 
-    return result
+    let prevResult: Message[] = []
+    let nextResult: Message[] = []
+    const from = this.initialized ? undefined : this.params.from
+
+    const firstFromQueryResult =
+      params.order === SortingOrder.Ascending ? queryResult.getFirst() : queryResult.getLast()
+    const lastFromFile = result[result.length - 1]
+    if (from instanceof Date) {
+      for (const message of result) {
+        const isNext = params.order === SortingOrder.Ascending ? message.created >= from : message.created > from
+
+        if (isNext) {
+          nextResult.push(message)
+        } else {
+          prevResult.push(message)
+        }
+      }
+    } else if (
+      direction === Direction.Backward &&
+      (firstFromQueryResult == null || lastFromFile.created < firstFromQueryResult.created)
+    ) {
+      prevResult = result
+    } else {
+      nextResult = result
+    }
+
+    return { next: nextResult, prev: prevResult }
   }
 
   private async loadMessagesFromFiles(group: MessagesGroup): Promise<ParsedFile> {
@@ -540,11 +661,11 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  private async findGroupByDate(created: Date): Promise<MessagesGroup | undefined> {
+  private async findGroupByDate(params: Date): Promise<MessagesGroup | undefined> {
     const groups = await this.client.findMessagesGroups({
       card: this.params.card,
-      fromDate: { lessOrEqual: created },
-      toDate: { greaterOrEqual: created },
+      fromDate: { lessOrEqual: params },
+      toDate: { greaterOrEqual: params },
       limit: 1,
       order: SortingOrder.Ascending,
       orderBy: 'fromDate'
@@ -553,13 +674,16 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return groups[0]
   }
 
-  private async findGroups(direction: Direction, fromDate?: Date): Promise<MessagesGroup[]> {
+  private async findGroups(
+    direction: Direction,
+    date?: Pick<FindMessagesGroupsParams, 'fromDate' | 'toDate'>
+  ): Promise<MessagesGroup[]> {
     if (this.isOneMessageQuery(this.params)) {
       const group = await this.findGroupByDate(this.params.created)
       return group !== undefined ? [group] : []
     }
 
-    if (fromDate == null) {
+    if (date == null) {
       return await this.client.findMessagesGroups({
         card: this.params.card,
         limit: GROUPS_LIMIT,
@@ -573,18 +697,12 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       limit: GROUPS_LIMIT,
       order: direction === Direction.Forward ? SortingOrder.Ascending : SortingOrder.Descending,
       orderBy: 'fromDate',
-      fromDate:
-        direction === Direction.Forward
-          ? {
-              greater: fromDate
-            }
-          : {
-              less: fromDate
-            }
+      ...date
     })
   }
 
   private async find(params: FindMessagesParams): Promise<Message[]> {
+    delete (params as any).from
     return await this.client.findMessages(params, this.id)
   }
 
@@ -593,6 +711,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   private async notify(): Promise<void> {
+    this.initialized = true
     if (this.callback == null) return
     if (this.result instanceof Promise) this.result = await this.result
     const result = this.result.getResult()
@@ -625,7 +744,16 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       void this.notify()
     }
 
-    this.messagesFromFiles = this.messagesFromFiles.map((it) => {
+    this.next.buffer = this.next.buffer.map((it) => {
+      if (it.id === event.thread.message) {
+        return {
+          ...it,
+          thread: event.thread
+        }
+      }
+      return it
+    })
+    this.prev.buffer = this.next.buffer.map((it) => {
       if (it.id === event.thread.message) {
         return {
           ...it,
@@ -649,7 +777,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       const eventId = event._id
       if (eventId != null) {
         const tmp = this.tmpMessages.get(eventId)
-        if (tmp) this.result.delete(tmp)
+        if (tmp != null) this.result.delete(tmp)
         this.tmpMessages.delete(eventId)
       }
       const lastMessage = this.result.getLast()
@@ -718,7 +846,8 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       void this.notify()
     }
 
-    this.messagesFromFiles = this.messagesFromFiles.filter((it) => !event.messages.includes(it.id))
+    this.next.buffer = this.next.buffer.filter((it) => !event.messages.includes(it.id))
+    this.prev.buffer = this.prev.buffer.filter((it) => !event.messages.includes(it.id))
   }
 
   private async onReactionCreatedEvent(event: ReactionCreatedEvent): Promise<void> {
@@ -737,9 +866,13 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       void this.notify()
     }
 
-    const fromBuffer = this.messagesFromFiles.find((it) => it.id === reaction.message)
-    if (fromBuffer !== undefined) {
-      addReaction(fromBuffer, reaction)
+    const fromNextBuffer = this.next.buffer.find((it) => it.id === reaction.message)
+    if (fromNextBuffer !== undefined) {
+      addReaction(fromNextBuffer, reaction)
+    }
+    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === reaction.message)
+    if (fromPrevBuffer !== undefined) {
+      addReaction(fromPrevBuffer, reaction)
     }
   }
 
@@ -756,7 +889,10 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
         void this.notify()
       }
     }
-    this.messagesFromFiles = this.messagesFromFiles.map((it) =>
+    this.next.buffer = this.next.buffer.map((it) =>
+      it.id === event.message ? removeReaction(it, event.reaction, event.creator) : it
+    )
+    this.prev.buffer = this.prev.buffer.map((it) =>
       it.id === event.message ? removeReaction(it, event.reaction, event.creator) : it
     )
   }
@@ -773,9 +909,13 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       await this.notify()
     }
 
-    const fromBuffer = this.messagesFromFiles.find((it) => it.id === file.message)
-    if (fromBuffer !== undefined) {
-      addFile(fromBuffer, file)
+    const fromNextBuffer = this.next.buffer.find((it) => it.id === file.message)
+    if (fromNextBuffer !== undefined) {
+      addFile(fromNextBuffer, file)
+    }
+    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === file.message)
+    if (fromPrevBuffer !== undefined) {
+      addFile(fromPrevBuffer, file)
     }
   }
 
@@ -797,9 +937,8 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       await this.notify()
     }
 
-    this.messagesFromFiles = this.messagesFromFiles.map((it) =>
-      it.id === event.message ? removeFile(it, event.blobId) : it
-    )
+    this.next.buffer = this.next.buffer.map((it) => (it.id === event.message ? removeFile(it, event.blobId) : it))
+    this.prev.buffer = this.prev.buffer.map((it) => (it.id === event.message ? removeFile(it, event.blobId) : it))
   }
 
   private allowedPatches(): PatchType[] {

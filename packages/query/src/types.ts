@@ -79,9 +79,25 @@ export interface DefaultMessageQueryParams {
   created?: Partial<Record<ComparisonOperator, Date>> | Date
 }
 
-export interface OneMessageQueryParams extends DefaultMessageQueryParams {
-  id: MessageID
-  created: Date
+interface BaseMessageQueryParams {
+  card: CardID
+
+  limit?: number
+  order?: SortingOrder
+
+  files?: boolean
+  reactions?: boolean
+  replies?: boolean
 }
 
-export type MessageQueryParams = OneMessageQueryParams | DefaultMessageQueryParams
+export interface ManyMessagesQueryParams extends BaseMessageQueryParams {
+  from?: Date
+}
+
+export interface OneMessageQueryParams extends BaseMessageQueryParams {
+  id: MessageID
+  created: Date
+  from?: never
+}
+
+export type MessageQueryParams = OneMessageQueryParams | ManyMessagesQueryParams

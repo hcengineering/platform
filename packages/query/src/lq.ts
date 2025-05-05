@@ -44,7 +44,7 @@ interface CreateQueryResult {
   unsubscribe: () => void
 }
 
-const maxQueriesCache = 20
+const maxQueriesCache = 40
 
 export class LiveQueries {
   private readonly queries = new Map<QueryId, AnyQuery>()
