@@ -89,7 +89,7 @@
     e.stopPropagation()
     e.preventDefault()
     if (person !== undefined) {
-      if ($myInfo === undefined) return
+      if ($myInfo === undefined || (person._id === me && $myInfo?.room === room._id)) return
       showPopup(PersonActionPopup, { room, person: person._id }, eventToHTMLElement(e))
     } else {
       await openRoom(x, y)
@@ -202,7 +202,7 @@
       {#if room.access === RoomAccess.DND || room.type === RoomType.Video}
         <div class="flex-row-center flex-no-shrink h-full flex-gap-2">
           {#if room.access === RoomAccess.DND}
-            <Icon icon={love.icon.DND} size={'small'} />
+            <Icon icon={love.icon.DND} fill={'var(--bg-negative-default)'} size={'small'} />
           {/if}
           {#if room.type === RoomType.Video}
             <Icon icon={love.icon.CamEnabled} size={'small'} />

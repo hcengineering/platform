@@ -212,6 +212,38 @@
 
     &:hover { background-color: var(--highlight-select-hover); }
   }
+
+  &.mini {
+    padding: var(--spacing-0_5);
+    width: var(--global-extra-small-Size);
+    height: var(--global-extra-small-Size);
+    background-color: transparent;
+    border: none;
+    outline: none;
+
+    &.positive {
+      &:hover { background-color: var(--theme-state-positive-background-color); }
+      &.pressed,
+      &:active { background-color: var(--theme-state-positive-background-hover); }
+    }
+    &.positiveContent {
+      color: var(--theme-state-positive-color);
+      &.pressed,
+      &:hover,
+      &:active { color: var(--theme-state-positive-hover); }
+    }
+    &.negative {
+      &:hover { background-color: var(--theme-state-negative-background-color); }
+      &.pressed,
+      &:active { background-color: var(--theme-state-negative-background-hover); }
+    }
+    &.negativeContent {
+      color: var(--theme-state-negative-color);
+      &.pressed,
+      &:hover,
+      &:active { color: var(--theme-state-negative-hover); }
+    }
+  }
 }
 
 // Old style Button

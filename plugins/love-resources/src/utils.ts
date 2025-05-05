@@ -3,7 +3,7 @@ import { connectMeeting, disconnectMeeting } from '@hcengineering/ai-bot-resourc
 import { Analytics } from '@hcengineering/analytics'
 import calendar, { type Event, type Schedule, getAllEvents } from '@hcengineering/calendar'
 import chunter from '@hcengineering/chunter'
-import contact, { type Employee, getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
+import contact, { getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
 import { personByIdStore } from '@hcengineering/contact-resources'
 import core, {
   AccountRole,
@@ -956,7 +956,7 @@ export async function tryConnect (
     await client.update(invite, { status: invite.room === room._id ? RequestStatus.Approved : RequestStatus.Rejected })
   }
 
-  const isGuest = (currentPerson as Employee).role === AccountRole.Guest
+  const isGuest = client.getHierarchy().as(currentPerson, contact.mixin.Employee).role === AccountRole.Guest
   if ((room.access === RoomAccess.Knock || isGuest) && (!isOffice(room) || room.person !== currentPerson._id)) {
     const _id = await client.createDoc(love.class.JoinRequest, core.space.Workspace, {
       person: currentPerson._id,

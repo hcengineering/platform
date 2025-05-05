@@ -17,7 +17,13 @@
 <script lang="ts">
   import { Schedule } from '@hcengineering/calendar'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import presentation, { createQuery, getClient, getCurrentWorkspaceUrl, MessageBox } from '@hcengineering/presentation'
+  import presentation, {
+    copyTextToClipboard,
+    createQuery,
+    getClient,
+    getCurrentWorkspaceUrl,
+    MessageBox
+  } from '@hcengineering/presentation'
   import { Action, ButtonIcon, IconAdd, IconDelete, IconLink, NavItem, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { TreeElement } from '@hcengineering/view-resources'
@@ -91,7 +97,7 @@
         okLabel: presentation.string.CopyLink,
         canSubmit: false,
         action: async () => {
-          await navigator.clipboard.writeText(link)
+          await copyTextToClipboard(link)
         }
       },
       undefined

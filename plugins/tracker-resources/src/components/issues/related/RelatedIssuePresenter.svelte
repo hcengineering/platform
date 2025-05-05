@@ -29,7 +29,7 @@
 <div class="flex-row-center">
   {#if status}
     <div class="icon mr-2">
-      <IssueStatusIcon value={status} {size} space={issue.space} />
+      <IssueStatusIcon value={status} taskType={issue.kind} {size} space={issue.space} />
     </div>
   {/if}
   <span class="label" class:text-base={huge}>

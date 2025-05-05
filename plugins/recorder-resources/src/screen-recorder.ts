@@ -13,63 +13,37 @@
 // limitations under the License.
 //
 
-import plugin from '@hcengineering/recorder'
 import { Recorder } from './recorder'
-import { TusUploader, type Uploader, type Options } from './uploader'
-import { getMetadata } from '@hcengineering/platform'
+import { type Uploader, type TusUploaderOptions, TusUploader } from './uploader'
+
+export function createScreenRecorder (mediaStream: MediaStream, options: TusUploaderOptions): ScreenRecorder {
+  const recorder = new Recorder({ mediaStream })
+  const uploader = new TusUploader(recorder.asStream(), options)
+
+  return new ScreenRecorder(mediaStream, recorder, uploader)
+}
 
 export class ScreenRecorder {
-  private readonly recorder: Recorder
-  private readonly uploader: Uploader
+  constructor (
+    readonly stream: MediaStream,
+    private readonly recorder: Recorder,
+    private readonly uploader: Uploader
+  ) {}
 
-  constructor (recorder: Recorder, uploader: Uploader) {
-    this.recorder = recorder
-    this.uploader = uploader
+  get elapsedTime (): number {
+    return this.recorder.getRecordedTimeMs()
   }
 
-  static async fromNavigatorMediaDevices (opts: Options): Promise<ScreenRecorder> {
-    let width = 0
-    let height = 0
-    const combinedStream = new MediaStream()
-    const getMediaStream =
-      getMetadata(plugin.metadata.GetCustomMediaStream) ??
-      (async (op) => await navigator.mediaDevices.getDisplayMedia(op))
-    const displayStream = await getMediaStream({
-      video: { frameRate: opts.fps ?? 30 }
-    })
-    try {
-      const microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      microphoneStream.getAudioTracks().forEach((track) => {
-        combinedStream.addTrack(track)
-      })
-    } catch (err) {
-      console.warn('microphone is disabled', err)
-    }
-    displayStream.getVideoTracks().forEach((track) => {
-      combinedStream.addTrack(track)
-      width = Math.max(track.getSettings().width ?? width, width)
-      height = Math.max(track.getSettings().height ?? height, height)
-    })
-    displayStream.getAudioTracks().forEach((track) => {
-      combinedStream.addTrack(track)
-    })
-
-    const recorder = new Recorder(combinedStream)
-    const uploader = new TusUploader(recorder.asStream(), { ...opts, metadata: { resolution: width + ':' + height } })
-
-    return new ScreenRecorder(recorder, uploader)
-  }
-
-  public start (): void {
+  public async start (): Promise<void> {
     this.uploader.start()
     this.recorder.start()
   }
 
-  public pause (): void {
+  public async pause (): Promise<void> {
     this.recorder.pause()
   }
 
-  public resume (): void {
+  public async resume (): Promise<void> {
     this.recorder.resume()
   }
 

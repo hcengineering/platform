@@ -20,7 +20,10 @@ import {
   type MasterTag,
   type ParentInfo,
   type Tag,
-  type Role
+  type Role,
+  type CardSection,
+  type CardViewDefaults,
+  type CardNavigation
 } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
 import core, {
@@ -34,7 +37,8 @@ import core, {
   type CollectionSize,
   type MarkupBlobRef,
   type Rank,
-  type Ref
+  type Ref,
+  type MixinData
 } from '@hcengineering/core'
 import {
   Collection,
@@ -45,14 +49,15 @@ import {
   TypeRef,
   TypeString,
   UX,
-  type Builder
+  type Builder,
+  Mixin
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import { TAttachedDoc, TClass, TDoc, TMixin, TSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
 import view, { createAction } from '@hcengineering/model-view'
-import workbench from '@hcengineering/model-workbench'
+import workbench, { WidgetType } from '@hcengineering/model-workbench'
 import { type Asset, getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
@@ -116,6 +121,20 @@ export class MasterTagEditorSection extends TDoc implements MasterTagEditorSecti
   component!: AnyComponent
 }
 
+@Model(card.class.CardSection, core.class.Doc, DOMAIN_MODEL)
+export class TCardSection extends TDoc implements CardSection {
+  label!: IntlString
+  component!: AnyComponent
+  order!: number
+  navigation!: CardNavigation[]
+}
+
+@Mixin(card.mixin.CardViewDefaults, card.class.MasterTag)
+export class TCardViewDefaults extends TMasterTag implements CardViewDefaults {
+  defaultSection!: Ref<CardSection>
+  defaultNavigation?: string
+}
+
 @Model(card.class.Role, core.class.AttachedDoc, DOMAIN_MODEL)
 export class TRole extends TAttachedDoc implements Role {
   name!: string
@@ -155,6 +174,7 @@ export function createSystemType (
   icon: Asset = card.icon.MasterTag,
   label: IntlString,
   pluralLabel?: IntlString,
+  viewDefaults?: MixinData<MasterTag, CardViewDefaults>,
   parent?: Ref<MasterTag>
 ): void {
   builder.createDoc(
@@ -210,13 +230,30 @@ export function createSystemType (
     },
     config: listConfig
   })
+
+  if (viewDefaults !== undefined) {
+    builder.mixin(type, card.class.MasterTag, card.mixin.CardViewDefaults, viewDefaults)
+  }
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection, TCardSpace, TRole)
+  builder.createModel(
+    TMasterTag,
+    TTag,
+    TCard,
+    MasterTagEditorSection,
+    TCardSpace,
+    TRole,
+    TCardSection,
+    TCardViewDefaults
+  )
+
+  defineTabs(builder)
 
   createSystemType(builder, card.types.File, card.icon.File, attachment.string.File, attachment.string.Files)
-  createSystemType(builder, card.types.Document, card.icon.Document, card.string.Document, card.string.Documents)
+  createSystemType(builder, card.types.Document, card.icon.Document, card.string.Document, card.string.Documents, {
+    defaultSection: card.section.Content
+  })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: card.class.CardSpace,
@@ -701,6 +738,80 @@ export function createModel (builder: Builder): void {
     label: card.string.Views,
     component: card.component.ViewsSection
   })
+
+  builder.createDoc(
+    workbench.class.Widget,
+    core.space.Model,
+    {
+      label: card.string.Cards,
+      type: WidgetType.Flexible,
+      icon: card.icon.Card,
+      component: card.component.CardWidget
+    },
+    card.ids.CardWidget
+  )
+}
+
+function defineTabs (builder: Builder): void {
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: card.string.Properties,
+      component: card.sectionComponent.PropertiesSection,
+      order: 100,
+      navigation: []
+    },
+    card.section.Properties
+  )
+
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: card.string.Content,
+      component: card.sectionComponent.ContentSection,
+      order: 200,
+      navigation: []
+    },
+    card.section.Content
+  )
+
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: card.string.Children,
+      component: card.sectionComponent.ChildrenSection,
+      order: 300,
+      navigation: []
+    },
+    card.section.Children
+  )
+
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: attachment.string.Attachments,
+      component: card.sectionComponent.AttachmentsSection,
+      order: 400,
+      navigation: []
+    },
+    card.section.Attachments
+  )
+
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: core.string.Relations,
+      component: card.sectionComponent.RelationsSection,
+      order: 500,
+      navigation: []
+    },
+    card.section.Relations
+  )
 }
 
 export default card

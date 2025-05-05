@@ -18,8 +18,8 @@ import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import workbench from '@hcengineering/model-workbench'
 import { chatId } from '@hcengineering/chat'
-import { WidgetType } from '@hcengineering/workbench'
 import { createSystemType } from '@hcengineering/model-card'
+import communication, { MessagesNavigationAnchors } from '@hcengineering/communication'
 
 import chat from './plugin'
 
@@ -37,23 +37,20 @@ export function createModel (builder: Builder): void {
       alias: chatId,
       accessLevel: AccountRole.User,
       hidden: true,
-      component: chat.component.ChatApplication
+      component: chat.component.ChatApplication,
+      locationResolver: chat.resolver.Location,
+      locationDataResolver: chat.resolver.LocationData
     },
     chat.app.Chat
   )
 
-  builder.createDoc(
-    workbench.class.Widget,
-    core.space.Model,
-    {
-      label: chat.string.Chat,
-      type: WidgetType.Flexible,
-      icon: chat.icon.ChatBubble,
-      component: chat.component.ChatWidget
-    },
-    chat.ids.ChatWidget
-  )
-
-  createSystemType(builder, chat.masterTag.Thread, chat.icon.Thread, chat.string.Thread, chat.string.Threads)
-  createSystemType(builder, chat.masterTag.Channel, chat.icon.Channel, chat.string.Channel, chat.string.Channels)
+  // TODO: move types to communication-plugin
+  createSystemType(builder, chat.masterTag.Thread, chat.icon.Thread, chat.string.Thread, chat.string.Threads, {
+    defaultSection: communication.ids.CardMessagesSection,
+    defaultNavigation: MessagesNavigationAnchors.LatestMessages
+  })
+  createSystemType(builder, chat.masterTag.Channel, chat.icon.Channel, chat.string.Channel, chat.string.Channels, {
+    defaultSection: communication.ids.CardMessagesSection,
+    defaultNavigation: MessagesNavigationAnchors.LatestMessages
+  })
 }

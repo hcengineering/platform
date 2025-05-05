@@ -288,7 +288,7 @@ export class S3Service implements StorageAdapter {
                 size: data.Size ?? 0,
                 provider: this.opt.name,
                 space: core.space.Configuration,
-                modifiedBy: core.account.ConfigUser,
+                modifiedBy: core.account.System,
                 modifiedOn: data.LastModified?.getTime() ?? 0
               })
             }

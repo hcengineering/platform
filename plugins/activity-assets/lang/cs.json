@@ -53,6 +53,8 @@
     "UpdatedObject": "Aktualizovaný {object}",
     "NewObjectType": "Nový {type}: {title}",
     "RemovedObjectType": "Odstraněný {type} : {title}",
-    "AttributeSetTo": "{name} nastaveno na {value}"
+    "AttributeSetTo": "{name} nastaveno na {value}",
+    "AddedTag": "Přidaný štítek: {title}",
+    "RemovedTag": "Odebráný štítek: {title}"
   }
 }

@@ -30,8 +30,10 @@ import {
   type S3PutOptions
 } from './types'
 
-export function createBucket (client: S3, bucket: string): S3Bucket {
-  return new S3BucketImpl(client, bucket)
+export async function createBucket (ctx: MeasureContext, client: S3, bucket: string): Promise<S3Bucket> {
+  const impl = new S3BucketImpl(client, bucket)
+  await impl.init(ctx)
+  return impl
 }
 
 class S3BucketImpl implements S3Bucket {
@@ -39,6 +41,25 @@ class S3BucketImpl implements S3Bucket {
     private readonly client: S3,
     readonly bucket: string
   ) {}
+
+  async init (ctx: MeasureContext): Promise<void> {
+    try {
+      await this.client.headBucket({ Bucket: this.bucket })
+    } catch (err: any) {
+      if (err.name === 'NotFound') {
+        ctx.warn('bucket not found, creating', { bucket: this.bucket })
+        try {
+          await this.client.createBucket({ Bucket: this.bucket })
+          ctx.info('bucket created', { bucket: this.bucket })
+        } catch (err: any) {
+          ctx.error('failed to create bucket', { bucket: this.bucket, error: err.message })
+          throw err
+        }
+      } else {
+        throw err
+      }
+    }
+  }
 
   async head (ctx: MeasureContext, key: string): Promise<S3Object | null> {
     try {

@@ -5,6 +5,11 @@
     "Stop": "Arrêter",
     "Resume": "Reprendre",
     "Record": "Enregistrer",
+    "CancelRecording": "Annuler l'enregistrement",
+    "CancelRecordingConfirm": "Êtes-vous sûr de vouloir annuler l'enregistrement?",
+    "RestartRecording": "Redémarrer l'enregistrement",
+    "RestartRecordingConfirm": "Êtes-vous sûr de vouloir redémarrer l'enregistrement?",
+    "RecordingTitle": "Enregistrement d'écran {date}",
     "ClickToSkip": "Cliquer pour ignorer"
   }
 }

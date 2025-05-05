@@ -2479,6 +2479,26 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/communication",
+      "projectFolder": "plugins/communication",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-assets",
+      "projectFolder": "plugins/communication-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-resources",
+      "projectFolder": "plugins/communication-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-communication",
+      "projectFolder": "models/communication",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-gmail-next",
       "projectFolder": "services/gmail/pod-gmail-next",
       "shouldPublish": false

@@ -320,11 +320,12 @@ export default plugin(activityId, {
     UpdatedObject: '' as IntlString,
     NewObjectType: '' as IntlString,
     RemovedObjectType: '' as IntlString,
-    AttributeSetTo: '' as IntlString
+    AttributeSetTo: '' as IntlString,
+    AddedTag: '' as IntlString,
+    RemovedTag: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,
-    NewActivity: '' as AnyComponent,
     ActivityMessagePresenter: '' as AnyComponent,
     DocUpdateMessagePresenter: '' as AnyComponent,
     ActivityInfoMessagePresenter: '' as AnyComponent,

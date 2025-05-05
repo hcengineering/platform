@@ -29,11 +29,11 @@
     closeTooltip,
     deviceOptionsStore as deviceInfo,
     day as getDay,
-    getWeekStart,
     getWeekDayName,
+    getWeekStart,
+    isWeekend,
     resizeObserver,
-    ticker,
-    isWeekend
+    ticker
   } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -48,6 +48,7 @@
   import calendar from '../plugin'
   import { isReadOnly, updateReccuringInstance } from '../utils'
   import EventElement from './EventElement.svelte'
+  import TimeDuration from './TimeDuration.svelte'
 
   export let events: Event[]
   export let selectedDate: Date = new Date()
@@ -340,6 +341,40 @@
         }
       }
     }
+  }
+
+  const calcTime = (events: CalendarItem[]): number => {
+    if (events.length === 0) return 0
+
+    // Extract and sort intervals by start time
+    const intervals = events.map((it) => [it.date, it.dueDate]).sort((a, b) => a[0] - b[0])
+
+    // Merge overlapping intervals
+    const mergedIntervals = []
+    let currentStart = intervals[0][0]
+    let currentEnd = intervals[0][1]
+
+    for (let i = 1; i < intervals.length; i++) {
+      const [nextStart, nextEnd] = intervals[i]
+
+      // If intervals overlap, extend the current end if needed
+      if (nextStart <= currentEnd) {
+        currentEnd = Math.max(currentEnd, nextEnd)
+      } else {
+        // No overlap, add current interval to merged list and start a new one
+        mergedIntervals.push([currentStart, currentEnd])
+        currentStart = nextStart
+        currentEnd = nextEnd
+      }
+    }
+
+    // Add the last interval
+    mergedIntervals.push([currentStart, currentEnd])
+
+    // Calculate total duration in hours
+    const totalHours = mergedIntervals.reduce((sum, [start, end]) => sum + (end - start) / (1000 * 60 * 60), 0)
+
+    return totalHours * 1000 * 60 * 60
   }
 
   const checkIntersect = (date1: CalendarItem | CalendarElement, date2: CalendarItem | CalendarElement): boolean => {
@@ -818,6 +853,7 @@
       {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
         {@const day = getDay(weekStart, dayOfWeek)}
         {@const tday = areDatesEqual(todayDate, day)}
+        {@const tEvents = calcTime(toCalendar(events, day))}
         <div class="sticky-header head title" class:center={displayedDaysCount > 1}>
           <span class="day" class:today={tday}>{day.getDate()}</span>
           {#if tday}
@@ -827,6 +863,11 @@
             </div>
           {:else}
             <span class="weekday">{getWeekDayName(day, weekFormat)}</span>
+          {/if}
+          {#if tEvents !== 0}
+            <span style:min-width={'3rem'}>
+              <TimeDuration value={tEvents} />
+            </span>
           {/if}
         </div>
       {/each}

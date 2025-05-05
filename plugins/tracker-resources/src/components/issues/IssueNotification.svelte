@@ -57,7 +57,7 @@
   <svelte:fragment slot="content">
     <div class="flex-row-center flex-wrap gap-2 reverse">
       {#if status === undefined && issue}
-        <IssueStatusIcon value={status} space={issue.space} size="small" />
+        <IssueStatusIcon value={status} taskType={issue.kind} space={issue.space} size="small" />
       {/if}
       {#if issue}
         <IssuePresenter value={issue} />

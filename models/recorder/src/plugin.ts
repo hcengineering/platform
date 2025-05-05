@@ -13,8 +13,15 @@
 // limitations under the License.
 //
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import core from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
 import { recorderId } from '@hcengineering/recorder'
 import recorder from '@hcengineering/recorder-resources/src/plugin'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 
-export default mergeIds(recorderId, recorder, {})
+export default mergeIds(recorderId, recorder, {
+  component: {
+    WorkbenchExtension: '' as AnyComponent
+  }
+})

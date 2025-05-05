@@ -52,6 +52,8 @@
     "UpdatedObject": "Atualizado {object}",
     "NewObjectType": "Novo {type}: {title}",
     "RemovedObjectType": "Removido {type} : {title}",
-    "AttributeSetTo": "{name} definido para {value}"
+    "AttributeSetTo": "{name} definido para {value}",
+    "AddedTag": "Tag adicionado: {title}",
+    "RemovedTag": "Tag removido: {title}"
   }
 }

@@ -268,11 +268,13 @@ export interface PluginConfiguration extends Doc {
   pluginId: Plugin
   transactions: Ref<Doc>[]
 
-  // If not set will not be shown in configuration UI
   label?: IntlString
   icon?: Asset
   description?: IntlString
   enabled: boolean
+
+  // If set will not be shown in configuration UI or enabled
+  hidden?: boolean
 
   // If specified, will show beta/testing label in UI.
   beta: boolean

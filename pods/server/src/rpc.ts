@@ -1,6 +1,7 @@
 import core, {
   buildSocialIdString,
   generateId,
+  systemAccountUuid,
   pickPrimarySocialId,
   TxFactory,
   TxProcessor,
@@ -330,8 +331,9 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       const accountClient = getAccountClient(token)
 
       const { uuid, socialId } = await accountClient.ensurePerson(socialType, socialValue, firstName, lastName)
-      const primaryPersonId = pickPrimarySocialId(session.getSocialIds())
-      const txFactory: TxFactory = new TxFactory(primaryPersonId._id)
+      const primaryPersonId =
+        session.getUser() === systemAccountUuid ? core.account.System : pickPrimarySocialId(session.getSocialIds())._id
+      const txFactory: TxFactory = new TxFactory(primaryPersonId)
 
       const [person] = await session.findAllRaw(ctx, contact.class.Person, { personUuid: uuid }, { limit: 1 })
       let personRef: Ref<Person> = person?._id

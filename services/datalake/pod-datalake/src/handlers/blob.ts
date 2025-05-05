@@ -237,7 +237,7 @@ export async function handleUploadFormData (
 
           ctx.info('uploaded', { workspace, name, etag: metadata.etag, type: contentType })
 
-          return { key, metadata }
+          return { key, id: name, metadata }
         } catch (err: any) {
           Analytics.handleError(err)
           const error = err instanceof Error ? err.message : String(err)
