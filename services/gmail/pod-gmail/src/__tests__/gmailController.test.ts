@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,13 +15,14 @@
 
 import { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
+import * as serverClient from '@hcengineering/server-client'
+
 import { GmailController } from '../gmailController'
 import { GmailClient } from '../gmail'
 import { WorkspaceClient } from '../workspaceClient'
 import { Token } from '../types'
 import * as integrations from '../integrations'
 import * as tokens from '../tokens'
-import * as serverClient from '@hcengineering/server-client'
 
 jest.mock('../workspaceClient')
 jest.mock('../gmail')
@@ -30,6 +30,8 @@ jest.mock('../integrations')
 jest.mock('../tokens')
 jest.mock('@hcengineering/server-client')
 jest.mock('../utils')
+
+/* eslint-disable @typescript-eslint/unbound-method */
 
 describe('GmailController', () => {
   let gmailController: GmailController
