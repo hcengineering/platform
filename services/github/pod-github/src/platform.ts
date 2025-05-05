@@ -773,7 +773,7 @@ export class PlatformWorker {
     const toDelete = new Set<string>(this.clients.keys())
 
     const rateLimiter = new RateLimiter(5)
-    const rechecks: WorkspaceId[] = []
+    const rechecks: string[] = []
     let idx = 0
     const connecting = new Map<string, number>()
     const st = Date.now()
