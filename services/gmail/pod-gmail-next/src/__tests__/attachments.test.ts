@@ -83,9 +83,10 @@ describe('AttachmentHandler', () => {
   describe('addAttachement', () => {
     it('should not add attachment if it already exists', async () => {
       const file: AttachedFile = {
-        file: 'test-file',
+        id: 'test-id',
+        data: Buffer.from('test-file'),
         name: 'test.txt',
-        type: 'text/plain',
+        contentType: 'text/plain',
         size: 100,
         lastModified: Date.now()
       }
@@ -106,9 +107,10 @@ describe('AttachmentHandler', () => {
 
     it('should add new attachment', async () => {
       const file: AttachedFile = {
-        file: 'test-file',
+        id: 'test-id',
+        data: Buffer.from('test-file'),
         name: 'test.txt',
-        type: 'text/plain',
+        contentType: 'text/plain',
         size: 100,
         lastModified: Date.now()
       }
@@ -154,9 +156,10 @@ describe('AttachmentHandler', () => {
 
       expect(result).toEqual([
         {
-          file: 'test-data',
+          id: expect.any(String),
+          data: expect.any(Buffer),
           name: 'test.txt',
-          type: 'text/plain',
+          contentType: 'text/plain',
           size: 100,
           lastModified: expect.any(Number)
         }
@@ -177,9 +180,10 @@ describe('AttachmentHandler', () => {
 
       expect(result).toEqual([
         {
-          file: 'test-data',
+          id: expect.any(String),
+          data: expect.any(Buffer),
           name: 'test.txt',
-          type: 'text/plain',
+          contentType: 'text/plain',
           size: 100,
           lastModified: expect.any(Number)
         }

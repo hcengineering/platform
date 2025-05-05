@@ -38,11 +38,32 @@ export type State = User & {
 }
 
 export interface AttachedFile {
-  size?: number
-  file: string
-  type?: string
-  lastModified: number
+  id: string
   name: string
+  data: Buffer
+  contentType: string
+  size?: number
+  lastModified: number
+}
+
+export interface EmailContact {
+  email: string
+  firstName: string
+  lastName: string
+}
+
+export interface ConvertedMessage {
+  modifiedOn: number
+  messageId: string
+  replyTo?: string
+  copy?: EmailContact[]
+  content: string
+  textContent: string
+  from: EmailContact
+  to: EmailContact
+  incoming: boolean
+  subject: string
+  sendOn: number
 }
 
 export type Channel = Pick<PlatformChannel, 'value' | keyof Doc>

@@ -24,30 +24,31 @@ import {
 import contact, { AvatarType, combineName, SocialIdentityRef } from '@hcengineering/contact'
 import { AccountClient } from '@hcengineering/account-client'
 
-import { GooglePeopleClient } from '../gmail/peopleClient'
+import { EmailContact } from '../types'
 
 export async function ensureGlobalPerson (
   ctx: MeasureContext,
   client: AccountClient,
   mailId: string,
-  email: string,
-  peopleClient: GooglePeopleClient
+  contact: EmailContact
 ): Promise<{ socialId: PersonId, uuid: PersonUuid, firstName: string, lastName: string } | undefined> {
-  const googlePerson = await peopleClient.getContactInfo(email)
-  const firstName = googlePerson?.firstName ?? email
-  const lastName = googlePerson?.lastName ?? ''
-  const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
+  const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: contact.email })
   const socialId = await client.findSocialIdBySocialKey(socialKey)
   const uuid = await client.findPersonBySocialKey(socialKey)
   if (socialId !== undefined && uuid !== undefined) {
-    return { socialId, uuid, firstName, lastName }
+    return { socialId, uuid, firstName: contact.firstName, lastName: contact.lastName }
   }
   try {
-    const globalPerson = await client.ensurePerson(SocialIdType.EMAIL, email, firstName, lastName)
-    ctx.info('Created global person', { mailId, email, personUuid: globalPerson.uuid })
-    return { ...globalPerson, firstName, lastName }
+    const globalPerson = await client.ensurePerson(
+      SocialIdType.EMAIL,
+      contact.email,
+      contact.firstName,
+      contact.lastName
+    )
+    ctx.info('Created global person', { mailId, email: contact, personUuid: globalPerson.uuid })
+    return { ...globalPerson, firstName: contact.firstName, lastName: contact.lastName }
   } catch (error) {
-    ctx.error('Failed to create global person', { mailId, error, email })
+    ctx.error('Failed to create global person', { mailId, error, email: contact })
   }
   return undefined
 }

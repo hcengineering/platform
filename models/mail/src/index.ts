@@ -54,6 +54,7 @@ export function createModel (builder: Builder): void {
     chat.icon.Thread,
     mail.string.MailThread,
     mail.string.MailMessages,
+    undefined,
     chat.masterTag.Thread
   )
   createSystemType(
@@ -62,6 +63,7 @@ export function createModel (builder: Builder): void {
     chat.icon.Channel,
     mail.string.MailChannel,
     mail.string.MailChannels,
+    undefined,
     chat.masterTag.Channel
   )
   createMailViewlet(builder)

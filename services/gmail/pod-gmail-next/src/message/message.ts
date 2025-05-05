@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type MeasureContext, Timestamp, AttachedData } from '@hcengineering/core'
-import { type Message } from '@hcengineering/gmail'
+import { type MeasureContext } from '@hcengineering/core'
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 import sanitizeHtml from 'sanitize-html'
@@ -21,15 +20,14 @@ import sanitizeHtml from 'sanitize-html'
 import { AttachmentHandler } from './attachments'
 import { decode64 } from '../base64'
 import { createMessages } from './messageCard'
-import { GooglePeopleClient } from '../gmail/peopleClient'
 import { randomUUID } from 'crypto'
+import { ConvertedMessage, EmailContact } from '../types'
 
 export class MessageManager {
   constructor (
     private readonly ctx: MeasureContext,
     private readonly attachmentHandler: AttachmentHandler,
-    private readonly token: string,
-    private readonly peopleClient: GooglePeopleClient
+    private readonly token: string
   ) {}
 
   async saveMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string): Promise<void> {
@@ -38,14 +36,14 @@ export class MessageManager {
 
     await createMessages(
       this.ctx,
-      this.peopleClient,
       this.token,
-      message.data.id ?? randomUUID(),
+      res.messageId ?? randomUUID(),
       res.from,
       [res.to, ...(res.copy ?? [])],
       res.subject,
       res.content,
       attachments,
+      me,
       res.replyTo
     )
   }
@@ -88,18 +86,16 @@ function getPartMessage (part: gmail_v1.Schema$MessagePart | undefined, mime: st
   return getPartsMessage(part.parts, mime)
 }
 
-function convertMessage (
-  message: GaxiosResponse<gmail_v1.Schema$Message>,
-  me: string
-): AttachedData<Message> & { modifiedOn: Timestamp } {
+function convertMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string): ConvertedMessage {
   const date = message.data.internalDate != null ? new Date(Number.parseInt(message.data.internalDate)) : new Date()
-  const from = getHeaderValue(message.data.payload, 'From') ?? ''
-  const to = getHeaderValue(message.data.payload, 'To') ?? ''
+  const from = parseNameFromEmailHeader(getHeaderValue(message.data.payload, 'From') ?? '')
+  const to = parseNameFromEmailHeader(getHeaderValue(message.data.payload, 'To') ?? '')
+
   const copy =
     getHeaderValue(message.data.payload, 'Cc')
       ?.split(',')
-      .map((p) => p.trim()) ?? undefined
-  const incoming = !from.includes(me)
+      .map((p) => parseNameFromEmailHeader(p.trim())) ?? undefined
+  const incoming = !from.email.includes(me)
   return {
     modifiedOn: date.getTime(),
     messageId: getHeaderValue(message.data.payload, 'Message-ID') ?? '',
@@ -112,5 +108,59 @@ function convertMessage (
     incoming,
     subject: getHeaderValue(message.data.payload, 'Subject') ?? '',
     sendOn: date.getTime()
+  }
+}
+
+export function parseNameFromEmailHeader (headerValue: string | undefined): EmailContact {
+  if (headerValue == null || headerValue.trim() === '') {
+    return {
+      email: '',
+      firstName: '',
+      lastName: ''
+    }
+  }
+
+  // Match pattern like: "Name" <email@example.com> or Name <email@example.com>
+  const nameEmailPattern = /^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/
+  const match = headerValue.trim().match(nameEmailPattern)
+
+  if (match == null) {
+    const address = headerValue.trim()
+    const parts = address.split('@')
+    return {
+      email: address,
+      firstName: parts[0],
+      lastName: parts[1]
+    }
+  }
+
+  const displayName = match[1]?.trim()
+  const email = match[2].trim()
+
+  if (displayName == null || displayName === '') {
+    const parts = email.split('@')
+    return {
+      email,
+      firstName: parts[0],
+      lastName: parts[1]
+    }
+  }
+
+  const nameParts = displayName.split(/\s+/)
+  let firstName: string | undefined
+  let lastName: string | undefined
+
+  if (nameParts.length === 1) {
+    firstName = nameParts[0]
+  } else if (nameParts.length > 1) {
+    firstName = nameParts[0]
+    lastName = nameParts.slice(1).join(' ')
+  }
+
+  const parts = email.split('@')
+  return {
+    email,
+    firstName: firstName ?? parts[0],
+    lastName: lastName ?? parts[1]
   }
 }

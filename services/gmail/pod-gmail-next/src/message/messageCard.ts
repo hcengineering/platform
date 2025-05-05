@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
-import { createRestTxOperations } from '@hcengineering/api-client'
+import { createRestTxOperations, createRestClient } from '@hcengineering/api-client'
 import { type Card } from '@hcengineering/card'
 import {
   type RestClient as CommunicationClient,
@@ -27,28 +27,31 @@ import {
   type PersonId,
   type Ref,
   type TxOperations,
+  type Doc,
   generateId,
   PersonUuid,
-  RateLimiter
+  RateLimiter,
+  SocialIdType
 } from '@hcengineering/core'
 import mail from '@hcengineering/mail'
+import chat from '@hcengineering/chat'
+
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 
 import config from '../config'
-import { ensureGlobalPerson, ensureLocalPerson } from './person'
 import { type AttachedFile } from './types'
-import { GooglePeopleClient } from '../gmail/peopleClient'
+import { EmailContact } from '../types'
 
 export async function createMessages (
   ctx: MeasureContext,
-  peopleClient: GooglePeopleClient,
   token: string,
   mailId: string,
-  from: string,
-  tos: string[],
+  from: EmailContact,
+  tos: EmailContact[],
   subject: string,
   content: string,
   attachments: AttachedFile[],
+  me: string,
   inReplyTo?: string
 ): Promise<void> {
   ctx.info('Sending message', { mailId, from, to: tos.join(',') })
@@ -64,54 +67,20 @@ export async function createMessages (
   const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
   const txClient = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
   const msgClient = getCommunicationClient(wsInfo.endpoint, wsInfo.workspace, wsInfo.token)
+  const restClient = createRestClient(transactorUrl, wsInfo.workspace, wsInfo.token)
 
-  const fromPerson = await ensureGlobalPerson(ctx, accountClient, mailId, from, peopleClient)
-  if (fromPerson === undefined) {
-    ctx.error('Unable to create message without a proper FROM', { mailId })
-    return
-  }
-  try {
-    await ensureLocalPerson(
-      ctx,
-      txClient,
-      mailId,
-      fromPerson.uuid,
-      fromPerson.socialId,
-      from,
-      fromPerson.firstName,
-      fromPerson.lastName
-    )
-  } catch (error) {
-    ctx.error('Failed to ensure local FROM person', { error, mailId })
-    ctx.error('Unable to create message without a proper FROM', { mailId })
-    return
-  }
+  const fromPerson = await restClient.ensurePerson(SocialIdType.EMAIL, from.email, from.firstName, from.lastName)
 
   const toPersons: { address: string, uuid: PersonUuid, socialId: PersonId }[] = []
   for (const to of tos) {
-    const toPerson = await ensureGlobalPerson(ctx, accountClient, mailId, to, peopleClient)
+    const toPerson = await restClient.ensurePerson(SocialIdType.EMAIL, to.email, to.firstName, to.lastName)
     if (toPerson === undefined) {
       continue
     }
-    try {
-      await ensureLocalPerson(
-        ctx,
-        txClient,
-        mailId,
-        toPerson.uuid,
-        toPerson.socialId,
-        to,
-        toPerson.firstName,
-        toPerson.lastName
-      )
-    } catch (error) {
-      ctx.error('Failed to ensure local TO person, skip', { error, mailId })
-      continue
-    }
-    toPersons.push({ address: to, ...toPerson })
+    toPersons.push({ address: to.email, ...toPerson })
   }
   if (toPersons.length === 0) {
-    ctx.error('Unable to create message without a proper TO', { mailId })
+    ctx.error('Unable to create message without a proper TO', { mailId, from })
     return
   }
 
@@ -148,7 +117,7 @@ export async function createMessages (
   }
 
   try {
-    const spaces = await getPersonSpaces(ctx, txClient, mailId, fromPerson.uuid, from)
+    const spaces = await getPersonSpaces(ctx, txClient, mailId, fromPerson.uuid, from.email)
     if (spaces.length > 0) {
       await saveMessageToSpaces(
         ctx,
@@ -161,6 +130,7 @@ export async function createMessages (
         subject,
         content,
         attachedBlobs,
+        me,
         inReplyTo
       )
     }
@@ -188,6 +158,7 @@ export async function createMessages (
           subject,
           content,
           attachedBlobs,
+          me,
           inReplyTo
         )
       }
@@ -208,7 +179,7 @@ async function getPersonSpaces (
   const personRefs = persons.map((p) => p._id)
   const spaces = await client.findAll(contact.class.PersonSpace, { person: { $in: personRefs } })
   if (spaces.length === 0) {
-    ctx.info('No personal space found, skip', { mailId, personUuid, email })
+    ctx.warn('No personal space found, skip', { mailId, personUuid, email })
   }
   return spaces
 }
@@ -224,6 +195,7 @@ async function saveMessageToSpaces (
   subject: string,
   content: string,
   attachments: AttachedFile[],
+  me: string,
   inReplyTo?: string
 ): Promise<void> {
   const rateLimiter = new RateLimiter(10)
@@ -247,8 +219,9 @@ async function saveMessageToSpaces (
         }
       }
       if (threadId === undefined) {
+        const channel = await getOrCreateChannel(ctx, client, spaceId, participants, modifiedBy, me)
         const newThreadId = await client.createDoc(
-          mail.class.MailThread,
+          chat.masterTag.Thread,
           space._id,
           {
             title: subject,
@@ -257,7 +230,8 @@ async function saveMessageToSpaces (
             members: participants,
             archived: false,
             createdBy: modifiedBy,
-            modifiedBy
+            modifiedBy,
+            parent: channel
           },
           generateId(),
           undefined,
@@ -269,12 +243,12 @@ async function saveMessageToSpaces (
 
       const { id: messageId, created: messageCreated } = await msgClient.createMessage(
         threadId,
-        mail.class.MailThread,
+        chat.masterTag.Thread,
         content,
         modifiedBy,
         MessageType.Message
       )
-      ctx.info('Created message', { mailId, messageId, threadId })
+      ctx.info('Created message', { mailId, messageId, threadId, content })
 
       for (const a of attachments) {
         await msgClient.createFile(
@@ -303,4 +277,38 @@ async function saveMessageToSpaces (
     })
   }
   await rateLimiter.waitProcessing()
+}
+
+async function getOrCreateChannel (
+  ctx: MeasureContext,
+  client: TxOperations,
+  space: Ref<PersonSpace>,
+  participants: PersonId[],
+  modifiedBy: PersonId,
+  me: string
+): Promise<Ref<Doc> | undefined> {
+  try {
+    const channel = await client.findOne(chat.masterTag.Channel, { title: me })
+    ctx.info('Existing channel', { me, space, channel })
+    if (channel != null) return channel._id
+    ctx.info('Creating new channel', { me, space })
+    return await client.createDoc(
+      chat.masterTag.Channel,
+      space,
+      {
+        title: me,
+        private: true,
+        members: participants,
+        archived: false,
+        createdBy: modifiedBy,
+        modifiedBy
+      },
+      generateId(),
+      undefined,
+      modifiedBy
+    )
+  } catch (err: any) {
+    ctx.error('Failed to create channel', { me, space })
+    return undefined
+  }
 }

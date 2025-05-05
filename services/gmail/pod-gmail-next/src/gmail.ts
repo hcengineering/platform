@@ -34,7 +34,6 @@ import { MessageManager } from './message/message'
 import { SyncManager } from './message/sync'
 import { getEmail } from './gmail/utils'
 import { Integration } from '@hcengineering/account-client'
-import { GooglePeopleClient } from './gmail/peopleClient'
 
 const SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
@@ -105,12 +104,7 @@ export class GmailClient {
     this.client = new TxOperations(client, this.socialId._id)
     this.account = this.user.userId
     this.attachmentHandler = new AttachmentHandler(ctx, workspaceId, storageAdapter, this.gmail, this.client)
-    this.messageManager = new MessageManager(
-      ctx,
-      this.attachmentHandler,
-      this.integrationToken,
-      new GooglePeopleClient(oAuth2Client, ctx, this.rateLimiter)
-    )
+    this.messageManager = new MessageManager(ctx, this.attachmentHandler, this.integrationToken)
     const keyValueClient = getKvsClient(this.integrationToken)
     this.syncManager = new SyncManager(
       ctx,
