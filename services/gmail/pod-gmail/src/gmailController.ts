@@ -97,7 +97,6 @@ export class GmailController {
         const accountClient = getAccountClient(wsToken)
 
         const tokens = await getWorkspaceTokens(accountClient, workspace)
-        if (token == null) continue
         await limiter.add(async () => {
           const info = await accountClient.getWorkspaceInfo()
 
