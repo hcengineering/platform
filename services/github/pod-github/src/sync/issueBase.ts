@@ -1087,7 +1087,7 @@ export abstract class IssueSyncManagerBase {
 
     const update: IssueUpdate = {}
     const du: DocumentUpdate<DocSyncInfo> = {}
-    const account = (await this.provider.getAccount(issueExternal.author))?._id ?? core.account.System
+    const account = (await this.provider.getAccount(issueExternal.author)) ?? core.account.System
 
     const container = await this.provider.getContainer(info.space)
     if (container == null) {
@@ -1114,17 +1114,10 @@ export abstract class IssueSyncManagerBase {
     }
     if (!deepEqual(previousExternal.assignees, issueExternal.assignees)) {
       const assignees = await this.getAssignees(issueExternal)
-      update.assignee = assignees?.[0]?.person ?? null
+      update.assignee = assignees?.[0] ?? null
     }
     if (Object.keys(update).length > 0) {
-      await this.handleUpdate(
-        issueExternal,
-        derivedClient,
-        update,
-        account,
-        container.project,
-        false
-      )
+      await this.handleUpdate(issueExternal, derivedClient, update, account, container.project, false)
     }
   }
 
@@ -1142,7 +1135,7 @@ export abstract class IssueSyncManagerBase {
       syncDocs ??
       (await this.client.findAll<DocSyncInfo>(github.class.DocSyncInfo, {
         space: repo.githubProject,
-        repository: repo._id,
+        // repository: repo._id, // If we skip repository, we will find orphaned issues, so we could connect them on.
         objectClass: _class,
         url: { $in: issues.map((it) => (it.url ?? '').toLowerCase()) }
       }))
@@ -1176,15 +1169,15 @@ export abstract class IssueSyncManagerBase {
           if (syncDocs !== undefined) {
             syncDocs = syncDocs.filter((it) => it._id !== existing._id)
           }
-          const externalEqual = deepEqual(existing.external, issue)
+          const externalEqual = deepEqual(existing.external, issue) && existing.repository === repo._id
           if (!externalEqual || existing.externalVersion !== githubExternalSyncVersion) {
             this.ctx.info('Update sync doc(extarnal changes)', {
               url: issue.url,
               workspace: this.provider.getWorkspaceId()
             })
 
-            if (existing.needSync === githubSyncVersion) {
-              // Sync external if and only if no changes from platform.
+            if (existing.needSync === githubSyncVersion || existing.repository !== repo._id) {
+              // Sync external if and only if no changes from platform or we do resync from github.
               // We need to apply changes from Github, while service was offline.
               await this.performDocumentExternalSync(this.ctx, existing, existing.external, issue, derivedClient)
             }
@@ -1197,6 +1190,7 @@ export abstract class IssueSyncManagerBase {
                 externalVersion: githubExternalSyncVersion,
                 derivedVersion: '', // Clear derived state to recalculate it.
                 externalVersionSince: '',
+                repository: repo._id,
                 lastModified: new Date(issue.updatedAt).getTime()
               },
               Date.now()
