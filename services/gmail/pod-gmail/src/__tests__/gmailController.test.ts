@@ -30,6 +30,7 @@ jest.mock('../integrations')
 jest.mock('../tokens')
 jest.mock('@hcengineering/server-client')
 jest.mock('../utils')
+jest.mock('../config')
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
