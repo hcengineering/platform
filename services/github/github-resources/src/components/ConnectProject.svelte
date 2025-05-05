@@ -13,12 +13,18 @@
     showPopup
   } from '@hcengineering/ui'
   import DropdownLabelsPopup from '@hcengineering/ui/src/components/DropdownLabelsPopup.svelte'
-  import { GithubIntegration, GithubIntegrationRepository, githubPullRequestStates } from '@hcengineering/github'
+  import {
+    GithubIntegration,
+    GithubIntegrationRepository,
+    githubPullRequestStates,
+    type GithubProject
+  } from '@hcengineering/github'
   import github from '../plugin'
 
   export let integration: WithLookup<GithubIntegration>
   export let repository: GithubIntegrationRepository
   export let projects: Project[] = []
+  export let orphanProjects: GithubProject[] = []
 
   /**
    * @public
@@ -112,16 +118,23 @@
 
     const githubProject = client.getHierarchy().as(projectInst, github.mixin.GithubProject)
 
-    void getClient().update(githubProject, {
+    if (githubProject.integration !== integration._id) {
+      await getClient().update(githubProject, {
+        integration: integration._id
+      })
+    }
+    await getClient().update(githubProject, {
       $push: { repositories: repository._id }
     })
-    void getClient().update(repository, { githubProject: githubProject._id, enabled: true })
+    await getClient().update(repository, { githubProject: githubProject._id, enabled: true })
   }
 
-  $: allowedProjects = projects.filter(
-    (it) =>
-      (client.getHierarchy().asIf(it, github.mixin.GithubProject)?.integration ?? integration._id) === integration._id
-  )
+  $: allowedProjects = projects
+    .filter(
+      (it) =>
+        (client.getHierarchy().asIf(it, github.mixin.GithubProject)?.integration ?? integration._id) === integration._id
+    )
+    .concat(orphanProjects)
   async function selectProject (event: MouseEvent): Promise<void> {
     showPopup(
       DropdownLabelsPopup,

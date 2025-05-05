@@ -370,12 +370,13 @@ export async function syncDerivedDocuments<T extends { url: string }> (
       })
     } else {
       processed.add(existing._id)
-      if (!deepEqual(existing.external, r)) {
+      if (!deepEqual(existing.external, r) || existing.repository !== repo._id) {
         // Only update if had changes.
         await derivedClient.update(existing, {
           external: r,
           needSync: '', // We need to check if we had any changes.
           derivedVersion: '',
+          repository: repo._id,
           externalVersion: githubExternalSyncVersion,
           lastModified: new Date(r.updatedAt ?? r.createdAt).getTime(),
           ...extra
