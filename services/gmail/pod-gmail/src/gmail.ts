@@ -99,7 +99,7 @@ export class GmailClient {
     private socialId: SocialId
   ) {
     this.email = email
-    this.integrationToken = serviceToken()
+    this.integrationToken = serviceToken(workspaceId)
     this.tokenStorage = new TokenStorage(this.ctx, workspaceId, this.integrationToken)
     this.client = new TxOperations(client, this.socialId._id)
     this.account = this.user.userId
