@@ -75,6 +75,7 @@ import github, { githubId } from '@hcengineering/github'
 import { bitrixId } from '@hcengineering/bitrix'
 import {inboxId} from '@hcengineering/inbox'
 import {achievementId} from '@hcengineering/achievement'
+import {emojiId} from '@hcengineering/emoji'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/analytics-collector-assets'
@@ -362,6 +363,7 @@ function configureI18n(): void {
   addStringsLoader(processId, async (lang: string) => await import(`@hcengineering/process-assets/lang/${lang}.json`))
   addStringsLoader(inboxId, async (lang: string) => await import(`@hcengineering/inbox-assets/lang/${lang}.json`))
   addStringsLoader(achievementId, async (lang: string) => await import(`@hcengineering/achievement-assets/lang/${lang}.json`))
+  addStringsLoader(emojiId, async (lang: string) => await import(`@hcengineering/emoji-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -551,7 +553,7 @@ export async function configurePlatform() {
   addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
   addLocation(recorderId, () => import(/* webpackChunkName: "recorder" */ '@hcengineering/recorder-resources'))
   addLocation(mediaId, () => import(/* webpackChunkName: "media" */ '@hcengineering/media-resources'))
-  
+
   addLocation(
     testManagementId,
     () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources')
@@ -564,6 +566,7 @@ export async function configurePlatform() {
   addLocation(processId, () => import(/* webpackChunkName: "process" */ '@hcengineering/process-resources'))
   addLocation(inboxId, () => import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
   addLocation(achievementId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/achievement-resources'))
+  addLocation(emojiId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/emoji-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

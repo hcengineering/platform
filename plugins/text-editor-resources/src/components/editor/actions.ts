@@ -1,6 +1,7 @@
 import { getResource } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { EmojiPopup, IconEmoji, showPopup } from '@hcengineering/ui'
+import { IconEmoji, showPopup } from '@hcengineering/ui'
+import emojiPlugin from '@hcengineering/emoji'
 import textEditor, { type RefAction } from '@hcengineering/text-editor'
 
 import RiMention from '../icons/RIMention.svelte'
@@ -20,7 +21,7 @@ export const defaultRefActions: RefAction[] = [
     icon: IconEmoji,
     action: (element, editorHandler) => {
       showPopup(
-        EmojiPopup,
+        emojiPlugin.component.EmojiPopup,
         {},
         element,
         (emoji) => {

@@ -2477,6 +2477,26 @@
       "packageName": "@hcengineering/kvs-client",
       "projectFolder": "packages/kvs-client",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/emoji",
+      "projectFolder": "plugins/emoji",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/emoji-assets",
+      "projectFolder": "plugins/emoji-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/emoji-resources",
+      "projectFolder": "plugins/emoji-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-emoji",
+      "projectFolder": "models/emoji",
+      "shouldPublish": false
     }
   ]
 }

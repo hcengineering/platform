@@ -117,6 +117,7 @@ import { chatId, createModel as chatModel } from '@hcengineering/model-chat'
 import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
 import { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
 import { achievementId, createModel as achievementModel } from '@hcengineering/model-achievement'
+import { emojiId, createModel as emojiModel } from '@hcengineering/model-emoji'
 import { type Plugin } from '@hcengineering/platform'
 
 interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' | 'transactions'> {}
@@ -456,6 +457,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [chatModel, chatId],
     [inboxModel, inboxId],
     [achievementModel, achievementId],
+    [emojiModel, emojiId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
