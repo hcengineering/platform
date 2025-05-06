@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,11 +13,13 @@
 // limitations under the License.
 //
 
-export * from './client'
-export * from './markup/types'
-export * from './socket'
-export * from './types'
-export * from './rest'
-export * from './config'
-export * from './utils'
-export * from './storage'
+import { Blob } from '@hcengineering/core'
+import { Readable } from 'stream'
+
+export interface StorageClient {
+  stat: (objectName: string) => Promise<Blob | undefined>
+  get: (objectName: string) => Promise<Readable>
+  put: (objectName: string, stream: Readable | Buffer | string, contentType: string, size?: number) => Promise<Blob>
+  partial: (objectName: string, offset: number, length?: number) => Promise<Readable>
+  remove: (objectName: string) => Promise<void>
+}
