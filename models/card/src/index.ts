@@ -174,8 +174,7 @@ export function createSystemType (
   icon: Asset = card.icon.MasterTag,
   label: IntlString,
   pluralLabel?: IntlString,
-  viewDefaults?: MixinData<MasterTag, CardViewDefaults>,
-  parent?: Ref<MasterTag>
+  viewDefaults?: MixinData<MasterTag, CardViewDefaults>
 ): void {
   builder.createDoc(
     card.class.MasterTag,
@@ -183,7 +182,7 @@ export function createSystemType (
     {
       label,
       pluralLabel,
-      extends: parent ?? card.class.Card,
+      extends: card.class.Card,
       icon,
       kind: ClassifierKind.CLASS
     },

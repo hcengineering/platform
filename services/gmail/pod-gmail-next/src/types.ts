@@ -52,9 +52,9 @@ export interface EmailContact {
   lastName: string
 }
 
-export interface ConvertedMessage {
+export interface EmailMessage {
   modifiedOn: number
-  messageId: string
+  mailId: string
   replyTo?: string
   copy?: EmailContact[]
   content: string

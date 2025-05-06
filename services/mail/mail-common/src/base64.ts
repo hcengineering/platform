@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import { loadMetadata } from '@hcengineering/platform'
-import mail from '@hcengineering/mail'
+export function encode64 (str: string): string {
+  return Buffer.from(str).toString('base64')
+}
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(mail.icon, {
-  NewMail: `${icons}#new-mail`,
-  Inbox: `${icons}#inbox`,
-  Done: `${icons}#done`,
-  Sent: `${icons}#sent`,
-  Mail: `${icons}#mail`
-})
+export function decode64 (str: string): string {
+  return Buffer.from(str, 'base64').toString('utf8')
+}
+
+export function arrayBufferToBase64 (buffer: ArrayBuffer): string {
+  return Buffer.from(buffer).toString('base64')
+}

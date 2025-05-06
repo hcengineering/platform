@@ -9,7 +9,6 @@
     "Date": "Fecha",
     "MailMessage": "Mensaje",
     "MailMessages": "Mensajes",
-    "MailChannel": "Canal de correo",
-    "MailChannels": "Canales de correo"
+    "MailTag": "Correo"
   }
 }

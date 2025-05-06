@@ -9,7 +9,6 @@
     "Date": "Дата",
     "MailMessage": "Сообщение",
     "MailMessages": "Сообщения",
-    "MailChannel": "Почтовый канал",
-    "MailChannels": "Почтовые каналы"
+    "MailTag": "Почта"
   }
 }

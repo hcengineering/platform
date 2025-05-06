@@ -9,7 +9,6 @@
     "Date": "Datum",
     "MailMessage": "Zpráva",
     "MailMessages": "Zprávy",
-    "MailChannel": "Zpráva",
-    "MailChannels": "Zprávy"
+    "MailTag": "Zpráva"
   }
 }

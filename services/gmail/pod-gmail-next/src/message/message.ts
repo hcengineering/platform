@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type MeasureContext } from '@hcengineering/core'
+import { SocialId, type MeasureContext } from '@hcengineering/core'
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 import sanitizeHtml from 'sanitize-html'
@@ -20,32 +20,21 @@ import sanitizeHtml from 'sanitize-html'
 import { AttachmentHandler } from './attachments'
 import { decode64 } from '../base64'
 import { createMessages } from './messageCard'
-import { randomUUID } from 'crypto'
-import { ConvertedMessage, EmailContact } from '../types'
+import { EmailMessage, EmailContact } from '../types'
 
 export class MessageManager {
   constructor (
     private readonly ctx: MeasureContext,
     private readonly attachmentHandler: AttachmentHandler,
-    private readonly token: string
+    private readonly token: string,
+    private readonly socialId: SocialId
   ) {}
 
   async saveMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string): Promise<void> {
     const res = convertMessage(message, me)
     const attachments = await this.attachmentHandler.getPartFiles(message.data.payload, message.data.id ?? '')
 
-    await createMessages(
-      this.ctx,
-      this.token,
-      res.messageId ?? randomUUID(),
-      res.from,
-      [res.to, ...(res.copy ?? [])],
-      res.subject,
-      res.content,
-      attachments,
-      me,
-      res.replyTo
-    )
+    await createMessages(this.ctx, this.token, res, attachments, me, this.socialId)
   }
 }
 
@@ -86,7 +75,7 @@ function getPartMessage (part: gmail_v1.Schema$MessagePart | undefined, mime: st
   return getPartsMessage(part.parts, mime)
 }
 
-function convertMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string): ConvertedMessage {
+function convertMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string): EmailMessage {
   const date = message.data.internalDate != null ? new Date(Number.parseInt(message.data.internalDate)) : new Date()
   const from = parseNameFromEmailHeader(getHeaderValue(message.data.payload, 'From') ?? '')
   const to = parseNameFromEmailHeader(getHeaderValue(message.data.payload, 'To') ?? '')
@@ -98,7 +87,7 @@ function convertMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: s
   const incoming = !from.email.includes(me)
   return {
     modifiedOn: date.getTime(),
-    messageId: getHeaderValue(message.data.payload, 'Message-ID') ?? '',
+    mailId: getHeaderValue(message.data.payload, 'Message-ID') ?? '',
     replyTo: getHeaderValue(message.data.payload, 'In-Reply-To'),
     copy,
     content: sanitizeHtml(getPartMessage(message.data.payload, 'text/html')),

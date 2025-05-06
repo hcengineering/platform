@@ -27,7 +27,7 @@ interface Config {
   FooterMessage: string
   InitLimit: number
   KvsUrl: string
-  StorageConfig?: string
+  StorageConfig: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -39,7 +39,8 @@ const envMap: { [key in keyof Config]: string } = {
   WATCH_TOPIC_NAME: 'WATCH_TOPIC_NAME',
   FooterMessage: 'FOOTER_MESSAGE',
   InitLimit: 'INIT_LIMIT',
-  KvsUrl: 'KVS_URL'
+  KvsUrl: 'KVS_URL',
+  StorageConfig: 'STORAGE_CONFIG'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -55,7 +56,7 @@ const config: Config = (() => {
     InitLimit: parseNumber(process.env[envMap.InitLimit]) ?? 50,
     FooterMessage: process.env[envMap.FooterMessage] ?? '<br><br><p>Sent via <a href="https://huly.io">Huly</a></p>',
     KvsUrl: process.env[envMap.KvsUrl],
-    StorageConfig: process.env.STORAGE_CONFIG
+    StorageConfig: process.env[envMap.StorageConfig]
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)

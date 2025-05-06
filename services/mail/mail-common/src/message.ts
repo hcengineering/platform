@@ -39,16 +39,16 @@ import chat from '@hcengineering/chat'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 
-import config from '../config'
-import { type AttachedFile } from './types'
-import { EmailMessage } from '../types'
+import { BaseConfig, type Attachment } from './types'
+import { EmailMessage } from './types'
 import { getMdContent } from './utils'
 
 export async function createMessages (
+  config: BaseConfig,
   ctx: MeasureContext,
   token: string,
   message: EmailMessage,
-  attachments: AttachedFile[],
+  attachments: Attachment[],
   me: string,
   socialId: SocialId
 ): Promise<void> {
@@ -88,7 +88,7 @@ export async function createMessages (
   const participants = [fromPerson.socialId, ...toPersons.map((p) => p.socialId)]
   const content = getMdContent(ctx, message)
 
-  const attachedBlobs: AttachedFile[] = []
+  const attachedBlobs: Attachment[] = []
   if (config.StorageConfig !== undefined) {
     const storageConfig = storageConfigFromEnv(config.StorageConfig)
     const storageAdapter = buildStorageFromConfig(storageConfig)
@@ -199,7 +199,7 @@ async function saveMessageToSpaces (
   modifiedBy: PersonId,
   subject: string,
   content: string,
-  attachments: AttachedFile[],
+  attachments: Attachment[],
   me: string,
   socialId: SocialId,
   createdDate: number,

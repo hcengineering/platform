@@ -1,4 +1,4 @@
-import { type MeasureContext, TxOperations, AttachedData } from '@hcengineering/core'
+import { type MeasureContext, TxOperations, AttachedData, SocialId } from '@hcengineering/core'
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 import { type Message } from '@hcengineering/gmail'
@@ -19,6 +19,7 @@ describe('MessageManager', () => {
   let mockAttachmentHandler: AttachmentHandler
   let mockToken: string
   let mockWorkspace: { getChannel: (email: string) => Channel | undefined }
+  let mockSocialId: SocialId
 
   beforeEach(() => {
     mockCtx = {
@@ -42,8 +43,9 @@ describe('MessageManager', () => {
     mockWorkspace = {
       getChannel: jest.fn()
     }
+    mockSocialId = { key: 'test-key', _id: '123' } as unknown as SocialId
 
-    messageManager = new MessageManager(mockCtx, mockAttachmentHandler, mockToken)
+    messageManager = new MessageManager(mockCtx, mockAttachmentHandler, mockToken, mockSocialId)
   })
 
   describe('saveMessage', () => {
