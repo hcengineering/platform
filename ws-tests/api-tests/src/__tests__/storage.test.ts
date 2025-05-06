@@ -15,27 +15,21 @@
 
 import {
   connectStorage,
-  createRestClient,
-  createRestTxOperations,
   getWorkspaceToken,
   loadServerConfig,
   NotFoundError,
-  ServerConfig,
-  StorageClient,
-  type RestClient,
+  type ServerConfig,
+  type StorageClient,
   type WorkspaceToken
 } from '@hcengineering/api-client'
-import core, { MeasureMetricsContext, systemAccountUuid, generateUuid, Ref, Blob } from '@hcengineering/core'
-import chunter from '@hcengineering/chunter'
+import { systemAccountUuid, generateUuid, type Ref, type Blob } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 
 describe('storage-api-server', () => {
   const frontUrl = 'http://huly.local:8083'
-  const testCtx = new MeasureMetricsContext('test', {})
   const wsName = 'api-tests'
   let config: ServerConfig
   let apiWorkspace1: WorkspaceToken
-  let apiWorkspace2: WorkspaceToken
 
   beforeAll(async () => {
     config = await loadServerConfig(frontUrl)
@@ -49,19 +43,9 @@ describe('storage-api-server', () => {
       },
       config
     )
-
-    apiWorkspace2 = await getWorkspaceToken(
-      'http://huly.local:8083',
-      {
-        email: 'user1',
-        password: '1234',
-        workspace: wsName + '-cr'
-      },
-      config
-    )
   }, 10000)
 
-  async function connect(ws?: WorkspaceToken, asSystem = false): Promise<StorageClient> {
+  async function connect (ws?: WorkspaceToken, asSystem = false): Promise<StorageClient> {
     const tok = ws ?? apiWorkspace1
     const token = asSystem ? generateToken(systemAccountUuid, tok.workspaceId, undefined, 'secret') : tok.token
 
