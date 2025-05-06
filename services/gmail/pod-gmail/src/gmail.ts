@@ -99,7 +99,7 @@ export class GmailClient {
     private socialId: SocialId
   ) {
     this.email = email
-    this.integrationToken = serviceToken()
+    this.integrationToken = serviceToken(workspaceId)
     this.tokenStorage = new TokenStorage(this.ctx, workspaceId, this.integrationToken)
     this.client = new TxOperations(client, this.socialId._id)
     this.account = this.user.userId
@@ -363,15 +363,11 @@ export class GmailClient {
     this.socialId = await getOrCreateSocialId(this.account, this.email)
   }
 
-  private async getCurrentToken (): Promise<Token | null> {
-    return await this.tokenStorage.getToken(this.socialId._id)
-  }
-
   private async addClient (): Promise<void> {
     try {
       this.ctx.info('Register client', { socialId: this.socialId._id, email: this.email })
       const controller = GmailController.getGmailController()
-      controller.addClient(this.socialId._id, this)
+      controller.addClient(this.socialId._id, this.user.workspace, this)
     } catch (err) {
       this.ctx.error('Add client error', {
         workspaceUuid: this.user.workspace,
