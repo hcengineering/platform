@@ -88,6 +88,10 @@ services:
     ports:
       - 9002:9000
       - 9003:9001
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      retries: 10
   elastic:
     image: 'elasticsearch:7.14.2'
     expose:
@@ -166,7 +170,9 @@ services:
       - SERVER_SECRET=secret
       - ACCOUNTS_URL_INTERNAL=http://account:3003
       - ACCOUNTS_URL=http://localhost:3003
-      - UPLOAD_URL=/files
+      - FILES_URL=http://localhost:4031/blob/:workspace/:blobId/:filename
+      - UPLOAD_URL=http://localhost:4031/upload/form-data/:workspace
+      - PREVIEW_CONFIG=http://localhost:4031/image/fit=cover,width=:width,height=:height,dpr=:dpr/:workspace/:blobId
       - ELASTIC_URL=http://elastic:9200
       - GMAIL_URL=http://localhost:8088
       - CALENDAR_URL=http://localhost:8095
@@ -258,6 +264,28 @@ services:
       - REKONI_URL=http://rekoni:4007
       - ACCOUNTS_URL=http://account:3003
       - STATS_URL=http://stats:4901
+  datalake:
+    image: hardcoreeng/datalake
+    depends_on:
+      minio:
+        condition: service_healthy
+      cockroach:
+        condition: service_started
+      stats:
+        condition: service_started
+      account:
+        condition: service_started
+    ports:
+      - 4031:4031
+    environment:
+      - PORT=4031
+      - SECRET=secret
+      - ACCOUNTS_URL=http://account:3003
+      - STATS_URL=http://stats:4901
+      - STREAM_URL=http://localhost:1081/recording
+      - DB_URL=${DB_PG_URL}
+      - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
+    restart: unless-stopped
   stats:
     image: hardcoreeng/stats
     ports:

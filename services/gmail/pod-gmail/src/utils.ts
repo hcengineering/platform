@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type Data, type Doc, type DocumentUpdate, systemAccountUuid } from '@hcengineering/core'
+import { type Data, type Doc, type DocumentUpdate, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { deepEqual } from 'fast-equals'
 import { type KeyValueClient, getClient as getKeyValueClient } from '@hcengineering/kvs-client'
@@ -72,8 +72,8 @@ export function addFooter (message: string): string {
   return message + config.FooterMessage.trim()
 }
 
-export function serviceToken (): string {
-  return generateToken(systemAccountUuid, undefined, { service: 'gmail' })
+export function serviceToken (workspaceId?: WorkspaceUuid): string {
+  return generateToken(systemAccountUuid, workspaceId, { service: 'gmail' })
 }
 
 export async function wait (sec: number): Promise<void> {

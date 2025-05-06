@@ -554,6 +554,9 @@ export function convertArrayParams (parameters?: ParameterOrJSON<any>[]): any[] 
 }
 
 export function filterProjection<T extends Doc> (data: any, projection: Projection<T> | undefined): any {
+  if (projection === undefined) {
+    return data
+  }
   for (const key in data) {
     if (!Object.prototype.hasOwnProperty.call(projection, key) || (projection as any)[key] === 0) {
       // check nested projections in case of object

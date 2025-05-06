@@ -36,11 +36,15 @@
 
     docObject[type] = users
   }
+
+  $: reviewers = docObject?.reviewers ?? []
+  $: approvers = docObject?.approvers ?? []
+  $: coAuthors = docObject?.coAuthors ?? []
 </script>
 
 {#if docObject !== undefined}
   <div class="root">
-    <DocTeam controlledDoc={docObject} {space} on:update={handleUpdate} />
+    <DocTeam controlledDoc={docObject} {space} on:update={handleUpdate} {approvers} {reviewers} {coAuthors} />
   </div>
 {/if}
 
