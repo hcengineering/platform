@@ -78,12 +78,23 @@ export const getFrequentlyEmojis = (): EmojiWithGroup[] | undefined => {
     const parsedEmojis = JSON.parse(frequentlyEmojis)
     if (!Array.isArray(parsedEmojis)) return undefined
     const emojis = get(emojiStore)
-    return emojis.filter((e) => {
-      if (isCustomEmoji(e)) {
-        return parsedEmojis.find(pe => pe.hexcode === e.shortcode) !== undefined
+    const result: EmojiWithGroup[] = []
+    emojis.forEach((emoji: EmojiWithGroup) => {
+      if (isCustomEmoji(emoji)) {
+        if (parsedEmojis.find(pe => pe.hexcode === emoji.shortcode) !== undefined) result.push(emoji)
+      } else {
+        parsedEmojis.forEach((parsedEmoji: any) => {
+          if (parsedEmoji.hexcode === emoji.hexcode) {
+            result.push(emoji)
+            return
+          }
+          const skinEmoji = emoji.skins?.find(s => s.hexcode === parsedEmoji.hexcode)
+          if (skinEmoji === undefined) return
+          result.push({ ...skinEmoji, key: '' })
+        })
       }
-      return parsedEmojis.find(pe => pe.hexcode === e.hexcode || e.skins?.find(s => s.hexcode === pe.hexcode) !== undefined) !== undefined
     })
+    return result
   } catch (e) {
     console.error(e)
     return undefined
