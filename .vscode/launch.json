@@ -196,6 +196,7 @@
         "MAIL_URL": "",
         // "DB_NS": "account-2",
         // "WS_LIVENESS_DAYS": "1",
+        // "WORKSPACE_LIMIT_PER_USER": "1",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost"

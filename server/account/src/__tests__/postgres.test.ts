@@ -335,6 +335,7 @@ describe('AccountPostgresDbCollection', () => {
         a.timezone,
         a.locale,
         a.automatic,
+        a.max_workspaces,
         p.hash,
         p.salt
       FROM global_account.account as a

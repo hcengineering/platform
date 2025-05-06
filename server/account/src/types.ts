@@ -58,6 +58,7 @@ export interface Account {
   locale?: string
   hash?: Buffer | null
   salt?: Buffer | null
+  maxWorkspaces?: number
 }
 
 // TODO: type data with generic type
