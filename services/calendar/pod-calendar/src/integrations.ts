@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,23 +13,9 @@
 // limitations under the License.
 //
 
-import { MongoClientReference, getMongoClient } from '@hcengineering/mongo'
-import { MongoClient } from 'mongodb'
+import { AccountClient, Integration } from '@hcengineering/account-client'
+import { CALENDAR_INTEGRATION } from './types'
 
-import config from './config'
-
-const clientRef: MongoClientReference = getMongoClient(config.MongoURI)
-let client: MongoClient | undefined
-export const getDB = (() => {
-  return async () => {
-    if (client === undefined) {
-      client = await clientRef.getClient()
-    }
-
-    return client.db(config.MongoDB)
-  }
-})()
-
-export const closeDB: () => Promise<void> = async () => {
-  clientRef.close()
+export async function getIntegrations (client: AccountClient): Promise<Integration[]> {
+  return (await client.listIntegrations({ kind: CALENDAR_INTEGRATION })) ?? []
 }
