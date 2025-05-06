@@ -5,53 +5,56 @@ import { showPopup } from '@hcengineering/ui'
 import { Track, LocalTrack, LocalAudioTrack, LocalVideoTrack, ParticipantEvent, TrackInvalidError, ScreenShareCaptureOptions, DeviceUnsupportedError, ScreenSharePresets } from 'livekit-client'
 
 import { IPCMainExposed } from './types'
-import { setMetadata } from '@hcengineering/platform'
-import recordPlugin from '@hcengineering/recorder'
 
-export async function getMediaStream (opts?: DisplayMediaStreamOptions): Promise<MediaStream> {
-  if (opts === undefined) {
-    throw new Error('opts must be provided')
-  }
-  const ipcMain = (window as any).electron as IPCMainExposed
-  const sources = await ipcMain.getScreenSources()
-
-  const hasAccess = await ipcMain.getScreenAccess()
-  if (!hasAccess) {
-    log.error('No screen access granted')
-    throw new Error('No screen access granted')
+export function defineGetDisplayMedia (): void {
+  if (navigator?.mediaDevices === undefined) {
+    console.warn('mediaDevices API not available')
+    return
   }
 
   if (navigator.mediaDevices.getDisplayMedia === undefined) {
     throw new DeviceUnsupportedError('getDisplayMedia not supported')
   }
-  return await new Promise<MediaStream>((resolve, reject) => {
-    showPopup(
-      love.component.SelectScreenSourcePopup,
-      {
-        sources
-      },
-      'top',
-      () => {
-        reject(new Error('No source selected'))
-      },
-      (val) => {
-        if (val != null) {
-          opts.video = {
-            mandatory: {
-              ...(typeof opts.video === 'boolean' ? {} : opts.video),
-              chromeMediaSource: 'desktop',
-              chromeMediaSourceId: val
-            }
-          } as any
-          resolve(window.navigator.mediaDevices.getUserMedia(opts))
-        }
-      }
-    )
-  })
-}
 
-export function defineScreenRecorder (): void {
-  setMetadata(recordPlugin.metadata.GetCustomMediaStream, getMediaStream)
+  navigator.mediaDevices.getDisplayMedia = async (opts?: DisplayMediaStreamOptions): Promise<MediaStream> => {
+    if (opts === undefined) {
+      throw new Error('opts must be provided')
+    }
+
+    const ipcMain = (window as any).electron as IPCMainExposed
+    const sources = await ipcMain.getScreenSources()
+
+    const hasAccess = await ipcMain.getScreenAccess()
+    if (!hasAccess) {
+      log.error('No screen access granted')
+      throw new Error('No screen access granted')
+    }
+
+    return await new Promise<MediaStream>((resolve, reject) => {
+      showPopup(
+        love.component.SelectScreenSourcePopup,
+        {
+          sources
+        },
+        'top',
+        () => {
+          reject(new Error('No source selected'))
+        },
+        (val) => {
+          if (val != null) {
+            opts.video = {
+              mandatory: {
+                ...(typeof opts.video === 'boolean' ? {} : opts.video),
+                chromeMediaSource: 'desktop',
+                chromeMediaSourceId: val
+              }
+            } as any
+            resolve(window.navigator.mediaDevices.getUserMedia(opts))
+          }
+        }
+      )
+    })
+  }
 }
 
 export function defineScreenShare (): void {

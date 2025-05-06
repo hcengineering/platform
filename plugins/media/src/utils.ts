@@ -196,3 +196,14 @@ export async function getMicrophoneStream (
     return null
   }
 }
+
+export async function getDisplayMedia (constraints: MediaStreamConstraints): Promise<MediaStream> {
+  if (
+    navigator?.mediaDevices?.getDisplayMedia !== undefined &&
+    typeof navigator.mediaDevices.getDisplayMedia === 'function'
+  ) {
+    return await navigator.mediaDevices.getDisplayMedia(constraints)
+  }
+
+  throw new Error('getDisplayMedia not supported')
+}

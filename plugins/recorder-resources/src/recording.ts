@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { getDisplayMedia } from '@hcengineering/media'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
@@ -69,7 +70,7 @@ export async function startRecording (options: RecordingOptions): Promise<void> 
 
   let displayStream: MediaStream
   try {
-    displayStream = await navigator.mediaDevices.getDisplayMedia({
+    displayStream = await getDisplayMedia({
       video: {
         frameRate: { ideal: fps ?? 30 }
       }

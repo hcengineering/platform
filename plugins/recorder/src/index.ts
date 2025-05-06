@@ -24,18 +24,12 @@ export const recorderId = 'recorder' as Plugin
 /**
  * @public
  */
-export type GetMediaStream = (options?: DisplayMediaStreamOptions) => Promise<MediaStream>
-
-/**
- * @public
- */
 const recordPlugin = plugin(recorderId, {
   icon: {
     Record: '' as Asset
   },
   metadata: {
-    StreamUrl: '' as Metadata<string>,
-    GetCustomMediaStream: '' as Metadata<GetMediaStream>
+    StreamUrl: '' as Metadata<string>
   },
   space: {
     Drive: '' as Ref<Drive>
