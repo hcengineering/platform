@@ -52,6 +52,7 @@
     "snappyjs": "^0.7.0",
     "@hcengineering/api-client": "^0.6.0",
     "@hcengineering/account-client": "^0.6.0",
+    "@hcengineering/storage-client": "^0.6.0",
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/contact": "^0.6.24",

@@ -2497,6 +2497,11 @@
       "packageName": "@hcengineering/model-communication",
       "projectFolder": "models/communication",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/storage-client",
+      "projectFolder": "packages/storage-client",
+      "shouldPublish": false
     }
   ]
 }

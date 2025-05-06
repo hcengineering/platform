@@ -1,4 +1,3 @@
-//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,17 +10,16 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 import core, { concatLink, WorkspaceUuid, Blob, Ref } from '@hcengineering/core'
 import FormData from 'form-data'
 import { Readable } from 'stream'
-import { StorageClient } from './types'
-import { loadServerConfig, ServerConfig } from '../config'
-import { NetworkError, NotFoundError, StorageError } from './error'
-import { AuthOptions } from '../types'
-import { getWorkspaceToken } from '../utils'
 import nodeFetch from 'node-fetch'
+
+import { StorageClient, AuthOptions } from './types'
+import { loadServerConfig, ServerConfig } from './config'
+import { NetworkError, NotFoundError, StorageError } from './error'
+import { getWorkspaceToken } from './utils'
 
 interface ObjectMetadata {
   name: string
