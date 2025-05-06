@@ -21,6 +21,7 @@ import { loadServerConfig, ServerConfig } from '../config'
 import { NetworkError, NotFoundError, StorageError } from './error'
 import { AuthOptions } from '../types'
 import { getWorkspaceToken } from '../utils'
+import nodeFetch from 'node-fetch'
 
 interface ObjectMetadata {
   name: string
@@ -108,11 +109,19 @@ export class StorageClientImpl implements StorageClient {
       knownLength: size
     }
     formData.append('file', stream, options)
-    const response = await wrappedFetch(this.uploadUrl, {
-      method: 'POST',
-      body: Readable.toWeb(formData) as ReadableStream,
-      headers: { ...this.headers }
-    })
+    let response
+    try {
+      response = await nodeFetch(this.uploadUrl, {
+        method: 'POST',
+        body: formData,
+        headers: { ...this.headers }
+      })
+    } catch (error: any) {
+      throw new NetworkError(`Network error ${error}`)
+    }
+    if (!response.ok) {
+      throw new StorageError(await response.text())
+    }
     const result = (await response.json()) as BlobUploadResult[]
     if (Object.hasOwn(result[0], 'id')) {
       const fileResult = result[0] as BlobUploadSuccess
