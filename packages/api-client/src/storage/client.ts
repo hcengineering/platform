@@ -193,9 +193,8 @@ export async function connectStorage (url: string, options: AuthOptions, config?
     ':workspace',
     token.workspaceId
   )
-  const uploadUrl = (config.UPLOAD_URL.startsWith('/') ? concatLink(url, config.UPLOAD_URL) : config.UPLOAD_URL).replace(
-    ':workspace',
-    token.workspaceId
-  )
+  const uploadUrl = (
+    config.UPLOAD_URL.startsWith('/') ? concatLink(url, config.UPLOAD_URL) : config.UPLOAD_URL
+  ).replace(':workspace', token.workspaceId)
   return new StorageClientImpl(filesUrl, uploadUrl, token.token, token.workspaceId)
 }
