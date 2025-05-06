@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { BackupClient, DocChunk } from './backup'
-import { Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
+import { Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp, type Account } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { MeasureContext, MeasureMetricsContext } from './measurements'
@@ -23,7 +23,8 @@ import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup } from './storage'
 import { SearchOptions, SearchQuery, SearchResult } from './storage'
 import { Tx, TxCUD, WorkspaceEvent, type TxWorkspaceEvent } from './tx'
-import { platformNow, platformNowDiff, toFindResult } from './utils'
+import { platformNow, platformNowDiff, toFindResult, type WorkspaceUuid } from './utils'
+import { deepEqual } from 'fast-equals'
 
 /**
  * @public
@@ -80,13 +81,15 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
   isConnected: () => boolean
 
   close: () => Promise<void>
-  onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+  onConnect?: (event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>
 
   // If hash is passed, will return LoadModelResponse
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
 
-  getLastHash?: (ctx: MeasureContext) => Promise<string | undefined>
+  getLastHash?: (ctx: MeasureContext) => Promise<Record<WorkspaceUuid, string | undefined>>
   pushHandler: (handler: Handler) => void
+
+  getAccount: () => Promise<Account>
 }
 
 class ClientImpl implements Client, BackupClient {
@@ -237,7 +240,7 @@ export async function createClient (
   let hierarchy = new Hierarchy()
   let model = new ModelDb(hierarchy)
 
-  let lastTx: string | undefined
+  let lastTx: Record<WorkspaceUuid, string | undefined> | undefined
 
   function txHandler (...tx: Tx[]): void {
     if (tx == null || tx.length === 0) {
@@ -282,7 +285,7 @@ export async function createClient (
   txBuffer = undefined
 
   const oldOnConnect:
-  | ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>)
+  | ((event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>)
   | undefined = conn.onConnect
   conn.onConnect = async (event, _lastTx, data) => {
     console.log('Client: onConnect', event)
@@ -324,7 +327,7 @@ export async function createClient (
       return
     }
 
-    if (lastTx === _lastTx) {
+    if (deepEqual(lastTx, _lastTx)) {
       // Same lastTx, no need to refresh
       await oldOnConnect?.(ClientConnectEvent.Reconnected, _lastTx, data)
       return
@@ -362,9 +365,13 @@ async function loadModel (
     hash: ''
   }
 
-  if (conn.getLastHash !== undefined && (await conn.getLastHash(ctx)) === current.hash) {
-    // We have same model hash.
-    return { mode: 'same', current: current.transactions, addition: [] }
+  if (conn.getLastHash !== undefined) {
+    const lastHash = await conn.getLastHash(ctx)
+    const account = await conn.getAccount()
+    if (lastHash[account.targetWorkspace] === current.hash) {
+      // We have same model hash.
+      return { mode: 'same', current: current.transactions, addition: [] }
+    }
   }
   const lastTxTime = getLastTxTime(current.transactions)
   const result = await ctx.with('connection-load-model', { hash: current.hash !== '' }, (ctx) =>

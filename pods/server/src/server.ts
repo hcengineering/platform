@@ -17,11 +17,10 @@
 import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
-import { startSessionManager } from '@hcengineering/server'
+import { startSessionManager, type SessionManager } from '@hcengineering/server'
 import {
   type CommunicationApiFactory,
   type PlatformQueue,
-  type SessionManager,
   type StorageConfiguration
 } from '@hcengineering/server-core'
 

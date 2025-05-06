@@ -27,7 +27,8 @@ import core, {
   type Tx,
   type TxResult,
   type TxWorkspaceEvent,
-  type WorkspaceIds
+  type WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import { createHash, type Hash } from 'crypto'
@@ -284,17 +285,21 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
   class TestClientConnection implements ClientConnection {
     isConnected = (): boolean => true
 
-    handler?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+    handler?: (event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>
 
     set onConnect (
-      handler: ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined
+      handler: ((event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>) | undefined
     ) {
       this.handler = handler
-      void this.handler?.(ClientConnectEvent.Connected, '', {})
+      void this.handler?.(ClientConnectEvent.Connected, {}, {})
     }
 
-    get onConnect (): ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined {
+    get onConnect (): ((event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>) | undefined {
       return this.handler
+    }
+
+    getAccount (): Promise<Account> {
+      throw new Error('Method not implemented.')
     }
 
     pushHandler (): void {}

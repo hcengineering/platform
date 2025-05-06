@@ -75,7 +75,8 @@ async function createMessages (
   for (const data of result) {
     void api.event(
       {
-        account: systemAccount
+        // TODO: Fix me, Undetermined role is missing in communication API
+        account: systemAccount as any
       },
       {
         type: MessageRequestEventType.CreateMessage,

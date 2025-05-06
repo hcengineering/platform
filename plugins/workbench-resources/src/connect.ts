@@ -343,11 +343,16 @@ export async function connect (title: string): Promise<Client | undefined> {
   // TODO: should we take the function from some resource like fetchWorkspace/selectWorkspace
   // to remove account client dependency?
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-  const socialIds: SocialId[] = await getAccountClient(accountsUrl, token).getSocialIds()
 
-  const me: Account = {
+  const accountVal = await newClient.getConnection?.()?.getAccount()
+
+  const socialIds: SocialId[] = accountVal?.fullSocialIds ?? await getAccountClient(accountsUrl, token).getSocialIds()
+
+  const me: Account = (await newClient.getConnection?.()?.getAccount()) ?? {
     uuid: account,
     role: workspaceLoginInfo.role,
+    roles: {},
+    targetWorkspace: workspaceLoginInfo.workspace,
     primarySocialId: pickPrimarySocialId(socialIds)._id,
     socialIds: socialIds.map((si) => si._id),
     fullSocialIds: socialIds

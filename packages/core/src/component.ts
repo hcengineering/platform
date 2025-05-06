@@ -15,9 +15,9 @@
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { BenchmarkDoc } from './benchmark'
-import { AccountRole } from './classes'
 import type {
   Account,
+  AccountUuid,
   AnyAttribute,
   ArrOf,
   Association,
@@ -59,9 +59,9 @@ import type {
   TypeAny,
   TypedSpace,
   UserStatus,
-  Version,
-  AccountUuid
+  Version
 } from './classes'
+import { AccountRole } from './classes'
 import { Status, StatusCategory } from './status'
 import type {
   Tx,
@@ -69,11 +69,11 @@ import type {
   TxCUD,
   TxCreateDoc,
   TxMixin,
-  TxModelUpgrade,
   TxRemoveDoc,
   TxUpdateDoc,
   TxWorkspaceEvent
 } from './tx'
+import type { WorkspaceUuid } from './utils'
 
 /**
  * @public
@@ -88,7 +88,9 @@ export const systemAccountEmail = 'anticrm@hc.engineering'
 export const systemAccountUuid = '1749089e-22e6-48de-af4e-165e18fbd2f9' as AccountUuid
 export const systemAccount: Account = {
   uuid: systemAccountUuid,
+  roles: { },
   role: AccountRole.Owner,
+  targetWorkspace: systemAccountUuid as any as WorkspaceUuid,
   primarySocialId: '' as PersonId,
   socialIds: [],
   fullSocialIds: []
@@ -107,7 +109,6 @@ export default plugin(coreId, {
     Interface: '' as Ref<Class<Interface<Doc>>>,
     Attribute: '' as Ref<Class<AnyAttribute>>,
     Tx: '' as Ref<Class<Tx>>,
-    TxModelUpgrade: '' as Ref<Class<TxModelUpgrade>>,
     TxWorkspaceEvent: '' as Ref<Class<TxWorkspaceEvent>>,
     TxApplyIf: '' as Ref<Class<TxApplyIf>>,
     TxCUD: '' as Ref<Class<TxCUD<Doc>>>,

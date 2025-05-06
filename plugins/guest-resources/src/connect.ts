@@ -186,6 +186,8 @@ export async function connect (title: string): Promise<Client | undefined> {
   const me: Account = {
     uuid: account,
     role: workspaceLoginInfo.role,
+    roles: {},
+    targetWorkspace: workspaceLoginInfo.workspace,
     primarySocialId: '' as PersonId,
     socialIds: [],
     fullSocialIds: []

@@ -1,3 +1,11 @@
+import { getClient as getAccountClientRaw, type AccountClient } from '@hcengineering/account-client'
+import contact, {
+  AvatarType,
+  combineName,
+  type Person,
+  type SocialIdentity,
+  type SocialIdentityRef
+} from '@hcengineering/contact'
 import core, {
   buildSocialIdString,
   generateId,
@@ -6,26 +14,19 @@ import core, {
   TxFactory,
   TxProcessor,
   type AttachedData,
-  type Data,
   type Class,
+  type Data,
   type Doc,
   type MeasureContext,
   type Ref,
   type SearchOptions,
   type SearchQuery,
-  type TxCUD
+  type TxCUD,
+  type WorkspaceUuid
 } from '@hcengineering/core'
-import type { ClientSessionCtx, ConnectionSocket, Session, SessionManager } from '@hcengineering/server-core'
-import { decodeToken } from '@hcengineering/server-token'
 import { rpcJSONReplacer, type RateLimitInfo } from '@hcengineering/rpc'
-import contact, {
-  AvatarType,
-  combineName,
-  type SocialIdentity,
-  type Person,
-  type SocialIdentityRef
-} from '@hcengineering/contact'
-import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
+import type { ConnectionSocket } from '@hcengineering/server-core'
+import { decodeToken } from '@hcengineering/server-token'
 
 import { createHash } from 'crypto'
 import { type Express, type Response as ExpressResponse, type Request } from 'express'
@@ -36,6 +37,7 @@ import { gzip } from 'zlib'
 import { retrieveJson } from './utils'
 
 import { unknownError } from '@hcengineering/platform'
+import type { ClientSessionCtx, Session, SessionManager } from '@hcengineering/server'
 interface RPCClientInfo {
   client: ConnectionSocket
   session: Session
@@ -138,7 +140,8 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       ctx: ClientSessionCtx,
       session: Session,
       rateLimit: RateLimitInfo | undefined,
-      token: string
+      token: string,
+      workspaceId: WorkspaceUuid
     ) => Promise<void>
   ): Promise<void> {
     try {
@@ -152,35 +155,36 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         sendError(res, 401, { message: 'Missing Authorization header' })
         return
       }
-      const workspaceId = decodeURIComponent(req.params.workspaceId)
+      const workspaceId = decodeURIComponent(req.params.workspaceId) as WorkspaceUuid
       token = token.split(' ')[1]
 
       const decodedToken = decodeToken(token)
-      if (workspaceId !== decodedToken.workspace) {
-        sendError(res, 401, { message: 'Invalid workspace', workspace: decodedToken.workspace })
-        return
-      }
+      // if (workspaceId !== decodedToken.workspace) {
+      //   sendError(res, 401, { message: 'Invalid workspace', workspace: decodedToken.workspace })
+      //   return
+      // }
 
       let transactorRpc = rpcSessions.get(token)
 
       if (transactorRpc === undefined) {
         const cs: ConnectionSocket = createClosingSocket(token, rpcSessions)
-        const s = await sessions.addSession(ctx, cs, decodedToken, token, token)
-        if (!('session' in s)) {
+        const session = await sessions.addSession(ctx, cs, decodedToken, token, token)
+        if (!('session' in session)) {
           sendError(res, 401, {
             message: 'Failed to create session',
-            mode: 'specialError' in s ? s.specialError ?? '' : 'upgrading'
+            mode: 'specialError' in session ? session.specialError ?? '' : 'upgrading'
           })
           return
         }
-        transactorRpc = { session: s.session, client: cs, workspaceId: s.workspaceId }
+        transactorRpc = { session, client: cs, workspaceId }
         rpcSessions.set(token, transactorRpc)
       }
 
       const rpc = transactorRpc
-      const rateLimit = await sessions.handleRPC(ctx, rpc.session, rpc.client, async (ctx, rateLimit) => {
-        await operation(ctx, rpc.session, rateLimit, token)
-      })
+      const rateLimit = await sessions.handleRPC(ctx, workspaceId,
+        rpc.session, rpc.client, async (ctx, rateLimit) => {
+          await operation(ctx, rpc.session, rateLimit, token, workspaceId)
+        })
       if (rateLimit !== undefined) {
         const { remaining, limit, reset, retryAfter } = rateLimit
         const retryHeaders: OutgoingHttpHeaders = {
@@ -207,15 +211,15 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
   }
 
   app.get('/api/v1/ping/:workspaceId', (req, res) => {
-    void withSession(req, res, async (ctx, session, rateLimit) => {
+    void withSession(req, res, async (ctx, session, rateLimit, token, workspaceId) => {
       await session.ping(ctx)
+
       await sendJson(
         req,
         res,
         {
           pong: true,
-          lastTx: ctx.pipeline.context.lastTx,
-          lastHash: ctx.pipeline.context.lastHash
+          ...await sessions.getLastTxHash(workspaceId)
         },
         rateLimitToHeaders(rateLimit)
       )
@@ -274,14 +278,17 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         core.class.Space,
         core.class.Tx
       ]
-      const h = ctx.pipeline.context.hierarchy
-      const filtered = txes.filter(
-        (it) =>
-          TxProcessor.isExtendsCUD(it._class) &&
+      const workspace = ctx.workspaces[0]
+      await workspace.with(async (pipeline) => {
+        const h = pipeline.context.hierarchy
+        const filtered = txes.filter(
+          (it) =>
+            TxProcessor.isExtendsCUD(it._class) &&
           allowedClasess.some((cl) => h.isDerived((it as TxCUD<Doc>).objectClass, cl))
-      )
+        )
 
-      await sendJson(req, res, filtered, rateLimitToHeaders(rateLimit))
+        await sendJson(req, res, filtered, rateLimitToHeaders(rateLimit))
+      })
     })
   })
 
