@@ -1,3 +1,5 @@
+import { GoogleEmail } from './types'
+
 export class RateLimiter {
   private tokens: number
   private lastRefillTime: number
@@ -31,4 +33,15 @@ export class RateLimiter {
 
     this.tokens -= count
   }
+}
+
+const current = new Map<string, RateLimiter>()
+
+export function getRateLimitter (email: GoogleEmail): RateLimiter {
+  let limiter = current.get(email)
+  if (limiter === undefined) {
+    limiter = new RateLimiter(1000, 500)
+    current.set(email, limiter)
+  }
+  return limiter
 }
