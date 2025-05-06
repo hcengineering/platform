@@ -117,6 +117,7 @@ import '@hcengineering/mail-assets'
 import '@hcengineering/chat-assets'
 import '@hcengineering/inbox-assets'
 import '@hcengineering/achievement-assets'
+import '@hcengineering/emoji-assets'
 import '@hcengineering/media-assets'
 
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'

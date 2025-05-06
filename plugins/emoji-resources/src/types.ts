@@ -1,22 +1,22 @@
-import type { IntlString } from '@hcengineering/platform'
+import type { Asset, IntlString } from '@hcengineering/platform'
 import { type EmojiWithGroup } from '@hcengineering/emoji'
-import emojiPlugin from './plugin'
+import emojiPlugin from '@hcengineering/emoji'
 
 export interface EmojiCategory {
   id: string
   label: IntlString
-  // icon: AnySvelteComponent
+  icon: Asset
   categories?: string[] | string
   emojisString?: string[]
   emojis?: EmojiWithGroup[]
 }
 
 export const emojiCategories: EmojiCategory[] = [
-  { id: 'frequently-used', label: emojiPlugin.string.FrequentlyUsed/* , icon: emojiPlugin.component.IconFrequentlyUsed */},
+  { id: 'frequently-used', label: emojiPlugin.string.FrequentlyUsed, icon: emojiPlugin.icon.FrequentlyUsed },
   {
     id: 'getting-work-done',
     label: emojiPlugin.string.GettingWorkDone,
-    /* icon: emojiPlugin.component.IconGettingWorkDone, */
+    icon: emojiPlugin.icon.GettingWorkDone,
     emojisString: [
       '2705',
       '1F440',
@@ -43,21 +43,21 @@ export const emojiCategories: EmojiCategory[] = [
   {
     id: 'smileys-people',
     label: emojiPlugin.string.SmileysAndPeople,
-    /* icon: emojiPlugin.component.IconSmileysAndPeople, */
+    icon: emojiPlugin.icon.SmileysAndPeople,
     categories: ['smileys-emotion', 'people-body']
   },
   {
     id: 'animals-nature',
     label: emojiPlugin.string.AnimalsAndNature,
-    /* icon: emojiPlugin.component.IconAnimalsAndNature, */
+    icon: emojiPlugin.icon.AnimalsAndNature,
     categories: 'animals-nature'
   },
-  { id: 'food-drink', label: emojiPlugin.string.FoodAndDrink, /* icon: emojiPlugin.component.IconFoodAndDrink, */categories: 'food-drink' },
-  { id: 'travel-places', label: emojiPlugin.string.TravelAndPlaces, /* icon: emojiPlugin.component.IconTravelAndPlaces, */categories: 'travel-places' },
-  { id: 'activities', label: emojiPlugin.string.Activities, /* icon: emojiPlugin.component.IconActivities, */categories: 'activities' },
-  { id: 'objects', label: emojiPlugin.string.Objects, /* icon: emojiPlugin.component.IconObjects, */categories: 'objects' },
-  { id: 'symbols', label: emojiPlugin.string.Symbols, /* icon: emojiPlugin.component.IconSymbols, */categories: 'symbols' },
-  { id: 'flags', label: emojiPlugin.string.Flags, /*icon: emojiPlugin.component.IconFlags, */categories: 'flags' }
+  { id: 'food-drink', label: emojiPlugin.string.FoodAndDrink, icon: emojiPlugin.icon.FoodAndDrink, categories: 'food-drink' },
+  { id: 'travel-places', label: emojiPlugin.string.TravelAndPlaces, icon: emojiPlugin.icon.TravelAndPlaces, categories: 'travel-places' },
+  { id: 'activities', label: emojiPlugin.string.Activities, icon: emojiPlugin.icon.Activities, categories: 'activities' },
+  { id: 'objects', label: emojiPlugin.string.Objects, icon: emojiPlugin.icon.Objects, categories: 'objects' },
+  { id: 'symbols', label: emojiPlugin.string.Symbols, icon: emojiPlugin.icon.Symbols, categories: 'symbols' },
+  { id: 'flags', label: emojiPlugin.string.Flags, icon: emojiPlugin.icon.Flags, categories: 'flags' }
 ]
 
 export const skinTones: Map<number, IntlString> = new Map<number, IntlString>(

@@ -12,3 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { loadMetadata } from '@hcengineering/platform'
+import emojiPlugin from '@hcengineering/emoji'
+
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
+loadMetadata(emojiPlugin.icon, {
+  Activities: `${icons}#activities`,
+  AnimalsAndNature: `${icons}#animals-and-nature`,
+  Flags: `${icons}#flags`,
+  FoodAndDrink: `${icons}#food-and-drink`,
+  FrequentlyUsed: `${icons}#frequently-used`,
+  GettingWorkDone: `${icons}#getting-work-done`,
+  Objects: `${icons}#objects`,
+  Search: `${icons}#search`,
+  SmileysAndPeople: `${icons}#smileys-and-people`,
+  Symbols: `${icons}#symbols`,
+  TravelAndPlaces: `${icons}#travel-and-places`
+})

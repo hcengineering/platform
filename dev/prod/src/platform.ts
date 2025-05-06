@@ -129,6 +129,7 @@ import '@hcengineering/inbox-assets'
 import '@hcengineering/mail-assets'
 import '@hcengineering/github-assets'
 import '@hcengineering/achievement-assets'
+import '@hcengineering/emoji-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, {

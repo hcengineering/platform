@@ -12,7 +12,7 @@
     showPopup,
     eventToHTMLElement,
     ButtonBase,
-    closeTooltip, getEmojiByShortCode, getEmojiSkins, getUnicodeEmojiByShortCode
+    closeTooltip, getEmojiByShortCode, getEmojiSkins, getUnicodeEmojiByShortCode, Icon, icon
   } from '@hcengineering/ui'
   import {
     searchEmoji,
@@ -27,9 +27,9 @@
   import ActionsPopup from './ActionsPopup.svelte'
   import SkinTonePopup from './SkinTonePopup.svelte'
   import EmojiGroup from './EmojiGroup.svelte'
-  import emojiPlugin from '../plugin'
-  import { isCustomEmoji } from '@hcengineering/emoji'
+  import emojiPlugin, { isCustomEmoji } from '@hcengineering/emoji'
   import { emojiCategories, EmojiCategory } from '../types'
+  import { Asset, getMetadata } from '@hcengineering/platform'
 
   export let embedded = false
   export let selected: string | undefined
@@ -50,7 +50,7 @@
     {
       id: 'search-category',
       label: emojiPlugin.string.SearchResults,
-      /* icon: IconSearch */
+      icon: emojiPlugin.icon.Search
     }
   ]
   let timer: any = null
@@ -235,6 +235,7 @@
             handleScrollToCategory(category.id)
           }}
         >
+          <Icon icon={category.icon} size={isMobile ? 'large' : 'x-large'}/>
           <!--<svelte:component this={category.icon} size={isMobile ? 'large' : 'x-large'} />-->
         </button>
       {/each}
