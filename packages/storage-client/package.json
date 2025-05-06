@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/api-client",
+  "name": "@hcengineering/storage-client",
   "version": "0.6.0",
   "main": "lib/index.js",
   "exports": {
@@ -46,25 +46,16 @@
     "ts-node": "^10.8.0",
     "@types/node": "~20.11.16",
     "@types/jest": "^29.5.5",
-    "@types/ws": "^8.5.11",
-    "@types/snappyjs": "^0.7.1"
+    "@types/node-fetch": "~2.6.2"
   },
   "dependencies": {
     "@hcengineering/account-client": "^0.6.0",
-    "@hcengineering/client": "^0.6.18",
-    "@hcengineering/client-resources": "^0.6.27",
-    "@hcengineering/collaborator-client": "^0.6.4",
     "@hcengineering/core": "^0.6.32",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/text": "^0.6.5",
-    "@hcengineering/text-markdown": "^0.6.0",
-    "snappyjs": "^0.7.0"
+    "form-data": "^4.0.0",
+    "node-fetch": "^2.6.6"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
-  },
-  "optionalDependencies": {
-    "ws": "^8.18.0"
   }
 }

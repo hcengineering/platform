@@ -16,3 +16,5 @@
 export { createStorageClient, connectStorage } from './client'
 export * from './error'
 export * from './types'
+export * from './config'
+export * from './utils'

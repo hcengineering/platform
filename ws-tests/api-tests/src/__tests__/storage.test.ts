@@ -15,13 +15,13 @@
 
 import {
   connectStorage,
-  getWorkspaceToken,
-  loadServerConfig,
   NotFoundError,
-  type ServerConfig,
   type StorageClient,
-  type WorkspaceToken
-} from '@hcengineering/api-client'
+  type ServerConfig,
+  type WorkspaceToken,
+  loadServerConfig,
+  getWorkspaceToken
+} from '@hcengineering/storage-client'
 import { systemAccountUuid, generateUuid, type Ref, type Blob } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 

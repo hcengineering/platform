@@ -1,4 +1,3 @@
-//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,7 +10,6 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 import { Blob } from '@hcengineering/core'
 import { Readable } from 'stream'
@@ -23,3 +21,37 @@ export interface StorageClient {
   partial: (objectName: string, offset: number, length?: number) => Promise<Readable>
   remove: (objectName: string) => Promise<void>
 }
+
+/**
+ * Configuration options for password-based authentication
+ * @public
+ */
+export interface PasswordAuthOptions {
+  /** User's email address */
+  email: string
+
+  /** User's password */
+  password: string
+
+  /** Workspace URL name */
+  workspace: string
+}
+
+/**
+ * Configuration options for token-based authentication
+ * @public
+ */
+export interface TokenAuthOptions {
+  /** Authentication token */
+  token: string
+
+  /** Workspace URL name */
+  workspace: string
+}
+
+/**
+ * Union type representing all authentication options
+ * Can be either password-based or token-based authentication
+ * @public
+ */
+export type AuthOptions = PasswordAuthOptions | TokenAuthOptions
