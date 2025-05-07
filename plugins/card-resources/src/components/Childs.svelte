@@ -41,6 +41,7 @@
 
   export let object: Card
   export let readonly: boolean = false
+  export let emptyKind: 'create' | 'placeholder' = 'create'
 
   let viewlet: WithLookup<Viewlet> | undefined
   let viewOptions: ViewOptions | undefined
@@ -196,12 +197,18 @@
         </div>
       </Scroller>
     {:else if !readonly}
-      <div class="antiSection-empty solid">
+      <div class="antiSection-empty" class:solid={emptyKind === 'create'} class:noBorder={emptyKind === 'placeholder'}>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <span class="over-underline content-color" on:click={createCard}>
+        {#if emptyKind === 'create'}
+          <span class="over-underline content-color" on:click={createCard}>
           <Label label={card.string.CreateChild} />
+          </span>
+          {:else}
+        <span class="content-color" >
+          <Label label={card.string.NoChildren} />
         </span>
+          {/if}
       </div>
     {/if}
   </svelte:fragment>

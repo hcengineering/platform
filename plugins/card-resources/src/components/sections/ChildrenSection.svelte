@@ -32,7 +32,7 @@
 </script>
 
 <div class="section-children">
-  <Childs object={doc} {readonly} on:docs={() => dispatch('loaded')} />
+  <Childs object={doc} {readonly} on:docs={() => dispatch('loaded')} emptyKind="placeholder"/>
 </div>
 
 <style lang="scss">

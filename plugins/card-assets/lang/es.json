@@ -37,6 +37,7 @@
     "CreateSpace": "Crear espacio",
     "NumberTypes": "{count, plural, one {# tipo} other {# tipos}}",
     "Labels": "Etiquetas",
-    "Properties": "Propiedades"
+    "Properties": "Propiedades",
+    "NoChildren": "No hay hijos"
   }
 }

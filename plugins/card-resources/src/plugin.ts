@@ -99,6 +99,7 @@ export default mergeIds(cardId, card, {
     CreateSpace: '' as IntlString,
     NumberTypes: '' as IntlString,
     Labels: '' as IntlString,
-    Properties: '' as IntlString
+    Properties: '' as IntlString,
+    NoChildren: '' as IntlString
   }
 })

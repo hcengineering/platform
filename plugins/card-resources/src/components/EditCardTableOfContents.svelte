@@ -33,7 +33,7 @@
 
   const client = getClient()
 
-  const sections: CardSection[] = client.getModel().findAllSync(card.class.CardSection, {})
+  const sections: CardSection[] = client.getModel().findAllSync(card.class.CardSection, {}).sort((a, b) => a.order - b.order)
 
   let defaults: CardViewDefaults | undefined = undefined
   $: defaults = client.getHierarchy().classHierarchyMixin(doc._class, card.mixin.CardViewDefaults)
