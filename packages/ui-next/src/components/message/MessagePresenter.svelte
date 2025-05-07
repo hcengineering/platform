@@ -19,11 +19,12 @@
   import { getClient } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
   import { getCurrentAccount } from '@hcengineering/core'
-  import { EmojiPopup, getEventPositionElement, showPopup, Action as MenuAction } from '@hcengineering/ui'
+  import { getEventPositionElement, showPopup, Action as MenuAction } from '@hcengineering/ui'
   import { PersonPreviewProvider, personByPersonIdStore } from '@hcengineering/contact-resources'
   import type { SocialID } from '@hcengineering/communication-types'
   import { AttachmentPreview } from '@hcengineering/attachment-resources'
   import { Message, MessageType } from '@hcengineering/communication-types'
+  import emojiPlugin from '@hcengineering/emoji'
 
   import MessageContentViewer from './MessageContentViewer.svelte'
   import { AvatarSize } from '../../types'
@@ -130,11 +131,11 @@
           icon: IconEmoji,
           action: async (): Promise<void> => {
             showPopup(
-              EmojiPopup,
+              emojiPlugin.component.EmojiPopup,
               {},
               event.target as HTMLElement,
               async (result) => {
-                const emoji = result?.emoji
+                const emoji = result?.text
                 if (emoji == null) {
                   return
                 }

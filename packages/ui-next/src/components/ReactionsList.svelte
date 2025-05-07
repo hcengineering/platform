@@ -15,9 +15,10 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { EmojiPopup, showPopup } from '@hcengineering/ui'
+  import { showPopup } from '@hcengineering/ui'
   import { getCurrentAccount, groupByArray } from '@hcengineering/core'
   import { Reaction } from '@hcengineering/communication-types'
+  import emojiPlugin from '@hcengineering/emoji'
 
   import ReactionPresenter from './ReactionPresenter.svelte'
   import IconEmojiAdd from './icons/IconEmojiAdd.svelte'
@@ -34,11 +35,11 @@
     event.stopPropagation()
     emojiPopupOpened = true
     showPopup(
-      EmojiPopup,
+      emojiPlugin.component.EmojiPopup,
       {},
       event.target as HTMLElement,
       (result) => {
-        const emoji = result?.emoji
+        const emoji = result?.text
         emojiPopupOpened = false
         if (emoji == null) {
           return

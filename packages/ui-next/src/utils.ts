@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { EmojiPopup, showPopup } from '@hcengineering/ui'
+import { showPopup } from '@hcengineering/ui'
 import { getCurrentAccount, type Markup } from '@hcengineering/core'
 import { markupToJSON, jsonToMarkup } from '@hcengineering/text'
 import { markupToMarkdown, markdownToMarkup } from '@hcengineering/text-markdown'
 import { type Message } from '@hcengineering/communication-types'
 import { getCommunicationClient } from '@hcengineering/presentation'
+import emojiPlugin from '@hcengineering/emoji'
 
 import IconAt from './components/icons/IconAt.svelte'
 import IconEmoji from './components/icons/IconEmoji.svelte'
@@ -39,7 +40,7 @@ export const defaultMessageInputActions: TextInputAction[] = [
     icon: IconEmoji,
     action: (element, editorHandler) => {
       showPopup(
-        EmojiPopup,
+        emojiPlugin.component.EmojiPopup,
         {},
         element,
         (emoji) => {
@@ -47,7 +48,7 @@ export const defaultMessageInputActions: TextInputAction[] = [
             return
           }
 
-          editorHandler.insertText(emoji)
+          editorHandler.insertText(emoji.text)
           editorHandler.focus()
         },
         () => {}

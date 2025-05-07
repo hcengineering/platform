@@ -19,9 +19,9 @@
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
   import { ProjectType, TaskType, calculateStatuses, createState } from '@hcengineering/task'
   import {
+    Component,
     ButtonIcon,
     ButtonMenu,
-    EmojiPopup,
     IconCopy,
     IconDelete,
     IconSettings,
@@ -38,6 +38,7 @@
   } from '@hcengineering/ui'
   import { ColorsPopup, statusStore } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
+  import emojiPlugin from '@hcengineering/emoji'
   import { taskTypeStore, typeStore } from '../..'
   import task from '../../plugin'
   import ApproveStatusRenamePopup from './ApproveStatusRenamePopup.svelte'
@@ -432,11 +433,12 @@
             }}
           />
         {:else}
-          <EmojiPopup
-            embedded
-            selected={Array.isArray(color) ? fromCodePoint(...color) : color ? fromCodePoint(color) : undefined}
-            disabled={readonly}
-            kind={'default'}
+          <Component is={emojiPlugin.component.EmojiPopup}
+            props={{
+              selected: Array.isArray(color) ? fromCodePoint(...color) : color ? fromCodePoint(color) : undefined,
+              disabled: readonly,
+              kind: 'default'
+            }}
             on:close={(evt) => {
               if (readonly) return
               color = evt.detail.codes

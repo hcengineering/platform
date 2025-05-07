@@ -102,6 +102,7 @@
     addFrequentlyEmojis(emoji)
     dispatch('close', {
       text: selected,
+      codes: isCustomEmoji(emoji) ? undefined : emoji.hexcode.split('-').map((hc) => parseInt(hc, 16)),
       url: isCustomEmoji(emoji) ? emoji.url : undefined
     })
   }

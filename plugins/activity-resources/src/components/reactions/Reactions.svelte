@@ -16,8 +16,9 @@
   import { createEventDispatcher } from 'svelte'
   import { Reaction } from '@hcengineering/activity'
   import { Doc, getCurrentAccount, PersonId } from '@hcengineering/core'
-  import { EmojiPopup, IconAdd, showPopup, tooltip, type Emojis } from '@hcengineering/ui'
+  import { IconAdd, showPopup, tooltip } from '@hcengineering/ui'
   import { includesAny } from '@hcengineering/contact'
+  import emojiPlugin, { type Emojis } from '@hcengineering/emoji'
 
   import ReactionsTooltip from './ReactionsTooltip.svelte'
   import { updateDocReactions } from '../../utils'
@@ -55,8 +56,8 @@
     ev.preventDefault()
     ev.stopPropagation()
     opened = true
-    showPopup(EmojiPopup, {}, ev.target as HTMLElement, async (emoji: Emojis) => {
-      if (emoji?.emoji !== undefined) await updateDocReactions(reactions, object, emoji.emoji)
+    showPopup(emojiPlugin.component.EmojiPopup, {}, ev.target as HTMLElement, async (emoji: Emojis) => {
+      if (emoji?.text !== undefined) await updateDocReactions(reactions, object, emoji.text)
       opened = false
     })
   }

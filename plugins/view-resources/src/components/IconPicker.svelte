@@ -16,15 +16,15 @@
   import { Asset, Metadata } from '@hcengineering/platform'
   import {
     ButtonIcon,
-    EmojiPopup,
     TabsControl,
     fromCodePoint,
     Scroller,
     getPlatformColor,
     getPlatformColorDef,
     themeStore,
-    Label
+    Label, Component
   } from '@hcengineering/ui'
+  import emojiPlugin from '@hcengineering/emoji'
   import { createEventDispatcher } from 'svelte'
   import { iconsLibrary } from '../icons'
   import view from '../plugin'
@@ -96,9 +96,10 @@
           {/if}
         </div>
       {:else}
-        <EmojiPopup
-          embedded
-          selected={Array.isArray(color) ? fromCodePoint(...color) : fromCodePoint(color)}
+        <Component is={emojiPlugin.component.EmojiPopup}
+          props={{
+            selected: Array.isArray(color) ? fromCodePoint(...color) : color ? fromCodePoint(color) : undefined
+          }}
           on:close={(evt) => {
             dispatch('close', { icon: iconWithEmoji, color: evt.detail.codes })
           }}

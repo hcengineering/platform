@@ -52,6 +52,8 @@
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/communication-types": "0.1.172",
+    "@hcengineering/emoji": "^0.6.0",
+    "@hcengineering/emoji-resources": "^0.6.0",
     "svelte": "^4.2.19"
   }
 }

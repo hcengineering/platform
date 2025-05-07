@@ -14,9 +14,10 @@
 -->
 
 <script lang="ts">
-  import { showPopup, EmojiPopup } from '@hcengineering/ui'
+  import { showPopup } from '@hcengineering/ui'
   import { Message } from '@hcengineering/communication-types'
   import { createEventDispatcher } from 'svelte'
+  import emojiPlugin from '@hcengineering/emoji'
 
   import IconEmoji from '../icons/IconEmoji.svelte'
   import IconMessageMultiple from '../icons/IconMessageMultiple.svelte'
@@ -42,12 +43,12 @@
         action: (event: MouseEvent): void => {
           isOpened = true
           showPopup(
-            EmojiPopup,
+            emojiPlugin.component.EmojiPopup,
             {},
             event.target as HTMLElement,
             async (result) => {
               isOpened = false
-              const emoji = result?.emoji
+              const emoji = result?.text
               if (emoji == null) {
                 return
               }
