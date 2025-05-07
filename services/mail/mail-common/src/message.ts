@@ -20,6 +20,7 @@ import {
   createRestClient as getCommunicationClient
 } from '@hcengineering/communication-rest-client'
 import { MessageType } from '@hcengineering/communication-types'
+import chat from '@hcengineering/chat'
 import contact, { PersonSpace } from '@hcengineering/contact'
 import {
   type Blob,
@@ -35,7 +36,6 @@ import {
   SocialId
 } from '@hcengineering/core'
 import mail from '@hcengineering/mail'
-import chat from '@hcengineering/chat'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 
@@ -244,6 +244,15 @@ async function saveMessageToSpaces (
           undefined,
           modifiedBy
         )
+        await client.createMixin(
+          newThreadId,
+          chat.masterTag.Thread,
+          space._id,
+          mail.tag.MailThread,
+          {},
+          Date.now(),
+          socialId._id
+        )
         threadId = newThreadId as Ref<Card>
         ctx.info('Created new thread', { mailId, threadId, spaceId })
       }
@@ -298,11 +307,11 @@ async function getOrCreateChannel (
   socialId: SocialId
 ): Promise<Ref<Doc> | undefined> {
   try {
-    const channel = await client.findOne(chat.masterTag.Channel, { title: me })
+    const channel = await client.findOne(mail.tag.MailChannel, { title: me })
     ctx.info('Existing channel', { me, space, channel })
     if (channel != null) return channel._id
-    ctx.info('Creating new channel', { me, space })
-    return await client.createDoc(
+    ctx.info('Creating new channel', { me, space, personId: socialId._id })
+    const channelId = await client.createDoc(
       chat.masterTag.Channel,
       space,
       {
@@ -310,10 +319,21 @@ async function getOrCreateChannel (
         private: true,
         members: participants,
         archived: false,
-        createdBy: socialId._id
+        createdBy: socialId._id,
+        modifiedBy: socialId._id
       },
       generateId(),
-      undefined,
+      Date.now(),
+      socialId._id
+    )
+    ctx.info('Creating mixin', { me, space, personId: socialId._id, channelId })
+    await client.createMixin(
+      channelId,
+      chat.masterTag.Channel,
+      space,
+      mail.tag.MailChannel,
+      {},
+      Date.now(),
       socialId._id
     )
   } catch (err: any) {

@@ -14,8 +14,9 @@
 //
 import TurndownService from 'turndown'
 import sanitizeHtml from 'sanitize-html'
-import { EmailMessage } from './types'
+
 import { MeasureContext } from '@hcengineering/core'
+import { EmailContact, EmailMessage } from './types'
 
 export function getMdContent (ctx: MeasureContext, email: EmailMessage): string {
   if (email.content !== undefined) {
@@ -28,4 +29,58 @@ export function getMdContent (ctx: MeasureContext, email: EmailMessage): string 
     }
   }
   return email.textContent
+}
+
+export function parseNameFromEmailHeader (headerValue: string | undefined): EmailContact {
+  if (headerValue == null || headerValue.trim() === '') {
+    return {
+      email: '',
+      firstName: '',
+      lastName: ''
+    }
+  }
+
+  // Match pattern like: "Name" <email@example.com> or Name <email@example.com>
+  const nameEmailPattern = /^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/
+  const match = headerValue.trim().match(nameEmailPattern)
+
+  if (match == null) {
+    const address = headerValue.trim()
+    const parts = address.split('@')
+    return {
+      email: address,
+      firstName: parts[0],
+      lastName: parts[1]
+    }
+  }
+
+  const displayName = match[1]?.trim()
+  const email = match[2].trim()
+
+  if (displayName == null || displayName === '') {
+    const parts = email.split('@')
+    return {
+      email,
+      firstName: parts[0],
+      lastName: parts[1]
+    }
+  }
+
+  const nameParts = displayName.split(/\s+/)
+  let firstName: string | undefined
+  let lastName: string | undefined
+
+  if (nameParts.length === 1) {
+    firstName = nameParts[0]
+  } else if (nameParts.length > 1) {
+    firstName = nameParts[0]
+    lastName = nameParts.slice(1).join(' ')
+  }
+
+  const parts = email.split('@')
+  return {
+    email,
+    firstName: firstName ?? parts[0],
+    lastName: lastName ?? parts[1]
+  }
 }

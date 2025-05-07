@@ -12,37 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-export interface Attachment {
-  id: string
-  name: string
-  data: Buffer
-  contentType: string
-  size?: number
-  lastModified: number
-}
 
-export interface EmailContact {
-  email: string
-  firstName: string
-  lastName: string
-}
-
-export interface EmailMessage {
-  modifiedOn: number
-  mailId: string
-  replyTo?: string
-  copy?: EmailContact[]
-  content: string
-  textContent: string
-  from: EmailContact
-  to: EmailContact
-  incoming: boolean
-  subject: string
-  sendOn: number
-}
-
-export interface BaseConfig {
-  AccountsURL: string
-  KvsUrl: string
-  StorageConfig: string
-}
+export * from './base64'
+export * from './message'
+export * from './types'
+export * from './utils'

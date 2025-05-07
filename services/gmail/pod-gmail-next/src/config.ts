@@ -13,21 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { BaseConfig } from '@hcengineering/mail-common'
 import { config as dotenvConfig } from 'dotenv'
 
 dotenvConfig()
 
-interface Config {
+interface Config extends BaseConfig {
   Port: number
-  AccountsURL: string
   ServiceID: string
   Secret: string
   Credentials: string
   WATCH_TOPIC_NAME: string
   FooterMessage: string
   InitLimit: number
-  KvsUrl: string
-  StorageConfig: string
 }
 
 const envMap: { [key in keyof Config]: string } = {

@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { SocialId, type MeasureContext } from '@hcengineering/core'
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 import sanitizeHtml from 'sanitize-html'
 
+import { SocialId, type MeasureContext } from '@hcengineering/core'
+import { createMessages, parseNameFromEmailHeader } from '@hcengineering/mail-common'
+
+import config from '../config'
 import { AttachmentHandler } from './attachments'
 import { decode64 } from '../base64'
-import { createMessages } from './messageCard'
-import { EmailMessage, EmailContact } from '../types'
+import { EmailMessage } from '../types'
 
 export class MessageManager {
   constructor (
@@ -34,7 +36,7 @@ export class MessageManager {
     const res = convertMessage(message, me)
     const attachments = await this.attachmentHandler.getPartFiles(message.data.payload, message.data.id ?? '')
 
-    await createMessages(this.ctx, this.token, res, attachments, me, this.socialId)
+    await createMessages(config, this.ctx, this.token, res, attachments, me, this.socialId)
   }
 }
 
@@ -97,59 +99,5 @@ function convertMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: s
     incoming,
     subject: getHeaderValue(message.data.payload, 'Subject') ?? '',
     sendOn: date.getTime()
-  }
-}
-
-export function parseNameFromEmailHeader (headerValue: string | undefined): EmailContact {
-  if (headerValue == null || headerValue.trim() === '') {
-    return {
-      email: '',
-      firstName: '',
-      lastName: ''
-    }
-  }
-
-  // Match pattern like: "Name" <email@example.com> or Name <email@example.com>
-  const nameEmailPattern = /^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/
-  const match = headerValue.trim().match(nameEmailPattern)
-
-  if (match == null) {
-    const address = headerValue.trim()
-    const parts = address.split('@')
-    return {
-      email: address,
-      firstName: parts[0],
-      lastName: parts[1]
-    }
-  }
-
-  const displayName = match[1]?.trim()
-  const email = match[2].trim()
-
-  if (displayName == null || displayName === '') {
-    const parts = email.split('@')
-    return {
-      email,
-      firstName: parts[0],
-      lastName: parts[1]
-    }
-  }
-
-  const nameParts = displayName.split(/\s+/)
-  let firstName: string | undefined
-  let lastName: string | undefined
-
-  if (nameParts.length === 1) {
-    firstName = nameParts[0]
-  } else if (nameParts.length > 1) {
-    firstName = nameParts[0]
-    lastName = nameParts.slice(1).join(' ')
-  }
-
-  const parts = email.split('@')
-  return {
-    email,
-    firstName: firstName ?? parts[0],
-    lastName: lastName ?? parts[1]
   }
 }
