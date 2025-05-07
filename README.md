@@ -72,7 +72,8 @@ docker build . -t hcengineering/sream:latest
 The following environment variables can be used:
 
 ```
-KEY                                TYPE             DEFAULT             STREAM_LOG_LEVEL                     String           debug                              sets log level for the application
+KEY                                  TYPE             DEFAULT                            DESCRIPTION
+STREAM_LOG_LEVEL                     String           debug                              sets log level for the application
 STREAM_SERVER_SECRET                 String                                              server secret required to generate and verify tokens
 STREAM_PPROF_ENABLED                 True or False    true                               starts profile server on localhost:6060 if true
 STREAM_INSECURE                      True or False    false                              ignores authorization check if true
@@ -81,6 +82,7 @@ STREAM_ENDPOINT_URL                  URL              s3://127.0.0.1:9000       
 STREAM_MAX_PARALLEL_SCALING_COUNT    Integer          2                                  how much parallel scaling can be processed
 STREAM_MAX_THREAD_COUNT              Integer          4                                  max number of threads for transcoder
 STREAM_OUTPUT_DIR                    String           /tmp/transcoing/                   path to the directory with tra
+STREAM_SENTRY_DSN                    String           ""                                 sentry dsn for error tracking
 ```
 
 ### Metadata

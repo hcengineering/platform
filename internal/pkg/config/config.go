@@ -25,6 +25,7 @@ import (
 
 // Config represents configuration for the huly-stream application.
 type Config struct {
+	SentryDsn               string   `split_words:"true" default:"" desc:"sentry dsn value"`
 	LogLevel                string   `split_words:"true" default:"debug" desc:"sets log level for the application"`
 	ServerSecret            string   `split_words:"true" default:"" desc:"server secret required to generate and verify tokens"`
 	PprofEnabled            bool     `split_words:"true" default:"true" desc:"starts profile server on localhost:6060 if true"`
