@@ -16,6 +16,7 @@ package storage
 import (
 	"context"
 	"net/url"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -52,4 +53,14 @@ func NewStorageByURL(ctx context.Context, u *url.URL, storageType, token, worksa
 	default:
 		return nil, errors.New("unknown scheme")
 	}
+}
+
+func getContentType(objectKey string) string {
+	if strings.HasSuffix(objectKey, ".ts") {
+		return "video/mp2t"
+	}
+	if strings.HasSuffix(objectKey, ".m3u8") {
+		return "video/x-mpegurl"
+	}
+	return "application/octet-stream"
 }

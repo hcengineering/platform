@@ -20,8 +20,10 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net/textproto"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/hcengineering/stream/internal/pkg/log"
 	"github.com/pkg/errors"
@@ -48,6 +50,24 @@ func NewDatalakeStorage(ctx context.Context, baseURL, workspace, token string) S
 	}
 }
 
+var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
+
+func escapeQuotes(s string) string {
+	return quoteEscaper.Replace(s)
+}
+
+func createFormFile(writer *multipart.Writer, fieldname, filename, contentType string) (io.Writer, error) {
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, escapeQuotes(fieldname), escapeQuotes(filename)))
+	h.Set("Content-Type", contentType)
+	return writer.CreatePart(h)
+}
+
+func getObjectKey(s string) string {
+	var _, objectKey = filepath.Split(s)
+	return objectKey
+}
+
 // PutFile uploads file to the datalake
 func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string) error {
 	// #nosec
@@ -67,7 +87,7 @@ func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string) error {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	part, err := writer.CreateFormFile("file", objectKey)
+	part, err := createFormFile(writer, "file", objectKey, getContentType(objectKey))
 	if err != nil {
 		return errors.Wrapf(err, "failed to create form file")
 	}
@@ -77,7 +97,10 @@ func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string) error {
 		return errors.Wrapf(err, "failed to copy file data")
 	}
 
-	_ = writer.Close()
+	err = writer.Close()
+	if err != nil {
+		return errors.Wrapf(err, "failed to close multipart writer")
+	}
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -126,11 +149,6 @@ func (d *DatalakeStorage) DeleteFile(ctx context.Context, fileName string) error
 	logger.Debug("deleted")
 
 	return nil
-}
-
-func getObjectKey(s string) string {
-	var _, objectKey = filepath.Split(s)
-	return objectKey
 }
 
 // PatchMeta patches metadata for the object
