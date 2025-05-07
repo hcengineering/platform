@@ -5,7 +5,7 @@ services:
       - 'huly.local:host-gateway'
     container_name: stream
     environment:
-      - STREAM_ENDPOINT_URL=s3://huly.local:9000
+      - STREAM_ENDPOINT_URL=datalake://huly.local:4030
       - STREAM_INSECURE=true
       - STREAM_SERVER_SECRET=secret
       - AWS_ACCESS_KEY_ID=minioadmin

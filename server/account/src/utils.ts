@@ -1475,7 +1475,15 @@ export async function setTimezoneIfNotDefined (
 }
 
 // Move to config?
-export const integrationServices = ['github', 'telegram-bot', 'telegram', 'mailbox', 'caldav', 'gmail']
+export const integrationServices = [
+  'github',
+  'telegram-bot',
+  'telegram',
+  'mailbox',
+  'caldav',
+  'gmail',
+  'google-calendar'
+]
 
 export async function findExistingIntegration (
   account: AccountUuid,

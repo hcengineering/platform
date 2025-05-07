@@ -10,28 +10,71 @@ In order to be able to install required packages, you will need to obtain GitHub
 npm install @hcengineering/api-client
 ```
 
+## WebSocket Client vs REST Client
+
+The api client package provides two main client variants: a WebSocket client and a REST client. The WebSocket client holds persistent connection to the Huly Platform API. The REST client uses standard HTTP requests to perform operations.
+
+### WebSocket Client
+
+```ts
+import { connect } from '@hcengineering/api-client'
+
+// Connect to Huly
+const client = await connect('https://huly.app', {
+  email: 'johndoe@example.com',
+  password: 'password',
+  workspace: 'my-workspace',
+})
+
+// Use the client to perform operations
+...
+
+// Close the client when done
+await client.close()
+```
+
+### REST Client
+
+```ts
+import { connectRest } from '@hcengineering/api-client'
+
+// Connect to Huly
+const client = await connectRest('https://huly.app', {
+  email: 'johndoe@example.com',
+  password: 'password',
+  workspace: 'my-workspace'
+})
+
+// Use the client to perform operations
+...
+
+```
+
 ## Authentication
 
-There are two ways to connect to the platform, using email and password, or using token.
+The client supports two authentication methods: using email and password, or using a token.
+When authenticated, the client will have access to the same resources as the user.
+
+> Note: The examples below use the WebSocket client (`connect`). To use the REST client instead, import and call `connectRest` with the same options.
 
 Parameters:
 
-- `url`: URL of the Huly instance
+- `url`: URL of the Huly instance, for Huly Cloud use `https://huly.app`
 - `options`: Connection options
-  - `workspace`: Name of the workspace to connect to
+  - `workspace`: Name of the workspace to connect to, the workspace name can be found in the URL of the workspace: `https://huly.app/workbench/<workspace-name>`
   - `token`: Optional authentication token
   - `email`: Optional user email
   - `password`: Optional user password
-  - `connectionTimeout`: Optional connection timeout
-  - `socketFactory`: Optional socket factory
 
 ### Using Email and Password
 
 ```ts
-const client = await connect('http://localhost:8087', {
-  email: 'user1',
-  password: '1234',
-  workspace: 'ws1'
+import { connect } from '@hcengineering/api-client'
+
+const client = await connect('https://huly.app', {
+  email: 'johndoe@example.com',
+  password: 'password',
+  workspace: 'my-workspace'
 })
 
 ...
@@ -42,9 +85,11 @@ await client.close()
 ### Using Token
 
 ```ts
-const client = await connect('http://localhost:8087', {
+import { connect } from '@hcengineering/api-client'
+
+const client = await connect('https://huly.app', {
   token: '...',
-  workspace: 'ws1'
+  workspace: 'my-workspace'
 })
 
 ...
@@ -52,7 +97,9 @@ const client = await connect('http://localhost:8087', {
 await client.close()
 ```
 
-## Example usage
+## Client API
+
+The client provides a set of methods for interacting with the Huly Platform API. This section describes the main methods available in the client.
 
 ### Fetch API
 
@@ -64,7 +111,7 @@ Retrieves a single document matching the query criteria.
 
 Parameters:
 
-- `_class`: Class of the object to find, results will include all subclasses of the targe class
+- `_class`: Class of the object to find, results will include all subclasses of the target class
 - `query`: Query criteria
 - `options`: Find options
   - `limit`: Limit the number of results returned
@@ -94,7 +141,7 @@ Retrieves multiple document matching the query criteria.
 
 Parameters:
 
-- `_class`: Class of the object to find, results will include all subclasses of the targe class
+- `_class`: Class of the object to find, results will include all subclasses of the target class
 - `query`: Query criteria
 - `options`: Find options
   - `limit`: Limit the number of results returned
@@ -160,7 +207,7 @@ const personId = await client.createDoc(
 
 #### updateDoc
 
-Updates exising document.
+Updates existing document.
 
 Parameters:
 
@@ -188,7 +235,7 @@ await client.updateDoc(
 
 #### removeDoc
 
-Removes exising document.
+Removes existing document.
 
 Parameters:
 
@@ -258,7 +305,7 @@ await client.addCollection(
 
 #### updateCollection
 
-Updates exising attached document in collection.
+Updates existing attached document in collection.
 
 Parameters:
 
@@ -292,7 +339,7 @@ await client.updateCollection(
 
 #### removeCollection
 
-Removes exising attached document from collection.
+Removes existing attached document from collection.
 
 Parameters:
 

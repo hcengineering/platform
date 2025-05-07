@@ -65,7 +65,7 @@
       context={notificationContext}
       {scrollDiv}
       {contentDiv}
-      {position}
+      bind:position
       shouldScrollToStart={active && position === MessagesNavigationAnchors.ConversationStart && shouldScrollToStart}
       {isLoadingBefore}
       on:change

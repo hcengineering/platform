@@ -64,12 +64,24 @@
   }
 </script>
 
-{#if stream !== null}
-  <!-- svelte-ignore a11y-media-has-caption -->
-  <video bind:this={video} width="100%" height="100%" autoplay muted disablepictureinpicture />
-{/if}
+<div class="container">
+  {#if stream !== null}
+    <!-- svelte-ignore a11y-media-has-caption -->
+    <video bind:this={video} width="100%" height="100%" autoplay muted disablepictureinpicture />
+  {/if}
+</div>
 
 <style lang="scss">
+  .container {
+    padding: 0.375rem;
+    border-radius: 0.375rem;
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   video {
     border-radius: inherit;
     transform: rotateY(180deg);

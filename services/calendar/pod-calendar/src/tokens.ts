@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,11 +13,17 @@
 // limitations under the License.
 //
 
-export * from './client'
-export * from './markup/types'
-export * from './socket'
-export * from './types'
-export * from './rest'
-export * from './config'
-export * from './utils'
-export * from './storage'
+import { AccountClient, IntegrationSecret } from '@hcengineering/account-client'
+import { WorkspaceUuid } from '@hcengineering/core'
+import { CALENDAR_INTEGRATION } from './types'
+
+export async function getWorkspaceTokens (
+  accountClient: AccountClient,
+  workspace: WorkspaceUuid
+): Promise<IntegrationSecret[]> {
+  const secrets = await accountClient.listIntegrationsSecrets({
+    kind: CALENDAR_INTEGRATION,
+    workspaceUuid: workspace
+  })
+  return secrets
+}

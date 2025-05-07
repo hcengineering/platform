@@ -528,7 +528,7 @@ export class CommentSyncManager implements DocSyncManager {
     }
     const syncInfo = await this.client.findAll<DocSyncInfo>(github.class.DocSyncInfo, {
       space: repo.githubProject,
-      repository: repo._id,
+      // repository: repo._id, // If we skip repository, we will find orphaned comments, so we could connect them on.
       objectClass: chunter.class.ChatMessage,
       url: { $in: comments.map((it) => (it.url ?? '').toLowerCase()) }
     })
@@ -550,14 +550,19 @@ export class CommentSyncManager implements DocSyncManager {
             lastModified
           })
         } else {
-          if (!deepEqual(existing.external, comment) || existing.externalVersion !== githubExternalSyncVersion) {
+          if (
+            !deepEqual(existing.external, comment) ||
+            existing.externalVersion !== githubExternalSyncVersion ||
+            existing.repository !== repo._id
+          ) {
             await derivedClient.diffUpdate(
               existing,
               {
                 needSync: '',
                 external: comment,
                 externalVersion: githubExternalSyncVersion,
-                lastModified
+                lastModified,
+                repository: repo._id
               },
               lastModified
             )

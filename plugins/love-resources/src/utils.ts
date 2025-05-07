@@ -436,8 +436,8 @@ lk.on(RoomEvent.Connected, () => {
 
   const session = useMedia({
     state: {
-      camera: { enabled: false },
-      microphone: current?.type === RoomType.Video ? { enabled: false } : undefined
+      camera: current?.type === RoomType.Video ? { enabled: false } : undefined,
+      microphone: { enabled: false }
     },
     autoDestroy: false
   })

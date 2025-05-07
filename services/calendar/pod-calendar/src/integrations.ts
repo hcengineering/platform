@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,11 +13,9 @@
 // limitations under the License.
 //
 
-export * from './client'
-export * from './markup/types'
-export * from './socket'
-export * from './types'
-export * from './rest'
-export * from './config'
-export * from './utils'
-export * from './storage'
+import { AccountClient, Integration } from '@hcengineering/account-client'
+import { CALENDAR_INTEGRATION } from './types'
+
+export async function getIntegrations (client: AccountClient): Promise<Integration[]> {
+  return (await client.listIntegrations({ kind: CALENDAR_INTEGRATION })) ?? []
+}

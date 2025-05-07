@@ -19,11 +19,11 @@ import { workbenchId, logOut } from '@hcengineering/workbench'
 
 import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
-import { defineScreenShare, defineScreenRecorder } from './screenShare'
+import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
 import { IPCMainExposed } from './types'
 
 defineScreenShare()
-defineScreenRecorder()
+defineGetDisplayMedia()
 
 void configurePlatform().then(() => {
   createApp(document.body)
