@@ -81,6 +81,7 @@ export interface AddedCollaboratorsEvent extends BaseResponseEvent {
   card: CardID
   cardType: CardType
   collaborators: AccountID[]
+  date: Date
 }
 
 export interface RemovedCollaboratorsEvent extends BaseResponseEvent {

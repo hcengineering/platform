@@ -191,7 +191,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async addCollaborators(event: AddCollaboratorsEvent): Promise<Result> {
-    const added = await this.db.addCollaborators(event.card, event.cardType, event.collaborators, event.date)
+    const date = event.date ?? new Date()
+    const added = await this.db.addCollaborators(event.card, event.cardType, event.collaborators, date)
     if (added.length === 0) return {}
     return {
       responseEvent: {
@@ -199,7 +200,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         type: NotificationResponseEventType.AddedCollaborators,
         card: event.card,
         cardType: event.cardType,
-        collaborators: added
+        collaborators: added,
+        date
       }
     }
   }

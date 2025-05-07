@@ -14,10 +14,11 @@
 //
 
 import {
-  LabelRequestEventType,
-  NotificationResponseEventType,
   type AddedCollaboratorsEvent,
+  LabelRequestEventType,
   type NotificationContextUpdatedEvent,
+  NotificationRequestEventType,
+  NotificationResponseEventType,
   type RemovedCollaboratorsEvent,
   type RequestEvent
 } from '@hcengineering/communication-sdk-types'
@@ -35,6 +36,14 @@ async function onAddedCollaborators(ctx: TriggerCtx, event: AddedCollaboratorsEv
       cardType,
       account: collaborator,
       label: SubscriptionLabelID
+    })
+
+    result.push({
+      type: NotificationRequestEventType.CreateNotificationContext,
+      account: collaborator,
+      card,
+      lastUpdate: event.date,
+      lastView: event.date
     })
   }
   return result

@@ -71,7 +71,7 @@ async function onMessagesRemoved(ctx: TriggerCtx, event: MessagesRemovedEvent): 
       replies: 'decrement'
     }
 
-    return [threadEvent]
+    return [patchEvent, threadEvent]
   })
 }
 
