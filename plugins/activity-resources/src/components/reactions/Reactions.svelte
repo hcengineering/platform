@@ -18,7 +18,7 @@
   import { Doc, getCurrentAccount, PersonId } from '@hcengineering/core'
   import { IconAdd, showPopup, tooltip } from '@hcengineering/ui'
   import { includesAny } from '@hcengineering/contact'
-  import emojiPlugin, { type Emojis } from '@hcengineering/emoji'
+  import emojiPlugin from '@hcengineering/emoji'
 
   import ReactionsTooltip from './ReactionsTooltip.svelte'
   import { updateDocReactions } from '../../utils'
@@ -56,7 +56,7 @@
     ev.preventDefault()
     ev.stopPropagation()
     opened = true
-    showPopup(emojiPlugin.component.EmojiPopup, {}, ev.target as HTMLElement, async (emoji: Emojis) => {
+    showPopup(emojiPlugin.component.EmojiPopup, {}, ev.target as HTMLElement, async (emoji) => {
       if (emoji?.text !== undefined) await updateDocReactions(reactions, object, emoji.text)
       opened = false
     })

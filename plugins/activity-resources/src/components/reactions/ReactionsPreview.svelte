@@ -18,7 +18,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { showPopup } from '@hcengineering/ui'
   import { SortingOrder } from '@hcengineering/core'
-  import emojiPlugin, { type Emojis } from '@hcengineering/emoji'
+  import emojiPlugin from '@hcengineering/emoji'
 
   import { updateDocReactions } from '../../utils'
 
@@ -66,7 +66,7 @@
 
     e.stopPropagation()
     e.preventDefault()
-    showPopup(emojiPlugin.component.EmojiPopup, {}, e.target as HTMLElement, (emoji: Emojis) => {
+    showPopup(emojiPlugin.component.EmojiPopup, {}, e.target as HTMLElement, (emoji) => {
       if (emoji?.text !== undefined) void updateDocReactions(reactions, message, emoji.text)
     })
   }
