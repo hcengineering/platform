@@ -53,7 +53,6 @@
     "prettier": "^3.1.0",
     "ts-node": "^10.8.0",
     "typescript": "^5.3.3",
-    "@types/sharp": "~0.32.0",
     "@types/morgan": "~1.9.9",
     "@types/on-headers": "^1.0.2"
   },

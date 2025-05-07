@@ -234,7 +234,7 @@
 
   .text-input__text {
     overflow: auto;
-    min-height: 2.75rem;
+    min-height: 2.85rem;
     padding: 0 0.25rem;
     font-size: 0.875rem;
     font-weight: 400;

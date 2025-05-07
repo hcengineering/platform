@@ -29,11 +29,13 @@
 </script>
 
 {#if active}
-  <div class="flex-row-center container flex-gap-0-5">
-    <MicStateButton state={$state.microphone} />
-    <CamStateButton state={$state.camera} />
+  <div class="flex-row-center hot-controls-container">
+    <div class="flex-row-center controls-container flex-gap-0-5">
+      <MicStateButton state={$state.microphone} />
+      <CamStateButton state={$state.camera} />
 
-    <ComponentExtensions extension={media.extension.StateIndicator} />
+      <ComponentExtensions extension={media.extension.StateIndicator} />
+    </div>
 
     <MediaSettingsButton disabled={!hasMediaDevices} />
   </div>
@@ -42,11 +44,14 @@
 {/if}
 
 <style lang="scss">
-  .container {
-    padding: 0.125rem;
-    height: 1.75rem;
-    background-color: var(--theme-state-positive-background-color);
-    border-radius: 0.25rem;
-    cursor: pointer;
+  .hot-controls-container {
+    gap: 1px;
+
+    .controls-container {
+      padding: 0.125rem;
+      height: 1.75rem;
+      background-color: var(--theme-state-positive-background-color);
+      border-radius: 0.375rem 0 0 0.375rem;
+    }
   }
 </style>

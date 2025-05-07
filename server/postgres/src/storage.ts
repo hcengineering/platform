@@ -88,6 +88,7 @@ import {
   DBCollectionHelper,
   type DBDoc,
   doFetchTypes,
+  filterProjection,
   getDBClient,
   inferType,
   isDataField,
@@ -662,7 +663,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
           const joins = this.buildJoins<T>(_class, options)
           // Add workspace name as $1
 
-          const select = `SELECT ${this.getProjection(vars, domain, options?.projection, joins, options?.associations)} FROM ${domain}`
+          const projection = this.localizeProjection(_class, options?.projection ?? undefined)
+
+          const select = `SELECT ${this.getProjection(vars, domain, projection, joins, options?.associations)} FROM ${domain}`
 
           const showArchived = shouldShowArchived(query, options)
           const secJoin = this.addSecurity(vars, query, showArchived, domain, ctx.contextData)
@@ -714,11 +717,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
               options?.associations === undefined
             ) {
               return toFindResult(
-                result.map((p) => parseDocWithProjection(p, domain, options?.projection)),
+                result.map((p) => parseDocWithProjection(p, domain, projection)),
                 total
               )
             } else {
-              const res = this.parseLookup<T>(result, joins, options?.projection, domain)
+              const res = this.parseLookup<T>(result, joins, projection, domain)
               return toFindResult(res, total)
             }
           })) as FindResult<T>
@@ -737,6 +740,36 @@ abstract class PostgresAdapterBase implements DbAdapter {
         sql: vars.injectVars(fquery)
       })
     )
+  }
+
+  private localizeProjection<T extends Doc>(
+    _class: Ref<Class<T>>,
+    projection: Projection<T> | undefined
+  ): Projection<T> | undefined {
+    if (projection === undefined) return
+
+    if (!this.hierarchy.isMixin(_class)) {
+      return projection
+    }
+
+    projection = { ...projection }
+    for (const key in projection) {
+      if (key.includes('.')) continue
+      try {
+        const attr = this.hierarchy.findAttribute(_class, key)
+        if (attr !== undefined && this.hierarchy.isMixin(attr.attributeOf)) {
+          const newKey = `${attr.attributeOf}.${attr.name}` as keyof Projection<T>
+          projection[newKey] = projection[key]
+
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete projection[key]
+        }
+      } catch (err: any) {
+        // ignore, if
+      }
+    }
+
+    return projection
   }
 
   private buildJoins<T extends Doc>(_class: Ref<Class<T>>, options: ServerFindOptions<T> | undefined): JoinProps[] {
@@ -776,7 +809,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         }
         if (query.space === acc.uuid) return // TODO: was it for private spaces? If so, need to fix it as they are not identified by acc.uuid now
         if (domain === DOMAIN_SPACE && isOwner(acc) && showArchived) return
-        const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? "data ->> 'objectSpace'" : 'space'
+        const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? '"objectSpace"' : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
         const archivedCheck = showArchived ? '' : ' AND sec.archived = false'
         const q = `(sec.members @> '{"${acc.uuid}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})${archivedCheck}`
@@ -888,17 +921,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
                 continue
               }
               if (column === 'data') {
-                const data = row[column]
-                if (projection !== undefined) {
-                  if (projection !== undefined) {
-                    for (const key in data) {
-                      if (!Object.prototype.hasOwnProperty.call(projection, key) || (projection as any)[key] === 0) {
-                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                        delete data[key]
-                      }
-                    }
-                  }
-                }
+                let data = row[column]
+                data = filterProjection(data, projection)
                 doc = { ...doc, ...data }
               } else {
                 if (column === 'createdOn' || column === 'modifiedOn') {

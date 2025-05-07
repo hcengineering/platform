@@ -379,11 +379,15 @@ export async function createWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
+  const accountObj = await db.account.findOne({ uuid: account })
+  if (accountObj == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
   // Get a list of created workspaces
   const created = (await db.workspace.find({ createdBy: socialId.personUuid })).length
 
-  // TODO: Add support for per person limit increase
-  if (created >= workspaceLimitPerUser) {
+  if (created >= (accountObj.maxWorkspaces ?? workspaceLimitPerUser)) {
     ctx.warn('created-by-limit', { person: socialId.key, workspace: workspaceName })
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.WorkspaceLimitReached, { workspace: workspaceName })

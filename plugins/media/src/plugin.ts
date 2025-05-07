@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Plugin, Asset } from '@hcengineering/platform'
+import type { Plugin, Asset, IntlString } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { type ComponentExtensionId } from '@hcengineering/ui'
 
@@ -27,7 +27,13 @@ export const mediaPlugin = plugin(mediaId, {
   },
   icon: {
     Mic: '' as Asset,
-    Cam: '' as Asset
+    Cam: '' as Asset,
+    MicOff: '' as Asset,
+    CamOff: '' as Asset
+  },
+  string: {
+    TurnOnMic: '' as IntlString,
+    TurnOffMic: '' as IntlString
   }
 })
 

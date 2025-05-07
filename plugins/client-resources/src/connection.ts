@@ -298,7 +298,7 @@ class Connection implements ClientConnection {
       return
     }
 
-    if (resp.rateLimit !== undefined) {
+    if (resp.rateLimit !== undefined && resp.rateLimit.remaining < 50) {
       console.log(
         'Rate limits:',
         resp.rateLimit.remaining,

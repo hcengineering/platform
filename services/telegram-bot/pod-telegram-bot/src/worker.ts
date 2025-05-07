@@ -87,7 +87,9 @@ export class PlatformWorker {
     const storageConfig: StorageConfiguration = storageConfigFromEnv()
     const storage = buildStorageFromConfig(storageConfig)
 
+    ctx.info('Connecting to database...', { dbUrl: config.DbUrl })
     const db = await getDb()
+    ctx.info('Database connected')
     const limiter = new Limiter()
 
     return new PlatformWorker(ctx, storage, limiter, db)

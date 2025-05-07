@@ -101,9 +101,7 @@
           {/each}
 
           {#if selected}
-            <div class="preview">
-              <MediaPopupCamPreview {selected} />
-            </div>
+            <MediaPopupCamPreview {selected} />
           {/if}
         {:else}
           <MediaPopupItem
@@ -125,15 +123,5 @@
     &.enabled {
       color: var(--theme-state-positive-color);
     }
-  }
-
-  .preview {
-    padding: 0.375rem;
-    border-radius: 0.375rem;
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 </style>

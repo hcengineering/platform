@@ -40,7 +40,9 @@
     "ColorRemove": "Odstraňte předvolbu barev",
     "ColorReset": "Resetovat předvolby barev",
     "Copy": "Kopírovat",
-    "CopyLink": "Zkopírovat odkaz"
+    "CopyLink": "Zkopírovat odkaz",
+    "AccessDenied": "Objekt neexistuje nebo k němu nemáte oprávnění.",
+    "UnableToFollowMention": "Nelze otevřít zmíněný objekt"
   },
   "status": {
     "FileTooLarge": "Soubor je příliš velký"

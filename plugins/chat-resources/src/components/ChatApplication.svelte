@@ -21,21 +21,27 @@
     deviceOptionsStore as deviceInfo,
     resolvedLocationStore,
     Location,
-    restoreLocation
+    restoreLocation,
+    Component
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import { getClient } from '@hcengineering/presentation'
   import { chatId } from '@hcengineering/chat'
-  import { Ref } from '@hcengineering/core'
+  import { Ref, Doc, Class } from '@hcengineering/core'
+  import view from '@hcengineering/view'
 
-  import ChatPanel from './ChatPanel.svelte'
   import ChatNavigation from './ChatNavigation.svelte'
   import { navigateToCard, getCardIdFromLocation, navigateToType, getTypeIdFromLocation } from '../location'
   import ChatNavigationCategoryList from './ChatNavigationCategoryList.svelte'
 
-  type Selection = { type: 'card', card: Card } | { type: 'type', ref: Ref<MasterTag> }
+  interface Selection {
+    _class: Ref<Class<Doc>>
+    _id: Ref<Doc>
+    doc: Doc
+  }
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   let replacedPanelElement: HTMLElement
   let selection: Selection | undefined = undefined
@@ -50,9 +56,10 @@
     }
 
     const typeId = getTypeIdFromLocation(loc)
+    const type = typeId != null ? await client.findOne(cardPlugin.class.MasterTag, { _id: typeId }) : undefined
 
-    if (typeId != null && typeId !== '') {
-      selection = { type: 'type', ref: typeId }
+    if (type != null) {
+      selection = { _class: cardPlugin.class.MasterTag, _id: type._id, doc: type }
       return
     }
 
@@ -71,33 +78,34 @@
 
     if (cardId !== selectedCard?._id) {
       const card = await client.findOne(cardPlugin.class.Card, { _id: cardId })
-      selection = card != null ? { type: 'card', card } : undefined
+      selection = card != null ? { _class: cardPlugin.class.Card, _id: cardId, doc: card } : undefined
     }
   }
 
   function selectCard (event: CustomEvent<Card>): void {
+    if (selection?._id === event.detail._id) return
     const card = event.detail
-    selection = { type: 'card', card }
+    selection = { _class: cardPlugin.class.Card, _id: card._id, doc: card }
     navigateToCard(card._id)
   }
 
   function selectType (event: CustomEvent<MasterTag>): void {
-    if (selection && selection.type === 'type' && selection.ref === event.detail._id) return
+    if (selection?._id === event.detail._id) return
     const type = event.detail
-    selection = { type: 'type', ref: type._id }
+    selection = { _class: cardPlugin.class.MasterTag, _id: type._id, doc: type }
     navigateToType(type._id)
   }
 
   function getSelectedCard (selection: Selection | undefined): Card | undefined {
     if (selection == null) return undefined
-    if (selection.type !== 'card') return undefined
-    return selection.card
+    if (selection._class !== cardPlugin.class.Card) return undefined
+    return selection.doc as Card | undefined
   }
 
   function getSelectedType (selection: Selection | undefined): Ref<MasterTag> | undefined {
     if (selection == null) return undefined
-    if (selection.type !== 'type') return undefined
-    return selection.ref
+    if (selection._class !== cardPlugin.class.MasterTag) return undefined
+    return selection._id as Ref<MasterTag>
   }
 
   onDestroy(
@@ -146,7 +154,9 @@
   {/if}
   <div bind:this={replacedPanelElement} class="hulyComponent chat__panel">
     {#if selectedCard}
-      <ChatPanel card={selectedCard} />
+      {@const panelComponent = hierarchy.classHierarchyMixin(selectedCard._class, view.mixin.ObjectPanel)}
+      {@const comp = panelComponent?.component ?? view.component.EditDoc}
+      <Component is={comp} props={{ _id: selectedCard._id, readonly: false, embedded: true, allowClose: false }} />
     {:else if selectedType}
       <ChatNavigationCategoryList type={selectedType} />
     {/if}
@@ -155,18 +165,18 @@
 
 <style lang="scss">
   .chat {
-    background: var(--next-background-color);
-    border-color: var(--next-border-color);
+    background: var(--theme-navpanel-color);
+    border-color: var(--theme-divider-color);
   }
 
   .chat__navigator {
-    background: var(--next-background-color);
-    border-color: var(--next-border-color);
+    background: var(--theme-navpanel-color);
+    border-color: var(--theme-divider-color);
   }
 
   .chat__panel {
-    background: var(--next-panel-color-background);
-    border-color: var(--next-panel-color-border);
+    background: var(--theme-panel-color);
+    border-color: var(--theme-divider-color);
     position: relative;
   }
 </style>

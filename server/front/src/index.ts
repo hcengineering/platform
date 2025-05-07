@@ -16,6 +16,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, Blob as PlatformBlob, WorkspaceIds, metricsAggregate, type Ref } from '@hcengineering/core'
+import platform, { PlatformError } from '@hcengineering/platform'
 import { TokenError, decodeToken } from '@hcengineering/server-token'
 import { StorageAdapter } from '@hcengineering/storage'
 import bp from 'body-parser'
@@ -51,7 +52,7 @@ async function storageUpload (
   storageAdapter: StorageAdapter,
   wsIds: WorkspaceIds,
   file: UploadedFile
-): Promise<string> {
+): Promise<{ uuid: string, etag: string }> {
   const uuid = file.name
   const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
   const resp = await ctx.with(
@@ -62,7 +63,7 @@ async function storageUpload (
   )
 
   ctx.info('storage upload', resp)
-  return uuid
+  return { uuid, etag: resp.etag }
 }
 
 function getRange (range: string, size: number): [number, number] {
@@ -458,9 +459,12 @@ export function start (
         try {
           const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
+          const authorization = ((req?.headers?.authorization as string) ?? '').split(' ')
+          const authorizationToken = authorization.at(0)?.toLowerCase() === 'bearer' ? authorization.at(1) : undefined
           const token =
             cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1] ??
             (req.query.token as string | undefined) ??
+            authorizationToken ??
             ''
           const wsIds = await getWorkspaceIds(ctx, token, req.path)
           if (wsIds === null) {
@@ -489,6 +493,7 @@ export function start (
               'accept-ranges': 'bytes',
               connection: 'keep-alive',
               'Keep-Alive': 'timeout=5',
+              'content-type': blobInfo.contentType,
               'content-length': blobInfo.size,
               'content-security-policy': "default-src 'none';",
               Etag: blobInfo.etag,
@@ -527,7 +532,7 @@ export function start (
             )
           }
         } catch (error: any) {
-          if (error instanceof TokenError) {
+          if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
             res.status(401).send()
             return
           }
@@ -597,15 +602,26 @@ export function start (
             res.status(403).send()
             return
           }
-          const uuid = await storageUpload(ctx, config.storageAdapter, workspaceDataId, file)
+          const { uuid, etag } = await storageUpload(ctx, config.storageAdapter, workspaceDataId, file)
 
           res.status(200).send([
             {
               key: 'file',
-              id: uuid
+              id: uuid,
+              metadata: {
+                name: uuid,
+                etag,
+                size: file.size,
+                contentType: file.mimetype,
+                lastModified: Date.now()
+              }
             }
           ])
         } catch (error: any) {
+          if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
+            res.status(401).send()
+            return
+          }
           ctx.error('error-post-files', error)
           res.status(500).send()
         }
@@ -639,7 +655,7 @@ export function start (
 
       res.status(200).send()
     } catch (error: any) {
-      if (error instanceof TokenError) {
+      if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
         res.status(401).send()
         return
       }
@@ -727,6 +743,10 @@ export function start (
           res.status(500).send(e)
         })
     } catch (error: any) {
+      if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
+        res.status(401).send()
+        return
+      }
       Analytics.handleError(error)
       ctx.error('error', { error })
       res.status(500).send()
@@ -803,6 +823,10 @@ export function start (
           })
       })
     } catch (error: any) {
+      if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
+        res.status(401).send()
+        return
+      }
       Analytics.handleError(error)
       ctx.error('error', { error })
       res.status(500).send()

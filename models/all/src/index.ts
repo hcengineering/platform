@@ -118,6 +118,7 @@ import processes, { processId, createModel as processModel } from '@hcengineerin
 import { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
 import { achievementId, createModel as achievementModel } from '@hcengineering/model-achievement'
 import { emojiId, createModel as emojiModel } from '@hcengineering/model-emoji'
+import { communicationId, createModel as communicationModel } from '@hcengineering/model-communication'
 import { type Plugin } from '@hcengineering/platform'
 
 interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' | 'transactions'> {}
@@ -144,7 +145,7 @@ export type { MigrateOperation } from '@hcengineering/model'
  * @param disabled  - a set of disabled plugins
  * @returns
  */
-export default function buildModel (enabled: string[] = ['*'], disabled: string[] = []): Builder {
+export default function buildModel (): Builder {
   const builder = new Builder()
 
   const defaultFilter = [
@@ -324,10 +325,11 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       boardModel,
       boardId,
       {
-        label: undefined, // board.string.ConfigLabel,
+        label: board.string.ConfigLabel,
         description: board.string.ConfigDescription,
         enabled: false,
         beta: true,
+        hidden: true,
         icon: board.icon.Board,
         classFilter: defaultFilter
       }
@@ -336,10 +338,11 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       bitrixModel,
       bitrixId,
       {
-        label: undefined, // bitrix.string.ConfigLabel,
+        label: bitrix.string.ConfigLabel,
         description: bitrix.string.ConfigDescription,
         enabled: false,
         beta: true,
+        hidden: true,
         icon: bitrix.icon.Bitrix,
         classFilter: defaultFilter
       }
@@ -458,6 +461,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [inboxModel, inboxId],
     [achievementModel, achievementId],
     [emojiModel, emojiId],
+    [communicationModel, communicationId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
@@ -507,9 +511,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         pluginId: id,
         transactions: txes.map((it) => it._id),
         ...config,
-        enabled:
-          config?.label === undefined ||
-          ((config?.enabled ?? true) && (enabled.includes(id) || enabled.includes('*')) && !disabled.includes(id)),
+        enabled: config?.label === undefined || ((config?.enabled ?? true) && !(config.hidden ?? false)),
         beta: config?.beta ?? false
       },
       ('plugin-configuration-' + id) as Ref<PluginConfiguration>

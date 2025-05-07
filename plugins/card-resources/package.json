@@ -39,8 +39,9 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@hcengineering/presence": "^0.6.0",
     "@hcengineering/presentation": "^0.6.3",
-    "@hcengineering/communication-types": "0.1.172",
+    "@hcengineering/communication-types": "0.1.175",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/setting": "^0.6.17",

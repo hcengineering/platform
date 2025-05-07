@@ -18,7 +18,12 @@ import type { PersonId, Timestamp, WorkspaceUuid } from '@hcengineering/core'
 import type { NextFunction, Request, Response } from 'express'
 import type { Credentials } from 'google-auth-library'
 
+export const CALENDAR_INTEGRATION = 'google-calendar'
+
+export type GoogleEmail = string & { googleEmail: true }
+
 export interface WatchBase {
+  email: GoogleEmail
   userId: PersonId
   workspace: WorkspaceUuid
   expired: Timestamp
@@ -42,7 +47,7 @@ export interface DummyWatch {
   calendarId: string
 }
 
-export type Token = User & Credentials
+export type Token = User & Credentials & { email: GoogleEmail }
 
 export interface CalendarHistory {
   userId: PersonId
@@ -71,7 +76,6 @@ export interface ReccuringData {
 export interface User {
   userId: PersonId
   workspace: WorkspaceUuid
-  token: string
 }
 
 export type State = User & {
@@ -109,3 +113,10 @@ export interface ProjectCredentialsData {
   client_secret: string
   redirect_uris: string[]
 }
+
+export const SCOPES = [
+  'https://www.googleapis.com/auth/calendar.calendars.readonly',
+  'https://www.googleapis.com/auth/calendar.calendarlist.readonly',
+  'https://www.googleapis.com/auth/calendar.events',
+  'https://www.googleapis.com/auth/userinfo.email'
+]

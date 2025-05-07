@@ -140,7 +140,7 @@ export function cleanupDeviceLabel (label: string): string {
 }
 
 export async function getCameraStream (
-  deviceId: MediaDeviceInfo['deviceId'],
+  deviceId: MediaDeviceInfo['deviceId'] | undefined,
   constraints?: MediaStreamConstraints
 ): Promise<MediaStream | null> {
   if (navigator?.mediaDevices === undefined) {
@@ -151,17 +151,16 @@ export async function getCameraStream (
   let video: MediaTrackConstraints | boolean
 
   if (constraints?.video === undefined) {
-    video = { deviceId }
+    video = deviceId !== undefined ? { deviceId: { exact: deviceId } } : true
   } else if (constraints.video === true) {
-    video = { deviceId }
+    video = deviceId !== undefined ? { deviceId: { exact: deviceId } } : true
   } else if (constraints.video === false) {
     video = false
   } else {
-    video = { deviceId, ...constraints.video }
+    video = { deviceId: { exact: deviceId }, ...constraints.video }
   }
 
   try {
-    console.info('Using media device', constraints)
     return await navigator.mediaDevices.getUserMedia({ ...constraints, video })
   } catch (err: any) {
     console.warn('Failed to get camera stream', err)
@@ -191,10 +190,20 @@ export async function getMicrophoneStream (
   }
 
   try {
-    console.info('Using media device', constraints)
     return await navigator.mediaDevices.getUserMedia({ ...constraints, audio })
   } catch (err: any) {
     console.warn('Failed to get microphone stream', err)
     return null
   }
+}
+
+export async function getDisplayMedia (constraints: MediaStreamConstraints): Promise<MediaStream> {
+  if (
+    navigator?.mediaDevices?.getDisplayMedia !== undefined &&
+    typeof navigator.mediaDevices.getDisplayMedia === 'function'
+  ) {
+    return await navigator.mediaDevices.getDisplayMedia(constraints)
+  }
+
+  throw new Error('getDisplayMedia not supported')
 }

@@ -23,11 +23,11 @@ import Suggestion, { type SuggestionKeyDownProps, type SuggestionOptions, type S
 
 import { type Class, type Doc, type Ref } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
-import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+import presentation, { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
 
 import contact from '@hcengineering/contact'
-import { parseLocation, tooltip, type LabelAndProps, type Location } from '@hcengineering/ui'
+import { parseLocation, showPopup, tooltip, type LabelAndProps, type Location } from '@hcengineering/ui'
 import workbench, { type Application } from '@hcengineering/workbench'
 
 export interface ReferenceExtensionOptions extends ReferenceOptions {
@@ -101,6 +101,13 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
 
       root.addEventListener('click', (event) => {
         if (event.button !== 0) return
+        if (broken) {
+          showPopup(MessageBox, {
+            label: presentation.string.UnableToFollowMention,
+            message: presentation.string.AccessDenied,
+            canSubmit: false
+          })
+        }
         const _class = objectclass
         const _id = id
         if (_id != null && _class != null) {
@@ -118,9 +125,16 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
       const query = createQuery(true)
       const options = this.options
 
+      let broken = false
+
       const renderLabel = (props: ReferenceNodeProps): void => {
         root.setAttribute('data-label', props.label)
         titleSpan.innerText = `${iconUrl !== '' ? '' : options.suggestion.char}${props.label ?? props.id}`
+        if (broken) {
+          root.classList.add('broken')
+        } else {
+          root.classList.remove('broken')
+        }
       }
 
       const icon =
@@ -153,15 +167,18 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
       if (id !== undefined && objectclass !== undefined) {
         query.query(objectclass, { _id: id }, async (result) => {
           const obj = result[0]
-          if (obj === undefined) return
+          broken = obj === undefined
+          if (broken) {
+            renderLabel({ id, objectclass, label: node.attrs.label })
+            resetTooltipHandle(undefined)
+          } else {
+            const label = await getReferenceLabel(objectclass, id, obj)
+            if (label === '') return
 
-          const label = await getReferenceLabel(objectclass, id, obj)
-          if (label === '') return
-
-          const tooltipOptions = await getReferenceTooltip(objectclass, id, obj)
-          resetTooltipHandle(tooltip(root, tooltipOptions))
-
-          renderLabel({ id, objectclass, label })
+            const tooltipOptions = await getReferenceTooltip(objectclass, id, obj)
+            resetTooltipHandle(tooltip(root, tooltipOptions))
+            renderLabel({ id, objectclass, label })
+          }
         })
       }
 
@@ -430,6 +447,8 @@ export async function getTargetObjectFromUrl (
 
   let location: Location
   if (typeof urlOrLocation === 'string') {
+    if (!URL.canParse(urlOrLocation)) return
+
     const url = new URL(urlOrLocation)
 
     const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin

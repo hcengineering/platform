@@ -41,5 +41,5 @@
 {#if data.action === 'create'}
   <ActivityObjectValue {message} {card} />
 {:else if data.update && data.action === 'update'}
-  <ActivityUpdateViewer update={data.update} model={attributeModel} />
+  <ActivityUpdateViewer update={data.update} model={attributeModel} content={message.content} />
 {/if}

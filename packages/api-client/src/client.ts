@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type WorkspaceLoginInfo, getClient as getAccountClient } from '@hcengineering/account-client'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 import client, { clientId } from '@hcengineering/client'
 import {
   type Class,
@@ -51,6 +51,7 @@ import {
   createMarkupOperations
 } from './markup'
 import { type ConnectOptions, type PlatformClient, WithMarkup } from './types'
+import { getWorkspaceToken } from './utils'
 
 /**
  * Create platform client
@@ -281,40 +282,4 @@ class PlatformClientImpl implements PlatformClient {
   async [Symbol.asyncDispose] (): Promise<void> {
     await this.close()
   }
-}
-
-export interface WorkspaceToken {
-  endpoint: string
-  token: string
-  workspaceId: WorkspaceUuid
-  info: WorkspaceLoginInfo
-}
-
-export async function getWorkspaceToken (
-  url: string,
-  options: ConnectOptions,
-  config?: ServerConfig
-): Promise<WorkspaceToken> {
-  config ??= await loadServerConfig(url)
-
-  let token: string | undefined
-
-  if ('token' in options) {
-    token = options.token
-  } else {
-    const { email, password } = options
-    const loginInfo = await getAccountClient(config.ACCOUNTS_URL).login(email, password)
-    token = loginInfo.token
-  }
-
-  if (token === undefined) {
-    throw new Error('Login failed')
-  }
-
-  const ws = await getAccountClient(config.ACCOUNTS_URL, token).selectWorkspace(options.workspace)
-  if (ws === undefined) {
-    throw new Error('Workspace not found')
-  }
-
-  return { endpoint: ws.endpoint, token: ws.token, workspaceId: ws.workspace, info: ws }
 }

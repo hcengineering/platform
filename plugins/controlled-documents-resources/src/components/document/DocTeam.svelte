@@ -25,13 +25,12 @@
   export let canChangeReviewers: boolean = true
   export let canChangeApprovers: boolean = true
   export let canChangeCoAuthors: boolean = true
+  export let reviewers: Ref<Employee>[] = controlledDoc?.reviewers ?? []
+  export let approvers: Ref<Employee>[] = controlledDoc?.approvers ?? []
+  export let coAuthors: Ref<Employee>[] = controlledDoc?.coAuthors ?? []
 
   const dispatch = createEventDispatcher()
   const currentEmployee = getCurrentEmployee()
-
-  $: reviewers = controlledDoc.reviewers
-  $: approvers = controlledDoc.approvers
-  $: coAuthors = controlledDoc.coAuthors
 
   $: permissionsSpace = space === documents.space.UnsortedTemplates ? documents.space.QualityDocuments : space
 

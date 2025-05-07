@@ -196,6 +196,7 @@
         "MAIL_URL": "",
         // "DB_NS": "account-2",
         // "WS_LIVENESS_DAYS": "1",
+        // "WORKSPACE_LIMIT_PER_USER": "1",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost"
@@ -459,14 +460,14 @@
         "MINIO_ENDPOINT": "localhost:9000",
         "TRANSACTOR_URL": "ws://localhost:3332",
         "ACCOUNTS_URL": "http://localhost:3000",
-        "ACCOUNT_DB_URL": "mongodb://localhost:27017",
+        "ACCOUNT_DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
         // "ACCOUNT_DB_URL": "postgresql://postgres:example@localhost:5433",
         // "DB_URL": "postgresql://postgres:example@localhost:5433",
         "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
         "MONGO_URL": "mongodb://localhost:27017",
         "TELEGRAM_DATABASE": "telegram-service",
         "REKONI_URL": "http://localhost:4004",
-        "MODEL_VERSION": "0.7.1"
+        "MODEL_VERSION": "0.7.75"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,

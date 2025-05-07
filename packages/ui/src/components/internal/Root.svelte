@@ -187,7 +187,7 @@
         {/if}
         {#if !secondRow}
           <div
-            class="flex-row-center left-items flex-gap-0-5"
+            class="flex-row-center left-items flex-gap-1"
             class:ml-14={appsMini}
             style:-webkit-app-region={'no-drag'}
           >
@@ -206,10 +206,10 @@
             <StatusComponent {status} />
           {/if}
         </div>
-        <div class="flex-row-reverse flex-gap-2" style:-webkit-app-region={'no-drag'}>
+        <div class="flex-row-reverse flex-gap-0-5" style:-webkit-app-region={'no-drag'}>
           <Settings />
           <Clock />
-          <div class="flex-row-center gap-statusbar">
+          <div class="flex-row-center flex-gap-0-5">
             {#if !secondRow}
               <RootBarExtension position="right" />
             {/if}

@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import { type MicState } from '@hcengineering/media'
-  import { Button } from '@hcengineering/ui'
+  import { Icon, tooltip } from '@hcengineering/ui'
 
   import media from '../plugin'
   import { sessions } from '../stores'
 
   import IconMicOn from './icons/MicOn.svelte'
+  import IconMicOff from './icons/MicOff.svelte'
 
   export let state: MicState | undefined
 
@@ -32,16 +33,11 @@
 </script>
 
 {#if state != null}
-  <Button
-    noFocus
-    icon={IconMicOn}
-    iconProps={{
-      fill: state.enabled ? 'var(--theme-state-positive-color)' : 'var(--theme-state-negative-color)'
-    }}
-    kind={'icon'}
-    size={'x-small'}
-    padding={'0 .5rem'}
-    showTooltip={{ label: state.enabled ? media.string.TurnOffMic : media.string.TurnOnMic, direction: 'bottom' }}
+  <button
+    class="hulyStatusBarButton mini positive {state.enabled ? 'positiveContent' : 'negativeContent'}"
+    use:tooltip={{ label: state.enabled ? media.string.TurnOffMic : media.string.TurnOnMic, direction: 'bottom' }}
     on:click={handleClick}
-  />
+  >
+    <Icon icon={state.enabled ? IconMicOn : IconMicOff} size={'small'} />
+  </button>
 {/if}

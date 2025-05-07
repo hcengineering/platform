@@ -53,7 +53,7 @@
 
   const filter = (it: Doc): boolean => {
     const card = it as Card
-    return !card.parentInfo.some((p) => cards.has(p._id))
+    return !card.parentInfo?.some((p) => cards.has(p._id))
   }
 </script>
 

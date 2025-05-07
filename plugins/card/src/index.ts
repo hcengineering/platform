@@ -71,6 +71,23 @@ export interface MasterTagEditorSection extends Doc {
   masterOnly?: boolean
 }
 
+export interface CardNavigation {
+  id: string
+  label: IntlString
+}
+
+export interface CardSection extends Doc {
+  label: IntlString
+  component: AnyComponent
+  order: number
+  navigation: CardNavigation[]
+}
+
+export interface CardViewDefaults extends MasterTag {
+  defaultSection: Ref<CardSection>
+  defaultNavigation?: string
+}
+
 /**
  * @public
  */
@@ -88,7 +105,11 @@ const cardPlugin = plugin(cardId, {
     Tag: '' as Ref<Class<Tag>>,
     MasterTagEditorSection: '' as Ref<Class<MasterTagEditorSection>>,
     CardSpace: '' as Ref<Class<CardSpace>>,
-    Role: '' as Ref<Class<Role>>
+    Role: '' as Ref<Class<Role>>,
+    CardSection: '' as Ref<Class<CardSection>>
+  },
+  mixin: {
+    CardViewDefaults: '' as Ref<Mixin<CardViewDefaults>>
   },
   space: {
     Default: '' as Ref<CardSpace>
@@ -119,6 +140,16 @@ const cardPlugin = plugin(cardId, {
     Cards: '' as IntlString,
     CardApplication: '' as IntlString,
     Views: '' as IntlString
+  },
+  section: {
+    Attachments: '' as Ref<CardSection>,
+    Children: '' as Ref<CardSection>,
+    Content: '' as Ref<CardSection>,
+    Properties: '' as Ref<CardSection>,
+    Relations: '' as Ref<CardSection>
+  },
+  ids: {
+    CardWidget: '' as Ref<Doc>
   }
 })
 

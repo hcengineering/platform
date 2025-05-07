@@ -53,6 +53,8 @@
     "UpdatedObject": "Обновил(а) {object}",
     "NewObjectType": "Новый(ые) {type}: {title}",
     "RemovedObjectType": "Удален(ы) {type} : {title}",
-    "AttributeSetTo": "{name} установлен на {value}"
+    "AttributeSetTo": "{name} установлен на {value}",
+    "AddedTag": "Добавлен тег: {title}",
+    "RemovedTag": "Удален тег: {title}"
   }
 }

@@ -16,8 +16,12 @@
   import calendar, { Event, getAllEvents } from '@hcengineering/calendar'
   import { calendarByIdStore } from '@hcengineering/calendar-resources'
   import { getCurrentEmployee, Person } from '@hcengineering/contact'
-  import { socialIdsByPersonRefStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
-  import core, { Doc, IdMap, Ref, Timestamp, Tx, TxCUD, TxCreateDoc, TxUpdateDoc } from '@hcengineering/core'
+  import {
+    personRefByAccountUuidStore,
+    personRefByPersonIdStore,
+    socialIdsByPersonRefStore
+  } from '@hcengineering/contact-resources'
+  import core, { Doc, IdMap, Ref, Timestamp, Tx, TxCreateDoc, TxCUD, TxUpdateDoc } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/task'
@@ -43,7 +47,10 @@
   let slots: WorkSlot[] = []
   let events: Event[] = []
   let todos: IdMap<ToDo> = new Map()
-  let persons: Ref<Person>[] = []
+
+  $: persons = (project?.members ?? [])
+    .map((it) => $personRefByAccountUuidStore.get(it))
+    .filter((it) => it !== undefined)
 
   const txCreateQuery = createQuery()
 
@@ -68,12 +75,10 @@
   const client = getClient()
 
   function group (
-    txMap: Map<Ref<Person>, Tx[]>,
-    persons: Ref<Person>[],
+    txes: Tx[],
     from: Timestamp,
     to: Timestamp
   ): { add: Map<Asset, { count: number, tx: TxCUD<Doc>[] }>, change: Map<Asset, { count: number, tx: TxCUD<Doc>[] }> } {
-    const txes = persons.flatMap((it) => txMap.get(it))
     const add = new Map<Asset, { count: number, tx: TxCUD<Doc>[] }>()
     const change = new Map<Asset, { count: number, tx: TxCUD<Doc>[] }>()
     const h = client.getHierarchy()
@@ -146,8 +151,7 @@
     {@const planned = gitem?.mappings.reduce((it, val) => it + val.total, 0) ?? 0}
     {@const pevents = gitem?.events.reduce((it, val) => it + (val.dueDate - val.date), 0) ?? 0}
     {@const busy = gitem?.busy.slots.reduce((it, val) => it + (val.dueDate - val.date), 0) ?? 0}
-    <!-- {@const accounts = personAccounts.filter((it) => it.person === person).map((it) => it._id)} -->
-    {@const txInfo = group(txes, persons, dayFrom, dayTo)}
+    {@const txInfo = group(txes.get(person) ?? [], dayFrom, dayTo)}
     <div style:overflow="auto" style:height="{height}rem" class="p-1">
       <div class="flex-row-center p-1">
         <Icon icon={time.icon.Team} size={'small'} />

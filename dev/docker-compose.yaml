@@ -5,7 +5,7 @@ services:
       - 'huly.local:host-gateway'
     container_name: stream
     environment:
-      - STREAM_ENDPOINT_URL=s3://huly.local:9000
+      - STREAM_ENDPOINT_URL=datalake://huly.local:4030
       - STREAM_INSECURE=true
       - STREAM_SERVER_SECRET=secret
       - AWS_ACCESS_KEY_ID=minioadmin
@@ -109,6 +109,10 @@ services:
       - 9001:9001
     volumes:
       - files:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      retries: 10
     restart: unless-stopped
   elastic:
     image: 'elasticsearch:7.14.2'
@@ -128,7 +132,7 @@ services:
     healthcheck:
       interval: 20s
       retries: 10
-      test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
+      test: curl -f http://localhost:9000/minio/health/live
     restart: unless-stopped
   account:
     image: hardcoreeng/account
@@ -158,7 +162,6 @@ services:
       - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://huly.local:8087
-      - MODEL_ENABLED=*
       - LAST_NAME_FIRST=true
       # - WS_LIVENESS_DAYS=1
       - ACCOUNTS_URL=http://huly.local:3000
@@ -193,7 +196,6 @@ services:
       - STATS_URL=http://huly.local:4900
       - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - REGION=
       - ACCOUNTS_URL=http://huly.local:3000
       - BRANDING_PATH=/var/cfg/branding.json
@@ -219,7 +221,6 @@ services:
       - DB_URL=${DB_CR_URL}
       - STATS_URL=http://huly.local:4900
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://huly.local:3000
       - BRANDING_PATH=/var/cfg/branding.json
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
@@ -264,7 +265,9 @@ services:
       - SERVER_SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
       - STATS_URL=http://huly.local:4900
-      - UPLOAD_URL=/files
+      - FILES_URL=http://huly.local:4030/blob/:workspace/:blobId/:filename
+      - UPLOAD_URL=http://huly.local:4030/upload/form-data/:workspace
+      - PREVIEW_CONFIG=http://huly.local:4030/image/fit=cover,width=:width,height=:height,dpr=:dpr/:workspace/:blobId
       - GMAIL_URL=http://huly.local:8088
       - CALENDAR_URL=http://huly.local:8095
       - TELEGRAM_URL=http://huly.local:8086
@@ -508,6 +511,30 @@ services:
       - STATS_URL=http://huly.local:4900
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://huly.local:3000
+  datalake:
+    image: hardcoreeng/datalake
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      minio:
+        condition: service_healthy
+      cockroach:
+        condition: service_started
+      stats:
+        condition: service_started
+      account:
+        condition: service_started
+    ports:
+      - 4030:4030
+    environment:
+      - PORT=4030
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - STATS_URL=http://huly.local:4900
+      - STREAM_URL=http://huly.local:1080/recording
+      - DB_URL=${DB_CR_URL}
+      - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
+    restart: unless-stopped
 volumes:
   db:
   dbpg:

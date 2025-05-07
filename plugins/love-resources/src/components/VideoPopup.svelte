@@ -270,7 +270,7 @@
   <Scroller
     bind:divScroll
     noStretch
-    padding={'.25rem .5rem 0'}
+    padding={'.5rem'}
     containerName={'videoPopupСontainer'}
     onResize={dispatchFit}
     stickedScrollBars

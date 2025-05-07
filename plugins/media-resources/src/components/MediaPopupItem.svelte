@@ -93,7 +93,7 @@
 
     .mediaPopupItem-header {
       margin: 0.25rem;
-      padding: 0 0.5rem;
+      padding: 0.25rem 0.5rem;
       min-height: 2.25rem;
 
       display: flex;

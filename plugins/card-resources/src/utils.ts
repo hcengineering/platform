@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Card, CardEvents, cardId, type CardSpace, type MasterTag } from '@hcengineering/card'
+import { type Card, CardEvents, cardId, type CardSpace, type CardSection, type MasterTag } from '@hcengineering/card'
 import {
   type Class,
   type Client,
@@ -38,10 +38,11 @@ import {
 } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
-import { type LocationData } from '@hcengineering/workbench'
+import workbench, { type LocationData } from '@hcengineering/workbench'
 import { translate } from '@hcengineering/platform'
 import { makeRank } from '@hcengineering/rank'
 import { Analytics } from '@hcengineering/analytics'
+import { openWidget } from '@hcengineering/workbench-resources'
 
 import CardSearchItem from './components/CardSearchItem.svelte'
 import CreateSpace from './components/navigator/CreateSpace.svelte'
@@ -226,4 +227,28 @@ export function sortNavigatorTypes (types: MasterTag[], config: NavigatorConfig)
 
     return a.label.localeCompare(b.label)
   })
+}
+
+export interface CardWidgetData {
+  _id: Ref<Card>
+  name: string
+  tab?: Ref<CardSection>
+}
+
+export async function openCardInSidebar (cardId: Ref<Card>, doc?: Card, tabId?: Ref<CardSection>): Promise<void> {
+  const client = getClient()
+
+  const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: card.ids.CardWidget as any })[0]
+  if (widget === undefined) return
+
+  const object = doc ?? (await client.findOne(card.class.Card, { _id: cardId }))
+  if (object === undefined) return
+
+  const data: CardWidgetData = {
+    _id: cardId,
+    name: object.title,
+    tab: tabId
+  }
+
+  openWidget(widget, data)
 }

@@ -85,6 +85,10 @@ export async function handleBlobGet (
 
   pipeline(blob.body, res, (err) => {
     if (err != null) {
+      // ignore abort errors to avoid flooding the logs
+      if (err.name === 'AbortError' || err.code === 'ERR_STREAM_PREMATURE_CLOSE') {
+        return
+      }
       const error = err instanceof Error ? err.message : String(err)
       ctx.error('error writing response', { workspace, name, error })
       Analytics.handleError(err)
@@ -233,7 +237,7 @@ export async function handleUploadFormData (
 
           ctx.info('uploaded', { workspace, name, etag: metadata.etag, type: contentType })
 
-          return { key, metadata }
+          return { key, id: name, metadata }
         } catch (err: any) {
           Analytics.handleError(err)
           const error = err instanceof Error ? err.message : String(err)

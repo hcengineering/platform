@@ -274,7 +274,8 @@ const calendarPlugin = plugin(calendarId, {
     CalDavServerURL: '' as Metadata<string>
   },
   extensions: {
-    EditEventExtensions: '' as ComponentExtensionId
+    EditEventExtensions: '' as ComponentExtensionId,
+    EditScheduleExtensions: '' as ComponentExtensionId
   },
   ids: {
     ReminderNotification: '' as Ref<NotificationType>,

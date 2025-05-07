@@ -47,6 +47,7 @@
     "@types/node": "~20.11.16",
     "@types/jest": "^29.5.5",
     "@types/ws": "^8.5.11",
+    "@types/node-fetch": "~2.6.2",
     "@types/snappyjs": "^0.7.1"
   },
   "dependencies": {
@@ -58,6 +59,8 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/text-markdown": "^0.6.0",
+    "form-data": "^4.0.0",
+    "node-fetch": "^2.6.6",
     "snappyjs": "^0.7.0"
   },
   "repository": "https://github.com/hcengineering/platform",

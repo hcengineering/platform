@@ -5,6 +5,11 @@
     "Stop": "Zastavit",
     "Resume": "Pokračovat",
     "Record": "Nahrávat",
+    "CancelRecording": "Zrušit nahrávání",
+    "CancelRecordingConfirm": "Opravdu chcete zrušit nahrávání?",
+    "RestartRecording": "Restart nahrávání",
+    "RestartRecordingConfirm": "Opravdu chcete restartovat nahrávání?",
+    "RecordingTitle": "Nahrávání obrazovky {date}",
     "ClickToSkip": "Kliknutím přeskočíte"
   }
 }

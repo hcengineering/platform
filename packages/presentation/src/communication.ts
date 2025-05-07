@@ -65,12 +65,14 @@ import {
   createNotificationContextsQuery,
   createNotificationsQuery,
   createLabelsQuery,
-  initLiveQueries
+  initLiveQueries,
+  type MessageQueryParams
 } from '@hcengineering/communication-client-query'
 
 import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
 
 export { createMessagesQuery, createNotificationsQuery, createNotificationContextsQuery, createLabelsQuery }
+export type { MessageQueryParams }
 
 interface Connection extends PlatformConnection {
   findMessages: (params: FindMessagesParams, queryId?: number) => Promise<Message[]>

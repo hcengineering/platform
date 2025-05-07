@@ -77,12 +77,12 @@ test.describe('Workspace Migration tests', () => {
       const adminPage = new AdminPage(page2)
       await adminPage.gotoAdmin()
 
-      await page2.getByText('Today -').click()
+      await page2.getByText('Hour -').click()
       await page2.locator('div:nth-child(3) > .checkbox-container > .checkSVG').click()
       await page2.locator('div:nth-child(4) > .checkbox-container > .checkSVG').click()
 
-      await page2.getByRole('button', { name: 'America', exact: true }).click()
-      await page2.getByRole('button', { name: 'europe' }).click()
+      await page2.getByRole('button', { name: 'America', exact: true }).first().click()
+      await page2.getByRole('button', { name: 'europe' }).first().click()
       await page2.getByPlaceholder('Search').click()
       await page2.getByPlaceholder('Search').fill(workspaceInfo.workspace)
       await page2.locator(`[id="${workspaceInfo.workspace}"]`).getByRole('button', { name: 'Migrate' }).click()

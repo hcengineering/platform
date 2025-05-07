@@ -55,6 +55,7 @@ Analytics.setTag('application', 'telegram-bot-service')
 
 export async function requestReconnect (bot: Telegraf<TgContext>, limiter: Limiter): Promise<void> {
   if (config.MongoDB === '' || config.MongoURL === '') {
+    ctx.info('MongoDB is not configured, skipping reconnect')
     return
   }
 
@@ -84,11 +85,15 @@ export const start = async (): Promise<void> => {
   setMetadata(serverClient.metadata.UserAgent, config.ServiceId)
   registerLoaders()
 
+  ctx.info('Creating worker...')
   const worker = await PlatformWorker.create(ctx)
+  ctx.info('Set up bot...')
   const bot = await setUpBot(worker)
-
+  ctx.info('Creating server...')
   const app = createServer(bot, worker, ctx)
+  ctx.info('Creating queue...')
   const queue = getPlatformQueue('telegramBotService', config.QueueRegion)
+  ctx.info('queue', { clientId: queue.getClientId() })
 
   if (config.Domain === '') {
     ctx.info('Starting bot with polling')
@@ -110,7 +115,9 @@ export const start = async (): Promise<void> => {
     res.status(200).send()
   })
 
+  ctx.info('Requesting reconnect...')
   await requestReconnect(bot, worker.limiter)
+  ctx.info('Starting server...')
   const server = listen(app, ctx, config.Port)
 
   const consumer = queue.createConsumer<TelegramQueueMessage>(

@@ -21,7 +21,7 @@ export interface ChunkReadResult {
 export class ChunkReader {
   private readonly chunks: Blob[] = []
   private done: boolean = false
-  private awaitingResolve: ((val: ChunkReadResult | PromiseLike<ChunkReadResult>) => void) | null = null
+  private awaitingResolve: ((val: ChunkReadResult | Promise<ChunkReadResult>) => void) | null = null
 
   public async read (): Promise<ChunkReadResult> {
     if (this.done && this.chunks.length === 0) {
@@ -36,8 +36,16 @@ export class ChunkReader {
   }
 
   public push (blob: Blob): void {
+    if (this.done) {
+      console.warn('ChunkReader: push into closed stream')
+      // close just in case someone is waiting for a chunk
+      if (this.awaitingResolve !== null) {
+        this.awaitingResolve({ done: true, value: undefined })
+      }
+      return
+    }
+
     this.chunks.push(blob)
-    console.log(this.awaitingResolve)
     if (this.awaitingResolve !== null) {
       this.awaitingResolve(this.read())
       this.awaitingResolve = null

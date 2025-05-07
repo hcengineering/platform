@@ -40,7 +40,9 @@
     "ColorRemove": "Remover predefinição de cor",
     "ColorReset": "Repor predefinições de cores",
     "Copiar": "Copiar",
-    "CopyLink": "Copiar link"
+    "CopyLink": "Copiar link",
+    "AccessDenied": "O objeto não existe ou você não tem permissão para acessá-lo.",
+    "UnableToFollowMention": "Não foi possível abrir o objeto mencionado"
   },
   "status": {
     "FileTooLarge": "Ficheiro demasiado grande"

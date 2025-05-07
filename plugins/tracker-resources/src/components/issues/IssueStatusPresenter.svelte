@@ -31,5 +31,5 @@
 </script>
 
 {#if value}
-  <IssueStatusIcon value={issueStatus} {size} space={value.space} />
+  <IssueStatusIcon value={issueStatus} taskType={value.kind} {size} space={value.space} />
 {/if}

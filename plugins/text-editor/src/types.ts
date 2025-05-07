@@ -85,7 +85,9 @@ export interface RefAction {
 export interface Heading {
   id: string
   level: number
-  title: string
+  title?: string
+  titleIntl?: IntlString
+  group?: string
 }
 
 /**

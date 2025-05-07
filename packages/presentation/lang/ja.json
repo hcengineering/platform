@@ -40,7 +40,9 @@
     "ColorRemove": "カラープリセットを削除",
     "ColorReset": "カラープリセットをリセット",
     "Copy": "コピー",
-    "CopyLink": "リンクをコピー"
+    "CopyLink": "リンクをコピー",
+    "AccessDenied": "オブジェクトが存在しないか、アクセス権限がありません。",
+    "UnableToFollowMention": "言及されたオブジェクトを開くことができません"
   },
   "status": {
     "FileTooLarge": "ファイルサイズが大きすぎます"

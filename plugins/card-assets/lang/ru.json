@@ -36,6 +36,7 @@
     "SelectType": "Выбрать тип",
     "CreateSpace": "Создать пространство",
     "NumberTypes": "{count, plural, one {# тип} few {# типа} other {# типов}}",
-    "Labels": "Метки"
+    "Labels": "Метки",
+    "Properties": "Свойства"
   }
 }

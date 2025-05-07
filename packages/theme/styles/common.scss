@@ -535,6 +535,12 @@
     background-color: var(--theme-mention-focused-bg-color);
   }
 
+  &.broken {
+    color: var(--theme-broken-mention-color);
+    background-color: var(--theme-broken-mention-bg-color);
+    --theme-mention-focused-bg-color: var(--theme-broken-mention-focused-bg-color);
+  }
+
   > svg {
     display: inline-block;
     vertical-align: sub;

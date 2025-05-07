@@ -23,6 +23,7 @@
   import { groupTeamData, toSlots } from '../utils'
   import EventElement from './EventElement.svelte'
   import PersonCalendar from './PersonCalendar.svelte'
+  import { personRefByAccountUuidStore } from '@hcengineering/contact-resources'
 
   export let space: Ref<Project>
   export let currentDate: Date
@@ -37,7 +38,10 @@
   let slots: WorkSlot[] = []
   let events: Event[] = []
   let todos: IdMap<ToDo> = new Map()
-  let persons: Ref<Person>[] = []
+
+  $: persons = (project?.members ?? [])
+    .map((it) => $personRefByAccountUuidStore.get(it))
+    .filter((it) => it !== undefined)
 
   function calcHourWidth (events: Event[], totalWidth: number): number[] {
     const hours = new Map<number, number>()
