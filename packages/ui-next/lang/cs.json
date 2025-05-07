@@ -15,7 +15,7 @@
     "MonthAt": "{month} v {time}",
     "New": "Nový",
     "Removed": "Odstraněno",
-    "RepliesCount": "{count} odpovědí",
+    "RepliesCount": "{count, plural, =0 {žádné odpovědi} =1 {1 odpověď} other {# odpovědí}}",
     "Reply": "Odpovědět",
     "Send": "Odeslat",
     "Set": "Nastavit",

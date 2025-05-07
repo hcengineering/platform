@@ -21,13 +21,18 @@
   import ActivityMessageViewer from './ActivityMessageViewer.svelte'
   import { toMarkup } from '../../utils'
   import { isActivityMessage } from '../../activity'
+  import ThreadMessageViewer from './ThreadMessageViewer.svelte'
 
   export let card: Card
   export let message: Message
 </script>
 
-{#if message.type === MessageType.Message}
+{#if message.thread != null}
+  <ThreadMessageViewer {message} thread={message.thread} />
+{:else if message.type === MessageType.Message}
   <MarkupMessageViewer message={toMarkup(message.content)} />
 {:else if isActivityMessage(message)}
   <ActivityMessageViewer {message} {card} />
+{:else}
+  <MarkupMessageViewer message={toMarkup(message.content)} />
 {/if}

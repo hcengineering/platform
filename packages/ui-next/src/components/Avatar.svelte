@@ -60,7 +60,7 @@
     <img src={url} srcset={srcSet} alt="avatar" />
   {:else}
     <div
-      class="ava-text"
+      class="ava-text {size}"
       style:color={color ? color.iconText : 'var(--primary-button-color)'}
       data-name={getAvatarDisplayName(name).toLocaleUpperCase()}
     />
@@ -128,6 +128,9 @@
     letter-spacing: -0.05em;
     font-size: 1rem;
 
+    &.x-small {
+      font-size: 0.75rem;
+    }
     &::after {
       content: attr(data-name);
       transform: translate(-50%, -50%);

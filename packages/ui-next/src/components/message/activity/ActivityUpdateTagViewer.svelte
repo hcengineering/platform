@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { IconDelete } from '@hcengineering/ui'
+  import { IconDelete, tooltip } from '@hcengineering/ui'
   import { ActivityTagUpdate, RichText } from '@hcengineering/communication-types'
   import cardPlugin from '@hcengineering/card'
 
@@ -38,8 +38,10 @@
       <Icon icon={IconPlus} size="small" />
       <Label label={uiNext.string.Added} />
       <span class="lower"><Label label={cardPlugin.string.Tag} /></span>
-      <div class="tag no-word-wrap">
-        <Label label={mixin.label} />
+      <div class="tag no-word-wrap" use:tooltip={{ label: mixin.label }}>
+        <span class="overflow-label">
+          <Label label={mixin.label} />
+        </span>
       </div>
     </div>
   {:else if update.action === 'remove'}
@@ -47,8 +49,10 @@
       <Icon icon={IconDelete} size="small" />
       <Label label={uiNext.string.Removed} />
       <span class="lower"><Label label={cardPlugin.string.Tag} /></span>
-      <div class="tag no-word-wrap">
-        <Label label={mixin.label} />
+      <div class="tag no-word-wrap" use:tooltip={{ label: mixin.label }}>
+        <span class="overflow-label">
+          <Label label={mixin.label} />
+        </span>
       </div>
     </div>
   {/if}
@@ -67,6 +71,8 @@
   .tag {
     padding: 0.25rem 0.5rem;
     border: 1px solid var(--theme-content-color);
+    max-width: 12.5rem;
+    overflow: hidden;
 
     border-radius: 6rem;
 
@@ -74,6 +80,5 @@
 
     display: flex;
     align-items: center;
-    justify-content: center;
   }
 </style>

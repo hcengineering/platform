@@ -15,7 +15,7 @@
     "MonthAt": "{month}・{time}",
     "New": "新規",
     "Removed": "削除済み",
-    "RepliesCount": "{count} 件の返信",
+    "RepliesCount": "{count, plural, =0 {返信なし} =1 {1件の返信} other {#件の返信}}",
     "Reply": "返信",
     "Send": "送信",
     "Set": "設定",

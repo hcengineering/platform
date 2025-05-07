@@ -80,6 +80,7 @@
     height: 100%;
     padding: 1rem;
     padding-left: 0;
+    overflow: hidden;
 
     &.withoutBorder {
       padding-bottom: 0;

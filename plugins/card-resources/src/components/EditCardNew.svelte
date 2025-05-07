@@ -24,7 +24,6 @@
     EditBox,
     FocusHandler,
     getCurrentLocation,
-    IconDetailsFilled,
     IconMoreH,
     navigate,
     Panel
@@ -34,13 +33,10 @@
   import { ParentsNavigator, showMenu } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
   import { NotificationContext } from '@hcengineering/communication-types'
+  import { MessageInput } from '@hcengineering/ui-next'
 
   import card from '../plugin'
-  import CardPresenter from './CardPresenter.svelte'
-  import { openCardInSidebar } from '../utils'
   import EditCardTableOfContents from './EditCardTableOfContents.svelte'
-  import { translate } from '@hcengineering/platform'
-  import { makeRank } from '@hcengineering/rank'
   import TagsEditor from './TagsEditor.svelte'
 
   export let _id: Ref<Card>
@@ -96,15 +92,31 @@
       await client.update(doc, { title: nameTrimmed })
     }
   }
+
+  let content: EditCardTableOfContents | undefined = undefined
 </script>
 
 <FocusHandler {manager} />
 {#if doc !== undefined}
   <Panel isAside={false} isHeader={false} {embedded} {allowClose} adaptive="disabled" on:open on:close>
     <div class="main-content clear-mins">
-      {#key doc._id}
-        <EditCardTableOfContents {doc} {readonly} {context} {isContextLoaded} />
-      {/key}
+      {#if doc._id === _id}
+        {#key doc._id}
+          <EditCardTableOfContents bind:this={content} {doc} {readonly} {context} {isContextLoaded} />
+        {/key}
+      {/if}
+      {#if !readonly}
+        <div class="message-input">
+          <MessageInput
+            cardId={doc._id}
+            cardType={doc._class}
+            title={doc.title}
+            on:sent={() => {
+              content?.scrollDown()
+            }}
+          />
+        </div>
+      {/if}
     </div>
 
     <svelte:fragment slot="title">
@@ -193,5 +205,16 @@
     font-size: 1rem;
     flex: 1;
     min-width: 10rem;
+  }
+
+  .message-input {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 0.75rem;
+    min-height: 8.5rem;
+    max-height: 50%;
+    margin-top: auto;
   }
 </style>
