@@ -52,9 +52,24 @@ export const emojiCategories: EmojiCategory[] = [
     icon: emojiPlugin.icon.AnimalsAndNature,
     categories: 'animals-nature'
   },
-  { id: 'food-drink', label: emojiPlugin.string.FoodAndDrink, icon: emojiPlugin.icon.FoodAndDrink, categories: 'food-drink' },
-  { id: 'travel-places', label: emojiPlugin.string.TravelAndPlaces, icon: emojiPlugin.icon.TravelAndPlaces, categories: 'travel-places' },
-  { id: 'activities', label: emojiPlugin.string.Activities, icon: emojiPlugin.icon.Activities, categories: 'activities' },
+  {
+    id: 'food-drink',
+    label: emojiPlugin.string.FoodAndDrink,
+    icon: emojiPlugin.icon.FoodAndDrink,
+    categories: 'food-drink'
+  },
+  {
+    id: 'travel-places',
+    label: emojiPlugin.string.TravelAndPlaces,
+    icon: emojiPlugin.icon.TravelAndPlaces,
+    categories: 'travel-places'
+  },
+  {
+    id: 'activities',
+    label: emojiPlugin.string.Activities,
+    icon: emojiPlugin.icon.Activities,
+    categories: 'activities'
+  },
   { id: 'objects', label: emojiPlugin.string.Objects, icon: emojiPlugin.icon.Objects, categories: 'objects' },
   { id: 'symbols', label: emojiPlugin.string.Symbols, icon: emojiPlugin.icon.Symbols, categories: 'symbols' },
   { id: 'flags', label: emojiPlugin.string.Flags, icon: emojiPlugin.icon.Flags, categories: 'flags' }

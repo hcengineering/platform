@@ -22,7 +22,8 @@
     getPlatformColor,
     getPlatformColorDef,
     themeStore,
-    Label, Component
+    Label,
+    Component
   } from '@hcengineering/ui'
   import emojiPlugin from '@hcengineering/emoji'
   import { createEventDispatcher } from 'svelte'
@@ -96,7 +97,8 @@
           {/if}
         </div>
       {:else}
-        <Component is={emojiPlugin.component.EmojiPopup}
+        <Component
+          is={emojiPlugin.component.EmojiPopup}
           props={{
             selected: Array.isArray(color) ? fromCodePoint(...color) : color ? fromCodePoint(color) : undefined
           }}

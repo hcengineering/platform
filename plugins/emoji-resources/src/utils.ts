@@ -51,7 +51,9 @@ export function getEmojiByHexcode (hexcode: string): EmojiWithGroup | undefined 
 
 export function getEmojiByEmoticon (emoticon: string | undefined): string | undefined {
   if (emoticon === undefined) return undefined
-  const matchEmoji = findEmoji(e => !isCustomEmoji(e) && (Array.isArray(e.emoticon) ? e.emoticon.includes(emoticon) : e.emoticon === emoticon))
+  const matchEmoji = findEmoji(
+    (e) => !isCustomEmoji(e) && (Array.isArray(e.emoticon) ? e.emoticon.includes(emoticon) : e.emoticon === emoticon)
+  )
   if (matchEmoji === undefined) return undefined
   return !isCustomEmoji(matchEmoji) ? matchEmoji.emoji : undefined
 }
@@ -71,7 +73,10 @@ export function getEmojiByShortCode (shortcode: string | undefined, skinTone?: n
   }, skinTone)
 }
 
-function findEmoji (predicate: (e: EmojiWithGroup) => boolean | undefined, skinTone?: number): ExtendedEmoji | undefined {
+function findEmoji (
+  predicate: (e: EmojiWithGroup) => boolean | undefined,
+  skinTone?: number
+): ExtendedEmoji | undefined {
   const emojis = get(emojiStore)
   const matchEmoji = emojis.find(predicate)
   if (matchEmoji === undefined) return undefined

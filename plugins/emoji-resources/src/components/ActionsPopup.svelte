@@ -5,7 +5,7 @@
   //
   import { createEventDispatcher } from 'svelte'
   import emojiPlugin, { ExtendedEmoji, Emoji } from '@hcengineering/emoji'
-    import { getEmojiByHexcode, getEmojiSkins } from '../utils'
+  import { getEmojiByHexcode, getEmojiSkins } from '../utils'
   import EmojiButton from './EmojiButton.svelte'
   import { getSkinTone, emojiStore } from '../store'
   import { Label, IconDelete, closeTooltip, ButtonBase } from '@hcengineering/ui'
@@ -50,7 +50,7 @@
     const equal = a === b
     const noTone = a === 0
     return equal && noTone
-      ? e as Emoji.Emoji
+      ? (e as Emoji.Emoji)
       : getEmojiSkins(e)?.find((skin) =>
         equal ? skin.tone === a : Array.isArray(skin.tone) && skin.tone[0] === a && skin.tone[1] === b
       )

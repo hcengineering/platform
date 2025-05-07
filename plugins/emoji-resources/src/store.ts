@@ -10,7 +10,7 @@ export const resultEmojis = derived([emojiStore, searchEmoji], ([emojis, search]
     ? emojis.filter(
       (emoji) =>
         (emoji.tags?.some((tag: string) => tag.toLowerCase().startsWith(search.toLowerCase())) ?? false) ||
-        emoji.label.toLowerCase().includes(search.toLowerCase())
+          emoji.label.toLowerCase().includes(search.toLowerCase())
     )
     : emojis
 })
@@ -81,14 +81,14 @@ export const getFrequentlyEmojis = (): EmojiWithGroup[] | undefined => {
     const result: EmojiWithGroup[] = []
     emojis.forEach((emoji: EmojiWithGroup) => {
       if (isCustomEmoji(emoji)) {
-        if (parsedEmojis.find(pe => pe.hexcode === emoji.shortcode) !== undefined) result.push(emoji)
+        if (parsedEmojis.find((pe) => pe.hexcode === emoji.shortcode) !== undefined) result.push(emoji)
       } else {
         parsedEmojis.forEach((parsedEmoji: any) => {
           if (parsedEmoji.hexcode === emoji.hexcode) {
             result.push(emoji)
             return
           }
-          const skinEmoji = emoji.skins?.find(s => s.hexcode === parsedEmoji.hexcode)
+          const skinEmoji = emoji.skins?.find((s) => s.hexcode === parsedEmoji.hexcode)
           if (skinEmoji === undefined) return
           result.push({ ...skinEmoji, key: '' })
         })

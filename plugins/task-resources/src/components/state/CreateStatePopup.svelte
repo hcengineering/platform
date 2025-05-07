@@ -433,7 +433,8 @@
             }}
           />
         {:else}
-          <Component is={emojiPlugin.component.EmojiPopup}
+          <Component
+            is={emojiPlugin.component.EmojiPopup}
             props={{
               selected: Array.isArray(color) ? fromCodePoint(...color) : color ? fromCodePoint(color) : undefined,
               disabled: readonly,

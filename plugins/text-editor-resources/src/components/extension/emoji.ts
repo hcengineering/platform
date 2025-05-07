@@ -4,12 +4,12 @@ import {
   emoticonGlobalRegex,
   shortcodeRegex,
   shortcodeGlobalRegex,
-  getEmojiByEmoticon,
-  getEmojiByShortCode,
   emojiRegex,
   emojiGlobalRegex,
-  type ExtendedEmoji, isCustomEmoji
-} from '@hcengineering/ui'
+  type ExtendedEmoji,
+  isCustomEmoji
+} from '@hcengineering/emoji'
+import { getEmojiByEmoticon, getEmojiByShortCode } from '@hcengineering/emoji-resources'
 import { type ResolvedPos } from '@tiptap/pm/model'
 import { type ExtendedRegExpMatchArray, type SingleCommands, type Range, InputRule, PasteRule } from '@tiptap/core'
 import { type EditorState } from '@tiptap/pm/state'

@@ -84,7 +84,7 @@
       {#if node.attrs?.kind === 'custom'}
         {@const src = toString(attrs.url)}
         {@const alt = toString(attrs.emoji)}
-        <img {src} {alt}/>
+        <img {src} {alt} />
       {:else}
         {node.attrs?.emoji}
       {/if}

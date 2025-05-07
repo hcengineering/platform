@@ -12,8 +12,10 @@
     showPopup,
     eventToHTMLElement,
     ButtonBase,
-    closeTooltip, getEmojiByShortCode, getEmojiSkins, getUnicodeEmojiByShortCode, Icon, icon
+    closeTooltip,
+    Icon
   } from '@hcengineering/ui'
+  import { getEmojiByShortCode, getEmojiSkins, getUnicodeEmojiByShortCode } from '../utils'
   import {
     searchEmoji,
     emojiStore,
@@ -29,7 +31,6 @@
   import EmojiGroup from './EmojiGroup.svelte'
   import emojiPlugin, { isCustomEmoji } from '@hcengineering/emoji'
   import { emojiCategories, EmojiCategory } from '../types'
-  import { Asset, getMetadata } from '@hcengineering/platform'
 
   export let embedded = false
   export let selected: string | undefined
@@ -119,27 +120,22 @@
 
     clearTimer()
     shownContext = true
-    showPopup(
-      ActionsPopup,
-      { emoji, remove },
-      eventToHTMLElement(event),
-      (result: 'remove' | EmojiWithGroup) => {
-        if (result === 'remove') {
-          removeFrequentlyEmojis(emoji)
-          const index = emojisCat.findIndex((ec) => ec.id === 'frequently-used')
-          if (index > -1) emojisCat[index].emojis = getFrequentlyEmojis()
-          emojisCat = emojisCat.filter(
-            (em) => em.categories !== undefined || (Array.isArray(em.emojis) && em.emojis.length > 0)
-          )
-          if (currentCategory.emojis?.length === 0) {
-            currentCategory = emojisCat.find((ec) => ec.emojis !== undefined && ec.emojis.length > 0) ?? emojisCat[0]
-          }
-        } else if (result !== undefined) {
-          sendEmoji(result)
+    showPopup(ActionsPopup, { emoji, remove }, eventToHTMLElement(event), (result: 'remove' | EmojiWithGroup) => {
+      if (result === 'remove') {
+        removeFrequentlyEmojis(emoji)
+        const index = emojisCat.findIndex((ec) => ec.id === 'frequently-used')
+        if (index > -1) emojisCat[index].emojis = getFrequentlyEmojis()
+        emojisCat = emojisCat.filter(
+          (em) => em.categories !== undefined || (Array.isArray(em.emojis) && em.emojis.length > 0)
+        )
+        if (currentCategory.emojis?.length === 0) {
+          currentCategory = emojisCat.find((ec) => ec.emojis !== undefined && ec.emojis.length > 0) ?? emojisCat[0]
         }
-        shownContext = false
+      } else if (result !== undefined) {
+        sendEmoji(result)
       }
-    )
+      shownContext = false
+    })
   }
   function handleContextMenu (event: MouseEvent, emoji: EmojiWithGroup, remove: boolean): void {
     event.preventDefault()
@@ -169,13 +165,18 @@
 
   const showSkinMenu = (event: MouseEvent): void => {
     shownSTM = true
-    showPopup(SkinTonePopup, { emoji: getEmojiByShortCode(':hand:', 0), selected: skinTone }, eventToHTMLElement(event), (result) => {
-      if (typeof result === 'number') {
-        skinTone = result
-        setSkinTone(skinTone)
+    showPopup(
+      SkinTonePopup,
+      { emoji: getEmojiByShortCode(':hand:', 0), selected: skinTone },
+      eventToHTMLElement(event),
+      (result) => {
+        if (typeof result === 'number') {
+          skinTone = result
+          setSkinTone(skinTone)
+        }
+        shownSTM = false
       }
-      shownSTM = false
-    })
+    )
   }
 
   let hidden: boolean = true
@@ -195,7 +196,7 @@
         const tempEmojis: string[] = em.emojisString
         const emojis: EmojiWithGroup[] = []
         tempEmojis.forEach((te) => {
-          const e = $emojiStore.find((es) => isCustomEmoji(es) ? es.shortcode === te : es.hexcode === te)
+          const e = $emojiStore.find((es) => (isCustomEmoji(es) ? es.shortcode === te : es.hexcode === te))
           if (e !== undefined) emojis.push(e)
         })
         emojiCategories[index].emojis = emojis
@@ -236,7 +237,7 @@
             handleScrollToCategory(category.id)
           }}
         >
-          <Icon icon={category.icon} size={isMobile ? 'large' : 'x-large'}/>
+          <Icon icon={category.icon} size={isMobile ? 'large' : 'x-large'} />
           <!--<svelte:component this={category.icon} size={isMobile ? 'large' : 'x-large'} />-->
         </button>
       {/each}

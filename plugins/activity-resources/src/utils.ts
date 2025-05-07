@@ -6,8 +6,7 @@ import {
   getCurrentResolvedLocation,
   getEventPositionElement,
   showPopup,
-  type Location,
-  type EmojiWithGroup, isCustomEmoji
+  type Location
 } from '@hcengineering/ui'
 import { type AttributeModel } from '@hcengineering/view'
 import emojiPlugin from '@hcengineering/emoji'

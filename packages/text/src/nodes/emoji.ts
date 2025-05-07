@@ -84,13 +84,11 @@ export const EmojiNode = Node.create<EmojiNodeOptions>({
         ),
         [
           'img',
-          mergeAttributes(
-            {
-              'data-type': this.name,
-              src: node.attrs.url,
-              alt: node.attrs.emoji
-            }
-          )
+          mergeAttributes({
+            'data-type': this.name,
+            src: node.attrs.url,
+            alt: node.attrs.emoji
+          })
         ]
       ]
     }

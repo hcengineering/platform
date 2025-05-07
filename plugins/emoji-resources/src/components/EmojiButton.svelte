@@ -5,8 +5,9 @@
   //
   import { createEventDispatcher } from 'svelte'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { tooltip, capitalizeFirstLetter, type LabelAndProps, type ExtendedEmoji, getEmojiSkins } from '@hcengineering/ui'
-  import { isCustomEmoji } from '@hcengineering/emoji'
+  import { tooltip, capitalizeFirstLetter, type LabelAndProps } from '@hcengineering/ui'
+  import { isCustomEmoji, type ExtendedEmoji } from '@hcengineering/emoji'
+  import { getEmojiSkins } from '../utils'
 
   export let emoji: ExtendedEmoji
   export let selected: boolean = false
@@ -42,7 +43,7 @@
     }}
   >
     {#if isCustomEmoji(displayedEmoji)}
-      <span><img src="{displayedEmoji.url}" alt="{displayedEmoji.shortcode}"></span>
+      <span><img src={displayedEmoji.url} alt={displayedEmoji.shortcode} /></span>
     {:else}
       <span>{displayedEmoji.emoji}</span>
     {/if}
