@@ -32,6 +32,7 @@ const mailTag = 'Mail'
 export { mailId } from '@hcengineering/mail'
 export { default } from './plugin'
 
+// TODO: UBERF-10525 Remove mail route, use KVS, remove createMailTag
 @Model(mail.class.MailRoute, core.class.Doc, DOMAIN_MAIL)
 export class TMailRoute extends TDoc implements MailRoute {
   @Prop(TypeString(), mail.string.MailId)

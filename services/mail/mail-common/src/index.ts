@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-export * from './base64'
 export * from './message'
 export * from './types'
 export * from './utils'
