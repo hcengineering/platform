@@ -31,7 +31,7 @@
   }
 
   function getParentClass (doc: Doc | AttachedDoc): Ref<Class<Doc>> {
-    return isAttachedDoc(doc) ? doc.attachedToClass : doc._class
+    return isAttachedDoc(doc) ? doc.attachedToClass : client.getHierarchy().getParentClass(doc._class)
   }
 
   function withParent (doc: Doc | AttachedDoc): boolean {

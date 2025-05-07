@@ -123,6 +123,7 @@ export function start (
         findMessages: async () => [],
         findMessagesGroups: async () => [],
         findNotificationContexts: async () => [],
+        findCollaborators: async () => [],
         findNotifications: async () => [],
         findLabels: async () => [],
         unsubscribeQuery: async () => {},

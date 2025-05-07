@@ -54,7 +54,7 @@
       style="padding-left: 0.25rem"
       on:click={handleStartRecording}
     >
-      <Icon icon={IconRecordOn} iconProps={{ fill: 'var(--theme-state-negative-color)' }} size="small" />
+      <Icon icon={IconRecordOn} iconProps={{ fill: 'var(--theme-dark-color)' }} size="small" />
       <Icon icon={IconRec} iconProps={{ fill: 'var(--theme-dark-color)' }} size="small" />
     </button>
   {/if}

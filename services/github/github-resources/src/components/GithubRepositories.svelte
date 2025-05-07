@@ -26,11 +26,11 @@
   import ConnectProject from './ConnectProject.svelte'
   import { githubLanguageColors } from './languageColors'
   import { sendGHServiceRequest } from './utils'
-  import { BackgroundColor } from '@hcengineering/text'
 
   export let integration: WithLookup<GithubIntegration>
   export let projects: Project[] = []
   export let giProjects: GithubProject[] = []
+  export let orphanProjects: GithubProject[] = []
 
   const client = getClient()
 
@@ -235,7 +235,7 @@
                 />
               </div>
             {:else}
-              <ConnectProject {integration} {repository} {projects} />
+              <ConnectProject {integration} {repository} {projects} {orphanProjects} />
             {/if}
           </div>
         </div>

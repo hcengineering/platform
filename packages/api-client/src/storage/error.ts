@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,23 +13,23 @@
 // limitations under the License.
 //
 
-import { MongoClientReference, getMongoClient } from '@hcengineering/mongo'
-import { MongoClient } from 'mongodb'
-
-import config from './config'
-
-const clientRef: MongoClientReference = getMongoClient(config.MongoURI)
-let client: MongoClient | undefined
-export const getDB = (() => {
-  return async () => {
-    if (client === undefined) {
-      client = await clientRef.getClient()
-    }
-
-    return client.db(config.MongoDB)
+export class NetworkError extends Error {
+  constructor (message: string) {
+    super(message)
+    this.name = 'NetworkError'
   }
-})()
+}
 
-export const closeDB: () => Promise<void> = async () => {
-  clientRef.close()
+export class StorageError extends Error {
+  constructor (message: string) {
+    super(message)
+    this.name = 'StorageError'
+  }
+}
+
+export class NotFoundError extends StorageError {
+  constructor (message = 'Not Found') {
+    super(message)
+    this.name = 'NotFoundError'
+  }
 }

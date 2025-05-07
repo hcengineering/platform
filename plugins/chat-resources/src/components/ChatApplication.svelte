@@ -22,7 +22,8 @@
     resolvedLocationStore,
     Location,
     restoreLocation,
-    Component
+    Component,
+    closePanel
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import { getClient } from '@hcengineering/presentation'
@@ -56,14 +57,14 @@
     }
 
     const typeId = getTypeIdFromLocation(loc)
+    const cardId = getCardIdFromLocation(loc)
+
     const type = typeId != null ? await client.findOne(cardPlugin.class.MasterTag, { _id: typeId }) : undefined
 
     if (type != null) {
       selection = { _class: cardPlugin.class.MasterTag, _id: type._id, doc: type }
       return
     }
-
-    const cardId = getCardIdFromLocation(loc)
 
     if (cardId == null || cardId === '') {
       selection = undefined
@@ -84,6 +85,7 @@
 
   function selectCard (event: CustomEvent<Card>): void {
     if (selection?._id === event.detail._id) return
+    closePanel(false)
     const card = event.detail
     selection = { _class: cardPlugin.class.Card, _id: card._id, doc: card }
     navigateToCard(card._id)
@@ -91,6 +93,7 @@
 
   function selectType (event: CustomEvent<MasterTag>): void {
     if (selection?._id === event.detail._id) return
+    closePanel(false)
     const type = event.detail
     selection = { _class: cardPlugin.class.MasterTag, _id: type._id, doc: type }
     navigateToType(type._id)

@@ -13,8 +13,8 @@
 
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import { FindMessagesParams, type Message, NotificationContext, Window } from '@hcengineering/communication-types'
-  import { createMessagesQuery, getCommunicationClient } from '@hcengineering/presentation'
+  import { type Message, NotificationContext, Window } from '@hcengineering/communication-types'
+  import { createMessagesQuery, getCommunicationClient, type MessageQueryParams } from '@hcengineering/presentation'
   import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
   import { MessagesGroup as MessagesGroupPresenter, MessagesLoading } from '@hcengineering/ui-next'
@@ -36,7 +36,6 @@
   const communicationClient = getCommunicationClient()
   const query = createMessagesQuery()
 
-  const loadPageThreshold = 200
   const scrollToNewThreshold = 50
 
   const initialLastView = context?.lastView
@@ -117,7 +116,7 @@
     }
   }
 
-  function getBaseQuery (): FindMessagesParams {
+  function getBaseQuery (): MessageQueryParams {
     if (position === MessagesNavigationAnchors.ConversationStart) {
       return {
         card: card._id,
@@ -136,12 +135,7 @@
       reactions: true,
       order,
       limit,
-      created:
-        unread && initialLastView != null
-          ? {
-              greaterOrEqual: initialLastView
-            }
-          : undefined
+      from: unread && initialLastView != null ? initialLastView : undefined
     }
   }
 
@@ -168,11 +162,11 @@
   function shouldLoadPrevPage (): boolean {
     const topOffset = getTopOffset()
 
-    return topOffset > -1 && topOffset <= loadPageThreshold
+    return topOffset > -1 && topOffset <= 300
   }
 
   function shouldLoadNextPage (): boolean {
-    return getBottomOffset() <= loadPageThreshold
+    return getBottomOffset() <= 200
   }
 
   function loadMore (): void {
@@ -315,13 +309,6 @@
     })
   }
 
-  async function handleReply (event: CustomEvent<Message>): Promise<void> {
-    // const message = event.detail
-    // await replyToThread(message, card)
-    // TODO: implement reply
-    alert('Sorry, replying is not implemented yet.')
-  }
-
   $: void initializeScroll(isLoading, isLoadingBefore, separatorDiv)
 
   function scrollToWithOffset (container: HTMLElement, target: HTMLElement, offset: number): void {
@@ -410,10 +397,9 @@
       messages={group.messages}
       {readonly}
       {separatorDate}
-      on:reply={handleReply}
     />
   {:else}
-    <MessagesGroupPresenter {card} date={group.day} messages={group.messages} {readonly} on:reply={handleReply} />
+    <MessagesGroupPresenter {card} date={group.day} messages={group.messages} {readonly} />
   {/if}
 {/each}
 {#if window !== undefined && window.hasNextPage()}

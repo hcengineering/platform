@@ -15,7 +15,7 @@
     "MonthAt": "{month} 于 {time}",
     "New": "新",
     "Removed": "已删除",
-    "RepliesCount": "{count} 条回复",
+    "RepliesCount": "{count, plural, =0 {无回复} =1 {1 回复} other {# 回复}}",
     "Reply": "回复",
     "Send": "发送",
     "Set": "设置",

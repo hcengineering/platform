@@ -27,7 +27,8 @@
     Label,
     ScrollerBar,
     SelectPopup,
-    showPopup
+    showPopup,
+    tooltip
   } from '@hcengineering/ui'
   import MasterTagSelector from './MasterTagSelector.svelte'
 
@@ -98,8 +99,10 @@
       <div class="tags gap-2">
         {#each activeTags as mixin}
           {@const removable = isRemoveable(mixin._id, activeTags)}
-          <div class="tag no-word-wrap" class:removable>
-            <Label label={mixin.label} />
+          <div class="tag no-word-wrap" class:removable use:tooltip={{ label: mixin.label }}>
+            <span class="overflow-label">
+              <Label label={mixin.label} />
+            </span>
             {#if removable}
               <ButtonIcon icon={IconClose} size="extra-small" kind="tertiary" on:click={() => removeTag(mixin._id)} />
             {/if}
@@ -123,14 +126,14 @@
       padding: 0.25rem 0.5rem;
       height: 1.5rem;
       border: 1px solid var(--theme-content-color);
-
+      max-width: 12.5rem;
+      overflow: hidden;
       border-radius: 6rem;
 
       color: var(--theme-caption-color);
 
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 0.25rem;
 
       &.removable {

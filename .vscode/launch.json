@@ -196,6 +196,7 @@
         "MAIL_URL": "",
         // "DB_NS": "account-2",
         // "WS_LIVENESS_DAYS": "1",
+        // "WORKSPACE_LIMIT_PER_USER": "1",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost"
@@ -886,7 +887,7 @@
         "PORT": "9087",
         "SECRET": "secret",
         "SERVICE_ID": "msg2file-service",
-        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin"
+        "STORAGE_CONFIG": "datalake|http://huly.local:4030"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],

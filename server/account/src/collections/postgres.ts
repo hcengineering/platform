@@ -371,6 +371,7 @@ export class AccountPostgresDbCollection
         a.timezone,
         a.locale,
         a.automatic,
+        a.max_workspaces,
         p.hash,
         p.salt
       FROM ${this.getTableName()} as a
@@ -851,7 +852,8 @@ export class PostgresAccountDB implements AccountDB {
       this.getV4Migration1(),
       this.getV5Migration(),
       this.getV6Migration(),
-      this.getV7Migration()
+      this.getV7Migration(),
+      this.getV8Migration()
     ]
   }
 
@@ -1142,6 +1144,16 @@ export class PostgresAccountDB implements AccountDB {
       `
       ALTER TABLE ${this.ns}.social_id
       ADD COLUMN IF NOT EXISTS display_value TEXT;
+      `
+    ]
+  }
+
+  private getV8Migration (): [string, string] {
+    return [
+      'account_db_v8_add_account_max_workspaces',
+      `
+      ALTER TABLE ${this.ns}.account
+      ADD COLUMN IF NOT EXISTS max_workspaces SMALLINT;
       `
     ]
   }

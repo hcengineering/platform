@@ -69,6 +69,7 @@ import {
   errorToObj,
   getCreateStatus,
   getType,
+  guessStatus,
   isGHWriteAllowed
 } from './utils'
 
@@ -1075,6 +1076,51 @@ export abstract class IssueSyncManagerBase {
     return issueUpdate
   }
 
+  async performDocumentExternalSync (
+    ctx: MeasureContext,
+    info: DocSyncInfo,
+    previousExternal: IssueExternalData,
+    issueExternal: IssueExternalData,
+    derivedClient: TxOperations
+  ): Promise<void> {
+    // TODO: Since Github integeration need to be re-written to use cards, so this is quick fix to not loose data in case of external sync while service was offline.
+
+    const update: IssueUpdate = {}
+    const du: DocumentUpdate<DocSyncInfo> = {}
+    const account = (await this.provider.getAccount(issueExternal.author)) ?? core.account.System
+
+    const container = await this.provider.getContainer(info.space)
+    if (container == null) {
+      return
+    }
+    const type = await this.provider.getTaskTypeOf(container.project.type, tracker.class.Issue)
+    const statuses = await this.provider.getStatuses(type?._id)
+
+    if (previousExternal.state !== issueExternal.state) {
+      update.status = (
+        await guessStatus({ state: issueExternal.state, stateReason: issueExternal.stateReason }, statuses)
+      )._id
+    }
+    if (previousExternal.title !== issueExternal.title) {
+      update.title = issueExternal.title
+    }
+    if (previousExternal.body !== issueExternal.body) {
+      update.description = await this.provider.getMarkupSafe(
+        container.container,
+        issueExternal.body,
+        this.stripGuestLink
+      )
+      du.markdown = await this.provider.getMarkdown(update.description)
+    }
+    if (!deepEqual(previousExternal.assignees, issueExternal.assignees)) {
+      const assignees = await this.getAssignees(issueExternal)
+      update.assignee = assignees?.[0] ?? null
+    }
+    if (Object.keys(update).length > 0) {
+      await this.handleUpdate(issueExternal, derivedClient, update, account, container.project, false)
+    }
+  }
+
   async syncIssues (
     _class: Ref<Class<Doc>>,
     repo: GithubIntegrationRepository,
@@ -1089,7 +1135,7 @@ export abstract class IssueSyncManagerBase {
       syncDocs ??
       (await this.client.findAll<DocSyncInfo>(github.class.DocSyncInfo, {
         space: repo.githubProject,
-        repository: repo._id,
+        // repository: repo._id, // If we skip repository, we will find orphaned issues, so we could connect them on.
         objectClass: _class,
         url: { $in: issues.map((it) => (it.url ?? '').toLowerCase()) }
       }))
@@ -1123,9 +1169,19 @@ export abstract class IssueSyncManagerBase {
           if (syncDocs !== undefined) {
             syncDocs = syncDocs.filter((it) => it._id !== existing._id)
           }
-          const externalEqual = deepEqual(existing.external, issue)
+          const externalEqual = deepEqual(existing.external, issue) && existing.repository === repo._id
           if (!externalEqual || existing.externalVersion !== githubExternalSyncVersion) {
-            this.ctx.info('Update sync doc', { url: issue.url, workspace: this.provider.getWorkspaceId() })
+            this.ctx.info('Update sync doc(extarnal changes)', {
+              url: issue.url,
+              workspace: this.provider.getWorkspaceId()
+            })
+
+            if (existing.needSync === githubSyncVersion || existing.repository !== repo._id) {
+              // Sync external if and only if no changes from platform or we do resync from github.
+              // We need to apply changes from Github, while service was offline.
+              await this.performDocumentExternalSync(this.ctx, existing, existing.external, issue, derivedClient)
+            }
+
             await ops.diffUpdate(
               existing,
               {
@@ -1134,6 +1190,7 @@ export abstract class IssueSyncManagerBase {
                 externalVersion: githubExternalSyncVersion,
                 derivedVersion: '', // Clear derived state to recalculate it.
                 externalVersionSince: '',
+                repository: repo._id,
                 lastModified: new Date(issue.updatedAt).getTime()
               },
               Date.now()

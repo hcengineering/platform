@@ -96,7 +96,8 @@ import {
   type ObjectTooltip,
   type AttrPresenter,
   type AttributeCategory,
-  type LinkIdProvider
+  type LinkIdProvider,
+  type CustomObjectLinkProvider
 } from '@hcengineering/view'
 
 import view from './plugin'
@@ -390,6 +391,12 @@ export class TAttrPresenter extends TDoc implements AttrPresenter {
   component!: AnyComponent
 }
 
+@Mixin(view.mixin.CustomObjectLinkProvider, core.class.Class)
+export class TCustomObjectLinkProvider extends TClass implements CustomObjectLinkProvider {
+  match!: Resource<(doc: Doc) => boolean>
+  encode!: Resource<(doc: Doc) => Location>
+}
+
 export type ActionTemplate = Partial<Data<Action>>
 
 /**
@@ -478,7 +485,8 @@ export function createModel (builder: Builder): void {
     TObjectTooltip,
     TObjectIcon,
     TAttrPresenter,
-    TLinkIdProvider
+    TLinkIdProvider,
+    TCustomObjectLinkProvider
   )
 
   classPresenter(

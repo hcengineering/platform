@@ -21,6 +21,7 @@ interface Config {
   AccountsURL: string
   ServiceID: string
   Secret: string
+  KvsUrl: string
   Credentials: string
   WATCH_URL: string
   InitLimit: number
@@ -37,7 +38,8 @@ const envMap: { [key in keyof Config]: string } = {
   Secret: 'SECRET',
   Credentials: 'Credentials',
   WATCH_URL: 'WATCH_URL',
-  InitLimit: 'INIT_LIMIT'
+  InitLimit: 'INIT_LIMIT',
+  KvsUrl: 'KVS_URL'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -52,7 +54,8 @@ const config: Config = (() => {
     Secret: process.env[envMap.Secret],
     Credentials: process.env[envMap.Credentials],
     InitLimit: parseNumber(process.env[envMap.InitLimit]) ?? 50,
-    WATCH_URL: process.env[envMap.WATCH_URL]
+    WATCH_URL: process.env[envMap.WATCH_URL],
+    KvsUrl: process.env[envMap.KvsUrl]
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)
