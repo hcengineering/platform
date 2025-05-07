@@ -18,14 +18,14 @@ import { Node, mergeAttributes } from '@tiptap/core'
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     emoji: {
-      insertEmoji: (emoji: string, kind: 'unicode' | 'custom', url?: string) => ReturnType
+      insertEmoji: (emoji: string, kind: 'unicode' | 'image', url?: string) => ReturnType
     }
   }
 }
 
 export interface EmojiNodeOptions {
   emoji: string
-  kind: 'unicode' | 'custom'
+  kind: 'unicode' | 'image'
   url?: string
 }
 
@@ -53,7 +53,7 @@ export const EmojiNode = Node.create<EmojiNodeOptions>({
   addCommands () {
     return {
       insertEmoji:
-        (emoji: string, kind: 'unicode' | 'custom', url?: string) =>
+        (emoji: string, kind: 'unicode' | 'image', url?: string) =>
           ({ commands }) => {
             return commands.insertContent({
               type: this.name,
@@ -72,7 +72,7 @@ export const EmojiNode = Node.create<EmojiNodeOptions>({
   },
 
   renderHTML ({ node, HTMLAttributes }) {
-    if (node.attrs.kind === 'custom') {
+    if (node.attrs.kind === 'image') {
       return [
         'span',
         mergeAttributes(

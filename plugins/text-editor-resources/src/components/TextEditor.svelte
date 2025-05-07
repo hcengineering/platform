@@ -97,7 +97,7 @@
   }
 
   export function insertEmoji (text: string, url?: string): void {
-    editor?.commands.insertEmoji(text, url === undefined ? 'unicode' : 'custom', url)
+    editor?.commands.insertEmoji(text, url === undefined ? 'unicode' : 'image', url)
   }
 
   export function insertText (text: string): void {

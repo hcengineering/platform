@@ -81,7 +81,7 @@
     {node.text}
   {:else if node.type === MarkupNodeType.emoji}
     <span class="emoji" class:emojiOnly={single}>
-      {#if node.attrs?.kind === 'custom'}
+      {#if node.attrs?.kind === 'image'}
         {@const src = toString(attrs.url)}
         {@const alt = toString(attrs.emoji)}
         <img {src} {alt} />

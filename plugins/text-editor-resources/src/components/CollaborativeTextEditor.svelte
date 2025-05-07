@@ -179,7 +179,7 @@
       editor?.commands.insertContent(text)
     },
     insertEmoji: (text: string, url?: string) => {
-      editor?.commands.insertEmoji(text, url === undefined ? 'unicode' : 'custom')
+      editor?.commands.insertEmoji(text, url === undefined ? 'unicode' : 'image')
     },
     insertMarkup: (markup) => {
       editor?.commands.insertContent(markupToJSON(markup))

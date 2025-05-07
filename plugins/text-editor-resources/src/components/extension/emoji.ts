@@ -53,7 +53,7 @@ function handleEmoji (
         type: 'emoji',
         attrs: {
           emoji: emoji.shortcode,
-          kind: 'custom',
+          kind: 'image',
           url: emoji.url
         }
       }
