@@ -24,6 +24,7 @@
   export let labelIntl: IntlString | undefined = undefined
   export let icon: IconComponent
   export let selected: boolean = false
+  export let notify: boolean = false
   export let notificationsCount: number = 0
   export let paddingLeft: string | undefined = undefined
 </script>
@@ -39,7 +40,7 @@
       <Label label={labelIntl} />
     {/if}
   </span>
-  {#if notificationsCount > 0}
+  {#if notify && notificationsCount > 0}
     <span class="nav-item__notifications-count">
       {#if notificationsCount > 9}
         9+
@@ -47,6 +48,8 @@
         {notificationsCount}
       {/if}
     </span>
+    {:else if notify}
+    <span class="nav-item__notifications-count small"/>
   {/if}
 </button>
 
@@ -103,8 +106,15 @@
     border-radius: 50%;
     padding: 0.25rem;
     font-size: 0.75rem;
-    min-width: 1.325rem;
+    min-width: 1.5rem;
     align-items: center;
     justify-content: center;
+
+    &.small {
+      min-width: 0.5rem;
+      min-height: 0.5rem;
+      height: 0.5rem;
+      width: 0.5rem;
+    }
   }
 </style>
