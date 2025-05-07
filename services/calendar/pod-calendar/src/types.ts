@@ -42,25 +42,7 @@ export interface EventWatch extends WatchBase {
 
 export type Watch = CalendarsWatch | EventWatch
 
-export interface DummyWatch {
-  timer: NodeJS.Timeout
-  calendarId: string
-}
-
 export type Token = User & Credentials & { email: GoogleEmail }
-
-export interface CalendarHistory {
-  userId: PersonId
-  workspace: string
-  historyId: string
-}
-
-export interface EventHistory {
-  calendarId: string
-  userId: PersonId
-  workspace: string
-  historyId: string
-}
 
 export interface SyncHistory {
   workspace: string

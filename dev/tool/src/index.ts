@@ -97,6 +97,7 @@ import { performGithubAccountMigrations } from './github'
 import { migrateCreatedModifiedBy, ensureGlobalPersonsForLocalAccounts, moveAccountDbFromMongoToPG } from './db'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 import { performGmailAccountMigrations } from './gmail'
+import { performCalendarAccountMigrations } from './calendar'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -2443,6 +2444,21 @@ export function devTool (
 
       const kvsUrl = getKvsUrl()
       await performGmailAccountMigrations(_client.db(cmd.db), cmd.region ?? null, kvsUrl)
+      await _client.close()
+      client.close()
+    })
+
+  program
+    .command('migrate-calendar-integrations-data')
+    .option('--db <db>', 'DB name', 'calendar-service')
+    .option('--region <region>', 'DB region')
+    .action(async (cmd: { db: string, region?: string }) => {
+      const mongodbUri = getMongoDBUrl()
+      const client = getMongoClient(mongodbUri)
+      const _client = await client.getClient()
+
+      const kvsUrl = getKvsUrl()
+      await performCalendarAccountMigrations(_client.db(cmd.db), cmd.region ?? null, kvsUrl)
       await _client.close()
       client.close()
     })
