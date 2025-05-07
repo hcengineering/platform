@@ -676,6 +676,29 @@ jobs:
           echo Pushing love-agent release of tag ${{ github.ref }}
           cd ./services/ai-bot/love-agent
           pnpm docker:push
+
+  hulykvs-build:
+    name: Build Hulykvs
+    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+    runs-on: ubuntu-latest
+    env: 
+      source_repo: https://github.com/hcengineering/hulykvs.git
+      source_ref: v0.1.0
+      docker_user: hardcoreeng
+      docker_password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      docker_image: "hardcoreeng/hulykvs:${{ github.ref_name }}"
+
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.docker_user }}
+          password: ${{ env.docker_password }}
+      - name: Clone
+        run: git clone -q --single-branch --branch ${{ env.source_ref }} ${{ env.source_repo }} .
+      - name: Build & Push
+        run: cd hulykvs_server && docker build -t ${{ env.docker_image }} . && docker push ${{ env.docker_image }}
+
   dist-build:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
     if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
