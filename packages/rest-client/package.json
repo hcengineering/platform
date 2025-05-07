@@ -29,7 +29,7 @@
     "@hcengineering/communication-types": "workspace:*",
     "@hcengineering/communication-shared": "workspace:*",
     "@hcengineering/communication-sdk-types": "workspace:*",
-    "@hcengineering/core": "^0.7.28",
+    "@hcengineering/core": "^0.7.88",
     "snappyjs": "^0.7.0"
   },
   "repository": {

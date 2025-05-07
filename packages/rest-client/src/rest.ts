@@ -102,7 +102,9 @@ class RestClientImpl implements RestClient {
     creator: SocialID,
     type: MessageType,
     data?: MessageData,
-    created?: Date
+    created?: Date,
+    externalId?: string,
+    id?: MessageID
   ): Promise<CreateMessageResult> {
     const result = await this.event({
       type: MessageRequestEventType.CreateMessage,
@@ -112,7 +114,9 @@ class RestClientImpl implements RestClient {
       content,
       creator,
       data,
-      created
+      created,
+      externalId,
+      id
     })
     return result as CreateMessageResult
   }
@@ -130,8 +134,8 @@ class RestClientImpl implements RestClient {
       messageCreated,
       card,
       message,
-      content,
-      creator
+      creator,
+      data: { content }
     })
   }
 

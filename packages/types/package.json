@@ -25,9 +25,9 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.28",
-    "@hcengineering/card": "^0.7.28",
-    "@hcengineering/tags": "^0.7.28"
+    "@hcengineering/core": "^0.7.88",
+    "@hcengineering/card": "^0.7.88",
+    "@hcengineering/tags": "^0.7.88"
   },
   "repository": {
     "type": "git",

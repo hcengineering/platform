@@ -39,7 +39,8 @@ import type {
   Label,
   FindLabelsParams,
   LabelID,
-  CardType
+  CardType,
+  PatchData
 } from '@hcengineering/communication-types'
 
 export interface DbAdapter {
@@ -50,7 +51,8 @@ export interface DbAdapter {
     creator: SocialID,
     created: Date,
     data?: MessageData,
-    externalId?: string
+    externalId?: string,
+    id?: MessageID
   ): Promise<MessageID>
   removeMessages(card: CardID, ids: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]>
 
@@ -59,7 +61,7 @@ export interface DbAdapter {
     message: MessageID,
     messageCreated: Date,
     type: PatchType,
-    content: RichText,
+    data: PatchData,
     creator: SocialID,
     created: Date
   ): Promise<void>
@@ -96,7 +98,14 @@ export interface DbAdapter {
   ): Promise<void>
   removeFile(card: CardID, message: MessageID, blobId: BlobID): Promise<void>
 
-  createThread(card: CardID, message: MessageID, messageCreated: Date, thread: CardID, created: Date): Promise<void>
+  createThread(
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    thread: CardID,
+    threadType: CardType,
+    created: Date
+  ): Promise<void>
   updateThread(thread: CardID, op: 'increment' | 'decrement', lastReply?: Date): Promise<void>
 
   findMessages(params: FindMessagesParams): Promise<Message[]>

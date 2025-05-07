@@ -25,7 +25,9 @@ import type {
   WorkspaceID,
   Notification,
   FindLabelsParams,
-  Label
+  Label,
+  FindCollaboratorsParams,
+  Collaborator
 } from '@hcengineering/communication-types'
 import { createDbAdapter } from '@hcengineering/communication-cockroach'
 import type { EventResult, RequestEvent, ServerApi, SessionData } from '@hcengineering/communication-sdk-types'
@@ -87,6 +89,10 @@ export class Api implements ServerApi {
 
   async findLabels(session: SessionData, params: FindLabelsParams): Promise<Label[]> {
     return await this.middlewares.findLabels(session, params)
+  }
+
+  async findCollaborators(session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
+    return await this.middlewares.findCollaborators(session, params)
   }
 
   async unsubscribeQuery(session: SessionData, id: number): Promise<void> {

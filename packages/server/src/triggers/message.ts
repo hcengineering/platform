@@ -25,14 +25,23 @@ import {
   NotificationRequestEventType,
   type PatchCreatedEvent,
   type RequestEvent,
+  type ThreadCreatedEvent,
   type UpdateThreadEvent
 } from '@hcengineering/communication-sdk-types'
-import { type CardID, PatchType, type File } from '@hcengineering/communication-types'
+import {
+  type AddFilePatchData,
+  type CardID,
+  type Message,
+  MessageType,
+  PatchType
+} from '@hcengineering/communication-types'
 import { generateToken } from '@hcengineering/server-token'
 import { concatLink, systemAccountUuid } from '@hcengineering/core'
+import { generateMessageId } from '@hcengineering/communication-shared'
 
 import type { TriggerCtx, TriggerFn, Triggers } from '../types'
 import { findAccount } from '../utils'
+import { findMessageInFiles } from './utils'
 
 async function onMessagesGroupCreated(ctx: TriggerCtx, event: MessagesGroupCreatedEvent): Promise<RequestEvent[]> {
   ctx.registeredCards.delete(event.group.card)
@@ -49,11 +58,11 @@ async function onMessagesRemoved(ctx: TriggerCtx, event: MessagesRemovedEvent): 
   return event.messages.flatMap(() => {
     const patchEvent: CreatePatchEvent = {
       type: MessageRequestEventType.CreatePatch,
-      patchType: PatchType.removeReply,
+      patchType: PatchType.updateThread,
       card: thread.card,
       message: thread.message,
       messageCreated: thread.messageCreated,
-      content: thread.thread,
+      data: { thread: thread.thread, threadType: thread.threadType, replies: 'decrement' },
       creator: socialId
     }
     const threadEvent: UpdateThreadEvent = {
@@ -62,7 +71,7 @@ async function onMessagesRemoved(ctx: TriggerCtx, event: MessagesRemovedEvent): 
       replies: 'decrement'
     }
 
-    return [patchEvent, threadEvent]
+    return [threadEvent]
   })
 }
 
@@ -71,7 +80,7 @@ async function onFileCreated(ctx: TriggerCtx, event: FileCreatedEvent): Promise<
   if (message !== undefined) return []
 
   const { file } = event
-  const patchContent: Omit<File, 'card' | 'message' | 'created' | 'creator' | 'messageCreated'> = {
+  const patchData: AddFilePatchData = {
     blobId: file.blobId,
     type: file.type,
     filename: file.filename,
@@ -85,7 +94,7 @@ async function onFileCreated(ctx: TriggerCtx, event: FileCreatedEvent): Promise<
       card: event.card,
       message: file.message,
       messageCreated: file.messageCreated,
-      content: JSON.stringify(patchContent),
+      data: patchData,
       creator: file.creator
     }
   ]
@@ -103,7 +112,7 @@ async function onFileRemoved(ctx: TriggerCtx, event: FileRemovedEvent): Promise<
       card: event.card,
       message: event.message,
       messageCreated: event.messageCreated,
-      content: JSON.stringify({ blobId }),
+      data: { blobId },
       creator: event.creator
     }
   ]
@@ -157,6 +166,7 @@ async function addCollaborators(ctx: TriggerCtx, event: MessageCreatedEvent): Pr
 }
 
 async function addThreadReply(ctx: TriggerCtx, event: MessageCreatedEvent): Promise<RequestEvent[]> {
+  if (event.message.type !== MessageType.Message || ctx.derived) return []
   const { message } = event
   const thread = await ctx.db.findThread(message.card)
   if (thread === undefined) return []
@@ -164,11 +174,11 @@ async function addThreadReply(ctx: TriggerCtx, event: MessageCreatedEvent): Prom
   return [
     {
       type: MessageRequestEventType.CreatePatch,
-      patchType: PatchType.addReply,
+      patchType: PatchType.updateThread,
       card: thread.card,
       message: thread.message,
       messageCreated: thread.messageCreated,
-      content: thread.thread,
+      data: { thread: thread.thread, threadType: thread.threadType, replies: 'increment' },
       creator: message.creator
     },
     {
@@ -180,6 +190,81 @@ async function addThreadReply(ctx: TriggerCtx, event: MessageCreatedEvent): Prom
   ]
 }
 
+async function onThreadCreated(ctx: TriggerCtx, event: ThreadCreatedEvent): Promise<RequestEvent[]> {
+  let message: Message | undefined = (
+    await ctx.db.findMessages({
+      card: event.thread.card,
+      id: event.thread.message,
+      limit: 1,
+      files: true,
+      reactions: true
+    })
+  )[0]
+
+  const result: RequestEvent[] = []
+
+  if (message === undefined) {
+    message = await findMessageInFiles(ctx, event.thread.card, event.thread.message, event.thread.messageCreated)
+
+    if (message !== undefined) {
+      result.push({
+        type: MessageRequestEventType.CreatePatch,
+        patchType: PatchType.updateThread,
+        card: event.thread.card,
+        message: event.thread.message,
+        messageCreated: event.thread.messageCreated,
+        data: { thread: event.thread.thread, threadType: event.thread.threadType },
+        creator: message.creator
+      })
+    }
+  }
+
+  if (message === undefined) {
+    return []
+  }
+
+  const messageId = generateMessageId()
+  result.push({
+    type: MessageRequestEventType.CreateMessage,
+    messageType: message.type,
+    card: event.thread.thread,
+    cardType: event.thread.threadType,
+    content: message.content,
+    creator: message.creator,
+    data: message.data,
+    externalId: message.externalId,
+    created: message.created,
+    id: messageId
+  })
+
+  for (const file of message.files) {
+    result.push({
+      type: MessageRequestEventType.CreateFile,
+      card: event.thread.thread,
+      message: messageId,
+      messageCreated: message.created,
+      blobId: file.blobId,
+      fileType: file.type,
+      filename: file.filename,
+      size: file.size,
+      creator: file.creator
+    })
+  }
+
+  for (const reaction of message.reactions) {
+    result.push({
+      type: MessageRequestEventType.CreateReaction,
+      card: event.thread.thread,
+      message: messageId,
+      messageCreated: message.created,
+      reaction: reaction.reaction,
+      creator: reaction.creator
+    })
+  }
+
+  return result
+}
+
 const triggers: Triggers = [
   ['add_collaborators_on_message_created', MessageResponseEventType.MessageCreated, addCollaborators as TriggerFn],
   ['add_thread_reply_on_message_created', MessageResponseEventType.MessageCreated, addThreadReply as TriggerFn],
@@ -188,7 +273,8 @@ const triggers: Triggers = [
   ['on_messages_group_created', MessageResponseEventType.MessagesGroupCreated, onMessagesGroupCreated as TriggerFn],
   ['remove_reply_on_messages_removed', MessageResponseEventType.MessagesRemoved, onMessagesRemoved as TriggerFn],
   ['on_file_created', MessageResponseEventType.FileCreated, onFileCreated as TriggerFn],
-  ['on_file_removed', MessageResponseEventType.FileRemoved, onFileRemoved as TriggerFn]
+  ['on_file_removed', MessageResponseEventType.FileRemoved, onFileRemoved as TriggerFn],
+  ['on_thread_created', MessageResponseEventType.ThreadCreated, onThreadCreated as TriggerFn]
 ]
 
 export default triggers

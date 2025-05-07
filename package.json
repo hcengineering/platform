@@ -20,7 +20,7 @@
     "eslint-plugin-prettier": "^5.4.0",
     "prettier": "^3.5.3",
     "typescript-eslint": "^8.32.0",
-    "turbo": "^2.5.2"
+    "turbo": "^2.5.3"
   },
   "packageManager": "bun@1.2.9"
 }

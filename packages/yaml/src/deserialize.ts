@@ -29,6 +29,7 @@ export function deserializeMessage(message: Message): FileMessage {
       message.thread != null
         ? {
             thread: message.thread.thread,
+            threadType: message.thread.threadType,
             repliesCount: message.thread.repliesCount,
             lastReply: message.thread.lastReply
           }

@@ -77,6 +77,7 @@ export function parseYaml(data: string): ParsedFile {
             message: message.id,
             messageCreated: message.created,
             thread: message.thread.thread,
+            threadType: message.thread.threadType,
             repliesCount: message.thread.repliesCount,
             lastReply: message.thread.lastReply
           }

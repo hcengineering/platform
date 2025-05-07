@@ -54,6 +54,18 @@ export interface MessageDb {
   external_id?: string
 }
 
+export const messageSchema: Record<keyof MessageDb, string> = {
+  id: 'int8',
+  workspace_id: 'uuid',
+  card_id: 'varchar',
+  content: 'text',
+  creator: 'varchar',
+  created: 'timestamptz',
+  type: 'varchar',
+  data: 'jsonb',
+  external_id: 'varchar'
+}
+
 export interface MessagesGroupDb {
   workspace_id: WorkspaceID
   card_id: CardID
@@ -69,7 +81,7 @@ export interface PatchDb {
   card_id: CardID
   message_id: MessageID
   type: PatchType
-  content: RichText
+  data: Record<string, any>
   creator: SocialID
   created: Date
   message_created: Date
@@ -103,6 +115,7 @@ export interface ThreadDb {
   message_id: MessageID
   message_created: Date
   thread_id: CardID
+  thread_type: CardType
   replies_count: number
   last_reply: Date
 }

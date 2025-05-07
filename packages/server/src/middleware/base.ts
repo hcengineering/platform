@@ -29,7 +29,9 @@ import type {
   NotificationContext,
   Notification,
   FindLabelsParams,
-  Label
+  Label,
+  FindCollaboratorsParams,
+  Collaborator
 } from '@hcengineering/communication-types'
 
 import type { Middleware, MiddlewareContext, QueryId } from '../types'
@@ -72,12 +74,16 @@ export class BaseMiddleware implements Middleware {
     return await this.provideFindLabels(session, params, queryId)
   }
 
+  async findCollaborators(session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
+    return await this.provideFindCollaborators(session, params)
+  }
+
   async event(session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
     return await this.provideEvent(session, event, derived)
   }
 
-  async response(session: SessionData, event: ResponseEvent): Promise<void> {
-    return await this.provideResponse(session, event)
+  async response(session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
+    return await this.provideResponse(session, event, derived)
   }
 
   unsubscribeQuery(session: SessionData, queryId: number): void {
@@ -151,9 +157,19 @@ export class BaseMiddleware implements Middleware {
     return []
   }
 
-  protected async provideResponse(session: SessionData, event: ResponseEvent): Promise<void> {
+  protected async provideFindCollaborators(
+    session: SessionData,
+    params: FindCollaboratorsParams
+  ): Promise<Collaborator[]> {
     if (this.next !== undefined) {
-      return this.next.response(session, event)
+      return this.next.findCollaborators(session, params)
+    }
+    return []
+  }
+
+  protected async provideResponse(session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
+    if (this.next !== undefined) {
+      return this.next.response(session, event, derived)
     }
   }
 }

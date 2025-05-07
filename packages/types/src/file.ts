@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { BlobID, CardID, RichText, SocialID } from './core'
+import type { BlobID, CardID, CardType, RichText, SocialID } from './core'
 import type { Message, MessageID, MessageType, MessageData } from './message'
 
 export interface FileMetadata {
@@ -54,6 +54,7 @@ export interface FileReaction {
 
 export interface FileThread {
   thread: CardID
+  threadType: CardType
   repliesCount: number
   lastReply: Date
 }

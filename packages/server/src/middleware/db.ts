@@ -13,19 +13,21 @@
 // limitations under the License.
 //
 
-import type {
-  FindLabelsParams,
-  FindMessagesGroupsParams,
-  FindMessagesParams,
-  FindNotificationContextParams,
-  FindNotificationsParams,
-  Label,
-  Message,
-  MessagesGroup,
-  Notification,
-  NotificationContext,
-  Patch,
-  Reaction
+import {
+  type Collaborator,
+  type FindCollaboratorsParams,
+  type FindLabelsParams,
+  type FindMessagesGroupsParams,
+  type FindMessagesParams,
+  type FindNotificationContextParams,
+  type FindNotificationsParams,
+  type Label,
+  type Message,
+  type MessagesGroup,
+  type Notification,
+  type NotificationContext,
+  type Patch,
+  type Reaction
 } from '@hcengineering/communication-types'
 import {
   type AddCollaboratorsEvent,
@@ -117,10 +119,14 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     return await this.db.findLabels(params)
   }
 
-  async event(session: SessionData, event: RequestEvent): Promise<EventResult> {
+  async findCollaborators(_: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
+    return await this.db.findCollaborators(params)
+  }
+
+  async event(session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
     const result = await this.processEvent(session, event)
     if (result.responseEvent) {
-      void this.context.head?.response(session, result.responseEvent)
+      void this.context.head?.response(session, result.responseEvent, derived)
     }
 
     return result.result ?? {}
@@ -220,7 +226,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       event.creator,
       created,
       event.data,
-      event.externalId
+      event.externalId,
+      event.id
     )
     const message: Message = {
       id,
@@ -257,19 +264,19 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       event.message,
       event.messageCreated,
       event.patchType,
-      event.content,
+      event.data,
       event.creator,
       created
     )
 
-    const patch: Patch = {
+    const patch = {
       type: event.patchType,
       messageCreated: event.messageCreated,
       message: event.message,
-      content: event.content,
+      data: event.data,
       creator: event.creator,
       created
-    }
+    } as Patch
     const responseEvent: PatchCreatedEvent = {
       _id: event._id,
       type: MessageResponseEventType.PatchCreated,
@@ -505,13 +512,14 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
 
   private async createThread(event: CreateThreadEvent): Promise<Result> {
     const date = new Date()
-    await this.db.createThread(event.card, event.message, event.messageCreated, event.thread, date)
+    await this.db.createThread(event.card, event.message, event.messageCreated, event.thread, event.threadType, date)
     const responseEvent: ThreadCreatedEvent = {
       _id: event._id,
       type: MessageResponseEventType.ThreadCreated,
       thread: {
         card: event.card,
         thread: event.thread,
+        threadType: event.threadType,
         message: event.message,
         messageCreated: event.messageCreated,
         repliesCount: 0,

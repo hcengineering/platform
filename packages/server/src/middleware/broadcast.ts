@@ -118,7 +118,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     data.contextQueries.delete(queryId)
   }
 
-  async response(session: SessionData, event: ResponseEvent): Promise<void> {
+  async response(session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
     const sessionIds: string[] = []
     for (const [sessionId, session] of this.dataBySessionId.entries()) {
       if (this.match(event, session)) {
@@ -133,7 +133,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
         this.context.ctx.error('Failed to broadcast event', { error: e })
       }
     }
-    await this.provideResponse(session, event)
+    await this.provideResponse(session, event, derived)
   }
 
   closeSession(sessionId: string): void {

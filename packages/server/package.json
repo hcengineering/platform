@@ -24,13 +24,14 @@
     "@types/ws": "^8.5.13"
   },
   "dependencies": {
-    "@hcengineering/account-client": "^0.7.28",
+    "@hcengineering/account-client": "^0.7.88",
     "@hcengineering/communication-cockroach": "workspace:*",
     "@hcengineering/communication-sdk-types": "workspace:*",
     "@hcengineering/communication-types": "workspace:*",
-    "@hcengineering/core": "^0.7.28",
-    "@hcengineering/server-token": "^0.7.28",
-    "@hcengineering/platform": "^0.7.28",
+    "@hcengineering/communication-yaml": "workspace:*",
+    "@hcengineering/core": "^0.7.88",
+    "@hcengineering/server-token": "^0.7.88",
+    "@hcengineering/platform": "^0.7.88",
     "zod": "^3.24.2"
   },
   "peerDependencies": {

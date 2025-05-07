@@ -22,6 +22,8 @@ import {
   NotificationRequestEventType
 } from '@hcengineering/communication-sdk-types'
 import type {
+  Collaborator,
+  FindCollaboratorsParams,
   FindLabelsParams,
   FindMessagesGroupsParams,
   FindMessagesParams,
@@ -88,6 +90,11 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
   async findLabels(session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
     this.validate(params, FindLabelsParamsSchema)
     return await this.provideFindLabels(session, params, queryId)
+  }
+
+  async findCollaborators(session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
+    this.validate(params, FindCollaboratorsParamsSchema)
+    return await this.provideFindCollaborators(session, params)
   }
 
   async event(session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
@@ -165,6 +172,7 @@ const CardType = z.string()
 const ContextID = z.string()
 const LabelID = z.string()
 const MessageData = z.any()
+const PatchData = z.any()
 const MessageID = z.string()
 const MessageType = z.string()
 const MessagesGroup = z.any()
@@ -233,6 +241,10 @@ const FindLabelsParamsSchema = FindParamsSchema.extend({
   account: AccountID.optional()
 }).strict()
 
+const FindCollaboratorsParamsSchema = FindParamsSchema.extend({
+  card: CardID.optional(),
+  account: z.union([AccountID, z.array(AccountID)]).optional()
+}).strict()
 //Events
 
 const BaseRequestEventSchema = z
@@ -267,7 +279,8 @@ const CreateMessageEventSchema = BaseRequestEventSchema.extend({
   creator: SocialID,
   data: MessageData.optional(),
   externalId: z.string().optional(),
-  created: Date.optional()
+  created: Date.optional(),
+  id: MessageID.optional()
 }).strict()
 
 const RemoveMessagesEventSchema = BaseRequestEventSchema.extend({
@@ -282,7 +295,7 @@ const CreatePatchEventSchema = BaseRequestEventSchema.extend({
   card: CardID,
   message: MessageID,
   messageCreated: Date,
-  content: RichText,
+  data: PatchData,
   creator: SocialID
 }).strict()
 
@@ -329,7 +342,8 @@ const CreateThreadEventSchema = BaseRequestEventSchema.extend({
   card: CardID,
   message: MessageID,
   messageCreated: Date,
-  thread: CardID
+  thread: CardID,
+  threadType: CardType
 }).strict()
 
 const UpdateThreadEventSchema = BaseRequestEventSchema.extend({

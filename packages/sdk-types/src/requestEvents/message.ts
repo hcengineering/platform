@@ -23,7 +23,8 @@ import type {
   PatchType,
   MessageType,
   MessageData,
-  CardType
+  CardType,
+  PatchData
 } from '@hcengineering/communication-types'
 
 import type { BaseRequestEvent } from './common'
@@ -70,6 +71,7 @@ export interface CreateMessageEvent extends BaseRequestEvent {
   data?: MessageData
   externalId?: string
   created?: Date
+  id?: MessageID
 }
 
 export interface RemoveMessagesEvent extends BaseRequestEvent {
@@ -84,7 +86,7 @@ export interface CreatePatchEvent extends BaseRequestEvent {
   card: CardID
   message: MessageID
   messageCreated: Date
-  content: RichText
+  data: PatchData
   creator: SocialID
 }
 
@@ -133,6 +135,7 @@ export interface CreateThreadEvent extends BaseRequestEvent {
   message: MessageID
   messageCreated: Date
   thread: CardID
+  threadType: CardType
 }
 
 export interface UpdateThreadEvent extends BaseRequestEvent {

@@ -23,7 +23,9 @@ import type {
   NotificationContext,
   Notification,
   FindLabelsParams,
-  Label
+  Label,
+  FindCollaboratorsParams,
+  Collaborator
 } from '@hcengineering/communication-types'
 import type { Account } from '@hcengineering/core'
 
@@ -49,6 +51,7 @@ export interface ServerApi {
   ): Promise<Notification[]>
 
   findLabels(session: SessionData, params: FindLabelsParams): Promise<Label[]>
+  findCollaborators(session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]>
 
   event(session: SessionData, event: RequestEvent): Promise<EventResult>
 

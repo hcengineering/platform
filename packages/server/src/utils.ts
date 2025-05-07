@@ -16,6 +16,7 @@
 import type { AccountID, SocialID } from '@hcengineering/communication-types'
 import { generateToken } from '@hcengineering/server-token'
 import { systemAccountUuid } from '@hcengineering/core'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 
 import type { TriggerCtx } from './types'
 
@@ -28,47 +29,11 @@ export async function findAccount(ctx: TriggerCtx, socialString: SocialID): Prom
   if (url === '') return undefined
 
   const token = generateToken(systemAccountUuid)
-  // const account = getAccountClient(ctx.metadata.accountsUrl, token)
+  const account = getAccountClient(ctx.metadata.accountsUrl, token)
 
   try {
-    //TODO: FIXME
-    return await fetchAccount(socialString, url, token)
+    return (await account.findPersonBySocialId(socialString, true)) as AccountID | undefined
   } catch (err: any) {
     ctx.ctx.warn('Cannot find account', { socialString, err })
   }
-}
-
-//TODO: replace with AccountClient
-async function fetchAccount(socialId: SocialID, url: string, token: string): Promise<AccountID | undefined> {
-  const body = {
-    method: 'findPersonBySocialId' as const,
-    params: { socialId, requireAccount: true }
-  }
-  const request: RequestInit = {
-    keepalive: true,
-    headers: {
-      ...(token === undefined
-        ? {}
-        : {
-            Authorization: 'Bearer ' + token
-          })
-    }
-  }
-
-  const response = await fetch(url, {
-    ...request,
-    headers: {
-      ...request.headers,
-      'Content-Type': 'application/json'
-    },
-    method: 'POST',
-    body: JSON.stringify(body)
-  })
-
-  const result = await response.json()
-  if (result.error != null) {
-    throw Error(result.error)
-  }
-
-  return result.result as AccountID | undefined
 }

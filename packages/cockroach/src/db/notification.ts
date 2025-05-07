@@ -219,7 +219,7 @@ export class NotificationsDb extends BaseDb {
             JSON_AGG(
               JSONB_BUILD_OBJECT(
                 'patch_type', p.type,
-                'patch_content', p.content,
+                'patch_data', p.data,
                 'patch_creator', p.creator,
                 'patch_created', p.created
               ) ORDER BY p.created DESC

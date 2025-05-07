@@ -11,13 +11,13 @@
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-prettier": "^5.4.0",
         "prettier": "^3.5.3",
-        "turbo": "^2.5.2",
+        "turbo": "^2.5.3",
         "typescript-eslint": "^8.32.0",
       },
     },
     "packages/client-query": {
       "name": "@hcengineering/communication-client-query",
-      "version": "0.1.174-beta.2",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-query": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
@@ -33,7 +33,7 @@
     },
     "packages/cockroach": {
       "name": "@hcengineering/communication-cockroach",
-      "version": "0.1.174-beta.2",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
@@ -50,7 +50,7 @@
     },
     "packages/query": {
       "name": "@hcengineering/communication-query",
-      "version": "0.1.174-beta.2",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
@@ -69,12 +69,12 @@
     },
     "packages/rest-client": {
       "name": "@hcengineering/communication-rest-client",
-      "version": "0.1.174-beta.2",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
-        "@hcengineering/core": "^0.7.28",
+        "@hcengineering/core": "^0.7.88",
         "snappyjs": "^0.7.0",
       },
       "devDependencies": {
@@ -87,10 +87,10 @@
     },
     "packages/sdk-types": {
       "name": "@hcengineering/communication-sdk-types",
-      "version": "0.1.174-beta.2",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-types": "workspace:*",
-        "@hcengineering/core": "^0.7.28",
+        "@hcengineering/core": "^0.7.88",
       },
       "devDependencies": {
         "@types/bun": "^1.1.14",
@@ -101,15 +101,16 @@
     },
     "packages/server": {
       "name": "@hcengineering/communication-server",
-      "version": "0.1.174-beta.2",
+      "version": "0.1.0",
       "dependencies": {
-        "@hcengineering/account-client": "^0.7.28",
+        "@hcengineering/account-client": "^0.7.88",
         "@hcengineering/communication-cockroach": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
-        "@hcengineering/core": "^0.7.28",
-        "@hcengineering/platform": "^0.7.28",
-        "@hcengineering/server-token": "^0.7.28",
+        "@hcengineering/communication-yaml": "workspace:*",
+        "@hcengineering/core": "^0.7.88",
+        "@hcengineering/platform": "^0.7.88",
+        "@hcengineering/server-token": "^0.7.88",
         "zod": "^3.24.2",
       },
       "devDependencies": {
@@ -124,7 +125,7 @@
     },
     "packages/shared": {
       "name": "@hcengineering/communication-shared",
-      "version": "0.1.174-beta.2",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
@@ -138,11 +139,11 @@
     },
     "packages/types": {
       "name": "@hcengineering/communication-types",
-      "version": "0.1.174-beta.2",
+      "version": "0.1.0",
       "dependencies": {
-        "@hcengineering/card": "^0.7.28",
-        "@hcengineering/core": "^0.7.28",
-        "@hcengineering/tags": "^0.7.28",
+        "@hcengineering/card": "^0.7.88",
+        "@hcengineering/core": "^0.7.88",
+        "@hcengineering/tags": "^0.7.88",
       },
       "devDependencies": {
         "@types/bun": "^1.1.14",
@@ -153,7 +154,7 @@
     },
     "packages/yaml": {
       "name": "@hcengineering/communication-yaml",
-      "version": "0.1.174-beta.2",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-shared": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
@@ -201,11 +202,11 @@
 
     "@formatjs/intl-localematcher": ["@formatjs/intl-localematcher@0.6.0", "", { "dependencies": { "tslib": "2" } }, "sha512-4rB4g+3hESy1bHSBG3tDFaMY2CH67iT7yne1e+0CLTsGLDcmoEWWpJjjpWVaYgYfYuohIRuo0E+N536gd2ZHZA=="],
 
-    "@hcengineering/account-client": ["@hcengineering/account-client@0.7.28", "https://npm.pkg.github.com/download/@hcengineering/account-client/0.7.28/32c9bc0dd297f00f4d5461467f25e072d01b9c76", { "dependencies": { "@hcengineering/core": "^0.7.28", "@hcengineering/platform": "^0.7.28" } }, "sha512-k1dkioX+jYrLyAXLLLsBYVCdZKf3WjhnDHw/yeAQgLQQ/9W2ffLtDMZ8lYWV3XMQ3eWrUCodtTDOiAQgXd/LEQ=="],
+    "@hcengineering/account-client": ["@hcengineering/account-client@0.7.88", "https://npm.pkg.github.com/download/@hcengineering/account-client/0.7.88/57caa95e62fecc4ca22a32c76bcdc900b0384f04", { "dependencies": { "@hcengineering/core": "^0.7.88", "@hcengineering/platform": "^0.7.88" } }, "sha512-CZWOJT/JZAUy+FuYuX0QcJQYDnVDNAB0QHU4RxKc7gSlYAYleibL7qJC0vRGL4rNkvDVZfJMKDPUQW4AauGqtA=="],
 
-    "@hcengineering/analytics": ["@hcengineering/analytics@0.7.28", "https://npm.pkg.github.com/download/@hcengineering/analytics/0.7.28/a8faf3d575bb28b9682b659495e738f8e0ca596e", { "dependencies": { "@hcengineering/platform": "^0.7.28" } }, "sha512-+CI/wJ8zgop+3mEcvhlB1UJBU6tIKq2Y7qTichZjGli8BckEIEwbD4j2beu2qXRSoTT2yUGWM9zpS9+fmH/DAw=="],
+    "@hcengineering/analytics": ["@hcengineering/analytics@0.7.88", "https://npm.pkg.github.com/download/@hcengineering/analytics/0.7.88/385c2ae512bbcae39189d63e53ea527aa21a662f", { "dependencies": { "@hcengineering/platform": "^0.7.88" } }, "sha512-3jT3h2Y85awrgG0JWZSrpWOXaX1J3dpq8zouo3QMw8OVO1RgHCwPEqrBPOALnB+gc9cZL02p6Aq4J+fnTZ2fww=="],
 
-    "@hcengineering/card": ["@hcengineering/card@0.7.28", "https://npm.pkg.github.com/download/@hcengineering/card/0.7.28/5348996f5b7b4a34517780a5bf324122cbddfbad", { "dependencies": { "@hcengineering/core": "^0.7.28", "@hcengineering/platform": "^0.7.28", "@hcengineering/ui": "^0.7.28" } }, "sha512-1d3allyx9jTpE/gr9kk/g5qo5848i4FKsRiHgCpJqzNEdRW7TAednoHAr2hKRU5DZC/i3Br56axSkUQzV2Idhg=="],
+    "@hcengineering/card": ["@hcengineering/card@0.7.88", "https://npm.pkg.github.com/download/@hcengineering/card/0.7.88/e39b9e182325945494f162f2dd6f16ef9bea0f3e", { "dependencies": { "@hcengineering/core": "^0.7.88", "@hcengineering/platform": "^0.7.88", "@hcengineering/ui": "^0.7.88" } }, "sha512-3JDgocHFSGmQuKsrtQ5CTTm4rpd/PHahIx6oNX8sshDGpS2hnvNtrHNkJf39seIKiq0NNKmJ//Etl4I21h4c6w=="],
 
     "@hcengineering/communication-client-query": ["@hcengineering/communication-client-query@workspace:packages/client-query"],
 
@@ -225,21 +226,21 @@
 
     "@hcengineering/communication-yaml": ["@hcengineering/communication-yaml@workspace:packages/yaml"],
 
-    "@hcengineering/core": ["@hcengineering/core@0.7.28", "https://npm.pkg.github.com/download/@hcengineering/core/0.7.28/43b84c63262e2b8fe5554c1967812e2ce6bb56e1", { "dependencies": { "@hcengineering/analytics": "^0.7.28", "@hcengineering/platform": "^0.7.28", "fast-equals": "^5.2.2" } }, "sha512-qv4QE7mkect6JYlGMljW5CQ2uU80hFGq0E17lZ5rO79h1boWEKLJpINv+w3J2BdR/nNG7taIsdZg3yfl9fY4bg=="],
+    "@hcengineering/core": ["@hcengineering/core@0.7.88", "https://npm.pkg.github.com/download/@hcengineering/core/0.7.88/ca01c3ccd43c85ea44b189d995b0693c5465956c", { "dependencies": { "@hcengineering/analytics": "^0.7.88", "@hcengineering/platform": "^0.7.88", "fast-equals": "^5.2.2" } }, "sha512-c3GRTGAZYARu1kMt4TqkugmnuprYesZ4XZUeakReRtZdYei9tAF+i9xPpDKb4J3hvMC3u82LlEiV8iK26iXpTA=="],
 
-    "@hcengineering/platform": ["@hcengineering/platform@0.7.28", "https://npm.pkg.github.com/download/@hcengineering/platform/0.7.28/2126ff97284b679ceab3c86f24febd73a3a28712", { "dependencies": { "intl-messageformat": "^10.7.14" } }, "sha512-0zEifwsLdOs/M6TZ9xnPrQTTlhwW28sooiyL4ZfQsiC2AJUy05vLP5/W8V9eDLta+EiR5bjtlulGsg1GfPjUoQ=="],
+    "@hcengineering/platform": ["@hcengineering/platform@0.7.88", "https://npm.pkg.github.com/download/@hcengineering/platform/0.7.88/b3fbe09d6b849f7eb3641792682bf133103037f0", { "dependencies": { "intl-messageformat": "^10.7.14" } }, "sha512-iFAwYQZjGox1NqEgUh8hiT1mRHdSJqYmYux0lkeIFyt8Nn/BAZOVXe0br0Dx7wXiueFPWhSZSeWVhxvBb78zoA=="],
 
-    "@hcengineering/preference": ["@hcengineering/preference@0.7.28", "https://npm.pkg.github.com/download/@hcengineering/preference/0.7.28/f1739991cc012d194fa18f99565ae5bd64f0ad07", { "dependencies": { "@hcengineering/core": "^0.7.28", "@hcengineering/platform": "^0.7.28", "@hcengineering/ui": "^0.7.28" } }, "sha512-WwwOfjZ1TLdTfPhQGvSjo8dS63HyuE7BDVhfstxP8D+H4BI5UKYoev/6vlwQf/3d+jI1S4f2ivO//IDJAD7sGg=="],
+    "@hcengineering/preference": ["@hcengineering/preference@0.7.88", "https://npm.pkg.github.com/download/@hcengineering/preference/0.7.88/e1181dae3cb2eaf53fed66ddd3d5c4854717ccf0", { "dependencies": { "@hcengineering/core": "^0.7.88", "@hcengineering/platform": "^0.7.88", "@hcengineering/ui": "^0.7.88" } }, "sha512-idzAlphM/HyNJfFMFwbpyKg6KvFTJ6rTaqgduNNJqkO4DsUCEF5/1WLNQMmiAeoFDY9y5+/mHJrx+1Ztq1XIuw=="],
 
-    "@hcengineering/server-token": ["@hcengineering/server-token@0.7.28", "https://npm.pkg.github.com/download/@hcengineering/server-token/0.7.28/b1cffcb628aa0c6ac73171ef340c8ccf0f85ab07", { "dependencies": { "@hcengineering/core": "^0.7.28", "@hcengineering/platform": "^0.7.28", "jwt-simple": "^0.5.6" } }, "sha512-TaHwzxuoFKN6jnWHIZk0UcRmB+UQ1QE1HZzUh5doPSFUYOAtTrSb32iJDA8e8oEADcJpOp9RGIUP/EP/VED7BQ=="],
+    "@hcengineering/server-token": ["@hcengineering/server-token@0.7.88", "https://npm.pkg.github.com/download/@hcengineering/server-token/0.7.88/11b3a8247869a50037fcbb13572e16545116ff93", { "dependencies": { "@hcengineering/core": "^0.7.88", "@hcengineering/platform": "^0.7.88", "jwt-simple": "^0.5.6" } }, "sha512-UQfW0E+v+PTwR7ICR+kSTQqAokpiV008ukqsxRSQJkCM4vmNYciUgd/7Y/ifDMFhKDvNyODb+wgAQs3QxkSbkA=="],
 
-    "@hcengineering/tags": ["@hcengineering/tags@0.7.28", "https://npm.pkg.github.com/download/@hcengineering/tags/0.7.28/42545cc43e3c61e32ce96be87c245fa929f5cbb6", { "dependencies": { "@hcengineering/core": "^0.7.28", "@hcengineering/platform": "^0.7.28", "@hcengineering/ui": "^0.7.28", "@hcengineering/view": "^0.7.28" } }, "sha512-2KCVUu5N/GAkDsDRbdUi7gnBq4ze1Z3eCLoc8nz2G/zeAjAga8gmWkZEbXqAC8rNVqBQv72EKeJFGJyqnev6Xw=="],
+    "@hcengineering/tags": ["@hcengineering/tags@0.7.88", "https://npm.pkg.github.com/download/@hcengineering/tags/0.7.88/f3f0de35b1be71d1f3f6711b8e4f161e0cf857eb", { "dependencies": { "@hcengineering/core": "^0.7.88", "@hcengineering/platform": "^0.7.88", "@hcengineering/ui": "^0.7.88", "@hcengineering/view": "^0.7.88" } }, "sha512-wpnVX/1Y8E4YPYnUcw+ZyVOpZvXYpboZC9D1btMqFs34CoMGc4tW1XT3YfsS8KxlkH6tsQjsAUvtWOPy2J46dg=="],
 
-    "@hcengineering/theme": ["@hcengineering/theme@0.7.28", "https://npm.pkg.github.com/download/@hcengineering/theme/0.7.28/557640a7ba2ffaa4d6e5411a54577f60dc528300", { "dependencies": { "@hcengineering/analytics": "^0.7.28", "@hcengineering/platform": "^0.7.28", "svelte": "^4.2.19" } }, "sha512-Hv3wQKHr327TC7wMHCBiG4bMtg8vSlb7+UFwdKI8ztEs3359meqkXu+exqi7Nl5334voXIz5ZFxjwZwOMzNSFA=="],
+    "@hcengineering/theme": ["@hcengineering/theme@0.7.88", "https://npm.pkg.github.com/download/@hcengineering/theme/0.7.88/d939d1e2a9047def2795dc5124653e49ca522cfc", { "dependencies": { "@hcengineering/analytics": "^0.7.88", "@hcengineering/platform": "^0.7.88", "svelte": "^4.2.19" } }, "sha512-PCt9bFuGPYOf1kQgjzxPSZgGXU4G14Z1XZJfgGu71u/zHxG6fu6nls35aSrEjy2Ks6oR+OCqqvpDh6RTf6utrg=="],
 
-    "@hcengineering/ui": ["@hcengineering/ui@0.7.28", "https://npm.pkg.github.com/download/@hcengineering/ui/0.7.28/82025fc775702ea8c8569611356662bfbf28eb74", { "dependencies": { "@hcengineering/analytics": "^0.7.28", "@hcengineering/core": "^0.7.28", "@hcengineering/platform": "^0.7.28", "@hcengineering/theme": "^0.7.28", "autolinker": "4.0.0", "date-fns": "^2.30.0", "date-fns-tz": "^2.0.0", "dompurify": "^3.1.6", "emojibase": "^16.0.0", "fast-equals": "^5.2.2", "hls.js": "^1.5.20", "plyr": "^3.7.8", "svelte": "^4.2.19" } }, "sha512-QsUpO0+Idu1n2dC6KtorPJ6SSp30It8FHSuG3Y+Awv4td/ftVocOSFqhskbk+us9Yw9KqOYgkqhGYEHbfRfw4Q=="],
+    "@hcengineering/ui": ["@hcengineering/ui@0.7.88", "https://npm.pkg.github.com/download/@hcengineering/ui/0.7.88/fce3392a59f706c248ba4b17714163e5725d5f01", { "dependencies": { "@hcengineering/analytics": "^0.7.88", "@hcengineering/core": "^0.7.88", "@hcengineering/platform": "^0.7.88", "@hcengineering/theme": "^0.7.88", "autolinker": "4.0.0", "date-fns": "^2.30.0", "date-fns-tz": "^2.0.0", "dompurify": "^3.1.6", "emojibase": "^16.0.0", "fast-equals": "^5.2.2", "hls.js": "^1.5.20", "plyr": "^3.7.8", "svelte": "^4.2.19" } }, "sha512-mzHXcX3aBC/OXUaV9F2hnB6+irwMfEYM5J1CnfqiHqgv3Hza20BZR6BrYe/nQCLb44DuHkXojbwL94AKK3QW6w=="],
 
-    "@hcengineering/view": ["@hcengineering/view@0.7.28", "https://npm.pkg.github.com/download/@hcengineering/view/0.7.28/8aad5b07d3750463a78aae1b9482361f2ff9f45e", { "dependencies": { "@hcengineering/core": "^0.7.28", "@hcengineering/platform": "^0.7.28", "@hcengineering/preference": "^0.7.28", "@hcengineering/ui": "^0.7.28" } }, "sha512-cG0isakqIxuiAG7T2KyRnztfOp3falr+oG77Qod915EeBKNEDqXfNrD29Dp04Wwf5TowifDT9smLzAyH8l6kgg=="],
+    "@hcengineering/view": ["@hcengineering/view@0.7.88", "https://npm.pkg.github.com/download/@hcengineering/view/0.7.88/8a13ddff0178ac3b705ebed683d0c1cc328c8e1c", { "dependencies": { "@hcengineering/core": "^0.7.88", "@hcengineering/platform": "^0.7.88", "@hcengineering/preference": "^0.7.88", "@hcengineering/ui": "^0.7.88" } }, "sha512-W3/OgCu9W+OGZ8v8hoT0bjoCNflvIcWFwFafk40FtWFxvqzObm41e5ZWNj3yGWFdlVsyN/Nqdjkyz0txWUXQAA=="],
 
     "@humanfs/core": ["@humanfs/core@0.19.1", "", {}, "sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA=="],
 
@@ -691,19 +692,19 @@
 
     "tslib": ["tslib@2.8.1", "", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
 
-    "turbo": ["turbo@2.5.2", "", { "optionalDependencies": { "turbo-darwin-64": "2.5.2", "turbo-darwin-arm64": "2.5.2", "turbo-linux-64": "2.5.2", "turbo-linux-arm64": "2.5.2", "turbo-windows-64": "2.5.2", "turbo-windows-arm64": "2.5.2" }, "bin": { "turbo": "bin/turbo" } }, "sha512-Qo5lfuStr6LQh3sPQl7kIi243bGU4aHGDQJUf6ylAdGwks30jJFloc9NYHP7Y373+gGU9OS0faA4Mb5Sy8X9Xw=="],
+    "turbo": ["turbo@2.5.3", "", { "optionalDependencies": { "turbo-darwin-64": "2.5.3", "turbo-darwin-arm64": "2.5.3", "turbo-linux-64": "2.5.3", "turbo-linux-arm64": "2.5.3", "turbo-windows-64": "2.5.3", "turbo-windows-arm64": "2.5.3" }, "bin": { "turbo": "bin/turbo" } }, "sha512-iHuaNcq5GZZnr3XDZNuu2LSyCzAOPwDuo5Qt+q64DfsTP1i3T2bKfxJhni2ZQxsvAoxRbuUK5QetJki4qc5aYA=="],
 
-    "turbo-darwin-64": ["turbo-darwin-64@2.5.2", "", { "os": "darwin", "cpu": "x64" }, "sha512-2aIl0Sx230nLk+Cg2qSVxvPOBWCZpwKNuAMKoROTvWKif6VMpkWWiR9XEPoz7sHeLmCOed4GYGMjL1bqAiIS/g=="],
+    "turbo-darwin-64": ["turbo-darwin-64@2.5.3", "", { "os": "darwin", "cpu": "x64" }, "sha512-YSItEVBUIvAGPUDpAB9etEmSqZI3T6BHrkBkeSErvICXn3dfqXUfeLx35LfptLDEbrzFUdwYFNmt8QXOwe9yaw=="],
 
-    "turbo-darwin-arm64": ["turbo-darwin-arm64@2.5.2", "", { "os": "darwin", "cpu": "arm64" }, "sha512-MrFYhK/jYu8N6QlqZtqSHi3e4QVxlzqU3ANHTKn3/tThuwTLbNHEvzBPWSj5W7nZcM58dCqi6gYrfRz6bJZyAA=="],
+    "turbo-darwin-arm64": ["turbo-darwin-arm64@2.5.3", "", { "os": "darwin", "cpu": "arm64" }, "sha512-5PefrwHd42UiZX7YA9m1LPW6x9YJBDErXmsegCkVp+GjmWrADfEOxpFrGQNonH3ZMj77WZB2PVE5Aw3gA+IOhg=="],
 
-    "turbo-linux-64": ["turbo-linux-64@2.5.2", "", { "os": "linux", "cpu": "x64" }, "sha512-LxNqUE2HmAJQ/8deoLgMUDzKxd5bKxqH0UBogWa+DF+JcXhtze3UTMr6lEr0dEofdsEUYK1zg8FRjglmwlN5YA=="],
+    "turbo-linux-64": ["turbo-linux-64@2.5.3", "", { "os": "linux", "cpu": "x64" }, "sha512-M9xigFgawn5ofTmRzvjjLj3Lqc05O8VHKuOlWNUlnHPUltFquyEeSkpQNkE/vpPdOR14AzxqHbhhxtfS4qvb1w=="],
 
-    "turbo-linux-arm64": ["turbo-linux-arm64@2.5.2", "", { "os": "linux", "cpu": "arm64" }, "sha512-0MI1Ao1q8zhd+UUbIEsrM+yLq1BsrcJQRGZkxIsHFlGp7WQQH1oR3laBgfnUCNdCotCMD6w4moc9pUbXdOR3bg=="],
+    "turbo-linux-arm64": ["turbo-linux-arm64@2.5.3", "", { "os": "linux", "cpu": "arm64" }, "sha512-auJRbYZ8SGJVqvzTikpg1bsRAsiI9Tk0/SDkA5Xgg0GdiHDH/BOzv1ZjDE2mjmlrO/obr19Dw+39OlMhwLffrw=="],
 
-    "turbo-windows-64": ["turbo-windows-64@2.5.2", "", { "os": "win32", "cpu": "x64" }, "sha512-hOLcbgZzE5ttACHHyc1ajmWYq4zKT42IC3G6XqgiXxMbS+4eyVYTL+7UvCZBd3Kca1u4TLQdLQjeO76zyDJc2A=="],
+    "turbo-windows-64": ["turbo-windows-64@2.5.3", "", { "os": "win32", "cpu": "x64" }, "sha512-arLQYohuHtIEKkmQSCU9vtrKUg+/1TTstWB9VYRSsz+khvg81eX6LYHtXJfH/dK7Ho6ck+JaEh5G+QrE1jEmCQ=="],
 
-    "turbo-windows-arm64": ["turbo-windows-arm64@2.5.2", "", { "os": "win32", "cpu": "arm64" }, "sha512-fMU41ABhSLa18H8V3Z7BMCGynQ8x+wj9WyBMvWm1jeyRKgkvUYJsO2vkIsy8m0vrwnIeVXKOIn6eSe1ddlBVqw=="],
+    "turbo-windows-arm64": ["turbo-windows-arm64@2.5.3", "", { "os": "win32", "cpu": "arm64" }, "sha512-3JPn66HAynJ0gtr6H+hjY4VHpu1RPKcEwGATvGUTmLmYSYBQieVlnGDRMMoYN066YfyPqnNGCfhYbXfH92Cm0g=="],
 
     "type-check": ["type-check@0.4.0", "", { "dependencies": { "prelude-ls": "^1.2.1" } }, "sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew=="],
 

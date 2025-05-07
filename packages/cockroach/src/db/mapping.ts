@@ -33,8 +33,10 @@ import {
   type SocialID,
   type Thread,
   type MessageData,
-  type Label
+  type Label,
+  type CardType
 } from '@hcengineering/communication-types'
+import { applyPatches } from '@hcengineering/communication-shared'
 
 import {
   type FileDb,
@@ -51,6 +53,7 @@ import {
 
 interface RawMessage extends MessageDb {
   thread_id?: CardID
+  thread_type?: CardType
   replies_count?: number
   last_reply?: Date
   patches?: PatchDb[]
@@ -72,7 +75,7 @@ interface RawNotification extends NotificationDb {
   message_group_count?: number
   message_patches?: {
     patch_type: PatchType
-    patch_content: RichText
+    patch_data: Record<string, any>
     patch_creator: SocialID
     patch_created: Date
   }[]
@@ -83,32 +86,38 @@ type RawContext = ContextDb & { id: ContextID } & {
 }
 
 export function toMessage(raw: RawMessage): Message {
-  const lastPatch = raw.patches?.[0]
+  const patches = (raw.patches ?? []).map((it) => toPatch(it))
 
-  return {
+  const rawMessage: Message = {
     id: String(raw.id) as MessageID,
     type: raw.type,
     card: raw.card_id,
-    content: lastPatch?.content ?? raw.content,
+    content: raw.content,
     creator: raw.creator,
-    created: raw.created,
+    created: new Date(raw.created),
     data: raw.data,
     externalId: raw.external_id,
-    edited: lastPatch?.created ?? undefined,
     thread:
-      raw.thread_id != null
+      raw.thread_id != null && raw.thread_type != null
         ? {
             card: raw.card_id,
             message: String(raw.id) as MessageID,
             messageCreated: new Date(raw.created),
             thread: raw.thread_id,
-            repliesCount: raw.replies_count ?? 0,
+            threadType: raw.thread_type,
+            repliesCount: raw.replies_count ? parseInt(raw.replies_count as any) : 0,
             lastReply: raw.last_reply ?? new Date()
           }
         : undefined,
     reactions: (raw.reactions ?? []).map(toReaction),
     files: (raw.files ?? []).map(toFile)
   }
+
+  if (patches.length === 0) {
+    return rawMessage
+  }
+
+  return applyPatches(rawMessage, patches, [PatchType.update])
 }
 
 export function toReaction(raw: ReactionDb): Reaction {
@@ -116,7 +125,7 @@ export function toReaction(raw: ReactionDb): Reaction {
     message: String(raw.message_id) as MessageID,
     reaction: raw.reaction,
     creator: raw.creator,
-    created: raw.created
+    created: new Date(raw.created)
   }
 }
 
@@ -130,7 +139,7 @@ export function toFile(raw: FileDb): File {
     filename: raw.filename,
     size: parseInt(raw.size as any),
     creator: raw.creator,
-    created: raw.created
+    created: new Date(raw.created)
   }
 }
 
@@ -145,12 +154,12 @@ export function toMessagesGroup(raw: MessagesGroupDb): MessagesGroup {
   }
 }
 
-export function toPatch(raw: PatchDb): Patch {
+export function toPatch(raw: Omit<PatchDb, 'workspace_id'>): Patch {
   return {
     type: raw.type,
     messageCreated: new Date(raw.message_created),
     message: String(raw.message_id) as MessageID,
-    content: raw.content,
+    data: raw.data as any,
     creator: raw.creator,
     created: new Date(raw.created)
   }
@@ -162,8 +171,9 @@ export function toThread(raw: ThreadDb): Thread {
     message: String(raw.message_id) as MessageID,
     messageCreated: new Date(raw.message_created),
     thread: raw.thread_id,
-    repliesCount: raw.replies_count,
-    lastReply: raw.last_reply
+    threadType: raw.thread_type,
+    repliesCount: parseInt(raw.replies_count as any),
+    lastReply: new Date(raw.last_reply)
   }
 }
 
@@ -198,19 +208,34 @@ function toNotificationRaw(
     raw.message_created != null &&
     raw.message_type != null
   ) {
-    const lastPatch = (raw.message_patches ?? []).find((it) => it.patch_type === PatchType.update)
+    const patches = (raw.message_patches ?? []).map((it) =>
+      toPatch({
+        card_id: card,
+        message_id: raw.message_id,
+        type: it.patch_type,
+        data: it.patch_data,
+        creator: it.patch_creator,
+        created: new Date(it.patch_created),
+        message_created: raw.message_created ? new Date(raw.message_created) : created
+      })
+    )
+
     message = {
       id: String(raw.message_id) as MessageID,
       type: raw.message_type,
       card,
-      content: lastPatch?.patch_content ?? raw.message_content,
+      content: raw.message_content,
       data: raw.message_data,
       externalId: raw.message_external_id,
       creator: raw.message_creator,
       created: new Date(raw.message_created),
-      edited: lastPatch?.patch_created != null ? new Date(lastPatch.patch_created) : undefined,
+      edited: undefined,
       reactions: [],
       files: []
+    }
+
+    if (patches.length > 0) {
+      message = applyPatches(message, patches, [PatchType.update])
     }
   }
 

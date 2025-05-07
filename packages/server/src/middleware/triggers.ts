@@ -33,13 +33,14 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     this.ctx = context.ctx.newChild('triggers', {})
   }
 
-  async response(session: SessionData, event: ResponseEvent): Promise<void> {
+  async response(session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
     const ctx: Omit<TriggerCtx, 'ctx'> = {
       metadata: this.context.metadata,
       db: this.db,
       workspace: this.context.workspace,
       account: session.account,
       registeredCards: this.context.registeredCards,
+      derived,
       execute: async (event: RequestEvent) => {
         return (await this.context.head?.event(session, event, true)) ?? {}
       }

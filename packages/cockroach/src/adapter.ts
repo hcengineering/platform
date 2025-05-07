@@ -41,10 +41,10 @@ import {
   type FindLabelsParams,
   type LabelID,
   type CardType,
-  type MessageData
+  type MessageData,
+  type PatchData
 } from '@hcengineering/communication-types'
 import type { DbAdapter } from '@hcengineering/communication-sdk-types'
-import { retry } from '@hcengineering/communication-shared'
 
 import { MessagesDb } from './db/message'
 import { NotificationsDb } from './db/notification'
@@ -77,9 +77,10 @@ export class CockroachAdapter implements DbAdapter {
     creator: SocialID,
     created: Date,
     data?: MessageData,
-    externalId?: string
+    externalId?: string,
+    id?: MessageID
   ): Promise<MessageID> {
-    return await this.message.createMessage(card, type, content, creator, created, data, externalId)
+    return await this.message.createMessage(card, type, content, creator, created, data, externalId, id)
   }
 
   async removeMessages(card: CardID, messages: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]> {
@@ -91,11 +92,11 @@ export class CockroachAdapter implements DbAdapter {
     message: MessageID,
     messageCreated: Date,
     type: PatchType,
-    content: RichText,
+    data: PatchData,
     creator: SocialID,
     created: Date
   ): Promise<void> {
-    await this.message.createPatch(card, message, messageCreated, type, content, creator, created)
+    await this.message.createPatch(card, message, messageCreated, type, data, creator, created)
   }
 
   async createMessagesGroup(card: CardID, blobId: BlobID, fromDate: Date, toDate: Date, count: number): Promise<void> {
@@ -150,9 +151,10 @@ export class CockroachAdapter implements DbAdapter {
     message: MessageID,
     messageCreated: Date,
     thread: CardID,
+    threadType: CardType,
     created: Date
   ): Promise<void> {
-    await this.message.createThread(card, message, messageCreated, thread, created)
+    await this.message.createThread(card, message, messageCreated, thread, threadType, created)
   }
 
   async updateThread(thread: CardID, op: 'increment' | 'decrement', lastReply?: Date): Promise<void> {
@@ -243,77 +245,13 @@ export async function createDbAdapter(
   logger?: Logger,
   options?: Options
 ): Promise<DbAdapter> {
-  const greenUrl = process.env.GREEN_URL ?? ''
   const connection = connect(connectionString)
   const sql = await connection.getClient()
   await initSchema(sql)
 
-  if (greenUrl !== '') {
-    const client = new GreenClient(greenUrl, sql)
-    return new CockroachAdapter(client, workspace, logger, options)
-  } else {
-    const client = new CockroachClient(connection, sql)
+  const client = new CockroachClient(connection, sql)
 
-    return new CockroachAdapter(client, workspace, logger, options)
-  }
-}
-
-class GreenClient implements SqlClient {
-  private readonly url: string
-  private readonly token: string
-  constructor(
-    private readonly endpoint: string,
-    private readonly sql: postgres.Sql
-  ) {
-    const url = new URL(this.endpoint)
-    this.token = url.searchParams.get('token') ?? 'secret'
-
-    const compression = url.searchParams.get('compression') ?? ''
-
-    const newHost = url.host
-    const newPathname = url.pathname
-    const newSearchParams = new URLSearchParams()
-
-    if (compression !== '') {
-      newSearchParams.set('compression', compression)
-    }
-
-    this.url = `${url.protocol}//${newHost}${newPathname}${newSearchParams.size > 0 ? '?' + newSearchParams.toString() : ''}`
-  }
-
-  async execute<T = SqlRow>(query: string, params?: SqlParams): Promise<T[]> {
-    return await retry(() => this.fetch<T[]>(query, params), { retries: 5 })
-  }
-
-  cursor<T = SqlRow>(query: string, params?: SqlParams, size?: number): AsyncIterable<NonNullable<T[][number]>[]> {
-    const sql = params !== undefined && params.length > 0 ? injectVars(query, params) : query
-
-    return this.sql.unsafe<T[]>(sql).cursor(size)
-  }
-
-  close(): void {
-    // do nothing
-  }
-
-  private async fetch<T = SqlRow>(query: string, params?: SqlParams): Promise<T> {
-    const url = this.url.endsWith('/') ? this.url + 'api/v1/sql' : this.url + '/api/v1/sql'
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + this.token,
-        Connection: 'keep-alive'
-      },
-      body: JSON.stringify({ query, params }, (_, value) => (typeof value === 'bigint' ? value.toString() : value))
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to execute sql: ${response.status} ${response.statusText}`)
-    }
-
-    return await response.json()
-  }
+  return new CockroachAdapter(client, workspace, logger, options)
 }
 
 class CockroachClient implements SqlClient {

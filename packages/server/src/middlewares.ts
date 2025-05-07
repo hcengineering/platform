@@ -16,6 +16,8 @@
 import type { MeasureContext } from '@hcengineering/core'
 import type { DbAdapter, EventResult, RequestEvent, SessionData } from '@hcengineering/communication-sdk-types'
 import type {
+  Collaborator,
+  FindCollaboratorsParams,
   FindLabelsParams,
   FindMessagesGroupsParams,
   FindMessagesParams,
@@ -147,6 +149,11 @@ export class Middlewares {
   async findLabels(session: SessionData, params: FindLabelsParams): Promise<Label[]> {
     if (this.head === undefined) return []
     return await this.head.findLabels(session, params)
+  }
+
+  async findCollaborators(session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
+    if (this.head === undefined) return []
+    return await this.head.findCollaborators(session, params)
   }
 
   async unsubscribeQuery(session: SessionData, id: number): Promise<void> {

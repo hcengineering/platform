@@ -17,7 +17,6 @@ import {
   type FindNotificationContextParams,
   type Notification,
   type NotificationContext,
-  PatchType,
   SortingOrder,
   type WorkspaceID
 } from '@hcengineering/communication-types'
@@ -42,8 +41,6 @@ import { defaultQueryParams, type PagedQuery, type QueryId } from '../types'
 import { QueryResult } from '../result'
 import { WindowImpl } from '../window'
 import { loadMessageFromGroup } from '../utils'
-
-const allowedPatchTypes = [PatchType.update, PatchType.addReaction, PatchType.removeReaction]
 
 export class NotificationContextsQuery implements PagedQuery<NotificationContext, FindNotificationContextParams> {
   private result: QueryResult<NotificationContext> | Promise<QueryResult<NotificationContext>>
@@ -311,9 +308,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       notifications: context.notifications?.map((it) => ({
         ...it,
         message:
-          it.messageId === event.patch.message && it.message != null
-            ? applyPatch(it.message, event.patch, allowedPatchTypes)
-            : it.message
+          it.messageId === event.patch.message && it.message != null ? applyPatch(it.message, event.patch) : it.message
       }))
     })
 

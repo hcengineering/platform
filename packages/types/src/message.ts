@@ -14,7 +14,7 @@
 //
 
 import type { Attribute, Class, Mixin, Ref } from '@hcengineering/core'
-import type { BlobID, CardID, ID, RichText, SocialID } from './core'
+import type { BlobID, CardID, CardType, ID, RichText, SocialID } from './core'
 import type { Card, Tag } from '@hcengineering/card'
 
 export type MessageID = ID & { message: true }
@@ -85,23 +85,98 @@ export interface MessagesGroup {
   patches?: Patch[]
 }
 
-export interface Patch {
+interface BasePatch {
   message: MessageID
   messageCreated: Date
   type: PatchType
-  content: string
   creator: SocialID
   created: Date
+
+  data: Record<string, any>
+}
+
+export interface UpdatePatch extends BasePatch {
+  type: PatchType.update
+  data: UpdatePatchData
+}
+
+export interface AddReactionPatch extends BasePatch {
+  type: PatchType.addReaction
+  data: AddReactionPatchData
+}
+
+export interface RemoveReactionPatch extends BasePatch {
+  type: PatchType.removeReaction
+  data: RemoveReactionPatchData
+}
+export interface UpdateThreadPatch extends BasePatch {
+  type: PatchType.updateThread
+  data: UpdateThreadPatchData
+}
+
+export interface AddFilePatch extends BasePatch {
+  type: PatchType.addFile
+  data: AddFilePatchData
+}
+
+export interface RemoveFilePatch extends BasePatch {
+  type: PatchType.removeFile
+  data: RemoveFilePatchData
+}
+
+export type Patch =
+  | UpdatePatch
+  | AddReactionPatch
+  | RemoveReactionPatch
+  | AddFilePatch
+  | RemoveFilePatch
+  | UpdateThreadPatch
+
+export type PatchData =
+  | UpdatePatchData
+  | AddReactionPatchData
+  | RemoveReactionPatchData
+  | AddFilePatchData
+  | RemoveFilePatchData
+  | UpdateThreadPatchData
+
+export interface UpdateThreadPatchData {
+  thread: CardID
+  threadType: CardType
+  replies?: 'increment' | 'decrement'
+}
+
+export interface UpdatePatchData {
+  content?: RichText
+  data?: MessageData
+}
+
+export interface AddReactionPatchData {
+  reaction: string
+}
+
+export interface RemoveReactionPatchData {
+  reaction: string
+}
+
+export interface AddFilePatchData {
+  blobId: BlobID
+  type: string
+  filename: string
+  size: number
+}
+
+export interface RemoveFilePatchData {
+  blobId: BlobID
 }
 
 export enum PatchType {
   update = 'update',
   addReaction = 'addReaction',
   removeReaction = 'removeReaction',
-  addReply = 'addReply',
-  removeReply = 'removeReply',
   addFile = 'addFile',
-  removeFile = 'removeFile'
+  removeFile = 'removeFile',
+  updateThread = 'updateThread'
 }
 
 export interface Reaction {
@@ -128,6 +203,7 @@ export interface Thread {
   message: MessageID
   messageCreated: Date
   thread: CardID
+  threadType: CardType
   repliesCount: number
   lastReply: Date
 }

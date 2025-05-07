@@ -24,6 +24,8 @@ import type {
 } from '@hcengineering/communication-sdk-types'
 import type {
   CardID,
+  Collaborator,
+  FindCollaboratorsParams,
   FindLabelsParams,
   FindMessagesGroupsParams,
   FindMessagesParams,
@@ -40,6 +42,7 @@ import type {
 export interface Metadata {
   msg2fileUrl: string
   accountsUrl: string
+  filesUrl: string
   secret?: string
 }
 
@@ -65,12 +68,13 @@ export interface Middleware {
   ) => Promise<Notification[]>
 
   findLabels: (session: SessionData, params: FindLabelsParams, queryId?: QueryId) => Promise<Label[]>
+  findCollaborators: (session: SessionData, params: FindCollaboratorsParams) => Promise<Collaborator[]>
 
   event: (session: SessionData, event: RequestEvent, derived: boolean) => Promise<EventResult>
 
   unsubscribeQuery: (session: SessionData, queryId: number) => void
 
-  response: (session: SessionData, event: ResponseEvent) => Promise<void>
+  response: (session: SessionData, event: ResponseEvent, derived: boolean) => Promise<void>
 
   closeSession: (sessionId: string) => void
   close: () => void
@@ -109,6 +113,7 @@ export interface TriggerCtx {
   workspace: WorkspaceID
   account: Account
   registeredCards: Set<CardID>
+  derived: boolean
   execute: (event: RequestEvent) => Promise<EventResult>
 }
 

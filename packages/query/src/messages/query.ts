@@ -951,7 +951,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       result.push(PatchType.addFile, PatchType.removeFile)
     }
     if (this.params.replies === true) {
-      result.push(PatchType.addReply, PatchType.removeReply)
+      result.push(PatchType.updateThread)
     }
     return result
   }
