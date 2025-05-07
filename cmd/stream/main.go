@@ -21,7 +21,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/getsentry/sentry-go"
+	sentryhttp "github.com/getsentry/sentry-go/http"
 	"go.uber.org/zap"
 
 	"github.com/hcengineering/stream/internal/pkg/api/v1/recording"
@@ -48,19 +51,43 @@ func main() {
 	}
 	logger.Sugar().Debugf("parsed config is %v", cfg)
 
+	if cfg.SentryDsn != "" {
+		if err := sentry.Init(sentry.ClientOptions{
+			Dsn:  cfg.SentryDsn,
+			Tags: map[string]string{"application": "stream"},
+		}); err != nil {
+			logger.Sugar().Fatalf("sentry.Init: %s", err)
+		}
+		// ensure buffered events are sent before exit
+		defer sentry.Flush(2 * time.Second)
+	}
+
 	var recordingHandler = recording.NewHandler(ctx, cfg)
 	var transcodingHandler = transcoding.NewHandler(ctx, cfg)
 
-	http.Handle("/recording/", http.StripPrefix("/recording/", recordingHandler))
-	http.Handle("/recording", http.StripPrefix("/recording", recordingHandler))
-	http.Handle("/transcoding", http.StripPrefix("/transcoding", transcodingHandler))
+	// setup HTTP routes
+	mux := http.NewServeMux()
+	mux.Handle("/recording/", http.StripPrefix("/recording/", recordingHandler))
+	mux.Handle("/recording", http.StripPrefix("/recording", recordingHandler))
+	mux.Handle("/transcoding", http.StripPrefix("/transcoding", transcodingHandler))
+
+	// wrap with Sentry HTTP handler if enabled
+	var handler http.Handler = mux
+	if cfg.SentryDsn != "" {
+		sentryHandler := sentryhttp.New(sentryhttp.Options{
+			Repanic:         true,
+			WaitForDelivery: true,
+			Timeout:         2 * time.Second,
+		})
+		handler = sentryHandler.Handle(mux)
+	}
 
 	go func() {
 		logger.Info("server started serving", zap.String("ServeURL", cfg.ServeURL))
 		defer logger.Info("server finished")
 
 		// #nosec
-		var err = http.ListenAndServe(cfg.ServeURL, nil)
+		var err = http.ListenAndServe(cfg.ServeURL, handler)
 		if err != nil {
 			cancel()
 			logger.Debug("unable to listen", zap.Error(err))

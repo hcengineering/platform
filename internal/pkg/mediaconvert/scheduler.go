@@ -148,7 +148,14 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		return
 	}
 
-	var res = fmt.Sprintf("%v:%v", probe.FirstVideoStream().Width, probe.FirstVideoStream().Height)
+	videoStream := probe.FirstVideoStream()
+	if videoStream == nil {
+		logger.Error("no video stream found in the file", zap.String("filepath", sourceFilePath))
+		_ = os.RemoveAll(destinationFolder)
+		return
+	}
+
+	var res = fmt.Sprintf("%v:%v", videoStream.Width, videoStream.Height)
 	var level = resconv.Level(res)
 	var opts = Options{
 		Input:         sourceFilePath,
@@ -214,8 +221,8 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 
 	if metaProvider, ok := remoteStorage.(storage.MetaProvider); ok {
 		var hls = HLS{
-			Width:     probe.FirstVideoStream().Width,
-			Height:    probe.FirstVideoStream().Height,
+			Width:     videoStream.Width,
+			Height:    videoStream.Height,
 			Source:    task.ID + "_master.m3u8",
 			Thumbnail: task.ID + ".jpg",
 		}

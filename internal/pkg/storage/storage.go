@@ -16,6 +16,7 @@ package storage
 import (
 	"context"
 	"net/url"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -37,8 +38,8 @@ type Storage interface {
 }
 
 // NewStorageByURL creates a new storage based on the type from the url scheme, for example "datalake://my-datalake-endpoint"
-func NewStorageByURL(ctx context.Context, u *url.URL, storageType, token, worksapce string) (Storage, error) {
-	if worksapce == "" {
+func NewStorageByURL(ctx context.Context, u *url.URL, storageType, token, workspace string) (Storage, error) {
+	if workspace == "" {
 		return nil, errors.New("workspace is missed")
 	}
 	switch storageType {
@@ -46,10 +47,20 @@ func NewStorageByURL(ctx context.Context, u *url.URL, storageType, token, worksa
 		if token == "" {
 			return nil, errors.New("token is missed")
 		}
-		return NewDatalakeStorage(ctx, u.String(), worksapce, token), nil
+		return NewDatalakeStorage(ctx, u.String(), workspace, token), nil
 	case "s3":
-		return NewS3(ctx, u.String(), worksapce), nil
+		return NewS3(ctx, u.String(), workspace), nil
 	default:
 		return nil, errors.New("unknown scheme")
 	}
+}
+
+func getContentType(objectKey string) string {
+	if strings.HasSuffix(objectKey, ".ts") {
+		return "video/mp2t"
+	}
+	if strings.HasSuffix(objectKey, ".m3u8") {
+		return "video/x-mpegurl"
+	}
+	return "application/octet-stream"
 }

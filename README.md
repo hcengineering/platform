@@ -5,9 +5,9 @@
 
 ## About
 
-The Stream is high-performance HTTP-based transcoding service. *Stream* supports  **TUS protocol**, enabling reliable,
-resumable transcodings. Designed for seamless and consistent media processing,it supports advanced transcoding features
-with robust integration options.
+The Stream is a high-performance HTTP-based transcoding service. *Stream* supports the **TUS protocol**, enabling
+reliable, resumable transcoding. Designed for seamless and consistent media processing, it supports advanced transcoding
+features with robust integration options.
 
 ---
 
@@ -36,8 +36,8 @@ with robust integration options.
 
 #### Key Functionalities
 
-- **Live transcoing with minimal upload time**: Transcoding results are going to be avaible after stream completion.
-- **Transcoding Cancelation**: Cancel or pause ongoing transcoding in real-time.
+- **Live transcoding with minimal upload time**: Transcoding results are available after stream completion.
+- **Transcoding Cancellation**: Cancel or pause ongoing transcoding in real-time.
 - **Transcoding Resumption**: Resume incomplete transcoding tasks efficiently.
 
 ### Transcoding scheduling
@@ -60,27 +60,29 @@ go mod tidy
 2. Build the service:
 
 ```bash
-docker build . -t hcengineering/sream:latest
+docker build . -t hcengineering/stream:latest
 ```
 
 ---
 
-## Configuraiton
+## Configuration
 
-### App env configuraiton
+### App Env Configuration
 
 The following environment variables can be used:
 
 ```
-KEY                                TYPE             DEFAULT             STREAM_LOG_LEVEL                     String           debug                              sets log level for the application
+KEY                                  TYPE             DEFAULT                            DESCRIPTION
+STREAM_LOG_LEVEL                     String           debug                              sets log level for the application
 STREAM_SERVER_SECRET                 String                                              server secret required to generate and verify tokens
 STREAM_PPROF_ENABLED                 True or False    true                               starts profile server on localhost:6060 if true
 STREAM_INSECURE                      True or False    false                              ignores authorization check if true
-STREAM_SERVE_URL                     String           0.0.0.0:1080                       listen on url
+STREAM_SERVE_URL                     String           0.0.0.0:1080                       listens on URL
 STREAM_ENDPOINT_URL                  URL              s3://127.0.0.1:9000                S3 or Datalake endpoint, example: s3://my-ip-address, datalake://my-ip-address
 STREAM_MAX_PARALLEL_SCALING_COUNT    Integer          2                                  how much parallel scaling can be processed
 STREAM_MAX_THREAD_COUNT              Integer          4                                  max number of threads for transcoder
-STREAM_OUTPUT_DIR                    String           /tmp/transcoing/                   path to the directory with tra
+STREAM_OUTPUT_DIR                    String           /tmp/transcoding/                  path to the directory where transcoded files are stored
+STREAM_SENTRY_DSN                    String           ""                                 sentry dsn for error tracking
 ```
 
 ### Metadata
@@ -103,7 +105,7 @@ The service exposes an HTTP API.
 
 Below are some examples of how to interact with it.
 
-### Trnascode via TUS
+### Transcode via TUS
 
 ```bash
 curl -X POST http://localhost:1080/recording \
@@ -112,8 +114,8 @@ curl -X POST http://localhost:1080/recording \
      --data-binary @path/to/your/file.mp4
 ```
 
-Note: tus client is required, to play with a service locally you can use tus-js-client example
-with [video](https://github.com/tus/tus-js-client/blob/main/demos/browser/video.html)
+Note: A TUS client is required to play with the service locally.
+You can use the tus-js-client example with [video](https://github.com/tus/tus-js-client/blob/main/demos/browser/video.html).
 
 ### Schedule a transcoding
 

@@ -20,7 +20,6 @@ import (
 
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -61,16 +60,6 @@ func NewS3(ctx context.Context, endpoint, bucketName string) Storage {
 		bucketName: bucketName,
 		logger:     log.FromContext(ctx).With(zap.String("s3", "storage")),
 	}
-}
-
-func getContentType(objectKey string) string {
-	if strings.HasSuffix(objectKey, ".ts") {
-		return "video/mp2t"
-	}
-	if strings.HasSuffix(objectKey, ".m3u8") {
-		return "video/x-mpegurl"
-	}
-	return "application/octet-stream"
 }
 
 // DeleteFile deletes file from the s3 storage
