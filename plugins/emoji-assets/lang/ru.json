@@ -1,4 +1,25 @@
 {
   "string": {
+    "SmileysAndPeople": "Эмоции & Люди",
+    "Components": "Компоненты",
+    "AnimalsAndNature": "Животные & Природа",
+    "FoodAndDrink": "Еда & Напитки",
+    "TravelAndPlaces": "Путешествия & Места",
+    "Activities": "Варианты досуга",
+    "Objects": "Объекты",
+    "Symbols": "Символы",
+    "Flags": "Флаги",
+    "FrequentlyUsed": "Часто используемые",
+    "GettingWorkDone": "Для работы",
+    "DefaultSkinTone": "Тон кожи по умолчанию",
+    "NoTone": "Без тона",
+    "Light": "Cветлый",
+    "MediumLight": "Cредне-светлый",
+    "Medium": "Средний",
+    "MediumDark": "Средне-темный",
+    "Dark": "Темный",
+    "Remove": "Удалить",
+    "SearchDots": "Поиск...",
+    "SearchResults": "Результаты поиска"
   }
 }

@@ -1,4 +1,25 @@
 {
   "string": {
+    "SmileysAndPeople": "Smileys & Personnes",
+    "Components": "Composants",
+    "AnimalsAndNature": "Animaux & Nature",
+    "FoodAndDrink": "Nourriture & Boissons",
+    "TravelAndPlaces": "Voyages & Lieux",
+    "Activities": "Activités",
+    "Objects": "Objets",
+    "Symbols": "Symboles",
+    "Flags": "Drapeaux",
+    "FrequentlyUsed": "Fréquemment utilisé",
+    "GettingWorkDone": "Faire le travail",
+    "DefaultSkinTone": "Teint par défaut",
+    "NoTone": "Pas de tonalité",
+    "Light": "Clair",
+    "MediumLight": "Moyen-clair",
+    "Medium": "Moyen",
+    "MediumDark": "Moyen-foncé",
+    "Dark": "Foncé",
+    "Remove": "Supprimer",
+    "SearchDots": "Recherche...",
+    "SearchResults": "Résultats de la recherche"
   }
 }
