@@ -128,18 +128,22 @@
         <DocTable objects={docs} {_class} {config} {onContextMenu} />
       </Scroller>
     {:else if !readonly}
-      <div class="antiSection-empty clear-mins mt-3" class:solid={emptyKind === 'create'} class:noBorder={emptyKind === 'placeholder'}>
+      <div
+        class="antiSection-empty clear-mins mt-3"
+        class:solid={emptyKind === 'create'}
+        class:noBorder={emptyKind === 'placeholder'}
+      >
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         {#if emptyKind === 'create'}
-                  <span class="over-underline content-color" on:click={add}>
-          <Label label={core.string.AddRelation} />
-                  </span>
-          {:else}
-        <span class=" content-color" >
-         <Label label={view.string.NoRelations} />
-        </span>
-          {/if}
+          <span class="over-underline content-color" on:click={add}>
+            <Label label={core.string.AddRelation} />
+          </span>
+        {:else}
+          <span class=" content-color">
+            <Label label={view.string.NoRelations} />
+          </span>
+        {/if}
       </div>
     {/if}
   </svelte:fragment>

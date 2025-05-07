@@ -39,6 +39,7 @@ export type IconSize = 'x-small' | 'small' | 'medium' | 'large'
 export type IconComponent = Asset | ComponentType
 
 export enum AvatarSize {
+  XXSmall = 'xx-small',
   XSmall = 'x-small',
   Small = 'small',
   Regular = 'regular',

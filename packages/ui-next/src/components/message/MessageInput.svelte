@@ -80,7 +80,7 @@
     for (const file of files) {
       await communicationClient.createFile(card._id, id, created, file.blobId, file.type, file.filename, file.size)
     }
-    await client.update(card, { }, false, Date.now())
+    await client.update(card, {}, false, Date.now())
   }
 
   async function editMessage (message: Message, markdown: string, files: UploadedFile[]): Promise<void> {

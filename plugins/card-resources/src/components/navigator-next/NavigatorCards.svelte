@@ -16,7 +16,12 @@
 <script lang="ts">
   import { Card, CardSpace, MasterTag } from '@hcengineering/card'
   import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
-  import { createLabelsQuery, createNotificationContextsQuery, createQuery, getClient } from '@hcengineering/presentation'
+  import {
+    createLabelsQuery,
+    createNotificationContextsQuery,
+    createQuery,
+    getClient
+  } from '@hcengineering/presentation'
   import uiNext, { Button, ButtonVariant, NavItem } from '@hcengineering/ui-next'
   import { createEventDispatcher } from 'svelte'
   import { Label, NotificationContext } from '@hcengineering/communication-types'
@@ -48,7 +53,7 @@
   let isLoading: boolean = true
 
   let sort: 'alphabetical' | 'recent' | undefined
-   $:sort = config.specialSorting?.[type._id] ?? config.defaultSorting ?? 'alphabetical'
+  $: sort = config.specialSorting?.[type._id] ?? config.defaultSorting ?? 'alphabetical'
 
   let limit = config.limit
 

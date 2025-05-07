@@ -202,13 +202,13 @@
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         {#if emptyKind === 'create'}
           <span class="over-underline content-color" on:click={createCard}>
-          <Label label={card.string.CreateChild} />
+            <Label label={card.string.CreateChild} />
           </span>
-          {:else}
-        <span class="content-color" >
-          <Label label={card.string.NoChildren} />
-        </span>
-          {/if}
+        {:else}
+          <span class="content-color">
+            <Label label={card.string.NoChildren} />
+          </span>
+        {/if}
       </div>
     {/if}
   </svelte:fragment>

@@ -42,7 +42,7 @@
     {/if}
     {#if secondLabel}
       ({secondLabel})
-      {/if}
+    {/if}
   </span>
   {#if notify && notificationsCount > 0}
     <span class="nav-item__notifications-count">
@@ -52,8 +52,8 @@
         {notificationsCount}
       {/if}
     </span>
-    {:else if notify}
-    <span class="nav-item__notifications-count small"/>
+  {:else if notify}
+    <span class="nav-item__notifications-count small" />
   {/if}
 </button>
 
