@@ -15,7 +15,7 @@
     "MonthAt": "{month} alle {time}",
     "New": "Nuovo",
     "Removed": "Rimosso",
-    "RepliesCount": "{count} risposte",
+    "RepliesCount": "{count, plural, =0 {nessuna risposta} =1 {1 risposta} other {# risposte}}",
     "Reply": "Rispondi",
     "Send": "Invia",
     "Set": "Imposta",

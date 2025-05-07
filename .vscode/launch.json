@@ -887,7 +887,7 @@
         "PORT": "9087",
         "SECRET": "secret",
         "SERVICE_ID": "msg2file-service",
-        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin"
+        "STORAGE_CONFIG": "datalake|http://huly.local:4030"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],

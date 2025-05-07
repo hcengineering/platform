@@ -812,6 +812,12 @@ export interface ObjectPanel extends Class<Doc> {
   component: AnyComponent
 }
 
+// Temp workaround for cards-based apps navigation
+export interface CustomObjectLinkProvider extends Class<Doc> {
+  match: Resource<(doc: Doc) => boolean>
+  encode: Resource<(doc: Doc) => Location>
+}
+
 /**
  * @public
  */

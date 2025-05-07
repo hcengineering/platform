@@ -69,10 +69,12 @@ import {
   FindMessagesParams,
   FindNotificationContextParams,
   FindNotificationsParams,
+  FindCollaboratorsParams,
   Label,
   Message,
   MessagesGroup,
-  NotificationContext
+  NotificationContext,
+  Collaborator
 } from '@hcengineering/communication-types'
 
 const SECOND = 1000
@@ -933,6 +935,10 @@ class Connection implements ClientConnection {
 
   async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<Notification[]> {
     return await this.sendRequest({ method: 'findNotifications', params: [params, queryId] })
+  }
+
+  async findCollaborators (params: FindCollaboratorsParams): Promise<Collaborator[]> {
+    return await this.sendRequest({ method: 'findCollaborators', params: [params] })
   }
 
   async unsubscribeQuery (id: number): Promise<void> {

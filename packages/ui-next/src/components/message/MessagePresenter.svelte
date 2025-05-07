@@ -35,7 +35,7 @@
   import Menu from '../Menu.svelte'
   import uiNext from '../../plugin'
   import MessageReplies from './MessageReplies.svelte'
-  import { toMarkup, toggleReaction } from '../../utils'
+  import { toMarkup, toggleReaction, replyToThread } from '../../utils'
   import MessageActionsPanel from './MessageActionsPanel.svelte'
   import IconEmoji from '../icons/IconEmoji.svelte'
   import IconMessageMultiple from '../icons/IconMessageMultiple.svelte'
@@ -58,8 +58,13 @@
   function canEdit (): boolean {
     if (!editable) return false
     if (message.type !== MessageType.Message) return false
+    if (message.thread != null) return false
 
     return me.socialIds.includes(message.creator)
+  }
+
+  function canReply (): boolean {
+    return message.type === MessageType.Message
   }
 
   async function updateAuthor (socialId: SocialID): Promise<void> {
@@ -125,8 +130,10 @@
       event.preventDefault()
       event.stopPropagation()
 
-      const actions: MenuAction[] = [
-        {
+      const actions: MenuAction[] = []
+
+      if (message.thread == null) {
+        actions.push({
           label: uiNext.string.Emoji,
           icon: IconEmoji,
           action: async (): Promise<void> => {
@@ -145,18 +152,21 @@
               () => {}
             )
           }
-        },
-        {
+        })
+      }
+
+      if (canReply()) {
+        actions.push({
           label: uiNext.string.Reply,
           icon: IconMessageMultiple,
           action: async (): Promise<void> => {
-            dispatch('reply', message)
+            await replyToThread(message, card)
           }
-        }
-      ]
+        })
+      }
 
       if (canEdit()) {
-        actions.unshift({
+        actions.push({
           label: uiNext.string.Edit,
           icon: IconPen,
           action: handleEdit
@@ -169,7 +179,8 @@
 
   let isActionsOpened = false
 
-  async function handleReply () {
+  async function handleReply (): Promise<void> {
+    if (!canReply()) return
     const t = message.thread
     if (t === undefined) return
     const _id = t.thread
@@ -178,6 +189,8 @@
     if (c === undefined) return
     await openDoc(client.getHierarchy(), c)
   }
+
+  $: isThread = message.thread != null
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -194,10 +207,12 @@
       <MessageActionsPanel
         {message}
         editable={canEdit()}
+        canReply={canReply()}
+        canReact={!isThread}
         bind:isOpened={isActionsOpened}
         on:edit={handleEdit}
         on:reply={() => {
-          dispatch('reply', message)
+          void replyToThread(message, card)
         }}
       />
     </div>
@@ -242,21 +257,26 @@
       {/if}
     </div>
   </div>
-  {#if message.files.length > 0}
+  {#if !isThread && message.files.length > 0}
     <div class="message__files">
       {#each message.files as file (file.blobId)}
         <AttachmentPreview value={{ file: file.blobId, type: file.type, name: file.filename }} />
       {/each}
     </div>
   {/if}
-  {#if message.reactions.length > 0}
+  {#if !isThread && message.reactions.length > 0}
     <div class="message__reactions">
       <ReactionsList reactions={message.reactions} on:click={handleReaction} />
     </div>
   {/if}
   {#if replies && message.thread && message.thread.repliesCount > 0}
     <div class="message__replies overflow-label">
-      <MessageReplies count={message.thread.repliesCount} lastReply={message.thread.lastReply} on:click={handleReply} />
+      <MessageReplies
+        threadId={message.thread.thread}
+        count={message.thread.repliesCount}
+        lastReply={message.thread.lastReply}
+        on:click={handleReply}
+      />
     </div>
   {/if}
 </div>

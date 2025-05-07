@@ -15,15 +15,38 @@
 
 <script lang="ts">
   import { ticker, DAY, HOUR, MINUTE, languageStore } from '@hcengineering/ui'
+  import { getCommunicationClient, getClient } from '@hcengineering/presentation'
   import { translateCB } from '@hcengineering/platform'
+  import { Collaborator, CardID } from '@hcengineering/communication-types'
+  import contact, { Person } from '@hcengineering/contact'
 
+  import Avatar from '../Avatar.svelte'
   import uiNext from '../../plugin'
   import Label from '../Label.svelte'
+  import { AvatarSize } from '../../types'
 
+  export let threadId: CardID
   export let count: number
   export let lastReply: Date
 
+  const displayPersonsNumber = 4
+  const communicationClient = getCommunicationClient()
+  const client = getClient()
+
   let displayDate: string = ''
+  let collaborators: Collaborator[] = []
+  let persons: Person[] = []
+
+  $: communicationClient.findCollaborators({ card: threadId }).then((res) => {
+    collaborators = res
+  })
+  $: client
+    .findAll(contact.class.Person, {
+      personUuid: { $in: collaborators.map((it) => it.account).slice(0, displayPersonsNumber) }
+    })
+    .then((res) => {
+      persons = res
+    })
 
   $: formatDate($ticker, lastReply, $languageStore)
 
@@ -125,17 +148,30 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="replies" on:click>
+  <div class="avatars">
+    {#each persons as person}
+      <Avatar size={AvatarSize.XSmall} avatar={person} name={person.name} />
+    {/each}
+  </div>
+
+  {#if collaborators.length > displayPersonsNumber}
+    <div class="plus">
+      +{collaborators.length - displayPersonsNumber}
+    </div>
+  {/if}
+
   <span class="text overflow-label">
     <span class="replies__count">
       <Label label={uiNext.string.RepliesCount} params={{ count }} />
     </span>
-
-    <span class="replies__last-reply">
-      <Label label={uiNext.string.LastReply} />
-      <span class="lower">
-        {displayDate}
+    {#if count > 0}
+      <span class="replies__last-reply">
+        <Label label={uiNext.string.LastReply} />
+        <span class="lower">
+          {displayDate}
+        </span>
       </span>
-    </span>
+    {/if}
   </span>
 </div>
 
@@ -169,5 +205,10 @@
     color: var(--next-text-color-tertiary);
     font-size: 0.75rem;
     font-weight: 400;
+  }
+
+  .avatars {
+    display: flex;
+    gap: 0.25rem;
   }
 </style>
