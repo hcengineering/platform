@@ -39,7 +39,8 @@ export function createModel (builder: Builder): void {
       hidden: true,
       component: chat.component.ChatApplication,
       locationResolver: chat.resolver.Location,
-      locationDataResolver: chat.resolver.LocationData
+      locationDataResolver: chat.resolver.LocationData,
+      type: 'cards'
     },
     chat.app.Chat
   )

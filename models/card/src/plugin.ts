@@ -52,7 +52,9 @@ export default mergeIds(cardId, card, {
   function: {
     CardTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     CardIdProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
-    GetCardLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
+    GetCardLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    CardCustomLinkMatch: '' as Resource<(doc: Doc) => boolean>,
+    CardCustomLinkEncode: '' as Resource<(doc: Doc) => Location>
   },
   label: {
     Subscribed: '' as Ref<TagElement>,

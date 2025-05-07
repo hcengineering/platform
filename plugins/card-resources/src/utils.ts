@@ -36,7 +36,7 @@ import {
   type ResolvedLocation,
   showPopup
 } from '@hcengineering/ui'
-import view from '@hcengineering/view'
+import view, { encodeObjectURI } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import workbench, { type LocationData } from '@hcengineering/workbench'
 import { translate } from '@hcengineering/platform'
@@ -251,4 +251,21 @@ export async function openCardInSidebar (cardId: Ref<Card>, doc?: Card, tabId?: 
   }
 
   openWidget(widget, data)
+}
+
+export function cardCustomLinkMatch (doc: Card): boolean {
+  const loc = getCurrentResolvedLocation()
+  const client = getClient()
+  const alias = loc.path[2]
+  const app = client.getModel().findAllSync(workbench.class.Application, {
+    alias
+  })[0]
+
+  return app.type === 'cards'
+}
+
+export function cardCustomLinkEncode (doc: Card): Location {
+  const loc = getCurrentResolvedLocation()
+  loc.path[3] = encodeObjectURI(doc._id, card.class.Card)
+  return loc
 }

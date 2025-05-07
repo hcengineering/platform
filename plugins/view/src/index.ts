@@ -62,7 +62,8 @@ import {
   Viewlet,
   ViewletDescriptor,
   ViewletPreference,
-  LinkIdProvider
+  LinkIdProvider,
+  CustomObjectLinkProvider
 } from './types'
 
 export * from './types'
@@ -113,7 +114,8 @@ const view = plugin(viewId, {
     AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>,
     Aggregation: '' as Ref<Mixin<Aggregation>>,
     Groupping: '' as Ref<Mixin<Groupping>>,
-    ObjectIcon: '' as Ref<Mixin<ObjectIcon>>
+    ObjectIcon: '' as Ref<Mixin<ObjectIcon>>,
+    CustomObjectLinkProvider: '' as Ref<Mixin<CustomObjectLinkProvider>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,
