@@ -56,6 +56,9 @@ func escapeQuotes(s string) string {
 	return quoteEscaper.Replace(s)
 }
 
+// multipart writer CreateFormFile function does not support custom content type
+// here we have to have a modified copy that uses actual type instead of application/octet-stream
+// see https://github.com/golang/go/issues/49329
 func createFormFile(writer *multipart.Writer, fieldname, filename, contentType string) (io.Writer, error) {
 	h := make(textproto.MIMEHeader)
 	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, escapeQuotes(fieldname), escapeQuotes(filename)))
