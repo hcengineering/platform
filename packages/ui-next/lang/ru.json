@@ -15,7 +15,7 @@
     "MonthAt": "{month} в {time}",
     "New": "Новый",
     "Removed": "Удалено",
-    "RepliesCount": "{count} ответов",
+    "RepliesCount": "{count, plural, =0 {нет ответов} =1 {1 ответ} other {# ответов}}",
     "Reply": "Ответить",
     "Send": "Отправить",
     "Set": "Установлено",

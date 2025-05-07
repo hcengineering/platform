@@ -49,7 +49,7 @@
       {#if separatorIndex !== 0 && index === separatorIndex}
         <MessagesSeparator bind:element={separatorDiv} />
       {/if}
-      <MessagePresenter {message} {card} editable={!readonly} on:reply />
+      <MessagePresenter {message} {card} editable={!readonly} />
     {/each}
   </div>
 </div>

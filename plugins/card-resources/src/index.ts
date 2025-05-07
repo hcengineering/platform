@@ -25,7 +25,9 @@ import {
   getCardLink,
   queryCard,
   deleteMasterTag,
-  editSpace
+  editSpace,
+  cardCustomLinkEncode,
+  cardCustomLinkMatch
 } from './utils'
 import ManageMasterTagsContent from './components/settings/ManageMasterTagsContent.svelte'
 import ManageMasterTagsTools from './components/settings/ManageMasterTagsTools.svelte'
@@ -115,6 +117,8 @@ export default async (): Promise<Resources> => ({
   function: {
     CardTitleProvider: getCardTitle,
     CardIdProvider: getCardId,
-    GetCardLink: getCardLink
+    GetCardLink: getCardLink,
+    CardCustomLinkMatch: cardCustomLinkMatch,
+    CardCustomLinkEncode: cardCustomLinkEncode
   }
 })

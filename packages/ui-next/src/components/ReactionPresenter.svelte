@@ -37,7 +37,7 @@
   class:selected
   class:active
   on:click
-  use:tooltip={{ component: ReactionsTooltip, props: { socialIds } }}
+  use:tooltip={(count ?? 0) > 0 ? { component: ReactionsTooltip, props: { socialIds } } : undefined}
 >
   <div class="reaction__emoji" class:foreground={icon != null}>
     {#if icon}

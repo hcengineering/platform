@@ -12,12 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import {
+  fillDefaults,
+  generateId,
+  getCurrentAccount,
+  type Markup,
+  type MarkupBlobRef,
+  type Ref,
+  SortingOrder
+} from '@hcengineering/core'
+import { markupToJSON, jsonToMarkup, markupToText } from '@hcengineering/text'
 import { showPopup } from '@hcengineering/ui'
-import { getCurrentAccount, type Markup } from '@hcengineering/core'
-import { markupToJSON, jsonToMarkup } from '@hcengineering/text'
 import { markupToMarkdown, markdownToMarkup } from '@hcengineering/text-markdown'
 import { type Message } from '@hcengineering/communication-types'
-import { getCommunicationClient } from '@hcengineering/presentation'
+import { getClient, getCommunicationClient } from '@hcengineering/presentation'
+import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
+import cardPlugin, { type Card } from '@hcengineering/card'
+import { openDoc } from '@hcengineering/view-resources'
+import { getEmployeeBySocialId } from '@hcengineering/contact'
+import { get } from 'svelte/store'
+import chat from '@hcengineering/chat'
+import { makeRank } from '@hcengineering/rank'
 import emojiPlugin from '@hcengineering/emoji'
 
 import IconAt from './components/icons/IconAt.svelte'
@@ -76,4 +91,59 @@ export async function toggleReaction (message: Message, emoji: string): Promise<
   } else {
     await communicationClient.createReaction(message.card, message.id, message.created, emoji)
   }
+}
+
+export async function replyToThread (message: Message, parentCard: Card): Promise<void> {
+  const client = getClient()
+  const communicationClient = getCommunicationClient()
+  const hierarchy = client.getHierarchy()
+
+  const thread = message.thread
+  if (thread != null) {
+    const _id = thread.thread
+    const card = await client.findOne(cardPlugin.class.Card, { _id: _id as Ref<Card> })
+    if (card === undefined) return
+    await openDoc(client.getHierarchy(), card)
+    return
+  }
+
+  const author =
+    get(employeeByPersonIdStore).get(message.creator) ?? (await getEmployeeBySocialId(client, message.creator))
+  const lastOne = await client.findOne(cardPlugin.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
+  const title = createThreadTitle(message, parentCard)
+  const data = fillDefaults(
+    hierarchy,
+    {
+      title,
+      rank: makeRank(lastOne?.rank, undefined),
+      content: '' as MarkupBlobRef,
+      parent: parentCard._id
+    },
+    chat.masterTag.Thread
+  )
+  const apply = client.apply('create thread', undefined, true)
+  const threadCardID = generateId<Card>()
+  await apply.createDoc(chat.masterTag.Thread, cardPlugin.space.Default, data, threadCardID)
+  await apply.commit()
+  await communicationClient.createThread(
+    parentCard._id,
+    message.id,
+    message.created,
+    threadCardID,
+    chat.masterTag.Thread
+  )
+  if (author?.active === true && author?.personUuid !== undefined) {
+    await communicationClient.addCollaborators(threadCardID, chat.masterTag.Thread, [author.personUuid])
+  }
+  const threadCard = await client.findOne(cardPlugin.class.Card, { _id: threadCardID })
+  if (threadCard === undefined) return
+  await openDoc(client.getHierarchy(), threadCard)
+}
+
+function createThreadTitle (message: Message, parent: Card): string {
+  const markup = jsonToMarkup(markdownToMarkup(message.content))
+  const messageText = markupToText(markup).trim()
+
+  const titleFromMessage = `${messageText.slice(0, 100)}${messageText.length > 100 ? '...' : ''}`
+  return titleFromMessage.length > 0 ? titleFromMessage : `Thread from ${parent.title}`
 }

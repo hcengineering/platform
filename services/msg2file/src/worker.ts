@@ -256,8 +256,8 @@ async function newMessages2file (
     const savedMessages = await createNewGroup(client, card, newMessages, ctx, storage, workspace)
 
     const ids = [...messagesFromExistingGroup, ...savedMessages].map((it) => it.id)
-    await removeMessages(db, workspace, card._id, ids)
-    await removePatches(db, workspace, card._id, ids)
+    await removeMessages(db, workspace, card._id, [...ids])
+    await removePatches(db, workspace, card._id, [...ids])
   }
 }
 

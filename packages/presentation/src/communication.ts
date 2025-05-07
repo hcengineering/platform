@@ -32,7 +32,9 @@ import {
   type SocialID,
   type CardType,
   type Label,
-  type FindLabelsParams
+  type FindLabelsParams,
+  type FindCollaboratorsParams,
+  type Collaborator
 } from '@hcengineering/communication-types'
 import {
   type CreateFileEvent,
@@ -80,6 +82,7 @@ interface Connection extends PlatformConnection {
   findNotificationContexts: (params: FindNotificationContextParams, queryId?: number) => Promise<NotificationContext[]>
   findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<Notification[]>
   findLabels: (params: FindLabelsParams) => Promise<Label[]>
+  findCollaborators: (params: FindCollaboratorsParams) => Promise<Collaborator[]>
   sendEvent: (event: RequestEvent) => Promise<EventResult>
   unsubscribeQuery: (id: number) => Promise<void>
 }
@@ -122,13 +125,20 @@ class Client {
   onEvent: (event: ResponseEvent) => void = () => {}
   onRequest: (event: RequestEvent, eventPromise: Promise<EventResult>) => void = () => {}
 
-  async createThread (card: CardID, message: MessageID, messageCreated: Date, thread: CardID): Promise<void> {
+  async createThread (
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    thread: CardID,
+    threadType: CardType
+  ): Promise<void> {
     const event: CreateThreadEvent = {
       type: MessageRequestEventType.CreateThread,
       card,
       message,
       messageCreated,
-      thread
+      thread,
+      threadType
     }
 
     await this.sendEvent(event)
@@ -154,7 +164,7 @@ class Client {
       card,
       message,
       messageCreated,
-      content,
+      data: { content },
       creator: this.getSocialId()
     }
     await this.sendEvent(event)
@@ -260,6 +270,10 @@ class Client {
 
   async findLabels (params: FindLabelsParams): Promise<Label[]> {
     return await this.connection.findLabels(params)
+  }
+
+  async findCollaborators (params: FindCollaboratorsParams): Promise<Collaborator[]> {
+    return await this.connection.findCollaborators(params)
   }
 
   async unsubscribeQuery (id: number): Promise<void> {

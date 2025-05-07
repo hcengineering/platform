@@ -309,13 +309,6 @@
     })
   }
 
-  async function handleReply (event: CustomEvent<Message>): Promise<void> {
-    // const message = event.detail
-    // await replyToThread(message, card)
-    // TODO: implement reply
-    alert('Sorry, replying is not implemented yet.')
-  }
-
   $: void initializeScroll(isLoading, isLoadingBefore, separatorDiv)
 
   function scrollToWithOffset (container: HTMLElement, target: HTMLElement, offset: number): void {
@@ -404,10 +397,9 @@
       messages={group.messages}
       {readonly}
       {separatorDate}
-      on:reply={handleReply}
     />
   {:else}
-    <MessagesGroupPresenter {card} date={group.day} messages={group.messages} {readonly} on:reply={handleReply} />
+    <MessagesGroupPresenter {card} date={group.day} messages={group.messages} {readonly} />
   {/if}
 {/each}
 {#if window !== undefined && window.hasNextPage()}

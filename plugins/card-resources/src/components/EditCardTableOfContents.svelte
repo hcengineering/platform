@@ -137,7 +137,7 @@
     }
   }
 
-  function onMessageSent (): void {
+  export function scrollDown (): void {
     if (scrollDiv == null) return
     const lastTocItem = toc[toc.length - 1]
     if (lastTocItem === undefined) return
@@ -175,14 +175,14 @@
   $: showOverlay = !isScrollInitialized || Object.values(sectionOverlays).some((it) => it)
 </script>
 
-{#if showOverlay}
-  <div class="overlay">
-    <Loading />
-  </div>
-{/if}
-<div class="hulyComponent-content__container columns">
+<div class="hulyComponent-content__container columns relative">
+  {#if showOverlay}
+    <div class="overlay">
+      <Loading />
+    </div>
+  {/if}
   <div class="hulyComponent-content__column content">
-    <div class="toc-container">
+    <div class="toc-container" class:hidden={showOverlay}>
       <div class="toc">
         <TableOfContents
           items={toc}
@@ -233,25 +233,10 @@
         {/each}
       </div>
     </Scroller>
-
-    {#if !readonly}
-      <div class="message-input">
-        <MessageInput cardId={doc._id} cardType={doc._class} title={doc.title} on:sent={onMessageSent} />
-      </div>
-    {/if}
   </div>
 </div>
 
 <style lang="scss">
-  .message-input {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 0 0.75rem;
-    min-height: 8.5rem;
-    max-height: 50%;
-  }
   .overlay {
     width: 100%;
     height: 100%;
@@ -270,6 +255,10 @@
     z-index: 1;
     top: 0;
     left: 0.5rem;
+
+    &.hidden {
+      display: none;
+    }
   }
 
   .toc {

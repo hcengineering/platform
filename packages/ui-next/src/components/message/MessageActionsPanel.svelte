@@ -29,15 +29,19 @@
 
   export let message: Message
   export let editable: boolean = true
+  export let canReply: boolean = true
+  export let canReact: boolean = true
   export let isOpened: boolean = false
 
   const dispatch = createEventDispatcher()
 
   function getActions (): Action[] {
-    const actions: Action[] = [
-      {
+    const actions: Action[] = []
+    if (canReact) {
+      actions.push({
         id: 'emoji',
         label: uiNext.string.Emoji,
+
         icon: IconEmoji,
         order: 10,
         action: (event: MouseEvent): void => {
@@ -60,8 +64,11 @@
             }
           )
         }
-      },
-      {
+      })
+    }
+
+    if (canReply) {
+      actions.push({
         id: 'reply',
         label: uiNext.string.Reply,
         icon: IconMessageMultiple,
@@ -69,11 +76,11 @@
         action: (): void => {
           dispatch('reply')
         }
-      }
-    ]
+      })
+    }
 
     if (editable) {
-      actions.unshift({
+      actions.push({
         id: 'edit',
         label: uiNext.string.Edit,
         icon: IconPen,
