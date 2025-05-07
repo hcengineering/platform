@@ -31,7 +31,7 @@ export class WatchClient {
 
   private async getWatches (): Promise<Record<string, Watch>> {
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:${this.user.workspace}:${this.user.userId}`
+    const key = `${CALENDAR_INTEGRATION}:watch:${this.user.workspace}:${this.user.userId}:${this.user.email}`
     const watches = await client.listKeys<Watch>(key)
     return watches ?? {}
   }
@@ -104,7 +104,7 @@ async function watchCalendars (user: User, email: GoogleEmail, googleClient: cal
   const res = await googleClient.calendarList.watch({ requestBody: body })
   if (res.data.expiration != null && res.data.resourceId !== null) {
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:${user.workspace}:${user.userId}:null`
+    const key = `${CALENDAR_INTEGRATION}:watch:${user.workspace}:${user.userId}:${email}:null`
     await client.setValue<Watch>(key, {
       userId: user.userId,
       workspace: user.workspace,
@@ -133,7 +133,7 @@ async function watchCalendar (
   const res = await googleClient.events.watch({ calendarId, requestBody: body })
   if (res.data.expiration != null && res.data.resourceId != null) {
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:${user.workspace}:${user.userId}:${calendarId}`
+    const key = `${CALENDAR_INTEGRATION}:watch:${user.workspace}:${user.userId}:${email}:${calendarId}`
     await client.setValue<Watch>(key, {
       userId: user.userId,
       workspace: user.workspace,
@@ -267,7 +267,7 @@ export class WatchController {
   ): Promise<void> {
     if (!force) {
       const client = getKvsClient()
-      const key = `${CALENDAR_INTEGRATION}:watch:${user.workspace}:${user.userId}:${calendarId ?? 'null'}`
+      const key = `${CALENDAR_INTEGRATION}:watch:${user.workspace}:${user.userId}:${email}:${calendarId ?? 'null'}`
       const exists = await client.getValue<Watch>(key)
       if (exists != null) {
         return
