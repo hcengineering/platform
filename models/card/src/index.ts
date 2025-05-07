@@ -749,6 +749,10 @@ export function createModel (builder: Builder): void {
     },
     card.ids.CardWidget
   )
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.CustomObjectLinkProvider, {
+    match: card.function.CardCustomLinkMatch,
+    encode: card.function.CardCustomLinkEncode
+  })
 }
 
 function defineTabs (builder: Builder): void {

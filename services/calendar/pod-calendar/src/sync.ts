@@ -191,7 +191,7 @@ export class IncomingSyncManager {
   }
 
   private async syncEvents (calendarId: string): Promise<void> {
-    const history = await getEventHistory(this.user, calendarId)
+    const history = await getEventHistory(this.user, this.email, calendarId)
     await this.eventsSync(calendarId, history)
   }
 
@@ -220,7 +220,7 @@ export class IncomingSyncManager {
         await this.eventsSync(calendarId, syncToken, nextPageToken)
       }
       if (res.data.nextSyncToken != null) {
-        await setEventHistory(this.user, calendarId, res.data.nextSyncToken)
+        await setEventHistory(this.user, this.email, calendarId, res.data.nextSyncToken)
       }
       // if resync
     } catch (err: any) {
@@ -559,7 +559,7 @@ export class IncomingSyncManager {
   }
 
   async syncCalendars (): Promise<void> {
-    const history = await getCalendarsSyncHistory(this.user)
+    const history = await getCalendarsSyncHistory(this.user, this.email)
     await this.calendarSync(history)
     const watchController = WatchController.get(this.accountClient)
     await this.rateLimiter.take(1)
@@ -594,7 +594,7 @@ export class IncomingSyncManager {
           continue
         }
         if (res.data.nextSyncToken != null) {
-          await setCalendarsSyncHistory(this.user, res.data.nextSyncToken)
+          await setCalendarsSyncHistory(this.user, this.email, res.data.nextSyncToken)
         }
         return
       } catch (err: any) {

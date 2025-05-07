@@ -12,10 +12,11 @@ export function getKvsClient (): KeyValueClient {
   return keyValueClient
 }
 
-export async function getSyncHistory (workspace: WorkspaceUuid): Promise<number | undefined | null> {
+export async function getSyncHistory (workspace: WorkspaceUuid): Promise<number | undefined> {
   const client = getKvsClient()
   const key = `${CALENDAR_INTEGRATION}:calendarSync:${workspace}`
-  return await client.getValue(key)
+  const res = await client.getValue<number>(key)
+  return res ?? undefined
 }
 
 export async function setSyncHistory (workspace: WorkspaceUuid): Promise<void> {
@@ -24,32 +25,37 @@ export async function setSyncHistory (workspace: WorkspaceUuid): Promise<void> {
   await client.setValue(key, Date.now())
 }
 
-function calendarsHistoryKey (user: User): string {
-  return `${CALENDAR_INTEGRATION}:calendarsHistory:${user.workspace}:${user.userId}`
+function calendarsHistoryKey (user: User, email: GoogleEmail): string {
+  return `${CALENDAR_INTEGRATION}:calendarsHistory:${user.workspace}:${user.userId}:${email}`
 }
 
-export async function getCalendarsSyncHistory (user: User): Promise<string | undefined> {
+export async function getCalendarsSyncHistory (user: User, email: GoogleEmail): Promise<string | undefined> {
   const client = getKvsClient()
-  return (await client.getValue(calendarsHistoryKey(user))) ?? undefined
+  return (await client.getValue(calendarsHistoryKey(user, email))) ?? undefined
 }
 
-export async function setCalendarsSyncHistory (user: User, historyId: string): Promise<void> {
+export async function setCalendarsSyncHistory (user: User, email: GoogleEmail, historyId: string): Promise<void> {
   const client = getKvsClient()
-  await client.setValue(calendarsHistoryKey(user), historyId)
+  await client.setValue(calendarsHistoryKey(user, email), historyId)
 }
 
-function eventHistoryKey (user: User, calendarId: string): string {
-  return `${CALENDAR_INTEGRATION}:eventHistory:${user.workspace}:${user.userId}:${calendarId}`
+function eventHistoryKey (user: User, email: GoogleEmail, calendarId: string): string {
+  return `${CALENDAR_INTEGRATION}:eventHistory:${user.workspace}:${user.userId}:${email}:${calendarId}`
 }
 
-export async function getEventHistory (user: User, calendarId: string): Promise<string | undefined> {
+export async function getEventHistory (user: User, email: GoogleEmail, calendarId: string): Promise<string | undefined> {
   const client = getKvsClient()
-  return (await client.getValue(eventHistoryKey(user, calendarId))) ?? undefined
+  return (await client.getValue(eventHistoryKey(user, email, calendarId))) ?? undefined
 }
 
-export async function setEventHistory (user: User, calendarId: string, historyId: string): Promise<void> {
+export async function setEventHistory (
+  user: User,
+  email: GoogleEmail,
+  calendarId: string,
+  historyId: string
+): Promise<void> {
   const client = getKvsClient()
-  await client.setValue(eventHistoryKey(user, calendarId), historyId)
+  await client.setValue(eventHistoryKey(user, email, calendarId), historyId)
 }
 
 export async function getUserByEmail (email: GoogleEmail): Promise<Token[]> {

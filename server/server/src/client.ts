@@ -20,6 +20,7 @@ import {
   EventResult
 } from '@hcengineering/communication-sdk-types'
 import {
+  FindCollaboratorsParams,
   FindLabelsParams,
   FindMessagesGroupsParams,
   FindMessagesParams,
@@ -432,6 +433,11 @@ export class ClientSession implements Session {
 
   async findLabels (ctx: ClientSessionCtx, params: FindLabelsParams): Promise<void> {
     const result = await ctx.communicationApi.findLabels(this.getCommunicationCtx(), params)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async findCollaborators (ctx: ClientSessionCtx, params: FindCollaboratorsParams): Promise<void> {
+    const result = await ctx.communicationApi.findCollaborators(this.getCommunicationCtx(), params)
     await ctx.sendResponse(ctx.requestId, result)
   }
 
