@@ -17,6 +17,7 @@ import { gmail_v1 } from 'googleapis'
 
 import { type MeasureContext, PersonId } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
+import { SyncMutex } from '@hcengineering/mail-common'
 
 import { RateLimiter } from '../rateLimiter'
 import { MessageManager } from './message'
@@ -25,35 +26,6 @@ interface History {
   historyId: string
   userId: string
   workspace: string
-}
-
-export class SyncMutex {
-  private readonly locks = new Map<string, Promise<void>>()
-
-  async lock (key: string): Promise<() => void> {
-    // Wait for any existing lock to be released
-    const currentLock = this.locks.get(key)
-    if (currentLock != null) {
-      await currentLock
-    }
-
-    // Create a new lock
-    let releaseFn!: () => void
-    const newLock = new Promise<void>((resolve) => {
-      releaseFn = resolve
-    })
-
-    // Store the lock
-    this.locks.set(key, newLock)
-
-    // Return the release function
-    return () => {
-      if (this.locks.get(key) === newLock) {
-        this.locks.delete(key)
-      }
-      releaseFn()
-    }
-  }
 }
 
 export class SyncManager {
