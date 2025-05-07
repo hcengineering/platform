@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { Card, CardSpace, MasterTag } from '@hcengineering/card'
-  import { Ref, SortingOrder } from '@hcengineering/core'
+  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createLabelsQuery, createNotificationContextsQuery, createQuery, getClient } from '@hcengineering/presentation'
   import uiNext, { Button, ButtonVariant, NavItem } from '@hcengineering/ui-next'
   import { createEventDispatcher } from 'svelte'
@@ -39,8 +39,8 @@
   const labelsQuery = createLabelsQuery()
   const notificationContextsQuery = createNotificationContextsQuery()
 
-  let cards: Card[] = []
-  let sortedCards: Card[] = []
+  let cards: WithLookup<Card>[] = []
+  let sortedCards: WithLookup<Card>[] = []
   let total = -1
   let contextByCard = new Map<Ref<Card>, NotificationContext>()
   let labels: Label[] = []
@@ -84,7 +84,14 @@
         total = res.total
         isLoading = false
       },
-      { total: true, limit, sort: sort === 'alphabetical' ? { title: SortingOrder.Ascending } : { modifiedOn: SortingOrder.Descending } }
+      {
+        total: true,
+        limit,
+        sort: sort === 'alphabetical' ? { title: SortingOrder.Ascending } : { modifiedOn: SortingOrder.Descending },
+        lookup: {
+          parent: cardPlugin.class.Card
+        }
+      }
     )
   }
 
@@ -138,6 +145,7 @@
         {@const context = contextByCard.get(card._id)}
         <NavItem
           label={card.title}
+          secondLabel={card.$lookup?.parent?.title}
           icon={clazz.icon ?? cardPlugin.icon.Card}
           selected={selectedCard === card._id}
           paddingLeft="1.75rem"

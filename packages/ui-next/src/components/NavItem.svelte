@@ -22,6 +22,7 @@
 
   export let label: string | undefined = undefined
   export let labelIntl: IntlString | undefined = undefined
+  export let secondLabel: string | undefined = undefined
   export let icon: IconComponent
   export let selected: boolean = false
   export let notify: boolean = false
@@ -39,6 +40,9 @@
     {:else if labelIntl}
       <Label label={labelIntl} />
     {/if}
+    {#if secondLabel}
+      ({secondLabel})
+      {/if}
   </span>
   {#if notify && notificationsCount > 0}
     <span class="nav-item__notifications-count">
