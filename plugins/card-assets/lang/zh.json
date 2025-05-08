@@ -1,7 +1,7 @@
 {
   "string": {
     "Card": "卡片",
-    "CardApplication": "卡片",
+    "CardApplication": "卡片 (测试版)",
     "Cards": "卡片",
     "Content": "内容",
     "CreateCard": "创建卡片",
@@ -38,6 +38,7 @@
     "NumberTypes": "{count, plural, one {# 类型} other {# 类型}}",
     "Labels": "标签",
     "Properties": "属性",
-    "NoChildren": "没有子级"
+    "NoChildren": "没有子级",
+    "ConfigDescription": "用于数据库风格知识管理的扩展。"
   }
 }
