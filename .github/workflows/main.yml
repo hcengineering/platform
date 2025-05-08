@@ -679,7 +679,7 @@ jobs:
 
   hulykvs-build:
     name: Build Hulykvs
-    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+    #if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
     runs-on: ubuntu-latest
     env: 
       source_repo: https://github.com/hcengineering/hulykvs.git
