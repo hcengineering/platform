@@ -14,15 +14,24 @@
 //
 
 import { type Builder } from '@hcengineering/model'
-import emojiPlugin from './plugin'
-import presentation from '@hcengineering/model-presentation'
 import core from '@hcengineering/model-core'
-import workbench from '@hcengineering/workbench'
+import presentation from '@hcengineering/model-presentation'
+import workbench from '@hcengineering/model-workbench'
+
+import { DOMAIN_EMOJI, TCustomEmoji } from './models'
+import emojiPlugin from './plugin'
 
 export { emojiId } from '@hcengineering/emoji'
 export { emojiPlugin as default }
 
 export function createModel (builder: Builder): void {
+  builder.createModel(TCustomEmoji)
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_EMOJI,
+    disabled: [{ space: 1 }, { modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }]
+  })
+
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: workbench.extensions.WorkbenchExtensions,
     component: emojiPlugin.component.WorkbenchExtension

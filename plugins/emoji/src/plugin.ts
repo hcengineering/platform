@@ -14,11 +14,19 @@
 //
 import { Asset, type IntlString, plugin, type Plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
+import type { Class, Ref, Doc } from '@hcengineering/core'
+import { CustomEmoji } from './types'
 
 /** @public */
 export const emojiId = 'emoji' as Plugin
 
 export const emojiPlugin = plugin(emojiId, {
+  ids: {
+    CustomEmoji: '' as Ref<Doc>
+  },
+  class: {
+    CustomEmoji: '' as Ref<Class<CustomEmoji>>
+  },
   component: {
     EmojiPopup: '' as AnyComponent
   },

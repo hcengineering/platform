@@ -54,7 +54,7 @@ function handleEmoji (
         attrs: {
           emoji: emoji.shortcode,
           kind: 'image',
-          url: emoji.url
+          url: ''
         }
       }
     ])

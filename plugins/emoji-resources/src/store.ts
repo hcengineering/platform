@@ -8,9 +8,13 @@ export const searchEmoji = writable<string>('')
 export const resultEmojis = derived([emojiStore, searchEmoji], ([emojis, search]) => {
   return search !== ''
     ? emojis.filter(
-      (emoji) =>
-        (emoji.tags?.some((tag: string) => tag.toLowerCase().startsWith(search.toLowerCase())) ?? false) ||
+      (emoji) => {
+        if (isCustomEmoji(emoji)) {
+          return emoji.shortcode.toLowerCase().includes(search.toLowerCase())
+        }
+        return (emoji.tags?.some((tag: string) => tag.toLowerCase().startsWith(search.toLowerCase())) ?? false) ||
           emoji.label.toLowerCase().includes(search.toLowerCase())
+      }
     )
     : emojis
 })

@@ -13,18 +13,18 @@
 // limitations under the License.
 //
 import type { Emoji } from 'emojibase'
+import type { Blob, Doc, Ref } from '@hcengineering/core'
 
 export { default as Emoji } from 'emojibase'
 export type ExtendedEmoji = Emoji | CustomEmoji
 export type EmojiWithGroup = ExtendedEmoji & { key: string }
 
-export interface CustomEmoji {
+/** @public */
+export interface CustomEmoji extends Doc {
   shortcode: string
-  label: string
-  url: string
-  tags?: string[]
+  image: Ref<Blob>
 }
 
 export function isCustomEmoji (emoji: ExtendedEmoji): emoji is CustomEmoji {
-  return 'url' in emoji
+  return 'image' in emoji
 }
