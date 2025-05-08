@@ -2,21 +2,22 @@ import { writable, derived, get } from 'svelte/store'
 import { isCustomEmoji, type EmojiWithGroup } from '@hcengineering/emoji'
 import { getCurrentAccount } from '@hcengineering/core'
 
-export const emojiStore = writable<EmojiWithGroup[]>([])
+export const unicodeEmojiStore = writable<EmojiWithGroup[]>([])
+export const customEmojiStore = writable<EmojiWithGroup[]>([])
 export const searchEmoji = writable<string>('')
 
-export const resultEmojis = derived([emojiStore, searchEmoji], ([emojis, search]) => {
+export const resultEmojis = derived([unicodeEmojiStore, customEmojiStore, searchEmoji], ([unicode, custom, search]) => {
   return search !== ''
-    ? emojis.filter(
-      (emoji) => {
-        if (isCustomEmoji(emoji)) {
-          return emoji.shortcode.toLowerCase().includes(search.toLowerCase())
-        }
-        return (emoji.tags?.some((tag: string) => tag.toLowerCase().startsWith(search.toLowerCase())) ?? false) ||
-          emoji.label.toLowerCase().includes(search.toLowerCase())
+    ? unicode.concat(custom).filter((emoji) => {
+      if (isCustomEmoji(emoji)) {
+        return emoji.shortcode.toLowerCase().includes(search.toLowerCase())
       }
-    )
-    : emojis
+      return (
+        (emoji.tags?.some((tag: string) => tag.toLowerCase().startsWith(search.toLowerCase())) ?? false) ||
+          emoji.label.toLowerCase().includes(search.toLowerCase())
+      )
+    })
+    : unicode.concat(custom)
 })
 
 export const setSkinTone = (skinTone: number): void => {
@@ -81,7 +82,7 @@ export const getFrequentlyEmojis = (): EmojiWithGroup[] | undefined => {
   try {
     const parsedEmojis = JSON.parse(frequentlyEmojis)
     if (!Array.isArray(parsedEmojis)) return undefined
-    const emojis = get(emojiStore)
+    const emojis = get(unicodeEmojiStore).concat(get(customEmojiStore))
     const result: EmojiWithGroup[] = []
     emojis.forEach((emoji: EmojiWithGroup) => {
       if (isCustomEmoji(emoji)) {

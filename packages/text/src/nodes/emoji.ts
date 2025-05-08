@@ -14,19 +14,18 @@
 //
 
 import { Node, mergeAttributes } from '@tiptap/core'
+import type { Blob, Ref } from '@hcengineering/core'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     emoji: {
-      insertEmoji: (emoji: string, kind: 'unicode' | 'image', url?: string) => ReturnType
+      insertEmoji: (emoji: string, kind: 'unicode' | 'image', image?: Ref<Blob>) => ReturnType
     }
   }
 }
 
 export interface EmojiNodeOptions {
-  emoji: string
-  kind: 'unicode' | 'image'
-  url?: string
+  getBlobRef: (fileId: Ref<Blob>, filename?: string, size?: number) => Promise<{ src: string, srcset: string }>
 }
 
 export const EmojiNode = Node.create<EmojiNodeOptions>({
@@ -44,7 +43,7 @@ export const EmojiNode = Node.create<EmojiNodeOptions>({
       kind: {
         default: 'unicode'
       },
-      url: {
+      image: {
         default: null
       }
     }
@@ -53,11 +52,12 @@ export const EmojiNode = Node.create<EmojiNodeOptions>({
   addCommands () {
     return {
       insertEmoji:
-        (emoji: string, kind: 'unicode' | 'image', url?: string) =>
+        (emoji: string, kind: 'unicode' | 'image', image?: Ref<Blob>) =>
           ({ commands }) => {
+            if (kind === 'image') emoji = `:${emoji}:`
             return commands.insertContent({
               type: this.name,
-              attrs: { emoji, kind, url }
+              attrs: { emoji, kind, image }
             })
           }
     }
@@ -69,6 +69,43 @@ export const EmojiNode = Node.create<EmojiNodeOptions>({
         tag: `span[data-type="${this.name}"]`
       }
     ]
+  },
+
+  addNodeView () {
+    return ({ node, HTMLAttributes }) => {
+      console.log('Node view')
+      const container = document.createElement('span')
+      const containerAttributes = mergeAttributes(
+        {
+          'data-type': this.name,
+          class: 'emoji'
+        },
+        HTMLAttributes
+      )
+
+      for (const [k, v] of Object.entries(containerAttributes)) {
+        if (v !== null) {
+          container.setAttribute(k, v)
+        }
+      }
+
+      if (node.attrs.kind === 'image') {
+        const imgElement = document.createElement('img')
+        imgElement.alt = node.attrs.emoji
+        imgElement.setAttribute('data-type', this.name)
+        void this.options.getBlobRef(node.attrs.image).then((val) => {
+          imgElement.src = val.src
+          imgElement.srcset = val.srcset
+        })
+        container.append(imgElement)
+      } else {
+        container.append(node.attrs.emoji)
+      }
+
+      return {
+        dom: container
+      }
+    }
   },
 
   renderHTML ({ node, HTMLAttributes }) {
@@ -86,7 +123,7 @@ export const EmojiNode = Node.create<EmojiNodeOptions>({
           'img',
           mergeAttributes({
             'data-type': this.name,
-            src: node.attrs.url,
+            src: node.attrs.image,
             alt: node.attrs.emoji
           })
         ]

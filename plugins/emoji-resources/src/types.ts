@@ -72,7 +72,8 @@ export const emojiCategories: EmojiCategory[] = [
   },
   { id: 'objects', label: emojiPlugin.string.Objects, icon: emojiPlugin.icon.Objects, categories: 'objects' },
   { id: 'symbols', label: emojiPlugin.string.Symbols, icon: emojiPlugin.icon.Symbols, categories: 'symbols' },
-  { id: 'flags', label: emojiPlugin.string.Flags, icon: emojiPlugin.icon.Flags, categories: 'flags' }
+  { id: 'flags', label: emojiPlugin.string.Flags, icon: emojiPlugin.icon.Flags, categories: 'flags' },
+  { id: 'custom', label: emojiPlugin.string.Flags, icon: emojiPlugin.icon.Flags, categories: 'custom' }
 ]
 
 export const skinTones: Map<number, IntlString> = new Map<number, IntlString>(

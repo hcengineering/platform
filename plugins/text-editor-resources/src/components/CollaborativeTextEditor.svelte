@@ -178,8 +178,8 @@
     insertText: (text) => {
       editor?.commands.insertContent(text)
     },
-    insertEmoji: (text: string, url?: string) => {
-      editor?.commands.insertEmoji(text, url === undefined ? 'unicode' : 'image')
+    insertEmoji: (text: string, image?: Ref<Blob>) => {
+      editor?.commands.insertEmoji(text, image === undefined ? 'unicode' : 'image', image)
     },
     insertMarkup: (markup) => {
       editor?.commands.insertContent(markupToJSON(markup))

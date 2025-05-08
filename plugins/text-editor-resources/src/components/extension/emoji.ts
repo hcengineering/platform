@@ -13,6 +13,7 @@ import { getEmojiByEmoticon, getEmojiByShortCode } from '@hcengineering/emoji-re
 import { type ResolvedPos } from '@tiptap/pm/model'
 import { type ExtendedRegExpMatchArray, type SingleCommands, type Range, InputRule, PasteRule } from '@tiptap/core'
 import { type EditorState } from '@tiptap/pm/state'
+import { getBlobRef } from '@hcengineering/presentation'
 
 const invalidMarks = ['link']
 
@@ -52,9 +53,9 @@ function handleEmoji (
       {
         type: 'emoji',
         attrs: {
-          emoji: emoji.shortcode,
+          emoji: `:${emoji.shortcode}:`,
           kind: 'image',
-          url: ''
+          image: emoji.image
         }
       }
     ])
@@ -62,6 +63,11 @@ function handleEmoji (
 }
 
 export const EmojiExtension = EmojiNode.extend<EmojiNodeOptions>({
+  addOptions () {
+    return {
+      getBlobRef: async (file, name, size) => await getBlobRef(file, name, size)
+    }
+  },
   addPasteRules () {
     return [
       new PasteRule({

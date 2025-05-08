@@ -54,7 +54,7 @@ export const defaultMessageInputActions: TextInputAction[] = [
             return
           }
 
-          editorHandler.insertEmoji(emoji.text)
+          editorHandler.insertEmoji(emoji.text, emoji.image)
           editorHandler.focus()
         },
         () => {}

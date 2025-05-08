@@ -18,7 +18,8 @@
   import { getEmojiByShortCode, getEmojiSkins, getUnicodeEmojiByShortCode } from '../utils'
   import {
     searchEmoji,
-    emojiStore,
+    unicodeEmojiStore,
+    customEmojiStore,
     getFrequentlyEmojis,
     addFrequentlyEmojis,
     removeFrequentlyEmojis,
@@ -104,7 +105,7 @@
     dispatch('close', {
       text: selected,
       codes: isCustomEmoji(emoji) ? undefined : emoji.hexcode.split('-').map((hc) => parseInt(hc, 16)),
-      url: isCustomEmoji(emoji) ? emoji.url : undefined
+      image: isCustomEmoji(emoji) ? emoji.image : undefined
     })
   }
 
@@ -196,7 +197,9 @@
         const tempEmojis: string[] = em.emojisString
         const emojis: EmojiWithGroup[] = []
         tempEmojis.forEach((te) => {
-          const e = $emojiStore.find((es) => (isCustomEmoji(es) ? es.shortcode === te : es.hexcode === te))
+          const e = $unicodeEmojiStore
+            .concat($customEmojiStore)
+            .find((es) => (isCustomEmoji(es) ? es.shortcode === te : es.hexcode === te))
           if (e !== undefined) emojis.push(e)
         })
         emojiCategories[index].emojis = emojis

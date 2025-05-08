@@ -1,17 +1,24 @@
 import { isCustomEmoji, fetchEmojis, fetchMessages } from '@hcengineering/emoji'
-import type { EmojiWithGroup, ExtendedEmoji, Locale, Emoji } from '@hcengineering/emoji'
+import type { EmojiWithGroup, ExtendedEmoji, Locale, Emoji, CustomEmoji } from '@hcengineering/emoji'
 import { emojiCategories } from './types'
-import { emojiStore, getSkinTone } from './store'
+import { unicodeEmojiStore, customEmojiStore, getSkinTone } from './store'
 import { get } from 'svelte/store'
 import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
-export async function updateEmojis (lang?: string): Promise<void> {
-  const local = lang ?? get(deviceInfo).language ?? 'en'
-  const emojis = await loadEmojis(local)
-  emojiStore.set(emojis)
+export function updateCustomEmojis (customEmoji: CustomEmoji[]): void {
+  const emoji = customEmoji.map((e) => {
+    return { ...e, key: 'custom' }
+  })
+  customEmojiStore.set(emoji as EmojiWithGroup[])
 }
 
-export async function loadEmojis (lang: string): Promise<EmojiWithGroup[]> {
+export async function updateUnicodeEmojis (lang?: string): Promise<void> {
+  const local = lang ?? get(deviceInfo).language ?? 'en'
+  const emojis = await loadUnicodeEmojis(local)
+  unicodeEmojiStore.set(emojis)
+}
+
+export async function loadUnicodeEmojis (lang: string): Promise<EmojiWithGroup[]> {
   const englishEmojis =
     lang === 'en'
       ? await fetchEmojis('en', { version: '15.0', shortcodes: ['iamcal'] })
@@ -46,7 +53,9 @@ export async function loadEmojis (lang: string): Promise<EmojiWithGroup[]> {
 }
 
 export function getEmojiByHexcode (hexcode: string): EmojiWithGroup | undefined {
-  return get(emojiStore).find((e) => !isCustomEmoji(e) && e.hexcode === hexcode)
+  return get(unicodeEmojiStore)
+    .concat(get(customEmojiStore))
+    .find((e) => !isCustomEmoji(e) && e.hexcode === hexcode)
 }
 
 export function getEmojiByEmoticon (emoticon: string | undefined): string | undefined {
@@ -77,7 +86,7 @@ function findEmoji (
   predicate: (e: EmojiWithGroup) => boolean | undefined,
   skinTone?: number
 ): ExtendedEmoji | undefined {
-  const emojis = get(emojiStore)
+  const emojis = get(unicodeEmojiStore).concat(get(customEmojiStore))
   const matchEmoji = emojis.find(predicate)
   if (matchEmoji === undefined) return undefined
   if (isCustomEmoji(matchEmoji)) return matchEmoji

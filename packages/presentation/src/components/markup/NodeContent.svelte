@@ -13,17 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref, Blob } from '@hcengineering/core'
   import { AttrValue, MarkupNode, MarkupNodeType } from '@hcengineering/text'
 
   import CodeBlockNode from './CodeBlockNode.svelte'
   import ObjectNode from './ObjectNode.svelte'
   import MarkdownNode from './MarkdownNode.svelte'
   import Node from './Node.svelte'
+  import { getBlobRef } from '../../preview'
 
   export let node: MarkupNode
   export let single = true
   export let preview = false
+
+  function toRefBlob (blobId: AttrValue): Ref<Blob> {
+    return blobId as Ref<Blob>
+  }
 
   function toRef (objectId: string): Ref<Doc> {
     return objectId as Ref<Doc>
@@ -82,9 +87,11 @@
   {:else if node.type === MarkupNodeType.emoji}
     <span class="emoji" class:emojiOnly={single}>
       {#if node.attrs?.kind === 'image'}
-        {@const src = toString(attrs.url)}
+        {@const blob = toRefBlob(attrs.image)}
         {@const alt = toString(attrs.emoji)}
-        <img {src} {alt} />
+        {#await getBlobRef(blob) then blobSrc}
+          <img src={blobSrc.src} {alt} />
+        {/await}
       {:else}
         {node.attrs?.emoji}
       {/if}

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Markup } from '@hcengineering/core'
+  import { Markup, type Ref, type Blob } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import textEditor, { RefAction, TextEditorHandler } from '@hcengineering/text-editor'
@@ -84,8 +84,8 @@
     insertText: (text) => {
       editor?.insertText(text)
     },
-    insertEmoji: (text: string, url?: string) => {
-      editor?.insertEmoji(text, url)
+    insertEmoji: (text: string, image?: Ref<Blob>) => {
+      editor?.insertEmoji(text, image)
     },
     insertMarkup: (markup) => {
       editor?.insertMarkup(markup)

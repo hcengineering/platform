@@ -8,6 +8,7 @@
   import { tooltip, capitalizeFirstLetter, type LabelAndProps } from '@hcengineering/ui'
   import { isCustomEmoji, type ExtendedEmoji } from '@hcengineering/emoji'
   import { getEmojiSkins } from '../utils'
+  import { getBlobRef } from '@hcengineering/presentation'
 
   export let emoji: ExtendedEmoji
   export let selected: boolean = false
@@ -43,7 +44,9 @@
     }}
   >
     {#if isCustomEmoji(displayedEmoji)}
-      <span><img src={displayedEmoji.url} alt={displayedEmoji.shortcode} /></span>
+      {#await getBlobRef(displayedEmoji.image) then image}
+        <span><img src={image.src} alt={displayedEmoji.shortcode} /></span>
+      {/await}
     {:else}
       <span>{displayedEmoji.emoji}</span>
     {/if}
