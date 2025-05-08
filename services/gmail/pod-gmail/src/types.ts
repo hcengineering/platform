@@ -37,14 +37,6 @@ export type State = User & {
   redirectURL: string
 }
 
-export interface AttachedFile {
-  size?: number
-  file: string
-  type?: string
-  lastModified: number
-  name: string
-}
-
 export type Channel = Pick<PlatformChannel, 'value' | keyof Doc>
 
 export type RequestType = 'get' | 'post'

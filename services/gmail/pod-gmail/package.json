@@ -17,7 +17,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "node ../../../common/scripts/esbuild.js",
+    "bundle": "node ../../../common/scripts/esbuild.js --external=ws",
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/gmail",
     "docker:tbuild": "docker build -t hardcoreeng/gmail . --platform=linux/amd64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/gmail",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/gmail staging",
@@ -36,6 +36,7 @@
     "@types/express": "^4.17.13",
     "@types/node": "~20.11.16",
     "@types/sanitize-html": "^2.15.0",
+    "@types/turndown": "^5.0.5",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "esbuild": "^0.24.2",
@@ -58,10 +59,13 @@
   "dependencies": {
     "@hcengineering/attachment": "^0.6.14",
     "@hcengineering/account-client": "^0.6.0",
+    "@hcengineering/api-client": "^0.6.0",
+    "@hcengineering/card": "^0.6.0",
+    "@hcengineering/chat": "^0.6.0",
     "@hcengineering/client": "^0.6.18",
     "@hcengineering/client-resources": "^0.6.27",
     "@hcengineering/contact": "^0.6.24",
-    "@hcengineering/mongo": "^0.6.1",
+    "@hcengineering/mail-common": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/gmail": "^0.6.22",
     "@hcengineering/platform": "^0.6.11",
@@ -80,9 +84,9 @@
     "google-auth-library": "^8.0.2",
     "gaxios": "^5.0.1",
     "jwt-simple": "^0.5.6",
-    "mongodb": "^6.12.0",
     "uuid": "^8.3.2",
     "@hcengineering/analytics-service": "^0.6.0",
-    "sanitize-html": "^2.15.0"
+    "sanitize-html": "^2.15.0",
+    "turndown": "^7.2.0"
   }
 }

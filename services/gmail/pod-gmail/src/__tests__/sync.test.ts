@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 import { MeasureContext, PersonId } from '@hcengineering/core'
-import { SyncManager, SyncMutex } from '../message/sync'
-import { MessageManager } from '../message/message'
+import { SyncManager } from '../message/sync'
+import { MessageManagerV2 } from '../message/v2/message'
 import { RateLimiter } from '../rateLimiter'
 
 jest.mock('../config')
-jest.mock('../message/message')
+jest.mock('../message/adapter')
 jest.mock('../utils', () => {
   const originalModule = jest.requireActual('../utils')
   return {
@@ -46,7 +46,7 @@ const mockKeyValueClientInstance = {
 describe('SyncManager', () => {
   // Mocked dependencies
   let mockCtx: MeasureContext
-  let mockMessageManager: jest.Mocked<MessageManager>
+  let mockMessageManager: jest.Mocked<MessageManagerV2>
   let mockGmail: any // Using any for easier mocking
   let mockKeyValueClient: MockKeyValueClient
 
@@ -68,7 +68,7 @@ describe('SyncManager', () => {
 
     mockMessageManager = {
       saveMessage: jest.fn().mockResolvedValue(undefined)
-    } as unknown as jest.Mocked<MessageManager>
+    } as unknown as jest.Mocked<MessageManagerV2>
 
     mockGmail = {
       history: {
@@ -235,103 +235,5 @@ describe('SyncManager', () => {
       })
       expect(result).toEqual(mockResponse)
     })
-  })
-})
-
-describe('SyncMutex', () => {
-  let syncMutex: SyncMutex
-
-  beforeEach(() => {
-    syncMutex = new SyncMutex()
-  })
-
-  it('should allow sequential locking and unlocking', async () => {
-    // Lock first time
-    const release1 = await syncMutex.lock('test-key')
-    release1()
-
-    // Lock second time
-    const release2 = await syncMutex.lock('test-key')
-    release2()
-
-    // If we got here without hanging, the test passes
-    expect(true).toBe(true)
-  })
-
-  it('should queue up multiple requests for the same key', async () => {
-    const results: number[] = []
-
-    // Start 3 concurrent lock operations
-    const promise1 = (async () => {
-      const release = await syncMutex.lock('test-key')
-      results.push(1)
-      await new Promise((resolve) => setTimeout(resolve, 10))
-      release()
-    })()
-
-    const promise2 = (async () => {
-      const release = await syncMutex.lock('test-key')
-      results.push(2)
-      await new Promise((resolve) => setTimeout(resolve, 5))
-      release()
-    })()
-
-    const promise3 = (async () => {
-      const release = await syncMutex.lock('test-key')
-      results.push(3)
-      release()
-    })()
-
-    // Wait for all promises to resolve
-    await Promise.all([promise1, promise2, promise3])
-
-    // The operations should have happened in order
-    expect(results).toEqual([1, 2, 3])
-  })
-
-  it('should allow concurrent operations on different keys', async () => {
-    const results: string[] = []
-
-    // Lock two different keys concurrently
-    const promise1 = (async () => {
-      const release = await syncMutex.lock('key1')
-      results.push('key1-locked')
-      await new Promise((resolve) => setTimeout(resolve, 20))
-      results.push('key1-unlocked')
-      release()
-    })()
-
-    const promise2 = (async () => {
-      const release = await syncMutex.lock('key2')
-      results.push('key2-locked')
-      await new Promise((resolve) => setTimeout(resolve, 10))
-      results.push('key2-unlocked')
-      release()
-    })()
-
-    // Wait for both promises to resolve
-    await Promise.all([promise1, promise2])
-
-    // key2 operations should complete before key1 due to shorter timeout
-    expect(results.indexOf('key2-locked')).toBeLessThan(results.indexOf('key1-unlocked'))
-  })
-
-  it('should release the lock properly even if an error occurs', async () => {
-    try {
-      const release = await syncMutex.lock('test-key')
-      try {
-        throw new Error('Test error')
-      } finally {
-        release()
-      }
-    } catch (error) {
-      // Ignore the error
-    }
-
-    // Should be able to acquire the lock again
-    const release = await syncMutex.lock('test-key')
-    release()
-
-    expect(true).toBe(true)
   })
 })
