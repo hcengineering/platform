@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AttachedData, Class, Client, Doc, FindResult, Hierarchy, Ref } from '@hcengineering/core'
+import { AttachedData, Class, Client, Doc, Hierarchy, Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
 import { AvatarProvider, AvatarType, Channel, Contact, Person, contactPlugin } from '.'
@@ -95,68 +95,57 @@ export async function findContacts (
     return { contacts: [], channels: [] }
   }
   // Take only first part of first name for match.
-  const values = channels.map((it) => it.value)
+  const values = channels.map((it) => it.value.trim()).filter((it) => it.length > 0)
 
   // Same name persons
 
-  const potentialChannels = await client.findAll(
-    contactPlugin.class.Channel,
-    { value: { $in: values } },
-    { limit: 1000 }
-  )
-  let potentialContactIds = Array.from(new Set(potentialChannels.map((it) => it.attachedTo as Ref<Contact>)).values())
-
+  const potentialChannels =
+    values.length === 0
+      ? []
+      : await client.findAll(contactPlugin.class.Channel, { value: { $in: values } }, { limit: 1000 })
+  const channelsMap = new Map<Ref<Contact>, Channel[]>()
+  for (const ch of potentialChannels) {
+    const arr = channelsMap.get(ch.attachedTo as Ref<Contact>) ?? []
+    channelsMap.set(ch.attachedTo as Ref<Contact>, [...arr, ch])
+  }
+  const potentialContactIds = Array.from(channelsMap.keys())
+  let potentialPersons: Contact[] = []
   if (potentialContactIds.length === 0) {
     if (client.getHierarchy().isDerived(_class, contactPlugin.class.Person)) {
       const firstName = getFirstName(name).split(' ').shift() ?? ''
       const lastName = getLastName(name)
       // try match using just first/last name
-      potentialContactIds = (
-        await client.findAll(
-          contactPlugin.class.Contact,
-          { name: { $like: `${lastName}%${firstName}%` } },
-          { limit: 100 }
-        )
-      ).map((it) => it._id)
-      if (potentialContactIds.length === 0) {
-        return { contacts: [], channels: [] }
-      }
+      potentialPersons = await client.findAll(
+        contactPlugin.class.Contact,
+        { name: { $like: `${lastName}%${firstName}%` } },
+        { limit: 100 }
+      )
     } else if (client.getHierarchy().isDerived(_class, contactPlugin.class.Organization)) {
       // try match using just first/last name
-      potentialContactIds = (
-        await client.findAll(contactPlugin.class.Contact, { name: { $like: `${name}` } }, { limit: 100 })
-      ).map((it) => it._id)
-      if (potentialContactIds.length === 0) {
-        return { contacts: [], channels: [] }
-      }
+      potentialPersons = await client.findAll(
+        contactPlugin.class.Contact,
+        { name: { $like: `${name}` } },
+        { limit: 100 }
+      )
     }
+  } else {
+    potentialPersons = await client.findAll(contactPlugin.class.Contact, { _id: { $in: potentialContactIds } })
   }
-
-  const potentialPersons: FindResult<Contact> = await client.findAll(
-    contactPlugin.class.Contact,
-    { _id: { $in: potentialContactIds } },
-    {
-      lookup: {
-        _id: {
-          channels: contactPlugin.class.Channel
-        }
-      }
-    }
-  )
 
   const result: Contact[] = []
   const resChannels: AttachedData<Channel>[] = []
   for (const c of potentialPersons) {
     let matches = 0
-    if (c.name === name) {
+    if (c.name.trim().toLowerCase() === name.trim().toLowerCase()) {
       matches++
     }
-    for (const ch of (c.$lookup?.channels as Channel[]) ?? []) {
+    const contactChannels = channelsMap.get(c._id) ?? []
+    for (const ch of contactChannels) {
       for (const chc of channels) {
-        if (chc.provider === ch.provider && chc.value === ch.value.trim()) {
+        if (chc.provider === ch.provider && chc.value.trim().toLowerCase() === ch.value.trim().toLowerCase()) {
           // We have matched value
           resChannels.push(chc)
-          matches += 2
+          matches++
           break
         }
       }
