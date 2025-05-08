@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { findParentNode } from '@tiptap/core'
-import { type Selection, type Transaction } from '@tiptap/pm/state'
+import { type Editor, findParentNode } from '@tiptap/core'
+import { type EditorState, type Selection, type Transaction } from '@tiptap/pm/state'
 import { CellSelection, type Rect, TableMap, addColumn, addRow } from '@tiptap/pm/tables'
 
-import { TableSelection, type TableNodeLocation } from './types'
+import { type TableNodeLocation, TableSelection } from './types'
 
 export function insertColumn (table: TableNodeLocation, index: number, tr: Transaction): Transaction {
   const map = TableMap.get(table.node)
@@ -137,4 +137,14 @@ export const isRectSelected = (rect: Rect, selection: CellSelection): boolean =>
 
 export const findTable = (selection: Selection): TableNodeLocation | undefined => {
   return findParentNode((node) => node.type.spec.tableRole === 'table')(selection)
+}
+
+export function haveTableRelatedChanges (
+  editor: Editor,
+  table: TableNodeLocation | undefined,
+  oldState: EditorState,
+  newState: EditorState,
+  tr: Transaction
+): table is TableNodeLocation {
+  return editor.isEditable && table !== undefined && (tr.docChanged || !newState.selection.eq(oldState.selection))
 }
