@@ -152,6 +152,7 @@
     "DisablePermissions": "Zakázat řízení přístupu na základě rolí",
     "EnablePermissions": "Povolit řízení přístupu na základě rolí",
     "DisablePermissionsConfirmation": "Opravdu chcete zakázat řízení přístupu na základě rolí? Všechny role a oprávnění budou deaktivovány.",
-    "EnablePermissionsConfirmation": "Opravdu chcete povolit řízení přístupu na základě rolí? Všechny role a oprávnění budou aktivovány."
+    "EnablePermissionsConfirmation": "Opravdu chcete povolit řízení přístupu na základě rolí? Všechny role a oprávnění budou aktivovány.",
+    "BetaWarning": "Moduly označené jako beta jsou k dispozici pro experimentální účely a nemusí být plně funkční. V tuto chvíli nedoporučujeme spoléhat se na funkce beta pro kritickou práci."
   }
 }

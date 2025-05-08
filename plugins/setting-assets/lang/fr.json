@@ -152,6 +152,7 @@
     "DisablePermissions": "Désactiver le contrôle d'accès basé sur les rôles",
     "EnablePermissions": "Activer le contrôle d'accès basé sur les rôles",
     "DisablePermissionsConfirmation": "Êtes-vous sûr de vouloir désactiver le contrôle d'accès basé sur les rôles ? Tous les rôles et permissions seront désactivés.",
-    "EnablePermissionsConfirmation": "Êtes-vous sûr de vouloir activer le contrôle d'accès basé sur les rôles ? Tous les rôles et permissions seront activés."
+    "EnablePermissionsConfirmation": "Êtes-vous sûr de vouloir activer le contrôle d'accès basé sur les rôles ? Tous les rôles et permissions seront activés.",
+    "BetaWarning": "Les modules étiquetés comme bêta sont disponibles à des fins expérimentales et peuvent ne pas être entièrement fonctionnels. Nous ne recommandons pas de compter sur les fonctionnalités bêta pour un travail critique pour le moment."
   }
 }
