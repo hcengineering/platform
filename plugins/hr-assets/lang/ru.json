@@ -11,7 +11,7 @@
     "MemberCount": "{count, plural, =0 {нет сотрудников} one {# сотрудник} few {# сотрудника} other {# сотрудников}}",
     "AssignLead": "Назначить менеджера",
     "TeamLeadTooltip": "{value}",
-    "HRApplication": "Табель рабочего времени",
+    "HRApplication": "Табель рабочего времени (бета)",
     "MoveStaff": "Перевод сотрудника",
     "MoveStaffDescr": "Вы действительно хотите перевести сотрудника из {current} в {department}",
     "Departments": "Департаменты",
