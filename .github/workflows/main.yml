@@ -678,14 +678,14 @@ jobs:
           pnpm docker:push
 
   hulykvs-build:
-    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+    if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
     runs-on: ubuntu-latest
     env: 
-      source_repo: https://github.com/hcengineering/hulykvs.git
-      source_ref: v0.1.0
-      docker_user: hardcoreeng
+      source_repo: hcengineering/hulykvs
+      source_ref: v0.1.1
+      docker_user: ${{ vars.DOCKER_USER || 'hardcoreeng' }}
       docker_password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-      docker_image: "hardcoreeng/hulykvs:${{ github.head_ref || github.ref_name }}"
+      docker_image: "${{ vars.DOCKER_USER || 'hardcoreeng' }}/hulykvs:${{ github.head_ref || github.ref_name }}"
 
     steps:
       - name: Login to Docker Hub
@@ -693,10 +693,23 @@ jobs:
         with:
           username: ${{ env.docker_user }}
           password: ${{ env.docker_password }}
-      - name: Clone
-        run: git clone -q --single-branch --branch ${{ env.source_ref }} ${{ env.source_repo }} .
-      - name: Build & Push
-        run: cd hulykvs_server && docker build -t ${{ env.docker_image }} . && docker push ${{ env.docker_image }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.source_repo }}
+          ref: ${{ env.source_ref }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push
+        uses: docker/build-push-action@v6
+        with:
+          context: hulykvs_server
+          push: true
+          tags: "${{ env.docker_image }}"
+          platforms: linux/amd64,linux/arm64
 
   dist-build:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
