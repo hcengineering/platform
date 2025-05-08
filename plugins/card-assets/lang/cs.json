@@ -37,6 +37,7 @@
     "CreateSpace": "Vytvořit prostor",
     "NumberTypes": "{count, plural, one {# typ} few {# typy} other {# typů}}",
     "Labels": "Štítky",
-    "Properties": "Vlastnosti"
+    "Properties": "Vlastnosti",
+    "NoChildren": "Žádné děti"
   }
 }

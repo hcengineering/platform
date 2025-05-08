@@ -22,6 +22,7 @@
 
   export let object: Doc
   export let readonly: boolean = false
+  export let emptyKind: 'create' | 'placeholder' = 'create'
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -90,6 +91,7 @@
     {readonly}
     label={getEmbeddedLabel(association.nameB)}
     direction="B"
+    {emptyKind}
   />
 {/each}
 {#each associationsA as association (association._id)}
@@ -100,5 +102,6 @@
     {readonly}
     label={getEmbeddedLabel(association.nameA)}
     direction="A"
+    {emptyKind}
   />
 {/each}

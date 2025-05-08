@@ -34,7 +34,7 @@
   $: action = message.data.action
 </script>
 
-<span class="flex flex-gap-1 overflow-label">
+<span class="container flex-gap-1 overflow-label">
   {#if clazz.icon}
     <span class="icon mr-1">
       <Icon icon={clazz.icon} size="small" />
@@ -62,7 +62,14 @@
 
 <style lang="scss">
   .icon {
+    display: flex;
+    align-items: center;
     color: var(--next-text-color-secondary);
     fill: var(--next-text-color-secondary);
+  }
+
+  .container {
+    display: flex;
+    align-items: center;
   }
 </style>

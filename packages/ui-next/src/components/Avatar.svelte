@@ -82,6 +82,10 @@
       border-radius: 100%;
     }
 
+    &.xx-small {
+      width: var(--next-avatar-size-xxsmall);
+      height: var(--next-avatar-size-xxsmall);
+    }
     &.x-small {
       width: var(--next-avatar-size-xsmall);
       height: var(--next-avatar-size-xsmall);
@@ -128,7 +132,7 @@
     letter-spacing: -0.05em;
     font-size: 1rem;
 
-    &.x-small {
+    &.xx-small {
       font-size: 0.75rem;
     }
     &::after {

@@ -108,8 +108,7 @@
       {#if !readonly}
         <div class="message-input">
           <MessageInput
-            cardId={doc._id}
-            cardType={doc._class}
+            card={doc}
             title={doc.title}
             on:sent={() => {
               content?.scrollDown()

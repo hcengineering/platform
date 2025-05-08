@@ -37,6 +37,7 @@
     "CreateSpace": "スペースを作成",
     "NumberTypes": "{count, plural, one {# タイプ} other {# タイプ}}",
     "Labels": "ラベル",
-    "Properties": "プロパティ"
+    "Properties": "プロパティ",
+    "NoChildren": "子がありません"
   }
 }

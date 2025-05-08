@@ -37,7 +37,11 @@
       { type: chat.masterTag.Thread, order: 1 },
       { type: chat.masterTag.Channel, order: 2 }
     ],
-    fixedTypes: [chat.masterTag.Thread, chat.masterTag.Channel]
+    fixedTypes: [chat.masterTag.Thread, chat.masterTag.Channel],
+    defaultSorting: 'alphabetical',
+    specialSorting: {
+      [chat.masterTag.Thread]: 'recent'
+    }
   }}
   applicationId={chatId}
   selectedType={type}
