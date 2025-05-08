@@ -128,6 +128,7 @@
     "MasterDetail": "Mestre-detalhe",
     "Tree": "Árvore",
     "Document": "Documento",
-    "Loading": "Carregando..."
+    "Loading": "Carregando...",
+    "NoRelations": "Sem relações"
   }
 }

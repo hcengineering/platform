@@ -15,14 +15,14 @@
 
 <script lang="ts">
   import { Card, CardSpace, MasterTag } from '@hcengineering/card'
-  import { Ref, SortingOrder } from '@hcengineering/core'
+  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import {
+    createLabelsQuery,
     createNotificationContextsQuery,
     createQuery,
-    getClient,
-    createLabelsQuery
+    getClient
   } from '@hcengineering/presentation'
-  import uiNext, { ButtonVariant, NavItem, Button } from '@hcengineering/ui-next'
+  import uiNext, { Button, ButtonVariant, NavItem } from '@hcengineering/ui-next'
   import { createEventDispatcher } from 'svelte'
   import { Label, NotificationContext } from '@hcengineering/communication-types'
 
@@ -44,12 +44,16 @@
   const labelsQuery = createLabelsQuery()
   const notificationContextsQuery = createNotificationContextsQuery()
 
-  let cards: Card[] = []
+  let cards: WithLookup<Card>[] = []
+  let sortedCards: WithLookup<Card>[] = []
   let total = -1
-  let contexts: NotificationContext[] = []
+  let contextByCard = new Map<Ref<Card>, NotificationContext>()
   let labels: Label[] = []
   let isLabelsLoaded = false
   let isLoading: boolean = true
+
+  let sort: 'alphabetical' | 'recent' | undefined
+  $: sort = config.specialSorting?.[type._id] ?? config.defaultSorting ?? 'alphabetical'
 
   let limit = config.limit
 
@@ -85,7 +89,14 @@
         total = res.total
         isLoading = false
       },
-      { total: true, limit, sort: { title: SortingOrder.Ascending } }
+      {
+        total: true,
+        limit,
+        sort: sort === 'alphabetical' ? { title: SortingOrder.Ascending } : { modifiedOn: SortingOrder.Descending },
+        lookup: {
+          parent: cardPlugin.class.Card
+        }
+      }
     )
   }
 
@@ -100,28 +111,50 @@
         }
       },
       (res) => {
-        contexts = res.getResult()
+        contextByCard = new Map(res.getResult().map((it) => [it.card, it]))
       }
     )
   } else {
     notificationContextsQuery.unsubscribe()
-    contexts = []
+    contextByCard = new Map()
   }
 
   $: empty = total === 0
+
+  $: sortedCards = sortCards(cards, contextByCard)
+
+  function sortCards (cards: Card[], contextByCard: Map<Ref<Card>, NotificationContext>): Card[] {
+    const sort = config.specialSorting?.[type._id] ?? config.defaultSorting ?? 'alphabetical'
+    if (sort === 'alphabetical') {
+      return cards.sort((a, b) => a.title.localeCompare(b.title))
+    } else if (sort === 'recent') {
+      return cards.sort((card1, card2) => {
+        const context1 = contextByCard.get(card1._id)
+        const context2 = contextByCard.get(card2._id)
+        const lastUpdate1 = context1?.lastUpdate.getTime() ?? 0
+        const lastUpdate2 = context2?.lastUpdate.getTime() ?? 0
+
+        return lastUpdate2 - lastUpdate1
+      })
+    }
+
+    return cards
+  }
 </script>
 
 {#if !isLoading}
   {#if !empty || config.hideEmpty !== true || config.fixedTypes?.includes(type._id)}
     <NavigatorType {type} {config} {space} {selectedType} {empty} bold on:selectType on:selectCard>
-      {#each cards as card (card._id)}
+      {#each sortedCards as card (card._id)}
         {@const clazz = hierarchy.getClass(card._class)}
-        {@const context = contexts.find((c) => c.card === card._id)}
+        {@const context = contextByCard.get(card._id)}
         <NavItem
           label={card.title}
+          secondLabel={card.$lookup?.parent?.title}
           icon={clazz.icon ?? cardPlugin.icon.Card}
           selected={selectedCard === card._id}
           paddingLeft="1.75rem"
+          notify={context && context.lastUpdate.getTime() > context.lastView.getTime()}
           notificationsCount={context?.notifications?.length ?? 0}
           on:click={(e) => {
             e.stopPropagation()

@@ -133,6 +133,7 @@
     "MasterDetail": "Master-detail",
     "Tree": "Tree",
     "Document": "Document",
-    "Loading": "Loading..."
+    "Loading": "Loading...",
+    "NoRelations": "No relations"
   }
 }
