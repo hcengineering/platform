@@ -686,7 +686,7 @@ jobs:
       source_ref: v0.1.0
       docker_user: hardcoreeng
       docker_password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-      docker_image: "hardcoreeng/hulykvs:${{ github.ref_name }}"
+      docker_image: "hardcoreeng/hulykvs:${{ github.head_ref || github.ref_name }}"
 
     steps:
       - name: Login to Docker Hub
