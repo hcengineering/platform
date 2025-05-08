@@ -1,7 +1,7 @@
 {
   "string": {
     "Card": "Cartão",
-    "CardApplication": "Cartões",
+    "CardApplication": "Cartões (beta)",
     "Cards": "Cartões",
     "Content": "Conteúdo",
     "CreateCard": "Criar Cartão",
@@ -32,6 +32,7 @@
     "ChangeType": "Alterar tipo",
     "ChangeTypeWarning": "Aviso: Alterar o tipo de um cartão irá remover todos os dados para quaisquer atributos que não existem no tipo de destino. Dados anteriores do atributo podem ser restaurados alterando o cartão de volta para um tipo anterior. O conteúdo do cartão não será afetado.",
     "CreateSpace": "Criar espaço",
-    "NumberTypes": "{count, plural, one {# tipo} other {# tipos}}"
+    "NumberTypes": "{count, plural, one {# tipo} other {# tipos}}",
+    "ConfigDescription": "Extensão para gerenciamento de conhecimento no estilo de banco de dados."
   }
 }

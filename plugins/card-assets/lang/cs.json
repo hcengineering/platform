@@ -1,7 +1,7 @@
 {
   "string": {
     "Card": "Karta",
-    "CardApplication": "Karty",
+    "CardApplication": "Karty (beta)",
     "Cards": "Karty",
     "Content": "Obsah",
     "CreateCard": "Vytvořit kartu",
@@ -32,6 +32,7 @@
     "ChangeType": "Změnit typ",
     "ChangeTypeWarning": "Varování: Změna typu karty odstraní všechna data pro jakýkoliv atribut, který v cílovém typu neexistuje. Předchozí data atributu mohou být obnoveny změnou karty zpět na předchozí typ. Obsah karty nebude ovlivněn.",
     "CreateSpace": "Vytvořit prostor",
-    "NumberTypes": "{count, plural, one {# typ} few {# typy} other {# typů}}"
+    "NumberTypes": "{count, plural, one {# typ} few {# typy} other {# typů}}",
+    "ConfigDescription": "Rozšíření pro správu znalostí ve stylu databáze."
   }
 }

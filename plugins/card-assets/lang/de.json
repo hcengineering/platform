@@ -1,7 +1,7 @@
 {
   "string": {
     "Card": "Karte",
-    "CardApplication": "Karten",
+    "CardApplication": "Karten (beta)",
     "Cards": "Karten",
     "Content": "Inhalt",
     "CreateCard": "Karte erstellen",
@@ -32,6 +32,7 @@
     "ChangeType": "Typ ändern",
     "ChangeTypeWarning": "Warnung: Das Ändern des Typs einer Karte wird alle Daten für alle Attribute entfernen, die nicht auf dem Zieltyp vorhanden sind. Vorherige Attributdaten können wiederhergestellt werden, indem Sie die Karte auf einen früheren Typ zurücksetzen. Karteninhalt wird nicht betroffen.",
     "CreateSpace": "Raum erstellen",
-    "NumberTypes": "{count, plural, one {# typ} other {# typen}}"
+    "NumberTypes": "{count, plural, one {# typ} other {# typen}}",
+    "ConfigDescription": "Erweiterung für Datenbank-basiertes Wissensmanagement."
   }
 }

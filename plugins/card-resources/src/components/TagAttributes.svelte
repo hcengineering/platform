@@ -30,6 +30,7 @@
     themeStore
   } from '@hcengineering/ui'
   import CardAttributes from './CardAttributes.svelte'
+  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
 
   export let value: Card
   export let tag: Tag
@@ -62,33 +63,35 @@
     <Label {label} />
     <Chevron expanded={!isCollapsed} outline fill={'var(--content-color'} />
   </div>
-  <div class="btns">
-    <Button
-      icon={IconAdd}
-      kind={'link'}
-      size={'medium'}
-      showTooltip={{ label: setting.string.AddAttribute }}
-      on:click={(ev) => {
-        showPopup(setting.component.CreateAttributePopup, { _class: tag._id, isCard: true }, 'top')
-      }}
-    />
-    <Button
-      icon={setting.icon.Setting}
-      kind={'link'}
-      size={'medium'}
-      showTooltip={{ label: setting.string.Setting }}
-      on:click={(ev) => {
-        ev.stopPropagation()
-        const loc = getCurrentResolvedLocation()
-        loc.path[2] = settingId
-        loc.path[3] = 'types'
-        loc.path[4] = tag._id
-        loc.path.length = 5
-        loc.fragment = undefined
-        navigate(loc)
-      }}
-    />
-  </div>
+  {#if hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)}
+    <div class="btns">
+      <Button
+        icon={IconAdd}
+        kind={'link'}
+        size={'medium'}
+        showTooltip={{ label: setting.string.AddAttribute }}
+        on:click={(ev) => {
+          showPopup(setting.component.CreateAttributePopup, { _class: tag._id, isCard: true }, 'top')
+        }}
+      />
+      <Button
+        icon={setting.icon.Setting}
+        kind={'link'}
+        size={'medium'}
+        showTooltip={{ label: setting.string.Setting }}
+        on:click={(ev) => {
+          ev.stopPropagation()
+          const loc = getCurrentResolvedLocation()
+          loc.path[2] = settingId
+          loc.path[3] = 'types'
+          loc.path[4] = tag._id
+          loc.path.length = 5
+          loc.fragment = undefined
+          navigate(loc)
+        }}
+      />
+    </div>
+  {/if}
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
   <CardAttributes object={value} _class={tag._id} to={tag.extends} {readonly} {ignoreKeys} />
