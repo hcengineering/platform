@@ -15,6 +15,7 @@
 //
 import { BaseConfig } from '@hcengineering/mail-common'
 import { config as dotenvConfig } from 'dotenv'
+import { IntegrationVersion } from './types'
 
 dotenvConfig()
 
@@ -26,7 +27,7 @@ interface Config extends BaseConfig {
   WATCH_TOPIC_NAME: string
   FooterMessage: string
   InitLimit: number
-  Version: 'v1' | 'v2'
+  Version: IntegrationVersion
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -46,9 +47,12 @@ const envMap: { [key in keyof Config]: string } = {
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
 
 const config: Config = (() => {
-  const version = process.env[envMap.Version] ?? 'v1'
-  if (version !== 'v1' && version !== 'v2') {
-    throw new Error(`Invalid version: ${version}. Must be 'v1' or 'v2'.`)
+  const versionStr = process.env[envMap.Version] ?? 'v1'
+  let version: IntegrationVersion
+  if (versionStr === IntegrationVersion.V1 || versionStr === IntegrationVersion.V2) {
+    version = versionStr as IntegrationVersion
+  } else {
+    throw new Error(`Invalid version: ${versionStr}. Must be 'v1' or 'v2'.`)
   }
   const params: Partial<Config> = {
     Port: parseNumber(process.env[envMap.Port]) ?? 8087,

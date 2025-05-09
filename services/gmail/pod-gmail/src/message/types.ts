@@ -31,6 +31,12 @@ export interface EmailContact {
   photoUrl?: string | null
 }
 
+export interface History {
+  historyId: string
+  userId: string
+  workspace: string
+}
+
 export interface IMessageManager {
   saveMessage: (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string) => Promise<void>
 }
