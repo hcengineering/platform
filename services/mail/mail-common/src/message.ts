@@ -28,7 +28,6 @@ import {
   type PersonId,
   type Ref,
   type TxOperations,
-  type Doc,
   generateId,
   PersonUuid,
   RateLimiter,
@@ -43,6 +42,7 @@ import { EmailMessage } from './types'
 import { getMdContent } from './utils'
 import { PersonCacheFactory } from './person'
 import { PersonSpacesCacheFactory } from './personSpaces'
+import { ChannelCache, ChannelCacheFactory } from './channel'
 
 export async function createMessages (
   config: BaseConfig,
@@ -54,7 +54,7 @@ export async function createMessages (
   socialId: SocialId
 ): Promise<void> {
   const { mailId, from, subject, replyTo } = message
-  const tos = [message.to, ...(message.copy ?? [])]
+  const tos = [...(message.to ?? []), ...(message.copy ?? [])]
   ctx.info('Sending message', { mailId, from, to: tos.join(',') })
 
   const accountClient = getAccountClient(config.AccountsURL, token)
@@ -71,6 +71,7 @@ export async function createMessages (
   const restClient = createRestClient(transactorUrl, wsInfo.workspace, wsInfo.token)
   const personCache = PersonCacheFactory.getInstance(ctx, restClient, wsInfo.workspace)
   const personSpacesCache = PersonSpacesCacheFactory.getInstance(ctx, txClient, wsInfo.workspace)
+  const channelCache = ChannelCacheFactory.getInstance(ctx, txClient, wsInfo.workspace)
 
   const fromPerson = await personCache.ensurePerson(from)
 
@@ -137,6 +138,7 @@ export async function createMessages (
         me,
         socialId,
         message.sendOn,
+        channelCache,
         replyTo
       )
     }
@@ -167,6 +169,7 @@ export async function createMessages (
           me,
           socialId,
           message.sendOn,
+          channelCache,
           replyTo
         )
       }
@@ -190,6 +193,7 @@ async function saveMessageToSpaces (
   me: string,
   socialId: SocialId,
   createdDate: number,
+  channelCache: ChannelCache,
   inReplyTo?: string
 ): Promise<void> {
   const rateLimiter = new RateLimiter(10)
@@ -213,7 +217,7 @@ async function saveMessageToSpaces (
         }
       }
       if (threadId === undefined) {
-        const channel = await getOrCreateChannel(ctx, client, spaceId, participants, me, socialId)
+        const channel = await channelCache.getOrCreateChannel(spaceId, participants, me, socialId)
         const newThreadId = await client.createDoc(
           chat.masterTag.Thread,
           space._id,
@@ -283,48 +287,4 @@ async function saveMessageToSpaces (
     })
   }
   await rateLimiter.waitProcessing()
-}
-
-async function getOrCreateChannel (
-  ctx: MeasureContext,
-  client: TxOperations,
-  space: Ref<PersonSpace>,
-  participants: PersonId[],
-  me: string,
-  socialId: SocialId
-): Promise<Ref<Doc> | undefined> {
-  try {
-    const channel = await client.findOne(mail.tag.MailChannel, { title: me })
-    ctx.info('Existing channel', { me, space, channel })
-    if (channel != null) return channel._id
-    ctx.info('Creating new channel', { me, space, personId: socialId._id })
-    const channelId = await client.createDoc(
-      chat.masterTag.Channel,
-      space,
-      {
-        title: me,
-        private: true,
-        members: participants,
-        archived: false,
-        createdBy: socialId._id,
-        modifiedBy: socialId._id
-      },
-      generateId(),
-      Date.now(),
-      socialId._id
-    )
-    ctx.info('Creating mixin', { me, space, personId: socialId._id, channelId })
-    await client.createMixin(
-      channelId,
-      chat.masterTag.Channel,
-      space,
-      mail.tag.MailChannel,
-      {},
-      Date.now(),
-      socialId._id
-    )
-  } catch (err: any) {
-    ctx.error('Failed to create channel', { me, space })
-    return undefined
-  }
 }

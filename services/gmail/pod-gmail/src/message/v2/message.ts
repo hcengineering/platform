@@ -17,7 +17,7 @@ import { gmail_v1 } from 'googleapis'
 import sanitizeHtml from 'sanitize-html'
 
 import { SocialId, type MeasureContext } from '@hcengineering/core'
-import { createMessages, parseNameFromEmailHeader, EmailMessage } from '@hcengineering/mail-common'
+import { createMessages, parseEmailHeader, parseNameFromEmailHeader, EmailMessage } from '@hcengineering/mail-common'
 
 import { IMessageManager } from '../types'
 import config from '../../config'
@@ -80,12 +80,9 @@ function getPartMessage (part: gmail_v1.Schema$MessagePart | undefined, mime: st
 function convertMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string): EmailMessage {
   const date = message.data.internalDate != null ? new Date(Number.parseInt(message.data.internalDate)) : new Date()
   const from = parseNameFromEmailHeader(getHeaderValue(message.data.payload, 'From') ?? '')
-  const to = parseNameFromEmailHeader(getHeaderValue(message.data.payload, 'To') ?? '')
+  const to = parseEmailHeader(getHeaderValue(message.data.payload, 'To') ?? '')
 
-  const copy =
-    getHeaderValue(message.data.payload, 'Cc')
-      ?.split(',')
-      .map((p) => parseNameFromEmailHeader(p.trim())) ?? undefined
+  const copy = parseEmailHeader(getHeaderValue(message.data.payload, 'Cc') ?? '')
   const incoming = !from.email.includes(me)
   return {
     modifiedOn: date.getTime(),

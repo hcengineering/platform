@@ -35,7 +35,7 @@ export interface EmailMessage {
   content: string
   textContent: string
   from: EmailContact
-  to: EmailContact
+  to: EmailContact[]
   incoming: boolean
   subject: string
   sendOn: number

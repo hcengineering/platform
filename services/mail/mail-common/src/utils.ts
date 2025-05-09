@@ -31,6 +31,32 @@ export function getMdContent (ctx: MeasureContext, email: EmailMessage): string 
   return email.textContent
 }
 
+/**
+ * Parse email header into EmailContact objects
+ * Supports both single and multiple addresses in formats like:
+ * - "Name" <email@example.com>
+ * - Name <email@example.com>
+ * - email@example.com
+ * - Multiple comma-separated addresses in any of the above formats
+ *
+ * @param headerValue Email header value to parse
+ * @returns Array of EmailContact objects
+ */
+export function parseEmailHeader (headerValue: string | undefined): EmailContact[] {
+  if (headerValue == null || headerValue.trim() === '') {
+    return []
+  }
+
+  // Split the header by commas, but ignore commas inside quotes
+  const regex = /,(?=(?:[^"]*"[^"]*")*[^"]*$)/
+  const addresses = headerValue
+    .split(regex)
+    .map((addr) => addr.trim())
+    .filter((addr) => addr !== '')
+
+  return addresses.map((address) => parseNameFromEmailHeader(address))
+}
+
 export function parseNameFromEmailHeader (headerValue: string | undefined): EmailContact {
   if (headerValue == null || headerValue.trim() === '') {
     return {
