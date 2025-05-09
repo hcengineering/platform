@@ -19,6 +19,7 @@
   import { translateCB } from '@hcengineering/platform'
   import { Collaborator, CardID } from '@hcengineering/communication-types'
   import contact, { Person } from '@hcengineering/contact'
+  import { getCurrentAccount } from '@hcengineering/core'
 
   import Avatar from '../Avatar.svelte'
   import uiNext from '../../plugin'
@@ -36,13 +37,16 @@
   let displayDate: string = ''
   let collaborators: Collaborator[] = []
   let persons: Person[] = []
+  const me = getCurrentAccount()
 
   $: communicationClient.findCollaborators({ card: threadId }).then((res) => {
     collaborators = res
   })
   $: client
     .findAll(contact.class.Person, {
-      personUuid: { $in: collaborators.map((it) => it.account).slice(0, displayPersonsNumber) }
+      personUuid: {
+        $in: collaborators.map((it) => it.account).slice(0, displayPersonsNumber)
+      }
     })
     .then((res) => {
       persons = res
@@ -150,7 +154,7 @@
 <div class="replies" on:click>
   <div class="avatars">
     {#each persons as person}
-      <Avatar size={AvatarSize.XSmall} avatar={person} name={person.name} />
+      <Avatar size={AvatarSize.XXSmall} avatar={person} name={person.name} />
     {/each}
   </div>
 

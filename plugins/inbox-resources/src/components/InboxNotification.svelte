@@ -24,7 +24,7 @@
 
 {#if notification.message}
   <div class="notification">
-    <MessagePresenter {card} message={notification.message} editable={false} />
+    <MessagePresenter {card} message={notification.message} editable={false} padding="0.5rem 1rem" />
   </div>
 {/if}
 

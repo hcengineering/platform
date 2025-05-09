@@ -45,7 +45,7 @@
   <slot name="text" />
 
   {#each attributeValues as value}
-    <span class="strong">
+    <span class="bold">
       {#if value != null && typeof value === 'object'}
         <ObjectPresenter {value} shouldShowAvatar={false} accent />
       {:else}
@@ -57,7 +57,13 @@
 
 <style lang="scss">
   .icon {
+    display: flex;
+    align-items: center;
     color: var(--next-text-color-secondary);
     fill: var(--next-text-color-secondary);
+  }
+
+  .bold {
+    font-weight: 500;
   }
 </style>

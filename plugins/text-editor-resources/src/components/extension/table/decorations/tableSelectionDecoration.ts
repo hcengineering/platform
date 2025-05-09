@@ -13,43 +13,71 @@
 // limitations under the License.
 //
 
-import { type EditorState } from '@tiptap/pm/state'
 import { CellSelection, TableMap } from '@tiptap/pm/tables'
-import { Decoration } from '@tiptap/pm/view'
+import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
-import { type TableNodeLocation } from '../types'
+import { type Editor } from '@tiptap/core'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 
-export const tableSelectionDecoration = (state: EditorState, table: TableNodeLocation): Decoration[] => {
-  const decorations: Decoration[] = []
+import { findTable, haveTableRelatedChanges } from '../utils'
 
-  const { selection } = state
+interface TableSelectionDecorationPluginState {
+  decorations?: DecorationSet
+}
 
-  const tableMap = TableMap.get(table.node)
+export const TableSelectionDecorationPlugin = (editor: Editor): Plugin<TableSelectionDecorationPluginState> => {
+  const key = new PluginKey('tableSelectionDecorationPlugin')
+  return new Plugin<TableSelectionDecorationPluginState>({
+    key,
+    state: {
+      init: () => {
+        return {}
+      },
+      apply (tr, prev, oldState, newState) {
+        const table = findTable(newState.selection)
+        if (!haveTableRelatedChanges(editor, table, oldState, newState, tr)) {
+          return table !== undefined ? prev : {}
+        }
 
-  if (selection instanceof CellSelection) {
-    const selected: number[] = []
+        const { selection } = newState
+        if (!(selection instanceof CellSelection)) {
+          return {}
+        }
 
-    selection.forEachCell((_node, pos) => {
-      const start = pos - table.pos - 1
-      selected.push(start)
-    })
+        const decorations: Decoration[] = []
 
-    selection.forEachCell((node, pos) => {
-      const start = pos - table.pos - 1
-      const borders = getTableCellBorders(start, selected, tableMap)
+        const tableMap = TableMap.get(table.node)
 
-      const classes = ['table-cell-selected']
+        const selected: number[] = []
 
-      if (borders.top) classes.push('table-cell-selected__border-top')
-      if (borders.bottom) classes.push('table-cell-selected__border-bottom')
-      if (borders.left) classes.push('table-cell-selected__border-left')
-      if (borders.right) classes.push('table-cell-selected__border-right')
+        selection.forEachCell((_node, pos) => {
+          const start = pos - table.pos - 1
+          selected.push(start)
+        })
 
-      decorations.push(Decoration.node(pos, pos + node.nodeSize, { class: classes.join(' ') }))
-    })
-  }
+        selection.forEachCell((node, pos) => {
+          const start = pos - table.pos - 1
+          const borders = getTableCellBorders(start, selected, tableMap)
 
-  return decorations
+          const classes = ['table-cell-selected']
+
+          if (borders.top) classes.push('table-cell-selected__border-top')
+          if (borders.bottom) classes.push('table-cell-selected__border-bottom')
+          if (borders.left) classes.push('table-cell-selected__border-left')
+          if (borders.right) classes.push('table-cell-selected__border-right')
+
+          decorations.push(Decoration.node(pos, pos + node.nodeSize, { class: classes.join(' ') }))
+        })
+
+        return { decorations: DecorationSet.create(newState.doc, decorations) }
+      }
+    },
+    props: {
+      decorations (state) {
+        return key.getState(state).decorations
+      }
+    }
+  })
 }
 
 function getTableCellBorders (

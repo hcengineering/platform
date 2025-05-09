@@ -29,12 +29,15 @@ export interface TypesNavigatorConfig extends BaseNavigatorConfig {
   hierarchyDepth?: number
 }
 
+type Sorting = 'alphabetical' | 'recent'
 export interface CardsNavigatorConfig extends BaseNavigatorConfig {
   variant: 'cards'
   limit: number
   hideEmpty?: boolean
   labelFilter?: LabelID[]
   fixedTypes?: Array<Ref<MasterTag>>
+  defaultSorting?: Sorting
+  specialSorting?: Record<Ref<MasterTag>, Sorting>
 }
 
 export type NavigatorConfig = TypesNavigatorConfig | CardsNavigatorConfig

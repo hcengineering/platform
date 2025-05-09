@@ -16,13 +16,14 @@
 <script lang="ts">
   import { Markup, RateLimiter } from '@hcengineering/core'
   import { tick, createEventDispatcher, onDestroy } from 'svelte'
-  import { uploadFile, deleteFile, getCommunicationClient } from '@hcengineering/presentation'
-  import { CardID, CardType, Message } from '@hcengineering/communication-types'
+  import { uploadFile, deleteFile, getCommunicationClient, getClient } from '@hcengineering/presentation'
+  import { Message } from '@hcengineering/communication-types'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import { isEmptyMarkup } from '@hcengineering/text'
   import { updateMyPresence } from '@hcengineering/presence-resources'
   import { ThrottledCaller } from '@hcengineering/ui'
   import { getCurrentEmployee } from '@hcengineering/contact'
+  import { Card } from '@hcengineering/card'
 
   import TextInput from '../TextInput.svelte'
   import { defaultMessageInputActions, toMarkdown } from '../../utils'
@@ -31,8 +32,7 @@
   import { type TextInputAction, UploadedFile, type PresenceTyping } from '../../types'
   import TypingPresenter from '../TypingPresenter.svelte'
 
-  export let cardId: CardID
-  export let cardType: CardType
+  export let card: Card
   export let message: Message | undefined = undefined
   export let content: Markup | undefined = undefined
   export let title: string = ''
@@ -42,6 +42,7 @@
   const throttle = new ThrottledCaller(500)
   const dispatch = createEventDispatcher()
   const communicationClient = getCommunicationClient()
+  const client = getClient()
   const me = getCurrentEmployee()
 
   let files: UploadedFile[] = []
@@ -74,19 +75,20 @@
   }
 
   async function createMessage (markdown: string, files: UploadedFile[]): Promise<void> {
-    const { id, created } = await communicationClient.createMessage(cardId, cardType, markdown)
+    const { id, created } = await communicationClient.createMessage(card._id, card._class, markdown)
 
     for (const file of files) {
-      await communicationClient.createFile(cardId, id, created, file.blobId, file.type, file.filename, file.size)
+      await communicationClient.createFile(card._id, id, created, file.blobId, file.type, file.filename, file.size)
     }
+    await client.update(card, {}, false, Date.now())
   }
 
   async function editMessage (message: Message, markdown: string, files: UploadedFile[]): Promise<void> {
-    await communicationClient.updateMessage(cardId, message.id, message.created, markdown)
+    await communicationClient.updateMessage(card._id, message.id, message.created, markdown)
 
     for (const file of files) {
       await communicationClient.createFile(
-        cardId,
+        card._id,
         message.id,
         message.created,
         file.blobId,
@@ -205,7 +207,7 @@
     const markup = event.detail
     if (!isEmptyMarkup(markup)) {
       throttle.call(() => {
-        const room = { objectId: cardId, objectClass: cardType }
+        const room = { objectId: card._id, objectClass: card._class }
         const typing: PresenceTyping = { person: me, lastTyping: Date.now() }
         updateMyPresence(room, { typing })
       })
@@ -269,8 +271,8 @@
   </TextInput>
 </div>
 
-{#if cardId && message === undefined}
-  <TypingPresenter {cardId} />
+{#if message === undefined}
+  <TypingPresenter cardId={card._id} />
 {/if}
 
 <style lang="scss">

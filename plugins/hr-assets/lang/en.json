@@ -11,7 +11,7 @@
     "MemberCount": "{count, plural, =0 {no employees} =1 {1 employee} other {# employees}}",
     "AssignLead": "Assign team lead",
     "TeamLeadTooltip": "{value}",
-    "HRApplication": "Human resources",
+    "HRApplication": "Human resources (beta)",
     "MoveStaff": "Employee transfer",
     "MoveStaffDescr": "Do you want to transfer employee from {current} to {department}",
     "Departments": "Departments",

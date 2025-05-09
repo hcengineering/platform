@@ -130,6 +130,7 @@
     "MasterDetail": "Мастер-деталь",
     "Tree": "Дерево",
     "Document": "Документ",
-    "Loading": "Загрузка..."
+    "Loading": "Загрузка...",
+    "NoRelations": "Нет связей"
   }
 }

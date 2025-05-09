@@ -13,75 +13,34 @@
 // limitations under the License.
 //
 
-import { type Editor } from '@tiptap/core'
 import TiptapTableCell from '@tiptap/extension-table-cell'
-import { Plugin, PluginKey, type Selection } from '@tiptap/pm/state'
-import { DecorationSet } from '@tiptap/pm/view'
+import { Plugin } from '@tiptap/pm/state'
 
-import { CellSelection, type Rect, TableMap } from '@tiptap/pm/tables'
-import { columnHandlerDecoration } from './decorations/columnHandlerDecoration'
-import { columnInsertDecoration } from './decorations/columnInsertDecoration'
-import { rowHandlerDecoration } from './decorations/rowHandlerDecoration'
-import { rowInsertDecoration } from './decorations/rowInsertDecoration'
-import { tableDragMarkerDecoration } from './decorations/tableDragMarkerDecoration'
-import { tableSelectionDecoration } from './decorations/tableSelectionDecoration'
-import { findTable } from './utils'
 import { type Node } from '@tiptap/pm/model'
+import { CellSelection, type Rect, TableMap } from '@tiptap/pm/tables'
+import { TableColumnHandlerDecorationPlugin } from './decorations/columnHandlerDecoration'
+import { TableColumnInsertDecorationPlugin } from './decorations/columnInsertDecoration'
+import { TableRowHandlerDecorationPlugin } from './decorations/rowHandlerDecoration'
+import { TableRowInsertDecorationPlugin } from './decorations/rowInsertDecoration'
+import { TableDragMarkerDecorationPlugin } from './decorations/tableDragMarkerDecoration'
+import { TableSelectionDecorationPlugin } from './decorations/tableSelectionDecoration'
+import { findTable } from './utils'
 
 export const TableCell = TiptapTableCell.extend({
   addProseMirrorPlugins () {
-    return [tableCellDecorationPlugin(this.editor), tableSelectionNormalizer()]
+    return [
+      TableSelectionNormalizerPlugin(),
+      TableSelectionDecorationPlugin(this.editor),
+      TableDragMarkerDecorationPlugin(this.editor),
+      TableColumnHandlerDecorationPlugin(this.editor),
+      TableColumnInsertDecorationPlugin(this.editor),
+      TableRowHandlerDecorationPlugin(this.editor),
+      TableRowInsertDecorationPlugin(this.editor)
+    ]
   }
 })
 
-interface TableCellDecorationPluginState {
-  decorations?: DecorationSet
-  selection?: Selection
-}
-
-const tableCellDecorationPlugin = (editor: Editor): Plugin<TableCellDecorationPluginState> => {
-  const key = new PluginKey('table-cell-decoration-plugin')
-  return new Plugin({
-    key,
-    state: {
-      init: (): TableCellDecorationPluginState => {
-        return {}
-      },
-      apply (tr, prev, oldState, newState) {
-        if (!editor.isEditable) {
-          return { selection: newState.selection, decorations: DecorationSet.empty }
-        }
-
-        const newTable = findTable(newState.selection)
-
-        if (newTable === undefined) {
-          return {}
-        }
-
-        if (prev.selection === newState.selection) {
-          return prev
-        }
-
-        const decorations = DecorationSet.create(newState.doc, [
-          ...tableSelectionDecoration(newState, newTable),
-          ...tableDragMarkerDecoration(newState, newTable),
-          ...columnHandlerDecoration(newState, newTable, editor),
-          ...columnInsertDecoration(newState, newTable, editor),
-          ...rowHandlerDecoration(newState, newTable, editor),
-          ...rowInsertDecoration(newState, newTable, editor)
-        ])
-        return { selection: newState.selection, decorations }
-      }
-    },
-    props: {
-      decorations (state) {
-        return key.getState(state).decorations
-      }
-    }
-  })
-}
-
-const tableSelectionNormalizer = (): Plugin<any> => {
+const TableSelectionNormalizerPlugin = (): Plugin<any> => {
   return new Plugin({
     appendTransaction: (transactions, oldState, newState) => {
       const selection = newState.selection
