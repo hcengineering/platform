@@ -4376,7 +4376,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz':
-    resolution: {integrity: sha512-hHNcN2WSN39v23z5zOKCsf796DwBB1YzkslfMttsN3OfUnEoofO9G2VW6xCjfzbSWlU5Uu4XCI/PF47LKmEgMA==, tarball: file:projects/mail-common.tgz}
+    resolution: {integrity: sha512-FxQudYPTiQ+buMQzXcnO4zW3IAAXrxwa7nncHFIMiu4Q95O7KOHV16AgXwJGVbOjlChACxxbBqFqQ0JvogKnkA==, tarball: file:projects/mail-common.tgz}
     version: 0.0.0
 
   '@rush-temp/mail-resources@file:projects/mail-resources.tgz':
@@ -19862,8 +19862,8 @@ snapshots:
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
-      '@hcengineering/communication-rest-client': 0.1.176(typescript@5.7.3)
-      '@hcengineering/communication-types': 0.1.176(typescript@5.7.3)
+      '@hcengineering/communication-rest-client': 0.1.178(typescript@5.7.3)
+      '@hcengineering/communication-types': 0.1.178(typescript@5.7.3)
       '@tsconfig/node16': 1.0.4
       '@types/express': 4.17.21
       '@types/jest': 29.5.12
