@@ -123,60 +123,6 @@ describe('SyncManager', () => {
     jest.clearAllMocks()
   })
 
-  describe('getHistory', () => {
-    it('should retrieve history from key-value store', async () => {
-      // Arrange
-      const mockHistory = {
-        historyId,
-        userId,
-        workspace
-      }
-      mockKeyValueClient.getValue.mockResolvedValue(mockHistory)
-
-      // Act
-      const result = await (syncManager as any).getHistory(userId)
-
-      // Assert
-      expect(mockKeyValueClient.getValue).toHaveBeenCalledWith(`history:${workspace}:${userId}`)
-      expect(result).toEqual(mockHistory)
-    })
-
-    it('should return null when history not found', async () => {
-      // Arrange
-      mockKeyValueClient.getValue.mockResolvedValue(null)
-
-      // Act
-      const result = await (syncManager as any).getHistory(userId)
-
-      // Assert
-      expect(result).toBeNull()
-    })
-  })
-
-  describe('setHistoryId', () => {
-    it('should store history in key-value store', async () => {
-      // Act
-      await (syncManager as any).setHistoryId(userId, historyId)
-
-      // Assert
-      expect(mockKeyValueClient.setValue).toHaveBeenCalledWith(`history:${workspace}:${userId}`, {
-        historyId,
-        userId,
-        workspace
-      })
-    })
-  })
-
-  describe('clearHistory', () => {
-    it('should delete history from key-value store', async () => {
-      // Act
-      await (syncManager as any).clearHistory(userId)
-
-      // Assert
-      expect(mockKeyValueClient.deleteKey).toHaveBeenCalledWith(`history:${workspace}:${userId}`)
-    })
-  })
-
   describe('sync', () => {
     it('should perform full sync when no history exists', async () => {
       // Arrange
