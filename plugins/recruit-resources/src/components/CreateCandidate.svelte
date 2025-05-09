@@ -525,7 +525,12 @@
     ]
   }
 
-  $: if (object.firstName != null && object.lastName != null) {
+  $: if (
+    object.firstName != null &&
+    object.firstName.trim().length > 0 &&
+    object.lastName != null &&
+    object.lastName.trim().length > 0
+  ) {
     void findContacts(
       client,
       contact.class.Person,
@@ -748,69 +753,78 @@
   </svelte:fragment>
 
   <svelte:fragment slot="footer">
-    <div
-      class="flex-center resume"
-      class:solid={dragover || object.resumeUuid}
-      on:dragover|preventDefault={() => {
-        dragover = true
-      }}
-      on:dragleave={() => {
-        dragover = false
-      }}
-      on:drop|preventDefault|stopPropagation={drop}
-    >
-      {#if loading && object.resumeUuid}
-        <Button label={recruit.string.Parsing} icon={Spinner} disabled />
-      {:else}
-        {#if loading}
-          <Button label={recruit.string.Uploading} icon={Spinner} disabled />
-        {:else if object.resumeUuid}
-          <Button
-            disabled={loading}
-            focusIndex={103}
-            icon={FileIcon}
-            on:click={() => {
-              showPopup(
-                FilePreviewPopup,
-                {
-                  file: object.resumeUuid,
-                  contentType: object.resumeType,
-                  name: object.resumeName
-                },
-                object.resumeType?.startsWith('image/') ? 'centered' : 'float'
-              )
-            }}
-          >
-            <svelte:fragment slot="content">
-              <span class="overflow-label disabled">{object.resumeName}</span>
-            </svelte:fragment>
-          </Button>
+    {#if matches.length === 0}
+      <div
+        class="flex-center resume"
+        class:solid={dragover || object.resumeUuid}
+        on:dragover|preventDefault={() => {
+          dragover = true
+        }}
+        on:dragleave={() => {
+          dragover = false
+        }}
+        on:drop|preventDefault|stopPropagation={drop}
+      >
+        {#if loading && object.resumeUuid}
+          <Button label={recruit.string.Parsing} icon={Spinner} disabled />
         {:else}
-          <Button
-            focusIndex={103}
-            label={recruit.string.AddDropHere}
-            icon={IconAttachment}
-            notSelected
-            on:click={() => {
-              inputFile.click()
-            }}
+          {#if loading}
+            <Button label={recruit.string.Uploading} icon={Spinner} disabled />
+          {:else if object.resumeUuid}
+            <Button
+              disabled={loading}
+              focusIndex={103}
+              icon={FileIcon}
+              on:click={() => {
+                showPopup(
+                  FilePreviewPopup,
+                  {
+                    file: object.resumeUuid,
+                    contentType: object.resumeType,
+                    name: object.resumeName
+                  },
+                  object.resumeType?.startsWith('image/') ? 'centered' : 'float'
+                )
+              }}
+            >
+              <svelte:fragment slot="content">
+                <span class="overflow-label disabled">{object.resumeName}</span>
+              </svelte:fragment>
+            </Button>
+          {:else}
+            <Button
+              focusIndex={103}
+              label={recruit.string.AddDropHere}
+              icon={IconAttachment}
+              notSelected
+              on:click={() => {
+                inputFile.click()
+              }}
+            />
+          {/if}
+          <input
+            bind:this={inputFile}
+            type="file"
+            name="file"
+            id="file"
+            style="display: none"
+            on:change={fileSelected}
           />
         {/if}
-        <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected} />
-      {/if}
-      <div class="ml-1">
-        <MiniToggle bind:on={shouldCreateNewSkills} label={recruit.string.CreateNewSkills} />
-      </div>
-    </div>
-    {#if matches.length > 0}
-      <div class="flex-col-stretch flex-grow error-color">
-        <div class="flex mb-1">
-          <IconInfo size={'medium'} />
-          <span class="text-sm overflow-label ml-2">
-            <Label label={contact.string.PersonAlreadyExists} />
-          </span>
+        <div class="ml-1">
+          <MiniToggle bind:on={shouldCreateNewSkills} label={recruit.string.CreateNewSkills} />
         </div>
-        <PersonPresenter value={matches[0]} avatarSize={'tiny'} />
+      </div>
+    {/if}
+  </svelte:fragment>
+  <svelte:fragment slot="error">
+    {#if matches.length > 0}
+      <div class="flex-row-center error-color">
+        <IconInfo size={'small'} />
+        <span class="text-sm overflow-label ml-2">
+          <Label label={contact.string.PersonAlreadyExists} />
+        </span>
+        <div class="ml-4"><PersonPresenter value={matches[0]} /></div>
       </div>
     {/if}
   </svelte:fragment>
