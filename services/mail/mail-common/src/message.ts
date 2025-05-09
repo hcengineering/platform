@@ -21,7 +21,7 @@ import {
 } from '@hcengineering/communication-rest-client'
 import { MessageType } from '@hcengineering/communication-types'
 import chat from '@hcengineering/chat'
-import contact, { PersonSpace } from '@hcengineering/contact'
+import { PersonSpace } from '@hcengineering/contact'
 import {
   type Blob,
   type MeasureContext,
@@ -32,7 +32,6 @@ import {
   generateId,
   PersonUuid,
   RateLimiter,
-  SocialIdType,
   SocialId
 } from '@hcengineering/core'
 import mail from '@hcengineering/mail'
@@ -42,6 +41,8 @@ import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/ser
 import { BaseConfig, type Attachment } from './types'
 import { EmailMessage } from './types'
 import { getMdContent } from './utils'
+import { PersonCacheFactory } from './person'
+import { PersonSpacesCacheFactory } from './personSpaces'
 
 export async function createMessages (
   config: BaseConfig,
@@ -68,12 +69,14 @@ export async function createMessages (
   const txClient = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
   const msgClient = getCommunicationClient(wsInfo.endpoint, wsInfo.workspace, wsInfo.token)
   const restClient = createRestClient(transactorUrl, wsInfo.workspace, wsInfo.token)
+  const personCache = PersonCacheFactory.getInstance(ctx, restClient, wsInfo.workspace)
+  const personSpacesCache = PersonSpacesCacheFactory.getInstance(ctx, txClient, wsInfo.workspace)
 
-  const fromPerson = await restClient.ensurePerson(SocialIdType.EMAIL, from.email, from.firstName, from.lastName)
+  const fromPerson = await personCache.ensurePerson(from)
 
   const toPersons: { address: string, uuid: PersonUuid, socialId: PersonId }[] = []
   for (const to of tos) {
-    const toPerson = await restClient.ensurePerson(SocialIdType.EMAIL, to.email, to.firstName, to.lastName)
+    const toPerson = await personCache.ensurePerson(to)
     if (toPerson === undefined) {
       continue
     }
@@ -118,7 +121,7 @@ export async function createMessages (
   }
 
   try {
-    const spaces = await getPersonSpaces(ctx, txClient, mailId, fromPerson.uuid, from.email)
+    const spaces = await personSpacesCache.getPersonSpaces(mailId, fromPerson.uuid, from.email)
     if (spaces.length > 0) {
       await saveMessageToSpaces(
         ctx,
@@ -148,7 +151,7 @@ export async function createMessages (
 
   for (const to of toPersons) {
     try {
-      const spaces = await getPersonSpaces(ctx, txClient, mailId, to.uuid, to.address)
+      const spaces = await personSpacesCache.getPersonSpaces(mailId, to.uuid, to.address)
       if (spaces.length > 0) {
         await saveMessageToSpaces(
           ctx,
@@ -171,22 +174,6 @@ export async function createMessages (
       ctx.error('Failed to save message spaces', { error, mailId, personUuid: to.uuid, email: to.address })
     }
   }
-}
-
-async function getPersonSpaces (
-  ctx: MeasureContext,
-  client: TxOperations,
-  mailId: string,
-  personUuid: PersonUuid,
-  email: string
-): Promise<PersonSpace[]> {
-  const persons = await client.findAll(contact.class.Person, { personUuid }, { projection: { _id: 1 } })
-  const personRefs = persons.map((p) => p._id)
-  const spaces = await client.findAll(contact.class.PersonSpace, { person: { $in: personRefs } })
-  if (spaces.length === 0) {
-    ctx.warn('No personal space found, skip', { mailId, personUuid, email })
-  }
-  return spaces
 }
 
 async function saveMessageToSpaces (

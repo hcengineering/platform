@@ -790,9 +790,6 @@ importers:
       '@rush-temp/pod-gmail':
         specifier: file:./projects/pod-gmail.tgz
         version: file:projects/pod-gmail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)
-      '@rush-temp/pod-gmail-next':
-        specifier: file:./projects/pod-gmail-next.tgz
-        version: file:projects/pod-gmail-next.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)
       '@rush-temp/pod-inbound-mail':
         specifier: file:./projects/pod-inbound-mail.tgz
         version: file:projects/pod-inbound-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
@@ -4856,10 +4853,6 @@ packages:
 
   '@rush-temp/pod-github@file:projects/pod-github.tgz':
     resolution: {integrity: sha512-MacXha5Tki03BvclakE7iMrCSQgSd8W5Sw6yF2sJROcwfoETEfcR54x2VVY/H3HAiMiiKrAEiHmp01WjUx4jAg==, tarball: file:projects/pod-github.tgz}
-    version: 0.0.0
-
-  '@rush-temp/pod-gmail-next@file:projects/pod-gmail-next.tgz':
-    resolution: {integrity: sha512-sgms4lCI1JkF85WPmVCgBYhiILbxumiULt/dKYPi0IuAatMwAi483JqnVe+gv7TB1wliUsTNI9NPeNlar41X6w==, tarball: file:projects/pod-gmail-next.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
@@ -22292,55 +22285,6 @@ snapshots:
       - utf-8-validate
       - y-prosemirror
 
-  '@rush-temp/pod-gmail-next@file:projects/pod-gmail-next.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)':
-    dependencies:
-      '@tsconfig/node16': 1.0.4
-      '@types/cors': 2.8.17
-      '@types/express': 4.17.21
-      '@types/jest': 29.5.12
-      '@types/node': 20.11.19
-      '@types/sanitize-html': 2.15.0
-      '@types/turndown': 5.0.5
-      '@types/uuid': 8.3.4
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
-      cors: 2.8.5
-      cross-env: 7.0.3
-      dotenv: 16.0.3
-      esbuild: 0.24.2
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-node: 11.1.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      express: 4.21.2
-      fast-equals: 5.2.2
-      file-api: 0.10.4
-      gaxios: 5.1.3(encoding@0.1.13)
-      google-auth-library: 8.9.0(encoding@0.1.13)
-      googleapis: 122.0.0(encoding@0.1.13)
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      jwt-simple: 0.5.6
-      prettier: 3.2.5
-      sanitize-html: 2.16.0
-      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
-      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.7.3)
-      ts-node-dev: 2.0.0(@types/node@20.11.19)(typescript@5.7.3)
-      turndown: 7.2.0
-      typescript: 5.7.3
-      uuid: 8.3.2
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@swc/core'
-      - '@swc/wasm'
-      - babel-jest
-      - babel-plugin-macros
-      - encoding
-      - node-notifier
-      - supports-color
-
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)':
     dependencies:
       '@tsconfig/node16': 1.0.4
@@ -37106,24 +37050,6 @@ snapshots:
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       tsconfig: 7.0.0
       typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/node'
-
-  ts-node-dev@2.0.0(@types/node@20.11.19)(typescript@5.7.3):
-    dependencies:
-      chokidar: 3.6.0
-      dynamic-dedupe: 0.3.0
-      minimist: 1.2.8
-      mkdirp: 1.0.4
-      resolve: 1.22.8
-      rimraf: 2.7.1
-      source-map-support: 0.5.21
-      tree-kill: 1.2.2
-      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.7.3)
-      tsconfig: 7.0.0
-      typescript: 5.7.3
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'

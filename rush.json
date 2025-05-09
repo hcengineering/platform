@@ -2499,11 +2499,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-gmail-next",
-      "projectFolder": "services/gmail/pod-gmail-next",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/mail-common",
       "projectFolder": "services/mail/mail-common",
       "shouldPublish": false
