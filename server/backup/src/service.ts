@@ -57,6 +57,8 @@ export interface BackupConfig {
   SkipWorkspaces: string
 
   Parallel: number
+
+  keepSnapshots: number
 }
 
 class BackupWorker {
@@ -298,8 +300,9 @@ class BackupWorker {
             force: true,
             timeout: this.config.Timeout * 1000,
             connectTimeout: 5 * 60 * 1000, // 5 minutes to,
+            keepSnapshots: this.config.keepSnapshots,
             blobDownloadLimit: this.downloadLimit,
-            skipBlobContentTypes: [],
+            skipBlobContentTypes: ['video/'],
             fullVerify: this.fullCheck,
             storageAdapter: this.workspaceStorageAdapter,
             getLastTx: async (): Promise<Tx | undefined> => {

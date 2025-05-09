@@ -946,6 +946,7 @@ export function devTool (
     .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
     .option('-f, --force', 'Force backup', false)
     .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
+    .option('-k, --keepSnapshots <keepSnapshots>', 'Keep snapshots for days', '14')
     .action(
       async (
         dirName: string,
@@ -958,6 +959,7 @@ export function devTool (
           blobLimit: string
           contentTypes: string
           full: boolean
+          keepSnapshots: string
         }
       ) => {
         const storage = await createFileBackupStorage(dirName)
@@ -983,7 +985,8 @@ export function devTool (
             skipBlobContentTypes: cmd.contentTypes
               .split(';')
               .map((it) => it.trim())
-              .filter((it) => it.length > 0)
+              .filter((it) => it.length > 0),
+            keepSnapshots: parseInt(cmd.keepSnapshots)
           })
         })
       }
@@ -1003,9 +1006,19 @@ export function devTool (
     .command('backup-compact <dirName>')
     .description('Compact a given backup, will create one snapshot clean unused resources')
     .option('-f, --force', 'Force compact.', false)
-    .action(async (dirName: string, cmd: { force: boolean }) => {
+    .option(
+      '-ct, --contentTypes <contentTypes>',
+      'A list of ; separated content types for blobs to exclude from backup',
+      'video/;application/octet-stream'
+    )
+    .option('-k, --keepSnapshots <keepSnapshots>', 'Keep snapshots for days', '14')
+    .action(async (dirName: string, cmd: { force: boolean, contentTypes: string, keepSnapshots: string }) => {
       const storage = await createFileBackupStorage(dirName)
-      await compactBackup(toolCtx, storage, cmd.force)
+      await compactBackup(toolCtx, storage, cmd.force, {
+        blobLimit: 10 * 1024 * 1024, // 10 MB
+        skipContentTypes: cmd.contentTypes.split(';'),
+        keepSnapshots: parseInt(cmd.keepSnapshots)
+      })
     })
   program
     .command('backup-check <dirName>')
@@ -1230,21 +1243,30 @@ export function devTool (
   //   await backupRemoveLast(storage, daysInterval)
   // })
 
-  // program
-  // .command('backup-s3-compact <bucketName> <dirName>')
-  // .description('Compact a given backup to just one snapshot')
-  // .option('-f, --force', 'Force compact.', false)
-  // .action(async (bucketName: string, dirName: string, cmd: { force: boolean, print: boolean }) => {
-  //   const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
-  //   const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
-  //   try {
-  //     const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
-  //     await compactBackup(toolCtx, storage, cmd.force)
-  //   } catch (err: any) {
-  //     toolCtx.error('failed to size backup', { err })
-  //   }
-  //   await storageAdapter.close()
-  // })
+  program
+    .command('backup-s3-compact <bucketName> <dirName>')
+    .description('Compact a given backup to just one snapshot')
+    .option('-f, --force', 'Force compact.', false)
+    .option(
+      '-ct, --contentTypes <contentTypes>',
+      'A list of ; separated content types for blobs to exclude from backup',
+      'video/;application/octet-stream'
+    )
+    .action(async (bucketName: string, dirName: string, cmd: { force: boolean, contentTypes: string }) => {
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      const backupIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
+      try {
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, backupIds, dirName)
+        await compactBackup(toolCtx, storage, cmd.force, {
+          blobLimit: 10 * 1024 * 1024, // 10 MB
+          skipContentTypes: cmd.contentTypes !== undefined ? cmd.contentTypes.split(';') : undefined
+        })
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
+    })
   // program
   // .command('backup-s3-check <bucketName> <dirName>')
   // .description('Compact a given backup to just one snapshot')
@@ -2448,6 +2470,14 @@ export function devTool (
     })
 
   extendProgram?.(program)
+
+  process.on('unhandledRejection', (reason, promise) => {
+    toolCtx.error('Unhandled Rejection at:', { reason, promise })
+  })
+
+  process.on('uncaughtException', (error, origin) => {
+    toolCtx.error('Uncaught Exception at:', { origin, error })
+  })
 
   program.parse(process.argv)
 }
