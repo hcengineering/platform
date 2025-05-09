@@ -35,6 +35,10 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/emoji": "^0.6.0",
-    "@hcengineering/model-workbench": "^0.6.1"
+    "@hcengineering/model-workbench": "^0.6.1",
+    "@hcengineering/setting": "^0.6.17",
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/model-print": "^0.6.0",
+    "@hcengineering/model-tracker": "^0.6.0"
   }
 }

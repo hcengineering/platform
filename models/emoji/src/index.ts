@@ -15,11 +15,17 @@
 
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
+
 import presentation from '@hcengineering/model-presentation'
 import workbench from '@hcengineering/model-workbench'
+import setting from '@hcengineering/setting'
+import view from '@hcengineering/view'
+import print from '@hcengineering/model-print'
+import tracker from '@hcengineering/model-tracker'
 
 import { DOMAIN_EMOJI, TCustomEmoji } from './models'
 import emojiPlugin from './plugin'
+import { AccountRole } from '@hcengineering/core'
 
 export { emojiId } from '@hcengineering/emoji'
 export { emojiPlugin as default }
@@ -30,6 +36,20 @@ export function createModel (builder: Builder): void {
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_EMOJI,
     disabled: [{ space: 1 }, { modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }]
+  })
+
+  builder.createDoc(setting.class.WorkspaceSettingCategory, core.space.Model, {
+    name: 'emojis',
+    label: emojiPlugin.string.CustomEmojis,
+    icon: emojiPlugin.icon.Search,
+    component: emojiPlugin.component.SettingsEmojiTable,
+    group: 'settings-editor',
+    role: AccountRole.User,
+    order: 5000
+  })
+
+  builder.mixin(emojiPlugin.class.CustomEmoji, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Open, view.action.OpenInNewTab, print.action.Print, tracker.action.NewRelatedIssue]
   })
 
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {

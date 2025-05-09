@@ -59,7 +59,6 @@
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/query": "^0.6.12",
     "@hcengineering/emoji": "^0.6.0",
-    "@hcengineering/emoji-resources": "^0.6.0",
     "fast-equals": "^5.2.2"
   }
 }

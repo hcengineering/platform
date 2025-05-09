@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Asset, type IntlString, plugin, type Plugin } from '@hcengineering/platform'
+import { Asset, type IntlString, plugin, type Plugin, Resource } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import type { Class, Ref, Doc } from '@hcengineering/core'
-import { CustomEmoji } from './types'
+import { CustomEmoji, ExtendedEmoji } from './types'
 
 /** @public */
 export const emojiId = 'emoji' as Plugin
@@ -28,7 +28,8 @@ export const emojiPlugin = plugin(emojiId, {
     CustomEmoji: '' as Ref<Class<CustomEmoji>>
   },
   component: {
-    EmojiPopup: '' as AnyComponent
+    EmojiPopup: '' as AnyComponent,
+    SettingsEmojiTable: '' as AnyComponent
   },
   string: {
     Remove: '' as IntlString,
@@ -50,7 +51,20 @@ export const emojiPlugin = plugin(emojiId, {
     MediumLight: '' as IntlString,
     Medium: '' as IntlString,
     MediumDark: '' as IntlString,
-    Dark: '' as IntlString
+    Dark: '' as IntlString,
+    CustomEmojis: '' as IntlString,
+    Shortcode: '' as IntlString,
+    ShortcodeDescription: '' as IntlString,
+    Image: '' as IntlString,
+    ImageDescription: '' as IntlString,
+    UploadImage: '' as IntlString,
+    Preview: '' as IntlString,
+    PreviewText: '' as IntlString,
+    CreateTitle: '' as IntlString,
+    Create: '' as IntlString,
+    ImageAspectError: '' as IntlString,
+    ShortcodeMatchError: '' as IntlString,
+    ShortcodeExistsError: '' as IntlString,
   },
   icon: {
     Activities: '' as Asset,
@@ -64,6 +78,10 @@ export const emojiPlugin = plugin(emojiId, {
     SmileysAndPeople: '' as Asset,
     Symbols: '' as Asset,
     TravelAndPlaces: '' as Asset
+  },
+  functions: {
+    GetEmojiByEmoticon: '' as Resource<(emoticon: string | undefined) => string | undefined>,
+    GetEmojiByShortCode: '' as Resource<(shortcode: string | undefined, skinTone?: number) => ExtendedEmoji | undefined>,
   }
 })
 

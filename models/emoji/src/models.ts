@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import emojiPlugin from './plugin'
-import { Model } from '@hcengineering/model'
+import { Model, Prop, ReadOnly, TypeRef, TypeString } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import type { Ref, Blob, Domain } from '@hcengineering/core'
 import { type CustomEmoji } from '@hcengineering/emoji'
@@ -22,6 +22,11 @@ export const DOMAIN_EMOJI = 'emoji' as Domain
 
 @Model(emojiPlugin.class.CustomEmoji, core.class.Doc, DOMAIN_EMOJI)
 export class TCustomEmoji extends TDoc implements CustomEmoji {
-  shortcode!: string
-  image!: Ref<Blob>
+  @Prop(TypeString(), emojiPlugin.string.Shortcode)
+  @ReadOnly()
+    shortcode!: string
+
+  @Prop(TypeRef(core.class.Blob), emojiPlugin.string.Image)
+  @ReadOnly()
+    image!: Ref<Blob>
 }
