@@ -58,7 +58,7 @@ export interface BackupConfig {
 
   Parallel: number
 
-  keepSnapshots: number
+  KeepSnapshots: number
 }
 
 class BackupWorker {
@@ -300,7 +300,7 @@ class BackupWorker {
             force: true,
             timeout: this.config.Timeout * 1000,
             connectTimeout: 5 * 60 * 1000, // 5 minutes to,
-            keepSnapshots: this.config.keepSnapshots,
+            keepSnapshots: this.config.KeepSnapshots,
             blobDownloadLimit: this.downloadLimit,
             skipBlobContentTypes: ['video/'],
             fullVerify: this.fullCheck,

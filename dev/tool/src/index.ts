@@ -1016,8 +1016,7 @@ export function devTool (
       const storage = await createFileBackupStorage(dirName)
       await compactBackup(toolCtx, storage, cmd.force, {
         blobLimit: 10 * 1024 * 1024, // 10 MB
-        skipContentTypes: cmd.contentTypes.split(';'),
-        keepSnapshots: parseInt(cmd.keepSnapshots)
+        skipContentTypes: cmd.contentTypes.split(';')
       })
     })
   program

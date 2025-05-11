@@ -599,7 +599,7 @@ export class WorkspaceWorker {
           AccountsURL: '',
           Interval: 0,
           Parallel: 1,
-          keepSnapshots: 7 * 2
+          KeepSnapshots: 7 * 2
         },
         pipelineFactory,
         workspaceStorageAdapter,
