@@ -26,8 +26,21 @@ import { Doc as YDoc } from 'yjs'
 import { Context } from '../context'
 import { CollabStorageAdapter } from './adapter'
 
+export interface PlatformStorageAdapterOptions {
+  retryCount?: number
+  retryInterval?: number
+}
 export class PlatformStorageAdapter implements CollabStorageAdapter {
-  constructor (private readonly storage: StorageAdapter) {}
+  private readonly retryCount: number
+  private readonly retryInterval: number
+
+  constructor (
+    private readonly storage: StorageAdapter,
+    options: PlatformStorageAdapterOptions = {}
+  ) {
+    this.retryCount = options.retryCount ?? 5
+    this.retryInterval = options.retryInterval ?? 50
+  }
 
   async loadDocument (ctx: MeasureContext, documentName: string, context: Context): Promise<YDoc | undefined> {
     const { content, wsIds } = context
@@ -38,9 +51,14 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       ctx.info('load document content', { documentName })
 
       const ydoc = await ctx.with('loadCollabYdoc', {}, (ctx) => {
-        return withRetry(ctx, 5, () => {
-          return loadCollabYdoc(ctx, this.storage, wsIds, documentId)
-        })
+        return withRetry(
+          ctx,
+          this.retryCount,
+          () => {
+            return loadCollabYdoc(ctx, this.storage, wsIds, documentId)
+          },
+          this.retryInterval
+        )
       })
 
       if (ydoc !== undefined) {
@@ -100,9 +118,14 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     try {
       ctx.info('save document ydoc content', { documentName })
       await ctx.with('saveCollabYdoc', {}, (ctx) => {
-        return withRetry(ctx, 5, () => {
-          return saveCollabYdoc(ctx, this.storage, wsIds, documentId, document)
-        })
+        return withRetry(
+          ctx,
+          this.retryCount,
+          () => {
+            return saveCollabYdoc(ctx, this.storage, wsIds, documentId, document)
+          },
+          this.retryInterval
+        )
       })
     } catch (err: any) {
       Analytics.handleError(err)
@@ -180,9 +203,14 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     }
 
     const blobId = await ctx.with('saveCollabJson', {}, (ctx) => {
-      return withRetry(ctx, 5, () => {
-        return saveCollabJson(ctx, this.storage, wsIds, documentId, markup.curr[objectAttr])
-      })
+      return withRetry(
+        ctx,
+        this.retryCount,
+        () => {
+          return saveCollabJson(ctx, this.storage, wsIds, documentId, markup.curr[objectAttr])
+        },
+        this.retryInterval
+      )
     })
 
     await ctx.with('update', {}, () => client.diffUpdate(current, { [objectAttr]: blobId }))
