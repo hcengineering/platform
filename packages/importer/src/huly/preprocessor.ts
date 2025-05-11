@@ -14,12 +14,7 @@
 
 import { Attachment } from '@hcengineering/attachment'
 import { type Person } from '@hcengineering/contact'
-import {
-  type Class,
-  type Doc,
-  type Ref,
-  type Space
-} from '@hcengineering/core'
+import { type Class, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
 import * as fs from 'fs'
 import { contentType } from 'mime-types'

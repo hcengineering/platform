@@ -22,14 +22,7 @@ import documents, {
   DocumentMeta,
   DocumentState
 } from '@hcengineering/controlled-documents'
-import {
-  AccountUuid,
-  generateId,
-  PersonId,
-  type Ref,
-  SocialIdType,
-  type TxOperations
-} from '@hcengineering/core'
+import { AccountUuid, generateId, PersonId, type Ref, SocialIdType, type TxOperations } from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
 import core from '@hcengineering/model-core'
 import tracker, { type Issue, Project } from '@hcengineering/tracker'
@@ -751,7 +744,7 @@ export class HulyFormatImporter {
   }
 
   private async cachePersonsByNames (): Promise<void> {
-    (await this.client.findAll(contact.class.Person, {})).forEach((person) => {
+    ;(await this.client.findAll(contact.class.Person, {})).forEach((person) => {
       const name = person.name.split(',').reverse().join(' ')
       this.personsByName.set(name, person._id)
       if (person.personUuid !== undefined) {

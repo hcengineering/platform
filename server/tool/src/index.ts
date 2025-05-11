@@ -210,7 +210,6 @@ export async function initializeWorkspace (
   const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
   const initRepoDir = getMetadata(toolPlugin.metadata.InitRepoDir) ?? ''
   ctx.info('Init script details', { initWS, initRepoDir })
-  // if (initWS === undefined || initRepoDir === undefined) return
 
   const initScriptFile = path.resolve(initRepoDir, 'script.yaml')
   if (!fs.existsSync(initScriptFile)) {
