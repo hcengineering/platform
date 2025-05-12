@@ -35,6 +35,7 @@
   export let disabled = false
   export let shouldShowAvatar: boolean = true
   export let shouldShowName = true
+  export let disabledAspectRatio: boolean = false
   // export let element: HTMLElement | undefined = undefined
   export let shouldShowPlaceholder = false
   export let noUnderline: boolean = false
@@ -84,6 +85,7 @@
         {disabled}
         {shouldShowAvatar}
         {shouldShowName}
+        {disabledAspectRatio}
         {noUnderline}
         {avatarSize}
         {onEdit}
@@ -108,6 +110,7 @@
       {disabled}
       {shouldShowAvatar}
       {shouldShowName}
+      {disabledAspectRatio}
       {noUnderline}
       {avatarSize}
       {onEdit}

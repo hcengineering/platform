@@ -30,6 +30,7 @@
   export let shouldShowAvatar = true
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
+  export let disabledAspectRatio: boolean = false
   export let noUnderline = false
   export let defaultName: IntlString | undefined = ui.string.NotSelected
   export let statusLabel: IntlString | undefined = undefined
@@ -92,6 +93,7 @@
     {shouldShowAvatar}
     {shouldShowName}
     {shouldShowPlaceholder}
+    {disabledAspectRatio}
     {noUnderline}
     {enlargedText}
     {statusLabel}

@@ -106,7 +106,7 @@
         {#each persons as person}
           <div class="timeline-row" style={getRowStyle()}>
             <div class="timeline-resource-cell">
-              <PersonPresenter value={person} />
+              <PersonPresenter value={person} disabledAspectRatio />
             </div>
           </div>
         {/each}
