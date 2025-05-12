@@ -518,9 +518,16 @@ describe('invite operations', () => {
       test('should return login info with external endpoint when clientNetworkPosition is external', async () => {
         ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspaceEu)
 
-        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken, {}, {
-          clientNetworkPosition: 'external'
-        })
+        const result = await getLoginInfoByToken(
+          mockCtx,
+          mockDb,
+          mockBranding,
+          mockToken,
+          {},
+          {
+            clientNetworkPosition: 'external'
+          }
+        )
 
         expect(result).toEqual({
           account: mockPersonId,
@@ -540,9 +547,16 @@ describe('invite operations', () => {
         }
         ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspaceUs)
 
-        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken, {}, {
-          clientNetworkPosition: 'internal'
-        })
+        const result = await getLoginInfoByToken(
+          mockCtx,
+          mockDb,
+          mockBranding,
+          mockToken,
+          {},
+          {
+            clientNetworkPosition: 'internal'
+          }
+        )
 
         expect(result).toEqual({
           account: mockPersonId,
