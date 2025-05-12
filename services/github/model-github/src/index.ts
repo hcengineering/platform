@@ -43,7 +43,7 @@ import {
 import { type Person } from '@hcengineering/contact'
 import contact, { TPerson } from '@hcengineering/model-contact'
 import presentation from '@hcengineering/model-presentation'
-import tracker, { TComponent, TIssue, TMilestone, TProject, issuesOptions } from '@hcengineering/model-tracker'
+import tracker, { TComponent, TIssue, TProject, issuesOptions } from '@hcengineering/model-tracker'
 import view, { classPresenter } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel } from '@hcengineering/platform'
@@ -54,11 +54,9 @@ import {
   type DocSyncInfo,
   type GithubAuthentication,
   type GithubComponent,
-  type GithubFieldMapping,
   type GithubIntegration,
   type GithubIntegrationRepository,
   type GithubIssue,
-  type GithubMilestone,
   type GithubPatch,
   type GithubProject,
   type GithubPullRequest,
@@ -374,16 +372,6 @@ export class TGithubProject extends TProject implements GithubProject {
   @ReadOnly()
   @Hidden()
     projectNumber!: number
-
-  @Prop(TypeRef(core.class.Class), getEmbeddedLabel('Attribute Class'))
-  @ReadOnly()
-  @Hidden()
-    mixinClass!: Ref<Class<GithubIssue>>
-
-  @Prop(ArrOf(TypeRecord()), getEmbeddedLabel('Field mappings'))
-  @Hidden()
-  // Mapping of all fields in this project.
-    mappings!: GithubFieldMapping[]
 }
 
 @Mixin(github.mixin.GithubIssue, tracker.class.Issue)
@@ -431,29 +419,6 @@ export class TGithubComponent extends TComponent implements GithubComponent {
   @ReadOnly()
   @Hidden()
     represent!: boolean
-}
-
-@Mixin(github.mixin.GithubMilestone, tracker.class.Milestone)
-@UX(github.string.GithubMilestone)
-export class TGithubMilestone extends TMilestone implements GithubMilestone {
-  @Prop(TypeHyperlink(), getEmbeddedLabel('Github Project URL'))
-  @Index(IndexKind.FullText)
-  @ReadOnly()
-    url!: Hyperlink
-
-  @Prop(TypeString(), getEmbeddedLabel('NodeID'))
-  @Hidden()
-  @ReadOnly()
-    projectNodeId!: string
-
-  @Prop(TypeNumber(), getEmbeddedLabel('Number'))
-  @Hidden()
-  @ReadOnly()
-    projectNumber!: number
-
-  @Prop(ArrOf(TypeRecord()), getEmbeddedLabel('Field mappings'))
-  // Mapping of all fields in this project.
-    mappings!: GithubFieldMapping[]
 }
 
 @Model(github.class.GithubPullRequest, tracker.class.Issue)
@@ -603,7 +568,6 @@ export function createModel (builder: Builder): void {
     TGithubIntegrationRepository,
     TGithubPatch,
     TGithubUserInfo,
-    TGithubMilestone,
     TGithubComponent,
     TGithubUser,
     TGithubTodo

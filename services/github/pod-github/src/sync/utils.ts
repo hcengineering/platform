@@ -1,20 +1,17 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  PersonId,
-  AnyAttribute,
   AttachedDoc,
   Class,
   Doc,
   DocumentQuery,
   DocumentUpdate,
   MeasureContext,
+  PersonId,
   Ref,
   SortingOrder,
   Status,
   Timestamp,
-  TxOperations,
-  Type,
-  toIdMap
+  TxOperations
 } from '@hcengineering/core'
 import github, {
   DocSyncInfo,
@@ -23,11 +20,10 @@ import github, {
   GithubProject
 } from '@hcengineering/github'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
-import task, { TaskType, calculateStatuses, createState, findStatusAttr } from '@hcengineering/task'
-import tracker, { IssueStatus } from '@hcengineering/tracker'
+import task from '@hcengineering/task'
+import { IssueStatus } from '@hcengineering/tracker'
 import { deepEqual } from 'fast-equals'
-import { IntegrationManager, githubExternalSyncVersion } from '../types'
-import { GithubDataType } from './githubTypes'
+import { githubExternalSyncVersion } from '../types'
 
 /**
  * Return if github write operations are allowed.
@@ -151,93 +147,8 @@ export function gqlp (params: Record<string, string | number | string[] | undefi
 /**
  * @public
  */
-export async function getCreateStatus (
-  ctx: MeasureContext,
-  provider: IntegrationManager,
-  client: TxOperations,
-  prj: GithubProject,
-  name: string,
-  description: string,
-  colorStr: string,
-  taskType: TaskType
-): Promise<string> {
-  const color = hashCode(colorStr)
-
-  const states = await provider.getStatuses(taskType._id)
-
-  for (const s of states) {
-    if (s.name.toLowerCase().trim() === name.toLowerCase().trim()) {
-      return s._id
-    }
-  }
-  ctx.error('Create new project Status', { name, colorStr, category: 'Backlog' })
-  // No status found, let's create one.
-  const id = await createState(client, taskType.statusClass, {
-    name,
-    description,
-    color,
-    ofAttribute: findStatusAttr(client.getHierarchy(), taskType.statusClass)._id,
-    category: task.statusCategory.UnStarted
-  })
-  const type = await client.findOne(task.class.ProjectType, { _id: prj.type })
-  if (type === undefined) {
-    return id
-  }
-
-  if (!taskType.statuses.includes(id)) {
-    await client.update(taskType, {
-      $push: { statuses: id }
-    })
-    const taskTypes = toIdMap(await client.findAll(task.class.TaskType, { parent: type._id }))
-
-    const index = type.statuses.findIndex((it) => it._id === id)
-    if (index === -1) {
-      await client.update(type, {
-        statuses: calculateStatuses(type, taskTypes, [{ taskTypeId: taskType._id, statuses: taskType.statuses }])
-      })
-    }
-  }
-  return id
-}
-
-/**
- * @public
- */
 export function hashCode (str: string): number {
   return str.split('').reduce((prevHash, currVal) => ((prevHash << 5) - prevHash + currVal.charCodeAt(0)) | 0, 0)
-}
-
-export function getType (attr: AnyAttribute): GithubDataType | undefined {
-  if (attr.type._class === core.class.TypeString) {
-    return 'TEXT'
-  }
-  if (
-    attr.type._class === core.class.TypeNumber ||
-    attr.type._class === tracker.class.TypeReportedTime ||
-    attr.type._class === tracker.class.TypeEstimation ||
-    attr.type._class === tracker.class.TypeRemainingTime
-  ) {
-    return 'NUMBER'
-  }
-  if (attr.type._class === core.class.TypeDate) {
-    return 'DATE'
-  }
-  if (attr.type._class === core.class.EnumOf) {
-    return 'SINGLE_SELECT'
-  }
-}
-
-export function getPlatformType (dataType: GithubDataType): Ref<Class<Type<any>>> | undefined {
-  switch (dataType) {
-    case 'TEXT':
-      return core.class.TypeString
-    case 'NUMBER':
-      return core.class.TypeNumber
-    case 'DATE':
-      return core.class.TypeDate
-    case 'SINGLE_SELECT':
-      return core.class.EnumOf
-  }
 }
 
 export async function guessStatus (
