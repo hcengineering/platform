@@ -1582,7 +1582,7 @@ export async function backupSize (storage: BackupStorage): Promise<void> {
         console.log(file, fileSize)
         size += fileSize
       } catch (err: any) {
-        ctx.error('failed to calculate size', { file, err })
+        console.error('failed to calculate size', { file, err })
       }
     }
   }
@@ -1652,7 +1652,7 @@ export async function backupDownload (storage: BackupStorage, storeIn: string): 
           })
           size += fileSize
         } catch (err: any) {
-          ctx.error('failed to calculate size', { file, err })
+          console.error('failed to calculate size', { file, err })
         }
       } else {
         console.log('file-same', file)

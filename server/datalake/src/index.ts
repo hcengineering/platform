@@ -66,7 +66,8 @@ export interface DatalakeClientOptions {
  */
 export class DatalakeService implements StorageAdapter {
   private readonly client: DatalakeClient
-  private readonly retry: (ctx: MeasureContext, op: () => Promise<T>) => Promise<T>
+  private readonly retryCount: number
+  private readonly retryInterval: number
 
   constructor (
     readonly cfg: DatalakeConfig,
@@ -74,12 +75,8 @@ export class DatalakeService implements StorageAdapter {
   ) {
     const token = generateToken(systemAccountUuid, undefined, { service: 'datalake' })
     this.client = createDatalakeClient(cfg, token)
-
-    const retryCount = options.retryCount ?? 5
-    const retryInterval = options.retryInterval ?? 50
-    this.retry = (ctx: MeasureContext, op: () => Promise<T>): Promise<T> => {
-      return withRetry(ctx, retryCount, op, retryInterval)
-    }
+    this.retryCount = options.retryCount ?? 5
+    this.retryInterval = options.retryInterval ?? 50
   }
 
   async initialize (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {}
@@ -224,6 +221,10 @@ export class DatalakeService implements StorageAdapter {
 
   async getUrl (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<string> {
     return this.client.getObjectUrl(ctx, wsIds.uuid, objectName)
+  }
+
+  async retry<T>(ctx: MeasureContext, op: () => Promise<T>): Promise<T> {
+    return await withRetry(ctx, this.retryCount, op, this.retryInterval)
   }
 }
 
