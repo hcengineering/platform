@@ -330,6 +330,9 @@ export interface MailboxOptions {
   maxMailboxCount: number
 }
 
+export type ClientNetworkPosition = 'internal' | 'external'
+
 export interface Meta {
   timezone?: string
+  clientNetworkPosition?: ClientNetworkPosition
 }
