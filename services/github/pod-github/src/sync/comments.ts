@@ -29,7 +29,6 @@ import { collectUpdate, deleteObjects, errorToObj, getSince, isGHWriteAllowed } 
 import { Analytics } from '@hcengineering/analytics'
 import { IssueComment, IssueCommentCreatedEvent, IssueCommentEvent } from '@octokit/webhooks-types'
 import config from '../config'
-import { syncConfig } from './syncConfig'
 
 interface MessageData {
   message: string
@@ -87,14 +86,6 @@ export class CommentSyncManager implements DocSyncManager {
   ): Promise<boolean> {
     const container = await this.provider.getContainer(info.space)
     if (container === undefined) {
-      return false
-    }
-    if (
-      container?.container === undefined ||
-      ((container.project.projectNodeId === undefined ||
-        !container.container.projectStructure.has(container.project._id)) &&
-        syncConfig.MainProject)
-    ) {
       return false
     }
 

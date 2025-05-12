@@ -22,12 +22,10 @@ import {
   DocSyncInfo,
   GithubIntegration,
   GithubIntegrationRepository,
-  GithubMilestone,
   GithubProject,
   GithubUserInfo
 } from '@hcengineering/github'
 import { Octokit } from 'octokit'
-import { GithubProjectV2 } from './sync/githubTypes'
 
 /**
  * @public
@@ -60,8 +58,6 @@ export interface IntegrationContainer {
   installationId: number
   installationName: string
   octokit: Octokit
-
-  projectStructure: Map<Ref<GithubProject | GithubMilestone>, GithubProjectV2>
 
   enabled: boolean
   synchronized: Set<string>

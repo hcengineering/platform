@@ -40,7 +40,6 @@ import { collectUpdate, deleteObjects, errorToObj, isGHWriteAllowed, syncChilds,
 import { Analytics } from '@hcengineering/analytics'
 import { PullRequestReviewThreadEvent } from '@octokit/webhooks-types'
 import config from '../config'
-import { syncConfig } from './syncConfig'
 import { githubConfiguration } from './configuration'
 
 export type ReviewThreadData = Pick<
@@ -115,14 +114,6 @@ export class ReviewThreadSyncManager implements DocSyncManager {
   ): Promise<boolean> {
     const container = await this.provider.getContainer(info.space)
     if (container === undefined) {
-      return false
-    }
-    if (
-      container?.container === undefined ||
-      ((container.project.projectNodeId === undefined ||
-        !container.container.projectStructure.has(container.project._id)) &&
-        syncConfig.MainProject)
-    ) {
       return false
     }
 
