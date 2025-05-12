@@ -1273,6 +1273,7 @@ export async function getLoginInfoByToken (
   db: AccountDB,
   branding: Branding | null,
   token: string,
+  params?: unknown,
   meta?: Meta
 ): Promise<LoginInfo | WorkspaceLoginInfo> {
   let accountUuid: AccountUuid
@@ -1344,11 +1345,14 @@ export async function getLoginInfoByToken (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
     }
 
+    const endpointKind = meta?.clientNetworkPosition === 'internal' ? EndpointKind.Internal : EndpointKind.External
+    const endpoint = getEndpoint(workspace.uuid, workspace.region, endpointKind)
+
     if (isDocGuest) {
       return {
         ...loginInfo,
         workspace: workspaceUuid,
-        endpoint: getEndpoint(workspace.uuid, workspace.region, EndpointKind.External),
+        endpoint,
         role: AccountRole.DocGuest
       }
     }
@@ -1364,7 +1368,7 @@ export async function getLoginInfoByToken (
       ...loginInfo,
       workspace: workspace.uuid,
       workspaceDataId: workspace.dataId,
-      endpoint: getEndpoint(workspace.uuid, workspace.region, EndpointKind.External),
+      endpoint,
       role
     }
   } else {

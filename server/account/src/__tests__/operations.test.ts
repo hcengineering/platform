@@ -18,7 +18,7 @@ import platform, { PlatformError, Status, Severity, getMetadata } from '@hcengin
 import { decodeTokenVerbose } from '@hcengineering/server-token'
 
 import { AccountDB } from '../types'
-import { createInvite, createInviteLink, sendInvite, resendInvite } from '../operations'
+import { createInvite, createInviteLink, sendInvite, resendInvite, getLoginInfoByToken } from '../operations'
 import { accountPlugin } from '../plugin'
 
 // Mock platform
@@ -450,6 +450,190 @@ describe('invite operations', () => {
 
       expect(mockDb.invite.insertOne).toHaveBeenCalled()
       expect(global.fetch).toHaveBeenCalled()
+    })
+  })
+
+  describe('getLoginInfoByToken', () => {
+    const mockCtx = {
+      error: jest.fn(),
+      info: jest.fn()
+    } as unknown as MeasureContext
+
+    const mockBranding = null
+    const mockToken = 'test-token'
+    const mockPersonId = 'test-person-id'
+
+    const mockDb = {
+      account: {
+        findOne: jest.fn()
+      },
+      workspace: {
+        findOne: jest.fn()
+      },
+      person: {
+        findOne: jest.fn()
+      },
+      socialId: {
+        find: jest.fn()
+      },
+      getWorkspaceRole: jest.fn()
+    } as unknown as AccountDB
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      // Mock the metadata for endpoints
+      ;(getMetadata as jest.Mock).mockImplementation((key) => {
+        if (key === accountPlugin.metadata.Transactors) {
+          return 'ws://external:3000;ws://external:3000;eu,ws://internal:3000;ws://internal:3000;us'
+        }
+        return undefined
+      })
+    })
+
+    describe('endpoint selection', () => {
+      const mockWorkspaceEu = {
+        uuid: 'workspace-uuid' as WorkspaceUuid,
+        name: 'Test Workspace',
+        url: 'test-workspace',
+        region: 'eu'
+      }
+
+      const mockPerson = {
+        uuid: mockPersonId as PersonUuid,
+        firstName: 'John',
+        lastName: 'Doe'
+      }
+
+      beforeEach(() => {
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+        ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.User)
+        ;(mockDb.socialId.find as jest.Mock).mockResolvedValue([{ _id: 'social-id-1' }])
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockPersonId,
+          workspace: mockWorkspaceEu.uuid,
+          extra: {}
+        })
+      })
+
+      test('should return login info with external endpoint when clientNetworkPosition is external', async () => {
+        ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspaceEu)
+
+        const result = await getLoginInfoByToken(
+          mockCtx,
+          mockDb,
+          mockBranding,
+          mockToken,
+          {},
+          {
+            clientNetworkPosition: 'external'
+          }
+        )
+
+        expect(result).toEqual({
+          account: mockPersonId,
+          name: 'John Doe',
+          socialId: 'social-id-1',
+          token: mockToken,
+          workspace: mockWorkspaceEu.uuid,
+          endpoint: 'ws://external:3000',
+          role: AccountRole.User
+        })
+      })
+
+      test('should return login info with internal endpoint when clientNetworkPosition is internal', async () => {
+        const mockWorkspaceUs = {
+          ...mockWorkspaceEu,
+          region: 'us'
+        }
+        ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspaceUs)
+
+        const result = await getLoginInfoByToken(
+          mockCtx,
+          mockDb,
+          mockBranding,
+          mockToken,
+          {},
+          {
+            clientNetworkPosition: 'internal'
+          }
+        )
+
+        expect(result).toEqual({
+          account: mockPersonId,
+          name: 'John Doe',
+          socialId: 'social-id-1',
+          token: mockToken,
+          workspace: mockWorkspaceUs.uuid,
+          endpoint: 'ws://internal:3000',
+          role: AccountRole.User
+        })
+      })
+
+      test('should default to external endpoint when clientNetworkPosition is not provided', async () => {
+        ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspaceEu)
+
+        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken, {})
+
+        expect(result).toEqual({
+          account: mockPersonId,
+          name: 'John Doe',
+          socialId: 'social-id-1',
+          token: mockToken,
+          workspace: mockWorkspaceEu.uuid,
+          endpoint: 'ws://external:3000',
+          role: AccountRole.User
+        })
+      })
+    })
+
+    test('should return login info without workspace when no workspace in token', async () => {
+      const mockPerson = {
+        uuid: mockPersonId as PersonUuid,
+        firstName: 'John',
+        lastName: 'Doe'
+      }
+
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockPersonId,
+        workspace: undefined,
+        extra: {}
+      })
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+      ;(mockDb.socialId.find as jest.Mock).mockResolvedValue([{ _id: 'social-id-1' }])
+
+      const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken, {})
+
+      expect(result).toEqual({
+        account: mockPersonId,
+        name: 'John Doe',
+        socialId: 'social-id-1',
+        token: mockToken
+      })
+    })
+
+    test('should throw error when workspace not found', async () => {
+      const mockWorkspace = {
+        uuid: 'workspace-uuid' as WorkspaceUuid
+      }
+
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockPersonId,
+        workspace: mockWorkspace.uuid,
+        extra: {}
+      })
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({
+        uuid: mockPersonId,
+        firstName: 'John',
+        lastName: 'Doe'
+      })
+      ;(mockDb.socialId.find as jest.Mock).mockResolvedValue([{ _id: 'social-id-1' }])
+
+      await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken, {})).rejects.toThrow(
+        new PlatformError(
+          new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: mockWorkspace.uuid })
+        )
+      )
     })
   })
 })

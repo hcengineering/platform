@@ -5,6 +5,7 @@
 import account, {
   type AccountMethods,
   type Meta,
+  type ClientNetworkPosition,
   EndpointKind,
   accountId,
   getAccountDB,
@@ -175,7 +176,19 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   }
 
   const getRequestMeta = (headers: IncomingHttpHeaders): Meta => {
-    return headers?.['x-timezone'] !== undefined ? { timezone: headers['x-timezone'] as string } : {}
+    const meta: Meta = {}
+    if (headers?.['x-timezone'] !== undefined) {
+      meta.timezone = headers['x-timezone'] as string
+    }
+
+    if (headers?.['x-client-network-position'] !== undefined) {
+      const val = headers['x-client-network-position'] as string
+      if (['internal', 'external'].includes(val)) {
+        meta.clientNetworkPosition = val as ClientNetworkPosition
+      }
+    }
+
+    return meta
   }
 
   function getCookieOptions (ctx: Koa.Context): Cookies.SetOption {
