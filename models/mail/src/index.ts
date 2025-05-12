@@ -16,6 +16,7 @@
 import core, { ClassifierKind, type Domain, IndexKind } from '@hcengineering/core'
 import { type Builder, Index, Model, Prop, TypeString } from '@hcengineering/model'
 import { TDoc } from '@hcengineering/model-core'
+import chat from '@hcengineering/chat'
 
 import view, { type Viewlet } from '@hcengineering/model-view'
 import card from '@hcengineering/card'
@@ -31,6 +32,7 @@ const mailTag = 'Mail'
 export { mailId } from '@hcengineering/mail'
 export { default } from './plugin'
 
+// TODO: UBERF-10525 Remove mail route, use KVS, remove createMailTag
 @Model(mail.class.MailRoute, core.class.Doc, DOMAIN_MAIL)
 export class TMailRoute extends TDoc implements MailRoute {
   @Prop(TypeString(), mail.string.MailId)
@@ -46,6 +48,29 @@ export function createModel (builder: Builder): void {
   builder.createModel(TMailRoute)
 
   createMailTag(builder)
+
+  builder.createDoc(
+    card.class.Tag,
+    core.space.Model,
+    {
+      extends: chat.masterTag.Thread,
+      label: mail.string.MailTag,
+      kind: ClassifierKind.MIXIN,
+      icon: mail.icon.Mail
+    },
+    mail.tag.MailThread
+  )
+  builder.createDoc(
+    card.class.Tag,
+    core.space.Model,
+    {
+      extends: chat.masterTag.Channel,
+      label: mail.string.MailTag,
+      kind: ClassifierKind.MIXIN,
+      icon: mail.icon.Mail
+    },
+    mail.tag.MailChannel
+  )
   createMailViewlet(builder)
 }
 

@@ -56,6 +56,10 @@ jest.mock('@hcengineering/core', () => {
   }
 })
 
+jest.mock('@hcengineering/mail-common', () => ({
+  createMessages: jest.fn().mockResolvedValue(undefined)
+}))
+
 jest.mock('googleapis', () => ({
   gmail_v1: {},
   google: {
@@ -69,7 +73,7 @@ jest.mock('googleapis', () => ({
 }))
 
 jest.mock('../tokens')
-jest.mock('../message/message')
+jest.mock('../message/adapter')
 jest.mock('../message/sync')
 jest.mock('../message/attachments')
 jest.mock('@hcengineering/server-client', () => ({

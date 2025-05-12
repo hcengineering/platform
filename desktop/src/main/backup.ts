@@ -47,6 +47,7 @@ async function doBackup (dirName: string, token: string, endpoint: string, wsIds
       blobDownloadLimit: backupHugeFiles ? 10240 : 50,
       token,
       skipBlobContentTypes: [],
+      keepSnapshots: 7 * 14,
       isCanceled: (): boolean => {
         return runningBackup == null
       },

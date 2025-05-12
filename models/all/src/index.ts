@@ -455,11 +455,11 @@ export default function buildModel (): Builder {
     ],
     [surveyModel, surveyId],
     [presenceModel, presenceId],
-    [mailModel, mailId],
     [chatModel, chatId],
     [inboxModel, inboxId],
     [achievementModel, achievementId],
     [communicationModel, communicationId],
+    [mailModel, mailId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],

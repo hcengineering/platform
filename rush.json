@@ -2497,6 +2497,11 @@
       "packageName": "@hcengineering/model-communication",
       "projectFolder": "models/communication",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/mail-common",
+      "projectFolder": "services/mail/mail-common",
+      "shouldPublish": false
     }
   ]
 }

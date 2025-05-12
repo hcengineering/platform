@@ -13,20 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { BaseConfig } from '@hcengineering/mail-common'
 import { config as dotenvConfig } from 'dotenv'
+import { IntegrationVersion } from './types'
 
 dotenvConfig()
 
-interface Config {
+interface Config extends BaseConfig {
   Port: number
-  AccountsURL: string
   ServiceID: string
   Secret: string
   Credentials: string
   WATCH_TOPIC_NAME: string
   FooterMessage: string
   InitLimit: number
-  KvsUrl: string
+  Version: IntegrationVersion
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -38,12 +39,21 @@ const envMap: { [key in keyof Config]: string } = {
   WATCH_TOPIC_NAME: 'WATCH_TOPIC_NAME',
   FooterMessage: 'FOOTER_MESSAGE',
   InitLimit: 'INIT_LIMIT',
-  KvsUrl: 'KVS_URL'
+  KvsUrl: 'KVS_URL',
+  StorageConfig: 'STORAGE_CONFIG',
+  Version: 'VERSION'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
 
 const config: Config = (() => {
+  const versionStr = process.env[envMap.Version] ?? 'v1'
+  let version: IntegrationVersion
+  if (versionStr === IntegrationVersion.V1 || versionStr === IntegrationVersion.V2) {
+    version = versionStr as IntegrationVersion
+  } else {
+    throw new Error(`Invalid version: ${versionStr}. Must be 'v1' or 'v2'.`)
+  }
   const params: Partial<Config> = {
     Port: parseNumber(process.env[envMap.Port]) ?? 8087,
     AccountsURL: process.env[envMap.AccountsURL],
@@ -53,7 +63,9 @@ const config: Config = (() => {
     WATCH_TOPIC_NAME: process.env[envMap.WATCH_TOPIC_NAME],
     InitLimit: parseNumber(process.env[envMap.InitLimit]) ?? 50,
     FooterMessage: process.env[envMap.FooterMessage] ?? '<br><br><p>Sent via <a href="https://huly.io">Huly</a></p>',
-    KvsUrl: process.env[envMap.KvsUrl]
+    KvsUrl: process.env[envMap.KvsUrl],
+    StorageConfig: process.env[envMap.StorageConfig],
+    Version: version
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)
