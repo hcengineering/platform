@@ -542,7 +542,7 @@ export async function selectWorkspace (
       case 'byregion':
         return externalRegions.includes(region ?? '') ? EndpointKind.External : EndpointKind.Internal
       default:
-        return EndpointKind.External
+        return meta?.clientNetworkPosition === 'internal' ? EndpointKind.Internal : EndpointKind.External
     }
   }
 

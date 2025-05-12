@@ -518,7 +518,7 @@ describe('invite operations', () => {
       test('should return login info with external endpoint when clientNetworkPosition is external', async () => {
         ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspaceEu)
 
-        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken, {
+        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken, {}, {
           clientNetworkPosition: 'external'
         })
 
@@ -540,7 +540,7 @@ describe('invite operations', () => {
         }
         ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspaceUs)
 
-        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken, {
+        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken, {}, {
           clientNetworkPosition: 'internal'
         })
 
@@ -558,7 +558,7 @@ describe('invite operations', () => {
       test('should default to external endpoint when clientNetworkPosition is not provided', async () => {
         ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspaceEu)
 
-        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)
+        const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken, {})
 
         expect(result).toEqual({
           account: mockPersonId,
@@ -587,7 +587,7 @@ describe('invite operations', () => {
       ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
       ;(mockDb.socialId.find as jest.Mock).mockResolvedValue([{ _id: 'social-id-1' }])
 
-      const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)
+      const result = await getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken, {})
 
       expect(result).toEqual({
         account: mockPersonId,
@@ -615,7 +615,7 @@ describe('invite operations', () => {
       })
       ;(mockDb.socialId.find as jest.Mock).mockResolvedValue([{ _id: 'social-id-1' }])
 
-      await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+      await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken, {})).rejects.toThrow(
         new PlatformError(
           new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: mockWorkspace.uuid })
         )
