@@ -1943,8 +1943,8 @@ importers:
         specifier: ^2.2.0
         version: 2.8.0(webpack@5.97.1)
       minio:
-        specifier: ^8.0.0
-        version: 8.0.0
+        specifier: ^8.0.5
+        version: 8.0.5
       mongodb:
         specifier: ^6.12.0
         version: 6.12.0(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)
@@ -4404,7 +4404,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/minio@file:projects/minio.tgz':
-    resolution: {integrity: sha512-3yNUVfYUNDuDMcvX19iY2li2h8zCTFOkSevtKXox8JtVhaBkuZuRUKXlQ7VxdOpSCdXodgzbLbzqqeLD7Ag29Q==, tarball: file:projects/minio.tgz}
+    resolution: {integrity: sha512-yhBypcBYWAGiAuROzVI+dfzlZ9e/+Qv12QV62+b9OwZ5MfqWvrxXIjfNA0gflsOdl82ZqGq4ETATs3kN1gMKAg==, tarball: file:projects/minio.tgz}
     version: 0.0.0
 
   '@rush-temp/model-achievement@file:projects/model-achievement.tgz':
@@ -9000,10 +9000,6 @@ packages:
   fast-uri@3.0.1:
     resolution: {integrity: sha512-MWipKbbYiYI0UC7cl8m/i/IWTqfC8YXsqjzybjddLsFjStroQzsHXkc73JutMvBiXmOvapk+axIl79ig5t55Bw==}
 
-  fast-xml-parser@4.3.4:
-    resolution: {integrity: sha512-utnwm92SyozgA3hhH2I8qldf2lBqm6qHOICawRNRFu1qMe3+oqr+GcXjGqTmXTMGE5T4eC03kr/rlh5C1IRdZA==}
-    hasBin: true
-
   fast-xml-parser@4.4.1:
     resolution: {integrity: sha512-xkjOecfnKGkSsOwtZ5Pz7Us/T6mrbPQrq0nh+aCO5V9nk5NLWmasAHumTKjiPJPWANe+kAZ84Jc8ooJkzZ88Sw==}
     hasBin: true
@@ -10856,8 +10852,8 @@ packages:
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
-  minio@8.0.0:
-    resolution: {integrity: sha512-GkM/lk+Gzwd4fAQvLlB+cy3NV3PRADe0tNXnH9JD5BmdAHKIp+5vypptbjdkU85xWBIQsa2xK35GpXjmYXBBYA==}
+  minio@8.0.5:
+    resolution: {integrity: sha512-/vAze1uyrK2R/DSkVutE4cjVoAowvIQ18RAwn7HrqnLecLlMazFnY0oNBqfuoAWvu7mZIGX75AzpuV05TJeoHg==}
     engines: {node: ^16 || ^18 || >=20}
 
   minipass-collect@1.0.2:
@@ -20088,7 +20084,6 @@ snapshots:
   '@rush-temp/minio@file:projects/minio.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
       '@types/jest': 29.5.12
-      '@types/minio': 7.0.18
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -20098,7 +20093,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      minio: 8.0.0
+      minio: 8.0.5
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       typescript: 5.3.3
@@ -32218,10 +32213,6 @@ snapshots:
 
   fast-uri@3.0.1: {}
 
-  fast-xml-parser@4.3.4:
-    dependencies:
-      strnum: 1.0.5
-
   fast-xml-parser@4.4.1:
     dependencies:
       strnum: 1.0.5
@@ -33236,7 +33227,7 @@ snapshots:
 
   is-typed-array@1.1.13:
     dependencies:
-      which-typed-array: 1.1.14
+      which-typed-array: 1.1.15
 
   is-typedarray@1.0.0: {}
 
@@ -34468,14 +34459,14 @@ snapshots:
 
   minimist@1.2.8: {}
 
-  minio@8.0.0:
+  minio@8.0.5:
     dependencies:
       async: 3.2.5
       block-stream2: 2.1.0
       browser-or-node: 2.1.1
       buffer-crc32: 1.0.0
       eventemitter3: 5.0.1
-      fast-xml-parser: 4.3.4
+      fast-xml-parser: 4.4.1
       ipaddr.js: 2.1.0
       lodash: 4.17.21
       mime-types: 2.1.35
@@ -37372,7 +37363,7 @@ snapshots:
       is-arguments: 1.1.1
       is-generator-function: 1.0.10
       is-typed-array: 1.1.13
-      which-typed-array: 1.1.14
+      which-typed-array: 1.1.15
 
   utila@0.4.0: {}
 
@@ -37665,7 +37656,7 @@ snapshots:
       isarray: 2.0.5
       which-boxed-primitive: 1.0.2
       which-collection: 1.0.1
-      which-typed-array: 1.1.14
+      which-typed-array: 1.1.15
 
   which-collection@1.0.1:
     dependencies:

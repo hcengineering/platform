@@ -1529,16 +1529,20 @@ async function rebuildSizeInfo (
 
   const addFileSize = async (file: string | undefined | null): Promise<void> => {
     if (file != null) {
-      const sz = sizeInfo[file]
-      const fileSize = sz ?? (await storage.stat(file))
-      if (sz === undefined) {
-        sizeInfo[file] = fileSize
-        processed++
-        if (processed % 10 === 0) {
-          ctx.info('Calculate size processed', { processed, size: Math.round(result.backupSize / (1024 * 1024)) })
+      try {
+        const sz = sizeInfo[file]
+        const fileSize = sz ?? (await storage.stat(file))
+        if (sz === undefined) {
+          sizeInfo[file] = fileSize
+          processed++
+          if (processed % 10 === 0) {
+            ctx.info('Calculate size processed', { processed, size: Math.round(result.backupSize / (1024 * 1024)) })
+          }
         }
+        result.backupSize += fileSize
+      } catch (err: any) {
+        ctx.error('failed to calculate size', { file, err })
       }
-      result.backupSize += fileSize
     }
   }
 
@@ -1610,9 +1614,13 @@ export async function backupSize (storage: BackupStorage): Promise<void> {
   console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
   const addFileSize = async (file: string | undefined | null): Promise<void> => {
     if (file != null && (await storage.exists(file))) {
-      const fileSize = await storage.stat(file)
-      console.log(file, fileSize)
-      size += fileSize
+      try {
+        const fileSize = await storage.stat(file)
+        console.log(file, fileSize)
+        size += fileSize
+      } catch (err: any) {
+        console.error('failed to calculate size', { file, err })
+      }
     }
   }
 
@@ -1665,20 +1673,24 @@ export async function backupDownload (storage: BackupStorage, storeIn: string): 
       const serverSize: number | undefined = sizeInfo[file]
 
       if (!existsSync(target) || force || (serverSize !== undefined && serverSize !== statSync(target).size)) {
-        const fileSize = serverSize ?? (await storage.stat(file))
-        console.log('downloading', file, fileSize)
-        const readStream = await storage.load(file)
-        const outp = createWriteStream(target)
+        try {
+          const fileSize = serverSize ?? (await storage.stat(file))
+          console.log('downloading', file, fileSize)
+          const readStream = await storage.load(file)
+          const outp = createWriteStream(target)
 
-        readStream.pipe(outp)
-        await new Promise<void>((resolve) => {
-          readStream.on('end', () => {
-            readStream.destroy()
-            outp.close()
-            resolve()
+          readStream.pipe(outp)
+          await new Promise<void>((resolve) => {
+            readStream.on('end', () => {
+              readStream.destroy()
+              outp.close()
+              resolve()
+            })
           })
-        })
-        size += fileSize
+          size += fileSize
+        } catch (err: any) {
+          console.error('failed to calculate size', { file, err })
+        }
       } else {
         console.log('file-same', file)
       }
