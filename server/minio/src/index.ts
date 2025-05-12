@@ -299,13 +299,14 @@ export class MinioService implements StorageAdapter {
         err?.code === 'NoSuchKey' ||
         err?.code === 'NotFound' ||
         err?.message === 'No such key' ||
-        err?.Code === 'NoSuchKey' ||
-        err?.code === 'ECONNRESET'
+        err?.Code === 'NoSuchKey'
       ) {
         // Do not print error in this case
         return
       }
-      ctx.error('no object found', { error: err, objectName, wsIds })
+
+      ctx.error('failed to stat object', { error: err, objectName, wsIds })
+      throw err
     }
   }
 
