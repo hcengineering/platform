@@ -80,7 +80,8 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: chunter.class.ChatMessage
-    }
+    },
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

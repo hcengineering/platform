@@ -244,6 +244,8 @@ export interface SearchResultDoc {
   shortTitleComponent?: SearchComponentWithProps
   title?: string
   titleComponent?: SearchComponentWithProps
+  description?: string
+  emojiIcon?: string
   score?: number
   doc: Pick<Doc, '_id' | '_class'>
 }

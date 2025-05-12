@@ -16,7 +16,7 @@
   import { onDestroy } from 'svelte'
   import { Ref } from '@hcengineering/core'
   import type {
-    BaseNotificationType,
+    NotificationType,
     NotificationGroup,
     NotificationPreferencesGroup,
     NotificationTypeSetting
@@ -48,7 +48,7 @@
     .getModel()
     .findAllSync(notification.class.NotificationPreferencesGroup, {})
 
-  let settings = new Map<Ref<BaseNotificationType>, NotificationTypeSetting[]>()
+  let settings = new Map<Ref<NotificationType>, NotificationTypeSetting[]>()
 
   let isProviderSettingLoading = true
   let isTypeSettingLoading = true

@@ -59,7 +59,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverActivity.trigger.OnDocRemoved
+    trigger: serverActivity.trigger.OnDocRemoved,
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

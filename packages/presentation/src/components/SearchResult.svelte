@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { SearchResultDoc } from '@hcengineering/core'
+  import { notEmpty, SearchResultDoc } from '@hcengineering/core'
   import { getResourceC } from '@hcengineering/platform'
-  import { Icon, type AnySvelteComponent } from '@hcengineering/ui'
+  import { Icon, type AnySvelteComponent, IconWithEmoji } from '@hcengineering/ui'
 
   export let value: SearchResultDoc
 
@@ -45,6 +45,15 @@
       <div class="icon-place">
         <svelte:component this={iconComponent} size={'smaller'} {...value.iconComponent?.props} />
       </div>
+    {:else if value.emojiIcon}
+      <div class="emoji">
+        <IconWithEmoji
+          icon={Array.from(value.emojiIcon)
+            .map((c) => c.codePointAt(0))
+            .filter(notEmpty)}
+          size={'small'}
+        />
+      </div>
     {:else if icon !== undefined}
       <Icon {icon} size={'small'} />
     {/if}
@@ -60,12 +69,24 @@
     {:else}
       <span class="name">{value.title}</span>
     {/if}
+
+    {#if value.description !== undefined}
+      <span class="description">{value.description}</span>
+    {/if}
   </span>
 </div>
 
 <style lang="scss">
   .icon-place {
     width: 1.75rem;
+  }
+
+  .emoji {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
   }
   .searchResult {
     display: flex;
@@ -79,6 +100,11 @@
     .name {
       display: flex;
       flex: 1;
+    }
+
+    .description {
+      padding-left: 0.5rem;
+      color: var(--global-secondary-TextColor);
     }
   }
 </style>

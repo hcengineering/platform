@@ -51,6 +51,7 @@
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
+  export let docClass: Ref<Class<Doc>> | undefined = undefined
   export let content: Markup = EmptyMarkup
   export let iconSend: Asset | AnySvelteComponent | undefined = undefined
   export let labelSend: IntlString | undefined = undefined
@@ -441,6 +442,7 @@
       autofocus={autofocus ? 'end' : false}
       loading={loading || progress}
       {boundary}
+      {docClass}
       canEmbedFiles={false}
       canEmbedImages={false}
       extraActions={[

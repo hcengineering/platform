@@ -307,16 +307,7 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
 
     const senderInfo: SenderInfo = await getSenderInfo(control.ctx, tx.modifiedBy, control)
     const notificationControl = await getNotificationProviderControl(control.ctx, control)
-    const notifyResult = await isShouldNotifyTx(
-      control,
-      createTx,
-      todo,
-      employee._id,
-      socialIds,
-      true,
-      false,
-      notificationControl
-    )
+    const notifyResult = await isShouldNotifyTx(control, createTx, todo, receiverInfo, true, false, notificationControl)
     const content = await getNotificationContent(tx, employee._id, senderInfo, todo, control)
     const data: Partial<Data<CommonInboxNotification>> = {
       ...content,

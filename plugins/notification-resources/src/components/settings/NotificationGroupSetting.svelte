@@ -15,10 +15,9 @@
 <script lang="ts">
   import core, { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import {
-    BaseNotificationType,
+    NotificationType,
     NotificationProvider,
     NotificationGroup,
-    NotificationType,
     NotificationTypeSetting,
     NotificationProviderDefaults,
     NotificationProviderSetting
@@ -31,7 +30,7 @@
   import { providersSettings } from '../../utils'
 
   export let group: Ref<NotificationGroup>
-  export let settings: Map<Ref<BaseNotificationType>, NotificationTypeSetting[]>
+  export let settings: Map<Ref<NotificationType>, NotificationTypeSetting[]>
 
   const client = getClient()
 
@@ -44,12 +43,12 @@
     .findAllSync(notification.class.NotificationProviderDefaults, {})
   const providersMap: IdMap<NotificationProvider> = toIdMap(providers)
 
-  $: types = client.getModel().findAllSync(notification.class.BaseNotificationType, { group })
+  $: types = client.getModel().findAllSync(notification.class.NotificationType, { group })
   $: typesMap = toIdMap(types)
 
   function getStatus (
-    settings: Map<Ref<BaseNotificationType>, NotificationTypeSetting[]>,
-    type: Ref<BaseNotificationType>,
+    settings: Map<Ref<NotificationType>, NotificationTypeSetting[]>,
+    type: Ref<NotificationType>,
     provider: Ref<NotificationProvider>
   ): boolean {
     const setting = getTypeSetting(settings, type, provider)
@@ -64,7 +63,7 @@
   }
 
   async function onToggle (
-    typeId: Ref<BaseNotificationType>,
+    typeId: Ref<NotificationType>,
     providerId: Ref<NotificationProvider>,
     value: boolean
   ): Promise<void> {
@@ -96,8 +95,8 @@
   }
 
   function getTypeSetting (
-    map: Map<Ref<BaseNotificationType>, NotificationTypeSetting[]>,
-    type: Ref<BaseNotificationType>,
+    map: Map<Ref<NotificationType>, NotificationTypeSetting[]>,
+    type: Ref<NotificationType>,
     provider: Ref<NotificationProvider>
   ): NotificationTypeSetting | undefined {
     const typeMap = map.get(type)
@@ -105,11 +104,11 @@
     return typeMap.find((p) => p.attachedTo === provider)
   }
 
-  const isNotificationType = (type: BaseNotificationType): type is NotificationType => {
+  const isNotificationType = (type: NotificationType): type is NotificationType => {
     return type._class === notification.class.NotificationType
   }
 
-  function getLabel (type: BaseNotificationType): IntlString {
+  function getLabel (type: NotificationType): IntlString {
     if (isNotificationType(type) && type.attachedToClass !== undefined) {
       return notification.string.AddedRemoved
     }
@@ -117,7 +116,7 @@
     return notification.string.Change
   }
 
-  function isIgnored (type: Ref<BaseNotificationType>, provider: NotificationProvider): boolean {
+  function isIgnored (type: Ref<NotificationType>, provider: NotificationProvider): boolean {
     const ignored = providerDefaults.some((it) => provider._id === it.provider && it.ignoredTypes.includes(type))
 
     if (ignored) return true
@@ -133,7 +132,7 @@
 
   async function getFilteredProviders (
     providers: NotificationProvider[],
-    types: BaseNotificationType[],
+    types: NotificationType[],
     providersSettings: NotificationProviderSetting[]
   ): Promise<NotificationProvider[]> {
     const result: NotificationProvider[] = []
