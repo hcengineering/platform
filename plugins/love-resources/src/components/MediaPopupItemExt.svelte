@@ -4,14 +4,12 @@
   import { Button } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { DocNavLink } from '@hcengineering/view-resources'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { onMount } from 'svelte'
   import love from '../plugin'
   import { currentRoom, infos, myInfo, myOffice, rooms, currentMeetingMinutes } from '../stores'
   import { endMeeting, isCurrentInstanceConnected, leaveRoom } from '../utils'
 
   export let limit: number = 4
-
-  const dispatch = createEventDispatcher()
 
   $: isMyOffice = $myInfo?.room === $myOffice?._id
   $: allowLeave = !isMyOffice && $myInfo?.room !== love.ids.Reception
@@ -20,7 +18,6 @@
   async function handleLeaveClick (): Promise<void> {
     leaving = true
     await leaveRoom($myInfo, $myOffice)
-    dispatch('close')
   }
 
   let ending = false
@@ -30,7 +27,6 @@
     if (room !== undefined && isOffice(room) && $myInfo !== undefined) {
       await endMeeting(room, $rooms, $infos, $myInfo)
     }
-    dispatch('close')
   }
 
   function formatElapsedTime (elapsed: number): string {

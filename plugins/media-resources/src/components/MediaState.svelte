@@ -24,24 +24,22 @@
   // When running not in secure context, we cannot get access
   // to the media devices, so we disable the configuration button
   const hasMediaDevices = navigator?.mediaDevices !== undefined
+  let anchor: HTMLElement
 
   $: active = $sessions.length > 0
 </script>
 
-{#if active}
-  <div class="flex-row-center hot-controls-container">
+<div bind:this={anchor} class="flex-row-center hot-controls-container">
+  {#if active}
     <div class="flex-row-center controls-container flex-gap-0-5">
       <MicStateButton state={$state.microphone} />
       <CamStateButton state={$state.camera} />
 
-      <ComponentExtensions extension={media.extension.StateIndicator} on:close />
+      <ComponentExtensions extension={media.extension.StateIndicator} />
     </div>
-
-    <MediaSettingsButton disabled={!hasMediaDevices} />
-  </div>
-{:else}
-  <MediaSettingsButton disabled={!hasMediaDevices} />
-{/if}
+  {/if}
+  <MediaSettingsButton disabled={!hasMediaDevices} {anchor} />
+</div>
 
 <style lang="scss">
   .hot-controls-container {
