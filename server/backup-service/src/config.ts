@@ -47,7 +47,8 @@ const envMap: { [key in keyof Config]: string } = {
   Storage: 'STORAGE',
   WorkspaceStorage: 'WORKSPACE_STORAGE',
   Region: 'REGION',
-  Parallel: 'PARALLEL'
+  Parallel: 'PARALLEL',
+  KeepSnapshots: 'KEEP_SNAPSHOTS'
 }
 
 const required: Array<keyof Config> = [
