@@ -4397,7 +4397,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/minio@file:projects/minio.tgz':
-    resolution: {integrity: sha512-t+svmxFDL/LDzqNwfuaZMGtut1YcemGMnAXkJi4+/GvhLzXJU9CP10kjtmM959T+FN9ySOwoWJRS8ExVrAwIFg==, tarball: file:projects/minio.tgz}
+    resolution: {integrity: sha512-yhBypcBYWAGiAuROzVI+dfzlZ9e/+Qv12QV62+b9OwZ5MfqWvrxXIjfNA0gflsOdl82ZqGq4ETATs3kN1gMKAg==, tarball: file:projects/minio.tgz}
     version: 0.0.0
 
   '@rush-temp/model-achievement@file:projects/model-achievement.tgz':
@@ -20039,7 +20039,6 @@ snapshots:
   '@rush-temp/minio@file:projects/minio.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
       '@types/jest': 29.5.12
-      '@types/minio': 7.0.18
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
