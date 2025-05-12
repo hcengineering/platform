@@ -271,5 +271,37 @@ func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination str
 	return nil
 }
 
+func (d *DatalakeStorage) StatFile(ctx context.Context, filename string) (*BlobInfo, error) {
+	var logger = d.logger.With(zap.String("head", d.workspace), zap.String("fileName", filename))
+	logger.Debug("start")
+
+	var objectKey = getObjectKey(filename)
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+	req.SetRequestURI(d.baseURL + "/blob/" + d.workspace + "/" + objectKey)
+	req.Header.SetMethod(fasthttp.MethodHead)
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	if err := d.client.Do(req, resp); err != nil {
+		return nil, err
+	}
+
+	// Check the response status code
+	if resp.StatusCode() != fasthttp.StatusOK {
+		var err = fmt.Errorf("unexpected status code: %d", resp.StatusCode())
+		logger.Debug("bad status code", zap.Error(err))
+		return nil, err
+	}
+
+	var info BlobInfo
+	info.Size = int64(resp.Header.ContentLength())
+	info.Type = string(resp.Header.ContentType())
+	info.ETag = string(resp.Header.Peek("ETag"))
+	return &info, nil
+}
+
 var _ Storage = (*DatalakeStorage)(nil)
 var _ MetaProvider = (*DatalakeStorage)(nil)
