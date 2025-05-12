@@ -16,9 +16,8 @@
   import { Analytics } from '@hcengineering/analytics'
   import { Ref, SortingOrder, Space, generateId } from '@hcengineering/core'
   import { Document, DocumentEvents, Teamspace } from '@hcengineering/document'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
   import {
-    IconWithEmoji,
     IconEdit,
     getPlatformColorDef,
     getPlatformColorForTextDef,
@@ -270,7 +269,7 @@
       ? { icon: space.color }
       : {
           fill:
-            space.color !== undefined
+            space.color !== undefined && typeof space.color !== 'string'
               ? getPlatformColorDef(space.color, $themeStore.dark).icon
               : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
         }}
@@ -313,7 +312,7 @@
           iconProps={item.icon === view.ids.IconWithEmoji
             ? { icon: visibleItem.color }
             : {
-                fill: item.color !== undefined ? getPlatformColorDef(item.color, $themeStore.dark).icon : 'currentColor'
+                fill: item.color !== undefined && typeof item.color !== 'string' ? getPlatformColorDef(item.color, $themeStore.dark).icon : 'currentColor'
               }}
           title={item.title}
           selected

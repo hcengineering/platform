@@ -13,11 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import presentation, { isAdminUser } from '@hcengineering/presentation'
+  import presentation, { IconWithEmoji, isAdminUser } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/tracker'
   import {
     Icon,
-    IconWithEmoji,
     Label,
     getPlatformColorDef,
     getPlatformColorForTextDef,
@@ -44,7 +43,7 @@
           ? { icon: value.color }
           : {
               fill:
-                value.color !== undefined
+                value.color !== undefined && typeof value.color !== 'string'
                   ? getPlatformColorDef(value.color, $themeStore.dark).icon
                   : getPlatformColorForTextDef(value.name, $themeStore.dark).icon
             }}

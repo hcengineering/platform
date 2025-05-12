@@ -13,20 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IconSize } from '../types'
-  import { fromCodePoint } from '../utils'
+  import { Ref, Blob } from '@hcengineering/core'
+  import { IconSize, fromCodePoint } from '@hcengineering/ui'
+  import { getBlobRef } from '../preview'
 
-  export let icon: number | number[]
+  export let icon: number | number[] | Ref<Blob>
   export let size: IconSize
 
   let value: string = ''
   $: try {
-    value = Array.isArray(icon) ? fromCodePoint(...icon) : fromCodePoint(icon)
+    if (typeof icon !== 'string') {
+      value = Array.isArray(icon) ? fromCodePoint(...icon) : fromCodePoint(icon)
+    }
   } catch (err) {}
 </script>
 
 <div class="emoji-{size} flex-row-center emoji">
-  {value}
+  {#if (typeof icon !== 'string')}
+    {value}
+  {:else}
+    {#await getBlobRef(icon) then iconBlob}
+      <img src={iconBlob.src} srcset={iconBlob.srcset} alt="icon">
+    {/await}
+  {/if}
 </div>
 
 <style lang="scss">

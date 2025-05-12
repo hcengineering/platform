@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Attribute, Class, Ref, Status, StatusCategory } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import presentation, { IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
   import { ProjectType, TaskType, calculateStatuses, createState } from '@hcengineering/task'
   import {
@@ -25,7 +25,6 @@
     IconCopy,
     IconDelete,
     IconSettings,
-    IconWithEmoji,
     Label,
     Modal,
     ModernEditbox,

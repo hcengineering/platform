@@ -20,12 +20,11 @@
   import type { ToDosMode } from '..'
   import {
     AccordionItem,
-    IconWithEmoji,
     getPlatformColorDef,
     getPlatformColorForTextDef,
     themeStore
   } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
+  import { IconWithEmoji, getClient } from '@hcengineering/presentation'
   import { makeRank } from '@hcengineering/task'
   import tracker from '@hcengineering/tracker'
   import view from '@hcengineering/view'
@@ -54,7 +53,7 @@
       ? { icon: project.color }
       : {
           fill:
-            project.color !== undefined
+            project.color !== undefined && typeof project.color !== 'string'
               ? getPlatformColorDef(project.color, $themeStore.dark).icon
               : getPlatformColorForTextDef(project.name, $themeStore.dark).icon
         }

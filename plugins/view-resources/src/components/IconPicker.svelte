@@ -100,7 +100,7 @@
         <Component
           is={emojiPlugin.component.EmojiPopup}
           props={{
-            selected: Array.isArray(color) ? fromCodePoint(...color) : color ? fromCodePoint(color) : undefined
+            selected: typeof color === 'string' ? color : Array.isArray(color) ? fromCodePoint(...color) : color ? fromCodePoint(color) : undefined
           }}
           on:close={(evt) => {
             dispatch('close', { icon: iconWithEmoji, color: evt.detail.codes })

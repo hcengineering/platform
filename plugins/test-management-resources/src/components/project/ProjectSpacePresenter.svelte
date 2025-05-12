@@ -16,8 +16,8 @@
   import { Ref, Space } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { TestProject } from '@hcengineering/test-management'
+  import { IconWithEmoji } from '@hcengineering/presentation'
   import {
-    IconWithEmoji,
     getPlatformColorDef,
     getPlatformColorForTextDef,
     themeStore,
@@ -71,7 +71,7 @@
       ? { icon: space.color }
       : {
           fill:
-            space.color !== undefined
+            space.color !== undefined && typeof space.color !== 'string'
               ? getPlatformColorDef(space.color, $themeStore.dark).icon
               : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
         }}

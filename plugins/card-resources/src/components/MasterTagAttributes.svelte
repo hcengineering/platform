@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Card, MasterTag } from '@hcengineering/card'
-  import { getClient } from '@hcengineering/presentation'
+  import { IconWithEmoji, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import {
     Button,
@@ -23,7 +23,6 @@
     getCurrentResolvedLocation,
     Icon,
     IconAdd,
-    IconWithEmoji,
     Label,
     navigate,
     showPopup

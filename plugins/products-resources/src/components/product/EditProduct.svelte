@@ -22,13 +22,12 @@
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
-  import { ActionContext, MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
+  import { ActionContext, MessageViewer, IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
   import {
     Button,
     EditBox,
     IconMixin,
     IconMoreH,
-    IconWithEmoji,
     getPlatformColorDef,
     showPopup,
     themeStore
@@ -153,7 +152,7 @@
             ? { icon: object.color }
             : {
                 fill:
-                  object.color !== undefined ? getPlatformColorDef(object.color, $themeStore.dark).icon : 'currentColor'
+                  object.color !== undefined && typeof object.color !== 'string' ? getPlatformColorDef(object.color, $themeStore.dark).icon : 'currentColor'
               }}
           on:click={chooseIcon}
         />

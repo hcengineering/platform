@@ -16,8 +16,8 @@
   import { Ref, Space } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { Project } from '@hcengineering/tracker'
+  import { IconWithEmoji } from '@hcengineering/presentation'
   import {
-    IconWithEmoji,
     getPlatformColorDef,
     getPlatformColorForTextDef,
     themeStore,

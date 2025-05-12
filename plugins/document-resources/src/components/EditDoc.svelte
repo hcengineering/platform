@@ -21,7 +21,7 @@
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
+  import { IconWithEmoji, copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Heading } from '@hcengineering/text-editor'
   import { TableOfContents } from '@hcengineering/text-editor-resources'
@@ -31,7 +31,6 @@
     Component,
     FocusHandler,
     IconMoreH,
-    IconWithEmoji,
     Label,
     TimeSince,
     createFocusManager,
@@ -332,7 +331,7 @@
               ? { icon: doc.color, size: 'large' }
               : {
                   size: 'large',
-                  fill: doc.color !== undefined ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
+                  fill: doc.color !== undefined && typeof doc.color !== 'string' ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
                 }}
             disabled={readonly}
             showTooltip={{ label: document.string.Icon, direction: 'bottom' }}

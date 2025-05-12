@@ -15,8 +15,8 @@
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { IconWithEmoji, NavItem, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { IconWithEmoji, getClient } from '@hcengineering/presentation'
+  import { NavItem, getCurrentLocation, navigate } from '@hcengineering/ui'
   import card from '../../plugin'
   import view from '@hcengineering/view'
 

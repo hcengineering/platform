@@ -269,7 +269,6 @@ export { NotificationSeverity } from './components/notifications/NotificationSev
 export type { Notification } from './components/notifications/Notification'
 export { default as Wizard } from './components/wizard/Wizard.svelte'
 export { default as StepsDialog } from './components/StepsDialog.svelte'
-export { default as IconWithEmoji } from './components/IconWithEmoji.svelte'
 export { default as ModeSelector } from './components/ModeSelector.svelte'
 export { default as SimpleTimePopup } from './components/calendar/SimpleTimePopup.svelte'
 export { default as NumberInput } from './components/NumberInput.svelte'

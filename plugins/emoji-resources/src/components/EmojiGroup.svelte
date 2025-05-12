@@ -19,12 +19,13 @@
   import { EmojiWithGroup } from '@hcengineering/emoji'
   import { EmojiCategory } from '../types'
   import { resultEmojis } from '../store'
+  import { Ref, Blob } from '@hcengineering/core'
 
   export let group: EmojiCategory
   export let lazy: boolean = true
   export let searching: boolean = false
   export let disabled: boolean = false
-  export let selected: string | undefined = undefined
+  export let selected: string | Ref<Blob> | undefined = undefined
   export let skinTone: number = 0
   export let kind: 'default' | 'fade' = 'fade'
 

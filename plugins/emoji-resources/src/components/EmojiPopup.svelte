@@ -32,9 +32,10 @@
   import EmojiGroup from './EmojiGroup.svelte'
   import emojiPlugin, { isCustomEmoji } from '@hcengineering/emoji'
   import { emojiCategories, EmojiCategory } from '../types'
+  import { Ref, Blob } from '@hcengineering/core'
 
   export let embedded = false
-  export let selected: string | undefined
+  export let selected: string | Ref<Blob> | undefined
   export let disabled: boolean = false
   export let kind: 'default' | 'fade' = 'fade'
 
@@ -100,11 +101,11 @@
   }
 
   const sendEmoji = (emoji: EmojiWithGroup): void => {
-    selected = isCustomEmoji(emoji) ? emoji.shortcode : emoji.emoji
+    selected = isCustomEmoji(emoji) ? emoji.image : emoji.emoji
     addFrequentlyEmojis(emoji)
     dispatch('close', {
       text: selected,
-      codes: isCustomEmoji(emoji) ? undefined : emoji.hexcode.split('-').map((hc) => parseInt(hc, 16)),
+      codes: isCustomEmoji(emoji) ? emoji.image : emoji.hexcode.split('-').map((hc) => parseInt(hc, 16)),
       image: isCustomEmoji(emoji) ? emoji.image : undefined
     })
   }

@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import { Teamspace } from '@hcengineering/document'
-  import { Icon, IconWithEmoji, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
+  import { IconWithEmoji } from '@hcengineering/presentation'
+  import { Icon, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import document from '../../plugin'
 
@@ -32,7 +33,7 @@
           ? { icon: value.color }
           : {
               fill:
-                value.color !== undefined
+                value.color !== undefined && typeof value.color !== 'string'
                   ? getPlatformColorDef(value.color, $themeStore.dark).icon
                   : getPlatformColorForTextDef(value.name, $themeStore.dark).icon
             }}

@@ -15,12 +15,11 @@
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
   import { getEmbeddedLabel, translateCB } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { IconWithEmoji, getClient } from '@hcengineering/presentation'
   import {
     ButtonIcon,
     getCurrentLocation,
     IconDelete,
-    IconWithEmoji,
     ModernEditbox,
     navigate,
     showPopup,

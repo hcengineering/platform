@@ -15,12 +15,13 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { Ref, Blob } from '@hcengineering/core'
   import { isCustomEmoji, type ExtendedEmoji } from '@hcengineering/emoji'
 
   import EmojiButton from './EmojiButton.svelte'
 
   export let emojis: ExtendedEmoji[]
-  export let selected: string | undefined
+  export let selected: string | Ref<Blob> | undefined
   export let disabled: boolean = false
   export let skinTone: number = 0
 
@@ -31,7 +32,7 @@
   {#each emojis as emoji}
     <EmojiButton
       {emoji}
-      selected={isCustomEmoji(emoji) ? emoji.shortcode === selected : emoji.emoji === selected}
+      selected={isCustomEmoji(emoji) ? emoji.image === selected : emoji.emoji === selected}
       {disabled}
       {skinTone}
       on:select
