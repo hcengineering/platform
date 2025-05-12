@@ -24,12 +24,7 @@ import core, {
   TxOperations,
   makeDocCollabId
 } from '@hcengineering/core'
-import github, {
-  DocSyncInfo,
-  GithubIntegrationRepository,
-  GithubIssue,
-  GithubProject
-} from '@hcengineering/github'
+import github, { DocSyncInfo, GithubIntegrationRepository, GithubIssue, GithubProject } from '@hcengineering/github'
 import { IntlString } from '@hcengineering/platform'
 import { LiveQuery } from '@hcengineering/query'
 import { getPublicLink } from '@hcengineering/server-guest-resources'
@@ -669,8 +664,7 @@ export abstract class IssueSyncManagerBase {
       // No external issue yet, safe delete, since platform document will be deleted a well.
       return true
     }
-    const account =
-      existing?.createdBy ?? (await this.provider.getAccount(issueExternal.author)) ?? core.account.System
+    const account = existing?.createdBy ?? (await this.provider.getAccount(issueExternal.author)) ?? core.account.System
 
     if (issueExternal !== undefined) {
       try {
