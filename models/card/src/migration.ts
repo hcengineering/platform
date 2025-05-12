@@ -96,10 +96,11 @@ async function setParentInfo (client: MigrationClient): Promise<void> {
   )
 }
 
-function extractObjectProps<T extends Doc> (doc: T): Data<T> {
+function extractObjectData<T extends Doc> (doc: T): Data<T> {
+  const dataKeys = ['_id', 'space', 'modifiedOn', 'modifiedBy', 'createdBy', 'createdOn']
   const data: any = {}
   for (const key in doc) {
-    if (key === '_id') {
+    if (dataKeys.includes(key)) {
       continue
     }
     data[key] = doc[key]
@@ -114,8 +115,8 @@ async function migrateViewlets (client: Client): Promise<void> {
   const currentViewlets = await client.findAll(view.class.Viewlet, { attachTo: { $in: masterTags.map((p) => p._id) } })
   for (const masterTag of masterTags) {
     for (const viewlet of viewlets) {
-      const base = extractObjectProps(viewlet)
-      const resConfig = base.config
+      const base = extractObjectData(viewlet)
+      const resConfig = [...base.config]
       let index = -1
       if (viewlet.descriptor === view.viewlet.List) {
         index = viewlet.config.findIndex((p) => typeof p !== 'string' && p.displayProps?.grow === true)

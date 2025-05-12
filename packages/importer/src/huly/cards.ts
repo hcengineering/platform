@@ -32,11 +32,10 @@ import * as yaml from 'js-yaml'
 import { contentType } from 'mime-types'
 import * as path from 'path'
 import { IntlString } from '../../../platform/types'
-import { Props, UnifiedDoc, UnifiedUpdate, UnifiedFile, UnifiedMixin } from '../types'
-import { MetadataRegistry, AssociationMetadata } from './registry'
-import { readMarkdownContent, readYamlHeader } from './parsing'
 import { Logger } from '../importer/logger'
-import { validateSchema } from './validation'
+import { Props, UnifiedDoc, UnifiedFile, UnifiedMixin, UnifiedUpdate } from '../types'
+import { UnifiedFormatParser } from './parser'
+import { AssociationMetadata, MetadataRegistry } from './registry'
 import {
   AssociationSchema,
   BaseFieldType,
@@ -51,6 +50,7 @@ import {
   StringFieldType,
   TagSchema
 } from './schema'
+import { validateSchema } from './validation'
 
 export interface UnifiedDocProcessResult {
   docs: Map<string, Array<UnifiedDoc<Doc>>>
@@ -62,6 +62,7 @@ export interface UnifiedDocProcessResult {
 export class CardsProcessor {
   constructor (
     private readonly metadataRegistry: MetadataRegistry,
+    private readonly parser: UnifiedFormatParser,
     private readonly logger: Logger
   ) {}
 
@@ -199,7 +200,7 @@ export class CardsProcessor {
     for (const entry of entries) {
       if (entry.isFile() && entry.name.endsWith('.md')) {
         const cardPath = path.join(currentPath, entry.name)
-        const { class: cardType, ...cardProps } = await readYamlHeader(cardPath)
+        const { class: cardType, ...cardProps } = this.parser.readYamlHeader(cardPath)
 
         if (masterTagId !== undefined) {
           await this.processCard(result, cardPath, cardProps, masterTagId, masterTagAssociaions, masterTagAttributes)
@@ -231,7 +232,7 @@ export class CardsProcessor {
     for (const entry of entries) {
       if (entry.isFile() && entry.name.endsWith('.md')) {
         const cardPath = path.join(currentDir, entry.name)
-        const { class: cardType, ...cardProps } = await readYamlHeader(cardPath)
+        const { class: cardType, ...cardProps } = this.parser.readYamlHeader(cardPath)
 
         if (cardType !== undefined && cardType.startsWith('card:types:') === false) {
           throw new Error('Unsupported card type: ' + cardType + ' in ' + cardPath)
@@ -310,7 +311,7 @@ export class CardsProcessor {
 
     for (const entry of entries) {
       const childCardPath = path.join(cardDir, entry.name)
-      const { class: cardClass, ...cardProps } = await readYamlHeader(childCardPath)
+      const { class: cardClass, ...cardProps } = this.parser.readYamlHeader(childCardPath)
       await this.processCard(
         result,
         childCardPath,
@@ -594,7 +595,7 @@ export class CardsProcessor {
       {
         _class: masterTagId,
         collabField: 'content',
-        contentProvider: () => readMarkdownContent(cardPath),
+        contentProvider: () => Promise.resolve(this.parser.readMarkdownContent(cardPath)),
         props: cardProps as Props<Card>
       },
       ...relations
