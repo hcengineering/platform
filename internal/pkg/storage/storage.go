@@ -30,11 +30,19 @@ type MetaProvider interface {
 	PatchMeta(ctx context.Context, filename string, value *Metadata) error
 }
 
+// BlobInfo contains blob stat information
+type BlobInfo struct {
+	Size int64
+	Type string
+	ETag string
+}
+
 // Storage represents file-based storage
 type Storage interface {
 	PutFile(ctx context.Context, fileName string) error
 	DeleteFile(ctx context.Context, fileName string) error
 	GetFile(ctx context.Context, fileName, destination string) error
+	StatFile(ctx context.Context, fileName string) (*BlobInfo, error)
 }
 
 // NewStorageByURL creates a new storage based on the type from the url scheme, for example "datalake://my-datalake-endpoint"

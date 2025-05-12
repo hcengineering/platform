@@ -121,20 +121,37 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	var destinationFolder = filepath.Join(p.cfg.OutputDir, task.ID)
 	var _, filename = filepath.Split(task.Source)
 	var sourceFilePath = filepath.Join(destinationFolder, filename)
-	_ = os.MkdirAll(destinationFolder, os.ModePerm)
+	err = os.MkdirAll(destinationFolder, os.ModePerm)
+	if err != nil {
+		logger.Error("can not create temporary folder", zap.Error(err))
+		return
+	}
 
 	logger.Debug("phase 3: get the remote file")
 
 	remoteStorage, err := storage.NewStorageByURL(ctx, p.cfg.Endpoint(), p.cfg.EndpointURL.Scheme, tokenString, task.Workspace)
 
 	if err != nil {
-		logger.Error("can not create storage by url", zap.Error(err))
+		logger.Error("can not create storage by url", zap.Error(err), zap.String("url", p.cfg.EndpointURL.String()))
+		_ = os.RemoveAll(destinationFolder)
+		return
+	}
+
+	stat, err := remoteStorage.StatFile(ctx, task.Source)
+	if err != nil {
+		logger.Error("can not stat a file", zap.Error(err), zap.String("filepath", task.Source))
+		_ = os.RemoveAll(destinationFolder)
+		return
+	}
+
+	if !IsSupportedMediaType(stat.Type) {
+		logger.Info("unsupported media type", zap.String("type", stat.Type))
 		_ = os.RemoveAll(destinationFolder)
 		return
 	}
 
 	if err = remoteStorage.GetFile(ctx, task.Source, sourceFilePath); err != nil {
-		logger.Error("can not download a file", zap.Error(err))
+		logger.Error("can not download a file", zap.Error(err), zap.String("filepath", task.Source))
 		_ = os.RemoveAll(destinationFolder)
 		// TODO: reschedule
 		return
@@ -177,7 +194,12 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		SourceFile:  sourceFilePath,
 	})
 
-	_ = manifest.GenerateHLSPlaylist(opts.ScalingLevels, p.cfg.OutputDir, opts.UploadID)
+	err = manifest.GenerateHLSPlaylist(opts.ScalingLevels, p.cfg.OutputDir, opts.UploadID)
+	if err != nil {
+		logger.Error("can not generate hls playlist", zap.String("out", p.cfg.OutputDir), zap.String("uploadID", opts.UploadID))
+		_ = os.RemoveAll(destinationFolder)
+		return
+	}
 
 	go uploader.Start()
 
@@ -238,5 +260,18 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		if err != nil {
 			logger.Error("can not patch the source file", zap.Error(err))
 		}
+	}
+}
+
+// IsSupportedMediaType checks whether transcoding is supported for given media type
+func IsSupportedMediaType(mediaType string) bool {
+	// Explicitly disable conversion for video/mp2t and video/x-mpegurl
+	switch mediaType {
+	case "video/mp2t", "video/x-mpegurl":
+		return false
+	case "video/mp4":
+		return true
+	default:
+		return false
 	}
 }

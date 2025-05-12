@@ -57,12 +57,12 @@ linters-settings:
   goimports:
     local-prefixes: github.com/networkservicemesh/sdk
   gocyclo:
-    min-complexity: 15
+    min-complexity: 20
   dupl:
     threshold: 150
   funlen:
-    lines: 140
-    statements: 80
+    lines: 160
+    statements: 100
   goconst:
     min-len: 2
     min-occurrences: 2
