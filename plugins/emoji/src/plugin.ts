@@ -84,6 +84,7 @@ export const emojiPlugin = plugin(emojiId, {
   functions: {
     GetEmojiByEmoticon: '' as Resource<(emoticon: string | undefined) => string | undefined>,
     GetEmojiByShortCode: '' as Resource<(shortcode: string | undefined, skinTone?: number) => ExtendedEmoji | undefined>,
+    GetCustomEmoji: '' as Resource<(shortcode: string | undefined, skinTone?: number) => CustomEmoji | undefined>
   }
 })
 

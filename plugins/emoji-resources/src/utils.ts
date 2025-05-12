@@ -82,6 +82,17 @@ export function getEmojiByShortCode (shortcode: string | undefined, skinTone?: n
   }, skinTone)
 }
 
+export function getCustomEmoji (shortcode: string | undefined): CustomEmoji | undefined {
+  if (shortcode === undefined) return undefined
+  const pureShortcode = shortcode.replaceAll(':', '')
+  const result = findEmoji((e) => {
+    if (isCustomEmoji(e)) return e.shortcode === pureShortcode
+    return false
+  }) as CustomEmoji
+  console.log('CustomEmoji', shortcode, result)
+  return result
+}
+
 function findEmoji (
   predicate: (e: EmojiWithGroup) => boolean | undefined,
   skinTone?: number

@@ -20,6 +20,9 @@
   import ReactionsTooltip from './ReactionsTooltip.svelte'
   import Icon from './Icon.svelte'
   import { IconSize, IconComponent } from '../types'
+  import emojiPlugin, { emojiRegex } from '@hcengineering/emoji'
+  import { getBlobRef } from '@hcengineering/presentation'
+  import { getResource } from '@hcengineering/platform'
 
   export let icon: IconComponent | undefined = undefined
   export let iconSize: IconSize | undefined = undefined
@@ -43,7 +46,19 @@
     {#if icon}
       <Icon {icon} size={iconSize} />
     {:else}
-      {emoji}
+      {#await getResource(emojiPlugin.functions.GetCustomEmoji) then getCustomEmojiFunction}
+        {@const customEmoji = getCustomEmojiFunction(emoji)}
+        {#if customEmoji === undefined}
+          {emoji}
+        {:else}
+          {@const alt = emoji}
+          {#await getBlobRef(customEmoji.image) then blobSrc}
+          <span class="emoji">
+            <img src={blobSrc.src} {alt} />
+          </span>
+          {/await}
+        {/if}
+      {/await}
     {/if}
   </div>
   {#if count !== undefined}

@@ -22,6 +22,8 @@
 
   import ReactionsTooltip from './ReactionsTooltip.svelte'
   import { updateDocReactions } from '../../utils'
+  import { getResource } from '@hcengineering/platform'
+  import { getBlobRef } from '@hcengineering/presentation'
 
   export let reactions: Reaction[] = []
   export let object: Doc | undefined = undefined
@@ -74,7 +76,19 @@
       use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: persons } }}
       on:click={getClickHandler(emoji)}
     >
-      <span class="emoji">{emoji}</span>
+      {#await getResource(emojiPlugin.functions.GetCustomEmoji) then getCustomEmojiFunction}
+        {@const customEmoji = getCustomEmojiFunction(emoji)}
+        <span class="emoji">
+        {#if customEmoji === undefined}
+          {emoji}
+        {:else}
+          {@const alt = emoji}
+          {#await getBlobRef(customEmoji.image) then blobSrc}
+            <img src={blobSrc.src} {alt} />
+          {/await}
+        {/if}
+        </span>
+      {/await}
       <span class="counter">{persons.length}</span>
     </div>
   {/each}
@@ -118,6 +132,10 @@
 
       .emoji {
         font-size: 1rem;
+      }
+      .emoji > img {
+        height: 1.05em;
+        margin: 0 0.05em 0.08em 0.1em;
       }
       &.highlight {
         background: var(--global-ui-highlight-BackgroundColor);
