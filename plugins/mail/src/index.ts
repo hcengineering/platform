@@ -16,7 +16,7 @@
 import type { Class, Doc, Ref } from '@hcengineering/core'
 import { Asset, IntlString, type Plugin, plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
-import type { MasterTag } from '@hcengineering/card'
+import type { MasterTag, Tag } from '@hcengineering/card'
 
 export interface MailRoute extends Doc {
   mailId: string
@@ -32,6 +32,10 @@ export default plugin(mailId, {
   class: {
     MailThread: '' as Ref<MasterTag>,
     MailRoute: '' as Ref<Class<MailRoute>>
+  },
+  tag: {
+    MailChannel: '' as Ref<Tag>,
+    MailThread: '' as Ref<Tag>
   },
   component: {
     CreateMail: '' as AnyComponent,
@@ -50,12 +54,14 @@ export default plugin(mailId, {
     From: '' as IntlString,
     CreateMail: '' as IntlString,
     Reply: '' as IntlString,
-    Date: '' as IntlString
+    Date: '' as IntlString,
+    MailTag: '' as IntlString
   },
   icon: {
     NewMail: '' as Asset,
     Inbox: '' as Asset,
     Done: '' as Asset,
-    Sent: '' as Asset
+    Sent: '' as Asset,
+    Mail: '' as Asset
   }
 })
