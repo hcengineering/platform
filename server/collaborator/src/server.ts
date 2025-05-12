@@ -43,8 +43,10 @@ export type Shutdown = () => Promise<void>
  */
 export async function start (ctx: MeasureContext, config: Config, storageAdapter: StorageAdapter): Promise<Shutdown> {
   const port = config.Port
+  const retryCount = config.StorageRetryCount
+  const retryInterval = config.StorageRetryInterval
 
-  ctx.info('Starting collaborator server', { port })
+  ctx.info('Starting collaborator server', { config })
 
   const app = express()
   app.use(cors())
@@ -95,7 +97,7 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
-        adapter: new PlatformStorageAdapter(storageAdapter),
+        adapter: new PlatformStorageAdapter(storageAdapter, { retryCount, retryInterval }),
         transformer
       })
     ]

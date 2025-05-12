@@ -55,8 +55,14 @@ export class StorageExtension implements Extension {
     this.configuration = configuration
   }
 
-  async onChange ({ context, documentName }: withContext<onChangePayload>): Promise<any> {
+  async onChange ({ context, document, documentName }: withContext<onChangePayload>): Promise<any> {
+    const { ctx } = this.configuration
     const { connectionId } = context
+
+    if (document.isLoading) {
+      ctx.warn('document changed while is loading', { documentName, connectionId })
+      return
+    }
 
     const updates = this.updates.get(documentName)
     if (updates === undefined) {
