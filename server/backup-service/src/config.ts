@@ -75,7 +75,8 @@ export const config: () => Config = () => {
     WorkspaceStorage: process.env[envMap.WorkspaceStorage],
     Storage: process.env[envMap.Storage],
     Region: process.env[envMap.Region] ?? '',
-    Parallel: parseInt(process.env[envMap.Parallel] ?? '1')
+    Parallel: parseInt(process.env[envMap.Parallel] ?? '1'),
+    KeepSnapshots: parseInt(process.env[envMap.KeepSnapshots] ?? '14')
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])
