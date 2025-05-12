@@ -4376,7 +4376,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz':
-    resolution: {integrity: sha512-FxQudYPTiQ+buMQzXcnO4zW3IAAXrxwa7nncHFIMiu4Q95O7KOHV16AgXwJGVbOjlChACxxbBqFqQ0JvogKnkA==, tarball: file:projects/mail-common.tgz}
+    resolution: {integrity: sha512-K9Ezw+iw4J9Fkc5sH/wOiUzK7dn98BUHegPk6ZiGRbEhg3YDqU4xK8ty0GgbSayy6qT6Waxrz65O7tldIA9Utg==, tarball: file:projects/mail-common.tgz}
     version: 0.0.0
 
   '@rush-temp/mail-resources@file:projects/mail-resources.tgz':
@@ -4460,7 +4460,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-contact@file:projects/model-contact.tgz':
-    resolution: {integrity: sha512-R5QhJlkccqefuHjHaIg/POYsrtnWCYDPE6MwNTQ+1F/CxGYuCJ2kDfEZMlKZiLitiruAkKbvq8xBo/nl2/PNfw==, tarball: file:projects/model-contact.tgz}
+    resolution: {integrity: sha512-+wfUTUKjOzRKHOpcINUdbA6SGyJOYE+hxIiY2ZAL/3x6CqWb720+uhpkmNqb88ZXubhrOCT4z/nDXg29QkqL4A==, tarball: file:projects/model-contact.tgz}
     version: 0.0.0
 
   '@rush-temp/model-controlled-documents@file:projects/model-controlled-documents.tgz':
@@ -4856,7 +4856,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
-    resolution: {integrity: sha512-5sqBFg5VB9InzTjRtZOQewE63ntNzDTdE38tjiKPT4e387vjhGP+IWY1l8PUUs1h/DHNyyeqV6SSzmz/x+mYjQ==, tarball: file:projects/pod-gmail.tgz}
+    resolution: {integrity: sha512-BuAMVBU4uCu4UQTXGYHfxeTgt9/A7OOZL3HA/pXq2X1lkL2w2xGt7M19tt2qBuAGAPJtSsZTMmEDVBRd6hgrWA==, tarball: file:projects/pod-gmail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
@@ -19862,8 +19862,8 @@ snapshots:
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
-      '@hcengineering/communication-rest-client': 0.1.178(typescript@5.7.3)
-      '@hcengineering/communication-types': 0.1.178(typescript@5.7.3)
+      '@hcengineering/communication-rest-client': 0.1.180(typescript@5.7.3)
+      '@hcengineering/communication-types': 0.1.180(typescript@5.7.3)
       '@tsconfig/node16': 1.0.4
       '@types/express': 4.17.21
       '@types/jest': 29.5.12
@@ -22293,7 +22293,6 @@ snapshots:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@types/sanitize-html': 2.15.0
-      '@types/turndown': 5.0.5
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -22320,7 +22319,6 @@ snapshots:
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       ts-node-dev: 2.0.0(@types/node@20.11.19)(typescript@5.3.3)
-      turndown: 7.2.0
       typescript: 5.3.3
       uuid: 8.3.2
     transitivePeerDependencies:
