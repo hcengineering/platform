@@ -32,6 +32,8 @@ import workbench, { type Application } from '@hcengineering/workbench'
 
 export interface ReferenceExtensionOptions extends ReferenceOptions {
   suggestion: Omit<SuggestionOptions, 'editor'>
+  docClass?: Ref<Class<Doc>>
+  multipleMentions?: boolean
   showDoc?: (event: MouseEvent, _id: string, _class: string) => void
 }
 
@@ -96,10 +98,12 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
         this.options.HTMLAttributes,
         HTMLAttributes
       )
+      const withoutDoc = [contact.mention.Everyone, contact.mention.Here].includes(node.attrs.id)
       const id = node.attrs.id
       const objectclass: Ref<Class<Doc>> = node.attrs.objectclass
 
       root.addEventListener('click', (event) => {
+        if (withoutDoc) return
         if (event.button !== 0) return
         if (broken) {
           showPopup(MessageBox, {
@@ -164,7 +168,7 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
       const titleSpan = root.appendChild(document.createElement('span'))
       renderLabel({ id, objectclass, label: node.attrs.label })
 
-      if (id !== undefined && objectclass !== undefined) {
+      if (id !== undefined && objectclass !== undefined && !withoutDoc) {
         query.query(objectclass, { _id: id }, async (result) => {
           const obj = result[0]
           broken = obj === undefined
@@ -180,6 +184,8 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
             renderLabel({ id, objectclass, label })
           }
         })
+      } else if (withoutDoc) {
+        query.unsubscribe()
       }
 
       return {
@@ -228,6 +234,8 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
     return [
       Suggestion({
         editor: this.editor,
+        docClass: this.options.docClass,
+        multipleMentions: this.options.multipleMentions,
         ...this.options.suggestion
       }),
       // ReferenceClickHandler(this.options),

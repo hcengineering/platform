@@ -40,7 +40,7 @@ import core, {
 import notification, {
   notificationId,
   type ActivityInboxNotification,
-  type BaseNotificationType,
+  type NotificationType,
   type Collaborators,
   type DisplayInboxNotification,
   type DocNotifyContext,
@@ -821,7 +821,7 @@ export function notificationsComparator (notifications1: InboxNotification, noti
   return 0
 }
 
-export function isNotificationAllowed (type: BaseNotificationType, providerId: Ref<NotificationProvider>): boolean {
+export function isNotificationAllowed (type: NotificationType, providerId: Ref<NotificationProvider>): boolean {
   const client = getClient()
   const provider = client.getModel().findAllSync(notification.class.NotificationProvider, { _id: providerId })[0]
   if (provider === undefined) return false

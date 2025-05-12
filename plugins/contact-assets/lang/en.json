@@ -115,6 +115,10 @@
     "Confirmed": "Confirmed",
     "UserProfile": "User profile",
     "DeactivatedAccount": "Deactivated account",
-    "LocalTime": "local time"
+    "LocalTime": "local time",
+    "Everyone": "Everyone",
+    "Here": "Here",
+    "EveryoneDescription": "Notify everyone in this {title}",
+    "HereDescription": "Notify every online member in this {title}"
   }
 }

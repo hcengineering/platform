@@ -106,7 +106,7 @@ export class MinioService implements StorageAdapter {
       if (!(await this.client.bucketExists(this.opt.rootBucket))) {
         return []
       }
-      const stream = this.client.listObjects(this.opt.rootBucket, '', false)
+      const stream = this.client.listObjectsV2(this.opt.rootBucket, '', false)
       await new Promise<void>((resolve, reject) => {
         stream.on('end', () => {
           stream.destroy()
@@ -210,7 +210,7 @@ export class MinioService implements StorageAdapter {
         try {
           if (stream === undefined && !done) {
             const rprefix = rootPrefix ?? ''
-            stream = this.client.listObjects(this.getBucketId(wsIds), rprefix, true)
+            stream = this.client.listObjectsV2(this.getBucketId(wsIds), rprefix, true)
             stream.on('end', () => {
               stream?.destroy()
               done = true
@@ -299,13 +299,14 @@ export class MinioService implements StorageAdapter {
         err?.code === 'NoSuchKey' ||
         err?.code === 'NotFound' ||
         err?.message === 'No such key' ||
-        err?.Code === 'NoSuchKey' ||
-        err?.code === 'ECONNRESET'
+        err?.Code === 'NoSuchKey'
       ) {
         // Do not print error in this case
         return
       }
-      ctx.error('no object found', { error: err, objectName, wsIds })
+
+      ctx.error('failed to stat object', { error: err, objectName, wsIds })
+      throw err
     }
   }
 

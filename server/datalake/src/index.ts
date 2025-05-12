@@ -46,8 +46,8 @@ export interface DatalakeConfig extends StorageConfig {
 /**
  * @public
  */
-export function createDatalakeClient (opt: DatalakeConfig, token: string): DatalakeClient {
-  const endpoint = Number.isInteger(opt.port) ? `${opt.endpoint}:${opt.port}` : opt.endpoint
+export function createDatalakeClient (cfg: DatalakeConfig, token: string): DatalakeClient {
+  const endpoint = Number.isInteger(cfg.port) ? `${cfg.endpoint}:${cfg.port}` : cfg.endpoint
   return new DatalakeClient(endpoint, token)
 }
 
@@ -56,12 +56,27 @@ export const CONFIG_KIND = 'datalake'
 /**
  * @public
  */
+export interface DatalakeClientOptions {
+  retryCount?: number
+  retryInterval?: number
+}
+
+/**
+ * @public
+ */
 export class DatalakeService implements StorageAdapter {
   private readonly client: DatalakeClient
+  private readonly retryCount: number
+  private readonly retryInterval: number
 
-  constructor (readonly opt: DatalakeConfig) {
+  constructor (
+    readonly cfg: DatalakeConfig,
+    readonly options: DatalakeClientOptions = {}
+  ) {
     const token = generateToken(systemAccountUuid, undefined, { service: 'datalake' })
-    this.client = createDatalakeClient(opt, token)
+    this.client = createDatalakeClient(cfg, token)
+    this.retryCount = options.retryCount ?? 5
+    this.retryInterval = options.retryInterval ?? 50
   }
 
   async initialize (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {}
@@ -86,7 +101,7 @@ export class DatalakeService implements StorageAdapter {
   async remove (ctx: MeasureContext, wsIds: WorkspaceIds, objectNames: string[]): Promise<void> {
     await Promise.all(
       objectNames.map(async (objectName) => {
-        await this.client.deleteObject(ctx, wsIds.uuid, objectName)
+        await this.retry(ctx, () => this.client.deleteObject(ctx, wsIds.uuid, objectName))
       })
     )
   }
@@ -106,7 +121,7 @@ export class DatalakeService implements StorageAdapter {
       next: async () => {
         try {
           while (hasMore && buffer.length < 50) {
-            const res = await this.client.listObjects(ctx, wsIds.uuid, cursor)
+            const res = await this.retry(ctx, () => this.client.listObjects(ctx, wsIds.uuid, cursor))
             hasMore = res.cursor !== undefined
             cursor = res.cursor
 
@@ -116,7 +131,7 @@ export class DatalakeService implements StorageAdapter {
                 _class: core.class.Blob,
                 etag: blob.etag,
                 size: (typeof blob.size === 'string' ? parseInt(blob.size) : blob.size) ?? 0,
-                provider: this.opt.name,
+                provider: this.cfg.name,
                 space: core.space.Configuration,
                 modifiedBy: core.account.System,
                 modifiedOn: 0
@@ -134,32 +149,26 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('stat')
   async stat (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Blob | undefined> {
-    return await withRetry(ctx, 5, async () => {
-      try {
-        const result = await this.client.statObject(ctx, wsIds.uuid, objectName)
-        if (result !== undefined) {
-          return {
-            provider: '',
-            _class: core.class.Blob,
-            _id: objectName as Ref<Blob>,
-            contentType: result.type,
-            size: result.size ?? 0,
-            etag: result.etag ?? '',
-            space: core.space.Configuration,
-            modifiedBy: core.account.System,
-            modifiedOn: result.lastModified,
-            version: null
-          }
-        }
-      } catch (err) {
-        ctx.error('failed to stat object', { error: err, objectName, workspaceId: wsIds.uuid })
+    const result = await this.retry(ctx, () => this.client.statObject(ctx, wsIds.uuid, objectName))
+    if (result !== undefined) {
+      return {
+        provider: '',
+        _class: core.class.Blob,
+        _id: objectName as Ref<Blob>,
+        contentType: result.type,
+        size: result.size ?? 0,
+        etag: result.etag ?? '',
+        space: core.space.Configuration,
+        modifiedBy: core.account.System,
+        modifiedOn: result.lastModified,
+        version: null
       }
-    })
+    }
   }
 
   @withContext('get')
   async get (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Readable> {
-    return await this.client.getObject(ctx, wsIds.uuid, objectName)
+    return await this.retry(ctx, () => this.client.getObject(ctx, wsIds.uuid, objectName))
   }
 
   @withContext('put')
@@ -178,7 +187,7 @@ export class DatalakeService implements StorageAdapter {
     }
 
     const { etag } = await ctx.with('put', {}, (ctx) =>
-      withRetry(ctx, 5, () => this.client.putObject(ctx, wsIds.uuid, objectName, stream, params))
+      this.retry(ctx, () => this.client.putObject(ctx, wsIds.uuid, objectName, stream, params))
     )
 
     return {
@@ -189,7 +198,7 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('read')
   async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer[]> {
-    const data = await this.client.getObject(ctx, wsIds.uuid, objectName)
+    const data = await this.retry(ctx, () => this.client.getObject(ctx, wsIds.uuid, objectName))
     const chunks: Buffer[] = []
 
     for await (const chunk of data) {
@@ -207,11 +216,15 @@ export class DatalakeService implements StorageAdapter {
     offset: number,
     length?: number
   ): Promise<Readable> {
-    return await this.client.getPartialObject(ctx, wsIds.uuid, objectName, offset, length)
+    return await this.retry(ctx, () => this.client.getPartialObject(ctx, wsIds.uuid, objectName, offset, length))
   }
 
   async getUrl (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<string> {
     return this.client.getObjectUrl(ctx, wsIds.uuid, objectName)
+  }
+
+  async retry<T>(ctx: MeasureContext, op: () => Promise<T>): Promise<T> {
+    return await withRetry(ctx, this.retryCount, op, this.retryInterval)
   }
 }
 
@@ -244,7 +257,7 @@ async function withRetry<T> (
     } catch (err: any) {
       error = err
       ctx.error('error', { err })
-      if (retries !== 0) {
+      if (retries !== 0 && delay > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay))
       }
     }

@@ -31,7 +31,7 @@ import {
 } from '@hcengineering/core'
 import gmail, { Message } from '@hcengineering/gmail'
 import { TriggerControl } from '@hcengineering/server-core'
-import { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
+import { NotificationType, InboxNotification } from '@hcengineering/notification'
 import serverNotification, { ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import { getContentByTemplate } from '@hcengineering/server-notification-resources'
 import { getMetadata } from '@hcengineering/platform'
@@ -138,7 +138,7 @@ export async function sendEmailNotification (
 
 async function notifyByEmail (
   control: TriggerControl,
-  type: Ref<BaseNotificationType>,
+  type: Ref<NotificationType>,
   doc: Doc | undefined,
   sender: SenderInfo,
   receiver: ReceiverInfo,
@@ -160,7 +160,7 @@ async function notifyByEmail (
 
 const SendEmailNotifications = async (
   control: TriggerControl,
-  types: BaseNotificationType[],
+  types: NotificationType[],
   object: Doc,
   data: InboxNotification,
   receiver: ReceiverInfo,
