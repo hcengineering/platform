@@ -29,8 +29,8 @@
     const room = $currentRoom
     if (room !== undefined && isOffice(room) && $myInfo !== undefined) {
       await endMeeting(room, $rooms, $infos, $myInfo)
-      dispatch('close')
     }
+    dispatch('close')
   }
 
   function formatElapsedTime (elapsed: number): string {
