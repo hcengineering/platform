@@ -21,7 +21,6 @@
   import emojiPlugin from '@hcengineering/emoji'
 
   import ReactionPresenter from './ReactionPresenter.svelte'
-  import IconEmojiAdd from './icons/IconEmojiAdd.svelte'
 
   export let reactions: Reaction[] = []
 
@@ -64,7 +63,7 @@
       on:click={() => dispatch('click', emoji)}
     />
   {/each}
-  <ReactionPresenter icon={IconEmojiAdd} iconSize="small" active={emojiPopupOpened} on:click={handleAdd} />
+  <ReactionPresenter icon={emojiPlugin.icon.EmojiAdd} iconSize="small" active={emojiPopupOpened} on:click={handleAdd} />
 </div>
 
 <style lang="scss">

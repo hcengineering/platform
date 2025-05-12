@@ -19,7 +19,6 @@
   import { createEventDispatcher } from 'svelte'
   import emojiPlugin from '@hcengineering/emoji'
 
-  import IconEmoji from '../icons/IconEmoji.svelte'
   import IconMessageMultiple from '../icons/IconMessageMultiple.svelte'
   import IconPen from '../icons/IconPen.svelte'
   import uiNext from '../../plugin'
@@ -42,7 +41,7 @@
         id: 'emoji',
         label: uiNext.string.Emoji,
 
-        icon: IconEmoji,
+        icon: emojiPlugin.icon.Emoji,
         order: 10,
         action: (event: MouseEvent): void => {
           isOpened = true

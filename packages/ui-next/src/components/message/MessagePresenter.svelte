@@ -38,7 +38,6 @@
   import MessageReplies from './MessageReplies.svelte'
   import { toMarkup, toggleReaction, replyToThread } from '../../utils'
   import MessageActionsPanel from './MessageActionsPanel.svelte'
-  import IconEmoji from '../icons/IconEmoji.svelte'
   import IconMessageMultiple from '../icons/IconMessageMultiple.svelte'
   import IconPen from '../icons/IconPen.svelte'
 
@@ -136,7 +135,7 @@
       if (message.thread == null) {
         actions.push({
           label: uiNext.string.Emoji,
-          icon: IconEmoji,
+          icon: emojiPlugin.icon.Emoji,
           action: async (): Promise<void> => {
             showPopup(
               emojiPlugin.component.EmojiPopup,

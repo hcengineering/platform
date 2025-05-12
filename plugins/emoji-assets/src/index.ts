@@ -17,6 +17,8 @@ import emojiPlugin from '@hcengineering/emoji'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(emojiPlugin.icon, {
+  Emoji: `${icons}#emoji`,
+  EmojiAdd: `${icons}#emoji-add`,
   Activities: `${icons}#activities`,
   AnimalsAndNature: `${icons}#animals-and-nature`,
   Flags: `${icons}#flags`,

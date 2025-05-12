@@ -64,9 +64,11 @@ export const emojiPlugin = plugin(emojiId, {
     Create: '' as IntlString,
     ImageAspectError: '' as IntlString,
     ShortcodeMatchError: '' as IntlString,
-    ShortcodeExistsError: '' as IntlString,
+    ShortcodeExistsError: '' as IntlString
   },
   icon: {
+    Emoji: '' as Asset,
+    EmojiAdd: '' as Asset,
     Activities: '' as Asset,
     AnimalsAndNature: '' as Asset,
     Flags: '' as Asset,

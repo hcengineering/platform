@@ -41,7 +41,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(setting.class.WorkspaceSettingCategory, core.space.Model, {
     name: 'emojis',
     label: emojiPlugin.string.CustomEmojis,
-    icon: emojiPlugin.icon.Search,
+    icon: emojiPlugin.icon.Emoji,
     component: emojiPlugin.component.SettingsEmojiTable,
     group: 'settings-editor',
     role: AccountRole.User,

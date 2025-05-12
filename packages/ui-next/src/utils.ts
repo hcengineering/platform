@@ -36,14 +36,13 @@ import { makeRank } from '@hcengineering/rank'
 import emojiPlugin from '@hcengineering/emoji'
 
 import IconAt from './components/icons/IconAt.svelte'
-import IconEmoji from './components/icons/IconEmoji.svelte'
 import { type TextInputAction } from './types'
 import uiNext from './plugin'
 
 export const defaultMessageInputActions: TextInputAction[] = [
   {
     label: uiNext.string.Emoji,
-    icon: IconEmoji,
+    icon: emojiPlugin.icon.Emoji,
     action: (element, editorHandler) => {
       showPopup(
         emojiPlugin.component.EmojiPopup,

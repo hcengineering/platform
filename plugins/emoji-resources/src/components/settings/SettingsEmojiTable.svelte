@@ -29,15 +29,8 @@
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
-    <Breadcrumb icon={emojiPlugin.icon.Search} label={emojiPlugin.string.CustomEmojis} size={'large'} isCurrent />
+    <Breadcrumb icon={emojiPlugin.icon.Emoji} label={emojiPlugin.string.CustomEmojis} size={'large'} isCurrent />
     <svelte:fragment slot="search">
-      <!--<SearchInput
-        bind:value={search}
-        collapsed
-        on:change={() => {
-        updateResultQuery(search, category)
-      }}
-      />-->
     </svelte:fragment>
     <svelte:fragment slot="actions">
       <slot />
