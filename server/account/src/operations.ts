@@ -1273,7 +1273,7 @@ export async function getLoginInfoByToken (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: unknown,
+  params?: unknown,
   meta?: Meta
 ): Promise<LoginInfo | WorkspaceLoginInfo> {
   let accountUuid: AccountUuid
