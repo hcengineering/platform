@@ -165,6 +165,7 @@ func (u *S3Storage) GetFile(ctx context.Context, filename, dest string) error {
 	return nil
 }
 
+// StatFile gets file stat from the storage
 func (u *S3Storage) StatFile(ctx context.Context, filename string) (*BlobInfo, error) {
 	var logger = u.logger.With(zap.String("head", u.bucketName), zap.String("fileName", filename))
 

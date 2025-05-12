@@ -271,6 +271,7 @@ func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination str
 	return nil
 }
 
+// StatFile gets file stat from the storage
 func (d *DatalakeStorage) StatFile(ctx context.Context, filename string) (*BlobInfo, error) {
 	var logger = d.logger.With(zap.String("head", d.workspace), zap.String("fileName", filename))
 	logger.Debug("start")

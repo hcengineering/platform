@@ -263,6 +263,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	}
 }
 
+// IsSupportedMediaType checks whether transcoding is supported for given media type
 func IsSupportedMediaType(mediaType string) bool {
 	// Explicitly disable conversion for video/mp2t and video/x-mpegurl
 	switch mediaType {

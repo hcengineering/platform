@@ -30,6 +30,7 @@ type MetaProvider interface {
 	PatchMeta(ctx context.Context, filename string, value *Metadata) error
 }
 
+// BlobInfo contains blob stat information
 type BlobInfo struct {
 	Size int64
 	Type string
