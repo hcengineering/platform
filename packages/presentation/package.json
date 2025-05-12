@@ -42,6 +42,7 @@
   "dependencies": {
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/client": "^0.6.18",
+    "@hcengineering/contact": "^0.6.24",
     "@hcengineering/collaborator-client": "^0.6.4",
     "@hcengineering/communication-client-query": "0.1.178",
     "@hcengineering/communication-sdk-types": "0.1.178",

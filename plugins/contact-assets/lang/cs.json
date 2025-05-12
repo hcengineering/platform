@@ -111,6 +111,10 @@
     "ViberPlaceholder": "Viber",
     "UserProfile": "Uživatelský profil",
     "DeactivatedAccount": "Deaktivovaný účet",
-    "LocalTime": "místní čas"
+    "LocalTime": "místní čas",
+    "Everyone": "Všichni",
+    "Here": "Zde",
+    "EveryoneDescription": "Upozornit všechny v tomto {title}",
+    "HereDescription": "Upozornit všechny v tomto {title}"
   }
 }

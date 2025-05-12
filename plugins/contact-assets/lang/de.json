@@ -111,6 +111,10 @@
     "ViberPlaceholder": "Viber",
     "UserProfile": "Benutzerprofil",
     "DeactivatedAccount": "Deaktivierter Account",
-    "LocalTime": "Ortszeit"
+    "LocalTime": "Ortszeit",
+    "Everyone": "Jeder",
+    "Here": "Hier",
+    "EveryoneDescription": "Benachrichtigen Sie alle in diesem {title}",
+    "HereDescription": "Benachrichtigen Sie alle in diesem {title}"
   }
 }

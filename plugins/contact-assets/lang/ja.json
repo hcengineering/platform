@@ -115,6 +115,10 @@
     "Confirmed": "確認済み",
     "UserProfile": "ユーザープロフィール",
     "DeactivatedAccount": "アカウントは無効化されました",
-    "LocalTime": "現地時間"
+    "LocalTime": "現地時間",
+    "Everyone": "全員",
+    "Here": "ここ",
+    "EveryoneDescription": "この{title}のすべてに通知する",
+    "HereDescription": "この{title}のすべてに通知する"
   }
 }

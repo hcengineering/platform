@@ -47,7 +47,8 @@ export default mergeIds(notificationId, notification, {
   component: {
     NotificationSettings: '' as AnyComponent,
     ActivityInboxNotificationPresenter: '' as AnyComponent,
-    CommonInboxNotificationPresenter: '' as AnyComponent
+    CommonInboxNotificationPresenter: '' as AnyComponent,
+    MentionInboxNotificationPresenter: '' as AnyComponent
   },
   function: {
     HasDocNotifyContextPinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,

@@ -98,4 +98,13 @@ export function createModel (builder: Builder): void {
       objectClass: notification.class.InboxNotification
     }
   })
+
+  builder.mixin(
+    notification.ids.MentionNotificationType,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverNotification.function.MentionTypeMatch
+    }
+  )
 }

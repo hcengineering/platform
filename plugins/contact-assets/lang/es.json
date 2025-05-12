@@ -115,6 +115,10 @@
     "Confirmed": "Confirmado",
     "UserProfile": "Perfil de usuario",
     "DeactivatedAccount": "Cuenta desactivada",
-    "LocalTime": "hora local"
+    "LocalTime": "hora local",
+    "Everyone": "Todos",
+    "Here": "Aquí",
+    "EveryoneDescription": "Notificar a todos en este {title}",
+    "HereDescription": "Notificar a todos en este {title}"
   }
 }

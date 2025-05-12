@@ -52,6 +52,7 @@ import {
   type Tx,
   type TxFactory,
   type TxResult,
+  type UserStatus,
   type WorkspaceIds,
   type WorkspaceUuid
 } from '@hcengineering/core'
@@ -205,6 +206,7 @@ export interface PipelineContext {
 
   broadcastEvent?: (ctx: MeasureContext, tx: Tx[]) => Promise<void>
   communicationApi: CommunicationApi | null
+  userStatusMap?: Map<Ref<UserStatus>, { online: boolean, user: AccountUuid }>
 }
 /**
  * @public
@@ -269,6 +271,7 @@ export interface TriggerControl {
   lowLevel: LowLevelStorage
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
+  userStatusMap: Map<Ref<UserStatus>, { online: boolean, user: AccountUuid }>
 
   queue?: PlatformQueue
 

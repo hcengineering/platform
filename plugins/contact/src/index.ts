@@ -342,7 +342,11 @@ export const contactPlugin = plugin(contactId, {
     Confirmed: '' as IntlString,
     UserProfile: '' as IntlString,
     DeactivatedAccount: '' as IntlString,
-    LocalTime: '' as IntlString
+    LocalTime: '' as IntlString,
+    Everyone: '' as IntlString,
+    Here: '' as IntlString,
+    EveryoneDescription: '' as IntlString,
+    HereDescription: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,
@@ -374,6 +378,10 @@ export const contactPlugin = plugin(contactId, {
   },
   ids: {
     MentionCommonNotificationType: '' as Ref<Doc>
+  },
+  mention: {
+    Everyone: '' as Ref<Employee>,
+    Here: '' as Ref<Employee>
   },
   extension: {
     EmployeePopupActions: '' as ComponentExtensionId,
