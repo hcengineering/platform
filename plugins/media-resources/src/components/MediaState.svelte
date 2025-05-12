@@ -35,7 +35,7 @@
       <MicStateButton state={$state.microphone} />
       <CamStateButton state={$state.camera} />
 
-      <ComponentExtensions extension={media.extension.StateIndicator} />
+      <ComponentExtensions extension={media.extension.StateIndicator} on:close />
     </div>
   {/if}
   <MediaSettingsButton disabled={!hasMediaDevices} {anchor} />
