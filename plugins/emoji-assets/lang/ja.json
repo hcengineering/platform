@@ -20,6 +20,22 @@
     "Dark": "暗い",
     "Remove": "削除",
     "SearchDots": "検索...",
-    "SearchResults": "検索結果"
+    "SearchResults": "検索結果",
+    "CustomEmojis": "カスタム絵文字",
+    "Shortcode": "名前",
+    "ShortcodeDescription": "文字、数字、記号「-」「+」「_」が使用できます。",
+    "Image": "画像",
+    "ImageDescription": "絵文字用の.gif、.png、.jpgファイルを指定してください。",
+    "UploadImage": "アップロード",
+    "Preview": "プレビュー",
+    "PreviewTextBegin": "これは",
+    "PreviewTextEnd": "を含む文です。",
+    "CreateTitle": "カスタム絵文字の作成",
+    "Create": "作成",
+    "ImageAspectError": "画像は1:1のアスペクト比が必要です。",
+    "ShortcodeMatchError": "文字、数字、記号「-」「+」「_」が使用できます。",
+    "ShortcodeExistsError": "この名前は既に使用されています。別の名前を選択してください。",
+    "NewCustomEmojiDialogClose": "ダイアログを閉じますか？",
+    "NewCustomEmojiDialogCloseNote": "すべての変更が失われます"
   }
 }

@@ -29,5 +29,6 @@ loadMetadata(emojiPlugin.icon, {
   Search: `${icons}#search`,
   SmileysAndPeople: `${icons}#smileys-and-people`,
   Symbols: `${icons}#symbols`,
-  TravelAndPlaces: `${icons}#travel-and-places`
+  TravelAndPlaces: `${icons}#travel-and-places`,
+  Custom: `${icons}#custom`
 })

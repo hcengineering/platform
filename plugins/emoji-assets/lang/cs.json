@@ -20,6 +20,22 @@
     "Dark": "Tmavý",
     "Remove": "Odstranit",
     "SearchDots": "Hledám...",
-    "SearchResults": "Výsledky vyhledávání"
+    "SearchResults": "Výsledky vyhledávání",
+    "CustomEmojis": "Vlastní emoji",
+    "Shortcode": "Název",
+    "ShortcodeDescription": "Může obsahovat písmena, číslice a symboly '-', '+' a '_'.",
+    "Image": "Obrázek",
+    "ImageDescription": "Zadejte soubor .gif, .png nebo .jpg pro vaše emoji.",
+    "UploadImage": "Nahrát",
+    "Preview": "Náhled",
+    "PreviewTextBegin": "Toto je věta s ",
+    "PreviewTextEnd": " uvnitř.",
+    "CreateTitle": "Vytvořit vlastní emoji",
+    "Create": "Vytvořit",
+    "ImageAspectError": "Obrázek musí mít poměr stran 1:1.",
+    "ShortcodeMatchError": "Může obsahovat písmena, číslice a symboly '-', '+' a '_'.",
+    "ShortcodeExistsError": "Tento název je již používán. Zvolte jiný název.",
+    "NewCustomEmojiDialogClose": "Zavřít dialogové okno?",
+    "NewCustomEmojiDialogCloseNote": "Všechny změny budou ztraceny"
   }
 }

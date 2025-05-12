@@ -59,12 +59,15 @@ export const emojiPlugin = plugin(emojiId, {
     ImageDescription: '' as IntlString,
     UploadImage: '' as IntlString,
     Preview: '' as IntlString,
-    PreviewText: '' as IntlString,
+    PreviewTextBegin: '' as IntlString,
+    PreviewTextEnd: '' as IntlString,
     CreateTitle: '' as IntlString,
     Create: '' as IntlString,
     ImageAspectError: '' as IntlString,
     ShortcodeMatchError: '' as IntlString,
-    ShortcodeExistsError: '' as IntlString
+    ShortcodeExistsError: '' as IntlString,
+    NewCustomEmojiDialogClose: '' as IntlString,
+    NewCustomEmojiDialogCloseNote: '' as IntlString
   },
   icon: {
     Emoji: '' as Asset,
@@ -79,7 +82,8 @@ export const emojiPlugin = plugin(emojiId, {
     Search: '' as Asset,
     SmileysAndPeople: '' as Asset,
     Symbols: '' as Asset,
-    TravelAndPlaces: '' as Asset
+    TravelAndPlaces: '' as Asset,
+    Custom: '' as Asset
   },
   functions: {
     GetEmojiByEmoticon: '' as Resource<(emoticon: string | undefined) => string | undefined>,

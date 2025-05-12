@@ -20,6 +20,22 @@
     "Dark": "黑暗",
     "Remove": "移走",
     "SearchDots": "搜索...",
-    "SearchResults": "搜寻结果"
+    "SearchResults": "搜寻结果",
+    "CustomEmojis": "自定义表情",
+    "Shortcode": "名称",
+    "ShortcodeDescription": "可包含字母、数字及符号'-', '+'和'_'。",
+    "Image": "图像",
+    "ImageDescription": "请指定.gif、.png或.jpg格式的图片文件。",
+    "UploadImage": "上传",
+    "Preview": "预览",
+    "PreviewTextBegin": "这是一个包含",
+    "PreviewTextEnd": "的示例句子。",
+    "CreateTitle": "创建自定义表情",
+    "Create": "创建",
+    "ImageAspectError": "图像必须为1:1比例。",
+    "ShortcodeMatchError": "可包含字母、数字及符号'-', '+'和'_'。",
+    "ShortcodeExistsError": "该名称已被使用，请选择其他名称。",
+    "NewCustomEmojiDialogClose": "要关闭对话框吗？",
+    "NewCustomEmojiDialogCloseNote": "所有更改将丢失"
   }
 }

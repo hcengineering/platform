@@ -20,6 +20,22 @@
     "Dark": "Dunkel",
     "Remove": "Entfernen",
     "SearchDots": "Suchen...",
-    "SearchResults": "Suchergebnisse"
+    "SearchResults": "Suchergebnisse",
+    "CustomEmojis": "Benutzerdefinierte Emojis",
+    "Shortcode": "Name",
+    "ShortcodeDescription": "Kann Buchstaben, Zahlen und die Symbole '-', '+' und '_' enthalten.",
+    "Image": "Bild",
+    "ImageDescription": "Geben Sie eine .gif-, .png- oder .jpg-Datei für Ihr Emoji an.",
+    "UploadImage": "Hochladen",
+    "Preview": "Vorschau",
+    "PreviewTextBegin": "Dies ist ein Satz mit ",
+    "PreviewTextEnd": " darin.",
+    "CreateTitle": "Benutzerdefiniertes Emoji erstellen",
+    "Create": "Erstellen",
+    "ImageAspectError": "Das Bild muss ein Seitenverhältnis von 1:1 haben.",
+    "ShortcodeMatchError": "Kann Buchstaben, Zahlen und die Symbole '-', '+' und '_' enthalten.",
+    "ShortcodeExistsError": "Dieser Name wird bereits verwendet. Bitte wählen Sie einen anderen.",
+    "NewCustomEmojiDialogClose": "Dialog schließen?",
+    "NewCustomEmojiDialogCloseNote": "Alle Änderungen gehen verloren"
   }
 }

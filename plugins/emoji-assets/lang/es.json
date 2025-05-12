@@ -20,6 +20,22 @@
     "Dark": "Oscuro",
     "Remove": "Eliminar",
     "SearchDots": "Buscar...",
-    "SearchResults": "Resultados de la búsqueda"
+    "SearchResults": "Resultados de la búsqueda",
+    "CustomEmojis": "Emojis personalizados",
+    "Shortcode": "Nombre",
+    "ShortcodeDescription": "Puede contener letras, números y los símbolos '-', '+' y '_'.",
+    "Image": "Imagen",
+    "ImageDescription": "Especifique un archivo .gif, .png o .jpg para su emoji.",
+    "UploadImage": "Subir",
+    "Preview": "Vista previa",
+    "PreviewTextBegin": "Esta es una oración con ",
+    "PreviewTextEnd": " dentro.",
+    "CreateTitle": "Crear emoji personalizado",
+    "Create": "Crear",
+    "ImageAspectError": "La imagen debe tener una relación de aspecto 1:1.",
+    "ShortcodeMatchError": "Puede contener letras, números y los símbolos '-', '+' y '_'.",
+    "ShortcodeExistsError": "Este nombre ya está en uso. Elija otro nombre.",
+    "NewCustomEmojiDialogClose": "¿Cerrar el diálogo?",
+    "NewCustomEmojiDialogCloseNote": "Todos los cambios se perderán"
   }
 }

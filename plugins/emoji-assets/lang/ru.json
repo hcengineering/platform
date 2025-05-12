@@ -20,6 +20,22 @@
     "Dark": "Темный",
     "Remove": "Удалить",
     "SearchDots": "Поиск...",
-    "SearchResults": "Результаты поиска"
+    "SearchResults": "Результаты поиска",
+    "CustomEmojis": "Пользовательские эмодзи",
+    "Shortcode": "Имя",
+    "ShortcodeDescription": "Может содержать буквы, цифры и символы '-', '+' и '_'.",
+    "Image": "Изображение",
+    "ImageDescription": "Укажите файл .gif, .png или .jpg для вашего эмодзи.",
+    "UploadImage": "Загрузить",
+    "Preview": "Предпросмотр",
+    "PreviewTextBegin": "Это предложение содержит ",
+    "PreviewTextEnd": " внутри.",
+    "CreateTitle": "Создать пользовательский эмодзи",
+    "Create": "Создать",
+    "ImageAspectError": "Изображение должно иметь соотношение сторон 1:1.",
+    "ShortcodeMatchError": "Может содержать буквы, цифры и символы '-', '+' и '_'.",
+    "ShortcodeExistsError": "Это имя уже используется. Выберите другое.",
+    "NewCustomEmojiDialogClose": "Закрыть диалоговое окно?",
+    "NewCustomEmojiDialogCloseNote": "Все изменения будут потеряны"
   }
 }

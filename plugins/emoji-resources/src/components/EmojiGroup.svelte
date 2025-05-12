@@ -58,7 +58,7 @@
     min-height: 0;
 
     &.lazy {
-      min-height: 10rem;
+      min-height: 28.5rem;
     }
 
     &__header {

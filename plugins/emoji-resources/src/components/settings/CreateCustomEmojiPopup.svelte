@@ -89,8 +89,8 @@
       showPopup(
         MessageBox,
         {
-          label: emojiPlugin.string.Dark,
-          message: emojiPlugin.string.Dark
+          label: emojiPlugin.string.NewCustomEmojiDialogClose,
+          message: emojiPlugin.string.NewCustomEmojiDialogCloseNote
         },
         'top',
         (result?: boolean) => {
@@ -168,9 +168,9 @@
             <Label label={emojiPlugin.string.Preview} />
           </div>
           <div class="padding">
-            <Label label={emojiPlugin.string.PreviewText} />
-            <!--<span class="emoji"><img src={URL.createObjectURL(file)} alt='' /></span>
-            <Label label={emojiPlugin.string.Dark} />-->
+            <Label label={emojiPlugin.string.PreviewTextBegin} />
+            <span class="emoji"><img src={URL.createObjectURL(file)} alt='' /></span>
+            <Label label={emojiPlugin.string.PreviewTextEnd} />
           </div>
         </div>
       {/if}
