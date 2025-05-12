@@ -47,37 +47,40 @@ async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerCo
     for (const des of desc) {
       const viewlets = control.modelDb.findAllSync(view.class.Viewlet, { attachTo: des, variant: { $exists: false } })
       for (const viewlet of viewlets) {
+        const updatedConfig = [...viewlet.config]
         // let push it after grow for the list
         if (viewlet.descriptor === view.viewlet.List) {
           const index = viewlet.config.findIndex((p) => typeof p !== 'string' && p.displayProps?.grow === true)
           if (index !== -1) {
-            viewlet.config.splice(index + 1, 0, attr.name)
+            updatedConfig.splice(index + 1, 0, attr.name)
           } else {
-            viewlet.config.push(attr.name)
+            updatedConfig.push(attr.name)
           }
         } else {
-          viewlet.config.push(attr.name)
+          updatedConfig.push(attr.name)
         }
         res.push(
           control.txFactory.createTxUpdateDoc(viewlet._class, viewlet.space, viewlet._id, {
-            config: viewlet.config
+            config: updatedConfig
           })
         )
+
         const prefs = await control.findAll(control.ctx, view.class.ViewletPreference, { attachedTo: viewlet._id })
         for (const pref of prefs) {
+          const updatedPrefConfig = [...pref.config]
           if (viewlet.descriptor === view.viewlet.List) {
-            const index = viewlet.config.findIndex((p) => typeof p !== 'string' && p.displayProps?.grow === true)
+            const index = updatedPrefConfig.findIndex((p) => typeof p !== 'string' && p.displayProps?.grow === true)
             if (index !== -1) {
-              viewlet.config.splice(index + 1, 0, attr.name)
+              updatedPrefConfig.splice(index + 1, 0, attr.name)
             } else {
-              viewlet.config.push(attr.name)
+              updatedPrefConfig.push(attr.name)
             }
           } else {
-            viewlet.config.push(attr.name)
+            updatedPrefConfig.push(attr.name)
           }
           res.push(
             control.txFactory.createTxUpdateDoc(pref._class, pref.space, pref._id, {
-              config: pref.config
+              config: updatedPrefConfig
             })
           )
         }
@@ -97,18 +100,16 @@ async function OnAttributeRemove (ctx: TxRemoveDoc<AnyAttribute>[], control: Tri
     for (const des of desc) {
       const viewlets = control.modelDb.findAllSync(view.class.Viewlet, { attachTo: des })
       for (const viewlet of viewlets) {
-        viewlet.config = viewlet.config.filter((p) => p !== attr.name)
         res.push(
           control.txFactory.createTxUpdateDoc(viewlet._class, viewlet.space, viewlet._id, {
-            config: viewlet.config
+            config: viewlet.config.filter((p) => p !== attr.name)
           })
         )
         const prefs = await control.findAll(control.ctx, view.class.ViewletPreference, { attachedTo: viewlet._id })
         for (const pref of prefs) {
-          pref.config = pref.config.filter((p) => p !== attr.name)
           res.push(
             control.txFactory.createTxUpdateDoc(pref._class, pref.space, pref._id, {
-              config: pref.config
+              config: pref.config.filter((p) => p !== attr.name)
             })
           )
         }
@@ -200,10 +201,11 @@ async function removeTagRelations (control: TriggerControl, tag: Ref<Tag | Maste
   return res
 }
 
-function extractObjectProps<T extends Doc> (doc: T): Data<T> {
+function extractObjectData<T extends Doc> (doc: T): Data<T> {
+  const dataKeys = ['_id', 'space', 'modifiedOn', 'modifiedBy', 'createdBy', 'createdOn']
   const data: any = {}
   for (const key in doc) {
-    if (key === '_id') {
+    if (dataKeys.includes(key)) {
       continue
     }
     data[key] = doc[key]
@@ -229,7 +231,7 @@ async function OnMasterTagCreate (ctx: TxCreateDoc<MasterTag | Tag>[], control: 
       variant: { $exists: false }
     })
     for (const viewlet of viewlets) {
-      const base = extractObjectProps(viewlet)
+      const base = extractObjectData(viewlet)
       res.push(
         control.txFactory.createTxCreateDoc(view.class.Viewlet, core.space.Model, {
           ...base,

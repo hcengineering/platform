@@ -661,7 +661,7 @@ export function createModel (builder: Builder): void {
         tools: card.component.ManageMasterTagsTools
       },
       group: 'settings-editor',
-      role: AccountRole.User,
+      role: AccountRole.Maintainer,
       order: 5000,
       expandable: true
     },

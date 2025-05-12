@@ -17,85 +17,26 @@ import { gmail_v1 } from 'googleapis'
 
 import { type MeasureContext, PersonId } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
+import { SyncMutex } from '@hcengineering/mail-common'
 
 import { RateLimiter } from '../rateLimiter'
-import { MessageManager } from './message'
-
-interface History {
-  historyId: string
-  userId: string
-  workspace: string
-}
-
-export class SyncMutex {
-  private readonly locks = new Map<string, Promise<void>>()
-
-  async lock (key: string): Promise<() => void> {
-    // Wait for any existing lock to be released
-    const currentLock = this.locks.get(key)
-    if (currentLock != null) {
-      await currentLock
-    }
-
-    // Create a new lock
-    let releaseFn!: () => void
-    const newLock = new Promise<void>((resolve) => {
-      releaseFn = resolve
-    })
-
-    // Store the lock
-    this.locks.set(key, newLock)
-
-    // Return the release function
-    return () => {
-      if (this.locks.get(key) === newLock) {
-        this.locks.delete(key)
-      }
-      releaseFn()
-    }
-  }
-}
+import { IMessageManager } from './types'
+import { SyncStateManager } from './syncState'
+import config from '../config'
 
 export class SyncManager {
   private readonly syncMutex = new SyncMutex()
+  private readonly stateManager: SyncStateManager
 
   constructor (
     private readonly ctx: MeasureContext,
-    private readonly messageManager: MessageManager,
+    private readonly messageManager: IMessageManager,
     private readonly gmail: gmail_v1.Resource$Users,
     private readonly workspace: string,
-    private readonly keyValueClient: KeyValueClient,
+    keyValueClient: KeyValueClient,
     private readonly rateLimiter: RateLimiter
-  ) {}
-
-  private async getHistory (userId: PersonId): Promise<History | null> {
-    const historyKey = this.getHistoryKey(userId)
-    return await this.keyValueClient.getValue<History>(historyKey)
-  }
-
-  private async clearHistory (userId: PersonId): Promise<void> {
-    const historyKey = this.getHistoryKey(userId)
-    await this.keyValueClient.deleteKey(historyKey)
-  }
-
-  private async setHistoryId (userId: PersonId, historyId: string): Promise<void> {
-    const historyKey = this.getHistoryKey(userId)
-    const history: History = {
-      historyId,
-      userId,
-      workspace: this.workspace
-    }
-    await this.keyValueClient.setValue(historyKey, history)
-  }
-
-  private async getPageToken (userId: PersonId): Promise<string | null> {
-    const pageTokenKey = this.getPageTokenKey(userId)
-    return await this.keyValueClient.getValue<string>(pageTokenKey)
-  }
-
-  private async setPageToken (userId: PersonId, pageToken: string): Promise<void> {
-    const pageTokenKey = this.getPageTokenKey(userId)
-    await this.keyValueClient.setValue(pageTokenKey, pageToken)
+  ) {
+    this.stateManager = new SyncStateManager(keyValueClient, workspace, config.Version)
   }
 
   private async partSync (userId: PersonId, userEmail: string | undefined, historyId: string): Promise<void> {
@@ -115,7 +56,7 @@ export class SyncManager {
         })
       } catch (err: any) {
         this.ctx.error('Part sync get history error', { workspaceUuid: this.workspace, userId, error: err.message })
-        await this.clearHistory(userId)
+        await this.stateManager.clearHistory(userId)
         void this.sync(userId)
         return
       }
@@ -141,7 +82,7 @@ export class SyncManager {
             }
           }
           if (history.id != null) {
-            await this.setHistoryId(userId, history.id)
+            await this.stateManager.setHistoryId(userId, history.id)
           }
         }
         if (nextPageToken == null) {
@@ -162,8 +103,8 @@ export class SyncManager {
       throw new Error('Cannot sync without user email')
     }
 
-    // Get saved page token if exists to resume sync
-    let pageToken: string | undefined = (await this.getPageToken(userId)) ?? undefined
+    // Get saved page token to continue from
+    let pageToken: string | undefined = (await this.stateManager.getPageToken(userId)) ?? undefined
 
     const query: gmail_v1.Params$Resource$Users$Messages$List = {
       userId: 'me',
@@ -218,11 +159,11 @@ export class SyncManager {
         // Update page token for the next iteration
         pageToken = messages.data.nextPageToken
         query.pageToken = pageToken
-        await this.setPageToken(userId, pageToken)
+        await this.stateManager.setPageToken(userId, pageToken)
       }
 
       if (currentHistoryId != null) {
-        await this.setHistoryId(userId, currentHistoryId)
+        await this.stateManager.setHistoryId(userId, currentHistoryId)
       }
       this.ctx.info('Full sync finished', { workspaceUuid: this.workspace, userId, userEmail })
     } catch (err) {
@@ -246,7 +187,7 @@ export class SyncManager {
     try {
       this.ctx.info('Sync history', { workspaceUuid: this.workspace, userId, userEmail })
 
-      const history = await this.getHistory(userId)
+      const history = await this.stateManager.getHistory(userId)
       if (history?.historyId != null && history?.historyId !== '') {
         this.ctx.info('Start part sync', { workspaceUuid: this.workspace, userId, historyId: history.historyId })
         await this.partSync(userId, userEmail, history.historyId)
@@ -259,13 +200,5 @@ export class SyncManager {
     } finally {
       releaseLock()
     }
-  }
-
-  private getHistoryKey (userId: PersonId): string {
-    return `history:${this.workspace}:${userId}`
-  }
-
-  private getPageTokenKey (userId: PersonId): string {
-    return `page-token:${this.workspace}:${userId}`
   }
 }

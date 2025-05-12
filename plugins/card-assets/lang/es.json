@@ -1,7 +1,7 @@
 {
   "string": {
     "Card": "Tarjeta",
-    "CardApplication": "Tarjetas",
+    "CardApplication": "Tarjetas (beta)",
     "Cards": "Tarjetas",
     "Content": "Contenido",
     "CreateCard": "Crear Tarjeta",
@@ -38,6 +38,7 @@
     "NumberTypes": "{count, plural, one {# tipo} other {# tipos}}",
     "Labels": "Etiquetas",
     "Properties": "Propiedades",
-    "NoChildren": "No hay hijos"
+    "NoChildren": "No hay hijos",
+    "ConfigDescription": "Extensión para la gestión del conocimiento al estilo de una base de datos."
   }
 }

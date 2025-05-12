@@ -11,7 +11,7 @@
     "MemberCount": "{count, plural, =0 {无员工} =1 {1 名员工} other {# 名员工}}",
     "AssignLead": "分配团队负责人",
     "TeamLeadTooltip": "{value}",
-    "HRApplication": "人力资源",
+    "HRApplication": "人力资源 (测试版)",
     "MoveStaff": "员工调动",
     "MoveStaffDescr": "您是否要将员工从 {current} 调动到 {department}",
     "Departments": "部门",

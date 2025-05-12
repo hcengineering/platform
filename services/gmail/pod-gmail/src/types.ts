@@ -37,14 +37,6 @@ export type State = User & {
   redirectURL: string
 }
 
-export interface AttachedFile {
-  size?: number
-  file: string
-  type?: string
-  lastModified: number
-  name: string
-}
-
 export type Channel = Pick<PlatformChannel, 'value' | keyof Doc>
 
 export type RequestType = 'get' | 'post'
@@ -74,4 +66,9 @@ export const GMAIL_INTEGRATION = 'gmail'
 
 export enum SecretType {
   TOKEN = 'token'
+}
+
+export enum IntegrationVersion {
+  V1 = 'v1', // Save messages in legacy format using gmail.class.Message
+  V2 = 'v2' // Save messages as thread cards and communication messages
 }

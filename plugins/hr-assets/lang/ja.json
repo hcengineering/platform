@@ -11,7 +11,7 @@
     "MemberCount": "{count, plural, =0 {従業員なし} =1 {1人の従業員} other {#人の従業員}}",
     "AssignLead": "チームリーダーを割り当て",
     "TeamLeadTooltip": "{value}",
-    "HRApplication": "人事",
+    "HRApplication": "人事 (ベータ)",
     "MoveStaff": "社員異動",
     "MoveStaffDescr": "{current}から{department}へ社員を異動させますか？",
     "Departments": "部署",

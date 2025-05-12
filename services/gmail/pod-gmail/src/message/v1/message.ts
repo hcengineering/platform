@@ -32,15 +32,16 @@ import core from '@hcengineering/core'
 import attachment, { Attachment } from '@hcengineering/attachment'
 import sanitizeHtml from 'sanitize-html'
 
-import { type Channel } from '../types'
-import { AttachmentHandler } from './attachments'
-import { decode64 } from '../base64'
-import { diffAttributes } from '../utils'
+import { IMessageManager } from '../types'
+import { type Channel } from '../../types'
+import { AttachmentHandler } from '../attachments'
+import { decode64 } from '../../base64'
+import { diffAttributes } from '../../utils'
 
 const EMAIL_REGEX =
   /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
 
-export class MessageManager {
+export class MessageManagerV1 implements IMessageManager {
   constructor (
     private readonly ctx: MeasureContext,
     private readonly client: TxOperations,

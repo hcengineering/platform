@@ -1,7 +1,7 @@
 {
   "string": {
     "Card": "Karta",
-    "CardApplication": "Karty",
+    "CardApplication": "Karty (beta)",
     "Cards": "Karty",
     "Content": "Obsah",
     "CreateCard": "Vytvořit kartu",
@@ -38,6 +38,7 @@
     "NumberTypes": "{count, plural, one {# typ} few {# typy} other {# typů}}",
     "Labels": "Štítky",
     "Properties": "Vlastnosti",
-    "NoChildren": "Žádné děti"
+    "NoChildren": "Žádné děti",
+    "ConfigDescription": "Rozšíření pro správu znalostí ve stylu databáze."
   }
 }

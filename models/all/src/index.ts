@@ -236,7 +236,7 @@ export default function buildModel (): Builder {
         label: telegram.string.ConfigLabel,
         description: telegram.string.ConfigDescription,
         enabled: true,
-        beta: false,
+        beta: true,
         classFilter: defaultFilter
       }
     ],
@@ -259,7 +259,7 @@ export default function buildModel (): Builder {
         label: gmail.string.ConfigLabel,
         description: gmail.string.ConfigDescription,
         enabled: true,
-        beta: false,
+        beta: true,
         classFilter: defaultFilter
       }
     ],
@@ -291,7 +291,7 @@ export default function buildModel (): Builder {
         label: hr.string.ConfigLabel,
         description: hr.string.ConfigDescription,
         enabled: true,
-        beta: false,
+        beta: true,
         icon: hr.icon.Structure,
         classFilter: defaultFilter
       }
@@ -379,7 +379,7 @@ export default function buildModel (): Builder {
         label: love.string.Office,
         description: love.string.LoveDescription,
         enabled: true,
-        beta: true,
+        beta: false,
         icon: love.icon.Love,
         classFilter: defaultFilter
       }
@@ -455,11 +455,11 @@ export default function buildModel (): Builder {
     ],
     [surveyModel, surveyId],
     [presenceModel, presenceId],
-    [mailModel, mailId],
     [chatModel, chatId],
     [inboxModel, inboxId],
     [achievementModel, achievementId],
     [communicationModel, communicationId],
+    [mailModel, mailId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
