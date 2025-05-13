@@ -12,13 +12,13 @@ import core, {
   Ref,
   TxOperations
 } from '@hcengineering/core'
-import { LiveQuery } from '@hcengineering/query'
 import github, {
   DocSyncInfo,
   GithubIntegrationRepository,
   GithubProject,
   GithubReviewComment
 } from '@hcengineering/github'
+import { LiveQuery } from '@hcengineering/query'
 import {
   ContainerFocus,
   DocSyncManager,
@@ -34,7 +34,6 @@ import { collectUpdate, deleteObjects, errorToObj, isGHWriteAllowed } from './ut
 import { Analytics } from '@hcengineering/analytics'
 import { PullRequestReviewCommentCreatedEvent, PullRequestReviewCommentEvent } from '@octokit/webhooks-types'
 import config from '../config'
-import { syncConfig } from './syncConfig'
 
 export type ReviewCommentData = DocData<GithubReviewComment>
 
@@ -96,14 +95,6 @@ export class ReviewCommentSyncManager implements DocSyncManager {
   ): Promise<boolean> {
     const container = await this.provider.getContainer(info.space)
     if (container === undefined) {
-      return false
-    }
-    if (
-      container?.container === undefined ||
-      ((container.project.projectNodeId === undefined ||
-        !container.container.projectStructure.has(container.project._id)) &&
-        syncConfig.MainProject)
-    ) {
       return false
     }
 

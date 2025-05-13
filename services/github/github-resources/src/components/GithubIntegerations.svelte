@@ -1,11 +1,11 @@
 <script lang="ts">
   import GithubRepositories from './GithubRepositories.svelte'
 
-  import { WithLookup } from '@hcengineering/core'
+  import { toIdMap, WithLookup } from '@hcengineering/core'
+  import { GithubIntegration } from '@hcengineering/github'
   import { getClient } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/tracker'
   import { Scroller } from '@hcengineering/ui'
-  import { GithubIntegration } from '@hcengineering/github'
   import github from '../plugin'
 
   export let integrations: WithLookup<GithubIntegration>[] = []
@@ -14,6 +14,10 @@
   const client = getClient()
 
   $: githubProjects = client.getHierarchy().asIfArray(projects, github.mixin.GithubProject)
+
+  $: integerationsMap = toIdMap(integrations)
+
+  $: orphanProjects = githubProjects.filter((it) => !integerationsMap.has(it.integration))
 </script>
 
 {#if integrations.length > 0}
@@ -23,7 +27,7 @@
         {@const giprj = githubProjects.filter((it) => it.integration === gi._id)}
         <div class="flex flex-col mb-4">
           <!-- svelte-ignore a11y-missing-attribute -->
-          <GithubRepositories integration={gi} giProjects={giprj} {projects} />
+          <GithubRepositories integration={gi} giProjects={giprj} {projects} {orphanProjects} />
         </div>
       {/each}
     </div>
