@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type Timestamp } from '@hcengineering/core'
+import type { Blob, Ref, Timestamp } from '@hcengineering/core'
 import type {
   Asset,
   IntlString,
@@ -262,7 +262,7 @@ export type IconSize =
   | '2x-large'
   | 'full'
 export interface IconProps {
-  icon?: number | number[]
+  icon?: number | number[] | Ref<Blob>
   size?: IconSize
   fill?: string
   filled?: boolean

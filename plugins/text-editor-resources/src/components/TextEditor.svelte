@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { Markup } from '@hcengineering/core'
+  import { type Blob, Markup, type Ref } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { EmptyMarkup, getMarkup, markupToJSON } from '@hcengineering/text'
   import { themeStore } from '@hcengineering/ui'
@@ -94,6 +94,10 @@
   }
   export function getEditor (): Editor {
     return editor
+  }
+
+  export function insertEmoji (text: string, image?: Ref<Blob>): void {
+    editor?.commands.insertEmoji(text, image === undefined ? 'unicode' : 'image', image)
   }
 
   export function insertText (text: string): void {

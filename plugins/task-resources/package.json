@@ -63,6 +63,8 @@
     "@hcengineering/kanban": "^0.6.0",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/setting": "^0.6.17",
-    "@hcengineering/setting-resources": "^0.6.0"
+    "@hcengineering/setting-resources": "^0.6.0",
+    "@hcengineering/emoji": "^0.6.0",
+    "@hcengineering/emoji-resources": "^0.6.0"
   }
 }

@@ -15,12 +15,11 @@
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
   import { Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { IconWithEmoji, createQuery } from '@hcengineering/presentation'
   import { clearSettingsStore } from '@hcengineering/setting-resources'
   import {
     Icon,
     IconOpenedArrow,
-    IconWithEmoji,
     Label,
     Location,
     getCurrentResolvedLocation,

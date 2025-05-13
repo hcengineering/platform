@@ -91,6 +91,7 @@ const nonEmptyNodes = [
   MarkupNodeType.horizontal_rule,
   MarkupNodeType.image,
   MarkupNodeType.reference,
+  MarkupNodeType.emoji,
   MarkupNodeType.subLink,
   MarkupNodeType.table
 ]

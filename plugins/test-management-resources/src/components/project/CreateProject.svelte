@@ -32,11 +32,10 @@
   } from '@hcengineering/core'
   import view from '@hcengineering/view'
   import testManagement, { TestProject } from '@hcengineering/test-management'
-  import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
+  import presentation, { Card, IconWithEmoji, getClient, reduceCalls } from '@hcengineering/presentation'
   import {
     Button,
     EditBox,
-    IconWithEmoji,
     Label,
     Toggle,
     getColorNumberByText,
@@ -328,7 +327,7 @@
           ? { icon: color, size: 'medium' }
           : {
               fill:
-                color !== undefined
+                color !== undefined && typeof color !== 'string'
                   ? getPlatformColorDef(color, $themeStore.dark).icon
                   : getPlatformColorForTextDef(name, $themeStore.dark).icon
             }}

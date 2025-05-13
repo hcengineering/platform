@@ -37,6 +37,7 @@ import { ImageNode, ImageOptions } from '../nodes/image'
 import { MarkdownNode } from '../nodes/markdown'
 import { MermaidExtension, mermaidOptions } from '../nodes/mermaid'
 import { ReferenceNode } from '../nodes/reference'
+import { EmojiNode } from '../nodes/emoji'
 import { TodoItemNode, TodoListNode } from '../nodes/todo'
 
 import { DefaultKit, DefaultKitOptions } from './default-kit'
@@ -103,6 +104,7 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       TodoItemNode,
       TodoListNode,
       ReferenceNode,
+      EmojiNode,
       CommentNode,
       MarkdownNode,
       NodeUuid,
