@@ -32,7 +32,7 @@ export const getSkinTone = (): number => {
   try {
     return JSON.parse(skinTone)
   } catch (e) {
-    console.error(e)
+    console.error('Failed to parse emojis', e)
     return 0
   }
 }
@@ -101,7 +101,7 @@ export const getFrequentlyEmojis = (): EmojiWithGroup[] | undefined => {
     })
     return result
   } catch (e) {
-    console.error(e)
+    console.error('Failed to parse emojis', e)
     return undefined
   }
 }
