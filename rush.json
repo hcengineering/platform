@@ -2354,11 +2354,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/mail-resources",
-      "projectFolder": "plugins/mail-resources",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/pod-mail",
       "projectFolder": "services/mail/pod-mail",
       "shouldPublish": false
