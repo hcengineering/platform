@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { EmojiPopup, showPopup } from '@hcengineering/ui'
 import {
   fillDefaults,
   generateId,
@@ -23,6 +22,7 @@ import {
   SortingOrder
 } from '@hcengineering/core'
 import { markupToJSON, jsonToMarkup, markupToText } from '@hcengineering/text'
+import { showPopup } from '@hcengineering/ui'
 import { markupToMarkdown, markdownToMarkup } from '@hcengineering/text-markdown'
 import { type Message } from '@hcengineering/communication-types'
 import { getClient, getCommunicationClient } from '@hcengineering/presentation'
@@ -33,19 +33,19 @@ import { getEmployeeBySocialId } from '@hcengineering/contact'
 import { get } from 'svelte/store'
 import chat from '@hcengineering/chat'
 import { makeRank } from '@hcengineering/rank'
+import emojiPlugin from '@hcengineering/emoji'
 
 import IconAt from './components/icons/IconAt.svelte'
-import IconEmoji from './components/icons/IconEmoji.svelte'
 import { type TextInputAction } from './types'
 import uiNext from './plugin'
 
 export const defaultMessageInputActions: TextInputAction[] = [
   {
     label: uiNext.string.Emoji,
-    icon: IconEmoji,
+    icon: emojiPlugin.icon.Emoji,
     action: (element, editorHandler) => {
       showPopup(
-        EmojiPopup,
+        emojiPlugin.component.EmojiPopup,
         {},
         element,
         (emoji) => {
@@ -53,7 +53,7 @@ export const defaultMessageInputActions: TextInputAction[] = [
             return
           }
 
-          editorHandler.insertText(emoji)
+          editorHandler.insertEmoji(emoji.text, emoji.image)
           editorHandler.focus()
         },
         () => {}

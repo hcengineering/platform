@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Markup } from '@hcengineering/core'
+  import { type Blob, Markup, type Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { EmptyMarkup } from '@hcengineering/text'
   import { Button, type ButtonSize, Scroller } from '@hcengineering/ui'
@@ -78,6 +78,9 @@
   export const editorHandler: TextEditorHandler = {
     insertText: (text) => {
       editor?.insertText(text)
+    },
+    insertEmoji: (text: string, image?: Ref<Blob>) => {
+      editor?.insertEmoji(text, image)
     },
     insertMarkup: (markup) => {
       editor?.insertMarkup(markup)

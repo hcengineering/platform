@@ -865,9 +865,9 @@
             <span class="weekday">{getWeekDayName(day, weekFormat)}</span>
           {/if}
           {#if tEvents !== 0}
-            <span style:min-width={'3rem'}>
+            <div class="header-time">
               <TimeDuration value={tEvents} />
-            </span>
+            </div>
           {/if}
         </div>
       {/each}
@@ -1375,6 +1375,16 @@
       &.mini {
         padding: 0.125rem;
       }
+    }
+    .header-time {
+      position: absolute;
+      top: var(--spacing-0_25);
+      right: var(--spacing-0_25);
+      padding: var(--spacing-0_25) var(--spacing-1);
+      font-size: 0.75rem;
+      color: var(--theme-dark-color);
+      background-color: var(--theme-button-hovered);
+      border-radius: var(--small-BorderRadius);
     }
   }
 </style>

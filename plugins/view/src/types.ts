@@ -38,7 +38,8 @@ import {
   TxOperations,
   Type,
   UXObject,
-  AccountUuid
+  AccountUuid,
+  Blob
 } from '@hcengineering/core'
 import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
@@ -859,7 +860,7 @@ export interface MasterDetailOption {
  */
 export interface IconProps {
   icon?: Asset
-  color?: number | number[]
+  color?: number | number[] | Ref<Blob>
 }
 
 export type AttributeCategory = 'attribute' | 'inplace' | 'collection' | 'array' | 'object'

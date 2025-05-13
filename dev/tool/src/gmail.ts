@@ -1,16 +1,25 @@
-import {
+import core, {
   type AccountUuid,
+  type BackupClient,
+  type Client,
+  DOMAIN_MODEL_TX,
+  type Doc,
   type PersonId,
+  type Ref,
   type SocialId,
+  SocialIdType,
+  type TxCUD,
+  TxProcessor,
   type WorkspaceInfoWithStatus,
   type WorkspaceUuid,
   buildSocialIdString,
   systemAccountUuid
 } from '@hcengineering/core'
-import { getAccountClient } from '@hcengineering/server-client'
+import { createClient, getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { getClient as getKvsClient } from '@hcengineering/kvs-client'
 import { generateToken } from '@hcengineering/server-token'
-import { getSocialKeyByOldEmail } from '@hcengineering/model-core'
+import { getAccountsFromTxes, getSocialKeyByOldEmail } from '@hcengineering/model-core'
+
 import type { Db } from 'mongodb'
 
 // Old token and history types
@@ -106,7 +115,8 @@ async function migrateGmailIntegrations (
         }
         token.workspace = ws.uuid
 
-        const socialKey = buildSocialIdString(getSocialKeyByOldEmail(token.userId))
+        const socialKey = await getSocialKeyByOldAccount(ws, token.userId)
+        console.log('socialKey', socialKey)
         const socialId =
           socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
         if (socialId == null) {
@@ -134,10 +144,11 @@ async function migrateGmailIntegrations (
           socialId: socialId._id,
           workspaceUuid: ws?.uuid
         })
+        const email = socialId.type === SocialIdType.EMAIL ? socialId.value : undefined
         const newToken: TokenV2 = {
           ...token,
           workspace: ws?.uuid,
-          email: token.userId,
+          email,
           userId: socialId.personUuid as AccountUuid,
           socialId
         }
@@ -188,7 +199,11 @@ async function migrateGmailHistory (
 
     for (const history of allHistories) {
       try {
-        const socialKey = buildSocialIdString(getSocialKeyByOldEmail(history.userId))
+        const ws = await workspaceProvider.getWorkspaceInfo(history.workspace as any)
+        if (ws == null) {
+          continue
+        }
+        const socialKey = await getSocialKeyByOldAccount(ws, history.userId)
         const socialId =
           socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
         if (socialId == null) {
@@ -196,15 +211,12 @@ async function migrateGmailHistory (
           continue
         }
         // Update/create history in KVS
-        const ws = await workspaceProvider.getWorkspaceInfo(history.workspace as any)
-        if (ws == null) {
-          continue
-        }
         const historyKey = getHistoryKey(ws.uuid, socialId._id)
         const existingHistory = await kvsClient.getValue<HistoryV2>(historyKey)
+        const email = socialId.type === SocialIdType.EMAIL ? socialId.value : undefined
         const updatedHistory: HistoryV2 = {
           ...(existingHistory ?? history),
-          email: history.userId,
+          email,
           workspace: ws.uuid,
           userId: socialId.personUuid as AccountUuid,
           socialId
@@ -222,4 +234,59 @@ async function migrateGmailHistory (
 
 function getHistoryKey (workspace: WorkspaceUuid, userId: PersonId): string {
   return `history:${workspace}:${userId}`
+}
+
+const accountsMap = new Map<WorkspaceUuid, Record<string, string>>()
+async function getSocialKeyByOldAccount (ws: WorkspaceInfoWithStatus, userId: string): Promise<string | undefined> {
+  if (!accountsMap.has(ws.uuid)) {
+    const socialKeyByAccount = await getSociaKeysMap(ws)
+    accountsMap.set(ws.uuid, socialKeyByAccount)
+  }
+  const socialKeyByAccount = accountsMap.get(ws.uuid) ?? {}
+  return socialKeyByAccount[userId]
+}
+
+async function getSociaKeysMap (ws: WorkspaceInfoWithStatus): Promise<Record<string, string>> {
+  const systemAccounts = [core.account.System, core.account.ConfigUser]
+  const accounts = await loadAccounts(ws)
+
+  const socialKeyByAccount: Record<string, string> = {}
+  for (const account of accounts) {
+    if (account.email === undefined) {
+      continue
+    }
+
+    if (systemAccounts.includes(account._id as any)) {
+      ;(socialKeyByAccount as any)[account._id] = account._id
+    } else {
+      socialKeyByAccount[account._id] = buildSocialIdString(getSocialKeyByOldEmail(account.email)) as any
+    }
+  }
+  return socialKeyByAccount
+}
+
+export async function loadAccounts (ws: WorkspaceInfoWithStatus): Promise<(Doc & { email?: string })[]> {
+  const wsToken = generateToken(systemAccountUuid, ws.uuid, { service: 'gmail', mode: 'backup' })
+  const endpoint = await getTransactorEndpoint(wsToken, 'external')
+  const client = (await createClient(endpoint, wsToken)) as BackupClient & Client
+
+  const accountsTxes: TxCUD<Doc>[] = []
+  let idx: number | undefined
+
+  while (true) {
+    const info = await client.loadChunk(DOMAIN_MODEL_TX, idx)
+    idx = info.idx
+    const ids = Array.from(info.docs.map((it) => it.id as Ref<Doc>))
+    const docs = (await client.loadDocs(DOMAIN_MODEL_TX, ids)).filter((it) =>
+      TxProcessor.isExtendsCUD(it._class)
+    ) as TxCUD<Doc>[]
+    accountsTxes.push(...docs)
+    if (info.finished && idx !== undefined) {
+      await client.closeChunk(info.idx)
+      break
+    }
+  }
+  await client.close()
+
+  return getAccountsFromTxes(accountsTxes)
 }

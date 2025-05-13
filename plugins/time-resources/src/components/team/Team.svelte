@@ -25,7 +25,6 @@
     Header,
     themeStore,
     Breadcrumbs,
-    IconWithEmoji,
     getPlatformColorDef,
     getPlatformColorForTextDef
   } from '@hcengineering/ui'
@@ -35,7 +34,7 @@
   import TeamNavigator from './TeamNavigator.svelte'
   import Agenda from './agenda/Agenda.svelte'
   import Calendar from './calendar/Calendar.svelte'
-  import { getClient } from '@hcengineering/presentation'
+  import { IconWithEmoji, getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { Analytics } from '@hcengineering/analytics'
   import tracker, { Project as Proj } from '@hcengineering/tracker'
@@ -64,7 +63,7 @@
           ? { icon: project.color }
           : {
               fill:
-                project.color !== undefined
+                project.color !== undefined && typeof project.color !== 'string'
                   ? getPlatformColorDef(project.color, $themeStore.dark).icon
                   : getPlatformColorForTextDef(project.name, $themeStore.dark).icon
             }

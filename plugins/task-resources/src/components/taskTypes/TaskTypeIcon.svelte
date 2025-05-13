@@ -15,11 +15,11 @@
 -->
 <script lang="ts">
   import { TaskType } from '@hcengineering/task'
+  import { IconWithEmoji } from '@hcengineering/presentation'
   import {
     ColorDefinition,
     Icon,
     IconSize,
-    IconWithEmoji,
     getColorNumberByText,
     getPlatformColorDef,
     themeStore
@@ -37,7 +37,12 @@
     dispatch('accent-color', color)
   }
 
-  $: color = getPlatformColorDef(value?.color ?? getColorNumberByText(value?.name ?? ''), $themeStore.dark)
+  $: color = getPlatformColorDef(
+    value?.color !== undefined && typeof value?.color !== 'string'
+      ? value?.color
+      : getColorNumberByText(value?.name ?? ''),
+    $themeStore.dark
+  )
   $: dispatchAccentColor(color)
 
   onMount(() => {

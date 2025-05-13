@@ -18,14 +18,13 @@
   import { Analytics } from '@hcengineering/analytics'
   import { Data, generateId, Ref } from '@hcengineering/core'
   import { Document, DocumentEvents, Teamspace } from '@hcengineering/document'
-  import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
+  import { IconWithEmoji, Card, getClient, SpaceSelector } from '@hcengineering/presentation'
   import {
     Button,
     createFocusManager,
     EditBox,
     FocusHandler,
     getPlatformColorDef,
-    IconWithEmoji,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
@@ -134,7 +133,9 @@
           ? { icon: object.color, size: 'medium' }
           : {
               fill:
-                object.color !== undefined ? getPlatformColorDef(object.color, $themeStore.dark).icon : 'currentColor'
+                object.color !== undefined && typeof object.color !== 'string'
+                  ? getPlatformColorDef(object.color, $themeStore.dark).icon
+                  : 'currentColor'
             }}
         on:click={chooseIcon}
       />

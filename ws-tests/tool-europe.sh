@@ -14,7 +14,7 @@ export SERVER_SECRET=secret
 export DB_URL=postgresql://root@huly.local:26258/defaultdb?sslmode=disable
 
 export REGION_INFO="|America;europe|" # Europe without name will not be available for creation of new workspaces.
-export TRANSACTOR_URL="ws://huly.local:3334;ws://huly.localv:3334,ws://huly.local:3335;ws://huly.local:3335;europe,"
+export TRANSACTOR_URL="ws://huly.local:3334;ws://huly.local:3334,ws://huly.local:3335;ws://huly.local:3335;europe,"
 export QUEUE_CONFIG=huly.local:19093
 
 # Check if local bundle.js exists and use it if available

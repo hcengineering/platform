@@ -38,14 +38,13 @@
     notEmpty
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Card, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+  import { Card, MessageBox, IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
   import {
     Button,
     DropdownLabelsIntl,
     EditBox,
     FocusHandler,
     IconAttachment,
-    IconWithEmoji,
     createFocusManager,
     getPlatformColorDef,
     showPopup,
@@ -262,7 +261,10 @@
       iconProps={object.icon === view.ids.IconWithEmoji
         ? { icon: object.color }
         : {
-            fill: object.color !== undefined ? getPlatformColorDef(object.color, $themeStore.dark).icon : 'currentColor'
+            fill:
+              object.color !== undefined && typeof object.color !== 'string'
+                ? getPlatformColorDef(object.color, $themeStore.dark).icon
+                : 'currentColor'
           }}
       on:click={chooseIcon}
     />

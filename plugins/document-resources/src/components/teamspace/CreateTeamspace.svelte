@@ -30,11 +30,10 @@
   } from '@hcengineering/core'
   import document, { Teamspace, DocumentEvents } from '@hcengineering/document'
   import { Asset } from '@hcengineering/platform'
-  import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
+  import presentation, { IconWithEmoji, Card, getClient, reduceCalls } from '@hcengineering/presentation'
   import {
     Button,
     EditBox,
-    IconWithEmoji,
     Label,
     Toggle,
     getColorNumberByText,
@@ -363,7 +362,7 @@
           ? { icon: color }
           : {
               fill:
-                color !== undefined
+                color !== undefined && typeof color !== 'string'
                   ? getPlatformColorDef(color, $themeStore.dark).icon
                   : getPlatformColorForTextDef(name, $themeStore.dark).icon
             }}

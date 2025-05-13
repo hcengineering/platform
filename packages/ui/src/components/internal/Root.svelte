@@ -11,8 +11,7 @@
     checkMobile,
     deviceOptionsStore as deviceInfo,
     checkAdaptiveMatching,
-    getLocalWeekStart,
-    updateEmojis
+    getLocalWeekStart
   } from '../../'
   import { desktopPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
   import uiPlugin from '../../plugin'
@@ -92,8 +91,6 @@
   $: $deviceInfo.fontSize = $themeStore.fontSize
 
   $: document.documentElement.style.setProperty('--app-height', `${docHeight}px`)
-
-  $: void updateEmojis($themeStore.language)
 
   let doubleTouchStartTimestamp = 0
   document.addEventListener('touchstart', (event) => {

@@ -307,6 +307,15 @@ importers:
       '@rush-temp/elastic':
         specifier: file:./projects/elastic.tgz
         version: file:projects/elastic.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)
+      '@rush-temp/emoji':
+        specifier: file:./projects/emoji.tgz
+        version: file:projects/emoji.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/emoji-assets':
+        specifier: file:./projects/emoji-assets.tgz
+        version: file:projects/emoji-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/emoji-resources':
+        specifier: file:./projects/emoji-resources.tgz
+        version: file:projects/emoji-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/export':
         specifier: file:./projects/export.tgz
         version: file:projects/export.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -511,6 +520,9 @@ importers:
       '@rush-temp/model-drive':
         specifier: file:./projects/model-drive.tgz
         version: file:projects/model-drive.tgz
+      '@rush-temp/model-emoji':
+        specifier: file:./projects/model-emoji.tgz
+        version: file:projects/model-emoji.tgz
       '@rush-temp/model-export':
         specifier: file:./projects/model-export.tgz
         version: file:projects/model-export.tgz
@@ -1754,6 +1766,9 @@ importers:
         specifier: ^1.2.0-beta.0
         version: 1.2.0-beta.0
       emojibase:
+        specifier: ^16.0.0
+        version: 16.0.0
+      emojibase-regex:
         specifier: ^16.0.0
         version: 16.0.0
       esbuild:
@@ -3948,7 +3963,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/activity-resources@file:projects/activity-resources.tgz':
-    resolution: {integrity: sha512-wgkR5K1ITM6du7LR5d/VuWTkwZprdqfkoFs39EtDC86rMhZoJywV3pwrPI7ASlz7cMb1VtzLR/6SKtENmB3FWg==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-D/V1RS70B/E7aBNzD2V+DJm7Ncr9DFrOAVXQVF+zU45QoUP98x16mkOfOvYMm72sfkPMZXt/dazzyMfDuidfIQ==, tarball: file:projects/activity-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/activity@file:projects/activity.tgz':
@@ -4164,7 +4179,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-2MuxT1ciufuMIFtWSoBJlO0uNhPmICCXRVnZZOQji4ByNWBvm4RSkPd97BQic8PxYe4H4FlPmIylRsvvVaeU7w==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-mj3Or3RObSw1iM1XVjuK+ecPRc3H/sxwKl5Lu92qg794LRA/tBt+GZaSFomZ27Oi9sU/OUoUbvtdXlgf2b40IQ==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4213,6 +4228,18 @@ packages:
 
   '@rush-temp/elastic@file:projects/elastic.tgz':
     resolution: {integrity: sha512-WGiDJdr4on2TaKPfaKntlenxzUJ5uuxtibsd/ZkppUh0BghpFSH37C8WGps7kQRS4oqpb+mB3QhxVhxIz2IvGg==, tarball: file:projects/elastic.tgz}
+    version: 0.0.0
+
+  '@rush-temp/emoji-assets@file:projects/emoji-assets.tgz':
+    resolution: {integrity: sha512-HQ14d4cwZ0klYdy/wRepltE3uviJX4SNX8fXkyUXonnnQZ226JG0ZQZQjxeTmCBeX9U/fm/+3xT98atXkpGofw==, tarball: file:projects/emoji-assets.tgz}
+    version: 0.0.0
+
+  '@rush-temp/emoji-resources@file:projects/emoji-resources.tgz':
+    resolution: {integrity: sha512-ibOvCN3xgD/JTN5p4ILKI6lDe97Ut9fWdNxRlrl54Xi/lYqSzcR1qA3/9sRANc07QatKeCqiFeZSZUgPAGTv3A==, tarball: file:projects/emoji-resources.tgz}
+    version: 0.0.0
+
+  '@rush-temp/emoji@file:projects/emoji.tgz':
+    resolution: {integrity: sha512-Obbi4ccdBssdxagUm1zLtCGQhj5R0xOFNUqgOoRQDlcEqVvojA6EyQM6G+YtNLBllF+lnHGCqIs96GQ8G+AR4g==, tarball: file:projects/emoji.tgz}
     version: 0.0.0
 
   '@rush-temp/export-assets@file:projects/export-assets.tgz':
@@ -4420,7 +4447,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-all@file:projects/model-all.tgz':
-    resolution: {integrity: sha512-apw/K0//cfSDJtJQ6h8Y9RmfYgpBq67AAr1hxPrSg8kYLMPzhro1u/0Iuj+jJGnbv874rVprV8VWZznoDD5m8A==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-5ggvhrxV+Dhwf4cqX/CLjE+NcDstaIVFrZ0aO9lUcfpX4txUgCCQK0ioAqZ8rL0XHjQ//gq78Fny76aWyuJnLw==, tarball: file:projects/model-all.tgz}
     version: 0.0.0
 
   '@rush-temp/model-analytics-collector@file:projects/model-analytics-collector.tgz':
@@ -4481,6 +4508,10 @@ packages:
 
   '@rush-temp/model-drive@file:projects/model-drive.tgz':
     resolution: {integrity: sha512-JG62skvnh8n7bBwsriHH6TE71W/gVm287OVnmy4VRJVf/tDC0/sCKlg+75qvcSu3CmAjaYqnnJz5q1Lz9EH3xw==, tarball: file:projects/model-drive.tgz}
+    version: 0.0.0
+
+  '@rush-temp/model-emoji@file:projects/model-emoji.tgz':
+    resolution: {integrity: sha512-o3HzefmauAMUKALu3SpLNEsdNdD/g3zWNT4NvnwXq0UU+l6OVJPOaj40cRZYgbW0J+PYVIA5kLgLmpaTj/3XLw==, tarball: file:projects/model-emoji.tgz}
     version: 0.0.0
 
   '@rush-temp/model-export@file:projects/model-export.tgz':
@@ -4928,7 +4959,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-xbOaATMslHsHV4sUFB+PKbMMWrattdYQi9aAXxuYylBCFMOeNbOD4din6fgYn/MuyerpUXuN/EH4gDoeFv8Udg==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-BIZsM8bDI2fpnw7r71lbLTUZNXk76T2X5Ni9yzy+reE/5/m4+JvCmayE9lOQwIESaKijZSvTJ72rNDYs2+wsoQ==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -4956,7 +4987,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
-    resolution: {integrity: sha512-sH+/06L2vJs2pfZD+n0Lir0YqObICbAlwOUjLMmJGWoQNGn5SrK85M9asNA5w4FbzKSHMLoSarNHebM7Th8ipQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-GdZBIxyfe90BSJp2zRY77jkeyisNUL2i918qAo93lYsVrw1GFnMwuNxgK/Vw3a2fsLCVw9QIcUq6OLjfJTRDpA==, tarball: file:projects/prod.tgz}
     version: 0.0.0
 
   '@rush-temp/products-assets@file:projects/products-assets.tgz':
@@ -5412,7 +5443,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/task-resources@file:projects/task-resources.tgz':
-    resolution: {integrity: sha512-z+jiv045QZjtK9XdepXuvG3dgv5kZ0N1VVjLUfyzS+23PNChRJ5djF6WQjqvMVVUwtLd5xQmM97KG8U5GlbIVg==, tarball: file:projects/task-resources.tgz}
+    resolution: {integrity: sha512-hNQPRCjOf5j5O5j7RcOsWBWxGZE5tkrLZlq1zZRhUqK8Ms05g9yv0jZkiN7Ech1+PxGUCvqTJJ4ju6oB3zEghg==, tarball: file:projects/task-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/task@file:projects/task.tgz':
@@ -5472,7 +5503,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-editor-resources@file:projects/text-editor-resources.tgz':
-    resolution: {integrity: sha512-MvBheskzm3x8NJCOJv12lYQV2OMPO57KcYvLMTjZ7uVmJyK7iZsBBY7Tuv9kmwVuOT++P+KOTYj1GVd/iwIOjg==, tarball: file:projects/text-editor-resources.tgz}
+    resolution: {integrity: sha512-graqZ0uS/Iwo3ioLjgR27wpTl0NVQ/IieRuGZFkAuMukFjBrgO3AUZJZETB0cm3Ma/KZ/HotJ0I1mOQBRHeCOw==, tarball: file:projects/text-editor-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/text-editor@file:projects/text-editor.tgz':
@@ -5540,11 +5571,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/ui-next@file:projects/ui-next.tgz':
-    resolution: {integrity: sha512-5ZTDsqNUfXyCIVeeSMGhnxDSj+71eZSnHSSPz4l0QoH2FKtVa7fj01mXV7CXSMcIAz42S38gaXJfH1NB2TOcEw==, tarball: file:projects/ui-next.tgz}
+    resolution: {integrity: sha512-A3FSIrGhW7OIseHR5XIXglebYVOGmgq40yuGx68bV2XhCmN5KLiTA72MAJYxXmYG2uRS1L7GydCRTmdML+WlNA==, tarball: file:projects/ui-next.tgz}
     version: 0.0.0
 
   '@rush-temp/ui@file:projects/ui.tgz':
-    resolution: {integrity: sha512-0U0x2FrKQNlJteRKEqKkDhZNC/qOWO/rL3qK8cuqdYR7Gz5kCaQBnRRHYWGDTVtUKcyYrUN+2RTaB/OG5pgYhA==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-1Qa4BqkJrIa/OAlhIk8KQQpejRJa65FHm9MEh0U5o1qy1TnScBVPY0VKtM5hYyBA2L6D7AypJ+K+4nvNTyIB2A==, tarball: file:projects/ui.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader-assets@file:projects/uploader-assets.tgz':
@@ -5564,7 +5595,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/view-resources@file:projects/view-resources.tgz':
-    resolution: {integrity: sha512-7AFAEQlszTmRCzi9xfKegIhjzl76W8lLW4/LLygoH7a8JZPqoJhP1/l99QhNwa0tpUsXFTMg1EYMucFMrXhMdQ==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-vOueglFyJvW7+13mDOKqFx3TQsMVq+vcIIxAoWQdvkcid8vypVg16TM5WPm1VbL3mF/XZ4Aa0q3DCmQKS+lmYQ==, tarball: file:projects/view-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/view@file:projects/view.tgz':
@@ -8495,6 +8526,9 @@ packages:
 
   emoji-regex@9.2.2:
     resolution: {integrity: sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==}
+
+  emojibase-regex@16.0.0:
+    resolution: {integrity: sha512-ZMp31BkzBWNW+T73of6NURL6nXQa5GkfKneOkr3cEwBDVllbW/2nuva7NO0J3RjaQ07+SZQNgPTGZ4JlIhmM2Q==}
 
   emojibase@16.0.0:
     resolution: {integrity: sha512-Nw2m7JLIO4Ou2X/yZPRNscHQXVbbr6SErjkJ7EooG7MbR3yDZszCv9KTizsXFc7yZl0n3WF+qUKIC/Lw6H9xaQ==}
@@ -18599,6 +18633,98 @@ snapshots:
       - node-notifier
       - supports-color
 
+  '@rush-temp/emoji-assets@file:projects/emoji-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
+      typescript: 5.7.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/emoji-resources@file:projects/emoji-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
+      sass: 1.71.1
+      svelte: 4.2.19
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.19)
+      svelte-loader: 3.2.0(svelte@4.2.19)
+      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)(typescript@5.7.3)
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
+      typescript: 5.7.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - coffeescript
+      - esbuild
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+      - ts-node
+
+  '@rush-temp/emoji@file:projects/emoji.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      emojibase: 16.0.0
+      emojibase-regex: 16.0.0
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
+      typescript: 5.7.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
   '@rush-temp/export-assets@file:projects/export-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
       '@types/jest': 29.5.12
@@ -20378,6 +20504,20 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       typescript: 5.3.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@rush-temp/model-emoji@file:projects/model-emoji.tgz':
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 
@@ -27461,6 +27601,7 @@ snapshots:
       date-fns-tz: 2.0.0(date-fns@2.30.0)
       dompurify: 3.1.6
       emojibase: 16.0.0
+      emojibase-regex: 16.0.0
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.3.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
@@ -31437,6 +31578,8 @@ snapshots:
   emoji-regex@8.0.0: {}
 
   emoji-regex@9.2.2: {}
+
+  emojibase-regex@16.0.0: {}
 
   emojibase@16.0.0: {}
 

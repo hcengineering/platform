@@ -267,6 +267,9 @@ export const storeNodes: Record<string, NodeProcessor> = {
     // Check if test has reference mark, in this case we need to remove [[]]
     state.text(node.text ?? '')
   },
+  emoji: (state, node) => {
+    state.text(node.attrs?.emoji as string)
+  },
   table: (state, node) => {
     state.write(state.renderHtml(node))
     state.closeBlock(node)

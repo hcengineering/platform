@@ -2,15 +2,14 @@ import type { ActivityMessage, Reaction } from '@hcengineering/activity'
 import core, { getCurrentAccount, isOtherHour, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { getClient, isSpace } from '@hcengineering/presentation'
 import {
-  EmojiPopup,
   closePopup,
   getCurrentResolvedLocation,
   getEventPositionElement,
   showPopup,
-  type Location,
-  type Emojis
+  type Location
 } from '@hcengineering/ui'
 import { type AttributeModel } from '@hcengineering/view'
+import emojiPlugin from '@hcengineering/emoji'
 import { get } from 'svelte/store'
 
 import { savedMessagesStore } from './activity'
@@ -61,8 +60,8 @@ export async function addReactionAction (
 
   closePopup()
 
-  showPopup(EmojiPopup, {}, element, (emoji: Emojis) => {
-    if (emoji?.emoji !== undefined) void updateDocReactions(reactions, message, emoji.emoji)
+  showPopup(emojiPlugin.component.EmojiPopup, {}, element, (emoji) => {
+    if (emoji?.text !== undefined) void updateDocReactions(reactions, message, emoji.text)
     params?.onClose?.()
   })
   params?.onOpen?.()

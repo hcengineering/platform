@@ -18,12 +18,13 @@
   import { getClient } from '@hcengineering/presentation'
   import cardPlugin, { Card } from '@hcengineering/card'
   import { getCurrentAccount, Ref } from '@hcengineering/core'
-  import { EmojiPopup, getEventPositionElement, showPopup, Action as MenuAction } from '@hcengineering/ui'
+  import { getEventPositionElement, showPopup, Action as MenuAction } from '@hcengineering/ui'
   import { personByPersonIdStore } from '@hcengineering/contact-resources'
   import type { SocialID } from '@hcengineering/communication-types'
   import { AttachmentPreview } from '@hcengineering/attachment-resources'
   import { Message, MessageType } from '@hcengineering/communication-types'
   import { openDoc } from '@hcengineering/view-resources'
+  import emojiPlugin from '@hcengineering/emoji'
 
   import ReactionsList from '../ReactionsList.svelte'
   import Menu from '../Menu.svelte'
@@ -31,7 +32,6 @@
   import MessageReplies from './MessageReplies.svelte'
   import { toggleReaction, replyToThread } from '../../utils'
   import MessageActionsPanel from './MessageActionsPanel.svelte'
-  import IconEmoji from '../icons/IconEmoji.svelte'
   import IconMessageMultiple from '../icons/IconMessageMultiple.svelte'
   import IconPen from '../icons/IconPen.svelte'
   import MessageBody from './MessageBody.svelte'
@@ -120,14 +120,14 @@
       if (message.thread == null) {
         actions.push({
           label: uiNext.string.Emoji,
-          icon: IconEmoji,
+          icon: emojiPlugin.icon.Emoji,
           action: async (): Promise<void> => {
             showPopup(
-              EmojiPopup,
+              emojiPlugin.component.EmojiPopup,
               {},
               event.target as HTMLElement,
               async (result) => {
-                const emoji = result?.emoji
+                const emoji = result?.text
                 if (emoji == null) {
                   return
                 }

@@ -16,16 +16,8 @@
   import { Card, MasterTag } from '@hcengineering/card'
   import { AnyAttribute, Class, Ref, RefTo } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    Button,
-    ButtonKind,
-    ButtonSize,
-    eventToHTMLElement,
-    IconWithEmoji,
-    Label,
-    showPopup
-  } from '@hcengineering/ui'
+  import { IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
+  import { Button, ButtonKind, ButtonSize, eventToHTMLElement, Label, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'

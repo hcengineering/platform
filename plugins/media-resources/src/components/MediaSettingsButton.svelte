@@ -14,15 +14,15 @@
 -->
 <script lang="ts">
   import { requestMediaAccess } from '@hcengineering/media'
-  import { Button, IconMoreH, StatusBarButton, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { IconMoreH, StatusBarButton, showPopup } from '@hcengineering/ui'
 
   import { camAccess, micAccess, sessions } from '../stores'
 
   import IconCamOn from './icons/CamOn.svelte'
   import MediaPopup from './MediaPopup.svelte'
-  import Icon from '@hcengineering/ui/src/components/Icon.svelte'
 
   export let disabled = false
+  export let anchor: HTMLElement
 
   $: active = $sessions.length > 0
 
@@ -39,11 +39,11 @@
 
   let pressed = false
 
-  async function openPopup (ev: MouseEvent): Promise<void> {
+  async function openPopup (): Promise<void> {
     pressed = true
 
     await ensureMediaAccess()
-    showPopup(MediaPopup, {}, eventToHTMLElement(ev), () => {
+    showPopup(MediaPopup, {}, anchor, () => {
       pressed = false
     })
   }

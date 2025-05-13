@@ -34,10 +34,9 @@
     AnySvelteComponent,
     navigate,
     getCurrentResolvedLocation,
-    IconWithEmoji,
     deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { SpaceTypeEditor } from '@hcengineering/setting'
   import { Asset, getResource } from '@hcengineering/platform'
   import view from '@hcengineering/view'
