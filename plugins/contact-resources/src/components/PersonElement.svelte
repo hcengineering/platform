@@ -26,7 +26,6 @@
   export let disabled: boolean = false
   export let shouldShowAvatar: boolean = true
   export let shouldShowName: boolean = true
-  export let disabledAspectRatio: boolean = false
   export let noUnderline: boolean = false
   export let avatarSize: IconSize = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
@@ -54,7 +53,6 @@
         {#if shouldShowAvatar}
           <span
             class="ap-icon"
-            class:no-square={disabledAspectRatio}
             class:mr-2={shouldShowName && !enlargedText}
             class:mr-3={shouldShowName && enlargedText}
           >

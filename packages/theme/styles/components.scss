@@ -2234,8 +2234,7 @@
     align-items: center;
     color: var(--theme-dark-color);
     height: 100%;
-
-    &:not(.no-square) { aspect-ratio: 1; }
+    aspect-ratio: 1;
   }
   .ap-label {
     min-width: 0;
