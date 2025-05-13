@@ -6,6 +6,7 @@
   "scripts": {
     "_phase:docker-build": "rushx docker:build",
     "docker:build": "sh bin/build.sh",
-    "docker:push": "sh bin/push.sh"
+    "docker:push": "sh bin/push.sh",
+    "format": "true"
   }
 }
