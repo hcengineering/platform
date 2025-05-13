@@ -70,8 +70,8 @@ const config: Config = (() => {
     KvsUrl: process.env[envMap.KvsUrl],
     StorageConfig: process.env[envMap.StorageConfig],
     Version: version,
-    QueueConfig: process.env[envMap.QueueConfig],
-    QueueRegion: process.env[envMap.QueueRegion]
+    QueueConfig: process.env[envMap.QueueConfig] ?? '',
+    QueueRegion: process.env[envMap.QueueRegion] ?? ''
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)
@@ -80,6 +80,10 @@ const config: Config = (() => {
 
   if (missingEnv.length > 0) {
     throw Error(`Missing env variables: ${missingEnv.join(', ')}`)
+  }
+
+  if (version === IntegrationVersion.V2 && (params.QueueConfig == null || params.QueueConfig === '')) {
+    throw Error('Missing env variable: QUEUE_CONFIG')
   }
 
   return params as Config
