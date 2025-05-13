@@ -139,6 +139,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       hierarchy: this.context.hierarchy,
       cache: this.cache,
       communicationApi: this.context.communicationApi,
+      userStatusMap: this.context.userStatusMap ?? new Map(),
       apply: async (ctx, tx, needResult) => {
         if (needResult === true) {
           return (await this.context.derived?.tx(ctx, tx)) ?? {}

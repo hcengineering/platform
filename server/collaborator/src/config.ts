@@ -21,6 +21,8 @@ export interface Config {
   Secret: string
 
   Interval: number
+  StorageRetryCount: number
+  StorageRetryInterval: number
 
   Port: number
 
@@ -32,7 +34,9 @@ const envMap: { [key in keyof Config]: string } = {
   Secret: 'SECRET',
   Interval: 'INTERVAL',
   Port: 'COLLABORATOR_PORT',
-  AccountsUrl: 'ACCOUNTS_URL'
+  AccountsUrl: 'ACCOUNTS_URL',
+  StorageRetryCount: 'STORAGE_RETRY_COUNT',
+  StorageRetryInterval: 'STORAGE_RETRY_INTERVAL'
 }
 
 const required: Array<keyof Config> = ['Secret', 'ServiceID', 'Port', 'AccountsUrl']
@@ -43,7 +47,9 @@ const config: Config = (() => {
     ServiceID: process.env[envMap.ServiceID] ?? 'collaborator-service',
     Interval: parseInt(process.env[envMap.Interval] ?? '30000'),
     Port: parseInt(process.env[envMap.Port] ?? '3078'),
-    AccountsUrl: process.env[envMap.AccountsUrl]
+    AccountsUrl: process.env[envMap.AccountsUrl],
+    StorageRetryCount: parseInt(process.env[envMap.StorageRetryCount] ?? '5'),
+    StorageRetryInterval: parseInt(process.env[envMap.StorageRetryInterval] ?? '50')
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])

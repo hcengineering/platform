@@ -128,6 +128,7 @@
     "MasterDetail": "マスター・詳細",
     "Tree": "ツリー",
     "Document": "ドキュメント",
-    "Loading": "読み込み中..."
+    "Loading": "読み込み中...",
+    "NoRelations": "関係なし"
   }
 }

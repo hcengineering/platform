@@ -2,8 +2,8 @@ import { type Editor, type Range, escapeForRegEx } from '@tiptap/core'
 import { type EditorState, Plugin, PluginKey, type Transaction } from '@tiptap/pm/state'
 import { ReplaceStep } from '@tiptap/pm/transform'
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
-
 import { type ResolvedPos } from '@tiptap/pm/model'
+import { type Class, type Doc, type Ref } from '@hcengineering/core'
 
 export interface Trigger {
   char: string
@@ -129,6 +129,8 @@ export interface SuggestionOptions<I = any> {
   startOfLine?: boolean
   decorationTag?: string
   decorationClass?: string
+  multipleMentions?: boolean
+  docClass?: Ref<Class<Doc>>
   command?: (props: { editor: Editor, range: Range, props: I }) => void
   items?: (props: { query: string, editor: Editor }) => I[] | Promise<I[]>
   render?: () => {
@@ -147,6 +149,8 @@ export interface SuggestionProps<I = any> {
   range: Range
   query: string
   text: string
+  multipleMentions: boolean
+  docClass?: Ref<Class<Doc>>
   items: I[]
   command: (props: I) => void
   decorationNode: Element | null
@@ -172,6 +176,8 @@ export default function Suggestion<I = any> ({
   startOfLine = false,
   decorationTag = 'span',
   decorationClass = 'suggestion',
+  multipleMentions = false,
+  docClass,
   command = () => null,
   items = () => [],
   render = () => ({}),
@@ -226,7 +232,9 @@ export default function Suggestion<I = any> ({
             range: state.range,
             query: state.query,
             text: state.text,
+            docClass,
             items: [],
+            multipleMentions,
             command: (commandProps) => {
               command({
                 editor,

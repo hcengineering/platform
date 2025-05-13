@@ -133,6 +133,7 @@
     "MasterDetail": "Master-detail",
     "Tree": "Baum",
     "Document": "Dokument",
-    "Loading": "Laden..."
+    "Loading": "Laden...",
+    "NoRelations": "Keine Beziehungen"
   }
 }

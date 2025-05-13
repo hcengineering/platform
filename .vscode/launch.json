@@ -276,12 +276,14 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "v0.7.1",
+        "MODEL_VERSION": "v0.7.75",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
-        "BACKUP_BUCKET": "dev-backups"
-        // "INIT_REPO_DIR": "${workspaceRoot}/pods/workspace/init",
-        // "INIT_WORKSPACE": "staging-dev"
+        "BACKUP_BUCKET": "dev-backups",
+        "INIT_REPO_DIR": "${workspaceRoot}/pods/workspace/init",
+        "INIT_WORKSPACE": "staging-dev",
+        "QUEUE_CONFIG": "huly.local:19092",
+        "QUEUE_REGION": ""
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -309,10 +311,11 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "0.7.1",
+        "MODEL_VERSION": "0.7.75",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
-        "BACKUP_BUCKET": "dev-backups"
+        "BACKUP_BUCKET": "dev-backups",
+        "QUEUE_CONFIG": "huly.local:19092"
         // "INIT_REPO_DIR": "${workspaceRoot}/pods/workspace/init",
         // "INIT_WORKSPACE": "staging-dev"
       },

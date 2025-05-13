@@ -683,6 +683,7 @@
       flex-direction: column;
     }
     &.solid { border-style: solid; }
+    &.noBorder { border: none; }
     &.items {
       justify-content: start;
       padding: .75rem;

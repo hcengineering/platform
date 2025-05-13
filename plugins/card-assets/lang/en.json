@@ -1,7 +1,7 @@
 {
   "string": {
     "Card": "Card",
-    "CardApplication": "Cards",
+    "CardApplication": "Cards (beta)",
     "Cards": "Cards",
     "Content": "Content",
     "CreateCard": "Create Card",
@@ -37,6 +37,8 @@
     "CreateSpace": "Create space",
     "NumberTypes": "{count, plural, one {# type} other {# types}}",
     "Labels": "Labels",
-    "Properties": "Properties"
+    "Properties": "Properties",
+    "NoChildren": "No children",
+    "ConfigDescription": "Extension for database-style knowledge management."
   }
 }

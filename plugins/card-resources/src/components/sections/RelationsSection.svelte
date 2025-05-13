@@ -22,7 +22,7 @@
 </script>
 
 <div class="section-relations">
-  <RelationsEditor object={doc} {readonly} on:loaded />
+  <RelationsEditor object={doc} {readonly} on:loaded emptyKind="placeholder" />
 </div>
 
 <style lang="scss">

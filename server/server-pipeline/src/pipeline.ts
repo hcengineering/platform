@@ -37,7 +37,8 @@ import {
   SpacePermissionsMiddleware,
   SpaceSecurityMiddleware,
   TriggersMiddleware,
-  TxMiddleware
+  TxMiddleware,
+  UserStatusMiddleware
 } from '@hcengineering/middleware'
 import {
   createBenchmarkAdapter,
@@ -127,6 +128,7 @@ export function createServerPipeline (
       ConfigurationMiddleware.create,
       ContextNameMiddleware.create,
       MarkDerivedEntryMiddleware.create,
+      UserStatusMiddleware.create,
       ApplyTxMiddleware.create, // Extract apply
       TxMiddleware.create, // Store tx into transaction domain
       ...(opt.disableTriggers === true ? [] : [TriggersMiddleware.create]),

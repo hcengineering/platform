@@ -1,7 +1,7 @@
 {
   "string": {
     "Card": "Karte",
-    "CardApplication": "Karten",
+    "CardApplication": "Karten (beta)",
     "Cards": "Karten",
     "Content": "Inhalt",
     "CreateCard": "Karte erstellen",
@@ -37,6 +37,8 @@
     "CreateSpace": "Raum erstellen",
     "NumberTypes": "{count, plural, one {# typ} other {# typen}}",
     "Labels": "Labels",
-    "Properties": "Eigenschaften"
+    "Properties": "Eigenschaften",
+    "NoChildren": "Keine Kinder",
+    "ConfigDescription": "Erweiterung für Datenbank-basiertes Wissensmanagement."
   }
 }

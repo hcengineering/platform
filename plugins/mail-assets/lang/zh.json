@@ -8,6 +8,7 @@
     "Reply": "回复",
     "Date": "日期",
     "MailMessage": "邮件",
-    "MailMessages": "邮件"
+    "MailMessages": "邮件",
+    "MailTag": "邮件"
   }
 }

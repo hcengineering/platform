@@ -1,7 +1,7 @@
 {
   "string": {
     "Card": "Carta",
-    "CardApplication": "Carte",
+    "CardApplication": "Carte (beta)",
     "Cards": "Carte",
     "Content": "Contenuto",
     "CreateCard": "Crea Carta",
@@ -36,6 +36,9 @@
     "SelectType": "Seleziona il tipo",
     "CreateSpace": "Crea spazio",
     "Labels": "Etichette",
-    "Properties": "Proprietà"
+    "Properties": "Proprietà",
+    "NoChildren": "Nessun figlio",
+    "NumberTypes": "{count, plural, one {# tipo} other {# tipi}}",
+    "ConfigDescription": "Estensione per la gestione della conoscenza in stile database."
   }
 }

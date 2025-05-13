@@ -133,6 +133,7 @@
     "MasterDetail": "Hlavní-detailní",
     "Tree": "Strom",
     "Document": "Dokument",
-    "Loading": "Načítání..."
+    "Loading": "Načítání...",
+    "NoRelations": "Žádné vztahy"
   }
 }

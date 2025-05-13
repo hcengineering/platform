@@ -56,10 +56,11 @@ export class StorageExtension implements Extension {
   }
 
   async onChange ({ context, document, documentName }: withContext<onChangePayload>): Promise<any> {
+    const { ctx } = this.configuration
     const { connectionId } = context
 
     if (document.isLoading) {
-      console.warn('document changed while is loading', { documentName, connectionId })
+      ctx.warn('document changed while is loading', { documentName, connectionId })
       return
     }
 

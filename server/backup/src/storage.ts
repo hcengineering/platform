@@ -1,7 +1,7 @@
 import { MeasureContext, type WorkspaceIds } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { createReadStream, createWriteStream, existsSync, statSync } from 'fs'
-import { mkdir, readFile, rm, writeFile } from 'fs/promises'
+import { mkdir, readdir, readFile, rm, writeFile } from 'fs/promises'
 import { dirname, join } from 'path'
 import { PassThrough, Readable, Writable } from 'stream'
 
@@ -18,6 +18,8 @@ export interface BackupStorage {
 
   stat: (name: string) => Promise<number>
   delete: (name: string) => Promise<void>
+
+  deleteRecursive: (name: string) => Promise<void>
 }
 
 class FileStorage implements BackupStorage {
@@ -50,6 +52,16 @@ class FileStorage implements BackupStorage {
 
   async delete (name: string): Promise<void> {
     await rm(join(this.root, name))
+  }
+
+  async deleteRecursive (name: string): Promise<void> {
+    // Check if folder has no files
+    const files = await readdir(join(this.root, name))
+    if (files.length === 0) {
+      await rm(join(this.root, name), {
+        recursive: true
+      })
+    }
   }
 
   async writeFile (name: string, data: string | Buffer | Readable): Promise<void> {
@@ -105,6 +117,10 @@ class AdapterStorage implements BackupStorage {
 
   async delete (name: string): Promise<void> {
     await this.client.remove(this.ctx, this.wsIds, [join(this.root, name)])
+  }
+
+  async deleteRecursive (name: string): Promise<void> {
+    // Do not need to do anything
   }
 
   async writeFile (name: string, data: string | Buffer | Readable): Promise<void> {

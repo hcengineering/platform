@@ -15,7 +15,7 @@
 
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 import chunter, { Channel, ChatMessage, chunterId, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
-import contact, { Person } from '@hcengineering/contact'
+import contact, { Employee, Person } from '@hcengineering/contact'
 import { getAccountBySocialId, getPerson } from '@hcengineering/server-contact'
 import core, {
   PersonId,
@@ -36,7 +36,8 @@ import core, {
   UserStatus,
   type MeasureContext,
   combineAttributes,
-  AccountUuid
+  AccountUuid,
+  notEmpty
 } from '@hcengineering/core'
 import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
@@ -46,7 +47,7 @@ import {
   getDocCollaborators,
   getMixinTx
 } from '@hcengineering/server-notification-resources'
-import { markupToText, stripTags } from '@hcengineering/text-core'
+import { extractReferences, markupToText, stripTags } from '@hcengineering/text-core'
 import { jsonToHTML, markupToJSON } from '@hcengineering/text'
 import { workbenchId } from '@hcengineering/workbench'
 
@@ -175,14 +176,21 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
   const isChannel = hierarchy.isDerived(targetDoc._class, chunter.class.Channel)
   const res: Tx[] = []
   const account = await getAccountBySocialId(control, message.modifiedBy)
-
-  if (account == null) {
-    return []
-  }
+  const node = markupToJSON(message.message)
+  const references = extractReferences(node)
+  const mentionedPersons = references
+    .filter(({ objectClass }) => control.hierarchy.isDerived(objectClass, contact.class.Person))
+    .map(({ objectId }) => objectId as Ref<Person>)
+  const employees =
+    mentionedPersons.length > 0
+      ? await control.findAll(ctx, contact.mixin.Employee, { _id: { $in: mentionedPersons as Ref<Employee>[] } })
+      : []
+  const collaboratorsFromMessage = [...employees.map((it) => it.personUuid), account].filter(notEmpty)
 
   if (hierarchy.hasMixin(targetDoc, notification.mixin.Collaborators)) {
     const collaboratorsMixin = hierarchy.as(targetDoc, notification.mixin.Collaborators)
-    if (!collaboratorsMixin.collaborators.includes(account)) {
+    const newCollabs = collaboratorsFromMessage.filter((it) => !collaboratorsMixin.collaborators.includes(it))
+    if (newCollabs.length > 0) {
       res.push(
         control.txFactory.createTxMixin(
           targetDoc._id,
@@ -190,22 +198,25 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
           targetDoc.space,
           notification.mixin.Collaborators,
           {
-            $push: {
-              collaborators: account
-            }
+            $push: { collaborators: { $each: newCollabs, $position: 0 } }
           }
         )
       )
     }
   } else {
     const collaborators = await getDocCollaborators(ctx, targetDoc, mixin, control)
-    if (!collaborators.includes(account)) {
-      collaborators.push(account)
-    }
-    res.push(getMixinTx(tx, control, collaborators))
+    res.push(getMixinTx(tx, control, Array.from(new Set(collaborators.concat(collaboratorsFromMessage)))))
   }
 
-  if (isChannel && !(targetDoc as Channel).members.includes(account)) {
+  if (collaboratorsFromMessage.length > 0) {
+    control.txFactory.createTxMixin(message._id, message._class, message.space, notification.mixin.Collaborators, {
+      $push: {
+        $push: { collaborators: { $each: collaboratorsFromMessage, $position: 0 } }
+      }
+    })
+  }
+
+  if (account != null && isChannel && !(targetDoc as Channel).members.includes(account)) {
     res.push(...joinChannel(control, targetDoc as Channel, account))
   }
 

@@ -2499,6 +2499,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/mail-common",
+      "projectFolder": "services/mail/mail-common",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/emoji",
       "projectFolder": "plugins/emoji",
       "shouldPublish": false

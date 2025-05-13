@@ -8,6 +8,7 @@
     "Reply": "Responder",
     "Date": "Data",
     "MailMessage": "Mensagem",
-    "MailMessages": "Mensagens"
+    "MailMessages": "Mensagens",
+    "MailTag": "Correio"
   }
 }

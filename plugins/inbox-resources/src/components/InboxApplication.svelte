@@ -141,8 +141,6 @@
   }
 
   .inbox__panel {
-    //background: var(--next-panel-color-background);
-    //border-color: var(--next-panel-color-border);
     position: relative;
   }
 </style>

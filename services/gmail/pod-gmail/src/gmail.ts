@@ -30,10 +30,11 @@ import { getOrCreateSocialId } from './accounts'
 import { createIntegrationIfNotEsixts, disableIntegration, removeIntegration } from './integrations'
 import { AttachmentHandler } from './message/attachments'
 import { TokenStorage } from './tokens'
-import { MessageManager } from './message/message'
+import { createMessageManager } from './message/adapter'
 import { SyncManager } from './message/sync'
 import { getEmail } from './gmail/utils'
 import { Integration } from '@hcengineering/account-client'
+import { IMessageManager } from './message/types'
 
 const SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
@@ -81,7 +82,7 @@ export class GmailClient {
   private refreshTimer: NodeJS.Timeout | undefined = undefined
   private readonly rateLimiter = new RateLimiter(1000, 200)
   private readonly attachmentHandler: AttachmentHandler
-  private readonly messageManager: MessageManager
+  private readonly messageManager: IMessageManager
   private readonly syncManager: SyncManager
   private readonly integrationToken: string
   private integration: Integration | undefined = undefined
@@ -104,12 +105,13 @@ export class GmailClient {
     this.client = new TxOperations(client, this.socialId._id)
     this.account = this.user.userId
     this.attachmentHandler = new AttachmentHandler(ctx, workspaceId, storageAdapter, this.gmail, this.client)
-    this.messageManager = new MessageManager(
+    this.messageManager = createMessageManager(
       ctx,
       this.client,
       this.attachmentHandler,
-      this.socialId._id,
-      this.workspace
+      this.workspace,
+      this.integrationToken,
+      socialId
     )
     const keyValueClient = getKvsClient(this.integrationToken)
     this.syncManager = new SyncManager(

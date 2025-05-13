@@ -661,7 +661,7 @@ export function createModel (builder: Builder): void {
         tools: card.component.ManageMasterTagsTools
       },
       group: 'settings-editor',
-      role: AccountRole.User,
+      role: AccountRole.Maintainer,
       order: 5000,
       expandable: true
     },
@@ -786,7 +786,7 @@ function defineTabs (builder: Builder): void {
     {
       label: card.string.Children,
       component: card.sectionComponent.ChildrenSection,
-      order: 300,
+      order: 400,
       navigation: []
     },
     card.section.Children
@@ -798,7 +798,7 @@ function defineTabs (builder: Builder): void {
     {
       label: attachment.string.Attachments,
       component: card.sectionComponent.AttachmentsSection,
-      order: 400,
+      order: 300,
       navigation: []
     },
     card.section.Attachments

@@ -21,5 +21,6 @@ loadMetadata(mail.icon, {
   NewMail: `${icons}#new-mail`,
   Inbox: `${icons}#inbox`,
   Done: `${icons}#done`,
-  Sent: `${icons}#sent`
+  Sent: `${icons}#sent`,
+  Mail: `${icons}#mail`
 })

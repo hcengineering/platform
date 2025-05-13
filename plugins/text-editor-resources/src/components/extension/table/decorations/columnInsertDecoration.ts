@@ -14,57 +14,130 @@
 //
 
 import { type Editor } from '@tiptap/core'
-import { type EditorState } from '@tiptap/pm/state'
 import { TableMap } from '@tiptap/pm/tables'
-import { Decoration } from '@tiptap/pm/view'
+import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
+import { findTable, haveTableRelatedChanges, insertColumn } from '../utils'
 import { addSvg } from './icons'
-import { type TableNodeLocation } from '../types'
-import { insertColumn, isColumnSelected } from '../utils'
 
 import { getTableCellWidgetDecorationPos, getTableHeightPx } from './utils'
 
-export const columnInsertDecoration = (state: EditorState, table: TableNodeLocation, editor: Editor): Decoration[] => {
-  const decorations: Decoration[] = []
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 
-  const { selection } = state
-
-  const tableMap = TableMap.get(table.node)
-  const { width } = tableMap
-
-  const tableHeightPx = getTableHeightPx(table, editor)
-
-  for (let col = 0; col < width; col++) {
-    const show = col < width - 1 && !isColumnSelected(col, selection) && !isColumnSelected(col + 1, selection)
-
-    if (show) {
-      const insert = document.createElement('div')
-      insert.classList.add('table-col-insert')
-
-      const button = document.createElement('button')
-      button.className = 'table-insert-button'
-      button.innerHTML = addSvg
-      button.addEventListener('mousedown', (e) => {
-        handleMouseDown(col, table, e, editor)
-      })
-      insert.appendChild(button)
-
-      const marker = document.createElement('div')
-      marker.className = 'table-insert-marker'
-      marker.style.height = tableHeightPx + 'px'
-      insert.appendChild(marker)
-
-      const pos = getTableCellWidgetDecorationPos(table, tableMap, col)
-      decorations.push(Decoration.widget(pos, insert))
-    }
-  }
-
-  return decorations
+interface TableColumnInsertDecorationPluginState {
+  decorations?: DecorationSet
 }
 
-const handleMouseDown = (col: number, table: TableNodeLocation, event: Event, editor: Editor): void => {
-  event.stopPropagation()
-  event.preventDefault()
+export const TableColumnInsertDecorationPlugin = (editor: Editor): Plugin<TableColumnInsertDecorationPluginState> => {
+  const key = new PluginKey('tableColumnInsertDecorationPlugin')
+  return new Plugin<TableColumnInsertDecorationPluginState>({
+    key,
+    state: {
+      init: () => {
+        return {}
+      },
+      apply (tr, prev, oldState, newState) {
+        const table = findTable(newState.selection)
+        if (!haveTableRelatedChanges(editor, table, oldState, newState, tr)) {
+          return table !== undefined ? prev : {}
+        }
 
-  editor.view.dispatch(insertColumn(table, col + 1, editor.state.tr))
+        const decorations: Decoration[] = []
+
+        const tableMap = TableMap.get(table.node)
+        const { width } = tableMap
+
+        let isStale = false
+        const mapped = prev.decorations?.map(tr.mapping, tr.doc)
+        for (let col = 0; col < width - 1; col++) {
+          const pos = getTableCellWidgetDecorationPos(table, tableMap, col)
+          if (mapped?.find(pos, pos + 1)?.length !== 1) {
+            isStale = true
+            break
+          }
+        }
+
+        if (!isStale) {
+          return { decorations: mapped }
+        }
+
+        for (let col = 0; col < width - 1; col++) {
+          const pos = getTableCellWidgetDecorationPos(table, tableMap, col)
+          const handler = new ColumnInsertHandler(editor, { col })
+          decorations.push(Decoration.widget(pos, () => handler.build(), { destroy: handler.destroy }))
+        }
+
+        return { decorations: DecorationSet.create(newState.doc, decorations) }
+      }
+    },
+    props: {
+      decorations (state) {
+        return key.getState(state).decorations
+      }
+    }
+  })
+}
+
+interface ColumnInsertHandlerProps {
+  col: number
+}
+
+class ColumnInsertHandler {
+  editor: Editor
+  props: ColumnInsertHandlerProps
+  destroy?: () => void
+
+  constructor (editor: Editor, props: ColumnInsertHandlerProps) {
+    this.editor = editor
+    this.props = props
+  }
+
+  build (): HTMLElement {
+    const editor = this.editor
+    const col = this.props.col
+
+    const handle = document.createElement('div')
+    handle.classList.add('table-col-insert')
+
+    const button = document.createElement('button')
+    button.className = 'table-insert-button'
+    button.innerHTML = addSvg
+    button.addEventListener('mousedown', (event) => {
+      event.stopPropagation()
+      event.preventDefault()
+
+      const table = findTable(editor.state.selection)
+      if (table === undefined) {
+        return
+      }
+      editor.view.dispatch(insertColumn(table, col + 1, editor.state.tr))
+    })
+    handle.appendChild(button)
+
+    const marker = document.createElement('div')
+    marker.className = 'table-insert-marker'
+
+    handle.appendChild(marker)
+
+    const updateMarkerHeight = (): void => {
+      const table = findTable(editor.state.selection)
+      if (table === undefined) {
+        return
+      }
+      const tableHeightPx = getTableHeightPx(table, editor)
+      marker.style.height = tableHeightPx + 'px'
+    }
+
+    updateMarkerHeight()
+    editor.on('update', updateMarkerHeight)
+
+    if (this.destroy !== undefined) {
+      this.destroy()
+    }
+    this.destroy = () => {
+      editor.off('update', updateMarkerHeight)
+    }
+
+    return handle
+  }
 }

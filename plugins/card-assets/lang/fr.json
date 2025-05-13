@@ -1,7 +1,7 @@
 {
   "string": {
     "Card": "Carte",
-    "CardApplication": "Cartes",
+    "CardApplication": "Cartes (bêta)",
     "Cards": "Cartes",
     "Content": "Contenu",
     "CreateCard": "Créer une carte",
@@ -37,6 +37,8 @@
     "CreateSpace": "Créer un espace",
     "NumberTypes": "{count, plural, one {# type} other {# types}}",
     "Labels": "Étiquettes",
-    "Properties": "Propriétés"
+    "Properties": "Propriétés",
+    "NoChildren": "Pas d'enfants",
+    "ConfigDescription": "Extension pour la gestion des connaissances de style base de données."
   }
 }

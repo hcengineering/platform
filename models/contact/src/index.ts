@@ -15,7 +15,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import card, { type Role, type Card } from '@hcengineering/card'
+import { type Role, type Card } from '@hcengineering/card'
 import {
   AvatarType,
   type UserRole,
@@ -36,7 +36,6 @@ import {
 } from '@hcengineering/contact'
 import {
   AccountRole,
-  ClassifierKind,
   DOMAIN_MODEL,
   DateRangeMode,
   IndexKind,
@@ -52,6 +51,7 @@ import {
   type SocialIdType,
   type Timestamp
 } from '@hcengineering/core'
+import { createSystemType } from '@hcengineering/model-card'
 import {
   Collection as CollectionType,
   Hidden,
@@ -278,55 +278,6 @@ export class TPersonSpace extends TSpace implements PersonSpace {
 export class TUserRole extends TDoc implements UserRole {
   user!: Ref<Employee>
   role!: Ref<Role>
-}
-
-function createUserProfileTag (builder: Builder): void {
-  builder.createDoc(
-    card.class.MasterTag,
-    core.space.Model,
-    {
-      extends: card.class.Card,
-      label: contact.string.UserProfile,
-      kind: ClassifierKind.CLASS,
-      icon: contact.icon.Person
-    },
-    contact.class.UserProfile
-  )
-
-  builder.createDoc(core.class.Attribute, core.space.Model, {
-    attributeOf: contact.class.UserProfile,
-    name: 'person',
-    label: contact.string.Person,
-    icon: contact.icon.Person,
-    type: TypeRef(contact.class.Person),
-    readonly: true
-  })
-
-  builder.mixin(contact.class.UserProfile, core.class.Mixin, setting.mixin.Editable, {
-    value: false
-  })
-  builder.mixin(contact.class.UserProfile, core.class.Mixin, setting.mixin.UserMixin, {})
-}
-
-function createUserProfileViewlet (builder: Builder): void {
-  builder.createDoc<Viewlet>(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: contact.class.UserProfile,
-      descriptor: view.viewlet.Table,
-      config: [
-        '',
-        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right' } },
-        { key: 'createdBy', displayProps: { fixed: 'left', key: 'app' } }
-      ],
-      configOptions: {
-        hiddenKeys: ['name'],
-        sortable: true
-      }
-    },
-    contact.viewlet.TableUserProfile
-  )
 }
 
 export function createModel (builder: Builder): void {
@@ -1319,6 +1270,14 @@ export function createModel (builder: Builder): void {
   })
 
   createAttributePresenter(builder, contact.component.SpaceMembersEditor, core.class.Space, 'members', 'array')
-  createUserProfileTag(builder)
-  createUserProfileViewlet(builder)
+  createSystemType(builder, contact.class.UserProfile, contact.icon.Person, contact.string.UserProfile)
+  builder.createDoc(core.class.Attribute, core.space.Model, {
+    attributeOf: contact.class.UserProfile,
+    name: 'person',
+    label: contact.string.Person,
+    icon: contact.icon.Person,
+    type: TypeRef(contact.class.Person),
+    isCustom: true,
+    readonly: true
+  })
 }

@@ -30,6 +30,7 @@
   import card from '../plugin'
   import CardAttributes from './CardAttributes.svelte'
   import view from '@hcengineering/view'
+  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
 
   export let value: Card
   export let readonly: boolean = false
@@ -62,33 +63,35 @@
     <Label {label} />
     <Chevron expanded={!isCollapsed} outline fill={'var(--content-color)'} />
   </div>
-  <div class="btns">
-    <Button
-      icon={IconAdd}
-      kind={'link'}
-      size={'medium'}
-      showTooltip={{ label: setting.string.AddAttribute }}
-      on:click={(ev) => {
-        showPopup(setting.component.CreateAttributePopup, { _class: value._class, isCard: true }, 'top')
-      }}
-    />
-    <Button
-      icon={setting.icon.Setting}
-      kind={'link'}
-      size={'medium'}
-      showTooltip={{ label: setting.string.Setting }}
-      on:click={(ev) => {
-        ev.stopPropagation()
-        const loc = getCurrentResolvedLocation()
-        loc.path[2] = settingId
-        loc.path[3] = 'types'
-        loc.path[4] = value._class
-        loc.path.length = 5
-        loc.fragment = undefined
-        navigate(loc)
-      }}
-    />
-  </div>
+  {#if hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)}
+    <div class="btns">
+      <Button
+        icon={IconAdd}
+        kind={'link'}
+        size={'medium'}
+        showTooltip={{ label: setting.string.AddAttribute }}
+        on:click={(ev) => {
+          showPopup(setting.component.CreateAttributePopup, { _class: value._class, isCard: true }, 'top')
+        }}
+      />
+      <Button
+        icon={setting.icon.Setting}
+        kind={'link'}
+        size={'medium'}
+        showTooltip={{ label: setting.string.Setting }}
+        on:click={(ev) => {
+          ev.stopPropagation()
+          const loc = getCurrentResolvedLocation()
+          loc.path[2] = settingId
+          loc.path[3] = 'types'
+          loc.path[4] = value._class
+          loc.path.length = 5
+          loc.fragment = undefined
+          navigate(loc)
+        }}
+      />
+    </div>
+  {/if}
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
   <CardAttributes object={value} _class={value._class} {readonly} {ignoreKeys} {fourRows} />

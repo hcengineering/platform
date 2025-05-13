@@ -6,159 +6,6 @@ import {
   PullRequestMergeable
 } from '@hcengineering/github'
 
-/**
- * @public
- */
-export type GithubDataType = 'SINGLE_SELECT' | 'TEXT' | 'DATE' | 'NUMBER'
-
-/**
- * @public
- */
-export interface GithubProjectV2 {
-  projectV2: {
-    id: string
-    title: string
-    description: string
-    updatedAt: string
-    fields: {
-      edges: GithubProjectV2Field[]
-    }
-  }
-}
-
-/**
- * @public
- */
-export interface GithubProjectV2FieldOption {
-  name: string
-  color: string
-  description: string
-  id: string
-}
-/**
- * @public
- */
-export interface GithubProjectV2Field {
-  node: {
-    dataType: GithubDataType
-    updatedAt: string
-
-    id: string
-    name: string
-    options?: GithubProjectV2FieldOption[]
-  } & Record<string, any>
-}
-/**
- * @public
- */
-export interface GithubProjectV2ItemFieldValue {
-  id: string
-  // Date
-  date?: string
-  // Number
-  number?: number
-  // Single select
-  color?: string
-  description?: string
-  optionId?: string
-  // Text
-  text?: string
-  field: {
-    id: string
-    name: string
-    dataType: GithubDataType
-  }
-}
-
-export interface GithubProjectV2Item {
-  id: string
-  type: 'ISSUE' | 'PULL_REQUEST' | 'DRAFT_ISSUE' | 'REDACTED'
-  project: {
-    id: string
-    number: number
-  }
-  fieldValues: {
-    nodes: (GithubProjectV2ItemFieldValue | any)[]
-  }
-}
-
-export const projectV2Field = `
-  ... on ProjectV2Field {
-    id
-    name
-    updatedAt 
-    dataType
-  }
-  ... on ProjectV2IterationField {
-    id
-    name
-    dataType
-    updatedAt
-  }
-  ... on ProjectV2SingleSelectField {
-    id
-    name
-    options {
-      name
-      id
-      color
-      description
-    }
-    dataType
-    updatedAt    
-  }
-`
-
-export const projectV2ItemFields = `
-  ... on ProjectV2ItemFieldDateValue {
-    id
-    date
-    field {
-      ... on ProjectV2Field {
-        id
-        name
-        dataType
-      }
-    }
-  }
-  ... on ProjectV2ItemFieldNumberValue {
-    id
-    number
-    field {
-      ... on ProjectV2Field {
-        id
-        name
-        dataType
-      }
-    }
-  }
-  ... on ProjectV2ItemFieldSingleSelectValue {
-    id
-    name
-    color
-    description
-    optionId
-    field {
-      ... on ProjectV2SingleSelectField {
-        id
-        name
-        dataType
-      }
-    }
-  }
-  ... on ProjectV2ItemFieldTextValue {
-    id
-    text
-    field {
-      ... on ProjectV2Field {
-        id
-        name
-        dataType
-      }
-    }
-  }
-`
-
 export const assigneesField = `
   assignees(first: 10) {
     nodes {
@@ -245,22 +92,6 @@ title
 updatedAt
 url
 ${reactionsField}
-projectItems(first: 10, includeArchived: true) {
-  nodes {
-    id
-    type
-    project {
-      id
-      url
-      number
-    }
-    fieldValues(first: 50) {
-      nodes {
-        ${projectV2ItemFields}
-      }
-    }
-  }
-}
 lastEditedAt
 publishedAt
 `
@@ -306,9 +137,6 @@ export interface IssueExternalData {
         login: string
       }
     }[]
-  }
-  projectItems: {
-    nodes: GithubProjectV2Item[]
   }
   lastEditedAt: string
   publishedAt: string

@@ -16,6 +16,7 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { Component, Icon, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import contact from '@hcengineering/contact'
 
   import { createQuery, getClient } from '../../utils'
   import MessageBox from '../MessageBox.svelte'
@@ -31,10 +32,14 @@
 
   let doc: Doc | undefined = undefined
   let broken: boolean = false
+  const withoutDoc = [contact.mention.Here, contact.mention.Everyone]
 
-  $: icon = _class !== undefined && hierarchy.hasClass(_class) ? hierarchy.getClass(_class).icon : null
+  $: icon =
+    _class !== undefined && hierarchy.hasClass(_class) && !withoutDoc.includes(_id as any)
+      ? hierarchy.getClass(_class).icon
+      : null
 
-  $: if (_class != null && _id != null && hierarchy.hasClass(_class)) {
+  $: if (_class != null && _id != null && hierarchy.hasClass(_class) && !withoutDoc.includes(_id as any)) {
     docQuery.query(_class, { _id }, (r) => {
       doc = r.shift()
       broken = doc === undefined

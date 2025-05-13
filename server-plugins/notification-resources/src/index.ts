@@ -47,7 +47,6 @@ import core, {
 } from '@hcengineering/core'
 import notification, {
   ActivityInboxNotification,
-  BaseNotificationType,
   ClassCollaborators,
   Collaborators,
   CommonInboxNotification,
@@ -87,6 +86,7 @@ import {
   isMixinTx,
   isShouldNotifyTx,
   isUserEmployeeInFieldValueTypeMatch,
+  mentionTypeMatch,
   messageToMarkup,
   type NotificationProviderControl,
   replaceAll,
@@ -147,6 +147,7 @@ export async function getCommonNotificationTxes (
     data,
     _class,
     modifiedOn,
+    [],
     true,
     tx
   )
@@ -191,7 +192,7 @@ function fillTemplate (
 export async function getContentByTemplate (
   doc: Doc | undefined,
   sender: string,
-  type: Ref<BaseNotificationType>,
+  type: Ref<NotificationType>,
   control: TriggerControl,
   data: string,
   notificationData?: InboxNotification,
@@ -352,6 +353,7 @@ export async function pushInboxNotifications (
   data: Partial<Data<InboxNotification>>,
   _class: Ref<Class<InboxNotification>>,
   modifiedOn: Timestamp,
+  types: Ref<NotificationType>[],
   shouldUpdateTimestamp = true,
   tx?: TxCUD<Doc>
 ): Promise<TxCreateDoc<InboxNotification> | undefined> {
@@ -381,6 +383,7 @@ export async function pushInboxNotifications (
     archived: false,
     objectId,
     objectClass,
+    types,
     ...data
   }
   const notificationTx = control.txFactory.createTxCreateDoc(_class, receiver.space, notificationData)
@@ -500,6 +503,7 @@ export async function pushActivityInboxNotifications (
   object: Doc,
   docNotifyContexts: DocNotifyContext[],
   activityMessage: ActivityMessage,
+  types: Ref<NotificationType>[],
   shouldUpdateTimestamp: boolean
 ): Promise<TxCreateDoc<InboxNotification> | undefined> {
   const content = await getNotificationContent(originTx, receiver.employee, sender, object, control)
@@ -522,6 +526,7 @@ export async function pushActivityInboxNotifications (
     data,
     notification.class.ActivityInboxNotification,
     activityMessage.modifiedOn,
+    types,
     shouldUpdateTimestamp,
     originTx
   )
@@ -590,8 +595,7 @@ export async function getNotificationTxes (
       control,
       tx,
       object,
-      receiver.employee,
-      receiver.socialIds,
+      receiver,
       params.isOwn,
       params.isSpace,
       settings,
@@ -599,6 +603,7 @@ export async function getNotificationTxes (
     )
 
     if (notifyResult.has(notification.providers.InboxNotificationProvider)) {
+      const types = (notifyResult.get(notification.providers.InboxNotificationProvider) ?? []).map((it) => it._id)
       const notificationTx = await pushActivityInboxNotifications(
         ctx,
         tx,
@@ -609,6 +614,7 @@ export async function getNotificationTxes (
         object,
         docNotifyContexts,
         message,
+        types,
         params.shouldUpdateTimestamp
       )
 
@@ -753,7 +759,7 @@ export async function createCollabDocInfo (
 
   cache.set(space._id, space)
 
-  const filteredCollaborators = control.hierarchy.isDerived(object._class, core.class.SystemSpace)
+  const filteredCollaborators = !space.private
     ? collaborators
     : collaborators.filter(
       (it) =>
@@ -1028,7 +1034,7 @@ async function updateCollaboratorsMixin (
       prevCollabs = mixin !== undefined ? new Set(await getDocCollaborators(ctx, prevDoc, mixin, control)) : new Set()
     }
 
-    const type = await control.modelDb.findOne(notification.class.BaseNotificationType, {
+    const type = await control.modelDb.findOne(notification.class.NotificationType, {
       _id: notification.ids.CollaboratoAddNotification
     })
 
@@ -1091,6 +1097,7 @@ async function updateCollaboratorsMixin (
             prevDoc,
             docNotifyContexts,
             message,
+            [],
             true
           )
         }
@@ -1712,6 +1719,7 @@ export default async () => ({
     PushNotificationsHandler
   },
   function: {
-    IsUserEmployeeInFieldValueTypeMatch: isUserEmployeeInFieldValueTypeMatch
+    IsUserEmployeeInFieldValueTypeMatch: isUserEmployeeInFieldValueTypeMatch,
+    MentionTypeMatch: mentionTypeMatch
   }
 })

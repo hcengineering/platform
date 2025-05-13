@@ -167,7 +167,7 @@ export async function OnPersonCreate (_txes: Tx[], control: TriggerControl): Pro
     const lastOne = (
       await control.findAll(control.ctx, card.class.Card, {}, { sort: { rank: SortingOrder.Descending }, limit: 1 })
     )[0]
-    const userProfileTx = control.txFactory.createTxCreateDoc<UserProfile>(contact.class.UserProfile, ctx.space, {
+    const userProfileTx = control.txFactory.createTxCreateDoc<UserProfile>(contact.class.UserProfile, ctx.objectSpace, {
       person: ctx.objectId,
       title: formatName(ctx.attributes.name),
       rank: makeRank(lastOne?.rank, undefined),
@@ -178,7 +178,7 @@ export async function OnPersonCreate (_txes: Tx[], control: TriggerControl): Pro
 
     result.push(userProfileTx)
     result.push(
-      control.txFactory.createTxUpdateDoc<Person>(ctx.objectClass, ctx.space, ctx.objectId, {
+      control.txFactory.createTxUpdateDoc<Person>(ctx.objectClass, ctx.objectSpace, ctx.objectId, {
         profile: userProfileTx.objectId
       })
     )

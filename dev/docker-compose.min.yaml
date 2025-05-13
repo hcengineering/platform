@@ -53,6 +53,10 @@ services:
       - 9001:9001
     volumes:
       - files:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      retries: 10
     restart: unless-stopped
   elastic:
     image: 'elasticsearch:7.14.2'
@@ -143,7 +147,7 @@ services:
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
       - MAIL_URL=
-      # - INIT_WORKSPACE=staging-dev
+      - INIT_WORKSPACE=staging-dev
     restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator
@@ -255,6 +259,30 @@ services:
       - STATS_URL=http://huly.local:4900
       - REKONI_URL=http://huly.local:4004
       - ACCOUNTS_URL=http://huly.local:3000
+  datalake:
+    image: hardcoreeng/datalake
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      minio:
+        condition: service_healthy
+      cockroach:
+        condition: service_started
+      stats:
+        condition: service_started
+      account:
+        condition: service_started
+    ports:
+      - 4030:4030
+    environment:
+      - PORT=4030
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - STATS_URL=http://huly.local:4900
+      - STREAM_URL=http://huly.local:1080/recording
+      - DB_URL=${DB_CR_URL}
+      - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
+    restart: unless-stopped
 volumes:
   db:
   dbpg:

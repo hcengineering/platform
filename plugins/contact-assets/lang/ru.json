@@ -115,6 +115,10 @@
     "Confirmed": "Подтвержден",
     "UserProfile": "Профиль пользователя",
     "DeactivatedAccount": "Деактивированный аккаунт",
-    "LocalTime": "местного времени"
+    "LocalTime": "местного времени",
+    "Everyone": "Все",
+    "Here": "Здесь",
+    "EveryoneDescription": "Уведомить всех в этом {title}",
+    "HereDescription": "Уведомить всех в этом{title}"
   }
 }
