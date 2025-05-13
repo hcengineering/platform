@@ -25,6 +25,8 @@ import { IMessageManager } from '../types'
 import config from '../../config'
 import { AttachmentHandler } from '../attachments'
 import { decode64 } from '../../base64'
+import { getProducer } from '../../queue'
+import { QueueTopic } from '@hcengineering/server-core'
 
 export class MessageManagerV2 implements IMessageManager {
   private wsInfo: WorkspaceLoginInfo | undefined = undefined
@@ -55,6 +57,7 @@ export class MessageManagerV2 implements IMessageManager {
       this.ctx,
       this.txClient,
       this.keyValueClient,
+      getProducer(QueueTopic.CommunicationEvents),
       this.token,
       this.wsInfo,
       res,

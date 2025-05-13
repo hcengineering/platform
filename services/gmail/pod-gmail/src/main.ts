@@ -25,11 +25,13 @@ import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/ser
 import serverToken, { decodeToken } from '@hcengineering/server-token'
 import { type IncomingHttpHeaders } from 'http'
 import { join } from 'path'
+
 import { decode64 } from './base64'
 import config from './config'
 import { GmailController } from './gmailController'
 import { createServer, listen } from './server'
-import { type Endpoint, type State } from './types'
+import { IntegrationVersion, type Endpoint, type State } from './types'
+import { initQueue, closeQueue } from './queue'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
   try {
@@ -60,6 +62,10 @@ export const main = async (): Promise<void> => {
 
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
   const storageAdapter = buildStorageFromConfig(storageConfig)
+
+  if (config.Version === IntegrationVersion.V2) {
+    initQueue(ctx, config.QueueRegion)
+  }
 
   const gmailController = GmailController.create(ctx, storageAdapter)
   await gmailController.startAll()
@@ -162,6 +168,7 @@ export const main = async (): Promise<void> => {
   const asyncClose = async (): Promise<void> => {
     await gmailController.close()
     await storageAdapter.close()
+    await closeQueue()
   }
 
   const shutdown = (): void => {

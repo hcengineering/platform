@@ -21,10 +21,11 @@ import { MeasureContext } from '@hcengineering/core'
 import { type Attachment, type EmailContact, type EmailMessage, createMessages } from '@hcengineering/mail-common'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
+import { QueueTopic } from '@hcengineering/server-core'
 
 import { mailServiceToken, baseConfig, kvsClient } from './client'
-
 import config from './config'
+import { getProducer } from './queue'
 
 export interface MtaMessage {
   envelope: {
@@ -118,7 +119,17 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
     const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
     const txClient = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
 
-    await createMessages(baseConfig, ctx, txClient, kvsClient, mailServiceToken, wsInfo, convertedMessage, attachments)
+    await createMessages(
+      baseConfig,
+      ctx,
+      txClient,
+      kvsClient,
+      getProducer(QueueTopic.CommunicationEvents),
+      mailServiceToken,
+      wsInfo,
+      convertedMessage,
+      attachments
+    )
   } catch (error) {
     ctx.error('mta-hook', { error })
   } finally {
