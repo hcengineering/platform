@@ -790,6 +790,9 @@ importers:
       '@rush-temp/pod-export':
         specifier: file:./projects/pod-export.tgz
         version: file:projects/pod-export.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@rush-temp/pod-external':
+        specifier: file:./projects/pod-external.tgz
+        version: file:projects/pod-external.tgz
       '@rush-temp/pod-front':
         specifier: file:./projects/pod-front.tgz
         version: file:projects/pod-front.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
@@ -4872,6 +4875,10 @@ packages:
 
   '@rush-temp/pod-export@file:projects/pod-export.tgz':
     resolution: {integrity: sha512-ti4odQwfm459k1EdChmIGqlOHEIg0fzEdkGQyuEE5QjQ+ym4hlTzt7U4rjpIKFEjQMrYsoijk9f6wiPylNFhQg==, tarball: file:projects/pod-export.tgz}
+    version: 0.0.0
+
+  '@rush-temp/pod-external@file:projects/pod-external.tgz':
+    resolution: {integrity: sha512-EzhncgJofJZu1oGgew/WOZ/BeE/TnCoQOB04mWDU43jPN4kNgvHR3AUQUmojiXLH74QtXq8+vYWjtthjOo3HgQ==, tarball: file:projects/pod-external.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-front@file:projects/pod-front.tgz':
@@ -22258,6 +22265,8 @@ snapshots:
       - node-notifier
       - supports-color
       - utf-8-validate
+
+  '@rush-temp/pod-external@file:projects/pod-external.tgz': {}
 
   '@rush-temp/pod-front@file:projects/pod-front.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:

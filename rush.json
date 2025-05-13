@@ -933,6 +933,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-external",
+      "projectFolder": "pods/external",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/front",
       "projectFolder": "server/front",
       "shouldPublish": false
