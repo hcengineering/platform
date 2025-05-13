@@ -119,7 +119,9 @@
     "HideArchivedVacancies": "Ocultar vacantes archivadas",
     "HideApplicantsFromArchivedVacancies": "Ocultar de vacantes archivadas",
     "CreateNewSkills": "Crear nuevas habilidades si no se encuentran las existentes",
-    "SwapFirstAndLastNames": "Intercambie nombres y apellidos"
+    "SwapFirstAndLastNames": "Intercambie nombres y apellidos",
+    "ForbidCreateVacancyPermission": "Prohibir crear vacante",
+    "ForbidCreateVacancyPermissionDescription": "Prohíbe a los usuarios crear nuevas vacantes"
   },
   "status": {
     "ApplicationExists": "La solicitud ya existe",

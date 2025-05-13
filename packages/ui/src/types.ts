@@ -519,10 +519,10 @@ export interface HeaderButtonAction extends SelectPopupValueType {
   keyBinding?: string[] | undefined
   draft?: boolean
   accountRole?: AccountRole
-  permission?: {
+  permissions?: Array<{
     id: Ref<Permission>
     space: Ref<TypedSpace>
-  }
+  }>
 }
 
 /**

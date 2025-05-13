@@ -87,11 +87,7 @@
     {
       id: tracker.string.CreateProject,
       label: tracker.string.CreateProject,
-      accountRole: AccountRole.Maintainer,
-      permission: {
-        id: core.permission.CreateProject,
-        space: core.space.Space
-      },
+      accountRole: AccountRole.User,
       callback: newProject
     },
     {

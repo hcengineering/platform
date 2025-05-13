@@ -29,7 +29,8 @@ import {
   Space,
   Status,
   Timestamp,
-  Type
+  Type,
+  type Permission
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
@@ -519,7 +520,9 @@ const pluginState = plugin(trackerId, {
     RelatedIssues: '' as IntlString,
     Issue: '' as IntlString,
     NewProject: '' as IntlString,
-    UnsetParentIssue: '' as IntlString
+    UnsetParentIssue: '' as IntlString,
+    ForbidCreateProjectPermission: '' as IntlString,
+    ForbidCreateProjectPermissionDescription: '' as IntlString
   },
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,
@@ -529,6 +532,9 @@ const pluginState = plugin(trackerId, {
   taskTypes: {
     Issue: '' as Ref<TaskType>,
     SubIssue: '' as Ref<TaskType>
+  },
+  permission: {
+    ForbidCreateProject: '' as Ref<Permission>
   }
 })
 export default pluginState

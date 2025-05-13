@@ -24,7 +24,7 @@ const roles = [
   {
     _id: core.role.Admin,
     name: 'Admin',
-    permissions: [core.permission.UpdateObject, core.permission.DeleteObject, core.permission.CreateProject]
+    permissions: [core.permission.UpdateObject, core.permission.DeleteObject]
   }
 ]
 
@@ -46,7 +46,7 @@ export function defineSpaceType (builder: Builder): void {
       description: core.string.SpacesDescription,
       icon: '' as Asset, // FIXME
       baseClass: core.class.Space,
-      availablePermissions: [core.permission.UpdateObject, core.permission.DeleteObject, core.permission.CreateProject],
+      availablePermissions: [core.permission.UpdateObject, core.permission.DeleteObject],
       system: true
     },
     core.descriptor.SpacesType

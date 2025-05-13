@@ -246,14 +246,12 @@ export default plugin(coreId, {
     ForbidDeleteObject: '' as IntlString,
     UpdateSpace: '' as IntlString,
     ArchiveSpace: '' as IntlString,
-    CreateProject: '' as IntlString,
     CreateObjectDescription: '' as IntlString,
     UpdateObjectDescription: '' as IntlString,
     DeleteObjectDescription: '' as IntlString,
     ForbidDeleteObjectDescription: '' as IntlString,
     UpdateSpaceDescription: '' as IntlString,
     ArchiveSpaceDescription: '' as IntlString,
-    CreateProjectDescription: '' as IntlString,
     AutoJoin: '' as IntlString,
     AutoJoinDescr: '' as IntlString
   },
@@ -269,8 +267,7 @@ export default plugin(coreId, {
     DeleteObject: '' as Ref<Permission>,
     ForbidDeleteObject: '' as Ref<Permission>,
     UpdateSpace: '' as Ref<Permission>,
-    ArchiveSpace: '' as Ref<Permission>,
-    CreateProject: '' as Ref<Permission>
+    ArchiveSpace: '' as Ref<Permission>
   },
   role: {
     Admin: '' as Ref<Role>

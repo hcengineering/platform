@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Ref, getCurrentAccount } from '@hcengineering/core'
+  import core, { AccountRole, Ref, getCurrentAccount } from '@hcengineering/core'
   import { type Drive } from '@hcengineering/drive'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { HeaderButton } from '@hcengineering/ui'
@@ -80,7 +80,7 @@
       id: drive.string.CreateDrive,
       label: drive.string.CreateDrive,
       icon: drive.icon.Drive,
-      accountRole: AccountRole.Maintainer,
+      accountRole: AccountRole.User,
       callback: handleCreateDrive
     },
     {

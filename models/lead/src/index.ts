@@ -32,6 +32,7 @@ import { type ViewOptionsModel } from '@hcengineering/view'
 
 import lead from './plugin'
 import { defineSpaceType } from './spaceType'
+import { definePermissions } from './permissions'
 import { TCustomer, TFunnel, TLead } from './types'
 
 export { leadId } from '@hcengineering/lead'
@@ -659,4 +660,5 @@ export function createModel (builder: Builder): void {
   })
 
   defineSpaceType(builder)
+  definePermissions(builder)
 }

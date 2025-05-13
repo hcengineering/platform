@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Mixin, Ref, SpaceType, SpaceTypeDescriptor } from '@hcengineering/core'
+import type { Class, Doc, Mixin, Ref, SpaceType, SpaceTypeDescriptor, Permission } from '@hcengineering/core'
 import { NotificationGroup, NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -70,7 +70,9 @@ export const documentPlugin = plugin(documentId, {
   string: {
     ConfigLabel: '' as IntlString,
     CreateDocument: '' as IntlString,
-    Documents: '' as IntlString
+    Documents: '' as IntlString,
+    ForbidCreateTeamspacePermission: '' as IntlString,
+    ForbidCreateTeamspacePermissionDescription: '' as IntlString
   },
   ids: {
     NoParent: '' as Ref<Document>,
@@ -82,6 +84,9 @@ export const documentPlugin = plugin(documentId, {
   },
   spaceType: {
     DefaultTeamspaceType: '' as Ref<SpaceType>
+  },
+  permission: {
+    ForbidCreateTeamspace: '' as Ref<Permission>
   }
 })
 

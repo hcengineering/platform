@@ -50,6 +50,8 @@
     "ConfigDescription": "Estensione per la modifica collaborativa dei documenti",
     "Icon": "Icona",
     "Color": "Colore",
-    "RoleLabel": "Ruolo: {role}"
+    "RoleLabel": "Ruolo: {role}",
+    "ForbidCreateTeamspacePermission": "Vieta creazione teamspace",
+    "ForbidCreateTeamspacePermissionDescription": "Vieta agli utenti di creare nuovi teamspaces"
   }
 }

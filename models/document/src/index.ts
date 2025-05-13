@@ -53,6 +53,7 @@ import { type Asset, getEmbeddedLabel } from '@hcengineering/platform'
 import tags from '@hcengineering/tags'
 import time, { type ToDo, type Todoable } from '@hcengineering/time'
 import document from './plugin'
+import { definePermissions } from './permissions'
 
 export { documentId } from '@hcengineering/document'
 
@@ -560,6 +561,7 @@ export function createModel (builder: Builder): void {
   defineDocument(builder)
 
   defineApplication(builder)
+  definePermissions(builder)
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_DOCUMENT,

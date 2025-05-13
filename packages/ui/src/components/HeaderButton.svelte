@@ -49,11 +49,14 @@
   }
 
   async function isActionAllowed (action: HeaderButtonAction): Promise<boolean> {
-    if (action.accountRole === undefined && action.permission === undefined) return true
+    if (action.accountRole === undefined && action.permissions === undefined) return true
     if (action.accountRole !== undefined && hasAccountRole(getCurrentAccount(), action.accountRole)) return true
-    return (
-      action.permission !== undefined && (await checkPermission(client, action.permission.id, action.permission.space))
-    )
+    if (action.permissions !== undefined) {
+      for (const permission of action.permissions) {
+        if (await checkPermission(client, permission.id, permission.space)) return true
+      }
+    }
+    return false
   }
 </script>
 
