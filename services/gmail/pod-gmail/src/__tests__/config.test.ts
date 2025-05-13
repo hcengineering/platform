@@ -49,7 +49,7 @@ describe('Config Validation', () => {
   it('should not require QUEUE_CONFIG when VERSION is v1', () => {
     // Set version to v1
     process.env.VERSION = IntegrationVersion.V1
-    process.env.QUEUE_CONFIG = ''
+    process.env.QUEUE_CONFIG = undefined
 
     // This should not throw
     let config
@@ -65,7 +65,7 @@ describe('Config Validation', () => {
   it('should allow empty QUEUE_CONFIG when VERSION is v1', () => {
     // Set version to v1
     process.env.VERSION = IntegrationVersion.V1
-    delete process.env.QUEUE_CONFIG
+    process.env.QUEUE_CONFIG = ''
 
     // This should not throw
     let config

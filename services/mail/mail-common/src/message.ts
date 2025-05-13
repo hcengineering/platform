@@ -252,7 +252,7 @@ async function saveMessageToSpaces (
       }
 
       const messageId = generateMessageId()
-      const created = new Date(createdDate * 1000)
+      const created = new Date(createdDate)
       await producer.send(workspace, [
         {
           type: MessageRequestEventType.CreateMessage,

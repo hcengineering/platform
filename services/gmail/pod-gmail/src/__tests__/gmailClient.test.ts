@@ -124,6 +124,12 @@ jest.mock('../config', () => ({
   WATCH_TOPIC_NAME: 'test-topic'
 }))
 
+jest.mock('../queue', () => ({
+  getProducer: jest.fn()
+}))
+jest.mock('@hcengineering/server-core', () => {
+})
+
 describe('GmailClient', () => {
   const mockContext: MeasureContext = {
     info: jest.fn(),
