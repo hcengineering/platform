@@ -53,9 +53,9 @@
         {:else}
           {@const alt = emoji}
           {#await getBlobRef(customEmoji.image) then blobSrc}
-          <span class="emoji">
-            <img src={blobSrc.src} {alt} />
-          </span>
+            <span class="emoji">
+              <img src={blobSrc.src} {alt} />
+            </span>
           {/await}
         {/if}
       {/await}

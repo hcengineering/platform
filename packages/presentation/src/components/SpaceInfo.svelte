@@ -21,11 +21,11 @@
     Icon,
     IconFolder,
     IconSize,
-    IconWithEmoji,
     Label,
     getPlatformColorDef,
     themeStore
   } from '@hcengineering/ui'
+  import IconWithEmoji from './IconWithEmoji.svelte'
   import view, { IconProps } from '@hcengineering/view'
 
   import presentation from '..'
@@ -46,7 +46,10 @@
       iconProps={value.icon === iconWithEmoji && iconWithEmoji
         ? { icon: value.color }
         : {
-            fill: value.color !== undefined ? getPlatformColorDef(value.color, $themeStore.dark).icon : 'currentColor'
+            fill:
+              value.color !== undefined && typeof value.color !== 'string'
+                ? getPlatformColorDef(value.color, $themeStore.dark).icon
+                : 'currentColor'
           }}
     />
   </div>

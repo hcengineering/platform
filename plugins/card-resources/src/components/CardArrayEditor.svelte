@@ -17,14 +17,7 @@
   import { AnyAttribute, ArrOf, Ref, RefTo, Type } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    Button,
-    ButtonKind,
-    ButtonSize,
-    eventToHTMLElement,
-    Label,
-    showPopup
-  } from '@hcengineering/ui'
+  import { Button, ButtonKind, ButtonSize, eventToHTMLElement, Label, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'

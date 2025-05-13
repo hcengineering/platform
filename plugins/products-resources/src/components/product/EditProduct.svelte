@@ -23,15 +23,7 @@
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
   import { ActionContext, MessageViewer, IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    Button,
-    EditBox,
-    IconMixin,
-    IconMoreH,
-    getPlatformColorDef,
-    showPopup,
-    themeStore
-  } from '@hcengineering/ui'
+  import { Button, EditBox, IconMixin, IconMoreH, getPlatformColorDef, showPopup, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { DocAttributeBar, IconPicker, getDocMixins, showMenu } from '@hcengineering/view-resources'
   import type { Product } from '@hcengineering/products'
@@ -152,7 +144,9 @@
             ? { icon: object.color }
             : {
                 fill:
-                  object.color !== undefined && typeof object.color !== 'string' ? getPlatformColorDef(object.color, $themeStore.dark).icon : 'currentColor'
+                  object.color !== undefined && typeof object.color !== 'string'
+                    ? getPlatformColorDef(object.color, $themeStore.dark).icon
+                    : 'currentColor'
               }}
           on:click={chooseIcon}
         />

@@ -1,12 +1,6 @@
 <script lang="ts">
   import core from '@hcengineering/core'
-  import {
-    Button,
-    EditBox,
-    Label,
-    Modal,
-    showPopup
-  } from '@hcengineering/ui'
+  import { Button, EditBox, Label, Modal, showPopup } from '@hcengineering/ui'
 
   import { getEmojiByShortCode } from '../../utils'
   import emojiPlugin, { shortcodeRegex } from '@hcengineering/emoji'
@@ -99,7 +93,6 @@
       )
     }
   }
-
 </script>
 
 <input
@@ -118,7 +111,10 @@
   type={'type-popup'}
   okLabel={emojiPlugin.string.Create}
   okAction={save}
-  canSave={shortcode.trim().length > 0 && shortcodeError === undefined && imageError === undefined && file !== undefined}
+  canSave={shortcode.trim().length > 0 &&
+    shortcodeError === undefined &&
+    imageError === undefined &&
+    file !== undefined}
   onCancel={showConfirmationDialog}
 >
   <div class="flex-col">
@@ -129,7 +125,14 @@
           <span><Label label={emojiPlugin.string.ShortcodeDescription} /></span>
         </div>
         <div class="padding">
-          <EditBox id="teamspace-title" bind:value={shortcode} placeholder={emojiPlugin.string.Shortcode} kind={'large-style'} autoFocus on:input={onShortcodeChange}/>
+          <EditBox
+            id="teamspace-title"
+            bind:value={shortcode}
+            placeholder={emojiPlugin.string.Shortcode}
+            kind={'large-style'}
+            autoFocus
+            on:input={onShortcodeChange}
+          />
           {#if shortcodeError !== undefined}
             <div class="absolute overflow-label validation-error">
               <Label label={shortcodeError} />
@@ -145,7 +148,8 @@
         <div class="padding">
           <Button
             label={emojiPlugin.string.UploadImage}
-            kind={'primary'} size={'medium'}
+            kind={'primary'}
+            size={'medium'}
             on:click={() => {
               inputFile.click()
             }}
@@ -169,7 +173,7 @@
           </div>
           <div class="padding">
             <Label label={emojiPlugin.string.PreviewTextBegin} />
-            <span class="emoji"><img src={URL.createObjectURL(file)} alt='' /></span>
+            <span class="emoji"><img src={URL.createObjectURL(file)} alt="" /></span>
             <Label label={emojiPlugin.string.PreviewTextEnd} />
           </div>
         </div>

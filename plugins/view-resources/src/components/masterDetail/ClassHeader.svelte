@@ -15,8 +15,8 @@
 <script lang="ts">
   import card, { MasterTag } from '@hcengineering/card'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { Icon, IconWithEmoji, Label } from '@hcengineering/ui'
+  import { IconWithEmoji, getClient } from '@hcengineering/presentation'
+  import { Icon, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
   export let _class: Ref<Class<Doc>>

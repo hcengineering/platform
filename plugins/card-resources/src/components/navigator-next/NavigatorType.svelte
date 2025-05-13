@@ -15,12 +15,12 @@
 
 <script lang="ts">
   import view from '@hcengineering/view'
-  import { IconWithEmoji, IconAdd } from '@hcengineering/ui'
+  import { IconAdd } from '@hcengineering/ui'
   import { Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
   import { CardSpace, MasterTag } from '@hcengineering/card'
   import { Section, Action } from '@hcengineering/ui-next'
-  import { getClient } from '@hcengineering/presentation'
+  import { IconWithEmoji, getClient } from '@hcengineering/presentation'
 
   import type { NavigatorConfig } from '../../types'
   import cardPlugin from '../../plugin'

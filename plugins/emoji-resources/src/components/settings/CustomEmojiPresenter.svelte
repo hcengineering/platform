@@ -6,9 +6,11 @@
   export let value: Ref<Blob> | undefined
 </script>
 
-{#await getBlobRef(value) then image}
-  <span class="emoji emojiOnly"><img src={image.src} alt='test' /></span>
-{/await}
+{#if value !== undefined}
+  {#await getBlobRef(value) then image}
+    <span class="emoji emojiOnly"><img src={image.src} alt="test" /></span>
+  {/await}
+{/if}
 
 <style lang="scss">
   .emojiOnly {

@@ -331,7 +331,10 @@
               ? { icon: doc.color, size: 'large' }
               : {
                   size: 'large',
-                  fill: doc.color !== undefined && typeof doc.color !== 'string' ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
+                  fill:
+                    doc.color !== undefined && typeof doc.color !== 'string'
+                      ? getPlatformColorDef(doc.color, $themeStore.dark).icon
+                      : 'currentColor'
                 }}
             disabled={readonly}
             showTooltip={{ label: document.string.Icon, direction: 'bottom' }}

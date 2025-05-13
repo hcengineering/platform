@@ -29,11 +29,11 @@
 </script>
 
 <div class="emoji-{size} flex-row-center emoji">
-  {#if (typeof icon !== 'string')}
+  {#if typeof icon !== 'string'}
     {value}
   {:else}
     {#await getBlobRef(icon) then iconBlob}
-      <img src={iconBlob.src} srcset={iconBlob.srcset} alt="icon">
+      <img src={iconBlob.src} srcset={iconBlob.srcset} alt="icon" />
     {/await}
   {/if}
 </div>

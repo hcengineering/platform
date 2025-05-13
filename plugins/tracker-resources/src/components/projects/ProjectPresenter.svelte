@@ -15,13 +15,7 @@
 <script lang="ts">
   import presentation, { IconWithEmoji, isAdminUser } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/tracker'
-  import {
-    Icon,
-    Label,
-    getPlatformColorDef,
-    getPlatformColorForTextDef,
-    themeStore
-  } from '@hcengineering/ui'
+  import { Icon, Label, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { NavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'

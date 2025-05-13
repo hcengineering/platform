@@ -17,12 +17,7 @@
   import { getResource } from '@hcengineering/platform'
   import { TestProject } from '@hcengineering/test-management'
   import { IconWithEmoji } from '@hcengineering/presentation'
-  import {
-    getPlatformColorDef,
-    getPlatformColorForTextDef,
-    themeStore,
-    type Action
-  } from '@hcengineering/ui'
+  import { getPlatformColorDef, getPlatformColorForTextDef, themeStore, type Action } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { NavLink, TreeNode } from '@hcengineering/view-resources'
   import { SpacesNavModel, SpecialNavModel } from '@hcengineering/workbench'

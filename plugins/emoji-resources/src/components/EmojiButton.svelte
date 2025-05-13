@@ -28,7 +28,13 @@
 
 {#if emoji}
   <button
-    use:tooltip={showTooltip ?? { label: getEmbeddedLabel(isCustomEmoji(displayedEmoji) ? `:${displayedEmoji.shortcode}:` : capitalizeFirstLetter(displayedEmoji?.label ?? '')) }}
+    use:tooltip={showTooltip ?? {
+      label: getEmbeddedLabel(
+        isCustomEmoji(displayedEmoji)
+          ? `:${displayedEmoji.shortcode}:`
+          : capitalizeFirstLetter(displayedEmoji?.label ?? '')
+      )
+    }}
     class="hulyPopupEmoji-button"
     class:preview
     class:selected

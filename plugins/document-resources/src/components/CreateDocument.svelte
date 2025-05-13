@@ -133,7 +133,9 @@
           ? { icon: object.color, size: 'medium' }
           : {
               fill:
-                object.color !== undefined && typeof object.color !== 'string' ? getPlatformColorDef(object.color, $themeStore.dark).icon : 'currentColor'
+                object.color !== undefined && typeof object.color !== 'string'
+                  ? getPlatformColorDef(object.color, $themeStore.dark).icon
+                  : 'currentColor'
             }}
         on:click={chooseIcon}
       />

@@ -79,14 +79,14 @@
       {#await getResource(emojiPlugin.functions.GetCustomEmoji) then getCustomEmojiFunction}
         {@const customEmoji = getCustomEmojiFunction(emoji)}
         <span class="emoji">
-        {#if customEmoji === undefined}
-          {emoji}
-        {:else}
-          {@const alt = emoji}
-          {#await getBlobRef(customEmoji.image) then blobSrc}
-            <img src={blobSrc.src} {alt} />
-          {/await}
-        {/if}
+          {#if customEmoji === undefined}
+            {emoji}
+          {:else}
+            {@const alt = emoji}
+            {#await getBlobRef(customEmoji.image) then blobSrc}
+              <img src={blobSrc.src} {alt} />
+            {/await}
+          {/if}
         </span>
       {/await}
       <span class="counter">{persons.length}</span>

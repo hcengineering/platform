@@ -17,12 +17,7 @@
   import { getResource } from '@hcengineering/platform'
   import { Project } from '@hcengineering/tracker'
   import { IconWithEmoji } from '@hcengineering/presentation'
-  import {
-    getPlatformColorDef,
-    getPlatformColorForTextDef,
-    themeStore,
-    type Action
-  } from '@hcengineering/ui'
+  import { getPlatformColorDef, getPlatformColorForTextDef, themeStore, type Action } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { NavLink, TreeNode } from '@hcengineering/view-resources'
   import { SpacesNavModel, SpecialNavModel } from '@hcengineering/workbench'
@@ -71,7 +66,7 @@
       ? { icon: space.color }
       : {
           fill:
-            space.color !== undefined
+            space.color !== undefined && typeof space.color !== 'string'
               ? getPlatformColorDef(space.color, $themeStore.dark).icon
               : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
         }}

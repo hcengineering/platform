@@ -33,6 +33,9 @@
   iconProps={value?.icon === iconWithEmoji && iconWithEmoji
     ? { icon: value?.color }
     : {
-        fill: value?.color !== undefined && typeof value?.color !== 'string' ? getPlatformColorDef(value?.color, $themeStore.dark).icon : 'currentColor'
+        fill:
+          value?.color !== undefined && typeof value?.color !== 'string'
+            ? getPlatformColorDef(value?.color, $themeStore.dark).icon
+            : 'currentColor'
       }}
 />

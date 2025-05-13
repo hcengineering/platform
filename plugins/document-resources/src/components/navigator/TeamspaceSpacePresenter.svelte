@@ -312,7 +312,10 @@
           iconProps={item.icon === view.ids.IconWithEmoji
             ? { icon: visibleItem.color }
             : {
-                fill: item.color !== undefined && typeof item.color !== 'string' ? getPlatformColorDef(item.color, $themeStore.dark).icon : 'currentColor'
+                fill:
+                  item.color !== undefined && typeof item.color !== 'string'
+                    ? getPlatformColorDef(item.color, $themeStore.dark).icon
+                    : 'currentColor'
               }}
           title={item.title}
           selected

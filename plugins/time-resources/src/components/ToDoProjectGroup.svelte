@@ -18,12 +18,7 @@
   import type { Project } from '@hcengineering/tracker'
   import type { ToDo } from '@hcengineering/time'
   import type { ToDosMode } from '..'
-  import {
-    AccordionItem,
-    getPlatformColorDef,
-    getPlatformColorForTextDef,
-    themeStore
-  } from '@hcengineering/ui'
+  import { AccordionItem, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
   import { IconWithEmoji, getClient } from '@hcengineering/presentation'
   import { makeRank } from '@hcengineering/task'
   import tracker from '@hcengineering/tracker'

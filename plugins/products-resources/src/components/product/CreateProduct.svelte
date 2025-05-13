@@ -261,7 +261,10 @@
       iconProps={object.icon === view.ids.IconWithEmoji
         ? { icon: object.color }
         : {
-            fill: object.color !== undefined && typeof object.color !== 'string' ? getPlatformColorDef(object.color, $themeStore.dark).icon : 'currentColor'
+            fill:
+              object.color !== undefined && typeof object.color !== 'string'
+                ? getPlatformColorDef(object.color, $themeStore.dark).icon
+                : 'currentColor'
           }}
       on:click={chooseIcon}
     />

@@ -107,7 +107,10 @@
         iconProps={doc.icon === view.ids.IconWithEmoji
           ? { icon: doc.color }
           : {
-              fill: doc.color !== undefined && typeof doc.color !== 'string' ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
+              fill:
+                doc.color !== undefined && typeof doc.color !== 'string'
+                  ? getPlatformColorDef(doc.color, $themeStore.dark).icon
+                  : 'currentColor'
             }}
         title={doc.title}
         selected={selected === doc._id && draggedItem === undefined}
