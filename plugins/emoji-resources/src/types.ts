@@ -40,6 +40,7 @@ export const emojiCategories: EmojiCategory[] = [
       '1F3CE'
     ]
   },
+  { id: 'custom', label: emojiPlugin.string.CustomEmojis, icon: emojiPlugin.icon.Custom, categories: 'custom' },
   {
     id: 'smileys-people',
     label: emojiPlugin.string.SmileysAndPeople,
@@ -72,8 +73,7 @@ export const emojiCategories: EmojiCategory[] = [
   },
   { id: 'objects', label: emojiPlugin.string.Objects, icon: emojiPlugin.icon.Objects, categories: 'objects' },
   { id: 'symbols', label: emojiPlugin.string.Symbols, icon: emojiPlugin.icon.Symbols, categories: 'symbols' },
-  { id: 'flags', label: emojiPlugin.string.Flags, icon: emojiPlugin.icon.Flags, categories: 'flags' },
-  { id: 'custom', label: emojiPlugin.string.CustomEmojis, icon: emojiPlugin.icon.Custom, categories: 'custom' }
+  { id: 'flags', label: emojiPlugin.string.Flags, icon: emojiPlugin.icon.Flags, categories: 'flags' }
 ]
 
 export const skinTones: Map<number, IntlString> = new Map<number, IntlString>(

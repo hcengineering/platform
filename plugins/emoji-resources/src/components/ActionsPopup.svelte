@@ -7,7 +7,7 @@
   import emojiPlugin, { ExtendedEmoji, Emoji } from '@hcengineering/emoji'
   import { getEmojiByHexcode, getEmojiSkins } from '../utils'
   import EmojiButton from './EmojiButton.svelte'
-  import { getSkinTone, emojiStore } from '../store'
+  import { getSkinTone, unicodeEmojiStore } from '../store'
   import { Label, IconDelete, closeTooltip, ButtonBase } from '@hcengineering/ui'
   import SkinToneTooltip from './SkinToneTooltip.svelte'
 
@@ -26,7 +26,7 @@
     dispatch('close', 'remove')
   }
   const getEmojiParts = (): ExtendedEmoji[] => {
-    const def = $emojiStore[168]
+    const def = $unicodeEmojiStore[168]
     const temp = skins?.find((skin) => Array.isArray(skin.tone) && skin.tone.length > 1)?.hexcode.split('-200D-')
     if (temp === undefined || temp.length < 2) return [def, def]
     const firstEmoji = getEmojiByHexcode(temp[0].slice(0, -6)) ?? def

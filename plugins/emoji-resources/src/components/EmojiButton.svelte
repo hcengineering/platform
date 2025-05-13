@@ -28,7 +28,7 @@
 
 {#if emoji}
   <button
-    use:tooltip={showTooltip ?? { label: getEmbeddedLabel(capitalizeFirstLetter(displayedEmoji?.label ?? '')) }}
+    use:tooltip={showTooltip ?? { label: getEmbeddedLabel(isCustomEmoji(displayedEmoji) ? `:${displayedEmoji.shortcode}:` : capitalizeFirstLetter(displayedEmoji?.label ?? '')) }}
     class="hulyPopupEmoji-button"
     class:preview
     class:selected
@@ -63,19 +63,19 @@
     border: 1px solid transparent;
 
     &:not(.preview) {
-      margin: 0.125rem;
+      margin: 0.215rem;
       padding: 0.25rem;
-      width: 2.75rem;
-      height: 2.75rem;
-      font-size: 2rem;
+      width: 1.75rem;
+      height: 1.75rem;
+      font-size: 1.5rem;
       border-radius: 0.75rem;
     }
     &.preview {
       margin: 0;
       padding: 0;
-      width: 2.25rem;
-      height: 2.25rem;
-      font-size: 1.75rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      font-size: 1.25rem;
       border-radius: 0.375rem;
     }
     span {

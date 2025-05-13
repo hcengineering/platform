@@ -57,9 +57,9 @@
     flex-wrap: nowrap;
     min-width: 0;
     min-height: 0;
+    padding-bottom: 0.5rem;
 
     &.lazy {
-      min-height: 28.5rem;
     }
 
     &__header {
@@ -69,7 +69,7 @@
       padding: 0.25rem 0.375rem;
       top: 0;
       height: 1.5rem;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 600;
       text-transform: uppercase;
       text-shadow: 0 0 0.25rem var(--theme-popup-color);
