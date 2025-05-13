@@ -132,7 +132,6 @@ export class SettingsPage extends CommonPage {
 
   async changeIcon (): Promise<void> {
     await this.selectIconButton().click()
-    await this.emojiSectionButton().click()
     await this.emojiIconButton('👀').click()
   }
 }
