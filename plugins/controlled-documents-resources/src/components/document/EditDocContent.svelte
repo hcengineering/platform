@@ -13,48 +13,47 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onDestroy, tick } from 'svelte'
-  import { merge } from 'effector'
-  import { type Ref, type Blob, generateId } from '@hcengineering/core'
-  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
-  import view from '@hcengineering/view'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import documents, { DocumentState } from '@hcengineering/controlled-documents'
+  import { type Blob, type Ref, generateId } from '@hcengineering/core'
+  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import { Editor, Heading } from '@hcengineering/text-editor'
   import {
     CollaboratorEditor,
-    TableOfContents,
-    TableOfContentsContent,
     FocusExtension,
     HeadingsExtension,
     IsEmptyContentExtension,
     NodeHighlightExtension,
     NodeHighlightType,
-    highlightUpdateCommand,
-    getNodeElement
+    TableOfContents,
+    TableOfContentsContent,
+    getNodeElement,
+    highlightUpdateCommand
   } from '@hcengineering/text-editor-resources'
-  import { navigate, EditBox, Scroller, Label } from '@hcengineering/ui'
-  import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { EditBox, Label, Scroller } from '@hcengineering/ui'
+  import { getCollaborationUser, openDoc } from '@hcengineering/view-resources'
+  import { merge } from 'effector'
+  import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import plugin from '../../plugin'
 
   import {
     $areDocumentCommentPopupsOpened as areDocumentCommentPopupsOpened,
-    $controlledDocument as controlledDocument,
-    $isEditable as isEditable,
-    $documentCommentHighlightedLocation as documentCommentHighlightedLocation,
     $areDocumentCommentPopupsOpened as arePopupsOpened,
     $canAddDocumentComments as canAddDocumentComments,
     $canViewDocumentComments as canViewDocumentComments,
+    $controlledDocument as controlledDocument,
+    $documentCommentHighlightedLocation as documentCommentHighlightedLocation,
     $documentComments as documentComments,
     documentCommentsDisplayRequested,
     documentCommentsHighlightUpdated,
     documentCommentsLocationNavigateRequested,
-    $documentReleasedVersions as documentReleasedVersions
+    $documentReleasedVersions as documentReleasedVersions,
+    $isEditable as isEditable
   } from '../../stores/editors/document'
-  import DocumentTitle from './DocumentTitle.svelte'
-  import DocumentPrintTitlePage from '../print/DocumentPrintTitlePage.svelte'
   import { syncDocumentMetaTitle } from '../../utils'
+  import DocumentPrintTitlePage from '../print/DocumentPrintTitlePage.svelte'
+  import DocumentTitle from './DocumentTitle.svelte'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -295,8 +294,7 @@
           on:open-document={async (event) => {
             const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
             if (doc != null) {
-              const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
-              navigate(location)
+              await openDoc(client.getHierarchy(), doc)
             }
           }}
           attachFile={async (file) => {

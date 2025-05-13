@@ -20,9 +20,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Heading } from '@hcengineering/text-editor'
   import { TableOfContents } from '@hcengineering/text-editor-resources'
-  import { navigate } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import { getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { openDoc } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   import ContentEditor from './ContentEditor.svelte'
@@ -107,8 +105,7 @@
       on:open-document={async (event) => {
         const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
         if (doc != null) {
-          const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
-          navigate(location)
+          await openDoc(client.getHierarchy(), doc)
         }
       }}
       bind:this={editor}

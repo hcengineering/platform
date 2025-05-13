@@ -399,7 +399,10 @@
       }
     }
     loc.query = resolved.loc.query ?? loc.query ?? currentQuery ?? resolved.defaultLocation.query
-    loc.fragment = resolved.loc.fragment ?? loc.fragment ?? resolved.defaultLocation.fragment
+    loc.fragment =
+      (loc.fragment ?? '') !== '' && resolved.loc.fragment === resolved.defaultLocation.fragment
+        ? loc.fragment
+        : resolved.loc.fragment ?? resolved.defaultLocation.fragment
     return loc
   }
 
