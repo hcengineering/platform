@@ -16,7 +16,6 @@
   import { Asset, Metadata } from '@hcengineering/platform'
   import {
     ButtonIcon,
-    TabsControl,
     fromCodePoint,
     Scroller,
     getPlatformColor,
@@ -42,73 +41,62 @@
 
   let _color = color
   let _icon = icon ?? icons[0]
-
-  let model = showEmoji
-    ? [{ label: view.string.IconCategory }, { label: view.string.EmojiCategory }]
-    : [{ label: view.string.IconCategory }]
-  $: model = showEmoji
-    ? [{ label: view.string.IconCategory }, { label: view.string.EmojiCategory }]
-    : [{ label: view.string.IconCategory }]
 </script>
 
 <div class="hulyPopup-container noPadding autoWidth maxWidth">
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <TabsControl size={'small'} {model} selected={icon === iconWithEmoji ? 1 : 0} padding={'0 .75rem'} gap={'medium'}>
-    <svelte:fragment slot="content" let:selected>
-      {#if selected === 0}
-        <div class="flex-col mb-2">
-          <Scroller noStretch>
-            {#if icons.length > 0}
-              <div class="pallete">
-                {#each icons as obj}
-                  <ButtonIcon
-                    icon={obj}
-                    iconSize={'medium'}
-                    iconProps={showColor
-                      ? { fill: obj === _icon ? 'currentColor' : getPlatformColor(_color ?? 0, $themeStore.dark) }
-                      : undefined}
-                    size={'medium'}
-                    kind={obj === _icon ? 'primary' : 'tertiary'}
-                    on:click={() => {
-                      _icon = obj
-                      dispatch(!showColor ? 'close' : 'update', { icon: _icon, color: _color })
-                    }}
-                  />
-                {/each}
-                <div class="clear-mins flex-grow" />
-              </div>
-            {/if}
-          </Scroller>
-          {#if showColor}
-            <div class="subheader"><Label label={view.string.ChooseAColor} /></div>
-            <ColorsPopup
-              selected={getPlatformColorDef(_color, $themeStore.dark).name}
-              columns={'auto'}
-              embedded
-              on:close={(evt) => {
-                _color = evt.detail
-                dispatch(icons.length === 0 ? 'close' : 'update', {
-                  icon: icons.length === 0 ? null : _icon,
-                  color: _color
-                })
-              }}
-            />
-          {/if}
-        </div>
-      {:else}
-        <Component
-          is={emojiPlugin.component.EmojiPopup}
-          props={{
-            selected: typeof color === 'string' ? color : Array.isArray(color) ? fromCodePoint(...color) : color ? fromCodePoint(color) : undefined
-          }}
+  {#if !showEmoji}
+    <div class="flex-col mb-2">
+      <Scroller noStretch>
+        {#if icons.length > 0}
+          <div class="pallete">
+            {#each icons as obj}
+              <ButtonIcon
+                icon={obj}
+                iconSize={'medium'}
+                iconProps={showColor
+                  ? { fill: obj === _icon ? 'currentColor' : getPlatformColor(_color ?? 0, $themeStore.dark) }
+                  : undefined}
+                size={'medium'}
+                kind={obj === _icon ? 'primary' : 'tertiary'}
+                on:click={() => {
+                  _icon = obj
+                  dispatch(!showColor ? 'close' : 'update', { icon: _icon, color: _color })
+                }}
+              />
+            {/each}
+            <div class="clear-mins flex-grow" />
+          </div>
+        {/if}
+      </Scroller>
+      {#if showColor}
+        <div class="subheader"><Label label={view.string.ChooseAColor} /></div>
+        <ColorsPopup
+          selected={getPlatformColorDef(_color, $themeStore.dark).name}
+          columns={'auto'}
+          embedded
           on:close={(evt) => {
-            dispatch('close', { icon: iconWithEmoji, color: evt.detail.codes })
+            _color = evt.detail
+            dispatch(icons.length === 0 ? 'close' : 'update', {
+              icon: icons.length === 0 ? null : _icon,
+              color: _color
+            })
           }}
         />
       {/if}
-    </svelte:fragment>
-  </TabsControl>
+    </div>
+  {:else}
+    <Component
+      is={emojiPlugin.component.EmojiPopup}
+      props={{
+        selected: typeof color === 'string' ? color : Array.isArray(color) ? fromCodePoint(...color) : color ? fromCodePoint(color) : undefined
+      }}
+      on:close={(evt) => {
+        dispatch('close', { icon: iconWithEmoji, color: evt.detail.codes })
+      }}
+    />
+  {/if}
 </div>
 
 <style lang="scss">
