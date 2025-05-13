@@ -41,65 +41,61 @@ export const removeFrequentlyEmojis = (emoji: EmojiWithGroup): void => {
   const hexcode = isCustomEmoji(emoji) ? emoji.shortcode : emoji.hexcode
   if (hexcode === undefined) return
 
-  const frequentlyEmojisKey = getEmojisLocalStorageKey()
-  const frequentlyEmojis = window.localStorage.getItem(frequentlyEmojisKey)
-  if (frequentlyEmojis != null) {
-    const parsedEmojis = JSON.parse(frequentlyEmojis)
-    if (Array.isArray(parsedEmojis)) {
-      window.localStorage.setItem(
-        frequentlyEmojisKey,
-        JSON.stringify(parsedEmojis.filter((pe) => pe.hexcode !== hexcode))
-      )
-    }
-  }
+  const frequentlyEmojis = getStoredFrequentlyEmojis()
+  if (frequentlyEmojis === undefined) return
+
+  window.localStorage.setItem(
+    getEmojisLocalStorageKey(),
+    JSON.stringify(frequentlyEmojis.filter((pe) => pe.hexcode !== hexcode))
+  )
 }
 export const addFrequentlyEmojis = (emoji: EmojiWithGroup): void => {
   if (emoji === undefined) return
   const hexcode = isCustomEmoji(emoji) ? emoji.shortcode : emoji.hexcode
 
-  const frequentlyEmojisKey = getEmojisLocalStorageKey()
-  const frequentlyEmojis = window.localStorage.getItem(frequentlyEmojisKey)
-  const empty = frequentlyEmojis == null
-
-  if (!empty) {
-    const parsedEmojis = JSON.parse(frequentlyEmojis)
-    if (Array.isArray(parsedEmojis)) {
-      const index = parsedEmojis.findIndex((pe) => pe.hexcode === hexcode)
-      if (index === -1) parsedEmojis.push({ hexcode, count: 1 })
-      else parsedEmojis[index].count++
-      parsedEmojis.sort((a, b) => b.count - a.count)
-      window.localStorage.setItem(frequentlyEmojisKey, JSON.stringify(parsedEmojis))
-      return undefined
-    }
+  const frequentlyEmojis = getStoredFrequentlyEmojis()
+  if (frequentlyEmojis === undefined) {
+    window.localStorage.setItem(getEmojisLocalStorageKey(), JSON.stringify([{ hexcode, count: 1 }]))
+    return
   }
-  window.localStorage.setItem(frequentlyEmojisKey, JSON.stringify([{ hexcode, count: 1 }]))
+  const index = frequentlyEmojis.findIndex((pe) => pe.hexcode === hexcode)
+  if (index === -1) frequentlyEmojis.push({ hexcode, count: 1 })
+  else frequentlyEmojis[index].count++
+  frequentlyEmojis.sort((a, b) => b.count - a.count)
+  window.localStorage.setItem(getEmojisLocalStorageKey(), JSON.stringify(frequentlyEmojis))
 }
 export const getFrequentlyEmojis = (): EmojiWithGroup[] | undefined => {
+  const frequentlyEmojis = getStoredFrequentlyEmojis()
+  if (frequentlyEmojis === undefined) return undefined
+
+  const emojis = get(unicodeEmojiStore).concat(get(customEmojiStore))
+  const result: EmojiWithGroup[] = []
+  emojis.forEach((emoji: EmojiWithGroup) => {
+    if (isCustomEmoji(emoji)) {
+      if (frequentlyEmojis.find((pe) => pe.hexcode === emoji.shortcode) !== undefined) result.push(emoji)
+    } else {
+      frequentlyEmojis.forEach((parsedEmoji: any) => {
+        if (parsedEmoji.hexcode === emoji.hexcode) {
+          result.push(emoji)
+          return
+        }
+        const skinEmoji = emoji.skins?.find((s) => s.hexcode === parsedEmoji.hexcode)
+        if (skinEmoji === undefined) return
+        result.push({ ...skinEmoji, key: '' })
+      })
+    }
+  })
+  return result
+}
+
+function getStoredFrequentlyEmojis (): Array<{ hexcode: string, count: number }> | undefined {
   const frequentlyEmojisKey = getEmojisLocalStorageKey()
   const frequentlyEmojis = window.localStorage.getItem(frequentlyEmojisKey)
-  if (frequentlyEmojis == null) return undefined
-
+  if (frequentlyEmojis === null) return undefined
   try {
-    const parsedEmojis = JSON.parse(frequentlyEmojis)
+    const parsedEmojis: Array<{ hexcode: string, count: number }> = JSON.parse(frequentlyEmojis)
     if (!Array.isArray(parsedEmojis)) return undefined
-    const emojis = get(unicodeEmojiStore).concat(get(customEmojiStore))
-    const result: EmojiWithGroup[] = []
-    emojis.forEach((emoji: EmojiWithGroup) => {
-      if (isCustomEmoji(emoji)) {
-        if (parsedEmojis.find((pe) => pe.hexcode === emoji.shortcode) !== undefined) result.push(emoji)
-      } else {
-        parsedEmojis.forEach((parsedEmoji: any) => {
-          if (parsedEmoji.hexcode === emoji.hexcode) {
-            result.push(emoji)
-            return
-          }
-          const skinEmoji = emoji.skins?.find((s) => s.hexcode === parsedEmoji.hexcode)
-          if (skinEmoji === undefined) return
-          result.push({ ...skinEmoji, key: '' })
-        })
-      }
-    })
-    return result
+    return parsedEmojis
   } catch (e) {
     console.error('Failed to parse emojis', e)
     return undefined
@@ -108,5 +104,5 @@ export const getFrequentlyEmojis = (): EmojiWithGroup[] | undefined => {
 
 function getEmojisLocalStorageKey (suffix: string = 'frequently'): string {
   const me = getCurrentAccount()
-  return `emojis.${suffix}.${me.uuid}`
+  return `emojis1.${suffix}.${me.uuid}`
 }
