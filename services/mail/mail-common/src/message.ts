@@ -15,10 +15,6 @@
 import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { createRestTxOperations, createRestClient } from '@hcengineering/api-client'
 import { type Card } from '@hcengineering/card'
-import {
-  type RestClient as CommunicationClient,
-  createRestClient as getCommunicationClient
-} from '@hcengineering/communication-rest-client'
 import { MessageType } from '@hcengineering/communication-types'
 import chat from '@hcengineering/chat'
 import { PersonSpace } from '@hcengineering/contact'
@@ -31,11 +27,15 @@ import {
   generateId,
   PersonUuid,
   RateLimiter,
-  SocialId
+  SocialId,
+  WorkspaceUuid
 } from '@hcengineering/core'
 import mail from '@hcengineering/mail'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { PlatformQueueProducer } from '@hcengineering/server-core'
+import { RequestEvent as CommunicationEvent, MessageRequestEventType } from '@hcengineering/communication-sdk-types'
+import { generateMessageId } from '@hcengineering/communication-shared'
 
 import { BaseConfig, type Attachment } from './types'
 import { EmailMessage } from './types'
@@ -51,7 +51,8 @@ export async function createMessages (
   message: EmailMessage,
   attachments: Attachment[],
   me: string,
-  socialId: SocialId
+  socialId: SocialId,
+  producer: PlatformQueueProducer<CommunicationEvent>
 ): Promise<void> {
   const { mailId, from, subject, replyTo } = message
   const tos = [...(message.to ?? []), ...(message.copy ?? [])]
@@ -67,7 +68,6 @@ export async function createMessages (
 
   const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
   const txClient = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
-  const msgClient = getCommunicationClient(wsInfo.endpoint, wsInfo.workspace, wsInfo.token)
   const restClient = createRestClient(transactorUrl, wsInfo.workspace, wsInfo.token)
   const personCache = PersonCacheFactory.getInstance(ctx, restClient, wsInfo.workspace)
   const personSpacesCache = PersonSpacesCacheFactory.getInstance(ctx, txClient, wsInfo.workspace)
@@ -127,7 +127,8 @@ export async function createMessages (
       await saveMessageToSpaces(
         ctx,
         txClient,
-        msgClient,
+        producer,
+        wsInfo.workspace,
         mailId,
         spaces,
         participants,
@@ -158,7 +159,8 @@ export async function createMessages (
         await saveMessageToSpaces(
           ctx,
           txClient,
-          msgClient,
+          producer,
+          wsInfo.workspace,
           mailId,
           spaces,
           participants,
@@ -182,7 +184,8 @@ export async function createMessages (
 async function saveMessageToSpaces (
   ctx: MeasureContext,
   client: TxOperations,
-  msgClient: CommunicationClient,
+  producer: PlatformQueueProducer<CommunicationEvent>,
+  workspace: WorkspaceUuid,
   mailId: string,
   spaces: PersonSpace[],
   participants: PersonId[],
@@ -248,30 +251,34 @@ async function saveMessageToSpaces (
         ctx.info('Created new thread', { mailId, threadId, spaceId })
       }
 
-      const { id: messageId, created: messageCreated } = await msgClient.createMessage(
-        threadId,
-        chat.masterTag.Thread,
-        content,
-        modifiedBy,
-        MessageType.Message,
+      const messageId = generateMessageId()
+      const created = new Date(createdDate * 1000)
+      await producer.send(workspace, [
         {
-          created: createdDate
+          type: MessageRequestEventType.CreateMessage,
+          messageType: MessageType.Message,
+          card: threadId,
+          cardType: chat.masterTag.Thread,
+          content,
+          creator: modifiedBy,
+          created,
+          id: messageId
         }
-      )
-      ctx.info('Created message', { mailId, messageId, threadId, content })
+      ])
+      ctx.info('Send message event', { mailId, threadId, content })
 
-      for (const a of attachments) {
-        await msgClient.createFile(
-          threadId,
-          messageId,
-          messageCreated,
-          a.id as Ref<Blob>,
-          a.contentType,
-          a.name,
-          a.data.length,
-          modifiedBy
-        )
-      }
+      const fileEvents: CommunicationEvent[] = attachments.map((a) => ({
+        type: MessageRequestEventType.CreateFile,
+        card: threadId,
+        message: messageId,
+        messageCreated: created,
+        blobId: a.id as Ref<Blob>,
+        fileType: a.contentType,
+        filename: a.name,
+        size: a.data.length,
+        creator: modifiedBy
+      }))
+      await producer.send(workspace, fileEvents)
 
       await client.createDoc(
         mail.class.MailRoute,

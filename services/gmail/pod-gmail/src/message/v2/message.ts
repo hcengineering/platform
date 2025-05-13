@@ -18,11 +18,13 @@ import sanitizeHtml from 'sanitize-html'
 
 import { SocialId, type MeasureContext } from '@hcengineering/core'
 import { createMessages, parseEmailHeader, parseNameFromEmailHeader, EmailMessage } from '@hcengineering/mail-common'
+import { QueueTopic } from '@hcengineering/server-core'
 
 import { IMessageManager } from '../types'
 import config from '../../config'
 import { AttachmentHandler } from '../attachments'
 import { decode64 } from '../../base64'
+import { getProducer } from '../../queue'
 
 export class MessageManagerV2 implements IMessageManager {
   constructor (
@@ -36,7 +38,16 @@ export class MessageManagerV2 implements IMessageManager {
     const res = convertMessage(message, me)
     const attachments = await this.attachmentHandler.getPartFiles(message.data.payload, message.data.id ?? '')
 
-    await createMessages(config, this.ctx, this.token, res, attachments, me, this.socialId)
+    await createMessages(
+      config,
+      this.ctx,
+      this.token,
+      res,
+      attachments,
+      me,
+      this.socialId,
+      getProducer(QueueTopic.CommunicationEvents)
+    )
   }
 }
 
