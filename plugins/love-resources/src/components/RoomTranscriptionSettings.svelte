@@ -20,6 +20,7 @@
   import RoomLanguageSelector from './RoomLanguageSelector.svelte'
 
   export let room: Room
+  export let fullScreenPopup: boolean = false
 
   const client = getClient()
 

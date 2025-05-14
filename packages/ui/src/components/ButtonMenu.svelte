@@ -43,6 +43,7 @@
   export let focusIndex = -1
   export let id: string | undefined = undefined
   export let dataId: string | undefined = undefined
+  export let fullScreenPopup: boolean = false
 
   let opened: boolean = false
 
@@ -57,13 +58,20 @@
       }
       opened = true
       closeTooltip()
-      showPopup(ModernPopup, { items, selected: noSelection ? undefined : selected, params }, element, (result) => {
-        if (result) {
-          selected = result
-          dispatch('selected', result)
-        }
-        opened = false
-      })
+      showPopup(
+        ModernPopup,
+        { items, selected: noSelection ? undefined : selected, params },
+        element,
+        (result) => {
+          if (result) {
+            selected = result
+            dispatch('selected', result)
+          }
+          opened = false
+        },
+        () => {},
+        { category: 'popup', overlay: true, fullScreen: fullScreenPopup }
+      )
     }
   }
 

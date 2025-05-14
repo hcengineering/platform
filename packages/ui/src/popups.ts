@@ -28,6 +28,7 @@ export interface CompAndProps {
   options: {
     category: string
     overlay: boolean
+    fullScreen?: boolean
     fixed?: boolean
     refId?: string
   }
@@ -90,6 +91,7 @@ export function showPopup (
   options: {
     category: string
     overlay: boolean
+    fullScreen?: boolean
     fixed?: boolean
     refId?: string
     id?: string

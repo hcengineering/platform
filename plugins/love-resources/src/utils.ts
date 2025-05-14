@@ -1194,10 +1194,18 @@ export async function updateSessionLanguage (room: Room): Promise<void> {
   }
 }
 
-export async function showRoomSettings (room?: Room): Promise<void> {
+export async function showRoomSettings (room?: Room, evt?: Event, params?: Record<string, any>): Promise<any> {
   if (room === undefined) return
 
-  showPopup(RoomSettingsPopup, { room }, 'top')
+  const fullScreen: boolean = params?.fullScreen
+  showPopup(
+    RoomSettingsPopup,
+    { room, fullScreenPopup: fullScreen },
+    'top',
+    () => {},
+    () => {},
+    { category: 'popup', overlay: true, fullScreen }
+  )
 }
 
 export async function copyGuestLink (room?: Room): Promise<void> {
