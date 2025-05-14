@@ -13,15 +13,9 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Ref } from '@hcengineering/core'
+import type { Ref } from '@hcengineering/core'
 import { Asset, IntlString, type Plugin, plugin } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
-import type { MasterTag, Tag } from '@hcengineering/card'
-
-export interface MailRoute extends Doc {
-  mailId: string
-  threadId: string
-}
+import type { Tag } from '@hcengineering/card'
 
 /**
  * @public
@@ -29,39 +23,14 @@ export interface MailRoute extends Doc {
 export const mailId = 'mail' as Plugin
 
 export default plugin(mailId, {
-  class: {
-    MailThread: '' as Ref<MasterTag>,
-    MailRoute: '' as Ref<Class<MailRoute>>
-  },
   tag: {
     MailChannel: '' as Ref<Tag>,
     MailThread: '' as Ref<Tag>
   },
-  component: {
-    CreateMail: '' as AnyComponent,
-    MailThreadPresenter: '' as AnyComponent,
-    MailThread: '' as AnyComponent
-  },
   string: {
-    MailMessage: '' as IntlString,
-    MailMessages: '' as IntlString,
-    MailId: '' as IntlString,
-    MailThread: '' as IntlString,
-    MailThreadId: '' as IntlString,
-    MailPreview: '' as IntlString,
-    Subject: '' as IntlString,
-    To: '' as IntlString,
-    From: '' as IntlString,
-    CreateMail: '' as IntlString,
-    Reply: '' as IntlString,
-    Date: '' as IntlString,
     MailTag: '' as IntlString
   },
   icon: {
-    NewMail: '' as Asset,
-    Inbox: '' as Asset,
-    Done: '' as Asset,
-    Sent: '' as Asset,
     Mail: '' as Asset
   }
 })

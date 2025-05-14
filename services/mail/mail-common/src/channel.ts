@@ -13,16 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  MeasureContext,
-  PersonId,
-  Ref,
-  TxOperations,
-  Doc,
-  WorkspaceUuid,
-  generateId,
-  SocialId
-} from '@hcengineering/core'
+import { MeasureContext, PersonId, Ref, TxOperations, Doc, WorkspaceUuid, generateId } from '@hcengineering/core'
 import chat from '@hcengineering/chat'
 import mail from '@hcengineering/mail'
 import { PersonSpace } from '@hcengineering/contact'
@@ -50,7 +41,7 @@ export class ChannelCache {
     spaceId: Ref<PersonSpace>,
     participants: PersonId[],
     emailAccount: string,
-    socialId: SocialId
+    owner: PersonId
   ): Promise<Ref<Doc> | undefined> {
     const cacheKey = `${spaceId}:${emailAccount}`
 
@@ -59,7 +50,7 @@ export class ChannelCache {
       return channel
     }
 
-    channel = await this.fetchOrCreateChannel(spaceId, participants, emailAccount, socialId)
+    channel = await this.fetchOrCreateChannel(spaceId, participants, emailAccount, owner)
     if (channel != null) {
       this.cache.set(cacheKey, channel)
     }
@@ -83,7 +74,7 @@ export class ChannelCache {
     space: Ref<PersonSpace>,
     participants: PersonId[],
     emailAccount: string,
-    socialId: SocialId
+    personId: PersonId
   ): Promise<Ref<Doc> | undefined> {
     try {
       // First try to find existing channel
@@ -94,7 +85,7 @@ export class ChannelCache {
         return channel._id
       }
 
-      return await this.createNewChannel(space, participants, emailAccount, socialId)
+      return await this.createNewChannel(space, participants, emailAccount, personId)
     } catch (err) {
       this.ctx.error('Failed to create channel', {
         me: emailAccount,
@@ -114,7 +105,7 @@ export class ChannelCache {
     space: Ref<PersonSpace>,
     participants: PersonId[],
     emailAccount: string,
-    socialId: SocialId
+    personId: PersonId
   ): Promise<Ref<Doc> | undefined> {
     const mutexKey = `channel:${this.workspace}:${space}:${emailAccount}`
     const releaseLock = await createMutex.lock(mutexKey)
@@ -132,7 +123,7 @@ export class ChannelCache {
       }
 
       // Create new channel if it doesn't exist
-      this.ctx.info('Creating new channel', { me: emailAccount, space, personId: socialId._id })
+      this.ctx.info('Creating new channel', { me: emailAccount, space, personId })
       const channelId = await this.client.createDoc(
         chat.masterTag.Channel,
         space,
@@ -141,15 +132,15 @@ export class ChannelCache {
           private: true,
           members: participants,
           archived: false,
-          createdBy: socialId._id,
-          modifiedBy: socialId._id
+          createdBy: personId,
+          modifiedBy: personId
         },
         generateId(),
         Date.now(),
-        socialId._id
+        personId
       )
 
-      this.ctx.info('Creating mixin', { me: emailAccount, space, personId: socialId._id, channelId })
+      this.ctx.info('Creating mixin', { me: emailAccount, space, personId, channelId })
       await this.client.createMixin(
         channelId,
         chat.masterTag.Channel,
@@ -157,7 +148,7 @@ export class ChannelCache {
         mail.tag.MailChannel,
         {},
         Date.now(),
-        socialId._id
+        personId
       )
 
       return channelId

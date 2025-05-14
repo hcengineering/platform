@@ -18,7 +18,7 @@ export interface Attachment {
   data: Buffer
   contentType: string
   size?: number
-  lastModified: number
+  lastModified?: number
 }
 
 export interface EmailContact {

@@ -230,7 +230,6 @@
     "@hcengineering/export-resources": "^0.6.0",
     "@hcengineering/mail": "^0.6.0",
     "@hcengineering/mail-assets": "^0.6.0",
-    "@hcengineering/mail-resources": "^0.6.0",
     "@hcengineering/chat": "^0.6.0",
     "@hcengineering/chat-assets": "^0.6.0",
     "@hcengineering/chat-resources": "^0.6.0",
