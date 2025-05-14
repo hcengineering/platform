@@ -1194,10 +1194,10 @@ export async function updateSessionLanguage (room: Room): Promise<void> {
   }
 }
 
-export async function showRoomSettings (room?: Room, evt?: Event, params?: Record<string, any>): Promise<any> {
+export async function showRoomSettings (room?: Room): Promise<any> {
   if (room === undefined) return
 
-  const fullScreen: boolean = params?.fullScreen
+  const fullScreen: boolean = get(isFullScreen)
   showPopup(
     RoomSettingsPopup,
     { room, fullScreenPopup: fullScreen },

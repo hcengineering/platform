@@ -23,7 +23,6 @@
   import love from '../plugin'
 
   export let room: Room
-  export let fullScreenPopup: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -66,7 +65,7 @@
     </div>
     <div class="component">
       {#if selectedGroup.id === 'transcription'}
-        <RoomTranscriptionSettings {room} {fullScreenPopup} />
+        <RoomTranscriptionSettings {room} />
       {/if}
     </div>
   </div>

@@ -21,11 +21,10 @@
 
   import { languagesDisplayData } from '../types'
   import LanguageIcon from './LanguageIcon.svelte'
-  import { updateSessionLanguage } from '../utils'
+  import { updateSessionLanguage, isFullScreen } from '../utils'
 
   export let room: Room
   export let kind: 'dropdown' | 'icon' = 'dropdown'
-  export let fullScreenPopup: boolean = false
 
   const client = getClient()
 
@@ -60,7 +59,7 @@
         }
       },
       () => {},
-      { category: 'popup', overlay: true, fullScreen: fullScreenPopup }
+      { category: 'popup', overlay: true, fullScreen: $isFullScreen }
     )
   }
 </script>
@@ -74,7 +73,7 @@
     iconProps={{ lang: selectedItem }}
     bind:selected={selectedItem}
     label={view.string.AddSavedView}
-    {fullScreenPopup}
+    fullScreenPopup={$isFullScreen}
     on:selected={(e) => handleSelection(e.detail)}
   />
 {:else}
