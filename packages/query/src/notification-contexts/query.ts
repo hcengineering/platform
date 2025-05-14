@@ -33,7 +33,9 @@ import {
   type PagedQueryCallback,
   type RequestEvent,
   type ResponseEvent,
-  type FindClient
+  type FindClient,
+  CardResponseEventType,
+  type CardRemovedEvent
 } from '@hcengineering/communication-sdk-types'
 import { applyPatch } from '@hcengineering/communication-shared'
 
@@ -124,7 +126,11 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       }
       case NotificationResponseEventType.NotificationContextRemoved: {
         await this.onRemoveNotificationContextEvent(event)
+        break
       }
+      case CardResponseEventType.CardRemoved:
+        await this.onCardRemoved(event)
+        break
     }
   }
 
@@ -466,6 +472,26 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
             ? b.lastUpdate.getTime() - a.lastUpdate.getTime()
             : a.lastUpdate.getTime() - b.lastUpdate.getTime()
         )
+      }
+      void this.notify()
+    }
+  }
+
+  async onCardRemoved(event: CardRemovedEvent): Promise<void> {
+    if (this.result instanceof Promise) this.result = await this.result
+    let deleted = false
+    const result = this.result.getResult()
+    for (const context of result) {
+      if (context.card == event.card) {
+        this.result.delete(context.id)
+        deleted = true
+      }
+    }
+
+    if (deleted) {
+      if (this.params.limit && this.result.length < this.params.limit && result.length >= this.params.limit) {
+        const contexts = await this.find(this.params)
+        this.result = new QueryResult(contexts, (x) => x.id)
       }
       void this.notify()
     }

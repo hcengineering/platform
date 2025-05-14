@@ -129,7 +129,7 @@ export function toReaction(raw: ReactionDb): Reaction {
   }
 }
 
-export function toFile(raw: FileDb): File {
+export function toFile(raw: Omit<FileDb, 'workspace_id'>): File {
   return {
     card: raw.card_id,
     message: String(raw.message_id) as MessageID,
@@ -138,6 +138,7 @@ export function toFile(raw: FileDb): File {
     type: raw.type,
     filename: raw.filename,
     size: parseInt(raw.size as any),
+    meta: raw.meta,
     creator: raw.creator,
     created: new Date(raw.created)
   }

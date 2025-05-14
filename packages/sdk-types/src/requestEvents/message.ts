@@ -24,7 +24,8 @@ import type {
   MessageType,
   MessageData,
   CardType,
-  PatchData
+  PatchData,
+  BlobMetadata
 } from '@hcengineering/communication-types'
 
 import type { BaseRequestEvent } from './common'
@@ -118,6 +119,7 @@ export interface CreateFileEvent extends BaseRequestEvent {
   fileType: string
   filename: string
   creator: SocialID
+  meta?: BlobMetadata
 }
 
 export interface RemoveFileEvent extends BaseRequestEvent {

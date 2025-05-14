@@ -16,7 +16,8 @@
 import type { Triggers } from '../types'
 import message from './message'
 import notification from './notification'
+import card from './card'
 
-const allTriggers: Triggers = [...message, ...notification]
+const allTriggers: Triggers = [...message, ...notification, ...card]
 
 export default allTriggers

@@ -53,66 +53,111 @@ export class LabelsDb extends BaseDb {
     )
   }
 
-  async removeLabel(label: LabelID, card: CardID, account: AccountID): Promise<void> {
+  async removeLabels(query: Partial<Label>): Promise<void> {
+    const db: Partial<LabelDb> = {
+      label_id: query.label,
+      card_id: query.card,
+      card_type: query.cardType,
+      account: query.account
+    }
+
+    const entries = Object.entries(db).filter(([_, value]) => value != undefined)
+
+    if (entries.length === 0) return
+
+    entries.push(['workspace_id', this.workspace])
+
+    const whereClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
+    const whereValues = entries.map(([_, value]) => value)
+
     const sql = `DELETE
                  FROM ${TableName.Label}
-                 WHERE workspace_id = $1::uuid
-                   AND label_id = $2::varchar
-                   AND card_id = $3::varchar
-                   AND account = $4::uuid`
-    await this.execute(sql, [this.workspace, label, card, account], 'remove label')
+                 WHERE ${whereClauses.join(' AND ')}`
+
+    await this.execute(sql, whereValues, 'remove labels')
+  }
+
+  async updateLabels(params: FindLabelsParams, data: Partial<Label>): Promise<void> {
+    const dbData: Partial<LabelDb> = {
+      label_id: data.label,
+      card_id: data.card,
+      card_type: data.cardType,
+      account: data.account,
+      created: data.created
+    }
+
+    const entries = Object.entries(dbData).filter(([_, value]) => value != undefined)
+    if (entries.length === 0) return
+
+    const setClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
+    const setValues = entries.map(([_, value]) => value)
+
+    const { where, values: whereValues } = this.buildWhere(params, setValues.length, '')
+
+    const sql = `UPDATE ${TableName.Label}
+             SET ${setClauses.join(', ')}
+             ${where}`
+
+    await this.execute(sql, [...setValues, ...whereValues], 'update labels')
   }
 
   async findLabels(params: FindLabelsParams): Promise<Label[]> {
     const select = `SELECT *
                     FROM ${TableName.Label} l`
 
-    const where: string[] = ['l.workspace_id = $1::uuid']
-    const whereValues: any[] = [this.workspace]
-    let index = whereValues.length + 1
+    const { where, values } = this.buildWhere(params)
+
+    const limit = params.limit != null ? `LIMIT ${params.limit}` : ''
+    const orderBy =
+      params.order != null ? `ORDER BY l.created ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}` : ''
+    const sql = [select, where, orderBy, limit].join(' ')
+
+    const result = await this.execute(sql, values, 'find labels')
+
+    return result.map((it: any) => toLabel(it))
+  }
+
+  buildWhere(params: FindLabelsParams, startIndex: number = 0, prefix = 'l.'): { where: string; values: any[] } {
+    const where: string[] = []
+    const values: any[] = []
+    let index = startIndex + 1
+
+    where.push(`${prefix}workspace_id = $${index++}::uuid`)
+    values.push(this.workspace)
 
     if (params.label != null) {
       const labels = Array.isArray(params.label) ? params.label : [params.label]
       if (labels.length === 1) {
-        where.push(`l.label_id = $${index++}::varchar`)
-        whereValues.push(labels[0])
+        where.push(`${prefix}label_id = $${index++}::varchar`)
+        values.push(labels[0])
       } else {
-        where.push(`l.label_id = ANY($${index++}::varchar[])`)
-        whereValues.push(labels)
+        where.push(`${prefix}label_id = ANY($${index++}::varchar[])`)
+        values.push(labels)
       }
     }
 
     if (params.card != null) {
-      where.push(`l.card_id = $${index++}::varchar`)
-      whereValues.push(params.card)
+      where.push(`${prefix}card_id = $${index++}::varchar`)
+      values.push(params.card)
     }
 
     if (params.cardType != null) {
       const types = Array.isArray(params.cardType) ? params.cardType : [params.cardType]
 
       if (types.length === 1) {
-        where.push(`l.card_type = $${index++}::varchar`)
-        whereValues.push(types[0])
+        where.push(`${prefix}card_type = $${index++}::varchar`)
+        values.push(types[0])
       } else {
-        where.push(`l.card_type = ANY($${index++}::varchar[])`)
-        whereValues.push(types)
+        where.push(`${prefix}card_type = ANY($${index++}::varchar[])`)
+        values.push(types)
       }
     }
 
     if (params.account != null) {
-      where.push(`l.account = $${index++}::uuid`)
-      whereValues.push(params.account)
+      where.push(`${prefix}account = $${index++}::uuid`)
+      values.push(params.account)
     }
 
-    const limit = params.limit != null ? `LIMIT ${params.limit}` : ''
-    const orderBy =
-      params.order != null ? `ORDER BY l.created ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}` : ''
-
-    const whereString = `WHERE ${where.join(' AND ')}`
-    const sql = [select, whereString, orderBy, limit].join(' ')
-
-    const result = await this.execute(sql, whereValues, 'find labels')
-
-    return result.map((it: any) => toLabel(it))
+    return { where: `WHERE ${where.join(' AND ')}`, values }
   }
 }

@@ -94,22 +94,10 @@ export type MiddlewareCreateFn = (context: MiddlewareContext, next?: Middleware)
 
 export type BroadcastSessionsFunc = (ctx: MeasureContext, sessionIds: string[], result: any) => void
 
-export type TriggersDb = Pick<
-  DbAdapter,
-  | 'findMessagesGroups'
-  | 'findMessages'
-  | 'findCollaborators'
-  | 'findNotifications'
-  | 'findNotificationContexts'
-  | 'findLabels'
-  | 'getCollaboratorsCursor'
-  | 'findThread'
->
-
 export interface TriggerCtx {
   ctx: MeasureContext
   metadata: Metadata
-  db: TriggersDb
+  db: DbAdapter
   workspace: WorkspaceID
   account: Account
   registeredCards: Set<CardID>

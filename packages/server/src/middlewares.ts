@@ -42,7 +42,7 @@ import type {
 import { PermissionsMiddleware } from './middleware/permissions'
 import { DatabaseMiddleware } from './middleware/db'
 import { BroadcastMiddleware } from './middleware/broadcast'
-import { createTriggersDb, TriggersMiddleware } from './middleware/triggers'
+import { TriggersMiddleware } from './middleware/triggers'
 import { ValidateMiddleware } from './middleware/validate'
 import { DateMiddleware } from './middleware/date'
 
@@ -59,7 +59,7 @@ export async function buildMiddlewares(
     async (context, next) => new DateMiddleware(context, next),
     async (context, next) => new BroadcastMiddleware(broadcast, context, next),
     async (context, next) => new DatabaseMiddleware(db, context, next),
-    async (context, next) => new TriggersMiddleware(createTriggersDb(db), context, next)
+    async (context, next) => new TriggersMiddleware(db, context, next)
   ]
 
   const context: MiddlewareContext = {

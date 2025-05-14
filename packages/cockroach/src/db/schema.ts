@@ -26,7 +26,8 @@ import {
   type WorkspaceID,
   type NotificationID,
   type LabelID,
-  type CardType
+  type CardType,
+  type BlobMetadata
 } from '@hcengineering/communication-types'
 
 export enum TableName {
@@ -104,6 +105,7 @@ export interface FileDb {
   filename: string
   size: number
   type: string
+  meta?: BlobMetadata
   creator: SocialID
   created: Date
   message_created: Date

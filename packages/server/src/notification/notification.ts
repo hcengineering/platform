@@ -102,7 +102,6 @@ async function processCollaborator(
   result.push(...events)
 
   if (contextId == null || isOwn) return result
-  if (message.type !== MessageType.Message) return result
 
   result.push({
     type: NotificationRequestEventType.CreateNotification,

@@ -15,6 +15,9 @@
 
 import type { FindLabelsParams, Label, WorkspaceID } from '@hcengineering/communication-types'
 import {
+  type CardRemovedEvent,
+  CardResponseEventType,
+  type CardTypeUpdatedEvent,
   type EventResult,
   type FindClient,
   type LabelCreatedEvent,
@@ -34,6 +37,7 @@ function getId(label: Label): string {
 
 export class LabelsQuery implements Query<Label, FindLabelsParams> {
   private result: Promise<QueryResult<Label>> | QueryResult<Label>
+  private isCardRemoved = false
 
   constructor(
     private readonly client: FindClient,
@@ -53,12 +57,20 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
   }
 
   async onEvent(event: ResponseEvent): Promise<void> {
+    if (this.isCardRemoved) return
     switch (event.type) {
       case LabelResponseEventType.LabelCreated:
         await this.onLabelCreated(event)
         break
       case LabelResponseEventType.LabelRemoved:
         await this.onLabelRemoved(event)
+        break
+
+      case CardResponseEventType.CardTypeUpdated:
+        await this.onCardTypeUpdated(event)
+        break
+      case CardResponseEventType.CardRemoved:
+        await this.onCardRemoved(event)
         break
     }
   }
@@ -93,6 +105,50 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     void this.notify()
   }
 
+  async onCardTypeUpdated(event: CardTypeUpdatedEvent): Promise<void> {
+    if (this.result instanceof Promise) this.result = await this.result
+
+    const result = this.result.getResult()
+    let updated = false
+    for (const label of result) {
+      if (label.card == event.card) {
+        this.result.update({ ...label, cardType: event.cardType })
+        updated = true
+      }
+    }
+    if (updated) {
+      void this.notify()
+    }
+  }
+
+  async onCardRemoved(event: CardRemovedEvent): Promise<void> {
+    if (this.result instanceof Promise) this.result = await this.result
+
+    if (this.params.card === event.card) {
+      this.isCardRemoved = true
+      this.result.deleteAll()
+      void this.notify()
+      return
+    }
+
+    const result = this.result.getResult()
+    const prevLength = this.result.length
+    let deleted = false
+    for (const label of result) {
+      if (label.card == event.card) {
+        this.result.delete(label.label)
+        deleted = true
+      }
+    }
+
+    if (deleted) {
+      if (this.params.limit && this.result.length < this.params.limit && prevLength >= this.params.limit) {
+        const labels = await this.find(this.params)
+        this.result = new QueryResult(labels, getId)
+      }
+      void this.notify()
+    }
+  }
   async onRequest(event: RequestEvent, promise: Promise<EventResult>): Promise<void> {}
 
   private async initResult(): Promise<QueryResult<Label>> {
@@ -130,6 +186,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
   }
 
   private async find(params: FindLabelsParams): Promise<Label[]> {
+    if (this.isCardRemoved) return []
     return await this.client.findLabels(params, this.id)
   }
 

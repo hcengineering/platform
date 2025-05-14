@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Attribute, Class, Mixin, Ref } from '@hcengineering/core'
+import type { Attribute, BlobMetadata, Class, Mixin, Ref } from '@hcengineering/core'
 import type { BlobID, CardID, CardType, ID, RichText, SocialID } from './core'
 import type { Card, Tag } from '@hcengineering/card'
 
@@ -195,6 +195,7 @@ export interface File {
   filename: string
   size: number
   creator: SocialID
+  meta?: BlobMetadata
   created: Date
 }
 

@@ -31,6 +31,8 @@ import {
   type WorkspaceID
 } from '@hcengineering/communication-types'
 import {
+  type CardRemovedEvent,
+  CardResponseEventType,
   type CreateMessageEvent,
   type CreateMessageResult,
   type EventResult,
@@ -94,6 +96,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   private readonly tmpMessages = new Map<string, MessageID>()
+  private isCardRemoved = false
 
   constructor(
     private readonly client: FindClient,
@@ -144,6 +147,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   async onEvent(event: ResponseEvent): Promise<void> {
+    if (this.isCardRemoved) return
     switch (event.type) {
       case MessageResponseEventType.MessageCreated: {
         await this.onMessageCreatedEvent(event)
@@ -173,13 +177,29 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
         await this.onFileRemovedEvent(event)
         break
       }
-      case MessageResponseEventType.ThreadCreated: {
+      case MessageResponseEventType.ThreadCreated:
         await this.onThreadCreatedEvent(event)
-      }
+        break
+      case CardResponseEventType.CardRemoved:
+        await this.onCardRemoved(event)
+        break
+    }
+  }
+
+  async onCardRemoved(event: CardRemovedEvent): Promise<void> {
+    if (this.result instanceof Promise) this.result = await this.result
+    if (this.params.card === event.card) {
+      this.isCardRemoved = true
+      this.result.deleteAll()
+      this.result.setHead(true)
+      this.result.setTail(true)
+      void this.notify()
+      return
     }
   }
 
   async onRequest(event: RequestEvent, promise: Promise<EventResult>): Promise<void> {
+    if (this.isCardRemoved) return
     switch (event.type) {
       case MessageRequestEventType.CreateMessage: {
         await this.onCreateMessageRequest(event, promise as Promise<CreateMessageResult>)
@@ -260,6 +280,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   async requestLoadNextPage(): Promise<void> {
+    if (this.isCardRemoved) return
     if (this.result instanceof Promise) this.result = await this.result
 
     if (!this.result.isTail()) {
@@ -274,6 +295,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   async requestLoadPrevPage(): Promise<void> {
+    if (this.isCardRemoved) return
     if (this.result instanceof Promise) this.result = await this.result
     if (!this.result.isHead()) {
       this.result = this.loadPage(Direction.Backward, this.result)
@@ -898,15 +920,17 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   private async onFileCreatedEvent(event: FileCreatedEvent): Promise<void> {
-    if (this.params.files !== true) return
+    if (this.params.files !== true || event.file.card !== this.params.card) return
     if (this.result instanceof Promise) this.result = await this.result
 
     const { file } = event
     const message = this.result.get(file.message)
     if (message !== undefined) {
-      message.files.push(file)
-      this.result.update(message)
-      await this.notify()
+      if (!message.files.some((it) => it.blobId === file.blobId)) {
+        message.files.push(file)
+        this.result.update(message)
+        await this.notify()
+      }
     }
 
     const fromNextBuffer = this.next.buffer.find((it) => it.id === file.message)
@@ -962,7 +986,9 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 }
 
 function addFile(message: Message, file: File): Message {
-  message.files.push(file)
+  if (!message.files.some((it) => it.blobId === file.blobId)) {
+    message.files.push(file)
+  }
   return message
 }
 

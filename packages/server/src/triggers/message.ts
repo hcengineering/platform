@@ -36,8 +36,10 @@ import {
   PatchType
 } from '@hcengineering/communication-types'
 import { generateToken } from '@hcengineering/server-token'
-import { concatLink, systemAccountUuid } from '@hcengineering/core'
+import { type AccountUuid, concatLink, systemAccountUuid } from '@hcengineering/core'
 import { generateMessageId } from '@hcengineering/communication-shared'
+import { extractReferences } from '@hcengineering/text-core'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 
 import type { TriggerCtx, TriggerFn, Triggers } from '../types'
 import { findAccount } from '../utils'
@@ -151,15 +153,34 @@ async function registerCard(ctx: TriggerCtx, event: MessageCreatedEvent | PatchC
 async function addCollaborators(ctx: TriggerCtx, event: MessageCreatedEvent): Promise<RequestEvent[]> {
   const { creator } = event.message
   const account = await findAccount(ctx, creator)
+  const collaborators: AccountUuid[] = []
 
-  if (account === undefined) return []
+  if (account !== undefined) {
+    collaborators.push(account)
+  }
+
+  const markup = markdownToMarkup(event.message.content)
+  const references = extractReferences(markup)
+  for (const reference of references) {
+    const { objectId, objectClass } = reference
+    if (['contact:class:Person', 'contact:mixin:Employee'].includes(objectClass)) {
+      const account = await ctx.db.getAccountByPersonId(objectId)
+      if (account !== undefined) {
+        collaborators.push(account)
+      }
+    }
+  }
+
+  if (collaborators.length === 0) {
+    return []
+  }
 
   return [
     {
       type: NotificationRequestEventType.AddCollaborators,
       card: event.message.card,
       cardType: event.cardType,
-      collaborators: [account],
+      collaborators,
       date: event.message.created
     }
   ]
@@ -247,6 +268,7 @@ async function onThreadCreated(ctx: TriggerCtx, event: ThreadCreatedEvent): Prom
       fileType: file.type,
       filename: file.filename,
       size: file.size,
+      meta: file.meta,
       creator: file.creator
     })
   }

@@ -32,6 +32,8 @@
     "@hcengineering/core": "^0.7.88",
     "@hcengineering/server-token": "^0.7.88",
     "@hcengineering/platform": "^0.7.88",
+    "@hcengineering/text-core": "^0.7.88",
+    "@hcengineering/text-markdown": "^0.7.88",
     "zod": "^3.24.2"
   },
   "peerDependencies": {

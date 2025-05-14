@@ -42,7 +42,9 @@ import {
   type LabelID,
   type CardType,
   type MessageData,
-  type PatchData
+  type PatchData,
+  type File,
+  type BlobMetadata
 } from '@hcengineering/communication-types'
 import type { DbAdapter } from '@hcengineering/communication-sdk-types'
 
@@ -83,7 +85,7 @@ export class CockroachAdapter implements DbAdapter {
     return await this.message.createMessage(card, type, content, creator, created, data, externalId, id)
   }
 
-  async removeMessages(card: CardID, messages: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]> {
+  async removeMessages(card: CardID, messages?: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]> {
     return await this.message.removeMessages(card, messages, socialIds)
   }
 
@@ -97,6 +99,10 @@ export class CockroachAdapter implements DbAdapter {
     created: Date
   ): Promise<void> {
     await this.message.createPatch(card, message, messageCreated, type, data, creator, created)
+  }
+
+  async removePatches(card: CardID): Promise<void> {
+    await this.message.removePatches(card)
   }
 
   async createMessagesGroup(card: CardID, blobId: BlobID, fromDate: Date, toDate: Date, count: number): Promise<void> {
@@ -136,14 +142,26 @@ export class CockroachAdapter implements DbAdapter {
     fileType: string,
     filename: string,
     size: number,
+    meta: BlobMetadata | undefined,
     creator: SocialID,
     created: Date
   ): Promise<void> {
-    await this.message.createFile(card, message, messageCreated, blobId, fileType, filename, size, creator, created)
+    await this.message.createFile(
+      card,
+      message,
+      messageCreated,
+      blobId,
+      fileType,
+      filename,
+      size,
+      meta,
+      creator,
+      created
+    )
   }
 
-  async removeFile(card: CardID, message: MessageID, blobId: BlobID): Promise<void> {
-    await this.message.removeFile(card, message, blobId)
+  async removeFiles(query: Partial<File>): Promise<void> {
+    await this.message.removeFiles(query)
   }
 
   async createThread(
@@ -157,8 +175,19 @@ export class CockroachAdapter implements DbAdapter {
     await this.message.createThread(card, message, messageCreated, thread, threadType, created)
   }
 
-  async updateThread(thread: CardID, op: 'increment' | 'decrement', lastReply?: Date): Promise<void> {
-    await this.message.updateThread(thread, op, lastReply)
+  async removeThreads(query: Partial<Thread>): Promise<void> {
+    await this.message.removeThreads(query)
+  }
+
+  async updateThread(
+    thread: CardID,
+    update: {
+      threadType?: CardType
+      op?: 'increment' | 'decrement'
+      lastReply?: Date
+    }
+  ): Promise<void> {
+    await this.message.updateThread(thread, update)
   }
 
   async findMessages(params: FindMessagesParams): Promise<Message[]> {
@@ -182,8 +211,12 @@ export class CockroachAdapter implements DbAdapter {
     return await this.notification.addCollaborators(card, cardType, collaborators, date)
   }
 
-  async removeCollaborators(card: CardID, collaborators: AccountID[]): Promise<void> {
+  async removeCollaborators(card: CardID, collaborators?: AccountID[]): Promise<void> {
     await this.notification.removeCollaborators(card, collaborators)
+  }
+
+  async updateCollaborators(params: FindCollaboratorsParams, data: Partial<Collaborator>): Promise<void> {
+    await this.notification.updateCollaborators(params, data)
   }
 
   async createNotification(context: ContextID, message: MessageID, messageCreated: Date): Promise<NotificationID> {
@@ -202,8 +235,8 @@ export class CockroachAdapter implements DbAdapter {
     await this.notification.updateContext(context, account, lastUpdate, lastView)
   }
 
-  async removeContext(context: ContextID, account: AccountID): Promise<void> {
-    await this.notification.removeContext(context, account)
+  async removeContexts(query: Partial<NotificationContext>): Promise<void> {
+    await this.notification.removeContexts(query)
   }
 
   async findNotificationContexts(params: FindNotificationContextParams): Promise<NotificationContext[]> {
@@ -230,12 +263,27 @@ export class CockroachAdapter implements DbAdapter {
     return this.label.createLabel(label, card, cardType, account, created)
   }
 
-  removeLabel(label: LabelID, card: CardID, account: AccountID): Promise<void> {
-    return this.label.removeLabel(label, card, account)
+  removeLabels(query: Partial<Label>): Promise<void> {
+    return this.label.removeLabels(query)
   }
 
   findLabels(params: FindLabelsParams): Promise<Label[]> {
     return this.label.findLabels(params)
+  }
+  updateLabels(params: FindLabelsParams, data: Partial<Label>): Promise<void> {
+    return this.label.updateLabels(params, data)
+  }
+
+  //TODO: remove it!
+  async getAccountByPersonId(_id: string): Promise<AccountID | undefined> {
+    const sql = `SELECT data ->> 'personUuid' AS "personUuid"
+                 FROM public.contact
+                 WHERE "workspaceId" = $1::uuid
+                   AND _id = $2::varchar
+                 LIMIT 1`
+    const result = await this.sql.execute(sql, [this.workspace, _id])
+
+    return result?.[0]?.personUuid as AccountID
   }
 }
 

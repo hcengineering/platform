@@ -40,7 +40,6 @@ export async function findMessageInFiles(
 ): Promise<Message | undefined> {
   const filesUrl = ctx.metadata.filesUrl
   if (filesUrl === '') {
-    ctx.ctx.error('FILES_URL is missing', { filesUrl })
     return undefined
   }
 

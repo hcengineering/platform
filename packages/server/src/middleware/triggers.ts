@@ -17,7 +17,7 @@ import type { DbAdapter, RequestEvent, ResponseEvent, SessionData } from '@hceng
 import type { MeasureContext } from '@hcengineering/core'
 
 import triggers from '../triggers/all'
-import type { Middleware, MiddlewareContext, TriggerCtx, TriggersDb } from '../types'
+import type { Middleware, MiddlewareContext, TriggerCtx } from '../types'
 import { BaseMiddleware } from './base'
 import { notify } from '../notification/notification'
 
@@ -25,7 +25,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   private readonly ctx: MeasureContext
 
   constructor(
-    private readonly db: TriggersDb,
+    private readonly db: DbAdapter,
     context: MiddlewareContext,
     next?: Middleware
   ) {
@@ -80,18 +80,5 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     if (derived.length === 0) return
     if (this.context.head === undefined) return
     await Promise.all(derived.map((d) => this.context.head?.event(session, d, true)))
-  }
-}
-
-export function createTriggersDb(db: DbAdapter): TriggersDb {
-  return {
-    findMessagesGroups: (params) => db.findMessagesGroups(params),
-    findMessages: (params) => db.findMessages(params),
-    findCollaborators: (params) => db.findCollaborators(params),
-    findNotifications: (params) => db.findNotifications(params),
-    findNotificationContexts: (params) => db.findNotificationContexts(params),
-    findLabels: (params) => db.findLabels(params),
-    findThread: (params) => db.findThread(params),
-    getCollaboratorsCursor: (card, date, size) => db.getCollaboratorsCursor(card, date, size)
   }
 }

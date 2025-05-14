@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { concatLink } from '@hcengineering/core'
+import { type BlobMetadata, concatLink } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
   MessageRequestEventType,
@@ -161,7 +161,8 @@ class RestClientImpl implements RestClient {
     fileType: string,
     filename: string,
     size: number,
-    creator: SocialID
+    creator: SocialID,
+    meta?: BlobMetadata
   ): Promise<void> {
     await this.event({
       type: MessageRequestEventType.CreateFile,
@@ -172,6 +173,7 @@ class RestClientImpl implements RestClient {
       fileType,
       filename,
       size,
+      meta,
       creator
     })
   }

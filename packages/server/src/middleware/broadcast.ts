@@ -14,6 +14,7 @@
 //
 
 import {
+  CardResponseEventType,
   type EventResult,
   LabelResponseEventType,
   MessageResponseEventType,
@@ -247,6 +248,10 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
         return info.account === event.label.account
       case LabelResponseEventType.LabelRemoved:
         return info.account === event.account
+      case CardResponseEventType.CardTypeUpdated:
+        return true
+      case CardResponseEventType.CardRemoved:
+        return true
     }
   }
 

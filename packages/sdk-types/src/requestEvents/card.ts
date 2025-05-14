@@ -13,17 +13,24 @@
 // limitations under the License.
 //
 
-import type { Ref, Blob, AccountUuid, WorkspaceUuid, PersonId, BlobMetadata } from '@hcengineering/core'
-import type { Card, MasterTag } from '@hcengineering/card'
+import type { CardID, CardType } from '@hcengineering/communication-types'
 
-export type { BlobMetadata }
+import type { BaseRequestEvent } from './common'
 
-export type BlobID = Ref<Blob>
-export type CardID = Ref<Card>
-export type CardType = Ref<MasterTag>
-export type SocialID = PersonId
-export type WorkspaceID = WorkspaceUuid
-export type RichText = string
-export type AccountID = AccountUuid
+export enum CardRequestEventType {
+  UpdateCardType = 'updateCardType',
+  RemoveCard = 'removeCard'
+}
 
-export type ID = string
+export type CardRequestEvent = UpdateCardTypeEvent | RemoveCardEvent
+
+export interface UpdateCardTypeEvent extends BaseRequestEvent {
+  type: CardRequestEventType.UpdateCardType
+  card: CardID
+  cardType: CardType
+}
+
+export interface RemoveCardEvent extends BaseRequestEvent {
+  type: CardRequestEventType.RemoveCard
+  card: CardID
+}

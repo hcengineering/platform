@@ -29,7 +29,9 @@ import {
   type RichText,
   type SocialID,
   SortingOrder,
-  type Thread
+  type Thread,
+  type File,
+  type BlobMetadata
 } from '@hcengineering/communication-types'
 
 import { BaseDb } from './base'
@@ -90,9 +92,7 @@ export class MessagesDb extends BaseDb {
     return result.map((it: any) => it.id)[0]
   }
 
-  async removeMessages(card: CardID, messages: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]> {
-    if (messages.length === 0) return []
-
+  async removeMessages(card: CardID, messages?: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]> {
     const where: string[] = ['workspace_id = $1::uuid', 'card_id = $2::varchar']
     const values: any[] = [this.workspace, card]
 
@@ -108,10 +108,10 @@ export class MessagesDb extends BaseDb {
       values.push(socialIds)
     }
 
-    if (messages.length === 1) {
+    if (messages && messages.length === 1) {
       where.push(`id = $${index++}::bigint`)
       values.push(messages[0])
-    } else {
+    } else if (messages && messages.length > 1) {
       where.push(`id = ANY($${index++}::bigint[])`)
       values.push(messages)
     }
@@ -158,6 +158,14 @@ export class MessagesDb extends BaseDb {
     )
   }
 
+  async removePatches(card: CardID): Promise<void> {
+    const sql = `DELETE
+                 FROM ${TableName.Patch}
+                 WHERE workspace_id = $1::uuid
+                   AND card_id = $2::varchar`
+    await this.execute(sql, [this.workspace, card], 'remove patches')
+  }
+
   // File
   async createFile(
     card: CardID,
@@ -167,6 +175,7 @@ export class MessagesDb extends BaseDb {
     fileType: string,
     filename: string,
     size: number,
+    meta: BlobMetadata | undefined,
     creator: SocialID,
     created: Date
   ): Promise<void> {
@@ -180,12 +189,13 @@ export class MessagesDb extends BaseDb {
       size,
       creator,
       created,
-      message_created: messageCreated
+      message_created: messageCreated,
+      meta
     }
     const sql = `INSERT INTO ${TableName.File} (workspace_id, card_id, message_id, blob_id, type, filename, creator,
-                                                created, message_created, size)
+                                                created, message_created, size, meta)
                  VALUES ($1::uuid, $2::varchar, $3::int8, $4::uuid, $5::varchar, $6::varchar, $7::varchar,
-                         $8::timestamptz, $9::timestamptz, $10::int8)`
+                         $8::timestamptz, $9::timestamptz, $10::int8, $11::jsonb)`
 
     await this.execute(
       sql,
@@ -199,20 +209,34 @@ export class MessagesDb extends BaseDb {
         db.creator,
         db.created,
         db.message_created,
-        db.size
+        db.size,
+        db.meta ?? {}
       ],
       'insert file'
     )
   }
 
-  async removeFile(card: CardID, message: MessageID, blobId: BlobID): Promise<void> {
+  async removeFiles(query: Partial<File>): Promise<void> {
+    const db: Partial<FileDb> = {
+      card_id: query.card,
+      message_id: query.message,
+      blob_id: query.blobId
+    }
+
+    const entries = Object.entries(db).filter(([_, value]) => value != undefined)
+
+    if (entries.length === 0) return
+
+    entries.push(['workspace_id', this.workspace])
+
+    const whereClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
+    const whereValues = entries.map(([_, value]) => value)
+
     const sql = `DELETE
                  FROM ${TableName.File}
-                 WHERE workspace_id = $1::uuid
-                   AND card_id = $2::varchar
-                   AND message_id = $3::bigint
-                   AND blob_id = $4::uuid`
-    await this.execute(sql, [this.workspace, card, message, blobId], 'remove file')
+                 WHERE ${whereClauses.join(' AND ')}`
+
+    await this.execute(sql, whereValues, 'remove files')
   }
 
   // Reaction
@@ -322,26 +346,65 @@ export class MessagesDb extends BaseDb {
     )
   }
 
-  async updateThread(thread: CardID, op: 'increment' | 'decrement', lastReply?: Date): Promise<void> {
+  async removeThreads(query: Partial<Thread>): Promise<void> {
+    const db: Partial<ThreadDb> = {
+      card_id: query.card,
+      message_id: query.message,
+      thread_id: query.thread,
+      thread_type: query.threadType
+    }
+
+    const entries = Object.entries(db).filter(([_, value]) => value != undefined)
+
+    if (entries.length === 0) return
+
+    entries.push(['workspace_id', this.workspace])
+
+    const whereClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
+    const whereValues = entries.map(([_, value]) => value)
+
+    const sql = `DELETE
+                 FROM ${TableName.Thread}
+                 WHERE ${whereClauses.join(' AND ')}`
+
+    await this.execute(sql, whereValues, 'remove threads')
+  }
+
+  async updateThread(
+    thread: CardID,
+    update: {
+      threadType?: CardType
+      op?: 'increment' | 'decrement'
+      lastReply?: Date
+    }
+  ): Promise<void> {
     const set: string[] = []
     const values: any[] = []
 
-    if (lastReply != null) {
-      set.push('last_reply = $3::timestamptz')
-      values.push(lastReply)
+    let index = 1
+    if (update.lastReply != null) {
+      set.push(`last_reply = $${index++}::timestamptz`)
+      values.push(update.lastReply)
     }
 
-    if (op === 'increment') {
+    if (update.op === 'increment') {
       set.push('replies_count = replies_count + 1')
-    } else if (op === 'decrement') {
+    } else if (update.op === 'decrement') {
       set.push('replies_count = GREATEST(replies_count - 1, 0)')
     }
 
-    const update = `UPDATE ${TableName.Thread}`
+    if (update.threadType != null) {
+      set.push(`thread_type = $${index++}::varchar`)
+      values.push(update.threadType)
+    }
+
+    if (set.length === 0) return
+
+    const updateSql = `UPDATE ${TableName.Thread}`
     const setSql = 'SET ' + set.join(', ')
-    const where = 'WHERE workspace_id = $1::uuid AND thread_id = $2::varchar'
-    const sql = [update, setSql, where].join(' ')
-    await this.execute(sql, [this.workspace, thread, ...values], 'update thread')
+    const where = `WHERE workspace_id = $${index++}::uuid AND thread_id = $${index++}::varchar`
+    const sql = [updateSql, setSql, where].join(' ')
+    await this.execute(sql, [...values, this.workspace, thread], 'update thread')
   }
 
   // MessagesGroup
@@ -427,6 +490,7 @@ export class MessagesDb extends BaseDb {
           'type', f.type,
           'size', f.size,
           'filename', f.filename,
+          'meta', f.meta,
           'creator', f.creator,
           'created', f.created
         )) AS files

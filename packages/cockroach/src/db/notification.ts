@@ -30,7 +30,7 @@ import {
 } from '@hcengineering/communication-types'
 
 import { BaseDb } from './base'
-import { type ContextDb, type NotificationDb, TableName } from './schema'
+import { type CollaboratorDb, type ContextDb, type NotificationDb, TableName } from './schema'
 import { getCondition } from './utils'
 import { toCollaborator, toNotification, toNotificationContext } from './mapping'
 
@@ -58,10 +58,11 @@ export class NotificationsDb extends BaseDb {
     return result.map((it: any) => it.account)
   }
 
-  async removeCollaborators(card: CardID, collaborators: AccountID[]): Promise<void> {
-    if (collaborators.length === 0) return
-
-    if (collaborators.length === 1) {
+  async removeCollaborators(card: CardID, collaborators?: AccountID[]): Promise<void> {
+    if (collaborators === undefined) {
+      const sql = `DELETE FROM ${TableName.Collaborators} WHERE workspace_id = $1::uuid AND card_id = $2::varchar`
+      await this.execute(sql, [this.workspace, card], 'remove collaborators')
+    } else if (collaborators.length === 1) {
       const sql = `DELETE
                          FROM ${TableName.Collaborators}
                          WHERE workspace_id = $1::uuid
@@ -140,11 +141,26 @@ export class NotificationsDb extends BaseDb {
     return result[0].id as ContextID
   }
 
-  async removeContext(context: ContextID, account: AccountID): Promise<void> {
+  async removeContexts(query: Partial<NotificationContext>): Promise<void> {
+    const db: Partial<ContextDb> & { id?: ContextID } = {
+      id: query.id,
+      card_id: query.card,
+      account: query.account
+    }
+    const entries = Object.entries(db).filter(([_, value]) => value != undefined)
+
+    if (entries.length === 0) return
+
+    entries.push(['workspace_id', this.workspace])
+
+    const whereClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
+    const whereValues = entries.map(([_, value]) => value)
+
     const sql = `DELETE
-                     FROM ${TableName.NotificationContext}
-                     WHERE id = $1::int8 AND account = $2::uuid`
-    await this.execute(sql, [context, account], 'remove notification context')
+                 FROM ${TableName.NotificationContext}
+                 WHERE ${whereClauses.join(' AND ')}`
+
+    await this.execute(sql, whereValues, 'remove notification context')
   }
 
   async updateContext(context: ContextID, account: AccountID, lastUpdate?: Date, lastView?: Date): Promise<void> {
@@ -349,6 +365,27 @@ export class NotificationsDb extends BaseDb {
     return result.map((it: any) => toNotification(it))
   }
 
+  async updateCollaborators(params: FindCollaboratorsParams, data: Partial<Collaborator>): Promise<void> {
+    const dbData: Partial<CollaboratorDb> = {
+      account: data.account,
+      card_id: data.card,
+      card_type: data.cardType
+    }
+
+    const entries = Object.entries(dbData).filter(([_, value]) => value != undefined)
+    if (entries.length === 0) return
+
+    const setClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
+    const setValues = entries.map(([_, value]) => value)
+
+    const { where, values: whereValues } = this.buildCollaboratorsWhere(params, setValues.length, '')
+
+    const sql = `UPDATE ${TableName.Collaborators}
+             SET ${setClauses.join(', ')}
+             ${where}`
+
+    await this.execute(sql, [...setValues, ...whereValues], 'update collaborators')
+  }
   async findCollaborators(params: FindCollaboratorsParams): Promise<Collaborator[]> {
     const { where, values } = this.buildCollaboratorsWhere(params)
     const select = `
@@ -366,18 +403,27 @@ export class NotificationsDb extends BaseDb {
     return result.map((it: any) => toCollaborator(it))
   }
 
-  private buildCollaboratorsWhere(params: FindCollaboratorsParams): { where: string; values: any[] } {
-    const where: string[] = ['c.workspace_id = $1::uuid', 'c.card_id = $2::varchar']
-    const values: any[] = [this.workspace, params.card]
-    let index = values.length + 1
+  private buildCollaboratorsWhere(
+    params: FindCollaboratorsParams,
+    startIndex: number = 0,
+    prefix: string = 'c.'
+  ): { where: string; values: any[] } {
+    const where: string[] = []
+    const values: any[] = []
+    let index = startIndex + 1
+
+    where.push(`${prefix}workspace_id = $${index++}::uuid`)
+    values.push(this.workspace)
+    where.push(`${prefix}card_id = $${index++}::varchar`)
+    values.push(params.card)
 
     if (params.account != null) {
       const accounts = Array.isArray(params.account) ? params.account : [params.account]
       if (accounts.length === 1) {
-        where.push(`c.account = $${index++}::uuid`)
+        where.push(`${prefix}account = $${index++}::uuid`)
         values.push(accounts[0])
       } else if (accounts.length > 1) {
-        where.push(`c.account = ANY($${index++}::uuid[])`)
+        where.push(`${prefix}account = ANY($${index++}::uuid[])`)
         values.push(accounts)
       }
     }

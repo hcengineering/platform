@@ -29,7 +29,9 @@ import type { TriggerCtx, TriggerFn, Triggers } from '../types'
 async function onAddedCollaborators(ctx: TriggerCtx, event: AddedCollaboratorsEvent): Promise<RequestEvent[]> {
   const { card, cardType, collaborators } = event
   const result: RequestEvent[] = []
+  const contexts = await ctx.db.findNotificationContexts({ card, account: event.collaborators })
   for (const collaborator of collaborators) {
+    const context = contexts.find((it) => it.account === collaborator)
     result.push({
       type: LabelRequestEventType.CreateLabel,
       card,
@@ -38,13 +40,23 @@ async function onAddedCollaborators(ctx: TriggerCtx, event: AddedCollaboratorsEv
       label: SubscriptionLabelID
     })
 
-    result.push({
-      type: NotificationRequestEventType.CreateNotificationContext,
-      account: collaborator,
-      card,
-      lastUpdate: event.date,
-      lastView: event.date
-    })
+    if (context === undefined) {
+      result.push({
+        type: NotificationRequestEventType.CreateNotificationContext,
+        account: collaborator,
+        card,
+        lastUpdate: event.date,
+        lastView: event.date
+      })
+    } else {
+      result.push({
+        type: NotificationRequestEventType.UpdateNotificationContext,
+        context: context.id,
+        account: collaborator,
+        lastUpdate: event.date,
+        lastView: event.date
+      })
+    }
   }
   return result
 }
@@ -52,13 +64,24 @@ async function onAddedCollaborators(ctx: TriggerCtx, event: AddedCollaboratorsEv
 async function onRemovedCollaborators(ctx: TriggerCtx, event: RemovedCollaboratorsEvent): Promise<RequestEvent[]> {
   const { card, collaborators } = event
   const result: RequestEvent[] = []
+  const contexts = await ctx.db.findNotificationContexts({ card, account: event.collaborators })
   for (const collaborator of collaborators) {
+    const context = contexts.find((it) => it.account === collaborator)
     result.push({
       type: LabelRequestEventType.RemoveLabel,
       card,
       account: collaborator,
       label: SubscriptionLabelID
     })
+
+    if (context !== undefined && context.lastUpdate.getTime() > context.lastView.getTime()) {
+      result.push({
+        type: NotificationRequestEventType.UpdateNotificationContext,
+        context: context.id,
+        account: collaborator,
+        lastView: context.lastUpdate
+      })
+    }
   }
   return result
 }

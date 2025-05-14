@@ -23,17 +23,29 @@ import type {
 import { type LabelResponseEvent, LabelResponseEventType } from './responseEvents/label'
 import type { MessageResponseEvent, MessageResponseEventType } from './responseEvents/message'
 import type { NotificationResponseEvent, NotificationResponseEventType } from './responseEvents/notification'
+import type { CardRequestEvent, CardRequestEventType } from './requestEvents/card'
+import type { CardResponseEvent, CardResponseEventType } from './responseEvents/card'
 
 export * from './requestEvents/message'
-export * from './requestEvents/notification'
-export * from './requestEvents/label'
 export * from './responseEvents/message'
+export * from './requestEvents/notification'
 export * from './responseEvents/notification'
+export * from './requestEvents/label'
 export * from './responseEvents/label'
+export * from './requestEvents/card'
+export * from './responseEvents/card'
 
-export type RequestEventType = MessageRequestEventType | NotificationRequestEventType | LabelRequestEventType
-export type RequestEvent = MessageRequestEvent | NotificationRequestEvent | LabelRequestEvent
+export type RequestEventType =
+  | MessageRequestEventType
+  | NotificationRequestEventType
+  | LabelRequestEventType
+  | CardRequestEventType
+export type RequestEvent = MessageRequestEvent | NotificationRequestEvent | LabelRequestEvent | CardRequestEvent
 export type EventResult = MessageEventResult | NotificationEventResult | {}
 
-export type ResponseEventType = MessageResponseEventType | NotificationResponseEventType | LabelResponseEventType
-export type ResponseEvent = MessageResponseEvent | NotificationResponseEvent | LabelResponseEvent
+export type ResponseEventType =
+  | MessageResponseEventType
+  | NotificationResponseEventType
+  | LabelResponseEventType
+  | CardResponseEventType
+export type ResponseEvent = MessageResponseEvent | NotificationResponseEvent | LabelResponseEvent | CardResponseEvent
