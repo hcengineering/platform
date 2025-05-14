@@ -536,6 +536,19 @@ services:
       - DB_URL=${DB_CR_URL}
       - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
     restart: unless-stopped
+  hulykvs:
+    image: hardcoreeng/hulykvs
+    depends_on:
+      cockroach:
+        condition: service_started
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    ports:
+      - 8094:8094
+    environment:
+      - HULY_DB_CONNECTION=${DB_CR_URL}
+      - HULY_TOKEN_SECRET=secret
+    restart: unless-stopped
 volumes:
   db:
   dbpg:
