@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Reaction } from '@hcengineering/activity'
-  import { Doc, getCurrentAccount, PersonId } from '@hcengineering/core'
+  import { Doc, getCurrentAccount, PersonId, Ref, Blob } from '@hcengineering/core'
   import { IconAdd, showPopup, tooltip } from '@hcengineering/ui'
   import { includesAny } from '@hcengineering/contact'
   import emojiPlugin from '@hcengineering/emoji'
@@ -32,14 +32,14 @@
   const dispatch = createEventDispatcher()
   const me = getCurrentAccount()
 
-  let reactionsPersons = new Map<string, PersonId[]>()
+  let reactionsPersons = new Map<{ text: string, image?: Ref<Blob> }, PersonId[]>()
   let opened: boolean = false
 
   $: {
     reactionsPersons.clear()
     reactions.forEach((r) => {
-      const persons = reactionsPersons.get(r.emoji) ?? []
-      reactionsPersons.set(r.emoji, [...persons, r.createBy])
+      const persons = reactionsPersons.get({ text: r.emoji, image: r.image }) ?? []
+      reactionsPersons.set({ text: r.emoji, image: r.image }, [...persons, r.createBy])
     })
     reactionsPersons = reactionsPersons
   }
@@ -59,7 +59,14 @@
     ev.stopPropagation()
     opened = true
     showPopup(emojiPlugin.component.EmojiPopup, {}, ev.target as HTMLElement, async (emoji) => {
-      if (emoji?.text !== undefined) await updateDocReactions(reactions, object, emoji.text)
+      if (emoji?.text !== undefined) {
+        await updateDocReactions(
+          reactions,
+          object,
+          emoji.text,
+          emoji.image
+        )
+      }
       opened = false
     })
   }
@@ -74,21 +81,17 @@
       class:highlight={includesAny(persons, me.socialIds)}
       class:cursor-pointer={!readonly}
       use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: persons } }}
-      on:click={getClickHandler(emoji)}
+      on:click={getClickHandler(emoji.text)}
     >
-      {#await getResource(emojiPlugin.functions.GetCustomEmoji) then getCustomEmojiFunction}
-        {@const customEmoji = getCustomEmojiFunction(emoji)}
-        <span class="emoji">
-          {#if customEmoji === undefined}
-            {emoji}
-          {:else}
-            {@const alt = emoji}
-            {#await getBlobRef(customEmoji.image) then blobSrc}
-              <img src={blobSrc.src} {alt} />
-            {/await}
-          {/if}
-        </span>
-      {/await}
+      <span class="emoji">
+        {#if emoji.image === undefined || emoji.image == null}
+          {emoji.text}
+        {:else}
+          {#await getBlobRef(emoji.image) then blobSrc}
+            <img src={blobSrc.src} alt={emoji.text} />
+          {/await}
+        {/if}
+      </span>
       <span class="counter">{persons.length}</span>
     </div>
   {/each}
