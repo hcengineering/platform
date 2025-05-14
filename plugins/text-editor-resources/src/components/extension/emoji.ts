@@ -86,7 +86,13 @@ function detectPasteEmojis (text: string, regExp: RegExp): PasteRuleMatch[] | nu
     }
     if (matchEnd < text.length) {
       if (index === matches.length - 1 && text[matchEnd] !== ' ') continue
-      if (index < matches.length - 1 && text.indexOf(matches[index + 1], matchEnd) > matchEnd && text[matchEnd] !== ' ') { continue }
+      if (
+        index < matches.length - 1 &&
+        text.indexOf(matches[index + 1], matchEnd) > matchEnd &&
+        text[matchEnd] !== ' '
+      ) {
+        continue
+      }
     }
     result.push({ index: matchStart, text: match })
   }

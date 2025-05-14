@@ -76,7 +76,7 @@
       border-radius: 0.25rem;
     }
     &.preview {
-      margin: 0.0rem;
+      margin: 0rem;
       padding: 0.25rem;
       width: 1.5rem;
       height: 1.5rem;
