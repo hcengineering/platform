@@ -14,6 +14,7 @@
 //
 
 import { MeasureContext, TxOperations, SocialId } from '@hcengineering/core'
+import { type KeyValueClient } from '@hcengineering/kvs-client'
 
 import config from '../config'
 import { AttachmentHandler } from './attachments'
@@ -25,6 +26,7 @@ import { type Channel } from '../types'
 export function createMessageManager (
   ctx: MeasureContext,
   client: TxOperations,
+  keyValueClient: KeyValueClient,
   attachmentHandler: AttachmentHandler,
   workspace: { getChannel: (email: string) => Channel | undefined },
   token: string,

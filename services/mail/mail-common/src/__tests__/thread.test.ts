@@ -13,21 +13,19 @@
 // limitations under the License.
 //
 
-import { MeasureContext, Ref, PersonId } from '@hcengineering/core'
+import { MeasureContext, Ref } from '@hcengineering/core'
 import { KeyValueClient } from '@hcengineering/kvs-client'
 import { Card } from '@hcengineering/card'
 import { PersonSpace } from '@hcengineering/contact'
-import { ThreadLookupService, ThreadLookupInfo } from '../thread'
+import { ThreadLookupService, ThreadInfo } from '../thread'
 
 describe('ThreadLookupService', () => {
   // Test constants
-  const WORKSPACE = 'test-workspace'
+  const TOKEN = 'test-token'
   const MAIL_ID = 'test-mail-id'
   const SPACE_ID = 'test-space-id' as Ref<PersonSpace>
   const THREAD_ID = 'test-thread-id' as Ref<Card>
-  const OWNER_ID = 'test-owner-id' as PersonId
-  const TIMESTAMP = 1620000000000
-  const KEY = `mail-thread-lookup:${WORKSPACE}:${MAIL_ID}:${SPACE_ID}`
+  const KEY = `mail-thread-lookup:${MAIL_ID}:${SPACE_ID}`
 
   // Mocks
   let mockCtx: MeasureContext
@@ -36,9 +34,6 @@ describe('ThreadLookupService', () => {
   beforeEach(() => {
     // Reset module between tests
     jest.resetModules()
-
-    // Mock Date.now() to return a consistent timestamp
-    jest.spyOn(Date, 'now').mockImplementation(() => TIMESTAMP)
 
     // Create mock context
     mockCtx = {
@@ -59,38 +54,51 @@ describe('ThreadLookupService', () => {
     // Clear all mocks and restore Date.now
     jest.clearAllMocks()
     jest.restoreAllMocks()
+    ThreadLookupService.resetAllInstances()
   })
 
   describe('getInstance', () => {
-    it('should create a new instance when none exists', () => {
-      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient)
+    it('should create a new instance when none exists for the token', () => {
+      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
 
       expect(service).toBeInstanceOf(ThreadLookupService)
     })
 
-    it('should reuse existing instance when called multiple times', () => {
-      const service1 = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient)
-      const service2 = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient)
+    it('should reuse existing instance when called multiple times with same token', () => {
+      const service1 = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+      const service2 = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
 
       expect(service1).toBe(service2)
+    })
+
+    it('should create different instances for different tokens', () => {
+      const service1 = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+      const service2 = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, 'different-token')
+
+      expect(service1).not.toBe(service2)
+    })
+
+    it('should return new instance after resetting a specific instance', () => {
+      const service1 = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+      ThreadLookupService.resetInstance(TOKEN)
+      const service2 = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+
+      expect(service1).not.toBe(service2)
     })
   })
 
   describe('getThreadId', () => {
     it('should return thread ID when mapping exists', async () => {
       // Setup mock response
-      const mockLookup: ThreadLookupInfo = {
-        mailId: MAIL_ID,
-        spaceId: SPACE_ID,
-        threadId: THREAD_ID,
-        timestamp: TIMESTAMP
+      const mockLookup: ThreadInfo = {
+        threadId: THREAD_ID
       }
 
       mockKeyValueClient.getValue.mockResolvedValue(mockLookup)
 
       // Get service and call method
-      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient)
-      const result = await service.getThreadId(WORKSPACE, MAIL_ID, SPACE_ID)
+      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+      const result = await service.getThreadId(MAIL_ID, SPACE_ID)
 
       // Verify behavior
       expect(mockKeyValueClient.getValue).toHaveBeenCalledWith(KEY)
@@ -98,7 +106,6 @@ describe('ThreadLookupService', () => {
       expect(mockCtx.info).toHaveBeenCalledWith(
         'Found existing thread mapping',
         expect.objectContaining({
-          workspace: WORKSPACE,
           mailId: MAIL_ID,
           threadId: THREAD_ID
         })
@@ -110,8 +117,8 @@ describe('ThreadLookupService', () => {
       mockKeyValueClient.getValue.mockResolvedValue(null)
 
       // Get service and call method
-      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient)
-      const result = await service.getThreadId(WORKSPACE, MAIL_ID, SPACE_ID)
+      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+      const result = await service.getThreadId(MAIL_ID, SPACE_ID)
 
       // Verify behavior
       expect(mockKeyValueClient.getValue).toHaveBeenCalledWith(KEY)
@@ -125,8 +132,8 @@ describe('ThreadLookupService', () => {
       mockKeyValueClient.getValue.mockRejectedValue(mockError)
 
       // Get service and call method
-      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient)
-      const result = await service.getThreadId(WORKSPACE, MAIL_ID, SPACE_ID)
+      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+      const result = await service.getThreadId(MAIL_ID, SPACE_ID)
 
       // Verify behavior
       expect(mockKeyValueClient.getValue).toHaveBeenCalledWith(KEY)
@@ -134,7 +141,6 @@ describe('ThreadLookupService', () => {
       expect(mockCtx.error).toHaveBeenCalledWith(
         'Failed to lookup thread for email',
         expect.objectContaining({
-          workspace: WORKSPACE,
           mailId: MAIL_ID,
           error: mockError
         })
@@ -145,25 +151,20 @@ describe('ThreadLookupService', () => {
   describe('setThreadId', () => {
     it('should store thread mapping in KVS', async () => {
       // Get service and call method
-      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient)
-      await service.setThreadId(WORKSPACE, MAIL_ID, SPACE_ID, THREAD_ID, OWNER_ID)
+      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+      await service.setThreadId(MAIL_ID, SPACE_ID, THREAD_ID)
 
       // Verify behavior
       expect(mockKeyValueClient.setValue).toHaveBeenCalledWith(KEY, {
-        mailId: MAIL_ID,
-        spaceId: SPACE_ID,
-        threadId: THREAD_ID,
-        timestamp: TIMESTAMP
+        threadId: THREAD_ID
       })
 
       expect(mockCtx.info).toHaveBeenCalledWith(
         'Saved thread mapping',
         expect.objectContaining({
-          workspace: WORKSPACE,
           mailId: MAIL_ID,
           spaceId: SPACE_ID,
-          threadId: THREAD_ID,
-          timestamp: TIMESTAMP
+          threadId: THREAD_ID
         })
       )
     })
@@ -174,15 +175,14 @@ describe('ThreadLookupService', () => {
       mockKeyValueClient.setValue.mockRejectedValue(mockError)
 
       // Get service and call method
-      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient)
-      await service.setThreadId(WORKSPACE, MAIL_ID, SPACE_ID, THREAD_ID, OWNER_ID)
+      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+      await service.setThreadId(MAIL_ID, SPACE_ID, THREAD_ID)
 
       // Verify behavior
       expect(mockKeyValueClient.setValue).toHaveBeenCalledWith(KEY, expect.any(Object))
       expect(mockCtx.error).toHaveBeenCalledWith(
         'Failed to save thread mapping',
         expect.objectContaining({
-          workspace: WORKSPACE,
           mailId: MAIL_ID,
           spaceId: SPACE_ID,
           threadId: THREAD_ID,
@@ -195,8 +195,8 @@ describe('ThreadLookupService', () => {
   describe('getParentThreadId', () => {
     it('should return undefined when inReplyTo is undefined', async () => {
       // Get service and call method
-      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient)
-      const result = await service.getParentThreadId(WORKSPACE, undefined, SPACE_ID)
+      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+      const result = await service.getParentThreadId(undefined, SPACE_ID)
 
       // Verify behavior
       expect(result).toBeUndefined()
@@ -209,20 +209,15 @@ describe('ThreadLookupService', () => {
       const PARENT_THREAD_ID = 'parent-thread-id' as Ref<Card>
 
       mockKeyValueClient.getValue.mockResolvedValue({
-        mailId: REPLY_TO,
-        spaceId: SPACE_ID,
-        threadId: PARENT_THREAD_ID,
-        timestamp: TIMESTAMP
+        threadId: PARENT_THREAD_ID
       })
 
       // Get service and call method
-      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient)
-      const result = await service.getParentThreadId(WORKSPACE, REPLY_TO, SPACE_ID)
+      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+      const result = await service.getParentThreadId(REPLY_TO, SPACE_ID)
 
       // Verify behavior
-      expect(mockKeyValueClient.getValue).toHaveBeenCalledWith(
-        `mail-thread-lookup:${WORKSPACE}:${REPLY_TO}:${SPACE_ID}`
-      )
+      expect(mockKeyValueClient.getValue).toHaveBeenCalledWith(`mail-thread-lookup:${REPLY_TO}:${SPACE_ID}`)
       expect(result).toBe(PARENT_THREAD_ID)
     })
   })
@@ -230,15 +225,14 @@ describe('ThreadLookupService', () => {
   describe('deleteMapping', () => {
     it('should delete mapping from KVS', async () => {
       // Get service and call method
-      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient)
-      await service.deleteMapping(WORKSPACE, MAIL_ID, SPACE_ID)
+      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+      await service.deleteMapping(MAIL_ID, SPACE_ID)
 
       // Verify behavior
       expect(mockKeyValueClient.deleteKey).toHaveBeenCalledWith(KEY)
       expect(mockCtx.info).toHaveBeenCalledWith(
         'Deleted thread mapping',
         expect.objectContaining({
-          workspace: WORKSPACE,
           mailId: MAIL_ID,
           spaceId: SPACE_ID
         })
@@ -251,20 +245,61 @@ describe('ThreadLookupService', () => {
       mockKeyValueClient.deleteKey.mockRejectedValue(mockError)
 
       // Get service and call method
-      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient)
-      await service.deleteMapping(WORKSPACE, MAIL_ID, SPACE_ID)
+      const service = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, TOKEN)
+      await service.deleteMapping(MAIL_ID, SPACE_ID)
 
       // Verify behavior
       expect(mockKeyValueClient.deleteKey).toHaveBeenCalledWith(KEY)
       expect(mockCtx.error).toHaveBeenCalledWith(
         'Failed to delete thread mapping',
         expect.objectContaining({
-          workspace: WORKSPACE,
           mailId: MAIL_ID,
           spaceId: SPACE_ID,
           error: mockError
         })
       )
+    })
+  })
+
+  describe('resetInstance and resetAllInstances', () => {
+    it('should reset a specific instance', () => {
+      const token1 = 'token1'
+      const token2 = 'token2'
+
+      // Create two instances with different tokens
+      const service1 = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, token1)
+      const service2 = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, token2)
+
+      // Reset only one instance
+      ThreadLookupService.resetInstance(token1)
+
+      // Get instances again
+      const service1After = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, token1)
+      const service2After = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, token2)
+
+      // First instance should be new, second should be the same
+      expect(service1).not.toBe(service1After)
+      expect(service2).toBe(service2After)
+    })
+
+    it('should reset all instances', () => {
+      const token1 = 'token1'
+      const token2 = 'token2'
+
+      // Create two instances with different tokens
+      const service1 = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, token1)
+      const service2 = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, token2)
+
+      // Reset all instances
+      ThreadLookupService.resetAllInstances()
+
+      // Get instances again
+      const service1After = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, token1)
+      const service2After = ThreadLookupService.getInstance(mockCtx, mockKeyValueClient, token2)
+
+      // Both instances should be new
+      expect(service1).not.toBe(service1After)
+      expect(service2).not.toBe(service2After)
     })
   })
 })

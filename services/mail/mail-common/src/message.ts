@@ -33,6 +33,7 @@ import {
   RateLimiter
 } from '@hcengineering/core'
 import mail from '@hcengineering/mail'
+import { type KeyValueClient } from '@hcengineering/kvs-client'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 
@@ -42,10 +43,12 @@ import { getMdContent } from './utils'
 import { PersonCacheFactory } from './person'
 import { PersonSpacesCacheFactory } from './personSpaces'
 import { ChannelCache, ChannelCacheFactory } from './channel'
+import { ThreadLookupService } from './thread'
 
 export async function createMessages (
   config: BaseConfig,
   ctx: MeasureContext,
+  keyValueClient: KeyValueClient,
   token: string,
   message: EmailMessage,
   attachments: Attachment[]
@@ -69,6 +72,7 @@ export async function createMessages (
   const personCache = PersonCacheFactory.getInstance(ctx, restClient, wsInfo.workspace)
   const personSpacesCache = PersonSpacesCacheFactory.getInstance(ctx, txClient, wsInfo.workspace)
   const channelCache = ChannelCacheFactory.getInstance(ctx, txClient, wsInfo.workspace)
+  const threadLookup = ThreadLookupService.getInstance(ctx, keyValueClient, token)
 
   const fromPerson = await personCache.ensurePerson(from)
 
@@ -125,6 +129,7 @@ export async function createMessages (
         ctx,
         txClient,
         msgClient,
+        threadLookup,
         mailId,
         spaces,
         participants,
@@ -156,6 +161,7 @@ export async function createMessages (
           ctx,
           txClient,
           msgClient,
+          threadLookup,
           mailId,
           spaces,
           participants,
@@ -180,6 +186,7 @@ async function saveMessageToSpaces (
   ctx: MeasureContext,
   client: TxOperations,
   msgClient: CommunicationClient,
+  threadLookup: ThreadLookupService,
   mailId: string,
   spaces: PersonSpace[],
   participants: PersonId[],
@@ -199,17 +206,15 @@ async function saveMessageToSpaces (
     await rateLimiter.add(async () => {
       ctx.info('Saving message to space', { mailId, space: spaceId })
 
-      const route = await client.findOne(mail.class.MailRoute, { mailId, space: spaceId })
-      if (route !== undefined) {
-        ctx.info('Message is already in the thread, skip', { mailId, threadId: route.threadId, spaceId })
+      let threadId = await threadLookup.getThreadId(mailId, spaceId)
+      if (threadId !== undefined) {
+        ctx.info('Message is already in the thread, skip', { mailId, threadId, spaceId })
         return
       }
 
-      let threadId: Ref<Card> | undefined
       if (inReplyTo !== undefined) {
-        const route = await client.findOne(mail.class.MailRoute, { mailId: inReplyTo, space: spaceId })
-        if (route !== undefined) {
-          threadId = route.threadId as Ref<Card>
+        threadId = await threadLookup.getParentThreadId(inReplyTo, spaceId)
+        if (threadId !== undefined) {
           ctx.info('Found existing thread', { mailId, threadId, spaceId })
         }
       }
@@ -270,17 +275,7 @@ async function saveMessageToSpaces (
         )
       }
 
-      await client.createDoc(
-        mail.class.MailRoute,
-        space._id,
-        {
-          mailId,
-          threadId
-        },
-        generateId(),
-        undefined,
-        modifiedBy
-      )
+      await threadLookup.setThreadId(mailId, space._id, threadId)
     })
   }
   await rateLimiter.waitProcessing()

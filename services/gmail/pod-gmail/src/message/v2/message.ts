@@ -18,6 +18,7 @@ import sanitizeHtml from 'sanitize-html'
 
 import { type MeasureContext } from '@hcengineering/core'
 import { createMessages, parseEmailHeader, parseNameFromEmailHeader, EmailMessage } from '@hcengineering/mail-common'
+import { type KeyValueClient } from '@hcengineering/kvs-client'
 
 import { IMessageManager } from '../types'
 import config from '../../config'
@@ -28,7 +29,8 @@ export class MessageManagerV2 implements IMessageManager {
   constructor (
     private readonly ctx: MeasureContext,
     private readonly attachmentHandler: AttachmentHandler,
-    private readonly token: string,
+    private readonly keyValueClient: KeyValueClient,
+    private readonly token: string
   ) {}
 
   async saveMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string): Promise<void> {

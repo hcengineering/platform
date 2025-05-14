@@ -13,114 +13,111 @@
 // limitations under the License.
 //
 
-import { MeasureContext, PersonId, Ref } from '@hcengineering/core'
+import { MeasureContext, Ref } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { Card } from '@hcengineering/card'
 import { PersonSpace } from '@hcengineering/contact'
 
-export interface ThreadLookupInfo {
-  mailId: string
-  spaceId: Ref<PersonSpace>
+export interface ThreadInfo {
   threadId: Ref<Card>
-  timestamp: number
 }
 
 /**
  * Service that manages mappings between emails and threads in spaces
  */
 export class ThreadLookupService {
-  private static instance: ThreadLookupService | undefined
+  // Replace single instance with a map of instances keyed by token
+  private static readonly instances = new Map<string, ThreadLookupService>()
 
   private constructor (
     private readonly keyValueClient: KeyValueClient,
     private readonly ctx: MeasureContext
   ) {}
 
-  static getInstance (ctx: MeasureContext, keyValueClient: KeyValueClient): ThreadLookupService {
-    if (ThreadLookupService.instance === undefined) {
-      ThreadLookupService.instance = new ThreadLookupService(keyValueClient, ctx)
+  static getInstance (ctx: MeasureContext, keyValueClient: KeyValueClient, token: string): ThreadLookupService {
+    // Use token as key to retrieve or create instance
+    const instance = ThreadLookupService.instances.get(token)
+    if (instance != null) {
+      return instance
     }
-
-    return ThreadLookupService.instance
+    const newInstance = new ThreadLookupService(keyValueClient, ctx)
+    ThreadLookupService.instances.set(token, newInstance)
+    return newInstance
   }
 
-  async getThreadId (workspace: string, mailId: string, spaceId: Ref<PersonSpace>): Promise<Ref<Card> | undefined> {
+  // Reset all instances for testing purposes
+  static resetAllInstances (): void {
+    ThreadLookupService.instances.clear()
+  }
+
+  static resetInstance (token: string): void {
+    ThreadLookupService.instances.delete(token)
+  }
+
+  async getThreadId (mailId: string, spaceId: Ref<PersonSpace>): Promise<Ref<Card> | undefined> {
     try {
-      const key = this.getLookupKey(workspace, mailId, spaceId)
-      const lookup = await this.keyValueClient.getValue<ThreadLookupInfo>(key)
+      if (mailId == null || spaceId == null) {
+        this.ctx.warn('Invalid parameters for thread lookup', { mailId, spaceId })
+        return undefined
+      }
+      const key = this.getLookupKey(mailId, spaceId)
+      const lookup = await this.keyValueClient.getValue<ThreadInfo>(key)
 
       if (lookup !== null) {
         this.ctx.info('Found existing thread mapping', {
-          workspace,
           mailId,
           spaceId,
-          threadId: lookup.threadId,
-          timestamp: lookup.timestamp
+          threadId: lookup.threadId
         })
         return lookup.threadId
       }
 
       return undefined
     } catch (error) {
-      this.ctx.error('Failed to lookup thread for email', { workspace, mailId, spaceId, error })
+      this.ctx.error('Failed to lookup thread for email', { mailId, spaceId, error })
       return undefined
     }
   }
 
-  async setThreadId (
-    workspace: string,
-    mailId: string,
-    spaceId: Ref<PersonSpace>,
-    threadId: Ref<Card>,
-    owner: PersonId
-  ): Promise<void> {
+  async setThreadId (mailId: string, spaceId: Ref<PersonSpace>, threadId: Ref<Card>): Promise<void> {
     try {
-      const key = this.getLookupKey(workspace, mailId, spaceId)
+      const key = this.getLookupKey(mailId, spaceId)
 
-      const lookupInfo: ThreadLookupInfo = {
-        mailId,
-        spaceId,
-        threadId,
-        timestamp: Date.now()
+      const lookupInfo: ThreadInfo = {
+        threadId
       }
 
       await this.keyValueClient.setValue(key, lookupInfo)
 
       this.ctx.info('Saved thread mapping', {
-        workspace,
         mailId,
         spaceId,
-        threadId,
-        timestamp: lookupInfo.timestamp
+        threadId
       })
     } catch (error) {
-      this.ctx.error('Failed to save thread mapping', { workspace, mailId, spaceId, threadId, error })
+      this.ctx.error('Failed to save thread mapping', { mailId, spaceId, threadId, error })
     }
   }
 
-  async getParentThreadId (
-    workspace: string,
-    inReplyTo: string | undefined,
-    spaceId: Ref<PersonSpace>
-  ): Promise<Ref<Card> | undefined> {
+  async getParentThreadId (inReplyTo: string | undefined, spaceId: Ref<PersonSpace>): Promise<Ref<Card> | undefined> {
     if (inReplyTo === undefined) {
       return undefined
     }
 
-    return await this.getThreadId(workspace, inReplyTo, spaceId)
+    return await this.getThreadId(inReplyTo, spaceId)
   }
 
-  async deleteMapping (workspace: string, mailId: string, spaceId: Ref<PersonSpace>): Promise<void> {
+  async deleteMapping (mailId: string, spaceId: Ref<PersonSpace>): Promise<void> {
     try {
-      const key = this.getLookupKey(workspace, mailId, spaceId)
+      const key = this.getLookupKey(mailId, spaceId)
       await this.keyValueClient.deleteKey(key)
-      this.ctx.info('Deleted thread mapping', { workspace, mailId, spaceId })
+      this.ctx.info('Deleted thread mapping', { mailId, spaceId })
     } catch (error) {
-      this.ctx.error('Failed to delete thread mapping', { workspace, mailId, spaceId, error })
+      this.ctx.error('Failed to delete thread mapping', { mailId, spaceId, error })
     }
   }
 
-  private getLookupKey (workspace: string, mailId: string, spaceId: Ref<PersonSpace>): string {
-    return `mail-thread-lookup:${workspace}:${mailId}:${spaceId}`
+  private getLookupKey (mailId: string, spaceId: Ref<PersonSpace>): string {
+    return `mail-thread-lookup:${mailId}:${spaceId}`
   }
 }

@@ -105,15 +105,16 @@ export class GmailClient {
     this.client = new TxOperations(client, this.socialId._id)
     this.account = this.user.userId
     this.attachmentHandler = new AttachmentHandler(ctx, workspaceId, storageAdapter, this.gmail, this.client)
+    const keyValueClient = getKvsClient(this.integrationToken)
     this.messageManager = createMessageManager(
       ctx,
       this.client,
+      keyValueClient,
       this.attachmentHandler,
       this.workspace,
       this.integrationToken,
       socialId
     )
-    const keyValueClient = getKvsClient(this.integrationToken)
     this.syncManager = new SyncManager(
       ctx,
       this.messageManager,
