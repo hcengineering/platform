@@ -93,35 +93,39 @@ export class GmailController {
       this.ctx.info('Workspaces with integrations', { count: workspaceIds.size })
 
       for (const workspace of workspaceIds) {
-        const wsToken = serviceToken(workspace)
-        const accountClient = getAccountClient(wsToken)
+        try {
+          const wsToken = serviceToken(workspace)
+          const accountClient = getAccountClient(wsToken)
 
-        const tokens = await getWorkspaceTokens(accountClient, workspace)
-        await limiter.add(async () => {
-          const info = await accountClient.getWorkspaceInfo()
+          const tokens = await getWorkspaceTokens(accountClient, workspace)
+          await limiter.add(async () => {
+            const info = await accountClient.getWorkspaceInfo()
 
-          if (info === undefined) {
-            this.ctx.info('workspace not found', { workspaceUuid: workspace })
-            return
-          }
-          if (!isActiveMode(info.mode)) {
-            this.ctx.info('workspace is not active', { workspaceUuid: workspace })
-            return
-          }
-          this.ctx.info('Use stored tokens', { count: tokens.length })
-          const startPromise = this.startWorkspace(workspace, tokens)
-          const timeoutPromise = new Promise<void>((resolve) => {
-            setTimeout(() => {
-              resolve()
-            }, 60000)
+            if (info === undefined) {
+              this.ctx.info('workspace not found', { workspaceUuid: workspace })
+              return
+            }
+            if (!isActiveMode(info.mode)) {
+              this.ctx.info('workspace is not active', { workspaceUuid: workspace })
+              return
+            }
+            this.ctx.info('Use stored tokens', { count: tokens.length })
+            const startPromise = this.startWorkspace(workspace, tokens)
+            const timeoutPromise = new Promise<void>((resolve) => {
+              setTimeout(() => {
+                resolve()
+              }, 60000)
+            })
+            await Promise.race([startPromise, timeoutPromise])
           })
-          await Promise.race([startPromise, timeoutPromise])
-        })
+        } catch (err: any) {
+          this.ctx.error('Failed to create workspace client', { workspaceUuid: workspace, error: err.message })
+        }
       }
 
       await limiter.waitProcessing()
     } catch (err: any) {
-      this.ctx.error('Failed to start existing integrations', err)
+      this.ctx.error('Failed to start existing integrations', { error: err.message })
     }
   }
 
