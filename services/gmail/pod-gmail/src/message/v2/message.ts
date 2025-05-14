@@ -16,7 +16,7 @@ import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 import sanitizeHtml from 'sanitize-html'
 
-import { SocialId, type MeasureContext } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
 import { createMessages, parseEmailHeader, parseNameFromEmailHeader, EmailMessage } from '@hcengineering/mail-common'
 
 import { IMessageManager } from '../types'
@@ -29,14 +29,13 @@ export class MessageManagerV2 implements IMessageManager {
     private readonly ctx: MeasureContext,
     private readonly attachmentHandler: AttachmentHandler,
     private readonly token: string,
-    private readonly socialId: SocialId
   ) {}
 
   async saveMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string): Promise<void> {
     const res = convertMessage(message, me)
     const attachments = await this.attachmentHandler.getPartFiles(message.data.payload, message.data.id ?? '')
 
-    await createMessages(config, this.ctx, this.token, res, attachments, me, this.socialId)
+    await createMessages(config, this.ctx, this.token, res, attachments)
   }
 }
 

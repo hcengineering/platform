@@ -17,9 +17,11 @@ import { readEml, ReadedEmlJson } from 'eml-parse-js'
 import { Request, Response } from 'express'
 import TurndownService from 'turndown'
 import sanitizeHtml from 'sanitize-html'
-import { MeasureContext } from '@hcengineering/core'
-import { type Attachment, createMessages } from './message'
+import { MeasureContext, systemAccountUuid } from '@hcengineering/core'
+import { type Attachment, type BaseConfig, type EmailContact, type EmailMessage, createMessages } from '@hcengineering/mail-common'
+
 import config from './config'
+import { generateToken } from '@hcengineering/server-token'
 
 interface MtaMessage {
   envelope: {
@@ -52,22 +54,26 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
 
     const mta: MtaMessage = req.body
 
-    const from = { address: mta.envelope.from.address, name: '' }
-    if (config.ignoredAddresses.includes(from.address)) {
+    const from: EmailContact = { email: mta.envelope.from.address, firstName: '', lastName: '' }
+    if (config.ignoredAddresses.includes(from.email)) {
       return
     }
     const fromHeader = getHeader(mta, 'From')
     if (fromHeader !== undefined) {
-      from.name = extractContactName(ctx, fromHeader)
+      const { firstName, lastName } = extractContactName(ctx, fromHeader, from.email)
+      from.firstName = firstName
+      from.lastName = lastName
     }
 
-    const tos = mta.envelope.to.map((to) => ({ address: stripTags(to.address), name: '' }))
+    const tos: EmailContact[] = mta.envelope.to.map((to) => ({ email: stripTags(to.address), firstName: '', lastName: '' }))
     const toHeader = getHeader(mta, 'To')
     if (toHeader !== undefined) {
       for (const part of toHeader.split(',')) {
         for (const to of tos) {
-          if (part.includes(to.address)) {
-            to.name = extractContactName(ctx, part)
+          if (part.includes(to.email)) {
+            const { firstName, lastName } = extractContactName(ctx, part, to.email)
+            to.firstName = firstName
+            to.lastName = lastName
           }
         }
       }
@@ -82,16 +88,35 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
       mailId = createHash('sha256')
         .update(
           JSON.stringify({
-            from: from.address,
-            to: tos.map((to) => to.address),
+            from: from.email,
+            to: tos.map((to) => to.email),
             subject,
             content
           })
         )
         .digest('hex')
     }
+    const date = Date.now()
+    const convertedMessage: EmailMessage = {
+      mailId,
+      from,
+      to: tos,
+      subject,
+      content,
+      textContent: content,
+      replyTo: inReplyTo,
+      incoming: true,
+      modifiedOn: date,
+      sendOn: date
+    }
 
-    await createMessages(ctx, mailId, from, tos, subject, content, attachments, inReplyTo)
+    const token = generateToken(systemAccountUuid, undefined, { service: 'mail' })
+    const baseConfig: BaseConfig = {
+      AccountsURL: config.accountsUrl,
+      KvsUrl: config.kvsUrl,
+      StorageConfig: config.storageConfig ?? ''
+    }
+    await createMessages(baseConfig, ctx, token, convertedMessage, attachments)
   } catch (error) {
     ctx.error('mta-hook', { error })
   } finally {
@@ -169,14 +194,19 @@ async function parseContent (
   return { content, attachments }
 }
 
-function extractContactName (ctx: MeasureContext, fromHeader: string): string {
+function extractContactName (ctx: MeasureContext, fromHeader: string, email: string): { firstName: string, lastName: string } {
   // Match name part that appears before an email in angle brackets
   const nameMatch = fromHeader.match(/^\s*"?([^"<]+?)"?\s*<.+?>/)
-  const name = nameMatch?.[1].trim() ?? ''
-  if (name.length > 0) {
-    return decodeMimeWord(ctx, name)
+  const encodedName = nameMatch?.[1].trim() ?? ''
+  const name = encodedName.length > 0 ? decodeMimeWord(ctx, encodedName) : ''
+  let [firstName, lastName] = name.split(' ')
+  if (firstName === undefined || firstName.length === 0) {
+    firstName = email.split('@')[0]
   }
-  return ''
+  if (lastName === undefined || lastName.length === 0) {
+    lastName = email.split('@')[1]
+  }
+  return { firstName, lastName }
 }
 
 function decodeMimeWord (ctx: MeasureContext, text: string): string {

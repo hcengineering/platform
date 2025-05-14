@@ -30,8 +30,7 @@ import {
   type TxOperations,
   generateId,
   PersonUuid,
-  RateLimiter,
-  SocialId
+  RateLimiter
 } from '@hcengineering/core'
 import mail from '@hcengineering/mail'
 
@@ -49,9 +48,7 @@ export async function createMessages (
   ctx: MeasureContext,
   token: string,
   message: EmailMessage,
-  attachments: Attachment[],
-  me: string,
-  socialId: SocialId
+  attachments: Attachment[]
 ): Promise<void> {
   const { mailId, from, subject, replyTo } = message
   const tos = [...(message.to ?? []), ...(message.copy ?? [])]
@@ -135,8 +132,8 @@ export async function createMessages (
         subject,
         content,
         attachedBlobs,
-        me,
-        socialId,
+        from.email,
+        fromPerson.socialId,
         message.sendOn,
         channelCache,
         replyTo
@@ -166,8 +163,8 @@ export async function createMessages (
           subject,
           content,
           attachedBlobs,
-          me,
-          socialId,
+          to.address,
+          to.socialId,
           message.sendOn,
           channelCache,
           replyTo
@@ -191,7 +188,7 @@ async function saveMessageToSpaces (
   content: string,
   attachments: Attachment[],
   me: string,
-  socialId: SocialId,
+  owner: PersonId,
   createdDate: number,
   channelCache: ChannelCache,
   inReplyTo?: string
@@ -217,7 +214,7 @@ async function saveMessageToSpaces (
         }
       }
       if (threadId === undefined) {
-        const channel = await channelCache.getOrCreateChannel(spaceId, participants, me, socialId)
+        const channel = await channelCache.getOrCreateChannel(spaceId, participants, me, owner)
         const newThreadId = await client.createDoc(
           chat.masterTag.Thread,
           space._id,
@@ -242,7 +239,7 @@ async function saveMessageToSpaces (
           mail.tag.MailThread,
           {},
           Date.now(),
-          socialId._id
+          owner
         )
         threadId = newThreadId as Ref<Card>
         ctx.info('Created new thread', { mailId, threadId, spaceId })

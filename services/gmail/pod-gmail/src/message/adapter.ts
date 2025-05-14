@@ -31,7 +31,7 @@ export function createMessageManager (
   socialId: SocialId
 ): IMessageManager {
   if (config.Version === 'v2') {
-    return new MessageManagerV2(ctx, attachmentHandler, token, socialId)
+    return new MessageManagerV2(ctx, attachmentHandler, token)
   } else {
     return new MessageManagerV1(ctx, client, attachmentHandler, socialId._id, workspace)
   }

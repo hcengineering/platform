@@ -20,7 +20,7 @@ import chat from '@hcengineering/chat'
 import card from '@hcengineering/card'
 import mail from '@hcengineering/mail'
 
-export { default } from '@hcengineering/mail'
+export { mailId } from '@hcengineering/mail'
 
 export function createModel (builder: Builder): void {
   // Create mail tags for Thread and Channel master tags
