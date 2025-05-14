@@ -16,18 +16,29 @@
   import { tooltip, eventToHTMLElement, showPopup } from '@hcengineering/ui'
 
   import love from '../plugin'
-  import { isSharingEnabled } from '../utils'
+  import { isConnected, isSharingEnabled, isShareWithSound, screenSharing, setShare } from '../utils'
 
   import SharingStatePopup from './SharingStatePopup.svelte'
   import IconShare from './icons/Share.svelte'
 
+  let disabled: boolean = false
   let pressed: boolean = false
-  function handleClick (ev: MouseEvent): void {
+
+  function handleShowPopup (ev: MouseEvent): void {
     pressed = true
     showPopup(SharingStatePopup, {}, eventToHTMLElement(ev), () => {
       pressed = false
     })
   }
+
+  function handleShare (): void {
+    if (disabled) return
+
+    const audio = $isShareWithSound
+    void setShare(true, audio)
+  }
+
+  $: disabled = !$screenSharing && !$isConnected
 </script>
 
 {#if $isSharingEnabled}
@@ -35,7 +46,17 @@
     class="hulyStatusBarButton mini positive positiveContent"
     class:pressed
     use:tooltip={{ label: love.string.Sharing, direction: 'bottom' }}
-    on:click={handleClick}
+    on:click={handleShowPopup}
+  >
+    <IconShare size={'small'} />
+  </button>
+{:else}
+  <button
+    class="hulyStatusBarButton mini disabled"
+    class:pressed
+    {disabled}
+    use:tooltip={{ label: love.string.Share, direction: 'bottom' }}
+    on:click={handleShare}
   >
     <IconShare size={'small'} />
   </button>
