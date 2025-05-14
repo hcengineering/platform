@@ -45,7 +45,8 @@ import {
   handleMultipartUploadStart,
   handleS3CreateBlob,
   handleS3CreateBlobParams,
-  handleUploadFormData
+  handleUploadFormData,
+  handleBlobSetParent
 } from './handlers'
 import { Datalake, Location } from './datalake'
 import { DatalakeImpl } from './datalake/datalake'
@@ -161,6 +162,15 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
   )
 
   app.delete('/blob/:workspace', withAuthorization, withWorkspace, wrapRequest(ctx, 'deleteBlob', handleBlobDeleteList))
+
+  // Blob parent
+
+  app.patch(
+    '/blob/:workspace/:name/parent',
+    withAuthorization,
+    withBlob,
+    wrapRequest(ctx, 'patchParent', handleBlobSetParent)
+  )
 
   // Blob meta
 

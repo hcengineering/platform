@@ -48,7 +48,7 @@ export interface BlobStorage {
 }
 
 export interface Datalake {
-  list: (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number) => Promise<BlobList>
+  list: (ctx: MeasureContext, workspace: string, options: { cursor?: string, limit?: number, derived?: boolean }) => Promise<BlobList>
   head: (ctx: MeasureContext, workspace: string, name: string) => Promise<BlobHead | null>
   get: (ctx: MeasureContext, workspace: string, name: string, options: { range?: string }) => Promise<BlobBody | null>
   delete: (ctx: MeasureContext, workspace: string, name: string | string[]) => Promise<void>
