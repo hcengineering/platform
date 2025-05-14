@@ -319,8 +319,8 @@
     width: 100%;
     height: 100%;
     min-width: 0;
-    min-height: 28.5rem;
-    max-height: 28.5rem;
+    min-height: 29rem;
+    max-height: 29rem;
     user-select: none;
 
     :global(.mobile-theme) & {
