@@ -214,12 +214,18 @@
   }
 
   &.mini {
+    color: var(--theme-dark-color);
     padding: var(--spacing-0_5);
     width: var(--global-extra-small-Size);
     height: var(--global-extra-small-Size);
     background-color: transparent;
     border: none;
     outline: none;
+
+    &:disabled {
+      color: var(--theme-button-disabled);
+      cursor: default;
+    }
 
     &.positive {
       &:hover { background-color: var(--theme-state-positive-background-color); }
