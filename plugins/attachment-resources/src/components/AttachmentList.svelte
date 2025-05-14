@@ -16,7 +16,7 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Ref, type WithLookup } from '@hcengineering/core'
   import { ListSelectionProvider } from '@hcengineering/view-resources'
-  import { Scroller, updatePopup } from '@hcengineering/ui'
+  import { updatePopup } from '@hcengineering/ui'
   import { AttachmentImageSize } from '../types'
   import AttachmentPreview from './AttachmentPreview.svelte'
 
@@ -43,7 +43,7 @@
 </script>
 
 {#if attachments.length}
-  <Scroller contentDirection={'horizontal'} horizontal gap={'gap-3'} scrollSnap>
+  <div class="gallery">
     {#each attachments as attachment}
       <AttachmentPreview
         value={attachment}
@@ -54,5 +54,13 @@
         on:open={(res) => (attachmentPopupId = res.detail)}
       />
     {/each}
-  </Scroller>
+  </div>
 {/if}
+
+<style lang="scss">
+  .gallery {
+    display: grid;
+    grid-gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, 20rem);
+  }
+</style>
