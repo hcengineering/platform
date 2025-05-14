@@ -13,13 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Class, Ref, updateAttribute } from '@hcengineering/core'
+  import { Class, Doc, Ref, updateAttribute } from '@hcengineering/core'
 
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getAttribute, getClient, KeyedAttribute } from '@hcengineering/presentation'
-  import { navigate } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import { getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { openDoc } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import AttachmentStyledBox from './AttachmentStyledBox.svelte'
 
@@ -137,8 +135,7 @@
       save(object, description)
       const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
       if (doc != null) {
-        const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
-        navigate(location)
+        await openDoc(client.getHierarchy(), doc)
       }
     }}
   />
