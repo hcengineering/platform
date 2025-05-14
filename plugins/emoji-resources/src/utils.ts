@@ -89,7 +89,6 @@ export function getCustomEmoji (shortcode: string | undefined): CustomEmoji | un
     if (isCustomEmoji(e)) return e.shortcode === pureShortcode
     return false
   }) as CustomEmoji
-  console.log('CustomEmoji', shortcode, result)
   return result
 }
 
