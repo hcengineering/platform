@@ -11,7 +11,14 @@ import {
 } from '@hcengineering/emoji'
 import emojiPlugin from '@hcengineering/emoji'
 import { type ResolvedPos } from '@tiptap/pm/model'
-import { type ExtendedRegExpMatchArray, type SingleCommands, type Range, type PasteRuleMatch, InputRule, PasteRule } from '@tiptap/core'
+import {
+  type ExtendedRegExpMatchArray,
+  type SingleCommands,
+  type Range,
+  type PasteRuleMatch,
+  InputRule,
+  PasteRule
+} from '@tiptap/core'
 import { type EditorState } from '@tiptap/pm/state'
 import { getBlobRef } from '@hcengineering/presentation'
 import { getResource } from '@hcengineering/platform'
@@ -79,7 +86,7 @@ function detectPasteEmojis (text: string, regExp: RegExp): PasteRuleMatch[] | nu
     }
     if (matchEnd < text.length) {
       if (index === matches.length - 1 && text[matchEnd] !== ' ') continue
-      if (index < matches.length - 1 && text.indexOf(matches[index + 1], matchEnd) > matchEnd && text[matchEnd] !== ' ') continue
+      if (index < matches.length - 1 && text.indexOf(matches[index + 1], matchEnd) > matchEnd && text[matchEnd] !== ' ') { continue }
     }
     result.push({ index: matchStart, text: match })
   }
