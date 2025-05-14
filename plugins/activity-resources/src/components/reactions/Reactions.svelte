@@ -22,7 +22,6 @@
 
   import ReactionsTooltip from './ReactionsTooltip.svelte'
   import { updateDocReactions } from '../../utils'
-  import { getResource } from '@hcengineering/platform'
   import { getBlobRef } from '@hcengineering/presentation'
 
   export let reactions: Reaction[] = []
@@ -32,19 +31,20 @@
   const dispatch = createEventDispatcher()
   const me = getCurrentAccount()
 
-  let reactionsPersons = new Map<{ text: string, image?: Ref<Blob> }, PersonId[]>()
+  let reactionsPersons = new Map<string, { persons: PersonId[], image?: Ref<Blob> }>()
   let opened: boolean = false
 
   $: {
     reactionsPersons.clear()
     reactions.forEach((r) => {
-      const persons = reactionsPersons.get({ text: r.emoji, image: r.image }) ?? []
-      reactionsPersons.set({ text: r.emoji, image: r.image }, [...persons, r.createBy])
+      const emojiInfo = reactionsPersons.get(r.emoji) ?? { persons: [], image: r.image }
+      reactionsPersons.set(r.emoji, { persons: [...emojiInfo.persons, r.createBy], image: r.image })
     })
+    console.log(reactionsPersons)
     reactionsPersons = reactionsPersons
   }
 
-  function getClickHandler (emoji: string): ((e: CustomEvent) => void) | undefined {
+  function getClickHandler (emoji: { text: string, image?: Ref<Blob> }): ((e: CustomEvent) => void) | undefined {
     if (readonly) return
     return (e: CustomEvent) => {
       e.stopPropagation()
@@ -60,12 +60,7 @@
     opened = true
     showPopup(emojiPlugin.component.EmojiPopup, {}, ev.target as HTMLElement, async (emoji) => {
       if (emoji?.text !== undefined) {
-        await updateDocReactions(
-          reactions,
-          object,
-          emoji.text,
-          emoji.image
-        )
+        await updateDocReactions(reactions, object, emoji.text, emoji.image)
       }
       opened = false
     })
@@ -73,26 +68,26 @@
 </script>
 
 <div class="hulyReactions-container">
-  {#each [...reactionsPersons] as [emoji, persons]}
+  {#each [...reactionsPersons] as [emoji, emojiInfo]}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="hulyReactions-button"
-      class:highlight={includesAny(persons, me.socialIds)}
+      class:highlight={includesAny(emojiInfo.persons, me.socialIds)}
       class:cursor-pointer={!readonly}
-      use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: persons } }}
-      on:click={getClickHandler(emoji.text)}
+      use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: emojiInfo.persons } }}
+      on:click={getClickHandler({ text: emoji, image: emojiInfo.image })}
     >
       <span class="emoji">
-        {#if emoji.image === undefined || emoji.image == null}
-          {emoji.text}
+        {#if emojiInfo.image === undefined || emojiInfo.image == null}
+          {emoji}
         {:else}
-          {#await getBlobRef(emoji.image) then blobSrc}
-            <img src={blobSrc.src} alt={emoji.text} />
+          {#await getBlobRef(emojiInfo.image) then blobSrc}
+            <img src={blobSrc.src} alt={emoji} />
           {/await}
         {/if}
       </span>
-      <span class="counter">{persons.length}</span>
+      <span class="counter">{emojiInfo.persons.length}</span>
     </div>
   {/each}
   {#if object && reactionsPersons.size > 0 && !readonly}
