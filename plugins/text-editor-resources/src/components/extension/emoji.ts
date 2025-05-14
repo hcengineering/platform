@@ -11,7 +11,7 @@ import {
 } from '@hcengineering/emoji'
 import emojiPlugin from '@hcengineering/emoji'
 import { type ResolvedPos } from '@tiptap/pm/model'
-import { type ExtendedRegExpMatchArray, type SingleCommands, type Range, InputRule, PasteRule } from '@tiptap/core'
+import { type ExtendedRegExpMatchArray, type SingleCommands, type Range, type PasteRuleMatch, InputRule, PasteRule } from '@tiptap/core'
 import { type EditorState } from '@tiptap/pm/state'
 import { getBlobRef } from '@hcengineering/presentation'
 import { getResource } from '@hcengineering/platform'
@@ -63,6 +63,29 @@ function handleEmoji (
   }
 }
 
+function detectPasteEmojis (text: string, regExp: RegExp): PasteRuleMatch[] | null | undefined {
+  const matches = text.match(regExp)
+  if (matches == null) return null
+  let startIndex = 0
+  const result: PasteRuleMatch[] = []
+  for (let index = 0; index < matches.length; index++) {
+    const match = matches[index]
+    const matchStart = text.indexOf(match, startIndex)
+    const matchEnd = matchStart + match.length
+    const prevStartIndex = startIndex
+    startIndex = matchEnd
+    if (matchStart > prevStartIndex && text[matchStart - 1] !== ' ') {
+      continue
+    }
+    if (matchEnd < text.length) {
+      if (index === matches.length - 1 && text[matchEnd] !== ' ') continue
+      if (index < matches.length - 1 && text.indexOf(matches[index + 1], matchEnd) > matchEnd && text[matchEnd] !== ' ') continue
+    }
+    result.push({ index: matchStart, text: match })
+  }
+  return result
+}
+
 export const EmojiExtension = EmojiNode.extend<EmojiNodeOptions>({
   addOptions () {
     return {
@@ -80,19 +103,25 @@ export const EmojiExtension = EmojiNode.extend<EmojiNodeOptions>({
     })
     return [
       new PasteRule({
-        find: shortcodeGlobalRegex,
+        find: (text: string, event?: ClipboardEvent | null) => {
+          return detectPasteEmojis(text, shortcodeGlobalRegex)
+        },
         handler: ({ state, range, match, commands }) => {
           handleEmoji(state, range, match, commands, shortCodeFn)
         }
       }),
       new PasteRule({
-        find: emojiGlobalRegex,
+        find: (text: string, event?: ClipboardEvent | null) => {
+          return detectPasteEmojis(text, emojiGlobalRegex)
+        },
         handler: ({ state, range, match, commands }) => {
           handleEmoji(state, range, match, commands, (emoji: string | undefined) => emoji)
         }
       }),
       new PasteRule({
-        find: emoticonGlobalRegex,
+        find: (text: string, event?: ClipboardEvent | null) => {
+          return detectPasteEmojis(text, emoticonGlobalRegex)
+        },
         handler: ({ state, range, match, commands }) => {
           handleEmoji(state, range, match, commands, emoticonFn)
         }

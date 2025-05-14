@@ -19,10 +19,10 @@ import SHORTCODE_REGEX from 'emojibase-regex/shortcode'
 export { fetchEmojis, fetchMessages, type Locale } from 'emojibase'
 
 export const emojiRegex = EMOJI_REGEX
-export const emojiGlobalRegex = new RegExp(EMOJI_REGEX.source, EMOJI_REGEX.flags + 'g')
+export const emojiGlobalRegex = new RegExp(emojiRegex.source, EMOJI_REGEX.flags + 'g')
 
-export const emoticonRegex = new RegExp(`(?:^|\\s)(${EMOTICON_REGEX.source})$`)
-export const emoticonGlobalRegex = new RegExp(`(?<!\\S)${EMOTICON_REGEX.source}(?!\\S)`, EMOTICON_REGEX.flags + 'g')
+export const emoticonRegex = EMOTICON_REGEX
+export const emoticonGlobalRegex = new RegExp(emoticonRegex.source, EMOTICON_REGEX.flags + 'g')
 
-export const shortcodeRegex = new RegExp(`(?:^|\\s)(${SHORTCODE_REGEX.source})$`)
-export const shortcodeGlobalRegex = new RegExp(`(?<!\\S)${SHORTCODE_REGEX.source}(?!\\S)`, SHORTCODE_REGEX.flags + 'g')
+export const shortcodeRegex = SHORTCODE_REGEX
+export const shortcodeGlobalRegex = new RegExp(shortcodeRegex.source, SHORTCODE_REGEX.flags + 'g')
