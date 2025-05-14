@@ -40,7 +40,6 @@
       const emojiInfo = reactionsPersons.get(r.emoji) ?? { persons: [], image: r.image }
       reactionsPersons.set(r.emoji, { persons: [...emojiInfo.persons, r.createBy], image: r.image })
     })
-    console.log(reactionsPersons)
     reactionsPersons = reactionsPersons
   }
 
