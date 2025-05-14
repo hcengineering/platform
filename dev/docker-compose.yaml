@@ -532,7 +532,7 @@ services:
       - SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
       - STATS_URL=http://huly.local:4900
-      - STREAM_URL=http://huly.local:1080/recording
+      - STREAM_URL=http://huly.local:1080/transcoding
       - DB_URL=${DB_CR_URL}
       - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
     restart: unless-stopped

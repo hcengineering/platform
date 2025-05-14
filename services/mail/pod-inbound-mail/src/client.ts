@@ -12,12 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type Resources } from '@hcengineering/platform'
-import MailThread from './components/MailThread.svelte'
 
-export default async (): Promise<Resources> => ({
-  component: {
-    MailThread
-  },
-  activity: {}
-})
+import { systemAccountUuid } from '@hcengineering/core'
+import { BaseConfig } from '@hcengineering/mail-common'
+import { generateToken } from '@hcengineering/server-token'
+import { getClient } from '@hcengineering/kvs-client'
+import config from './config'
+
+export const mailServiceToken = generateToken(systemAccountUuid, undefined, { service: 'mail' })
+export const baseConfig: BaseConfig = {
+  AccountsURL: config.accountsUrl,
+  KvsUrl: config.kvsUrl,
+  StorageConfig: config.storageConfig ?? ''
+}
+export const kvsClient = getClient('inbound-mail', baseConfig.KvsUrl, mailServiceToken)

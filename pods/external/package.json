@@ -1,0 +1,12 @@
+{
+  "name": "@hcengineering/pod-external",
+  "version": "0.6.0",
+  "author": "Anticrm Platform Contributors",
+  "license": "EPL-2.0",
+  "scripts": {
+    "_phase:docker-build": "rushx docker:build",
+    "docker:build": "sh bin/build.sh",
+    "docker:push": "sh bin/push.sh",
+    "format": "true"
+  }
+}

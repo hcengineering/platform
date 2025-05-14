@@ -53,6 +53,12 @@ export interface BlobMetaRecord extends BlobId {
 
 export type BlobWithDataRecord = BlobRecord & BlobDataRecord
 
+export interface ListBlobOptions {
+  cursor?: string
+  limit?: number
+  derived?: boolean
+}
+
 export interface ListBlobResult {
   cursor: string | undefined
   blobs: BlobWithDataRecord[]
@@ -101,7 +107,7 @@ export async function createDb (ctx: MeasureContext, connectionString: string): 
 export interface BlobDB {
   getData: (ctx: MeasureContext, dataId: BlobDataId) => Promise<BlobDataRecord | null>
   getBlob: (ctx: MeasureContext, blobId: BlobId) => Promise<BlobWithDataRecord | null>
-  listBlobs: (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number) => Promise<ListBlobResult>
+  listBlobs: (ctx: MeasureContext, workspace: string, options: ListBlobOptions) => Promise<ListBlobResult>
   createData: (ctx: MeasureContext, data: BlobDataRecord) => Promise<void>
   createBlob: (ctx: MeasureContext, blob: Omit<BlobRecord, 'filename'>) => Promise<void>
   createBlobData: (ctx: MeasureContext, blob: BlobWithDataRecord) => Promise<void>
@@ -203,7 +209,8 @@ export class PostgresDB implements BlobDB {
     return null
   }
 
-  async listBlobs (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number): Promise<ListBlobResult> {
+  async listBlobs (ctx: MeasureContext, workspace: string, options: ListBlobOptions): Promise<ListBlobResult> {
+    let { cursor, limit, derived } = options
     cursor = cursor ?? ''
     limit = Math.min(limit ?? 100, 1000)
 
@@ -212,7 +219,7 @@ export class PostgresDB implements BlobDB {
       SELECT b.workspace, b.name, b.hash, b.location, b.parent, b.deleted_at, d.filename, d.size, d.type
       FROM blob.blob AS b
       JOIN blob.data AS d ON b.hash = d.hash AND b.location = d.location
-      WHERE b.workspace = $1 AND b.name > $2 AND b.deleted_at IS NULL
+      WHERE b.workspace = $1 AND b.name > $2 AND b.deleted_at IS NULL ${derived !== true ? 'AND b.parent IS NULL' : ''}
       ORDER BY b.workspace, b.name
       LIMIT $3
     `,
@@ -412,8 +419,8 @@ export class RetryDB implements BlobDB {
     return await retry(() => this.db.getBlob(ctx, blobId), this.options)
   }
 
-  async listBlobs (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number): Promise<ListBlobResult> {
-    return await retry(() => this.db.listBlobs(ctx, workspace, cursor, limit), this.options)
+  async listBlobs (ctx: MeasureContext, workspace: string, options: ListBlobOptions): Promise<ListBlobResult> {
+    return await retry(() => this.db.listBlobs(ctx, workspace, options), this.options)
   }
 
   async createData (ctx: MeasureContext, data: BlobDataRecord): Promise<void> {
@@ -471,8 +478,8 @@ export class LoggedDB implements BlobDB {
     return await ctx.with('db.getBlob', {}, () => this.db.getBlob(this.ctx, blobId))
   }
 
-  async listBlobs (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number): Promise<ListBlobResult> {
-    return await ctx.with('db.listBlobs', {}, () => this.db.listBlobs(this.ctx, workspace, cursor, limit))
+  async listBlobs (ctx: MeasureContext, workspace: string, options: ListBlobOptions): Promise<ListBlobResult> {
+    return await ctx.with('db.listBlobs', {}, () => this.db.listBlobs(this.ctx, workspace, options))
   }
 
   async createData (ctx: MeasureContext, data: BlobDataRecord): Promise<void> {

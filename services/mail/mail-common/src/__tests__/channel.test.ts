@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { PersonId, Ref, WorkspaceUuid, MeasureContext, TxOperations, Doc, SocialId } from '@hcengineering/core'
+import { PersonId, Ref, WorkspaceUuid, MeasureContext, TxOperations, Doc } from '@hcengineering/core'
 import { PersonSpace } from '@hcengineering/contact'
 import chat from '@hcengineering/chat'
 import mail from '@hcengineering/mail'
@@ -29,7 +29,7 @@ describe('ChannelCache', () => {
   const spaceId = 'test-space-id' as Ref<PersonSpace>
   const emailAccount = 'test@example.com'
   const participants: PersonId[] = ['person1', 'person2'] as PersonId[]
-  const socialId: SocialId = { _id: 'social-id' as PersonId } as any
+  const personId: PersonId = 'person1' as PersonId
 
   const mockChannel = {
     _id: 'channel-id' as Ref<Doc>,
@@ -62,7 +62,7 @@ describe('ChannelCache', () => {
       const cache = (channelCache as any).cache
       cache.set(`${spaceId}:${emailAccount}`, mockChannel._id)
 
-      const result = await channelCache.getOrCreateChannel(spaceId, participants, emailAccount, socialId)
+      const result = await channelCache.getOrCreateChannel(spaceId, participants, emailAccount, personId)
 
       expect(result).toBe(mockChannel._id)
       expect(mockClient.findOne).not.toHaveBeenCalled()
@@ -71,7 +71,7 @@ describe('ChannelCache', () => {
     it('should fetch existing channel if not in cache', async () => {
       mockClient.findOne.mockResolvedValue(mockChannel as any)
 
-      const result = await channelCache.getOrCreateChannel(spaceId, participants, emailAccount, socialId)
+      const result = await channelCache.getOrCreateChannel(spaceId, participants, emailAccount, personId)
 
       expect(result).toBe(mockChannel._id)
       expect(mockClient.findOne).toHaveBeenCalledWith(mail.tag.MailChannel, { title: emailAccount })
@@ -90,7 +90,7 @@ describe('ChannelCache', () => {
       mockClient.createDoc.mockResolvedValue(generatedId)
       mockClient.createMixin.mockResolvedValue(undefined as any)
 
-      const result = await channelCache.getOrCreateChannel(spaceId, participants, emailAccount, socialId)
+      const result = await channelCache.getOrCreateChannel(spaceId, participants, emailAccount, personId)
 
       expect(result).toBe(generatedId)
       expect(mockClient.findOne).toHaveBeenCalledTimes(2)
@@ -102,12 +102,12 @@ describe('ChannelCache', () => {
           private: true,
           members: participants,
           archived: false,
-          createdBy: socialId._id,
-          modifiedBy: socialId._id
+          createdBy: personId,
+          modifiedBy: personId
         },
         expect.any(String),
         expect.any(Number),
-        socialId._id
+        personId
       )
       expect(mockClient.createMixin).toHaveBeenCalledWith(
         expect.any(String),
@@ -116,7 +116,7 @@ describe('ChannelCache', () => {
         mail.tag.MailChannel,
         {},
         expect.any(Number),
-        socialId._id
+        personId
       )
     })
 
@@ -125,7 +125,7 @@ describe('ChannelCache', () => {
       // Second findOne inside createNewChannel returns the channel (simulate race condition handled)
       mockClient.findOne.mockResolvedValueOnce(null as any).mockResolvedValueOnce(mockChannel as any)
 
-      const result = await channelCache.getOrCreateChannel(spaceId, participants, emailAccount, socialId)
+      const result = await channelCache.getOrCreateChannel(spaceId, participants, emailAccount, personId)
 
       expect(result).toBe(mockChannel._id)
       expect(mockClient.findOne).toHaveBeenCalledTimes(2)
@@ -141,7 +141,7 @@ describe('ChannelCache', () => {
       const error = new Error('Database error')
       mockClient.findOne.mockRejectedValue(error)
 
-      const result = await channelCache.getOrCreateChannel(spaceId, participants, emailAccount, socialId)
+      const result = await channelCache.getOrCreateChannel(spaceId, participants, emailAccount, personId)
 
       expect(result).toBeUndefined()
       expect(mockCtx.error).toHaveBeenCalledWith('Failed to create channel', {

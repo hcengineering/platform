@@ -565,7 +565,6 @@ export async function configurePlatform() {
   addLocation(surveyId, () => import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
   addLocation(presenceId, () => import(/* webpackChunkName: "presence" */ '@hcengineering/presence-resources'))
   addLocation(cardId, () => import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
-  addLocation(mailId, () => import(/* webpackChunkName: "card" */ '@hcengineering/mail-resources'))
   addLocation(chatId, () => import(/* webpackChunkName: "chat" */ '@hcengineering/chat-resources'))
   addLocation(processId, () => import(/* webpackChunkName: "process" */ '@hcengineering/process-resources'))
   addLocation(inboxId, () => import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))

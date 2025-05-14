@@ -187,6 +187,7 @@ class KeyValueClientImpl implements KeyValueClient {
           errMessage.includes('network')
 
         if (!isNetworkError || timeout < Date.now()) {
+          console.error(`KVS request failed for url ${url}`, err.message)
           throw err
         }
 

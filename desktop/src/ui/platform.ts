@@ -373,7 +373,6 @@ export async function configurePlatform (): Promise<void> {
   addLocation(cardId, () => import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
   addLocation(chatId, () => import(/* webpackChunkName: "chat" */ '@hcengineering/chat-resources'))
   addLocation(inboxId, () => import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
-  addLocation(mailId, () => import(/* webpackChunkName: "card" */ '@hcengineering/mail-resources'))
   addLocation(processId, () => import(/* webpackChunkName: "process" */ '@hcengineering/process-resources'))
   addLocation(achievementId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/achievement-resources'))
   addLocation(communicationId, () => import(/* webpackChunkName: "communication" */ '@hcengineering/communication-resources'))

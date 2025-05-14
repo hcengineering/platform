@@ -933,6 +933,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-external",
+      "projectFolder": "pods/external",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/front",
       "projectFolder": "server/front",
       "shouldPublish": false
@@ -2351,11 +2356,6 @@
     {
       "packageName": "@hcengineering/mail-assets",
       "projectFolder": "plugins/mail-assets",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/mail-resources",
-      "projectFolder": "plugins/mail-resources",
       "shouldPublish": false
     },
     {

@@ -42,8 +42,9 @@ export async function handleBlobList (
   const { workspace } = req.params
   const cursor = req.query.cursor as string
   const limit = extractIntParam(req.query.limit as string)
+  const derived = req.query.derived === 'true'
 
-  const blobs = await datalake.list(ctx, workspace, cursor, limit)
+  const blobs = await datalake.list(ctx, workspace, { cursor, limit, derived })
   res.status(200).json(blobs)
 }
 
@@ -178,6 +179,16 @@ export async function handleBlobSetParent (
 ): Promise<void> {
   const { workspace, name } = req.params
   const { parent } = (await req.body) as BlobParentRequest
+
+  const heads = await Promise.all(
+    parent != null
+      ? [datalake.head(ctx, workspace, name), datalake.head(ctx, workspace, parent)]
+      : [datalake.head(ctx, workspace, name)]
+  )
+  if (heads.some((head) => head == null)) {
+    res.status(404).send()
+    return
+  }
 
   try {
     await datalake.setParent(ctx, workspace, name, parent)

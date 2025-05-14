@@ -45,6 +45,7 @@ import core, {
   type Domain,
   type IndexingConfiguration,
   type Ref,
+  type Blob,
   type Timestamp,
   type Tx,
   type TxCUD
@@ -226,6 +227,8 @@ export class TReaction extends TAttachedDoc implements Reaction {
 
   @Prop(TypeString(), activity.string.Emoji)
     emoji!: string
+
+  image?: Ref<Blob>
 
   @Prop(TypePersonId(), view.string.Created)
     createBy!: PersonId

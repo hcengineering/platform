@@ -25,7 +25,8 @@ import {
   type RelatedDocument,
   Timestamp,
   Tx,
-  TxCUD
+  TxCUD,
+  Blob
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -220,6 +221,7 @@ export interface Reaction extends AttachedDoc {
   attachedTo: Ref<ActivityMessage>
   attachedToClass: Ref<Class<ActivityMessage>>
   emoji: string
+  image?: Ref<Blob>
   createBy: PersonId
 }
 
