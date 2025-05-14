@@ -17,7 +17,7 @@ import { type Asset, type IntlString } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
 import { type TextEditorHandler } from '@hcengineering/text-editor'
 import { type BlobID } from '@hcengineering/communication-types'
-import type { Ref, Timestamp } from '@hcengineering/core'
+import type { BlobMetadata, Ref, Timestamp } from '@hcengineering/core'
 import type { Person } from '@hcengineering/contact'
 
 export interface NavigationSection {
@@ -38,40 +38,6 @@ export interface NavigationSectionItem {
 export type IconSize = 'x-small' | 'small' | 'medium' | 'large'
 export type IconComponent = Asset | ComponentType
 
-export enum AvatarSize {
-  XXSmall = 'xx-small',
-  XSmall = 'x-small',
-  Small = 'small',
-  Regular = 'regular',
-  Medium = 'medium',
-  Large = 'large',
-  XLarge = 'x-large',
-  XXLarge = 'xx-large',
-  XXXLarge = 'xxx-large'
-}
-
-export enum AvatarShape {
-  Circle = 'circle'
-}
-
-export enum ButtonVariant {
-  Default = 'default',
-  Ghost = 'ghost'
-}
-
-export enum ButtonType {
-  Submit = 'submit',
-  Reset = 'reset',
-  Button = 'button'
-}
-
-export enum ButtonSize {
-  Auto = 'auto',
-  Small = 'small',
-  Medium = 'medium',
-  Large = 'large'
-}
-
 export type TextInputActionFn = (element: HTMLElement, editor: TextEditorHandler, event?: MouseEvent) => void
 
 export interface TextInputAction {
@@ -87,6 +53,7 @@ export interface UploadedFile {
   type: string
   filename: string
   size: number
+  metadata?: BlobMetadata
 }
 
 export interface Action {

@@ -17,6 +17,17 @@ import { communicationId } from '@hcengineering/communication'
 import communication from '@hcengineering/communication-resources/src/plugin'
 import {} from '@hcengineering/core'
 import {} from '@hcengineering/ui'
-import { mergeIds } from '@hcengineering/platform'
+import { mergeIds, type Resource } from '@hcengineering/platform'
+import { type ViewAction } from '@hcengineering/model-view'
+import { type Card } from '@hcengineering/card'
 
-export default mergeIds(communicationId, communication, {})
+export default mergeIds(communicationId, communication, {
+  action: {
+    Unsubscribe: '' as ViewAction,
+    Subscribe: '' as ViewAction
+  },
+  function: {
+    CanSubscribe: '' as Resource<(doc: Card | Card[] | undefined) => Promise<boolean>>,
+    CanUnsubscribe: '' as Resource<(doc: Card | Card[] | undefined) => Promise<boolean>>
+  }
+})

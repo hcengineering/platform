@@ -146,3 +146,13 @@ function createThreadTitle (message: Message, parent: Card): string {
   const titleFromMessage = `${messageText.slice(0, 100)}${messageText.length > 100 ? '...' : ''}`
   return titleFromMessage.length > 0 ? titleFromMessage : `Thread from ${parent.title}`
 }
+
+export function isMessageEmpty (message: Message): boolean {
+  return (
+    message.content.trim() === '' &&
+    message.files.length === 0 &&
+    message.reactions.length === 0 &&
+    message.thread == null &&
+    message.edited == null
+  )
+}

@@ -56,7 +56,7 @@
   let restore: { scrollHeight: number } | undefined = undefined
   let prevPosition: MessagesNavigationAnchors = position
 
-  const limit = 10
+  const limit = 50
   const unread = initialLastView != null && initialLastUpdate != null && initialLastUpdate > initialLastView
   let queryDef = getBaseQuery()
 
@@ -81,6 +81,7 @@
     if (!isScrollInitialized) return
 
     if (atBottom) {
+      dispatch('action', { id: 'hideScrollBar' })
       scrollToBottom()
     }
   })
@@ -219,12 +220,14 @@
 
   function restoreScroll (): void {
     if (restore == null) return
+    dispatch('action', { id: 'hideScrollBar' })
     const newScrollHeight = scrollDiv.scrollHeight
     scrollDiv.scrollTop = newScrollHeight - restore.scrollHeight + scrollDiv.scrollTop
     restore = undefined
   }
 
   function checkPositionOnScroll (): void {
+    if (!isScrollInitialized || isPageLoading) return
     const topOffset = getTopOffset()
     const bottomOffset = getBottomOffset()
 
@@ -253,6 +256,18 @@
     updateShouldScrollToNew()
     loadMore()
     checkPositionOnScroll()
+    void readAll()
+  }
+
+  async function readAll (): Promise<void> {
+    if (window == null || context == null || !isScrollInitialized || window.hasNextPage()) return
+    if (context.lastView.getTime() >= context.lastUpdate.getTime()) {
+      return
+    }
+    const bottomOffset = getBottomOffset()
+    if (bottomOffset < 10) {
+      readMessage(context.lastUpdate)
+    }
   }
 
   async function onUpdate (res: Message[]): Promise<void> {
@@ -266,6 +281,7 @@
     restoreScroll()
 
     if (shouldScrollToNew && prevCount > 0 && isScrollInitialized) {
+      dispatch('action', { id: 'hideScrollBar' })
       scrollToBottom()
     }
   }

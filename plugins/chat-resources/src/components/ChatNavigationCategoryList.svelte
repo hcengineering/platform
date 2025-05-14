@@ -69,17 +69,15 @@
       }
     },
     {
-      displayProps: {
-        fixed: 'right',
-        key: 'parent'
-      },
+      key: '',
+      presenter: card.component.LabelsPresenter,
+      label: card.string.Labels,
+      props: { fullSize: true }
+    },
+    {
       key: 'parent'
     },
     {
-      displayProps: {
-        fixed: 'right',
-        key: 'createdOn'
-      },
       key: 'createdOn'
     }
   ]

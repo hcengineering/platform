@@ -16,9 +16,18 @@
 import { type Resources } from '@hcengineering/platform'
 
 import CardMessagesSection from './components/CardMessagesSection.svelte'
+import { unsubscribe, subscribe, canSubscribe, canUnsubscribe } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
     CardMessagesSection
+  },
+  action: {
+    Unsubscribe: unsubscribe,
+    Subscribe: subscribe
+  },
+  function: {
+    CanSubscribe: canSubscribe,
+    CanUnsubscribe: canUnsubscribe
   }
 })

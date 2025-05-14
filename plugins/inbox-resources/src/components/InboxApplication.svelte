@@ -25,7 +25,7 @@
     Component
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { getClient, getCommunicationClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { inboxId } from '@hcengineering/inbox'
   import view from '@hcengineering/view'
   import { NotificationContext } from '@hcengineering/communication-types'
@@ -34,7 +34,6 @@
   import { getCardIdFromLocation, navigateToCard } from '../location'
 
   const client = getClient()
-  const communicationClient = getCommunicationClient()
 
   let replacedPanelElement: HTMLElement
   let card: Card | undefined = undefined
@@ -63,14 +62,7 @@
     }
   }
 
-  async function readCard (context: NotificationContext): Promise<void> {
-    const lastView = context.notifications?.[0]?.created
-    if (lastView == null) return
-    await communicationClient.updateNotificationContext(context.id, lastView)
-  }
-
   function selectCard (event: CustomEvent<{ context: NotificationContext, card: Card }>): void {
-    void readCard(event.detail.context)
     if (card?._id === event.detail.card._id) return
     card = event.detail.card
     navigateToCard(card._id)

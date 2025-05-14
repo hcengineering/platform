@@ -44,4 +44,4 @@
   />
 {/each}
 
-<Description {doc} {readonly} {showToc} bind:content minHeight={isFile ? '15vh' : '25vh'} on:loaded on:headings />
+<Description {doc} {readonly} {showToc} bind:content minHeight="4rem" on:loaded on:headings />

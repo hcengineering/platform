@@ -16,6 +16,7 @@
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
+  import { ButtonIcon } from '@hcengineering/ui'
 
   import Label from './Label.svelte'
   import IconArrowChevronRight from './icons/IconArrowChevronRight.svelte'
@@ -23,7 +24,6 @@
   import Divider from './Divider.svelte'
   import { IconComponent, Action } from '../types'
   import Icon from './Icon.svelte'
-  import Button from './Button.svelte'
 
   export let id: string
   export let title: IntlString
@@ -53,7 +53,9 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="section__header" class:selected on:click>
-    <div style:margin-left={`${1.25 * level}rem`} />
+    {#if level > 0}
+      <div style:margin-left={`${1.25 * level}rem`} />
+    {/if}
 
     <div class="section__arrow" on:click={toggleExpanded}>
       {#if !empty}
@@ -74,10 +76,11 @@
     {#if actions.length > 0}
       <div class="section__actions">
         {#each actions as action}
-          <Button
+          <ButtonIcon
             disabled={action.disabled}
             icon={action.icon}
             iconSize="small"
+            kind="tertiary"
             tooltip={{ label: action.label }}
             on:click={(e) => {
               if (action.disabled !== true) {

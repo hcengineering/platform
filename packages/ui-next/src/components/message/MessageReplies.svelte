@@ -20,11 +20,10 @@
   import { Collaborator, CardID } from '@hcengineering/communication-types'
   import contact, { Person } from '@hcengineering/contact'
   import { getCurrentAccount } from '@hcengineering/core'
+  import { Avatar } from '@hcengineering/contact-resources'
 
-  import Avatar from '../Avatar.svelte'
   import uiNext from '../../plugin'
   import Label from '../Label.svelte'
-  import { AvatarSize } from '../../types'
 
   export let threadId: CardID
   export let count: number
@@ -112,6 +111,7 @@
       translateCB(uiNext.string.WeekdayAt, { weekday, time }, lang, (res) => {
         displayDate = res
       })
+      return
     }
 
     const startOfYear = new Date(nowDate.getFullYear(), 0, 1, 0, 0, 0, 0)
@@ -130,6 +130,7 @@
       translateCB(uiNext.string.MonthAt, { month, time }, lang, (res) => {
         displayDate = res
       })
+      return
     }
 
     const year = date.toLocaleString('default', {
@@ -154,7 +155,7 @@
 <div class="replies" on:click>
   <div class="avatars">
     {#each persons as person}
-      <Avatar size={AvatarSize.XXSmall} avatar={person} name={person.name} />
+      <Avatar size="card" {person} name={person.name} />
     {/each}
   </div>
 

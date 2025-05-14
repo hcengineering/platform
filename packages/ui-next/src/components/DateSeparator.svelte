@@ -44,42 +44,49 @@
 </script>
 
 <div class="date-separator" class:sticky>
-  <div class="date-separator__content">
-    <div class="date-separator__date">
-      {#await formatDate(date, $themeStore.language) then date}
-        {date}
-      {/await}
-    </div>
+  <div class="date-separator__date border-radius-4 clear-mins">
+    {#await formatDate(date, $themeStore.language) then date}
+      {date}
+    {/await}
   </div>
 </div>
+
+<div class="line" />
 
 <style lang="scss">
   .date-separator {
     display: flex;
     width: 100%;
     padding: 0 4rem;
-    background: var(--theme-panel-color);
+    font-size: 0.75rem;
+    height: 2.25rem;
+    position: relative;
 
     &.sticky {
       position: sticky;
       top: 0;
       z-index: 1;
     }
+
+    .date-separator__date {
+      padding: 0.25rem 0.5rem;
+      height: max-content;
+      color: var(--theme-content-color);
+      background-color: var(--highlight-select);
+      border: 1px solid var(--highlight-select-border);
+      font-weight: 500;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 0.25rem;
+    }
   }
 
-  .date-separator__content {
-    display: flex;
+  .line {
+    flex: 1;
+    height: 1px;
     width: 100%;
-    align-items: center;
-    border-bottom: 1px solid var(--next-divider-color);
-    gap: 0.375rem;
-    padding: 0.375rem 0;
-  }
-
-  .date-separator__date {
-    color: var(--next-text-color-secondary);
-    font-size: 0.813rem;
-    font-weight: 400;
-    padding: 0 1rem;
+    border-bottom: 1px solid var(--highlight-select-border);
+    margin-top: -2rem;
   }
 </style>

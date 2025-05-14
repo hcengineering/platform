@@ -50,6 +50,7 @@ import {
   type ResponseEvent,
   type UpdateNotificationContextEvent,
   type AddCollaboratorsEvent,
+  type RemoveCollaboratorsEvent,
   MessageRequestEventType,
   NotificationRequestEventType
 } from '@hcengineering/communication-sdk-types'
@@ -57,9 +58,9 @@ import {
   type Client as PlatformClient,
   type ClientConnection as PlatformConnection,
   getCurrentAccount,
-  type SocialId,
   SocialIdType,
-  generateId
+  generateId,
+  type BlobMetadata
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
 import {
@@ -95,24 +96,17 @@ export function getCommunicationClient (): CommunicationClient {
   return client
 }
 
-export async function setCommunicationClient (platformClient: PlatformClient, socialIds: SocialId[]): Promise<void> {
+export async function setCommunicationClient (platformClient: PlatformClient): Promise<void> {
   const connection = platformClient.getConnection?.()
   if (connection === undefined) {
     return
   }
-  client = new Client(connection as unknown as Connection, socialIds)
+  client = new Client(connection as unknown as Connection)
   initLiveQueries(client, getCurrentWorkspaceUuid(), getFilesUrl(), onDestroy)
 }
 
 class Client {
-  private readonly hulySocialId: SocialId | undefined
-
-  constructor (
-    private readonly connection: Connection,
-    socialIds: SocialId[]
-  ) {
-    this.hulySocialId = socialIds.find((it) => it.type === SocialIdType.HULY && it.verifiedOn !== undefined)
-
+  constructor (private readonly connection: Connection) {
     connection.pushHandler((...events: any[]) => {
       for (const event of events) {
         if (event != null && 'type' in event) {
@@ -204,6 +198,15 @@ class Client {
     await this.sendEvent(event)
   }
 
+  async removeCollaborators (card: CardID, collaborators: AccountID[]): Promise<void> {
+    const event: RemoveCollaboratorsEvent = {
+      type: NotificationRequestEventType.RemoveCollaborators,
+      card,
+      collaborators
+    }
+    await this.sendEvent(event)
+  }
+
   async createFile (
     card: CardID,
     message: MessageID,
@@ -211,7 +214,8 @@ class Client {
     blobId: BlobID,
     fileType: string,
     filename: string,
-    size: number
+    size: number,
+    meta?: BlobMetadata
   ): Promise<void> {
     const event: CreateFileEvent = {
       type: MessageRequestEventType.CreateFile,
@@ -222,6 +226,7 @@ class Client {
       fileType,
       filename,
       size,
+      meta,
       creator: this.getSocialId()
     }
     await this.sendEvent(event)
@@ -293,7 +298,8 @@ class Client {
 
   private getSocialId (): SocialID {
     const me = getCurrentAccount()
-    const id = this.hulySocialId?._id ?? me.primarySocialId
+    const hulySocialId = me.fullSocialIds.find((it) => it.type === SocialIdType.HULY && it.verifiedOn !== undefined)
+    const id = hulySocialId?._id ?? me.primarySocialId
     if (id == null || id === '') {
       throw new Error('Social id not found')
     }

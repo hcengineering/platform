@@ -14,18 +14,18 @@
 -->
 
 <script lang="ts">
-  import { PersonPreviewProvider } from '@hcengineering/contact-resources'
+  import { PersonPreviewProvider, Avatar } from '@hcengineering/contact-resources'
   import { formatName, Person } from '@hcengineering/contact'
   import { Message } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
 
   import MessageContentViewer from './MessageContentViewer.svelte'
-  import Avatar from '../Avatar.svelte'
-  import { AvatarSize } from '../../types'
+  import MessageFooter from './MessageFooter.svelte'
 
   export let card: Card
   export let author: Person | undefined
   export let message: Message
+  export let replies = true
 
   function formatDate (date: Date): string {
     return date.toLocaleTimeString('default', {
@@ -38,7 +38,7 @@
 <div class="message__body">
   <div class="message__avatar">
     <PersonPreviewProvider value={author}>
-      <Avatar name={author?.name} avatar={author} size={AvatarSize.XXSmall} />
+      <Avatar name={author?.name} person={author} size="x-small" />
     </PersonPreviewProvider>
   </div>
   <div class="message__header">
@@ -56,12 +56,15 @@
     <MessageContentViewer {message} {card} />
   </div>
 </div>
+<div class="message__footer">
+  <MessageFooter {message} {replies} />
+</div>
 
 <style lang="scss">
   .message__body {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
     min-width: 0;
     overflow: hidden;
   }
@@ -70,8 +73,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    align-self: stretch;
-    width: 2rem;
+    justify-content: center;
+    width: 2.5rem;
   }
 
   .message__header {
@@ -103,5 +106,11 @@
     min-width: 0;
     max-width: 100%;
     user-select: text;
+  }
+
+  .message__footer {
+    display: flex;
+    flex-direction: column;
+    margin-left: 3.5rem;
   }
 </style>
