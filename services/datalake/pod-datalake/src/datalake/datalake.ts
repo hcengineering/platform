@@ -31,8 +31,12 @@ export class DatalakeImpl implements Datalake {
     }
   ) {}
 
-  async list (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number): Promise<BlobList> {
-    const blobs = await this.db.listBlobs(ctx, workspace, cursor, limit)
+  async list (
+    ctx: MeasureContext,
+    workspace: string,
+    options: { cursor?: string, limit?: number, derived?: boolean }
+  ): Promise<BlobList> {
+    const blobs = await this.db.listBlobs(ctx, workspace, options)
 
     return {
       cursor: blobs.cursor,
