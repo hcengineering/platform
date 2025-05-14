@@ -307,7 +307,7 @@ func (d *DatalakeStorage) StatFile(ctx context.Context, filename string) (*BlobI
 }
 
 // SetParent updates blob parent reference
-func (d *DatalakeStorage) SetParent(ctx context.Context, filename string, parent string) error {
+func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string) error {
 	var logger = d.logger.With(zap.String("parent", d.workspace), zap.String("fileName", filename), zap.String("parent", parent))
 
 	logger.Debug("start")
@@ -325,7 +325,11 @@ func (d *DatalakeStorage) SetParent(ctx context.Context, filename string, parent
 	body := map[string]any{
 		"parent": parentKey,
 	}
-	json.NewEncoder(req.BodyWriter()).Encode(body)
+
+	if err := json.NewEncoder(req.BodyWriter()).Encode(body); err != nil {
+		logger.Debug("can not encode body", zap.Error(err))
+		return err
+	}
 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)

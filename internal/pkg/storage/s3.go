@@ -188,7 +188,7 @@ func (u *S3Storage) StatFile(ctx context.Context, filename string) (*BlobInfo, e
 }
 
 // SetParent updates blob parent reference
-func (u *S3Storage) SetParent(ctx context.Context, filename string, parent string) error {
+func (u *S3Storage) SetParent(ctx context.Context, filename, parent string) error {
 	// Not implemented for S3 Storage
 	return nil
 }
