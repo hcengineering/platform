@@ -801,7 +801,7 @@ importers:
         version: file:projects/pod-github.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)(utf-8-validate@6.0.4)(y-prosemirror@1.2.15(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23))
       '@rush-temp/pod-gmail':
         specifier: file:./projects/pod-gmail.tgz
-        version: file:projects/pod-gmail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)
+        version: file:projects/pod-gmail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@6.0.4)
       '@rush-temp/pod-inbound-mail':
         specifier: file:./projects/pod-inbound-mail.tgz
         version: file:projects/pod-inbound-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
@@ -4887,7 +4887,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
-    resolution: {integrity: sha512-BuAMVBU4uCu4UQTXGYHfxeTgt9/A7OOZL3HA/pXq2X1lkL2w2xGt7M19tt2qBuAGAPJtSsZTMmEDVBRd6hgrWA==, tarball: file:projects/pod-gmail.tgz}
+    resolution: {integrity: sha512-5rn2Y1X7GtTiOKR5vbkqo5oB/zEeQXOiSw4nTPL8xp/Jx66PDnGjkwkHqBlberol5hG2/ns8im3Zqxql5O2VXw==, tarball: file:projects/pod-gmail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
@@ -22420,7 +22420,7 @@ snapshots:
       - utf-8-validate
       - y-prosemirror
 
-  '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)':
+  '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@6.0.4)':
     dependencies:
       '@tsconfig/node16': 1.0.4
       '@types/cors': 2.8.17
@@ -22429,6 +22429,7 @@ snapshots:
       '@types/node': 20.11.19
       '@types/sanitize-html': 2.15.0
       '@types/uuid': 8.3.4
+      '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       cors: 2.8.5
@@ -22456,6 +22457,7 @@ snapshots:
       ts-node-dev: 2.0.0(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
       uuid: 8.3.2
+      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -22463,9 +22465,11 @@ snapshots:
       - '@swc/wasm'
       - babel-jest
       - babel-plugin-macros
+      - bufferutil
       - encoding
       - node-notifier
       - supports-color
+      - utf-8-validate
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
