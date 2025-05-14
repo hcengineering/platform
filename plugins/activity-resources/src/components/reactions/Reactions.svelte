@@ -15,14 +15,13 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Reaction } from '@hcengineering/activity'
-  import { Doc, getCurrentAccount, PersonId } from '@hcengineering/core'
+  import { Doc, getCurrentAccount, PersonId, Ref, Blob } from '@hcengineering/core'
   import { IconAdd, showPopup, tooltip } from '@hcengineering/ui'
   import { includesAny } from '@hcengineering/contact'
   import emojiPlugin from '@hcengineering/emoji'
 
   import ReactionsTooltip from './ReactionsTooltip.svelte'
   import { updateDocReactions } from '../../utils'
-  import { getResource } from '@hcengineering/platform'
   import { getBlobRef } from '@hcengineering/presentation'
 
   export let reactions: Reaction[] = []
@@ -32,19 +31,19 @@
   const dispatch = createEventDispatcher()
   const me = getCurrentAccount()
 
-  let reactionsPersons = new Map<string, PersonId[]>()
+  let reactionsPersons = new Map<string, { persons: PersonId[], image?: Ref<Blob> }>()
   let opened: boolean = false
 
   $: {
     reactionsPersons.clear()
     reactions.forEach((r) => {
-      const persons = reactionsPersons.get(r.emoji) ?? []
-      reactionsPersons.set(r.emoji, [...persons, r.createBy])
+      const emojiInfo = reactionsPersons.get(r.emoji) ?? { persons: [], image: r.image }
+      reactionsPersons.set(r.emoji, { persons: [...emojiInfo.persons, r.createBy], image: r.image })
     })
     reactionsPersons = reactionsPersons
   }
 
-  function getClickHandler (emoji: string): ((e: CustomEvent) => void) | undefined {
+  function getClickHandler (emoji: { text: string, image?: Ref<Blob> }): ((e: CustomEvent) => void) | undefined {
     if (readonly) return
     return (e: CustomEvent) => {
       e.stopPropagation()
@@ -59,37 +58,35 @@
     ev.stopPropagation()
     opened = true
     showPopup(emojiPlugin.component.EmojiPopup, {}, ev.target as HTMLElement, async (emoji) => {
-      if (emoji?.text !== undefined) await updateDocReactions(reactions, object, emoji.text)
+      if (emoji?.text !== undefined) {
+        await updateDocReactions(reactions, object, emoji.text, emoji.image)
+      }
       opened = false
     })
   }
 </script>
 
 <div class="hulyReactions-container">
-  {#each [...reactionsPersons] as [emoji, persons]}
+  {#each [...reactionsPersons] as [emoji, emojiInfo]}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="hulyReactions-button"
-      class:highlight={includesAny(persons, me.socialIds)}
+      class:highlight={includesAny(emojiInfo.persons, me.socialIds)}
       class:cursor-pointer={!readonly}
-      use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: persons } }}
-      on:click={getClickHandler(emoji)}
+      use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: emojiInfo.persons } }}
+      on:click={getClickHandler({ text: emoji, image: emojiInfo.image })}
     >
-      {#await getResource(emojiPlugin.functions.GetCustomEmoji) then getCustomEmojiFunction}
-        {@const customEmoji = getCustomEmojiFunction(emoji)}
-        <span class="emoji">
-          {#if customEmoji === undefined}
-            {emoji}
-          {:else}
-            {@const alt = emoji}
-            {#await getBlobRef(customEmoji.image) then blobSrc}
-              <img src={blobSrc.src} {alt} />
-            {/await}
-          {/if}
-        </span>
-      {/await}
-      <span class="counter">{persons.length}</span>
+      <span class="emoji">
+        {#if emojiInfo.image === undefined || emojiInfo.image == null}
+          {emoji}
+        {:else}
+          {#await getBlobRef(emojiInfo.image) then blobSrc}
+            <img src={blobSrc.src} alt={emoji} />
+          {/await}
+        {/if}
+      </span>
+      <span class="counter">{emojiInfo.persons.length}</span>
     </div>
   {/each}
   {#if object && reactionsPersons.size > 0 && !readonly}

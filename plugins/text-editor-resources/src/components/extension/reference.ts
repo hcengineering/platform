@@ -408,7 +408,12 @@ export async function getReferenceLabel<T extends Doc> (
   const identifier = (await labelProviderFn?.(client, id, doc)) ?? ''
   const title = (await titleProviderFn?.(client, id, doc)) ?? ''
 
-  const label = identifier !== '' && title !== '' && identifier !== title ? `${identifier} ${title}` : title ?? ''
+  const label =
+    identifier !== '' && title !== '' && identifier !== title
+      ? `${identifier} ${title}`
+      : title !== ''
+        ? title
+        : identifier
 
   return label
 }
@@ -451,7 +456,6 @@ export async function getTargetObjectFromUrl (
   urlOrLocation: string | Location
 ): Promise<{ _id: Ref<Doc>, _class: Ref<Class<Doc>> } | undefined> {
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   let location: Location
   if (typeof urlOrLocation === 'string') {
@@ -469,19 +473,43 @@ export async function getTargetObjectFromUrl (
 
   const appAlias = (location.path[2] ?? '').trim()
   if (!(appAlias.length > 0)) return
-
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
   const apps: Application[] = client
     .getModel()
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
 
   const app = apps.find((p) => p.alias === appAlias)
+  const locationResolver = app?.locationResolver
+  const locationDataResolver = app?.locationDataResolver
 
-  if (app?.locationResolver === undefined) return
-  const locationResolverFn = await getResource(app.locationResolver)
-  const resolvedLocation = await locationResolverFn(location)
+  if ((location.fragment ?? '') !== '') {
+    const obj = await getObjectFromFragment(location.fragment ?? '')
+    if (obj !== undefined) return obj
+  }
 
-  const locationParts = decodeURIComponent(resolvedLocation?.loc?.fragment ?? '').split('|')
+  if (locationResolver !== undefined) {
+    const locationResolverFn = await getResource(locationResolver)
+    const resolvedLocation = await locationResolverFn(location)
+    const obj = await getObjectFromFragment(resolvedLocation?.loc?.fragment ?? '')
+    if (obj !== undefined) return obj
+  }
+
+  if (locationDataResolver !== undefined) {
+    const locationDataResolverFn = await getResource(locationDataResolver)
+    const locationData = await locationDataResolverFn(location)
+    if (locationData.objectId !== undefined && locationData.objectClass !== undefined) {
+      return { _id: locationData.objectId, _class: locationData.objectClass }
+    }
+  }
+}
+
+async function getObjectFromFragment (
+  fragment: string
+): Promise<{ _id: Ref<Doc>, _class: Ref<Class<Doc>> } | undefined> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const locationParts = decodeURIComponent(fragment).split('|')
   const id = locationParts[1] as Ref<Doc>
   const objectclass = locationParts[2] as Ref<Class<Doc>>
   if (id === undefined || objectclass === undefined) return

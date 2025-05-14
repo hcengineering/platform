@@ -15,6 +15,7 @@
 //
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import core, { Doc, Ref, WithLookup, generateId, type Blob } from '@hcengineering/core'
   import { Document, DocumentEvents } from '@hcengineering/document'
@@ -35,7 +36,6 @@
     TimeSince,
     createFocusManager,
     getPlatformColorDef,
-    navigate,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
@@ -45,14 +45,13 @@
     IconPicker,
     ParentsNavigator,
     RelationsEditor,
-    getObjectLinkFragment,
+    openDoc,
     restrictionStore,
     showMenu
   } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { Analytics } from '@hcengineering/analytics'
 
-  import { starDocument, unstarDocument, unlockContent } from '..'
+  import { starDocument, unlockContent, unstarDocument } from '..'
   import document from '../plugin'
   import { getDocumentUrl } from '../utils'
   import DocumentEditor from './DocumentEditor.svelte'
@@ -389,8 +388,7 @@
             on:open-document={async (event) => {
               const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
               if (doc != null) {
-                const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
-                navigate(location)
+                await openDoc(client.getHierarchy(), doc)
               }
             }}
             on:loaded={() => {

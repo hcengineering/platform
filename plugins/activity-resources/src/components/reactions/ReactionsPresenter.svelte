@@ -51,7 +51,7 @@
 
   const handleClick = (ev: CustomEvent) => {
     if (readonly) return
-    void updateDocReactions(reactions, object, ev.detail)
+    void updateDocReactions(reactions, object, ev.detail?.text, ev.detail?.image)
   }
 </script>
 

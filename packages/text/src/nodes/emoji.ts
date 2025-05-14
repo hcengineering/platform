@@ -73,7 +73,6 @@ export const EmojiNode = Node.create<EmojiNodeOptions>({
 
   addNodeView () {
     return ({ node, HTMLAttributes }) => {
-      console.log('Node view')
       const container = document.createElement('span')
       const containerAttributes = mergeAttributes(
         {

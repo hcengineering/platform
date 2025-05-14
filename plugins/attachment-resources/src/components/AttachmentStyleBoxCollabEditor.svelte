@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import attachment, { Attachment, AttachmentsEvents } from '@hcengineering/attachment'
   import contact from '@hcengineering/contact'
   import core, { BlobMetadata, Doc, PersonId, Ref, generateId, type Blob, type Space } from '@hcengineering/core'
@@ -34,11 +35,9 @@
     defaultRefActions,
     getModelRefActions
   } from '@hcengineering/text-editor-resources'
-  import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement, navigate } from '@hcengineering/ui'
-  import { type FileUploadCallbackParams, uploadFiles } from '@hcengineering/uploader'
-  import view from '@hcengineering/view'
-  import { getCollaborationUser, getObjectId, getObjectLinkFragment } from '@hcengineering/view-resources'
-  import { Analytics } from '@hcengineering/analytics'
+  import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement } from '@hcengineering/ui'
+  import { uploadFiles, type FileUploadCallbackParams } from '@hcengineering/uploader'
+  import { getCollaborationUser, getObjectId, openDoc } from '@hcengineering/view-resources'
 
   import AttachmentsGrid from './AttachmentsGrid.svelte'
 
@@ -324,8 +323,7 @@
       on:open-document={async (event) => {
         const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
         if (doc != null) {
-          const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
-          navigate(location)
+          await openDoc(client.getHierarchy(), doc)
         }
       }}
       on:focus

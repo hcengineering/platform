@@ -108,6 +108,7 @@
     const newValue = !$isSharingEnabled
     const audio = newValue && $isShareWithSound
     await setShare(newValue, audio)
+    dispatch('close')
   }
 
   async function leave (): Promise<void> {
