@@ -37,7 +37,7 @@ export class MessageManagerV2 implements IMessageManager {
     const res = convertMessage(message, me)
     const attachments = await this.attachmentHandler.getPartFiles(message.data.payload, message.data.id ?? '')
 
-    await createMessages(config, this.ctx, this.token, res, attachments)
+    await createMessages(config, this.ctx, this.keyValueClient, this.token, res, attachments)
   }
 }
 

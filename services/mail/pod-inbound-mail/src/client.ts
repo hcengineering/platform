@@ -13,10 +13,16 @@
 // limitations under the License.
 //
 
-import { loadMetadata } from '@hcengineering/platform'
-import mail from '@hcengineering/mail'
+import { systemAccountUuid } from '@hcengineering/core'
+import { BaseConfig } from '@hcengineering/mail-common'
+import { generateToken } from '@hcengineering/server-token'
+import { getClient } from '@hcengineering/kvs-client'
+import config from './config'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(mail.icon, {
-  Mail: `${icons}#mail`
-})
+export const mailServiceToken = generateToken(systemAccountUuid, undefined, { service: 'mail' })
+export const baseConfig: BaseConfig = {
+  AccountsURL: config.accountsUrl,
+  KvsUrl: config.kvsUrl,
+  StorageConfig: config.storageConfig ?? ''
+}
+export const kvsClient = getClient('inbound-mail', baseConfig.KvsUrl, mailServiceToken)

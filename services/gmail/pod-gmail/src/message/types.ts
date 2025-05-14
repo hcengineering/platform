@@ -15,22 +15,6 @@
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 
-export interface AttachedFile {
-  id: string
-  name: string
-  data: Buffer
-  contentType: string
-  size?: number
-  lastModified: number
-}
-
-export interface EmailContact {
-  email: string
-  firstName?: string
-  lastName?: string
-  photoUrl?: string | null
-}
-
 export interface History {
   historyId: string
   userId: string

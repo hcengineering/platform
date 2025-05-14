@@ -95,7 +95,7 @@ describe('AttachmentHandler', () => {
         {
           ...getBaseAttachment(),
           name: 'test.txt',
-          lastModified: file.lastModified
+          lastModified: file.lastModified ?? Date.now()
         }
       ]
 

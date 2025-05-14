@@ -17,11 +17,11 @@ import { readEml, ReadedEmlJson } from 'eml-parse-js'
 import { Request, Response } from 'express'
 import TurndownService from 'turndown'
 import sanitizeHtml from 'sanitize-html'
-import { MeasureContext, systemAccountUuid } from '@hcengineering/core'
-import { type Attachment, type BaseConfig, type EmailContact, type EmailMessage, createMessages } from '@hcengineering/mail-common'
+import { MeasureContext } from '@hcengineering/core'
+import { type Attachment, type EmailContact, type EmailMessage, createMessages } from '@hcengineering/mail-common'
+import { mailServiceToken, baseConfig, kvsClient } from './client'
 
 import config from './config'
-import { generateToken } from '@hcengineering/server-token'
 
 interface MtaMessage {
   envelope: {
@@ -110,13 +110,7 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
       sendOn: date
     }
 
-    const token = generateToken(systemAccountUuid, undefined, { service: 'mail' })
-    const baseConfig: BaseConfig = {
-      AccountsURL: config.accountsUrl,
-      KvsUrl: config.kvsUrl,
-      StorageConfig: config.storageConfig ?? ''
-    }
-    await createMessages(baseConfig, ctx, token, convertedMessage, attachments)
+    await createMessages(baseConfig, ctx, kvsClient, mailServiceToken, convertedMessage, attachments)
   } catch (error) {
     ctx.error('mta-hook', { error })
   } finally {

@@ -16,10 +16,10 @@ import { randomUUID } from 'crypto'
 import attachment, { Attachment } from '@hcengineering/attachment'
 import { AttachedData, Blob, MeasureContext, Ref, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
+import { type Attachment as AttachedFile } from '@hcengineering/mail-common'
 import { gmail_v1 } from 'googleapis'
 import { v4 as uuid } from 'uuid'
 import { encode64 } from '../base64'
-import type { AttachedFile } from './types'
 import { addFooter } from '../utils'
 
 export class AttachmentHandler {
@@ -42,7 +42,7 @@ export class AttachmentHandler {
         file: id as Ref<Blob>,
         type: file.data.toString('base64') ?? 'undefined',
         size: file.size ?? file.data.length,
-        lastModified: file.lastModified
+        lastModified: file.lastModified ?? Date.now()
       }
       await this.storageAdapter.put(this.ctx, this.workspaceId as any, id, file.data, data.type, data.size) // TODO: FIXME
       await this.client.addCollection(
