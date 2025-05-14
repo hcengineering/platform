@@ -101,13 +101,22 @@
   }
 
   const sendEmoji = (emoji: EmojiWithGroup): void => {
-    selected = isCustomEmoji(emoji) ? emoji.image : emoji.emoji
     addFrequentlyEmojis(emoji)
-    dispatch('close', {
-      text: selected,
-      codes: isCustomEmoji(emoji) ? emoji.image : emoji.hexcode.split('-').map((hc) => parseInt(hc, 16)),
-      image: isCustomEmoji(emoji) ? emoji.image : undefined
-    })
+    if (isCustomEmoji(emoji)) {
+      selected = emoji.image
+      dispatch('close', {
+        text: emoji.shortcode,
+        codes: emoji.image,
+        image: emoji.image
+      })
+    } else {
+      selected = emoji.emoji
+      dispatch('close', {
+        text: emoji.emoji,
+        codes: emoji.hexcode.split('-').map((hc) => parseInt(hc, 16)),
+        image: undefined
+      })
+    }
   }
 
   const selectedEmoji = (event: CustomEvent<EmojiWithGroup>): void => {
