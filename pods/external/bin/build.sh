@@ -4,16 +4,18 @@ registry=hardcoreeng
 tag=latest
 
 find services.d/ -type f -name "*.service" ! -name "-*" | sort | while read -r file; do
-    extern=$(cat $file | grep -v -e '^[[:space:]]*$' -e '^#' | head -n 1 | tr -d '[:space:]')
+    line=$(cat $file | grep -v -e '^[[:space:]]*$' -e '^#' | head -n 1)
 
-    if [ ! -z $extern ]; then
-        repo=$(echo $extern | cut -d'/' -f2 | cut -d':' -f1)
-        pulled=$(docker pull --quiet $extern)
-        local=$registry/$repo:$tag
+    target_repo=$(echo $line | cut -d ' ' -f1 | tr -d '[:space:]')
+    source=$(echo $line | cut -d ' ' -f2 | tr -d '[:space:]') 
 
-        docker tag $extern $local
+    if [ ! -z $target_repo ] && [ ! -z $source ]; then
+        target=$registry/$target_repo:$tag
 
-        echo "Pull&Tag: $pulled -> $local"
+        docker pull --quiet $source > /dev/null
+        docker tag $source $target
+
+        echo "Pull&Tag: $source -> $target"
     fi
 done
 
