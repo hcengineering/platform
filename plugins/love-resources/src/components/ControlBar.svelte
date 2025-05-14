@@ -155,7 +155,7 @@
 
   async function handleAction (action: Action): Promise<void> {
     const fn = await getResource(action.action)
-    await fn(room, undefined, { fullScreen })
+    await fn(room)
   }
   $: withVideo = $screenSharing || room.type === RoomType.Video
 
