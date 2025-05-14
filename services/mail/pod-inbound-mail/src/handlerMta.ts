@@ -23,7 +23,7 @@ import { mailServiceToken, baseConfig, kvsClient } from './client'
 
 import config from './config'
 
-interface MtaMessage {
+export interface MtaMessage {
   envelope: {
     from: {
       address: string
@@ -54,7 +54,7 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
 
     const mta: MtaMessage = req.body
 
-    const from: EmailContact = { email: mta.envelope.from.address, firstName: '', lastName: '' }
+    const from: EmailContact = getEmailContact(mta.envelope.from.address)
     if (config.ignoredAddresses.includes(from.email)) {
       return
     }
@@ -65,7 +65,7 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
       from.lastName = lastName
     }
 
-    const tos: EmailContact[] = mta.envelope.to.map((to) => ({ email: stripTags(to.address), firstName: '', lastName: '' }))
+    const tos: EmailContact[] = mta.envelope.to.map((to) => getEmailContact(stripTags(to.address)))
     const toHeader = getHeader(mta, 'To')
     if (toHeader !== undefined) {
       for (const part of toHeader.split(',')) {
@@ -188,7 +188,20 @@ async function parseContent (
   return { content, attachments }
 }
 
-function extractContactName (ctx: MeasureContext, fromHeader: string, email: string): { firstName: string, lastName: string } {
+function getEmailContact (email: string): EmailContact {
+  const parts = stripTags(email).split('@')
+  return {
+    email,
+    firstName: parts[0],
+    lastName: parts[1]
+  }
+}
+
+function extractContactName (
+  ctx: MeasureContext,
+  fromHeader: string,
+  email: string
+): { firstName: string, lastName: string } {
   // Match name part that appears before an email in angle brackets
   const nameMatch = fromHeader.match(/^\s*"?([^"<]+?)"?\s*<.+?>/)
   const encodedName = nameMatch?.[1].trim() ?? ''

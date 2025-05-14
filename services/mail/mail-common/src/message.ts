@@ -260,7 +260,7 @@ async function saveMessageToSpaces (
           created: createdDate
         }
       )
-      ctx.info('Created message', { mailId, messageId, threadId, content })
+      ctx.info('Created message', { mailId, messageId, threadId })
 
       for (const a of attachments) {
         await msgClient.createFile(
