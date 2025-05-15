@@ -26,7 +26,6 @@ import { Analytics } from '@hcengineering/analytics'
 import {
   AccountRole,
   concatLink,
-  parseSocialIdString,
   type AccountUuid,
   type Person,
   type WorkspaceInfoWithStatus,
@@ -961,18 +960,13 @@ export function isWorkspaceLoginInfo (
   return (info as any)?.workspace !== undefined && (info as any)?.token !== undefined
 }
 
-export function getAccountDisplayName (loginInfo: LoginInfo | null): string {
+export function getAccountDisplayName (loginInfo: LoginInfo | null | undefined): string {
   if (loginInfo == null) {
     return ''
   }
 
   if (loginInfo.name != null) {
     return loginInfo.name
-  }
-
-  if (loginInfo.socialId != null) {
-    const { value } = parseSocialIdString(loginInfo.socialId)
-    return value
   }
 
   return loginInfo.account
