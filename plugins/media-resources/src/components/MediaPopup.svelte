@@ -51,7 +51,7 @@
 </script>
 
 <div class="antiPopup mediaPopup">
-  <ComponentExtensions extension={media.extension.StateContext} />
+  <ComponentExtensions extension={media.extension.StateContext} on:close />
 
   <div class="ap-scroll">
     <div class="ap-box">
