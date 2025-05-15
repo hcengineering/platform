@@ -14,7 +14,7 @@
     "build": "compile",
     "build:watch": "compile",
     "test": "jest --passWithNoTests --silent",
-    "_phase:bundle": "rushx bundle --external=ws",
+    "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "node ../../../common/scripts/esbuild.js --external=ws",
