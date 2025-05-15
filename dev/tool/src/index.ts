@@ -94,7 +94,13 @@ import { getAccountDBUrl, getKvsUrl, getMongoDBUrl } from './__start'
 import { changeConfiguration } from './configuration'
 
 import { performGithubAccountMigrations } from './github'
-import { migrateCreatedModifiedBy, ensureGlobalPersonsForLocalAccounts, moveAccountDbFromMongoToPG } from './db'
+import {
+  migrateCreatedModifiedBy,
+  ensureGlobalPersonsForLocalAccounts,
+  moveAccountDbFromMongoToPG,
+  migrateMergedAccounts,
+  filterMergedAccountsInMembers
+} from './db'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 import { performGmailAccountMigrations } from './gmail'
 import { performCalendarAccountMigrations } from './calendar'
@@ -2311,6 +2317,22 @@ export function devTool (
 
     await withAccountDatabase(async (accDb) => {
       await ensureGlobalPersonsForLocalAccounts(toolCtx, dbUrl, accDb)
+    }, dbUrl)
+  })
+
+  program.command('migrate-merged-accounts').action(async () => {
+    const { dbUrl } = prepareTools()
+
+    await withAccountDatabase(async (accDb) => {
+      await migrateMergedAccounts(toolCtx, dbUrl, accDb)
+    }, dbUrl)
+  })
+
+  program.command('filter-merged-accounts-in-members').action(async () => {
+    const { dbUrl } = prepareTools()
+
+    await withAccountDatabase(async (accDb) => {
+      await filterMergedAccountsInMembers(toolCtx, dbUrl, accDb)
     }, dbUrl)
   })
 

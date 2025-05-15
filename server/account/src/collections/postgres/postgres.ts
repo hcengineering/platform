@@ -23,6 +23,7 @@ import {
   type AccountUuid
 } from '@hcengineering/core'
 
+import { getMigrations } from './migrations'
 import type {
   DbCollection,
   Query,
@@ -44,7 +45,7 @@ import type {
   MailboxSecret,
   Integration,
   IntegrationSecret
-} from '../types'
+} from '../../types'
 
 function toSnakeCase (str: string): string {
   // Preserve leading underscore
@@ -201,9 +202,14 @@ implements DbCollection<T> {
           break
         }
         case '$ne': {
-          currIdx++
-          whereChunks.push(`"${snakeKey}" != ${formatVar(currIdx, castType)}`)
-          values.push(Object.values(qKey as object)[0])
+          const val = Object.values(qKey as object)[0]
+          if (val === null) {
+            whereChunks.push(`"${snakeKey}" IS NOT NULL`)
+          } else {
+            currIdx++
+            whereChunks.push(`"${snakeKey}" != ${formatVar(currIdx, castType)}`)
+            values.push(val)
+          }
           break
         }
         default: {
@@ -661,7 +667,7 @@ export class PostgresAccountDB implements AccountDB {
     return res[0]?.role ?? null
   }
 
-  async getWorkspaceRoles (accountUuid: AccountUuid): Promise<Map<WorkspaceUuid, AccountRole | null>> {
+  async getWorkspaceRoles (accountUuid: AccountUuid): Promise<Map<WorkspaceUuid, AccountRole>> {
     const res = await this
       .client`SELECT workspace_uuid, role FROM ${this.client(this.getWsMembersTableName())} WHERE account_uuid = ${accountUuid}`
 
@@ -842,319 +848,6 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   protected getMigrations (): [string, string][] {
-    return [
-      this.getV1Migration(),
-      this.getV2Migration1(),
-      this.getV2Migration2(),
-      this.getV2Migration3(),
-      this.getV3Migration(),
-      this.getV4Migration(),
-      this.getV4Migration1(),
-      this.getV5Migration(),
-      this.getV6Migration(),
-      this.getV7Migration(),
-      this.getV8Migration()
-    ]
-  }
-
-  // NOTE: NEVER MODIFY EXISTING MIGRATIONS. IF YOU NEED TO ADJUST THE SCHEMA, ADD A NEW MIGRATION.
-  private getV1Migration (): [string, string] {
-    return [
-      'account_db_v1_global_init',
-      `
-      /* ======= FUNCTIONS ======= */
-
-      CREATE OR REPLACE FUNCTION current_epoch_ms() 
-      RETURNS BIGINT AS $$
-          SELECT (extract(epoch from current_timestamp) * 1000)::bigint;
-      $$ LANGUAGE SQL;
-
-      /* ======= T Y P E S ======= */
-      CREATE TYPE IF NOT EXISTS ${this.ns}.social_id_type AS ENUM ('email', 'github', 'google', 'phone', 'oidc', 'huly', 'telegram');
-      CREATE TYPE IF NOT EXISTS ${this.ns}.location AS ENUM ('kv', 'weur', 'eeur', 'wnam', 'enam', 'apac');
-      CREATE TYPE IF NOT EXISTS ${this.ns}.workspace_role AS ENUM ('OWNER', 'MAINTAINER', 'USER', 'GUEST', 'DOCGUEST');
-
-      /* ======= P E R S O N ======= */
-      CREATE TABLE IF NOT EXISTS ${this.ns}.person (
-          uuid UUID NOT NULL DEFAULT gen_random_uuid(),
-          first_name STRING NOT NULL,
-          last_name STRING NOT NULL,
-          country STRING,
-          city STRING,
-          CONSTRAINT person_pk PRIMARY KEY (uuid)
-      );
-
-      /* ======= A C C O U N T ======= */
-      CREATE TABLE IF NOT EXISTS ${this.ns}.account (
-          uuid UUID NOT NULL,
-          timezone STRING,
-          locale STRING,
-          CONSTRAINT account_pk PRIMARY KEY (uuid),
-          CONSTRAINT account_person_fk FOREIGN KEY (uuid) REFERENCES ${this.ns}.person(uuid)
-      );
-
-      CREATE TABLE IF NOT EXISTS ${this.ns}.account_passwords (
-          account_uuid UUID NOT NULL,
-          hash BYTES NOT NULL,
-          salt BYTES NOT NULL,
-          CONSTRAINT account_auth_pk PRIMARY KEY (account_uuid),
-          CONSTRAINT account_passwords_account_fk FOREIGN KEY (account_uuid) REFERENCES ${this.ns}.account(uuid)
-      );
-
-      CREATE TABLE IF NOT EXISTS ${this.ns}.account_events (
-          account_uuid UUID NOT NULL,
-          event_type STRING NOT NULL,
-          time BIGINT NOT NULL DEFAULT current_epoch_ms(),
-          data JSONB,
-          CONSTRAINT account_events_pk PRIMARY KEY (account_uuid, event_type, time),
-          CONSTRAINT account_events_account_fk FOREIGN KEY (account_uuid) REFERENCES ${this.ns}.account(uuid)
-      );
-
-      /* ======= S O C I A L   I D S ======= */
-      CREATE TABLE IF NOT EXISTS ${this.ns}.social_id (
-          type ${this.ns}.social_id_type NOT NULL,
-          value STRING NOT NULL,
-          key STRING AS (CONCAT(type::STRING, ':', value)) STORED,
-          person_uuid UUID NOT NULL,
-          created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
-          verified_on BIGINT,
-          CONSTRAINT social_id_pk PRIMARY KEY (type, value),
-          CONSTRAINT social_id_key_unique UNIQUE (key),
-          INDEX social_id_account_idx (person_uuid),
-          CONSTRAINT social_id_person_fk FOREIGN KEY (person_uuid) REFERENCES ${this.ns}.person(uuid)
-      );
-
-      /* ======= W O R K S P A C E ======= */
-      CREATE TABLE IF NOT EXISTS ${this.ns}.workspace (
-          uuid UUID NOT NULL DEFAULT gen_random_uuid(),
-          name STRING NOT NULL,
-          url STRING NOT NULL,
-          data_id STRING,
-          branding STRING,
-          location ${this.ns}.location,
-          region STRING,
-          created_by UUID, -- account uuid
-          created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
-          billing_account UUID,
-          CONSTRAINT workspace_pk PRIMARY KEY (uuid),
-          CONSTRAINT workspace_url_unique UNIQUE (url),
-          CONSTRAINT workspace_created_by_fk FOREIGN KEY (created_by) REFERENCES ${this.ns}.account(uuid),
-          CONSTRAINT workspace_billing_account_fk FOREIGN KEY (billing_account) REFERENCES ${this.ns}.account(uuid)
-      );
-
-      CREATE TABLE IF NOT EXISTS ${this.ns}.workspace_status (
-          workspace_uuid UUID NOT NULL,
-          mode STRING,
-          processing_progress INT2 DEFAULT 0,
-          version_major INT2 NOT NULL DEFAULT 0,
-          version_minor INT2 NOT NULL DEFAULT 0,
-          version_patch INT4 NOT NULL DEFAULT 0,
-          last_processing_time BIGINT DEFAULT 0,
-          last_visit BIGINT,
-          is_disabled BOOL DEFAULT FALSE,
-          processing_attempts INT2 DEFAULT 0,
-          processing_message STRING,
-          backup_info JSONB,
-          CONSTRAINT workspace_status_pk PRIMARY KEY (workspace_uuid),
-          CONSTRAINT workspace_status_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${this.ns}.workspace(uuid)
-      );
-
-      CREATE TABLE IF NOT EXISTS ${this.ns}.workspace_members (
-          workspace_uuid UUID NOT NULL,
-          account_uuid UUID NOT NULL,
-          role ${this.ns}.workspace_role NOT NULL DEFAULT 'USER',
-          CONSTRAINT workspace_assignment_pk PRIMARY KEY (workspace_uuid, account_uuid),
-          CONSTRAINT members_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${this.ns}.workspace(uuid),
-          CONSTRAINT members_account_fk FOREIGN KEY (account_uuid) REFERENCES ${this.ns}.account(uuid)
-      );
-
-      /* ========================================================================================== */
-      /* MAIN SCHEMA ENDS HERE */
-      /* ===================== */
-
-      /* ======= O T P ======= */
-      CREATE TABLE IF NOT EXISTS ${this.ns}.otp (
-          social_id STRING NOT NULL,
-          code STRING NOT NULL,
-          expires_on BIGINT NOT NULL,
-          created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
-          CONSTRAINT otp_pk PRIMARY KEY (social_id, code),
-          CONSTRAINT otp_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(key)
-      );
-
-      /* ======= I N V I T E ======= */
-      CREATE TABLE IF NOT EXISTS ${this.ns}.invite (
-          id INT8 NOT NULL DEFAULT unique_rowid(),
-          workspace_uuid UUID NOT NULL,
-          expires_on BIGINT NOT NULL,
-          email_pattern STRING,
-          remaining_uses INT2,
-          role ${this.ns}.workspace_role NOT NULL DEFAULT 'USER',
-          migrated_from STRING,
-          CONSTRAINT invite_pk PRIMARY KEY (id),
-          INDEX workspace_invite_idx (workspace_uuid),
-          INDEX migrated_from_idx (migrated_from),
-          CONSTRAINT invite_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${this.ns}.workspace(uuid)
-      );
-    `
-    ]
-  }
-
-  private getV2Migration1 (): [string, string] {
-    return [
-      'account_db_v2_social_id_id_add',
-      `
-      -- Add _id column to social_id table
-      ALTER TABLE ${this.ns}.social_id
-      ADD COLUMN IF NOT EXISTS _id INT8 NOT NULL DEFAULT unique_rowid();
-      `
-    ]
-  }
-
-  private getV2Migration2 (): [string, string] {
-    return [
-      'account_db_v2_social_id_pk_change',
-      `
-      -- Drop existing otp foreign key constraint
-      ALTER TABLE ${this.ns}.otp
-      DROP CONSTRAINT IF EXISTS otp_social_id_fk;
-
-      -- Drop existing primary key on social_id
-      ALTER TABLE ${this.ns}.social_id
-      DROP CONSTRAINT IF EXISTS social_id_pk;
-
-      -- Add new primary key on _id
-      ALTER TABLE ${this.ns}.social_id
-      ADD CONSTRAINT social_id_pk PRIMARY KEY (_id);
-      `
-    ]
-  }
-
-  private getV2Migration3 (): [string, string] {
-    return [
-      'account_db_v2_social_id_constraints',
-      `
-      -- Add unique constraint on type, value
-      ALTER TABLE ${this.ns}.social_id
-      ADD CONSTRAINT social_id_tv_key_unique UNIQUE (type, value);
-
-      -- Drop old table
-      DROP TABLE ${this.ns}.otp;
-
-      -- Create new OTP table with correct column type
-      CREATE TABLE ${this.ns}.otp (
-          social_id INT8 NOT NULL,
-          code STRING NOT NULL,
-          expires_on BIGINT NOT NULL,
-          created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
-          CONSTRAINT otp_new_pk PRIMARY KEY (social_id, code),
-          CONSTRAINT otp_new_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(_id)
-      );
-      `
-    ]
-  }
-
-  private getV3Migration (): [string, string] {
-    return [
-      'account_db_v3_add_invite_auto_join_final',
-      `
-      ALTER TABLE ${this.ns}.invite
-      ADD COLUMN IF NOT EXISTS email STRING,
-      ADD COLUMN IF NOT EXISTS auto_join BOOL DEFAULT FALSE;
-
-      ALTER TABLE ${this.ns}.account
-      ADD COLUMN IF NOT EXISTS automatic BOOL;
-      `
-    ]
-  }
-
-  private getV4Migration (): [string, string] {
-    return [
-      'account_db_v4_mailbox',
-      `
-      CREATE TABLE IF NOT EXISTS ${this.ns}.mailbox (
-          account_uuid UUID NOT NULL,
-          mailbox STRING NOT NULL,
-          CONSTRAINT mailbox_pk PRIMARY KEY (mailbox),
-          CONSTRAINT mailbox_account_fk FOREIGN KEY (account_uuid) REFERENCES ${this.ns}.account(uuid)
-      );
-
-      CREATE TABLE IF NOT EXISTS ${this.ns}.mailbox_secrets (
-          mailbox STRING NOT NULL,
-          app STRING,
-          secret STRING NOT NULL,
-          CONSTRAINT mailbox_secret_mailbox_fk FOREIGN KEY (mailbox) REFERENCES ${this.ns}.mailbox(mailbox)
-      );
-      `
-    ]
-  }
-
-  private getV4Migration1 (): [string, string] {
-    return [
-      'account_db_v4_remove_mailbox_account_fk',
-      `
-      ALTER TABLE ${this.ns}.mailbox
-      DROP CONSTRAINT IF EXISTS mailbox_account_fk;
-      `
-    ]
-  }
-
-  private getV5Migration (): [string, string] {
-    return [
-      'account_db_v5_social_id_is_deleted',
-      `
-      ALTER TABLE ${this.ns}.social_id
-      ADD COLUMN IF NOT EXISTS is_deleted BOOL NOT NULL DEFAULT FALSE;
-      `
-    ]
-  }
-
-  private getV6Migration (): [string, string] {
-    return [
-      'account_db_v6_add_social_id_integrations',
-      `
-      CREATE TABLE IF NOT EXISTS ${this.ns}.integrations (
-          social_id INT8 NOT NULL,
-          kind STRING NOT NULL,
-          workspace_uuid UUID,
-          _def_ws_uuid UUID NOT NULL GENERATED ALWAYS AS (COALESCE(workspace_uuid, '00000000-0000-0000-0000-000000000000')) STORED NOT VISIBLE,
-          data JSONB,
-          CONSTRAINT integrations_pk PRIMARY KEY (social_id, kind, _def_ws_uuid),
-          INDEX integrations_kind_idx (kind),
-          CONSTRAINT integrations_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(_id),
-          CONSTRAINT integrations_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${this.ns}.workspace(uuid)
-      );
-
-      CREATE TABLE IF NOT EXISTS ${this.ns}.integration_secrets (
-          social_id INT8 NOT NULL,
-          kind STRING NOT NULL,
-          workspace_uuid UUID,
-          _def_ws_uuid UUID NOT NULL GENERATED ALWAYS AS (COALESCE(workspace_uuid, '00000000-0000-0000-0000-000000000000')) STORED NOT VISIBLE,
-          key STRING,
-          secret STRING NOT NULL,
-          CONSTRAINT integration_secrets_pk PRIMARY KEY (social_id, kind, _def_ws_uuid, key)
-      );
-      `
-    ]
-  }
-
-  private getV7Migration (): [string, string] {
-    return [
-      'account_db_v7_add_display_value',
-      `
-      ALTER TABLE ${this.ns}.social_id
-      ADD COLUMN IF NOT EXISTS display_value TEXT;
-      `
-    ]
-  }
-
-  private getV8Migration (): [string, string] {
-    return [
-      'account_db_v8_add_account_max_workspaces',
-      `
-      ALTER TABLE ${this.ns}.account
-      ADD COLUMN IF NOT EXISTS max_workspaces SMALLINT;
-      `
-    ]
+    return getMigrations(this.ns)
   }
 }
