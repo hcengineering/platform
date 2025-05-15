@@ -3999,7 +3999,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/api-client@file:projects/api-client.tgz':
-    resolution: {integrity: sha512-jrdKbDKocPAw7npwNw1CRZqgAV4RlnuIMVFqLIRzm1FV+fD3s2vHjtWdPhO9mY11ycQrmhf4IpNmS3L+5/CnpA==, tarball: file:projects/api-client.tgz}
+    resolution: {integrity: sha512-8KbeHFsYSkoyd7aTjHSxPQTn/SN3uSuKO/lF1c6XW+11s7xLizlVo1QuWa8jNsHTAVrUT6EJWj2rVpYEuZu8WQ==, tarball: file:projects/api-client.tgz}
     version: 0.0.0
 
   '@rush-temp/api-tests@file:projects/api-tests.tgz':
@@ -4403,11 +4403,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz':
-    resolution: {integrity: sha512-K9Ezw+iw4J9Fkc5sH/wOiUzK7dn98BUHegPk6ZiGRbEhg3YDqU4xK8ty0GgbSayy6qT6Waxrz65O7tldIA9Utg==, tarball: file:projects/mail-common.tgz}
+    resolution: {integrity: sha512-SSRl9xtinXBjB1eXJI+XjLWhi9uGZE4wdaKmbhpvkgGBdxuaditY6T60XRLRmm4Op4KALf1RE0Ha4aZU106C4g==, tarball: file:projects/mail-common.tgz}
     version: 0.0.0
 
   '@rush-temp/mail@file:projects/mail.tgz':
-    resolution: {integrity: sha512-Ld099uwXEeUid9s0GYHmgUKkctWnDc6D+yppNRmJhnf7VWtInqIPM2S3vl1kQi7pj0LwUY8ZKQ8B6m7Wxgj1Pw==, tarball: file:projects/mail.tgz}
+    resolution: {integrity: sha512-9fEBr1e0tV9ByCfhjNlnUQTiu1uadVxmqduSXKAOTAL4IrcsekWrsicUHD/6LY8cGwpFkd+Sv7YD17pPkVrBDg==, tarball: file:projects/mail.tgz}
     version: 0.0.0
 
   '@rush-temp/media-assets@file:projects/media-assets.tgz':
@@ -4891,7 +4891,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
-    resolution: {integrity: sha512-tjWZdxHPbsV8+amEyl2p7FlCX1B6yHuspYEqX2K4DpWxbBCrkjgxurBRZ3ySM02gv/GauicV+UgoXcxttBopew==, tarball: file:projects/pod-inbound-mail.tgz}
+    resolution: {integrity: sha512-fl+JZgJ5jK57iKq1CrUysyvEJV6v/HH60zd+z/JPkyD4+0T1eCadrrWRfhuwYTlrz3GdMQxGGbpI/dJvqGNpeA==, tarball: file:projects/pod-inbound-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
@@ -16795,7 +16795,6 @@ snapshots:
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.6.2)
       typescript: 5.6.2
-    optionalDependencies:
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - '@babel/core'
