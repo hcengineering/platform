@@ -218,6 +218,8 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
       continue
     }
 
+    if (employee.role === 'GUEST') continue
+
     result.push(
       control.txFactory.createTxMixin(ctx.objectId, ctx.objectClass, ctx.objectSpace, hr.mixin.Staff, {
         department: hr.ids.Head
