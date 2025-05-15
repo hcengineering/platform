@@ -28,15 +28,7 @@
   let player: Plyr | null = null
 
   const options: Plyr.Options = {
-    controls: [
-      'play-large',
-      'play',
-      'progress',
-      'current-time',
-      'volume',
-      'settings',
-      'fullscreen'
-    ]
+    controls: ['play-large', 'play', 'progress', 'current-time', 'volume', 'settings', 'fullscreen']
   }
 
   function initialize (src: string): void {
