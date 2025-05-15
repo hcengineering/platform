@@ -17,7 +17,7 @@
   import { getPersonBySocialId, Person } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
-  import { getCurrentAccount} from '@hcengineering/core'
+  import { getCurrentAccount } from '@hcengineering/core'
   import { getEventPositionElement, showPopup, Action as MenuAction } from '@hcengineering/ui'
   import { personByPersonIdStore } from '@hcengineering/contact-resources'
   import type { SocialID } from '@hcengineering/communication-types'
@@ -39,6 +39,7 @@
   export let replies: boolean = true
   export let padding: string | undefined = undefined
   export let compact: boolean = false
+  export let hideAvatar: boolean = false
 
   const client = getClient()
   const me = getCurrentAccount()
@@ -181,9 +182,9 @@
   {/if}
 
   {#if isThread || message.type === MessageType.Activity}
-    <OneRowMessageBody {message} {card} {author} {replies} />
+    <OneRowMessageBody {message} {card} {author} {replies} {hideAvatar} />
   {:else}
-    <MessageBody {message} {card} {author} bind:isEditing {compact} {replies} />
+    <MessageBody {message} {card} {author} bind:isEditing {compact} {replies} {hideAvatar} />
   {/if}
 </div>
 

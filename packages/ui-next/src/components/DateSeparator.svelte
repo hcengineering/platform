@@ -85,8 +85,10 @@
   .line {
     flex: 1;
     height: 1px;
-    width: 100%;
-    border-bottom: 1px solid var(--highlight-select-border);
+    min-height: 1px;
+    width: calc(100% - 8rem);
+    background: var(--highlight-select-border);
+    margin: 0 4rem;
     margin-top: -2rem;
   }
 </style>

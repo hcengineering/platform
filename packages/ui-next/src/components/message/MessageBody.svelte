@@ -32,6 +32,7 @@
   export let isEditing = false
   export let compact: boolean = false
   export let replies = true
+  export let hideAvatar: boolean = false
 
   function formatDate (date: Date): string {
     return date.toLocaleTimeString('default', {
@@ -72,11 +73,13 @@
   </div>
 {:else}
   <div class="message__body">
-    <div class="message__avatar">
-      <PersonPreviewProvider value={author}>
-        <Avatar name={author?.name} person={author} size="medium" />
-      </PersonPreviewProvider>
-    </div>
+    {#if !hideAvatar}
+      <div class="message__avatar">
+        <PersonPreviewProvider value={author}>
+          <Avatar name={author?.name} person={author} size="medium" />
+        </PersonPreviewProvider>
+      </div>
+    {/if}
     <div class="message__content">
       <div class="message__header">
         <PersonPreviewProvider value={author}>
@@ -153,6 +156,7 @@
     color: var(--next-text-color-primary);
     font-size: 0.875rem;
     font-weight: 500;
+    white-space: nowrap;
   }
 
   .message__date {

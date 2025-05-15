@@ -24,7 +24,7 @@
   } from '@hcengineering/presentation'
   import uiNext, { NavItem } from '@hcengineering/ui-next'
   import { createEventDispatcher } from 'svelte'
-  import { Label, NotificationContext } from '@hcengineering/communication-types'
+  import { Label, NotificationContext, NotificationType } from '@hcengineering/communication-types'
   import { Button } from '@hcengineering/ui'
 
   import type { CardsNavigatorConfig } from '../../types'
@@ -106,6 +106,7 @@
       {
         card: ids ?? cards.map((it) => it._id),
         notifications: {
+          type: NotificationType.Message,
           order: SortingOrder.Descending,
           read: false,
           limit: 10
@@ -155,7 +156,7 @@
           icon={clazz.icon ?? cardPlugin.icon.Card}
           selected={selectedCard === card._id}
           paddingLeft="2.75rem"
-          notify={context && context.lastUpdate.getTime() > context.lastView.getTime()}
+          notify={(context?.notifications?.length ?? 0) > 0}
           notificationsCount={context?.notifications?.length ?? 0}
           on:click={(e) => {
             e.stopPropagation()

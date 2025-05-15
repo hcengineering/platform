@@ -14,6 +14,8 @@
 //
 
 import { type Message } from '@hcengineering/communication-types'
+import { isAppFocusedStore } from '@hcengineering/ui'
+import { get } from 'svelte/store'
 
 export interface MessagesGroup {
   day: number
@@ -57,6 +59,7 @@ export function createMessagesObserver (
   const messageObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
+        if (!get(isAppFocusedStore)) return
         if (entry.isIntersecting) {
           onMessageView(entry.target as HTMLDivElement)
           messageObserver.unobserve(entry.target)

@@ -24,7 +24,7 @@
 
   export let card: Card | undefined = undefined
 
-  const limit = 20
+  const limit = 6
 
   let cards: Card[] = []
   let contexts: NotificationContext[] = []
@@ -85,6 +85,5 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    padding: 8px;
   }
 </style>

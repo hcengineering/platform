@@ -26,6 +26,7 @@
   export let author: Person | undefined
   export let message: Message
   export let replies = true
+  export let hideAvatar: boolean = false
 
   function formatDate (date: Date): string {
     return date.toLocaleTimeString('default', {
@@ -36,11 +37,13 @@
 </script>
 
 <div class="message__body">
-  <div class="message__avatar">
-    <PersonPreviewProvider value={author}>
-      <Avatar name={author?.name} person={author} size="x-small" />
-    </PersonPreviewProvider>
-  </div>
+  {#if !hideAvatar}
+    <div class="message__avatar">
+      <PersonPreviewProvider value={author}>
+        <Avatar name={author?.name} person={author} size="x-small" />
+      </PersonPreviewProvider>
+    </div>
+  {/if}
   <div class="message__header">
     <PersonPreviewProvider value={author}>
       <div class="message__username">
@@ -87,6 +90,7 @@
     color: var(--next-text-color-primary);
     font-size: 0.875rem;
     font-weight: 500;
+    white-space: nowrap;
   }
 
   .message__date {

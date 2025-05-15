@@ -1,4 +1,3 @@
-<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,21 +10,7 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
 
-<script lang="ts">
-  import { Notification, NotificationType } from '@hcengineering/communication-types'
-  import { Card } from '@hcengineering/card'
+import { writable } from 'svelte/store'
 
-  import MessageNotification from './MessageNotification.svelte'
-  import ReactionNotification from './ReactionNotification.svelte'
-
-  export let notification: Notification
-  export let card: Card
-</script>
-
-{#if notification.type === NotificationType.Message}
-  <MessageNotification {notification} {card} />
-{:else if notification.type === NotificationType.Reaction}
-  <ReactionNotification {notification} {card} />
-{/if}
+export const isAppFocusedStore = writable(true)

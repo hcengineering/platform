@@ -68,6 +68,10 @@
     navigateToCard(card._id)
   }
 
+  function handleClose (): void {
+    navigateToCard(undefined)
+  }
+
   onDestroy(
     resolvedLocationStore.subscribe((loc) => {
       void syncLocation(loc)
@@ -116,6 +120,7 @@
           _id: card._id,
           embedded: true
         }}
+        on:close={handleClose}
       />
     {/if}
   </div>

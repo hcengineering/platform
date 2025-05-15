@@ -27,11 +27,16 @@ export function getCardIdFromLocation (loc: Location): Ref<Card> | undefined {
   return loc.path[3] as Ref<Card>
 }
 
-export function navigateToCard (_id: Ref<Card>): void {
+export function navigateToCard (_id?: Ref<Card>): void {
   const loc = getCurrentResolvedLocation()
 
   loc.path[2] = inboxId
-  loc.path[3] = _id
+  if (_id == null) {
+    loc.path[3] = ''
+    loc.path.length = 3
+  } else {
+    loc.path[3] = _id
+  }
 
   navigate(loc)
 }

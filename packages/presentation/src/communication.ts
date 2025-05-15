@@ -52,7 +52,8 @@ import {
   type AddCollaboratorsEvent,
   type RemoveCollaboratorsEvent,
   MessageRequestEventType,
-  NotificationRequestEventType
+  NotificationRequestEventType,
+  type RemoveNotificationContextEvent
 } from '@hcengineering/communication-sdk-types'
 import {
   type Client as PlatformClient,
@@ -250,6 +251,15 @@ class Client {
       context,
       account: this.getAccount(),
       lastView
+    }
+    await this.sendEvent(event)
+  }
+
+  async removeNotificationContext (context: ContextID): Promise<void> {
+    const event: RemoveNotificationContextEvent = {
+      type: NotificationRequestEventType.RemoveNotificationContext,
+      context,
+      account: this.getAccount()
     }
     await this.sendEvent(event)
   }
