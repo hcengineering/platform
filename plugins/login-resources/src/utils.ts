@@ -491,26 +491,18 @@ export function navigateToWorkspace (
   }
 }
 
-export async function checkJoined (inviteId: string): Promise<[Status, WorkspaceLoginInfo | null]> {
+export async function checkJoined (inviteId: string): Promise<WorkspaceLoginInfo | undefined> {
   const token = getMetadata(presentation.metadata.Token)
 
-  if (token == null) {
-    const loginInfo = await getAccountClient().getLoginInfoByToken()
-    if (loginInfo.token == null) {
-      return [unknownStatus('Please login'), null]
-    }
-  }
+  if (token == null) return
 
   try {
     const workspaceLoginInfo = await getAccountClient(token).checkJoin(inviteId)
 
-    return [OK, workspaceLoginInfo]
+    return workspaceLoginInfo
   } catch (err: any) {
-    if (err instanceof PlatformError) {
-      return [err.status, null]
-    } else {
+    if (!(err instanceof PlatformError)) {
       Analytics.handleError(err)
-      return [unknownError(err), null]
     }
   }
 }

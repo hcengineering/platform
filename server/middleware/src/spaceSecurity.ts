@@ -371,6 +371,23 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
+  private isForbiddenGuestTx (tx: TxCUD<Space>): boolean {
+    if (tx._class === core.class.TxRemoveDoc) return true
+    if (tx._class === core.class.TxCreateDoc) return false
+    if (tx._class === core.class.TxUpdateDoc) {
+      const updateTx = tx as TxUpdateDoc<Space>
+      const ops = updateTx.operations
+      const keys = ['members', 'private', 'archived', 'owners', 'autoJoin']
+      if (keys.some((key) => (ops as any)[key] !== undefined)) {
+        return true
+      }
+      if (ops.$push !== undefined || ops.$pull !== undefined) {
+        return true
+      }
+    }
+    return false
+  }
+
   private async processTx (ctx: MeasureContext<SessionData>, tx: Tx): Promise<void> {
     const h = this.context.hierarchy
     if (TxProcessor.isExtendsCUD(tx._class)) {
@@ -379,7 +396,9 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (isSpace) {
         const account = ctx.contextData.account
         if (account.role === AccountRole.Guest) {
-          throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+          if (this.isForbiddenGuestTx(cudTx as TxCUD<Space>)) {
+            throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+          }
         }
         await this.handleTx(ctx, cudTx as TxCUD<Space>)
       }

@@ -132,7 +132,7 @@
 </script>
 
 <UserBoxList
-  _class={!allowGuests ? contact.mixin.Employee : contact.class.Person}
+  _class={contact.mixin.Employee}
   items={employees}
   {label}
   {emptyLabel}
