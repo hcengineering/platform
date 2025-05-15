@@ -38,7 +38,6 @@
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let shouldUpdateUndefined: boolean = true
-  export let fullScreenPopup: boolean = false
   export let minW0 = true
   export let focusIndex: number = -1
   export let dataId: string | undefined = undefined
@@ -57,20 +56,13 @@
   function openPopup () {
     if (!opened) {
       opened = true
-      showPopup(
-        DropdownLabelsPopupIntl,
-        { items, selected, params },
-        container,
-        (result) => {
-          if (result) {
-            selected = result
-            dispatch('selected', result)
-          }
-          opened = false
-        },
-        () => {},
-        { category: 'popup', overlay: true, fullScreen: fullScreenPopup }
-      )
+      showPopup(DropdownLabelsPopupIntl, { items, selected, params }, container, (result) => {
+        if (result) {
+          selected = result
+          dispatch('selected', result)
+        }
+        opened = false
+      })
     }
   }
 

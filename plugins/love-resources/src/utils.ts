@@ -1197,15 +1197,7 @@ export async function updateSessionLanguage (room: Room): Promise<void> {
 export async function showRoomSettings (room?: Room): Promise<any> {
   if (room === undefined) return
 
-  const fullScreen: boolean = get(isFullScreen)
-  showPopup(
-    RoomSettingsPopup,
-    { room, fullScreenPopup: fullScreen },
-    'top',
-    () => {},
-    () => {},
-    { category: 'popup', overlay: true, fullScreen }
-  )
+  showPopup(RoomSettingsPopup, { room }, 'top')
 }
 
 export async function copyGuestLink (room?: Room): Promise<void> {
