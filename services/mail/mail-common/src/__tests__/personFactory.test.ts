@@ -14,9 +14,16 @@
 //
 
 import { MeasureContext, PersonUuid, PersonId, WorkspaceUuid } from '@hcengineering/core'
-import { RestClient } from '@hcengineering/api-client'
+import { RestClient, createRestClient } from '@hcengineering/api-client'
+import { WorkspaceLoginInfo } from '@hcengineering/account-client'
 import { PersonCache, PersonCacheFactory, CachedPerson } from '../person'
 import { EmailContact } from '../types'
+
+// Mock the createRestClient function
+jest.mock('@hcengineering/api-client', () => ({
+  ...jest.requireActual('@hcengineering/api-client'),
+  createRestClient: jest.fn()
+}))
 
 describe('PersonCacheFactory', () => {
   let mockCtx1: jest.Mocked<MeasureContext>
@@ -26,6 +33,19 @@ describe('PersonCacheFactory', () => {
 
   const workspace1 = 'workspace-1' as WorkspaceUuid
   const workspace2 = 'workspace-2' as WorkspaceUuid
+
+  // Create workspace login info objects
+  const wsInfo1: WorkspaceLoginInfo = {
+    workspace: workspace1,
+    endpoint: 'wss://endpoint1.example.com',
+    token: 'token-1'
+  } as any
+
+  const wsInfo2: WorkspaceLoginInfo = {
+    workspace: workspace2,
+    endpoint: 'wss://endpoint2.example.com',
+    token: 'token-2'
+  } as any
 
   const mockContact: EmailContact = {
     email: 'test@example.com',
@@ -66,62 +86,79 @@ describe('PersonCacheFactory', () => {
         uuid: 'different-uuid' as PersonUuid
       })
     } as unknown as jest.Mocked<RestClient>
+
+    // Mock createRestClient to return our mock clients
+    ;(createRestClient as jest.Mock).mockImplementation((url, workspace) => {
+      if (workspace === workspace1) {
+        return mockRestClient1
+      } else if (workspace === workspace2) {
+        return mockRestClient2
+      }
+      return mockRestClient1
+    })
   })
 
   describe('getInstance', () => {
     it('should create a new instance for a workspace', () => {
       expect(PersonCacheFactory.instanceCount).toBe(0)
 
-      const cache = PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace1)
+      const cache = PersonCacheFactory.getInstance(mockCtx1, wsInfo1)
 
       expect(cache).toBeInstanceOf(PersonCache)
       expect(PersonCacheFactory.instanceCount).toBe(1)
+      expect(createRestClient).toHaveBeenCalledWith('https://endpoint1.example.com', workspace1, 'token-1')
     })
 
     it('should return the same instance for the same workspace', () => {
-      const cache1 = PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace1)
-      const cache2 = PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace1)
+      const cache1 = PersonCacheFactory.getInstance(mockCtx1, wsInfo1)
+      const cache2 = PersonCacheFactory.getInstance(mockCtx1, wsInfo1)
 
       expect(cache1).toBe(cache2)
       expect(PersonCacheFactory.instanceCount).toBe(1)
     })
 
     it('should create different instances for different workspaces', () => {
-      const cache1 = PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace1)
-      const cache2 = PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace2)
+      const cache1 = PersonCacheFactory.getInstance(mockCtx1, wsInfo1)
+      const cache2 = PersonCacheFactory.getInstance(mockCtx1, wsInfo2)
 
       expect(cache1).not.toBe(cache2)
       expect(PersonCacheFactory.instanceCount).toBe(2)
     })
 
-    it('should use the first context and client for subsequent calls with the same workspace', async () => {
-      // First instance with first context and client
-      const cache1 = PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace1)
+    it('should throw an error if workspace UUID is undefined', () => {
+      const invalidWsInfo: WorkspaceLoginInfo = {
+        endpoint: 'wss://endpoint.example.com',
+        token: 'token'
+      } as any
 
-      // Try to get instance with different context and client, but same workspace
-      const cache2 = PersonCacheFactory.getInstance(mockCtx2, mockRestClient2, workspace1)
+      expect(() => {
+        PersonCacheFactory.getInstance(mockCtx1, invalidWsInfo)
+      }).toThrow('Workspace UUID is undefined')
+    })
 
-      // Should be the same instance
-      expect(cache1).toBe(cache2)
+    it('should convert websocket URLs to HTTP URLs', () => {
+      PersonCacheFactory.getInstance(mockCtx1, {
+        workspace: workspace1,
+        endpoint: 'ws://endpoint.example.com',
+        token: 'token'
+      } as any)
 
-      // Test that it uses the first client, not the second
-      await cache2.ensurePerson(mockContact)
-      expect(mockRestClient1.ensurePerson).toHaveBeenCalled()
-      expect(mockRestClient2.ensurePerson).not.toHaveBeenCalled()
+      expect(createRestClient).toHaveBeenCalledWith('http://endpoint.example.com', workspace1, 'token')
 
-      // Now get a different workspace with second client
-      const cache3 = PersonCacheFactory.getInstance(mockCtx2, mockRestClient2, workspace2)
-      await cache3.ensurePerson(mockContact)
+      PersonCacheFactory.getInstance(mockCtx2, {
+        workspace: workspace2,
+        endpoint: 'wss://secure.example.com',
+        token: 'token'
+      } as any)
 
-      // Second client should be used for second workspace
-      expect(mockRestClient2.ensurePerson).toHaveBeenCalled()
+      expect(createRestClient).toHaveBeenCalledWith('https://secure.example.com', workspace2, 'token')
     })
   })
 
   describe('resetInstance', () => {
     it('should remove the instance for a specific workspace', () => {
-      const cache1 = PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace1)
-      const cache2 = PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace2)
+      const cache1 = PersonCacheFactory.getInstance(mockCtx1, wsInfo1)
+      const cache2 = PersonCacheFactory.getInstance(mockCtx1, wsInfo2)
 
       expect(PersonCacheFactory.instanceCount).toBe(2)
 
@@ -130,16 +167,16 @@ describe('PersonCacheFactory', () => {
       expect(PersonCacheFactory.instanceCount).toBe(1)
 
       // Getting workspace1 again should create a new instance
-      const cache1New = PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace1)
+      const cache1New = PersonCacheFactory.getInstance(mockCtx1, wsInfo1)
       expect(cache1New).not.toBe(cache1)
 
       // Workspace2 instance should remain the same
-      const cache2Again = PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace2)
+      const cache2Again = PersonCacheFactory.getInstance(mockCtx1, wsInfo2)
       expect(cache2Again).toBe(cache2)
     })
 
     it('should do nothing when resetting a non-existent workspace', () => {
-      PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace1)
+      PersonCacheFactory.getInstance(mockCtx1, wsInfo1)
       expect(PersonCacheFactory.instanceCount).toBe(1)
 
       // Reset a workspace that doesn't have a cache
@@ -151,8 +188,8 @@ describe('PersonCacheFactory', () => {
 
   describe('resetAllInstances', () => {
     it('should remove all workspace instances', () => {
-      PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace1)
-      PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace2)
+      PersonCacheFactory.getInstance(mockCtx1, wsInfo1)
+      PersonCacheFactory.getInstance(mockCtx1, wsInfo2)
       expect(PersonCacheFactory.instanceCount).toBe(2)
 
       PersonCacheFactory.resetAllInstances()
@@ -165,10 +202,10 @@ describe('PersonCacheFactory', () => {
     it('should return the number of workspace instances', () => {
       expect(PersonCacheFactory.instanceCount).toBe(0)
 
-      PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace1)
+      PersonCacheFactory.getInstance(mockCtx1, wsInfo1)
       expect(PersonCacheFactory.instanceCount).toBe(1)
 
-      PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace2)
+      PersonCacheFactory.getInstance(mockCtx1, wsInfo2)
       expect(PersonCacheFactory.instanceCount).toBe(2)
 
       PersonCacheFactory.resetInstance(workspace1)
@@ -181,8 +218,8 @@ describe('PersonCacheFactory', () => {
 
   describe('integration with PersonCache', () => {
     it('should maintain separate caches for each workspace', async () => {
-      const cache1 = PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace1)
-      const cache2 = PersonCacheFactory.getInstance(mockCtx2, mockRestClient2, workspace2)
+      const cache1 = PersonCacheFactory.getInstance(mockCtx1, wsInfo1)
+      const cache2 = PersonCacheFactory.getInstance(mockCtx2, wsInfo2)
 
       // Populate cache for workspace1
       await cache1.ensurePerson(mockContact)
@@ -200,8 +237,8 @@ describe('PersonCacheFactory', () => {
     })
 
     it('should allow clearing cache for a specific workspace', async () => {
-      const cache1 = PersonCacheFactory.getInstance(mockCtx1, mockRestClient1, workspace1)
-      const cache2 = PersonCacheFactory.getInstance(mockCtx2, mockRestClient2, workspace2)
+      const cache1 = PersonCacheFactory.getInstance(mockCtx1, wsInfo1)
+      const cache2 = PersonCacheFactory.getInstance(mockCtx2, wsInfo2)
 
       // Populate caches
       await cache1.ensurePerson(mockContact)

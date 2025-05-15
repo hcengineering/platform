@@ -19,6 +19,8 @@ import { type StorageAdapter } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
 import type { Credentials, OAuth2Client } from 'google-auth-library'
 import { gmail_v1, google } from 'googleapis'
+import { getClient as getAccountClient, Integration } from '@hcengineering/account-client'
+
 import { encode64 } from './base64'
 import config from './config'
 import { GmailController } from './gmailController'
@@ -33,7 +35,6 @@ import { TokenStorage } from './tokens'
 import { createMessageManager } from './message/adapter'
 import { SyncManager } from './message/sync'
 import { getEmail } from './gmail/utils'
-import { Integration } from '@hcengineering/account-client'
 import { IMessageManager } from './message/types'
 
 const SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
@@ -105,11 +106,13 @@ export class GmailClient {
     this.client = new TxOperations(client, this.socialId._id)
     this.account = this.user.userId
     this.attachmentHandler = new AttachmentHandler(ctx, workspaceId, storageAdapter, this.gmail, this.client)
+    const accountClient = getAccountClient(config.AccountsURL, this.integrationToken)
     const keyValueClient = getKvsClient(this.integrationToken)
     this.messageManager = createMessageManager(
       ctx,
       this.client,
       keyValueClient,
+      accountClient,
       this.attachmentHandler,
       this.workspace,
       this.integrationToken,

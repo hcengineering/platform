@@ -19,6 +19,9 @@ import TurndownService from 'turndown'
 import sanitizeHtml from 'sanitize-html'
 import { MeasureContext } from '@hcengineering/core'
 import { type Attachment, type EmailContact, type EmailMessage, createMessages } from '@hcengineering/mail-common'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
+import { createRestTxOperations } from '@hcengineering/api-client'
+
 import { mailServiceToken, baseConfig, kvsClient } from './client'
 
 import config from './config'
@@ -110,7 +113,12 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
       sendOn: date
     }
 
-    await createMessages(baseConfig, ctx, kvsClient, mailServiceToken, convertedMessage, attachments)
+    const accountClient = getAccountClient(config.accountsUrl, mailServiceToken)
+    const wsInfo = await accountClient.selectWorkspace(config.workspaceUrl)
+    const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
+    const txClient = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
+
+    await createMessages(baseConfig, ctx, txClient, kvsClient, mailServiceToken, wsInfo, convertedMessage, attachments)
   } catch (error) {
     ctx.error('mta-hook', { error })
   } finally {
