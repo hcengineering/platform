@@ -48,8 +48,7 @@
     "@types/jest": "^29.5.5",
     "@types/ws": "^8.5.11",
     "@types/node-fetch": "~2.6.2",
-    "@types/snappyjs": "^0.7.1",
-    "ws": "^8.18.0"
+    "@types/snappyjs": "^0.7.1"
   },
   "dependencies": {
     "@hcengineering/account-client": "^0.6.0",
@@ -67,5 +66,8 @@
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
+  },
+  "optionalDependencies": {
+    "ws": "^8.18.0"
   }
 }
