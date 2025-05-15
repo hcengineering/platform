@@ -30,7 +30,7 @@
     eventToHTMLElement,
     showPopup,
     type AnySvelteComponent,
-    type CompAndProps
+    TooltipInstance
   } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
   import { getActions } from '@hcengineering/view-resources'
@@ -99,32 +99,21 @@
     await leaveRoom($myInfo, $myOffice)
   }
 
-  function showPopupIfFullScreen (component: AnySvelteComponent, props: any = {}, e: MouseEvent): void {
-    showPopup(
-      component,
-      props,
-      eventToHTMLElement(e),
-      () => {},
-      () => {},
-      { category: 'popup', overlay: true, fullScreen }
-    )
-  }
-
   function micSettings (e: MouseEvent): void {
-    showPopupIfFullScreen(MicSettingPopup, {}, e)
+    showPopup(MicSettingPopup, {}, eventToHTMLElement(e))
   }
 
   function camSettings (e: MouseEvent): void {
-    showPopupIfFullScreen(CamSettingPopup, {}, e)
+    showPopup(CamSettingPopup, {}, eventToHTMLElement(e))
   }
 
   function shareSettings (e: MouseEvent): void {
-    showPopupIfFullScreen(ShareSettingPopup, {}, e)
+    showPopup(ShareSettingPopup, {}, eventToHTMLElement(e))
   }
 
   function setAccess (e: MouseEvent): void {
     if (isOffice(room) && room.person !== me) return
-    showPopupIfFullScreen(RoomAccessPopup, { room }, e)
+    showPopup(RoomAccessPopup, { room }, eventToHTMLElement(e))
   }
 
   const me = getCurrentEmployee()
@@ -302,7 +291,6 @@
         kind="secondary"
         size="large"
         noSelection
-        fullScreenPopup={fullScreen}
         on:selected={handleMenuOption}
       />
     {/if}
@@ -321,6 +309,7 @@
   <svelte:fragment slot="extra">
     {#if fullScreen}
       <Popup fullScreen />
+      <TooltipInstance fullScreen />
     {/if}
   </svelte:fragment>
 </ControlBarContainer>

@@ -48,19 +48,12 @@
   }
 
   function showLanguagesPopup (): void {
-    showPopup(
-      DropdownLabelsPopupIntl,
-      { items, selected: selectedItem },
-      container,
-      async (result) => {
-        if (result != null && result !== '') {
-          selectedItem = result
-          await handleSelection(result)
-        }
-      },
-      () => {},
-      { category: 'popup', overlay: true, fullScreen: $isFullScreen }
-    )
+    showPopup(DropdownLabelsPopupIntl, { items, selected: selectedItem }, container, async (result) => {
+      if (result != null && result !== '') {
+        selectedItem = result
+        await handleSelection(result)
+      }
+    })
   }
 </script>
 
@@ -73,7 +66,6 @@
     iconProps={{ lang: selectedItem }}
     bind:selected={selectedItem}
     label={view.string.AddSavedView}
-    fullScreenPopup={$isFullScreen}
     on:selected={(e) => handleSelection(e.detail)}
   />
 {:else}

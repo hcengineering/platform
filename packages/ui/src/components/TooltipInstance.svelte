@@ -23,6 +23,8 @@
   import { capitalizeFirstLetter, formatKey } from '../utils'
   import { testing } from '..'
 
+  export let fullScreen: boolean = false
+
   let tooltipHTML: HTMLElement
   let nubHTML: HTMLElement
   let dir: TooltipAlignment
@@ -64,6 +66,7 @@
     visibility: 'hidden',
     classList: ''
   }
+  const checkFS = (): boolean => (fullScreen && !document.fullscreen) || (!fullScreen && document.fullscreen)
 
   const clearStyles = (): void => {
     shown = false
@@ -248,6 +251,7 @@
   }
 
   const hideTooltip = (): void => {
+    if (checkFS()) return
     if (tooltipHTML) options.visibility = 'hidden'
     shown = false
     closeTooltip()
@@ -256,7 +260,7 @@
   $: shownTooltip = $tooltip.element && tooltipHTML
 
   const whileShow = (ev: MouseEvent): void => {
-    if (!$tooltip.element) return
+    if (!$tooltip.element || checkFS()) return
     const rectP = tooltipHTML.getBoundingClientRect()
     rect = $tooltip.element.getBoundingClientRect()
     const dT: number = dir === 'bottom' && $tooltip.kind !== 'submenu' ? 12 : 0
@@ -271,33 +275,21 @@
   }
 
   $: if (kind === 'submenu') {
-    options = fitSubmenu()
+    if (!checkFS()) options = fitSubmenu()
   } else {
-    options = fitTooltip(tooltipHTML, clWidth)
+    if (!checkFS()) options = fitTooltip(tooltipHTML, clWidth)
   }
   afterUpdate(() => {
     if (kind === 'submenu') {
-      options = fitSubmenu()
+      if (!checkFS()) options = fitSubmenu()
     } else {
-      options = fitTooltip(tooltipHTML, clWidth)
+      if (!checkFS()) options = fitTooltip(tooltipHTML, clWidth)
     }
   })
   onDestroy(() => {
     hideTooltip()
   })
 </script>
-
-{#if $tooltip.kind === 'popup'}
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    class="modal-overlay antiOverlay"
-    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-    on:click|stopPropagation|preventDefault={() => {
-      closeTooltip()
-    }}
-    on:keydown|stopPropagation|preventDefault={() => {}}
-  />
-{/if}
 
 <svelte:window
   bind:innerWidth={docWidth}
@@ -318,48 +310,8 @@
     }
   }}
 />
-{#if $tooltip.component && $tooltip.kind !== 'submenu'}
-  <div
-    class="popup-tooltip {options.classList} {$tooltip.style}"
-    class:testing
-    class:shown
-    class:doublePadding={$tooltip.label}
-    use:resizeObserver={(element) => {
-      clWidth = element.clientWidth
-      options = fitTooltip(tooltipHTML, clWidth)
-    }}
-    style:top={options.top}
-    style:bottom={options.bottom}
-    style:left={options.left}
-    style:right={options.right}
-    style:width={options.width}
-    style:height={options.height}
-    style:transform={options.transform}
-    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-    bind:this={tooltipHTML}
-  >
-    {#if $tooltip.label}
-      <div class="fs-title mb-4">
-        <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
-      </div>
-    {/if}
-    {#if typeof $tooltip.component === 'string'}
-      <Component
-        is={$tooltip.component}
-        props={$tooltip.props}
-        on:update={onUpdate !== undefined ? onUpdate : async () => {}}
-      />
-    {:else}
-      <svelte:component
-        this={$tooltip.component}
-        {...$tooltip.props}
-        on:tooltip={(evt) => {
-          $modals = [...$modals.filter((t) => t.type !== 'tooltip'), { ...$tooltip, ...evt.detail }]
-        }}
-        on:update={onUpdate !== undefined ? onUpdate : async () => {}}
-      />
-    {/if}
-  </div>
+
+{#if !fullScreen}
   <svg class="svg-mask">
     <clipPath id="nub-bg">
       <path
@@ -372,83 +324,142 @@
       />
     </clipPath>
   </svg>
-  {#if !$tooltip.noArrow}
+{/if}
+
+{#if (fullScreen && document.fullscreen) || (!fullScreen && !document.fullscreen)}
+  {#if $tooltip.kind === 'popup'}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
-      bind:this={nubHTML}
+      class="modal-overlay antiOverlay"
       style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-      class="nub {nubDirection ?? ''}"
-      class:testing
-      class:shown
+      on:click|stopPropagation|preventDefault={() => {
+        closeTooltip()
+      }}
+      on:keydown|stopPropagation|preventDefault={() => {}}
     />
   {/if}
-{:else if $tooltip.label && $tooltip.kind !== 'submenu'}
-  <div
-    class="tooltip {dir ?? ''} {options.classList}"
-    bind:this={tooltipHTML}
-    style:top={options.top}
-    style:bottom={options.bottom}
-    style:left={options.left}
-    style:right={options.right}
-    style:width={options.width}
-    style:height={options.height}
-    style:max-width={options.maxWidth}
-    style:transform={options.transform}
-    style:visibility={options.visibility}
-    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-  >
-    <span class="label">
-      <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
-    </span>
-    {#if $tooltip.keys !== undefined}
-      <div class="keys">
-        {#each $tooltip.keys as key, i}
-          {#if i !== 0}
-            <div class="mr-1 ml-1">/</div>
-          {/if}
-          {#each formatKey(key) as k, jj}
-            <div class="key">
-              {#each k as kk, j}
-                {#if j !== 0}
-                  +
-                {/if}
-                {capitalizeFirstLetter(kk.trim())}
-              {/each}
-            </div>
+
+  {#if $tooltip.component && $tooltip.kind !== 'submenu'}
+    <div
+      class="popup-tooltip {options.classList} {$tooltip.style}"
+      class:testing
+      class:shown
+      class:doublePadding={$tooltip.label}
+      use:resizeObserver={(element) => {
+        clWidth = element.clientWidth
+        options = fitTooltip(tooltipHTML, clWidth)
+      }}
+      style:top={options.top}
+      style:bottom={options.bottom}
+      style:left={options.left}
+      style:right={options.right}
+      style:width={options.width}
+      style:height={options.height}
+      style:transform={options.transform}
+      style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+      bind:this={tooltipHTML}
+    >
+      {#if $tooltip.label}
+        <div class="fs-title mb-4">
+          <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
+        </div>
+      {/if}
+      {#if typeof $tooltip.component === 'string'}
+        <Component
+          is={$tooltip.component}
+          props={$tooltip.props}
+          on:update={onUpdate !== undefined ? onUpdate : async () => {}}
+        />
+      {:else}
+        <svelte:component
+          this={$tooltip.component}
+          {...$tooltip.props}
+          on:tooltip={(evt) => {
+            $modals = [...$modals.filter((t) => t.type !== 'tooltip'), { ...$tooltip, ...evt.detail }]
+          }}
+          on:update={onUpdate !== undefined ? onUpdate : async () => {}}
+        />
+      {/if}
+    </div>
+
+    {#if !$tooltip.noArrow}
+      <div
+        bind:this={nubHTML}
+        style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+        class="nub {nubDirection ?? ''}"
+        class:testing
+        class:shown
+      />
+    {/if}
+  {:else if $tooltip.label && $tooltip.kind !== 'submenu'}
+    <div
+      class="tooltip {dir ?? ''} {options.classList}"
+      bind:this={tooltipHTML}
+      style:top={options.top}
+      style:bottom={options.bottom}
+      style:left={options.left}
+      style:right={options.right}
+      style:width={options.width}
+      style:height={options.height}
+      style:max-width={options.maxWidth}
+      style:transform={options.transform}
+      style:visibility={options.visibility}
+      style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+    >
+      <span class="label">
+        <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
+      </span>
+      {#if $tooltip.keys !== undefined}
+        <div class="keys">
+          {#each $tooltip.keys as key, i}
+            {#if i !== 0}
+              <div class="mr-1 ml-1">/</div>
+            {/if}
+            {#each formatKey(key) as k, jj}
+              <div class="key">
+                {#each k as kk, j}
+                  {#if j !== 0}
+                    +
+                  {/if}
+                  {capitalizeFirstLetter(kk.trim())}
+                {/each}
+              </div>
+            {/each}
           {/each}
-        {/each}
-      </div>
-    {/if}
-  </div>
-{:else if $tooltip.kind === 'submenu'}
-  <div
-    class="submenu-container {dir ?? ''} {options.classList}"
-    use:resizeObserver={(element) => {
-      clWidth = element.clientWidth
-    }}
-    style:top={options.top}
-    style:bottom={options.bottom}
-    style:left={options.left}
-    style:right={options.right}
-    style:width={options.width}
-    style:height={options.height}
-    style:transform={options.transform}
-    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-    bind:this={tooltipHTML}
-  >
-    {#if typeof $tooltip.component === 'string'}
-      <Component
-        is={$tooltip.component}
-        props={$tooltip.props}
-        on:update={onUpdate !== undefined ? onUpdate : async () => {}}
-      />
-    {:else}
-      <svelte:component
-        this={$tooltip.component}
-        {...$tooltip.props}
-        on:update={onUpdate !== undefined ? onUpdate : async () => {}}
-      />
-    {/if}
-  </div>
+        </div>
+      {/if}
+    </div>
+  {:else if $tooltip.kind === 'submenu'}
+    <div
+      class="submenu-container {dir ?? ''} {options.classList}"
+      use:resizeObserver={(element) => {
+        clWidth = element.clientWidth
+      }}
+      style:top={options.top}
+      style:bottom={options.bottom}
+      style:left={options.left}
+      style:right={options.right}
+      style:width={options.width}
+      style:height={options.height}
+      style:transform={options.transform}
+      style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+      bind:this={tooltipHTML}
+    >
+      {#if typeof $tooltip.component === 'string'}
+        <Component
+          is={$tooltip.component}
+          props={$tooltip.props}
+          on:update={onUpdate !== undefined ? onUpdate : async () => {}}
+        />
+      {:else}
+        <svelte:component
+          this={$tooltip.component}
+          {...$tooltip.props}
+          on:update={onUpdate !== undefined ? onUpdate : async () => {}}
+        />
+      {/if}
+    </div>
+  {/if}
 {/if}
 
 <style lang="scss">

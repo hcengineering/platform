@@ -28,7 +28,11 @@
   }
 
   const checkFS = (popup: any): boolean => {
-    return (fullScreen && popup.options.fullScreen === true) || (!fullScreen && popup.options.fullScreen !== true)
+    return (
+      (fullScreen && document.fullscreen && popup.element !== 'full-centered') ||
+      (!fullScreen && document.fullscreen && popup.element === 'full-centered') ||
+      (!fullScreen && !document.fullscreen)
+    )
   }
 
   $: instances.length = $popups.filter((p) => p.dock !== true && checkFS(p)).length
