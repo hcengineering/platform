@@ -32,7 +32,7 @@
   }
 
   const minSizeRem = 4
-  const maxSizeRem = 20
+  const maxSizeRem = 25
 
   let dimensions: Dimensions
 

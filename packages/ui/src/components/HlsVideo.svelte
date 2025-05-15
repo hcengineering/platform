@@ -21,14 +21,23 @@
   export let src: string
   export let hlsSrc: string
   export let hlsThumbnail = ''
-  export let name: string | undefined = undefined
   export let preload = true
 
   let video: HTMLVideoElement | null = null
   let hls: HLS | null = null
   let player: Plyr | null = null
 
-  const options: Plyr.Options = {}
+  const options: Plyr.Options = {
+    controls: [
+      'play-large',
+      'play',
+      'progress',
+      'current-time',
+      'volume',
+      'settings',
+      'fullscreen'
+    ]
+  }
 
   function initialize (src: string): void {
     if (video === null) {
@@ -151,7 +160,14 @@
 </script>
 
 <!-- svelte-ignore a11y-media-has-caption -->
-<video bind:this={video} width="100%" height="100%" preload={preload ? 'auto' : 'none'} controls />
+<video
+  bind:this={video}
+  width="100%"
+  height="100%"
+  preload={preload ? 'auto' : 'none'}
+  controls
+  disablepictureinpicture
+/>
 
 <style lang="scss">
   video {
@@ -166,5 +182,9 @@
   video::-webkit-media-controls-enclosure {
     visibility: visible;
   }
+
   @import 'plyr/dist/plyr.css';
+  :global(.plyr) {
+    min-width: 10rem;
+  }
 </style>

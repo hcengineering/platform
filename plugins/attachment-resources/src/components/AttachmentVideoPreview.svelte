@@ -67,7 +67,7 @@
     {@const src = getFileUrl(file, name)}
 
     {#if meta?.hls?.source !== undefined}
-      <HlsVideo {src} {preload} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} {name} />
+      <HlsVideo {src} {preload} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} />
     {:else}
       <Video {src} {preload} {name} />
     {/if}
@@ -79,5 +79,6 @@
     min-width: 10rem;
     min-height: 10rem;
     border-radius: 0.75rem;
+    overflow: hidden;
   }
 </style>
