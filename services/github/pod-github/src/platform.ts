@@ -167,14 +167,17 @@ export class PlatformWorker {
   triggerCheckWorkspaces = (): void => {}
 
   async doSyncWorkspaces (): Promise<void> {
+    let oldErrors = ''
+    let sameErrors = 1
+
     while (!this.canceled) {
-      let errors = false
+      let errors: string[] = []
       try {
         errors = await this.checkWorkspaces()
       } catch (err: any) {
         Analytics.handleError(err)
         this.ctx.error('check workspace', err)
-        errors = true
+        errors.push(err.message)
       }
       await new Promise<void>((resolve) => {
         this.triggerCheckWorkspaces = () => {
@@ -182,10 +185,19 @@ export class PlatformWorker {
           this.triggerCheckWorkspaces = () => {}
           resolve()
         }
-        if (errors) {
+        if (errors.length > 0) {
+          const timeout = 15000 * sameErrors
+          const ne = errors.join(',')
+          if (oldErrors === ne) {
+            if (sameErrors < 25) {
+              sameErrors++
+            }
+          } else {
+            oldErrors = ne
+          }
           setTimeout(() => {
             this.triggerCheckWorkspaces()
-          }, 15000)
+          }, timeout)
         }
       })
     }
@@ -762,7 +774,7 @@ export class PlatformWorker {
     return { workspaceInfo, needRecheck: true }
   }
 
-  private async checkWorkspaces (): Promise<boolean> {
+  private async checkWorkspaces (): Promise<string[]> {
     this.ctx.info('************************* Check workspaces ************************* ', {
       workspaces: this.clients.size
     })
@@ -886,7 +898,6 @@ export class PlatformWorker {
         } catch (e: any) {
           Analytics.handleError(e)
           this.ctx.info("Couldn't create WS worker", { workspace, error: e })
-          console.error(e)
           rechecks.push(workspace)
         } finally {
           connecting.delete(workspaceInfo.workspace)
@@ -930,7 +941,7 @@ export class PlatformWorker {
       recheckCount: rechecks.length,
       workspacesToCheck: rechecks
     })
-    return rechecks.length > 0
+    return rechecks
   }
 
   getWorkers (): GithubWorker[] {

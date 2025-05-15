@@ -348,7 +348,8 @@ export default function buildModel (): Builder {
         description: github.string.ConfigDescription,
         enabled: true,
         beta: false,
-        icon: github.icon.Github
+        icon: github.icon.Github,
+        classFilter: defaultFilter
       }
     ],
     [
