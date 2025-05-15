@@ -668,13 +668,13 @@ export async function getAccountUuidByOldAccount (
   const cached = accountUuidByOldAccount.has(oldAccount)
 
   if (!cached) {
-    const socialId = socialKeyByOldAccount[oldAccount]
-    if (socialId == null) {
+    const socialKey = socialKeyByOldAccount[oldAccount]
+    if (socialKey == null) {
       accountUuidByOldAccount.set(oldAccount, null)
       return null
     }
 
-    const personUuid = await client.accountClient.findPersonBySocialKey(socialId)
+    const personUuid = await client.accountClient.findPersonBySocialKey(socialKey)
 
     accountUuidByOldAccount.set(oldAccount, (personUuid as AccountUuid | undefined) ?? null)
   }

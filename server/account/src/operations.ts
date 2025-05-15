@@ -1827,7 +1827,6 @@ export type AccountMethods =
   | 'findPersonBySocialKey'
   | 'findPersonBySocialId'
   | 'findSocialIdBySocialKey'
-  | 'findFullSocialIdBySocialKey'
   | 'ensurePerson'
   | 'exchangeGuestToken'
   | 'getMailboxOptions'

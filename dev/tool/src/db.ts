@@ -1,5 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { type AccountDB, type MongoAccountDB, type Workspace, ensurePerson } from '@hcengineering/account'
+import {
+  type AccountDB,
+  type MongoAccountDB,
+  type Workspace,
+  addSocialIdToPerson,
+  ensurePerson,
+  findFullSocialIdBySocialKey,
+  findPersonBySocialKey,
+  mergeSpecifiedPersons,
+  mergeSpecifiedAccounts
+} from '@hcengineering/account'
 import { getFirstName, getLastName } from '@hcengineering/contact'
 import {
   systemAccountUuid,
@@ -7,7 +17,12 @@ import {
   type Client,
   type Doc,
   MeasureMetricsContext,
-  SocialIdType
+  SocialIdType,
+  type PersonUuid,
+  type SocialKey,
+  type AccountUuid,
+  parseSocialIdString,
+  DOMAIN_SPACE
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import {
@@ -486,6 +501,262 @@ export async function migrateCreatedModifiedBy (ctx: MeasureMetricsContext, dbUr
   }
 }
 
+async function fillAccountSocialKeyMapping (ctx: MeasureMetricsContext, pgClient: postgres.Sql): Promise<void> {
+  ctx.info('Creating account to social key mapping table...')
+  // Create schema
+  await pgClient`CREATE SCHEMA IF NOT EXISTS temp_data`
+
+  // Create mapping table
+  await pgClient`
+    CREATE TABLE IF NOT EXISTS temp_data.account_socialkey_mapping (
+      workspace_id text,
+      old_account_id text,
+      new_social_key text,
+      person_ref text,
+      person_name text,
+      INDEX idx_account_mapping_old_id (workspace_id, old_account_id)
+  )
+  `
+
+  const [res] = await pgClient`SELECT COUNT(*) FROM temp_data.account_socialkey_mapping`
+
+  if (res.count === '0') {
+    // Populate mapping table
+    await pgClient`
+      INSERT INTO temp_data.account_socialkey_mapping
+      WITH accounts AS (
+        SELECT 
+            tx."workspaceId",
+            tx."objectId",
+            COALESCE(
+                -- Get the latest email from updates
+                (
+                    SELECT tx2.data->'operations'->>'email'
+                    FROM model_tx tx2
+                    WHERE tx2."objectId" = tx."objectId"
+                        AND tx2."workspaceId" = tx."workspaceId"
+                        AND tx2.data->>'objectClass' = 'contact:class:PersonAccount'
+                        AND tx2.data->'operations'->>'email' IS NOT NULL
+                    ORDER BY tx2."createdOn" DESC
+                    LIMIT 1
+                ),
+                -- If no updates with email, get from create transaction
+                tx.data->'attributes'->>'email'
+            ) as latest_email,
+            COALESCE(
+                -- Get the latest person from updates
+                (
+                    SELECT (tx2.data->'operations'->>'person')::text
+                    FROM model_tx tx2
+                    WHERE tx2."objectId" = tx."objectId"
+                        AND tx2."workspaceId" = tx."workspaceId"
+                        AND tx2.data->>'objectClass' = 'contact:class:PersonAccount'
+                        AND tx2.data->'operations'->>'person' IS NOT NULL
+                    ORDER BY tx2."createdOn" DESC
+                    LIMIT 1
+                ),
+                -- If no updates, get from create transaction
+                (tx.data->'attributes'->>'person')::text
+            ) as person_ref
+        FROM model_tx tx
+        WHERE tx."_class" = 'core:class:TxCreateDoc'
+            AND tx.data->>'objectClass' = 'contact:class:PersonAccount'
+            AND tx."objectId" NOT IN ('core:account:System', 'core:account:ConfigUser')
+      )
+      SELECT 
+          a."workspaceId" as workspace_id,
+          a."objectId" as old_account_id,
+          CASE 
+              WHEN a.latest_email LIKE 'github:%' THEN lower(a.latest_email)
+              WHEN a.latest_email LIKE 'openid:%' THEN 'oidc:' || lower(substring(a.latest_email from 8))
+              ELSE 'email:' || lower(a.latest_email)
+          END as new_social_key,
+          a.person_ref,
+              c.data->>'name' as person_name
+      FROM accounts as a
+          LEFT JOIN public.contact c ON c."_id" = a.person_ref AND c."workspaceId" = a."workspaceId"
+      WHERE a.latest_email IS NOT NULL 
+          AND a.latest_email != ''
+    `
+  }
+}
+
+export async function migrateMergedAccounts (
+  ctx: MeasureMetricsContext,
+  dbUrl: string,
+  accountDb: AccountDB
+): Promise<void> {
+  ctx.info('Migrating merged person accounts... ', {})
+
+  if (!dbUrl.startsWith('postgresql')) {
+    throw new Error('Only CockroachDB is supported')
+  }
+
+  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pgClient = await pg.getClient()
+  const token = getToolToken()
+
+  try {
+    await fillAccountSocialKeyMapping(ctx, pgClient)
+
+    const personsAccounts = await pgClient`
+      SELECT workspace_id, person_ref, array_agg(new_social_key) as social_keys
+      FROM temp_data.account_socialkey_mapping
+      WHERE new_social_key != 'email:huly.ai.bot@hc.engineering'
+      GROUP BY workspace_id, person_ref
+      HAVING count(*) > 1 
+    `
+
+    ctx.info('Processing persons with merged accounts ', { count: personsAccounts.length })
+    let processed = 0
+    let errors = 0
+
+    for (const personAccounts of personsAccounts) {
+      try {
+        const socialKeys = personAccounts.social_keys
+
+        // Every social id in the old account might either be already in the new account or not in the accounts at all
+        // So we want to
+        // 1. Take the first social id with the existing account
+        // 2. Merge all other accounts into the first one
+        // 3. Create social ids for the first account which haven't had their own accounts
+        const toAdd: Array<SocialKey> = []
+        const toMergePersons = new Set<PersonUuid>()
+        const toMergeAccounts = new Set<AccountUuid>()
+        for (const socialKey of socialKeys) {
+          const socialIdKey = parseSocialIdString(socialKey)
+          const socialId = await findFullSocialIdBySocialKey(ctx, accountDb, null, token, { socialKey })
+          const personUuid = socialId?.personUuid
+          const accountUuid = (await findPersonBySocialKey(ctx, accountDb, null, token, {
+            socialString: socialKey,
+            requireAccount: true
+          })) as AccountUuid
+
+          if (personUuid == null) {
+            toAdd.push(socialIdKey)
+            // Means not attached to any account yet, simply add the social id to the primary account
+          } else if (accountUuid == null) {
+            toMergePersons.add(personUuid)
+          } else {
+            // This is the case when the social id is already attached to an account. Merge the accounts.
+            toMergeAccounts.add(accountUuid)
+          }
+        }
+
+        if (toMergeAccounts.size === 0) {
+          // No existing accounts for the person's social ids. Normally this should never be the case.
+          ctx.info('No existing accounts for person', personAccounts)
+          continue
+        }
+
+        const toMergeAccountsArray = Array.from(toMergeAccounts)
+        const primaryAccount = toMergeAccountsArray[0]
+
+        for (let i = 1; i < toMergeAccountsArray.length; i++) {
+          const accountToMerge = toMergeAccountsArray[i]
+          await mergeSpecifiedAccounts(ctx, accountDb, null, token, {
+            primaryAccount,
+            secondaryAccount: accountToMerge
+          })
+        }
+
+        const toMergePersonsArray = Array.from(toMergePersons)
+        for (const personToMerge of toMergePersonsArray) {
+          await mergeSpecifiedPersons(ctx, accountDb, null, token, {
+            primaryPerson: primaryAccount,
+            secondaryPerson: personToMerge
+          })
+        }
+
+        for (const addTarget of toAdd) {
+          await addSocialIdToPerson(ctx, accountDb, null, token, {
+            person: primaryAccount,
+            ...addTarget,
+            confirmed: false
+          })
+        }
+
+        processed++
+        if (processed % 10 === 0) {
+          ctx.info(`Processed ${processed} of ${personsAccounts.length} persons`)
+        }
+      } catch (err: any) {
+        errors++
+        ctx.error('Failed to merge accounts for person', { mergedGroup: personAccounts, err })
+      }
+    }
+
+    ctx.info('Finished processing persons with merged accounts', { processed, of: personsAccounts.length, errors })
+  } catch (err: any) {
+    ctx.error('Failed to migrate merged accounts', { err })
+  } finally {
+    pg.close()
+  }
+}
+
+export async function filterMergedAccountsInMembers (
+  ctx: MeasureMetricsContext,
+  dbUrl: string,
+  accountDb: AccountDB
+): Promise<void> {
+  ctx.info('Filtering merged accounts in members... ', {})
+
+  if (!dbUrl.startsWith('postgresql')) {
+    throw new Error('Only CockroachDB is supported')
+  }
+
+  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pgClient = await pg.getClient()
+
+  try {
+    const mergedPersons = await accountDb.person.find({ migratedTo: { $ne: null } })
+
+    if (mergedPersons.length === 0) {
+      ctx.info('No merged persons to migrate')
+      return
+    }
+
+    ctx.info('Merged persons found', { count: mergedPersons.length })
+
+    const migrationMap = new Map<PersonUuid, PersonUuid>()
+    for (const person of mergedPersons) {
+      if (person.migratedTo == null) {
+        continue
+      }
+
+      migrationMap.set(person.uuid, person.migratedTo)
+    }
+
+    const spacesToUpdate = await pgClient`
+      SELECT "workspaceId", _id, members FROM ${pgClient(DOMAIN_SPACE)} WHERE members && ${pgClient.array(Array.from(migrationMap.keys()))}
+    `
+
+    ctx.info('Spaces to update', { count: spacesToUpdate.length })
+
+    let processed = 0
+    let errors = 0
+    for (const space of spacesToUpdate) {
+      try {
+        const newMembers = new Set<PersonUuid>(space.members.map((it: PersonUuid) => migrationMap.get(it) ?? it))
+
+        await pgClient`
+          UPDATE ${pgClient(DOMAIN_SPACE)} SET members = ${pgClient.array(Array.from(newMembers))}
+          WHERE "workspaceId" = ${space.workspaceId}
+          AND "_id" = ${space._id}
+        `
+        processed++
+      } catch (err: any) {
+        errors++
+        ctx.error('Failed to update space members', { space, err })
+      }
+    }
+
+    ctx.info('Finished updating spaces', { processed, of: spacesToUpdate.length, errors })
+  } finally {
+    pg.close()
+  }
+}
+
 export async function ensureGlobalPersonsForLocalAccounts (
   ctx: MeasureMetricsContext,
   dbUrl: string,
@@ -502,69 +773,7 @@ export async function ensureGlobalPersonsForLocalAccounts (
   const token = getToolToken()
 
   try {
-    ctx.info('Creating account to social key mapping table...')
-    // Create schema
-    await pgClient`CREATE SCHEMA IF NOT EXISTS temp_data`
-
-    // Create mapping table
-    await pgClient`
-      CREATE TABLE IF NOT EXISTS temp_data.account_socialkey_mapping (
-        workspace_id text,
-        old_account_id text,
-        new_social_key text,
-        person_ref text,
-        person_name text,
-        INDEX idx_account_mapping_old_id (workspace_id, old_account_id)
-    )
-    `
-
-    const [res] = await pgClient`SELECT COUNT(*) FROM temp_data.account_socialkey_mapping`
-
-    if (res.count === '0') {
-      // Populate mapping table
-      await pgClient`
-        INSERT INTO temp_data.account_socialkey_mapping
-        WITH person_refs AS (
-            SELECT 
-              tx."workspaceId" as workspace_id,
-              tx."objectId" as account_id,
-              CASE 
-                  WHEN tx.data->'attributes'->>'email' LIKE 'github:%' THEN lower(tx.data->'attributes'->>'email')
-                  WHEN tx.data->'attributes'->>'email' LIKE 'openid:%' THEN 'oidc:' || lower(substring(tx.data->'attributes'->>'email' from 8))
-                  ELSE 'email:' || lower(tx.data->'attributes'->>'email')
-              END as new_social_key,
-              COALESCE(
-                -- Try to get person from most recent update
-                (
-                  SELECT (tx2.data->'operations'->>'person')::text
-                  FROM model_tx tx2
-                  WHERE tx2."objectId" = tx."objectId"
-                  AND tx2."workspaceId" = tx."workspaceId"
-                  AND tx2.data->>'objectClass' = 'contact:class:PersonAccount'
-                  AND tx2.data->'operations'->>'person' IS NOT NULL
-                  ORDER BY tx2."createdOn" DESC
-                  LIMIT 1
-                ),
-                -- If no updates, get from create transaction
-                (tx.data->'attributes'->>'person')::text
-              ) as person_ref
-            FROM model_tx tx
-            WHERE tx."_class" = 'core:class:TxCreateDoc'
-            AND tx.data->>'objectClass' = 'contact:class:PersonAccount'
-            AND tx.data->'attributes'->>'email' IS NOT NULL
-            AND tx.data->'attributes'->>'email' != ''
-            AND tx."objectId" NOT IN ('core:account:System', 'core:account:ConfigUser')
-        )
-        SELECT 
-          p.workspace_id,
-          p.account_id as old_account_id,
-          p.new_social_key,
-          p.person_ref,
-          c.data->>'name' as person_name
-        FROM person_refs p
-        LEFT JOIN public.contact c ON c."_id" = p.person_ref
-      `
-    }
+    await fillAccountSocialKeyMapping(ctx, pgClient)
 
     let count = 0
     let failed = 0

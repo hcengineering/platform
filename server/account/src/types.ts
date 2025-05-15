@@ -23,7 +23,7 @@ import {
   WorkspaceMemberInfo,
   WorkspaceMode,
   type AccountUuid,
-  type Person,
+  type Person as BasePerson,
   type PersonId,
   type PersonUuid,
   type SocialId as SocialIdBase,
@@ -42,7 +42,10 @@ export enum Location {
 }
 
 // AccountRole in core
-// Person in core
+
+export interface Person extends BasePerson {
+  migratedTo?: PersonUuid
+}
 
 export interface SocialId extends SocialIdBase {
   personUuid: PersonUuid
@@ -201,7 +204,7 @@ export interface AccountDB {
   updateWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
   unassignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<void>
   getWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<AccountRole | null>
-  getWorkspaceRoles: (accountId: AccountUuid) => Promise<Map<WorkspaceUuid, AccountRole | null>>
+  getWorkspaceRoles: (accountId: AccountUuid) => Promise<Map<WorkspaceUuid, AccountRole>>
   getWorkspaceMembers: (workspaceId: WorkspaceUuid) => Promise<WorkspaceMemberInfo[]>
   getAccountWorkspaces: (accountId: AccountUuid) => Promise<WorkspaceInfoWithStatus[]>
   getPendingWorkspace: (
@@ -237,6 +240,7 @@ export interface QueryOperator<T> {
   $lte?: T
   $gt?: T
   $gte?: T
+  $ne?: T | null
 }
 
 export type Operations<T> = Partial<T> & {

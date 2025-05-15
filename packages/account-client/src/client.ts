@@ -169,6 +169,8 @@ export interface AccountClient {
   getIntegrationSecret: (integrationSecretKey: IntegrationSecretKey) => Promise<IntegrationSecret | null>
   listIntegrationsSecrets: (filter: Partial<IntegrationSecretKey>) => Promise<IntegrationSecret[]>
   getAccountInfo: (uuid: AccountUuid) => Promise<AccountInfo>
+  mergeSpecifiedPersons: (primaryPerson: PersonUuid, secondaryPerson: PersonUuid) => Promise<void>
+  mergeSpecifiedAccounts: (primaryAccount: AccountUuid, secondaryAccount: AccountUuid) => Promise<void>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -902,6 +904,24 @@ class AccountClientImpl implements AccountClient {
     }
 
     return await this.rpc(request)
+  }
+
+  async mergeSpecifiedPersons (primaryPerson: PersonUuid, secondaryPerson: PersonUuid): Promise<void> {
+    const request = {
+      method: 'mergeSpecifiedPersons' as const,
+      params: { primaryPerson, secondaryPerson }
+    }
+
+    await this.rpc(request)
+  }
+
+  async mergeSpecifiedAccounts (primaryAccount: AccountUuid, secondaryAccount: AccountUuid): Promise<void> {
+    const request = {
+      method: 'mergeSpecifiedAccounts' as const,
+      params: { primaryAccount, secondaryAccount }
+    }
+
+    await this.rpc(request)
   }
 
   async setCookie (): Promise<void> {

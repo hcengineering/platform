@@ -42,7 +42,7 @@ import { Analytics } from '@hcengineering/analytics'
 import { sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import { decodeTokenVerbose, generateToken, TokenError } from '@hcengineering/server-token'
 import { MongoAccountDB } from './collections/mongo'
-import { PostgresAccountDB } from './collections/postgres'
+import { PostgresAccountDB } from './collections/postgres/postgres'
 import { accountPlugin } from './plugin'
 import {
   AccountEventType,
@@ -1520,4 +1520,80 @@ export async function findExistingIntegration (
   }
 
   return await db.integration.findOne({ socialId, kind, workspaceUuid })
+}
+
+export async function doMergePersons (
+  db: AccountDB,
+  primaryPerson: PersonUuid,
+  secondaryPerson: PersonUuid
+): Promise<void> {
+  if (primaryPerson === secondaryPerson) {
+    // Nothing to do
+    return
+  }
+
+  const primaryPersonObj = await db.person.findOne({ uuid: primaryPerson })
+  if (primaryPersonObj == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: primaryPerson }))
+  }
+
+  const secondaryPersonObj = await db.person.findOne({ uuid: secondaryPerson })
+  if (secondaryPersonObj == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: secondaryPerson }))
+  }
+
+  // Merge social ids. Re-wire the secondary account social ids to the primary account.
+  // Keep their ids. This way all PersonIds inside the workspaces will remain the same.
+  const secondarySocialIds = await db.socialId.find({ personUuid: secondaryPerson })
+  for (const secondarySocialId of secondarySocialIds) {
+    await db.socialId.updateOne(
+      { _id: secondarySocialId._id, personUuid: secondaryPerson },
+      { personUuid: primaryPerson }
+    )
+  }
+
+  await db.person.updateOne({ uuid: secondaryPerson }, { migratedTo: primaryPerson })
+}
+
+export async function doMergeAccounts (
+  db: AccountDB,
+  primaryAccount: AccountUuid,
+  secondaryAccount: AccountUuid
+): Promise<void> {
+  if (primaryAccount === secondaryAccount) {
+    // Nothing to do
+    return
+  }
+
+  const primaryAccountObj = await db.account.findOne({ uuid: primaryAccount })
+  if (primaryAccountObj == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: primaryAccount }))
+  }
+
+  const secondaryAccountObj = await db.account.findOne({ uuid: secondaryAccount })
+  if (secondaryAccountObj == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: secondaryAccount }))
+  }
+
+  await doMergePersons(db, primaryAccount, secondaryAccount)
+
+  // Workspace assignments. Assign primary account to all workspaces of the secondary account.
+  const secondaryWorkspacesRoles = await db.getWorkspaceRoles(secondaryAccount)
+  for (const [workspaceUuid, role] of secondaryWorkspacesRoles) {
+    await db.unassignWorkspace(secondaryAccount, workspaceUuid)
+
+    const primaryRole = await db.getWorkspaceRole(primaryAccount, workspaceUuid)
+    if (primaryRole != null) {
+      if (getRolePower(primaryRole) < getRolePower(role)) {
+        await db.updateWorkspaceRole(primaryAccount, workspaceUuid, role)
+      }
+    } else {
+      await db.assignWorkspace(primaryAccount, workspaceUuid, role)
+    }
+  }
+
+  // Merge passwords. Keep the primary account password if exists, otherwise take the secondary account password.
+  if (primaryAccountObj.hash == null && secondaryAccountObj.hash != null && secondaryAccountObj.salt != null) {
+    await db.setPassword(primaryAccount, secondaryAccountObj.hash, secondaryAccountObj.salt)
+  }
 }

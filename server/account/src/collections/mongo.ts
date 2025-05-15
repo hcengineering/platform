@@ -716,12 +716,12 @@ export class MongoAccountDB implements AccountDB {
     return assignment?.role ?? null
   }
 
-  async getWorkspaceRoles (accountId: AccountUuid): Promise<Map<WorkspaceUuid, AccountRole | null>> {
+  async getWorkspaceRoles (accountId: AccountUuid): Promise<Map<WorkspaceUuid, AccountRole>> {
     const assignment = await this.workspaceMembers.find({
       accountUuid: accountId
     })
 
-    return assignment.reduce<Map<WorkspaceUuid, AccountRole | null>>((acc, it) => {
+    return assignment.reduce<Map<WorkspaceUuid, AccountRole>>((acc, it) => {
       acc.set(it.workspaceUuid, it.role)
       return acc
     }, new Map())
