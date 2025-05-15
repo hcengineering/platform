@@ -16,9 +16,10 @@ import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 import sanitizeHtml from 'sanitize-html'
 
-import { type MeasureContext } from '@hcengineering/core'
+import { TxOperations, type MeasureContext } from '@hcengineering/core'
 import { createMessages, parseEmailHeader, parseNameFromEmailHeader, EmailMessage } from '@hcengineering/mail-common'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
+import { AccountClient, isWorkspaceLoginInfo, WorkspaceLoginInfo } from '@hcengineering/account-client'
 
 import { IMessageManager } from '../types'
 import config from '../../config'
@@ -26,10 +27,13 @@ import { AttachmentHandler } from '../attachments'
 import { decode64 } from '../../base64'
 
 export class MessageManagerV2 implements IMessageManager {
+  private wsInfo: WorkspaceLoginInfo | undefined = undefined
   constructor (
     private readonly ctx: MeasureContext,
     private readonly attachmentHandler: AttachmentHandler,
+    private readonly txClient: TxOperations,
     private readonly keyValueClient: KeyValueClient,
+    private readonly accountClient: AccountClient,
     private readonly token: string
   ) {}
 
@@ -37,7 +41,25 @@ export class MessageManagerV2 implements IMessageManager {
     const res = convertMessage(message, me)
     const attachments = await this.attachmentHandler.getPartFiles(message.data.payload, message.data.id ?? '')
 
-    await createMessages(config, this.ctx, this.keyValueClient, this.token, res, attachments)
+    if (this.wsInfo === undefined) {
+      const workspaceInfo = await this.accountClient.getLoginInfoByToken()
+      if (!isWorkspaceLoginInfo(workspaceInfo)) {
+        this.ctx.error('Unable to get workspace info', { mailId: res.mailId, from: res.from })
+        return
+      }
+      this.wsInfo = workspaceInfo
+    }
+
+    await createMessages(
+      config,
+      this.ctx,
+      this.txClient,
+      this.keyValueClient,
+      this.token,
+      this.wsInfo,
+      res,
+      attachments
+    )
   }
 }
 

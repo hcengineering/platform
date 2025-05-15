@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
-import { createRestTxOperations, createRestClient } from '@hcengineering/api-client'
+import { WorkspaceLoginInfo } from '@hcengineering/account-client'
 import { type Card } from '@hcengineering/card'
 import {
   type RestClient as CommunicationClient,
@@ -48,8 +47,10 @@ import { ThreadLookupService } from './thread'
 export async function createMessages (
   config: BaseConfig,
   ctx: MeasureContext,
+  txClient: TxOperations,
   keyValueClient: KeyValueClient,
   token: string,
+  wsInfo: WorkspaceLoginInfo,
   message: EmailMessage,
   attachments: Attachment[]
 ): Promise<void> {
@@ -57,22 +58,11 @@ export async function createMessages (
   const tos = [...(message.to ?? []), ...(message.copy ?? [])]
   ctx.info('Sending message', { mailId, from, to: tos.join(',') })
 
-  const accountClient = getAccountClient(config.AccountsURL, token)
-  const wsInfo = await accountClient.getLoginInfoByToken()
-
-  if (!isWorkspaceLoginInfo(wsInfo)) {
-    ctx.error('Unable to get workspace info', { mailId, from, tos })
-    return
-  }
-
-  const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
-  const txClient = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
-  const msgClient = getCommunicationClient(wsInfo.endpoint, wsInfo.workspace, wsInfo.token)
-  const restClient = createRestClient(transactorUrl, wsInfo.workspace, wsInfo.token)
-  const personCache = PersonCacheFactory.getInstance(ctx, restClient, wsInfo.workspace)
+  const personCache = PersonCacheFactory.getInstance(ctx, wsInfo)
   const personSpacesCache = PersonSpacesCacheFactory.getInstance(ctx, txClient, wsInfo.workspace)
   const channelCache = ChannelCacheFactory.getInstance(ctx, txClient, wsInfo.workspace)
   const threadLookup = ThreadLookupService.getInstance(ctx, keyValueClient, token)
+  const msgClient = getCommunicationClient(wsInfo.endpoint, wsInfo.workspace, wsInfo.token)
 
   const fromPerson = await personCache.ensurePerson(from)
 
