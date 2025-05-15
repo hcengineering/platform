@@ -182,7 +182,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="message"
-  id={message.id.toString()}
+  id={`${message.id}`}
   on:contextmenu={editable && !isEditing ? handleContextMenu : undefined}
   class:active={isActionsOpened && !isEditing}
   class:noHover={!editable}

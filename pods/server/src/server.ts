@@ -78,6 +78,7 @@ export function start (
     storageConfig: StorageConfiguration
     port: number
     brandingMap: BrandingMap
+    communicationApiEnabled: boolean
 
     enableCompression?: boolean
 
@@ -118,7 +119,7 @@ export function start (
     {}
   )
   const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace, broadcastSessions) => {
-    if (dbUrl.startsWith('mongodb')) {
+    if (dbUrl.startsWith('mongodb') || !opt.communicationApiEnabled) {
       return {
         findMessages: async () => [],
         findMessagesGroups: async () => [],

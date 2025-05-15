@@ -36,11 +36,12 @@ export function createModel (builder: Builder): void {
       icon: chat.icon.ChatBubble,
       alias: chatId,
       accessLevel: AccountRole.User,
-      hidden: true,
+      hidden: false,
       component: chat.component.ChatApplication,
       locationResolver: chat.resolver.Location,
       locationDataResolver: chat.resolver.LocationData,
-      type: 'cards'
+      type: 'cards',
+      position: 'bottom'
     },
     chat.app.Chat
   )
