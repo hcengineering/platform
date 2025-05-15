@@ -838,7 +838,9 @@ export function pluginFilterTx (
       }
     }
   }
-  console.log('exclude plugin', msg)
+  if (typeof window !== 'undefined') {
+    console.log('exclude plugin', msg)
+  }
   systemTx = systemTx.filter((t) => !totalExcluded.has(t._id))
   return systemTx
 }
