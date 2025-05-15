@@ -19,8 +19,11 @@
   import { Ref } from '@hcengineering/core'
   import { onMount } from 'svelte'
   import { Analytics } from '@hcengineering/analytics'
+  import communication from '@hcengineering/communication'
+  import { getMetadata } from '@hcengineering/platform'
 
   import EditCardNew from './EditCardNew.svelte'
+  import EditCardOld from './EditCardOld.svelte'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
@@ -36,4 +39,8 @@
   })
 </script>
 
-<EditCardNew {_id} {readonly} {embedded} {allowClose} on:close on:open />
+{#if getMetadata(communication.metadata.Enabled) === true}
+  <EditCardNew {_id} {readonly} {embedded} {allowClose} on:close on:open />
+{:else}
+  <EditCardOld {_id} {readonly} {embedded} on:close on:open />
+{/if}

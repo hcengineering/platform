@@ -66,7 +66,7 @@ import { mailId } from '@hcengineering/mail'
 import { chatId } from '@hcengineering/chat'
 import { inboxId } from '@hcengineering/inbox'
 import { achievementId } from '@hcengineering/achievement'
-import {communicationId} from '@hcengineering/communication'
+import communication, {communicationId} from '@hcengineering/communication'
 import { emojiId } from '@hcengineering/emoji'
 
 import '@hcengineering/activity-assets'
@@ -269,6 +269,8 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(github.metadata.GithubApplication, config.GITHUB_APP ?? '')
   setMetadata(github.metadata.GithubClientID, config.GITHUB_CLIENTID ?? '')
   setMetadata(github.metadata.GithubURL, config.GITHUB_URL ?? '')
+
+  setMetadata(communication.metadata.Enabled, config.COMMUNICATION_API_ENABLED)
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
