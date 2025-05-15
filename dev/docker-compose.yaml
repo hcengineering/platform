@@ -110,7 +110,7 @@ services:
     volumes:
       - files:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ['CMD', 'mc', 'ready', 'local']
       interval: 5s
       retries: 10
     restart: unless-stopped
