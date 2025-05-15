@@ -200,6 +200,20 @@ export abstract class IssueSyncManagerBase {
         )
         await this.client.diffUpdate(doc, issueData, lastModified, account)
         this.provider.sync()
+      } else if (doc === undefined) {
+        await derivedClient.diffUpdate(
+          syncData,
+          {
+            external,
+            externalVersion: githubExternalSyncVersion,
+            needSync: '',
+            derivedVersion: '', // Check derived changes
+            lastModified,
+            lastGithubUser: account,
+            ...extraSyncUpdate
+          },
+          lastModified
+        )
       }
     }
     if (needSync) {

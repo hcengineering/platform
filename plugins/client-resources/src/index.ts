@@ -196,7 +196,6 @@ function returnClientTxes (txes: Tx[]): Tx[] {
     'text-editor:class:TextEditorAction' as Ref<Class<Doc>>,
     'templates:class:TemplateField' as Ref<Class<Doc>>,
     'activity:class:DocUpdateMessageViewlet' as Ref<Class<Doc>>,
-    'core:class:PluginConfiguration' as Ref<Class<Doc>>,
     'core:class:DomainIndexConfiguration' as Ref<Class<Doc>>,
     'view:class:ViewletDescriptor' as Ref<Class<Doc>>,
     'presentation:class:ComponentPointExtension' as Ref<Class<Doc>>,
