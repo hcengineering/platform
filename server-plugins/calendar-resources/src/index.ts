@@ -110,6 +110,9 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
       )
     )[0]
     if (employee?.personUuid === undefined) continue
+    if (employee.role === 'GUEST') {
+      continue
+    }
 
     result.push(...(await createCalendar(control, employee.personUuid, socialId, socialId)))
   }

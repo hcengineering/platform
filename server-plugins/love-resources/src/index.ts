@@ -70,6 +70,15 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
     if (val === undefined) {
       continue
     }
+    const user = (
+      await control.findAll(control.ctx, contact.mixin.Employee, { _id: actualTx.objectId as Ref<Employee> })
+    )[0]
+    if (user === undefined) {
+      continue
+    }
+    if (user.role === 'GUEST') {
+      continue
+    }
     if (val) {
       const freeRoom = (await control.findAll(control.ctx, love.class.Office, { person: null }))[0]
       if (freeRoom !== undefined) {

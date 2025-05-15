@@ -91,6 +91,7 @@ const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
   brandingMap: loadBrandingMap(config.brandingPath),
   accountsUrl: config.accountsUrl,
   enableCompression: config.enableCompression,
+  communicationApiEnabled: process.env.COMMUNICATION_API_ENABLED === 'true',
   profiling: {
     start: profileStart,
     stop: profileStop

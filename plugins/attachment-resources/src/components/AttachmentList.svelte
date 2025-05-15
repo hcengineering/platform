@@ -61,6 +61,6 @@
   .gallery {
     display: grid;
     grid-gap: 0.75rem;
-    grid-template-columns: repeat(auto-fill, 20rem);
+    grid-template-columns: repeat(auto-fill, 25rem);
   }
 </style>

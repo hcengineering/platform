@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { IntlString, plugin, Plugin } from '@hcengineering/platform'
+import { IntlString, Metadata, plugin, Plugin } from '@hcengineering/platform'
 import { CardSection } from '@hcengineering/card'
 import { Ref } from '@hcengineering/core'
 
@@ -23,6 +23,9 @@ export * from './types'
 export const communicationId = 'communication' as Plugin
 
 export default plugin(communicationId, {
+  metadata: {
+    Enabled: '' as Metadata<boolean>
+  },
   string: {
     Messages: '' as IntlString,
     FirstMessages: '' as IntlString,

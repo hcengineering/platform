@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { LoginInfo, WorkspaceLoginInfo } from '@hcengineering/login'
-  import { getAccount, getWorkspaces, navigateToWorkspace } from '@hcengineering/login-resources'
+  import { getAccount, getAccountDisplayName, getWorkspaces, navigateToWorkspace } from '@hcengineering/login-resources'
   import { OK } from '@hcengineering/platform'
   import { onMount } from 'svelte'
   import { Analytics } from '@hcengineering/analytics'
@@ -30,8 +30,7 @@
 
   const steps = Object.values(OnboardSteps)
 
-  let account: LoginInfo | undefined = undefined
-
+  let account: LoginInfo | null | undefined = undefined
   let step: OnboardSteps = OnboardSteps.Workspace
 
   function handleStepEvent (event: CustomEvent<LoginInfo | WorkspaceLoginInfo | undefined>): void {
@@ -69,9 +68,9 @@
   const action = {
     i18n: onboard.string.StartUsingHuly,
     func: async () => {
-      if (account !== undefined && isWorkspaceLoginInfo(account)) {
+      if (account != null && isWorkspaceLoginInfo(account)) {
         Analytics.handleEvent(OnboardEvents.StartHuly)
-        navigateToWorkspace(account.workspace, account)
+        navigateToWorkspace(account.workspaceUrl, account)
       }
     }
   }
@@ -86,7 +85,7 @@
     <Form
       status={OK}
       caption={onboard.string.SignUpCompleted}
-      subtitle={account.email}
+      subtitle={getAccountDisplayName(account)}
       fields={[]}
       object={{}}
       {action}

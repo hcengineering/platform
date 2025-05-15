@@ -43,7 +43,7 @@
     {#await getVideoMeta(value, name) then meta}
       {#if meta?.hls?.source !== undefined}
         {@const src = getFileUrl(value, name)}
-        <HlsVideo {src} {name} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
+        <HlsVideo {src} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
       {:else}
         {@const src = getFileUrl(value, name)}
         <Video {src} {name} />

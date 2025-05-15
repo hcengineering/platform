@@ -17,8 +17,10 @@ import { systemAccountUuid } from '@hcengineering/core'
 import { BaseConfig } from '@hcengineering/mail-common'
 import { generateToken } from '@hcengineering/server-token'
 import { getClient } from '@hcengineering/kvs-client'
+
 import config from './config'
 
+// TODO: Find account UUID from mailboxes and use personal workspace
 export const mailServiceToken = generateToken(systemAccountUuid, undefined, { service: 'mail' })
 export const baseConfig: BaseConfig = {
   AccountsURL: config.accountsUrl,

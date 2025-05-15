@@ -64,7 +64,9 @@ import {
   getWorkspaces,
   updateWorkspaceRole,
   getPersonName,
-  doReleaseSocialId
+  doReleaseSocialId,
+  doMergeAccounts,
+  doMergePersons
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -528,7 +530,7 @@ export async function releaseSocialId (
 ): Promise<void> {
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  verifyAllowedServices(['github'], extra)
+  verifyAllowedServices(['github', 'tool', 'workspace'], extra)
 
   const { personUuid, type, value } = params
 
@@ -549,7 +551,7 @@ export async function addSocialIdToPerson (
   const { person, type, value, confirmed, displayValue } = params
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  verifyAllowedServices(['github', 'telegram-bot', 'gmail'], extra)
+  verifyAllowedServices(['github', 'telegram-bot', 'gmail', 'tool', 'workspace'], extra)
 
   return await addSocialId(db, person, type, value, confirmed, displayValue)
 }
@@ -815,11 +817,45 @@ export async function findFullSocialIdBySocialKey (
   params: { socialKey: string }
 ): Promise<SocialId | null> {
   const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['telegram-bot', 'gmail'], extra)
+  verifyAllowedServices(['telegram-bot', 'gmail', 'tool', 'workspace'], extra)
 
   const { socialKey } = params
 
   return await db.socialId.findOne({ key: socialKey })
+}
+
+export async function mergeSpecifiedPersons (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    primaryPerson: PersonUuid
+    secondaryPerson: PersonUuid
+  }
+): Promise<void> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+  verifyAllowedServices(['tool', 'workspace'], extra)
+
+  const { primaryPerson, secondaryPerson } = params
+  await doMergePersons(db, primaryPerson, secondaryPerson)
+}
+
+export async function mergeSpecifiedAccounts (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    primaryAccount: AccountUuid
+    secondaryAccount: AccountUuid
+  }
+): Promise<void> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+  verifyAllowedServices(['tool', 'workspace'], extra)
+
+  const { primaryAccount, secondaryAccount } = params
+  await doMergeAccounts(db, primaryAccount, secondaryAccount)
 }
 
 export type AccountServiceMethods =
@@ -846,6 +882,8 @@ export type AccountServiceMethods =
   | 'getIntegrationSecret'
   | 'listIntegrationsSecrets'
   | 'findFullSocialIdBySocialKey'
+  | 'mergeSpecifiedPersons'
+  | 'mergeSpecifiedAccounts'
 
 /**
  * @public
@@ -874,6 +912,8 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     deleteIntegrationSecret: wrap(deleteIntegrationSecret),
     getIntegrationSecret: wrap(getIntegrationSecret),
     listIntegrationsSecrets: wrap(listIntegrationsSecrets),
-    findFullSocialIdBySocialKey: wrap(findFullSocialIdBySocialKey)
+    findFullSocialIdBySocialKey: wrap(findFullSocialIdBySocialKey),
+    mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
+    mergeSpecifiedAccounts: wrap(mergeSpecifiedAccounts)
   }
 }

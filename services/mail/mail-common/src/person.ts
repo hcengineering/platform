@@ -15,7 +15,9 @@
 
 import { type MeasureContext, PersonId, PersonUuid, SocialIdType, WorkspaceUuid } from '@hcengineering/core'
 import { type RestClient } from '@hcengineering/api-client'
+import { createRestClient } from '@hcengineering/api-client'
 import { EmailContact } from './types'
+import { WorkspaceLoginInfo } from '@hcengineering/account-client'
 
 export interface CachedPerson {
   socialId: PersonId
@@ -97,12 +99,17 @@ export class PersonCache {
 export const PersonCacheFactory = {
   instances: new Map<WorkspaceUuid, PersonCache>(),
 
-  getInstance (ctx: MeasureContext, restClient: RestClient, workspace: WorkspaceUuid): PersonCache {
-    let instance = PersonCacheFactory.instances.get(workspace)
+  getInstance (ctx: MeasureContext, wsInfo: WorkspaceLoginInfo): PersonCache {
+    if (wsInfo.workspace === undefined) {
+      throw new Error('Workspace UUID is undefined')
+    }
+    let instance = PersonCacheFactory.instances.get(wsInfo.workspace)
 
     if (instance === undefined) {
+      const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
+      const restClient = createRestClient(transactorUrl, wsInfo.workspace, wsInfo.token)
       instance = new PersonCache(ctx, restClient)
-      PersonCacheFactory.instances.set(workspace, instance)
+      PersonCacheFactory.instances.set(wsInfo.workspace, instance)
     }
 
     return instance

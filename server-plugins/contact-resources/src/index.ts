@@ -102,11 +102,13 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
     const account = person?.personUuid as AccountUuid
     if (account === undefined) continue
 
-    const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
-
     const txes = await createPersonSpace(account, mixinTx.objectId, control)
     result.push(...txes)
 
+    const emp = control.hierarchy.as(person, contact.mixin.Employee)
+    if (emp.role === 'GUEST') continue
+
+    const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
     for (const space of spaces) {
       if (space.members.includes(account)) continue
 

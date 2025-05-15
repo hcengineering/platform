@@ -113,9 +113,9 @@ import {
 } from '@hcengineering/model-server-controlled-documents'
 import { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
 import { presenceId, createModel as presenceModel } from '@hcengineering/model-presence'
-import { chatId, createModel as chatModel } from '@hcengineering/model-chat'
+import chat, { chatId, createModel as chatModel } from '@hcengineering/model-chat'
 import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
-import { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
+import inbox, { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
 import { achievementId, createModel as achievementModel } from '@hcengineering/model-achievement'
 import { emojiId, createModel as emojiModel } from '@hcengineering/model-emoji'
 import { communicationId, createModel as communicationModel } from '@hcengineering/model-communication'
@@ -370,7 +370,8 @@ export default function buildModel (): Builder {
         description: github.string.ConfigDescription,
         enabled: true,
         beta: false,
-        icon: github.icon.Github
+        icon: github.icon.Github,
+        classFilter: defaultFilter
       }
     ],
     [
@@ -456,8 +457,16 @@ export default function buildModel (): Builder {
     ],
     [surveyModel, surveyId],
     [presenceModel, presenceId],
-    [chatModel, chatId],
-    [inboxModel, inboxId],
+    [
+      chatModel,
+      chatId,
+      { label: chat.string.Chat, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
+    ],
+    [
+      inboxModel,
+      inboxId,
+      { label: inbox.string.Inbox, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
+    ],
     [achievementModel, achievementId],
     [emojiModel, emojiId],
     [communicationModel, communicationId],

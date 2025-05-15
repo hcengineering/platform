@@ -18,6 +18,7 @@ import { MeasureContext } from '@hcengineering/core'
 import { createMessages } from '@hcengineering/mail-common'
 import { type MtaMessage, handleMtaHook } from '../handlerMta'
 import * as client from '../client'
+import { createRestTxOperations } from '@hcengineering/api-client'
 
 // Mock dependencies
 jest.mock('@hcengineering/mail-common', () => ({
@@ -39,10 +40,50 @@ jest.mock(
   () => ({
     hookToken: 'test-hook-token',
     ignoredAddresses: ['ignored@example.com'],
-    storageConfig: 'test-storage-config'
+    storageConfig: 'test-storage-config',
+    workspaceUrl: 'test-workspace'
   }),
   { virtual: true }
 )
+
+// Mock workspace login info
+const mockLoginInfo = {
+  endpoint: 'wss://test-endpoint.com',
+  workspace: 'test-workspace',
+  token: 'test-token'
+}
+
+jest.mock('@hcengineering/account-client', () => ({
+  getClient: jest.fn().mockImplementation(() => ({
+    selectWorkspace: jest.fn().mockResolvedValue(mockLoginInfo),
+    getLoginInfoByToken: jest.fn().mockResolvedValue(mockLoginInfo),
+    getCurrentUser: jest.fn().mockResolvedValue({
+      _id: 'test-account-id',
+      email: 'test@example.com'
+    }),
+    getWorkspaceInfo: jest.fn().mockResolvedValue({
+      title: 'Test Workspace',
+      productId: 'test-product-id'
+    })
+  }))
+}))
+
+// Mock transaction operations
+const mockTxOperations = {
+  findOne: jest.fn().mockResolvedValue(null),
+  findAll: jest.fn().mockResolvedValue([]),
+  createDoc: jest.fn().mockResolvedValue({ _id: 'new-doc-id' }),
+  updateDoc: jest.fn().mockResolvedValue({}),
+  tx: jest.fn().mockResolvedValue({}),
+  txUpdateDoc: jest.fn().mockResolvedValue({}),
+  add: jest.fn().mockResolvedValue({}),
+  remove: jest.fn().mockResolvedValue({}),
+  update: jest.fn().mockResolvedValue({})
+}
+
+jest.mock('@hcengineering/api-client', () => ({
+  createRestTxOperations: jest.fn().mockImplementation(() => mockTxOperations)
+}))
 
 // Mock Date.now to return consistent timestamp for tests
 const MOCK_TIMESTAMP = 1620000000000
@@ -130,23 +171,30 @@ describe('handleMtaHook', () => {
     expect(mockStatus).toHaveBeenCalledWith(200)
     expect(mockSend).toHaveBeenCalledWith({ action: 'accept' })
 
-    // Should process the message
+    // Should process the message with the new signature order
     expect(createMessages).toHaveBeenCalledWith(
       client.baseConfig,
       mockCtx,
-      client.kvsClient,
+      mockTxOperations, // This should be the TxOperations mock, not kvsClient
+      {}, // This should be the KeyValueClient mock
       client.mailServiceToken,
+      mockLoginInfo, // Added workspace login info
       expect.objectContaining({
         mailId: expect.any(String),
         from: { email: 'sender@example.com', firstName: 'sender', lastName: 'example.com' },
         to: [{ email: 'recipient@example.com', firstName: 'recipient', lastName: 'example.com' }],
         subject: 'Test Subject',
         content: 'Hello, this is a test email',
-        incoming: true,
-        modifiedOn: MOCK_TIMESTAMP,
-        sendOn: MOCK_TIMESTAMP
+        incoming: true
       }),
-      []
+      [] // attachments
+    )
+
+    // And verify createRestTxOperations was called with the transformed URL
+    expect(createRestTxOperations).toHaveBeenCalledWith(
+      'https://test-endpoint.com', // Transformed from wss://
+      'test-workspace',
+      'test-token'
     )
   })
 
@@ -167,17 +215,19 @@ describe('handleMtaHook', () => {
 
     await handleMtaHook(mockReq as Request, mockRes as Response, mockCtx)
 
-    // Should process the message with correct names
+    // Should process the message with the correct names and parameter order
     expect(createMessages).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
+      client.baseConfig,
+      mockCtx,
+      mockTxOperations,
+      {},
+      client.mailServiceToken,
+      mockLoginInfo,
       expect.objectContaining({
         from: { email: 'sender@example.com', firstName: 'John', lastName: 'Doe' },
         to: [{ email: 'recipient@example.com', firstName: 'Jane', lastName: 'Smith' }]
       }),
-      expect.anything()
+      []
     )
   })
 
@@ -190,17 +240,19 @@ describe('handleMtaHook', () => {
 
     await handleMtaHook(mockReq as Request, mockRes as Response, mockCtx)
 
-    // Should process the message with stripped tags
+    // Should process the message with stripped tags in the correct parameter order
     expect(createMessages).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
+      client.baseConfig,
+      mockCtx,
+      mockTxOperations,
+      {},
+      client.mailServiceToken,
+      mockLoginInfo,
       expect.objectContaining({
         from: { email: 'sender+tag@example.com', firstName: 'sender', lastName: 'example.com' },
         to: [{ email: 'recipient@example.com', firstName: 'recipient', lastName: 'example.com' }]
       }),
-      expect.anything()
+      []
     )
   })
 
@@ -217,16 +269,18 @@ describe('handleMtaHook', () => {
 
     await handleMtaHook(mockReq as Request, mockRes as Response, mockCtx)
 
-    // Should use the provided Message-ID
+    // Should use the provided Message-ID with the correct parameter order
     expect(createMessages).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
+      client.baseConfig,
+      mockCtx,
+      mockTxOperations,
+      {},
+      client.mailServiceToken,
+      mockLoginInfo,
       expect.objectContaining({
         mailId: messageId
       }),
-      expect.anything()
+      []
     )
   })
 
@@ -239,16 +293,18 @@ describe('handleMtaHook', () => {
 
     await handleMtaHook(mockReq as Request, mockRes as Response, mockCtx)
 
-    // Should generate an ID
+    // Should generate an ID with the correct parameter order
     expect(createMessages).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
+      client.baseConfig,
+      mockCtx,
+      mockTxOperations,
+      {},
+      client.mailServiceToken,
+      mockLoginInfo,
       expect.objectContaining({
         mailId: expect.any(String)
       }),
-      expect.anything()
+      []
     )
   })
 
@@ -265,16 +321,18 @@ describe('handleMtaHook', () => {
 
     await handleMtaHook(mockReq as Request, mockRes as Response, mockCtx)
 
-    // Should include the replyTo field
+    // Should include the replyTo field with the correct parameter order
     expect(createMessages).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
+      client.baseConfig,
+      mockCtx,
+      mockTxOperations,
+      {},
+      client.mailServiceToken,
+      mockLoginInfo,
       expect.objectContaining({
         replyTo: inReplyTo
       }),
-      expect.anything()
+      []
     )
   })
 

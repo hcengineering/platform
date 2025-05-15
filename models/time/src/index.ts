@@ -27,7 +27,8 @@ import {
   type Timestamp,
   type Type,
   DateRangeMode,
-  IndexKind
+  IndexKind,
+  AccountRole
 } from '@hcengineering/core'
 import lead from '@hcengineering/lead'
 import {
@@ -194,6 +195,7 @@ export function createModel (builder: Builder): void {
     {
       label: time.string.Planner,
       icon: calendarPlugin.icon.Calendar,
+      accessLevel: AccountRole.User,
       alias: timeId,
       hidden: false,
       position: 'top',
@@ -208,6 +210,7 @@ export function createModel (builder: Builder): void {
     {
       label: time.string.Team,
       icon: time.icon.Team,
+      accessLevel: AccountRole.User,
       alias: 'team',
       hidden: false,
       component: time.component.Team
