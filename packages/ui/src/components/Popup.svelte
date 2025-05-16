@@ -27,21 +27,21 @@
     instances.forEach((p) => p.fitPopupInstance())
   }
 
-  const checkFS = (popup: any): boolean => {
+  const shouldDisplayPopup = (popup: any): boolean => {
     return (
-      (fullScreen && document.fullscreen && popup.element !== 'full-centered') ||
-      (!fullScreen && document.fullscreen && popup.element === 'full-centered') ||
-      (!fullScreen && !document.fullscreen)
+      (fullScreen && document.fullscreenElement != null && popup.element !== 'full-centered') ||
+      (!fullScreen && document.fullscreenElement != null && popup.element === 'full-centered') ||
+      (!fullScreen && document.fullscreenElement == null)
     )
   }
 
-  $: instances.length = $popups.filter((p) => p.dock !== true && checkFS(p)).length
+  $: instances.length = $popups.filter((p) => p.dock !== true && shouldDisplayPopup(p)).length
 </script>
 
 {#if $popups.length > 0}
   <slot name="popup-header" />
 {/if}
-{#each $popups.filter((p) => p.dock !== true && checkFS(p)) as popup, i (popup.id)}
+{#each $popups.filter((p) => p.dock !== true && shouldDisplayPopup(p)) as popup, i (popup.id)}
   <PopupInstance
     bind:this={instances[i]}
     is={popup.is}

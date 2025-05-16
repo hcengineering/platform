@@ -21,7 +21,7 @@
 
   import { languagesDisplayData } from '../types'
   import LanguageIcon from './LanguageIcon.svelte'
-  import { updateSessionLanguage, isFullScreen } from '../utils'
+  import { updateSessionLanguage } from '../utils'
 
   export let room: Room
   export let kind: 'dropdown' | 'icon' = 'dropdown'
