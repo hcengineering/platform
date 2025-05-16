@@ -45,4 +45,13 @@ export function createModel (builder: Builder): void {
   builder.mixin(gmail.ids.EmailNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
     func: serverGmail.function.IsIncomingMessageTypeMatch
   })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverGmail.trigger.NotificationsHandler,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: notification.class.InboxNotification
+    }
+  })
 }
