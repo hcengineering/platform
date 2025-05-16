@@ -19,7 +19,7 @@ export enum QueueTopic {
   CalendarEventCUD = 'calendarEventCUD',
 
   // A topic for sending events to the communication service.
-  CommunicationEvents = 'communicationEvents'
+  CommunicationEvents = 'commevent'
 }
 
 export interface ConsumerHandle {
