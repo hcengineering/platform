@@ -171,7 +171,7 @@ export class DatalakeService implements StorageAdapter {
   async get (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Readable> {
     const object = await this.retry(ctx, () => this.client.getObject(ctx, wsIds.uuid, objectName))
     if (object === undefined) {
-      throw new NotFoundError('Object not found')
+      throw new NotFoundError()
     }
     return object
   }
@@ -205,7 +205,7 @@ export class DatalakeService implements StorageAdapter {
   async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer[]> {
     const data = await this.retry(ctx, () => this.client.getObject(ctx, wsIds.uuid, objectName))
     if (data === undefined) {
-      throw new NotFoundError('Object not found')
+      throw new NotFoundError()
     }
 
     const chunks: Buffer[] = []
@@ -228,7 +228,7 @@ export class DatalakeService implements StorageAdapter {
       this.client.getPartialObject(ctx, wsIds.uuid, objectName, offset, length)
     )
     if (object === undefined) {
-      throw new NotFoundError('Object not found')
+      throw new NotFoundError()
     }
     return object
   }
