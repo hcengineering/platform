@@ -133,7 +133,13 @@ describe('queue message handlers', () => {
 
       await eventUpdated(ctx, ws, { event, modifiedBy: meetingHost, changes: { date: Date.now() } })
 
-      expect(createNotificationSpy).toHaveBeenCalledWith(ctx, ws, MeetingNotificationType.Rescheduled, event, meetingHost)
+      expect(createNotificationSpy).toHaveBeenCalledWith(
+        ctx,
+        ws,
+        MeetingNotificationType.Rescheduled,
+        event,
+        meetingHost
+      )
     })
 
     test('there should be notification when host updates meeting for guest in the past', async () => {
