@@ -41,6 +41,9 @@
 
 <style lang="scss">
   .container {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     color: var(--theme-caption-color);
   }
 </style>

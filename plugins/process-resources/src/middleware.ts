@@ -24,7 +24,7 @@ import core, {
 } from '@hcengineering/core'
 import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
 import process, { type ProcessToDo } from '@hcengineering/process'
-import { createExecution, getNextStateUserInput, requestResult } from './utils'
+import { createExecution, getNextStateUserInput, requestResult, pickTransition } from './utils'
 import cardPlugin, { type Card } from '@hcengineering/card'
 
 /**
@@ -113,12 +113,21 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
       })
       if (execution === undefined) return
       if (execution.currentState !== todo.state) return
-      const context = await getNextStateUserInput(execution, execution.context ?? {})
+      const transitions = this.client.getModel().findAllSync(process.class.Transition, {
+        process: execution.process,
+        from: execution.currentState,
+        trigger: process.trigger.OnToDoClose
+      })
+      const transition = await pickTransition(this.client.getModel(), execution, transitions, todo)
+      if (transition === undefined) return
+      const nextState = transition.to
+      if (nextState == null) return
+      const context = await getNextStateUserInput(execution, nextState, execution.context)
       const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
       await txop.update(execution, {
         context
       })
-      await requestResult(txop, execution, execution.results ?? {})
+      await requestResult(txop, execution, execution.context)
     }
   }
 }

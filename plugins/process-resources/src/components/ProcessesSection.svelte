@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
-  import core, { Ref } from '@hcengineering/core'
+  import core, { generateId, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Process } from '@hcengineering/process'
+  import { Process, State, Step } from '@hcengineering/process'
   import { ButtonIcon, getCurrentLocation, Icon, IconAdd, Label, navigate } from '@hcengineering/ui'
   import process from '../plugin'
 
@@ -26,12 +26,24 @@
   const client = getClient()
 
   async function add (): Promise<void> {
+    const initState = generateId<State>()
     const id = await client.createDoc(process.class.Process, core.space.Model, {
       name: await translate(process.string.NewProcess, {}),
       masterTag: masterTag._id,
+      context: {},
       description: '',
-      states: []
+      initState
     })
+    await client.createDoc(
+      process.class.State,
+      core.space.Model,
+      {
+        process: id,
+        title: await translate(process.string.NewState, {}),
+        actions: []
+      },
+      initState
+    )
     handleSelect(id)
   }
 

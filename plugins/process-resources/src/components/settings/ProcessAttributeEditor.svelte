@@ -15,13 +15,12 @@
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { getAttributeEditor, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
-  import { Process, State } from '@hcengineering/process'
+  import { Process } from '@hcengineering/process'
   import { AnySvelteComponent } from '@hcengineering/ui'
-  import { getContext } from '../utils'
-  import ProcessAttribute from './ProcessAttribute.svelte'
+  import { getContext } from '../../utils'
+  import ProcessAttribute from '../ProcessAttribute.svelte'
 
   export let process: Process
-  export let state: State
   export let _class: Ref<Class<Doc>>
   export let key: string
   export let object: Record<string, any>

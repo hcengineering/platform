@@ -87,7 +87,7 @@
 {:else if hasAccountRole(getCurrentAccount(), AccountRole.User) || hasSpace}
   <div class="antiNav-subheader">
     {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
-      {#if hasSpace}
+      {#if hasSpace && currentSpace !== undefined && _class !== undefined}
         <ButtonWithDropdown
           icon={IconAdd}
           justify={'left'}
@@ -97,7 +97,6 @@
           mainButtonId={'new-document'}
           dropdownIcon={IconDropdown}
           {dropdownItems}
-          disabled={currentSpace === undefined || _class === undefined}
           on:dropdown-selected={(ev) => {
             void dropdownItemSelected(ev.detail)
           }}

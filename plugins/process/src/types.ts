@@ -1,5 +1,5 @@
 import { Class, Doc, type AnyAttribute, type Association, type Ref } from '@hcengineering/core'
-import { ProcessFunction } from '.'
+import { ContextId, ProcessFunction } from '.'
 
 export interface Context {
   functions: Ref<ProcessFunction>[]
@@ -26,7 +26,7 @@ export interface Func {
 }
 
 interface BaseSelectedContext {
-  type: 'attribute' | 'relation' | 'nested' | 'userRequest' | 'function'
+  type: 'attribute' | 'relation' | 'nested' | 'userRequest' | 'function' | 'context'
   // attribute key
   key: string
 
@@ -58,7 +58,12 @@ export interface SelectedNested extends BaseSelectedContext {
 export interface SelectedUserRequest extends BaseSelectedContext {
   type: 'userRequest'
   _class: Ref<Class<Doc>>
-  id: string
+  id: ContextId
+}
+
+export interface SelectedExecutonContext extends BaseSelectedContext {
+  type: 'context'
+  id: ContextId
 }
 
 export interface SelectedContextFunc extends BaseSelectedContext {
@@ -73,3 +78,4 @@ export type SelectedContext =
   | SelectedNested
   | SelectedUserRequest
   | SelectedContextFunc
+  | SelectedExecutonContext
