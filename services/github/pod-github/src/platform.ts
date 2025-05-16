@@ -807,7 +807,8 @@ export class PlatformWorker {
   }
 
   async getWorkspaces (): Promise<WorkspaceUuid[]> {
-    return this.integrations.map((it) => it.workspace)
+    // Since few integeration could map into one workspace, we need to deduplicate
+    return Array.from(new Set(this.integrations.map((it) => it.workspace)))
   }
 
   checkedWorkspaces = new Set<string>()

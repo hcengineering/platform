@@ -111,16 +111,17 @@ export class DatalakeClient {
     return (await response.json()) as ListObjectOutput
   }
 
-  async getObject (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<Readable> {
+  async getObject (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<Readable | undefined> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
 
     let response
     try {
       response = await fetchSafe(ctx, url, { headers: { ...this.headers } })
     } catch (err: any) {
-      if (err.name !== 'NotFoundError') {
-        console.error('failed to get object', { workspace, objectName, err })
+      if (err.name === 'NotFoundError') {
+        return undefined
       }
+      console.error('failed to get object', { workspace, objectName, err })
       throw err
     }
 
@@ -138,7 +139,7 @@ export class DatalakeClient {
     objectName: string,
     offset: number,
     length?: number
-  ): Promise<Readable> {
+  ): Promise<Readable | undefined> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
     const headers = {
       ...this.headers,
@@ -149,9 +150,10 @@ export class DatalakeClient {
     try {
       response = await fetchSafe(ctx, url, { headers })
     } catch (err: any) {
-      if (err.name !== 'NotFoundError') {
-        console.error('failed to get partial object', { workspace, objectName, err })
+      if (err.name === 'NotFoundError') {
+        return undefined
       }
+      console.error('failed to get partial object', { workspace, objectName, err })
       throw err
     }
 
