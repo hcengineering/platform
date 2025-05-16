@@ -33,6 +33,7 @@ import {
 import { generateToken } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
 import { type UploadObjectParams, DatalakeClient } from './client'
+import { NotFoundError } from './error'
 
 export { DatalakeClient }
 
@@ -168,7 +169,11 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('get')
   async get (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Readable> {
-    return await this.retry(ctx, () => this.client.getObject(ctx, wsIds.uuid, objectName))
+    const object = await this.retry(ctx, () => this.client.getObject(ctx, wsIds.uuid, objectName))
+    if (object === undefined) {
+      throw new NotFoundError('Object not found')
+    }
+    return object
   }
 
   @withContext('put')
@@ -199,8 +204,11 @@ export class DatalakeService implements StorageAdapter {
   @withContext('read')
   async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer[]> {
     const data = await this.retry(ctx, () => this.client.getObject(ctx, wsIds.uuid, objectName))
-    const chunks: Buffer[] = []
+    if (data === undefined) {
+      throw new NotFoundError('Object not found')
+    }
 
+    const chunks: Buffer[] = []
     for await (const chunk of data) {
       chunks.push(chunk)
     }
@@ -216,7 +224,13 @@ export class DatalakeService implements StorageAdapter {
     offset: number,
     length?: number
   ): Promise<Readable> {
-    return await this.retry(ctx, () => this.client.getPartialObject(ctx, wsIds.uuid, objectName, offset, length))
+    const object = await this.retry(ctx, () =>
+      this.client.getPartialObject(ctx, wsIds.uuid, objectName, offset, length)
+    )
+    if (object === undefined) {
+      throw new NotFoundError('Object not found')
+    }
+    return object
   }
 
   async getUrl (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<string> {
