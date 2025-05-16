@@ -248,8 +248,7 @@ async function saveMessageToSpaces (
         modifiedBy,
         MessageType.Message,
         {
-          created: createdDate,
-          edited: createdDate
+          created: createdDate
         }
       )
       ctx.info('Created message', { mailId, messageId, threadId })
