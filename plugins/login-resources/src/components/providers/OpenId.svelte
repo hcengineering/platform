@@ -5,7 +5,6 @@
   import { getMetadata } from '@hcengineering/platform'
 
   const openIdDisplayName = getMetadata(login.metadata.OpenIdDisplayName) ?? 'OpenId'
-  console.log(openIdDisplayName)
 </script>
 
 <div class="flex-row-center flex-gap-2">
