@@ -196,9 +196,9 @@
       <span class="overflow-label text-md flex-grow">
         <Label label={getRoomLabel(room, $personByIdStore)} />
       </span>
-      {#if !isOffice(room)}
+      <!-- {#if !isOffice(room)}
         <RoomLanguage {room} />
-      {/if}
+      {/if} -->
       {#if room.access === RoomAccess.DND || room.type === RoomType.Video}
         <div class="flex-row-center flex-no-shrink h-full flex-gap-2">
           {#if room.access === RoomAccess.DND}
