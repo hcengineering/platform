@@ -4,7 +4,8 @@
   import login from '../../plugin'
   import { getMetadata } from '@hcengineering/platform'
 
-  const openIdDisplayName = getMetadata(login.metadata.DisableSignUp) ?? 'OpenId'
+  const openIdDisplayName = getMetadata(login.metadata.OpenIdDisplayName) ?? 'OpenId'
+  console.log(openIdDisplayName)
 </script>
 
 <div class="flex-row-center flex-gap-2">
