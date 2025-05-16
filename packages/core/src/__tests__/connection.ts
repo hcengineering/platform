@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { ClientConnectEvent, DocChunk, generateId } from '..'
-import type { Class, Doc, Domain, Ref, Timestamp } from '../classes'
+import { ClientConnectEvent, DocChunk, generateId, type WorkspaceUuid } from '..'
+import type { Account, Class, Doc, Domain, Ref, Timestamp } from '../classes'
 import { ClientConnection } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
@@ -47,17 +47,21 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     isConnected = (): boolean => true
     findAll = findAll
 
-    handler?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+    handler?: (event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>
 
     set onConnect (
-      handler: ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined
+      handler: ((event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>) | undefined
     ) {
       this.handler = handler
-      void this.handler?.(ClientConnectEvent.Connected, '', {})
+      void this.handler?.(ClientConnectEvent.Connected, {}, {})
     }
 
-    get onConnect (): ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined {
+    get onConnect (): ((event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>) | undefined {
       return this.handler
+    }
+
+    getAccount (): Promise<Account> {
+      throw new Error('Method not implemented.')
     }
 
     async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {

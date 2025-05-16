@@ -34,7 +34,7 @@ import { setObjectValue } from './objvalue'
 import { _getOperator } from './operator'
 import { _toDoc } from './proxy'
 import type { DocumentQuery, TxResult } from './storage'
-import { generateId } from './utils'
+import { generateId, type WorkspaceUuid } from './utils'
 
 /**
  * @public
@@ -52,7 +52,9 @@ export enum WorkspaceEvent {
   SecurityChange,
   MaintenanceNotification,
   BulkUpdate,
-  LastTx
+  LastTx,
+  WorkpaceActive,
+  ModelUpgrade = 7
 }
 
 /**
@@ -62,6 +64,7 @@ export enum WorkspaceEvent {
 export interface TxWorkspaceEvent<T = any> extends Tx {
   event: WorkspaceEvent
   params: T
+  workspace?: WorkspaceUuid
 }
 
 /**
@@ -77,11 +80,6 @@ export interface IndexingUpdateEvent {
 export interface BulkUpdateEvent {
   _class: Ref<Class<Doc>>[]
 }
-
-/**
- * @public
- */
-export interface TxModelUpgrade extends Tx {}
 
 /**
  * @public

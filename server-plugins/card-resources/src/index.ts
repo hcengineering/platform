@@ -412,7 +412,10 @@ async function updateCollaborators (control: TriggerControl, ctx: TxCreateDoc<Ca
 
     if (collaborators.length === 0) continue
     void communicationApi.event(
-      { account: systemAccount },
+      {
+        // TODO: Fix me, Undetermined role is missing in communication API
+        account: systemAccount as any
+      },
       {
         type: NotificationRequestEventType.AddCollaborators,
         card: tx.objectId,

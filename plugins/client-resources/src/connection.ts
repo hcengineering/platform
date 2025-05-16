@@ -22,13 +22,26 @@ import client, {
   pingConst,
   pongConst
 } from '@hcengineering/client'
+import { EventResult } from '@hcengineering/communication-sdk-types'
+import {
+  Collaborator,
+  FindCollaboratorsParams,
+  FindLabelsParams,
+  FindMessagesGroupsParams,
+  FindMessagesParams,
+  FindNotificationContextParams,
+  FindNotificationsParams,
+  Label,
+  Message,
+  MessagesGroup,
+  NotificationContext
+} from '@hcengineering/communication-types'
 import core, {
   Account,
   Class,
   ClientConnectEvent,
   ClientConnection,
   clone,
-  Handler,
   Doc,
   DocChunk,
   DocumentQuery,
@@ -36,6 +49,7 @@ import core, {
   FindOptions,
   FindResult,
   generateId,
+  Handler,
   LoadModelResponse,
   type MeasureContext,
   MeasureMetricsContext,
@@ -50,6 +64,8 @@ import core, {
   TxApplyIf,
   TxHandler,
   TxResult,
+  type TxWorkspaceEvent,
+  WorkspaceEvent,
   type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, {
@@ -60,22 +76,8 @@ import platform, {
   Status,
   UNAUTHORIZED
 } from '@hcengineering/platform'
+import { HelloRequest, HelloResponse, type RateLimitInfo, ReqId, type Response, RPCHandler } from '@hcengineering/rpc'
 import { uncompress } from 'snappyjs'
-import { HelloRequest, HelloResponse, ReqId, type Response, RPCHandler, type RateLimitInfo } from '@hcengineering/rpc'
-import { EventResult } from '@hcengineering/communication-sdk-types'
-import {
-  FindLabelsParams,
-  FindMessagesGroupsParams,
-  FindMessagesParams,
-  FindNotificationContextParams,
-  FindNotificationsParams,
-  FindCollaboratorsParams,
-  Label,
-  Message,
-  MessagesGroup,
-  NotificationContext,
-  Collaborator
-} from '@hcengineering/communication-types'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
@@ -136,11 +138,11 @@ class Connection implements ClientConnection {
 
   private account: Account | undefined
 
-  onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+  onConnect?: (event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>
 
   rpcHandler: RPCHandler
 
-  lastHash?: string
+  lastHash?: Record<WorkspaceUuid, string | undefined>
 
   handlers: Handler[] = []
 
@@ -181,9 +183,9 @@ class Connection implements ClientConnection {
     this.handlers.push(handler)
   }
 
-  async getLastHash (ctx: MeasureContext): Promise<string | undefined> {
+  async getLastHash (ctx: MeasureContext): Promise<Record<WorkspaceUuid, string | undefined>> {
     await this.waitOpenConnection(ctx)
-    return this.lastHash
+    return this.lastHash ?? {}
   }
 
   private schedulePing (socketId: number): void {
@@ -510,9 +512,13 @@ class Connection implements ClientConnection {
       const txArr = Array.isArray(resp.result) ? (resp.result as Tx[]) : [resp.result as Tx]
 
       for (const tx of txArr) {
-        if (tx?._class === core.class.TxModelUpgrade) {
-          console.log('Processing upgrade', this.workspace, this.user)
-          this.opt?.onUpgrade?.()
+        if (tx?._class === core.class.TxWorkspaceEvent) {
+          const event = tx as TxWorkspaceEvent
+          // TODO: Check
+          if (event.event === WorkspaceEvent.ModelUpgrade) {
+            console.log('Processing upgrade', this.workspace, this.user)
+            this.opt?.onUpgrade?.(event)
+          }
           return
         }
       }

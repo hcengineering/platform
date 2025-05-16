@@ -71,7 +71,10 @@ export interface Obj {
 
 export interface Account {
   uuid: AccountUuid
-  role: AccountRole
+  roles: Record<WorkspaceUuid, AccountRole>
+
+  role: AccountRole // Role in current workspace
+  targetWorkspace: WorkspaceUuid // In case target workspace is used, it will be filled with personal workspace UUID in case of all workspaces mode.
   primarySocialId: PersonId
   socialIds: PersonId[]
   fullSocialIds: SocialId[]
@@ -521,7 +524,8 @@ export enum AccountRole {
   Guest = 'GUEST',
   User = 'USER',
   Maintainer = 'MAINTAINER',
-  Owner = 'OWNER'
+  Owner = 'OWNER',
+  Undetermined = 'UNDETERMINED' // In case of multi workspaces mode
 }
 
 /**
@@ -530,6 +534,7 @@ export enum AccountRole {
 export const roleOrder: Record<AccountRole, number> = {
   [AccountRole.DocGuest]: 10,
   [AccountRole.Guest]: 20,
+  [AccountRole.Undetermined]: 25,
   [AccountRole.User]: 30,
   [AccountRole.Maintainer]: 40,
   [AccountRole.Owner]: 50

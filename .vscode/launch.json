@@ -103,7 +103,8 @@
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
         "STATS_URL": "http://huly.local:4900",
-        "QUEUE_CONFIG": "localhost:19092"
+        "QUEUE_CONFIG": "localhost:19092",
+        "RATE_LIMIT_MAX": "25000"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",

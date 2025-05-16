@@ -14,19 +14,9 @@
 //
 
 import {
-  type ServerApi as CommunicationApi,
-  type RequestEvent as CommunicationEvent,
-  type EventResult
+  type ServerApi as CommunicationApi
 } from '@hcengineering/communication-sdk-types'
 import {
-  type FindMessagesGroupsParams,
-  type FindMessagesParams,
-  type Message,
-  type MessagesGroup
-} from '@hcengineering/communication-types'
-import {
-  type Account,
-  type AccountUuid,
   type Branding,
   type Class,
   type Doc,
@@ -46,7 +36,6 @@ import {
   type SearchQuery,
   type SearchResult,
   type SessionData,
-  type SocialId,
   type Space,
   type Timestamp,
   type Tx,
@@ -58,14 +47,12 @@ import {
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
 import type { LiveQuery } from '@hcengineering/query'
-import type { RateLimitInfo, ReqId, Request, Response } from '@hcengineering/rpc'
-import type { Token } from '@hcengineering/server-token'
+import type { Request, Response } from '@hcengineering/rpc'
 import { type Readable } from 'stream'
 
 import type { DbAdapter, DomainHelper } from './adapter'
-import type { StatisticsElement, WorkspaceStatistics } from './stats'
+import { type PlatformQueue, type PlatformQueueProducer, type QueueTopic } from './queue'
 import { type StorageAdapter } from './storage'
-import { type PlatformQueueProducer, type QueueTopic, type PlatformQueue } from './queue'
 
 export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
   domain?: Domain // Allow to find for Doc's in specified domain only.
@@ -543,99 +530,8 @@ export interface SessionRequest {
   id: string
   params: any
   start: number
-}
 
-export interface ClientSessionCtx {
-  ctx: MeasureContext
-
-  pipeline: Pipeline
-  communicationApi: CommunicationApi
-
-  socialStringsToUsers: Map<PersonId, AccountUuid>
-  requestId: ReqId | undefined
-  sendResponse: (id: ReqId | undefined, msg: any) => Promise<void>
-  sendPong: () => void
-  sendError: (id: ReqId | undefined, msg: any, error: any) => Promise<void>
-}
-
-/**
- * @public
- */
-export interface Session {
-  workspace: WorkspaceIds
-  createTime: number
-
-  // Session restore information
-  sessionId: string
-  sessionInstanceId?: string
-  workspaceClosed?: boolean
-
-  requests: Map<string, SessionRequest>
-
-  binaryMode: boolean
-  useCompression: boolean
-  total: StatisticsElement
-  current: StatisticsElement
-  mins5: StatisticsElement
-
-  lastRequest: number
-  lastPing: number
-
-  isUpgradeClient: () => boolean
-
-  getMode: () => string
-
-  broadcast: (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]) => void
-
-  // Client methods
-  ping: (ctx: ClientSessionCtx) => Promise<void>
-  getUser: () => AccountUuid
-
-  getUserSocialIds: () => PersonId[]
-
-  getSocialIds: () => SocialId[]
-
-  loadModel: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<void>
-  loadModelRaw: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<LoadModelResponse | Tx[]>
-  getRawAccount: () => Account
-  findAll: <T extends Doc>(
-    ctx: ClientSessionCtx,
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ) => Promise<void>
-  findAllRaw: <T extends Doc>(
-    ctx: ClientSessionCtx,
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ) => Promise<FindResult<T>>
-  searchFulltext: (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions) => Promise<void>
-  searchFulltextRaw: (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
-  tx: (ctx: ClientSessionCtx, tx: Tx) => Promise<void>
-
-  txRaw: (
-    ctx: ClientSessionCtx,
-    tx: Tx
-  ) => Promise<{
-    result: TxResult
-    broadcastPromise: Promise<void>
-    asyncsPromise: Promise<void> | undefined
-  }>
-
-  loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number) => Promise<void>
-
-  getDomainHash: (ctx: ClientSessionCtx, domain: Domain) => Promise<void>
-  closeChunk: (ctx: ClientSessionCtx, idx: number) => Promise<void>
-  loadDocs: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
-  upload: (ctx: ClientSessionCtx, domain: Domain, docs: Doc[]) => Promise<void>
-  clean: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
-
-  includeSessionContext: (ctx: ClientSessionCtx) => void
-
-  eventRaw: (ctx: ClientSessionCtx, event: CommunicationEvent) => Promise<EventResult>
-  findMessagesRaw: (ctx: ClientSessionCtx, params: FindMessagesParams) => Promise<Message[]>
-  findMessagesGroupsRaw: (ctx: ClientSessionCtx, params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
+  workspaceId?: WorkspaceUuid
 }
 
 /**
@@ -667,77 +563,6 @@ export let LOGGING_ENABLED = true
  */
 export function disableLogging (): void {
   LOGGING_ENABLED = false
-}
-
-export interface AddSessionActive {
-  session: Session
-  context: MeasureContext
-  workspaceId: WorkspaceUuid
-}
-
-export type GetWorkspaceResponse =
-  | { upgrade: true, progress?: number }
-  | { error: any, terminate?: boolean, specialError?: 'archived' | 'migration' }
-
-export type AddSessionResponse = AddSessionActive | GetWorkspaceResponse
-
-/**
- * @public
- */
-export interface SessionManager {
-  // workspaces: Map<WorkspaceUuid, Workspace>
-  sessions: Map<string, { session: Session, socket: ConnectionSocket }>
-
-  addSession: (
-    ctx: MeasureContext,
-    ws: ConnectionSocket,
-    token: Token,
-    rawToken: string,
-    sessionId: string | undefined
-  ) => Promise<AddSessionResponse>
-
-  broadcastAll: (workspace: WorkspaceUuid, tx: Tx[], targets?: string[]) => void
-
-  close: (ctx: MeasureContext, ws: ConnectionSocket, workspaceId: WorkspaceUuid) => Promise<void>
-
-  forceClose: (wsId: WorkspaceUuid, ignoreSocket?: ConnectionSocket) => Promise<void>
-
-  closeWorkspaces: (ctx: MeasureContext) => Promise<void>
-
-  scheduleMaintenance: (timeMinutes: number) => void
-
-  profiling?: {
-    start: () => void
-    stop: () => Promise<string | undefined>
-  }
-
-  handleRequest: <S extends Session>(
-    requestCtx: MeasureContext,
-    service: S,
-    ws: ConnectionSocket,
-    request: Request<any>,
-    workspace: WorkspaceUuid
-  ) => Promise<void>
-
-  handleRPC: <S extends Session>(
-    requestCtx: MeasureContext,
-    service: S,
-    ws: ConnectionSocket,
-    operation: (ctx: ClientSessionCtx, rateLimit?: RateLimitInfo) => Promise<void>
-  ) => Promise<RateLimitInfo | undefined>
-
-  createOpContext: (
-    ctx: MeasureContext,
-    sendCtx: MeasureContext,
-    pipeline: Pipeline,
-    communicationApi: CommunicationApi,
-    requestId: Request<any>['id'],
-    service: Session,
-    ws: ConnectionSocket,
-    rateLimit?: RateLimitInfo
-  ) => ClientSessionCtx
-
-  getStatistics: () => WorkspaceStatistics[]
 }
 
 export const pingConst = 'ping'

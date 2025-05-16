@@ -16,10 +16,17 @@
 import clientPlugin from '@hcengineering/client'
 import type { ClientFactoryOptions } from '@hcengineering/client/src'
 import core, {
+  type Class,
   Client,
+  type ClientConnection,
+  type Doc,
   LoadModelResponse,
+  type ModelFilter,
   type PersonUuid,
+  type PluginConfiguration,
+  type Ref,
   Tx,
+  type TxCUD,
   TxHandler,
   TxPersistenceStore,
   TxWorkspaceEvent,
@@ -28,15 +35,8 @@ import core, {
   concatLink,
   createClient,
   fillConfiguration,
-  pluginFilterTx,
-  type Class,
-  type ClientConnection,
-  type Doc,
-  type ModelFilter,
-  type PluginConfiguration,
-  type Ref,
-  type TxCUD,
-  platformNow
+  platformNow,
+  pluginFilterTx
 } from '@hcengineering/core'
 import platform, { Severity, Status, getMetadata, getPlugins, setPlatformStatus } from '@hcengineering/platform'
 import { connect } from './connection'
@@ -103,12 +103,12 @@ export default async () => {
 
           const upgradeHandler: TxHandler = (...txes: Tx[]) => {
             for (const tx of txes) {
-              if (tx?._class === core.class.TxModelUpgrade) {
-                opt?.onUpgrade?.()
-                return
-              }
               if (tx?._class === core.class.TxWorkspaceEvent) {
                 const event = tx as TxWorkspaceEvent
+                if (event.event === WorkspaceEvent.ModelUpgrade) {
+                  // TODO: Add a workspace here
+                  opt?.onUpgrade?.(event)
+                }
                 if (event.event === WorkspaceEvent.MaintenanceNotification) {
                   void setPlatformStatus(
                     new Status(Severity.WARNING, platform.status.MaintenanceWarning, {

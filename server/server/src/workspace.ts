@@ -15,13 +15,9 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { type ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
-import { type Branding, type MeasureContext, type WorkspaceIds } from '@hcengineering/core'
-import type { ConnectionSocket, Pipeline, Session } from '@hcengineering/server-core'
-
-interface TickHandler {
-  ticks: number
-  operation: () => void
-}
+import { isMigrationMode, isRestoringMode, isWorkspaceCreating, systemAccountUuid, type Branding, type Data, type MeasureContext, type Version, type WorkspaceIds, type WorkspaceInfoWithStatus } from '@hcengineering/core'
+import type { ConnectionSocket, Pipeline } from '@hcengineering/server-core'
+import type { Session } from './types'
 
 export interface PipelinePair {
   pipeline: Pipeline
@@ -34,17 +30,17 @@ export type WorkspacePipelineFactory = () => Promise<PipelinePair>
  */
 export class Workspace {
   pipeline?: PipelinePair | Promise<PipelinePair>
-  upgrade: boolean = false
-  closing?: Promise<void>
-
-  workspaceInitCompleted: boolean = false
 
   softShutdown: number
 
   sessions = new Map<string, { session: Session, socket: ConnectionSocket, tickHash: number }>()
-  tickHandlers = new Map<string, TickHandler>()
 
   operations: number = 0
+
+  maintenance: boolean = false
+
+  lastTx: string | undefined // TODO: Do not cache for proxy case
+  lastHash: string | undefined // TODO: Do not cache for proxy case
 
   constructor (
     readonly context: MeasureContext,
@@ -59,6 +55,24 @@ export class Workspace {
     readonly branding: Branding | null
   ) {
     this.softShutdown = softShutdown
+  }
+
+  open (): void {
+    const pair = this.getPipelinePair()
+    if (pair instanceof Promise) {
+      void pair.then((it) => {
+        this.lastHash = it.pipeline.context.lastHash
+        this.lastTx = it.pipeline.context.lastTx
+      })
+    }
+  }
+
+  getLastTx (): string | undefined {
+    return this.lastTx
+  }
+
+  getLastHash (): string | undefined {
+    return this.lastHash
   }
 
   private getPipelinePair (): PipelinePair | Promise<PipelinePair> {
@@ -76,7 +90,10 @@ export class Workspace {
       this.pipeline = pair
     }
     try {
-      return await op(pair.pipeline, pair.communicationApi)
+      const result = await op(pair.pipeline, pair.communicationApi)
+      this.lastHash = pair.pipeline.context.lastHash
+      this.lastTx = pair.pipeline.context.lastTx
+      return result
     } finally {
       this.operations--
     }
@@ -115,8 +132,16 @@ export class Workspace {
       to.cancelHandle()
     })
   }
-}
 
+  checkHasUser (): boolean {
+    for (const val of this.sessions.values()) {
+      if (val.session.getUser() !== systemAccountUuid) {
+        return true
+      }
+    }
+    return false
+  }
+}
 function timeoutPromise (time: number): { promise: Promise<void>, cancelHandle: () => void } {
   let timer: any
   return {

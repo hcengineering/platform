@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Client, ClientConnectEvent, MeasureContext, TxPersistenceStore } from '@hcengineering/core'
+import type { Client, ClientConnectEvent, MeasureContext, TxPersistenceStore, TxWorkspaceEvent, WorkspaceUuid } from '@hcengineering/core'
 import { type Plugin, type Resource, type Metadata, plugin } from '@hcengineering/platform'
 
 /**
@@ -60,11 +60,11 @@ export interface ClientFactoryOptions {
   useProtocolCompression?: boolean
   connectionTimeout?: number
   onHello?: (serverVersion?: string) => boolean
-  onUpgrade?: () => void
+  onUpgrade?: (event?: TxWorkspaceEvent) => void
   onUnauthorized?: () => void
   onArchived?: () => void
   onMigration?: () => void
-  onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+  onConnect?: (event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>
   ctx?: MeasureContext
   onDialTimeout?: () => void | Promise<void>
 

@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 import { IntlString, Plugin } from '@hcengineering/platform'
-import { ClientConnectEvent, DocChunk } from '..'
-import type { Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
+import { ClientConnectEvent, DocChunk, type WorkspaceUuid } from '..'
+import type { Account, Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
 import { ClassifierKind, DOMAIN_MODEL, Space } from '../classes'
 import { ClientConnection, createClient } from '../client'
 import core from '../component'
@@ -104,19 +104,23 @@ describe('client', () => {
       }
 
       return new (class implements ClientConnection {
-        handler?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+        handler?: (event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>
 
         set onConnect (
-          handler: ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined
+          handler: ((event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>) | undefined
         ) {
           this.handler = handler
-          void this.handler?.(ClientConnectEvent.Connected, '', {})
+          void this.handler?.(ClientConnectEvent.Connected, {}, {})
         }
 
         get onConnect ():
-        | ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>)
+        | ((event: ClientConnectEvent, lastTx: Record<WorkspaceUuid, string | undefined> | undefined, data: any) => Promise<void>)
         | undefined {
           return this.handler
+        }
+
+        getAccount (): Promise<Account > {
+          throw new Error('Method not implemented.')
         }
 
         isConnected = (): boolean => true
