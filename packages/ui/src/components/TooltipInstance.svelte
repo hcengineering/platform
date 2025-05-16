@@ -66,7 +66,8 @@
     visibility: 'hidden',
     classList: ''
   }
-  const checkFS = (): boolean => (fullScreen && !document.fullscreen) || (!fullScreen && document.fullscreen)
+  const shouldHideTooltip = (): boolean =>
+    (fullScreen && document.fullscreenElement == null) || (!fullScreen && document.fullscreenElement != null)
 
   const clearStyles = (): void => {
     shown = false
@@ -251,7 +252,7 @@
   }
 
   const hideTooltip = (): void => {
-    if (checkFS()) return
+    if (shouldHideTooltip()) return
     if (tooltipHTML) options.visibility = 'hidden'
     shown = false
     closeTooltip()
@@ -260,7 +261,7 @@
   $: shownTooltip = $tooltip.element && tooltipHTML
 
   const whileShow = (ev: MouseEvent): void => {
-    if (!$tooltip.element || checkFS()) return
+    if (!$tooltip.element || shouldHideTooltip()) return
     const rectP = tooltipHTML.getBoundingClientRect()
     rect = $tooltip.element.getBoundingClientRect()
     const dT: number = dir === 'bottom' && $tooltip.kind !== 'submenu' ? 12 : 0
@@ -275,15 +276,15 @@
   }
 
   $: if (kind === 'submenu') {
-    if (!checkFS()) options = fitSubmenu()
+    if (!shouldHideTooltip()) options = fitSubmenu()
   } else {
-    if (!checkFS()) options = fitTooltip(tooltipHTML, clWidth)
+    if (!shouldHideTooltip()) options = fitTooltip(tooltipHTML, clWidth)
   }
   afterUpdate(() => {
     if (kind === 'submenu') {
-      if (!checkFS()) options = fitSubmenu()
+      if (!shouldHideTooltip()) options = fitSubmenu()
     } else {
-      if (!checkFS()) options = fitTooltip(tooltipHTML, clWidth)
+      if (!shouldHideTooltip()) options = fitTooltip(tooltipHTML, clWidth)
     }
   })
   onDestroy(() => {
