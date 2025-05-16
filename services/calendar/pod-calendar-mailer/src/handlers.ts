@@ -78,6 +78,9 @@ export async function eventUpdated (
   if (modifiedBy === event.user) {
     return 'Event modified by the user'
   }
+  if (!(await isMeeting(workspaceUuid, event))) {
+    return 'Event is not a meeting'
+  }
 
   const changes = message.changes as Partial<Data<Event>>
   if (changes.date === undefined) {

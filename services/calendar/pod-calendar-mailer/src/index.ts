@@ -60,7 +60,7 @@ async function main (): Promise<void> {
             action: record.action,
             eventId: record.event.eventId,
             objectId: record.event._id,
-            modiedBy: record.modifiedBy
+            modifiedBy: record.modifiedBy
           })
           try {
             let skipReason
