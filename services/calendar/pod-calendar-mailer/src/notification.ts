@@ -14,7 +14,7 @@
 //
 import calendar, { Event } from '@hcengineering/calendar'
 import contact from '@hcengineering/contact'
-import { AccountUuid, Doc, PersonId, Ref, Space, WorkspaceUuid } from '@hcengineering/core'
+import { AccountUuid, Doc, MeasureContext, PersonId, Ref, Space, WorkspaceUuid } from '@hcengineering/core'
 import notification from '@hcengineering/notification'
 import { IntlString } from '@hcengineering/platform'
 import { getClient } from './utils'
@@ -32,6 +32,7 @@ const notificationMessages: Record<MeetingNotificationType, IntlString> = {
 }
 
 export async function createNotification (
+  ctx: MeasureContext,
   workspaceUuid: WorkspaceUuid,
   type: MeetingNotificationType,
   forEvent: Event,
@@ -101,5 +102,12 @@ export async function createNotification (
     isViewed: false,
     archived: false,
     docNotifyContext: docNotifyContextId
+  })
+
+  ctx.info('Notification created', {
+    personUuid,
+    eventId: forEvent.eventId,
+    objectId: forEvent._id,
+    spaceId: space._id
   })
 }
