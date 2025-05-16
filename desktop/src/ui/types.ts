@@ -15,6 +15,7 @@ export interface Config {
   DESKTOP_UPDATES_CHANNEL?: string
   DESKTOP_UPDATES_URL?: string
   DISABLE_SIGNUP?: string
+  OPENID_DISPLAY_NAME?: string
   FILES_URL: string
   FRONT_URL: string
   GITHUB_APP: string

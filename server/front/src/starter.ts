@@ -119,6 +119,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   const disableSignUp = process.env.DISABLE_SIGNUP
 
+  const openIdDisplayName = process.env.OPENID_DISPLAY_NAME
+
   const mailUrl = process.env.MAIL_URL
 
   const config = {
@@ -140,6 +142,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     uploadConfig,
     pushPublicKey,
     disableSignUp,
+    openIdDisplayName,
     linkPreviewUrl,
     streamUrl,
     mailUrl

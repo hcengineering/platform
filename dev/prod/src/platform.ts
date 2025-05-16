@@ -175,6 +175,7 @@ export interface Config {
   TELEGRAM_BOT_URL?: string
   AI_URL?: string
   DISABLE_SIGNUP?: string
+  OPENID_DISPLAY_NAME?: string
   LINK_PREVIEW_URL?: string
   PASSWORD_STRICTNESS?: 'very_strict' | 'strict' | 'normal' | 'none'
   // Could be defined for dev environment
@@ -423,6 +424,7 @@ export async function configurePlatform() {
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
+  setMetadata(login.metadata.OpenIdDisplayName, config.OPENID_DISPLAY_NAME)
 
   setMetadata(login.metadata.PasswordValidations, PASSWORD_REQUIREMENTS[config.PASSWORD_STRICTNESS ?? 'none'])
 
