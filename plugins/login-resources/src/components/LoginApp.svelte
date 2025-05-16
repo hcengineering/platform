@@ -159,7 +159,7 @@
                 <LoginForm {navigateUrl} {signUpDisabled} {useOTP} />
               {/if}
             {:else if page === 'signup'}
-              <SignupForm {navigateUrl} {signUpDisabled} {useOTP} />
+              <SignupForm {navigateUrl} {signUpDisabled} {localLoginHidden} {useOTP} />
             {:else if page === 'createWorkspace'}
               <CreateWorkspaceForm />
             {:else if page === 'password'}
