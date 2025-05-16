@@ -14,18 +14,19 @@
 //
 import { randomUUID } from 'crypto'
 import attachment, { Attachment } from '@hcengineering/attachment'
-import { AttachedData, Blob, MeasureContext, Ref, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import { Blob, MeasureContext, Ref, TxOperations } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { type Attachment as AttachedFile } from '@hcengineering/mail-common'
 import { gmail_v1 } from 'googleapis'
-import { v4 as uuid } from 'uuid'
+import { WorkspaceLoginInfo } from '@hcengineering/account-client'
+
 import { encode64 } from '../base64'
 import { addFooter } from '../utils'
 
 export class AttachmentHandler {
   constructor (
     private readonly ctx: MeasureContext,
-    private readonly workspaceId: WorkspaceUuid,
+    private readonly wsInfo: WorkspaceLoginInfo,
     private readonly storageAdapter: StorageAdapter,
     private readonly gmail: gmail_v1.Resource$Users,
     private readonly client: TxOperations
@@ -36,22 +37,32 @@ export class AttachmentHandler {
       if (currentAttachemtns.findIndex((p) => p.name === file.name && p.lastModified === file.lastModified) !== -1) {
         return
       }
-      const id = uuid()
-      const data: AttachedData<Attachment> = {
-        name: file.name,
-        file: id as Ref<Blob>,
-        type: file.data.toString('base64') ?? 'undefined',
-        size: file.size ?? file.data.length,
-        lastModified: file.lastModified ?? Date.now()
-      }
-      await this.storageAdapter.put(this.ctx, this.workspaceId as any, id, file.data, data.type, data.size) // TODO: FIXME
+      const fileId = file.id ?? randomUUID()
+      await this.storageAdapter.put(
+        this.ctx,
+        {
+          uuid: this.wsInfo.workspace,
+          url: this.wsInfo.workspaceUrl,
+          dataId: this.wsInfo.workspaceDataId
+        },
+        fileId,
+        file.data,
+        file.contentType,
+        file.size
+      )
       await this.client.addCollection(
         attachment.class.Attachment,
         message.space,
         message._id,
         message._class,
         'attachments',
-        data
+        {
+          name: file.name,
+          file: fileId as Ref<Blob>,
+          type: file.data.toString('base64') ?? 'undefined',
+          size: file.size ?? file.data.length,
+          lastModified: file.lastModified ?? Date.now()
+        }
       )
     } catch (err: any) {
       this.ctx.error('Add attachment error', { error: err.message })
@@ -153,16 +164,33 @@ export class AttachmentHandler {
   }
 
   private async makeAttachmentPart (attachment: Attachment): Promise<string[]> {
-    const buffer = await this.storageAdapter.read(this.ctx, this.workspaceId as any, attachment.file) // TODO: FIXME
-    const data = Buffer.concat(buffer.map((b) => new Uint8Array(b))).toString('base64')
-    const res: string[] = []
-    res.push('--mail\n')
-    res.push(`Content-Type: ${attachment.type}\n`)
-    res.push('MIME-Version: 1.0\n')
-    res.push('Content-Transfer-Encoding: base64\n')
-    res.push(`Content-Disposition: attachment; filename="${attachment.name}"\n\n`)
-    res.push(data)
-    res.push('\n\n')
-    return res
+    try {
+      const buffer = await this.storageAdapter.read(
+        this.ctx,
+        {
+          uuid: this.wsInfo.workspace,
+          url: this.wsInfo.workspaceUrl,
+          dataId: this.wsInfo.workspaceDataId
+        },
+        attachment.file
+      )
+      const data = Buffer.concat(buffer.map((b) => new Uint8Array(b))).toString('base64')
+      const res: string[] = []
+      res.push('--mail\n')
+      res.push(`Content-Type: ${attachment.type}\n`)
+      res.push('MIME-Version: 1.0\n')
+      res.push('Content-Transfer-Encoding: base64\n')
+      res.push(`Content-Disposition: attachment; filename="${attachment.name}"\n\n`)
+      res.push(data)
+      res.push('\n\n')
+      return res
+    } catch (err: any) {
+      this.ctx.error('Failed to make attachment part', {
+        error: err.message,
+        file: attachment.file,
+        name: attachment.name
+      })
+      return []
+    }
   }
 }
