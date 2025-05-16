@@ -32,6 +32,7 @@ import {
   type PermissionsStore,
   type Person,
   type PersonsByPermission,
+  type MembersBySpace,
   type SocialIdentity
 } from '@hcengineering/contact'
 import core, {
@@ -732,7 +733,19 @@ export async function resolveLocationData (loc: Location): Promise<LocationData>
 }
 
 export function checkMyPermission (_id: Ref<Permission>, space: Ref<TypedSpace>, store: PermissionsStore): boolean {
+  const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
+  if (arePermissionsDisabled) return true
   return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
+}
+
+export function getPermittedPersons (
+  _id: Ref<Permission>,
+  space: Ref<TypedSpace>,
+  store: PermissionsStore
+): Array<Ref<Person>> {
+  const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
+  if (arePermissionsDisabled) return Array.from(store.ms[space] ?? [])
+  return store.whitelist.has(space) ? Array.from(store.ms[space] ?? []) : Array.from(store.ap[space]?.[_id] ?? [])
 }
 
 const spacesStore = writable<Space[]>([])
@@ -741,10 +754,12 @@ export const permissionsStore = derived([spacesStore, personRefByAccountUuidStor
   const whitelistedSpaces = new Set<Ref<Space>>()
   const permissionsBySpace: PermissionsBySpace = {}
   const employeesByPermission: PersonsByPermission = {}
+  const membersBySpace: MembersBySpace = {}
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   for (const s of spaces) {
+    membersBySpace[s._id] = new Set(s.members.map((m) => personRefByAccount.get(m)).filter(notEmpty))
     if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
       const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
       const mixin = type?.targetClass
@@ -790,6 +805,7 @@ export const permissionsStore = derived([spacesStore, personRefByAccountUuidStor
   return {
     ps: permissionsBySpace,
     ap: employeesByPermission,
+    ms: membersBySpace,
     whitelist: whitelistedSpaces
   }
 })
@@ -815,6 +831,7 @@ spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
       projection: {
         _id: 1,
         type: 1,
+        members: 1,
         ...targetClasses
       } as any
     }
