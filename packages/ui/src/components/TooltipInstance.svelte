@@ -327,7 +327,7 @@
   </svg>
 {/if}
 
-{#if (fullScreen && document.fullscreen) || (!fullScreen && !document.fullscreen)}
+{#if (fullScreen && document.fullscreenElement != null) || (!fullScreen && document.fullscreenElement == null)}
   {#if $tooltip.kind === 'popup'}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
