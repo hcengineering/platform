@@ -102,7 +102,7 @@ export async function eventDeleted (
   if (modifiedBy === event.user) {
     return 'Event modified by the user'
   }
-  if (!await isMeeting(workspaceUuid, event)) {
+  if (!(await isMeeting(workspaceUuid, event))) {
     return 'Event is not a meeting'
   }
 
@@ -124,7 +124,7 @@ export async function eventMixin (
   if (!recentlyCreatedEvents.has(event._id)) {
     return 'Event not found in recent events'
   }
-  if (!await isMeeting(workspaceUuid, event)) {
+  if (!(await isMeeting(workspaceUuid, event))) {
     return 'Event is not a meeting'
   }
 
