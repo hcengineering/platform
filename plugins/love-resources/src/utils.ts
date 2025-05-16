@@ -1194,7 +1194,7 @@ export async function updateSessionLanguage (room: Room): Promise<void> {
   }
 }
 
-export async function showRoomSettings (room?: Room): Promise<any> {
+export async function showRoomSettings (room?: Room): Promise<void> {
   if (room === undefined) return
 
   showPopup(RoomSettingsPopup, { room }, 'top')
