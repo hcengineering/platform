@@ -29,7 +29,8 @@ export const serverGmailId = 'server-gmail' as Plugin
  */
 export default plugin(serverGmailId, {
   trigger: {
-    OnMessageCreate: '' as Resource<TriggerFunc>
+    OnMessageCreate: '' as Resource<TriggerFunc>,
+    NotificationsHandler: '' as Resource<TriggerFunc>
   },
   function: {
     IsIncomingMessageTypeMatch: '' as TypeMatchFunc,
