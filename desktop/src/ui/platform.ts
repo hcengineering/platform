@@ -253,6 +253,7 @@ export async function configurePlatform (): Promise<void> {
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
+  setMetadata(login.metadata.OpenIdDisplayName, config.OPENID_DISPLAY_NAME)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
