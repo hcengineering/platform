@@ -5,7 +5,7 @@
     "Funnel": "Embudo",
     "FunnelName": "Nombre del Embudo",
     "Funnels": "Embudos",
-    "LeadApplication": "Clientes Potenciales",
+    "LeadApplication": "Clientes Potenciales (beta)",
     "LeadCreateLabel": "Cliente Potencial",
     "SelectFunnel": "Seleccionar Embudo",
     "LeadName": "Nombre del Cliente Potencial",
@@ -34,6 +34,8 @@
     "ConfigDescription": "Extensión para la gestión de las relaciones con los Clientes",
     "EditFunnel": "Editar Embudo",
     "FunnelMembers": "Miembros",
-    "RoleLabel": "Role: {role}"
+    "RoleLabel": "Role: {role}",
+    "ForbidCreateFunnelPermission": "Prohibir crear embudo",
+    "ForbidCreateFunnelPermissionDescription": "Prohíbe a los usuarios crear nuevos embudos"
   }
 }

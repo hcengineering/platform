@@ -9,7 +9,7 @@ import documents, {
   DocumentApprovalRequest,
   DocumentState,
   DocumentTemplate,
-  getEffectiveDocUpdate,
+  getEffectiveDocUpdates,
   type DocumentRequest,
   type DocumentTraining
 } from '@hcengineering/controlled-documents'
@@ -54,8 +54,9 @@ async function getDocs (
   return allDocs.filter(predicate)
 }
 
-function makeDocEffective (doc: ControlledDocument, txFactory: TxFactory): Tx {
-  return txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, getEffectiveDocUpdate())
+function makeDocEffective (doc: ControlledDocument, txFactory: TxFactory): Tx[] {
+  const updates = getEffectiveDocUpdates()
+  return updates.map((u) => txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, u))
 }
 
 function archiveDocs (docs: ControlledDocument[], txFactory: TxFactory): Tx[] {
@@ -64,8 +65,10 @@ function archiveDocs (docs: ControlledDocument[], txFactory: TxFactory): Tx[] {
   for (const doc of docs) {
     res.push(
       txFactory.createTxUpdateDoc<ControlledDocument>(doc._class, doc.space, doc._id, {
-        state: DocumentState.Archived,
-        controlledState: undefined
+        state: DocumentState.Archived
+      }),
+      txFactory.createTxUpdateDoc<ControlledDocument>(doc._class, doc.space, doc._id, {
+        $unset: { controlledState: true }
       })
     )
   }
@@ -77,14 +80,6 @@ function updateMeta (doc: ControlledDocument, txFactory: TxFactory): Tx[] {
   return [
     txFactory.createTxUpdateDoc(doc.attachedToClass, doc.space, doc.attachedTo, {
       title: `${doc.code} ${doc.title}`
-    })
-  ]
-}
-
-function updateAuthor (doc: ControlledDocument, txFactory: TxFactory): Tx[] {
-  return [
-    txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-      author: doc.owner
     })
   ]
 }
@@ -287,7 +282,6 @@ export async function OnDocHasBecomeEffective (
     const olderEffective = await getDocsOlderThanDoc(doc, control, [DocumentState.Effective])
 
     result.push(
-      ...updateAuthor(doc, control.txFactory),
       ...archiveDocs(olderEffective, control.txFactory),
       ...updateMeta(doc, control.txFactory),
       ...updateTemplate(doc, olderEffective, control),
@@ -297,22 +291,28 @@ export async function OnDocHasBecomeEffective (
   return result
 }
 
-export async function OnDocDeleted (txes: TxUpdateDoc<ControlledDocument>[], control: TriggerControl): Promise<Tx[]> {
+export async function OnDocEnteredNonActionableState (
+  txes: TxUpdateDoc<ControlledDocument>[],
+  control: TriggerControl
+): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
     const requests = await control.findAll(control.ctx, documents.class.DocumentRequest, {
-      attachedTo: tx.objectId,
-      status: RequestStatus.Active
+      attachedTo: tx.objectId
     })
-    const cancelTxes = requests.map((request) =>
-      control.txFactory.createTxUpdateDoc<DocumentRequest>(request._class, request.space, request._id, {
-        status: RequestStatus.Cancelled
+    const cancelTxes = requests
+      .filter((request) => {
+        return request.status === RequestStatus.Active || tx.operations.state === DocumentState.Deleted
       })
-    )
+      .map((request) =>
+        control.txFactory.createTxUpdateDoc<DocumentRequest>(request._class, request.space, request._id, {
+          status: RequestStatus.Cancelled
+        })
+      )
     await control.apply(control.ctx, [
       ...cancelTxes,
       control.txFactory.createTxUpdateDoc<ControlledDocument>(tx.objectClass, tx.objectSpace, tx.objectId, {
-        controlledState: undefined
+        $unset: { controlledState: true }
       })
     ])
   }
@@ -339,7 +339,7 @@ export async function OnDocPlannedEffectiveDateChanged (
     if (tx.operations.plannedEffectiveDate === 0 && doc.controlledState === ControlledDocumentState.Approved) {
       // Create with not derived tx factory in order for notifications to work
       const factory = new TxFactory(control.txFactory.account)
-      await control.apply(control.ctx, [makeDocEffective(doc, factory)])
+      await control.apply(control.ctx, makeDocEffective(doc, factory))
     }
   }
 
@@ -358,13 +358,13 @@ export async function OnDocApprovalRequestApproved (
         _id: tx.attachedTo as Ref<ControlledDocument>
       })
     )[0]
-    if (doc == null || doc.plannedEffectiveDate !== 0) {
+    if (doc == null || (typeof doc.plannedEffectiveDate === 'number' && doc.plannedEffectiveDate !== 0)) {
       continue
     }
 
     // Create with not derived tx factory in order for notifications to work
     const factory = new TxFactory(control.txFactory.account)
-    await control.apply(control.ctx, [makeDocEffective(doc, factory)])
+    await control.apply(control.ctx, makeDocEffective(doc, factory))
     // make doc effective immediately
   }
   return result
@@ -452,7 +452,7 @@ function CoAuthorsTypeMatch (
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnDocDeleted,
+    OnDocEnteredNonActionableState,
     OnDocPlannedEffectiveDateChanged,
     OnDocApprovalRequestApproved,
     OnDocHasBecomeEffective,

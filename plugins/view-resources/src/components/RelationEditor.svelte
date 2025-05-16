@@ -24,7 +24,7 @@
       ObjectBoxPopup,
       {
         _class,
-        docQuery: { _id: { $nin: docs.map((p) => p._id) } }
+        ignoreObjects: docs.map((p) => p._id)
       },
       'top',
       async (result) => {

@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
-import type { Attribute, Class, Doc, Mixin, Ref, Status } from '@hcengineering/core'
+import type { Attribute, Class, Doc, Mixin, Permission, Ref, Status } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { ProjectTypeDescriptor, TaskType } from '@hcengineering/task'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import type { Applicant, ApplicantMatch, Candidate, Opinion, Review, Vacancy, VacancyList } from './types'
+import { Action } from '@hcengineering/view'
 
 export * from './types'
 export * from './analytics'
@@ -45,6 +46,9 @@ const recruit = plugin(recruitId, {
   descriptors: {
     VacancyType: '' as Ref<ProjectTypeDescriptor>
   },
+  action: {
+    CreateTalent: '' as Ref<Action<Doc, any>>
+  },
   mixin: {
     Candidate: '' as Ref<Mixin<Candidate>>,
     VacancyList: '' as Ref<Mixin<VacancyList>>,
@@ -63,7 +67,9 @@ const recruit = plugin(recruitId, {
     Application: '' as IntlString,
     Vacancy: '' as IntlString,
     Review: '' as IntlString,
-    Talent: '' as IntlString
+    Talent: '' as IntlString,
+    ForbidCreateVacancyPermission: '' as IntlString,
+    ForbidCreateVacancyPermissionDescription: '' as IntlString
   },
   icon: {
     RecruitApplication: '' as Asset,
@@ -87,6 +93,9 @@ const recruit = plugin(recruitId, {
   },
   taskTypes: {
     Applicant: '' as Ref<TaskType>
+  },
+  permission: {
+    ForbidCreateVacancy: '' as Ref<Permission>
   }
 })
 

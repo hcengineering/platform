@@ -5,7 +5,7 @@
     "Funnel": "Trichter",
     "FunnelName": "Trichtername",
     "Funnels": "Trichter",
-    "LeadApplication": "Leads",
+    "LeadApplication": "Leads (Beta)",
     "LeadCreateLabel": "Lead",
     "SelectFunnel": "Trichter auswählen",
     "LeadName": "Lead-Name",
@@ -34,6 +34,8 @@
     "ConfigDescription": "Erweiterung für Customer Relationship Management",
     "EditFunnel": "Trichter bearbeiten",
     "FunnelMembers": "Mitglieder",
-    "RoleLabel": "Rolle: {role}"
+    "RoleLabel": "Rolle: {role}",
+    "ForbidCreateFunnelPermission": "Trichtererstellung verbieten",
+    "ForbidCreateFunnelPermissionDescription": "Verbietet Benutzern das Erstellen neuer Trichter"
   }
 }

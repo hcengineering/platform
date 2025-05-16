@@ -12,6 +12,7 @@ import core, {
   ClientWorkspaceInfo,
   DocumentUpdate,
   isActiveMode,
+  isArchivingMode,
   isDeletingMode,
   MeasureContext,
   RateLimiter,
@@ -166,14 +167,17 @@ export class PlatformWorker {
   triggerCheckWorkspaces = (): void => {}
 
   async doSyncWorkspaces (): Promise<void> {
+    let oldErrors = ''
+    let sameErrors = 1
+
     while (!this.canceled) {
-      let errors = false
+      let errors: string[] = []
       try {
         errors = await this.checkWorkspaces()
       } catch (err: any) {
         Analytics.handleError(err)
         this.ctx.error('check workspace', err)
-        errors = true
+        errors.push(err.message)
       }
       await new Promise<void>((resolve) => {
         this.triggerCheckWorkspaces = () => {
@@ -181,10 +185,19 @@ export class PlatformWorker {
           this.triggerCheckWorkspaces = () => {}
           resolve()
         }
-        if (errors) {
+        if (errors.length > 0) {
+          const timeout = 15000 * sameErrors
+          const ne = errors.join(',')
+          if (oldErrors === ne) {
+            if (sameErrors < 25) {
+              sameErrors++
+            }
+          } else {
+            oldErrors = ne
+          }
           setTimeout(() => {
             this.triggerCheckWorkspaces()
-          }, 5000)
+          }, timeout)
         }
       })
     }
@@ -713,6 +726,8 @@ export class PlatformWorker {
     return Array.from(workspaces)
   }
 
+  checkedWorkspaces = new Set<string>()
+
   async checkWorkspaceIsActive (
     token: string,
     workspace: string
@@ -729,23 +744,37 @@ export class PlatformWorker {
       return { workspaceInfo: undefined, needRecheck: false }
     }
     if (workspaceInfo?.disabled === true || isDeletingMode(workspaceInfo?.mode)) {
-      this.ctx.warn('Workspace is disabled', { workspace })
+      if (!this.checkedWorkspaces.has(workspace)) {
+        this.checkedWorkspaces.add(workspace)
+        this.ctx.warn('Workspace is disabled', { workspace })
+      }
       return { workspaceInfo: undefined, needRecheck: false }
     }
     if (!isActiveMode(workspaceInfo?.mode)) {
-      this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace, mode: workspaceInfo?.mode })
-      return { workspaceInfo: undefined, needRecheck: true }
+      const archived = isArchivingMode(workspaceInfo?.mode)
+      if (archived) {
+        if (!this.checkedWorkspaces.has(workspace)) {
+          this.checkedWorkspaces.add(workspace)
+          this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace, mode: workspaceInfo?.mode })
+        }
+      } else {
+        this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace, mode: workspaceInfo?.mode })
+      }
+      return { workspaceInfo: undefined, needRecheck: !archived }
     }
     const lastVisit = (Date.now() - workspaceInfo.lastVisit) / (3600 * 24 * 1000) // In days
 
     if (config.WorkspaceInactivityInterval > 0 && lastVisit > config.WorkspaceInactivityInterval) {
-      this.ctx.warn('Workspace is inactive for too long, skipping for now.', { workspace })
+      if (!this.checkedWorkspaces.has(workspace)) {
+        this.checkedWorkspaces.add(workspace)
+        this.ctx.warn('Workspace is inactive for too long, skipping for now.', { workspace })
+      }
       return { workspaceInfo: undefined, needRecheck: true }
     }
     return { workspaceInfo, needRecheck: true }
   }
 
-  private async checkWorkspaces (): Promise<boolean> {
+  private async checkWorkspaces (): Promise<string[]> {
     this.ctx.info('************************* Check workspaces ************************* ', {
       workspaces: this.clients.size
     })
@@ -756,7 +785,7 @@ export class PlatformWorker {
     const toDelete = new Set<string>(this.clients.keys())
 
     const rateLimiter = new RateLimiter(5)
-    let errors = 0
+    const rechecks: string[] = []
     let idx = 0
     const connecting = new Map<string, number>()
     const st = Date.now()
@@ -788,7 +817,7 @@ export class PlatformWorker {
         const { workspaceInfo, needRecheck } = await this.checkWorkspaceIsActive(token, workspace)
         if (workspaceInfo === undefined) {
           if (needRecheck) {
-            errors++
+            rechecks.push(workspace)
           }
           return
         }
@@ -864,13 +893,12 @@ export class PlatformWorker {
                 total: workspaces.length
               }
             )
-            errors++
+            rechecks.push(workspace)
           }
         } catch (e: any) {
           Analytics.handleError(e)
           this.ctx.info("Couldn't create WS worker", { workspace, error: e })
-          console.error(e)
-          errors++
+          rechecks.push(workspace)
         } finally {
           connecting.delete(workspaceInfo.workspace)
         }
@@ -884,7 +912,7 @@ export class PlatformWorker {
       await rateLimiter.waitProcessing()
     } catch (e: any) {
       Analytics.handleError(e)
-      errors++
+      this.ctx.error('Error', { err: e })
     }
     clearInterval(connectingInfo)
 
@@ -904,14 +932,16 @@ export class PlatformWorker {
           })
         } catch (err: any) {
           Analytics.handleError(err)
-          errors++
+          this.ctx.error('Error', { err })
         }
       }
     }
     this.ctx.info('************************* Check workspaces done ************************* ', {
-      workspaces: this.clients.size
+      workspaces: this.clients.size,
+      recheckCount: rechecks.length,
+      workspacesToCheck: rechecks
     })
-    return errors > 0
+    return rechecks
   }
 
   getWorkers (): GithubWorker[] {

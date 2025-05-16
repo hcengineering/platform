@@ -1,7 +1,7 @@
 {
   "string": {
     "Card": "Carta",
-    "CardApplication": "Carte",
+    "CardApplication": "Carte (beta)",
     "Cards": "Carte",
     "Content": "Contenuto",
     "CreateCard": "Crea Carta",
@@ -31,6 +31,8 @@
     "Document": "Documento",
     "ChangeType": "Cambia tipo",
     "ChangeTypeWarning": "Avviso: Cambiare il tipo di un'scheda rimuoverà tutti i dati per qualsiasi attributo che non esistono nel tipo di destinazione. I dati precedenti dell'attributo possono essere ripristinati modificando nuovamente il carta in un tipo precedente. Il contenuto della scheda non sarà influenzato.",
-    "CreateSpace": "Crea spazio"
+    "CreateSpace": "Crea spazio",
+    "NumberTypes": "{count, plural, one {# tipo} other {# tipi}}",
+    "ConfigDescription": "Estensione per la gestione della conoscenza in stile database."
   }
 }

@@ -67,6 +67,7 @@
     "WorkspaceSettings": "Configurações do espaço de trabalho",
     "Select": "Selecionar",
     "AddOwner": "Adicionar proprietário",
+    "Guest": "Convidado",
     "User": "Usuário",
     "Maintainer": "Mantenedor",
     "Owner": "Proprietário",
@@ -127,6 +128,7 @@
     "DisablePermissions": "Desativar controle de acesso baseado em funções",
     "EnablePermissions": "Ativar controle de acesso baseado em funções",
     "DisablePermissionsConfirmation": "Tem certeza de que deseja desativar o controle de acesso baseado em funções? Todos os papéis e permissões serão desativados.",
-    "EnablePermissionsConfirmation": "Tem certeza de que deseja ativar o controle de acesso baseado em funções? Todos os papéis e permissões serão ativados."
+    "EnablePermissionsConfirmation": "Tem certeza de que deseja ativar o controle de acesso baseado em funções? Todos os papéis e permissões serão ativados.",
+    "BetaWarning": "Modules labeled as beta are available for experimental purposes and may not be fully functional. We do not recommend relying on beta features for critical work at this time."
   }
 }

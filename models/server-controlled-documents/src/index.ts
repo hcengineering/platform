@@ -15,11 +15,11 @@ export { serverDocumentsId } from '@hcengineering/server-controlled-documents/sr
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverDocuments.trigger.OnDocDeleted,
+    trigger: serverDocuments.trigger.OnDocEnteredNonActionableState,
     txMatch: {
       _class: core.class.TxUpdateDoc,
       objectClass: documents.class.ControlledDocument,
-      'operations.state': DocumentState.Deleted
+      'operations.state': { $in: [DocumentState.Deleted, DocumentState.Obsolete, DocumentState.Archived] }
     }
   })
 

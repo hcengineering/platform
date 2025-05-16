@@ -48,6 +48,7 @@
   import { LoadingProps, buildConfigLookup, buildModel, restrictionStore } from '../utils'
   import IconUpDown from './icons/UpDown.svelte'
   import { getResultOptions, getResultQuery } from '../viewOptions'
+  import { canEditSpace } from '../visibilityTester'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -250,7 +251,7 @@
     }
   }
 
-  const joinProps = (attribute: AttributeModel, object: Doc, readonly: boolean) => {
+  const joinProps = (attribute: AttributeModel, object: Doc, readonly: boolean, editable: boolean) => {
     const readonlyParams =
       readonly || (attribute?.attribute?.readonly ?? false)
         ? {
@@ -258,7 +259,10 @@
             editable: false,
             disabled: true
           }
-        : {}
+        : {
+            readonly: !editable,
+            editable
+          }
     if (attribute.collectionAttr) {
       return { object, ...attribute.props, ...readonlyParams }
     }
@@ -439,26 +443,29 @@
                 {/if}
               </td>
             {/if}
-            {#if row < rowLimit}
-              {#each model as attribute, cell}
-                <td
-                  class:align-left={attribute.displayProps?.align === 'left'}
-                  class:align-center={attribute.displayProps?.align === 'center'}
-                  class:align-right={attribute.displayProps?.align === 'right'}
-                >
-                  <div class:antiTable-cells__firstCell={!cell}>
-                    <!-- {getOnChange(object, attribute) !== undefined} -->
-                    <svelte:component
-                      this={attribute.presenter}
-                      value={getValue(attribute, object)}
-                      onChange={getOnChange(object, attribute)}
-                      attribute={attribute.attribute}
-                      {...joinProps(attribute, object, readonly || $restrictionStore.readonly)}
-                    />
-                  </div>
-                </td>
-              {/each}
-            {/if}
+            {#await canEditSpace(object) then canEditObject}
+              {#if row < rowLimit}
+                {#each model as attribute, cell}
+                  <td
+                    class:align-left={attribute.displayProps?.align === 'left'}
+                    class:align-center={attribute.displayProps?.align === 'center'}
+                    class:align-right={attribute.displayProps?.align === 'right'}
+                  >
+                    <div class:antiTable-cells__firstCell={!cell}>
+                      <!-- {getOnChange(object, attribute) !== undefined} -->
+                      <svelte:component
+                        this={attribute.presenter}
+                        value={getValue(attribute, object)}
+                        onChange={getOnChange(object, attribute)}
+                        label={attribute.label}
+                        attribute={attribute.attribute}
+                        {...joinProps(attribute, object, readonly || $restrictionStore.readonly, canEditObject)}
+                      />
+                    </div>
+                  </td>
+                {/each}
+              {/if}
+            {/await}
           </tr>
         {/each}
       </tbody>

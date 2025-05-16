@@ -23,7 +23,7 @@ services:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
       - http.cors.enabled=true
-      - http.cors.allow-origin=http://localhost:8082      
+      - http.cors.allow-origin=http://localhost:8082
     healthcheck:
       interval: 20s
       retries: 10
@@ -46,12 +46,11 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://localhost:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
-      - MODEL_ENABLED=*
       - LAST_NAME_FIRST=true
       - ACCOUNTS_URL=http://localhost:3000
       - BRANDING_PATH=/var/cfg/branding.json
       - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
-      - INIT_WORKSPACE=onboarding      
+      - INIT_WORKSPACE=onboarding
     restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator
@@ -86,7 +85,7 @@ services:
       - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
       - 'MONGO_OPTIONS={"appName":"front","maxPoolSize":1}'
       - ACCOUNTS_URL=http://localhost:3000
-      - UPLOAD_URL=/files      
+      - UPLOAD_URL=/files
       - GMAIL_URL=http://localhost:8088
       - CALENDAR_URL=http://localhost:8095
       - TELEGRAM_URL=http://localhost:8086
@@ -100,7 +99,7 @@ services:
       - DESKTOP_UPDATES_URL=https://dist.huly.io
       - DESKTOP_UPDATES_CHANNEL=dev
       - BRANDING_URL=http://localhost:8087/branding.json
-    restart: unless-stopped    
+    restart: unless-stopped
   transactor:
     image: hardcoreeng/transactor
     links:
@@ -112,11 +111,11 @@ services:
     ports:
       - 3333:3333
     volumes:
-      - ../branding.json:/var/cfg/branding.json      
+      - ../branding.json:/var/cfg/branding.json
     environment:
       # - SERVER_PROVIDER=uweb
       # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
-      - UV_THREADPOOL_SIZE=10    
+      - UV_THREADPOOL_SIZE=10
       - SERVER_PORT=3333
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
@@ -133,7 +132,7 @@ services:
       - ACCOUNTS_URL=http://account:3000
       - LAST_NAME_FIRST=true
       - ELASTIC_INDEX_NAME=local_storage_index
-      - BRANDING_PATH=/var/cfg/branding.json      
+      - BRANDING_PATH=/var/cfg/branding.json
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
@@ -175,7 +174,7 @@ services:
       - ACCOUNTS_URL=http://account:3000
       - MINIO_SECRET_KEY=minioadmin
       - CERTIFICATE_PATH=/var/cfg/certificate.p12
-      - SERVICE_ID=sign-service      
+      - SERVICE_ID=sign-service
       - BRANDING_PATH=/var/cfg/branding.json
     deploy:
       resources:

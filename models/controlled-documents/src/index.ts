@@ -32,11 +32,12 @@ import tracker from '@hcengineering/model-tracker'
 import view, { classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
+import contacts from '@hcengineering/model-contact'
 import setting from '@hcengineering/setting'
 import tags from '@hcengineering/tags'
 import textEditor from '@hcengineering/text-editor'
 
-import { type Class, type Doc, type Ref } from '@hcengineering/core'
+import { AccountRole, type Class, type Doc, type Ref } from '@hcengineering/core'
 import { type Action } from '@hcengineering/view'
 import { definePermissions } from './permissions'
 import documents from './plugin'
@@ -196,6 +197,19 @@ export function createModel (builder: Builder): void {
             componentProps: {
               space: documents.space.QualityDocuments
             }
+          },
+          {
+            id: 'space-browser',
+            accessLevel: AccountRole.User,
+            label: documents.string.AllDocumentSpaces,
+            icon: view.icon.List,
+            component: workbench.component.SpecialView,
+            componentProps: {
+              _class: documents.class.DocumentSpace,
+              icon: view.icon.List,
+              label: documents.string.AllDocumentSpaces
+            },
+            position: 'bottom'
           }
         ],
         spaces: [
@@ -270,7 +284,7 @@ export function createModel (builder: Builder): void {
         },
         {
           key: '$lookup.owner',
-          label: documents.string.Owner,
+          label: documents.string.Author,
           presenter: documents.component.OwnerPresenter,
           props: { shouldShowLabel: true, isEditable: false },
           sortingKey: '$lookup.owner.name'
@@ -333,7 +347,7 @@ export function createModel (builder: Builder): void {
         },
         {
           key: '$lookup.owner',
-          label: documents.string.Owner,
+          label: documents.string.Author,
           presenter: documents.component.OwnerPresenter,
           props: { shouldShowLabel: true, isEditable: false },
           sortingKey: '$lookup.owner.name'
@@ -631,13 +645,23 @@ export function createModel (builder: Builder): void {
       'state',
       'space',
       'template',
-      'owner',
+      {
+        _class: documents.class.Document,
+        component: contacts.component.EmployeeFilter,
+        key: 'owner',
+        label: documents.string.Author
+      },
       'category',
       'modifiedOn',
       'labels',
       'major',
       'minor',
-      'author'
+      {
+        _class: documents.class.Document,
+        component: contacts.component.EmployeeFilter,
+        key: 'author',
+        label: documents.string.Creator
+      }
     ],
     getVisibleFilters: documents.function.GetVisibleFilters
   })
@@ -724,6 +748,34 @@ export function createModel (builder: Builder): void {
   builder.mixin(documents.class.OrgSpace, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Archive]
   })
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: documents.class.DocumentSpace,
+      descriptor: view.viewlet.Table,
+      configOptions: {
+        hiddenKeys: ['name', 'description']
+      },
+      config: ['', 'members', 'private', 'owners', 'archived'],
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [
+          {
+            key: 'hideArchived',
+            type: 'toggle',
+            defaultValue: true,
+            actionTarget: 'options',
+            action: view.function.HideArchived,
+            label: view.string.HideArchived
+          }
+        ]
+      }
+    },
+    documents.viewlet.DocumentSpaceTable
+  )
 
   builder.mixin(documents.class.Project, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: documents.component.ProjectPresenter

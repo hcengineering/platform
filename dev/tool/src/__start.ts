@@ -22,14 +22,15 @@ import { devTool } from '.'
 
 import { addLocation } from '@hcengineering/platform'
 import { serverActivityId } from '@hcengineering/server-activity'
+import { serverAiBotId } from '@hcengineering/server-ai-bot'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
-import { serverCardId } from '@hcengineering/server-card'
 import { serverCalendarId } from '@hcengineering/server-calendar'
+import { serverCardId } from '@hcengineering/server-card'
 import { serverChunterId } from '@hcengineering/server-chunter'
 import { serverCollaborationId } from '@hcengineering/server-collaboration'
 import { serverContactId } from '@hcengineering/server-contact'
-import { serverDriveId } from '@hcengineering/server-drive'
 import { serverDocumentId } from '@hcengineering/server-document'
+import { serverDriveId } from '@hcengineering/server-drive'
 import { serverGmailId } from '@hcengineering/server-gmail'
 import { serverGuestId } from '@hcengineering/server-guest'
 import { serverHrId } from '@hcengineering/server-hr'
@@ -45,7 +46,6 @@ import { serverTelegramId } from '@hcengineering/server-telegram'
 import { serverTimeId } from '@hcengineering/server-time'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
-import { serverAiBotId } from '@hcengineering/server-ai-bot'
 
 addLocation(serverActivityId, () => import('@hcengineering/server-activity-resources'))
 addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
@@ -79,10 +79,7 @@ function prepareTools (): {
   version: Data<Version>
   migrateOperations: [string, MigrateOperation][]
 } {
-  const enabled = (process.env.MODEL_ENABLED ?? '*').split(',').map((it) => it.trim())
-  const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.trim())
-
-  return { ...prepareToolsRaw(builder(enabled, disabled).getTxes()), version: getModelVersion(), migrateOperations }
+  return { ...prepareToolsRaw(builder().getTxes()), version: getModelVersion(), migrateOperations }
 }
 
 export function getMongoDBUrl (): string {

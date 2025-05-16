@@ -1,7 +1,7 @@
 {
   "string": {
     "Card": "Tarjeta",
-    "CardApplication": "Tarjetas",
+    "CardApplication": "Tarjetas (beta)",
     "Cards": "Tarjetas",
     "Content": "Contenido",
     "CreateCard": "Crear Tarjeta",
@@ -32,6 +32,7 @@
     "ChangeType": "Cambiar tipo",
     "ChangeTypeWarning": "Advertencia: Cambiar el tipo de una tarjeta eliminará todos los datos para cualquier atributo que no exista en el tipo de destino. Los datos previos del atributo pueden ser restaurados cambiando la tarjeta de nuevo a un tipo anterior. El contenido de la tarjeta no será afectado.",
     "CreateSpace": "Crear espacio",
-    "NumberTypes": "{count, plural, one {# tipo} other {# tipos}}"
+    "NumberTypes": "{count, plural, one {# tipo} other {# tipos}}",
+    "ConfigDescription": "Extensión para la gestión del conocimiento al estilo de una base de datos."
   }
 }

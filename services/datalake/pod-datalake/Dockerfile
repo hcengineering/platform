@@ -1,7 +1,5 @@
-FROM hardcoreeng/base:v20250113a
-WORKDIR /usr/src/app
-
-RUN npm install --ignore-scripts=false --verbose sharp@v0.32.6 --unsafe-perm
+FROM hardcoreeng/front-base:v20250310
+WORKDIR /app
 
 COPY bundle/bundle.js ./
 COPY bundle/bundle.js.map ./

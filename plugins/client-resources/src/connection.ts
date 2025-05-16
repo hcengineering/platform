@@ -315,7 +315,9 @@ class Connection implements ClientConnection {
         this.lastHash = (resp as HelloResponse).lastHash
 
         const serverVersion = helloResp.serverVersion
-        console.log('Connected to server:', serverVersion)
+        if (typeof window !== 'undefined') {
+          console.log('Connected to server:', serverVersion)
+        }
 
         if (this.opt?.onHello !== undefined && !this.opt.onHello(serverVersion)) {
           this.closed = true

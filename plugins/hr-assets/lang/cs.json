@@ -11,7 +11,7 @@
     "MemberCount": "{count, plural, =0 {žádní zaměstnanci} =1 {1 zaměstnanec} other {# zaměstnanců}}",
     "AssignLead": "Přiřadit vedoucího týmu",
     "TeamLeadTooltip": "{value}",
-    "HRApplication": "Lidské zdroje",
+    "HRApplication": "Lidské zdroje (beta)",
     "MoveStaff": "Přesun zaměstnance",
     "MoveStaffDescr": "Chcete přesunout zaměstnance z {current} do {department}?",
     "Departments": "Oddělení",

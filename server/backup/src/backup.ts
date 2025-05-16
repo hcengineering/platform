@@ -196,7 +196,7 @@ async function loadDigest (
       break
     }
   }
-  ctx.info('load-digest', { domain, snapshots: snapshots.length, documents: result.size })
+  // ctx.info('load-digest', { domain, snapshots: snapshots.length, documents: result.size })
   return result
 }
 async function verifyDigest (
@@ -1470,16 +1470,20 @@ async function rebuildSizeInfo (
 
   const addFileSize = async (file: string | undefined | null): Promise<void> => {
     if (file != null) {
-      const sz = sizeInfo[file]
-      const fileSize = sz ?? (await storage.stat(file))
-      if (sz === undefined) {
-        sizeInfo[file] = fileSize
-        processed++
-        if (processed % 10 === 0) {
-          ctx.info('Calculate size processed', { processed, size: Math.round(result.backupSize / (1024 * 1024)) })
+      try {
+        const sz = sizeInfo[file]
+        const fileSize = sz ?? (await storage.stat(file))
+        if (sz === undefined) {
+          sizeInfo[file] = fileSize
+          processed++
+          if (processed % 10 === 0) {
+            ctx.info('Calculate size processed', { processed, size: Math.round(result.backupSize / (1024 * 1024)) })
+          }
         }
+        result.backupSize += fileSize
+      } catch (err: any) {
+        ctx.error('failed to calculate size', { file, err })
       }
-      result.backupSize += fileSize
     }
   }
 
@@ -1551,9 +1555,13 @@ export async function backupSize (storage: BackupStorage): Promise<void> {
   console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
   const addFileSize = async (file: string | undefined | null): Promise<void> => {
     if (file != null && (await storage.exists(file))) {
-      const fileSize = await storage.stat(file)
-      console.log(file, fileSize)
-      size += fileSize
+      try {
+        const fileSize = await storage.stat(file)
+        console.log(file, fileSize)
+        size += fileSize
+      } catch (err: any) {
+        console.error('failed to calculate size', { file, err })
+      }
     }
   }
 
@@ -1606,20 +1614,24 @@ export async function backupDownload (storage: BackupStorage, storeIn: string): 
       const serverSize: number | undefined = sizeInfo[file]
 
       if (!existsSync(target) || force || (serverSize !== undefined && serverSize !== statSync(target).size)) {
-        const fileSize = serverSize ?? (await storage.stat(file))
-        console.log('downloading', file, fileSize)
-        const readStream = await storage.load(file)
-        const outp = createWriteStream(target)
+        try {
+          const fileSize = serverSize ?? (await storage.stat(file))
+          console.log('downloading', file, fileSize)
+          const readStream = await storage.load(file)
+          const outp = createWriteStream(target)
 
-        readStream.pipe(outp)
-        await new Promise<void>((resolve) => {
-          readStream.on('end', () => {
-            readStream.destroy()
-            outp.close()
-            resolve()
+          readStream.pipe(outp)
+          await new Promise<void>((resolve) => {
+            readStream.on('end', () => {
+              readStream.destroy()
+              outp.close()
+              resolve()
+            })
           })
-        })
-        size += fileSize
+          size += fileSize
+        } catch (err: any) {
+          console.error('failed to calculate size', { file, err })
+        }
       } else {
         console.log('file-same', file)
       }
@@ -1646,7 +1658,12 @@ export async function backupDownload (storage: BackupStorage, storeIn: string): 
 /**
  * @public
  */
-export async function backupFind (storage: BackupStorage, id: Ref<Doc>, domain?: string): Promise<void> {
+export async function backupFind (
+  storage: BackupStorage,
+  id: Ref<Doc>,
+  showAll: boolean,
+  domain?: string
+): Promise<void> {
   const infoFile = 'backup.json.gz'
 
   if (!(await storage.exists(infoFile))) {
@@ -1676,25 +1693,42 @@ export async function backupFind (storage: BackupStorage, id: Ref<Doc>, domain?:
       console.log('we found file')
       let found = false
       for (const sn of rnapshots) {
+        const ssDigest = await loadDigest(toolCtx, storage, [sn], dd)
+        if (!ssDigest.has(id)) {
+          continue
+        }
         const d = sn.domains[dd]
-        if (found) {
+        if (found && !showAll) {
           break
         }
         for (const sf of d?.storage ?? []) {
-          if (found) {
+          if (found && !showAll) {
             break
           }
           console.log('processing', sf)
           const readStream = await storage.load(sf)
           const ex = extract()
-
           ex.on('entry', (headers, stream, next) => {
             if (headers.name === id + '.json') {
               console.log('file found in:', sf)
+
+              const chunks: Buffer[] = []
+              stream.on('data', (chunk) => {
+                chunks.push(chunk)
+              })
+              stream.on('end', () => {
+                const bf = Buffer.concat(chunks as any)
+                console.log('>>>>>>>>>>>')
+                console.log(JSON.stringify(JSON.parse(bf.toString()), undefined, 2))
+                console.log('>>>>>>>>>>>')
+                next()
+              })
+
               found = true
+            } else {
+              stream.resume() // auto drain for non-matching entries
+              next() // continue to the next entry
             }
-            next()
-            stream.resume() // just auto drain the stream
           })
 
           const endPromise = new Promise((resolve) => {

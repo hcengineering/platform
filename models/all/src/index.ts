@@ -137,7 +137,7 @@ export type { MigrateOperation } from '@hcengineering/model'
  * @param disabled  - a set of disabled plugins
  * @returns
  */
-export default function buildModel (enabled: string[] = ['*'], disabled: string[] = []): Builder {
+export default function buildModel (): Builder {
   const builder = new Builder()
 
   const defaultFilter = [
@@ -217,7 +217,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: telegram.string.ConfigLabel,
         description: telegram.string.ConfigDescription,
         enabled: true,
-        beta: false,
+        beta: true,
         classFilter: defaultFilter
       }
     ],
@@ -240,7 +240,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: gmail.string.ConfigLabel,
         description: gmail.string.ConfigDescription,
         enabled: true,
-        beta: false,
+        beta: true,
         classFilter: defaultFilter
       }
     ],
@@ -270,7 +270,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: hr.string.ConfigLabel,
         description: hr.string.ConfigDescription,
         enabled: true,
-        beta: false,
+        beta: true,
         icon: hr.icon.Structure,
         classFilter: defaultFilter
       }
@@ -307,6 +307,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         description: board.string.ConfigDescription,
         enabled: false,
         beta: true,
+        hidden: true,
         icon: board.icon.Board,
         classFilter: defaultFilter
       }
@@ -319,6 +320,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         description: bitrix.string.ConfigDescription,
         enabled: false,
         beta: true,
+        hidden: true,
         icon: bitrix.icon.Bitrix,
         classFilter: defaultFilter
       }
@@ -346,7 +348,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         description: github.string.ConfigDescription,
         enabled: true,
         beta: false,
-        icon: github.icon.Github
+        icon: github.icon.Github,
+        classFilter: defaultFilter
       }
     ],
     [
@@ -356,7 +359,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: love.string.Office,
         description: love.string.LoveDescription,
         enabled: true,
-        beta: true,
+        beta: false,
         icon: love.icon.Love,
         classFilter: defaultFilter
       }
@@ -481,9 +484,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         pluginId: id,
         transactions: txes.map((it) => it._id),
         ...config,
-        enabled:
-          config?.label === undefined ||
-          ((config?.enabled ?? true) && (enabled.includes(id) || enabled.includes('*')) && !disabled.includes(id)),
+        enabled: config?.label === undefined || ((config?.enabled ?? true) && !(config.hidden ?? false)),
         beta: config?.beta ?? false
       },
       ('plugin-configuration-' + id) as Ref<PluginConfiguration>

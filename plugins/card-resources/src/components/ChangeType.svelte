@@ -93,6 +93,7 @@
         const _class = hierarchy.getClass(desc)
         if (_class.label === undefined) continue
         if (_class.kind !== ClassifierKind.CLASS) continue
+        if ((_class as MasterTag).removed === true) continue
         added.add(desc)
         toAdd.push(_class)
       }

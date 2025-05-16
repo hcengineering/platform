@@ -67,6 +67,7 @@
     "WorkspaceSettings": "Ajustes del espacio de trabajo",
     "Select": "Seleccionar",
     "AddOwner": "Añadir propietario",
+    "Guest": "Invitado",
     "User": "Usuario",
     "Maintainer": "Mantenedor",
     "Owner": "Propietario",
@@ -127,6 +128,7 @@
     "DisablePermissions": "Desactivar el control de acceso basado en roles",
     "EnablePermissions": "Activar el control de acceso basado en roles",
     "DisablePermissionsConfirmation": "¿Está seguro de que desea desactivar el control de acceso basado en roles? Todos los roles y permisos serán desactivados.",
-    "EnablePermissionsConfirmation": "¿Está seguro de que desea activar el control de acceso basado en roles? Todos los roles y permisos serán activados."
+    "EnablePermissionsConfirmation": "¿Está seguro de que desea activar el control de acceso basado en roles? Todos los roles y permisos serán activados.",
+    "BetaWarning": "Los módulos etiquetados como beta están disponibles con fines experimentales y pueden no ser completamente funcionales. No recomendamos confiar en las funciones beta para trabajos críticos en este momento."
   }
 }

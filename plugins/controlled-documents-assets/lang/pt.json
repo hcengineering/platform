@@ -22,11 +22,12 @@
     "Minor": "Secundária",
     "Patch": "Correção",
     "ValidationWorkflow": "Fluxo de validação",
-    "ChangeOwner": "Alterar responsável pelo documento",
-    "ChangeOwnerHintBeginning": "Transferir a propriedade do",
+    "Creator": "Criador",
+    "ChangeOwner": "Alterar autor do documento",
+    "ChangeOwnerHintBeginning": "Transferir autoria do documento",
     "ChangeOwnerHintEnd": "para outra pessoa.",
     "ChangeOwnerWarning": "Você não poderá mais editar este documento após essa ação.",
-    "SelectOwner": "Selecionar novo responsável",
+    "SelectOwner": "Selecionar novo autor",
     "CreateDocument": "Criar novo documento",
     "CreateTemplate": "Criar novo modelo",
     "Documents": "Documentos",
@@ -96,7 +97,8 @@
     "Title": "Título",
     "CreateFolder": "Criar nova pasta",
     "RenameFolder": "Renomear pasta",
-    "CreateChildFolder": "Criar subpasta"
+    "CreateChildFolder": "Criar subpasta",
+    "AllDocumentSpaces": "Todos os espaços de documentos"
   },
   "controlledDocStates": {
     "Empty": "",

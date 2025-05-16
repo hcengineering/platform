@@ -18,21 +18,21 @@ import { Association, Attribute, Blob as PlatformBlob, Doc, generateId, Ref } fr
 import { UnifiedDoc } from '../types'
 import { v4 as uuid } from 'uuid'
 
-export interface RelationMetadata {
+export interface AssociationMetadata {
   association: Ref<Association>
   field: 'docA' | 'docB'
   type: '1:1' | '1:N' | 'N:N'
 }
 export type MapAttributeToUnifiedDoc = Map<string, UnifiedDoc<Attribute<Tag>>>
-export type MapNameToRelation = Map<string, RelationMetadata>
+export type MapNameToAssociation = Map<string, AssociationMetadata>
 
 export interface TagMetadata {
   _id: string
   attributes: MapAttributeToUnifiedDoc
-  associations: MapNameToRelation
+  associations: MapNameToAssociation
 }
 
-export interface ReferenceMetadata {
+export interface MentionMetadata {
   id: Ref<Doc>
   class: string
   refTitle: string
@@ -41,9 +41,10 @@ export interface ReferenceMetadata {
 export class MetadataRegistry {
   private readonly pathToRef = new Map<string, Ref<Doc>>()
   private readonly refToPath = new Map<Ref<Doc>, string>()
+  private readonly refToEnumValues = new Map<Ref<Doc>, string[]>()
   private readonly pathToBlobUuid = new Map<string, Ref<PlatformBlob>>()
   private readonly pathToTagMetadata = new Map<string, TagMetadata>()
-  private readonly pathToRefMetadata = new Map<string, ReferenceMetadata>()
+  private readonly pathToMentionMetadata = new Map<string, MentionMetadata>()
 
   public getRef (path: string): Ref<Doc> {
     let ref = this.pathToRef.get(path)
@@ -68,11 +69,20 @@ export class MetadataRegistry {
     return blobUuid
   }
 
+  public getEnumValues (ref: Ref<Doc>): string[] {
+    return this.refToEnumValues.get(ref) ?? []
+  }
+
+  public setEnumValues (path: string, values: string[]): void {
+    const ref = this.getRef(path)
+    this.refToEnumValues.set(ref, values)
+  }
+
   public getAttributes (path: string): MapAttributeToUnifiedDoc {
     return this.pathToTagMetadata.get(path)?.attributes ?? new Map()
   }
 
-  public getAssociations (path: string): MapNameToRelation {
+  public getAssociations (path: string): MapNameToAssociation {
     return this.pathToTagMetadata.get(path)?.associations ?? new Map()
   }
 
@@ -86,7 +96,7 @@ export class MetadataRegistry {
     this.pathToTagMetadata.set(path, metadata)
   }
 
-  public addAssociation (tagPath: string, propName: string, relationMetadata: RelationMetadata): void {
+  public addAssociation (tagPath: string, propName: string, relationMetadata: AssociationMetadata): void {
     const metadata = this.pathToTagMetadata.get(tagPath) ?? {
       _id: this.getRef(tagPath),
       attributes: new Map(),
@@ -96,9 +106,9 @@ export class MetadataRegistry {
     this.pathToTagMetadata.set(tagPath, metadata)
   }
 
-  public setRefMetadata (path: string, _class: string, title: string): void {
-    const ref = this.getRef(path)
-    this.pathToRefMetadata.set(path, {
+  public setRefMetadata (path: string, _class: string, title: string, id?: Ref<Doc>): void {
+    const ref = id ?? this.getRef(path)
+    this.pathToMentionMetadata.set(path, {
       id: ref,
       class: _class,
       refTitle: title
@@ -106,12 +116,12 @@ export class MetadataRegistry {
   }
 
   public hasRefMetadata (path: string): boolean {
-    return this.pathToRefMetadata.has(path)
+    return this.pathToMentionMetadata.has(path)
   }
 
-  public getRefMetadata (path: string): ReferenceMetadata {
+  public getRefMetadata (path: string): MentionMetadata {
     return (
-      this.pathToRefMetadata.get(path) ?? {
+      this.pathToMentionMetadata.get(path) ?? {
         id: this.getRef(path),
         class: '',
         refTitle: ''

@@ -46,8 +46,7 @@ import {
   githubSyncVersion
 } from '../types'
 import { IssueExternalData, issueDetails } from './githubTypes'
-import { GithubIssueData, IssueSyncManagerBase, IssueSyncTarget, IssueUpdate, WithMarkup } from './issueBase'
-import { syncConfig } from './syncConfig'
+import { GithubIssueData, IssueSyncManagerBase, IssueUpdate, WithMarkup } from './issueBase'
 import { getSince, gqlp, guessStatus, isGHWriteAllowed, syncRunner } from './utils'
 
 export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncManager {
@@ -93,35 +92,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
     const projectV2Event = (event as ProjectsV2ItemEvent).projects_v2_item?.id !== undefined
     if (projectV2Event) {
-      const projectV2Event = event as ProjectsV2ItemEvent
-
-      const githubProjects = await this.provider.liveQuery.findAll(github.mixin.GithubProject, {
-        archived: false
-      })
-      let prj = githubProjects.find((it) => it.projectNodeId === projectV2Event.projects_v2_item.project_node_id)
-      if (prj === undefined) {
-        // Checking for milestones
-        const m = await this.provider.liveQuery.findOne(github.mixin.GithubMilestone, {
-          projectNodeId: projectV2Event.projects_v2_item.project_node_id
-        })
-        if (m !== undefined) {
-          prj = githubProjects.find((it) => it._id === m.space)
-        }
-      }
-
-      if (prj === undefined) {
-        this.ctx.info('Event from unknown v2 project', {
-          nodeId: projectV2Event.projects_v2_item.project_node_id,
-          workspace: this.provider.getWorkspaceId().name
-        })
-        return
-      }
-
-      const urlId = projectV2Event.projects_v2_item.node_id
-
-      await syncRunner.exec(urlId, async () => {
-        await this.processProjectV2Event(integration, projectV2Event, derivedClient, prj as GithubProject)
-      })
+      // Just ignore
     } else {
       const issueEvent = event as IssuesEvent
       const { project, repository } = await this.provider.getProjectAndRepository(issueEvent.repository.node_id)
@@ -336,15 +307,6 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
     let needCreateConnectedAtHuly = info.addHulyLink === true
 
-    if (
-      (container.project.projectNodeId === undefined ||
-        !container.container.projectStructure.has(container.project._id)) &&
-      syncConfig.MainProject
-    ) {
-      this.ctx.error('Not syncing no structure', { url: info.url })
-      return { needSync: '' }
-    }
-
     if (info.repository == null && existing !== undefined) {
       if (this.client.getHierarchy().hasMixin(existing, github.mixin.GithubIssue)) {
         const repositoryId = this.client.getHierarchy().as(existing, github.mixin.GithubIssue).repository
@@ -428,17 +390,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       return { needSync: githubSyncVersion }
     }
 
-    let target = await this.getMilestoneIssueTarget(
-      container.project,
-      container.container,
-      existing as Issue,
-      issueExternal
-    )
-    if (target === undefined) {
-      target = this.getProjectIssueTarget(container.project, issueExternal)
-    }
-
-    const syncResult = await this.syncToTarget(target, container, existing, issueExternal, derivedClient, info)
+    const syncResult = await this.syncToTarget(container, existing, issueExternal, derivedClient, info)
 
     if (externalWasCreated && existing !== undefined) {
       // Create child documents
@@ -466,13 +418,11 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
     return {
       ...syncResult,
-      issueExternal,
-      targetNodeId: target.target.projectNodeId
+      issueExternal
     }
   }
 
   async syncToTarget (
-    target: IssueSyncTarget,
     container: ContainerFocus,
     existing: Doc | undefined,
     issueExternal: IssueExternalData,
@@ -483,15 +433,6 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       existing?.modifiedBy ?? (await this.provider.getAccount(issueExternal.author))?._id ?? core.account.System
     const accountGH =
       info.lastGithubUser ?? (await this.provider.getAccount(issueExternal.author))?._id ?? core.account.System
-
-    const isProjectProjectTarget = target.target.projectNodeId === target.project.projectNodeId
-    const supportProjects =
-      (isProjectProjectTarget && syncConfig.MainProject) || (!isProjectProjectTarget && syncConfig.SupportMilestones)
-
-    // A target node id
-    const targetNodeId: string | undefined = info.targetNodeId as string
-
-    const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
 
     const type = await this.provider.getTaskTypeOf(container.project.type, tracker.class.Issue)
     const statuses = await this.provider.getStatuses(type?._id)
@@ -519,53 +460,6 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       return { needSync: githubSyncVersion }
     }
 
-    await this.fillProjectV2Fields(target, container, issueData, taskTypes[0])
-
-    if (
-      targetNodeId !== undefined &&
-      target.target.projectNodeId !== undefined &&
-      targetNodeId !== target.target.projectNodeId &&
-      supportProjects
-    ) {
-      const itemNode = issueExternal.projectItems.nodes.find((it) => it.project.id === targetNodeId)
-      if (itemNode !== undefined) {
-        await this.removeIssueFromProject(okit, targetNodeId, itemNode.id)
-        // remove data
-        issueExternal.projectItems.nodes = issueExternal.projectItems.nodes.filter((it) => it.id !== targetNodeId)
-        target.prjData = undefined
-        await derivedClient.update(info, {
-          external: issueExternal,
-          externalVersion: githubExternalSyncVersion
-        })
-        // We need to sync from platform as new to new project.
-        // We need to remove current sync
-        info.current = {}
-      }
-    }
-
-    if (target.prjData === undefined && okit !== undefined && syncConfig.IssuesInProject && supportProjects) {
-      try {
-        this.ctx.info('add issue to project v2', {
-          url: issueExternal.url,
-          workspace: this.provider.getWorkspaceId().name
-        })
-        target.prjData = await this.ctx.withLog('add issue to project v2', {}, () =>
-          this.addIssueToProject(container, okit, issueExternal, target.target.projectNodeId as string)
-        )
-        if (target.prjData !== undefined) {
-          issueExternal.projectItems.nodes.push(target.prjData)
-        }
-
-        await derivedClient.update(info, {
-          external: issueExternal,
-          externalVersion: githubExternalSyncVersion
-        })
-      } catch (err: any) {
-        Analytics.handleError(err)
-        this.ctx.error('Error add project v2', { err })
-        return { needSync: githubSyncVersion, error: JSON.stringify(err) }
-      }
-    }
     if (existing === undefined) {
       try {
         this.ctx.info('create platform issue', {
@@ -639,15 +533,13 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           {},
           async () =>
             await this.handleDiffUpdate(
-              target,
+              container,
               { ...(existing as any), description },
               info,
               issueData,
-              container,
               issueExternal,
               account,
-              accountGH,
-              supportProjects
+              accountGH
             ),
           { url: issueExternal.url }
         )
@@ -956,7 +848,6 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       repository: repo,
       descriptionLocked: isDescriptionLocked
     })
-    await this.client.createMixin<Issue, Issue>(issueId, github.mixin.GithubIssue, prj._id, prj.mixinClass, {})
 
     await this.addConnectToMessage(
       github.string.IssueConnectedActivityInfo,

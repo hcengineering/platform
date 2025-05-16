@@ -211,7 +211,7 @@ export async function createDocumentSnapshotAndEdit (client: TxOperations, docum
 
   await op.commit()
 
-  await client.update(document, { controlledState: undefined })
+  await client.update(document, { $unset: { controlledState: true } })
 
   const source = makeDocCollabId(document, 'content')
   const target = makeCollabId(documents.class.ControlledDocumentSnapshot, newSnapshotId, 'content')

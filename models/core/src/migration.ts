@@ -255,6 +255,41 @@ async function processMigrateContentFor (
   }
 }
 
+// async function migrateBackupMixins (client: MigrationClient): Promise<void> {
+//   // Go via classes with domain and check if mixin exists and need to flush %hash%
+//   const hierarchy = client.hierarchy
+//   const curHash = Date.now().toString(16) // Current hash value
+
+//   const txIterator = await client.traverse<TxMixin<Doc, AttachedDoc>>(DOMAIN_TX, { _class: core.class.TxMixin })
+
+//   while (true) {
+//     const mixinOps = await txIterator.next(500)
+//     if (mixinOps === null || mixinOps.length === 0) break
+//     const _classes = groupByArray(mixinOps, (it) => it.objectClass)
+
+//     for (const [_class, ops] of _classes.entries()) {
+//       const domain = hierarchy.findDomain(_class)
+//       if (domain === undefined) continue
+//       let docs = await client.find(domain, { _id: { $in: ops.map((it) => it.objectId) } })
+
+//       docs = docs.filter((it) => {
+//         // Check if mixin is last operation by modifiedOn
+//         const mops = ops.filter((mi) => mi.objectId === it._id)
+//         if (mops.length === 0) return false
+//         return mops.some((mi) => mi.modifiedOn === it.modifiedOn && mi.modifiedBy === it.modifiedBy)
+//       })
+
+//       if (docs.length > 0) {
+//         // Check if docs has mixins from list
+//         const toUpdate = docs.filter((it) => hierarchy.findAllMixins(it).length > 0)
+//         if (toUpdate.length > 0) {
+//           await client.update(domain, { _id: { $in: toUpdate.map((it) => it._id) } }, { '%hash%': curHash })
+//         }
+//       }
+//     }
+//   }
+// }
+
 async function migrateCollaborativeDocsToJson (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('migrateCollaborativeDocsToJson', {})
   const storageAdapter = client.storageAdapter

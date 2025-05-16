@@ -275,8 +275,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Setting,
       component: setting.component.Configure,
       order: 1200,
-      role: AccountRole.Owner,
-      adminOnly: true
+      role: AccountRole.Owner
     },
     setting.ids.Configure
   )

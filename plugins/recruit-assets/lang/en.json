@@ -122,7 +122,9 @@
     "HideArchivedVacancies": "Hide archived Vacancies",
     "HideApplicantsFromArchivedVacancies": "Hide from archived Vacancies",
     "CreateNewSkills": "Create new skills if existing not found",
-    "SwapFirstAndLastNames": "Swap first and last names"
+    "SwapFirstAndLastNames": "Swap first and last names",
+    "ForbidCreateVacancyPermission": "Forbid create vacancy",
+    "ForbidCreateVacancyPermissionDescription": "Forbid users creating new vacancies"
   },
   "status": {
     "ApplicationExists": "Application already exists",

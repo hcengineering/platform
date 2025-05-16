@@ -5,7 +5,7 @@
     "Funnel": "Trychtýř",
     "FunnelName": "Název trychtýře",
     "Funnels": "Trychtýře",
-    "LeadApplication": "Leady",
+    "LeadApplication": "Leady (beta)",
     "LeadCreateLabel": "Lead",
     "SelectFunnel": "Vyberte trychtýř",
     "LeadName": "Název leadu",
@@ -34,6 +34,8 @@
     "ConfigDescription": "Rozšíření pro řízení vztahů se zákazníky",
     "EditFunnel": "Upravit trychtýř",
     "FunnelMembers": "Členové",
-    "RoleLabel": "Role: {role}"
+    "RoleLabel": "Role: {role}",
+    "ForbidCreateFunnelPermission": "Zakázat vytvoření trychtýře",
+    "ForbidCreateFunnelPermissionDescription": "Zakazuje uživatelům vytvářet nové trychtýře"
   }
 }

@@ -10,7 +10,8 @@ export class IssuesPage extends CommonTrackerPage {
   modelSelectorAll = (): Locator => this.page.locator('label[data-id="tab-all"]')
   issues = (): Locator => this.page.locator('.antiPanel-navigator').locator('text="Issues"')
   subIssues = (): Locator => this.page.locator('button:has-text("Add sub-issue")')
-  newIssue = (): Locator => this.page.locator('#new-issue')
+  newIssue = (): Locator => this.page.locator('#tracker-string-NewIssue')
+  resumeDraft = (): Locator => this.page.locator('#tracker-string-ResumeDraft')
   modelSelectorActive = (): Locator => this.page.locator('label[data-id="tab-active"]')
   modelSelectorBacklog = (): Locator => this.page.locator('label[data-id="tab-backlog"]')
   buttonCreateNewIssue = (): Locator => this.page.locator('button > div', { hasText: 'New issue' })
@@ -156,7 +157,7 @@ export class IssuesPage extends CommonTrackerPage {
 
   estimationSpan = (): Locator => this.page.locator('.estimation-container >> span').first()
   okButton = (): Locator => this.page.getByRole('button', { name: 'Ok', exact: true })
-  newIssueButton = (): Locator => this.page.locator('#new-issue')
+  newIssueButton = (): Locator => this.page.locator('#tracker-string-NewIssue')
   issueNameInput = (): Locator => this.page.locator('#issue-name >> input')
   issueDescriptionInput = (): Locator => this.page.locator('#issue-description >> [contenteditable]')
   statusEditor = (): Locator => this.page.locator('#status-editor')
@@ -230,6 +231,10 @@ export class IssuesPage extends CommonTrackerPage {
 
   async clickOnNewIssue (): Promise<void> {
     await this.newIssue().click()
+  }
+
+  async clickOnResumeDraft (): Promise<void> {
+    await this.resumeDraft().click()
   }
 
   async navigateToMyIssues (): Promise<void> {

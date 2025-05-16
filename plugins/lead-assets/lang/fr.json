@@ -5,7 +5,7 @@
     "Funnel": "Pipeline",
     "FunnelName": "Nom du pipeline",
     "Funnels": "Pipelines",
-    "LeadApplication": "Prospects",
+    "LeadApplication": "Prospects (bêta)",
     "LeadCreateLabel": "Prospect",
     "SelectFunnel": "Sélectionner un pipeline",
     "LeadName": "Nom du prospect",
@@ -34,6 +34,8 @@
     "ConfigDescription": "Extension pour la gestion de la relation client",
     "EditFunnel": "Modifier le pipeline",
     "FunnelMembers": "Membres",
-    "RoleLabel": "Rôle : {role}"
+    "RoleLabel": "Rôle : {role}",
+    "ForbidCreateFunnelPermission": "Interdire la création de pipeline",
+    "ForbidCreateFunnelPermissionDescription": "Interdit aux utilisateurs de créer de nouveaux pipelines"
   }
 }

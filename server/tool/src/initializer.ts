@@ -35,6 +35,7 @@ export type InitStep<T extends Doc> =
   | DefaultStep<T>
   | MixinStep<T, T>
   | UpdateStep<T>
+  | BulkUpdateStep<T>
   | FindStep<T>
   | UploadStep
   | ImportStep
@@ -65,6 +66,15 @@ export interface MixinStep<T extends Doc, M extends T> {
 export interface UpdateStep<T extends Doc> {
   type: 'update'
   _class: Ref<Class<T>>
+  markdownFields?: string[]
+  collabFields?: string[]
+  data: Props<T>
+}
+
+export interface BulkUpdateStep<T extends Doc> {
+  type: 'bulkUpdate'
+  _class: Ref<Class<T>>
+  query: Partial<T>
   markdownFields?: string[]
   collabFields?: string[]
   data: Props<T>
@@ -120,6 +130,8 @@ export class WorkspaceInitializer {
           await this.processCreate(step, vars, defaults)
         } else if (step.type === 'update') {
           await this.processUpdate(step, vars)
+        } else if (step.type === 'bulkUpdate') {
+          await this.processBulkUpdate(step, vars)
         } else if (step.type === 'mixin') {
           await this.processMixin(step, vars)
         } else if (step.type === 'find') {
@@ -203,12 +215,22 @@ export class WorkspaceInitializer {
     await this.client.updateDoc(step._class, space, _id as Ref<Doc>, props)
   }
 
+  private async processBulkUpdate<T extends Doc>(step: BulkUpdateStep<T>, vars: Record<string, any>): Promise<void> {
+    const ops = this.client.apply()
+    const docs = await this.client.findAll(step._class, { ...(step.query as any) })
+    const data = await this.fillPropsWithMarkdown(step.data, vars, step.markdownFields)
+    for (const doc of docs) {
+      await ops.updateDoc(step._class, doc.space, doc._id, data)
+    }
+    await ops.commit()
+  }
+
   private async processCreate<T extends Doc>(
     step: CreateStep<T>,
     vars: Record<string, any>,
     defaults: Map<Ref<Class<T>>, Props<T>>
   ): Promise<void> {
-    const _id = generateId<T>()
+    const _id = step.data._id ?? generateId<T>()
     if (step.resultVariable !== undefined) {
       vars[`\${${step.resultVariable}}`] = _id
     }
@@ -227,7 +249,7 @@ export class WorkspaceInitializer {
       }
     }
 
-    await this.create(step._class, data, _id)
+    await this.create(step._class, data, _id as Ref<T>)
   }
 
   private parseMarkdown (text: string): string {

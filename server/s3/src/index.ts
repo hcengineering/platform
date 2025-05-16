@@ -69,8 +69,9 @@ export class S3Service implements StorageAdapter {
   expireTime: number
   client: S3
   constructor (readonly opt: S3Config) {
+    const endpoint = Number.isInteger(opt.port) ? `${opt.endpoint}:${opt.port}` : opt.endpoint
     this.client = new S3({
-      endpoint: opt.endpoint,
+      endpoint,
       credentials: {
         accessKeyId: opt.accessKey,
         secretAccessKey: opt.secretKey
@@ -310,6 +311,7 @@ export class S3Service implements StorageAdapter {
     } catch (err: any) {
       if (err?.$metadata?.httpStatusCode !== 404) {
         ctx.warn('no object found', { error: err, objectName, workspaceId: workspaceId.name })
+        throw err
       }
     }
   }

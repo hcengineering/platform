@@ -18,7 +18,7 @@ export const serverDocumentsId = 'server-documents' as Plugin
  */
 export default plugin(serverDocumentsId, {
   trigger: {
-    OnDocDeleted: '' as Resource<TriggerFunc>,
+    OnDocEnteredNonActionableState: '' as Resource<TriggerFunc>,
     OnDocPlannedEffectiveDateChanged: '' as Resource<TriggerFunc>,
     OnDocApprovalRequestApproved: '' as Resource<TriggerFunc>,
     OnDocHasBecomeEffective: '' as Resource<TriggerFunc>,

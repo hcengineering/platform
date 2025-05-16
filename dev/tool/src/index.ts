@@ -55,6 +55,7 @@ import serverClientPlugin, {
   BlobClient,
   createClient,
   getTransactorEndpoint,
+  getWorkspaceInfo,
   listAccountWorkspaces,
   updateBackupInfo
 } from '@hcengineering/server-client'
@@ -86,11 +87,13 @@ import core, {
   generateId,
   getWorkspaceId,
   isActiveMode,
+  type LowLevelStorage,
   MeasureMetricsContext,
   metricsToString,
   RateLimiter,
   systemAccountEmail,
   versionToString,
+  type ClientWorkspaceInfo,
   type Data,
   type Doc,
   type Ref,
@@ -119,7 +122,12 @@ import {
   shutdownPostgres
 } from '@hcengineering/postgres'
 import { CONFIG_KIND as S3_CONFIG_KIND, S3Service, type S3Config } from '@hcengineering/s3'
-import type { PipelineFactory, StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
+import {
+  createDummyStorageAdapter,
+  type PipelineFactory,
+  type StorageAdapter,
+  type StorageAdapterEx
+} from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
 import { getAccountDBUrl, getMongoDBUrl } from './__start'
@@ -146,6 +154,7 @@ import {
 } from './clean'
 import { changeConfiguration } from './configuration'
 import {
+  checkFromMongoToPG,
   generateUuidMissingWorkspaces,
   moveAccountDbFromMongoToPG,
   moveFromMongoToPG,
@@ -153,9 +162,10 @@ import {
   updateDataWorkspaceIdToUuid
 } from './db'
 import { reindexWorkspace } from './fulltext'
-import { restoreControlledDocContentMongo, restoreMarkupRefsMongo, restoreWikiContentMongo } from './markup'
+import { restoreControlledDocContentMongo, restoreMarkupRefs, restoreWikiContentMongo } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { copyToDatalake, moveFiles, showLostFiles } from './storage'
+import { SimpleFileLogger } from './logger'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -229,7 +239,7 @@ export function devTool (
     const uri = dbOverride ?? getAccountDBUrl()
     console.log(`connecting to database '${uri}'...`)
 
-    const [accountDb, closeAccountsDb] = await getAccountDB(uri)
+    const [accountDb, closeAccountsDb] = await getAccountDB(uri, process.env.DB_NS)
     try {
       await f(accountDb)
     } catch (err: any) {
@@ -1056,9 +1066,11 @@ export function devTool (
     .command('backup-find <dirName> <fileId>')
     .description('dump workspace transactions and minio resources')
     .option('-d, --domain <domain>', 'Check only domain')
-    .action(async (dirName: string, fileId: string, cmd: { domain: string | undefined }) => {
+    .option('-a, --all', 'Show all versions', false)
+    .action(async (dirName: string, fileId: string, cmd: { domain: string | undefined, all: boolean }) => {
       const storage = await createFileBackupStorage(dirName)
-      await backupFind(storage, fileId as unknown as Ref<Doc>, cmd.domain)
+      console.log(cmd.all)
+      await backupFind(storage, fileId as unknown as Ref<Doc>, cmd.all, cmd.domain)
     })
 
   program
@@ -1532,56 +1544,82 @@ export function devTool (
     })
 
   program
-    .command('restore-markup-ref-mongo')
+    .command('restore-markup-ref')
     .description('restore markup document content refs')
-    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
-    .option('-f, --force', 'Force update', false)
-    .action(async (cmd: { workspace: string, force: boolean }) => {
-      const { txes, version } = prepareTools()
-
+    .option('-w, --workspace <workspace>', 'Selected "workspaces" only, comma separated', '')
+    .option('-m, --migrated', 'Migrated only', false)
+    .option('-d, --dryrun', 'Dry run', false)
+    .option('-f, --force', 'Force update (skip version check)', false)
+    .action(async (cmd: { workspace: string, migrated: boolean, dryrun: boolean, force: boolean }) => {
+      let workspaces: Workspace[] = []
+      const targetWorkspaces = cmd.workspace.split(',')
+      const { txes, version, dbUrl } = prepareTools()
       const { hierarchy } = await buildModel(toolCtx, txes)
 
-      let workspaces: Workspace[] = []
       await withAccountDatabase(async (db) => {
         workspaces = await listWorkspacesPure(db)
         workspaces = workspaces
           .filter((p) => isActiveMode(p.mode))
-          .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+          .filter((p) => cmd.workspace === '' || targetWorkspaces.includes(p.workspace))
+          .filter((p) => !cmd.migrated || (p.region === 'europe' && p.targetRegion === 'europe'))
           .sort((a, b) => b.lastVisit - a.lastVisit)
       })
 
-      console.log('found workspaces', workspaces.length)
+      toolCtx.info('found workspaces', { count: workspaces.length })
 
       await withStorage(async (storageAdapter) => {
-        const mongodbUri = getMongoDBUrl()
-        const client = getMongoClient(mongodbUri)
-        const _client = await client.getClient()
+        const count = workspaces.length
+        let index = 0
+        for (const workspace of workspaces) {
+          index++
 
-        try {
-          const count = workspaces.length
-          let index = 0
-          for (const workspace of workspaces) {
-            index++
+          const ctx = new MeasureMetricsContext(
+            workspace.workspace,
+            {},
+            {},
+            undefined,
+            new SimpleFileLogger(workspace.workspace)
+          )
 
-            toolCtx.info('processing workspace', {
-              workspace: workspace.workspace,
-              version: workspace.version,
-              index,
-              count
-            })
+          ctx.info('processing workspace', {
+            workspace: workspace.workspace,
+            version: workspace.version,
+            index,
+            count
+          })
 
-            if (!cmd.force && (workspace.version === undefined || !deepEqual(workspace.version, version))) {
-              console.log(`upgrade to ${versionToString(version)} is required`)
-              continue
-            }
-
-            const workspaceId = getWorkspaceId(workspace.workspace)
-            const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
-
-            await restoreMarkupRefsMongo(toolCtx, wsDb, workspaceId, hierarchy, storageAdapter)
+          if (!cmd.force && (workspace.version === undefined || !deepEqual(workspace.version, version))) {
+            console.log(`Upgrade to ${versionToString(version)} is required or run with --force flag`)
+            continue
           }
-        } finally {
-          client.close()
+
+          const workspaceId = getWorkspaceId(workspace.workspace)
+          const backupPipeline = createBackupPipeline(ctx, dbUrl, txes, {
+            externalStorage: createDummyStorageAdapter()
+          })
+
+          const pipeline = await backupPipeline(
+            ctx,
+            {
+              name: workspace.workspace,
+              workspaceName: workspace.workspaceName ?? '',
+              workspaceUrl: '',
+              uuid: workspace.uuid ?? ''
+            },
+            false,
+            () => {},
+            null
+          )
+
+          try {
+            const lowLevel = pipeline.context.lowLevelStorage as LowLevelStorage
+
+            await restoreMarkupRefs(ctx, lowLevel, workspaceId, hierarchy, storageAdapter, cmd.dryrun)
+          } catch (err: any) {
+            ctx.error('failed to restore markup refs', { err })
+          } finally {
+            await pipeline.close()
+          }
         }
       })
     })
@@ -2104,7 +2142,8 @@ export function devTool (
   program
     .command('fulltext-reindex-all')
     .description('reindex workspaces')
-    .action(async () => {
+    .option('--region <region>', 'region to reindex')
+    .action(async (cmd: { region?: string }) => {
       const fulltextUrl = process.env.FULLTEXT_URL
       if (fulltextUrl === undefined) {
         console.error('please provide FULLTEXT_URL')
@@ -2112,16 +2151,19 @@ export function devTool (
       }
 
       await withAccountDatabase(async (db) => {
-        const workspaces = await listWorkspacesRaw(db)
+        const workspaces = (await listWorkspacesRaw(db, cmd.region)).filter(
+          (it) => isActiveMode(it.mode) && it.version?.patch === getModelVersion().patch
+        )
         workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+        console.log('workspacess to process', workspaces.length)
         for (const workspace of workspaces) {
           const wsid = getWorkspaceId(workspace.workspace)
           const token = generateToken(systemAccountEmail, wsid)
 
-          console.log('reindex workspace', workspace)
+          console.log('reindex workspace', workspace.workspaceUrl)
           await reindexWorkspace(toolCtx, fulltextUrl, token)
-          console.log('done', workspace)
         }
+        console.log('end-reindex')
       })
     })
 
@@ -2150,6 +2192,17 @@ export function devTool (
         region
       )
     })
+  })
+
+  program.command('check-move-mongo-to-pg <workspace>').action(async (workspaceId: string) => {
+    const { dbUrl, txes } = prepareTools()
+    const mongodbUri = getMongoDBUrl()
+    const sysToken = generateToken(systemAccountEmail, getWorkspaceId(workspaceId))
+    const info = await getWorkspaceInfo(sysToken, false)
+    if (info == null) {
+      return
+    }
+    await checkFromMongoToPG(mongodbUri, dbUrl, txes, info as ClientWorkspaceInfo)
   })
 
   program

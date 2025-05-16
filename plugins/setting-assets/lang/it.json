@@ -67,6 +67,7 @@
     "WorkspaceSettings": "Impostazioni spazio di lavoro",
     "Select": "Seleziona",
     "AddOwner": "Aggiungi proprietario",
+    "Guest": "Ospite",
     "User": "Utente",
     "Maintainer": "Manutentore",
     "Owner": "Proprietario",
@@ -136,6 +137,7 @@
     "DisablePermissions": "Disabilita il controllo degli accessi basato sui ruoli",
     "EnablePermissions": "Abilita il controllo degli accessi basato sui ruoli",
     "DisablePermissionsConfirmation": "Sei sicuro di voler disabilitare il controllo degli accessi basato sui ruoli? Tutti i ruoli e le autorizzazioni verranno disabilitati.",
-    "EnablePermissionsConfirmation": "Sei sicuro di voler abilitare il controllo degli accessi basato sui ruoli? Tutti i ruoli e le autorizzazioni verranno abilitati."
+    "EnablePermissionsConfirmation": "Sei sicuro di voler abilitare il controllo degli accessi basato sui ruoli? Tutti i ruoli e le autorizzazioni verranno abilitati.",
+    "BetaWarning": "I moduli contrassegnati come beta sono disponibili per scopi sperimentali e potrebbero non funzionare completamente. Non ti consigliamo di fare affidamento sulle funzionalità beta per il lavoro critico in questo momento."
   }
 }

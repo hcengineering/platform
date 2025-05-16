@@ -32,6 +32,7 @@ import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { createActions as defineActions } from './actions'
 import tracker from './plugin'
 import { definePresenters } from './presenters'
+import { definePermissions } from './permissions'
 import {
   DOMAIN_TRACKER,
   TClassicProjectTypeData,
@@ -708,6 +709,7 @@ export function createModel (builder: Builder): void {
     ]
   })
 
+  definePermissions(builder)
   defineSpaceType(builder)
 }
 

@@ -143,7 +143,7 @@
         <StatePresenter value={$controlledDocument} showTag={false} />
       </DocumentInfo>
 
-      <DocumentInfo label={documentsRes.string.Owner}>
+      <DocumentInfo label={documentsRes.string.Author}>
         <OwnerPresenter
           _id={$controlledDocument.owner}
           object={$controlledDocument}
@@ -153,7 +153,7 @@
         />
       </DocumentInfo>
 
-      <DocumentInfo label={documentsRes.string.Author}>
+      <DocumentInfo label={documentsRes.string.Creator}>
         <PersonPresenter value={$controlledDocument.author} disabled={true} />
       </DocumentInfo>
     </div>

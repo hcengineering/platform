@@ -8,11 +8,18 @@
     isRestoringMode,
     isUpgradingMode,
     reduceCalls,
+    systemAccountEmail,
     versionToString,
     type BaseWorkspaceInfo
   } from '@hcengineering/core'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { copyTextToClipboard, isAdminUser, MessageBox } from '@hcengineering/presentation'
+  import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
+  import presentation, {
+    copyTextToClipboard,
+    isAdminUser,
+    MessageBox,
+    type OverviewStatistics,
+    type WorkspaceStatistics
+  } from '@hcengineering/presentation'
   import {
     Button,
     ButtonMenu,
@@ -49,15 +56,17 @@
   let workspaces: WorkspaceInfo[] = []
 
   enum SortingRule {
-    Name = '1',
-    BackupDate = '2',
-    BackupSize = '3',
-    LastVisit = '4'
+    Activity = '1',
+    Name = '2',
+    BackupDate = '3',
+    BackupSize = '4',
+    LastVisit = '5'
   }
 
-  let sortingRule = SortingRule.BackupDate
+  let sortingRule = SortingRule.Activity
 
   const sortRules = {
+    [SortingRule.Activity]: 'Active users',
     [SortingRule.Name]: 'Name',
     [SortingRule.BackupDate]: 'Backup date',
     [SortingRule.BackupSize]: 'Backup size',
@@ -71,6 +80,30 @@
 
   $: void updateWorkspaces($ticker)
 
+  function isWorkspaceInactive (it: WorkspaceInfo, stats: WorkspaceStatistics | undefined): boolean {
+    if (stats === undefined) {
+      return true
+    }
+    const ops = (stats.sessions ?? []).reduceRight(
+      (p, it) => p + (it.mins5.tx + it.mins5.find) + (it.current.tx + it.current.find),
+      0
+    )
+    if (ops === 0) {
+      return true
+    }
+    if (stats.sessions.filter((it) => it.userId !== systemAccountEmail).length === 0) {
+      return true
+    }
+    return false
+  }
+
+  function getBackupSize (workspace: WorkspaceInfo): number {
+    return Math.max(
+      workspace.backupInfo?.backupSize ?? 0,
+      (workspace.backupInfo?.dataSize ?? 0) + (workspace.backupInfo?.blobsSize ?? 0)
+    )
+  }
+
   $: sortedWorkspaces = workspaces
     .filter(
       (it) =>
@@ -78,6 +111,8 @@
           (it.workspaceUrl?.includes(search) ?? false) ||
           it.workspace?.includes(search) ||
           it.createdBy?.includes(search)) &&
+        (showSelectedRegionOnly ? it.region === filterRegionId : true) &&
+        (showInactive ? isWorkspaceInactive(it, statsByWorkspace.get(it.workspace)) : true) &&
         ((showActive && isActiveMode(it.mode)) ||
           (showArchived && isArchivingMode(it.mode)) ||
           (showDeleted && isDeletingMode(it.mode)) ||
@@ -89,11 +124,16 @@
     )
     .sort((a, b) => {
       switch (sortingRule) {
+        case SortingRule.Activity: {
+          const aStats = statsByWorkspace.get(a.workspace ?? '')
+          const bStats = statsByWorkspace.get(b.workspace ?? '')
+          return (bStats?.sessions?.length ?? 0) - (aStats?.sessions?.length ?? 0)
+        }
         case SortingRule.BackupDate: {
           return (a.backupInfo?.lastBackup ?? 0) - (b.backupInfo?.lastBackup ?? 0)
         }
         case SortingRule.BackupSize:
-          return (b.backupInfo?.backupSize ?? 0) - (a.backupInfo?.backupSize ?? 0)
+          return getBackupSize(b) - getBackupSize(a)
         case SortingRule.LastVisit:
           return (b.lastVisit ?? 0) - (a.lastVisit ?? 0)
       }
@@ -105,6 +145,24 @@
   const backupInterval: number = 43200
 
   let backupable: WorkspaceInfo[] = []
+
+  const token: string = getMetadata(presentation.metadata.Token) ?? ''
+
+  const endpoint = getMetadata(presentation.metadata.StatsUrl)
+
+  async function fetchStats (time: number): Promise<void> {
+    await fetch(endpoint + `/api/v1/overview?token=${token}`, {})
+      .then(async (json) => {
+        data = await json.json()
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }
+  let data: OverviewStatistics | undefined
+  $: void fetchStats($ticker)
+
+  $: statsByWorkspace = new Map((data?.workspaces ?? []).map((it) => [it.wsId, it]))
 
   $: {
     // Assign backup idx
@@ -167,11 +225,15 @@
   }
 
   const dayRanges = {
-    Today: [-1, 1],
+    Hour: [-1, 0.1],
+    HalfDay: [0.1, 0.5],
+    Day: [0.5, 1],
     Week: [1, 7],
-    Weeks: [7, 30],
-    Month: [30, 90],
-    Months: [90, 180],
+    Weeks: [7, 14],
+    Month: [14, 30],
+    Months1: [30, 60],
+    Months2: [60, 90],
+    Months3: [90, 180],
     'Six Month': [180, 270],
     'Nine Months': [270, 365],
     Years: [365, 10000000]
@@ -185,10 +247,13 @@
   let showArchived: boolean = false
   let showDeleted: boolean = false
   let showOther: boolean = true
+  let showInactive: boolean = false
+
+  let showSelectedRegionOnly: boolean = false
 
   $: groupped = groupByArray(sortedWorkspaces, (it) => {
-    const lastUsageDays = Math.round((now - it.lastVisit) / (1000 * 3600 * 24))
-    return Object.entries(dayRanges).find(([_k, v]) => v[0] < lastUsageDays && lastUsageDays < v[1])?.[0] ?? 'Other'
+    const lastUsageDays = Math.round((10 * (now - it.lastVisit)) / (1000 * 3600 * 24)) / 10
+    return Object.entries(dayRanges).find(([_k, v]) => v[0] < lastUsageDays && lastUsageDays <= v[1])?.[0] ?? 'Years'
   })
 
   let regionInfo: RegionInfo[] = []
@@ -196,6 +261,9 @@
   let regionTitles: Record<string, string> = {}
 
   let selectedRegionId: string = ''
+
+  let filterRegionId: string = ''
+
   void getRegionInfo().then((_regionInfo) => {
     regionInfo = _regionInfo ?? []
     regionTitles = Object.fromEntries(
@@ -203,6 +271,9 @@
     )
     if (selectedRegionId === '' && regionInfo.length > 0) {
       selectedRegionId = regionInfo[0].region
+    }
+    if (filterRegionId === '' && regionInfo.length > 0) {
+      filterRegionId = regionInfo[0].region
     }
   })
 
@@ -212,6 +283,14 @@
       ? selectedRegionRef.name.length > 0
         ? selectedRegionRef.name
         : selectedRegionRef.region
+      : ''
+
+  $: filteredRegionRef = regionInfo.find((it) => it.region === filterRegionId)
+  $: filteredRegionName =
+    filteredRegionRef !== undefined
+      ? filteredRegionRef.name.length > 0
+        ? filteredRegionRef.name
+        : filteredRegionRef.region
       : ''
 
   $: byVersion = groupByArray(
@@ -241,10 +320,14 @@
     </div>
     <div class="fs-title p-3">
       Workspaces: {workspaces.length} active: {workspaces.filter((it) => isActiveMode(it.mode)).length}
-
       upgrading: {workspaces.filter((it) => isUpgradingMode(it.mode)).length}
-
+      <br />
       Backupable: {backupable.length} new: {backupable.reduce((p, it) => p + (it.backupInfo == null ? 1 : 0), 0)}
+      Active: {data?.workspaces.length ?? -1}
+      <br />
+      <span class="mt-2">
+        Users: {data?.usersTotal}/{data?.connectionsTotal}
+      </span>
 
       <div class="flex-row-center">
         {#each byVersion.entries() as [k, v]}
@@ -283,6 +366,10 @@
         <span class="mr-2">Show other workspaces:</span>
         <CheckBox bind:checked={showOther} />
       </div>
+      <div class="flex-row-center">
+        <span class="mr-2">Show inactive workspaces:</span>
+        <CheckBox bind:checked={showInactive} />
+      </div>
     </div>
 
     <div class="fs-title p-3 flex-row-center">
@@ -313,13 +400,32 @@
         }}
       />
     </div>
+
+    <div class="fs-title p-3 flex-row-center">
+      <div class="mr-2">
+        <CheckBox bind:checked={showSelectedRegionOnly} />
+      </div>
+      <span class="mr-2"> Filtere region selector: </span>
+      <ButtonMenu
+        selected={filterRegionId}
+        autoSelectionIfOne
+        title={filteredRegionName}
+        items={regionInfo.map((it) => ({
+          id: it.region === '' ? '#' : it.region,
+          label: getEmbeddedLabel(it.name.length > 0 ? it.name : it.region + ' (hidden)')
+        }))}
+        on:selected={(it) => {
+          filterRegionId = it.detail === '#' ? '' : it.detail
+        }}
+      />
+    </div>
     <div class="fs-title p-1">
       <Scroller maxHeight={40} noStretch={true}>
         <div class="mr-4">
           {#each Object.keys(dayRanges) as k}
             {@const v = groupped.get(k) ?? []}
             {@const hasMore = (groupped.get(k) ?? []).length > limit}
-            {@const activeV = v.filter((it) => isActiveMode(it.mode) && it.region !== selectedRegionId)}
+            {@const activeV = v.filter((it) => isActiveMode(it.mode) && it.region !== selectedRegionId).slice(0, limit)}
             {@const activeAll = v.filter((it) => isActiveMode(it.mode))}
             {@const archivedV = v.filter((it) => isArchivingMode(it.mode))}
             {@const deletedV = v.filter((it) => isDeletingMode(it.mode))}
@@ -404,13 +510,14 @@
                 </svelte:fragment>
                 {#each v.slice(0, limit) as workspace}
                   {@const wsName = workspace.workspaceName ?? workspace.workspace}
-                  {@const lastUsageDays = Math.round((now - workspace.lastVisit) / (1000 * 3600 * 24))}
+                  {@const lastUsageDays = Math.round((10 * (now - workspace.lastVisit)) / (1000 * 3600 * 24)) / 10}
                   {@const bIdx = backupIdx.get(workspace.workspace)}
+                  {@const stats = statsByWorkspace.get(workspace.workspace ?? '')}
                   <!-- svelte-ignore a11y-click-events-have-key-events -->
                   <!-- svelte-ignore a11y-no-static-element-interactions -->
                   <div class="flex fs-title cursor-pointer focused-button bordered" id={`${workspace.workspace}`}>
                     <div class="flex p-2">
-                      <span class="label overflow-label flex-row-center" style:width={'12rem'}>
+                      <span class="label overflow-label flex-row-center" style:width={'22rem'}>
                         <div class="mr-1">
                           <Button
                             icon={IconOpen}
@@ -426,8 +533,19 @@
                           />
                         </div>
                         {wsName}
+                        {#if stats}
+                          -
+                          <div class="ml-1">
+                            {stats.sessions?.length ?? 0}
+
+                            {(stats.sessions ?? []).reduceRight(
+                              (p, it) => p + (it.mins5.tx + it.mins5.find) + (it.current.tx + it.current.find),
+                              0
+                            )}
+                          </div>
+                        {/if}
                       </span>
-                      <div class="ml-1" style:width={'12rem'}>
+                      <div class="ml-1" style:width={'18rem'}>
                         {workspace.createdBy}
                       </div>
                       <span class="label overflow-label" style:width={'8rem'}>
@@ -452,10 +570,7 @@
                       </span>
                       <span class="flex flex-between" style:width={'5rem'}>
                         {#if workspace.backupInfo != null}
-                          {@const sz = Math.max(
-                            workspace.backupInfo.backupSize,
-                            workspace.backupInfo.dataSize + workspace.backupInfo.blobsSize
-                          )}
+                          {@const sz = getBackupSize(workspace)}
                           {@const szGb = Math.round((sz * 100) / 1024) / 100}
                           {#if szGb > 0}
                             {Math.round((sz * 100) / 1024) / 100}Gb

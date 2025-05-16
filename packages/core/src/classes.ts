@@ -16,6 +16,7 @@
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import type { DocumentQuery } from './storage'
+import { Tx } from './tx'
 
 /**
  * @public
@@ -239,6 +240,9 @@ export interface PluginConfiguration extends Doc {
   icon?: Asset
   description?: IntlString
   enabled: boolean
+
+  // If set will not be shown in configuration UI or enabled
+  hidden?: boolean
 
   // If specified, will show beta/testing label in UI.
   beta: boolean
@@ -475,6 +479,10 @@ export type RolesAssignment = Record<Ref<Role>, Ref<Account>[] | undefined>
  */
 export interface Permission extends Doc {
   label: IntlString
+  txClass?: Ref<Class<Tx>>
+  forbid?: boolean
+  objectClass?: Ref<Class<Doc>>
+  scope?: 'space' | 'workspace'
   description?: IntlString
   icon?: Asset
 }

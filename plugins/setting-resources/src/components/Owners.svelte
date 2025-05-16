@@ -15,16 +15,16 @@
 <script lang="ts">
   import contact, { PersonAccount, formatName } from '@hcengineering/contact'
   import { EmployeePresenter, employeesStore } from '@hcengineering/contact-resources'
-  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Breadcrumb, DropdownIntlItem, DropdownLabelsIntl, SearchInput, Header, Scroller } from '@hcengineering/ui'
+  import { Breadcrumb, DropdownLabelsIntl, SearchInput, Header, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
 
   const client = getClient()
   const query = createQuery()
   const currentAccount = getCurrentAccount()
 
-  const items: DropdownIntlItem[] = [
+  const items = [
     { id: AccountRole.Guest, label: setting.string.Guest },
     { id: AccountRole.User, label: setting.string.User },
     { id: AccountRole.Maintainer, label: setting.string.Maintainer },
@@ -71,7 +71,7 @@
               </div>
               <DropdownLabelsIntl
                 label={setting.string.Role}
-                disabled={!hasAccountRole(currentAccount, acc.role) ||
+                disabled={currentAccount.role !== AccountRole.Owner ||
                   (acc.role === AccountRole.Owner && owners.length === 1)}
                 kind={'primary'}
                 size={'medium'}

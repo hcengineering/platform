@@ -69,7 +69,6 @@ services:
       - DB_URL=mongodb://huly.local:27018
       - TRANSACTOR_URL=ws://huly.local:3334;ws://huly.local:3334,ws://huly.local:3335;ws://huly.local:3335;europe,
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://huly.local:4901
   workspace:
@@ -86,7 +85,6 @@ services:
       - SERVER_SECRET=secret
       - DB_URL=${DB_URL}
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - REGION=
       - ACCOUNTS_URL=http://huly.local:3003
       - BRANDING_PATH=/var/cfg/branding.json
@@ -110,7 +108,6 @@ services:
       - SERVER_SECRET=secret
       - DB_URL=${DB_EU_URL}
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://huly.local:3003
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://huly.local:4901

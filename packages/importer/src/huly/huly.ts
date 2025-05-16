@@ -52,7 +52,7 @@ import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
 import { CardsProcessor } from './cards'
-import { MetadataRegistry, ReferenceMetadata } from './metadata'
+import { MetadataRegistry, MentionMetadata } from './registry'
 import { readMarkdownContent, readYamlHeader } from './parsing'
 export interface HulyComment {
   author: string
@@ -126,6 +126,7 @@ export interface HulyControlledDocumentHeader {
   template: string
   author: string
   owner: string
+  category?: string
   abstract?: string
   reviewers?: string[]
   approvers?: string[]
@@ -251,7 +252,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     }
   }
 
-  private alterMentionNode (node: MarkupNode, targetMeta: ReferenceMetadata): void {
+  private alterMentionNode (node: MarkupNode, targetMeta: MentionMetadata): void {
     node.type = MarkupNodeType.reference
     node.attrs = {
       id: targetMeta.id,
@@ -296,7 +297,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     attachmentMeta: AttachmentMetadata,
     id: Ref<Doc>,
     spaceId: Ref<Space>,
-    sourceMeta: ReferenceMetadata
+    sourceMeta: MentionMetadata
   ): void {
     this.attachMetaByPath.set(fullPath, {
       ...attachmentMeta,
@@ -320,22 +321,26 @@ export class HulyFormatImporter {
   private personsByName = new Map<string, Ref<Person>>()
   private accountsByEmail = new Map<string, Ref<PersonAccount>>()
   private employeesByName = new Map<string, Ref<Employee>>()
+  private controlledDocumentCategories = new Map<string, Ref<DocumentCategory>>()
 
   private readonly fileMetaByPath = new Map<string, AttachmentMetadata>()
-  private readonly metadataRegistry = new MetadataRegistry()
 
-  private readonly cardsProcessor = new CardsProcessor(this.metadataRegistry)
+  private readonly metadataRegistry = new MetadataRegistry()
+  private readonly cardsProcessor: CardsProcessor
 
   constructor (
     private readonly client: TxOperations,
     private readonly fileUploader: FileUploader,
     private readonly logger: Logger
-  ) {}
+  ) {
+    this.cardsProcessor = new CardsProcessor(this.metadataRegistry, this.logger)
+  }
 
   private async initCaches (): Promise<void> {
     await this.cachePersonsByNames()
     await this.cacheAccountsByEmails()
     await this.cacheEmployeesByName()
+    await this.cacheControlledDocumentCategories()
   }
 
   async importFolder (folderPath: string): Promise<void> {
@@ -672,8 +677,8 @@ export class HulyFormatImporter {
         throw new Error(`Unknown document class ${docHeader.class} in ${docFile}`)
       }
 
-      const documentMetaId = this.metadataRegistry.getRef(docPath) as Ref<DocumentMeta>
-      this.metadataRegistry.setRefMetadata(docPath, documents.class.DocumentMeta, docHeader.title)
+      const documentMetaId = generateId<DocumentMeta>()
+      this.metadataRegistry.setRefMetadata(docPath, documents.class.DocumentMeta, docHeader.title, documentMetaId)
 
       if (docHeader.class === documents.class.ControlledDocument) {
         const doc = await this.processControlledDocument(
@@ -812,7 +817,7 @@ export class HulyFormatImporter {
     }
 
     const templateId = this.metadataRegistry.getRef(templatePath) as Ref<ControlledDocument>
-
+    const category = header.category !== undefined ? this.controlledDocumentCategories.get(header.category) : undefined
     return {
       id,
       metaId,
@@ -823,6 +828,7 @@ export class HulyFormatImporter {
       major: 0,
       minor: 1,
       state: DocumentState.Draft,
+      category,
       author,
       owner,
       abstract: header.abstract,
@@ -849,6 +855,11 @@ export class HulyFormatImporter {
       throw new Error(`Author or owner not found: ${header.author} or ${header.owner}`)
     }
 
+    const category = this.controlledDocumentCategories.get(header.category)
+    if (category === undefined) {
+      throw new Error(`Category not found: ${header.category}`)
+    }
+
     const codeMatch = path.basename(docPath).match(/^\[([^\]]+)\]/)
     return {
       id,
@@ -857,10 +868,10 @@ export class HulyFormatImporter {
       title: header.title,
       docPrefix: header.docPrefix,
       code: codeMatch?.[1],
-      major: 0,
-      minor: 1,
+      major: 1,
+      minor: 0,
       state: DocumentState.Draft,
-      category: header.category as Ref<DocumentCategory>,
+      category,
       author,
       owner,
       abstract: header.abstract,
@@ -909,6 +920,16 @@ export class HulyFormatImporter {
         refByName.set(employee.name, employee._id)
         return refByName
       }, new Map())
+  }
+
+  private async cacheControlledDocumentCategories (): Promise<void> {
+    this.controlledDocumentCategories = (await this.client.findAll(documents.class.DocumentCategory, {})).reduce(
+      (refByCode, category) => {
+        refByCode.set(category.code, category._id)
+        return refByCode
+      },
+      new Map()
+    )
   }
 
   private async collectFileMetadata (folderPath: string): Promise<void> {
