@@ -301,7 +301,54 @@ func (d *DatalakeStorage) StatFile(ctx context.Context, filename string) (*BlobI
 	info.Size = int64(resp.Header.ContentLength())
 	info.Type = string(resp.Header.ContentType())
 	info.ETag = string(resp.Header.Peek("ETag"))
+
+	logger.Debug("finished")
 	return &info, nil
+}
+
+// SetParent updates blob parent reference
+func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string) error {
+	var logger = d.logger.With(zap.String("parent", d.workspace), zap.String("fileName", filename), zap.String("parent", parent))
+
+	logger.Debug("start")
+
+	var objectKey = getObjectKey(filename)
+	var parentKey = getObjectKey(parent)
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+	req.SetRequestURI(d.baseURL + "/blob/" + d.workspace + "/" + objectKey + "/parent")
+	req.Header.SetMethod(fasthttp.MethodPatch)
+	req.Header.Add("Authorization", "Bearer "+d.token)
+	req.Header.Add("Content-Type", "application/json")
+
+	body := map[string]any{
+		"parent": parentKey,
+	}
+
+	if err := json.NewEncoder(req.BodyWriter()).Encode(body); err != nil {
+		logger.Debug("can not encode body", zap.Error(err))
+		return err
+	}
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	if err := d.client.Do(req, resp); err != nil {
+		return err
+	}
+
+	// Check the response status code
+	var statusOK = resp.StatusCode() >= 200 && resp.StatusCode() < 300
+	if !statusOK {
+		var err = fmt.Errorf("unexpected status code: %d", resp.StatusCode())
+		logger.Debug("bad status code", zap.Error(err))
+		return err
+	}
+
+	logger.Debug("finished")
+
+	return nil
 }
 
 var _ Storage = (*DatalakeStorage)(nil)

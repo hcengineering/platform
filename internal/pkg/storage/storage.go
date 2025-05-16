@@ -43,6 +43,7 @@ type Storage interface {
 	DeleteFile(ctx context.Context, fileName string) error
 	GetFile(ctx context.Context, fileName, destination string) error
 	StatFile(ctx context.Context, fileName string) (*BlobInfo, error)
+	SetParent(ctx context.Context, fileName string, parentName string) error
 }
 
 // NewStorageByURL creates a new storage based on the type from the url scheme, for example "datalake://my-datalake-endpoint"

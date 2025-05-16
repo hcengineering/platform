@@ -236,6 +236,14 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 			}
 			u.sentFiles.Store(f, struct{}{})
 			logger.Debug("file uploaded")
+
+			if u.options.SourceFile != "" {
+				err = u.storage.SetParent(ctx, f, u.options.SourceFile)
+				if err != nil {
+					logger.Error("can not set blob parent", zap.Error(err), zap.String("filename", f), zap.String("source", u.options.SourceFile))
+				}
+			}
+
 			break
 		}
 
