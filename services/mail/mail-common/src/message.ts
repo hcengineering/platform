@@ -221,10 +221,11 @@ async function saveMessageToSpaces (
             archived: false,
             createdBy: modifiedBy,
             modifiedBy,
-            parent: channel
+            parent: channel,
+            createdOn: createdDate
           },
           generateId(),
-          undefined,
+          createdDate,
           modifiedBy
         )
         await client.createMixin(
@@ -247,7 +248,8 @@ async function saveMessageToSpaces (
         modifiedBy,
         MessageType.Message,
         {
-          created: createdDate
+          created: createdDate,
+          edited: createdDate
         }
       )
       ctx.info('Created message', { mailId, messageId, threadId })
