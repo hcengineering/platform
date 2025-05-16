@@ -36,6 +36,7 @@
   import Join from './Join.svelte'
   import AutoJoin from './AutoJoin.svelte'
   import LoginForm from './LoginForm.svelte'
+  import ProvidersOnlyForm from './ProvidersOnlyForm.svelte'
   import PasswordRequest from './PasswordRequest.svelte'
   import PasswordRestore from './PasswordRestore.svelte'
   import SelectWorkspace from './SelectWorkspace.svelte'
@@ -55,6 +56,8 @@
   export let page: Pages = 'signup'
 
   const signUpDisabled = getMetadata(login.metadata.DisableSignUp) ?? false
+  const localLoginHidden = getMetadata(login.metadata.HideLocalLogin) ?? false
+  console.log('Ratte: ', localLoginHidden)
   const useOTP = getMetadata(presentation.metadata.MailUrl) != null && getMetadata(presentation.metadata.MailUrl) !== ''
   let navigateUrl: string | undefined
 
@@ -150,7 +153,11 @@
         <Scroller padding={'1rem 0'}>
           <div class="form-content">
             {#if page === 'login'}
-              <LoginForm {navigateUrl} {signUpDisabled} {useOTP} />
+              {#if localLoginHidden}
+                <ProvidersOnlyForm />
+              {:else}
+                <LoginForm {navigateUrl} {signUpDisabled} {useOTP} />
+              {/if}
             {:else if page === 'signup'}
               <SignupForm {navigateUrl} {signUpDisabled} {useOTP} />
             {:else if page === 'createWorkspace'}

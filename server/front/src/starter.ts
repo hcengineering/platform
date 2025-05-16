@@ -119,6 +119,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   const disableSignUp = process.env.DISABLE_SIGNUP
 
+  const hideLocalLogin = process.env.HIDE_LOCAL_LOGIN
+
   const mailUrl = process.env.MAIL_URL
 
   const config = {
@@ -140,6 +142,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     uploadConfig,
     pushPublicKey,
     disableSignUp,
+    hideLocalLogin,
     linkPreviewUrl,
     streamUrl,
     mailUrl
