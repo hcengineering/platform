@@ -193,7 +193,7 @@ export interface Config {
   CALDAV_SERVER_URL?: string
   EXPORT_URL?: string
   MAIL_URL?: string,
-  COMMUNICATION_API_ENABLED?: boolean
+  COMMUNICATION_API_ENABLED?: string
 }
 
 export interface Branding {
@@ -442,7 +442,7 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)
   setMetadata(recorder.metadata.StreamUrl, config.STREAM_URL)
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
-  setMetadata(communication.metadata.Enabled, config.COMMUNICATION_API_ENABLED)
+  setMetadata(communication.metadata.Enabled, config.COMMUNICATION_API_ENABLED === 'true')
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)

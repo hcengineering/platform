@@ -44,7 +44,7 @@ export interface Config {
   CALDAV_SERVER_URL?: string
   EXPORT_URL?: string
   MAIL_URL?: string
-  COMMUNICATION_API_ENABLED?: boolean
+  COMMUNICATION_API_ENABLED?: string
 }
 
 export interface Branding {
