@@ -19,7 +19,6 @@
   import ProcessAttributeEditor from './ProcessAttributeEditor.svelte'
 
   export let process: Process
-  export let state: State
   export let _class: Ref<Class<Doc>>
   export let params: MethodParams<Doc>
   export let allowRemove: boolean = false
@@ -43,7 +42,6 @@
   {#each keys as key}
     <ProcessAttributeEditor
       {process}
-      {state}
       {_class}
       {key}
       {allowRemove}

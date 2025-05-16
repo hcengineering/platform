@@ -53,7 +53,17 @@
     "OnSubProcessesDone": "Alla fine dei sottoprocessi",
     "Result": "Risultato",
     "RequestResult": "Richiedi risultato",
-    "NoResultRequired": "Nessun risultato richiesto"
+    "NoResultRequired": "Nessun risultato richiesto",
+    "From": "Da",
+    "To": "A",
+    "Trigger": "Trigger",
+    "Actions": "Azioni",
+    "Transition": "Transizione",
+    "OnToDoRemove": "Alla rimozione dell'attività",
+    "DeleteTransition": "Elimina transizione",
+    "DeleteTransitionConfirm": "Vuoi eliminare la transizione?",
+    "AddTransition": "Aggiungi transizione",
+    "ToDo": "Attività"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",
@@ -66,6 +76,7 @@
     "EmptyRelatedObjectValue": "Valore oggetto correlato vuoto: {parent} {attr}",
     "InternalServerError": "Errore interno del server, contatta il supporto, id errore: {errorId}",
     "ResultNotProvided": "Risultato non fornito",
-    "EmptyFunctionResult": "Risultato funzione vuoto {func}"
+    "EmptyFunctionResult": "Risultato funzione vuoto {func}",
+    "ContextValueNotProvided": "Valore di contesto non fornito: {name}"
   }
 }

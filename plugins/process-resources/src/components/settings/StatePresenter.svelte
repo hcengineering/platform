@@ -13,32 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Process, Step } from '@hcengineering/process'
-  import { Label } from '@hcengineering/ui'
-  import process from '../../plugin'
   import { Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import process, { State } from '@hcengineering/process'
 
-  export let step: Step<Process>
+  export let value: Ref<State>
 
-  const client = getClient()
-  $: method = client.getModel().findAllSync(process.class.Method, { _id: step.methodId })[0]
-
-  let value: Process | undefined = undefined
-
+  let state: State | undefined
   const query = createQuery()
-
-  $: if (step.params._id !== undefined) {
-    query.query(process.class.Process, { _id: step.params._id as Ref<Process> }, (res) => {
-      value = res[0]
-    })
-  } else {
-    query.unsubscribe()
-    value = undefined
-  }
+  $: query.query(process.class.State, { _id: value }, (res) => {
+    state = res[0]
+  })
 </script>
 
-<Label label={method.label} />
-{#if value}
-  - {value?.name}
+{#if state}
+  <div class="fs-title">
+    {state.title}
+  </div>
 {/if}

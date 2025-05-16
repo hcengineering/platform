@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,17 +11,19 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { State } from '@hcengineering/process'
+  import { Button, IconAdd, showPopup } from '@hcengineering/ui'
+  import plugin from '../../plugin'
+  import AddTransitionPopup from './AddTransitionPopup.svelte'
 
-import { loadMetadata } from '@hcengineering/platform'
-import process from '@hcengineering/process'
+  export let state: State
+  export let direction: 'from' | 'to'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(process.icon, {
-  Process: `${icons}#process`,
-  States: `${icons}#trigger`,
-  Steps: `${icons}#steps`,
-  ToDo: `${icons}#todo`,
-  ToDoRemove: `${icons}#todo-remove`,
-  WaitSubprocesses: `${icons}#subprocesses`
-})
+  function add (): void {
+    showPopup(AddTransitionPopup, { state, direction }, 'top')
+  }
+</script>
+
+<Button label={plugin.string.AddTransition} icon={IconAdd} kind={'ghost'} width={'100%'} on:click={add} />

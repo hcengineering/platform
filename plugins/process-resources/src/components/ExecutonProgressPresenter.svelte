@@ -16,35 +16,14 @@
   import { WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Execution } from '@hcengineering/process'
-  import { Button, eventToHTMLElement, ProgressCircle, showPopup } from '@hcengineering/ui'
-  import ExecutionPopup from './ExecutionPopup.svelte'
 
   export let value: WithLookup<Execution>
 
   const client = getClient()
 
-  $: states = value?.$lookup?.process?.states ?? client.getModel().findObject(value.process)?.states ?? []
-  $: progress = states.findIndex((it) => it === value.currentState) + 1
-
-  $: currentState = value.currentState != null ? client.getModel().findObject(value.currentState) : undefined
-
-  function showDetail (e: MouseEvent): void {
-    showPopup(ExecutionPopup, { value }, eventToHTMLElement(e))
-  }
+  $: currentState = client.getModel().findObject(value.currentState)
 </script>
 
-<div class="flex-center flex-no-shrink">
-  <Button width={'min-content'} kind={'link-bordered'} size={'small'} justify={'left'} on:click={showDetail}>
-    <svelte:fragment slot="content">
-      <div class="flex-row-center content-color text-sm pointer-events-none">
-        <div class="mr-1-5">
-          <ProgressCircle bind:value={progress} bind:max={states.length} size={'small'} primary />
-        </div>
-        {progress}/{states.length}
-        {#if currentState}
-          {currentState.title}
-        {/if}
-      </div>
-    </svelte:fragment>
-  </Button>
-</div>
+{#if currentState}
+  {currentState.title}
+{/if}

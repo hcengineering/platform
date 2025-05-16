@@ -53,7 +53,17 @@
     "OnSubProcessesDone": "При завершении подпроцессов",
     "Result": "Результат",
     "NoResultRequired": "Результат не требуется",
-    "RequestResult": "Запросить результат"
+    "RequestResult": "Запросить результат",
+    "From": "Из",
+    "To": "В",
+    "Trigger": "Триггер",
+    "Actions": "Действия",
+    "Transition": "Переход",
+    "OnToDoRemove": "При удалении ToDo",
+    "DeleteTransition": "Удалить переход",
+    "DeleteTransitionConfirm": "Вы хотите удалить переход?",
+    "AddTransition": "Добавить переход",
+    "ToDo": "ToDo"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
@@ -66,6 +76,7 @@
     "ObjectNotFound": "Объект не найден: {_id}",
     "AttributeNotExists": "Атрибут не существует: {key}",
     "ResultNotProvided": "Результат не предоставлен",
-    "EmptyFunctionResult": "Отсутствуют результат функции {func}"
+    "EmptyFunctionResult": "Отсутствуют результат функции {func}",
+    "ContextValueNotProvided": "Значение контекста не предоставлено: {name}"
   }
 }

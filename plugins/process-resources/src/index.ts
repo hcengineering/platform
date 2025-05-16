@@ -25,19 +25,23 @@ import Main from './components/Main.svelte'
 import SubProcessPresenter from './components/presenters/SubProcessPresenter.svelte'
 import ToDoPresenter from './components/presenters/ToDoPresenter.svelte'
 import UpdateCardPresenter from './components/presenters/UpdateCardPresenter.svelte'
-import ProcessEditor from './components/ProcessEditor.svelte'
+import ProcessEditor from './components/settings/ProcessEditor.svelte'
 import ProcessesExtension from './components/ProcessesExtension.svelte'
 import ProcessesSettingSection from './components/ProcessesSection.svelte'
 import ProcessPresenter from './components/ProcessPresenter.svelte'
 import RunProcessCardPopup from './components/RunProcessCardPopup.svelte'
 import RunProcessPopup from './components/RunProcessPopup.svelte'
-import SubProcessEditor from './components/SubProcessEditor.svelte'
-import ToDoEditor from './components/ToDoEditor.svelte'
-import UpdateCardEditor from './components/UpdateCardEditor.svelte'
+import SubProcessEditor from './components/settings/SubProcessEditor.svelte'
+import ToDoEditor from './components/settings/ToDoEditor.svelte'
+import UpdateCardEditor from './components/settings/UpdateCardEditor.svelte'
 import ResultInput from './components/contextEditors/ResultInput.svelte'
 import RoleEditor from './components/contextEditors/RoleEditor.svelte'
+import StatePresenter from './components/settings/StatePresenter.svelte'
+import TriggerPresenter from './components/settings/TriggerPresenter.svelte'
+import ActionsPresenter from './components/settings/ActionsPresenter.svelte'
+import ToDoParamsEditor from './components/settings/ToDoParamsEditor.svelte'
 
-import { continueExecution, showDoneQuery } from './utils'
+import { continueExecution, showDoneQuery, todoTranstionCheck } from './utils'
 import { ProcessMiddleware } from './middleware'
 
 export default async (): Promise<Resources> => ({
@@ -68,7 +72,15 @@ export default async (): Promise<Resources> => ({
     ErrorPresenter,
     RequestUserInput,
     ResultInput,
-    RoleEditor
+    RoleEditor,
+    ActionsPresenter,
+    StatePresenter,
+    TriggerPresenter,
+    ToDoRemoveEditor: ToDoParamsEditor,
+    ToDoCloseEditor: ToDoParamsEditor
+  },
+  triggerCheck: {
+    ToDo: todoTranstionCheck
   },
   function: {
     ShowDoneQuery: showDoneQuery,

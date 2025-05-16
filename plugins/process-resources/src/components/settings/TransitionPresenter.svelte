@@ -13,32 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Process, Step } from '@hcengineering/process'
+  import { getClient } from '@hcengineering/presentation'
+  import { Transition } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
-  import process from '../../plugin'
-  import { Ref } from '@hcengineering/core'
+  import plugin from '../../plugin'
 
-  export let step: Step<Process>
+  export let transition: Transition
+  export let direction: 'from' | 'to' | undefined = undefined
 
   const client = getClient()
-  $: method = client.getModel().findAllSync(process.class.Method, { _id: step.methodId })[0]
 
-  let value: Process | undefined = undefined
-
-  const query = createQuery()
-
-  $: if (step.params._id !== undefined) {
-    query.query(process.class.Process, { _id: step.params._id as Ref<Process> }, (res) => {
-      value = res[0]
-    })
-  } else {
-    query.unsubscribe()
-    value = undefined
-  }
+  const from = client.getModel().findObject(transition.from)
+  const to = transition.to === null ? null : client.getModel().findObject(transition.to)
 </script>
 
-<Label label={method.label} />
-{#if value}
-  - {value?.name}
-{/if}
+<span>
+  {#if transition.to === null}
+    <Label label={plugin.string.Rollback} />
+  {:else}
+    {#if direction !== 'from'}{from?.title}{/if}
+    →
+    {#if direction !== 'to'}{to?.title}{/if}
+  {/if}
+</span>
