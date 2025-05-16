@@ -106,8 +106,8 @@ export function inlineCommandsConfig (
 ): Partial<InlineCommandsOptions> {
   return {
     suggestion: {
-      items: () => {
-        return [
+      items: ({ query }: { query: string }) => {
+        const items = [
           { id: 'image', label: textEditor.string.Image, icon: view.icon.Image },
           { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
           { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
@@ -116,6 +116,21 @@ export function inlineCommandsConfig (
           { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any },
           { id: 'mermaid', label: textEditor.string.MermaidDiargram, icon: view.icon.Model }
         ].filter(({ id }) => !excludedCommands.includes(id as InlineCommandId))
+
+        // to handle case of `todo-list` and `action-item` being the same
+        const searchableItems = items.map(item =>
+          item.id === 'todo-list'
+            ? { ...item, searchLabels: ['action-item', textEditor.string.TodoList] }
+            : { ...item, searchLabels: [item.label] }
+        )
+
+        const filteredItems = searchableItems.filter(item =>
+          item.searchLabels.some(label =>
+            label.toLowerCase().includes(query.toLowerCase())
+          )
+        )
+
+        return filteredItems.length > 0 ? filteredItems : items
       },
       command: ({ editor, range, props }: { editor: Editor, range: Range, props: any }) => {
         editor.commands.deleteRange(range)
@@ -136,6 +151,7 @@ export function inlineCommandsConfig (
               element: document.body,
               props: {
                 ...props,
+                query: props.query,
                 close: () => {
                   component?.destroy()
                 }
