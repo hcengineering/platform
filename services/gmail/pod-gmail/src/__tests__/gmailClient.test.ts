@@ -125,7 +125,14 @@ jest.mock('../config', () => ({
 }))
 
 jest.mock('@hcengineering/account-client', () => ({
-  getClient: jest.fn()
+  getClient: jest.fn().mockImplementation(() => ({
+    getLoginInfoByToken: jest.fn().mockResolvedValue({
+      endpoint: 'wss://test-endpoint.com',
+      workspace: 'mockWorkspaceId',
+      token: 'test-token'
+    })
+  })),
+  isWorkspaceLoginInfo: jest.fn().mockImplementation(() => true)
 }))
 
 describe('GmailClient', () => {
