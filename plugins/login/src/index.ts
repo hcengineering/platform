@@ -50,6 +50,7 @@ export default plugin(loginId, {
     LoginEndpoint: '' as Metadata<string>,
     LoginAccount: '' as Metadata<string>,
     DisableSignUp: '' as Metadata<boolean>,
+    OpenIdDisplayName: '' as Metadata<string>,
     TransactorOverride: '' as Metadata<string>,
     PasswordValidations: '' as Metadata<{
       MinLength: number
