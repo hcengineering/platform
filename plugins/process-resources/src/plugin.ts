@@ -47,7 +47,12 @@ export default mergeIds(processId, process, {
     ErrorPresenter: '' as AnyComponent,
     RequestUserInput: '' as AnyComponent,
     ResultInput: '' as AnyComponent,
-    RoleEditor: '' as AnyComponent
+    RoleEditor: '' as AnyComponent,
+    ActionsPresenter: '' as AnyComponent,
+    TriggerPresenter: '' as AnyComponent,
+    StatePresenter: '' as AnyComponent,
+    ToDoCloseEditor: '' as AnyComponent,
+    ToDoRemoveEditor: '' as AnyComponent
   },
   function: {
     ShowDoneQuery: '' as ViewQueryAction,
@@ -103,6 +108,12 @@ export default mergeIds(processId, process, {
     OnSubProcessesDone: '' as IntlString,
     Result: '' as IntlString,
     RequestResult: '' as IntlString,
-    NoResultRequired: '' as IntlString
+    NoResultRequired: '' as IntlString,
+    Transition: '' as IntlString,
+    OnToDoRemove: '' as IntlString,
+    DeleteTransition: '' as IntlString,
+    DeleteTransitionConfirm: '' as IntlString,
+    AddTransition: '' as IntlString,
+    ToDo: '' as IntlString
   }
 })

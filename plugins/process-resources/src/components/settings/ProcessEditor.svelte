@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref } from '@hcengineering/core'
+  import core, { Doc, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
-  import { Process, State } from '@hcengineering/process'
-  import { settingsStore } from '@hcengineering/setting-resources'
+  import { ContextId, Process, SelectedExecutonContext, State, Step } from '@hcengineering/process'
+  import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
   import {
     Button,
     ButtonIcon,
@@ -36,16 +36,15 @@
     ToggleWithLabel
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import process from '../plugin'
-  import { getToDoEndAction } from '../utils'
-  import Aside from './Aside.svelte'
-  import ArrowEnd from './icons/ArrowEnd.svelte'
-  import ArrowStart from './icons/ArrowStart.svelte'
+  import process from '../../plugin'
+  import { addProcessContext, getToDoEndAction } from '../../utils'
+  import AsideStepEditor from './AsideStepEditor.svelte'
   import StateEditor from './StateEditor.svelte'
-  import TransitionEditor from './TransitionEditor.svelte'
 
   export let _id: Ref<Process>
   export let visibleSecondNav: boolean = true
+
+  const readonly: boolean = false
 
   const client = getClient()
   const query = createQuery()
@@ -66,13 +65,6 @@
   statesQuery.query(process.class.State, { process: _id }, (res) => {
     states = res
   })
-
-  $: sortedStates = sortStates(states, value)
-
-  function sortStates (states: State[], process: Process | undefined): State[] {
-    if (process === undefined) return states
-    return states.sort((a, b) => process.states.indexOf(a._id) - process.states.indexOf(b._id))
-  }
 
   async function saveName (): Promise<void> {
     if (value !== undefined) {
@@ -95,20 +87,48 @@
   async function addState (): Promise<void> {
     if (value === undefined) return
     const prevState = states[states.length - 1]
-
-    const id = await client.createDoc(process.class.State, core.space.Model, {
+    const _id = await client.createDoc(process.class.State, core.space.Model, {
       actions: [],
-      process: _id,
+      process: value._id,
       title: await translate(process.string.NewState, {})
     })
 
-    await client.update(value, { states: [...value.states, id] })
-
     if (prevState !== undefined) {
       const endAction = getToDoEndAction(prevState)
-      prevState.endAction = endAction
-      await client.update(prevState, { endAction })
-      $settingsStore = { id: value._id, component: Aside, props: { process: value, value: prevState, index: -1 } }
+      prevState.actions.push(endAction)
+      await client.update(prevState, { actions: prevState.actions })
+      if (endAction.contextId != null) {
+        const ctx: SelectedExecutonContext = {
+          type: 'context',
+          id: endAction.contextId,
+          key: ''
+        }
+        await client.createDoc(process.class.Transition, core.space.Model, {
+          trigger: process.trigger.OnToDoClose,
+          from: prevState._id,
+          to: _id,
+          actions: [],
+          triggerParams: {
+            _id: '$' + JSON.stringify(ctx)
+          },
+          process: value._id
+        })
+        await client.createDoc(process.class.Transition, core.space.Model, {
+          trigger: process.trigger.OnToDoRemove,
+          from: prevState._id,
+          to: null,
+          actions: [],
+          triggerParams: {
+            _id: '$' + JSON.stringify(ctx)
+          },
+          process: value._id
+        })
+      }
+      $settingsStore = {
+        id: value._id,
+        component: AsideStepEditor,
+        props: { readonly, process: value, step: endAction, _id: prevState._id }
+      }
     }
   }
 
@@ -118,6 +138,7 @@
     await client.remove(value)
     const loc = getCurrentLocation()
     loc.path.length = 5
+    clearSettingsStore()
     navigate(loc)
   }
 
@@ -150,7 +171,7 @@
           <ButtonIcon kind="tertiary" icon={IconDescription} size="small" inheritColor />
         </div>
       </div>
-      {#each sortedStates as navItem (navItem._id)}
+      {#each states as navItem (navItem._id)}
         <NavItem
           type="type-anchor-link"
           title={navItem.title}
@@ -185,32 +206,20 @@
             />
           </div>
           <div class="hulyComponent-content flex-col-center">
-            <div class="flex-col-center">
-              {#each sortedStates as state (state._id)}
+            <div class="flex-col-center states">
+              {#each states as state (state._id)}
                 <div bind:this={sectionRefs[state._id]}>
-                  <StateEditor process={value} value={state} />
+                  <StateEditor process={value} value={state} {readonly} />
                 </div>
-                <div class="arrow">
-                  <ArrowStart size={'full'} />
-                </div>
-                {#if state.endAction !== undefined}
-                  <TransitionEditor {state} process={value} />
-                  <div class="arrow">
-                    <ArrowEnd size={'full'} />
-                  </div>
-                {:else}
-                  <ButtonIcon icon={IconAdd} size={'medium'} kind={'primary'} on:click={addState} />
-                {/if}
               {/each}
-              {#if sortedStates.length === 0}
-                <Button
-                  kind={'primary'}
-                  size={'large'}
-                  icon={IconAdd}
-                  label={process.string.AddState}
-                  on:click={addState}
-                />
-              {/if}
+              <Button
+                kind={'primary'}
+                width={'32rem'}
+                size={'large'}
+                icon={IconAdd}
+                label={process.string.AddState}
+                on:click={addState}
+              />
             </div>
           </div>
         </div>
@@ -220,12 +229,12 @@
 </div>
 
 <style lang="scss">
-  .arrow {
-    height: 2.25rem;
-  }
-
   .header {
     font-size: 2rem;
     padding-bottom: 1rem;
+  }
+
+  .states {
+    gap: 2rem;
   }
 </style>

@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,17 +11,19 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Process, SelectedExecutonContext } from '@hcengineering/process'
+  import ui, { Label } from '@hcengineering/ui'
 
-import { loadMetadata } from '@hcengineering/platform'
-import process from '@hcengineering/process'
+  export let contextValue: SelectedExecutonContext
+  export let process: Process
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(process.icon, {
-  Process: `${icons}#process`,
-  States: `${icons}#trigger`,
-  Steps: `${icons}#steps`,
-  ToDo: `${icons}#todo`,
-  ToDoRemove: `${icons}#todo-remove`,
-  WaitSubprocesses: `${icons}#subprocesses`
-})
+  $: ctx = process.context[contextValue.id]?.name
+</script>
+
+{#if ctx !== undefined}
+  {ctx}
+{:else}
+  <Label label={ui.string.NotSelected} />
+{/if}

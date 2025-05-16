@@ -14,7 +14,8 @@
 //
 
 import { IntlString } from '@hcengineering/platform'
-import { ExecutionError } from '.'
+import { ExecutionError, Transition } from '.'
+import { Ref } from '@hcengineering/core'
 
 export class ProcessError extends Error {
   constructor (
@@ -37,6 +38,6 @@ export function processError (
   return new ProcessError(message, message, props, intlProps, shouldLog)
 }
 
-export function parseError (err: ProcessError): ExecutionError {
-  return { error: err.message, props: err.props, intlProps: err.intlProps }
+export function parseError (err: ProcessError, transition: Ref<Transition> | null): ExecutionError {
+  return { error: err.message, props: err.props, intlProps: err.intlProps, transition }
 }

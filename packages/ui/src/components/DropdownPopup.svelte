@@ -17,11 +17,12 @@
   import { translateCB } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { deviceOptionsStore, resizeObserver } from '..'
+  import { deviceOptionsStore, IconSearch, resizeObserver } from '..'
   import plugin from '../plugin'
   import type { AnySvelteComponent, ListItem } from '../types'
   import Icon from './Icon.svelte'
   import ListView from './ListView.svelte'
+  import EditWithIcon from './EditWithIcon.svelte'
 
   export let icon: Asset | AnySvelteComponent
   export let placeholder: IntlString = plugin.string.SearchDots
@@ -36,7 +37,7 @@
     })
   }
   const dispatch = createEventDispatcher()
-  let searchInput: HTMLInputElement
+  let searchInput: EditWithIcon
 
   onMount(() => {
     if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
@@ -78,13 +79,14 @@
 <div class="selectPopup popup" use:resizeObserver={() => dispatch('changeContent')} on:keydown={onKeydown}>
   {#if withSearch}
     <div class="header">
-      <input
+      <EditWithIcon
         bind:this={searchInput}
-        type="text"
+        icon={IconSearch}
+        size={'large'}
+        width={'100%'}
+        autoFocus={!$deviceOptionsStore.isMobile}
         bind:value={search}
-        placeholder={phTranslate}
-        on:input={(ev) => {}}
-        on:change
+        {placeholder}
       />
     </div>
   {/if}

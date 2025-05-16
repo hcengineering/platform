@@ -53,7 +53,17 @@
     "OnSubProcessesDone": "Au fin des sous-processus",
     "Result": "Résultat",
     "RequestResult": "Demander le résultat",
-    "NoResultRequired": "Aucun résultat requis"
+    "NoResultRequired": "Aucun résultat requis",
+    "From": "De",
+    "To": "À",
+    "Trigger": "Déclencheur",
+    "Actions": "Actions",
+    "Transition": "Transition",
+    "OnToDoRemove": "Lors de la suppression de la tâche",
+    "DeleteTransition": "Supprimer la transition",
+    "DeleteTransitionConfirm": "Voulez-vous supprimer la transition ?",
+    "AddTransition": "Ajouter une transition",
+    "ToDo": "Tâche"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",
@@ -66,6 +76,7 @@
     "EmptyRelatedObjectValue": "Valeur d'objet lié vide : {parent} {attr}",
     "InternalServerError": "Erreur interne du serveur, contactez le support, id d'erreur : {errorId}",
     "ResultNotProvided": "Résultat non fourni",
-    "EmptyFunctionResult": "Résultat de fonction vide {func}"
+    "EmptyFunctionResult": "Résultat de fonction vide {func}",
+    "ContextValueNotProvided": "Valeur de contexte non fournie : {name}"
   }
 }

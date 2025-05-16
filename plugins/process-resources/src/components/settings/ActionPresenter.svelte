@@ -14,28 +14,29 @@
 -->
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { Process, Step } from '@hcengineering/process'
-  import { tooltip, Component, Icon, IconError, Label } from '@hcengineering/ui'
-  import plugin from '../plugin'
   import { translate } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { MethodParams, Process, Step } from '@hcengineering/process'
+  import { Component, Icon, IconError, Label, tooltip } from '@hcengineering/ui'
+  import plugin from '../../plugin'
 
+  export let action: Step<Doc>
   export let process: Process
-  export let value: Step<Doc>
+  export let readonly: boolean
 
   const client = getClient()
 
-  $: method = client.getModel().findAllSync(plugin.class.Method, { _id: value.methodId })[0]
+  $: method = client.getModel().findAllSync(plugin.class.Method, { _id: action.methodId })[0]
 
   let errorProps: Record<string, any> | undefined = undefined
 
-  $: void validate(value)
+  $: void validate(action.params)
 
-  async function validate (value: Step<Doc>): Promise<void> {
+  async function validate (params: MethodParams<Doc>): Promise<void> {
     try {
       const res: string[] = []
       for (const key of method.requiredParams) {
-        if ((value.params as any)[key] === undefined) {
+        if ((params as any)[key] === undefined) {
           const label = client.getHierarchy().findAttribute(method.objectClass, key)?.label
           if (label !== undefined) {
             res.push(await translate(label, {}))
@@ -60,7 +61,7 @@
     </div>
   {/if}
   {#if method.presenter !== undefined}
-    <Component is={method.presenter} props={{ step: value, params: value.params, process }} />
+    <Component is={method.presenter} props={{ step: action, process, readonly }} />
   {:else}
     <Label label={method.label} />
   {/if}

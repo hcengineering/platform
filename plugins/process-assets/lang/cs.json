@@ -53,7 +53,17 @@
     "OnSubProcessesDone": "Při dokončení podprocesů",
     "Result": "Výsledek",
     "NoResultRequired": "Není vyžadován žádný výsledek",
-    "RequestResult": "Požádat o výsledek"
+    "RequestResult": "Požádat o výsledek",
+    "From": "Od",
+    "To": "Do",
+    "Trigger": "Spouštěč",
+    "Actions": "Akce",
+    "Transition": "Přechod",
+    "OnToDoRemove": "Při odstranění úkolu",
+    "DeleteTransition": "Smazat přechod",
+    "DeleteTransitionConfirm": "Opravdu chcete smazat přechod?",
+    "AddTransition": "Přidat přechod",
+    "ToDo": "Úkol"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",
@@ -66,6 +76,7 @@
     "EmptyRelatedObjectValue": "Prázdná hodnota {attr} souvisejícího objektu: {parent}",
     "InternalServerError": "Vnitřní chyba serveru, kontaktujte podporu, chybové id: {errorId}",
     "ResultNotProvided": "Výsledek nebyl poskytnut",
-    "EmptyFunctionResult": "Prázdný výsledek funkce {func}"
+    "EmptyFunctionResult": "Prázdný výsledek funkce {func}",
+    "ContextValueNotProvided": "Hodnota kontextu nebyla poskytnuta: {name}"
   }
 }

@@ -19,7 +19,13 @@ import { type StorageAdapter } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
 import type { Credentials, OAuth2Client } from 'google-auth-library'
 import { gmail_v1, google } from 'googleapis'
-import { getClient as getAccountClient, Integration } from '@hcengineering/account-client'
+import {
+  getClient as getAccountClient,
+  Integration,
+  WorkspaceLoginInfo,
+  isWorkspaceLoginInfo,
+  AccountClient
+} from '@hcengineering/account-client'
 
 import { encode64 } from './base64'
 import config from './config'
@@ -94,19 +100,19 @@ export class GmailClient {
     private readonly gmail: gmail_v1.Resource$Users,
     private readonly user: User,
     client: Client,
-    workspaceId: WorkspaceUuid,
+    accountClient: AccountClient,
+    wsInfo: WorkspaceLoginInfo,
     storageAdapter: StorageAdapter,
     private readonly workspace: WorkspaceClient,
     email: string,
     private socialId: SocialId
   ) {
     this.email = email
-    this.integrationToken = serviceToken(workspaceId)
-    this.tokenStorage = new TokenStorage(this.ctx, workspaceId, this.integrationToken)
+    this.integrationToken = serviceToken(wsInfo.workspace)
+    this.tokenStorage = new TokenStorage(this.ctx, wsInfo.workspace, this.integrationToken)
     this.client = new TxOperations(client, this.socialId._id)
     this.account = this.user.userId
-    this.attachmentHandler = new AttachmentHandler(ctx, workspaceId, storageAdapter, this.gmail, this.client)
-    const accountClient = getAccountClient(config.AccountsURL, this.integrationToken)
+    this.attachmentHandler = new AttachmentHandler(ctx, wsInfo, storageAdapter, this.gmail, this.client)
     const keyValueClient = getKvsClient(this.integrationToken)
     this.messageManager = createMessageManager(
       ctx,
@@ -164,13 +170,22 @@ export class GmailClient {
     }
     user.socialId = socialId
 
+    const integrationToken = serviceToken(workspaceId)
+    const accountClient = getAccountClient(config.AccountsURL, integrationToken)
+    const workspaceInfo = await accountClient.getLoginInfoByToken()
+    if (!isWorkspaceLoginInfo(workspaceInfo)) {
+      ctx.error('Unable to get workspace info', { workspaceId, email })
+      throw new Error('Unable to get workspace info')
+    }
+
     const gmailClient = new GmailClient(
       ctx,
       oAuth2Client,
       googleClient,
       user,
       client,
-      workspaceId,
+      accountClient,
+      workspaceInfo,
       storageAdapter,
       workspace,
       email,

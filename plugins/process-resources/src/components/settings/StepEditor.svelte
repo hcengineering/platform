@@ -15,13 +15,12 @@
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Process, State, type Method, type Step } from '@hcengineering/process'
+  import { Process, type Method, type Step } from '@hcengineering/process'
   import { Component, Label } from '@hcengineering/ui'
-  import plugin from '../plugin'
   import { createEventDispatcher } from 'svelte'
+  import plugin from '../../plugin'
 
   export let step: Step<Doc>
-  export let state: State
   export let process: Process
 
   const client = getClient()
@@ -56,7 +55,7 @@
       {/if}
     </div>
     {#if method.editor !== undefined}
-      <Component is={method.editor} props={{ step, state, process }} on:change={change} />
+      <Component is={method.editor} props={{ step, process }} on:change={change} />
     {/if}
   </div>
 {/if}

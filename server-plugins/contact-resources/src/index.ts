@@ -124,7 +124,10 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
   const account = control.ctx.contextData.account
   if (account.role !== AccountRole.Owner) return result
 
-  const typedSpaces = await control.findAll(control.ctx, core.class.TypedSpace, {})
+  const typedSpaces: Space[] = [
+    ...(await control.findAll(control.ctx, core.class.TypedSpace, {})),
+    ...(await control.findAll(control.ctx, card.class.CardSpace, { space: core.space.Space }))
+  ]
 
   for (const space of typedSpaces) {
     if (space === undefined) continue

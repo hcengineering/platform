@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AnyAttribute, generateId, Ref } from '@hcengineering/core'
+  import { AnyAttribute, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Context, ProcessFunction, SelectedContext } from '@hcengineering/process'
   import { Label, resizeObserver, Scroller, Submenu } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import { getValueReduceFunc } from '../../utils'
+  import { generateContextId, getValueReduceFunc } from '../../utils'
   import { MasterTag, Tag } from '@hcengineering/card'
 
   export let masterTag: Ref<MasterTag | Tag>
@@ -54,7 +54,7 @@
   function onUserRequest (): void {
     onSelect({
       type: 'userRequest',
-      id: generateId(),
+      id: generateContextId(),
       _class: attribute.attributeOf,
       key: attribute.name
     })
