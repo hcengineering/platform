@@ -19,6 +19,7 @@
   import PopupInstance from './PopupInstance.svelte'
 
   export let contentPanel: HTMLElement | undefined = undefined
+  export let fullScreen: boolean = false
 
   const instances: PopupInstance[] = []
 
@@ -26,13 +27,21 @@
     instances.forEach((p) => p.fitPopupInstance())
   }
 
-  $: instances.length = $popups.filter((p) => p.dock !== true).length
+  const shouldDisplayPopup = (popup: any): boolean => {
+    return (
+      (fullScreen && document.fullscreenElement != null && popup.element !== 'full-centered') ||
+      (!fullScreen && document.fullscreenElement != null && popup.element === 'full-centered') ||
+      (!fullScreen && document.fullscreenElement == null)
+    )
+  }
+
+  $: instances.length = $popups.filter((p) => p.dock !== true && shouldDisplayPopup(p)).length
 </script>
 
 {#if $popups.length > 0}
   <slot name="popup-header" />
 {/if}
-{#each $popups.filter((p) => p.dock !== true) as popup, i (popup.id)}
+{#each $popups.filter((p) => p.dock !== true && shouldDisplayPopup(p)) as popup, i (popup.id)}
   <PopupInstance
     bind:this={instances[i]}
     is={popup.is}
