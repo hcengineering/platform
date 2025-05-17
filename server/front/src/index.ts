@@ -273,6 +273,7 @@ export function start (
     linkPreviewUrl?: string
     pushPublicKey?: string
     disableSignUp?: string
+    hideLocalLogin?: string
     streamUrl?: string
     mailUrl?: string
   },
@@ -348,6 +349,7 @@ export function start (
       UPLOAD_CONFIG: config.uploadConfig,
       PUSH_PUBLIC_KEY: config.pushPublicKey,
       DISABLE_SIGNUP: config.disableSignUp,
+      HIDE_LOCAL_LOGIN: config.hideLocalLogin,
       MAIL_URL: config.mailUrl,
       ...(extraConfig ?? {})
     }
