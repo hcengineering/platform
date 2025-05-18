@@ -221,10 +221,11 @@ async function saveMessageToSpaces (
             archived: false,
             createdBy: modifiedBy,
             modifiedBy,
-            parent: channel
+            parent: channel,
+            createdOn: createdDate
           },
           generateId(),
-          undefined,
+          createdDate,
           modifiedBy
         )
         await client.createMixin(
