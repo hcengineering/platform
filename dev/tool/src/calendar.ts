@@ -1,5 +1,5 @@
 import calendar from '@hcengineering/calendar'
-import { type PersonId, type WorkspaceInfoWithStatus, type WorkspaceUuid, systemAccountUuid } from '@hcengineering/core'
+import { type PersonId, type WorkspaceInfoWithStatus, type WorkspaceUuid, isActiveMode, systemAccountUuid } from '@hcengineering/core'
 import { getClient as getKvsClient } from '@hcengineering/kvs-client'
 import { createClient, getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
@@ -129,6 +129,7 @@ async function migrateCalendarIntegrations (
         if (ws == null) {
           continue
         }
+        if (!isActiveMode(ws.mode)) continue
         token.workspace = ws.uuid
 
         const personId = await getPersonIdByEmail(ws.uuid, token.email, token.userId)
@@ -215,6 +216,7 @@ async function migrateCalendarHistory (
         if (ws == null) {
           continue
         }
+        if (!isActiveMode(ws.mode)) continue
 
         const personId = await getPersonIdByEmail(ws.uuid, history.email, history.userId)
         if (personId == null) {
