@@ -1,5 +1,11 @@
 import calendar from '@hcengineering/calendar'
-import { type PersonId, type WorkspaceInfoWithStatus, type WorkspaceUuid, isActiveMode, systemAccountUuid } from '@hcengineering/core'
+import {
+  type PersonId,
+  type WorkspaceInfoWithStatus,
+  type WorkspaceUuid,
+  isActiveMode,
+  systemAccountUuid
+} from '@hcengineering/core'
 import { getClient as getKvsClient } from '@hcengineering/kvs-client'
 import { createClient, getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
