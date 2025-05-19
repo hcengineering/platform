@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { concatLink } from '@hcengineering/core'
+  import { concatLink, type ProviderInfo } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
   import { AnySvelteComponent, Button, Grid, deviceOptionsStore, getCurrentLocation } from '@hcengineering/ui'
   import { onMount } from 'svelte'
@@ -12,28 +12,41 @@
   interface Provider {
     name: string
     component: AnySvelteComponent
+    displayName: null
   }
 
   const providers: Provider[] = [
     {
       name: 'google',
-      component: Google
+      component: Google,
+      displayName: null
     },
     {
       name: 'github',
-      component: Github
+      component: Github,
+      displayName: null
     },
     {
       name: 'openid',
-      component: OpenId
+      component: OpenId,
+      displayName: null
     }
   ]
 
   let enabledProviders: Provider[] = []
 
   onMount(() => {
-    void getProviders().then((res) => {
-      enabledProviders = providers.filter((provider) => res.includes(provider.name))
+    void getProviders().then((res: ProviderInfo[]) => {
+      enabledProviders = providers
+        .map((provider) => {
+          const match = res.find((r) => r.name === provider.name)
+          if (!match) return null
+          return {
+            ...provider,
+            displayName: match.displayName
+          }
+        })
+        .filter((p): p is Provider & { displayName: string } => p !== null)
     })
   })
 
@@ -70,7 +83,7 @@
         <a href={getLink(provider)}>
           <Button kind={'contrast'} shape={'round2'} size={'x-large'} width="100%" stopPropagation={false}>
             <svelte:fragment slot="content">
-              <svelte:component this={provider.component} />
+              <svelte:component this={provider.component} displayName={provider.displayName} />
             </svelte:fragment>
           </Button>
         </a>

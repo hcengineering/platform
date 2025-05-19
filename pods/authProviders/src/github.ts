@@ -1,4 +1,5 @@
 import { type AccountDB } from '@hcengineering/account'
+import { type ProviderInfo } from '@hcengineering/core'
 import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } from '@hcengineering/core'
 import Router from 'koa-router'
 import { Strategy as GitHubStrategy } from 'passport-github2'
@@ -14,9 +15,11 @@ export function registerGithub (
   frontUrl: string,
   brandings: BrandingMap,
   signUpDisabled?: boolean
-): string | undefined {
+): ProviderInfo | undefined {
   const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
   const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
+  const name = 'github'
+  const displayName = process.env.GITHUB_DISPLAY_NAME
 
   const redirectURL = '/auth/github/callback'
   if (GITHUB_CLIENT_ID === undefined || GITHUB_CLIENT_SECRET === undefined) return
@@ -80,5 +83,5 @@ export function registerGithub (
     }
   )
 
-  return 'github'
+  return { name, displayName }
 }

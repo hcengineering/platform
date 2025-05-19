@@ -30,7 +30,8 @@ import {
   type AccountUuid,
   type Person,
   type WorkspaceInfoWithStatus,
-  type WorkspaceUserOperation
+  type WorkspaceUserOperation,
+  type ProviderInfo
 } from '@hcengineering/core'
 import { loginId } from '@hcengineering/login'
 import platform, {
@@ -851,8 +852,8 @@ export async function getLoginInfoFromQuery (): Promise<LoginInfo | WorkspaceLog
   }
 }
 
-export async function getProviders (): Promise<string[]> {
-  let providers: string[]
+export async function getProviders (): Promise<ProviderInfo[]> {
+  let providers: ProviderInfo[]
 
   try {
     providers = await getAccountClient(null).getProviders()

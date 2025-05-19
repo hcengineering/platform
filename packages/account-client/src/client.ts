@@ -23,6 +23,7 @@ import {
   type PersonId,
   type PersonInfo,
   type PersonUuid,
+  type ProviderInfo,
   type SocialIdType,
   Version,
   type WorkspaceInfoWithStatus,
@@ -52,7 +53,7 @@ import { getClientTimezone } from './utils'
 /** @public */
 export interface AccountClient {
   // Static methods
-  getProviders: () => Promise<string[]>
+  getProviders: () => Promise<ProviderInfo[]>
 
   // RPC
   getUserWorkspaces: () => Promise<WorkspaceInfoWithStatus[]>
@@ -217,7 +218,7 @@ class AccountClientImpl implements AccountClient {
     this.rpc = withRetryUntilTimeout(this._rpc.bind(this), retryTimeoutMs ?? 5000)
   }
 
-  async getProviders (): Promise<string[]> {
+  async getProviders (): Promise<ProviderInfo[]> {
     return await withRetryUntilMaxAttempts(async () => {
       const response = await fetch(concatLink(this.url, '/providers'))
 

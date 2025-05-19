@@ -869,4 +869,9 @@ export interface AccountInfo {
   locale?: string
 }
 
+export interface ProviderInfo {
+  name: string
+  displayName?: string
+}
+
 export type SocialKey = Pick<SocialId, 'type' | 'value'>
