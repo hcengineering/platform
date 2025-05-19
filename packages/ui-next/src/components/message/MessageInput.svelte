@@ -258,7 +258,7 @@
     if (message.files.some((it) => !files.some((f) => f.blobId === it.blobId))) return true
     if (newMarkup === undefined || content === undefined) return false
 
-    return !areEqualMarkups(content, newMarkup ?? '')
+    return !areEqualMarkups(content, newMarkup ?? Markup.EmptyMarkup)
   }
 </script>
 
