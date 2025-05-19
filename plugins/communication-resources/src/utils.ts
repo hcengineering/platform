@@ -14,7 +14,9 @@
 import { getCommunicationClient } from '@hcengineering/presentation'
 import { type Card } from '@hcengineering/card'
 import { getCurrentAccount } from '@hcengineering/core'
-import  communication from './plugin'
+import { getMetadata } from '@hcengineering/platform'
+
+import communication from './plugin'
 
 export async function unsubscribe (card: Card): Promise<void> {
   const client = getCommunicationClient()
