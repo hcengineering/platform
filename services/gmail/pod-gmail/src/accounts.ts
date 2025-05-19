@@ -15,6 +15,7 @@
 import { AccountUuid, Person, PersonId, SocialId, SocialIdType, buildSocialIdString } from '@hcengineering/core'
 import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
+import { IntegrationError } from '@hcengineering/setting'
 
 import { serviceToken } from './utils'
 
@@ -67,7 +68,7 @@ export async function getOrCreateSocialId (account: AccountUuid, email: string):
   }
 
   if (socialId.personUuid !== account) {
-    throw new Error('SOCIAL_ID_PERSON_MISMATCH')
+    throw new Error(IntegrationError.EMAIL_IS_ALREADY_USED)
   }
 
   return socialId

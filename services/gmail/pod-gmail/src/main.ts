@@ -112,8 +112,9 @@ export const main = async (): Promise<void> => {
           ctx.error('Failed to process signin code', { message: err.message })
           if (state !== undefined) {
             const errorMessage = encodeURIComponent(err.message)
-            const errorUrl = `${state.redirectURL}?integrationError=${errorMessage}`
-            res.redirect(errorUrl)
+            const url = new URL(state.redirectURL)
+            url.searchParams.append('integrationError', errorMessage)
+            res.redirect(url.toString())
           } else {
             res.status(500).send()
           }

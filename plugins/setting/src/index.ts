@@ -111,6 +111,10 @@ export interface WorkspaceSetting extends Doc {
   icon?: Ref<Blob> | null
 }
 
+export enum IntegrationError {
+  EMAIL_IS_ALREADY_USED = 'EMAIL_IS_ALREADY_USED'
+}
+
 /**
  * @public
  */

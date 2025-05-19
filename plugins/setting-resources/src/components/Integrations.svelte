@@ -18,10 +18,11 @@
   import { createQuery } from '@hcengineering/presentation'
   import type { Integration, IntegrationType } from '@hcengineering/setting'
   import setting from '@hcengineering/setting'
+
   import { Header, Breadcrumb, NotificationSeverity, addNotification, themeStore } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
   import PluginCard from './PluginCard.svelte'
-  import IntegrationError from './IntegrationError.svelte'
+  import IntegrationErrorNotification from './IntegrationErrorNotification.svelte'
 
   const typeQuery = createQuery()
   const integrationQuery = createQuery()
@@ -60,13 +61,13 @@
 
   async function showErrorNotification (error: string): Promise<void> {
     const errorMessage =
-      error === 'SOCIAL_ID_PERSON_MISMATCH'
+      error === IntegrationError.EMAIL_IS_ALREADY_USED
         ? await translate(setting.string.EmailIsUsed, {}, $themeStore.language)
         : await translate(setting.string.IntegrationError, {}, $themeStore.language)
     addNotification(
       await translate(setting.string.IntegrationFailed, {}, $themeStore.language),
       errorMessage,
-      IntegrationError,
+      IntegrationErrorNotification,
       undefined,
       NotificationSeverity.Error
     )
