@@ -21,10 +21,10 @@ import { MeasureContext, MeasureMetricsContext, newMetrics } from '@hcengineerin
 import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
+import { initQueue, closeQueue } from '@hcengineering/mail-common'
 
 import { handleMtaHook } from './handlerMta'
 import config from './config'
-import { initQueue, closeQueue } from './queue'
 
 type RequestHandler = (req: Request, res: Response, ctx: MeasureContext, next?: NextFunction) => Promise<void>
 
@@ -45,7 +45,7 @@ async function main (): Promise<void> {
 
   setMetadata(serverToken.metadata.Secret, config.secret)
 
-  initQueue(ctx, config.queueRegion)
+  initQueue(ctx, 'inbound-mail', config.queueRegion)
 
   const app = express()
 

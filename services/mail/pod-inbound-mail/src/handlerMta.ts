@@ -18,14 +18,19 @@ import { Request, Response } from 'express'
 import TurndownService from 'turndown'
 import sanitizeHtml from 'sanitize-html'
 import { MeasureContext } from '@hcengineering/core'
-import { type Attachment, type EmailContact, type EmailMessage, createMessages } from '@hcengineering/mail-common'
+import {
+  type Attachment,
+  type EmailContact,
+  type EmailMessage,
+  createMessages,
+  getProducer
+} from '@hcengineering/mail-common'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
 import { QueueTopic } from '@hcengineering/server-core'
 
 import { mailServiceToken, baseConfig, kvsClient } from './client'
 import config from './config'
-import { getProducer } from './queue'
 
 export interface MtaMessage {
   envelope: {

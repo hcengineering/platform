@@ -16,7 +16,7 @@
 import { MeasureContext } from '@hcengineering/core'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { PlatformQueue, PlatformQueueProducer } from '@hcengineering/server-core'
-import { QueueProducerRegistry } from '../queue'
+import { QueueProducerRegistry, initQueue, closeQueue, getProducer } from '../queue'
 
 // Mock dependencies
 jest.mock('@hcengineering/kafka')
@@ -189,5 +189,191 @@ describe('QueueProducerRegistry', () => {
     // Should create a new producer since cache was cleared
     expect(mockQueue.getProducer).toHaveBeenCalledTimes(1)
     expect(mockCtx.info).toHaveBeenCalledWith('Created new producer', { topic: TOPIC1 })
+  })
+})
+
+describe('Queue Management Functions', () => {
+  // Mock objects
+  let mockCtx: MeasureContext
+  let mockQueue: PlatformQueue
+  let mockProducer: PlatformQueueProducer<any>
+
+  // Test constants
+  const SERVICE_ID = 'test-service'
+  const QUEUE_REGION = 'test-region'
+  const TEST_TOPIC = 'test-topic'
+  const CLIENT_ID = 'test-client-id'
+
+  beforeEach(() => {
+    // Reset module state between tests
+    jest.resetModules()
+
+    // Setup mock producer
+    mockProducer = {
+      send: jest.fn().mockResolvedValue(undefined),
+      sendMessages: jest.fn().mockResolvedValue(undefined),
+      getQueue: jest.fn().mockReturnValue(mockQueue),
+      close: jest.fn().mockResolvedValue(undefined)
+    }
+
+    // Setup mock queue
+    mockQueue = {
+      getProducer: jest.fn().mockReturnValue(mockProducer),
+      getClientId: jest.fn().mockReturnValue(CLIENT_ID),
+      createConsumer: jest.fn(),
+      createTopics: jest.fn(),
+      deleteTopics: jest.fn(),
+      shutdown: jest.fn()
+    }
+
+    // Setup mock context
+    mockCtx = {
+      info: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn()
+    } as unknown as MeasureContext
+
+    // Mock getPlatformQueue to return our mock queue
+    ;(getPlatformQueue as jest.Mock).mockReturnValue(mockQueue)
+
+    // Force re-initialization of module state
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const queueModule = require('../queue')
+    queueModule.queueRegistry = undefined
+  })
+
+  afterEach(async () => {
+    // Clean up after each test
+    await closeQueue()
+  })
+
+  describe('initQueue', () => {
+    it('should initialize the queue registry', () => {
+      // Call the function
+      initQueue(mockCtx, SERVICE_ID, QUEUE_REGION)
+
+      // Verify getPlatformQueue was called with correct parameters
+      expect(getPlatformQueue).toHaveBeenCalledWith(SERVICE_ID, QUEUE_REGION)
+
+      // Verify logging
+      expect(mockCtx.info).toHaveBeenCalledWith('Queue initialized', { clientId: CLIENT_ID })
+    })
+
+    it('should throw error if initialized multiple times', () => {
+      // First initialization
+      initQueue(mockCtx, SERVICE_ID, QUEUE_REGION)
+
+      // Second initialization should throw
+      expect(() => {
+        initQueue(mockCtx, SERVICE_ID, QUEUE_REGION)
+      }).toThrow('Queue already initialized')
+    })
+  })
+
+  describe('getProducer', () => {
+    it('should throw error if queue not initialized', () => {
+      expect(() => {
+        getProducer(TEST_TOPIC)
+      }).toThrow('Queue not initialized')
+    })
+
+    it('should return a producer for the specified topic', () => {
+      // Initialize queue
+      initQueue(mockCtx, SERVICE_ID, QUEUE_REGION)
+
+      // Get producer
+      const producer = getProducer(TEST_TOPIC)
+
+      // Verify queue.getProducer was called with correct parameters
+      expect(mockQueue.getProducer).toHaveBeenCalledWith(mockCtx, TEST_TOPIC)
+
+      // Verify the producer was returned
+      expect(producer).toBe(mockProducer)
+    })
+
+    it('should reuse existing producer for the same topic', () => {
+      // Initialize queue
+      initQueue(mockCtx, SERVICE_ID, QUEUE_REGION)
+
+      // Get producer twice
+      const producer1 = getProducer(TEST_TOPIC)
+      const producer2 = getProducer(TEST_TOPIC)
+
+      // Verify queue.getProducer was called only once
+      expect(mockQueue.getProducer).toHaveBeenCalledTimes(1)
+
+      // Verify the same producer was returned
+      expect(producer1).toBe(producer2)
+    })
+
+    it('should create different producers for different topics', () => {
+      // Setup a second producer
+      const mockProducer2 = { ...mockProducer }
+      mockQueue.getProducer = jest.fn().mockReturnValueOnce(mockProducer).mockReturnValueOnce(mockProducer2)
+
+      // Initialize queue
+      initQueue(mockCtx, SERVICE_ID, QUEUE_REGION)
+
+      // Get producers for different topics
+      const producer1 = getProducer('topic1')
+      const producer2 = getProducer('topic2')
+
+      // Verify queue.getProducer was called twice
+      expect(mockQueue.getProducer).toHaveBeenCalledTimes(2)
+
+      // Verify different producers were returned
+      expect(producer1).not.toBe(producer2)
+    })
+  })
+
+  describe('closeQueue', () => {
+    it('should close all producers', async () => {
+      // Initialize queue
+      initQueue(mockCtx, SERVICE_ID, QUEUE_REGION)
+
+      // Get multiple producers
+      getProducer('topic1')
+      getProducer('topic2')
+
+      // Close queue
+      await closeQueue()
+
+      // Verify producers were closed
+      expect(mockProducer.close).toHaveBeenCalledTimes(2)
+
+      // Verify logging
+      expect(mockCtx.info).toHaveBeenCalledWith('Producer closed', expect.any(Object))
+      expect(mockCtx.info).toHaveBeenCalledWith('QueueProducerRegistry closed')
+    })
+
+    it('should handle errors when closing producers', async () => {
+      // Make producer.close throw an error
+      mockProducer.close = jest.fn().mockRejectedValue(new Error('Close error'))
+
+      // Initialize queue
+      initQueue(mockCtx, SERVICE_ID, QUEUE_REGION)
+
+      // Get producer
+      getProducer(TEST_TOPIC)
+
+      // Close queue
+      await closeQueue()
+
+      // Verify error was logged
+      expect(mockCtx.error).toHaveBeenCalledWith('Failed to close producer', {
+        topic: TEST_TOPIC,
+        error: expect.any(Error)
+      })
+    })
+
+    it('should do nothing if queue not initialized', async () => {
+      // Don't initialize queue
+
+      // Close queue
+      await closeQueue()
+
+      // Verify no errors occurred
+      expect(mockCtx.error).not.toHaveBeenCalled()
+    })
   })
 })

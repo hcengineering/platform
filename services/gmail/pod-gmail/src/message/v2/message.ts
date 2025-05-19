@@ -17,16 +17,21 @@ import { gmail_v1 } from 'googleapis'
 import sanitizeHtml from 'sanitize-html'
 
 import { TxOperations, type MeasureContext } from '@hcengineering/core'
-import { createMessages, parseEmailHeader, parseNameFromEmailHeader, EmailMessage } from '@hcengineering/mail-common'
+import {
+  createMessages,
+  parseEmailHeader,
+  parseNameFromEmailHeader,
+  EmailMessage,
+  getProducer
+} from '@hcengineering/mail-common'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { AccountClient, isWorkspaceLoginInfo, WorkspaceLoginInfo } from '@hcengineering/account-client'
+import { QueueTopic } from '@hcengineering/server-core'
 
 import { IMessageManager } from '../types'
 import config from '../../config'
 import { AttachmentHandler } from '../attachments'
 import { decode64 } from '../../base64'
-import { getProducer } from '../../queue'
-import { QueueTopic } from '@hcengineering/server-core'
 
 export class MessageManagerV2 implements IMessageManager {
   private wsInfo: WorkspaceLoginInfo | undefined = undefined

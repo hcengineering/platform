@@ -250,7 +250,8 @@ async function saveMessageToSpaces (
 
       const messageData = Buffer.from(
         JSON.stringify({
-          type: MessageType.Message,
+          type: MessageRequestEventType.CreateMessage,
+          messageType: MessageType.Message,
           card: threadId,
           cardType: chat.masterTag.Thread,
           content,

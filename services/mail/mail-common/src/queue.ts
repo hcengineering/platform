@@ -16,6 +16,31 @@
 import { MeasureContext } from '@hcengineering/core'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { PlatformQueue, PlatformQueueProducer } from '@hcengineering/server-core'
+import { RequestEvent as CommunicationEvent } from '@hcengineering/communication-sdk-types'
+
+let queueRegistry: QueueProducerRegistry | undefined
+
+export function initQueue (ctx: MeasureContext, serviceId: string, queueRegion: string): void {
+  if (queueRegistry !== undefined) {
+    throw new Error('Queue already initialized')
+  }
+  queueRegistry = new QueueProducerRegistry(ctx, serviceId, queueRegion)
+  ctx.info('Queue initialized', { clientId: queueRegistry.getClientId() })
+}
+
+export async function closeQueue (): Promise<void> {
+  if (queueRegistry !== undefined) {
+    await queueRegistry.close()
+    queueRegistry = undefined
+  }
+}
+
+export function getProducer (topic: string): PlatformQueueProducer<CommunicationEvent> {
+  if (queueRegistry === undefined) {
+    throw new Error('Queue not initialized')
+  }
+  return queueRegistry.getProducer<CommunicationEvent>(topic)
+}
 
 export class QueueProducerRegistry {
   private readonly queue: PlatformQueue

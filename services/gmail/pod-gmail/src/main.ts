@@ -23,6 +23,7 @@ import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
+import { initQueue, closeQueue } from '@hcengineering/mail-common'
 import { type IncomingHttpHeaders } from 'http'
 import { join } from 'path'
 
@@ -31,7 +32,6 @@ import config from './config'
 import { GmailController } from './gmailController'
 import { createServer, listen } from './server'
 import { IntegrationVersion, type Endpoint, type State } from './types'
-import { initQueue, closeQueue } from './queue'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
   try {
@@ -64,7 +64,7 @@ export const main = async (): Promise<void> => {
   const storageAdapter = buildStorageFromConfig(storageConfig)
 
   if (config.Version === IntegrationVersion.V2) {
-    initQueue(ctx, config.QueueRegion)
+    initQueue(ctx, 'gmail-service', config.QueueRegion)
   }
 
   const gmailController = GmailController.create(ctx, storageAdapter)
