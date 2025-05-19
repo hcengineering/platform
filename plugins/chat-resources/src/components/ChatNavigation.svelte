@@ -38,9 +38,9 @@
       { type: chat.masterTag.Channel, order: 2 }
     ],
     fixedTypes: [chat.masterTag.Thread, chat.masterTag.Channel],
-    defaultSorting: 'alphabetical',
+    defaultSorting: 'recent',
     specialSorting: {
-      [chat.masterTag.Thread]: 'recent'
+      [chat.masterTag.Channel]: 'alphabetical'
     }
   }}
   applicationId={chatId}

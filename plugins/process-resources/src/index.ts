@@ -40,6 +40,7 @@ import StatePresenter from './components/settings/StatePresenter.svelte'
 import TriggerPresenter from './components/settings/TriggerPresenter.svelte'
 import ActionsPresenter from './components/settings/ActionsPresenter.svelte'
 import ToDoParamsEditor from './components/settings/ToDoParamsEditor.svelte'
+import ProcessesCardSection from './components/ProcessesCardSection.svelte'
 
 import { continueExecution, showDoneQuery, todoTranstionCheck } from './utils'
 import { ProcessMiddleware } from './middleware'
@@ -77,7 +78,8 @@ export default async (): Promise<Resources> => ({
     StatePresenter,
     TriggerPresenter,
     ToDoRemoveEditor: ToDoParamsEditor,
-    ToDoCloseEditor: ToDoParamsEditor
+    ToDoCloseEditor: ToDoParamsEditor,
+    ProcessesCardSection
   },
   triggerCheck: {
     ToDo: todoTranstionCheck

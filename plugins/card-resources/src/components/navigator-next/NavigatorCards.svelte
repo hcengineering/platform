@@ -22,9 +22,10 @@
     createQuery,
     getClient
   } from '@hcengineering/presentation'
-  import uiNext, { Button, ButtonVariant, NavItem } from '@hcengineering/ui-next'
+  import uiNext, { NavItem } from '@hcengineering/ui-next'
   import { createEventDispatcher } from 'svelte'
-  import { Label, NotificationContext } from '@hcengineering/communication-types'
+  import { Label, NotificationContext, NotificationType } from '@hcengineering/communication-types'
+  import { Button } from '@hcengineering/ui'
 
   import type { CardsNavigatorConfig } from '../../types'
   import cardPlugin from '../../plugin'
@@ -105,13 +106,14 @@
       {
         card: ids ?? cards.map((it) => it._id),
         notifications: {
+          type: NotificationType.Message,
           order: SortingOrder.Descending,
           read: false,
           limit: 10
         }
       },
       (res) => {
-        contextByCard = new Map(res.getResult().map((it) => [it.card, it]))
+        contextByCard = new Map(res.getResult().map((it) => [it.card as Ref<Card>, it]))
       }
     )
   } else {
@@ -153,8 +155,8 @@
           secondLabel={card.$lookup?.parent?.title}
           icon={clazz.icon ?? cardPlugin.icon.Card}
           selected={selectedCard === card._id}
-          paddingLeft="1.75rem"
-          notify={context && context.lastUpdate.getTime() > context.lastView.getTime()}
+          paddingLeft="2.75rem"
+          notify={(context?.notifications?.length ?? 0) > 0}
           notificationsCount={context?.notifications?.length ?? 0}
           on:click={(e) => {
             e.stopPropagation()
@@ -167,10 +169,12 @@
       {#if total > cards.length}
         <div class="all-button">
           <Button
-            labelIntl={uiNext.string.All}
+            label={uiNext.string.All}
             labelParams={{ count: total }}
-            variant={ButtonVariant.Ghost}
-            on:click={() => {
+            kind={'ghost'}
+            on:click={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
               limit += config.limit
             }}
           />

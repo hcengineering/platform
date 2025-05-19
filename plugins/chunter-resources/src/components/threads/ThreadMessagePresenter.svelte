@@ -36,7 +36,7 @@
   export let hoverable = true
   export let inline = false
   export let withShowMore: boolean = true
-  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hoverStyles: 'filledHover' = 'filledHover'
   export let attachmentImageSize: AttachmentImageSize = 'x-large'
   export let videoPreload = false
   export let readonly = false

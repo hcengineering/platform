@@ -31,7 +31,7 @@
   export let withActions: boolean = true
   export let actions: Action[] = []
   export let hoverable = true
-  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hoverStyles: 'filledHover' = 'filledHover'
   export let hideLink = false
   export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
