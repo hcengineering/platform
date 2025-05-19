@@ -243,7 +243,7 @@ export class AuthController {
       secret: JSON.stringify(_token)
     }
     try {
-      const currentIntegration = this.accountClient.getIntegrationSecret({
+      const currentIntegration = await this.accountClient.getIntegrationSecret({
         socialId: this.user.userId,
         kind: CALENDAR_INTEGRATION,
         workspaceUuid: this.user.workspace,
