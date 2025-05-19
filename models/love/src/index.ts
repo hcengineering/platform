@@ -60,7 +60,8 @@ import {
   TypeRef,
   TypeString,
   UX,
-  TypeBoolean
+  TypeBoolean,
+  Hidden
 } from '@hcengineering/model'
 import calendar, { TEvent, TSchedule } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
@@ -110,6 +111,7 @@ export class TRoom extends TDoc implements Room {
   y!: number
 
   @Prop(TypeString(), love.string.Language, { editor: love.component.RoomLanguageEditor })
+  @Hidden()
     language!: RoomLanguage
 
   @Prop(TypeBoolean(), love.string.StartWithTranscription)

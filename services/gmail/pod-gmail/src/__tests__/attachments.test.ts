@@ -15,6 +15,7 @@ import { AttachmentHandler } from '../message/attachments'
 import type { Attachment as AttachedFile } from '@hcengineering/mail-common'
 import attachment, { Attachment } from '@hcengineering/attachment'
 import { decode64, encode64 } from '../base64'
+import { WorkspaceLoginInfo } from '@hcengineering/account-client'
 
 jest.mock('../config')
 
@@ -41,7 +42,11 @@ describe('AttachmentHandler', () => {
     warn: jest.fn(),
     end: jest.fn()
   }
-  const mockWorkspaceId = 'test-workspace' as WorkspaceUuid
+  const mockWorkspaceLoginInfo: WorkspaceLoginInfo = {
+    endpoint: 'wss://test-endpoint.com',
+    workspace: 'test-workspace' as WorkspaceUuid,
+    token: 'test-token'
+  } as any
   const mockStorageAdapter = {
     put: jest.fn(),
     read: jest.fn()
@@ -77,7 +82,13 @@ describe('AttachmentHandler', () => {
   let attachmentHandler: AttachmentHandler
 
   beforeEach(() => {
-    attachmentHandler = new AttachmentHandler(mockCtx, mockWorkspaceId, mockStorageAdapter, mockGmail, mockClient)
+    attachmentHandler = new AttachmentHandler(
+      mockCtx,
+      mockWorkspaceLoginInfo,
+      mockStorageAdapter,
+      mockGmail,
+      mockClient
+    )
   })
 
   describe('addAttachement', () => {

@@ -110,7 +110,7 @@ services:
     volumes:
       - files:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ['CMD', 'mc', 'ready', 'local']
       interval: 5s
       retries: 10
     restart: unless-stopped
@@ -282,6 +282,7 @@ services:
       - DESKTOP_UPDATES_CHANNEL=dev
       - BRANDING_URL=http://huly.local:8087/branding.json
       - STREAM_URL=http://huly.local:1080/recording
+      - COMMUNICATION_API_ENABLED=true
       # - DISABLE_SIGNUP=true
     restart: unless-stopped
   transactor:
@@ -355,6 +356,7 @@ services:
       - RATE_LIMIT_MAX=250 # 250 requests per 30 seconds
       - RATE_LIMIT_WINDOW=30000
       - FILES_URL=http://huly.local:4030/blob/:workspace/:blobId/:filename
+      - COMMUNICATION_API_ENABLED=true
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
@@ -548,6 +550,21 @@ services:
     environment:
       - HULY_DB_CONNECTION=${DB_CR_URL}
       - HULY_TOKEN_SECRET=secret
+    restart: unless-stopped
+  hulygun:
+    image: hardcoreeng/hulygun
+    depends_on:
+      redpanda:
+        condition: service_started
+      account:
+        condition: service_started
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    environment:
+      - HULY_LOG=debug
+      - HULY_KAFKA_BOOTSTRAP=redpanda:9092
+      - HULY_TOKEN_SECRET=secret
+      - HULY_ACCOUNT_SERVICE=http://huly.local:3000
     restart: unless-stopped
 volumes:
   db:

@@ -13,6 +13,7 @@ import {
 } from '@hcengineering/contact'
 import {
   AccountRole,
+  type AccountUuid,
   buildSocialIdString,
   type Class,
   type Doc,
@@ -23,7 +24,9 @@ import {
   type MarkupBlobRef,
   MeasureMetricsContext,
   type PersonId,
+  type PersonUuid,
   type Ref,
+  type SocialKey,
   SortingOrder,
   type Space,
   type TxCUD
@@ -283,6 +286,88 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateMergedAccounts (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('migrateMergedAccounts', {})
+  ctx.info('migrating merged person accounts ', {})
+  const accountsByPerson = new Map<string, any[]>()
+  const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
+  })
+  const personAccounts = getAccountsFromTxes(personAccountsTxes)
+
+  for (const account of personAccounts) {
+    if (!accountsByPerson.has(account.person)) {
+      accountsByPerson.set(account.person, [])
+    }
+
+    // exclude empty emails
+    // also exclude Hulia account
+    if (account.email === '' || account.email === 'huly.ai.bot@hc.engineering') {
+      continue
+    }
+    accountsByPerson.get(account.person)?.push(account)
+  }
+
+  for (const [person, oldAccounts] of accountsByPerson.entries()) {
+    try {
+      if (oldAccounts.length < 2) continue
+
+      // Every social id in the old account might either be already in the new account or not in the accounts at all
+      // So we want to
+      // 1. Take the first social id with the existing account
+      // 2. Merge all other accounts into the first one
+      // 3. Create social ids for the first account which haven't had their own accounts
+      const toAdd: Array<SocialKey> = []
+      const toMergePersons = new Set<PersonUuid>()
+      const toMerge = new Set<AccountUuid>()
+      for (const oldAccount of oldAccounts) {
+        const socialIdKeyObj = getSocialKeyByOldEmail(oldAccount.email)
+        const socialIdKey = buildSocialIdString(socialIdKeyObj)
+
+        const socialId = await client.accountClient.findFullSocialIdBySocialKey(socialIdKey)
+        const personUuid = socialId?.personUuid
+        const accountUuid = (await client.accountClient.findPersonBySocialKey(socialIdKey, true)) as AccountUuid
+
+        if (personUuid == null) {
+          toAdd.push(socialIdKeyObj)
+          // Means not attached to any account yet, simply add the social id to the primary account
+        } else if (accountUuid == null) {
+          // Attached to a person without an account. Should not be the case if being run before the global accounts migration.
+          // Merge the person into the primary account.
+          toMergePersons.add(personUuid)
+        } else {
+          // This is the case when the social id is already attached to an account. Merge the accounts.
+          toMerge.add(accountUuid)
+        }
+      }
+
+      if (toMerge.size === 0) {
+        // No existing accounts for the person's social ids. Normally this should never be the case.
+        continue
+      }
+
+      const toMergeAccountsArray = Array.from(toMerge)
+      const primaryAccount = toMergeAccountsArray[0]
+
+      for (let i = 1; i < toMergeAccountsArray.length; i++) {
+        const accountToMerge = toMergeAccountsArray[i]
+        await client.accountClient.mergeSpecifiedAccounts(primaryAccount, accountToMerge)
+      }
+
+      const toMergePersonsArray = Array.from(toMergePersons)
+      for (const personToMerge of toMergePersonsArray) {
+        await client.accountClient.mergeSpecifiedPersons(primaryAccount, personToMerge)
+      }
+
+      for (const addTarget of toAdd) {
+        await client.accountClient.addSocialIdToPerson(primaryAccount, addTarget.type, addTarget.value, false)
+      }
+    } catch (err: any) {
+      ctx.error('Failed to merge accounts for person', { person, oldAccounts, err })
+    }
+  }
+}
+
 async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('contact ensureGlobalPersonsForLocalAccounts', {})
   ctx.info('ensuring global persons for local accounts ', {})
@@ -374,9 +459,41 @@ async function createUserProfiles (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fixSocialIdCase (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('contact fixSocialIdCase', {})
+  ctx.info('Fixing social id case...')
+
+  const socialIds = await client.traverse<SocialIdentity>(DOMAIN_CHANNEL, {
+    _class: contact.class.SocialIdentity
+  })
+
+  let updated = 0
+  while (true) {
+    const docs = await socialIds.next(200)
+    if (docs === null || docs?.length === 0) {
+      break
+    }
+
+    for (const d of docs) {
+      const newKey = d.key.toLowerCase()
+      const newVal = d.value.toLowerCase()
+      if (newKey !== d.key || newVal !== d.value) {
+        await client.update(DOMAIN_CHANNEL, { _id: d._id }, { key: newKey, value: newVal })
+        updated++
+      }
+    }
+  }
+  ctx.info('Finished fixing social id case. Total updated:', { updated })
+}
+
 export const contactOperation: MigrateOperation = {
   async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
     await tryMigrate(mode, client, contactId, [
+      {
+        state: 'migrate-merged-accounts',
+        mode: 'upgrade',
+        func: (client) => migrateMergedAccounts(client)
+      },
       {
         state: 'ensure-accounts-global-persons-v2',
         mode: 'upgrade',
@@ -550,6 +667,11 @@ export const contactOperation: MigrateOperation = {
         state: 'create-user-profiles',
         mode: 'upgrade',
         func: createUserProfiles
+      },
+      {
+        state: 'fix-social-id-case',
+        mode: 'upgrade',
+        func: fixSocialIdCase
       }
     ])
   },

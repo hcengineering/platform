@@ -13,15 +13,16 @@
 
 import core, { type Doc } from '@hcengineering/core'
 import { Mixin, type Builder } from '@hcengineering/model'
-import { TMethod, TProcessFunction } from '@hcengineering/model-process'
+import { TMethod, TProcessFunction, TTrigger } from '@hcengineering/model-process'
 import type { Resource } from '@hcengineering/platform'
-import process from '@hcengineering/process'
+import process, { type CheckFunc, ExecutionStatus } from '@hcengineering/process'
 import serverCore from '@hcengineering/server-core'
 import serverProcess, {
   type ExecuteFunc,
   type FuncImpl,
   type MethodImpl,
-  type TransformFunc
+  type TransformFunc,
+  type TriggerImpl
 } from '@hcengineering/server-process'
 
 export { serverProcessId } from '@hcengineering/server-process'
@@ -36,8 +37,21 @@ export class TFuncImpl extends TProcessFunction implements FuncImpl {
   func!: Resource<TransformFunc>
 }
 
+@Mixin(serverProcess.mixin.TriggerImpl, process.class.Trigger)
+export class TTriggerImpl extends TTrigger implements TriggerImpl {
+  serverCheckFunc?: Resource<CheckFunc>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TMethodImpl, TFuncImpl)
+  builder.createModel(TMethodImpl, TFuncImpl, TTriggerImpl)
+
+  builder.mixin(process.trigger.OnToDoClose, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    serverCheckFunc: serverProcess.func.CheckToDo
+  })
+
+  builder.mixin(process.trigger.OnToDoRemove, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    serverCheckFunc: serverProcess.func.CheckToDo
+  })
 
   builder.mixin(process.method.RunSubProcess, process.class.Method, serverProcess.mixin.MethodImpl, {
     func: serverProcess.func.RunSubProcess
@@ -49,10 +63,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(process.method.UpdateCard, process.class.Method, serverProcess.mixin.MethodImpl, {
     func: serverProcess.func.UpdateCard
-  })
-
-  builder.mixin(process.method.WaitSubProcess, process.class.Method, serverProcess.mixin.MethodImpl, {
-    func: serverProcess.func.WaitSubProcess
   })
 
   builder.mixin(process.function.FirstValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
@@ -104,20 +114,11 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxUpdateDoc,
       objectClass: process.class.Execution,
-      'operations.error': null
+      'operations.status': ExecutionStatus.Active,
+      space: core.space.Tx
     },
     isAsync: true
   })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverProcess.trigger.OnProcessRemove,
-    txMatch: {
-      _class: core.class.TxRemoveDoc,
-      objectClass: process.class.Process
-    },
-    isAsync: true
-  })
-
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverProcess.trigger.OnExecutionCreate,
     txMatch: {
@@ -146,11 +147,33 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnProcessRemove,
+    txMatch: {
+      _class: core.class.TxRemoveDoc,
+      objectClass: process.class.Process
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverProcess.trigger.OnStateRemove,
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: process.class.State
-    },
-    isAsync: true
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnStateActionsUpdate,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: process.class.State
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnTransition,
+    txMatch: {
+      objectClass: process.class.Transition
+    }
   })
 }

@@ -55,23 +55,34 @@ async function main (): Promise<void> {
         const ws = message.id as WorkspaceUuid
         const records = message.value
         for (const record of records) {
+          ctx.info('Processing event', {
+            ws,
+            action: record.action,
+            eventId: record.event.eventId,
+            objectId: record.event._id,
+            modifiedBy: record.modifiedBy
+          })
           try {
+            let skipReason
             switch (record.action) {
               case 'create':
-                await eventCreated(ws, record)
+                skipReason = await eventCreated(ctx, ws, record)
                 break
               case 'update':
-                await eventUpdated(ws, record)
+                skipReason = await eventUpdated(ctx, ws, record)
                 break
               case 'delete':
-                await eventDeleted(ws, record)
+                skipReason = await eventDeleted(ctx, ws, record)
                 break
               case 'mixin':
-                await eventMixin(ws, record)
+                skipReason = await eventMixin(ctx, ws, record)
                 break
             }
+            if (skipReason !== undefined) {
+              ctx.info('Notification skipped', { reason: skipReason, objectId: record.event._id })
+            }
           } catch (error) {
-            ctx.error('Error processing message', { error, ws, record })
+            ctx.error('Error processing event', { error, ws, record })
           }
         }
       }

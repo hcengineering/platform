@@ -54,11 +54,11 @@ export const main = async (): Promise<void> => {
       )
   })
 
-  const accountClient = getAccountClient(getServiceToken())
-
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
   setMetadata(serverToken.metadata.Secret, config.Secret)
+
+  const accountClient = getAccountClient(getServiceToken())
 
   const pushHandler = new PushHandler(ctx, accountClient)
   const calendarController = CalendarController.getCalendarController(ctx, accountClient)

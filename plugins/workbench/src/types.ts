@@ -37,7 +37,7 @@ export interface Application extends Doc {
   alias: string
   icon: Asset
   hidden: boolean
-  position?: 'top' | 'mid'
+  position?: 'top' | 'mid' | 'bottom'
   type?: string // temporary workaround for navigation in card-based application
 
   // Also attached ApplicationNavModel will be joined after this one main.

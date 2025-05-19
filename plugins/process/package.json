@@ -37,7 +37,6 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/contact": "^0.6.24",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/card": "^0.6.0",

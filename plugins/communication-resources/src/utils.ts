@@ -14,6 +14,7 @@
 import { getCommunicationClient } from '@hcengineering/presentation'
 import { type Card } from '@hcengineering/card'
 import { getCurrentAccount } from '@hcengineering/core'
+import  communication from './plugin'
 
 export async function unsubscribe (card: Card): Promise<void> {
   const client = getCommunicationClient()
@@ -28,6 +29,8 @@ export async function subscribe (card: Card): Promise<void> {
 }
 
 export async function canSubscribe (card: Card): Promise<boolean> {
+  const isEnabled = getMetadata(communication.metadata.Enabled) === true
+  if (!isEnabled) return false
   const client = getCommunicationClient()
   const me = getCurrentAccount()
   const collaborator = (await client.findCollaborators({ card: card._id, account: me.uuid, limit: 1 }))[0]
@@ -35,6 +38,8 @@ export async function canSubscribe (card: Card): Promise<boolean> {
 }
 
 export async function canUnsubscribe (card: Card): Promise<boolean> {
+  const isEnabled = getMetadata(communication.metadata.Enabled) === true
+  if (!isEnabled) return false
   const client = getCommunicationClient()
   const me = getCurrentAccount()
   const collaborator = (await client.findCollaborators({ card: card._id, account: me.uuid, limit: 1 }))[0]

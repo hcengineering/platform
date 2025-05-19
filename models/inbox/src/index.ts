@@ -34,8 +34,9 @@ export function createModel (builder: Builder): void {
       icon: inbox.icon.Inbox,
       alias: inboxId,
       accessLevel: AccountRole.User,
-      hidden: true,
-      component: inbox.component.InboxApplication
+      hidden: false,
+      component: inbox.component.InboxApplication,
+      position: 'bottom'
     },
     inbox.app.Inbox
   )

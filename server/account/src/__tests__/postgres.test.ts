@@ -20,7 +20,7 @@ import {
   type WorkspaceMode,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import { AccountPostgresDbCollection, PostgresAccountDB, PostgresDbCollection } from '../collections/postgres'
+import { AccountPostgresDbCollection, PostgresAccountDB, PostgresDbCollection } from '../collections/postgres/postgres'
 import { Sql } from 'postgres'
 
 interface TestWorkspace {

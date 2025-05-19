@@ -95,6 +95,7 @@ export interface Integration {
 
 export interface SocialId extends SocialIdBase {
   personUuid: PersonUuid
+  isDeleted?: boolean
 }
 
 export type IntegrationKey = Omit<Integration, 'data'>

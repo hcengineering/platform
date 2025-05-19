@@ -75,7 +75,7 @@ import github, { githubId } from '@hcengineering/github'
 import { bitrixId } from '@hcengineering/bitrix'
 import {inboxId} from '@hcengineering/inbox'
 import {achievementId} from '@hcengineering/achievement'
-import {communicationId} from '@hcengineering/communication'
+import communication, { communicationId } from '@hcengineering/communication'
 import {emojiId} from '@hcengineering/emoji'
 
 import '@hcengineering/activity-assets'
@@ -192,7 +192,8 @@ export interface Config {
   PUBLIC_SCHEDULE_URL?: string
   CALDAV_SERVER_URL?: string
   EXPORT_URL?: string
-  MAIL_URL?: string
+  MAIL_URL?: string,
+  COMMUNICATION_API_ENABLED?: string
 }
 
 export interface Branding {
@@ -441,6 +442,7 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)
   setMetadata(recorder.metadata.StreamUrl, config.STREAM_URL)
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
+  setMetadata(communication.metadata.Enabled, config.COMMUNICATION_API_ENABLED === 'true')
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)

@@ -26,7 +26,6 @@ import { Analytics } from '@hcengineering/analytics'
 import {
   AccountRole,
   concatLink,
-  parseSocialIdString,
   type AccountUuid,
   type Person,
   type WorkspaceInfoWithStatus,
@@ -491,26 +490,18 @@ export function navigateToWorkspace (
   }
 }
 
-export async function checkJoined (inviteId: string): Promise<[Status, WorkspaceLoginInfo | null]> {
+export async function checkJoined (inviteId: string): Promise<WorkspaceLoginInfo | undefined> {
   const token = getMetadata(presentation.metadata.Token)
 
-  if (token == null) {
-    const loginInfo = await getAccountClient().getLoginInfoByToken()
-    if (loginInfo.token == null) {
-      return [unknownStatus('Please login'), null]
-    }
-  }
+  if (token == null) return
 
   try {
     const workspaceLoginInfo = await getAccountClient(token).checkJoin(inviteId)
 
-    return [OK, workspaceLoginInfo]
+    return workspaceLoginInfo
   } catch (err: any) {
-    if (err instanceof PlatformError) {
-      return [err.status, null]
-    } else {
+    if (!(err instanceof PlatformError)) {
       Analytics.handleError(err)
-      return [unknownError(err), null]
     }
   }
 }
@@ -961,18 +952,13 @@ export function isWorkspaceLoginInfo (
   return (info as any)?.workspace !== undefined && (info as any)?.token !== undefined
 }
 
-export function getAccountDisplayName (loginInfo: LoginInfo | null): string {
+export function getAccountDisplayName (loginInfo: LoginInfo | null | undefined): string {
   if (loginInfo == null) {
     return ''
   }
 
   if (loginInfo.name != null) {
     return loginInfo.name
-  }
-
-  if (loginInfo.socialId != null) {
-    const { value } = parseSocialIdString(loginInfo.socialId)
-    return value
   }
 
   return loginInfo.account

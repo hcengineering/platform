@@ -177,14 +177,17 @@ export class PlatformWorker {
   triggerCheckWorkspaces = (): void => {}
 
   async doSyncWorkspaces (): Promise<void> {
+    let oldErrors = ''
+    let sameErrors = 1
+
     while (!this.canceled) {
-      let errors = false
+      let errors: string[] = []
       try {
         errors = await this.checkWorkspaces()
       } catch (err: any) {
         Analytics.handleError(err)
         this.ctx.error('check workspace', err)
-        errors = true
+        errors.push(err.message)
       }
       await new Promise<void>((resolve) => {
         this.triggerCheckWorkspaces = () => {
@@ -192,10 +195,19 @@ export class PlatformWorker {
           this.triggerCheckWorkspaces = () => {}
           resolve()
         }
-        if (errors) {
+        if (errors.length > 0) {
+          const timeout = 15000 * sameErrors
+          const ne = errors.join(',')
+          if (oldErrors === ne) {
+            if (sameErrors < 25) {
+              sameErrors++
+            }
+          } else {
+            oldErrors = ne
+          }
           setTimeout(() => {
             this.triggerCheckWorkspaces()
-          }, 5000)
+          }, timeout)
         }
       })
     }
@@ -795,7 +807,8 @@ export class PlatformWorker {
   }
 
   async getWorkspaces (): Promise<WorkspaceUuid[]> {
-    return this.integrations.map((it) => it.workspace)
+    // Since few integeration could map into one workspace, we need to deduplicate
+    return Array.from(new Set(this.integrations.map((it) => it.workspace)))
   }
 
   checkedWorkspaces = new Set<string>()
@@ -836,7 +849,7 @@ export class PlatformWorker {
     return { workspaceInfo, needRecheck: true }
   }
 
-  private async checkWorkspaces (): Promise<boolean> {
+  private async checkWorkspaces (): Promise<string[]> {
     this.ctx.info('************************* Check workspaces ************************* ', {
       workspaces: this.clients.size
     })
@@ -844,7 +857,7 @@ export class PlatformWorker {
     const toDelete = new Set<WorkspaceUuid>(this.clients.keys())
 
     const rateLimiter = new RateLimiter(5)
-    let errors = 0
+    const rechecks: string[] = []
     let idx = 0
     const connecting = new Map<string, number>()
     const st = Date.now()
@@ -870,7 +883,7 @@ export class PlatformWorker {
         const { workspaceInfo, needRecheck } = await this.checkWorkspaceIsActive(token, workspace)
         if (workspaceInfo === undefined) {
           if (needRecheck) {
-            errors++
+            rechecks.push(workspace)
           }
           return
         }
@@ -946,13 +959,12 @@ export class PlatformWorker {
                 total: workspaces.length
               }
             )
-            errors++
+            rechecks.push(workspace)
           }
         } catch (e: any) {
           Analytics.handleError(e)
           this.ctx.info("Couldn't create WS worker", { workspace, error: e })
-          console.error(e)
-          errors++
+          rechecks.push(workspace)
         } finally {
           connecting.delete(workspaceInfo.uuid)
         }
@@ -966,7 +978,6 @@ export class PlatformWorker {
       await rateLimiter.waitProcessing()
     } catch (e: any) {
       Analytics.handleError(e)
-      errors++
     }
     clearInterval(connectingInfo)
 
@@ -986,14 +997,13 @@ export class PlatformWorker {
           })
         } catch (err: any) {
           Analytics.handleError(err)
-          errors++
         }
       }
     }
     this.ctx.info('************************* Check workspaces done ************************* ', {
       workspaces: this.clients.size
     })
-    return errors > 0
+    return rechecks
   }
 
   getWorkers (): GithubWorker[] {

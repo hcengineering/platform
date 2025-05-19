@@ -22,5 +22,6 @@ loadMetadata(process.icon, {
   States: `${icons}#trigger`,
   Steps: `${icons}#steps`,
   ToDo: `${icons}#todo`,
+  ToDoRemove: `${icons}#todo-remove`,
   WaitSubprocesses: `${icons}#subprocesses`
 })
