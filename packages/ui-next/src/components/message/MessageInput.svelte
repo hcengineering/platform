@@ -37,8 +37,6 @@
   import IconPlus from '../icons/IconPlus.svelte'
   import { type TextInputAction, UploadedFile, type PresenceTyping } from '../../types'
   import TypingPresenter from '../TypingPresenter.svelte'
-  import { markdownToMarkup } from '@hcengineering/text-markdown'
-
   export let card: Card
   export let message: Message | undefined = undefined
   export let content: Markup | undefined = undefined
