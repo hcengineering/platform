@@ -16,7 +16,7 @@
 import { SortingOrder } from '@hcengineering/core'
 
 import type { MessageID } from './message'
-import type { ContextID } from './notification'
+import { type ContextID, type NotificationID, NotificationType } from './notification'
 import type { AccountID, BlobID, CardID, CardType } from './core'
 import type { LabelID } from './label'
 
@@ -66,6 +66,7 @@ export interface FindNotificationContextParams extends FindParams {
   lastUpdate?: Partial<Record<ComparisonOperator, Date>> | Date
   account?: AccountID | AccountID[]
   notifications?: {
+    type?: NotificationType
     message?: boolean
     limit: number
     order: SortingOrder
@@ -74,6 +75,9 @@ export interface FindNotificationContextParams extends FindParams {
 }
 
 export interface FindNotificationsParams extends FindParams {
+  id?: NotificationID
+  messageId?: MessageID
+  type?: NotificationType
   context?: ContextID
   read?: boolean
   created?: Partial<Record<ComparisonOperator, Date>> | Date

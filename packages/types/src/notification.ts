@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { AccountID, CardID, CardType, ID } from './core'
+import type { AccountID, CardID, CardType, ID, SocialID } from './core'
 import type { Message, MessageID, MessagesGroup, Patch } from './message'
 
 export type ContextID = ID & { context: true }
@@ -28,13 +28,28 @@ export interface Collaborator {
 export interface Notification {
   id: NotificationID
   context: ContextID
+  type: NotificationType
   read: boolean
   created: Date
-  messageId?: MessageID
+  content: NotificationContent
+  messageId: MessageID
+  messageCreated: Date
   message?: Message
   messageGroup?: MessagesGroup
   patches?: Patch[]
 }
+
+export enum NotificationType {
+  Message = 'message',
+  Reaction = 'reaction'
+}
+
+export interface ReactionNotificationContent {
+  emoji: string
+  creator: SocialID
+}
+
+export type NotificationContent = Record<string, any>
 
 export interface NotificationContext {
   id: ContextID
@@ -42,5 +57,6 @@ export interface NotificationContext {
   account: AccountID
   lastUpdate: Date
   lastView: Date
+  lastNotify?: Date
   notifications?: Notification[]
 }

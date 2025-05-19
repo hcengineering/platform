@@ -34,7 +34,8 @@ import {
   type Thread,
   type MessageData,
   type Label,
-  type CardType
+  type CardType,
+  type BlobMetadata
 } from '@hcengineering/communication-types'
 import { applyPatches } from '@hcengineering/communication-shared'
 
@@ -68,16 +69,28 @@ interface RawNotification extends NotificationDb {
   message_creator?: SocialID
   message_data?: MessageData
   message_external_id?: string
-  message_created?: Date
   message_group_blob_id?: BlobID
   message_group_from_date?: Date
   message_group_to_date?: Date
   message_group_count?: number
+  message_thread_id?: CardID
+  message_thread_type?: CardType
+  message_replies?: number
+  message_last_reply?: Date
   message_patches?: {
-    patch_type: PatchType
-    patch_data: Record<string, any>
-    patch_creator: SocialID
-    patch_created: Date
+    type: PatchType
+    data: Record<string, any>
+    creator: SocialID
+    created: Date
+  }[]
+  message_files?: {
+    blob_id: BlobID
+    type: string
+    size: number
+    filename: string
+    meta?: BlobMetadata
+    creator: SocialID
+    created: Date
   }[]
 }
 
@@ -137,7 +150,7 @@ export function toFile(raw: Omit<FileDb, 'workspace_id'>): File {
     blobId: raw.blob_id,
     type: raw.type,
     filename: raw.filename,
-    size: parseInt(raw.size as any),
+    size: Number(raw.size),
     meta: raw.meta,
     creator: raw.creator,
     created: new Date(raw.created)
@@ -186,22 +199,28 @@ export function toNotificationContext(raw: RawContext): NotificationContext {
     account: raw.account,
     lastView,
     lastUpdate: new Date(raw.last_update),
+    lastNotify: raw.last_notify != null ? new Date(raw.last_notify) : undefined,
     notifications: (raw.notifications ?? [])
       .filter((it) => it.id != null)
-      .map((it) => toNotificationRaw(raw.id, raw.card_id, lastView, it))
+      .map((it) => toNotificationRaw(raw.id, raw.card_id, it))
   }
 }
 
-function toNotificationRaw(
-  id: ContextID,
-  card: CardID,
-  lastView: Date | undefined,
-  raw: RawNotification
-): Notification {
+function toNotificationRaw(id: ContextID, card: CardID, raw: RawNotification): Notification {
   const created = new Date(raw.created)
-  const read = lastView != null && lastView >= created
-
   let message: Message | undefined
+
+  const patches = (raw.message_patches ?? []).map((it) =>
+    toPatch({
+      card_id: card,
+      message_id: raw.message_id,
+      type: it.type,
+      data: it.data,
+      creator: it.creator,
+      created: new Date(it.created),
+      message_created: raw.message_created ?? created
+    })
+  )
 
   if (
     raw.message_content != null &&
@@ -209,18 +228,34 @@ function toNotificationRaw(
     raw.message_created != null &&
     raw.message_type != null
   ) {
-    const patches = (raw.message_patches ?? []).map((it) =>
-      toPatch({
+    const messageFiles = raw.message_files?.map((it) =>
+      toFile({
         card_id: card,
         message_id: raw.message_id,
-        type: it.patch_type,
-        data: it.patch_data,
-        creator: it.patch_creator,
-        created: new Date(it.patch_created),
-        message_created: raw.message_created ? new Date(raw.message_created) : created
+        blob_id: it.blob_id,
+        type: it.type,
+        size: it.size,
+        filename: it.filename,
+        meta: it.meta,
+        creator: it.creator,
+        created: it.created,
+        message_created: raw.message_created ?? created
       })
     )
 
+    let thread: Thread | undefined = undefined
+
+    if (raw.message_thread_id != null && raw.message_thread_type != null) {
+      thread = {
+        card,
+        message: String(raw.message_id) as MessageID,
+        messageCreated: raw.message_created ? new Date(raw.message_created) : created,
+        thread: raw.message_thread_id,
+        threadType: raw.message_thread_type,
+        repliesCount: Number(raw.message_replies ?? 0),
+        lastReply: raw.message_last_reply ? new Date(raw.message_last_reply) : created
+      }
+    }
     message = {
       id: String(raw.message_id) as MessageID,
       type: raw.message_type,
@@ -232,7 +267,8 @@ function toNotificationRaw(
       created: new Date(raw.message_created),
       edited: undefined,
       reactions: [],
-      files: []
+      files: messageFiles ?? [],
+      thread
     }
 
     if (patches.length > 0) {
@@ -243,11 +279,14 @@ function toNotificationRaw(
   if (message != null) {
     return {
       id: String(raw.id) as NotificationID,
-      read,
+      read: Boolean(raw.read),
+      type: raw.type,
       messageId: String(raw.message_id) as MessageID,
+      messageCreated: new Date(raw.message_created),
       created,
       context: String(id) as ContextID,
-      message
+      message,
+      content: raw.content
     }
   }
 
@@ -259,24 +298,26 @@ function toNotificationRaw(
       blobId: raw.message_group_blob_id,
       fromDate: new Date(raw.message_group_from_date),
       toDate: new Date(raw.message_group_to_date),
-      count: raw.message_group_count ?? 0
+      count: raw.message_group_count ?? 0,
+      patches
     }
   }
 
   return {
     id: String(raw.id) as NotificationID,
-    read,
-    messageId: raw.message_id,
+    type: raw.type,
+    read: Boolean(raw.read),
+    messageId: String(raw.message_id) as MessageID,
+    messageCreated: new Date(raw.message_created),
     created,
     context: String(id) as ContextID,
-    messageGroup
+    messageGroup,
+    content: raw.content
   }
 }
 
-export function toNotification(raw: RawNotification & { card_id: CardID; last_view?: Date }): Notification {
-  const lastView = raw.last_view != null ? new Date(raw.last_view) : undefined
-
-  return toNotificationRaw(raw.context_id, raw.card_id, lastView, raw)
+export function toNotification(raw: RawNotification & { card_id: CardID }): Notification {
+  return toNotificationRaw(raw.context_id, raw.card_id, raw)
 }
 
 export function toCollaborator(raw: CollaboratorDb): Collaborator {

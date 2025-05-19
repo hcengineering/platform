@@ -22,16 +22,15 @@ import {
   type RemovedCollaboratorsEvent,
   type RequestEvent
 } from '@hcengineering/communication-sdk-types'
-import { NewMessageLabelID, SubscriptionLabelID } from '@hcengineering/communication-types'
+import { NewMessageLabelID, NotificationType, SubscriptionLabelID } from '@hcengineering/communication-types'
 
 import type { TriggerCtx, TriggerFn, Triggers } from '../types'
 
 async function onAddedCollaborators(ctx: TriggerCtx, event: AddedCollaboratorsEvent): Promise<RequestEvent[]> {
   const { card, cardType, collaborators } = event
   const result: RequestEvent[] = []
-  const contexts = await ctx.db.findNotificationContexts({ card, account: event.collaborators })
+
   for (const collaborator of collaborators) {
-    const context = contexts.find((it) => it.account === collaborator)
     result.push({
       type: LabelRequestEventType.CreateLabel,
       card,
@@ -39,24 +38,6 @@ async function onAddedCollaborators(ctx: TriggerCtx, event: AddedCollaboratorsEv
       account: collaborator,
       label: SubscriptionLabelID
     })
-
-    if (context === undefined) {
-      result.push({
-        type: NotificationRequestEventType.CreateNotificationContext,
-        account: collaborator,
-        card,
-        lastUpdate: event.date,
-        lastView: event.date
-      })
-    } else {
-      result.push({
-        type: NotificationRequestEventType.UpdateNotificationContext,
-        context: context.id,
-        account: collaborator,
-        lastUpdate: event.date,
-        lastView: event.date
-      })
-    }
   }
   return result
 }
@@ -79,7 +60,9 @@ async function onRemovedCollaborators(ctx: TriggerCtx, event: RemovedCollaborato
         type: NotificationRequestEventType.UpdateNotificationContext,
         context: context.id,
         account: collaborator,
-        lastView: context.lastUpdate
+        updates: {
+          lastView: context.lastUpdate
+        }
       })
     }
   }
@@ -95,19 +78,33 @@ async function onNotificationContextUpdated(
 
   const context = (await ctx.db.findNotificationContexts({ id: contextId }))[0]
   if (context == null) return []
+  const result: RequestEvent[] = []
 
   if (context.lastView >= context.lastUpdate) {
-    return [
-      {
-        type: LabelRequestEventType.RemoveLabel,
-        label: NewMessageLabelID,
-        card: context.card,
-        account: context.account
-      }
-    ]
+    result.push({
+      type: LabelRequestEventType.RemoveLabel,
+      label: NewMessageLabelID,
+      card: context.card,
+      account: context.account
+    })
   }
 
-  return []
+  result.push({
+    type: NotificationRequestEventType.UpdateNotification,
+    query: {
+      account: context.account,
+      context: context.id,
+      type: NotificationType.Message,
+      created: {
+        lessOrEqual: context.lastView
+      }
+    },
+    updates: {
+      read: true
+    }
+  })
+
+  return result
 }
 
 const triggers: Triggers = [

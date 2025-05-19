@@ -69,8 +69,12 @@ async function onMessagesRemoved(ctx: TriggerCtx, event: MessagesRemovedEvent): 
     }
     const threadEvent: UpdateThreadEvent = {
       type: MessageRequestEventType.UpdateThread,
+      card: thread.card,
+      message: thread.message,
       thread: thread.thread,
-      replies: 'decrement'
+      updates: {
+        replies: 'decrement'
+      }
     }
 
     return [patchEvent, threadEvent]
@@ -161,15 +165,13 @@ async function addCollaborators(ctx: TriggerCtx, event: MessageCreatedEvent): Pr
 
   const markup = markdownToMarkup(event.message.content)
   const references = extractReferences(markup)
-  for (const reference of references) {
-    const { objectId, objectClass } = reference
-    if (['contact:class:Person', 'contact:mixin:Employee'].includes(objectClass)) {
-      const account = await ctx.db.getAccountByPersonId(objectId)
-      if (account !== undefined) {
-        collaborators.push(account)
-      }
-    }
-  }
+  const personIds = references
+    .filter((it) => ['contact:class:Person', 'contact:mixin:Employee'].includes(it.objectClass))
+    .map((it) => it.objectId)
+    .filter((it) => it != null) as string[]
+  const accounts = await ctx.db.getAccountsByPersonIds(personIds)
+
+  collaborators.push(...accounts)
 
   if (collaborators.length === 0) {
     return []
@@ -204,9 +206,13 @@ async function addThreadReply(ctx: TriggerCtx, event: MessageCreatedEvent): Prom
     },
     {
       type: MessageRequestEventType.UpdateThread,
+      card: thread.card,
+      message: thread.message,
       thread: thread.thread,
-      lastReply: event.message.created,
-      replies: 'increment'
+      updates: {
+        lastReply: event.message.created,
+        replies: 'increment'
+      }
     }
   ]
 }

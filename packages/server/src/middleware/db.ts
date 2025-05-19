@@ -60,6 +60,7 @@ import {
   NotificationRequestEventType,
   NotificationResponseEventType,
   type NotificationsRemovedEvent,
+  type NotificationUpdatedEvent,
   type PatchCreatedEvent,
   type ReactionCreatedEvent,
   type ReactionRemovedEvent,
@@ -79,6 +80,7 @@ import {
   type ThreadCreatedEvent,
   type UpdateCardTypeEvent,
   type UpdateNotificationContextEvent,
+  type UpdateNotificationEvent,
   type UpdateThreadEvent
 } from '@hcengineering/communication-sdk-types'
 import { systemAccountUuid } from '@hcengineering/core'
@@ -156,6 +158,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         return await this.createNotification(event)
       case NotificationRequestEventType.RemoveNotifications:
         return await this.removeNotifications(event)
+      case NotificationRequestEventType.UpdateNotification:
+        return await this.updateNotification(event)
       case NotificationRequestEventType.CreateNotificationContext:
         return await this.createNotificationContext(event)
       case NotificationRequestEventType.RemoveNotificationContext:
@@ -186,17 +190,15 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async updateThread(event: UpdateThreadEvent): Promise<Result> {
-    await this.db.updateThread(event.thread, {
-      op: event.replies,
-      lastReply: event.lastReply
-    })
+    await this.db.updateThread(event.thread, event.updates)
     return {
       responseEvent: {
         _id: event._id,
         type: MessageResponseEventType.ThreadUpdated,
+        card: event.card,
+        message: event.message,
         thread: event.thread,
-        replies: event.replies,
-        lastReply: event.lastReply
+        updates: event.updates
       }
     }
   }
@@ -219,7 +221,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
 
   private async removeCollaborators(event: RemoveCollaboratorsEvent): Promise<Result> {
     if (event.collaborators.length === 0) return {}
-    await this.db.removeCollaborators(event.card, event.collaborators)
+    await this.db.removeCollaborators(event.card, { accounts: event.collaborators })
 
     return {
       responseEvent: {
@@ -311,7 +313,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       }
     const account = session.account
     const socialIds = systemAccountUuid === account.uuid ? undefined : account.socialIds
-    const deleted = await this.db.removeMessages(event.card, event.messages, socialIds)
+    const deleted = await this.db.removeMessages(event.card, { ids: event.messages, socialIds })
 
     const responseEvent: MessagesRemovedEvent = {
       _id: event._id,
@@ -350,7 +352,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       _id: event._id,
       type: MessageResponseEventType.ReactionCreated,
       card: event.card,
-      reaction
+      reaction,
+      messageCreated: event.messageCreated
     }
     return {
       responseEvent
@@ -364,6 +367,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       type: MessageResponseEventType.ReactionRemoved,
       card: event.card,
       message: event.message,
+      messageCreated: event.messageCreated,
       reaction: event.reaction,
       creator: event.creator
     }
@@ -409,7 +413,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async removeFile(event: RemoveFileEvent): Promise<Result> {
-    await this.db.removeFiles({ card: event.card, message: event.message, blobId: event.blobId })
+    await this.db.removeFiles(event.card, { message: event.message, blobId: event.blobId })
     const responseEvent: FileRemovedEvent = {
       _id: event._id,
       type: MessageResponseEventType.FileRemoved,
@@ -425,7 +429,15 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async createNotification(event: CreateNotificationEvent): Promise<Result> {
-    const id = await this.db.createNotification(event.context, event.message, event.created)
+    const id = await this.db.createNotification(
+      event.context,
+      event.message,
+      event.messageCreated,
+      event.notificationType,
+      event.read ?? false,
+      event.content,
+      event.created
+    )
 
     return {
       responseEvent: {
@@ -433,9 +445,12 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         type: NotificationResponseEventType.NotificationCreated,
         notification: {
           id,
+          type: event.notificationType,
+          content: event.content ?? {},
           context: event.context,
           messageId: event.message,
-          read: false,
+          messageCreated: event.messageCreated,
+          read: event.read ?? false,
           created: event.created
         },
         account: event.account
@@ -443,23 +458,48 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async removeNotifications(event: RemoveNotificationsEvent): Promise<Result> {
-    await this.db.removeNotification(event.context, event.account, event.untilDate)
-
-    const responseEvent: NotificationsRemovedEvent = {
+  private async updateNotification(event: UpdateNotificationEvent): Promise<Result> {
+    await this.db.updateNotification(event.query, event.updates)
+    const responseEvent: NotificationUpdatedEvent = {
       _id: event._id,
-      type: NotificationResponseEventType.NotificationsRemoved,
-      context: event.context,
-      account: event.account,
-      untilDate: event.untilDate
+      type: NotificationResponseEventType.NotificationUpdated,
+      query: event.query,
+      updates: event.updates
     }
     return {
       responseEvent
     }
   }
 
+  private async removeNotifications(event: RemoveNotificationsEvent): Promise<Result> {
+    const ids = await this.db.removeNotifications({
+      context: event.context,
+      account: event.account,
+      ids: event.ids
+    })
+    const responseEvent: NotificationsRemovedEvent = {
+      _id: event._id,
+      type: NotificationResponseEventType.NotificationsRemoved,
+      context: event.context,
+      account: event.account,
+      ids
+    }
+    return {
+      result: {
+        ids
+      },
+      responseEvent
+    }
+  }
+
   private async createNotificationContext(event: CreateNotificationContextEvent): Promise<Result> {
-    const id = await this.db.createContext(event.account, event.card, event.lastUpdate, event.lastView)
+    const id = await this.db.createContext(
+      event.account,
+      event.card,
+      event.lastUpdate,
+      event.lastView,
+      event.lastNotify
+    )
     const responseEvent: NotificationContextCreatedEvent = {
       _id: event._id,
       type: NotificationResponseEventType.NotificationContextCreated,
@@ -468,7 +508,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         account: event.account,
         card: event.card,
         lastView: event.lastView,
-        lastUpdate: event.lastUpdate
+        lastUpdate: event.lastUpdate,
+        lastNotify: event.lastNotify
       }
     }
     return {
@@ -494,15 +535,16 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   async updateNotificationContext(event: UpdateNotificationContextEvent): Promise<Result> {
-    await this.db.updateContext(event.context, event.account, event.lastUpdate, event.lastView)
+    await this.db.updateContext(event.context, event.account, event.updates)
 
     const responseEvent: NotificationContextUpdatedEvent = {
       _id: event._id,
       type: NotificationResponseEventType.NotificationContextUpdated,
       context: event.context,
       account: event.account,
-      lastView: event.lastView,
-      lastUpdate: event.lastUpdate
+      lastView: event.updates.lastView,
+      lastUpdate: event.updates.lastUpdate,
+      lastNotify: event.updates.lastNotify
     }
     return {
       responseEvent

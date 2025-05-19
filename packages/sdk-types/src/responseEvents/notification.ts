@@ -19,12 +19,15 @@ import type {
   NotificationContext,
   Notification,
   AccountID,
-  CardType
+  CardType,
+  NotificationID
 } from '@hcengineering/communication-types'
 import type { BaseResponseEvent } from './common'
+import type { NotificationUpdates, UpdateNotificationQuery } from '../db'
 
 export enum NotificationResponseEventType {
   NotificationCreated = 'notificationCreated',
+  NotificationUpdated = 'notificationUpdated',
   NotificationsRemoved = 'notificationsRemoved',
 
   NotificationContextCreated = 'notificationContextCreated',
@@ -37,6 +40,7 @@ export enum NotificationResponseEventType {
 
 export type NotificationResponseEvent =
   | NotificationCreatedEvent
+  | NotificationUpdatedEvent
   | NotificationsRemovedEvent
   | NotificationContextCreatedEvent
   | NotificationContextRemovedEvent
@@ -50,11 +54,17 @@ export interface NotificationCreatedEvent extends BaseResponseEvent {
   account: AccountID
 }
 
+export interface NotificationUpdatedEvent extends BaseResponseEvent {
+  type: NotificationResponseEventType.NotificationUpdated
+  query: UpdateNotificationQuery
+  updates: NotificationUpdates
+}
+
 export interface NotificationsRemovedEvent extends BaseResponseEvent {
   type: NotificationResponseEventType.NotificationsRemoved
-  untilDate: Date
   context: ContextID
   account: AccountID
+  ids: NotificationID[]
 }
 
 export interface NotificationContextCreatedEvent extends BaseResponseEvent {
@@ -74,6 +84,7 @@ export interface NotificationContextUpdatedEvent extends BaseResponseEvent {
   account: AccountID
   lastView?: Date
   lastUpdate?: Date
+  lastNotify?: Date
 }
 
 export interface AddedCollaboratorsEvent extends BaseResponseEvent {

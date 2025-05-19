@@ -66,6 +66,9 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
         this.checkAccount(session, event.account)
         break
       }
+      case NotificationRequestEventType.UpdateNotification:
+        this.checkAccount(session, event.query.account)
+        break
       case MessageRequestEventType.CreateMessagesGroup:
       case MessageRequestEventType.RemoveMessagesGroup: {
         this.onlySystemAccount(session)

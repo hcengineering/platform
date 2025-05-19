@@ -14,8 +14,6 @@
 //
 
 import {
-  type BlobID,
-  type File,
   type FindMessagesGroupsParams,
   type FindMessagesParams,
   type Message,
@@ -25,8 +23,6 @@ import {
   type ParsedFile,
   type Patch,
   PatchType,
-  type Reaction,
-  type SocialID,
   SortingOrder,
   type WorkspaceID
 } from '@hcengineering/communication-types'
@@ -65,6 +61,7 @@ import {
   type QueryId
 } from '../types'
 import { WindowImpl } from '../window'
+import { addFile, addReaction, removeFile, removeReaction } from '../utils.ts'
 
 const GROUPS_LIMIT = 4
 
@@ -982,37 +979,5 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   private isAllowedPatch(type: PatchType): boolean {
     return this.allowedPatches().includes(type)
-  }
-}
-
-function addFile(message: Message, file: File): Message {
-  if (!message.files.some((it) => it.blobId === file.blobId)) {
-    message.files.push(file)
-  }
-  return message
-}
-
-function removeFile(message: Message, blobId: BlobID): Message {
-  const files = message.files.filter((it) => it.blobId !== blobId)
-  if (files.length === message.files.length) return message
-
-  return {
-    ...message,
-    files
-  }
-}
-
-function addReaction(message: Message, reaction: Reaction): Message {
-  message.reactions.push(reaction)
-  return message
-}
-
-function removeReaction(message: Message, emoji: string, creator: SocialID): Message {
-  const reactions = message.reactions.filter((it) => it.reaction !== emoji || it.creator !== creator)
-  if (reactions.length === message.reactions.length) return message
-
-  return {
-    ...message,
-    reactions
   }
 }

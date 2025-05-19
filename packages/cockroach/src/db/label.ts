@@ -26,6 +26,7 @@ import {
 import { BaseDb } from './base'
 import { type LabelDb, TableName } from './schema'
 import { toLabel } from './mapping'
+import type { LabelUpdates, RemoveLabelQuery } from '@hcengineering/communication-sdk-types'
 
 export class LabelsDb extends BaseDb {
   async createLabel(
@@ -53,19 +54,18 @@ export class LabelsDb extends BaseDb {
     )
   }
 
-  async removeLabels(query: Partial<Label>): Promise<void> {
+  async removeLabels(query: RemoveLabelQuery): Promise<void> {
     const db: Partial<LabelDb> = {
       label_id: query.label,
       card_id: query.card,
-      card_type: query.cardType,
       account: query.account
     }
 
-    const entries = Object.entries(db).filter(([_, value]) => value != undefined)
+    const entries = Object.entries(db).filter(([_, value]) => value !== undefined)
 
     if (entries.length === 0) return
 
-    entries.push(['workspace_id', this.workspace])
+    entries.unshift(['workspace_id', this.workspace])
 
     const whereClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
     const whereValues = entries.map(([_, value]) => value)
@@ -77,28 +77,22 @@ export class LabelsDb extends BaseDb {
     await this.execute(sql, whereValues, 'remove labels')
   }
 
-  async updateLabels(params: FindLabelsParams, data: Partial<Label>): Promise<void> {
+  async updateLabels(card: CardID, updates: LabelUpdates): Promise<void> {
     const dbData: Partial<LabelDb> = {
-      label_id: data.label,
-      card_id: data.card,
-      card_type: data.cardType,
-      account: data.account,
-      created: data.created
+      card_type: updates.cardType
     }
 
-    const entries = Object.entries(dbData).filter(([_, value]) => value != undefined)
+    const entries = Object.entries(dbData).filter(([_, value]) => value !== undefined)
     if (entries.length === 0) return
 
-    const setClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
+    const setClauses = entries.map(([key], index) => `${key} = $${index + 3}`)
     const setValues = entries.map(([_, value]) => value)
-
-    const { where, values: whereValues } = this.buildWhere(params, setValues.length, '')
 
     const sql = `UPDATE ${TableName.Label}
              SET ${setClauses.join(', ')}
-             ${where}`
+             WHERE workspace_id = $1::uuid AND card_id = $2::varchar`
 
-    await this.execute(sql, [...setValues, ...whereValues], 'update labels')
+    await this.execute(sql, [this.workspace, card, ...setValues], 'update labels')
   }
 
   async findLabels(params: FindLabelsParams): Promise<Label[]> {

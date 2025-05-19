@@ -43,10 +43,25 @@ import {
   type CardType,
   type MessageData,
   type PatchData,
-  type File,
-  type BlobMetadata
+  type BlobMetadata,
+  NotificationType,
+  type NotificationContent
 } from '@hcengineering/communication-types'
-import type { DbAdapter } from '@hcengineering/communication-sdk-types'
+import type {
+  DbAdapter,
+  LabelUpdates,
+  NotificationContextUpdates,
+  NotificationUpdates,
+  RemoveCollaboratorsQuery,
+  RemoveFileQuery,
+  RemoveLabelQuery,
+  RemoveMessageQuery,
+  RemoveNotificationContextQuery,
+  RemoveNotificationsQuery,
+  RemoveThreadQuery,
+  ThreadUpdates,
+  UpdateNotificationQuery
+} from '@hcengineering/communication-sdk-types'
 
 import { MessagesDb } from './db/message'
 import { NotificationsDb } from './db/notification'
@@ -85,8 +100,8 @@ export class CockroachAdapter implements DbAdapter {
     return await this.message.createMessage(card, type, content, creator, created, data, externalId, id)
   }
 
-  async removeMessages(card: CardID, messages?: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]> {
-    return await this.message.removeMessages(card, messages, socialIds)
+  async removeMessages(card: CardID, query: RemoveMessageQuery): Promise<MessageID[]> {
+    return await this.message.removeMessages(card, query)
   }
 
   async createPatch(
@@ -160,8 +175,8 @@ export class CockroachAdapter implements DbAdapter {
     )
   }
 
-  async removeFiles(query: Partial<File>): Promise<void> {
-    await this.message.removeFiles(query)
+  async removeFiles(card: CardID, query: RemoveFileQuery): Promise<void> {
+    await this.message.removeFiles(card, query)
   }
 
   async createThread(
@@ -175,18 +190,11 @@ export class CockroachAdapter implements DbAdapter {
     await this.message.createThread(card, message, messageCreated, thread, threadType, created)
   }
 
-  async removeThreads(query: Partial<Thread>): Promise<void> {
+  async removeThreads(query: RemoveThreadQuery): Promise<void> {
     await this.message.removeThreads(query)
   }
 
-  async updateThread(
-    thread: CardID,
-    update: {
-      threadType?: CardType
-      op?: 'increment' | 'decrement'
-      lastReply?: Date
-    }
-  ): Promise<void> {
+  async updateThread(thread: CardID, update: ThreadUpdates): Promise<void> {
     await this.message.updateThread(thread, update)
   }
 
@@ -211,31 +219,49 @@ export class CockroachAdapter implements DbAdapter {
     return await this.notification.addCollaborators(card, cardType, collaborators, date)
   }
 
-  async removeCollaborators(card: CardID, collaborators?: AccountID[]): Promise<void> {
-    await this.notification.removeCollaborators(card, collaborators)
+  async removeCollaborators(card: CardID, query: RemoveCollaboratorsQuery): Promise<void> {
+    await this.notification.removeCollaborators(card, query)
   }
 
   async updateCollaborators(params: FindCollaboratorsParams, data: Partial<Collaborator>): Promise<void> {
     await this.notification.updateCollaborators(params, data)
   }
 
-  async createNotification(context: ContextID, message: MessageID, messageCreated: Date): Promise<NotificationID> {
-    return await this.notification.createNotification(context, message, messageCreated)
+  async createNotification(
+    context: ContextID,
+    message: MessageID,
+    messageCreated: Date,
+    type: NotificationType,
+    read: boolean,
+    content: NotificationContent | undefined,
+    created: Date
+  ): Promise<NotificationID> {
+    return await this.notification.createNotification(context, message, messageCreated, type, read, content, created)
   }
 
-  async removeNotification(context: ContextID, account: AccountID, untilDate: Date): Promise<void> {
-    await this.notification.removeNotifications(context, account, untilDate)
+  async updateNotification(query: UpdateNotificationQuery, updates: NotificationUpdates): Promise<void> {
+    await this.notification.updateNotification(query, updates)
   }
 
-  async createContext(account: AccountID, card: CardID, lastUpdate: Date, lastView: Date): Promise<ContextID> {
-    return await this.notification.createContext(account, card, lastUpdate, lastView)
+  async removeNotifications(query: RemoveNotificationsQuery): Promise<NotificationID[]> {
+    return await this.notification.removeNotifications(query)
   }
 
-  async updateContext(context: ContextID, account: AccountID, lastUpdate?: Date, lastView?: Date): Promise<void> {
-    await this.notification.updateContext(context, account, lastUpdate, lastView)
+  async createContext(
+    account: AccountID,
+    card: CardID,
+    lastUpdate: Date,
+    lastView: Date,
+    lastNotify?: Date
+  ): Promise<ContextID> {
+    return await this.notification.createContext(account, card, lastUpdate, lastView, lastNotify)
   }
 
-  async removeContexts(query: Partial<NotificationContext>): Promise<void> {
+  async updateContext(context: ContextID, account: AccountID, updates: NotificationContextUpdates): Promise<void> {
+    await this.notification.updateContext(context, account, updates)
+  }
+
+  async removeContexts(query: RemoveNotificationContextQuery): Promise<void> {
     await this.notification.removeContexts(query)
   }
 
@@ -263,27 +289,27 @@ export class CockroachAdapter implements DbAdapter {
     return this.label.createLabel(label, card, cardType, account, created)
   }
 
-  removeLabels(query: Partial<Label>): Promise<void> {
+  removeLabels(query: RemoveLabelQuery): Promise<void> {
     return this.label.removeLabels(query)
   }
 
   findLabels(params: FindLabelsParams): Promise<Label[]> {
     return this.label.findLabels(params)
   }
-  updateLabels(params: FindLabelsParams, data: Partial<Label>): Promise<void> {
-    return this.label.updateLabels(params, data)
+  updateLabels(card: CardID, updates: LabelUpdates): Promise<void> {
+    return this.label.updateLabels(card, updates)
   }
 
-  //TODO: remove it!
-  async getAccountByPersonId(_id: string): Promise<AccountID | undefined> {
+  //TODO: remove it ??
+  async getAccountsByPersonIds(ids: string[]): Promise<AccountID[]> {
+    if (ids.length === 0) return []
     const sql = `SELECT data ->> 'personUuid' AS "personUuid"
                  FROM public.contact
                  WHERE "workspaceId" = $1::uuid
-                   AND _id = $2::varchar
-                 LIMIT 1`
-    const result = await this.sql.execute(sql, [this.workspace, _id])
+                   AND _id = ANY($2::text[])`
+    const result = await this.sql.execute(sql, [this.workspace, ids])
 
-    return result?.[0]?.personUuid as AccountID
+    return result?.map((it) => it.personUuid as AccountID).filter((it) => it != null) ?? []
   }
 }
 

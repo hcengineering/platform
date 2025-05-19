@@ -47,6 +47,12 @@ import {
 } from './schema'
 import { getCondition } from './utils'
 import { toMessage, toMessagesGroup, toThread } from './mapping'
+import type {
+  RemoveFileQuery,
+  RemoveMessageQuery,
+  RemoveThreadQuery,
+  ThreadUpdates
+} from '@hcengineering/communication-sdk-types'
 
 export class MessagesDb extends BaseDb {
   // Message
@@ -92,10 +98,10 @@ export class MessagesDb extends BaseDb {
     return result.map((it: any) => it.id)[0]
   }
 
-  async removeMessages(card: CardID, messages?: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]> {
+  async removeMessages(card: CardID, query: RemoveMessageQuery): Promise<MessageID[]> {
     const where: string[] = ['workspace_id = $1::uuid', 'card_id = $2::varchar']
     const values: any[] = [this.workspace, card]
-
+    const { ids, socialIds } = query
     let index = values.length + 1
 
     if (socialIds?.length === 1) {
@@ -108,12 +114,12 @@ export class MessagesDb extends BaseDb {
       values.push(socialIds)
     }
 
-    if (messages && messages.length === 1) {
-      where.push(`id = $${index++}::bigint`)
-      values.push(messages[0])
-    } else if (messages && messages.length > 1) {
-      where.push(`id = ANY($${index++}::bigint[])`)
-      values.push(messages)
+    if (ids && ids.length === 1) {
+      where.push(`id = $${index++}::int8`)
+      values.push(ids[0])
+    } else if ((ids?.length ?? 0) > 1) {
+      where.push(`id = ANY($${index++}::int8[])`)
+      values.push(ids)
     }
 
     const sql = `DELETE
@@ -148,7 +154,7 @@ export class MessagesDb extends BaseDb {
 
     const sql = `INSERT INTO ${TableName.Patch} (workspace_id, card_id, message_id, type, data, creator, created,
                                                  message_created)
-                 VALUES ($1::uuid, $2::varchar, $3::bigint, $4::varchar, $5::jsonb, $6::varchar, $7::timestamptz,
+                 VALUES ($1::uuid, $2::varchar, $3::int8, $4::varchar, $5::jsonb, $6::varchar, $7::timestamptz,
                          $8::timestamptz)`
 
     await this.execute(
@@ -216,18 +222,17 @@ export class MessagesDb extends BaseDb {
     )
   }
 
-  async removeFiles(query: Partial<File>): Promise<void> {
+  async removeFiles(card: CardID, query: RemoveFileQuery): Promise<void> {
     const db: Partial<FileDb> = {
-      card_id: query.card,
+      card_id: card,
       message_id: query.message,
       blob_id: query.blobId
     }
 
-    const entries = Object.entries(db).filter(([_, value]) => value != undefined)
-
+    const entries = Object.entries(db).filter(([_, value]) => value !== undefined)
     if (entries.length === 0) return
 
-    entries.push(['workspace_id', this.workspace])
+    entries.unshift(['workspace_id', this.workspace])
 
     const whereClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
     const whereValues = entries.map(([_, value]) => value)
@@ -252,7 +257,7 @@ export class MessagesDb extends BaseDb {
                     FROM ${TableName.Message} m
                     WHERE m.workspace_id = $1::uuid
                       AND m.card_id = $2::varchar
-                      AND m.id = $3::bigint`
+                      AND m.id = $3::int8`
 
     const messageDb = await this.execute(select, [this.workspace, card, message], 'select message')
 
@@ -266,7 +271,7 @@ export class MessagesDb extends BaseDb {
         created
       }
       const sql = `INSERT INTO ${TableName.Reaction} (workspace_id, card_id, message_id, reaction, creator, created)
-                   VALUES ($1::uuid, $2::varchar, $3::bigint, $4::varchar, $5::varchar, $6::timestamptz)`
+                   VALUES ($1::uuid, $2::varchar, $3::int8, $4::varchar, $5::varchar, $6::timestamptz)`
 
       await this.execute(
         sql,
@@ -290,7 +295,7 @@ export class MessagesDb extends BaseDb {
                     FROM ${TableName.Message} m
                     WHERE m.workspace_id = $1::uuid
                       AND m.card_id = $2::varchar
-                      AND m.id = $3::bigint`
+                      AND m.id = $3::int8`
 
     const messageDb = await this.execute(select, [this.workspace, card, message], 'select message')
 
@@ -299,7 +304,7 @@ export class MessagesDb extends BaseDb {
                    FROM ${TableName.Reaction}
                    WHERE workspace_id = $1::uuid
                      AND card_id = $2::varchar
-                     AND message_id = $3::bigint
+                     AND message_id = $3::int8
                      AND reaction = $4::varchar
                      AND creator = $5::varchar`
       await this.execute(sql, [this.workspace, card, message, reaction, creator], 'remove reaction')
@@ -329,7 +334,7 @@ export class MessagesDb extends BaseDb {
     }
     const sql = `INSERT INTO ${TableName.Thread} (workspace_id, card_id, message_id, thread_id, thread_type, replies_count,
                                                   last_reply, message_created)
-                 VALUES ($1::uuid, $2::varchar, $3::bigint, $4::varchar, $5::varchar, $6::int, $7::timestamptz, $8::timestamptz)`
+                 VALUES ($1::uuid, $2::varchar, $3::int8, $4::varchar, $5::varchar, $6::int, $7::timestamptz, $8::timestamptz)`
     await this.execute(
       sql,
       [
@@ -346,19 +351,18 @@ export class MessagesDb extends BaseDb {
     )
   }
 
-  async removeThreads(query: Partial<Thread>): Promise<void> {
+  async removeThreads(query: RemoveThreadQuery): Promise<void> {
     const db: Partial<ThreadDb> = {
       card_id: query.card,
       message_id: query.message,
-      thread_id: query.thread,
-      thread_type: query.threadType
+      thread_id: query.thread
     }
 
-    const entries = Object.entries(db).filter(([_, value]) => value != undefined)
+    const entries = Object.entries(db).filter(([_, value]) => value !== undefined)
 
     if (entries.length === 0) return
 
-    entries.push(['workspace_id', this.workspace])
+    entries.unshift(['workspace_id', this.workspace])
 
     const whereClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
     const whereValues = entries.map(([_, value]) => value)
@@ -370,14 +374,7 @@ export class MessagesDb extends BaseDb {
     await this.execute(sql, whereValues, 'remove threads')
   }
 
-  async updateThread(
-    thread: CardID,
-    update: {
-      threadType?: CardType
-      op?: 'increment' | 'decrement'
-      lastReply?: Date
-    }
-  ): Promise<void> {
+  async updateThread(thread: CardID, update: ThreadUpdates): Promise<void> {
     const set: string[] = []
     const values: any[] = []
 
@@ -387,9 +384,9 @@ export class MessagesDb extends BaseDb {
       values.push(update.lastReply)
     }
 
-    if (update.op === 'increment') {
+    if (update.replies === 'increment') {
       set.push('replies_count = replies_count + 1')
-    } else if (update.op === 'decrement') {
+    } else if (update.replies === 'decrement') {
       set.push('replies_count = GREATEST(replies_count - 1, 0)')
     }
 
@@ -617,7 +614,7 @@ export class MessagesDb extends BaseDb {
     let index = 2
 
     if (params.id != null) {
-      where.push(`m.id = $${index++}::bigint`)
+      where.push(`m.id = $${index++}::int8`)
       values.push(params.id)
     }
 

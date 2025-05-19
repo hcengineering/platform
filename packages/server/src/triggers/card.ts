@@ -26,13 +26,13 @@ import type { TriggerCtx, TriggerFn, Triggers } from '../types'
 
 async function onCardTypeUpdates(ctx: TriggerCtx, event: CardTypeUpdatedEvent): Promise<RequestEvent[]> {
   await ctx.db.updateCollaborators({ card: event.card }, { cardType: event.cardType })
-  await ctx.db.updateLabels({ card: event.card }, { cardType: event.cardType })
+  await ctx.db.updateLabels(event.card, { cardType: event.cardType })
   await ctx.db.updateThread(event.card, { threadType: event.cardType })
   return []
 }
 
 async function removeCollaborators(ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
-  await ctx.db.removeCollaborators(event.card)
+  await ctx.db.removeCollaborators(event.card, {})
   return []
 }
 
@@ -47,9 +47,9 @@ async function removeThreads(ctx: TriggerCtx, event: CardRemovedEvent): Promise<
 }
 
 async function removeMessages(ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
-  await ctx.db.removeMessages(event.card)
+  await ctx.db.removeMessages(event.card, {})
   await ctx.db.removePatches(event.card)
-  await ctx.db.removeFiles({ card: event.card })
+  await ctx.db.removeFiles(event.card, {})
   await removeMessageGroups(ctx, event.card)
 
   return []

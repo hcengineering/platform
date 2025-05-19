@@ -151,6 +151,9 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
       case NotificationRequestEventType.RemoveNotifications:
         this.validate(event, RemoveNotificationsEventSchema)
         break
+      case NotificationRequestEventType.UpdateNotification:
+        this.validate(event, UpdateNotificationsEventSchema)
+        break
       case NotificationRequestEventType.CreateNotificationContext:
         this.validate(event, CreateNotificationContextEventSchema)
         break
@@ -174,6 +177,7 @@ const LabelID = z.string()
 const MessageData = z.any()
 const PatchData = z.any()
 const MessageID = z.string()
+const NotificationID = z.string()
 const MessageType = z.string()
 const MessagesGroup = z.any()
 const PatchType = z.string()
@@ -218,6 +222,7 @@ const FindNotificationContextParamsSchema = FindParamsSchema.extend({
   account: z.union([AccountID, z.array(AccountID)]).optional(),
   notifications: z
     .object({
+      type: z.string().optional(),
       message: z.boolean().optional(),
       limit: z.number(),
       order: SortingOrder,
@@ -228,6 +233,7 @@ const FindNotificationContextParamsSchema = FindParamsSchema.extend({
 
 const FindNotificationsParamsSchema = FindParamsSchema.extend({
   context: ContextID.optional(),
+  type: z.string().optional(),
   read: z.boolean().optional(),
   created: dateOrRecordSchema.optional(),
   account: z.union([AccountID, z.array(AccountID)]).optional(),
@@ -351,8 +357,10 @@ const CreateThreadEventSchema = BaseRequestEventSchema.extend({
 const UpdateThreadEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.UpdateThread),
   thread: CardID,
-  replies: z.enum(['increment', 'decrement']),
-  lastReply: DateSchema.optional()
+  updates: z.object({
+    replies: z.enum(['increment', 'decrement']),
+    lastReply: DateSchema.optional()
+  })
 }).strict()
 
 const CreateMessagesGroupEventSchema = BaseRequestEventSchema.extend({
@@ -370,17 +378,36 @@ const RemoveMessagesGroupEventSchema = BaseRequestEventSchema.extend({
 
 const CreateNotificationEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.CreateNotification),
+  notificationType: z.string(),
+  content: z.record(z.any()).optional(),
+  read: z.boolean().optional(),
   context: ContextID,
   message: MessageID,
+  messageCreated: DateSchema,
   created: DateSchema,
   account: AccountID
+}).strict()
+
+const UpdateNotificationsEventSchema = BaseRequestEventSchema.extend({
+  type: z.literal(NotificationRequestEventType.UpdateNotification),
+  query: z.object({
+    context: ContextID,
+    account: AccountID,
+    id: z.string().optional(),
+    type: z.string().optional(),
+    read: z.boolean().optional(),
+    created: dateOrRecordSchema.optional()
+  }),
+  updates: z.object({
+    read: z.boolean()
+  })
 }).strict()
 
 const RemoveNotificationsEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.RemoveNotifications),
   context: ContextID,
   account: AccountID,
-  untilDate: DateSchema
+  ids: z.array(NotificationID).nonempty()
 }).strict()
 
 const CreateNotificationContextEventSchema = BaseRequestEventSchema.extend({
@@ -388,7 +415,8 @@ const CreateNotificationContextEventSchema = BaseRequestEventSchema.extend({
   card: CardID,
   account: AccountID,
   lastView: DateSchema,
-  lastUpdate: DateSchema
+  lastUpdate: DateSchema,
+  lastNotify: DateSchema.optional()
 }).strict()
 
 const RemoveNotificationContextEventSchema = BaseRequestEventSchema.extend({
@@ -401,8 +429,11 @@ const UpdateNotificationContextEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.UpdateNotificationContext),
   context: ContextID,
   account: AccountID,
-  lastView: DateSchema.optional(),
-  lastUpdate: DateSchema.optional()
+  updates: z.object({
+    lastView: DateSchema.optional(),
+    lastUpdate: DateSchema.optional(),
+    lastNotify: DateSchema.optional()
+  })
 }).strict()
 
 const AddCollaboratorsEventSchema = BaseRequestEventSchema.extend({
@@ -439,7 +470,10 @@ function deserializeEvent(event: RequestEvent): RequestEvent {
     case MessageRequestEventType.UpdateThread:
       return {
         ...event,
-        lastReply: deserializeDate(event.lastReply)
+        updates: {
+          ...event.updates,
+          lastReply: deserializeDate(event.updates.lastReply)
+        }
       }
     case MessageRequestEventType.CreateMessagesGroup:
       return {
@@ -460,11 +494,6 @@ function deserializeEvent(event: RequestEvent): RequestEvent {
         ...event,
         created: deserializeDate(event.created)!
       }
-    case NotificationRequestEventType.RemoveNotifications:
-      return {
-        ...event,
-        untilDate: deserializeDate(event.untilDate)!
-      }
     case NotificationRequestEventType.CreateNotificationContext:
       return {
         ...event,
@@ -474,8 +503,11 @@ function deserializeEvent(event: RequestEvent): RequestEvent {
     case NotificationRequestEventType.UpdateNotificationContext:
       return {
         ...event,
-        lastView: deserializeDate(event.lastView)!,
-        lastUpdate: deserializeDate(event.lastUpdate)!
+        updates: {
+          ...event.updates,
+          lastView: deserializeDate(event.updates.lastView)!,
+          lastUpdate: deserializeDate(event.updates.lastUpdate)!
+        }
       }
   }
 

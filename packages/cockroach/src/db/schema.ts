@@ -29,6 +29,7 @@ import {
   type CardType,
   type BlobMetadata
 } from '@hcengineering/communication-types'
+import type { NotificationContent, NotificationType } from '@hcengineering/communication-types'
 
 export enum TableName {
   File = 'communication.files',
@@ -124,9 +125,13 @@ export interface ThreadDb {
 
 export interface NotificationDb {
   id: NotificationID
+  type: NotificationType
+  read: boolean
   message_id: MessageID | null
+  message_created: Date
   context_id: ContextID
   created: Date
+  content: NotificationContent
 }
 
 export interface ContextDb {
@@ -135,6 +140,7 @@ export interface ContextDb {
   account: AccountID
   last_update: Date
   last_view: Date
+  last_notify?: Date
 }
 
 export interface CollaboratorDb {

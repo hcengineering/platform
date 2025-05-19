@@ -27,13 +27,19 @@ import {
   type CardType,
   type ContextID,
   type Message,
-  MessageType,
+  type MessageID,
   NewMessageLabelID,
-  type NotificationContext
+  type NotificationContext,
+  NotificationType,
+  type Reaction,
+  type ReactionNotificationContent,
+  type SocialID,
+  SortingOrder
 } from '@hcengineering/communication-types'
 
 import type { TriggerCtx } from '../types'
 import { findAccount } from '../utils'
+import { findMessage } from '../triggers/utils.ts'
 
 const BATCH_SIZE = 500
 
@@ -42,9 +48,138 @@ export async function notify(ctx: TriggerCtx, event: ResponseEvent): Promise<Req
     case MessageResponseEventType.MessageCreated: {
       return await notifyMessage(ctx, event.message, event.cardType)
     }
+    case MessageResponseEventType.ReactionCreated: {
+      return await notifyReaction(ctx, event.card, event.reaction.message, event.messageCreated, event.reaction)
+    }
+    case MessageResponseEventType.ReactionRemoved: {
+      return await removeReactionNotification(
+        ctx,
+        event.card,
+        event.message,
+        event.messageCreated,
+        event.reaction,
+        event.creator
+      )
+    }
   }
 
   return []
+}
+
+async function removeReactionNotification(
+  ctx: TriggerCtx,
+  card: CardID,
+  message: MessageID,
+  messageCreated: Date,
+  reaction: string,
+  creator: SocialID
+): Promise<RequestEvent[]> {
+  const result: RequestEvent[] = []
+  const msg = await findMessage(ctx, card, message, messageCreated)
+  if (msg === undefined) return result
+
+  const messageAccount = await findAccount(ctx, msg.creator)
+  if (messageAccount == null) return result
+
+  const notifications = await ctx.db.findNotifications({
+    type: NotificationType.Reaction,
+    messageId: message,
+    account: messageAccount
+  })
+
+  const toDelete = notifications.find((n) => {
+    const content = n.content as ReactionNotificationContent
+    return content.emoji === reaction && content.creator === creator
+  })
+
+  if (toDelete === undefined) return result
+
+  const context = (await ctx.db.findNotificationContexts({ card: card, account: messageAccount, limit: 1 }))[0]
+  if (context == null) return result
+  if (context.lastNotify && context.lastNotify.getTime() === toDelete.created.getTime()) {
+    const lastNotification = (
+      await ctx.db.findNotifications({
+        account: messageAccount,
+        context: context.id,
+        created: {
+          less: context.lastNotify
+        },
+        order: SortingOrder.Descending,
+        limit: 1
+      })
+    )[0]
+    if (lastNotification != null) {
+      result.push({
+        type: NotificationRequestEventType.UpdateNotificationContext,
+        context: context.id,
+        account: messageAccount,
+        updates: {
+          lastNotify: lastNotification.created
+        }
+      })
+    }
+  }
+
+  result.push({
+    type: NotificationRequestEventType.RemoveNotifications,
+    context: toDelete.context,
+    account: messageAccount,
+    ids: [toDelete.id]
+  })
+
+  return result
+}
+async function notifyReaction(
+  ctx: TriggerCtx,
+  card: CardID,
+  message: MessageID,
+  messageCreated: Date,
+  reaction: Reaction
+): Promise<RequestEvent[]> {
+  const result: RequestEvent[] = []
+
+  const msg = await findMessage(ctx, card, message, messageCreated)
+  if (msg == null) return result
+
+  const messageAccount = await findAccount(ctx, msg.creator)
+  if (messageAccount == null) return result
+
+  const reactionAccount = await findAccount(ctx, reaction.creator)
+  if (reactionAccount === messageAccount) return result
+
+  const context = (await ctx.db.findNotificationContexts({ card: card, account: messageAccount }))[0]
+  let contextId: ContextID | undefined = context?.id
+
+  if (context == null) {
+    contextId = await createContext(ctx, messageAccount, card, new Date(), new Date())
+  }
+
+  if (contextId == null) return result
+
+  const content: ReactionNotificationContent = {
+    emoji: reaction.reaction,
+    creator: reaction.creator
+  }
+  result.push({
+    type: NotificationRequestEventType.CreateNotification,
+    notificationType: NotificationType.Reaction,
+    account: messageAccount,
+    context: contextId,
+    message: message,
+    messageCreated,
+    created: reaction.created,
+    content
+  })
+
+  result.push({
+    type: NotificationRequestEventType.UpdateNotificationContext,
+    context: contextId,
+    account: messageAccount,
+    updates: {
+      lastNotify: reaction.created
+    }
+  })
+  return result
 }
 
 async function notifyMessage(ctx: TriggerCtx, message: Message, cardType: CardType): Promise<RequestEvent[]> {
@@ -105,10 +240,12 @@ async function processCollaborator(
 
   result.push({
     type: NotificationRequestEventType.CreateNotification,
+    notificationType: NotificationType.Message,
     account: collaborator,
     context: contextId,
     message: message.id,
-    created: message.created
+    created: message.created,
+    messageCreated: message.created
   })
   return result
 }
@@ -129,7 +266,8 @@ async function createOrUpdateContext(
       collaborator,
       message.card,
       message.created,
-      isOwn ? message.created : undefined
+      isOwn ? message.created : undefined,
+      isOwn ? undefined : message.created
     )
 
     return {
@@ -149,8 +287,11 @@ async function createOrUpdateContext(
         type: NotificationRequestEventType.UpdateNotificationContext,
         context: context.id,
         account: collaborator,
-        lastView,
-        lastUpdate
+        updates: {
+          lastView,
+          lastUpdate,
+          lastNotify: isOwn ? undefined : message.created
+        }
       }
     ]
   }
@@ -161,7 +302,8 @@ async function createContext(
   account: AccountID,
   card: CardID,
   lastUpdate: Date,
-  lastView?: Date
+  lastView?: Date,
+  lastNotify?: Date
 ): Promise<ContextID | undefined> {
   try {
     const result = (await ctx.execute({
@@ -169,7 +311,8 @@ async function createContext(
       account,
       card,
       lastUpdate,
-      lastView: lastView ?? new Date(lastUpdate.getTime() - 1)
+      lastView: lastView ?? new Date(lastUpdate.getTime() - 1),
+      lastNotify
     })) as CreateNotificationContextResult
 
     return result.id
