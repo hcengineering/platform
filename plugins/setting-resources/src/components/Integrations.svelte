@@ -16,7 +16,7 @@
   import { onMount } from 'svelte'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import type { Integration, IntegrationType } from '@hcengineering/setting'
+  import { type Integration, type IntegrationType, IntegrationError } from '@hcengineering/setting'
   import setting from '@hcengineering/setting'
 
   import { Header, Breadcrumb, NotificationSeverity, addNotification, themeStore } from '@hcengineering/ui'
