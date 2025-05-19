@@ -275,16 +275,17 @@
     }
   }
 
-  $: if (kind === 'submenu') {
-    if (!shouldHideTooltip()) options = fitSubmenu()
-  } else {
-    if (!shouldHideTooltip()) options = fitTooltip(tooltipHTML, clWidth)
+  $: if (kind === 'submenu' && !shouldHideTooltip()) {
+    options = fitSubmenu()
+  } else if (!shouldHideTooltip()) {
+    options = fitTooltip(tooltipHTML, clWidth)
   }
   afterUpdate(() => {
+    if (shouldHideTooltip()) return
     if (kind === 'submenu') {
-      if (!shouldHideTooltip()) options = fitSubmenu()
+      options = fitSubmenu()
     } else {
-      if (!shouldHideTooltip()) options = fitTooltip(tooltipHTML, clWidth)
+      options = fitTooltip(tooltipHTML, clWidth)
     }
   })
   onDestroy(() => {
