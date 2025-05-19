@@ -24,7 +24,7 @@
 
   export let card: Card | undefined = undefined
 
-  const limit = 6
+  const limit = 20
 
   let cards: Card[] = []
   let contexts: NotificationContext[] = []

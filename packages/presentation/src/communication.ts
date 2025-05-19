@@ -53,7 +53,9 @@ import {
   type RemoveCollaboratorsEvent,
   MessageRequestEventType,
   NotificationRequestEventType,
-  type RemoveNotificationContextEvent
+  type RemoveNotificationContextEvent,
+  type UpdateNotificationEvent,
+  type UpdateNotificationQuery
 } from '@hcengineering/communication-sdk-types'
 import {
   type Client as PlatformClient,
@@ -245,12 +247,14 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async updateNotificationContext (context: ContextID, lastView?: Date): Promise<void> {
+  async updateNotificationContext (context: ContextID, lastView: Date): Promise<void> {
     const event: UpdateNotificationContextEvent = {
       type: NotificationRequestEventType.UpdateNotificationContext,
       context,
       account: this.getAccount(),
-      lastView
+      updates: {
+        lastView
+      }
     }
     await this.sendEvent(event)
   }
@@ -260,6 +264,25 @@ class Client {
       type: NotificationRequestEventType.RemoveNotificationContext,
       context,
       account: this.getAccount()
+    }
+    await this.sendEvent(event)
+  }
+
+  async updateNotifications (
+    context: ContextID,
+    query: Omit<UpdateNotificationQuery, 'context' | 'account'>,
+    read: boolean
+  ): Promise<void> {
+    const event: UpdateNotificationEvent = {
+      type: NotificationRequestEventType.UpdateNotification,
+      query: {
+        ...query,
+        context,
+        account: this.getAccount()
+      },
+      updates: {
+        read
+      }
     }
     await this.sendEvent(event)
   }

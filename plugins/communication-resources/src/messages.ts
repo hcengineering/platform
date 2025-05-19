@@ -60,9 +60,9 @@ export function createMessagesObserver (
     (entries) => {
       entries.forEach((entry) => {
         if (!get(isAppFocusedStore)) return
-        if (entry.isIntersecting) {
+        const isIntersecting = entry.isIntersecting
+        if (isIntersecting) {
           onMessageView(entry.target as HTMLDivElement)
-          messageObserver.unobserve(entry.target)
         }
       })
     },

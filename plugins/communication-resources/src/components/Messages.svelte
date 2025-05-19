@@ -13,8 +13,19 @@
 
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import { type Message, NotificationContext, Window } from '@hcengineering/communication-types'
-  import { createMessagesQuery, getCommunicationClient, type MessageQueryParams } from '@hcengineering/presentation'
+  import {
+    type Message,
+    NotificationContext,
+    Window,
+    NotificationType,
+    Notification
+  } from '@hcengineering/communication-types'
+  import {
+    createMessagesQuery,
+    getCommunicationClient,
+    type MessageQueryParams,
+    createNotificationsQuery
+  } from '@hcengineering/presentation'
   import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
   import { MessagesGroup as MessagesGroupPresenter, MessagesLoading } from '@hcengineering/ui-next'
@@ -36,6 +47,7 @@
   const me = getCurrentAccount()
   const communicationClient = getCommunicationClient()
   const query = createMessagesQuery()
+  const notificationsQuery = createNotificationsQuery()
 
   const scrollToNewThreshold = 50
 
@@ -45,6 +57,7 @@
   let separatorDiv: HTMLDivElement | null | undefined = undefined
 
   let messages: Message[] = []
+  let reactionNotifications: Notification[] = []
   let groups: MessagesGroup[] = []
   let window: Window<Message> | undefined = undefined
   let isLoading = true
@@ -77,6 +90,21 @@
     isLoading = messages.length < limit && (res.hasNextPage() || res.hasPrevPage())
     void onUpdate(messages)
   })
+
+  $: if (context !== undefined) {
+    void notificationsQuery.query(
+      {
+        context: context.id,
+        read: false,
+        type: NotificationType.Reaction
+      },
+      (res) => {
+        reactionNotifications = res.getResult()
+      }
+    )
+  } else {
+    notificationsQuery.unsubscribe()
+  }
 
   const mo = new MutationObserver(() => {
     if (!isScrollInitialized) return
@@ -283,7 +311,7 @@
     const containerRect = scrollDiv.getBoundingClientRect()
     const items = Array.from(contentDiv.getElementsByClassName('message')).reverse()
 
-    let lastVisible: Element | null = null
+    const visible: Element[] = []
 
     for (const item of items) {
       const rect = item.getBoundingClientRect()
@@ -291,16 +319,32 @@
       const isVisible = rect.top < containerRect.bottom && rect.bottom > containerRect.top
 
       if (isVisible) {
-        lastVisible = item
+        visible.push(item)
+      }
+
+      if (!isVisible && visible.length > 0) {
         break
       }
     }
-    if (lastVisible == null) return
+    if (visible.length === 0) return
 
-    const message = messages.find((it) => it.id === lastVisible.id)
+    const message = messages.find((it) => it.id === visible[0].id)
     if (message == null) return
 
     readMessage(message.created)
+
+    for (const item of visible) {
+      const reaction = reactionNotifications.find((it) => it.messageId === item.id)
+      if (reaction != null) {
+        void communicationClient.updateNotifications(
+          reaction.context,
+          {
+            id: reaction.id
+          },
+          true
+        )
+      }
+    }
   }
 
   function scrollToStartOfNew (): void {
@@ -395,10 +439,23 @@
       const message = messages.find((it) => it.id === id)
       if (message === undefined) return
       const shouldRead = newLastView == null || message.created > newLastView
+      const reactionsToRead = reactionNotifications.filter((it) => it.messageId === message.id)
 
       if (shouldRead) {
         newLastView = message.created
         readMessage(message.created)
+      }
+
+      if (reactionsToRead.length > 0) {
+        for (const reaction of reactionsToRead) {
+          void communicationClient.updateNotifications(
+            reaction.context,
+            {
+              id: reaction.id
+            },
+            true
+          )
+        }
       }
     })
   }
