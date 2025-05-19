@@ -14,13 +14,14 @@
 -->
 
 <script lang="ts">
-  import { getCurrentAccount, Timestamp } from '@hcengineering/core'
+  import { getCurrentAccount, Timestamp, isOtherHour } from '@hcengineering/core'
   import { Message } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
 
   import DateSeparator from '../DateSeparator.svelte'
   import MessagePresenter from './MessagePresenter.svelte'
   import MessagesSeparator from './MessagesSeparator.svelte'
+  import { isMessageEmpty } from '../../utils'
 
   export let card: Card
   export let date: Timestamp
@@ -46,10 +47,18 @@
   <DateSeparator {date} />
   <div class="messages-group__messages">
     {#each messages as message, index (message.id)}
+      {@const previousMessage = messages[index - 1]}
+      {@const compact =
+        previousMessage !== undefined &&
+        previousMessage.creator === message.creator &&
+        previousMessage.type === message.type &&
+        !isOtherHour(previousMessage.created.getTime(), message.created.getTime())}
       {#if separatorIndex !== 0 && index === separatorIndex}
         <MessagesSeparator bind:element={separatorDiv} />
       {/if}
-      <MessagePresenter {message} {card} editable={!readonly} />
+      {#if !isMessageEmpty(message)}
+        <MessagePresenter {message} {card} editable={!readonly} {compact} />
+      {/if}
     {/each}
   </div>
 </div>

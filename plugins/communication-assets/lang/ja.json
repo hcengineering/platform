@@ -2,6 +2,8 @@
   "string": {
     "Messages": "メッセージ",
     "FirstMessages": "最初のメッセージ",
-    "LatestMessages": "最新のメッセージ"
+    "LatestMessages": "最新のメッセージ",
+    "Subscribe": "購読",
+    "Unsubscribe": "購読解除"
   }
 }

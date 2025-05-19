@@ -1,4 +1,3 @@
-//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,23 +10,7 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
-import { type Resources } from '@hcengineering/platform'
+import { writable } from 'svelte/store'
 
-import CardMessagesSection from './components/CardMessagesSection.svelte'
-import { unsubscribe, subscribe, canSubscribe, canUnsubscribe } from './utils'
-
-export default async (): Promise<Resources> => ({
-  component: {
-    CardMessagesSection
-  },
-  action: {
-    Unsubscribe: unsubscribe,
-    Subscribe: subscribe
-  },
-  function: {
-    CanSubscribe: canSubscribe,
-    CanUnsubscribe: canUnsubscribe
-  }
-})
+export const isAppFocusedStore = writable(true)

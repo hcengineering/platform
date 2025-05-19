@@ -17,18 +17,31 @@
   import { NotificationContext, Notification } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
   import { createEventDispatcher } from 'svelte'
+  import { getCommunicationClient } from '@hcengineering/presentation'
 
   import InboxNotification from './InboxNotification.svelte'
   import InboxCardIcon from './InboxCardIcon.svelte'
+  import { CheckBox, Spinner } from '@hcengineering/ui'
 
   export let context: NotificationContext
   export let card: Card
   export let selected: boolean = false
 
   const dispatch = createEventDispatcher()
+  const communicationClient = getCommunicationClient()
 
   let displayNotifications: Notification[] = []
   $: displayNotifications = (context.notifications ?? []).filter((it) => it.message != null).slice(0, 3)
+
+  let isRemoving = false
+  async function handleCheck (): Promise<void> {
+    isRemoving = true
+    try {
+      await communicationClient.removeNotificationContext(context.id)
+    } finally {
+      isRemoving = false
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -47,10 +60,18 @@
         {card.title}
       </span>
     </div>
+
+    <div class="remove-checkbox flex-center min-w-6">
+      {#if isRemoving}
+        <Spinner size="small" />
+      {:else}
+        <CheckBox kind="todo" size="medium" on:value={handleCheck} />
+      {/if}
+    </div>
   </div>
   <div class="content">
     <div class="notifications">
-      {#each displayNotifications as notification (notification.messageId)}
+      {#each displayNotifications as notification}
         <InboxNotification {notification} {card} />
       {/each}
     </div>
@@ -63,7 +84,9 @@
     position: relative;
     flex-direction: column;
     cursor: pointer;
-    padding: var(--spacing-1_5) var(--spacing-1);
+    padding: 0 1rem;
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--global-ui-BorderColor);
     min-height: 5.625rem;
 
@@ -114,5 +137,11 @@
   .content {
     display: flex;
     width: 100%;
+  }
+
+  .remove-checkbox {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
   }
 </style>

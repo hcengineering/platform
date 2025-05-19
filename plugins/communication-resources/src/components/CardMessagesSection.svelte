@@ -69,6 +69,7 @@
       shouldScrollToStart={active && position === MessagesNavigationAnchors.ConversationStart && shouldScrollToStart}
       {isLoadingBefore}
       on:change
+      on:action
       on:loaded={() => {
         dispatch('action', { id: 'overlay', show: false })
         dispatch('loaded')

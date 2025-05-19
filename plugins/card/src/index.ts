@@ -139,7 +139,8 @@ const cardPlugin = plugin(cardId, {
     Card: '' as IntlString,
     Cards: '' as IntlString,
     CardApplication: '' as IntlString,
-    Views: '' as IntlString
+    Views: '' as IntlString,
+    Labels: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,
@@ -150,6 +151,9 @@ const cardPlugin = plugin(cardId, {
   },
   ids: {
     CardWidget: '' as Ref<Doc>
+  },
+  component: {
+    LabelsPresenter: '' as AnyComponent
   }
 })
 
