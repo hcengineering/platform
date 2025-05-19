@@ -543,7 +543,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: process.string.Processes,
-      component: process.component.ProcessesExtension,
+      component: process.component.ProcessesCardSection,
       order: 350,
       navigation: []
     },

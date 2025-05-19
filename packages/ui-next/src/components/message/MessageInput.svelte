@@ -25,7 +25,7 @@
   } from '@hcengineering/presentation'
   import { Message } from '@hcengineering/communication-types'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
-  import { areEqualMarkups, isEmptyMarkup } from '@hcengineering/text'
+  import { areEqualMarkups, isEmptyMarkup, EmptyMarkup } from '@hcengineering/text'
   import { updateMyPresence } from '@hcengineering/presence-resources'
   import { ThrottledCaller } from '@hcengineering/ui'
   import { getCurrentEmployee } from '@hcengineering/contact'
@@ -258,7 +258,7 @@
     if (message.files.some((it) => !files.some((f) => f.blobId === it.blobId))) return true
     if (newMarkup === undefined || content === undefined) return false
 
-    return !areEqualMarkups(content, newMarkup ?? Markup.EmptyMarkup)
+    return !areEqualMarkups(content, newMarkup ?? EmptyMarkup)
   }
 </script>
 
