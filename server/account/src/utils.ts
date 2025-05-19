@@ -21,16 +21,16 @@ import {
   groupByArray,
   isActiveMode,
   MeasureContext,
+  type Person,
+  type PersonId,
+  type PersonUuid,
   roleOrder,
   SocialIdType,
   SocialKey,
   systemAccountUuid,
+  type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   WorkspaceMode,
-  WorkspaceUuid,
-  type Person,
-  type PersonId,
-  type PersonUuid,
-  type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore
+  WorkspaceUuid
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -45,21 +45,21 @@ import { MongoAccountDB } from './collections/mongo'
 import { PostgresAccountDB } from './collections/postgres/postgres'
 import { accountPlugin } from './plugin'
 import {
+  type Account,
+  type AccountDB,
   AccountEventType,
   AccountMethodHandler,
   Integration,
   LoginInfo,
   Meta,
   OtpInfo,
+  type RegionInfo,
+  type SocialId,
+  type Workspace,
   WorkspaceInfoWithStatus,
   WorkspaceInvite,
   WorkspaceLoginInfo,
-  WorkspaceStatus,
-  type Account,
-  type AccountDB,
-  type RegionInfo,
-  type SocialId,
-  type Workspace
+  WorkspaceStatus
 } from './types'
 import { isAdminEmail } from './admin'
 
@@ -110,6 +110,14 @@ export async function getAccountDB (uri: string, dbNs?: string): Promise<[Accoun
 
 export function getRolePower (role: AccountRole): number {
   return roleOrder[role]
+}
+
+export function isReadOnlyOrGuest (account: AccountUuid, extra: Record<string, any> | undefined): boolean {
+  return isGuest(account, extra) || extra?.readonly === 'true'
+}
+
+export function isGuest (account: AccountUuid, extra: Record<string, any> | undefined): boolean {
+  return account === GUEST_ACCOUNT && extra?.guest === 'true'
 }
 
 export function wrap (
@@ -532,7 +540,7 @@ export async function selectWorkspace (
   meta?: Meta
 ): Promise<WorkspaceLoginInfo> {
   const { workspaceUrl, kind, externalRegions = [] } = params
-  const { account: accountUuid, workspace: tokenWorkspaceUuid, extra } = decodeTokenVerbose(ctx, token ?? '')
+  let { account: accountUuid, workspace: tokenWorkspaceUuid, extra } = decodeTokenVerbose(ctx, token ?? '')
   const getKind = (region: string | undefined): EndpointKind => {
     switch (kind) {
       case 'external':
@@ -546,7 +554,7 @@ export async function selectWorkspace (
     }
   }
 
-  if (accountUuid === GUEST_ACCOUNT && extra?.guest === 'true') {
+  if (isGuest(accountUuid, extra)) {
     const workspace = await getWorkspaceByUrl(db, workspaceUrl)
     if (workspace == null) {
       ctx.error('Workspace not found in selectWorkspace', { workspaceUrl, kind, accountUuid, extra })
@@ -603,6 +611,13 @@ export async function selectWorkspace (
   if (role == null) {
     ctx.error('Not a member of the workspace being selected', { workspaceUrl, accountUuid })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  if (role === AccountRole.ReadOnlyGuest) {
+    if (extra == null) {
+      extra = {}
+    }
+    extra.readonly = 'true'
   }
 
   const wsStatus = await db.workspaceStatus.findOne({ workspaceUuid: workspace.uuid })

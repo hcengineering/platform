@@ -32,7 +32,7 @@ import core, {
   TypedSpace,
   type MeasureContext,
   type SessionData,
-  type AccountUuid
+  type AccountUuid, AccountRole
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
@@ -337,6 +337,11 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
   }
 
   protected checkPermissions (ctx: MeasureContext, tx: Tx): void {
+    const account = ctx.contextData.account
+    if (account.role === AccountRole.ReadOnlyGuest) {
+      this.throwForbidden()
+    }
+
     if (tx._class === core.class.TxApplyIf) {
       const applyTx = tx as TxApplyIf
 

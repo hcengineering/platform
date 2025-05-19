@@ -26,7 +26,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV6Migration(ns),
     getV7Migration(ns),
     getV8Migration(ns),
-    getV9Migration(ns)
+    getV9Migration(ns),
+    getV10Migration(ns)
   ]
 }
 
@@ -45,7 +46,7 @@ function getV1Migration (ns: string): [string, string] {
     /* ======= T Y P E S ======= */
     CREATE TYPE IF NOT EXISTS ${ns}.social_id_type AS ENUM ('email', 'github', 'google', 'phone', 'oidc', 'huly', 'telegram');
     CREATE TYPE IF NOT EXISTS ${ns}.location AS ENUM ('kv', 'weur', 'eeur', 'wnam', 'enam', 'apac');
-    CREATE TYPE IF NOT EXISTS ${ns}.workspace_role AS ENUM ('OWNER', 'MAINTAINER', 'USER', 'GUEST', 'DOCGUEST');
+    CREATE TYPE IF NOT EXISTS ${ns}.workspace_role AS ENUM ('OWNER', 'MAINTAINER', 'USER', 'GUEST', 'DOCGUEST', 'READONLYGUEST');
 
     /* ======= P E R S O N ======= */
     CREATE TABLE IF NOT EXISTS ${ns}.person (
@@ -338,6 +339,15 @@ function getV9Migration (ns: string): [string, string] {
     ALTER TABLE ${ns}.person
     ADD COLUMN IF NOT EXISTS migrated_to UUID,
     ADD CONSTRAINT person_migrated_to_fk FOREIGN KEY (migrated_to) REFERENCES ${ns}.person(uuid);
+    `
+  ]
+}
+
+function getV10Migration (ns: string): [string, string] {
+  return [
+    'account_db_v10_add_readonly_role',
+    `
+    ALTER TYPE ${ns}.workspace_role ADD VALUE 'READONLYGUEST' AFTER 'DOCGUEST';
     `
   ]
 }

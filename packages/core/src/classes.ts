@@ -517,6 +517,7 @@ export interface Permission extends Doc {
  * @public
  */
 export enum AccountRole {
+  ReadOnlyGuest = 'READONLYGUEST',
   DocGuest = 'DocGuest',
   Guest = 'GUEST',
   User = 'USER',
@@ -528,6 +529,7 @@ export enum AccountRole {
  * @public
  */
 export const roleOrder: Record<AccountRole, number> = {
+  [AccountRole.ReadOnlyGuest]: 5,
   [AccountRole.DocGuest]: 10,
   [AccountRole.Guest]: 20,
   [AccountRole.User]: 30,

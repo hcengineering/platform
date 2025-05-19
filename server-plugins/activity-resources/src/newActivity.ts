@@ -75,6 +75,8 @@ async function createMessages (
   for (const data of result) {
     void api.event(
       {
+        // TODO: We should decide what to do with communications package and remove this workaround
+        // @ts-expect-error Temporary workaround because of Communications package depends on npm core package
         account: systemAccount
       },
       {

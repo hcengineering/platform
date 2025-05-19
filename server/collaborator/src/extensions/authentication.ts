@@ -17,9 +17,10 @@ import { decodeDocumentId } from '@hcengineering/collaborator-client'
 import { MeasureContext } from '@hcengineering/core'
 import { decodeToken } from '@hcengineering/server-token'
 import { Extension, onAuthenticatePayload } from '@hocuspocus/server'
+import { isReadOnlyOrGuest } from '@hcengineering/account'
 
 import { Context, buildContext } from '../context'
-import { getWorkspaceIds, isGuest } from '../utils'
+import { getWorkspaceIds } from '../utils'
 
 export interface AuthenticationConfiguration {
   ctx: MeasureContext
@@ -38,7 +39,7 @@ export class AuthenticationExtension implements Extension {
 
     return await ctx.with('authenticate', { workspaceId }, async () => {
       const token = decodeToken(data.token)
-      const readonly = isGuest(token)
+      const readonly = isReadOnlyOrGuest(token.account, token.extra)
 
       ctx.info('authenticate', {
         workspaceId,
