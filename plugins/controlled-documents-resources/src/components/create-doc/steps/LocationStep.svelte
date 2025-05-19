@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { type Doc, type Ref, type Space } from '@hcengineering/core'
+  import { TypedSpace, type Doc, type Ref, type Space } from '@hcengineering/core'
   import documents, {
     type DocumentSpace,
     type DocumentSpaceType,
@@ -23,7 +23,7 @@
   } from '@hcengineering/controlled-documents'
   import { SpaceSelector, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
-  import { permissionsStore } from '@hcengineering/contact-resources'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
 
   import { $locationStep as locationStep, locationStepUpdated } from '../../../stores/wizards/create-document'
   import DocumentParentSelector from '../../hierarchy/DocumentParentSelector.svelte'
@@ -82,9 +82,9 @@
 
   $: canProceed = $locationStep.space !== undefined && $locationStep.project !== undefined
   $: hasParentSelector = $locationStep.space !== documents.space.UnsortedTemplates
-  $: restrictedSpaces = Object.entries($permissionsStore.ps)
-    .filter(([, pss]) => !pss.has(documents.permission.CreateDocument))
-    .map(([s]) => s) as Ref<Space>[]
+  $: restrictedSpaces = Object.keys($permissionsStore.ps).filter(
+    (s) => !checkMyPermission(documents.permission.CreateDocument, s as Ref<TypedSpace>, $permissionsStore)
+  ) as Ref<TypedSpace>[]
 
   $: spaceQuery = isTemplate
     ? { _id: { $nin: restrictedSpaces }, archived: false, _class: { $nin: externalSpaces } }

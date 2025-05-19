@@ -703,7 +703,9 @@ export async function getDocumentMetaTitle (
 
   if (object === undefined) return ''
 
-  return object.title
+  const hint = await translate(documentsResources.string.LatestVersionHint, {})
+
+  return object.title + ` (${hint})`
 }
 
 export async function controlledDocumentReferenceObjectProvider (
