@@ -67,7 +67,7 @@ export async function getOrCreateSocialId (account: AccountUuid, email: string):
   }
 
   if (socialId.personUuid !== account) {
-    throw new Error('Social id connected to another account')
+    throw new Error('SOCIAL_ID_PERSON_MISMATCH')
   }
 
   return socialId

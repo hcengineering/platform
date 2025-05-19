@@ -239,7 +239,10 @@ export default plugin(settingId, {
     MailboxErrorMailboxExists: '' as IntlString,
     MailboxErrorMailboxCountLimit: '' as IntlString,
     DeleteMailbox: '' as IntlString,
-    MailboxDeleteConfirmation: '' as IntlString
+    MailboxDeleteConfirmation: '' as IntlString,
+    IntegrationFailed: '' as IntlString,
+    IntegrationError: '' as IntlString,
+    EmailIsUsed: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,
