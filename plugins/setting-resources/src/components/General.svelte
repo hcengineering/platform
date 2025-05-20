@@ -13,41 +13,50 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Configuration } from '@hcengineering/core'
+  import core, {
+    type Account,
+    AccountRole, AccountUuid,
+    Configuration,
+    getCurrentAccount,
+    pickPrimarySocialId
+  } from '@hcengineering/core'
   import {
     Breadcrumb,
-    Header,
-    Scroller,
-    EditBox,
-    Spinner,
     Button,
-    IconEdit,
-    IconClose,
+    deviceOptionsStore as deviceInfo,
+    DropdownLabels,
+    type DropdownTextItem,
+    EditBox,
+    getLocalWeekStart,
+    getWeekDayNames,
+    hasLocalWeekStart,
+    Header,
     IconCheckmark,
+    IconClose,
     IconDelete,
+    IconEdit,
     Label,
     navigate,
+    Scroller,
     showPopup,
-    DropdownLabels,
-    deviceOptionsStore as deviceInfo,
+    Spinner,
     themeStore,
-    getWeekDayNames,
-    getLocalWeekStart,
-    hasLocalWeekStart,
-    type DropdownTextItem
+    Toggle,
+    ToggleWithLabel
   } from '@hcengineering/ui'
   import { loginId } from '@hcengineering/login'
   import { EditableAvatar, getAccountClient } from '@hcengineering/contact-resources'
   import { translateCB } from '@hcengineering/platform'
-  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { createQuery, getClient, MessageBox, uiContext } from '@hcengineering/presentation'
   import { WorkspaceSetting } from '@hcengineering/setting'
-  import { AvatarType } from '@hcengineering/contact'
+  import { AvatarType, ensureEmployeeForPerson } from '@hcengineering/contact'
   import settingsRes from '../plugin'
 
   let loading = true
   let isEditingName = false
   let oldName: string
   let name: string = ''
+  let allowReadOnlyGuests: boolean
 
   const accountClient = getAccountClient()
   const disabledSet = ['\n', '<', '>', '/', '\\']
@@ -66,6 +75,8 @@
 
     oldName = res.name
     name = oldName
+    console.log(res.allowReadOnlyGuest)
+    allowReadOnlyGuests = res.allowReadOnlyGuest ?? false
     loading = false
   }
 
@@ -140,6 +151,23 @@
       disablePermissionsConfiguration = result[0]
     }
   )
+
+  async function handleToggleReadonlyAccess (e: CustomEvent<boolean>): Promise<void> {
+    const enabled = e.detail
+    const guestUserInfo = await accountClient.updateAllowReadOnlyGuests(enabled)
+    if (guestUserInfo !== undefined) {
+      const guestAccount: Account = {
+        uuid: guestUserInfo.guestPerson.uuid as AccountUuid,
+        role: AccountRole.ReadOnlyGuest,
+        primarySocialId: pickPrimarySocialId(guestUserInfo.guestSocialIds)._id,
+        socialIds: guestUserInfo.guestSocialIds.map((si) => si._id),
+        fullSocialIds: guestUserInfo.guestSocialIds
+      }
+      const myAccount = getCurrentAccount()
+      const ctx = uiContext.newChild('connect', {})
+      await ensureEmployeeForPerson(ctx, myAccount, guestAccount, client, guestUserInfo.guestSocialIds, guestUserInfo.guestPerson)
+    }
+  }
 
   function handleTogglePermissions (): void {
     const newState = !arePermissionsDisabled
@@ -253,6 +281,15 @@
             </div>
           </div>
           <div class="title mt-6"><Label label={settingsRes.string.Permissions} /></div>
+          <div class="flex-row-center flex-gap-4">
+            <Label label={settingsRes.string.EnablePermissions}/>
+            <Toggle
+              on={allowReadOnlyGuests}
+              on:change={(e) => {
+                void handleToggleReadonlyAccess(e)
+              }}
+            />
+          </div>
           <div class="delete">
             <Button
               kind="regular"

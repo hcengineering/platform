@@ -64,6 +64,7 @@ import {
 import { isAdminEmail } from './admin'
 
 export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
+export const READONLY_GUEST_ACCOUNT = '83bbed9a-0867-4851-be32-31d49d1d42ce'
 
 export async function getAccountDB (uri: string, dbNs?: string): Promise<[AccountDB, () => void]> {
   const isMongo = uri.startsWith('mongodb://')
@@ -540,7 +541,33 @@ export async function selectWorkspace (
   meta?: Meta
 ): Promise<WorkspaceLoginInfo> {
   const { workspaceUrl, kind, externalRegions = [] } = params
-  let { account: accountUuid, workspace: tokenWorkspaceUuid, extra } = decodeTokenVerbose(ctx, token ?? '')
+
+  let workspace: Workspace | null = null
+  if (workspaceUrl !== '') {
+    workspace = await getWorkspaceByUrl(db, workspaceUrl)
+  }
+
+  let accountUuid: AccountUuid
+  let extra: Record<string, any> | undefined
+  try {
+    const decodedToken = decodeTokenVerbose(ctx, token ?? '')
+    accountUuid = decodedToken.account
+    if (workspace == null) {
+      workspace = await getWorkspaceById(db, decodedToken.workspace)
+    }
+    extra = decodedToken.extra
+  } catch (e) {
+    if (workspace?.allowReadOnlyGuest === true) {
+      accountUuid = READONLY_GUEST_ACCOUNT as AccountUuid
+    } else {
+      throw e
+    }
+  }
+
+  if (workspace == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
+  }
+
   const getKind = (region: string | undefined): EndpointKind => {
     switch (kind) {
       case 'external':
@@ -573,22 +600,22 @@ export async function selectWorkspace (
     }
   }
 
-  const account = await db.account.findOne({ uuid: accountUuid })
+  let role = await db.getWorkspaceRole(accountUuid, workspace.uuid)
+  let account = await db.account.findOne({ uuid: accountUuid })
+
+  if ((role == null || account == null) && workspace.allowReadOnlyGuest) {
+    accountUuid = READONLY_GUEST_ACCOUNT as AccountUuid
+    role = await db.getWorkspaceRole(accountUuid, workspace.uuid)
+    account = await db.account.findOne({ uuid: accountUuid })
+  }
+
+  if (role == null) {
+    ctx.error('Not a member of the workspace being selected', { workspaceUrl, accountUuid })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
 
   if (accountUuid !== systemAccountUuid && account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
-  }
-
-  let workspace: Workspace | null
-  if (workspaceUrl === '') {
-    // Find from token
-    workspace = await getWorkspaceById(db, tokenWorkspaceUuid)
-  } else {
-    workspace = await getWorkspaceByUrl(db, workspaceUrl)
-  }
-
-  if (workspace == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
   }
 
   if (accountUuid !== systemAccountUuid && meta !== undefined) {
@@ -604,13 +631,6 @@ export async function selectWorkspace (
       workspaceUrl: workspace.url,
       role: AccountRole.Owner
     }
-  }
-
-  const role = await db.getWorkspaceRole(accountUuid, workspace.uuid)
-
-  if (role == null) {
-    ctx.error('Not a member of the workspace being selected', { workspaceUrl, accountUuid })
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
   if (role === AccountRole.ReadOnlyGuest) {
@@ -644,6 +664,53 @@ export async function selectWorkspace (
     workspaceDataId: workspace.dataId,
     role
   }
+}
+
+export async function updateAllowReadOnlyGuests (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    readOnlyGuestsAllowed: boolean
+  }
+): Promise<{ guestPerson: Person, guestSocialIds: SocialId[] } | undefined> {
+  const { readOnlyGuestsAllowed } = params
+  const { account, workspace } = decodeTokenVerbose(ctx, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  const accRole = account === systemAccountUuid ? AccountRole.Owner : await db.getWorkspaceRole(account, workspace)
+  if (accRole == null || getRolePower(accRole) < getRolePower(AccountRole.Owner)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  await db.updateAllowReadOnlyGuests(workspace, readOnlyGuestsAllowed)
+  if (!readOnlyGuestsAllowed) {
+    await db.unassignWorkspace(READONLY_GUEST_ACCOUNT as AccountUuid, workspace)
+    return undefined
+  }
+
+  let guestPerson = await db.person.findOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid })
+  if (guestPerson == null) {
+    await db.person.insertOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid, firstName: 'Readonly', lastName: 'Guest' })
+    await createAccount(db, READONLY_GUEST_ACCOUNT as PersonUuid, true)
+    guestPerson = await db.person.findOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid })
+  }
+  const roleInWorkspace = await db.getWorkspaceRole(READONLY_GUEST_ACCOUNT as AccountUuid, workspace)
+  if (roleInWorkspace == null) {
+    await db.assignWorkspace(READONLY_GUEST_ACCOUNT as AccountUuid, workspace, AccountRole.ReadOnlyGuest)
+  }
+
+  const guestAccount = await db.account.findOne({ uuid: READONLY_GUEST_ACCOUNT as AccountUuid })
+  if (guestPerson === null || guestAccount == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+  const guestSocialIds = await db.socialId.find({ personUuid: READONLY_GUEST_ACCOUNT as PersonUuid, verifiedOn: { $gt: 0 } })
+
+  return { guestPerson, guestSocialIds: guestSocialIds.filter((si) => si.isDeleted !== true) }
 }
 
 export async function updateWorkspaceRole (
@@ -781,6 +848,7 @@ export async function createWorkspaceRecord (
           branding: brandingKey,
           createdBy: account,
           billingAccount: account,
+          allowReadOnlyGuest: false,
           region
         },
         {

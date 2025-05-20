@@ -24,10 +24,10 @@ import {
   Doc,
   FindResult,
   generateId,
-  Person as GlobalPerson,
   Hierarchy,
   MeasureContext,
   notEmpty,
+  Person as GlobalPerson,
   PersonId,
   pickPrimarySocialId,
   Ref,
@@ -406,12 +406,24 @@ export async function ensureEmployee (
   socialIds: SocialId[],
   getGlobalPerson: () => Promise<GlobalPerson | undefined>
 ): Promise<Ref<Employee> | null> {
+  const globalPerson = await getGlobalPerson()
+  return await ensureEmployeeForPerson(ctx, me, me, client, socialIds, globalPerson)
+}
+
+export async function ensureEmployeeForPerson (
+  ctx: MeasureContext,
+  me: Account,
+  person: Account,
+  client: Pick<Client, 'findOne' | 'findAll' | 'tx'>,
+  socialIds: SocialId[],
+  globalPerson?: GlobalPerson
+): Promise<Ref<Employee> | null> {
   const txFactory = new TxFactory(me.primarySocialId)
-  const personByUuid = await client.findOne(contact.class.Person, { personUuid: me.uuid })
+  const personByUuid = await client.findOne(contact.class.Person, { personUuid: person.uuid })
   let personRef: Ref<Person> | undefined = personByUuid?._id
   if (personRef === undefined) {
     const socialIdentity = await client.findOne(contact.class.SocialIdentity, {
-      _id: { $in: me.socialIds as SocialIdentityRef[] }
+      _id: { $in: person.socialIds as SocialIdentityRef[] }
     })
 
     // This social id is confirmed globally as we only have ids of confirmed social identities in socialIds array
@@ -420,15 +432,13 @@ export async function ensureEmployee (
 
   if (personRef === undefined) {
     await ctx.with('create-person', {}, async () => {
-      const globalPerson = await getGlobalPerson()
-
       if (globalPerson === undefined) {
         console.error('Cannot get global person')
         return null
       }
 
       const data = {
-        personUuid: me.uuid,
+        personUuid: person.uuid,
         name: combineName(globalPerson.firstName, globalPerson.lastName),
         city: globalPerson.city,
         avatarType: AvatarType.COLOR
@@ -436,19 +446,17 @@ export async function ensureEmployee (
       personRef = generateId()
 
       const createPersonTx = txFactory.createTxCreateDoc(contact.class.Person, contact.space.Contacts, data, personRef)
-
       await client.tx(createPersonTx)
     })
   } else if (personByUuid === undefined) {
     const updatePersonTx = txFactory.createTxUpdateDoc(contact.class.Person, contact.space.Contacts, personRef, {
-      personUuid: me.uuid
+      personUuid: person.uuid
     })
-
     await client.tx(updatePersonTx)
   }
 
   const existingIdentifiers = toIdMap(
-    await client.findAll(contact.class.SocialIdentity, { _id: { $in: me.socialIds as SocialIdentityRef[] } })
+    await client.findAll(contact.class.SocialIdentity, { _id: { $in: person.socialIds as SocialIdentityRef[] } })
   )
 
   for (const socialId of socialIds) {
@@ -482,7 +490,6 @@ export async function ensureEmployee (
             socialId._id as SocialIdentityRef
           )
         )
-
         await client.tx(createSocialIdTx)
       })
     } else {
@@ -502,7 +509,6 @@ export async function ensureEmployee (
             verifiedOn: socialId.verifiedOn
           }
         )
-
         await client.tx(updateSocialIdentityTx)
       }
     }
@@ -510,7 +516,7 @@ export async function ensureEmployee (
 
   // NOTE: it is important to create Employee after Person and SocialIdentities are ensured so all the triggers applied
   // on Employee creation will be able to properly map things
-  const employeeRole = me.role === AccountRole.Guest ? 'GUEST' : 'USER'
+  const employeeRole = person.role === AccountRole.Guest || person.role === AccountRole.ReadOnlyGuest ? 'GUEST' : 'USER'
   const employee = await client.findOne(contact.mixin.Employee, { _id: personRef as Ref<Employee> })
 
   if (
@@ -536,7 +542,6 @@ export async function ensureEmployee (
           role: employeeRole
         }
       )
-
       await client.tx(createEmployeeTx)
     })
   }

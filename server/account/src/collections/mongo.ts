@@ -556,6 +556,15 @@ export class MongoAccountDB implements AccountDB {
     return res
   }
 
+  async updateAllowReadOnlyGuests (workspaceId: WorkspaceUuid, readOnlyGuestsAllowed: boolean): Promise<void> {
+    await this.workspace.updateOne(
+      {
+        uuid: workspaceId
+      },
+      { allowReadOnlyGuest: readOnlyGuestsAllowed }
+    )
+  }
+
   async getPendingWorkspace (
     region: string,
     version: Data<Version>,

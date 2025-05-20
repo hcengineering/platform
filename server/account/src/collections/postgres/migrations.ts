@@ -27,7 +27,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV7Migration(ns),
     getV8Migration(ns),
     getV9Migration(ns),
-    getV10Migration(ns)
+    getV10Migration1(ns),
+    getV10Migration2(ns)
   ]
 }
 
@@ -46,7 +47,7 @@ function getV1Migration (ns: string): [string, string] {
     /* ======= T Y P E S ======= */
     CREATE TYPE IF NOT EXISTS ${ns}.social_id_type AS ENUM ('email', 'github', 'google', 'phone', 'oidc', 'huly', 'telegram');
     CREATE TYPE IF NOT EXISTS ${ns}.location AS ENUM ('kv', 'weur', 'eeur', 'wnam', 'enam', 'apac');
-    CREATE TYPE IF NOT EXISTS ${ns}.workspace_role AS ENUM ('OWNER', 'MAINTAINER', 'USER', 'GUEST', 'DOCGUEST', 'READONLYGUEST');
+    CREATE TYPE IF NOT EXISTS ${ns}.workspace_role AS ENUM ('OWNER', 'MAINTAINER', 'USER', 'GUEST', 'DOCGUEST');
 
     /* ======= P E R S O N ======= */
     CREATE TABLE IF NOT EXISTS ${ns}.person (
@@ -343,11 +344,21 @@ function getV9Migration (ns: string): [string, string] {
   ]
 }
 
-function getV10Migration (ns: string): [string, string] {
+function getV10Migration1 (ns: string): [string, string] {
   return [
     'account_db_v10_add_readonly_role',
     `
     ALTER TYPE ${ns}.workspace_role ADD VALUE 'READONLYGUEST' AFTER 'DOCGUEST';
+    `
+  ]
+}
+
+function getV10Migration2 (ns: string): [string, string] {
+  return [
+    'account_db_v10_add_allow_guests_flag_to_workspace',
+    `
+    ALTER TABLE ${ns}.workspace
+    ADD COLUMN IF NOT EXISTS allow_read_only_guest BOOL NOT NULL DEFAULT FALSE;
     `
   ]
 }

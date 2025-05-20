@@ -96,7 +96,7 @@ import {
   verifyAllowedRole,
   verifyAllowedServices,
   verifyPassword,
-  wrap
+  wrap, updateAllowReadOnlyGuests
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -1824,6 +1824,7 @@ export type AccountMethods =
   | 'getPerson'
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
+  | 'updateAllowReadOnlyGuests'
   | 'findPersonBySocialKey'
   | 'findPersonBySocialId'
   | 'findSocialIdBySocialKey'
@@ -1867,6 +1868,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     updateWorkspaceName: wrap(updateWorkspaceName),
     deleteWorkspace: wrap(deleteWorkspace),
     updateWorkspaceRole: wrap(updateWorkspaceRole),
+    updateAllowReadOnlyGuests: wrap(updateAllowReadOnlyGuests),
     createMailbox: wrap(createMailbox),
     getMailboxes: wrap(getMailboxes),
     deleteMailbox: wrap(deleteMailbox),
