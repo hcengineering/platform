@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@hcengineering/contact'
+  import { Employee, Person } from '@hcengineering/contact'
   import { AccountUuid, Class, Doc, Ref } from '@hcengineering/core'
   import { ButtonIcon, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -23,7 +23,7 @@
   import ModernProfilePopup from './ModernProfilePopup.svelte'
   import contact from '../../plugin'
   import Avatar from '../Avatar.svelte'
-  import { employeeByIdStore } from '../../utils'
+  import { employeeByIdStore, personByIdStore } from '../../utils'
   import { getPersonTimezone } from './utils'
   import { EmployeePresenter } from '../../index'
   import TimePresenter from './TimePresenter.svelte'
@@ -35,11 +35,13 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let employee: Employee | undefined = undefined
+  let employee: Employee | Person | undefined = undefined
   let timezone: string | undefined = undefined
+  let isEmployee: boolean = false
 
-  $: employee = $employeeByIdStore.get(_id)
-  $: void loadPersonTimezone(employee?.personUuid)
+  $: employee = $employeeByIdStore.get(_id) ?? $personByIdStore.get(_id)
+  $: isEmployee = $employeeByIdStore.has(_id)
+  $: void loadPersonTimezone(employee)
 
   async function viewProfile (): Promise<void> {
     if (employee === undefined) return
@@ -49,8 +51,10 @@
     navigate(loc)
   }
 
-  async function loadPersonTimezone (personId: AccountUuid | undefined): Promise<void> {
-    timezone = await getPersonTimezone(personId)
+  async function loadPersonTimezone (person: Employee | Person | undefined): Promise<void> {
+    if (person?.personUuid !== undefined && isEmployee) {
+      timezone = await getPersonTimezone(person?.personUuid as AccountUuid)
+    }
   }
 </script>
 
@@ -80,7 +84,7 @@
           person={employee}
           name={employee?.name}
           {disabled}
-          showStatus
+          showStatus={isEmployee}
           statusSize="medium"
           style="modern"
           clickable
@@ -94,14 +98,16 @@
           </span>
         </div>
       </div>
-      <div class="py-1">
-        <ComponentExtensions
-          extension={contact.extension.PersonAchievementsPresenter}
-          props={{
-            personId: _id
-          }}
-        />
-      </div>
+      {#if isEmployee}
+        <div class="py-1">
+          <ComponentExtensions
+            extension={contact.extension.PersonAchievementsPresenter}
+            props={{
+              personId: _id
+            }}
+          />
+        </div>
+      {/if}
     {:else}
       <div class="flex-presenter flex-gap-2 p-2">
         <div class="flex-presenter">
