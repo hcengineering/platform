@@ -15,7 +15,7 @@
 import { getClient as getAccountClient, AccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
 import { Event } from '@hcengineering/calendar'
-import { Hierarchy, PersonId, systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import core, { Hierarchy, PersonId, systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import love from '@hcengineering/love'
 import { generateToken } from '@hcengineering/server-token'
 import config from './config'
@@ -27,7 +27,7 @@ export async function getClient (
   const token = generateToken(systemAccountUuid, workspaceUuid)
   let accountClient = getAccountClient(config.accountsUrl, token)
 
-  if (socialId !== undefined) {
+  if (socialId !== undefined && socialId !== core.account.System) {
     const personUuid = await accountClient.findPersonBySocialId(socialId, true)
     if (personUuid === undefined) {
       throw new Error('Global person not found')

@@ -2,6 +2,8 @@
   "string": {
     "Messages": "消息",
     "FirstMessages": "第一条消息",
-    "LatestMessages": "最新消息"
+    "LatestMessages": "最新消息",
+    "Subscribe": "订阅",
+    "Unsubscribe": "取消订阅"
   }
 }

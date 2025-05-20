@@ -50,7 +50,7 @@
   export let actions: Action[] = []
   export let skipLabel = false
   export let hoverable = true
-  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hoverStyles: 'filledHover' = 'filledHover'
   export let hideLink = false
   export let type: ActivityMessageViewType = 'default'
   export let readonly = false

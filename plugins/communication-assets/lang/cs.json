@@ -2,6 +2,8 @@
   "string": {
     "Messages": "Zprávy",
     "FirstMessages": "První zprávy",
-    "LatestMessages": "Poslední zprávy"
+    "LatestMessages": "Poslední zprávy",
+    "Subscribe": "Přihlásit se",
+    "Unsubscribe": "Odhlásit se"
   }
 }

@@ -22,7 +22,6 @@
   import { Button, eventToHTMLElement, SelectPopup, showPopup } from '@hcengineering/ui'
 
   export let process: Process
-  export let state: State
   export let step: Step<Card>
 
   let params = step.params
@@ -90,16 +89,7 @@
   }
 </script>
 
-<ParamsEditor
-  _class={process.masterTag}
-  {process}
-  {state}
-  {keys}
-  {params}
-  allowRemove
-  on:remove={remove}
-  on:change={change}
-/>
+<ParamsEditor _class={process.masterTag} {process} {keys} {params} allowRemove on:remove={remove} on:change={change} />
 {#if possibleAttrs.length > 0}
   <div class="flex-center mt-4">
     <Button label={presentation.string.Add} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onAdd} />

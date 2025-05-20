@@ -2,6 +2,8 @@
   "string": {
     "Messages": "Nachrichten",
     "FirstMessages": "Erste Nachrichten",
-    "LatestMessages": "Neueste Nachrichten"
+    "LatestMessages": "Neueste Nachrichten",
+    "Subscribe": "Abonnieren",
+    "Unsubscribe": "Abbestellen"
   }
 }

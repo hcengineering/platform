@@ -52,6 +52,7 @@
   export let containerName: string | undefined = undefined
   export let containerType: 'size' | 'inline-size' | undefined = containerName !== undefined ? 'inline-size' : undefined
   export let maxHeight: number | undefined = undefined
+  export let hideBar: boolean = false
 
   export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
     if (divScroll) {
@@ -133,10 +134,10 @@
           divBar.style.visibility = 'hidden'
         }
       } else {
-        if (divBar.style.visibility !== 'visible') {
+        if (!hideBar && divBar.style.visibility !== 'visible') {
           divBar.style.visibility = 'visible'
         }
-        if (divBar) {
+        if (divBar && !hideBar) {
           if (timer) {
             clearTimeout(timer)
             timer = undefined

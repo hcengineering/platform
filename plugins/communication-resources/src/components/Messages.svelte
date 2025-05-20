@@ -13,12 +13,24 @@
 
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import { type Message, NotificationContext, Window } from '@hcengineering/communication-types'
-  import { createMessagesQuery, getCommunicationClient, type MessageQueryParams } from '@hcengineering/presentation'
+  import {
+    type Message,
+    NotificationContext,
+    Window,
+    NotificationType,
+    Notification
+  } from '@hcengineering/communication-types'
+  import {
+    createMessagesQuery,
+    getCommunicationClient,
+    type MessageQueryParams,
+    createNotificationsQuery
+  } from '@hcengineering/presentation'
   import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
   import { MessagesGroup as MessagesGroupPresenter, MessagesLoading } from '@hcengineering/ui-next'
   import { MessagesNavigationAnchors } from '@hcengineering/communication'
+  import { isAppFocusedStore } from '@hcengineering/ui'
 
   import { createMessagesObserver, getGroupDay, groupMessagesByDay, MessagesGroup } from '../messages'
 
@@ -35,6 +47,7 @@
   const me = getCurrentAccount()
   const communicationClient = getCommunicationClient()
   const query = createMessagesQuery()
+  const notificationsQuery = createNotificationsQuery()
 
   const scrollToNewThreshold = 50
 
@@ -44,6 +57,7 @@
   let separatorDiv: HTMLDivElement | null | undefined = undefined
 
   let messages: Message[] = []
+  let reactionNotifications: Notification[] = []
   let groups: MessagesGroup[] = []
   let window: Window<Message> | undefined = undefined
   let isLoading = true
@@ -56,7 +70,7 @@
   let restore: { scrollHeight: number } | undefined = undefined
   let prevPosition: MessagesNavigationAnchors = position
 
-  const limit = 10
+  const limit = 50
   const unread = initialLastView != null && initialLastUpdate != null && initialLastUpdate > initialLastView
   let queryDef = getBaseQuery()
 
@@ -77,11 +91,31 @@
     void onUpdate(messages)
   })
 
+  $: if (context !== undefined) {
+    void notificationsQuery.query(
+      {
+        context: context.id,
+        read: false,
+        type: NotificationType.Reaction
+      },
+      (res) => {
+        reactionNotifications = res.getResult()
+      }
+    )
+  } else {
+    notificationsQuery.unsubscribe()
+  }
+
   const mo = new MutationObserver(() => {
     if (!isScrollInitialized) return
 
     if (atBottom) {
-      scrollToBottom()
+      dispatch('action', { id: 'hideScrollBar' })
+      if (!$isAppFocusedStore) {
+        scrollToStartOfNew()
+      } else {
+        scrollToBottom(true)
+      }
     }
   })
 
@@ -103,7 +137,7 @@
         contentDiv?.scrollIntoView({ behavior: 'instant', block: 'start' })
       }
     } else if (position === MessagesNavigationAnchors.LatestMessages && window && !window.hasNextPage()) {
-      scrollToBottom()
+      scrollToBottom(true)
     } else {
       queryDef = getBaseQuery()
       window = undefined
@@ -213,18 +247,21 @@
     }
   }
 
-  function scrollToBottom (): void {
+  function scrollToBottom (forced = false): void {
+    if (!$isAppFocusedStore && !forced) return
     scrollDiv.scroll({ top: scrollDiv.scrollHeight, behavior: 'instant' })
   }
 
   function restoreScroll (): void {
-    if (restore == null) return
+    if (restore == null || !$isAppFocusedStore) return
+    dispatch('action', { id: 'hideScrollBar' })
     const newScrollHeight = scrollDiv.scrollHeight
     scrollDiv.scrollTop = newScrollHeight - restore.scrollHeight + scrollDiv.scrollTop
     restore = undefined
   }
 
   function checkPositionOnScroll (): void {
+    if (!isScrollInitialized || isPageLoading) return
     const topOffset = getTopOffset()
     const bottomOffset = getBottomOffset()
 
@@ -253,6 +290,103 @@
     updateShouldScrollToNew()
     loadMore()
     checkPositionOnScroll()
+    void readAll()
+  }
+
+  $: updateSeparator($isAppFocusedStore, context)
+  $: readViewport($isAppFocusedStore)
+
+  function updateSeparator (isAppFocused: boolean, context: NotificationContext | undefined): void {
+    if (isAppFocused || context == null || window == null) return
+    const separatorIndex = messages.findIndex(
+      ({ created, creator }) => !me.socialIds.includes(creator) && created.getTime() > context.lastView.getTime()
+    )
+    if (separatorIndex === -1) return
+    separatorDate = messages[separatorIndex].created
+  }
+
+  function readViewport (isAppFocused: boolean): void {
+    if (!isAppFocused || context == null || window == null) return
+
+    const containerRect = scrollDiv.getBoundingClientRect()
+    const items = Array.from(contentDiv.getElementsByClassName('message')).reverse()
+
+    const visible: Element[] = []
+
+    for (const item of items) {
+      const rect = item.getBoundingClientRect()
+
+      const isVisible = rect.top < containerRect.bottom && rect.bottom > containerRect.top
+
+      if (isVisible) {
+        visible.push(item)
+      }
+
+      if (!isVisible && visible.length > 0) {
+        break
+      }
+    }
+    if (visible.length === 0) return
+
+    const message = messages.find((it) => it.id === visible[0].id)
+    if (message == null) return
+
+    readMessage(message.created)
+
+    for (const item of visible) {
+      const reaction = reactionNotifications.find((it) => it.messageId === item.id)
+      if (reaction != null) {
+        void communicationClient.updateNotifications(
+          reaction.context,
+          {
+            id: reaction.id
+          },
+          true
+        )
+      }
+    }
+  }
+
+  function scrollToStartOfNew (): void {
+    if (!shouldScrollToNew) return
+    updateSeparator($isAppFocusedStore, context)
+    if (separatorDate == null) {
+      scrollToBottom(true)
+      return
+    }
+
+    const firstNewMessageIndex = messages.findIndex(
+      ({ created, creator }) =>
+        separatorDate && !me.socialIds.includes(creator) && created.getTime() === separatorDate.getTime()
+    )
+
+    if (firstNewMessageIndex === -1) return
+    const msg = messages[firstNewMessageIndex]
+    if (msg == null) return
+
+    const messagesElement = contentDiv.querySelector(`[id="${msg.id}"]`)
+    if (messagesElement == null) return
+    const topOffset = messagesElement.getBoundingClientRect().top - 100
+    const bottomOffset = getBottomOffset()
+    if (topOffset < 0) return
+
+    if (bottomOffset < topOffset) {
+      scrollToBottom(true)
+    } else {
+      scrollDiv.scrollBy({ top: topOffset, behavior: 'instant' })
+    }
+  }
+
+  async function readAll (): Promise<void> {
+    if (window == null || context == null || !isScrollInitialized || window.hasNextPage() || !$isAppFocusedStore) return
+
+    if ((newLastView ?? context.lastView).getTime() >= context.lastUpdate.getTime()) {
+      return
+    }
+    const bottomOffset = getBottomOffset()
+    if (bottomOffset < 10) {
+      readMessage(new Date())
+    }
   }
 
   async function onUpdate (res: Message[]): Promise<void> {
@@ -265,7 +399,10 @@
 
     restoreScroll()
 
-    if (shouldScrollToNew && prevCount > 0 && isScrollInitialized) {
+    if (!$isAppFocusedStore) {
+      scrollToStartOfNew()
+    } else if (shouldScrollToNew && prevCount > 0 && isScrollInitialized) {
+      dispatch('action', { id: 'hideScrollBar' })
       scrollToBottom()
     }
   }
@@ -297,14 +434,28 @@
     if (unsubscribeObserver != null) return
 
     unsubscribeObserver = createMessagesObserver(contentDiv, (messageDiv) => {
+      if (!$isAppFocusedStore) return
       const id = messageDiv.id
       const message = messages.find((it) => it.id === id)
       if (message === undefined) return
       const shouldRead = newLastView == null || message.created > newLastView
+      const reactionsToRead = reactionNotifications.filter((it) => it.messageId === message.id)
 
       if (shouldRead) {
         newLastView = message.created
         readMessage(message.created)
+      }
+
+      if (reactionsToRead.length > 0) {
+        for (const reaction of reactionsToRead) {
+          void communicationClient.updateNotifications(
+            reaction.context,
+            {
+              id: reaction.id
+            },
+            true
+          )
+        }
       }
     })
   }
@@ -352,7 +503,7 @@
 
     if (separatorIndex === -1) {
       await tick() // Wait for the DOM to update
-      scrollToBottom()
+      scrollToBottom(true)
       shouldScrollToNew = true
       atBottom = true
       isScrollInitialized = true

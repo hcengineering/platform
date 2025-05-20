@@ -546,6 +546,7 @@ export class CardsProcessor {
           file: blobFile._id,
           type: blobFile.type,
           name: blobFile.name,
+          size: blobFile.size,
           metadata: {} // todo: blobFile.metadata
         }
       }

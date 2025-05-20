@@ -31,10 +31,12 @@
   import { List, ListSelectionProvider, SelectDirection, ViewletsSettingButton } from '@hcengineering/view-resources'
   import process from '../plugin'
   import RunProcessPopup from './RunProcessPopup.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let card: Card
 
   const viewletId = process.viewlet.CardExecutions
+  const dispatch = createEventDispatcher()
 
   $: query = {
     card: card._id
@@ -143,6 +145,7 @@
             docsProvided = true
             docs = evt.detail
             listProvider.update(evt.detail)
+            dispatch('loaded')
           }}
         />
         {#if docsProvided && docs.length === 0}

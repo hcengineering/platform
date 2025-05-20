@@ -270,7 +270,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(github.metadata.GithubClientID, config.GITHUB_CLIENTID ?? '')
   setMetadata(github.metadata.GithubURL, config.GITHUB_URL ?? '')
 
-  setMetadata(communication.metadata.Enabled, config.COMMUNICATION_API_ENABLED)
+  setMetadata(communication.metadata.Enabled, config.COMMUNICATION_API_ENABLED === 'true')
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)

@@ -53,7 +53,17 @@
     "OnSubProcessesDone": "On sub processes done",
     "Result": "Result",
     "RequestResult": "Request result",
-    "NoResultRequired": "No result required"
+    "NoResultRequired": "No result required",
+    "From": "From",
+    "To": "To",
+    "Trigger": "Trigger",
+    "Actions": "Actions",
+    "Transition": "Transition",
+    "OnToDoRemove": "On ToDo remove",
+    "DeleteTransition": "Delete transition",
+    "DeleteTransitionConfirm": "Do you want to delete transition?",
+    "AddTransition": "Add transition",
+    "ToDo": "ToDo"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",
@@ -66,6 +76,7 @@
     "EmptyRelatedObjectValue": "Empty related object {parent} value: {attr}",
     "InternalServerError": "Internal server error, contact support, error id: {errorId}",
     "ResultNotProvided": "Result not provided",
-    "EmptyFunctionResult": "Empty function result {func}"
+    "EmptyFunctionResult": "Empty function result {func}",
+    "ContextValueNotProvided": "Context value not provided: {name}"
   }
 }

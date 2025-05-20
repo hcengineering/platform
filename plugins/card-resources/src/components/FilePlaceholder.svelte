@@ -34,7 +34,8 @@
       name,
       type,
       metadata,
-      file: uuid
+      file: uuid,
+      size: file.size
     }
     await client.update(doc, {
       blobs

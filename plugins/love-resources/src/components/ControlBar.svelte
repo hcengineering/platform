@@ -184,11 +184,11 @@
 </script>
 
 <ControlBarContainer bind:noLabel>
-  <svelte:fragment slot="right">
+  <!-- <svelte:fragment slot="right">
     {#if $isConnected && isTranscriptionAllowed() && $isTranscription}
       <RoomLanguageSelector {room} kind="icon" />
     {/if}
-  </svelte:fragment>
+  </svelte:fragment> -->
   <svelte:fragment slot="center">
     {#if room._id !== love.ids.Reception}
       <ModernButton

@@ -16,18 +16,17 @@
   import { Card } from '@hcengineering/card'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Process, MethodParams, Step } from '@hcengineering/process'
-  import { tooltip, Icon, IconError, Label } from '@hcengineering/ui'
+  import { Process, Step } from '@hcengineering/process'
+  import { Icon, IconError, Label, tooltip } from '@hcengineering/ui'
   import plugin from '../../plugin'
 
   export let step: Step<Card>
-  export let params: MethodParams<Card>
   export let process: Process
 
   const client = getClient()
   $: method = client.getModel().findAllSync(plugin.class.Method, { _id: step.methodId })[0]
 
-  $: attributes = getAttributes(params, process)
+  $: attributes = getAttributes(step.params, process)
 
   function getAttributes (params: Record<string, any>, process: Process): IntlString[] {
     const res: IntlString[] = []

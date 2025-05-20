@@ -19,6 +19,7 @@
   import cardPlugin, { Card } from '@hcengineering/card'
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import { Label } from '@hcengineering/ui'
+  import { type Ref } from '@hcengineering/core'
 
   export let message: Message
   export let thread: Thread
@@ -31,7 +32,7 @@
 
   $: threadCardQuery.query(
     cardPlugin.class.Card,
-    { _id: thread.thread },
+    { _id: thread.thread as Ref<Card> },
     (res) => {
       threadCard = res[0]
     },

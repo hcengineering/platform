@@ -1,5 +1,11 @@
 import calendar from '@hcengineering/calendar'
-import { type PersonId, type WorkspaceInfoWithStatus, type WorkspaceUuid, systemAccountUuid } from '@hcengineering/core'
+import {
+  type PersonId,
+  type WorkspaceInfoWithStatus,
+  type WorkspaceUuid,
+  isActiveMode,
+  systemAccountUuid
+} from '@hcengineering/core'
 import { getClient as getKvsClient } from '@hcengineering/kvs-client'
 import { createClient, getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
@@ -81,17 +87,16 @@ export async function performCalendarAccountMigrations (db: Db, region: string |
 
 const workspacePersonsMap = new Map<WorkspaceUuid, Record<string, PersonId>>()
 
-async function getPersonIdByEmail (
-  workspace: WorkspaceUuid,
-  email: string,
-  oldId: string
-): Promise<PersonId | undefined> {
+async function getPersonIdByEmail (workspace: WorkspaceUuid, email: string): Promise<PersonId | undefined> {
   const map = workspacePersonsMap.get(workspace)
   if (map != null) {
     return map[email]
   } else {
     const transactorUrl = await getWorkspaceTransactorEndpoint(workspace)
-    const token = generateToken(systemAccountUuid, workspace)
+    const token = generateToken(systemAccountUuid, workspace, {
+      model: 'upgrade',
+      mode: 'backup'
+    })
     const client = await createClient(transactorUrl, token)
     try {
       const res: Record<string, PersonId> = {}
@@ -129,9 +134,10 @@ async function migrateCalendarIntegrations (
         if (ws == null) {
           continue
         }
+        if (!isActiveMode(ws.mode)) continue
         token.workspace = ws.uuid
 
-        const personId = await getPersonIdByEmail(ws.uuid, token.email, token.userId)
+        const personId = await getPersonIdByEmail(ws.uuid, token.email)
         if (personId == null) {
           console.error('No socialId found for token', token)
           continue
@@ -215,8 +221,9 @@ async function migrateCalendarHistory (
         if (ws == null) {
           continue
         }
+        if (!isActiveMode(ws.mode)) continue
 
-        const personId = await getPersonIdByEmail(ws.uuid, history.email, history.userId)
+        const personId = await getPersonIdByEmail(ws.uuid, history.email)
         if (personId == null) {
           console.error('No socialId found for token', token)
           continue

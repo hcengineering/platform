@@ -18,7 +18,7 @@
   import { DropdownLabels, DropdownTextItem, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import card from '@hcengineering/card'
-  import plugin from '../plugin'
+  import plugin from '../../plugin'
 
   export let process: Process
   export let step: Step<Process>

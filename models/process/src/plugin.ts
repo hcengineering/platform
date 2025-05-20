@@ -17,10 +17,14 @@ import { processId } from '@hcengineering/process'
 import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
 import process from '@hcengineering/process-resources/src/plugin'
 import { type ViewAction, type Action } from '@hcengineering/view'
+import { type CardSection } from '@hcengineering/card'
 
 export default mergeIds(processId, process, {
   app: {
     Process: '' as Ref<Doc>
+  },
+  section: {
+    CardProcesses: '' as Ref<CardSection>
   },
   pipeline: {
     ProcessMiddleware: '' as Ref<PresentationMiddlewareFactory>

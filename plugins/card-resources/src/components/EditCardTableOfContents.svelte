@@ -29,6 +29,7 @@
   export let context: NotificationContext | undefined = undefined
   export let isContextLoaded: boolean = false
   export let readonly: boolean = false
+  export let scrollDiv: HTMLDivElement | undefined | null = undefined
 
   const client = getClient()
 
@@ -50,10 +51,10 @@
   let toc: Heading[] = []
   let subTocBySection: Record<string, Heading[]> = {}
 
-  let scrollDiv: HTMLDivElement | undefined | null = undefined
   let isScrollInitialized = false
-
   let showOverlay = false
+  let timer: any
+  let hideBar: boolean = false
 
   function onNavigationClick (heading: Heading): void {
     selectedToc = heading
@@ -96,6 +97,10 @@
     if (action.id === 'overlay') {
       sectionOverlays[section] = action.show
       sectionOverlays = sectionOverlays
+    }
+
+    if (action.id === 'hideScrollBar') {
+      hideScrollBar()
     }
   }
 
@@ -152,6 +157,16 @@
     }
   }
 
+  export function hideScrollBar (): void {
+    hideBar = true
+    if (timer) {
+      clearTimeout(timer)
+    }
+    timer = setTimeout(() => {
+      hideBar = false
+    }, 1000)
+  }
+
   function handleScroll (): void {
     if (scrollDiv == null || showOverlay) return
     const allLoaded = sections.every(({ _id }) => sectionLoaded[_id] === true)
@@ -197,6 +212,7 @@
     </div>
     <Scroller
       padding="0"
+      {hideBar}
       bottomPadding="var(--spacing-3)"
       disablePointerEventsOnScroll
       bind:divScroll={scrollDiv}
