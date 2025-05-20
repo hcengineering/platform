@@ -37,16 +37,6 @@ export interface ConsumerControl {
   heartbeat: () => Promise<void>
 }
 
-export type MessageHeaders = Record<string, Buffer | string | (Buffer | string)[] | undefined>
-
-export interface ProducerMessage {
-  key: Buffer | string
-  value: Buffer | string
-  partition?: number
-  headers?: MessageHeaders
-  timestamp?: string
-}
-
 export interface PlatformQueue {
   getProducer: <T>(ctx: MeasureContext, topic: QueueTopic | string) => PlatformQueueProducer<T>
 
@@ -79,7 +69,6 @@ export interface PlatformQueue {
  */
 export interface PlatformQueueProducer<T> {
   send: (id: WorkspaceUuid | string, msgs: T[]) => Promise<void>
-  sendMessages: (msgs: ProducerMessage[]) => Promise<void>
   close: () => Promise<void>
 
   getQueue: () => PlatformQueue

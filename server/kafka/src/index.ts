@@ -20,8 +20,7 @@ import {
   type ConsumerHandle,
   type ConsumerMessage,
   type PlatformQueue,
-  type PlatformQueueProducer,
-  type ProducerMessage
+  type PlatformQueueProducer
 } from '@hcengineering/server-core'
 import { Kafka, Partitioners, type Consumer, type Producer } from 'kafkajs'
 import type * as tls from 'tls'
@@ -179,22 +178,17 @@ class PlatformQueueProducerImpl implements PlatformQueueProducer<any> {
   }
 
   async send (id: WorkspaceUuid | string, msgs: any[]): Promise<void> {
-    const messages = msgs.map((m) => ({
-      key: Buffer.from(`${id}`),
-      value: Buffer.from(JSON.stringify(m))
-    }))
-    await this.sendMessages(messages)
-  }
-
-  async sendMessages (messages: ProducerMessage[]): Promise<void> {
     if (this.connected !== undefined) {
       await this.connected
       this.connected = undefined
     }
-    await this.ctx.with('sendMessages', { topic: this.topic }, () =>
+    await this.ctx.with('send', { topic: this.topic }, () =>
       this.txProducer.send({
         topic: this.topic,
-        messages
+        messages: msgs.map((m) => ({
+          key: Buffer.from(`${id}`),
+          value: Buffer.from(JSON.stringify(m))
+        }))
       })
     )
   }

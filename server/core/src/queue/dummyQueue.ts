@@ -1,21 +1,11 @@
 import type { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
-import {
-  type ConsumerHandle,
-  type PlatformQueue,
-  type PlatformQueueProducer,
-  type QueueTopic,
-  type ProducerMessage
-} from './types'
+import { type ConsumerHandle, type PlatformQueue, type PlatformQueueProducer, type QueueTopic } from './types'
 
 /**
  * A dummy implementation of PlatformQueueProducer for testing and development
  */
 class DummyQueueProducer<T> implements PlatformQueueProducer<T> {
   async send (id: WorkspaceUuid | string, msgs: T[]): Promise<void> {
-    await Promise.resolve()
-  }
-
-  async sendMessages (msgs: ProducerMessage[]): Promise<void> {
     await Promise.resolve()
   }
 
