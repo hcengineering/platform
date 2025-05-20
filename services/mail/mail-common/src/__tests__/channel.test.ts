@@ -218,8 +218,7 @@ describe('ChannelCache', () => {
     })
 
     it('should normalize email addresses to lowercase before lookup and creation', async () => {
-      // Arrange - This test requires modifying the implementation to normalize emails
-      // We're assuming here that we'll update the implementation to lowercase emails
+      // Arrange - This test verifies that email normalization to lowercase is implemented
 
       const mixedCaseEmail = 'MiXeD@ExAmPlE.com'
 
