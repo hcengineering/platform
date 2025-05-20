@@ -57,10 +57,10 @@ const config: Config = {
     }
     throw Error('QUEUE_CONFIG env var is not set')
   })(),
-  queueRegion: process.env.CommunicationTopic ?? '',
+  queueRegion: process.env.QUEUE_REGION ?? '',
   communicationTopic: (() => {
-    if (process.env.CommunicationTopic !== undefined) {
-      return process.env.CommunicationTopic
+    if (process.env.COMMUNICATION_TOPIC !== undefined) {
+      return process.env.COMMUNICATION_TOPIC
     }
     throw Error('CommunicationTopic env var is not set')
   })()
