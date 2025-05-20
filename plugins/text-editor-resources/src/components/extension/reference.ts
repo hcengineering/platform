@@ -179,7 +179,10 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
             const label = await getReferenceLabel(objectclass, id, obj)
             if (label === '') return
 
-            const tooltipOptions = await getReferenceTooltip(objectclass, id, obj)
+            let tooltipOptions: LabelAndProps | undefined = await getReferenceTooltip(objectclass, id, obj)
+            if (tooltipOptions.component === undefined) {
+              tooltipOptions = undefined
+            }
             resetTooltipHandle(tooltip(root, tooltipOptions))
             renderLabel({ id, objectclass, label })
           }
@@ -523,4 +526,35 @@ async function getObjectFromFragment (
     _id,
     _class: objectclass
   }
+}
+
+export function buildReferenceUrl (props: Partial<ReferenceNodeProps>, refUrl: string = 'ref://'): string | undefined {
+  if (props.id === undefined || props.objectclass === undefined) return
+  let url = refUrl + (refUrl.includes('?') ? '&' : '?')
+  const query = makeQuery({ _class: props.objectclass, _id: props.id, label: props.label })
+  url = `${url}${query}`
+  return url
+}
+
+export function parseReferenceUrl (urlString: string, refUrl: string = 'ref://'): ReferenceNodeProps | undefined {
+  if (!urlString.startsWith(refUrl)) return
+  if (!URL.canParse(urlString)) return
+
+  const url = new URL(urlString)
+  const label = url.searchParams?.get('label') ?? ''
+  const id = (url.searchParams?.get('_id') as Ref<Doc>) ?? undefined
+  const objectclass = (url.searchParams?.get('_class') as Ref<Class<Doc>>) ?? undefined
+
+  if (id === undefined || objectclass === undefined) return
+
+  return { label, id, objectclass }
+}
+
+function makeQuery (obj: Record<string, string | number | boolean | null | undefined>): string {
+  return Object.keys(obj)
+    .filter((it) => it[1] != null)
+    .map(function (k) {
+      return encodeURIComponent(k) + '=' + encodeURIComponent(obj[k] as string | number | boolean)
+    })
+    .join('&')
 }

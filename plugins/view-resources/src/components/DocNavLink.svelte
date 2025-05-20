@@ -32,6 +32,7 @@
   export let accent: boolean = false
   export let noOverflow: boolean = false
   export let inlineReference: boolean = false
+  export let transparent: boolean = false
 
   let _disabled = disabled || $restrictionStore.disableNavigation
   $: _disabled = disabled || $restrictionStore.disableNavigation
@@ -70,6 +71,7 @@
   {accent}
   {noOverflow}
   {inlineReference}
+  {transparent}
 >
   <slot />
 </NavLink>

@@ -36,6 +36,7 @@
   export let metadata: BlobMetadata | undefined
   export let props: Record<string, any> = {}
   export let fit: boolean = false
+  export let embedded: boolean = false
 
   let download: HTMLAnchorElement
   let parentWidth: number
@@ -90,7 +91,8 @@
 
 <div
   use:resizeObserver={(element) => (parentWidth = element.clientWidth)}
-  class="content w-full h-full"
+  class:content-default={!embedded}
+  class:content-embedded={embedded}
   class:flex-center={fit && !audio}
   style:min-height={fit ? '0' : `${minHeight ?? 0}px`}
 >
@@ -122,9 +124,16 @@
 </div>
 
 <style lang="scss">
-  .content {
+  .content-default {
     flex-grow: 1;
     overflow: auto;
+    border: none;
+    width: 100%;
+    height: 100%;
+  }
+
+  .content-embedded {
+    width: 100%;
     border: none;
   }
 </style>
