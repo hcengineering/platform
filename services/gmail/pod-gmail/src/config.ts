@@ -74,7 +74,7 @@ const config: Config = (() => {
     Version: version,
     QueueConfig: process.env[envMap.QueueConfig] ?? '',
     QueueRegion: process.env[envMap.QueueRegion] ?? '',
-    CommunicationTopic: process.env[envMap.CommunicationTopic] ?? ''
+    CommunicationTopic: process.env[envMap.CommunicationTopic] ?? 'hulygun'
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)
