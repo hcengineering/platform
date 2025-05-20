@@ -55,6 +55,7 @@
     getCurrentLocation,
     getLocation,
     IconSettings,
+    isSameSegments,
     Label,
     languageStore,
     Location,
@@ -63,7 +64,6 @@
     locationToUrl,
     mainSeparators,
     navigate,
-    showPanel,
     PanelInstance,
     Popup,
     PopupAlignment,
@@ -71,15 +71,15 @@
     PopupResult,
     popupstore,
     pushRootBarComponent,
+    resizeObserver,
     ResolvedLocation,
     resolvedLocationStore,
     Separator,
     setResolvedLocation,
+    showPanel,
     showPopup,
     TooltipInstance,
-    workbenchSeparators,
-    resizeObserver,
-    isSameSegments
+    workbenchSeparators
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
@@ -101,7 +101,7 @@
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
-  import { buildNavModel, logOut, workspacesStore } from '../utils'
+  import { buildNavModel, isAppAllowed, logOut, workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import AppSwitcher from './AppSwitcher.svelte'
@@ -157,7 +157,9 @@
 
   const apps: Application[] = client
     .getModel()
-    .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
+    .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } }).filter((it) => isAppAllowed(it, account))
+
+  console.log(apps)
 
   let panelInstance: PanelInstance
   let popupInstance: Popup
@@ -264,6 +266,7 @@
   })
 
   const workspaceId = $location.path[1]
+
   const inboxClient = InboxNotificationsClientImpl.createClient()
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
@@ -272,10 +275,12 @@
   let hasInboxNotifications = false
 
   void getResource(notification.function.HasInboxNotifications).then((f) => {
+    if (account.role === AccountRole.ReadOnlyGuest) return
     hasNotificationsFn = f
   })
 
   $: void hasNotificationsFn?.($inboxNotificationsByContextStore).then((res) => {
+    if (account.role === AccountRole.ReadOnlyGuest) return
     hasInboxNotifications = res
   })
 
@@ -816,33 +821,35 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        <NavLink
-          app={notificationId}
-          shrink={0}
-          disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId}
-        >
-          <AppItem
-            icon={notification.icon.Notifications}
-            label={notification.string.Inbox}
-            selected={currentAppAlias === notificationId || inboxPopup !== undefined}
-            navigator={(currentAppAlias === notificationId || inboxPopup !== undefined) &&
-              $deviceInfo.navigator.visible}
-            on:click={(e) => {
-              if (e.metaKey || e.ctrlKey) return
-              if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId) {
-                toggleNav()
-              } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
-                e.preventDefault()
-                e.stopPropagation()
-                navigate(lastLoc)
-                lastLoc = undefined
-              } else {
-                lastLoc = $location
-              }
-            }}
-            notify={hasInboxNotifications}
-          />
-        </NavLink>
+        {#if account.role !== AccountRole.ReadOnlyGuest}
+          <NavLink
+            app={notificationId}
+            shrink={0}
+            disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId}
+          >
+            <AppItem
+              icon={notification.icon.Notifications}
+              label={notification.string.Inbox}
+              selected={currentAppAlias === notificationId || inboxPopup !== undefined}
+              navigator={(currentAppAlias === notificationId || inboxPopup !== undefined) &&
+                $deviceInfo.navigator.visible}
+              on:click={(e) => {
+                if (e.metaKey || e.ctrlKey) return
+                if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId) {
+                  toggleNav()
+                } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  navigate(lastLoc)
+                  lastLoc = undefined
+                } else {
+                  lastLoc = $location
+                }
+              }}
+              notify={hasInboxNotifications}
+            />
+          </NavLink>
+        {/if}
         <Applications
           {apps}
           active={currentApplication?._id}

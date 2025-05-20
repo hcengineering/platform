@@ -85,7 +85,9 @@
           />
         </NavLink>
       {/each}
-      <div class="divider" />
+      {#if (topApps.length > 0)}
+        <div class="divider" />
+      {/if}
       {#each midApps as app}
         <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
           <AppItem

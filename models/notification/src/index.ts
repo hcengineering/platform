@@ -388,6 +388,7 @@ export function createModel (builder: Builder): void {
     workbench.class.Application,
     core.space.Model,
     {
+      accessLevel: AccountRole.DocGuest,
       label: notification.string.Inbox,
       icon: notification.icon.Notifications,
       locationDataResolver: notification.function.LocationDataResolver,
