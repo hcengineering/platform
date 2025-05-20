@@ -33,11 +33,10 @@
   import { ParentsNavigator, showMenu } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
   import { NotificationContext } from '@hcengineering/communication-types'
-  import { MessageInput } from '@hcengineering/ui-next'
 
   import card from '../plugin'
-  import EditCardTableOfContents from './EditCardTableOfContents.svelte'
   import TagsEditor from './TagsEditor.svelte'
+  import EditCardNewContent from './EditCardNewContent.svelte'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
@@ -92,30 +91,13 @@
       await client.update(doc, { title: nameTrimmed })
     }
   }
-
-  let content: EditCardTableOfContents | undefined = undefined
 </script>
 
 <FocusHandler {manager} />
 {#if doc !== undefined}
   <Panel isAside={false} isHeader={false} {embedded} {allowClose} adaptive="disabled" on:open on:close>
     <div class="main-content clear-mins">
-      {#if doc._id === _id}
-        {#key doc._id}
-          <EditCardTableOfContents bind:this={content} {doc} {readonly} {context} {isContextLoaded} />
-        {/key}
-      {/if}
-      {#if !readonly}
-        <div class="message-input">
-          <MessageInput
-            card={doc}
-            title={doc.title}
-            on:sent={() => {
-              content?.scrollDown()
-            }}
-          />
-        </div>
-      {/if}
+      <EditCardNewContent {_id} {doc} {readonly} {context} {isContextLoaded} />
     </div>
 
     <svelte:fragment slot="title">
@@ -199,21 +181,11 @@
     display: flex;
     flex-direction: column;
     flex: 1;
+    height: 100%;
   }
   .title {
     font-size: 1rem;
     flex: 1;
     min-width: 10rem;
-  }
-
-  .message-input {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 0 0.75rem;
-    min-height: 8.5rem;
-    max-height: 50%;
-    margin-top: auto;
   }
 </style>

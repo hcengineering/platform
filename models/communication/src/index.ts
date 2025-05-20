@@ -13,7 +13,8 @@
 
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/core'
-import card from '@hcengineering/card'
+import card from '@hcengineering/model-card'
+import { createAction } from '@hcengineering/model-view'
 import { MessagesNavigationAnchors } from '@hcengineering/communication'
 
 import communication from './plugin'
@@ -22,6 +23,34 @@ export { communicationId } from '@hcengineering/communication'
 export * from './migration'
 
 export function createModel (builder: Builder): void {
+  createAction(builder, {
+    action: communication.action.Subscribe,
+    label: communication.string.Subscribe,
+    icon: communication.icon.Bell,
+    visibilityTester: communication.function.CanSubscribe,
+    input: 'focus',
+    category: card.category.Card,
+    target: card.class.Card,
+    context: {
+      mode: ['context'],
+      group: 'associate'
+    }
+  })
+
+  createAction(builder, {
+    action: communication.action.Unsubscribe,
+    label: communication.string.Unsubscribe,
+    icon: communication.icon.BellCrossed,
+    visibilityTester: communication.function.CanUnsubscribe,
+    input: 'focus',
+    category: card.category.Card,
+    target: card.class.Card,
+    context: {
+      mode: ['context'],
+      group: 'associate'
+    }
+  })
+
   builder.createDoc(
     card.class.CardSection,
     core.space.Model,

@@ -13,7 +13,12 @@
 // limitations under the License.
 //
 
-import { addStringsLoader } from '@hcengineering/platform'
-import { communicationId } from '@hcengineering/communication'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import communication, { communicationId } from '@hcengineering/communication'
 
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
+loadMetadata(communication.icon, {
+  Bell: `${icons}#bell`,
+  BellCrossed: `${icons}#bell-crossed`
+})
 addStringsLoader(communicationId, async (lang: string) => await import(`../lang/${lang}.json`))

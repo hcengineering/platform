@@ -52,7 +52,8 @@ export default mergeIds(processId, process, {
     TriggerPresenter: '' as AnyComponent,
     StatePresenter: '' as AnyComponent,
     ToDoCloseEditor: '' as AnyComponent,
-    ToDoRemoveEditor: '' as AnyComponent
+    ToDoRemoveEditor: '' as AnyComponent,
+    ProcessesCardSection: '' as AnyComponent
   },
   function: {
     ShowDoneQuery: '' as ViewQueryAction,

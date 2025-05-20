@@ -1,6 +1,6 @@
 <script lang="ts">
   import platform, { OK, PlatformEvent, Severity, Status, addEventListener, getMetadata } from '@hcengineering/platform'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import type { AnyComponent, WidthType } from '../../types'
   import { deviceSizes, deviceWidths } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
@@ -21,8 +21,38 @@
   import Clock from './Clock.svelte'
   import RootBarExtension from './RootBarExtension.svelte'
   import Settings from './Settings.svelte'
+  import { isAppFocusedStore } from '../../stores'
 
   let application: AnyComponent | undefined
+
+  function updateAppFocused (isFocused: boolean): void {
+    const isFocusedCurrent = $isAppFocusedStore
+    const isFocusedNew = isFocused && !document.hidden && document.hasFocus()
+    if (isFocusedCurrent !== isFocusedNew) {
+      isAppFocusedStore.set(isFocusedNew)
+    }
+  }
+  function visibilityChangeHandler (): void {
+    updateAppFocused(!document.hidden)
+  }
+  function handleWindowFocus (): void {
+    updateAppFocused(true)
+  }
+  function handleWindowBlur (): void {
+    updateAppFocused(false)
+  }
+
+  onMount(() => {
+    document.addEventListener('visibilitychange', visibilityChangeHandler)
+    window.addEventListener('focus', handleWindowFocus)
+    window.addEventListener('blur', handleWindowBlur)
+  })
+
+  onDestroy(() => {
+    document.removeEventListener('visibilitychange', visibilityChangeHandler)
+    window.removeEventListener('focus', handleWindowFocus)
+    window.removeEventListener('blur', handleWindowBlur)
+  })
 
   onDestroy(
     location.subscribe((loc) => {

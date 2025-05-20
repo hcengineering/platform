@@ -52,4 +52,8 @@ export interface CardOverlayAction {
   show: boolean
 }
 
-export type CardSectionAction = CardTocAction | CardOverlayAction
+export interface CardHideScrollBarAction {
+  id: 'hideScrollBar'
+}
+
+export type CardSectionAction = CardTocAction | CardOverlayAction | CardHideScrollBarAction

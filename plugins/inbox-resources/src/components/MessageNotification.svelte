@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,23 +11,27 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
 
-import { type Resources } from '@hcengineering/platform'
+<script lang="ts">
+  import { Notification } from '@hcengineering/communication-types'
+  import { MessagePresenter } from '@hcengineering/ui-next'
+  import { Card } from '@hcengineering/card'
 
-import CardMessagesSection from './components/CardMessagesSection.svelte'
-import { unsubscribe, subscribe, canSubscribe, canUnsubscribe } from './utils'
+  export let notification: Notification
+  export let card: Card
+</script>
 
-export default async (): Promise<Resources> => ({
-  component: {
-    CardMessagesSection
-  },
-  action: {
-    Unsubscribe: unsubscribe,
-    Subscribe: subscribe
-  },
-  function: {
-    CanSubscribe: canSubscribe,
-    CanUnsubscribe: canUnsubscribe
+{#if notification.message}
+  <div class="notification">
+    <MessagePresenter {card} message={notification.message} editable={false} padding="0.5rem 1rem" />
+  </div>
+{/if}
+
+<style lang="scss">
+  .notification {
+    position: relative;
+    cursor: pointer;
+    user-select: none;
   }
-})
+</style>

@@ -28,7 +28,7 @@
   export let doc: Card
   export let readonly: boolean = false
   export let content: HTMLElement
-  export let minHeight: '15vh' | '25vh' = '25vh'
+  export let minHeight: '15vh' | '25vh' | string = '25vh'
   export let showToc: boolean = true
 
   const client = getClient()

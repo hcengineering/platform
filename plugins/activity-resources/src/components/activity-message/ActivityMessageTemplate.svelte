@@ -58,7 +58,7 @@
   export let hoverable = true
   export let pending = false
   export let stale = false
-  export let hoverStyles: 'borderedHover' | 'filledHover' | 'none' = 'borderedHover'
+  export let hoverStyles: 'filledHover' | 'none' = 'filledHover'
   export let showDatePreposition = false
   export let type: ActivityMessageViewType = 'default'
   export let inlineActions: MessageInlineAction[] = []
@@ -177,7 +177,6 @@
       class:hoverable
       class:embedded
       class:actionsOpened={isActionsOpened}
-      class:borderedHover={hoverStyles === 'borderedHover'}
       class:filledHover={hoverStyles === 'filledHover'}
       class:stale
       on:click={onClick}
@@ -213,7 +212,7 @@
           {/if}
         </div>
       {/if}
-      <div class="flex-col ml-2 w-full clear-mins message-content">
+      <div class="flex-col w-full clear-mins message-content">
         {#if !isShort}
           <div class="header clear-mins">
             {#if person}
@@ -302,7 +301,7 @@
     position: relative;
     display: flex;
     flex-shrink: 0;
-    padding: 0.5rem 0.75rem 0.5rem 1rem;
+    padding: 0.5rem 1rem;
     gap: 1rem;
     //overflow: hidden;
     border: 1px solid transparent;
@@ -367,10 +366,6 @@
     }
 
     &.actionsOpened {
-      &.borderedHover {
-        border: 1px solid var(--global-ui-BackgroundColor);
-      }
-
       &.filledHover {
         background-color: var(--global-ui-BackgroundColor);
       }
@@ -378,10 +373,6 @@
 
     &.hoverable {
       &:hover:not(.embedded) {
-        &.borderedHover {
-          border: 1px solid var(--global-ui-BackgroundColor);
-        }
-
         &.filledHover {
           background-color: var(--global-ui-BackgroundColor);
         }
