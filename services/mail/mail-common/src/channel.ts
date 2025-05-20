@@ -43,7 +43,7 @@ export class ChannelCache {
     email: string,
     owner: PersonId
   ): Promise<Ref<Doc> | undefined> {
-    const normalizedEmail = email.toLowerCase()
+    const normalizedEmail = normalizeEmail(email)
     const cacheKey = `${spaceId}:${normalizedEmail}`
 
     let channel = this.cache.get(cacheKey)
@@ -60,7 +60,7 @@ export class ChannelCache {
   }
 
   clearCache (spaceId: Ref<PersonSpace>, email: string): void {
-    const normalizedEmail = email.toLowerCase()
+    const normalizedEmail = normalizeEmail(email)
     this.cache.delete(`${spaceId}:${normalizedEmail}`)
   }
 
@@ -78,7 +78,7 @@ export class ChannelCache {
     email: string,
     personId: PersonId
   ): Promise<Ref<Doc> | undefined> {
-    const normalizedEmail = email.toLowerCase()
+    const normalizedEmail = normalizeEmail(email)
     try {
       // First try to find existing channel
       const channel = await this.client.findOne(mail.tag.MailChannel, { title: normalizedEmail })
@@ -110,7 +110,7 @@ export class ChannelCache {
     email: string,
     personId: PersonId
   ): Promise<Ref<Doc> | undefined> {
-    const normalizedEmail = email.toLowerCase()
+    const normalizedEmail = normalizeEmail(email)
     const mutexKey = `channel:${this.workspace}:${space}:${normalizedEmail}`
     const releaseLock = await createMutex.lock(mutexKey)
 
@@ -190,4 +190,8 @@ export const ChannelCacheFactory = {
   get instanceCount (): number {
     return ChannelCacheFactory.instances.size
   }
+}
+
+function normalizeEmail (email: string): string {
+  return email.toLowerCase().trim()
 }
