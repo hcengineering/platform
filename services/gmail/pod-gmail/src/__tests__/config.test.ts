@@ -39,6 +39,7 @@ describe('Config', () => {
 
   it('should load default configuration values', () => {
     // Import config inside test to ensure env variables are set
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const config = require('../config').default
 
     // Check default values
@@ -63,6 +64,7 @@ describe('Config', () => {
     process.env.COMMUNICATION_TOPIC = 'custom-topic'
 
     // Load config with custom values
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const config = require('../config').default
 
     // Check overridden values
@@ -125,6 +127,7 @@ describe('Config', () => {
     process.env.INIT_LIMIT = '200'
 
     // Load config
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const config = require('../config').default
 
     // Check parsed values
@@ -142,6 +145,7 @@ describe('Config', () => {
     process.env.COMMUNICATION_TOPIC = 'test-topic-name'
 
     // Load config
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const config = require('../config').default
 
     // Check v2 specific configuration
