@@ -115,6 +115,7 @@
     "Everyone": "Všichni",
     "Here": "Zde",
     "EveryoneDescription": "Upozornit všechny v tomto {title}",
-    "HereDescription": "Upozornit všechny v tomto {title}"
+    "HereDescription": "Upozornit všechny v tomto {title}",
+    "Guest": "Host"
   }
 }

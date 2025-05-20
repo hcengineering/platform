@@ -119,6 +119,7 @@
     "Everyone": "Tutti",
     "Here": "Qui",
     "EveryoneDescription": "Notifica tutti in questo {title}",
-    "HereDescription": "Notifica tutti in questo {title}"
+    "HereDescription": "Notifica tutti in questo {title}",
+    "Guest": "Ospite"
   }
 }

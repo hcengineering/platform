@@ -346,7 +346,8 @@ export const contactPlugin = plugin(contactId, {
     Everyone: '' as IntlString,
     Here: '' as IntlString,
     EveryoneDescription: '' as IntlString,
-    HereDescription: '' as IntlString
+    HereDescription: '' as IntlString,
+    Guest: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,
