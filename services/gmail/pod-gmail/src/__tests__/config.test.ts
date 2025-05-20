@@ -18,11 +18,11 @@ import { IntegrationVersion } from '../types'
 describe('Config', () => {
   // Store original environment
   const originalEnv = { ...process.env }
-  
+
   // Mock required environment variables to prevent test failures
   beforeEach(() => {
     jest.resetModules() // Clear cache for config module between tests
-    
+
     // Set minimum required env variables
     process.env.ACCOUNTS_URL = 'http://accounts.test'
     process.env.SECRET = 'test-secret'
@@ -31,16 +31,16 @@ describe('Config', () => {
     process.env.KVS_URL = 'http://kvs.test'
     process.env.STORAGE_CONFIG = 'test-storage-config'
   })
-  
+
   // Restore original environment after tests
   afterEach(() => {
     process.env = { ...originalEnv }
   })
-  
+
   it('should load default configuration values', () => {
     // Import config inside test to ensure env variables are set
     const config = require('../config').default
-    
+
     // Check default values
     expect(config.Port).toBe(8087)
     expect(config.ServiceID).toBe('gmail-service')
@@ -50,7 +50,7 @@ describe('Config', () => {
     expect(config.QueueRegion).toBe('')
     expect(config.CommunicationTopic).toBe('hulygun')
   })
-  
+
   it('should override defaults with environment variables', () => {
     // Set custom values
     process.env.PORT = '9000'
@@ -61,10 +61,10 @@ describe('Config', () => {
     process.env.QUEUE_CONFIG = 'custom-queue-config'
     process.env.QUEUE_REGION = 'custom-region'
     process.env.COMMUNICATION_TOPIC = 'custom-topic'
-    
+
     // Load config with custom values
     const config = require('../config').default
-    
+
     // Check overridden values
     expect(config.Port).toBe(9000)
     expect(config.ServiceID).toBe('custom-service')
@@ -75,75 +75,75 @@ describe('Config', () => {
     expect(config.QueueRegion).toBe('custom-region')
     expect(config.CommunicationTopic).toBe('custom-topic')
   })
-  
+
   it('should throw error when required env variables are missing', () => {
     // Remove required environment variables
     process.env.ACCOUNTS_URL = undefined
-    
+
     // Expect error when loading config
     expect(() => {
       require('../config')
     }).toThrow('Missing env variables: ACCOUNTS_URL')
   })
-  
+
   it('should throw error for invalid version value', () => {
     // Set invalid version
     process.env.VERSION = 'invalid-version'
-    
+
     // Expect error when loading config
     expect(() => {
       require('../config')
-    }).toThrow('Invalid version: invalid-version. Must be \'v1\' or \'v2\'.')
+    }).toThrow("Invalid version: invalid-version. Must be 'v1' or 'v2'.")
   })
-  
+
   it('should throw error when v2 is set but queue config is missing', () => {
     // Set v2 without required queue config
     process.env.VERSION = 'v2'
     process.env.QUEUE_CONFIG = ''
-    
+
     // Expect error when loading config
     expect(() => {
       require('../config')
     }).toThrow('Missing env variable: QUEUE_CONFIG')
   })
-  
+
   it('should throw error when v2 is set but communication topic is missing', () => {
     // Set v2 with queue config but missing communication topic
     process.env.VERSION = 'v2'
     process.env.QUEUE_CONFIG = 'test-queue'
     process.env.COMMUNICATION_TOPIC = ''
-    
+
     // Expect error when loading config
     expect(() => {
       require('../config')
     }).toThrow('Missing env variable: COMMUNICATION_TOPIC')
   })
-  
+
   it('should correctly parse numeric values', () => {
     // Set string values for numeric fields
     process.env.PORT = '9999'
     process.env.INIT_LIMIT = '200'
-    
+
     // Load config
     const config = require('../config').default
-    
+
     // Check parsed values
     expect(config.Port).toBe(9999)
     expect(config.InitLimit).toBe(200)
     expect(typeof config.Port).toBe('number')
     expect(typeof config.InitLimit).toBe('number')
   })
-  
+
   it('should handle v2 configuration correctly', () => {
     // Set up v2 configuration
     process.env.VERSION = 'v2'
     process.env.QUEUE_CONFIG = 'test-queue-config'
     process.env.QUEUE_REGION = 'test-region'
     process.env.COMMUNICATION_TOPIC = 'test-topic-name'
-    
+
     // Load config
     const config = require('../config').default
-    
+
     // Check v2 specific configuration
     expect(config.Version).toBe(IntegrationVersion.V2)
     expect(config.QueueConfig).toBe('test-queue-config')

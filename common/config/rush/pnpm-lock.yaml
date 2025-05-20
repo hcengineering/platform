@@ -40,9 +40,6 @@ importers:
       '@hcengineering/communication-rest-client':
         specifier: 0.1.187
         version: 0.1.187(typescript@5.3.3)
-      '@hcengineering/communication-sdk-types':
-        specifier: 0.1.187
-        version: 0.1.187(typescript@5.3.3)
       '@hcengineering/communication-server':
         specifier: 0.1.187
         version: 0.1.187(typescript@5.3.3)
@@ -3023,6 +3020,11 @@ packages:
     peerDependencies:
       typescript: ^5.6.3
 
+  '@hcengineering/communication-sdk-types@0.1.180':
+    resolution: {integrity: sha512-RDQWuqcWMS+iWBBQ1gHN5bbGD174ghVQLrs/E262/Gp8ayYJ/0Gxn0IrkGXWUL4dO/ljySpWbS2qnBehXnbFiw==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-sdk-types/0.1.180/383bb8ec2c77688d5e59443c4c33cf1985db5bea}
+    peerDependencies:
+      typescript: ^5.6.3
+
   '@hcengineering/communication-sdk-types@0.1.187':
     resolution: {integrity: sha512-BksGMvrbR9wbNrXqCGNKlYnqSXAWDnjFp0fhoTCROmvE3O6qxmRMkQxc0Sv3pjpndjVWLOuXuju5Zxg1MEs65A==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-sdk-types/0.1.187/cea7a07d722fac94e111f3712b7e4e147f01fc8f}
     peerDependencies:
@@ -3035,6 +3037,11 @@ packages:
 
   '@hcengineering/communication-shared@0.1.187':
     resolution: {integrity: sha512-zakUV1orT4lw+woAKSrJuG50pjW7HV087JmPaqNUBvNFAQOZVOBIx50Y0ihaWEaxIxAmmW1n/7gyMrWfWjLmeQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-shared/0.1.187/8a76730a66b446b7190292b4b59e9a862a4e35e6}
+    peerDependencies:
+      typescript: ^5.6.3
+
+  '@hcengineering/communication-types@0.1.180':
+    resolution: {integrity: sha512-6QbMgkhVl8ZAvezvdCKi0MyMTXYs7bizzYYr1eo9WQEO+Zr9py0Uk8sOwCcpuTZ/X1zgTe6+xuLXoes3H4Y7eQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-types/0.1.180/cd5ae6805b909aaf5df46dbbbc9c45f374ec5c71}
     peerDependencies:
       typescript: ^5.6.3
 
@@ -4076,7 +4083,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/card-resources@file:projects/card-resources.tgz':
-    resolution: {integrity: sha512-CdWQQYWbLy+4AITDmlv2q7Sw96mSzRsslUOU/87wDljEuIubpEKNhfccS42ImusNZMXj4yvd5wwM9ajjBMRKkg==, tarball: file:projects/card-resources.tgz}
+    resolution: {integrity: sha512-pMv5ceyUDDEJBQbuNCHXE72Px6MNS16zvjzmK7M+PZxOmOXFNwldGCq/jPhslXqJXC24WjqpHCiQZ0gs7dN9uA==, tarball: file:projects/card-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/card@file:projects/card.tgz':
@@ -4412,7 +4419,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz':
-    resolution: {integrity: sha512-4ThjG7u37BfKgOUzqyVxZ+uCt5Z7Yv2DX192wxBuTbl1EX3t50XjTERnjt4Iw0rYFhXc7lOKZygYF1u8a3APhA==, tarball: file:projects/mail-common.tgz}
+    resolution: {integrity: sha512-DuWl8K6KBwPKVeIaSqUfgTwasFy+KEpU0zrPicIkuDaMILOKGCkmVM7YESS/ggiBlKxtyIOwKRDYeka1dhtxZw==, tarball: file:projects/mail-common.tgz}
     version: 0.0.0
 
   '@rush-temp/mail@file:projects/mail.tgz':
@@ -4900,7 +4907,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
-    resolution: {integrity: sha512-vRYTZhVYb2trqlb5uKFKAPJq7Ay7EaTFy6FijfUTRqitr9QJEREl4PKdf752cOFUfgC8L5uHTH6Q2rgbvsXSug==, tarball: file:projects/pod-inbound-mail.tgz}
+    resolution: {integrity: sha512-EQdkJNUsw+xUAs74SJ+44fJCrR/kNeSCRzm3Dah9tFlhIcTZl5d80ir8VotOXBZ4McKxAFo3is05crGMDxP04Q==, tarball: file:projects/pod-inbound-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
@@ -4992,7 +4999,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/process@file:projects/process.tgz':
-    resolution: {integrity: sha512-3vz9X1/VX0PmWuKw9m3Nlfp2CjFZo2MpgCRdLfPaeo6EHExPeSitbfYl7LojLsGo5Uk7tSnUOwMSgd/GOndOVA==, tarball: file:projects/process.tgz}
+    resolution: {integrity: sha512-FLoi1Ooh3ntse8Czmk9pyT2ASy8VHz1xGUUXf38t09UKTZ/8SfqwrOtNWYuVnyIrZ3zVVmSL7xcOWmcn5AdTSw==, tarball: file:projects/process.tgz}
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
@@ -5216,7 +5223,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-gmail-resources@file:projects/server-gmail-resources.tgz':
-    resolution: {integrity: sha512-VUZuCBA60lmGBsC072eJNhPcfGLWGWaQKj6NmEZSutJt2M0dzchgdC5iWr+AX+fhE3pmDJhNW8hYdU06Y5FeZg==, tarball: file:projects/server-gmail-resources.tgz}
+    resolution: {integrity: sha512-PsKe9cztrK9Mj6TZO5scM/IArHSVaiJ+SMNwMoz6j8Kb2jZBP3a36wWG0Ly5GuDU7m272NE8bjuKUNmzM+kfZQ==, tarball: file:projects/server-gmail-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/server-gmail@file:projects/server-gmail.tgz':
@@ -14995,6 +15002,12 @@ snapshots:
       snappyjs: 0.7.0
       typescript: 5.7.3
 
+  '@hcengineering/communication-sdk-types@0.1.180(typescript@5.3.3)':
+    dependencies:
+      '@hcengineering/communication-types': 0.1.180(typescript@5.3.3)
+      '@hcengineering/core': 0.7.88
+      typescript: 5.3.3
+
   '@hcengineering/communication-sdk-types@0.1.187(typescript@5.3.3)':
     dependencies:
       '@hcengineering/communication-types': 0.1.187(typescript@5.3.3)
@@ -15033,6 +15046,13 @@ snapshots:
       '@hcengineering/communication-sdk-types': 0.1.187(typescript@5.7.3)
       '@hcengineering/communication-types': 0.1.187(typescript@5.7.3)
       typescript: 5.7.3
+
+  '@hcengineering/communication-types@0.1.180(typescript@5.3.3)':
+    dependencies:
+      '@hcengineering/card': 0.7.88
+      '@hcengineering/core': 0.7.88
+      '@hcengineering/tags': 0.7.88
+      typescript: 5.3.3
 
   '@hcengineering/communication-types@0.1.187(typescript@5.3.3)':
     dependencies:
@@ -20013,6 +20033,8 @@ snapshots:
   '@rush-temp/mail-common@file:projects/mail-common.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
       '@hcengineering/communication-rest-client': 0.1.187(typescript@5.7.3)
+      '@hcengineering/communication-sdk-types': 0.1.187(typescript@5.7.3)
+      '@hcengineering/communication-shared': 0.1.187(typescript@5.7.3)
       '@hcengineering/communication-types': 0.1.187(typescript@5.7.3)
       '@tsconfig/node16': 1.0.4
       '@types/express': 4.17.21
@@ -22466,6 +22488,7 @@ snapshots:
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
       '@hcengineering/communication-rest-client': 0.1.187(typescript@5.7.3)
+      '@hcengineering/communication-sdk-types': 0.1.187(typescript@5.7.3)
       '@hcengineering/communication-types': 0.1.187(typescript@5.7.3)
       '@tsconfig/node16': 1.0.4
       '@types/cors': 2.8.17
