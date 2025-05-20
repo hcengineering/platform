@@ -296,8 +296,7 @@
           { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
           { id: 'todo-list', label: textEditor.string.TodoItem, icon: view.icon.TodoList },
           { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any },
-          { id: 'mermaid', label: textEditor.string.MermaidDiargram, icon: view.icon.Model },
-          { id: 'embed', label: textEditor.string.MermaidDiargram, icon: view.icon.Image }
+          { id: 'mermaid', label: textEditor.string.MermaidDiargram, icon: view.icon.Model }
         ],
         handleSelect: handleLeftMenuClick
       })
