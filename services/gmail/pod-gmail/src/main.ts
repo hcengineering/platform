@@ -101,15 +101,23 @@ export const main = async (): Promise<void> => {
       endpoint: '/signin/code',
       type: 'get',
       handler: async (req, res) => {
+        let state: State | undefined
         try {
           ctx.info('Signin code request received')
           const code = req.query.code as string
-          const state = JSON.parse(decode64(req.query.state as string)) as unknown as State
+          state = JSON.parse(decode64(req.query.state as string)) as unknown as State
           await gmailController.createClient(state, code)
           res.redirect(state.redirectURL)
-        } catch (err) {
-          ctx.error('Failed to process signin code', { message: (err as any).message })
-          res.status(500).send()
+        } catch (err: any) {
+          ctx.error('Failed to process signin code', { message: err.message })
+          if (state !== undefined) {
+            const errorMessage = encodeURIComponent(err.message)
+            const url = new URL(state.redirectURL)
+            url.searchParams.append('integrationError', errorMessage)
+            res.redirect(url.toString())
+          } else {
+            res.status(500).send()
+          }
         }
       }
     },

@@ -111,6 +111,10 @@ export interface WorkspaceSetting extends Doc {
   icon?: Ref<Blob> | null
 }
 
+export enum IntegrationError {
+  EMAIL_IS_ALREADY_USED = 'EMAIL_IS_ALREADY_USED'
+}
+
 /**
  * @public
  */
@@ -239,7 +243,10 @@ export default plugin(settingId, {
     MailboxErrorMailboxExists: '' as IntlString,
     MailboxErrorMailboxCountLimit: '' as IntlString,
     DeleteMailbox: '' as IntlString,
-    MailboxDeleteConfirmation: '' as IntlString
+    MailboxDeleteConfirmation: '' as IntlString,
+    IntegrationFailed: '' as IntlString,
+    IntegrationError: '' as IntlString,
+    EmailIsUsed: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,
