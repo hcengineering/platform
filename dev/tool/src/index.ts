@@ -174,11 +174,15 @@ export function devTool (
   setMetadata(serverClientPlugin.metadata.Endpoint, accountsUrl)
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
-  async function withAccountDatabase (f: (db: AccountDB) => Promise<any>, dbOverride?: string): Promise<void> {
+  async function withAccountDatabase (
+    f: (db: AccountDB) => Promise<any>,
+    dbOverride?: string,
+    nsOverride?: string
+  ): Promise<void> {
     const uri = dbOverride ?? getAccountDBUrl()
-    console.log(`connecting to database '${uri}'...`)
+    const ns = nsOverride ?? process.env.ACCOUNT_DB_NS
 
-    const [accountDb, closeAccountsDb] = await getAccountDB(uri)
+    const [accountDb, closeAccountsDb] = await getAccountDB(uri, ns)
     try {
       await f(accountDb)
     } catch (err: any) {
@@ -2299,10 +2303,16 @@ export function devTool (
       throw new Error('MONGO_URL and DB_URL are the same')
     }
 
+    const mongoNs = process.env.OLD_ACCOUNTS_NS
+
     await withAccountDatabase(async (pgDb) => {
-      await withAccountDatabase(async (mongoDb) => {
-        await moveAccountDbFromMongoToPG(toolCtx, mongoDb, pgDb)
-      }, mongodbUri)
+      await withAccountDatabase(
+        async (mongoDb) => {
+          await moveAccountDbFromMongoToPG(toolCtx, mongoDb, pgDb)
+        },
+        mongodbUri,
+        mongoNs
+      )
     }, dbUrl)
   })
 
