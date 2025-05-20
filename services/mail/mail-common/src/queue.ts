@@ -1,31 +1,17 @@
-//
-// Copyright © 2025 Hardcore Engineering Inc.
-//
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-
+import { Kafka, Producer } from 'kafkajs'
+import { parseQueueConfig } from '@hcengineering/kafka'
+import { BaseConfig } from './types'
 import { MeasureContext } from '@hcengineering/core'
-import { getPlatformQueue } from '@hcengineering/kafka'
-import { PlatformQueue, PlatformQueueProducer } from '@hcengineering/server-core'
-import { RequestEvent as CommunicationEvent } from '@hcengineering/communication-sdk-types'
 
-let queueRegistry: QueueProducerRegistry | undefined
+let queueRegistry: KafkaQueueRegistry | undefined
 
-export function initQueue (ctx: MeasureContext, serviceId: string, queueRegion: string): void {
+export function initQueue (ctx: MeasureContext, serviceId: string, config: BaseConfig): void {
   if (queueRegistry !== undefined) {
     throw new Error('Queue already initialized')
   }
-  queueRegistry = new QueueProducerRegistry(ctx, serviceId, queueRegion)
-  ctx.info('Queue initialized', { clientId: queueRegistry.getClientId() })
+
+  queueRegistry = new KafkaQueueRegistry(ctx, serviceId, config)
+  ctx.info('Kafka queue initialized', { serviceId })
 }
 
 export async function closeQueue (): Promise<void> {
@@ -35,53 +21,66 @@ export async function closeQueue (): Promise<void> {
   }
 }
 
-export function getProducer (topic: string): PlatformQueueProducer<CommunicationEvent> {
+export async function getProducer (key: string): Promise<Producer> {
   if (queueRegistry === undefined) {
     throw new Error('Queue not initialized')
   }
-  return queueRegistry.getProducer<CommunicationEvent>(topic)
+  return await queueRegistry.getProducer(key)
 }
-
-export class QueueProducerRegistry {
-  private readonly queue: PlatformQueue
-  private readonly producers = new Map<string, PlatformQueueProducer<any>>()
+export class KafkaQueueRegistry {
+  private readonly kafka: Kafka
+  private readonly producers = new Map<string, Producer>()
 
   constructor (
     private readonly ctx: MeasureContext,
-    queueName: string,
-    queueRegion: string
+    serviceId: string,
+    serviceConfig: BaseConfig
   ) {
-    this.queue = getPlatformQueue(queueName, queueRegion)
-    ctx.info('Queue created', { clientId: this.queue.getClientId() })
+    this.kafka = getKafkaQueue(serviceId, serviceConfig)
+
+    ctx.info('Kafka client created', { serviceId })
   }
 
-  public getProducer<T>(topic: string): PlatformQueueProducer<T> {
-    let producer = this.producers.get(topic) as PlatformQueueProducer<T> | undefined
-
-    if (producer === undefined) {
-      producer = this.queue.getProducer<T>(this.ctx, topic)
-      this.producers.set(topic, producer)
-      this.ctx.info('Created new producer', { topic })
+  public async getProducer (key: string): Promise<Producer> {
+    const producer = this.producers.get(key)
+    if (producer !== undefined) {
+      return producer
     }
 
-    return producer
-  }
+    const kafkaProducer = this.kafka.producer()
 
-  public getClientId (): string {
-    return this.queue.getClientId()
+    await kafkaProducer.connect()
+
+    this.producers.set(key, kafkaProducer)
+    this.ctx.info('Created new Kafka producer', { key })
+
+    return kafkaProducer
   }
 
   public async close (): Promise<void> {
     for (const [topic, producer] of this.producers.entries()) {
       try {
-        await producer.close()
-        this.ctx.info('Producer closed', { topic })
+        await producer.disconnect()
+        this.ctx.info('Kafka producer closed', { topic })
       } catch (err) {
-        this.ctx.error('Failed to close producer', { topic, error: err })
+        this.ctx.error('Failed to close Kafka producer', { topic, error: err })
       }
     }
 
     this.producers.clear()
-    this.ctx.info('QueueProducerRegistry closed')
+    this.ctx.info('KafkaQueueRegistry closed')
   }
+}
+
+function getKafkaQueue (serviceId: string, serviceConfig: BaseConfig): Kafka {
+  const { QueueConfig, QueueRegion } = serviceConfig
+  if (QueueConfig === undefined) {
+    throw new Error('Please provide queue config')
+  }
+  const config = parseQueueConfig(QueueConfig, serviceId, QueueRegion)
+  return new Kafka({
+    clientId: config.clientId,
+    brokers: config.brokers,
+    ssl: config.ssl
+  })
 }

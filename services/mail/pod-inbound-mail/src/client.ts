@@ -25,6 +25,9 @@ export const mailServiceToken = generateToken(systemAccountUuid, undefined, { se
 export const baseConfig: BaseConfig = {
   AccountsURL: config.accountsUrl,
   KvsUrl: config.kvsUrl,
-  StorageConfig: config.storageConfig ?? ''
+  StorageConfig: config.storageConfig ?? '',
+  QueueConfig: config.queueConfig ?? '',
+  QueueRegion: config.queueRegion ?? '',
+  CommunicationTopic: config.communicationTopic
 }
 export const kvsClient = getClient('inbound-mail', baseConfig.KvsUrl, mailServiceToken)

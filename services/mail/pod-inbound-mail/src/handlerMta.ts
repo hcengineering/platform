@@ -27,7 +27,6 @@ import {
 } from '@hcengineering/mail-common'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
-import { QueueTopic } from '@hcengineering/server-core'
 
 import { mailServiceToken, baseConfig, kvsClient } from './client'
 import config from './config'
@@ -129,7 +128,7 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
       ctx,
       txClient,
       kvsClient,
-      getProducer(QueueTopic.CommunicationEvents),
+      await getProducer(baseConfig.CommunicationTopic),
       mailServiceToken,
       wsInfo,
       convertedMessage,

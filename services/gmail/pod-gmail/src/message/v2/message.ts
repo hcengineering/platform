@@ -26,7 +26,6 @@ import {
 } from '@hcengineering/mail-common'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { AccountClient, isWorkspaceLoginInfo, WorkspaceLoginInfo } from '@hcengineering/account-client'
-import { QueueTopic } from '@hcengineering/server-core'
 
 import { IMessageManager } from '../types'
 import config from '../../config'
@@ -62,7 +61,7 @@ export class MessageManagerV2 implements IMessageManager {
       this.ctx,
       this.txClient,
       this.keyValueClient,
-      getProducer(QueueTopic.CommunicationEvents),
+      await getProducer(config.CommunicationTopic),
       this.token,
       this.wsInfo,
       res,

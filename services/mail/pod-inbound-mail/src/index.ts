@@ -25,6 +25,7 @@ import { initQueue, closeQueue } from '@hcengineering/mail-common'
 
 import { handleMtaHook } from './handlerMta'
 import config from './config'
+import { baseConfig } from './client'
 
 type RequestHandler = (req: Request, res: Response, ctx: MeasureContext, next?: NextFunction) => Promise<void>
 
@@ -45,7 +46,7 @@ async function main (): Promise<void> {
 
   setMetadata(serverToken.metadata.Secret, config.secret)
 
-  initQueue(ctx, 'inbound-mail', config.queueRegion)
+  initQueue(ctx, 'inbound-mail', baseConfig)
 
   const app = express()
 

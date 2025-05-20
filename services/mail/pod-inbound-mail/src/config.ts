@@ -28,6 +28,7 @@ interface Config {
   kvsUrl: string
   queueConfig: string
   queueRegion: string
+  communicationTopic: string
 }
 
 const config: Config = {
@@ -56,7 +57,13 @@ const config: Config = {
     }
     throw Error('QUEUE_CONFIG env var is not set')
   })(),
-  queueRegion: process.env.QUEUE_REGION ?? ''
+  queueRegion: process.env.CommunicationTopic ?? '',
+  communicationTopic: (() => {
+    if (process.env.CommunicationTopic !== undefined) {
+      return process.env.CommunicationTopic
+    }
+    throw Error('CommunicationTopic env var is not set')
+  })()
 }
 
 export default config

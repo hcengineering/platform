@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { Producer } from 'kafkajs'
+
 import { WorkspaceLoginInfo } from '@hcengineering/account-client'
 import { type Card } from '@hcengineering/card'
 import { MessageType } from '@hcengineering/communication-types'
@@ -33,8 +35,7 @@ import mail from '@hcengineering/mail'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import { PlatformQueueProducer } from '@hcengineering/server-core'
-import { RequestEvent as CommunicationEvent, MessageRequestEventType } from '@hcengineering/communication-sdk-types'
+import { MessageRequestEventType } from '@hcengineering/communication-sdk-types'
 import { generateMessageId } from '@hcengineering/communication-shared'
 
 import { BaseConfig, type Attachment } from './types'
@@ -50,7 +51,7 @@ export async function createMessages (
   ctx: MeasureContext,
   txClient: TxOperations,
   keyValueClient: KeyValueClient,
-  producer: PlatformQueueProducer<CommunicationEvent>,
+  producer: Producer,
   token: string,
   wsInfo: WorkspaceLoginInfo,
   message: EmailMessage,
@@ -117,6 +118,7 @@ export async function createMessages (
     const spaces = await personSpacesCache.getPersonSpaces(mailId, fromPerson.uuid, from.email)
     if (spaces.length > 0) {
       await saveMessageToSpaces(
+        config,
         ctx,
         txClient,
         producer,
@@ -150,6 +152,7 @@ export async function createMessages (
       const spaces = await personSpacesCache.getPersonSpaces(mailId, to.uuid, to.address)
       if (spaces.length > 0) {
         await saveMessageToSpaces(
+          config,
           ctx,
           txClient,
           producer,
@@ -176,9 +179,10 @@ export async function createMessages (
 }
 
 async function saveMessageToSpaces (
+  config: BaseConfig,
   ctx: MeasureContext,
   client: TxOperations,
-  producer: PlatformQueueProducer<CommunicationEvent>,
+  producer: Producer,
   threadLookup: ThreadLookupService,
   wsInfo: WorkspaceLoginInfo,
   mailId: string,
@@ -260,15 +264,18 @@ async function saveMessageToSpaces (
           id: messageId
         })
       )
-      await producer.sendMessages([
-        {
-          key: Buffer.from(channel ?? spaceId),
-          value: messageData,
-          headers: {
-            WorkspaceUuid: wsInfo.workspace
+      await producer.send({
+        topic: config.CommunicationTopic,
+        messages: [
+          {
+            key: Buffer.from(channel ?? spaceId),
+            value: messageData,
+            headers: {
+              WorkspaceUuid: wsInfo.workspace
+            }
           }
-        }
-      ])
+        ]
+      })
       ctx.info('Send message event', { mailId, messageId, threadId })
 
       const fileData: Buffer[] = attachments.map((a) =>
@@ -293,7 +300,10 @@ async function saveMessageToSpaces (
           WorkspaceUuid: wsInfo.workspace
         }
       }))
-      await producer.sendMessages(fileEvents)
+      await producer.send({
+        topic: config.CommunicationTopic,
+        messages: fileEvents
+      })
       ctx.info('Send file events', { mailId, messageId, threadId, count: fileEvents.length })
 
       await threadLookup.setThreadId(mailId, space._id, threadId)

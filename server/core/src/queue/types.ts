@@ -16,10 +16,7 @@ export enum QueueTopic {
   TelegramBot = 'telegramBot',
 
   // A topic about calendar events.
-  CalendarEventCUD = 'calendarEventCUD',
-
-  // A topic for sending events to the communication service.
-  CommunicationEvents = 'commevent'
+  CalendarEventCUD = 'calendarEventCUD'
 }
 
 export interface ConsumerHandle {

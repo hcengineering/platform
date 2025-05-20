@@ -64,7 +64,7 @@ export const main = async (): Promise<void> => {
   const storageAdapter = buildStorageFromConfig(storageConfig)
 
   if (config.Version === IntegrationVersion.V2) {
-    initQueue(ctx, 'gmail-service', config.QueueRegion)
+    initQueue(ctx, 'gmail-service', config)
   }
 
   const gmailController = GmailController.create(ctx, storageAdapter)
