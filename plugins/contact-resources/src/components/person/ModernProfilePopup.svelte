@@ -110,7 +110,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    height: 5.4rem;
+    height: 5.5rem;
 
     border-radius: 0;
     background-size: contain;
