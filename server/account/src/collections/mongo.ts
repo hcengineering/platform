@@ -184,6 +184,10 @@ implements DbCollection<T> {
     return (idKey !== undefined ? toInsert[idKey] : undefined) as K extends keyof T ? T[K] : undefined
   }
 
+  async insertMany (data: Array<Partial<T>>): Promise<K extends keyof T ? Array<T[K]> : undefined> {
+    throw new Error('Not implemented')
+  }
+
   async updateOne (query: Query<T>, ops: Operations<T>): Promise<void> {
     const resOps: any = { $set: {} }
 
@@ -346,6 +350,10 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
     return data.workspaceUuid
   }
 
+  async insertMany (data: Partial<WorkspaceStatus>[]): Promise<any> {
+    throw new Error('Not implemented')
+  }
+
   async updateOne (query: Query<WorkspaceStatus>, ops: Operations<WorkspaceStatus>): Promise<void> {
     await this.wsCollection.updateOne(this.toWsQuery(query), this.toWsOperations(ops))
   }
@@ -417,6 +425,13 @@ export class MongoAccountDB implements AccountDB {
       {
         key: { uuid: 1 },
         options: { unique: true, name: 'hc_account_account_uuid_1' }
+      }
+    ])
+
+    await this.socialId.ensureIndices([
+      {
+        key: { type: 1, value: 1 },
+        options: { unique: true, name: 'hc_account_social_id_type_value_1' }
       }
     ])
 
@@ -536,6 +551,16 @@ export class MongoAccountDB implements AccountDB {
       accountUuid: accountId,
       role
     })
+  }
+
+  async batchAssignWorkspace (data: [AccountUuid, WorkspaceUuid, AccountRole][]): Promise<void> {
+    await this.workspaceMembers.insertMany(
+      data.map(([accountId, workspaceId, role]) => ({
+        workspaceUuid: workspaceId,
+        accountUuid: accountId,
+        role
+      }))
+    )
   }
 
   async unassignWorkspace (accountId: AccountUuid, workspaceId: WorkspaceUuid): Promise<void> {

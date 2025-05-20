@@ -153,6 +153,9 @@
     "EnablePermissions": "Povolit řízení přístupu na základě rolí",
     "DisablePermissionsConfirmation": "Opravdu chcete zakázat řízení přístupu na základě rolí? Všechny role a oprávnění budou deaktivovány.",
     "EnablePermissionsConfirmation": "Opravdu chcete povolit řízení přístupu na základě rolí? Všechny role a oprávnění budou aktivovány.",
-    "BetaWarning": "Moduly označené jako beta jsou k dispozici pro experimentální účely a nemusí být plně funkční. V tuto chvíli nedoporučujeme spoléhat se na funkce beta pro kritickou práci."
+    "BetaWarning": "Moduly označené jako beta jsou k dispozici pro experimentální účely a nemusí být plně funkční. V tuto chvíli nedoporučujeme spoléhat se na funkce beta pro kritickou práci.",
+    "IntegrationFailed": "Nepodařilo se vytvořit integraci",
+    "IntegrationError": "Zkuste to prosím znovu nebo kontaktujte podporu, pokud problém přetrvává",
+    "EmailIsUsed": "E-mailová adresa je již použita jiným účtem"
   }
 }
