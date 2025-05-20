@@ -407,7 +407,9 @@ export async function moveAccountDbFromMongoToPG (
         workspacesCount += workspacesBatch.length
         workspacesBatch = []
 
-        await pgDb.workspaceStatus.insertMany(workspacesStatusesBatch.map((s, i) => ({ ...s, workspaceUuid: workspaceUuids[i] })))
+        await pgDb.workspaceStatus.insertMany(
+          workspacesStatusesBatch.map((s, i) => ({ ...s, workspaceUuid: workspaceUuids[i] }))
+        )
         workspacesStatusesBatch = []
 
         await pgDb.batchAssignWorkspace(workspacesMembersBatch)
@@ -422,7 +424,9 @@ export async function moveAccountDbFromMongoToPG (
     if (workspacesBatch.length > 0) {
       const workspaceUuids = await pgDb.workspace.insertMany(workspacesBatch)
       workspacesCount += workspacesBatch.length
-      await pgDb.workspaceStatus.insertMany(workspacesStatusesBatch.map((s, i) => ({ ...s, workspaceUuid: workspaceUuids[i] })))
+      await pgDb.workspaceStatus.insertMany(
+        workspacesStatusesBatch.map((s, i) => ({ ...s, workspaceUuid: workspaceUuids[i] }))
+      )
       await pgDb.batchAssignWorkspace(workspacesMembersBatch)
       membersCount += workspacesMembersBatch.length
     }
