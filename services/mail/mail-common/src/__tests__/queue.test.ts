@@ -143,7 +143,7 @@ describe('Kafka Queue Management', () => {
       expect(mockKafka.producer).toHaveBeenCalledTimes(1) // Called only once
     })
 
-    it('should create different producers for different topics', () => {
+    it('should create different producers for different topics', async () => {
       // Arrange
       initQueue(mockCtx, 'test-service', mockConfig)
 
@@ -152,8 +152,8 @@ describe('Kafka Queue Management', () => {
       mockKafka.producer = jest.fn().mockReturnValueOnce(mockProducer).mockReturnValueOnce(mockProducer2)
 
       // Act
-      const producer1 = getProducer('topic1')
-      const producer2 = getProducer('topic2')
+      const producer1 = await getProducer('topic1')
+      const producer2 = await getProducer('topic2')
 
       // Assert
       expect(mockKafka.producer).toHaveBeenCalledTimes(2)

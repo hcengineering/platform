@@ -96,9 +96,8 @@ async function main (): Promise<void> {
 
   const shutdown = (): void => {
     server.close(() => {
-      process.exit()
+      void closeQueue().then(() => process.exit())
     })
-    void closeQueue()
   }
 
   process.on('SIGINT', shutdown)
