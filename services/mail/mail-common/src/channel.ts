@@ -25,7 +25,7 @@ const createMutex = new SyncMutex()
  * Caches channel references to reduce calls to create mail channels
  */
 export class ChannelCache {
-  // Key is `${spaceId}:${emailAccount}`
+  // Key is `${spaceId}:${normalizedEmail}`
   private readonly cache = new Map<string, Ref<Doc>>()
 
   constructor (
@@ -40,17 +40,18 @@ export class ChannelCache {
   async getOrCreateChannel (
     spaceId: Ref<PersonSpace>,
     participants: PersonId[],
-    emailAccount: string,
+    email: string,
     owner: PersonId
   ): Promise<Ref<Doc> | undefined> {
-    const cacheKey = `${spaceId}:${emailAccount}`
+    const normalizedEmail = email.toLowerCase()
+    const cacheKey = `${spaceId}:${normalizedEmail}`
 
     let channel = this.cache.get(cacheKey)
     if (channel != null) {
       return channel
     }
 
-    channel = await this.fetchOrCreateChannel(spaceId, participants, emailAccount, owner)
+    channel = await this.fetchOrCreateChannel(spaceId, participants, normalizedEmail, owner)
     if (channel != null) {
       this.cache.set(cacheKey, channel)
     }
@@ -58,8 +59,9 @@ export class ChannelCache {
     return channel
   }
 
-  clearCache (spaceId: Ref<PersonSpace>, emailAccount: string): void {
-    this.cache.delete(`${spaceId}:${emailAccount}`)
+  clearCache (spaceId: Ref<PersonSpace>, email: string): void {
+    const normalizedEmail = email.toLowerCase()
+    this.cache.delete(`${spaceId}:${normalizedEmail}`)
   }
 
   clearAllCache (): void {
@@ -73,29 +75,30 @@ export class ChannelCache {
   private async fetchOrCreateChannel (
     space: Ref<PersonSpace>,
     participants: PersonId[],
-    emailAccount: string,
+    email: string,
     personId: PersonId
   ): Promise<Ref<Doc> | undefined> {
+    const normalizedEmail = email.toLowerCase()
     try {
       // First try to find existing channel
-      const channel = await this.client.findOne(mail.tag.MailChannel, { title: emailAccount })
+      const channel = await this.client.findOne(mail.tag.MailChannel, { title: normalizedEmail })
 
       if (channel != null) {
-        this.ctx.info('Using existing channel', { me: emailAccount, space, channel: channel._id })
+        this.ctx.info('Using existing channel', { me: normalizedEmail, space, channel: channel._id })
         return channel._id
       }
 
-      return await this.createNewChannel(space, participants, emailAccount, personId)
+      return await this.createNewChannel(space, participants, normalizedEmail, personId)
     } catch (err) {
       this.ctx.error('Failed to create channel', {
-        me: emailAccount,
+        me: normalizedEmail,
         space,
         workspace: this.workspace,
         error: err instanceof Error ? err.message : String(err)
       })
 
       // Remove failed lookup from cache
-      this.cache.delete(`${space}:${emailAccount}`)
+      this.cache.delete(`${space}:${normalizedEmail}`)
 
       return undefined
     }
@@ -104,18 +107,19 @@ export class ChannelCache {
   private async createNewChannel (
     space: Ref<PersonSpace>,
     participants: PersonId[],
-    emailAccount: string,
+    email: string,
     personId: PersonId
   ): Promise<Ref<Doc> | undefined> {
-    const mutexKey = `channel:${this.workspace}:${space}:${emailAccount}`
+    const normalizedEmail = email.toLowerCase()
+    const mutexKey = `channel:${this.workspace}:${space}:${normalizedEmail}`
     const releaseLock = await createMutex.lock(mutexKey)
 
     try {
       // Double-check that channel doesn't exist after acquiring lock
-      const existingChannel = await this.client.findOne(mail.tag.MailChannel, { title: emailAccount })
+      const existingChannel = await this.client.findOne(mail.tag.MailChannel, { title: normalizedEmail })
       if (existingChannel != null) {
         this.ctx.info('Using existing channel (found after mutex lock)', {
-          me: emailAccount,
+          me: normalizedEmail,
           space,
           channel: existingChannel._id
         })
@@ -123,12 +127,12 @@ export class ChannelCache {
       }
 
       // Create new channel if it doesn't exist
-      this.ctx.info('Creating new channel', { me: emailAccount, space, personId })
+      this.ctx.info('Creating new channel', { me: normalizedEmail, space, personId })
       const channelId = await this.client.createDoc(
         chat.masterTag.Channel,
         space,
         {
-          title: emailAccount,
+          title: normalizedEmail,
           private: true,
           members: participants,
           archived: false,
@@ -140,7 +144,7 @@ export class ChannelCache {
         personId
       )
 
-      this.ctx.info('Creating mixin', { me: emailAccount, space, personId, channelId })
+      this.ctx.info('Creating mixin', { me: normalizedEmail, space, personId, channelId })
       await this.client.createMixin(
         channelId,
         chat.masterTag.Channel,
