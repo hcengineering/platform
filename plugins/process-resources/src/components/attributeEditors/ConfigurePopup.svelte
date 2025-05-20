@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Context, Func, ProcessFunction, SelectedContext } from '@hcengineering/process'
+  import { Context, Func, Process, ProcessFunction, SelectedContext } from '@hcengineering/process'
   import {
     ButtonIcon,
     CheckBox,
@@ -35,6 +35,7 @@
   import FallbackEditor from '../contextEditors/FallbackEditor.svelte'
   import { MasterTag, Tag } from '@hcengineering/card'
 
+  export let process: Process
   export let masterTag: Ref<MasterTag | Tag>
   export let contextValue: SelectedContext
   export let context: Context

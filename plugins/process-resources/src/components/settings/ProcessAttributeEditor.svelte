@@ -56,6 +56,7 @@
 </script>
 
 <ProcessAttribute
+  {process}
   {context}
   {editor}
   {attribute}

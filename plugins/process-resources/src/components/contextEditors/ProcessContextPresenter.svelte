@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import process, { ProcessContext, State, Transition } from '@hcengineering/process'
+  import { ProcessContext, State, Transition } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
   import TransitionPresenter from '../settings/TransitionPresenter.svelte'
+  import process from '../../plugin'
 
   export let context: ProcessContext
 
@@ -35,6 +36,9 @@
 {#if context.name !== undefined && context.name !== ''}
   {context.name}
 {:else}
+  {#if context.isResult}
+    <Label label={process.string.Result} />:
+  {/if}
   {#if producer !== undefined}
     {#if isState(producer)}
       {producer.title}

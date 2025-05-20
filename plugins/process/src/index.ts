@@ -17,7 +17,7 @@ import { Asset, IntlString, Plugin, plugin, Resource } from '@hcengineering/plat
 import { ToDo } from '@hcengineering/time'
 import { AnyComponent } from '@hcengineering/ui'
 import { AttributeCategory } from '@hcengineering/view'
-import { SelectedContext } from './types'
+import { SelectedExecutonContext } from './types'
 
 /**
  * @public
@@ -41,7 +41,9 @@ export interface ProcessContext {
   _class: Ref<Class<Doc>>
   action: StepId
   producer: Ref<Transition | State>
-  value: SelectedContext
+  isResult?: boolean
+  type?: Type<any>
+  value: SelectedExecutonContext
 }
 
 export type ContextId = string & { __contextId: true }
@@ -120,6 +122,7 @@ export interface Step<T extends Doc> {
 
 export interface StepResult {
   _id: ContextId // context id
+  name: string
   type: Type<any>
 }
 

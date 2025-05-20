@@ -30,6 +30,7 @@
   export let defaultValue: string | undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
+  export let width: string | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -59,47 +60,42 @@
   }
 </script>
 
-<div class="hulyModal-content__settingsSet-line">
-  <span class="label">
-    <Label label={core.string.Enum} />
-  </span>
-  <div class="flex-row-center gap-2">
-    {#if editable}
-      <EnumSelect label={core.string.Enum} bind:value {create} {kind} {size} />
-    {:else if value}
-      <div>
-        {value.name}
-      </div>
-    {/if}
-    {#if value}
-      <Button
-        icon={setting.icon.Setting}
-        {kind}
-        {size}
-        showTooltip={{ label: presentation.string.Edit }}
-        on:click={edit}
-      />
-    {/if}
-  </div>
+<span class="label">
+  <Label label={core.string.Enum} />
+</span>
+<div class="flex-row-center gap-2">
+  {#if editable}
+    <EnumSelect label={core.string.Enum} shrink={1} {width} bind:value {create} {kind} {size} />
+  {:else if value}
+    <div>
+      {value.name}
+    </div>
+  {/if}
+  {#if value}
+    <Button
+      icon={setting.icon.Setting}
+      {kind}
+      {size}
+      showTooltip={{ label: presentation.string.Edit }}
+      on:click={edit}
+    />
+  {/if}
 </div>
 {#if value && type && !nested}
-  <div class="hulyModal-content__settingsSet-line">
-    <span class="label">
-      <Label label={setting.string.DefaultValue} />
-    </span>
-    <div class="ml-2">
-      <EnumEditor
-        label={setting.string.SelectAValue}
-        {kind}
-        {size}
-        allowDeselect
-        {type}
-        value={defaultValue ?? ''}
-        onChange={(e) => {
-          defaultValue = e
-          dispatch('change', { type, defaultValue })
-        }}
-      />
-    </div>
-  </div>
+  <span class="label">
+    <Label label={setting.string.DefaultValue} />
+  </span>
+  <EnumEditor
+    label={setting.string.SelectAValue}
+    {kind}
+    {size}
+    {width}
+    allowDeselect
+    {type}
+    value={defaultValue ?? ''}
+    onChange={(e) => {
+      defaultValue = e
+      dispatch('change', { type, defaultValue })
+    }}
+  />
 {/if}
