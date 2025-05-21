@@ -6,8 +6,9 @@ import { registerGithub } from './github'
 import { registerGoogle } from './google'
 import { registerOpenid } from './openid'
 import { registerToken } from './token'
-import { BrandingMap, MeasureContext, type ProviderInfo } from '@hcengineering/core'
+import { BrandingMap, MeasureContext } from '@hcengineering/core'
 import { type AccountDB } from '@hcengineering/account'
+import { type ProviderInfo } from '@hcengineering/account-client'
 
 export type Passport = typeof passport
 

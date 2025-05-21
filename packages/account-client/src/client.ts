@@ -23,7 +23,6 @@ import {
   type PersonId,
   type PersonInfo,
   type PersonUuid,
-  type ProviderInfo,
   type SocialIdType,
   Version,
   type WorkspaceInfoWithStatus,
@@ -46,7 +45,8 @@ import type {
   RegionInfo,
   SocialId,
   WorkspaceLoginInfo,
-  WorkspaceOperation
+  WorkspaceOperation,
+  ProviderInfo
 } from './types'
 import { getClientTimezone } from './utils'
 

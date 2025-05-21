@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import { type AccountDB } from '@hcengineering/account'
-import { type ProviderInfo } from '@hcengineering/core'
+import { type ProviderInfo } from '@hcengineering/account-client'
 import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } from '@hcengineering/core'
 import Router from 'koa-router'
 import { Issuer, Strategy } from 'openid-client'
