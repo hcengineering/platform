@@ -303,4 +303,157 @@ describe('SyncMutex', () => {
     // Counter should be exactly 50 if mutex prevented race conditions
     expect(sharedCounter.value).toBe(50)
   })
+
+  it('should remove mutex from map when no longer in use', async () => {
+    const mutex = new SyncMutex()
+    const key = 'test-key'
+
+    // Initially, the size should be 0
+    expect(mutex.size()).toBe(0)
+
+    // Acquire lock - should create a new mutex for this key
+    const release = await mutex.lock(key)
+
+    // Size should be 1 after acquiring a lock
+    expect(mutex.size()).toBe(1)
+
+    // Release the lock - should clean up the mutex
+    release()
+
+    // Need to wait for async cleanup to complete
+    // The cleanup happens in a separate promise chain
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    // Size should be 0 after releasing the lock and waiting for cleanup
+    expect(mutex.size()).toBe(0)
+  })
+
+  it('should keep mutex in map while it is still locked', async () => {
+    const mutex = new SyncMutex()
+    const key = 'test-key'
+
+    // Acquire two locks on the same key
+    const release1 = await mutex.lock(key)
+    const release2 = await mutex.lock(key)
+
+    // Size should be 1 (only one mutex for the key)
+    expect(mutex.size()).toBe(1)
+
+    // Release first lock
+    release1()
+
+    // Wait for any potential cleanup
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    // Mutex should still be in the map because second lock is still held
+    expect(mutex.size()).toBe(1)
+
+    // Release second lock
+    release2()
+
+    // Wait for cleanup
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    // Now the mutex should be removed
+    expect(mutex.size()).toBe(0)
+  })
+
+  it('should handle cleanup for multiple keys independently', async () => {
+    const mutex = new SyncMutex()
+
+    // Acquire locks on different keys
+    const release1 = await mutex.lock('key1')
+    const release2 = await mutex.lock('key2')
+    const release3 = await mutex.lock('key3')
+
+    // Size should be 3
+    expect(mutex.size()).toBe(3)
+
+    // Release locks in different order
+    release2() // Release key2
+
+    // Wait for cleanup
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    // Size should be 2
+    expect(mutex.size()).toBe(2)
+
+    release1() // Release key1
+
+    // Wait for cleanup
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    // Size should be 1
+    expect(mutex.size()).toBe(1)
+
+    release3() // Release key3
+
+    // Wait for cleanup
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    // Size should be 0
+    expect(mutex.size()).toBe(0)
+  })
+
+  it('should properly handle rapid lock/release cycles', async () => {
+    const mutex = new SyncMutex()
+    const key = 'rapid-key'
+
+    // Perform 50 quick lock/release operations
+    for (let i = 0; i < 50; i++) {
+      const release = await mutex.lock(key)
+      release()
+    }
+
+    // Wait for all cleanup operations to complete
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    // Size should be 0 after all operations
+    expect(mutex.size()).toBe(0)
+  })
+
+  it('should handle concurrent cleanup operations correctly', async () => {
+    const mutex = new SyncMutex()
+    const keys = ['key1', 'key2', 'key3', 'key4', 'key5']
+
+    // Acquire locks on all keys
+    const releases = await Promise.all(keys.map((key) => mutex.lock(key)))
+
+    // Size should be equal to number of keys
+    expect(mutex.size()).toBe(keys.length)
+
+    // Release all locks simultaneously
+    releases.forEach((release) => { release() })
+
+    // Wait for all cleanup operations to complete
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    // Size should be 0 after all releases
+    expect(mutex.size()).toBe(0)
+  })
+
+  it('should handle case where mutex is reacquired during cleanup', async () => {
+    const mutex = new SyncMutex()
+    const key = 'reacquire-key'
+
+    // First lock/release cycle
+    const release1 = await mutex.lock(key)
+    release1()
+
+    // Immediately acquire another lock on same key
+    // This should happen before cleanup completes
+    const release2 = await mutex.lock(key)
+
+    // Size should still be 1
+    expect(mutex.size()).toBe(1)
+
+    // Release second lock
+    release2()
+
+    // Wait for cleanup
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    // Size should be 0 after all locks released
+    expect(mutex.size()).toBe(0)
+  })
 })
