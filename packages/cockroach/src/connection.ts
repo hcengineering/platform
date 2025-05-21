@@ -97,14 +97,14 @@ export function connect(connectionString: string, database?: string): PostgresCl
 
   if (existing === undefined) {
     const sql = postgres(connectionString, {
-      connection: {
-        application_name: 'communication'
-      },
       database,
       max: 5,
       fetch_types: false,
-      prepare: false,
-      ...extraOptions
+      prepare: true,
+      ...extraOptions,
+      connection: {
+        application_name: 'communication'
+      }
     })
 
     existing = new PostgresClientReferenceImpl(sql, () => {

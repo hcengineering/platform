@@ -58,7 +58,7 @@ export interface DbAdapter {
     data?: MessageData,
     externalId?: string,
     id?: MessageID
-  ): Promise<MessageID>
+  ): Promise<{ id: MessageID; created: Date }>
   removeMessages(card: CardID, query: RemoveMessageQuery): Promise<MessageID[]>
 
   createPatch(

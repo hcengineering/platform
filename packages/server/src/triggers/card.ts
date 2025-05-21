@@ -20,7 +20,6 @@ import {
   NotificationRequestEventType,
   type RequestEvent
 } from '@hcengineering/communication-sdk-types'
-import type { CardID } from '@hcengineering/communication-types'
 
 import type { TriggerCtx, TriggerFn, Triggers } from '../types'
 
@@ -46,15 +45,6 @@ async function removeThreads(ctx: TriggerCtx, event: CardRemovedEvent): Promise<
   return []
 }
 
-async function removeMessages(ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
-  await ctx.db.removeMessages(event.card, {})
-  await ctx.db.removePatches(event.card)
-  await ctx.db.removeFiles(event.card, {})
-  await removeMessageGroups(ctx, event.card)
-
-  return []
-}
-
 async function removeNotificationContexts(ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
   const result: RequestEvent[] = []
   const contexts = await ctx.db.findNotificationContexts({ card: event.card })
@@ -68,24 +58,11 @@ async function removeNotificationContexts(ctx: TriggerCtx, event: CardRemovedEve
   return result
 }
 
-async function removeMessageGroups(ctx: TriggerCtx, card: CardID): Promise<void> {
-  while (true) {
-    const groups = await ctx.db.findMessagesGroups({ card })
-    if (groups.length === 0) return
-
-    for (const group of groups) {
-      ///TODO: delete blob
-      await ctx.db.removeMessagesGroup(group.card, group.blobId)
-    }
-  }
-}
-
 const triggers: Triggers = [
   ['on_card_type_updates', CardResponseEventType.CardTypeUpdated, onCardTypeUpdates as TriggerFn],
   ['remove_collaborators_on_card_removed', CardResponseEventType.CardRemoved, removeCollaborators as TriggerFn],
   ['remove_labels_on_card_removed', CardResponseEventType.CardRemoved, removeLabels as TriggerFn],
   ['remove_threads_on_card_removed', CardResponseEventType.CardRemoved, removeThreads as TriggerFn],
-  ['remove_messages_on_card_removed', CardResponseEventType.CardRemoved, removeMessages as TriggerFn],
   [
     'remove_notification_contexts_on_card_removed',
     CardResponseEventType.CardRemoved,

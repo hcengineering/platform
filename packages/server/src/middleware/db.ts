@@ -36,7 +36,6 @@ import {
   type CreateFileEvent,
   type CreateLabelEvent,
   type CreateMessageEvent,
-  type CreateMessageResult,
   type CreateMessagesGroupEvent,
   type CreateNotificationContextEvent,
   type CreateNotificationEvent,
@@ -235,7 +234,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
 
   private async createMessage(event: CreateMessageEvent): Promise<Result> {
     const created = event.created ?? new Date()
-    const id = await this.db.createMessage(
+    const result = await this.db.createMessage(
       event.card,
       event.messageType,
       event.content,
@@ -246,12 +245,12 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       event.id
     )
     const message: Message = {
-      id,
+      id: result.id,
       type: event.messageType,
       card: event.card,
       content: event.content,
       creator: event.creator,
-      created,
+      created: result.created,
       data: event.data,
       externalId: event.externalId,
       reactions: [],
@@ -262,10 +261,6 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       type: MessageResponseEventType.MessageCreated,
       cardType: event.cardType,
       message
-    }
-    const result: CreateMessageResult = {
-      id,
-      created
     }
     return {
       responseEvent,

@@ -96,7 +96,7 @@ export class CockroachAdapter implements DbAdapter {
     data?: MessageData,
     externalId?: string,
     id?: MessageID
-  ): Promise<MessageID> {
+  ): Promise<{ id: MessageID; created: Date }> {
     return await this.message.createMessage(card, type, content, creator, created, data, externalId, id)
   }
 
@@ -340,9 +340,9 @@ class CockroachClient implements SqlClient {
   }
 
   cursor<T = SqlRow>(query: string, params?: SqlParams, size?: number): AsyncIterable<NonNullable<T[][number]>[]> {
-    const sql = params !== undefined && params.length > 0 ? injectVars(query, params) : query
+    // const sql = params !== undefined && params.length > 0 ? injectVars(query, params) : query
 
-    return this.sql.unsafe<T[]>(sql).cursor(size)
+    return this.sql.unsafe<T[]>(query, params).cursor(size)
   }
 
   close(): void {

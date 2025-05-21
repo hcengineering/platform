@@ -65,7 +65,7 @@ export class MessagesDb extends BaseDb {
     data?: MessageData,
     externalId?: string,
     id?: MessageID
-  ): Promise<MessageID> {
+  ): Promise<{ id: MessageID; created: Date }> {
     const db: Omit<MessageDb, 'id'> & { id?: MessageID } = {
       type,
       workspace_id: this.workspace,
@@ -89,13 +89,22 @@ export class MessagesDb extends BaseDb {
     }
 
     const placeholders = keys.map((key, i) => `$${i + 1}::${(messageSchema as any)[key]}`)
+    const conflictClause =
+      externalId != null
+        ? `ON CONFLICT (workspace_id, card_id, external_id)
+     DO UPDATE SET external_id = EXCLUDED.external_id`
+        : ''
+
     const sql = `INSERT INTO ${TableName.Message} (${keys.join(', ')})
                    VALUES (${placeholders.join(', ')})
-                   RETURNING id::text`
+                   ${conflictClause}
+                   RETURNING id::text, created`
 
     const result = await this.execute(sql, values, 'insert message')
+    const createdR = new Date(result[0].created)
+    const idR = result[0].id as MessageID
 
-    return result.map((it: any) => it.id)[0]
+    return { id: idR, created: createdR }
   }
 
   async removeMessages(card: CardID, query: RemoveMessageQuery): Promise<MessageID[]> {
