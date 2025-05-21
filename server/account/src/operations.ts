@@ -96,7 +96,7 @@ import {
   verifyAllowedRole,
   verifyAllowedServices,
   verifyPassword,
-  wrap, updateAllowReadOnlyGuests
+  wrap, updateAllowReadOnlyGuests, READONLY_GUEST_ACCOUNT
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -109,6 +109,25 @@ const workspaceLimitPerUser =
 /* =================================== */
 /* ============OPERATIONS============= */
 /* =================================== */
+
+/**
+ * Given an email and password, logs the user in and returns the account information and token.
+ */
+export async function loginAsGuest (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<LoginInfo> {
+  const guestPerson = await db.person.findOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid })
+  if (guestPerson == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+  return {
+    account: guestPerson.uuid as AccountUuid,
+    token: generateToken(guestPerson.uuid, undefined),
+  }
+}
 
 /**
  * Given an email and password, logs the user in and returns the account information and token.
@@ -1793,6 +1812,7 @@ export type AccountMethods =
   | AccountServiceMethods
   | 'login'
   | 'loginOtp'
+  | 'loginAsGuest'
   | 'signUp'
   | 'signUpOtp'
   | 'validateOtp'
@@ -1846,6 +1866,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     /* OPERATIONS */
     login: wrap(login),
     loginOtp: wrap(loginOtp),
+    loginAsGuest: wrap(loginAsGuest),
     ...(hasSignUp ? { signUp: wrap(signUp) } : {}),
     ...(hasSignUp ? { signUpOtp: wrap(signUpOtp) } : {}),
     validateOtp: wrap(validateOtp),

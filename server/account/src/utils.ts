@@ -725,6 +725,10 @@ export async function updateWorkspaceRole (
 ): Promise<void> {
   const { targetAccount, targetRole } = params
 
+  if (targetAccount === READONLY_GUEST_ACCOUNT) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
   const { account, workspace } = decodeTokenVerbose(ctx, token)
 
   if (workspace === null) {

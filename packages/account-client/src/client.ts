@@ -103,6 +103,7 @@ export interface AccountClient {
    */
   signUp: (email: string, password: string, first: string, last: string) => Promise<LoginInfo>
   login: (email: string, password: string) => Promise<LoginInfo>
+  loginAsGuest: () => Promise<LoginInfo>
   getPerson: () => Promise<Person>
   getPersonInfo: (account: PersonUuid) => Promise<PersonInfo>
   getSocialIds: () => Promise<SocialId[]>
@@ -523,6 +524,15 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'login' as const,
       params: { email, password }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async loginAsGuest (): Promise<LoginInfo> {
+    const request = {
+      method: 'loginAsGuest' as const,
+      params: {}
     }
 
     return await this.rpc(request)
