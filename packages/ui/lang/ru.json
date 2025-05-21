@@ -98,6 +98,7 @@
     "Language": "Язык",
     "DaysWOValue": "{days, plural, one {день} few {дня} other {дней}}",
     "WeeksWOValue": "{weeks, plural, one {неделя} few {недели} other {недель}}",
-    "MonthsWOValue": "{months, plural, one {месяц} few {месяца} other {месяцев}}"
+    "MonthsWOValue": "{months, plural, one {месяц} few {месяца} other {месяцев}}",
+    "ReadOnlyModeWarning": "Режим только для чтения"
   }
 }
