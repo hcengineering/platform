@@ -147,6 +147,7 @@
     "BetaWarning": "Los módulos etiquetados como beta están disponibles con fines experimentales y pueden no ser completamente funcionales. No recomendamos confiar en las funciones beta para trabajos críticos en este momento.",
     "IntegrationFailed": "Error al crear la integración",
     "IntegrationError": "Por favor, inténtelo de nuevo o contacte con soporte si el problema persiste",
-    "EmailIsUsed": "El correo electrónico ya está en uso"
+    "EmailIsUsed": "El correo electrónico ya está en uso",
+    "Customize": "Personalizar"
   }
 }

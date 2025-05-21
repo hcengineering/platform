@@ -246,7 +246,8 @@ export default plugin(settingId, {
     MailboxDeleteConfirmation: '' as IntlString,
     IntegrationFailed: '' as IntlString,
     IntegrationError: '' as IntlString,
-    EmailIsUsed: '' as IntlString
+    EmailIsUsed: '' as IntlString,
+    Customize: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,
