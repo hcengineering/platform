@@ -146,6 +146,140 @@ describe('PersonCache', () => {
       expect(result2).toEqual(mockPerson2)
       expect(mockRestClient.ensurePerson).toHaveBeenCalledTimes(2)
     })
+
+    it('should normalize email with whitespace and different case', async () => {
+      // Arrange
+      const email1 = ' MiXeD@ExAmPlE.com ' // With whitespace and mixed case
+      const email2 = 'mixed@example.com' // Normal lowercase
+
+      const contact1: EmailContact = {
+        email: email1,
+        firstName: 'Mixed',
+        lastName: 'Case'
+      }
+
+      const contact2: EmailContact = {
+        email: email2,
+        firstName: 'Mixed',
+        lastName: 'Case'
+      }
+
+      const mockPerson = {
+        socialId: 'person-789' as PersonId,
+        uuid: 'uuid-789' as PersonUuid,
+        localPerson: 'local-789'
+      }
+
+      mockRestClient.ensurePerson.mockResolvedValue(mockPerson)
+
+      // Act
+      await personCache.ensurePerson(contact1)
+      await personCache.ensurePerson(contact2)
+
+      // Assert
+      expect(mockRestClient.ensurePerson).toHaveBeenCalledTimes(1)
+      expect(mockRestClient.ensurePerson).toHaveBeenCalledWith(
+        SocialIdType.EMAIL,
+        'mixed@example.com', // normalized email
+        'Mixed',
+        'Case'
+      )
+    })
+
+    it('should create different person entries for different emails', async () => {
+      // Arrange
+      const email1 = 'first@example.com'
+      const email2 = 'second@example.com'
+
+      const contact1: EmailContact = {
+        email: email1,
+        firstName: 'First',
+        lastName: 'User'
+      }
+
+      const contact2: EmailContact = {
+        email: email2,
+        firstName: 'Second',
+        lastName: 'User'
+      }
+
+      const mockPerson1 = {
+        socialId: 'person-1' as PersonId,
+        uuid: 'uuid-1' as PersonUuid,
+        localPerson: 'local-1'
+      }
+
+      const mockPerson2 = {
+        socialId: 'person-2' as PersonId,
+        uuid: 'uuid-2' as PersonUuid,
+        localPerson: 'local-2'
+      }
+
+      mockRestClient.ensurePerson.mockResolvedValueOnce(mockPerson1).mockResolvedValueOnce(mockPerson2)
+
+      // Act
+      const result1 = await personCache.ensurePerson(contact1)
+      const result2 = await personCache.ensurePerson(contact2)
+
+      // Assert
+      expect(mockRestClient.ensurePerson).toHaveBeenCalledTimes(2)
+      expect(result1).toEqual(mockPerson1)
+      expect(result2).toEqual(mockPerson2)
+      expect(personCache.size()).toBe(2)
+    })
+
+    it('should handle concurrent requests for the same email', async () => {
+      // Arrange
+      const email = 'concurrent@example.com'
+      const contact: EmailContact = {
+        email,
+        firstName: 'Concurrent',
+        lastName: 'User'
+      }
+
+      // Create a delayed mock response to simulate server latency
+      const mockPerson = {
+        socialId: 'person-123' as PersonId,
+        uuid: 'uuid-123' as PersonUuid,
+        localPerson: 'local-123'
+      }
+
+      // Create a delayed promise that resolves after 50ms
+      mockRestClient.ensurePerson.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve(mockPerson)
+            }, 50)
+          })
+      )
+
+      // Act - Create multiple concurrent requests
+      const requests = []
+      for (let i = 0; i < 10; i++) {
+        requests.push(personCache.ensurePerson(contact))
+      }
+
+      // Wait for all requests to complete
+      const results = await Promise.all(requests)
+
+      // Assert
+      expect(mockRestClient.ensurePerson).toHaveBeenCalledTimes(1)
+      expect(mockRestClient.ensurePerson).toHaveBeenCalledWith(
+        SocialIdType.EMAIL,
+        'concurrent@example.com',
+        'Concurrent',
+        'User'
+      )
+
+      // All results should reference the same person
+      results.forEach((result) => {
+        expect(result).toEqual(mockPerson)
+      })
+
+      // Cache size should be 1
+      expect(personCache.size()).toBe(1)
+    })
   })
 
   describe('clearCache', () => {

@@ -365,7 +365,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     const statuses = await this.provider.getStatuses(type?._id)
 
     const assignees = await this.getAssignees(pullRequestExternal)
-    const reviewers: PersonId[] = await this.getReviewers(pullRequestExternal)
+    const reviewers = await this.getPersonsFromId(await this.getReviewers(pullRequestExternal))
 
     const latestReviews: LastReviewState[] = []
 
@@ -386,7 +386,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         this.stripGuestLink
       ),
       assignee: assignees[0] ?? null,
-      reviewers: reviewers.map((it: any) => it.person),
+      reviewers,
       draft: pullRequestExternal.isDraft,
       head: pullRequestExternal.headRef,
       base: pullRequestExternal.baseRef,

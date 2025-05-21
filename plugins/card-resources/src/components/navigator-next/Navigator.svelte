@@ -29,6 +29,7 @@
   export let applicationId: string
   export let selectedType: Ref<MasterTag> | undefined = undefined
   export let selectedCard: Ref<Card> | undefined = undefined
+  export let selectedSpecial: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -75,6 +76,7 @@
   function selectType (event: CustomEvent<MasterTag>): void {
     selectedType = event.detail._id
     selectedCard = undefined
+    selectedSpecial = undefined
 
     dispatch('selectType', event.detail)
   }
@@ -82,8 +84,15 @@
   function selectCard (event: CustomEvent<Card>): void {
     selectedCard = event.detail._id
     selectedType = undefined
+    selectedSpecial = undefined
 
     dispatch('selectCard', event.detail)
+  }
+  function favorites (): void {
+    selectedCard = undefined
+    selectedType = undefined
+    selectedSpecial = 'favorites'
+    dispatch('favorites')
   }
 </script>
 
@@ -100,8 +109,11 @@
           {config}
           {selectedType}
           {selectedCard}
+          {selectedSpecial}
+          {applicationId}
           on:selectType={selectType}
           on:selectCard={selectCard}
+          on:favorites={favorites}
         />
       {/each}
     {:else}
@@ -110,8 +122,11 @@
         {config}
         {selectedType}
         {selectedCard}
+        {selectedSpecial}
+        {applicationId}
         on:selectType={selectType}
         on:selectCard={selectCard}
+        on:favorites={favorites}
       />
     {/if}
   </div>
@@ -122,6 +137,6 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    padding: 1rem 0.5rem;
+    padding: 1rem 0;
   }
 </style>

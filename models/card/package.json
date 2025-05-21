@@ -42,6 +42,7 @@
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/model-presentation": "^0.6.0",
+    "@hcengineering/model-preference": "^0.6.0",
     "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/card-resources": "^0.6.0",

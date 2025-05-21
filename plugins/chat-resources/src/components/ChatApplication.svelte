@@ -22,24 +22,39 @@
     resolvedLocationStore,
     Location,
     restoreLocation,
-    Component,
-    closePanel
+    closePanel,
+    Component
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import { getClient } from '@hcengineering/presentation'
   import { chatId } from '@hcengineering/chat'
-  import { Ref, Doc, Class } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import view from '@hcengineering/view'
+  import { Favorites } from '@hcengineering/card-resources'
 
   import ChatNavigation from './ChatNavigation.svelte'
-  import { navigateToCard, getCardIdFromLocation, navigateToType, getTypeIdFromLocation } from '../location'
+  import {
+    navigateToCard,
+    getCardIdFromLocation,
+    navigateToType,
+    getTypeIdFromLocation,
+    isFavoritesLocation,
+    navigateToFavorites
+  } from '../location'
   import ChatNavigationCategoryList from './ChatNavigationCategoryList.svelte'
 
-  interface Selection {
-    _class: Ref<Class<Doc>>
-    _id: Ref<Doc>
-    doc: Doc
-  }
+  type Selection =
+    | {
+      type: 'card'
+      _id: Ref<Card>
+      doc: Card
+    }
+    | {
+      type: 'type'
+      _id: Ref<MasterTag>
+      doc: MasterTag
+    }
+    | { type: 'favorites' }
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -58,11 +73,17 @@
 
     const typeId = getTypeIdFromLocation(loc)
     const cardId = getCardIdFromLocation(loc)
+    const isFavorites = isFavoritesLocation(loc)
+
+    if (isFavorites) {
+      selection = { type: 'favorites' }
+      return
+    }
 
     const type = typeId != null ? await client.findOne(cardPlugin.class.MasterTag, { _id: typeId }) : undefined
 
     if (type != null) {
-      selection = { _class: cardPlugin.class.MasterTag, _id: type._id, doc: type }
+      selection = { type: 'type', _id: type._id, doc: type }
       return
     }
 
@@ -79,36 +100,41 @@
 
     if (cardId !== selectedCard?._id) {
       const card = await client.findOne(cardPlugin.class.Card, { _id: cardId })
-      selection = card != null ? { _class: cardPlugin.class.Card, _id: cardId, doc: card } : undefined
+      selection = card != null ? { type: 'card', _id: cardId, doc: card } : undefined
     }
   }
 
   function selectCard (event: CustomEvent<Card>): void {
-    if (selection?._id === event.detail._id) return
+    if (selection?.type === 'card' && selection._id === event.detail._id) return
     closePanel(false)
     const card = event.detail
-    selection = { _class: cardPlugin.class.Card, _id: card._id, doc: card }
+    selection = { type: 'card', _id: card._id, doc: card }
     navigateToCard(card._id)
   }
 
   function selectType (event: CustomEvent<MasterTag>): void {
-    if (selection?._id === event.detail._id) return
+    if (selection?.type === 'type' && selection._id === event.detail._id) return
     closePanel(false)
     const type = event.detail
-    selection = { _class: cardPlugin.class.MasterTag, _id: type._id, doc: type }
+    selection = { type: 'type', _id: type._id, doc: type }
     navigateToType(type._id)
   }
 
+  function selectFavorites (): void {
+    if (selection?.type === 'favorites') return
+    closePanel(false)
+    selection = { type: 'favorites' }
+    navigateToFavorites()
+  }
+
   function getSelectedCard (selection: Selection | undefined): Card | undefined {
-    if (selection == null) return undefined
-    if (selection._class !== cardPlugin.class.Card) return undefined
-    return selection.doc as Card | undefined
+    if (selection?.type !== 'card') return undefined
+    return selection.doc
   }
 
   function getSelectedType (selection: Selection | undefined): Ref<MasterTag> | undefined {
-    if (selection == null) return undefined
-    if (selection._class !== cardPlugin.class.MasterTag) return undefined
-    return selection._id as Ref<MasterTag>
+    if (selection?.type !== 'type') return undefined
+    return selection._id
   }
 
   onDestroy(
@@ -138,8 +164,10 @@
         <ChatNavigation
           card={getSelectedCard(selection)}
           type={getSelectedType(selection)}
+          isFavorites={selection?.type === 'favorites'}
           on:selectCard={selectCard}
           on:selectType={selectType}
+          on:favorites={selectFavorites}
         />
       </div>
       {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
@@ -156,7 +184,11 @@
     />
   {/if}
   <div bind:this={replacedPanelElement} class="hulyComponent chat__panel">
-    {#if selectedCard}
+    {#if selection?.type === 'favorites'}
+      {#key selection.type}
+        <Favorites application={chatId} />
+      {/key}
+    {:else if selectedCard}
       {@const panelComponent = hierarchy.classHierarchyMixin(selectedCard._class, view.mixin.ObjectPanel)}
       {@const comp = panelComponent?.component ?? view.component.EditDoc}
       <Component is={comp} props={{ _id: selectedCard._id, readonly: false, embedded: true, allowClose: false }} />

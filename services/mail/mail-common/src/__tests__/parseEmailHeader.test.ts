@@ -36,8 +36,8 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'test@example.com',
-        firstName: 'test',
-        lastName: 'example.com'
+        firstName: 'test@example.com',
+        lastName: ''
       }
     ])
   })
@@ -47,8 +47,8 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'john.doe@example.com',
-        firstName: 'John',
-        lastName: 'Doe'
+        firstName: '<john.doe@example.com>',
+        lastName: 'John Doe'
       }
     ])
   })
@@ -58,8 +58,8 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'john.doe@example.com',
-        firstName: 'John',
-        lastName: 'Doe'
+        firstName: '<john.doe@example.com>',
+        lastName: 'John Doe'
       }
     ])
   })
@@ -69,8 +69,8 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'john.doe@example.com',
-        firstName: 'John',
-        lastName: 'Doe Smith'
+        firstName: '<john.doe@example.com>',
+        lastName: 'John Doe Smith'
       }
     ])
   })
@@ -80,13 +80,13 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'test1@example.com',
-        firstName: 'test1',
-        lastName: 'example.com'
+        firstName: 'test1@example.com',
+        lastName: ''
       },
       {
         email: 'test2@example.com',
-        firstName: 'test2',
-        lastName: 'example.com'
+        firstName: 'test2@example.com',
+        lastName: ''
       }
     ])
   })
@@ -96,13 +96,13 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'john@example.com',
-        firstName: 'John',
-        lastName: 'example.com'
+        firstName: '<john@example.com>',
+        lastName: 'John'
       },
       {
         email: 'jane@example.com',
-        firstName: 'Jane',
-        lastName: 'Doe'
+        firstName: '<jane@example.com>',
+        lastName: 'Jane Doe'
       }
     ])
   })
@@ -112,13 +112,13 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'john@example.com',
-        firstName: 'Doe,',
-        lastName: 'John'
+        firstName: '<john@example.com>',
+        lastName: 'Doe, John'
       },
       {
         email: 'jane@example.com',
-        firstName: 'Jane',
-        lastName: 'Doe'
+        firstName: '<jane@example.com>',
+        lastName: 'Jane Doe'
       }
     ])
   })
@@ -128,13 +128,13 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'john@example.com',
-        firstName: 'john',
-        lastName: 'example.com'
+        firstName: 'john@example.com',
+        lastName: ''
       },
       {
         email: 'jane@example.com',
-        firstName: 'Jane',
-        lastName: 'Doe'
+        firstName: '<jane@example.com>',
+        lastName: 'Jane Doe'
       }
     ])
   })
@@ -144,13 +144,13 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'john@example.com',
-        firstName: 'john',
-        lastName: 'example.com'
+        firstName: 'john@example.com',
+        lastName: ''
       },
       {
         email: 'jane@example.com',
-        firstName: 'jane',
-        lastName: 'example.com'
+        firstName: 'jane@example.com',
+        lastName: ''
       }
     ])
   })
@@ -160,13 +160,13 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'john@example.com',
-        firstName: 'john',
-        lastName: 'example.com'
+        firstName: 'john@example.com',
+        lastName: ''
       },
       {
         email: 'jane@example.com',
-        firstName: 'Jane',
-        lastName: 'Doe'
+        firstName: '<jane@example.com>',
+        lastName: 'Jane Doe'
       }
     ])
   })
@@ -176,13 +176,13 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'example-staff@example.com',
-        firstName: 'example',
-        lastName: 'staff'
+        firstName: '<example-staff@example.com>',
+        lastName: 'example staff'
       },
       {
         email: 'personnel@example.com',
-        firstName: 'personnel',
-        lastName: 'example.com'
+        firstName: '<personnel@example.com>',
+        lastName: 'personnel'
       }
     ])
   })
@@ -192,13 +192,13 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'abc@test.com',
-        firstName: 'abc',
-        lastName: 'test.com'
+        firstName: 'abc@test.com',
+        lastName: ''
       },
       {
         email: '123@test.com',
-        firstName: '123',
-        lastName: 'test.com'
+        firstName: '123@test.com',
+        lastName: ''
       }
     ])
   })
@@ -208,13 +208,13 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'john@example.com',
-        firstName: 'John',
-        lastName: 'example.com'
+        firstName: '<john@example.com>',
+        lastName: 'John'
       },
       {
         email: 'jane@example.com',
-        firstName: 'Jane',
-        lastName: 'example.com'
+        firstName: '<jane@example.com>',
+        lastName: 'Jane'
       }
     ])
   })
@@ -224,13 +224,13 @@ describe('parseEmailHeader', () => {
     expect(result).toEqual([
       {
         email: 'john@example.com',
-        firstName: 'John',
-        lastName: 'example.com'
+        firstName: '<john@example.com>',
+        lastName: 'John'
       },
       {
         email: 'jane@example.com',
-        firstName: 'Jane',
-        lastName: 'example.com'
+        firstName: '<jane@example.com>',
+        lastName: 'Jane'
       }
     ])
   })

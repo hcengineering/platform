@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,11 +11,21 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
 
-import { ExecutionError } from '@hcengineering/process'
-import { ExecuteResult } from '@hcengineering/server-process'
+<script lang="ts">
+  import card from '@hcengineering/card'
+  import { SpecialView } from '@hcengineering/workbench-resources'
+  import view from '@hcengineering/view'
+  import preference from '@hcengineering/preference'
 
-export function isError (value: ExecuteResult | any): value is ExecutionError {
-  return (value as ExecutionError)?.error !== undefined
-}
+  export let application: string
+</script>
+
+<SpecialView
+  _class={card.class.FavoriteCard}
+  icon={view.icon.Star}
+  label={preference.string.Starred}
+  defaultViewletDescriptor={view.viewlet.List}
+  baseQuery={{ application }}
+/>
