@@ -30,7 +30,7 @@
   export let files: boolean = true
 
   function canReply (): boolean {
-    return message.type === MessageType.Message
+    return message.type === MessageType.Message || message.type === MessageType.Thread
   }
 
   async function handleReaction (event: CustomEvent<string>): Promise<void> {
@@ -51,7 +51,7 @@
     await openDoc(client.getHierarchy(), c)
   }
 
-  $: isThread = message.thread != null
+  $: isThread = message.thread != null || message.type === MessageType.Thread
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

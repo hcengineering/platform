@@ -27,7 +27,7 @@
   export let message: Message
 </script>
 
-{#if message.thread != null}
+{#if message.type === MessageType.Thread || message.thread != null}
   <ThreadMessageViewer {message} thread={message.thread} />
 {:else if message.type === MessageType.Message}
   <MarkupMessageViewer message={toMarkup(message.content)} />

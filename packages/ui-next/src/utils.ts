@@ -24,7 +24,7 @@ import {
 import { markupToJSON, jsonToMarkup, markupToText } from '@hcengineering/text'
 import { showPopup } from '@hcengineering/ui'
 import { markupToMarkdown, markdownToMarkup } from '@hcengineering/text-markdown'
-import { type Message } from '@hcengineering/communication-types'
+import {MessageType, type Message } from '@hcengineering/communication-types'
 import { getClient, getCommunicationClient } from '@hcengineering/presentation'
 import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
 import cardPlugin, { type Card } from '@hcengineering/card'
@@ -153,6 +153,7 @@ export function isMessageEmpty (message: Message): boolean {
     message.files.length === 0 &&
     message.reactions.length === 0 &&
     message.thread == null &&
-    message.edited == null
+    message.edited == null &&
+    message.type === MessageType.Message
   )
 }

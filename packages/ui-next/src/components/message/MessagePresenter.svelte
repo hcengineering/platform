@@ -58,7 +58,7 @@
   }
 
   function canReply (): boolean {
-    return message.type === MessageType.Message
+    return message.type === MessageType.Message || message.type === MessageType.Thread
   }
 
   async function updateAuthor (socialId: SocialID): Promise<void> {
@@ -153,7 +153,7 @@
 
   let isActionsOpened = false
 
-  $: isThread = message.thread != null
+  $: isThread = message.thread != null || message.type === MessageType.Thread
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -202,7 +202,7 @@
 
     &:hover:not(.noHover) {
       background: var(--global-ui-BackgroundColor);
-      transition: background-color 0s ease 0.5s;
+      transition: background-color 0s ease 0.05s;
       .message__actions {
         visibility: visible;
       }
