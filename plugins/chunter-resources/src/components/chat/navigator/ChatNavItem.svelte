@@ -26,7 +26,7 @@
   } from '@hcengineering/notification-resources'
   import { createEventDispatcher } from 'svelte'
   import view from '@hcengineering/view'
-  import { Doc } from '@hcengineering/core'
+  import { AccountRole, Doc, getCurrentAccount } from '@hcengineering/core'
 
   import NavItem from './NavItem.svelte'
   import { ChatNavItemModel } from '../types'
@@ -38,6 +38,7 @@
   export let isSelected = false
   export let type: 'type-link' | 'type-tag' | 'type-anchor-link' | 'type-object' = 'type-link'
 
+  const me = getCurrentAccount()
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
@@ -48,17 +49,21 @@
   let count: number | null = null
   let actions: Action[] = []
 
-  notificationClient.inboxNotificationsByContext.subscribe((res) => {
-    if (context === undefined) {
-      return
-    }
+  if (me.role !== AccountRole.ReadOnlyGuest) {
+    notificationClient.inboxNotificationsByContext.subscribe((res) => {
+      if (context === undefined) {
+        return
+      }
 
-    notifications = (res.get(context._id) ?? []).filter((n) => {
-      if (isActivityNotification(n)) return true
+      notifications = (res.get(context._id) ?? []).filter((n) => {
+        if (isActivityNotification(n)) return true
 
-      return isMentionNotification(n) && hierarchy.isDerived(n.mentionedInClass, chunter.class.ChatMessage)
+        return isMentionNotification(n) && hierarchy.isDerived(n.mentionedInClass, chunter.class.ChatMessage)
+      })
     })
-  })
+  } else {
+    context = undefined
+  }
 
   $: void getNotificationsCount(context, notifications).then((res) => {
     count = res === 0 ? null : res
