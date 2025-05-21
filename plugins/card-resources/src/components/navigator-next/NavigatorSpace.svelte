@@ -26,8 +26,10 @@
   export let types: MasterTag[] = []
   export let config: NavigatorConfig
   export let space: CardSpace
+  export let applicationId: string
   export let selectedType: Ref<MasterTag> | undefined = undefined
   export let selectedCard: Ref<Card> | undefined = undefined
+  export let selectedSpecial: string | undefined = undefined
 
   const client = getClient()
 
@@ -51,8 +53,11 @@
       {config}
       {selectedType}
       {selectedCard}
+      {selectedSpecial}
+      {applicationId}
       on:selectType
       on:selectCard
+      on:favorites
     />
   </div>
 </TreeNode>

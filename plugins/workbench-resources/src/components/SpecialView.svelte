@@ -40,6 +40,7 @@
   } from '@hcengineering/view-resources'
   import workbench, { ParentsNavigationModel } from '@hcengineering/workbench'
   import ComponentNavigator from './ComponentNavigator.svelte'
+  import { deepEqual } from 'fast-equals'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -80,6 +81,12 @@
   $: resultQuery = isQueryLoaded ? searchQuery : undefined
 
   let options = viewlet?.options
+  let _options = viewlet?.options ?? {}
+
+  $: if (!deepEqual(viewlet?.options ?? {}, _options)) {
+    _options = viewlet?.options ?? {}
+    options = viewlet?.options
+  }
 
   $: void updateQuery(_baseQuery, viewOptions, viewlet, queryBuilder)
   $: void updateOptions(viewlet?.options, viewOptions, viewlet)

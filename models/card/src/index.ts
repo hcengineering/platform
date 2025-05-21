@@ -23,7 +23,8 @@ import {
   type Role,
   type CardSection,
   type CardViewDefaults,
-  type CardNavigation
+  type CardNavigation,
+  type FavoriteCard
 } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
 import core, {
@@ -56,12 +57,13 @@ import attachment from '@hcengineering/model-attachment'
 import { TAttachedDoc, TClass, TDoc, TMixin, TSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
-import view, { createAction } from '@hcengineering/model-view'
+import view, { createAction, type Viewlet } from '@hcengineering/model-view'
 import workbench, { WidgetType } from '@hcengineering/model-workbench'
 import { type Asset, getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type BuildModelKey } from '@hcengineering/view'
+import preference, { TPreference } from '@hcengineering/model-preference'
 import card from './plugin'
 
 export { cardId } from '@hcengineering/card'
@@ -142,6 +144,12 @@ export class TRole extends TAttachedDoc implements Role {
   declare collection: 'roles'
 }
 
+@Model(card.class.FavoriteCard, preference.class.Preference)
+export class TFavoriteCard extends TPreference implements FavoriteCard {
+  declare attachedTo: Ref<Card>
+  application!: string
+}
+
 export * from './migration'
 
 const listConfig: (BuildModelKey | string)[] = [
@@ -165,6 +173,58 @@ const listConfig: (BuildModelKey | string)[] = [
   {
     key: 'modifiedOn',
     displayProps: { fixed: 'right', dividerBefore: true }
+  }
+]
+
+const favoritesViewletConfig: (BuildModelKey | string)[] = [
+  {
+    displayProps: {
+      fixed: 'left',
+      key: '$lookup.attachedTo.createdBy'
+    },
+    key: '$lookup.attachedTo.createdBy'
+  },
+  {
+    displayProps: {
+      fixed: 'left',
+      key: ''
+    },
+    key: '',
+    label: view.string.Title,
+    props: {
+      showParent: false
+    }
+  },
+  { key: '$lookup.attachedTo._class', label: card.string.MasterTag, displayProps: { fixed: 'left', key: '_class' } },
+  {
+    displayProps: {
+      grow: true
+    },
+    key: ''
+  },
+  {
+    displayProps: {
+      fixed: 'left',
+      key: 'tags'
+    },
+    key: '$lookup.attachedTo',
+    label: card.string.Tags,
+    presenter: view.component.RolePresenter,
+    props: {
+      fullSize: true
+    }
+  },
+  {
+    key: '$lookup.attachedTo',
+    presenter: card.component.LabelsPresenter,
+    label: card.string.Labels,
+    props: { fullSize: true, key: 'labels' }
+  },
+  {
+    key: '$lookup.attachedTo.parent'
+  },
+  {
+    key: '$lookup.attachedTo.createdOn'
   }
 ]
 
@@ -244,7 +304,8 @@ export function createModel (builder: Builder): void {
     TCardSpace,
     TRole,
     TCardSection,
-    TCardViewDefaults
+    TCardViewDefaults,
+    TFavoriteCard
   )
 
   defineTabs(builder)
@@ -472,6 +533,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: card.component.CardPresenter
+  })
+
+  builder.mixin(card.class.FavoriteCard, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: card.component.FavoriteCardPresenter
   })
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributePresenter, {
@@ -815,6 +880,50 @@ function defineTabs (builder: Builder): void {
     },
     card.section.Relations
   )
+
+  builder.createDoc<Viewlet>(view.class.Viewlet, core.space.Model, {
+    attachTo: card.class.FavoriteCard,
+    descriptor: view.viewlet.Table,
+    viewOptions: {
+      groupBy: [],
+      orderBy: [
+        ['$lookup.attachedTo.modifiedOn', SortingOrder.Descending],
+        ['$lookup.attachedTo.title', SortingOrder.Ascending]
+      ],
+      other: []
+    },
+    configOptions: {
+      hiddenKeys: ['$lookup.attachedTo.content', '$lookup.attachedTo.title', 'attachedTo']
+    },
+    config: favoritesViewletConfig,
+    options: {
+      lookup: {
+        attachedTo: card.class.Card
+      } as any
+    }
+  })
+
+  builder.createDoc<Viewlet>(view.class.Viewlet, core.space.Model, {
+    attachTo: card.class.FavoriteCard,
+    descriptor: view.viewlet.List,
+    configOptions: {
+      hiddenKeys: ['$lookup.attachedTo.content', '$lookup.attachedTo.title', 'attachedTo']
+    },
+    viewOptions: {
+      groupBy: [],
+      orderBy: [
+        ['$lookup.attachedTo.modifiedOn', SortingOrder.Descending],
+        ['$lookup.attachedTo.title', SortingOrder.Ascending]
+      ],
+      other: []
+    },
+    config: favoritesViewletConfig,
+    options: {
+      lookup: {
+        attachedTo: card.class.Card
+      } as any
+    }
+  })
 }
 
 export default card
