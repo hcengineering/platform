@@ -25,12 +25,12 @@
     IconMoreV,
     IconUpOutline,
     ModernButton,
-    PopupInstance,
+    Popup,
     SplitButton,
     eventToHTMLElement,
     showPopup,
     type AnySvelteComponent,
-    type CompAndProps
+    TooltipInstance
   } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
   import { getActions } from '@hcengineering/view-resources'
@@ -76,7 +76,6 @@
   let allowCam: boolean = false
   const allowShare: boolean = true
   let allowLeave: boolean = false
-  let popup: CompAndProps | undefined = undefined
   let noLabel: boolean = false
 
   $: allowCam = $currentRoom?.type === RoomType.Video
@@ -100,50 +99,21 @@
     await leaveRoom($myInfo, $myOffice)
   }
 
-  function getPopup (component: AnySvelteComponent, e: MouseEvent, props: any = {}): CompAndProps {
-    return {
-      id: 'fsPopup',
-      is: component,
-      props,
-      element: eventToHTMLElement(e),
-      options: { category: 'popup', overlay: true },
-      close: () => {
-        popup = undefined
-      }
-    }
-  }
-
   function micSettings (e: MouseEvent): void {
-    if (fullScreen) {
-      popup = getPopup(MicSettingPopup, e)
-    } else {
-      showPopup(MicSettingPopup, {}, eventToHTMLElement(e))
-    }
+    showPopup(MicSettingPopup, {}, eventToHTMLElement(e))
   }
 
   function camSettings (e: MouseEvent): void {
-    if (fullScreen) {
-      popup = getPopup(CamSettingPopup, e)
-    } else {
-      showPopup(CamSettingPopup, {}, eventToHTMLElement(e))
-    }
+    showPopup(CamSettingPopup, {}, eventToHTMLElement(e))
   }
 
   function shareSettings (e: MouseEvent): void {
-    if (fullScreen) {
-      popup = getPopup(ShareSettingPopup, e)
-    } else {
-      showPopup(ShareSettingPopup, {}, eventToHTMLElement(e))
-    }
+    showPopup(ShareSettingPopup, {}, eventToHTMLElement(e))
   }
 
   function setAccess (e: MouseEvent): void {
     if (isOffice(room) && room.person !== me) return
-    if (fullScreen) {
-      popup = getPopup(RoomAccessPopup, e, { room })
-    } else {
-      showPopup(RoomAccessPopup, { room }, eventToHTMLElement(e))
-    }
+    showPopup(RoomAccessPopup, { room }, eventToHTMLElement(e))
   }
 
   const me = getCurrentEmployee()
@@ -337,20 +307,9 @@
   </svelte:fragment>
 
   <svelte:fragment slot="extra">
-    {#if popup && fullScreen}
-      <PopupInstance
-        is={popup.is}
-        props={popup.props}
-        element={popup.element}
-        onClose={popup.onClose}
-        onUpdate={popup.onUpdate}
-        zIndex={1}
-        top={true}
-        close={popup.close}
-        overlay={popup.options.overlay}
-        contentPanel={undefined}
-        {popup}
-      />
+    {#if fullScreen}
+      <Popup fullScreen />
+      <TooltipInstance fullScreen />
     {/if}
   </svelte:fragment>
 </ControlBarContainer>

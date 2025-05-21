@@ -22,7 +22,8 @@ import {
   type SocialKey,
   type AccountUuid,
   parseSocialIdString,
-  DOMAIN_SPACE
+  DOMAIN_SPACE,
+  AccountRole
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import {
@@ -192,11 +193,15 @@ export async function moveAccountDbFromMongoToPG (
   pgDb: AccountDB
 ): Promise<void> {
   const mdb = mongoDb as MongoAccountDB
+  const BATCH_SIZE = 5000
+  const WS_BATCH_SIZE = 2000
 
   ctx.info('Starting migration of persons...')
   const personsCursor = mdb.person.findCursor({})
   try {
     let personsCount = 0
+    let personsBatch: any[] = []
+
     while (await personsCursor.hasNext()) {
       const person = await personsCursor.next()
       if (person == null) break
@@ -211,12 +216,19 @@ export async function moveAccountDbFromMongoToPG (
           person.lastName = ''
         }
 
-        await pgDb.person.insertOne(person)
-        personsCount++
-        if (personsCount % 100 === 0) {
+        personsBatch.push(person)
+        if (personsBatch.length >= BATCH_SIZE) {
+          await pgDb.person.insertMany(personsBatch)
+          personsCount += personsBatch.length
           ctx.info(`Migrated ${personsCount} persons...`)
+          personsBatch = []
         }
       }
+    }
+    // Insert remaining batch
+    if (personsBatch.length > 0) {
+      await pgDb.person.insertMany(personsBatch)
+      personsCount += personsBatch.length
     }
     ctx.info(`Migrated ${personsCount} persons`)
   } finally {
@@ -227,6 +239,9 @@ export async function moveAccountDbFromMongoToPG (
   const accountsCursor = mdb.account.findCursor({})
   try {
     let accountsCount = 0
+    let accountsBatch: any[] = []
+    let passwordsBatch: any[] = []
+
     while (await accountsCursor.hasNext()) {
       const account = await accountsCursor.next()
       if (account == null) break
@@ -238,14 +253,32 @@ export async function moveAccountDbFromMongoToPG (
         delete account.hash
         delete account.salt
 
-        await pgDb.account.insertOne(account)
+        accountsBatch.push(account)
         if (hash != null && salt != null) {
-          await pgDb.setPassword(account.uuid, hash, salt)
+          passwordsBatch.push([account.uuid, hash, salt])
         }
-        accountsCount++
-        if (accountsCount % 100 === 0) {
+
+        if (accountsBatch.length >= BATCH_SIZE) {
+          await pgDb.account.insertMany(accountsBatch)
+          for (const [accountUuid, hash, salt] of passwordsBatch) {
+            await pgDb.setPassword(accountUuid, hash, salt)
+          }
+
+          accountsCount += accountsBatch.length
           ctx.info(`Migrated ${accountsCount} accounts...`)
+          accountsBatch = []
+          passwordsBatch = []
         }
+      }
+    }
+    // Insert remaining batch
+    if (accountsBatch.length > 0) {
+      await pgDb.account.insertMany(accountsBatch)
+      accountsCount += accountsBatch.length
+    }
+    if (passwordsBatch.length > 0) {
+      for (const [accountUuid, hash, salt] of passwordsBatch) {
+        await pgDb.setPassword(accountUuid, hash, salt)
       }
     }
     ctx.info(`Migrated ${accountsCount} accounts`)
@@ -257,6 +290,7 @@ export async function moveAccountDbFromMongoToPG (
   const socialIdsCursor = mdb.socialId.findCursor({})
   try {
     let socialIdsCount = 0
+    let socialIdsBatch: any[] = []
     while (await socialIdsCursor.hasNext()) {
       const socialId = await socialIdsCursor.next()
       if (socialId == null) break
@@ -267,12 +301,21 @@ export async function moveAccountDbFromMongoToPG (
         delete (socialId as any).id
         delete (socialId as any)._id // Types of _id are incompatible
 
-        await pgDb.socialId.insertOne(socialId)
-        socialIdsCount++
-        if (socialIdsCount % 100 === 0) {
-          ctx.info(`Migrated ${socialIdsCount} social IDs...`)
+        socialIdsBatch.push(socialId)
+
+        if (socialIdsBatch.length >= BATCH_SIZE) {
+          await pgDb.socialId.insertMany(socialIdsBatch)
+
+          socialIdsCount += socialIdsBatch.length
+          ctx.info(`Migrated ${socialIdsCount} social ids...`)
+          socialIdsBatch = []
         }
       }
+    }
+    // Insert remaining batch
+    if (socialIdsBatch.length > 0) {
+      await pgDb.socialId.insertMany(socialIdsBatch)
+      socialIdsCount += socialIdsBatch.length
     }
     ctx.info(`Migrated ${socialIdsCount} social IDs`)
   } finally {
@@ -283,6 +326,7 @@ export async function moveAccountDbFromMongoToPG (
   const accountEventsCursor = mdb.accountEvent.findCursor({})
   try {
     let eventsCount = 0
+    let eventsBatch: any[] = []
     while (await accountEventsCursor.hasNext()) {
       const accountEvent = await accountEventsCursor.next()
       if (accountEvent == null) break
@@ -296,12 +340,20 @@ export async function moveAccountDbFromMongoToPG (
         const account = await pgDb.account.findOne({ uuid: accountEvent.accountUuid })
         if (account == null) continue // Not a big deal if we don't move the event for non-existing account
 
-        await pgDb.accountEvent.insertOne(accountEvent)
-        eventsCount++
-        if (eventsCount % 100 === 0) {
+        eventsBatch.push(accountEvent)
+
+        if (eventsBatch.length >= BATCH_SIZE) {
+          await pgDb.accountEvent.insertMany(eventsBatch)
+          eventsCount += eventsBatch.length
           ctx.info(`Migrated ${eventsCount} account events...`)
+          eventsBatch = []
         }
       }
+    }
+    // Insert remaining batch
+    if (eventsBatch.length > 0) {
+      await pgDb.accountEvent.insertMany(eventsBatch)
+      eventsCount += eventsBatch.length
     }
     ctx.info(`Migrated ${eventsCount} account events`)
   } finally {
@@ -312,6 +364,9 @@ export async function moveAccountDbFromMongoToPG (
   const workspacesCursor = mdb.workspace.findCursor({})
   try {
     let workspacesCount = 0
+    let workspacesBatch: any[] = []
+    let workspacesStatusesBatch: any[] = []
+    let workspacesMembersBatch: any[] = []
     let membersCount = 0
     while (await workspacesCursor.hasNext()) {
       const workspace = await workspacesCursor.next()
@@ -333,25 +388,49 @@ export async function moveAccountDbFromMongoToPG (
       }
 
       if (workspace.createdOn == null) {
-        delete workspace.createdOn
+        workspace.createdOn = Date.now()
       }
 
-      await pgDb.createWorkspace(workspace, status)
-      workspacesCount++
+      workspacesBatch.push(workspace)
+      workspacesStatusesBatch.push(status)
 
       const members = await mdb.getWorkspaceMembers(workspace.uuid)
       for (const member of members) {
         const alreadyAssigned = await pgDb.getWorkspaceRole(member.person, workspace.uuid)
         if (alreadyAssigned != null) continue
 
-        await pgDb.assignWorkspace(member.person, workspace.uuid, member.role)
-        membersCount++
+        workspacesMembersBatch.push([member.person, workspace.uuid, member.role])
       }
 
-      if (workspacesCount % 100 === 0) {
+      if (workspacesBatch.length >= WS_BATCH_SIZE) {
+        const workspaceUuids = await pgDb.workspace.insertMany(workspacesBatch)
+        workspacesCount += workspacesBatch.length
+        workspacesBatch = []
+
+        await pgDb.workspaceStatus.insertMany(
+          workspacesStatusesBatch.map((s, i) => ({ ...s, workspaceUuid: workspaceUuids[i] }))
+        )
+        workspacesStatusesBatch = []
+
+        await pgDb.batchAssignWorkspace(workspacesMembersBatch)
+        membersCount += workspacesMembersBatch.length
+        workspacesMembersBatch = []
+
         ctx.info(`Migrated ${workspacesCount} workspaces...`)
       }
     }
+
+    // Insert remaining batch
+    if (workspacesBatch.length > 0) {
+      const workspaceUuids = await pgDb.workspace.insertMany(workspacesBatch)
+      workspacesCount += workspacesBatch.length
+      await pgDb.workspaceStatus.insertMany(
+        workspacesStatusesBatch.map((s, i) => ({ ...s, workspaceUuid: workspaceUuids[i] }))
+      )
+      await pgDb.batchAssignWorkspace(workspacesMembersBatch)
+      membersCount += workspacesMembersBatch.length
+    }
+
     ctx.info(`Migrated ${workspacesCount} workspaces with ${membersCount} member assignments`)
   } finally {
     await workspacesCursor.close()
@@ -360,7 +439,10 @@ export async function moveAccountDbFromMongoToPG (
   ctx.info('Starting migration of invites...')
   const invitesCursor = mdb.invite.findCursor({})
   try {
+    // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+    const MAX_INT_8 = 9223372036854775807
     let invitesCount = 0
+    let invitesBatch: any[] = []
     while (await invitesCursor.hasNext()) {
       const invite = await invitesCursor.next()
       if (invite == null) break
@@ -370,14 +452,29 @@ export async function moveAccountDbFromMongoToPG (
 
       delete (invite as any).id
 
+      if (invite.expiresOn > MAX_INT_8 || typeof invite.expiresOn !== 'number') {
+        invite.expiresOn = -1
+      }
+
+      if (["USER'", 'ADMIN'].includes(invite.role as any)) {
+        invite.role = AccountRole.User
+      }
+
       const exists = await pgDb.invite.findOne({ migratedFrom: invite.migratedFrom })
       if (exists == null) {
-        await pgDb.invite.insertOne(invite)
-        invitesCount++
-        if (invitesCount % 100 === 0) {
+        invitesBatch.push(invite)
+
+        if (invitesBatch.length >= BATCH_SIZE) {
+          await pgDb.invite.insertMany(invitesBatch)
+          invitesCount += invitesBatch.length
           ctx.info(`Migrated ${invitesCount} invites...`)
+          invitesBatch = []
         }
       }
+    }
+    if (invitesBatch.length > 0) {
+      await pgDb.invite.insertMany(invitesBatch)
+      invitesCount += invitesBatch.length
     }
     ctx.info(`Migrated ${invitesCount} invites`)
   } finally {

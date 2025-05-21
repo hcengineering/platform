@@ -128,18 +128,7 @@
   flex-shrink: 0;
   aspect-ratio: 1;
   background-color: var(--theme-button-default);
-  pointer-events: none;
-
-  &.clickable {
-    cursor: pointer;
-    pointer-events: auto;
-
-    & > * {
-      pointer-events: none;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-  }
+  // pointer-events: none;
 
   &.withStatus {
     mask-repeat: no-repeat;
@@ -210,6 +199,12 @@
       content: attr(data-name);
       transform: translate(-50%, -50%);
     }
+  }
+
+  & > * {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
   }
 }
 

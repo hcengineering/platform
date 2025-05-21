@@ -26,6 +26,9 @@ interface Config {
   mailSizeLimit?: string
   storageConfig?: string
   kvsUrl: string
+  queueConfig: string
+  queueRegion: string
+  communicationTopic: string
 }
 
 const config: Config = {
@@ -47,7 +50,15 @@ const config: Config = {
       return process.env.KVS_URL
     }
     throw Error('KVS_URL env var is not set')
-  })()
+  })(),
+  queueConfig: (() => {
+    if (process.env.QUEUE_CONFIG !== undefined) {
+      return process.env.QUEUE_CONFIG
+    }
+    throw Error('QUEUE_CONFIG env var is not set')
+  })(),
+  queueRegion: process.env.QUEUE_REGION ?? '',
+  communicationTopic: process.env.COMMUNICATION_TOPIC ?? 'hulygun'
 }
 
 export default config

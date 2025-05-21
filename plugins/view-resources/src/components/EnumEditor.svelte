@@ -27,6 +27,7 @@
   export let size: ButtonSize = 'large'
   export let allowDeselect: boolean = false
   export let readonly: boolean = false
+  export let width: string | undefined = undefined
 
   let items: DropdownTextItem[] = []
 
@@ -55,7 +56,7 @@
   justify={'left'}
   {size}
   {kind}
-  width={'100%'}
+  {width}
   allowDeselect
   disabled={readonly}
   autoSelect={false}

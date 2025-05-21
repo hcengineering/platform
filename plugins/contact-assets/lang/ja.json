@@ -119,6 +119,7 @@
     "Everyone": "全員",
     "Here": "ここ",
     "EveryoneDescription": "この{title}のすべてに通知する",
-    "HereDescription": "この{title}のすべてに通知する"
+    "HereDescription": "この{title}のすべてに通知する",
+    "Guest": "ゲスト"
   }
 }

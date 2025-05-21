@@ -20,6 +20,7 @@
   import plugin from '../../plugin'
 
   export let type: Type<any>
+  export let name: string = ''
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -51,7 +52,7 @@
   okLabel={presentation.string.Save}
 >
   <div>
-    <Label label={plugin.string.Result} />:
+    <Label label={plugin.string.Result} />: {name}
   </div>
   {#if editor}
     <div class="w-full mt-2">

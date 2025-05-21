@@ -188,7 +188,7 @@ export interface ActiveDescriptor {
   params?: any
 }
 
-export type TextEditorActionKind = 'text' | 'image' | 'table'
+export type TextEditorActionKind = 'text' | 'image' | 'table' | 'preview'
 
 /**
  * Defines a text action for text action editor

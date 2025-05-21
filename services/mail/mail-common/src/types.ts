@@ -45,4 +45,7 @@ export interface BaseConfig {
   AccountsURL: string
   KvsUrl: string
   StorageConfig: string
+  QueueConfig: string
+  QueueRegion: string
+  CommunicationTopic: string
 }

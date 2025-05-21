@@ -17,7 +17,13 @@ import { gmail_v1 } from 'googleapis'
 import sanitizeHtml from 'sanitize-html'
 
 import { TxOperations, type MeasureContext } from '@hcengineering/core'
-import { createMessages, parseEmailHeader, parseNameFromEmailHeader, EmailMessage } from '@hcengineering/mail-common'
+import {
+  createMessages,
+  parseEmailHeader,
+  parseNameFromEmailHeader,
+  EmailMessage,
+  getProducer
+} from '@hcengineering/mail-common'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { AccountClient, isWorkspaceLoginInfo, WorkspaceLoginInfo } from '@hcengineering/account-client'
 
@@ -55,6 +61,7 @@ export class MessageManagerV2 implements IMessageManager {
       this.ctx,
       this.txClient,
       this.keyValueClient,
+      await getProducer(config.CommunicationTopic),
       this.token,
       this.wsInfo,
       res,

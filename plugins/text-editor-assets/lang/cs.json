@@ -69,6 +69,9 @@
     "AddComment": "Přidat komentář",
     "AddCommentPlaceholder": "Přidat komentář...",
     "SetCellHighlightColor": "Nastavit barvu buňky",
-    "SetTextColor": "Nastavit barvu textu"
+    "SetTextColor": "Nastavit barvu textu",
+    "ConvertToLinkPreview": "Zobrazit jako odkaz",
+    "ConvertToEmbedPreview": "Zobrazit jako náhled obsahu",
+    "UnableToLoadEmbeddedContent": "Náhled odkazu nelze načíst kvůli nastavení oprávnění nebo nepodporovanému obsahu"
   }
 }

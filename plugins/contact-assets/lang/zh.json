@@ -119,6 +119,7 @@
     "Everyone": "所有人",
     "Here": "这里",
     "EveryoneDescription": "通知所有人在此{title}",
-    "HereDescription": "通知所有人在此{title}"
+    "HereDescription": "通知所有人在此{title}",
+    "Guest": "访客"
   }
 }

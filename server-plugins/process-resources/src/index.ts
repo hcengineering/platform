@@ -90,12 +90,19 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
     })
     const transition = await pickTransition(control, execution, transitions, todo)
     if (transition === undefined) continue
-    res.push(...(await executeTransition(execution, transition, control)))
+    const rollback: Tx[] = [control.txFactory.createTxUpdateDoc(todo._class, todo.space, todo._id, { doneOn: null })]
+    res.push(...(await executeTransition(execution, transition, control, rollback)))
   }
   return res
 }
 
-async function executeTransition (execution: Execution, transition: Transition, control: TriggerControl): Promise<Tx[]> {
+async function executeTransition (
+  execution: Execution,
+  transition: Transition,
+  control: TriggerControl,
+  rollback: Tx[],
+  disableRollback = false
+): Promise<Tx[]> {
   const res: Tx[] = []
   const _process = control.modelDb.findObject(execution.process)
   if (_process === undefined) return res
@@ -116,7 +123,6 @@ async function executeTransition (execution: Execution, transition: Transition, 
         process: transition.process
       }).length === 0
     const errors: ExecutionError[] = []
-    const rollback: Tx[] = []
     if (execution.currentState !== null) {
       rollback.push(
         control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
@@ -144,7 +150,9 @@ async function executeTransition (execution: Execution, transition: Transition, 
         res.push(...actionResult.txes)
       }
     }
-    execution.rollback.push(rollback)
+    if (!disableRollback) {
+      execution.rollback.push(rollback)
+    }
     res.push(
       control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
         rollback: execution.rollback,
@@ -439,7 +447,7 @@ function getExecutionContextValue (
   throw processError(process.error.ContextValueNotProvided, { name: ctx.name })
 }
 
-async function initState (execution: Execution, control: TriggerControl, isDone: boolean = false): Promise<Tx[]> {
+async function initState (execution: Execution, control: TriggerControl): Promise<Tx[]> {
   const _process = control.modelDb.findObject(execution.process)
   if (_process === undefined) return []
   const state = control.modelDb.findObject(_process.initState)
@@ -447,22 +455,7 @@ async function initState (execution: Execution, control: TriggerControl, isDone:
   const errors: ExecutionError[] = []
   const res: Tx[] = []
   const rollback: Tx[] = []
-  if (execution.currentState !== null) {
-    rollback.push(
-      control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
-        currentState: execution.currentState,
-        status: execution.status
-      })
-    )
-  } else {
-    rollback.push(control.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
-  }
-  if (isDone && execution.parentId !== undefined) {
-    const parentWaitTxes = await checkParent(execution, control)
-    if (parentWaitTxes !== undefined) {
-      res.push(...parentWaitTxes)
-    }
-  }
+  rollback.push(control.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
   for (const action of state.actions) {
     const actionResult = await executeAction(action, null, execution, control)
     if (isError(actionResult)) {
@@ -480,7 +473,7 @@ async function initState (execution: Execution, control: TriggerControl, isDone:
       currentState: state._id,
       rollback: execution.rollback,
       context: execution.context,
-      status: isDone ? ExecutionStatus.Done : ExecutionStatus.Active
+      status: ExecutionStatus.Active
     })
   )
   if (errors.length === 0) {
@@ -510,7 +503,7 @@ async function checkParent (execution: Execution, control: TriggerControl): Prom
   })
   const transition = await pickTransition(control, execution, transitions, execution)
   if (transition === undefined) return res
-  res.push(...(await executeTransition(parent, transition, control)))
+  res.push(...(await executeTransition(parent, transition, control, [], true)))
   return res
 }
 
@@ -544,7 +537,19 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
     })
     const transition = await pickTransition(control, execution, transitions, removedTodo)
     if (transition === undefined) continue
-    res.push(...(await executeTransition(execution, transition, control)))
+    const rollback: Tx[] = [
+      control.txFactory.createTxCreateDoc(
+        removedTodo._class,
+        removedTodo.space,
+        {
+          ...removedTodo
+        },
+        removedTodo._id,
+        removedTodo.modifiedOn,
+        removeTx.modifiedBy
+      )
+    ]
+    res.push(...(await executeTransition(execution, transition, control, rollback)))
   }
   return res
 }
@@ -763,7 +768,7 @@ export async function OnExecutionContinue (txes: Tx[], control: TriggerControl):
     if (error[0].transition !== null) {
       const transition = control.modelDb.findObject(error[0].transition)
       if (transition !== undefined) {
-        res.push(...(await executeTransition(execution, transition, control)))
+        res.push(...(await executeTransition(execution, transition, control, [])))
       }
     } else if (execution.currentState === _process.initState) {
       res.push(...(await initState(execution, control)))
@@ -876,19 +881,40 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
       if (action.contextId != null) {
         exists.add(action.contextId)
         const context = _process.context[action.contextId]
+        if (context === undefined) {
+          const method = control.modelDb.findObject(action.methodId)
+          if (method?.contextClass != null) {
+            changed = true
+            const ctx: SelectedExecutonContext = {
+              type: 'context',
+              id: action.contextId,
+              key: ''
+            }
+            _process.context[action.contextId] = {
+              name: '',
+              _class: method.contextClass,
+              action: action._id,
+              producer: state._id,
+              value: ctx
+            }
+          }
+        }
+      }
+      if (action.result?._id != null) {
+        exists.add(action.result._id)
+        const context = _process.context[action.result._id]
         if (context !== undefined) continue
-        const method = control.modelDb.findObject(action.methodId)
-        if (method === undefined) continue
-        if (method.contextClass == null) continue
         changed = true
         const ctx: SelectedExecutonContext = {
           type: 'context',
-          id: action.contextId,
+          id: action.result._id,
           key: ''
         }
-        _process.context[action.contextId] = {
-          name: '',
-          _class: method.contextClass,
+        _process.context[action.result._id] = {
+          name: action.result.name,
+          isResult: true,
+          type: action.result.type,
+          _class: action.result.type._class,
           action: action._id,
           producer: state._id,
           value: ctx

@@ -50,6 +50,9 @@ import { type IndendOptions, IndentExtension, indentExtensionOptions } from '../
 import TextAlign, { type TextAlignOptions } from '@tiptap/extension-text-align'
 import { LinkUtilsExtension } from '../components/extension/link'
 import { TransformPastedContentExtension } from '../components/extension/paste'
+import { EmbedNode, type EmbedNodeOptions } from '../components/extension/embed/embed'
+import { defaultYoutubeEmbedUrlOptions, YoutubeEmbedProvider } from '../components/extension/embed/providers/youtube'
+import { defaultDriveEmbedOptions, DriveEmbedProvider } from '../components/extension/embed/providers/drive'
 
 export interface EditorKitOptions extends DefaultKitOptions {
   history?: false
@@ -82,6 +85,7 @@ export interface EditorKitOptions extends DefaultKitOptions {
     isHidden?: () => boolean
   }
   | false
+  embed?: Partial<EmbedNodeOptions> | false
 }
 
 const headingLevels: Level[] = [1, 2, 3]
@@ -226,6 +230,19 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                 staticKitExtensions.push([410, TextStyle.configure({})])
                 staticKitExtensions.push([420, TextColor.configure({})])
                 staticKitExtensions.push([430, BackgroundColor.configure({ types: ['tableCell'] })])
+              }
+
+              if (mode === 'full' && this.options.embed !== false) {
+                staticKitExtensions.push([
+                  450,
+                  EmbedNode.configure({
+                    providers: [
+                      YoutubeEmbedProvider(defaultYoutubeEmbedUrlOptions),
+                      DriveEmbedProvider(defaultDriveEmbedOptions)
+                    ],
+                    ...this.options.embed
+                  })
+                ])
               }
 
               staticKitExtensions.push([
