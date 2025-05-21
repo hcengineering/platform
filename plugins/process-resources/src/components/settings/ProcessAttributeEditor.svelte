@@ -19,6 +19,7 @@
   import { AnySvelteComponent } from '@hcengineering/ui'
   import { getContext } from '../../utils'
   import ProcessAttribute from '../ProcessAttribute.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let process: Process
   export let _class: Ref<Class<Doc>>
@@ -28,6 +29,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const dispatch = createEventDispatcher()
 
   function onChange (value: any | undefined): void {
     if (value === undefined) {
@@ -36,6 +38,7 @@
     } else {
       ;(object as any)[key] = value
     }
+    dispatch('change', { value })
   }
 
   $: value = object[key]

@@ -318,13 +318,17 @@ export function showDoneQuery (value: any, query: DocumentQuery<Doc>): DocumentQ
 
 export async function continueExecution (value: Execution): Promise<void> {
   if (value.error == null) return
-  const transition = value.error[0].transition
-  if (transition == null) return
   const client = getClient()
-  const _transition = client.getModel().findObject(transition)
-  if (_transition === undefined) return
-  const targetState = _transition.to
-  const context = targetState == null ? value.context : await getNextStateUserInput(value, targetState, value.context)
+  let context = value.context
+  const transition = value.error[0].transition
+  if (transition == null) {
+    context = await newExecutionUserInput(value.process, context)
+  } else {
+    const _transition = client.getModel().findObject(transition)
+    if (_transition === undefined) return
+    const targetState = _transition.to
+    context = targetState == null ? value.context : await getNextStateUserInput(value, targetState, value.context)
+  }
   await client.update(value, { status: ExecutionStatus.Active, context })
 }
 

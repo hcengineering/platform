@@ -17,5 +17,5 @@ import { ExecutionError } from '@hcengineering/process'
 import { ExecuteResult } from '@hcengineering/server-process'
 
 export function isError (value: ExecuteResult | any): value is ExecutionError {
-  return (value as ExecutionError).error !== undefined
+  return (value as ExecutionError)?.error !== undefined
 }

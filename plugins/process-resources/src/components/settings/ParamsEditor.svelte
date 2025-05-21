@@ -46,7 +46,7 @@
       {key}
       {allowRemove}
       object={params}
-      on:update={(e) => {
+      on:change={(e) => {
         change(e, key)
       }}
       on:remove
