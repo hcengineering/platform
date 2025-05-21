@@ -176,4 +176,131 @@ describe('SyncMutex', () => {
     expect(results.indexOf('task1 completed')).toBeLessThan(results.indexOf('task2 completed'))
     expect(results.indexOf('task2 completed')).toBeLessThan(results.indexOf('task3 completed'))
   })
+
+  it('should handle a high volume of concurrent lock requests', async () => {
+    const mutex = new SyncMutex()
+    const key = 'high-volume-key'
+    const results: number[] = []
+    const counter = { value: 0 }
+
+    // Create a large number of concurrent operations
+    const operations = Array.from({ length: 100 }, (_, i) => {
+      return (async () => {
+        const release = await mutex.lock(key)
+
+        // Critical section: increment the counter
+        const currentValue = counter.value
+
+        // Introduce a small delay to increase chance of race conditions
+        // if the mutex doesn't work correctly
+        await new Promise((resolve) => setTimeout(resolve, Math.random() * 5))
+
+        counter.value = currentValue + 1
+        results.push(i)
+
+        release()
+      })()
+    })
+
+    // Wait for all operations to complete
+    await Promise.all(operations)
+
+    // Counter should have been incremented exactly 100 times
+    expect(counter.value).toBe(100)
+
+    // Results should contain all operation IDs (in some order)
+    expect(results.sort((a, b) => a - b)).toEqual(Array.from({ length: 100 }, (_, i) => i))
+  })
+
+  it('should properly release locks even if operations throw errors', async () => {
+    const mutex = new SyncMutex()
+    const key = 'error-key'
+    const results: string[] = []
+
+    // First operation throws an error
+    try {
+      const release = await mutex.lock(key)
+      try {
+        results.push('operation1-start')
+        throw new Error('Test error')
+      } finally {
+        results.push('operation1-cleanup')
+        release()
+      }
+    } catch (err) {
+      results.push('operation1-caught')
+    }
+
+    // Second operation should still be able to acquire the lock
+    const release2 = await mutex.lock(key)
+    results.push('operation2')
+    release2()
+
+    expect(results).toEqual(['operation1-start', 'operation1-cleanup', 'operation1-caught', 'operation2'])
+  })
+
+  it('should never deadlock when locks are released out of order', async () => {
+    const mutex = new SyncMutex()
+    const key = 'deadlock-key'
+    const results: string[] = []
+
+    // Acquire multiple locks on the same key
+    const release1 = await mutex.lock(key)
+    results.push('lock1')
+
+    const lockPromise2 = mutex.lock(key)
+    const lockPromise3 = mutex.lock(key)
+
+    // Release locks in a different order than acquisition
+    setTimeout(() => {
+      results.push('release1')
+      release1()
+    }, 10)
+
+    // Wait for lock2 and get its release function
+    const release2 = await lockPromise2
+    results.push('lock2')
+
+    setTimeout(() => {
+      results.push('release2')
+      release2()
+    }, 10)
+
+    // Wait for lock3 and release it
+    const release3 = await lockPromise3
+    results.push('lock3')
+    release3()
+    results.push('release3')
+
+    // Wait for all async operations to complete
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    // Check that all locks were acquired and released in the correct order
+    expect(results).toEqual(['lock1', 'release1', 'lock2', 'release2', 'lock3', 'release3'])
+  })
+
+  it('should handle concurrent lock and release operations', async () => {
+    const mutex = new SyncMutex()
+    const sharedCounter = { value: 0 }
+
+    // Function that increments the counter with mutex protection
+    const incrementWithLock = async (): Promise<void> => {
+      const release = await mutex.lock('counter')
+      try {
+        const current = sharedCounter.value
+        // Simulate some async work
+        await new Promise((resolve) => setTimeout(resolve, Math.random() * 5))
+        sharedCounter.value = current + 1
+      } finally {
+        release()
+      }
+    }
+
+    // Run 50 parallel increment operations
+    const operations = Array.from({ length: 50 }, () => incrementWithLock())
+    await Promise.all(operations)
+
+    // Counter should be exactly 50 if mutex prevented race conditions
+    expect(sharedCounter.value).toBe(50)
+  })
 })

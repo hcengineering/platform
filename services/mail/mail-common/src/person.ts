@@ -18,7 +18,9 @@ import { type RestClient } from '@hcengineering/api-client'
 import { createRestClient } from '@hcengineering/api-client'
 import { EmailContact } from './types'
 import { WorkspaceLoginInfo } from '@hcengineering/account-client'
+import { SyncMutex } from './mutex'
 
+const createMutex = new SyncMutex()
 export interface CachedPerson {
   socialId: PersonId
   uuid: PersonUuid
@@ -42,18 +44,41 @@ export class PersonCache {
   async ensurePerson (contact: EmailContact): Promise<CachedPerson> {
     const email = contact.email.toLowerCase().trim()
 
+    // Сheck if already cached
     let personPromise = this.cache.get(email)
+    if (personPromise !== undefined) {
+      const result = await personPromise
+      if (result !== undefined) {
+        return result
+      }
+    }
 
-    if (personPromise === undefined) {
-      personPromise = this.fetchAndCachePerson(email, contact.firstName, contact.lastName)
+    // Acquire lock and check/update cache
+    const mutexKey = `ensure-person:${email}`
+    const releaseLock = await createMutex.lock(mutexKey)
+
+    try {
+      // Double-check cache after acquiring lock
+      personPromise = this.cache.get(email)
+      if (personPromise !== undefined) {
+        const result = await personPromise
+        if (result !== undefined) {
+          return result
+        }
+      }
+
+      // Create a new promise and cache it
+      personPromise = this.fetchPerson(email, contact.firstName, contact.lastName)
       this.cache.set(email, personPromise)
-    }
 
-    const result = await personPromise
-    if (result === undefined) {
-      throw new Error(`Failed to ensure person exists for email: ${email}`)
+      const result = await personPromise
+      if (result === undefined) {
+        throw new Error(`Failed to ensure person exists for email: ${email}`)
+      }
+      return result
+    } finally {
+      releaseLock()
     }
-    return result
   }
 
   size (): number {
@@ -64,11 +89,7 @@ export class PersonCache {
     this.cache.clear()
   }
 
-  private async fetchAndCachePerson (
-    email: string,
-    firstName: string,
-    lastName: string
-  ): Promise<CachedPerson | undefined> {
+  private async fetchPerson (email: string, firstName: string, lastName: string): Promise<CachedPerson | undefined> {
     try {
       const result = await this.restClient.ensurePerson(SocialIdType.EMAIL, email, firstName, lastName)
 

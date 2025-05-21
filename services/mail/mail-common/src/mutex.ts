@@ -14,22 +14,29 @@
 //
 export class SyncMutex {
   private readonly locks = new Map<string, Promise<void>>()
+  private readonly globalLock = Promise.resolve()
 
   async lock (key: string): Promise<() => void> {
-    // Wait for any existing lock to be released
-    const currentLock = this.locks.get(key)
-    if (currentLock != null) {
-      await currentLock
-    }
-
-    // Create a new lock
     let releaseFn!: () => void
     const newLock = new Promise<void>((resolve) => {
       releaseFn = resolve
     })
 
-    // Store the lock
-    this.locks.set(key, newLock)
+    // Use a closure to hold the update operation
+    const updateLocksAndWait = async (): Promise<void> => {
+      // Wait for exclusive access to the map
+      await this.globalLock
+      const previousLock = this.locks.get(key)
+      this.locks.set(key, newLock)
+
+      // Wait for any previous lock to complete
+      if (previousLock != null) {
+        await previousLock
+      }
+    }
+
+    // Execute the lock operation
+    await updateLocksAndWait()
 
     // Return the release function
     return () => {
