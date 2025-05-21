@@ -15,7 +15,8 @@
 <script lang="ts">
   import core, {
     type Account,
-    AccountRole, AccountUuid,
+    AccountRole,
+    AccountUuid,
     Configuration,
     getCurrentAccount,
     pickPrimarySocialId
@@ -41,8 +42,7 @@
     showPopup,
     Spinner,
     themeStore,
-    Toggle,
-    ToggleWithLabel
+    Toggle
   } from '@hcengineering/ui'
   import { loginId } from '@hcengineering/login'
   import { EditableAvatar, getAccountClient } from '@hcengineering/contact-resources'
@@ -165,7 +165,14 @@
       }
       const myAccount = getCurrentAccount()
       const ctx = uiContext.newChild('connect', {})
-      await ensureEmployeeForPerson(ctx, myAccount, guestAccount, client, guestUserInfo.guestSocialIds, guestUserInfo.guestPerson)
+      await ensureEmployeeForPerson(
+        ctx,
+        myAccount,
+        guestAccount,
+        client,
+        guestUserInfo.guestSocialIds,
+        guestUserInfo.guestPerson
+      )
     }
   }
 
@@ -280,9 +287,9 @@
               />
             </div>
           </div>
-          <div class="title mt-6"><Label label={settingsRes.string.Permissions} /></div>
+          <div class="title mt-6"><Label label={settingsRes.string.GuestAccess} /></div>
           <div class="flex-row-center flex-gap-4">
-            <Label label={settingsRes.string.EnablePermissions}/>
+            <Label label={settingsRes.string.GuestAccessDescription} />
             <Toggle
               on={allowReadOnlyGuests}
               on:change={(e) => {

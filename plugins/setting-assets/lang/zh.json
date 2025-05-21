@@ -1,7 +1,7 @@
 {
   "string": {
     "Setting": "设置",
-    "Spaces": "空间", 
+    "Spaces": "空间",
     "Integrations": "集成",
     "Support": "支持",
     "Privacy": "隐私",
@@ -153,6 +153,8 @@
     "EnablePermissions": "启用基于角色的访问控制",
     "DisablePermissionsConfirmation": "您确定要禁用基于角色的访问控制吗？所有角色和权限都将被禁用。",
     "EnablePermissionsConfirmation": "您确定要启用基于角色的访问控制吗？所有角色和权限都将被启用。",
-    "BetaWarning": "标记为测试版的模块可用于实验目的，可能无法完全正常工作。我们不建议在此时依赖测试版功能进行关键工作。"
+    "BetaWarning": "标记为测试版的模块可用于实验目的，可能无法完全正常工作。我们不建议在此时依赖测试版功能进行关键工作。",
+    "GuestAccess": "匿名访客",
+    "GuestAccessDescription": "允许匿名用户以只读模式访问工作区"
   }
 }

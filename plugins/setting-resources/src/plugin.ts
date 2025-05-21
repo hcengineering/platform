@@ -123,6 +123,8 @@ export default mergeIds(settingId, setting, {
     EnablePermissions: '' as IntlString,
     DisablePermissionsConfirmation: '' as IntlString,
     EnablePermissionsConfirmation: '' as IntlString,
-    BetaWarning: '' as IntlString
+    BetaWarning: '' as IntlString,
+    GuestAccess: '' as IntlString,
+    GuestAccessDescription: '' as IntlString
   }
 })

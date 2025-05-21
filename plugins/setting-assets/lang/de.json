@@ -153,6 +153,8 @@
     "EnablePermissions": "Rollenbasierte Zugriffskontrolle aktivieren",
     "DisablePermissionsConfirmation": "Sind Sie sicher, dass Sie die rollenbasierte Zugriffskontrolle deaktivieren möchten? Alle Rollen und Berechtigungen werden deaktiviert.",
     "EnablePermissionsConfirmation": "Sind Sie sicher, dass Sie die rollenbasierte Zugriffskontrolle aktivieren möchten? Alle Rollen und Berechtigungen werden aktiviert.",
-    "BetaWarningDe": "Als Beta gekennzeichnete Module sind zu experimentellen Zwecken verfügbar und funktionieren möglicherweise nicht vollständig. Wir empfehlen derzeit nicht, sich auf Beta-Funktionen für kritische Arbeiten zu verlassen."
+    "BetaWarningDe": "Als Beta gekennzeichnete Module sind zu experimentellen Zwecken verfügbar und funktionieren möglicherweise nicht vollständig. Wir empfehlen derzeit nicht, sich auf Beta-Funktionen für kritische Arbeiten zu verlassen.",
+    "GuestAccess": "Anonyme Gäste",
+    "GuestAccessDescription": "Ermöglicht anonymen Benutzern den schreibgeschützten Zugriff auf den Arbeitsbereich"
   }
 }

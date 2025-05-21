@@ -144,6 +144,8 @@
     "EnablePermissions": "Ativar controle de acesso baseado em funções",
     "DisablePermissionsConfirmation": "Tem certeza de que deseja desativar o controle de acesso baseado em funções? Todos os papéis e permissões serão desativados.",
     "EnablePermissionsConfirmation": "Tem certeza de que deseja ativar o controle de acesso baseado em funções? Todos os papéis e permissões serão ativados.",
-    "BetaWarning": "Modules labeled as beta are available for experimental purposes and may not be fully functional. We do not recommend relying on beta features for critical work at this time."
+    "BetaWarning": "Modules labeled as beta are available for experimental purposes and may not be fully functional. We do not recommend relying on beta features for critical work at this time.",
+    "GuestAccess": "Convidados anônimos",
+    "GuestAccessDescription": "Permite que usuários anônimos acessem seu espaço de trabalho em modo somente leitura"
   }
 }
