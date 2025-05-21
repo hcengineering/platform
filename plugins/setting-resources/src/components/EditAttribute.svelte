@@ -179,25 +179,23 @@
       <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} {disabled} />
     </div>
   </div>
-  <div class="hulyModal-content__settingsSet">
-    <div class="hulyModal-content__settingsSet-line">
-      <span class="label">
-        <Label label={setting.string.Type} />
-      </span>
-      {#if exist}
-        <Label label={attribute.type.label} />
-      {:else}
-        <DropdownLabelsIntl
-          label={setting.string.Type}
-          {items}
-          size={'large'}
-          width="8rem"
-          bind:selected={selectedType}
-          on:selected={handleSelect}
-          {disabled}
-        />
-      {/if}
-    </div>
+  <div class="grid">
+    <span class="label">
+      <Label label={setting.string.Type} />
+    </span>
+    {#if exist}
+      <Label label={attribute.type.label} />
+    {:else}
+      <DropdownLabelsIntl
+        label={setting.string.Type}
+        {items}
+        size={'large'}
+        width={'100%'}
+        bind:selected={selectedType}
+        on:selected={handleSelect}
+        {disabled}
+      />
+    {/if}
     {#if is}
       <Component
         {is}
@@ -205,6 +203,7 @@
           isCard,
           type,
           defaultValue,
+          width: '100%',
           editable: !exist && !disabled,
           kind: 'regular',
           size: 'large'
@@ -215,3 +214,17 @@
     {/if}
   </div>
 </Modal>
+
+<style lang="scss">
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-rows: minmax(2rem, max-content);
+    justify-content: start;
+    padding: 0.5rem;
+    align-items: center;
+    row-gap: 0.5rem;
+    column-gap: 1rem;
+    height: min-content;
+  }
+</style>

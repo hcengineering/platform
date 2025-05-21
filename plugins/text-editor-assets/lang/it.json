@@ -68,6 +68,9 @@
     "AddComment": "Aggiungi commento",
     "AddCommentPlaceholder": "Aggiungi un commento...",
     "SetCellHighlightColor": "Cambia il colore delle celle",
-    "SetTextColor": "Cambia il colore del testo"
+    "SetTextColor": "Cambia il colore del testo",
+    "ConvertToLinkPreview": "Mostra come link",
+    "ConvertToEmbedPreview": "Mostra come anteprima del contenuto",
+    "UnableToLoadEmbeddedContent": "Impossibile caricare l'anteprima del link a causa delle impostazioni dei permessi o di contenuto non supportato"
   }
 }

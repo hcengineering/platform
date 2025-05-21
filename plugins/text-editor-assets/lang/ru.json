@@ -69,6 +69,9 @@
     "AddComment": "Добавить комментарий",
     "AddCommentPlaceholder": "Добавьте комментарий...",
     "SetCellHighlightColor": "Изменить цвет ячеек",
-    "SetTextColor": "Изменить цвет текста"
+    "SetTextColor": "Изменить цвет текста",
+    "ConvertToLinkPreview": "Показать как ссылку",
+    "ConvertToEmbedPreview": "Показать как превью контента",
+    "UnableToLoadEmbeddedContent": "Не удалось загрузить превью ссылки из-за настроек доступа или неподдерживаемого содержимого"
   }
 }

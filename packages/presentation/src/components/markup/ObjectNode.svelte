@@ -25,6 +25,7 @@
   export let _id: Ref<Doc> | undefined = undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
   export let title: string = ''
+  export let transparent: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -56,7 +57,7 @@
 </script>
 
 {#if !doc && title}
-  <span class="antiMention" class:broken on:click={onBrokenLinkClick}>
+  <span class="antiMention" class:transparent class:broken on:click={onBrokenLinkClick}>
     {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{title}
   </span>
 {:else if doc}
@@ -65,7 +66,8 @@
     showLoading={false}
     props={{
       object: doc,
-      title
+      title,
+      transparent
     }}
   />
 {/if}

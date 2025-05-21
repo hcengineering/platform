@@ -59,6 +59,9 @@
     "SeparatorLine": "linha separadora",
     "TodoItem": "Tarefa",
     "TodoList": "Lista de tarefas",
-    "DrawingBoard": "Quadro de desenho"
+    "DrawingBoard": "Quadro de desenho",
+    "ConvertToLinkPreview": "Mostrar como link",
+    "ConvertToEmbedPreview": "Mostrar como pré-visualização de conteúdo",
+    "UnableToLoadEmbeddedContent": "Não foi possível carregar a pré-visualização do link devido às permissões ou a conteúdo não suportado"
   }
 }

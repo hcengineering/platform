@@ -17,13 +17,14 @@
   import core, { AnyAttribute, Ref } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
-  import { Context, ProcessFunction } from '@hcengineering/process'
+  import { Context, Process, ProcessFunction } from '@hcengineering/process'
   import { AnySvelteComponent } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import ProcessAttribute from '../ProcessAttribute.svelte'
 
   export let func: ProcessFunction
+  export let process: Process
   export let masterTag: Ref<MasterTag | Tag>
   export let context: Context
   export let attribute: AnyAttribute
@@ -61,6 +62,7 @@
 
 <Card on:close width={'menu'} label={func.label} canSave okAction={save} okLabel={presentation.string.Save}>
   <ProcessAttribute
+    {process}
     {masterTag}
     {context}
     {attribute}

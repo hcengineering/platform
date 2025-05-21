@@ -488,6 +488,10 @@
           drawingBoard: {
             getSavedBoard
           },
+          embed: {
+            boundary: boundary ?? element,
+            popupContainer: editorPopupContainer
+          },
           ...kitOptions
         }),
         ...optionalExtensions,

@@ -27,6 +27,7 @@
   export let accent: boolean = false
   export let noOverflow: boolean = false
   export let inlineReference: boolean = false
+  export let transparent: boolean = false
 
   function clickHandler (e: MouseEvent): void {
     if (disabled) return
@@ -74,6 +75,7 @@
     class:inline
     class:colorInherit
     class:antiMention={inlineReference}
+    class:transparent
     class:fs-bold={accent}
     style:flex-shrink={shrink}
     on:click={clickHandler}
@@ -88,6 +90,7 @@
     class:inline
     class:colorInherit
     class:antiMention={inlineReference}
+    class:transparent
     class:fs-bold={accent}
     style:flex-shrink={shrink}
     on:click={clickHandler}

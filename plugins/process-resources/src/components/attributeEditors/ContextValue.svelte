@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SelectedContext, Context } from '@hcengineering/process'
+  import { SelectedContext, Context, Process } from '@hcengineering/process'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import ConfigurePopup from './ConfigurePopup.svelte'
   import { Ref, Class, Doc, AnyAttribute } from '@hcengineering/core'
@@ -22,6 +22,7 @@
   import { createEventDispatcher } from 'svelte'
   import { MasterTag, Tag } from '@hcengineering/card'
 
+  export let process: Process
   export let masterTag: Ref<MasterTag | Tag>
   export let contextValue: SelectedContext
   export let context: Context
@@ -56,8 +57,8 @@
 
 {#if configurable}
   <button on:click={configure}>
-    <ContextValuePresenter {contextValue} {context} />
+    <ContextValuePresenter {contextValue} {context} {process} />
   </button>
 {:else}
-  <ContextValuePresenter {contextValue} {context} />
+  <ContextValuePresenter {contextValue} {context} {process} />
 {/if}

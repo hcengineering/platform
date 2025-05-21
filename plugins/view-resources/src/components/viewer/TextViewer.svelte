@@ -68,5 +68,8 @@
 
   pre {
     font-family: var(--mono-font);
+    white-space: pre !important;
+    word-wrap: nowrap !important;
+    font-size: 0.8125rem;
   }
 </style>

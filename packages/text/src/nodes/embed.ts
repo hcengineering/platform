@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,20 +11,40 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
-<script lang="ts">
-  import { Process, SelectedExecutonContext } from '@hcengineering/process'
-  import ui, { Label } from '@hcengineering/ui'
-  import ProcessContextPresenter from '../contextEditors/ProcessContextPresenter.svelte'
+//
 
-  export let contextValue: SelectedExecutonContext
-  export let process: Process
+import { mergeAttributes, Node } from '@tiptap/core'
 
-  $: ctx = process.context[contextValue.id]
-</script>
+export const EmbedNode = Node.create<any>({
+  name: 'embed',
 
-{#if ctx !== undefined}
-  <ProcessContextPresenter context={ctx} />
-{:else}
-  <Label label={ui.string.NotSelected} />
-{/if}
+  addOptions () {
+    return {}
+  },
+
+  inline: false,
+  group: 'block',
+  atom: false,
+  draggable: false,
+
+  addAttributes () {
+    return {
+      src: {
+        default: null
+      }
+    }
+  },
+
+  parseHTML () {
+    return [
+      {
+        priority: 60,
+        tag: `figure[data-type="${this.name}"] iframe[src]`
+      }
+    ]
+  },
+
+  renderHTML ({ HTMLAttributes }) {
+    return ['figure', { 'data-type': this.name }, ['iframe', mergeAttributes(HTMLAttributes)]]
+  }
+})

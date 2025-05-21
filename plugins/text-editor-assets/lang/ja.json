@@ -69,6 +69,10 @@
     "AddComment": "コメントを追加",
     "AddCommentPlaceholder": "コメントを追加...",
     "SetCellHighlightColor": "セルの色を設定",
-    "SetTextColor": "テキストの色を設定"
+    "SetTextColor": "テキストの色を設定",
+
+    "ConvertToLinkPreview": "リンクとして表示",
+    "ConvertToEmbedPreview": "コンテンツプレビューとして表示",
+    "UnableToLoadEmbeddedContent": "リンクのプレビューを読み込めません。権限設定または非対応のコンテンツが原因です"
   }
 }

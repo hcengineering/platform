@@ -13,15 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { MasterTag, Tag } from '@hcengineering/card'
   import { AnyAttribute, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Context, ProcessFunction, SelectedContext } from '@hcengineering/process'
+  import { Context, ContextId, Process, ProcessContext, ProcessFunction, SelectedContext } from '@hcengineering/process'
   import { Label, resizeObserver, Scroller, Submenu } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import { generateContextId, getValueReduceFunc } from '../../utils'
-  import { MasterTag, Tag } from '@hcengineering/card'
+  import { generateContextId, getValueReduceFunc, isTypeEqual } from '../../utils'
+  import ExecutionContextPresenter from './ExecutionContextPresenter.svelte'
 
+  export let process: Process
   export let masterTag: Ref<MasterTag | Tag>
   export let context: Context
   export let attribute: AnyAttribute
@@ -48,6 +50,19 @@
     })
   }
 
+  $: processContext = getProcessContext(process, attribute)
+
+  function getProcessContext (process: Process, attribute: AnyAttribute): ProcessContext[] {
+    const res: ProcessContext[] = []
+    for (const key in process.context) {
+      const ctx = process.context[key as ContextId]
+      if (ctx._class === attribute.type._class && isTypeEqual(ctx.type, attribute.type)) {
+        res.push(ctx)
+      }
+    }
+    return res
+  }
+
   $: nested = Object.values(context.nested)
   $: relations = Object.entries(context.relations)
 
@@ -68,6 +83,11 @@
       func,
       props: {}
     })
+    dispatch('close')
+  }
+
+  function onProcessContext (ctx: ProcessContext): void {
+    onSelect(ctx.value)
     dispatch('close')
   }
 
@@ -119,6 +139,19 @@
             </span>
           </button>
         {/if}
+      {/each}
+      <div class="menu-separator" />
+    {/if}
+    {#if processContext.length > 0}
+      {#each processContext as f}
+        <button
+          on:click={() => {
+            onProcessContext(f)
+          }}
+          class="menu-item"
+        >
+          <ExecutionContextPresenter {process} contextValue={f.value} />
+        </button>
       {/each}
       <div class="menu-separator" />
     {/if}
