@@ -76,8 +76,7 @@ async function createMessages (
     void api.event(
       {
         // TODO: We should decide what to do with communications package and remove this workaround
-        // @ts-expect-error Temporary workaround because of Communications package depends on npm core package
-        account: systemAccount
+        account: systemAccount as any
       },
       {
         type: MessageRequestEventType.CreateMessage,
