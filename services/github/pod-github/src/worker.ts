@@ -1606,6 +1606,18 @@ export class GithubWorker implements IntegrationManager {
             }
             const ops = derivedClient.apply()
             for (const d of withError) {
+              const errStr = JSON.stringify(d.error)
+              if (
+                errStr.includes('Bad credentials') ||
+                errStr.includes('Resource not accessible by integration') ||
+                errStr.includes('does not have permission to update') ||
+                errStr.includes('State cannot be changed') ||
+                errStr.includes('Not Found') ||
+                errStr.includes('Body is too long, Body is too long')
+              ) {
+                // Skip this error's and not retry
+                continue
+              }
               await ops.update(d, { error: null, needSync: '' })
             }
             await ops.commit()
