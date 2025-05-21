@@ -123,7 +123,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="flex-presenter" use:tooltip={getPreviewPopup(person, showPreview)} on:click>
+<div class="flex-presenter" class:no-pointer={!clickable} use:tooltip={getPreviewPopup(person, showPreview)} on:click>
   {#if showStatus && person}
     <div class="relative">
       <AvatarInstance
@@ -140,7 +140,6 @@
         {adaptiveName}
         {disabled}
         {style}
-        {clickable}
         withStatus
       />
       <div
@@ -164,13 +163,6 @@
       {adaptiveName}
       {disabled}
       {style}
-      {clickable}
     />
   {/if}
 </div>
-
-<style>
-  .flex-presenter {
-    cursor: pointer;
-  }
-</style>

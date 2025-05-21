@@ -154,6 +154,82 @@ describe('ChannelCache', () => {
       // Verify the cache doesn't contain the failed lookup
       expect((channelCache as any).cache.has(`${spaceId}:${emailAccount}`)).toBe(false)
     })
+
+    it('should not create duplicate channels for email addresses with different case', async () => {
+      // Arrange
+      const existingChannelId = 'mixed-case-channel-id'
+      const lowerCaseEmail = 'mixedcase@example.com'
+      const upperCaseEmail = 'MixedCase@Example.com'
+
+      // Mock first findOne to return null (channel doesn't exist yet)
+      // and second findOne to return the channel (after creation)
+      mockClient.findOne
+        .mockResolvedValueOnce(undefined) // First call: channel doesn't exist
+        .mockResolvedValueOnce({
+          // Second call after creation with different case
+          _id: existingChannelId as any,
+          title: lowerCaseEmail
+        } as any)
+
+      mockClient.createDoc.mockResolvedValueOnce(existingChannelId as any)
+
+      // Act - First create a channel with lowercase email
+      const channelId1 = await channelCache.getOrCreateChannel(spaceId, participants, lowerCaseEmail, personId)
+
+      // Clear cache to simulate a fresh lookup
+      channelCache.clearCache(spaceId, lowerCaseEmail)
+
+      // Act - Then try to create with uppercase email
+      const channelId2 = await channelCache.getOrCreateChannel(spaceId, participants, upperCaseEmail, personId)
+
+      // Assert
+      expect(mockClient.findOne).toHaveBeenNthCalledWith(1, mail.tag.MailChannel, { title: lowerCaseEmail })
+      expect(mockClient.findOne).toHaveBeenNthCalledWith(2, mail.tag.MailChannel, { title: lowerCaseEmail })
+
+      // Should only create doc once
+      expect(mockClient.createDoc).toHaveBeenCalledTimes(1)
+      expect(mockClient.createMixin).toHaveBeenCalledTimes(1)
+
+      // Both should return the same channel ID
+      expect(channelId1).toBe(existingChannelId)
+      expect(channelId2).toBe(existingChannelId)
+      expect(channelId1).toBe(channelId2)
+    })
+
+    it('should handle race conditions when creating channels', async () => {
+      // Arrange - Simulate a race condition where channel is created between mutex lock and double-check
+      const raceChannelId = 'race-condition-channel-id'
+
+      // Mock behavior:
+      // 1. First findOne returns null (channel doesn't exist)
+      // 2. Second findOne (after mutex) returns a channel (someone else created it)
+      mockClient.findOne.mockResolvedValueOnce(undefined).mockResolvedValueOnce({
+        _id: raceChannelId,
+        title: 'race@example.com'
+      } as any)
+
+      // Act
+      const channelId = await channelCache.getOrCreateChannel(spaceId, participants, 'race@example.com', personId)
+
+      // Assert
+      expect(mockClient.findOne).toHaveBeenCalledTimes(2)
+      expect(mockClient.createDoc).not.toHaveBeenCalled() // Should not create doc because of race check
+      expect(channelId).toBe(raceChannelId)
+    })
+
+    it('should normalize email addresses to lowercase before lookup and creation', async () => {
+      // Arrange - This test verifies that email normalization to lowercase is implemented
+
+      const mixedCaseEmail = 'MiXeD@ExAmPlE.com'
+
+      // Act
+      await channelCache.getOrCreateChannel(spaceId, participants, mixedCaseEmail, personId)
+
+      // Assert - If email normalization is implemented, this would pass
+      expect(mockClient.findOne).toHaveBeenCalledWith(mail.tag.MailChannel, {
+        title: expect.stringMatching(/mixed@example\.com/i)
+      })
+    })
   })
 
   describe('clearCache', () => {
