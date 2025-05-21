@@ -56,7 +56,7 @@
     },
     {
       lookup: {
-        attachedTo: cardPlugin.class.Card
+        attachedTo: [cardPlugin.class.Card, { parent: cardPlugin.class.Card }]
       }
     }
   )
@@ -106,6 +106,7 @@
       dispatch('favorites')
     }}
   >
+    <div class="mt-0-5" />
     {#each favorites as favorite (favorite.attachedTo)}
       {@const card = getCard(favorite)}
       {@const context = contexts.find((it) => it.card === card._id)}

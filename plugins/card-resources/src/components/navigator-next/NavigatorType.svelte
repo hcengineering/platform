@@ -101,6 +101,7 @@
       dispatch('selectType', type)
     }}
   >
+    <div class="mt-0-5" />
     <slot />
     <svelte:fragment slot="visible" let:isOpen>
       <slot name="visible" {isOpen} />
