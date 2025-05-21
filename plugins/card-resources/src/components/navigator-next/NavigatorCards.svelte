@@ -81,8 +81,8 @@
     contextsQuery.unsubscribe()
   }
 
-  function getCard (favorite: WithLookup<FavoriteCard>): Card {
-    return favorite.$lookup?.attachedTo as any as Card
+  function getCard (favorite: WithLookup<FavoriteCard>): Card | undefined {
+    return favorite.$lookup?.attachedTo
   }
 </script>
 
@@ -109,16 +109,20 @@
     <div class="mt-0-5" />
     {#each favorites as favorite (favorite.attachedTo)}
       {@const card = getCard(favorite)}
-      {@const context = contexts.find((it) => it.card === card._id)}
-      <NavigatorCard {card} {context} {favorite} {applicationId} {selectedCard} on:selectCard />
+      {#if card}
+        {@const context = contexts.find((it) => it.card === card._id)}
+        <NavigatorCard {card} {context} {favorite} {applicationId} {selectedCard} on:selectCard />
+      {/if}
     {/each}
 
     <svelte:fragment slot="visible" let:isOpen>
       {@const visibleItem = favorites.find(({ attachedTo }) => attachedTo === selectedCard)}
       {#if visibleItem !== undefined && !isOpen}
         {@const card = getCard(visibleItem)}
-        {@const context = contexts.find((it) => it.card === card._id)}
-        <NavigatorCard {card} {context} favorite={visibleItem} {applicationId} {selectedCard} on:selectCard />
+        {#if card}
+          {@const context = contexts.find((it) => it.card === card._id)}
+          <NavigatorCard {card} {context} favorite={visibleItem} {applicationId} {selectedCard} on:selectCard />
+        {/if}
       {/if}
     </svelte:fragment>
   </NavGroup>
