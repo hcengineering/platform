@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { Label, Section, Scroller } from '@hcengineering/ui'
   import { Table, ViewletsSettingButton } from '@hcengineering/view-resources'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
@@ -26,40 +27,47 @@
   export let readonly: boolean = false
   export let meetings: number
 
+  const me = getCurrentAccount()
+
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
   let loading = true
+
+  let canViewMinutes: boolean = false
+  $: canViewMinutes = hasAccountRole(me, AccountRole.User)
 </script>
 
-<Section label={love.string.MeetingMinutes} icon={love.icon.Cam}>
-  <svelte:fragment slot="header">
-    <ViewletsSettingButton
-      viewletQuery={{ _id: love.viewlet.TableMeetingMinutesEmbedded }}
-      kind={'tertiary'}
-      bind:viewlet
-      bind:loading
-      bind:preference
-    />
-  </svelte:fragment>
+{#if canViewMinutes}
+  <Section label={love.string.MeetingMinutes} icon={love.icon.Cam}>
+    <svelte:fragment slot="header">
+      <ViewletsSettingButton
+        viewletQuery={{ _id: love.viewlet.TableMeetingMinutesEmbedded }}
+        kind={'tertiary'}
+        bind:viewlet
+        bind:loading
+        bind:preference
+      />
+    </svelte:fragment>
 
-  <svelte:fragment slot="content">
-    {#if meetings > 0 && viewlet}
-      <Scroller horizontal>
-        <Table
-          _class={love.class.MeetingMinutes}
-          config={preference?.config ?? viewlet.config}
-          query={{ attachedTo: objectId }}
-          loadingProps={{ length: meetings }}
-          prefferedSorting="createdOn"
-          {readonly}
-        />
-      </Scroller>
-    {:else}
-      <div class="antiSection-empty solid flex-col mt-3">
-        <span class="content-dark-color">
-          <Label label={love.string.NoMeetingMinutes} />
-        </span>
-      </div>
-    {/if}
-  </svelte:fragment>
-</Section>
+    <svelte:fragment slot="content">
+      {#if meetings > 0 && viewlet}
+        <Scroller horizontal>
+          <Table
+            _class={love.class.MeetingMinutes}
+            config={preference?.config ?? viewlet.config}
+            query={{ attachedTo: objectId }}
+            loadingProps={{ length: meetings }}
+            prefferedSorting="createdOn"
+            {readonly}
+          />
+        </Scroller>
+      {:else}
+        <div class="antiSection-empty solid flex-col mt-3">
+          <span class="content-dark-color">
+            <Label label={love.string.NoMeetingMinutes} />
+          </span>
+        </div>
+      {/if}
+    </svelte:fragment>
+  </Section>
+{/if}
