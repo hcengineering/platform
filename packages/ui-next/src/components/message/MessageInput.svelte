@@ -294,7 +294,7 @@
   >
     <div slot="header" class="header">
       {#if files.length > 0}
-        <div class="flex-row-center files-list scroll-divider-color flex-gap-2">
+        <div class="flex-row-center files-list scroll-divider-color flex-gap-2 mt-2">
           {#each files as file (file.blobId)}
             <div class="item flex">
               <AttachmentPresenter
@@ -337,7 +337,6 @@
   }
 
   .files-list {
-    padding: 0.5rem;
     overflow-x: auto;
     overflow-y: hidden;
 

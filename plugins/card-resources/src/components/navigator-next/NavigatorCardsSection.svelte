@@ -23,12 +23,11 @@
     getClient
   } from '@hcengineering/presentation'
   import { Label, NotificationContext, NotificationType } from '@hcengineering/communication-types'
-  import ui, { Button, ModernButton } from '@hcengineering/ui'
+  import ui, { ModernButton } from '@hcengineering/ui'
 
   import type { CardsNavigatorConfig } from '../../types'
   import cardPlugin from '../../plugin'
   import NavigatorType from './NavigatorType.svelte'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
   import NavigatorCard from './NavigatorCard.svelte'
 
   export let type: MasterTag

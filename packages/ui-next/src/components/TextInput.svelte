@@ -228,13 +228,13 @@
   .text-input {
     display: flex;
     padding: 0.75rem;
+    padding-top: 0.5rem;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.375rem;
+    gap: 0.25rem;
     align-self: stretch;
     border-radius: 0.75rem;
-    border: 1px solid var(--next-message-input-color-stroke);
-    background: var(--next-message-input-color-background);
+    border: 1px solid var(--theme-refinput-divider);
     overflow: hidden;
   }
 
