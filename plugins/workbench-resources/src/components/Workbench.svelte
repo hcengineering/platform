@@ -197,6 +197,7 @@
     (res) => {
       tabs = res
       tabsStore.set(tabs)
+      if (account.role === AccountRole.ReadOnlyGuest) return
       if (!areTabsLoaded) {
         void initCurrentTab(tabs)
         areTabsLoaded = true
@@ -256,7 +257,7 @@
 
   onMount(() => {
     pushRootBarComponent('right', view.component.SearchSelector)
-    pushRootBarComponent('left', workbench.component.WorkbenchTabs, 30)
+    if (account.role !== AccountRole.ReadOnlyGuest) pushRootBarComponent('left', workbench.component.WorkbenchTabs, 30)
     void getResource(login.function.GetWorkspaces).then(async (getWorkspaceFn) => {
       $workspacesStore = await getWorkspaceFn()
       await updateWindowTitle(getLocation())
@@ -1040,7 +1041,9 @@
       {#if $sidebarStore.variant === SidebarVariant.EXPANDED && !$sidebarStore.float}
         <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
       {/if}
-      <WidgetsBar />
+      {#if account.role !== AccountRole.ReadOnlyGuest}
+        <WidgetsBar />
+      {/if}
     </div>
   </div>
   <Dock />
