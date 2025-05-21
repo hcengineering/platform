@@ -530,6 +530,14 @@
   user-select: text;
   font-size: var(--body-font-size);
 
+  &.transparent {
+    background-color: transparent;
+    
+    &:hover {
+      background-color: transparent;
+    }
+  }
+
   &:hover {
     text-decoration: none !important;
     background-color: var(--theme-mention-focused-bg-color);

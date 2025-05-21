@@ -13,21 +13,36 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { type Editor } from '@tiptap/core'
   import { type TextEditorAction, type ActionContext } from '@hcengineering/text-editor'
   import { getResource } from '@hcengineering/platform'
   import { Icon, IconSize, tooltip } from '@hcengineering/ui'
+  import tr from 'date-fns/locale/tr'
+  import { Transaction } from '@tiptap/pm/state'
 
   export let action: TextEditorAction
   export let size: IconSize
   export let editor: Editor
   export let actionCtx: ActionContext
   export let blockMouseEvents = true
+  export let listenCursorUpdate = false
 
   const dispatch = createEventDispatcher()
   let selected: boolean = false
   $: void updateSelected(editor, action)
+
+  if (listenCursorUpdate) {
+    const listener = ({ transaction }: { transaction: Transaction }) => {
+      if (transaction.getMeta('contextCursorUpdate') === true) {
+        void updateSelected(editor, action)
+      }
+    }
+    editor.on('transaction', listener)
+    onDestroy(() => {
+      editor.off('transaction', listener)
+    })
+  }
 
   async function updateSelected (e: Editor, { isActive }: TextEditorAction): Promise<void> {
     if (isActive === undefined) {
