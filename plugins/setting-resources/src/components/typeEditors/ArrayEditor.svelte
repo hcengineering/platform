@@ -26,6 +26,7 @@
   export let editable: boolean = true
   export let kind: ButtonKind = 'regular'
   export let size: ButtonSize = 'medium'
+  export let width: string | undefined = undefined
   export let isCard: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -62,31 +63,30 @@
   }
 </script>
 
-<div class="hulyModal-content__settingsSet-line">
-  <span class="label">
-    <Label label={setting.string.Type} />
-  </span>
-  {#if editable}
-    <DropdownLabelsIntl
-      label={core.string.Class}
-      {kind}
-      {size}
-      items={types.map((p) => {
-        return { id: p._id, label: p.label }
-      })}
-      width="8rem"
-      bind:selected={refClass}
-    />
-  {:else if selected}
-    <Label label={selected.label} />
-  {/if}
-</div>
+<span class="label">
+  <Label label={setting.string.Type} />
+</span>
+{#if editable}
+  <DropdownLabelsIntl
+    label={core.string.Class}
+    {kind}
+    {size}
+    items={types.map((p) => {
+      return { id: p._id, label: p.label }
+    })}
+    {width}
+    bind:selected={refClass}
+  />
+{:else if selected}
+  <Label label={selected.label} />
+{/if}
 {#if selected}
   <Component
     is={getComponent(selected)}
     props={{
       type: type?.of,
       nested: true,
+      width,
       isCard,
       editable,
       kind,

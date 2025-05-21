@@ -43,13 +43,6 @@
       _id: 'all',
       label: plugin.string.AllProcesses,
       baseQuery: {}
-    },
-    {
-      _id: 'my',
-      label: plugin.string.MyProcesses,
-      baseQuery: {
-        assignee: getCurrentEmployee()
-      }
     }
   ]
 

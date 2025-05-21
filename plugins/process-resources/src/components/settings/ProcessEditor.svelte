@@ -37,7 +37,7 @@
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import process from '../../plugin'
-  import { addProcessContext, getToDoEndAction } from '../../utils'
+  import { getToDoEndAction } from '../../utils'
   import AsideStepEditor from './AsideStepEditor.svelte'
   import StateEditor from './StateEditor.svelte'
 

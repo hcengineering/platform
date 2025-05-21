@@ -121,7 +121,7 @@
   }
 </script>
 
-<Card
+\<Card
   label={setting.string.CreatingAttribute}
   okLabel={presentation.string.Create}
   okAction={save}
@@ -141,25 +141,24 @@
         <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} autoFocus />
       </div>
     </div>
-    <div class="hulyModal-content__settingsSet">
-      <div class="hulyModal-content__settingsSet-line">
-        <span class="label">
-          <Label label={setting.string.Type} />
-        </span>
-        <DropdownLabelsIntl
-          label={setting.string.Type}
-          {items}
-          size={'large'}
-          width="8rem"
-          bind:selected={selectedType}
-          on:selected={handleSelection}
-        />
-      </div>
+    <div class="grid">
+      <span class="label">
+        <Label label={setting.string.Type} />
+      </span>
+      <DropdownLabelsIntl
+        label={setting.string.Type}
+        {items}
+        size={'large'}
+        width={'100%'}
+        bind:selected={selectedType}
+        on:selected={handleSelection}
+      />
       {#if is}
         <Component
           {is}
           props={{
             type,
+            width: '100%',
             defaultValue,
             isCard,
             kind: 'regular',
@@ -171,3 +170,17 @@
     </div>
   </div>
 </Card>
+
+<style lang="scss">
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-rows: minmax(2rem, max-content);
+    justify-content: start;
+    padding: 0.5rem;
+    align-items: center;
+    row-gap: 0.5rem;
+    column-gap: 1rem;
+    height: min-content;
+  }
+</style>

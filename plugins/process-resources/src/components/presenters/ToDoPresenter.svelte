@@ -36,7 +36,7 @@
   <Label label={method.label} />
   {#if step.params.title}
     {#if contextValue}
-      - <ContextValuePresenter {contextValue} {context} />
+      - <ContextValuePresenter {contextValue} {context} {process} />
     {:else}
       - {step.params.title}
     {/if}

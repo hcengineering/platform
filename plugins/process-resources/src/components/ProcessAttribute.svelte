@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
-  import { Context, parseContext, SelectedContext } from '@hcengineering/process'
+  import { Context, parseContext, SelectedContext, Process } from '@hcengineering/process'
   import {
     AnySvelteComponent,
     Button,
@@ -31,6 +31,7 @@
   import ContextValue from './attributeEditors/ContextValue.svelte'
   import { MasterTag, Tag } from '@hcengineering/card'
 
+  export let process: Process
   export let masterTag: Ref<MasterTag | Tag>
   export let value: any
   export let context: Context
@@ -54,6 +55,7 @@
     showPopup(
       ContextSelectorPopup,
       {
+        process,
         masterTag,
         context,
         attribute,
@@ -81,6 +83,7 @@
   <div class="text-input" class:context={contextValue}>
     {#if contextValue}
       <ContextValue
+        {process}
         {masterTag}
         {contextValue}
         {context}

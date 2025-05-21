@@ -15,15 +15,16 @@
 <script lang="ts">
   import { Process, SelectedExecutonContext } from '@hcengineering/process'
   import ui, { Label } from '@hcengineering/ui'
+  import ProcessContextPresenter from '../contextEditors/ProcessContextPresenter.svelte'
 
   export let contextValue: SelectedExecutonContext
   export let process: Process
 
-  $: ctx = process.context[contextValue.id]?.name
+  $: ctx = process.context[contextValue.id]
 </script>
 
 {#if ctx !== undefined}
-  {ctx}
+  <ProcessContextPresenter context={ctx} />
 {:else}
   <Label label={ui.string.NotSelected} />
 {/if}

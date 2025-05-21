@@ -13,14 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Context, SelectedContext } from '@hcengineering/process'
+  import { Context, Process, SelectedContext } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
   import plugin from '../../plugin'
   import AttrContextPresenter from './AttrContextPresenter.svelte'
   import NestedContextPresenter from './NestedContextPresenter.svelte'
   import RelContextPresenter from './RelContextPresenter.svelte'
   import FunctionContextPresenter from './FunctionContextPresenter.svelte'
+  import ExecutionContextPresenter from './ExecutionContextPresenter.svelte'
 
+  export let process: Process
   export let contextValue: SelectedContext
   export let context: Context
 </script>
@@ -36,6 +38,8 @@
     <Label label={plugin.string.RequestFromUser} />
   {:else if contextValue.type === 'function'}
     <FunctionContextPresenter {contextValue} {context} />
+  {:else if contextValue.type === 'context'}
+    <ExecutionContextPresenter {contextValue} {process} />
   {/if}
 </div>
 

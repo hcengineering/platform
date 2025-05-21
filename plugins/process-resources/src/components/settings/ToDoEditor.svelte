@@ -13,10 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Process, ProcessToDo, State, Step } from '@hcengineering/process'
+  import { Process, ProcessToDo, Step } from '@hcengineering/process'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import ParamsEditor from './ParamsEditor.svelte'
+  import ResultEditor from './ResultEditor.svelte'
 
   export let process: Process
   export let step: Step<ProcessToDo>
@@ -25,7 +26,7 @@
 
   const dispatch = createEventDispatcher()
 
-  function change (e: CustomEvent<any>): void {
+  function changeParams (e: CustomEvent<any>): void {
     if (e.detail !== undefined) {
       params = e.detail
       ;(step.params as any) = params
@@ -34,6 +35,22 @@
   }
 
   const keys = ['title', 'user', 'dueDate']
+
+  function changeResult (e: CustomEvent<any>): void {
+    if (e.detail !== undefined) {
+      step = e.detail
+      dispatch('change', step)
+    }
+  }
 </script>
 
-<ParamsEditor _class={plugin.class.ProcessToDo} {process} {keys} {params} on:change={change} />
+<ParamsEditor _class={plugin.class.ProcessToDo} {process} {keys} {params} on:change={changeParams} />
+<div class="divider" />
+<ResultEditor {step} on:chage={changeResult} />
+
+<style lang="scss">
+  .divider {
+    border-bottom: 1px solid var(--divider-color);
+    margin: 1rem 0;
+  }
+</style>
