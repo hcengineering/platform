@@ -19,7 +19,8 @@ import type {
   OtpInfo,
   RegionInfo,
   WorkspaceLoginInfo,
-  WorkspaceInviteInfo
+  WorkspaceInviteInfo,
+  ProviderInfo
 } from '@hcengineering/account-client'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
@@ -30,8 +31,7 @@ import {
   type AccountUuid,
   type Person,
   type WorkspaceInfoWithStatus,
-  type WorkspaceUserOperation,
-  type ProviderInfo
+  type WorkspaceUserOperation
 } from '@hcengineering/core'
 import { loginId } from '@hcengineering/login'
 import platform, {
