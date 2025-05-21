@@ -22,6 +22,7 @@
 
   export let card: Card | undefined = undefined
   export let type: Ref<MasterTag> | undefined = undefined
+  export let isFavorites: boolean = false
 </script>
 
 <Navigator
@@ -46,6 +47,7 @@
   applicationId={chatId}
   selectedType={type}
   selectedCard={card?._id}
+  selectedSpecial={isFavorites ? 'favorites' : undefined}
   on:selectType
   on:selectCard
   on:favorites

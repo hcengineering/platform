@@ -164,6 +164,7 @@
         <ChatNavigation
           card={getSelectedCard(selection)}
           type={getSelectedType(selection)}
+          isFavorites={selection?.type === 'favorites'}
           on:selectCard={selectCard}
           on:selectType={selectType}
           on:favorites={selectFavorites}
