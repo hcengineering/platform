@@ -4412,7 +4412,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz':
-    resolution: {integrity: sha512-wFo9oISavyjzRdbECIqqDhuDiElkLJoWLkt1DAmhFsKVMSQhF7+IFsQqP/0SgAAONDz+YTM/Rdn39T7JTShxng==, tarball: file:projects/mail-common.tgz}
+    resolution: {integrity: sha512-4LBEBALM00RoLc14SVL4O2mE8iE4ny+ECRIHrWGfDncRWOniV+Z5i9JGy4LLMeOd1QwODiSU7bB5tt6ZHgE+Dw==, tarball: file:projects/mail-common.tgz}
     version: 0.0.0
 
   '@rush-temp/mail@file:projects/mail.tgz':
@@ -4896,11 +4896,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
-    resolution: {integrity: sha512-5rn2Y1X7GtTiOKR5vbkqo5oB/zEeQXOiSw4nTPL8xp/Jx66PDnGjkwkHqBlberol5hG2/ns8im3Zqxql5O2VXw==, tarball: file:projects/pod-gmail.tgz}
+    resolution: {integrity: sha512-Td4sAVaM3KeXpbCuObvVoC38pSukEzsXWyqvE2AVjXChD6zL43dbwNh7ij/OgTk24lrOa/JPiIooBOQDX/tncQ==, tarball: file:projects/pod-gmail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
-    resolution: {integrity: sha512-OtQGxUdsWkV7UwDUzT0f7NQ+dPQHBp6ofjEH08h7TzdUpq+rRxwr/AcA/08naCXc3vKJObwTvkqYCpF/9ynWKA==, tarball: file:projects/pod-inbound-mail.tgz}
+    resolution: {integrity: sha512-3FRnPh6suAMu0t2gfAhOD0pz4hwY00m95aRGQuQvHWLSnGgq0d6Cibl+1axZC4aEczUGL0+XxULY2PnrmYI6Jg==, tarball: file:projects/pod-inbound-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
@@ -20013,6 +20013,8 @@ snapshots:
   '@rush-temp/mail-common@file:projects/mail-common.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
       '@hcengineering/communication-rest-client': 0.1.188(typescript@5.7.3)
+      '@hcengineering/communication-sdk-types': 0.1.188(typescript@5.7.3)
+      '@hcengineering/communication-shared': 0.1.188(typescript@5.7.3)
       '@hcengineering/communication-types': 0.1.188(typescript@5.7.3)
       '@tsconfig/node16': 1.0.4
       '@types/express': 4.17.21
@@ -20031,6 +20033,7 @@ snapshots:
       eslint-plugin-node: 11.1.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      kafkajs: 2.2.4
       prettier: 3.2.5
       sanitize-html: 2.16.0
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
@@ -22412,6 +22415,7 @@ snapshots:
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@6.0.4)':
     dependencies:
+      '@hcengineering/communication-sdk-types': 0.1.188(typescript@5.3.3)
       '@tsconfig/node16': 1.0.4
       '@types/cors': 2.8.17
       '@types/express': 4.17.21
@@ -22464,6 +22468,7 @@ snapshots:
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
       '@hcengineering/communication-rest-client': 0.1.188(typescript@5.7.3)
+      '@hcengineering/communication-sdk-types': 0.1.188(typescript@5.7.3)
       '@hcengineering/communication-types': 0.1.188(typescript@5.7.3)
       '@tsconfig/node16': 1.0.4
       '@types/cors': 2.8.17
