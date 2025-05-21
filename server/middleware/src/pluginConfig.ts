@@ -50,7 +50,7 @@ export class PluginConfigurationMiddleware extends BaseMiddleware implements Mid
 
   tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     const account = ctx.contextData.account
-    if (account.uuid === systemAccountUuid || account.fullSocialIds.some((it) => it.value === aiBotAccountEmail)) {
+    if (account.uuid === systemAccountUuid || account.socialIdsByValue.has(aiBotAccountEmail)) {
       // We pass for system accounts and services.
       return this.provideTx(ctx, txes)
     }

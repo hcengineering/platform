@@ -82,6 +82,7 @@
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/server-telegram": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
+    "@hcengineering/client-resources": "^0.6.27",
     "utf-8-validate": "^6.0.4",
     "bufferutil": "^4.0.8",
     "msgpackr": "^1.11.2",

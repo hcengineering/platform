@@ -34,7 +34,7 @@ import { setObjectValue } from './objvalue'
 import { _getOperator } from './operator'
 import { _toDoc } from './proxy'
 import type { DocumentQuery, TxResult } from './storage'
-import { generateId } from './utils'
+import { generateId, type WorkspaceUuid } from './utils'
 
 /**
  * @public
@@ -52,7 +52,9 @@ export enum WorkspaceEvent {
   SecurityChange,
   MaintenanceNotification,
   BulkUpdate,
-  LastTx
+  LastTx,
+  WorkpaceActive,
+  WorkspaceMaintenance = 7
 }
 
 /**
@@ -62,6 +64,7 @@ export enum WorkspaceEvent {
 export interface TxWorkspaceEvent<T = any> extends Tx {
   event: WorkspaceEvent
   params: T
+  workspace?: WorkspaceUuid
 }
 
 /**
@@ -77,11 +80,6 @@ export interface IndexingUpdateEvent {
 export interface BulkUpdateEvent {
   _class: Ref<Class<Doc>>[]
 }
-
-/**
- * @public
- */
-export interface TxModelUpgrade extends Tx {}
 
 /**
  * @public
@@ -459,9 +457,14 @@ export class TxFactory {
   private readonly txSpace: Ref<Space>
   constructor (
     readonly account: PersonId,
+    readonly _workspaceUuid: WorkspaceUuid | (() => WorkspaceUuid),
     readonly isDerived: boolean = false
   ) {
     this.txSpace = isDerived ? core.space.DerivedTx : core.space.Tx
+  }
+
+  get workspaceUuid (): WorkspaceUuid {
+    return typeof this._workspaceUuid === 'function' ? this._workspaceUuid() : this._workspaceUuid
   }
 
   createTxCreateDoc<T extends Doc>(
@@ -473,6 +476,7 @@ export class TxFactory {
     modifiedBy?: PersonId
   ): TxCreateDoc<T> {
     return {
+      _uuid: this.workspaceUuid,
       _id: generateId(),
       _class: core.class.TxCreateDoc,
       space: this.txSpace,
@@ -515,6 +519,7 @@ export class TxFactory {
     modifiedBy?: PersonId
   ): TxUpdateDoc<T> {
     return {
+      _uuid: this.workspaceUuid,
       _id: generateId(),
       _class: core.class.TxUpdateDoc,
       space: this.txSpace,
@@ -536,6 +541,7 @@ export class TxFactory {
     modifiedBy?: PersonId
   ): TxRemoveDoc<T> {
     return {
+      _uuid: this.workspaceUuid,
       _id: generateId(),
       _class: core.class.TxRemoveDoc,
       space: this.txSpace,
@@ -557,6 +563,7 @@ export class TxFactory {
     modifiedBy?: PersonId
   ): TxMixin<D, M> {
     return {
+      _uuid: this.workspaceUuid,
       _id: generateId(),
       _class: core.class.TxMixin,
       space: this.txSpace,
@@ -583,6 +590,7 @@ export class TxFactory {
     modifiedBy?: PersonId
   ): TxApplyIf {
     return {
+      _uuid: this.workspaceUuid,
       _id: generateId(),
       _class: core.class.TxApplyIf,
       space: this.txSpace,

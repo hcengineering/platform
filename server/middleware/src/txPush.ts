@@ -78,6 +78,7 @@ export class TxMiddleware extends BaseMiddleware implements Middleware {
       this.context.lastTx = txToStore[txToStore.length - 1]._id
       // We need to deliver information to all clients so far.
       const evt: TxWorkspaceEvent = {
+        _uuid: this.context.workspace.uuid,
         _class: core.class.TxWorkspaceEvent,
         _id: generateId(),
         event: WorkspaceEvent.LastTx,

@@ -45,7 +45,7 @@ import {
 import { generateDocUpdateMessages } from '@hcengineering/server-activity-resources'
 
 function getActivityControl (client: MigrationClient): ActivityControl {
-  const txFactory = new TxFactory(core.account.System, false)
+  const txFactory = new TxFactory(core.account.System, client.wsIds.uuid, false)
 
   return {
     ctx: new MeasureMetricsContext('migration', {}),
@@ -91,6 +91,7 @@ async function generateDocUpdateMessageByTx (
     const domain = client.hierarchy.getDomain(createTx.objectClass)
 
     await client.create<DocUpdateMessage>(domain, {
+      _uuid: client.wsIds.uuid,
       _id: createTx.objectId,
       _class: createTx.objectClass,
       space: createTx.objectSpace,

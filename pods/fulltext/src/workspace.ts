@@ -113,6 +113,7 @@ export class WorkspaceIndexer {
           _class: classes
         }
         const tx: TxWorkspaceEvent = {
+          _uuid: workspace.uuid,
           _class: core.class.TxWorkspaceEvent,
           _id: generateId(),
           event: WorkspaceEvent.IndexingUpdate,

@@ -47,19 +47,18 @@ export class IdentityMiddleware extends BaseMiddleware implements Middleware {
   tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     const account = ctx.contextData.account
 
-    if (account.uuid === systemAccountUuid || account.fullSocialIds.some((it) => it.value === aiBotAccountEmail)) {
+    if (account.uuid === systemAccountUuid || account.socialIdsByValue.has(aiBotAccountEmail)) {
       // TODO: We need to enhance allowed list in case of user service, on behalf of user activities.
 
       // We pass for system accounts and services.
       return this.provideTx(ctx, txes)
     }
     function checkTx (tx: Tx): void {
-      const mxAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)
-      if (mxAccount === undefined || mxAccount !== account.uuid) {
+      if (!ctx.contextData.account.socialIds.includes(tx.modifiedBy)) {
         throw new PlatformError(
           new Status(Severity.ERROR, platform.status.AccountMismatch, {
             account: account.uuid,
-            requiredAccount: mxAccount
+            requiredAccount: ctx.contextData.account.uuid
           })
         )
       }

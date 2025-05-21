@@ -47,7 +47,7 @@ export class WorkspaceClient {
     })
     this.client = await connectPlatform(token)
 
-    return new TxOperations(this.client, core.account.System)
+    return new TxOperations(this.client, core.account.System, this.workspace)
   }
 
   async getPerson (personUuid: PersonUuid): Promise<Person | undefined> {

@@ -14,7 +14,9 @@
 //
 
 import {
+  groupByArray,
   TxProcessor,
+  type AccountUuid,
   type BroadcastTargets,
   type Class,
   type Doc,
@@ -70,9 +72,9 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
 
     // Combine targets by sender
 
-    const toSendTarget = new Map<string, Tx[]>()
+    const toSendTarget = new Map<AccountUuid | '', Tx[]>()
 
-    const getTxes = (key: string): Tx[] => {
+    const getTxes = (key: AccountUuid | ''): Tx[] => {
       let txes = toSendTarget.get(key)
       if (txes === undefined) {
         txes = [...(toSendTarget.get('') ?? [])] // We also need to add all from to all
@@ -83,7 +85,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
 
     // Put current user as send target
     for (const txd of tx) {
-      let target: string[] | undefined
+      let target: AccountUuid[] | undefined
       for (const tt of Object.values(targets ?? {})) {
         target = tt(txd)
         if (target !== undefined) {
@@ -107,8 +109,8 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     const handleSend = async (
       ctx: MeasureContext<SessionData>,
       derived: Tx[],
-      target?: string,
-      exclude?: string[]
+      target?: AccountUuid,
+      exclude?: AccountUuid[]
     ): Promise<void> => {
       if (derived.length === 0) {
         return
@@ -127,29 +129,32 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
 
     // Then send targeted and all other
     for (const [k, v] of toSendTarget.entries()) {
-      void handleSend(ctx, v, k)
+      void handleSend(ctx, v, k as AccountUuid)
     }
     // Send all other except us.
-    await handleSend(ctx, toSendAll, undefined, Array.from(toSendTarget.keys()))
+    await handleSend(ctx, toSendAll, undefined, Array.from(toSendTarget.keys()) as AccountUuid[])
   }
 
   private async sendWithPart (
     derived: Tx[],
     ctx: MeasureContext<SessionData>,
-    target: string | undefined,
-    exclude: string[] | undefined
+    target: AccountUuid | undefined,
+    exclude: AccountUuid[] | undefined
   ): Promise<void> {
-    const classes = new Set<Ref<Class<Doc>>>()
-    for (const dtx of derived) {
-      if (TxProcessor.isExtendsCUD(dtx._class)) {
-        classes.add((dtx as TxCUD<Doc>).objectClass)
-        const attachedToClass = (dtx as TxCUD<Doc>).attachedToClass
-        if (attachedToClass !== undefined) {
-          classes.add(attachedToClass)
+    const byWorkspace = groupByArray(derived, (it) => it._uuid)
+    for (const [uuid, dtxs] of byWorkspace) {
+      const classes = new Set<Ref<Class<Doc>>>()
+      for (const dtx of dtxs) {
+        if (TxProcessor.isExtendsCUD(dtx._class)) {
+          classes.add((dtx as TxCUD<Doc>).objectClass)
+          const attachedToClass = (dtx as TxCUD<Doc>).attachedToClass
+          if (attachedToClass !== undefined) {
+            classes.add(attachedToClass)
+          }
         }
       }
+      const bevent = createBroadcastEvent(uuid, Array.from(classes))
+      this.broadcast(ctx, [bevent], target, exclude)
     }
-    const bevent = createBroadcastEvent(Array.from(classes))
-    this.broadcast(ctx, [bevent], target, exclude)
   }
 }

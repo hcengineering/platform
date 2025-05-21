@@ -788,6 +788,7 @@ async function downloadComments (
     })
     for (const it of commentsData.result) {
       const c: ChatMessage & BitrixSyncDoc = {
+        _uuid: ops.client.workspaceUuid,
         _id: generateId(),
         _class: chunter.class.ChatMessage,
         message: processComment(it.COMMENT as string),
@@ -808,6 +809,7 @@ async function downloadComments (
           c.attachments = (c.attachments ?? 0) + 1
           res.blobs.push([
             {
+              _uuid: ops.client.workspaceUuid,
               _id: generateId(),
               _class: attachment.class.Attachment,
               attachedTo: c._id,
@@ -863,6 +865,7 @@ async function downloadComments (
           const parser = new DOMParser()
 
           const c: Message & BitrixSyncDoc = {
+            _uuid: ops.client.workspaceUuid,
             _id: generateId(),
             _class: gmail.class.Message,
             content: comm.DESCRIPTION,

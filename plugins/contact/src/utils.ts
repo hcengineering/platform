@@ -33,7 +33,8 @@ import {
   Ref,
   SocialId,
   toIdMap,
-  TxFactory
+  TxFactory,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
@@ -396,11 +397,12 @@ export async function ensureEmployee (
   ctx: MeasureContext,
   me: Account,
   client: Pick<Client, 'findOne' | 'findAll' | 'tx'>,
+  workspace: WorkspaceUuid,
   socialIds: SocialId[],
   getGlobalPerson: () => Promise<GlobalPerson | undefined>
 ): Promise<Ref<Employee> | null> {
   const globalPerson = await getGlobalPerson()
-  return await ensureEmployeeForPerson(ctx, me, me, client, socialIds, globalPerson)
+  return await ensureEmployeeForPerson(ctx, me, me, client, socialIds, workspace, globalPerson)
 }
 
 export async function ensureEmployeeForPerson (
@@ -409,15 +411,15 @@ export async function ensureEmployeeForPerson (
   person: Account,
   client: Pick<Client, 'findOne' | 'findAll' | 'tx'>,
   socialIds: SocialId[],
+  workspace: WorkspaceUuid,
   globalPerson?: GlobalPerson
 ): Promise<Ref<Employee> | null> {
-  const txFactory = new TxFactory(me.primarySocialId)
-  const personByUuid = await client.findOne(contact.class.Person, { personUuid: person.uuid })
+  const txFactory = new TxFactory(me.primarySocialId, workspace)
+  const personByUuid = await client.findOne(contact.class.Person, { personUuid: person.uuid }, { workspace })
   let personRef: Ref<Person> | undefined = personByUuid?._id
   if (personRef === undefined) {
-    const socialIdentity = await client.findOne(contact.class.SocialIdentity, {
-      _id: { $in: person.socialIds as SocialIdentityRef[] }
-    })
+    const socialIdentity = await client.findOne(contact.class.SocialIdentity, { _id: { $in: person.socialIds as SocialIdentityRef[] } }, { workspace }
+    )
 
     // This social id is confirmed globally as we only have ids of confirmed social identities in socialIds array
     personRef = socialIdentity?.attachedTo
@@ -449,7 +451,7 @@ export async function ensureEmployeeForPerson (
   }
 
   const existingIdentifiers = toIdMap(
-    await client.findAll(contact.class.SocialIdentity, { _id: { $in: person.socialIds as SocialIdentityRef[] } })
+    await client.findAll(contact.class.SocialIdentity, { _id: { $in: person.socialIds as SocialIdentityRef[] } }, { workspace })
   )
 
   for (const socialId of socialIds) {

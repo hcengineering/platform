@@ -67,7 +67,7 @@
   <div class="message__files">
     {#each message.files as file (file.blobId)}
       <AttachmentPreview
-        value={{ file: file.blobId, type: file.type, name: file.filename, size: file.size, metadata: file.meta }}
+        value={{ file: toAny(file.blobId), type: file.type, name: file.filename, size: file.size, metadata: file.meta }}
         imageSize="x-large"
       />
     {/each}

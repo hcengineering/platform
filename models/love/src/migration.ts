@@ -14,7 +14,7 @@
 //
 
 import contact from '@hcengineering/contact'
-import { TxOperations, type Ref, type Space } from '@hcengineering/core'
+import { type TxOperations, type Ref, type Space } from '@hcengineering/core'
 import drive from '@hcengineering/drive'
 import {
   MeetingStatus,
@@ -55,26 +55,24 @@ async function createDefaultFloor (tx: TxOperations): Promise<void> {
 }
 
 async function createRooms (client: MigrationUpgradeClient): Promise<void> {
-  const tx = new TxOperations(client, core.account.System)
   const rooms = await client.findAll(love.class.Room, {})
   for (const room of rooms) {
-    await tx.remove(room)
+    await client.remove(room)
   }
   const employees = await client.findAll(contact.mixin.Employee, { active: true })
   const data = createDefaultRooms(employees.map((p) => p._id))
   for (const room of data) {
     const _class = isOffice(room) ? love.class.Office : love.class.Room
-    await tx.createDoc(_class, core.space.Workspace, room, room._id)
+    await client.createDoc(_class, core.space.Workspace, room, room._id)
   }
 }
 
 async function createReception (client: MigrationUpgradeClient): Promise<void> {
-  const tx = new TxOperations(client, core.account.System)
-  const current = await tx.findOne(love.class.Room, {
+  const current = await client.findOne(love.class.Room, {
     _id: love.ids.Reception
   })
   if (current !== undefined) return
-  await tx.createDoc(
+  await client.createDoc(
     love.class.Room,
     core.space.Workspace,
     {
@@ -182,8 +180,7 @@ export const loveOperation: MigrateOperation = {
       {
         state: 'initial-defaults',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await createDefaultFloor(tx)
+          await createDefaultFloor(client)
         }
       },
       {

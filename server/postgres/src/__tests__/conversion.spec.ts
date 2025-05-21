@@ -71,7 +71,7 @@ describe('array decoding', () => {
   })
 })
 
-const factory = new TxFactory('email:test' as PersonId)
+const factory = new TxFactory('email:test' as PersonId, core.workspace.Model)
 function upd (id: string, partial: DocumentUpdate<ComplexClass>): Tx {
   return factory.createTxUpdateDoc<ComplexClass>(
     test.class.ComplexClass,

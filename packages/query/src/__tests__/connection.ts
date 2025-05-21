@@ -14,9 +14,7 @@
 //
 
 import core, {
-  BackupClient,
   Class,
-  Client,
   ClientConnectEvent,
   ClientConnection,
   Doc,
@@ -26,32 +24,26 @@ import core, {
   DOMAIN_TX,
   FindOptions,
   FindResult,
-  FulltextStorage,
   generateId,
-  Handler,
   Hierarchy,
-  LoadModelResponse,
   ModelDb,
   Ref,
   SearchOptions,
   SearchQuery,
   SearchResult,
+  systemAccount,
   Timestamp,
   Tx,
   TxDb,
-  TxResult
+  TxResult,
+  type Account,
+  type AccountWorkspace,
+  type SubscribedWorkspaceInfo,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { genMinModel } from './minmodel'
 
-export async function connect (handler: (tx: Tx) => void): Promise<
-Client &
-BackupClient &
-FulltextStorage & {
-  isConnected: () => boolean
-  loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
-  pushHandler: (handler: Handler) => void
-}
-> {
+export async function connect (handler: (tx: Tx[]) => void): Promise<ClientConnection> {
   const txes = genMinModel()
 
   const hierarchy = new Hierarchy()
@@ -78,6 +70,18 @@ FulltextStorage & {
     isConnected (): boolean {
       return true
     }
+
+    getAvailableWorkspaces (): WorkspaceUuid[] {
+      return []
+    }
+
+    async subscribe (): Promise<SubscribedWorkspaceInfo> {
+      return {}
+    }
+
+    async unsubscribe (): Promise<void> {}
+
+    getWorkspaces: () => Record<WorkspaceUuid, AccountWorkspace> = () => ({})
 
     pushHandler (): void {}
 
@@ -112,13 +116,13 @@ FulltextStorage & {
         this.hierarchy.tx(tx)
       }
       await Promise.all([this.model.tx(tx), this.transactions.tx(tx)])
-      handler(tx)
+      handler([tx])
       return {}
     }
 
     async close (): Promise<void> {}
 
-    async loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
+    async loadChunk (workspaceId: WorkspaceUuid, domain: Domain, idx?: number): Promise<DocChunk> {
       return {
         idx: -1,
         docs: [],
@@ -126,7 +130,7 @@ FulltextStorage & {
       }
     }
 
-    async getDomainHash (domain: Domain): Promise<string> {
+    async getDomainHash (workspaceId: WorkspaceUuid, domain: Domain): Promise<string> {
       return generateId()
     }
 
@@ -134,15 +138,15 @@ FulltextStorage & {
       return txes
     }
 
-    async closeChunk (idx: number): Promise<void> {}
+    async closeChunk (workspaceId: WorkspaceUuid, idx: number): Promise<void> {}
 
-    async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    async loadDocs (workspaceId: WorkspaceUuid, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
       return []
     }
 
-    async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+    async upload (workspaceId: WorkspaceUuid, domain: Domain, docs: Doc[]): Promise<void> {}
 
-    async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+    async clean (workspaceId: WorkspaceUuid, domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 
     async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
       return { docs: [] }
@@ -150,17 +154,37 @@ FulltextStorage & {
 
     async sendForceClose (): Promise<void> {}
 
-    handler?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+    handler?: (
+      event: ClientConnectEvent,
+      lastTx: Record<WorkspaceUuid, string | undefined> | undefined,
+      data: any
+    ) => Promise<void>
 
     set onConnect (
-      handler: ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined
+      handler:
+      | ((
+        event: ClientConnectEvent,
+        lastTx: Record<WorkspaceUuid, string | undefined> | undefined,
+        data: any
+      ) => Promise<void>)
+      | undefined
     ) {
       this.handler = handler
-      void this.handler?.(ClientConnectEvent.Connected, '', {})
+      void this.handler?.(ClientConnectEvent.Connected, {}, {})
     }
 
-    get onConnect (): ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined {
+    get onConnect ():
+    | ((
+      event: ClientConnectEvent,
+      lastTx: Record<WorkspaceUuid, string | undefined> | undefined,
+      data: any
+    ) => Promise<void>)
+    | undefined {
       return this.handler
+    }
+
+    async getAccount (): Promise<Account> {
+      return systemAccount
     }
   }
 

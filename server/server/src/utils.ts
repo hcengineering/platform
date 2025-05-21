@@ -13,64 +13,53 @@
 // limitations under the License.
 //
 
-import { type WorkspaceUuid, type MeasureContext } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 
-import type {
-  AddSessionActive,
-  AddSessionResponse,
-  ConnectionSocket,
-  Session,
-  SessionManager
-} from '@hcengineering/server-core'
+import type { ConnectionSocket } from '@hcengineering/server-core'
 
 import { type Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
+import type { Session, SessionManager } from './types'
+import type { Workspace } from './workspace'
 
 export interface WebsocketData {
   connectionSocket?: ConnectionSocket
   payload: Token
   token: string
-  session: Promise<AddSessionResponse> | AddSessionResponse | undefined
+  session: Promise<Session> | Session | undefined
   url: string
 }
 
-export function doSessionOp (
-  data: WebsocketData,
-  op: (session: AddSessionActive, msg: Buffer) => void,
-  msg: Buffer
-): void {
+export function doSessionOp (data: WebsocketData, op: (session: Session, msg: Buffer) => void, msg: Buffer): void {
   if (data.session instanceof Promise) {
     // We need to copy since we will out of protected buffer area
     const msgCopy = Buffer.copyBytesFrom(new Uint8Array(msg))
     void data.session
       .then((_session) => {
         data.session = _session
-        if ('session' in _session) {
-          op(_session, msgCopy)
-        }
+        op(data.session, msgCopy)
       })
       .catch((err) => {
         console.error({ message: 'Failed to process session operation', err })
       })
   } else {
-    if (data.session !== undefined && 'session' in data.session) {
+    if (data.session !== undefined) {
       op(data.session, msg)
     }
   }
 }
 
 export function processRequest (
+  ctx: MeasureContext,
   session: Session,
   cs: ConnectionSocket,
-  context: MeasureContext,
-  workspaceId: WorkspaceUuid,
   buff: any,
   sessions: SessionManager
 ): void {
   try {
     const request = cs.readRequest(buff, session.binaryMode)
-    void sessions.handleRequest(context, session, cs, request, workspaceId).catch((err) => {
-      context.error('failed to handle request', { err, request })
+    void sessions.handleRequest(ctx, session, cs, request).catch((err) => {
+      ctx.error('failed to handle request', { err })
     })
   } catch (err: any) {
     if (((err.message as string) ?? '').includes('Data read, but end of buffer not reached')) {
@@ -88,4 +77,20 @@ export function sendResponse (
   resp: Response<any>
 ): Promise<void> {
   return socket.send(ctx, resp, session.binaryMode, session.useCompression)
+}
+
+export function getLastHashInfo (workspaces: Workspace[]): {
+  lastTx: Record<WorkspaceUuid, string | undefined>
+  lastHash: Record<WorkspaceUuid, string | undefined>
+} {
+  const lastTx: Record<WorkspaceUuid, string | undefined> = {}
+  for (const workspace of workspaces) {
+    lastTx[workspace.wsId.uuid] = workspace.getLastTx()
+  }
+
+  const lastHash: Record<WorkspaceUuid, string | undefined> = {}
+  for (const workspace of workspaces) {
+    lastHash[workspace.wsId.uuid] = workspace.getLastHash()
+  }
+  return { lastTx, lastHash }
 }

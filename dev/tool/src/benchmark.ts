@@ -403,7 +403,7 @@ export function benchmarkWorker (): void {
 
       if (msg.options.mode === 'find-all') {
         const benchmarkPersonId = (core.account.System + '_benchmark') as PersonId
-        const opt = new TxOperations(connection, benchmarkPersonId)
+        const opt = new TxOperations(connection, benchmarkPersonId, msg.workspaceId)
         parentPort?.postMessage({
           type: 'operate',
           workId: msg.workId
@@ -544,7 +544,7 @@ export async function stressBenchmark (transactor: string, mode: StressBenchmark
 export async function testFindAll (endpoint: string, workspace: WorkspaceUuid, account: PersonUuid): Promise<void> {
   const connection = await connect(endpoint, workspace, account)
   try {
-    const client = new TxOperations(connection, core.account.System)
+    const client = new TxOperations(connection, core.account.System, workspace)
     const start = platformNow()
     const res = await client.findAll(
       recruit.class.Applicant,
@@ -569,7 +569,7 @@ export async function generateWorkspaceData (
   email: string
 ): Promise<void> {
   const connection = await connect(endpoint, workspace)
-  const client = new TxOperations(connection, core.account.System)
+  const client = new TxOperations(connection, core.account.System, workspace)
   try {
     const emailSocialString = buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
     const person = await getPersonBySocialKey(client, emailSocialString)

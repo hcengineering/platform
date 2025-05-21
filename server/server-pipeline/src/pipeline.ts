@@ -25,7 +25,6 @@ import {
   FullTextMiddleware,
   IdentityMiddleware,
   LiveQueryMiddleware,
-  LookupMiddleware,
   LowLevelMiddleware,
   MarkDerivedEntryMiddleware,
   ModelMiddleware,
@@ -117,7 +116,6 @@ export function createServerPipeline (
     const conf = getConfig(metrics, dbUrl, wsMetrics, opt, extensions)
 
     const middlewares: MiddlewareCreator[] = [
-      LookupMiddleware.create,
       IdentityMiddleware.create,
       ModifiedMiddleware.create,
       PluginConfigurationMiddleware.create,

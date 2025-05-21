@@ -34,6 +34,8 @@ import type {
 /** @public */
 export const workbenchId = 'workbench' as Plugin
 
+export const workbenchAppsId = 'apps' as Plugin
+
 /** @public */
 export const workbenchPlugin = plugin(workbenchId, {
   class: {
@@ -49,6 +51,7 @@ export const workbenchPlugin = plugin(workbenchId, {
   },
   component: {
     WorkbenchApp: '' as AnyComponent,
+    WorkbenchApps: '' as AnyComponent, // Multi workspace version of workbench
     InviteLink: '' as AnyComponent,
     Archive: '' as AnyComponent,
     SpecialView: '' as AnyComponent

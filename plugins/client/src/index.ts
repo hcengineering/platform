@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { Client, ClientConnectEvent, MeasureContext, TxPersistenceStore } from '@hcengineering/core'
-import { type Plugin, type Resource, type Metadata, plugin } from '@hcengineering/platform'
+import type { Client, ConnectionEvents, MeasureContext, TxPersistenceStore } from '@hcengineering/core'
+import { type Metadata, type Plugin, plugin, type Resource } from '@hcengineering/platform'
 
 /**
  * @public
@@ -54,20 +54,12 @@ export enum ClientSocketReadyState {
   CLOSED = 3
 }
 
-export interface ClientFactoryOptions {
+export interface ClientFactoryOptions extends ConnectionEvents {
   socketFactory?: ClientSocketFactory
   useBinaryProtocol?: boolean
   useProtocolCompression?: boolean
   connectionTimeout?: number
-  onHello?: (serverVersion?: string) => boolean
-  onUpgrade?: () => void
-  onUnauthorized?: () => void
-  onArchived?: () => void
-  onMigration?: () => void
-  onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
   ctx?: MeasureContext
-  onDialTimeout?: () => void | Promise<void>
-
   useGlobalRPCHandler?: boolean
 }
 

@@ -19,8 +19,9 @@ import {
   type LoginInfoWorkspace
 } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
-import { type ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
 import core, {
+  type EndpointInfo,
+  type Account,
   AccountRole,
   type AccountUuid,
   type Branding,
@@ -38,9 +39,11 @@ import core, {
   platformNow,
   platformNowDiff,
   SocialIdType,
+  type SubscribedWorkspaceInfo,
   systemAccountUuid,
   type Tx,
   TxFactory,
+  type TxHandler,
   type TxWorkspaceEvent,
   type Version,
   versionToString,
@@ -49,9 +52,10 @@ import core, {
   WorkspaceEvent,
   type WorkspaceIds,
   type WorkspaceInfoWithStatus,
+  type WorkspaceMode,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import { type Status, unknownError } from '@hcengineering/platform'
+import platform, { Severity, Status, unknownError } from '@hcengineering/platform'
 import {
   type HelloRequest,
   type HelloResponse,
@@ -61,31 +65,29 @@ import {
   SlidingWindowRateLimitter
 } from '@hcengineering/rpc'
 import {
-  type AddSessionResponse,
-  type ClientSessionCtx,
   type CommunicationApiFactory,
   type ConnectionSocket,
-  type GetWorkspaceResponse,
+  type EndpointConnectionFactory,
   LOGGING_ENABLED,
   pingConst,
-  type Pipeline,
   type PipelineFactory,
   type PlatformQueue,
   type PlatformQueueProducer,
   QueueTopic,
   type QueueUserMessage,
   type QueueWorkspaceMessage,
-  type Session,
-  type SessionManager,
   userEvents,
   type UserStatistics,
   workspaceEvents,
   type WorkspaceStatistics
 } from '@hcengineering/server-core'
 import { generateToken, type Token } from '@hcengineering/server-token'
-import { type PipelinePair, Workspace } from './workspace'
+import { type ClientSessionCtx, type Session, type SessionInfoRecord, type SessionManager } from './types'
+import { type PipelinePair, type Workspace, WorkspaceImpl, type WorkspacePipelineFactory } from './workspace'
+
 import { ClientSession } from './client'
-import { sendResponse } from './utils'
+import { EndpointClient, EndpointWorkspace } from './endpoint'
+import { getLastHashInfo, sendResponse } from './utils'
 
 const ticksPerSecond = 20
 const workspaceSoftShutdownTicks = 15 * ticksPerSecond
@@ -101,12 +103,24 @@ export interface Timeouts {
   reconnectTimeout: number // Default 3 seconds
 }
 
+interface TickHandler {
+  ticks: number
+  operation: () => Promise<void>
+}
+
 export class TSessionManager implements SessionManager {
   private readonly statusPromises = new Map<string, Promise<void>>()
   readonly workspaces = new Map<WorkspaceUuid, Workspace>()
   checkInterval: any
 
-  sessions = new Map<string, { session: Session, socket: ConnectionSocket, tickHash: number }>()
+  sessions = new Map<string, SessionInfoRecord>()
+
+  accountIdToSessions = new Map<AccountUuid, Session[]>()
+
+  accounts = new Map<AccountUuid, Account>()
+  socialStringsToUsers = new Map<PersonId, AccountUuid>()
+
+  tickHandlers = new Map<string, TickHandler>()
   reconnectIds = new Set<string>()
 
   maintenanceTimer: any
@@ -118,9 +132,10 @@ export class TSessionManager implements SessionManager {
   workspaceProducer: PlatformQueueProducer<QueueWorkspaceMessage>
   usersProducer: PlatformQueueProducer<QueueUserMessage>
 
+  broadcastHandlers: TxHandler[] = []
+
   now: number = Date.now()
 
-  ticksContext: MeasureContext
   constructor (
     readonly ctx: MeasureContext,
     readonly timeouts: Timeouts,
@@ -133,20 +148,29 @@ export class TSessionManager implements SessionManager {
     | undefined,
     readonly accountsUrl: string,
     readonly enableCompression: boolean,
-    readonly doHandleTick: boolean = true,
     readonly queue: PlatformQueue,
     readonly pipelineFactory: PipelineFactory,
-    readonly communicationApiFactory: CommunicationApiFactory
+    readonly endpointFactory: EndpointConnectionFactory,
+    readonly communicationApiFactory: CommunicationApiFactory,
+    readonly region: string,
+    readonly endpointName: string,
+    readonly _handleTick: boolean
   ) {
-    if (this.doHandleTick) {
+    if (this._handleTick) {
       this.checkInterval = setInterval(() => {
         this.handleTick()
       }, 1000 / ticksPerSecond)
     }
     this.workspaceProducer = this.queue.getProducer(ctx.newChild('queue', {}), QueueTopic.Workspace)
     this.usersProducer = this.queue.getProducer(ctx.newChild('queue', {}), QueueTopic.Users)
+  }
 
-    this.ticksContext = ctx.newChild('ticks', {})
+  addBroadcastHandler (handler: TxHandler): void {
+    this.broadcastHandlers.push(handler)
+  }
+
+  removeBroadcastHandler (handler: TxHandler): void {
+    this.broadcastHandlers = this.broadcastHandlers.filter((it) => it !== handler)
   }
 
   scheduleMaintenance (timeMinutes: number): void {
@@ -176,25 +200,41 @@ export class TSessionManager implements SessionManager {
     if (this.timeMinutes === 0) {
       return
     }
-    const event: TxWorkspaceEvent = this.createMaintenanceWarning()
     for (const ws of this.workspaces.values()) {
+      const event: TxWorkspaceEvent = this.createMaintenanceWarning(ws.wsId.uuid)
       this.doBroadcast(ws, [event])
     }
   }
 
-  private createMaintenanceWarning (): TxWorkspaceEvent {
+  private createMaintenanceWarning (workspace: WorkspaceUuid): TxWorkspaceEvent {
     return {
       _id: generateId(),
       _class: core.class.TxWorkspaceEvent,
+      _uuid: workspace,
       event: WorkspaceEvent.MaintenanceNotification,
+      space: core.space.Workspace,
+      objectSpace: core.space.DerivedTx,
       modifiedBy: core.account.System,
       modifiedOn: Date.now(),
-      objectSpace: core.space.DerivedTx,
-      space: core.space.DerivedTx,
       createdBy: core.account.System,
       params: {
         timeMinutes: this.timeMinutes
       }
+    }
+  }
+
+  private createWorkspaceEvent<T>(workspace: WorkspaceUuid, event: WorkspaceEvent, params?: T): TxWorkspaceEvent {
+    return {
+      _uuid: workspace,
+      _id: generateId(),
+      _class: core.class.TxWorkspaceEvent,
+      space: core.space.Workspace,
+      objectSpace: core.space.DerivedTx,
+      event,
+      modifiedBy: core.account.System,
+      modifiedOn: Date.now(),
+      createdBy: core.account.System,
+      params
     }
   }
 
@@ -210,58 +250,78 @@ export class TSessionManager implements SessionManager {
 
   private handleWorkspaceTick (): void {
     for (const [wsId, workspace] of this.workspaces.entries()) {
-      if (this.ticks % (60 * ticksPerSecond) === workspace.tickHash) {
+      if (this.ticks % ((workspace.maintenance ? 5 : 60) * ticksPerSecond) === workspace.tickHash) {
         try {
-          // update account lastVisit every minute per every workspace.∏
-          let connected: boolean = false
-          for (const val of workspace.sessions.values()) {
-            if (val.session.getUser() !== systemAccountUuid) {
-              connected = true
-              break
-            }
-          }
-          void this.getWorkspaceInfo(this.ticksContext, workspace.token, connected).catch(() => {
-            // Ignore
-          })
+          // TODO: Rework on Queue update listen???
+          void this.getWorkspaceInfo(workspace.token, workspace.checkHasUser())
+            .then((info) => {
+              if (info !== undefined) {
+                const wsVersion: Data<Version> = {
+                  major: info.versionMajor,
+                  minor: info.versionMinor,
+                  patch: info.versionPatch
+                }
+
+                const maintenance = this.getMaintenance(info.mode, versionToString(wsVersion))
+                if (workspace.maintenance && !maintenance) {
+                  workspace.maintenance = false
+                  this.ctx.warn('Workspace is back to normal', {
+                    workspace: workspace.wsId.url,
+                    wsId: workspace.wsId.uuid
+                  })
+                  // Need to inform clients about workspace back to normal
+                  this.broadcastAll(workspace.wsId.uuid, [
+                    this.createWorkspaceEvent(workspace.wsId.uuid, WorkspaceEvent.WorkpaceActive)
+                  ])
+                }
+              }
+            })
+            .catch(() => {
+              // Ignore
+            })
         } catch (err: any) {
           // Ignore
         }
       }
 
-      for (const [k, v] of Array.from(workspace.tickHandlers.entries())) {
-        v.ticks--
-        if (v.ticks === 0) {
-          workspace.tickHandlers.delete(k)
-          try {
-            v.operation()
-          } catch (err: any) {
-            Analytics.handleError(err)
-          }
-        }
-      }
-
       for (const s of workspace.sessions) {
         if (this.ticks % (5 * 60 * ticksPerSecond) === workspace.tickHash) {
-          s[1].session.mins5.find = s[1].session.current.find
-          s[1].session.mins5.tx = s[1].session.current.tx
+          s[1].mins5.find = s[1].current.find
+          s[1].mins5.tx = s[1].current.tx
 
-          s[1].session.current = { find: 0, tx: 0 }
+          s[1].current = { find: 0, tx: 0 }
         }
       }
 
       // Wait some time for new client to appear before closing workspace.
-      if (workspace.sessions.size === 0 && workspace.closing === undefined && workspace.workspaceInitCompleted) {
+      if (workspace.sessions.size === 0) {
         workspace.softShutdown--
         if (workspace.softShutdown <= 0) {
           this.ctx.warn('closing workspace, no users', {
             workspace: workspace.wsId.url,
-            wsId,
-            upgrade: workspace.upgrade
+            wsId
           })
-          workspace.closing = this.performWorkspaceCloseCheck(workspace)
+          void this.performWorkspaceCloseCheck(workspace).catch((err) => {
+            console.error({ message: 'Failed to perform workspace close check', err })
+          })
         }
       } else {
         workspace.softShutdown = workspaceSoftShutdownTicks
+      }
+    }
+
+    for (const [k, v] of Array.from(this.tickHandlers.entries())) {
+      v.ticks--
+      if (v.ticks === 0) {
+        this.tickHandlers.delete(k)
+        try {
+          void v.operation().catch((err) => {
+            Analytics.handleError(err)
+            this.ctx.error('error during tick handler', { error: err })
+          })
+        } catch (err: any) {
+          Analytics.handleError(err)
+        }
       }
     }
   }
@@ -271,7 +331,6 @@ export class TSessionManager implements SessionManager {
       const isCurrentUserTick = this.ticks % ticksPerSecond === s.tickHash
 
       if (isCurrentUserTick) {
-        const wsId = s.session.workspace.uuid
         const lastRequestDiff = now - s.session.lastRequest
 
         let timeout = 60000
@@ -279,10 +338,10 @@ export class TSessionManager implements SessionManager {
           timeout = timeout * 10
         }
         if (lastRequestDiff > timeout) {
-          this.ctx.warn('session hang, closing...', { wsId, user: s.session.getUser() })
+          this.ctx.warn('session hang, closing...', { user: s.session.getUser(), sessionId: s.session.sessionId })
 
           // Force close workspace if only one client and it hang.
-          void this.close(this.ticksContext, s.socket, wsId).catch((err) => {
+          void this.close(this.ctx, s.session).catch((err) => {
             this.ctx.error('failed to close', err)
           })
           continue
@@ -295,7 +354,7 @@ export class TSessionManager implements SessionManager {
           // And ping other wize
           s.session.lastPing = now
           if (s.socket.checkState()) {
-            void s.socket.send(this.ticksContext, { result: pingConst }, s.session.binaryMode, s.session.useCompression)
+            void s.socket.send(this.ctx, { result: pingConst }, s.session.binaryMode, s.session.useCompression)
           }
         }
         for (const r of s.session.requests.values()) {
@@ -303,7 +362,7 @@ export class TSessionManager implements SessionManager {
           if (sec > 0 && sec % 30 === 0) {
             this.ctx.warn('request hang found', {
               sec,
-              wsId,
+              wsId: r.workspaceId,
               total: s.session.requests.size,
               user: s.session.getUser(),
               ...cutObjectArray(r.params)
@@ -314,43 +373,7 @@ export class TSessionManager implements SessionManager {
     }
   }
 
-  createSession (token: Token, workspace: WorkspaceIds, info: LoginInfoWithWorkspaces): Session {
-    let primarySocialId: PersonId
-    let role: AccountRole = info.workspaces[workspace.uuid]?.role ?? AccountRole.User
-    switch (info.account) {
-      case systemAccountUuid:
-        primarySocialId = core.account.System
-        role = AccountRole.Owner
-        break
-      case guestAccount:
-        primarySocialId = '' as PersonId
-        role = AccountRole.DocGuest
-        break
-      default:
-        primarySocialId = pickPrimarySocialId(info.socialIds)._id
-    }
-
-    return new ClientSession(
-      token,
-      workspace,
-      {
-        uuid: info.account,
-        socialIds: info.socialIds.map((it) => it._id),
-        primarySocialId,
-        fullSocialIds: info.socialIds,
-        role
-      },
-      info,
-      token.extra?.mode === 'backup'
-    )
-  }
-
-  @withContext('🧭 get-workspace-info')
-  async getWorkspaceInfo (
-    ctx: MeasureContext,
-    token: string,
-    updateLastVisit = true
-  ): Promise<WorkspaceInfoWithStatus | undefined> {
+  async getWorkspaceInfo (token: string, updateLastVisit = true): Promise<WorkspaceInfoWithStatus | undefined> {
     try {
       return await getAccountClient(this.accountsUrl, token).getWorkspaceInfo(updateLastVisit)
     } catch (err: any) {
@@ -361,8 +384,7 @@ export class TSessionManager implements SessionManager {
     }
   }
 
-  @withContext('🧭 get-login-with-workspace-info')
-  async getLoginWithWorkspaceInfo (ctx: MeasureContext, token: string): Promise<LoginInfoWithWorkspaces | undefined> {
+  async getLoginWithWorkspaceInfo (token: string): Promise<LoginInfoWithWorkspaces | undefined> {
     try {
       const accountClient = getAccountClient(this.accountsUrl, token)
       return await accountClient.getLoginWithWorkspaceInfo()
@@ -376,234 +398,297 @@ export class TSessionManager implements SessionManager {
 
   countUserSessions (workspace: Workspace, accountUuid: AccountUuid): number {
     return Array.from(workspace.sessions.values())
-      .filter((it) => it.session.getUser() === accountUuid)
+      .filter((it) => it.getUser() === accountUuid)
       .reduce<number>((acc) => acc + 1, 0)
   }
 
   tickCounter = 0
 
-  @withContext('🧭 get-workspace')
-  async getWorkspace (
+  getMaintenance (mode: WorkspaceMode, version: string): boolean {
+    return (
+      isWorkspaceCreating(mode) ||
+      isMigrationMode(mode) ||
+      isRestoringMode(mode) ||
+      (this.modelVersion !== '' && this.modelVersion !== version)
+    )
+  }
+
+  getWorkspace (
     ctx: MeasureContext,
     workspaceUuid: WorkspaceUuid,
-    workspaceInfo: LoginInfoWorkspace | undefined,
-    token: Token,
-    ws: ConnectionSocket
-  ): Promise<{ workspace?: Workspace, resp?: GetWorkspaceResponse }> {
-    if (workspaceInfo === undefined) {
-      return { resp: { error: new Error('Workspace not found or not available'), terminate: true } }
-    }
-
+    workspaceInfo: LoginInfoWorkspace
+  ): { workspace?: Workspace, open?: Promise<void> } {
     if (isArchivingMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
-      return { resp: { error: new Error('Workspace is archived'), terminate: true, specialError: 'archived' } }
+      return {}
     }
-    if (isMigrationMode(workspaceInfo.mode)) {
-      // No access to disabled workspaces for regular users
-      return {
-        resp: { error: new Error('Workspace is in region migration'), terminate: true, specialError: 'migration' }
-      }
-    }
-    if (isRestoringMode(workspaceInfo.mode)) {
-      // No access to disabled workspaces for regular users
-      return {
-        resp: { error: new Error('Workspace is in backup restore'), terminate: true, specialError: 'migration' }
-      }
-    }
-
-    if (isWorkspaceCreating(workspaceInfo.mode)) {
-      // No access to workspace for token.
-      return { resp: { error: new Error(`Workspace during creation phase...${workspaceUuid}`) } }
-    }
-
     const wsVersion: Data<Version> = {
       major: workspaceInfo.version.versionMajor,
       minor: workspaceInfo.version.versionMinor,
       patch: workspaceInfo.version.versionPatch
     }
 
-    if (
-      this.modelVersion !== '' &&
-      this.modelVersion !== versionToString(wsVersion) &&
-      token.extra?.model !== 'upgrade' &&
-      token.extra?.mode !== 'backup'
-    ) {
-      ctx.warn('Model version mismatch', {
-        version: this.modelVersion,
-        workspaceVersion: versionToString(wsVersion),
-        workspace: workspaceUuid
-      })
-      // Version mismatch, return upgrading.
-      return { resp: { upgrade: true, progress: workspaceInfo.mode === 'upgrading' ? workspaceInfo.progress ?? 0 : 0 } }
-    }
+    const maintenance = this.getMaintenance(workspaceInfo.mode, versionToString(wsVersion))
 
     let workspace = this.workspaces.get(workspaceUuid)
-    if (workspace?.closing !== undefined) {
-      await workspace?.closing
-    }
-
-    workspace = this.workspaces.get(workspaceUuid)
+    let open: Promise<void> | undefined
 
     const branding = null
 
     if (workspace === undefined) {
       ctx.warn('open workspace', {
-        account: token.account,
-        workspace: workspaceUuid,
-        ...token.extra
+        url: workspaceInfo.url,
+        workspace: workspaceUuid
       })
+      ;({ workspace, open } = this.createWorkspace(
+        ctx.parent ?? ctx,
+        ctx,
+        workspaceUuid,
+        workspaceInfo.endpoint,
+        workspaceInfo.url,
+        workspaceInfo.dataId,
+        branding
+      ))
 
-      workspace = this.createWorkspace(ctx.parent ?? ctx, ctx, token, workspaceInfo.url, workspaceInfo.dataId, branding)
-      await this.workspaceProducer.send(workspaceUuid, [workspaceEvents.open()])
+      void this.workspaceProducer.send(workspaceUuid, [workspaceEvents.open()]).catch((err) => {
+        ctx.warn('failed to send workspace open event', { err })
+      })
     }
-
-    if (token.extra?.model === 'upgrade') {
-      if (workspace.upgrade) {
-        ctx.warn('reconnect workspace in upgrade', {
-          account: token.account,
-          workspace: workspaceUuid,
-          wsUrl: workspaceInfo.url
-        })
-      } else {
-        ctx.warn('reconnect workspace in upgrade switch', {
-          email: token.account,
-          workspace: workspaceUuid,
-          wsUrl: workspaceInfo.url
-        })
-
-        // We need to wait in case previous upgrade connection is already closing.
-        await this.switchToUpgradeSession(token, ctx.parent ?? ctx, workspace, ws)
-      }
-    } else {
-      if (workspace.upgrade) {
-        ctx.warn('connect during upgrade', {
-          account: token.account,
-          workspace: workspace.wsId.url,
-          sessionUsers: Array.from(workspace.sessions.values()).map((it) => it.session.getUser()),
-          sessionData: Array.from(workspace.sessions.values()).map((it) => it.socket.data())
-        })
-
-        return { resp: { upgrade: true } }
-      }
+    workspace.maintenance = maintenance
+    if (maintenance) {
+      ctx.warn('Workspace in maintenance', {
+        version: this.modelVersion,
+        workspaceVersion: versionToString(wsVersion),
+        workspace: workspaceUuid
+      })
     }
-    return { workspace }
+    return { workspace, open }
   }
 
+  async registerAccountByUuid (account: AccountUuid, session: Session): Promise<void> {
+    const acc = this.accounts.get(account)
+    if (acc !== undefined) {
+      this.registerAccount(account, acc, session)
+      return
+    }
+
+    const loginInfo = await this.getLoginWithWorkspaceInfo(generateToken(account, '' as WorkspaceUuid))
+    if (loginInfo !== undefined) {
+      this.registerAccount(account, createAccountFromInfo(loginInfo), session)
+    }
+  }
+
+  registerAccount (account: AccountUuid, loginInfo: Account, session: Session): void {
+    this.accounts.set(account, loginInfo)
+    const existingSessions = this.accountIdToSessions.get(account) ?? []
+    if (existingSessions.length === 0) {
+      for (const sid of loginInfo.fullSocialIds.values()) {
+        this.socialStringsToUsers.set(sid._id, account)
+      }
+    }
+    this.accountIdToSessions.set(account, existingSessions.concat(session))
+  }
+
+  unregisterAccount (account: AccountUuid, sessionRef: Session): void {
+    const filteredSessions = (this.accountIdToSessions.get(account) ?? []).filter(
+      (it) => it.sessionId !== sessionRef.sessionId
+    )
+
+    if (filteredSessions.length === 0) {
+      // In case no sessions left, remove account from map
+      this.accountIdToSessions.delete(account)
+      this.accounts.delete(account)
+
+      // Also remove sessionId mapping
+      for (const sid of sessionRef.getUserSocialIds()) {
+        this.socialStringsToUsers.delete(sid)
+      }
+    } else {
+      this.accountIdToSessions.set(account, filteredSessions)
+    }
+  }
+
+  @withContext('📲 add-session')
   async addSession (
     ctx: MeasureContext,
     ws: ConnectionSocket,
     token: Token,
     rawToken: string,
     sessionId: string | undefined
-  ): Promise<AddSessionResponse> {
-    return await ctx.with('📲 add-session', { source: token.extra?.service ?? '🤦‍♂️user' }, async (ctx) => {
-      let account: LoginInfoWithWorkspaces | undefined
+  ): Promise<Session> {
+    let account: LoginInfoWithWorkspaces | undefined
 
-      try {
-        account = await this.getLoginWithWorkspaceInfo(ctx, rawToken)
-      } catch (err: any) {
-        return { error: err }
+    try {
+      account = (token.account === systemAccountUuid)
+        ? {
+            account: token.account,
+            name: 'System',
+            personalWorkspace: core.workspace.Any,
+            workspaces: {},
+            socialIds: []
+          }
+        : await this.getLoginWithWorkspaceInfo(rawToken)
+    } catch (err: any) {
+      ctx.error('failed to get login info', { err })
+    }
+
+    if (account === undefined) {
+      void ws.send(
+        ctx,
+        {
+          id: -1,
+          error: new Status(Severity.ERROR, platform.status.AccountNotFound, {
+            account: token.account
+          }),
+          terminate: true
+        },
+        false,
+        false
+      )
+      throw new Error('Account not found or not available')
+    }
+
+    let targetInfo = account.workspaces[token.workspace]
+    let targetWorkspace: WorkspaceUuid | undefined
+    if (targetInfo !== undefined) {
+      targetWorkspace = token.workspace
+    }
+
+    if (targetInfo === undefined && token.workspace != null && token.workspace !== '') {
+      // In case of guest or system account
+      // We need to get workspace info for system account.
+      const workspaceInfo = await this.getWorkspaceInfo(rawToken, false)
+      if (workspaceInfo === undefined) {
+        ctx.warn('Workspace not found or not available', { token })
+      } else {
+        targetInfo = this.toLoginInfoWorkspace(workspaceInfo)
+        account.workspaces[token.workspace] = targetInfo
       }
+    }
 
-      if (account === undefined) {
-        return { error: new Error('Account not found or not available'), terminate: true }
+    const oldSession = sessionId !== undefined ? this.sessions.get(sessionId) : undefined
+    if (oldSession !== undefined) {
+      // Just close old socket for old session id.
+      await this.close(ctx, oldSession.session)
+    }
+
+    // Create sesson for all workspaces, or for selected workspace only
+    const accountRef: Account = createAccountFromInfo(account, token.workspace)
+
+    const session = new ClientSession(
+      (ctx.parent ?? ctx).newChild('🧲 session', {}),
+      token,
+      ws,
+      targetInfo !== undefined && targetWorkspace !== undefined
+        ? new Set([targetWorkspace])
+        : new Set(Object.keys(account.workspaces) as WorkspaceUuid[]),
+      accountRef,
+      account,
+      token.extra?.mode === 'backup'
+    )
+
+    session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
+
+    const tickHash = this.tickCounter % ticksPerSecond
+
+    this.sessions.set(session.sessionId, { session, socket: ws, tickHash })
+
+    this.registerAccount(session.getUser(), accountRef, session)
+
+    this.tickCounter++
+
+    const accountUuid = account.account
+
+    for (const workspaceRef of session.workspaces) {
+      const info = account.workspaces[workspaceRef]
+      if (info === undefined) {
+        continue
       }
-
-      let wsInfo = account.workspaces[token.workspace]
-
-      if (wsInfo === undefined) {
-        // In case of guest or system account
-        // We need to get workspace info for system account.
-        const workspaceInfo = await this.getWorkspaceInfo(ctx, rawToken, false)
-        if (workspaceInfo === undefined) {
-          return { error: new Error('Workspace not found or not available'), terminate: true }
-        }
-        wsInfo = {
-          url: workspaceInfo.url,
-          mode: workspaceInfo.mode,
-          dataId: workspaceInfo.dataId,
-          version: {
-            versionMajor: workspaceInfo.versionMajor,
-            versionMinor: workspaceInfo.versionMinor,
-            versionPatch: workspaceInfo.versionPatch
-          },
-          role: AccountRole.Owner,
-          endpoint: { externalUrl: '', internalUrl: '', region: workspaceInfo.region ?? '' },
-          progress: workspaceInfo.processingProgress
-        }
-      }
-      const { workspace, resp } = await this.getWorkspace(ctx.parent ?? ctx, token.workspace, wsInfo, token, ws)
-      if (resp !== undefined) {
-        return resp
-      }
-
-      if (workspace === undefined || account === undefined) {
-        // Should not happen
-        return { error: new Error('Workspace not found or not available'), terminate: true }
-      }
-
-      const oldSession = sessionId !== undefined ? workspace.sessions?.get(sessionId) : undefined
-      if (oldSession !== undefined) {
-        // Just close old socket for old session id.
-        await this.close(ctx, oldSession.socket, workspace.wsId.uuid)
-      }
-
-      const session = this.createSession(token, workspace.wsId, account)
-
-      session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
-      session.sessionInstanceId = generateId()
-      const tickHash = this.tickCounter % ticksPerSecond
-
-      this.sessions.set(ws.id, { session, socket: ws, tickHash })
-      // We need to delete previous session with Id if found.
-      this.tickCounter++
-      workspace.sessions.set(session.sessionId, { session, socket: ws, tickHash })
-
-      const accountUuid = account.account
-      if (accountUuid !== systemAccountUuid && accountUuid !== guestAccount) {
-        await this.usersProducer.send(workspace.wsId.uuid, [
-          userEvents.login({
-            user: accountUuid,
-            sessions: this.countUserSessions(workspace, accountUuid),
-            socialIds: account.socialIds.map((it) => it._id)
+      const { workspace, open } = this.getWorkspace(ctx, workspaceRef, info)
+      if (workspace !== undefined) {
+        if (workspace.maintenance && token.account !== systemAccountUuid) {
+          // We need to trigger workspace to be updated, to workspace service to perform upgrade.
+          // TODO: Rework on request in QUEUE
+          void this.getWorkspaceInfo(workspaceRef, true).catch(() => {
+            // Ignore
           })
-        ])
-      }
+        }
+        await workspace.addSession(session)
+        if (open !== undefined) {
+          await open
+        }
 
-      // Mark workspace as init completed and we had at least one client.
-      if (!workspace.workspaceInitCompleted) {
-        workspace.workspaceInitCompleted = true
+        if (accountUuid !== systemAccountUuid && accountUuid !== guestAccount) {
+          await this.usersProducer.send(workspace.wsId.uuid, [
+            userEvents.login({
+              user: accountUuid,
+              sessions: this.countUserSessions(workspace, accountUuid),
+              socialIds: account.socialIds.map((it) => it._id)
+            })
+          ])
+        }
       }
+    }
+    if (this.timeMinutes > 0) {
+      void ws
+        .send(
+          ctx,
+          { result: this.createMaintenanceWarning(Object.keys(account.workspaces)[0] as WorkspaceUuid) },
+          session.binaryMode,
+          session.useCompression
+        )
+        .catch((err) => {
+          ctx.error('failed to send maintenance warning', err)
+        })
+    }
+    return session
+  }
 
-      if (this.timeMinutes > 0) {
-        void ws
-          .send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
-          .catch((err) => {
-            ctx.error('failed to send maintenance warning', err)
-          })
-      }
-      return { session, context: workspace.context, workspaceId: workspace.wsId.uuid }
+  private toLoginInfoWorkspace (workspaceInfo: WorkspaceInfoWithStatus): LoginInfoWorkspace {
+    return {
+      url: workspaceInfo.url,
+      mode: workspaceInfo.mode,
+      name: workspaceInfo.name,
+      dataId: workspaceInfo.dataId,
+      version: {
+        versionMajor: workspaceInfo.versionMajor,
+        versionMinor: workspaceInfo.versionMinor,
+        versionPatch: workspaceInfo.versionPatch
+      },
+      endpoint: workspaceInfo.endpoint,
+      role: AccountRole.Owner,
+      progress: workspaceInfo.processingProgress
+    }
+  }
+
+  async getLastTxHash (
+    workspaceId: WorkspaceUuid
+  ): Promise<{ lastTx: string | undefined, lastHash: string | undefined }> {
+    const ws = this.workspaces.get(workspaceId)
+    if (ws !== undefined) {
+      return { lastHash: ws.getLastHash(), lastTx: ws.getLastTx() }
+    }
+
+    const info = await this.getWorkspaceInfo(workspaceId, false)
+    if (info === undefined) {
+      return { lastHash: undefined, lastTx: undefined }
+    }
+    const { workspace } = this.getWorkspace(this.ctx, workspaceId, this.toLoginInfoWorkspace(info))
+
+    if (workspace === undefined) {
+      return { lastHash: undefined, lastTx: undefined }
+    }
+    return await workspace.with(async (pipeline) => {
+      return { lastTx: pipeline.context.lastTx, lastHash: pipeline.context.lastHash }
     })
   }
 
-  private async switchToUpgradeSession (
-    token: Token,
-    ctx: MeasureContext,
-    workspace: Workspace,
-    ws: ConnectionSocket
-  ): Promise<void> {
-    if (LOGGING_ENABLED) {
-      ctx.info('reloading workspace', { url: workspace.wsId.url, token: JSON.stringify(token) })
-    }
-
-    // Mark as upgrade, to prevent any new clients to connect during close
-    workspace.upgrade = true
-    // If upgrade client is used.
-    // Drop all existing clients
-    await this.doCloseAll(workspace, 0, 'upgrade', ws)
-  }
-
-  broadcastAll (workspace: WorkspaceUuid, tx: Tx[], target?: string | string[], exclude?: string[]): void {
+  broadcastAll (
+    workspace: WorkspaceUuid,
+    tx: Tx[],
+    target?: AccountUuid | AccountUuid[],
+    exclude?: AccountUuid[]
+  ): void {
     const ws = this.workspaces.get(workspace)
     if (ws === undefined) {
       return
@@ -611,10 +696,7 @@ export class TSessionManager implements SessionManager {
     this.doBroadcast(ws, tx, target, exclude)
   }
 
-  doBroadcast (ws: Workspace, tx: Tx[], target?: string | string[], exclude?: string[]): void {
-    if (ws.upgrade) {
-      return
-    }
+  doBroadcast (ws: Workspace, tx: Tx[], target?: AccountUuid | AccountUuid[], exclude?: AccountUuid[]): void {
     if (target !== undefined && !Array.isArray(target)) {
       target = [target]
     }
@@ -623,13 +705,13 @@ export class TSessionManager implements SessionManager {
       if (it === undefined) {
         return false
       }
-      const tt = it.session.getUser()
+      const tt = it.getUser()
       return (target === undefined && !(exclude ?? []).includes(tt)) || (target?.includes(tt) ?? false)
     })
     function send (): void {
       for (const session of sessions) {
         try {
-          void sendResponse(ctx, session.session, session.socket, { result: tx }).catch((err) => {
+          void sendResponse(ctx, session, session.socket, { result: tx }).catch((err) => {
             ctx.error('failed to send', err)
           })
         } catch (err: any) {
@@ -648,21 +730,18 @@ export class TSessionManager implements SessionManager {
   }
 
   broadcastSessions (measure: MeasureContext, workspace: Workspace, sessionIds: string[], result: any): void {
-    if (workspace.upgrade) {
-      return
-    }
     const ctx = measure.newChild('📬 broadcast sessions', {})
     const sessions = [...workspace.sessions.values()].filter((it) => {
-      if (it === undefined || it.session.sessionId === '') {
+      if (it === undefined || it.sessionId === '') {
         return false
       }
-      return sessionIds.includes(it.session.sessionId)
+      return sessionIds.includes(it.sessionId)
     })
 
     function send (): void {
       for (const session of sessions) {
         try {
-          void sendResponse(ctx, session.session, session.socket, { result })
+          void sendResponse(ctx, session, session.socket, { result })
         } catch (err: any) {
           Analytics.handleError(err)
           ctx.error('error during send', { error: err })
@@ -678,23 +757,18 @@ export class TSessionManager implements SessionManager {
     }
   }
 
-  broadcast (
-    from: Session | null,
-    workspaceId: WorkspaceUuid,
-    resp: Tx[],
-    target: string | undefined,
-    exclude?: string[]
-  ): void {
+  broadcast (workspaceId: WorkspaceUuid, resp: Tx[], target: AccountUuid | undefined, exclude?: AccountUuid[]): void {
+    if (this.broadcastHandlers.length > 0) {
+      for (const handler of this.broadcastHandlers) {
+        handler(resp, workspaceId, target, exclude)
+      }
+    }
     const workspace = this.workspaces.get(workspaceId)
     if (workspace === undefined) {
       this.ctx.error('internal: cannot find sessions', {
         workspaceId,
-        target,
-        userId: from?.getUser() ?? '$unknown'
+        target
       })
-      return
-    }
-    if (workspace?.upgrade ?? false) {
       return
     }
 
@@ -702,12 +776,19 @@ export class TSessionManager implements SessionManager {
     const ctx = this.ctx.newChild('📭 broadcast', {})
     const send = (): void => {
       for (const sessionRef of sessions) {
-        const tt = sessionRef.session.getUser()
-        if ((target === undefined && !(exclude ?? []).includes(tt)) || (target?.includes(tt) ?? false)) {
-          sessionRef.session.broadcast(ctx, sessionRef.socket, resp)
+        if (sessionRef.subscribedUsers.size > 0) {
+          if (target == null || sessionRef.subscribedUsers.has(target)) {
+            // Will be handled by session on endpoint.
+            sessionRef.broadcast(ctx, sessionRef.socket, resp, target, exclude)
+          }
+        } else {
+          const tt = sessionRef.getUser()
+          if ((target === undefined && !(exclude ?? []).includes(tt)) || (target?.includes(tt) ?? false)) {
+            sessionRef.broadcast(ctx, sessionRef.socket, resp)
+          }
         }
+        ctx.end()
       }
-      ctx.end()
     }
     if (sessions.length > 0) {
       // We need to send broadcast after our client response so put it after all IO
@@ -717,69 +798,94 @@ export class TSessionManager implements SessionManager {
     }
   }
 
+  // A map of endpoint external url to endpoint client.
+  endpointClients = new Map<string, EndpointClient>()
+
   private createWorkspace (
     ctx: MeasureContext,
     pipelineCtx: MeasureContext,
-    token: Token,
+    uuid: WorkspaceUuid,
+    endpoint: EndpointInfo,
     workspaceUrl: string,
     workspaceDataId: WorkspaceDataId | undefined,
     branding: Branding | null
-  ): Workspace {
-    const upgrade = token.extra?.model === 'upgrade'
+  ): { workspace: Workspace, open?: Promise<void> } {
     const context = ctx.newChild('🧲 session', {})
     const workspaceIds: WorkspaceIds = {
-      uuid: token.workspace,
+      uuid,
       dataId: workspaceDataId,
       url: workspaceUrl
     }
 
-    const factory = async (): Promise<PipelinePair> => {
-      const communicationApi = await this.communicationApiFactory(
-        pipelineCtx,
-        workspaceIds,
-        (ctx, sessionIds, result) => {
-          this.broadcastSessions(ctx, workspace, sessionIds, result)
-        }
-      )
-      const pipeline = await this.pipelineFactory(
-        pipelineCtx,
-        workspaceIds,
-        (ctx, tx, targets, exclude) => {
-          this.broadcastAll(workspaceIds.uuid, tx, targets, exclude)
-        },
-        branding,
-        communicationApi
-      )
-      return { pipeline, communicationApi }
-    }
-    const workspace: Workspace = new Workspace(
-      context,
-      generateToken(systemAccountUuid, token.workspace, { service: 'transactor' }),
-      factory,
-      this.tickCounter % ticksPerSecond,
-      workspaceSoftShutdownTicks,
-      workspaceIds,
-      branding
-    )
-    workspace.upgrade = upgrade
-    this.workspaces.set(token.workspace, workspace)
+    let factory: WorkspacePipelineFactory
 
-    return workspace
+    let open: Promise<void> | undefined
+
+    if (this.endpointName !== endpoint.internalUrl || this.endpointName !== endpoint.externalUrl) {
+      const wsToken = generateToken(systemAccountUuid, uuid)
+      const epClient =
+        this.endpointClients.get(endpoint.externalUrl) ??
+        new EndpointClient(ctx, this.region, endpoint, this.endpointFactory, this)
+      this.endpointClients.set(endpoint.externalUrl, epClient)
+
+      open = epClient.addWorkspace(uuid)
+      const workspace = new EndpointWorkspace(
+        ctx,
+        epClient,
+        wsToken,
+        this.tickCounter % ticksPerSecond,
+        workspaceSoftShutdownTicks,
+        workspaceIds,
+        branding
+      )
+      this.workspaces.set(uuid, workspace)
+      return { workspace, open }
+    } else {
+      factory = async (): Promise<PipelinePair> => {
+        const communicationApi = await this.communicationApiFactory(
+          pipelineCtx,
+          workspaceIds,
+          (ctx, sessionIds, result) => {
+            this.broadcastSessions(ctx, workspace, sessionIds, result)
+          }
+        )
+        const pipeline = await this.pipelineFactory(
+          pipelineCtx,
+          workspaceIds,
+          (ctx, tx, targets, exclude) => {
+            this.broadcastAll(workspaceIds.uuid, tx, targets, exclude)
+          },
+          branding,
+          communicationApi
+        )
+        return { pipeline, communicationApi }
+      }
+      const workspace: Workspace = new WorkspaceImpl(
+        context,
+        generateToken(systemAccountUuid, uuid),
+        factory,
+        this.tickCounter % ticksPerSecond,
+        workspaceSoftShutdownTicks,
+        workspaceIds,
+        branding
+      )
+      this.workspaces.set(uuid, workspace)
+      workspace.open() // Trigger opening of workspace
+      return { workspace, open }
+    }
   }
 
   private async trySetStatus (
     ctx: MeasureContext,
-    pipeline: Pipeline,
-    communicationApi: CommunicationApi,
+    workspaces: Workspace[],
     session: Session,
-    online: boolean,
-    workspaceId: WorkspaceUuid
+    online: boolean
   ): Promise<void> {
     const current = this.statusPromises.get(session.getUser())
     if (current !== undefined) {
       await current
     }
-    const promise = this.setStatus(ctx, pipeline, communicationApi, session, online, workspaceId)
+    const promise = this.setStatus(ctx, workspaces, session, online)
     this.statusPromises.set(session.getUser(), promise)
     await promise
     this.statusPromises.delete(session.getUser())
@@ -787,45 +893,55 @@ export class TSessionManager implements SessionManager {
 
   private async setStatus (
     ctx: MeasureContext,
-    pipeline: Pipeline,
-    communicationApi: CommunicationApi,
+    workspaces: Workspace[],
     session: Session,
-    online: boolean,
-    workspaceId: WorkspaceUuid
+    online: boolean
   ): Promise<void> {
     try {
       const user = session.getUser()
-      const userRawAccount = session.getRawAccount()
-      if (user === undefined || userRawAccount.role === AccountRole.ReadOnlyGuest) return
+      if (user === undefined) return
 
       const clientCtx: ClientSessionCtx = {
+        workspaces,
         requestId: undefined,
-        pipeline,
-        communicationApi,
         sendResponse: async () => {
           // No response
         },
         ctx,
-        socialStringsToUsers: this.getActiveSocialStringsToUsersMap(workspaceId, session),
+        socialStringsToUsers: this.socialStringsToUsers,
         sendError: async () => {
           // Assume no error send
         },
-        sendPong: () => {}
+        sendPong: () => {},
+        getAccount: (uuid) => {
+          const result = this.accounts.get(uuid)
+          if (result === undefined) {
+            throw new Error('Account not found')
+          }
+          return result
+        }
       }
 
-      const status = (await session.findAllRaw(clientCtx, core.class.UserStatus, { user }, { limit: 1 }))[0]
-      const txFactory = new TxFactory(userRawAccount.primarySocialId, true)
-      if (status === undefined) {
-        const tx = txFactory.createTxCreateDoc(core.class.UserStatus, core.space.Space, {
-          online,
-          user
-        })
-        await session.tx(clientCtx, tx)
-      } else if (status.online !== online) {
-        const tx = txFactory.createTxUpdateDoc(status._class, status.space, status._id, {
-          online
-        })
-        await session.tx(clientCtx, tx)
+      const statuses = new Map(
+        (await session.findAllRaw(clientCtx, core.class.UserStatus, { user }, {})).map((it) => [it._uuid, it])
+      )
+      for (const ws of workspaces) {
+        const txFactory = new TxFactory(session.getRawAccount().primarySocialId, ws.wsId.uuid, true)
+        const status = statuses.get(ws.wsId.uuid)
+
+        if (status === undefined) {
+          await session.tx(
+            { ...clientCtx, workspaces: [ws] },
+            txFactory.createTxCreateDoc(core.class.UserStatus, core.space.Space, { online, user })
+          )
+        } else if (status.online !== online) {
+          await session.tx(
+            { ...clientCtx, workspaces: [ws] },
+            txFactory.createTxUpdateDoc(status._class, core.space.Space, status._id, {
+              online
+            })
+          )
+        }
       }
     } catch (err: any) {
       ctx.error('failed to set status', { err })
@@ -833,152 +949,85 @@ export class TSessionManager implements SessionManager {
     }
   }
 
-  async close (ctx: MeasureContext, ws: ConnectionSocket, workspaceUuid: WorkspaceUuid): Promise<void> {
-    const workspace = this.workspaces.get(workspaceUuid)
-
-    const sessionRef = this.sessions.get(ws.id)
+  async close (ctx: MeasureContext, sessionRef: Session): Promise<void> {
     if (sessionRef !== undefined) {
       ctx.info('bye happen', {
-        workspace: workspace?.wsId.url,
-        userId: sessionRef.session.getUser(),
-        user: sessionRef.session.getSocialIds().find((it) => it.type !== SocialIdType.HULY)?.value,
-        binary: sessionRef.session.binaryMode,
-        compression: sessionRef.session.useCompression,
-        totalTime: this.now - sessionRef.session.createTime,
-        workspaceUsers: workspace?.sessions?.size,
+        userId: sessionRef.getUser(),
+        user: sessionRef.getSocialIds().find((it) => it.type !== SocialIdType.HULY)?.value,
+        binary: sessionRef.binaryMode,
+        compression: sessionRef.useCompression,
+        totalTime: Date.now() - sessionRef.createTime,
         totalUsers: this.sessions.size
       })
-      this.sessions.delete(ws.id)
+      this.sessions.delete(sessionRef.sessionId)
+      const account = sessionRef.getUser()
 
-      if (workspace !== undefined) {
-        workspace.sessions.delete(sessionRef.session.sessionId)
+      this.unregisterAccount(account, sessionRef)
 
-        const userUuid = sessionRef.session.getUser()
-        await this.usersProducer.send(workspaceUuid, [
-          userEvents.logout({
-            user: userUuid,
-            sessions: this.countUserSessions(workspace, userUuid),
-            socialIds: sessionRef.session.getUserSocialIds()
-          })
-        ])
+      if (sessionRef.subscribedUsers.size > 0) {
+        for (const uuid of Array.from(sessionRef.subscribedUsers)) {
+          this.unregisterAccount(uuid, sessionRef)
+        }
+      }
 
-        if (this.doHandleTick) {
-          workspace.tickHandlers.set(sessionRef.session.sessionId, {
+      const workspaces = this.getSessionWorkspaces(sessionRef)
+
+      const userUuid = sessionRef.getUser()
+      for (const workspace of workspaces) {
+        if (workspace !== undefined) {
+          await workspace.removeSession(sessionRef)
+
+          this.tickHandlers.set(sessionRef.sessionId, {
             ticks: this.timeouts.reconnectTimeout * ticksPerSecond,
-            operation: () => {
-              this.reconnectIds.delete(sessionRef.session.sessionId)
-              const user = sessionRef.session.getUser()
-              if (workspace !== undefined) {
-                const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
-                if (another === -1 && !workspace.upgrade) {
-                  void workspace.with(async (pipeline, communicationApi) => {
-                    await communicationApi.closeSession(sessionRef.session.sessionId)
-                    if (user !== guestAccount && user !== systemAccountUuid) {
-                      await this.trySetStatus(
-                        workspace.context,
-                        pipeline,
-                        communicationApi,
-                        sessionRef.session,
-                        false,
-                        workspaceUuid
-                      ).catch(() => {})
-                    }
-                  })
+            operation: async () => {
+              if (!this.reconnectIds.delete(sessionRef.sessionId)) {
+                // Already reconnected
+                return
+              }
+              for (const u of [account, ...sessionRef.subscribedUsers]) {
+                // All other sessions, not for this workspaces.
+                const allSessions = (this.accountIdToSessions.get(u) ?? []).filter(
+                  (it) => it.sessionId !== sessionRef.sessionId && !it.workspaces.has(workspace.wsId.uuid)
+                )
+                if (allSessions.length === 0) {
+                  // No other sessions for this user
+                  if (account !== guestAccount && u !== systemAccountUuid) {
+                    await this.trySetStatus(ctx, workspaces, sessionRef, false).catch(() => {})
+                  }
+                  await this.usersProducer.send(workspace.wsId.uuid, [
+                    userEvents.logout({
+                      user: u,
+                      sessions: this.countUserSessions(workspace, userUuid),
+                      socialIds: sessionRef.getUserSocialIds()
+                    })
+                  ])
                 }
+              }
+
+              // Need to close all sessions for this user
+              for (const ws of workspaces) {
+                // TODO: Make handler async?
+                await ws.with(async (pipeline, communicationApi) => {
+                  await communicationApi.closeSession(sessionRef.sessionId)
+                })
               }
             }
           })
         }
-        this.reconnectIds.add(sessionRef.session.sessionId)
       }
-      try {
-        sessionRef.socket.close()
-      } catch (err) {
-        // Ignore if closed
-      }
+      this.reconnectIds.add(sessionRef.sessionId)
     }
-  }
-
-  async forceClose (wsId: WorkspaceUuid, ignoreSocket?: ConnectionSocket): Promise<void> {
-    const ws = this.workspaces.get(wsId)
-    if (ws !== undefined) {
-      this.ctx.warn('force-close', { name: ws.wsId.url })
-      ws.upgrade = true // We need to similare upgrade to refresh all clients.
-      ws.closing = this.doCloseAll(ws, 99, 'force-close', ignoreSocket)
-      this.workspaces.delete(wsId)
-      await ws.closing
-      ws.closing = undefined
-    } else {
-      this.ctx.warn('force-close-unknown', { wsId })
+    try {
+      sessionRef.socket.close()
+    } catch (err) {
+      // Ignore if closed
     }
-  }
-
-  async doCloseAll (
-    workspace: Workspace,
-    code: number,
-    reason: 'upgrade' | 'shutdown' | 'force-close',
-    ignoreSocket?: ConnectionSocket
-  ): Promise<void> {
-    if (LOGGING_ENABLED) {
-      this.ctx.info('closing workspace', {
-        url: workspace.wsId.url,
-        uuid: workspace.wsId.uuid,
-        code,
-        reason
-      })
-    }
-
-    const sessions = Array.from(workspace.sessions)
-    workspace.sessions.clear()
-
-    const closeS = (s: Session, webSocket: ConnectionSocket): void => {
-      s.workspaceClosed = true
-      if (reason === 'upgrade' || reason === 'force-close') {
-        // Override message handler, to wait for upgrading response from clients.
-        this.sendUpgrade(workspace.context, webSocket, s.binaryMode, s.useCompression)
-      }
-      webSocket.close()
-      this.reconnectIds.delete(s.sessionId)
-    }
-
-    if (LOGGING_ENABLED) {
-      this.ctx.warn('Clients disconnected. Closing Workspace...', {
-        url: workspace.wsId.url,
-        uuid: workspace.wsId.uuid
-      })
-    }
-
-    sessions
-      .filter((it) => it[1].socket.id !== ignoreSocket?.id)
-      .forEach((s) => {
-        closeS(s[1].session, s[1].socket)
-      })
-
-    if (reason !== 'upgrade') {
-      await workspace.close(this.ctx)
-      if (LOGGING_ENABLED) {
-        this.ctx.warn('Workspace closed...', { uuid: workspace.wsId.uuid, url: workspace.wsId.url })
-      }
-    }
-  }
-
-  private sendUpgrade (ctx: MeasureContext, webSocket: ConnectionSocket, binary: boolean, compression: boolean): void {
-    void webSocket.send(
-      ctx,
-      {
-        result: {
-          _class: core.class.TxModelUpgrade
-        }
-      },
-      binary,
-      compression
-    )
   }
 
   async closeWorkspaces (ctx: MeasureContext): Promise<void> {
     clearInterval(this.checkInterval)
-    for (const w of this.workspaces) {
-      await this.doCloseAll(w[1], 1, 'shutdown')
+    for (const w of this.workspaces.values()) {
+      await w.close(this.ctx)
     }
     await this.workspaceProducer.close()
     await this.usersProducer.close()
@@ -993,9 +1042,10 @@ export class TSessionManager implements SessionManager {
       }
       try {
         if (workspace.sessions.size === 0) {
+          this.workspaces.delete(uuid)
+
           await workspace.close(this.ctx)
 
-          this.workspaces.delete(uuid)
           workspace.context.end()
           if (LOGGING_ENABLED) {
             this.ctx.warn('Closed workspace', logParams)
@@ -1005,7 +1055,7 @@ export class TSessionManager implements SessionManager {
         }
       } catch (err: any) {
         Analytics.handleError(err)
-        this.workspaces.delete(uuid)
+
         if (LOGGING_ENABLED) {
           this.ctx.error('failed', { ...logParams, error: err })
         }
@@ -1023,8 +1073,7 @@ export class TSessionManager implements SessionManager {
   createOpContext (
     ctx: MeasureContext,
     sendCtx: MeasureContext,
-    pipeline: Pipeline,
-    communicationApi: CommunicationApi,
+    workspaces: Workspace[],
     requestId: Request<any>['id'],
     service: Session,
     ws: ConnectionSocket,
@@ -1033,8 +1082,7 @@ export class TSessionManager implements SessionManager {
     const st = platformNow()
     return {
       ctx,
-      pipeline,
-      communicationApi,
+      workspaces,
       requestId,
       sendResponse: (reqId, msg) =>
         sendResponse(sendCtx, service, ws, {
@@ -1048,7 +1096,7 @@ export class TSessionManager implements SessionManager {
       sendPong: () => {
         ws.sendPong()
       },
-      socialStringsToUsers: this.getActiveSocialStringsToUsersMap(service.workspace.uuid),
+      socialStringsToUsers: this.socialStringsToUsers,
       sendError: (reqId, msg, error: Status) =>
         sendResponse(sendCtx, service, ws, {
           id: reqId,
@@ -1058,25 +1106,38 @@ export class TSessionManager implements SessionManager {
           rateLimit,
           bfst: this.now,
           queue: service.requests.size
-        })
+        }),
+      getAccount: (uuid) => {
+        const result = this.accounts.get(uuid)
+        if (result === undefined) {
+          throw new Error('Account not found')
+        }
+        return result
+      }
     }
   }
 
   // TODO: cache this map and update when sessions created/closed
-  getActiveSocialStringsToUsersMap (workspace: WorkspaceUuid, ...extra: Session[]): Map<PersonId, AccountUuid> {
-    const ws = this.workspaces.get(workspace)
-    if (ws === undefined) {
-      return new Map()
-    }
+  getActiveSocialStringsToUsersMap (workspaces: WorkspaceUuid[], ...extra: Session[]): Map<PersonId, AccountUuid> {
     const res = new Map<PersonId, AccountUuid>()
-    for (const s of [...Array.from(ws.sessions.values()).map((it) => it.session), ...extra]) {
-      const sessionAccount = s.getUser()
-      if (sessionAccount === systemAccountUuid) {
-        continue
+
+    for (const workspace of workspaces) {
+      const ws = this.workspaces.get(workspace)
+      if (ws === undefined) {
+        return new Map()
       }
-      const userSocialIds = s.getUserSocialIds()
-      for (const id of userSocialIds) {
-        res.set(id, sessionAccount)
+
+      for (const s of [...Array.from(ws.sessions.values()).map((it) => it), ...extra]) {
+        const sessionAccounts = [s.getUser(), ...s.subscribedUsers]
+        for (const sessionAccount of sessionAccounts) {
+          if (sessionAccount === systemAccountUuid) {
+            continue
+          }
+          const userSocialIds = s.getUserSocialIds()
+          for (const id of userSocialIds) {
+            res.set(id, sessionAccount)
+          }
+        }
       }
     }
     return res
@@ -1088,18 +1149,23 @@ export class TSessionManager implements SessionManager {
     () => Date.now()
   )
 
-  async handleRequest<S extends Session>(
+  async forceCloseWorkspace (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<void> {
+    const wsRef = this.workspaces.get(workspace)
+    if (wsRef !== undefined) {
+      // Just force pipeline close/open
+      await wsRef.close(ctx)
+    }
+  }
+
+  handleRequest (
     requestCtx: MeasureContext,
-    service: S,
+    session: Session,
     ws: ConnectionSocket,
-    request: Request<any>,
-    workspaceId: WorkspaceUuid
+    request: Request<any>
   ): Promise<void> {
-    const userCtx = requestCtx.newChild('📞 client', {
-      source: service.token.extra?.service ?? '🤦‍♂️user',
-      mode: '🧭 handleRequest'
-    })
-    const rateLimit = this.limitter.checkRateLimit(service.getUser() + (service.token.extra?.service ?? ''))
+    const userCtx = requestCtx.newChild('📞 client', {})
+    const rateLimit =
+      session.getUser() === systemAccountUuid ? undefined : this.limitter.checkRateLimit(session.getUser())
     // If remaining is 0, rate limit is exceeded
     if (rateLimit?.remaining === 0) {
       void ws.send(
@@ -1109,173 +1175,245 @@ export class TSessionManager implements SessionManager {
           rateLimit,
           error: unknownError('Rate limit')
         },
-        service.binaryMode,
-        service.useCompression
+        session.binaryMode,
+        session.useCompression
       )
-      return
+      return Promise.resolve()
     }
 
     // Calculate total number of clients
     const reqId = generateId()
 
     const st = Date.now()
-    try {
-      if (request.time != null) {
-        const delta = Date.now() - request.time
-        requestCtx.measure('msg-receive-delta', delta)
-      }
-      const workspace = this.workspaces.get(workspaceId)
-      if (workspace === undefined || workspace.closing !== undefined) {
-        await ws.send(
-          userCtx,
-          {
+    return userCtx
+      .with('🧭 handleRequest', {}, async (ctx) => {
+        if (request.time != null) {
+          const delta = Date.now() - request.time
+          requestCtx.measure('msg-receive-delta', delta)
+        }
+        if (request.id === -1 && request.method === 'hello') {
+          await this.handleHello(request, session, ctx, ws, requestCtx)
+          return
+        }
+        if (
+          request.id === -2 &&
+          request.method === 'forceClose' &&
+          session.getRawAccount().uuid === systemAccountUuid
+        ) {
+          // TODO: we should allow this only for admin or system accounts
+          let done = false
+          const wsRef = this.workspaces.get(request.params[0] as WorkspaceUuid)
+          if (wsRef !== undefined) {
+            done = true
+            // Just force pipeline close/open
+            void wsRef.close(ctx)
+          }
+          const forceCloseResponse: Response<any> = {
             id: request.id,
-            error: unknownError('Workspace is closing')
-          },
-          service.binaryMode,
-          service.useCompression
-        )
-        return
-      }
-      if (request.id === -1 && request.method === 'hello') {
-        await this.handleHello<S>(request, service, userCtx, workspace, ws, requestCtx)
-        return
-      }
-      if (request.id === -2 && request.method === 'forceClose') {
-        // TODO: we chould allow this only for admin or system accounts
-        let done = false
-        const wsRef = this.workspaces.get(workspaceId)
-        if (wsRef?.upgrade ?? false) {
-          done = true
-          this.ctx.warn('FORCE CLOSE', { workspace: workspaceId })
-          // In case of upgrade, we need to force close workspace not in interval handler
-          await this.forceClose(workspaceId, ws)
-        }
-        const forceCloseResponse: Response<any> = {
-          id: request.id,
-          result: done
-        }
-        await ws.send(userCtx, forceCloseResponse, service.binaryMode, service.useCompression)
-        return
-      }
-
-      service.requests.set(reqId, {
-        id: reqId,
-        params: request,
-        start: st
-      })
-      if (request.id === -1 && request.method === '#upgrade') {
-        ws.close()
-        return
-      }
-
-      const f = (service as any)[request.method]
-      try {
-        const params = [...request.params]
-
-        if (ws.isBackpressure()) {
-          await ws.backpressure(userCtx)
+            result: done
+          }
+          await ws.send(ctx, forceCloseResponse, session.binaryMode, session.useCompression)
+          return
         }
 
-        await workspace.with(async (pipeline, communicationApi) => {
-          await userCtx.with('🧨 process', {}, (callTx) =>
-            f.apply(service, [
-              this.createOpContext(callTx, userCtx, pipeline, communicationApi, request.id, service, ws, rateLimit),
+        if (
+          (request.method === 'subscribe' || request.method === 'unsubscribe') &&
+          session.getRawAccount().uuid === systemAccountUuid
+        ) {
+          const subscription: { accounts?: AccountUuid[], workspaces?: WorkspaceUuid[] } = request.params[0]
+
+          const info = await this.handleSubcribe(ctx, session, subscription, request.method === 'subscribe')
+
+          const resp: Response<any> = {
+            id: request.id,
+            result: request.method === 'subscribe' ? info : true
+          }
+          await ws.send(ctx, resp, session.binaryMode, session.useCompression)
+          return
+        }
+
+        session.requests.set(reqId, {
+          id: reqId,
+          params: request,
+          start: st
+        })
+        if (request.id === -1 && request.method === '#upgrade') {
+          ws.close()
+          return
+        }
+
+        const f = (session as any)[request.method]
+        try {
+          const params = [...request.params]
+
+          if (ws.isBackpressure()) {
+            await ws.backpressure(ctx)
+          }
+
+          const workspaces = this.getSessionWorkspaces(session)
+
+          await ctx.with('🧨 process', {}, (callTx) =>
+            f.apply(session, [
+              this.createOpContext(callTx, userCtx, workspaces, request.id, session, ws, rateLimit),
               ...params
             ])
           )
-        })
-      } catch (err: any) {
-        Analytics.handleError(err)
-        if (LOGGING_ENABLED) {
-          this.ctx.error('error handle request', { error: err, request })
+        } catch (err: any) {
+          Analytics.handleError(err)
+          if (LOGGING_ENABLED) {
+            this.ctx.error('error handle request', { error: err, request })
+          }
+          await ws.send(
+            userCtx,
+            {
+              id: request.id,
+              error: unknownError(err),
+              result: JSON.parse(JSON.stringify(err?.stack))
+            },
+            session.binaryMode,
+            session.useCompression
+          )
         }
-        await ws.send(
-          userCtx,
-          {
-            id: request.id,
-            error: unknownError(err),
-            result: JSON.parse(JSON.stringify(err?.stack))
-          },
-          service.binaryMode,
-          service.useCompression
-        )
-      }
-    } finally {
-      userCtx.end()
-      service.requests.delete(reqId)
-    }
+      })
+      .finally(() => {
+        userCtx.end()
+        session.requests.delete(reqId)
+      })
   }
 
-  async handleRPC<S extends Session>(
+  async handleSubcribe (
+    ctx: MeasureContext<any>,
+    session: Session,
+    subscription: { accounts?: AccountUuid[], workspaces?: WorkspaceUuid[] },
+    subscribe: boolean
+  ): Promise<SubscribedWorkspaceInfo> {
+    const result: SubscribedWorkspaceInfo = {}
+
+    if (subscription.accounts !== undefined) {
+      for (const a of subscription.accounts) {
+        if (subscribe) {
+          // Find some session with this account already pressent
+          await this.registerAccountByUuid(a, session)
+        } else {
+          session.subscribedUsers.delete(a)
+          this.unregisterAccount(a, session)
+        }
+      }
+    }
+
+    if (subscription.workspaces !== undefined) {
+      for (const ws of subscription.workspaces) {
+        let workspace = this.workspaces.get(ws)
+        let open: Promise<void> | undefined
+        if (workspace === undefined && !subscribe) {
+          // No workspace and no need unsubscribe
+          continue
+        }
+        if (workspace === undefined) {
+          // Retrieve info about workspace and make it up.
+          // Edpoint itself will update last visit.
+          const rawToken = generateToken(systemAccountUuid, ws, { service: 'server', mode: 'server' })
+          const workspaceInfo = await this.getWorkspaceInfo(rawToken, false)
+          if (workspaceInfo === undefined) {
+            // No workspace, no need to subscribe
+            continue
+          }
+          ;({ workspace, open } = this.getWorkspace(ctx, ws, this.toLoginInfoWorkspace(workspaceInfo)))
+
+          if (workspace === undefined) {
+            continue
+          }
+          if (open !== undefined) {
+            await open
+          }
+        }
+        await workspace.with(async (pipeline, communicationApi) => {
+          result[ws] = {
+            lastHash: pipeline.context.lastHash,
+            lastTx: pipeline.context.lastTx
+          }
+        })
+        // We had workspace
+        if (!subscribe) {
+          session.workspaces.delete(ws)
+          await workspace.removeSession(session)
+        } else {
+          session.workspaces.add(ws)
+          await workspace.addSession(session)
+        }
+      }
+    }
+    return result
+  }
+
+  private getSessionWorkspaces (session: Session): Workspace[] {
+    let workspaces = Array.from(session.workspaces)
+      .map((it) => this.workspaces.get(it))
+      .filter((it) => it !== undefined) as Workspace[]
+
+    if (session.getRawAccount().uuid !== systemAccountUuid) {
+      // Filter all workspaces that are not in maintenance mode
+      workspaces = workspaces.filter((it) => !it.maintenance)
+    }
+    return workspaces
+  }
+
+  handleRPC (
     requestCtx: MeasureContext,
-    service: S,
+    workspaceId: WorkspaceUuid,
+    service: Session,
     ws: ConnectionSocket,
     operation: (ctx: ClientSessionCtx, rateLimit: RateLimitInfo | undefined) => Promise<void>
   ): Promise<RateLimitInfo | undefined> {
-    const rateLimitStatus = this.limitter.checkRateLimit(service.getUser() + (service.token.extra?.service ?? ''))
+    const rateLimitStatus = this.limitter.checkRateLimit(service.getUser())
     // If remaining is 0, rate limit is exceeded
     if (rateLimitStatus?.remaining === 0) {
-      return await Promise.resolve(rateLimitStatus)
+      return Promise.resolve(rateLimitStatus)
     }
 
-    const userCtx = requestCtx.newChild('📞 client', {
-      source: service.token.extra?.service ?? '🤦‍♂️user',
-      mode: '🧭 handleRPC'
-    })
+    const userCtx = requestCtx.newChild('📞 client', {})
 
     // Calculate total number of clients
     const reqId = generateId()
 
     const st = Date.now()
-    try {
-      const workspace = this.workspaces.get(service.workspace.uuid)
-      if (workspace === undefined || workspace.closing !== undefined) {
-        throw new Error('Workspace is closing')
-      }
+    return userCtx
+      .with('🧭 handleRPC', {}, async (ctx) => {
+        const workspaces = this.getSessionWorkspaces(service).filter((it) => it.wsId.uuid === workspaceId)
 
-      service.requests.set(reqId, {
-        id: reqId,
-        params: {},
-        start: st
-      })
-
-      try {
-        await workspace.with(async (pipeline, communicationApi) => {
-          const uctx = this.createOpContext(
-            userCtx,
-            userCtx,
-            pipeline,
-            communicationApi,
-            reqId,
-            service,
-            ws,
-            rateLimitStatus
-          )
-          await operation(uctx, rateLimitStatus)
+        service.requests.set(reqId, {
+          id: reqId,
+          params: {},
+          start: st
         })
-      } catch (err: any) {
-        Analytics.handleError(err)
-        if (LOGGING_ENABLED) {
-          this.ctx.error('error handle request', { error: err })
+
+        try {
+          // TODO: Select workspaces
+          const uctx = this.createOpContext(ctx, userCtx, workspaces, reqId, service, ws, rateLimitStatus)
+          await operation(uctx, rateLimitStatus)
+        } catch (err: any) {
+          Analytics.handleError(err)
+          if (LOGGING_ENABLED) {
+            this.ctx.error('error handle request', { error: err })
+          }
+          await ws.send(
+            userCtx,
+            {
+              id: reqId,
+              error: unknownError(err),
+              result: JSON.parse(JSON.stringify(err?.stack))
+            },
+            service.binaryMode,
+            service.useCompression
+          )
+          throw err
         }
-        await ws.send(
-          userCtx,
-          {
-            id: reqId,
-            error: unknownError(err),
-            result: JSON.parse(JSON.stringify(err?.stack))
-          },
-          service.binaryMode,
-          service.useCompression
-        )
-        throw err
-      }
-      return undefined
-    } finally {
-      userCtx.end()
-      service.requests.delete(reqId)
-    }
+        return undefined
+      })
+      .finally(() => {
+        userCtx.end()
+        service.requests.delete(reqId)
+      })
   }
 
   entryToUserStats = (session: Session, socket: ConnectionSocket): UserStatistics => {
@@ -1291,11 +1429,11 @@ export class TSessionManager implements SessionManager {
 
   workspaceToWorkspaceStats = (ws: Workspace): WorkspaceStatistics => {
     return {
-      clientsTotal: new Set(Array.from(ws.sessions.values()).map((it) => it.session.getUser())).size,
+      clientsTotal: new Set(Array.from(ws.sessions.values()).map((it) => it.getUser())).size,
       sessionsTotal: ws.sessions.size,
       workspaceName: ws.wsId.url,
       wsId: ws.wsId.uuid,
-      sessions: Array.from(ws.sessions.values()).map((it) => this.entryToUserStats(it.session, it.socket))
+      sessions: Array.from(ws.sessions.values()).map((it) => this.entryToUserStats(it, it.socket))
     }
   }
 
@@ -1303,61 +1441,50 @@ export class TSessionManager implements SessionManager {
     return Array.from(this.workspaces.values()).map((it) => this.workspaceToWorkspaceStats(it))
   }
 
-  private async handleHello<S extends Session>(
+  private async handleHello (
     request: Request<any>,
-    service: S,
+    session: Session,
     ctx: MeasureContext<any>,
-    workspace: Workspace,
     ws: ConnectionSocket,
     requestCtx: MeasureContext<any>
   ): Promise<void> {
     try {
       const hello = request as HelloRequest
-      service.binaryMode = hello.binary ?? false
-      service.useCompression = this.enableCompression ? hello.compression ?? false : false
+      session.binaryMode = hello.binary ?? false
+      session.useCompression = this.enableCompression ? hello.compression ?? false : false
 
       if (LOGGING_ENABLED) {
         ctx.info('hello happen', {
-          workspace: workspace.wsId.url,
-          workspaceId: workspace.wsId.uuid,
-          userId: service.getUser(),
-          user: service.getSocialIds().find((it) => it.type !== SocialIdType.HULY)?.value,
-          binary: service.binaryMode,
-          compression: service.useCompression,
-          timeToHello: Date.now() - service.createTime,
-          workspaceUsers: workspace.sessions.size,
+          userId: session.getUser(),
+          user: session.getSocialIds().find((it) => it.type !== SocialIdType.HULY)?.value,
+          binary: session.binaryMode,
+          compression: session.useCompression,
+          timeToHello: Date.now() - session.createTime,
           totalUsers: this.sessions.size
         })
       }
-      const reconnect = this.reconnectIds.has(service.sessionId)
-      if (reconnect) {
-        this.reconnectIds.delete(service.sessionId)
-      }
+      const reconnect = this.reconnectIds.delete(session.sessionId)
 
-      const account = service.getRawAccount()
-      await workspace.with(async (pipeline, communicationApi) => {
-        const helloResponse: HelloResponse = {
-          id: -1,
-          result: 'hello',
-          binary: service.binaryMode,
-          reconnect,
-          serverVersion: this.serverVersion,
-          lastTx: pipeline.context.lastTx,
-          lastHash: pipeline.context.lastHash,
-          account,
-          useCompression: service.useCompression
-        }
-        await ws.send(requestCtx, helloResponse, false, false)
-      })
+      const account = session.getRawAccount()
+
+      const workspaces = this.getSessionWorkspaces(session)
+
+      const helloResponse: HelloResponse = {
+        id: -1,
+        result: 'hello',
+        binary: session.binaryMode,
+        reconnect,
+        serverVersion: this.serverVersion,
+        ...getLastHashInfo(workspaces),
+        account,
+        useCompression: session.useCompression
+      }
+      await ws.send(requestCtx, helloResponse, false, false)
+
+      // TODO: Status passwing should not depend on pipeline.
       if (account.uuid !== guestAccount && account.uuid !== systemAccountUuid) {
-        void workspace.with(async (pipeline, communicationApi) => {
-          // We do not need to wait for set-status, just return session to client
-          await ctx
-            .with('set-status', {}, (ctx) =>
-              this.trySetStatus(ctx, pipeline, communicationApi, service, true, service.workspace.uuid)
-            )
-            .catch(() => {})
-        })
+        // We do not need to wait for set-status, just return session to client
+        await ctx.with('set-status', {}, (ctx) => this.trySetStatus(ctx, workspaces, session, true))
       }
     } catch (err: any) {
       ctx.error('error', { err })
@@ -1365,8 +1492,50 @@ export class TSessionManager implements SessionManager {
   }
 }
 
+function createAccountFromInfo (info: LoginInfoWithWorkspaces, targetWs?: WorkspaceUuid): Account {
+  let primarySocialId: PersonId
+  let role: AccountRole = AccountRole.User
+  switch (info.account) {
+    case systemAccountUuid:
+      primarySocialId = core.account.System
+      role = AccountRole.Owner
+      break
+    case guestAccount:
+      primarySocialId = '' as PersonId
+      role = AccountRole.DocGuest
+      break
+    default:
+      primarySocialId = pickPrimarySocialId(info.socialIds)._id
+  }
+
+  const account: Account = {
+    uuid: info.account,
+    socialIds: info.socialIds.map((it) => it._id),
+    primarySocialId,
+    fullSocialIds: new Map(info.socialIds.map((it) => [it._id, it])),
+    socialIdsByValue: new Map(info.socialIds.map((it) => [it.value, it])),
+    targetWorkspace: targetWs ?? info.personalWorkspace,
+    personalWorkspace: info.personalWorkspace,
+    role,
+    workspaces: {}
+  }
+
+  for (const [uuid, wsInfo] of Object.entries(info.workspaces)) {
+    account.workspaces[uuid as WorkspaceUuid] = {
+      url: wsInfo.url,
+      name: wsInfo.name,
+      role: wsInfo.role ?? AccountRole.User,
+      maintenance: false,
+      enabled: uuid === targetWs || targetWs === ''
+    }
+  }
+  return account
+}
+
 export function createSessionManager (
   ctx: MeasureContext,
+  region: string, // A endpoint region, will be used to perform combined find requests.
+  endpointName: string | '#endpoint', // If '#endpoint' special name is used, then will be endpoint only transactor, will not hold local workspaces.
   brandingMap: BrandingMap,
   timeouts: Timeouts,
   profiling:
@@ -1377,10 +1546,11 @@ export function createSessionManager (
   | undefined,
   accountsUrl: string,
   enableCompression: boolean,
-  doHandleTick: boolean = true,
   queue: PlatformQueue,
   pipelineFactory: PipelineFactory,
-  communicationApiFactory: CommunicationApiFactory
+  endpointFactory: EndpointConnectionFactory,
+  communicationApiFactory: CommunicationApiFactory,
+  handleTick: boolean = true
 ): SessionManager {
   return new TSessionManager(
     ctx,
@@ -1389,15 +1559,19 @@ export function createSessionManager (
     profiling,
     accountsUrl,
     enableCompression,
-    doHandleTick,
     queue,
     pipelineFactory,
-    communicationApiFactory
+    endpointFactory,
+    communicationApiFactory,
+    region,
+    endpointName,
+    handleTick
   )
 }
 
 export interface SessionManagerOptions extends Partial<Timeouts> {
   pipelineFactory: PipelineFactory
+  endpointFactory: EndpointConnectionFactory
   communicationApiFactory: CommunicationApiFactory
   brandingMap: BrandingMap
   enableCompression?: boolean
@@ -1407,6 +1581,9 @@ export interface SessionManagerOptions extends Partial<Timeouts> {
     stop: () => Promise<string | undefined>
   }
   queue: PlatformQueue
+
+  region: string
+  endpointName: string
 }
 
 /**
@@ -1415,6 +1592,8 @@ export interface SessionManagerOptions extends Partial<Timeouts> {
 export function startSessionManager (ctx: MeasureContext, opt: SessionManagerOptions): SessionManager {
   const sessions = createSessionManager(
     ctx,
+    opt.region,
+    opt.endpointName,
     opt.brandingMap,
     {
       pingTimeout: opt.pingTimeout ?? 10000,
@@ -1423,9 +1602,9 @@ export function startSessionManager (ctx: MeasureContext, opt: SessionManagerOpt
     opt.profiling,
     opt.accountsUrl,
     opt.enableCompression ?? false,
-    true,
     opt.queue,
     opt.pipelineFactory,
+    opt.endpointFactory,
     opt.communicationApiFactory
   )
   return sessions

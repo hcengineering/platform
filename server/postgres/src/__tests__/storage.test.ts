@@ -124,7 +124,7 @@ describe('postgres operations', () => {
       return wrapAdapterToClient(ctx, serverStorage, txes)
     })
 
-    operations = new TxOperations(client, core.account.System)
+    operations = new TxOperations(client, core.account.System, core.workspace.Model)
   }
 
   it('check add', async () => {

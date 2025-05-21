@@ -349,7 +349,7 @@ export class RepositorySyncMapper implements DocSyncManager {
   ): Promise<void> {
     // We need to update urls for all sync documents belong to this repository.
 
-    const derivedClient = new TxOperations(this.client, core.account.System, true)
+    const derivedClient = new TxOperations(this.client, core.account.System, this.provider.getWorkspaceId(), true)
     const processingId = generateId()
 
     // Wait previous sync to finish

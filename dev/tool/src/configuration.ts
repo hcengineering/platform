@@ -41,7 +41,7 @@ export async function changeConfiguration (
     }
     const enable = (cmd.enable ?? '').trim().split(',')
     console.log('enable', enable)
-    const ops = new TxFactory(core.account.ConfigUser)
+    const ops = new TxFactory(core.account.ConfigUser, workspaceId)
     if (enable.length > 0) {
       const p = config.filter((it) => enable.includes(it.pluginId) || enable.includes('*'))
       for (const pp of p) {

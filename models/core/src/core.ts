@@ -54,7 +54,8 @@ import {
   type Type,
   type TypeAny,
   type Version,
-  DOMAIN_SEQUENCE
+  DOMAIN_SEQUENCE,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import {
   Hidden,
@@ -87,6 +88,8 @@ export class TObj implements Obj {
 @Model(core.class.Doc, core.class.Obj)
 @UX(core.string.Object)
 export class TDoc extends TObj implements Doc {
+  declare _uuid: WorkspaceUuid
+
   @Prop(TypeRef(core.class.Doc), core.string.Id)
   @Hidden()
   // @Index(IndexKind.Indexed) // - automatically indexed by default.

@@ -57,7 +57,7 @@ export class SupportWsClient extends WorkspaceClient {
 
     this.generalChannel = await createGeneralOnboardingChannel(this.ctx, client)
     if (this.client != null) {
-      this.client.notify = (...txes) => {
+      this.client.notify = (txes) => {
         this.handleTx(client, ...txes)
       }
     }

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@hcengineering/core'
+import core from '@hcengineering/core'
 import {
   tryUpgrade,
   type MigrateOperation,
@@ -30,12 +30,11 @@ export const templatesOperation: MigrateOperation = {
       {
         state: 'create-defaults',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          const current = await tx.findOne(core.class.Space, {
+          const current = await client.findOne(core.class.Space, {
             _id: templates.space.Templates
           })
           if (current === undefined) {
-            await tx.createDoc(
+            await client.createDoc(
               templates.class.TemplateCategory,
               core.space.Space,
               {
@@ -49,9 +48,9 @@ export const templatesOperation: MigrateOperation = {
               templates.space.Templates
             )
           } else if (current.private) {
-            await tx.update(current, { private: false })
+            await client.update(current, { private: false })
           } else if (current.autoJoin !== true) {
-            await tx.update(current, { autoJoin: true })
+            await client.update(current, { autoJoin: true })
           }
         }
       }

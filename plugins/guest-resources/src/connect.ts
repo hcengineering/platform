@@ -115,9 +115,6 @@ export async function connect (title: string): Promise<Client | undefined> {
 
       return true
     },
-    onUpgrade: () => {
-      location.reload()
-    },
     onUnauthorized: () => {
       void logOut().then(() => {
         invalidError.set(true)
@@ -186,9 +183,13 @@ export async function connect (title: string): Promise<Client | undefined> {
   const me: Account = {
     uuid: account,
     role: workspaceLoginInfo.role,
+    targetWorkspace: workspaceLoginInfo.workspace,
     primarySocialId: '' as PersonId,
     socialIds: [],
-    fullSocialIds: []
+    fullSocialIds: new Map(),
+    personalWorkspace: core.workspace.Personal,
+    socialIdsByValue: new Map(),
+    workspaces: {}
   }
 
   if (me !== undefined) {

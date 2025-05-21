@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { type Client } from '..'
-import type { Class, Doc, Obj, Ref } from '../classes'
+import { type Client, type WorkspaceUuid } from '..'
+import type { AccountWorkspace, Class, Doc, Obj, Ref } from '../classes'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
@@ -22,11 +22,11 @@ import { TxOperations } from '../operations'
 import {
   type DocumentQuery,
   type FindOptions,
-  SortingOrder,
-  type WithLookup,
-  type SearchQuery,
   type SearchOptions,
-  type SearchResult
+  type SearchQuery,
+  type SearchResult,
+  SortingOrder,
+  type WithLookup
 } from '../storage'
 import { type Tx } from '../tx'
 import { genMinModel, test, type TestMixin } from './minmodel'
@@ -34,7 +34,7 @@ import { genMinModel, test, type TestMixin } from './minmodel'
 const txes = genMinModel()
 
 class ClientModel extends ModelDb implements Client {
-  notify?: ((...tx: Tx[]) => void) | undefined
+  notify?: ((tx: Tx[]) => void) | undefined
 
   getHierarchy (): Hierarchy {
     return this.hierarchy
@@ -43,6 +43,9 @@ class ClientModel extends ModelDb implements Client {
   getModel (): ModelDb {
     return this
   }
+
+  getWorkspaces: () => Record<WorkspaceUuid, AccountWorkspace> = () => ({})
+  getAvailableWorkspaces: () => WorkspaceUuid[] = () => []
 
   async findOne<T extends Doc>(
     _class: Ref<Class<T>>,
@@ -84,7 +87,7 @@ describe('memdb', () => {
   it('should create space', async () => {
     const { model } = await createModel()
 
-    const client = new TxOperations(model, core.account.System)
+    const client = new TxOperations(model, core.account.System, core.workspace.Model)
     const result = await client.findAll(core.class.Space, {})
     expect(result).toHaveLength(2)
 
@@ -126,7 +129,7 @@ describe('memdb', () => {
 
   it('should create mixin', async () => {
     const { model } = await createModel()
-    const ops = new TxOperations(model, core.account.System)
+    const ops = new TxOperations(model, core.account.System, core.workspace.Model)
 
     await ops.createMixin<Doc, TestMixin>(core.class.Obj, core.class.Class, core.space.Model, test.mixin.TestMixin, {
       arr: ['hello']
@@ -140,7 +143,7 @@ describe('memdb', () => {
     const result = await model.findAll(core.class.Space, {})
     expect(result.length).toBe(2)
 
-    const ops = new TxOperations(model, core.account.System)
+    const ops = new TxOperations(model, core.account.System, core.workspace.Model)
     await ops.removeDoc(result[0]._class, result[0].space, result[0]._id)
     const result2 = await model.findAll(core.class.Space, {})
     expect(result2).toHaveLength(1)
@@ -249,7 +252,7 @@ describe('memdb', () => {
   it('limit and sorting', async () => {
     const hierarchy = new Hierarchy()
     for (const tx of txes) hierarchy.tx(tx)
-    const model = new TxOperations(new ClientModel(hierarchy), core.account.System)
+    const model = new TxOperations(new ClientModel(hierarchy), core.account.System, core.workspace.Model)
     for (const tx of txes) await model.tx(tx)
 
     const without = await model.findAll(core.class.Space, {})
@@ -274,7 +277,7 @@ describe('memdb', () => {
   it('should add attached document', async () => {
     const { model } = await createModel()
 
-    const client = new TxOperations(model, core.account.System)
+    const client = new TxOperations(model, core.account.System, core.workspace.Model)
     const result = await client.findAll(core.class.Space, {})
     expect(result).toHaveLength(2)
 
@@ -288,7 +291,7 @@ describe('memdb', () => {
   it('lookups', async () => {
     const { model } = await createModel()
 
-    const client = new TxOperations(model, core.account.System)
+    const client = new TxOperations(model, core.account.System, core.workspace.Model)
     const spaces = await client.findAll(core.class.Space, {})
     expect(spaces).toHaveLength(2)
 
@@ -343,7 +346,7 @@ describe('memdb', () => {
   it('mixin lookups', async () => {
     const { model } = await createModel()
 
-    const client = new TxOperations(model, core.account.System)
+    const client = new TxOperations(model, core.account.System, core.workspace.Model)
     const spaces = await client.findAll(core.class.Space, {})
     expect(spaces).toHaveLength(2)
 
@@ -379,7 +382,7 @@ describe('memdb', () => {
     expect.assertions(1)
     const { model } = await createModel()
 
-    const client = new TxOperations(model, core.account.System)
+    const client = new TxOperations(model, core.account.System, core.workspace.Model)
     const spaces = await client.findAll(core.class.Space, {})
     const task = await client.createDoc(test.class.Task, spaces[0]._id, {
       name: 'TSK1',

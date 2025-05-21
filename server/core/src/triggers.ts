@@ -109,7 +109,7 @@ export class Triggers {
       trigger.op = await trigger.op
     }
     for (const [k, v] of group.entries()) {
-      tctrl.txFactory = new TxFactory(k, true)
+      tctrl.txFactory = new TxFactory(k, ctrl.workspace.uuid, true)
       try {
         const tresult = await trigger.op(v, tctrl)
         result.push(...tresult)

@@ -32,7 +32,7 @@ import core, { AttachedDoc, ClassifierKind, DOMAIN_MODEL, DOMAIN_TX, TxFactory }
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 
-const txFactory = new TxFactory(core.account.System)
+const txFactory = new TxFactory(core.account.System, core.workspace.Model)
 
 function createClass (_class: Ref<Class<Obj>>, attributes: Data<Class<Obj>>): TxCreateDoc<Doc> {
   return txFactory.createTxCreateDoc(core.class.Class, core.space.Model, attributes, _class)

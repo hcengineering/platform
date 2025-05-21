@@ -70,7 +70,7 @@ export class MessageManagerV1 implements IMessageManager {
     const channels = this.findChannels(res)
     if (channels.length === 0) return
     const attachments = await this.attachmentHandler.getPartFiles(message.data.payload, message.data.id ?? '')
-    const factory = new TxFactory(this.socialId)
+    const factory = new TxFactory(this.socialId, this.client.workspaceUuid)
     for (const channel of channels) {
       const current = await this.client.findOne(gmail.class.Message, {
         messageId: res.messageId,

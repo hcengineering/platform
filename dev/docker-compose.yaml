@@ -302,6 +302,7 @@ services:
     environment:
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - REGION=
+      - ENDPOINT=ws://huly.local:3333
       - SERVER_PORT=3333
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
@@ -338,6 +339,7 @@ services:
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_PORT=3332
       - REGION=cockroach
+      - ENDPOINT=ws://huly.local:3332
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
       - FULLTEXT_URL=http://huly.local:4702

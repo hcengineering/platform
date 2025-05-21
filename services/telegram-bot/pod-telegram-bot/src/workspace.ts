@@ -149,7 +149,7 @@ export class WorkspaceClient {
     text: string,
     files: TelegramFileInfo[]
   ): Promise<boolean> {
-    const txFactory = new TxFactory(socialId)
+    const txFactory = new TxFactory(socialId, this.workspace)
     const hierarchy = this.hierarchy
 
     const isAvailable = await this.isReplyAvailable(account, message)
@@ -298,7 +298,7 @@ export class WorkspaceClient {
       return undefined
     }
 
-    const txFactory = new TxFactory(socialId)
+    const txFactory = new TxFactory(socialId, this.workspace)
     const messageId = generateId<ChatMessage>()
     const attachments = await this.createAttachments(
       txFactory,

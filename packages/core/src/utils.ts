@@ -762,7 +762,13 @@ export function isOwnerOrMaintainer (): boolean {
 }
 
 export function hasAccountRole (acc: Account, targerRole: AccountRole): boolean {
-  return roleOrder[acc.role] >= roleOrder[targerRole]
+  if (acc.targetWorkspace == null) {
+    throw new Error('Account has no target workspace')
+  }
+  if (acc.targetWorkspace === '') {
+    return true
+  }
+  return roleOrder[acc.workspaces[acc.targetWorkspace].role] >= roleOrder[targerRole]
 }
 
 export function getBranding (brandings: BrandingMap, key: string | undefined): Branding | null {

@@ -75,6 +75,7 @@ export class StorageClientImpl implements StorageClient {
     const lastModified = Date.parse(headers.get('Last-Modified') ?? '')
     const size = parseInt(headers.get('Content-Length') ?? '0', 10)
     return {
+      _uuid: this.workspace,
       provider: '',
       _class: core.class.Blob,
       _id: objectName as Ref<Blob>,
@@ -121,6 +122,7 @@ export class StorageClientImpl implements StorageClient {
     if (Object.hasOwn(result[0], 'id')) {
       const fileResult = result[0] as BlobUploadSuccess
       return {
+        _uuid: this.workspace,
         _class: core.class.Blob,
         _id: fileResult.id as Ref<Blob>,
         space: core.space.Configuration,

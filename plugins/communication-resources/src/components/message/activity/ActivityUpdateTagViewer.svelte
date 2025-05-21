@@ -26,7 +26,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: mixin = hierarchy.hasClass(update.tag) ? hierarchy.getClass(update.tag) : undefined
+  $: mixin = hierarchy.hasClass(update.tag as any) ? hierarchy.getClass(update.tag as any) : undefined
 </script>
 
 {#if mixin !== undefined}

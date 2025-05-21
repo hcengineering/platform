@@ -282,6 +282,7 @@ export class S3Service implements StorageAdapter {
             for (const data of res.Contents ?? []) {
               const _id = this.stripPrefix(rootPrefix, data.Key ?? '')
               buffer.push({
+                _uuid: wsIds.uuid,
                 _id: _id as Ref<Blob>,
                 _class: core.class.Blob,
                 etag: data.ETag ?? '',
@@ -311,6 +312,7 @@ export class S3Service implements StorageAdapter {
       })
       const rootPrefix = this.rootPrefix(wsIds)
       return {
+        _uuid: wsIds.uuid,
         provider: '',
         _class: core.class.Blob,
         _id: this.stripPrefix(rootPrefix, objectName) as Ref<Blob>,

@@ -65,6 +65,7 @@ describe('AttachmentHandler', () => {
   } as unknown as TxOperations
 
   const getBaseAttachment = (): Attachment => ({
+    _uuid: 'test-uuid' as WorkspaceUuid,
     _id: 'test-attachment' as Ref<Attachment>,
     name: 'test.txt',
     type: 'text/plain',

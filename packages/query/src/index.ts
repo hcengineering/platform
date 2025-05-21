@@ -58,7 +58,9 @@ import core, {
   platformNow,
   reduceCalls,
   shouldShowArchived,
-  toFindResult
+  toFindResult,
+  type AccountWorkspace,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
@@ -72,7 +74,7 @@ const CACHE_SIZE = 125
  * @public
  */
 export class LiveQuery implements WithTx, Client {
-  private readonly client: Client
+  protected readonly client: Client
   private readonly queries = new Map<Ref<Class<Doc>>, Map<QueryId, Query>>()
   private readonly queue = new Map<QueryId, Query & { lastUsed: number }>()
   private queryCounter: number = 0
@@ -84,6 +86,14 @@ export class LiveQuery implements WithTx, Client {
 
   constructor (client: Client) {
     this.client = client
+  }
+
+  getWorkspaces (): Record<WorkspaceUuid, AccountWorkspace> {
+    return this.client.getWorkspaces()
+  }
+
+  getAvailableWorkspaces (): WorkspaceUuid[] {
+    return this.client.getAvailableWorkspaces()
   }
 
   public isClosed (): boolean {
@@ -884,6 +894,7 @@ export class LiveQuery implements WithTx, Client {
   // Check if query is partially matched.
   private async matchQuery (q: Query, tx: TxUpdateDoc<Doc>, docCache: Map<string, Doc>): Promise<boolean> {
     const doc: Doc = {
+      _uuid: tx._uuid,
       _id: tx.objectId,
       _class: tx.objectClass,
       modifiedBy: tx.modifiedBy,

@@ -44,7 +44,7 @@ async function getTxOperations (client: Client, token: Token, isDerived: boolean
     primarySocialString = pickPrimarySocialId(socialIds)._id
   }
 
-  return new TxOperations(client, primarySocialString, isDerived)
+  return new TxOperations(client, primarySocialString, token.workspace, isDerived)
 }
 
 /**

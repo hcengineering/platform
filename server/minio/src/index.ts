@@ -229,6 +229,7 @@ export class MinioService implements StorageAdapter {
               if (data.name !== undefined) {
                 const _id = this.stripPrefix(rootPrefix, data.name)
                 buffer.push({
+                  _uuid: wsIds.uuid,
                   _id: _id as Ref<Blob>,
                   _class: core.class.Blob,
                   etag: data.etag,
@@ -283,6 +284,7 @@ export class MinioService implements StorageAdapter {
       const result = await this.client.statObject(this.getBucketId(wsIds), this.getDocumentKey(wsIds, objectName))
       const rootPrefix = this.rootPrefix(wsIds)
       return {
+        _uuid: wsIds.uuid,
         provider: '',
         _class: core.class.Blob,
         _id: this.stripPrefix(rootPrefix, objectName) as Ref<Blob>,

@@ -20,7 +20,7 @@ import core, {
   type Ref,
   type Status,
   type TxCreateDoc,
-  TxOperations,
+  type TxOperations,
   generateId,
   toIdMap
 } from '@hcengineering/core'
@@ -260,6 +260,7 @@ async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
         : status.modifiedBy
 
     const tx: TxCreateDoc<IssueStatus> = {
+      _uuid: client.wsIds.uuid,
       _id: generateId(),
       _class: core.class.TxCreateDoc,
       space: core.space.Tx,
@@ -404,8 +405,7 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'create-defaults',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await createDefaults(tx)
+          await createDefaults(client)
         }
       }
     ])

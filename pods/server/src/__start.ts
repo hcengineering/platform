@@ -25,6 +25,8 @@ import serverToken from '@hcengineering/server-token'
 import { join } from 'path'
 import { start } from '.'
 import { profileStart, profileStop } from './inspector'
+import client from '@hcengineering/client'
+import { WebSocket } from 'ws'
 
 configureAnalytics(process.env.SENTRY_DSN, {})
 Analytics.setTag('application', 'transactor')
@@ -84,6 +86,13 @@ setMetadata(serverNotification.metadata.WebPushUrl, config.webPushUrl)
 setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
 setMetadata(serverCalendar.metadata.EndpointURL, process.env.CALENDAR_URL)
 
+const region = process.env.REGION ?? ''
+const endpointName = process.env.ENDPOINT_NAME ?? `ws://huly.local:${config.serverPort}`
+
+setMetadata(client.metadata.ClientSocketFactory, (url) => {
+  return new WebSocket(url) as any
+})
+
 const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
   fulltextUrl: config.fulltextUrl,
   storageConfig,
@@ -97,7 +106,9 @@ const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
     stop: profileStop
   },
   mongoUrl: config.mongoUrl,
-  queue
+  queue,
+  region,
+  endpointName
 })
 
 getStats = (): WorkspaceStatistics[] => {

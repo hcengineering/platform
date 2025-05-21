@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { DOMAIN_MODEL_TX, TxOperations, type Ref, type Status } from '@hcengineering/core'
+import { DOMAIN_MODEL_TX, type TxOperations, type Ref, type Status } from '@hcengineering/core'
 import { leadId, type Lead } from '@hcengineering/lead'
 import {
   tryMigrate,
@@ -193,8 +193,7 @@ export const leadOperation: MigrateOperation = {
       {
         state: 'u-default-funnel',
         func: async (client) => {
-          const ops = new TxOperations(client, core.account.System)
-          await createDefaults(ops)
+          await createDefaults(client)
         }
       }
     ])

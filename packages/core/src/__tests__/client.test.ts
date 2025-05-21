@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 import { type IntlString, type Plugin } from '@hcengineering/platform'
-import { ClientConnectEvent, type DocChunk } from '..'
-import type { Class, Data, Doc, Domain, PluginConfiguration, Ref, Space, Timestamp } from '../classes'
+import { ClientConnectEvent, type DocChunk, systemAccount, type WorkspaceUuid } from '..'
 import { ClassifierKind, DOMAIN_MODEL } from '../classes'
-import { type ClientConnection, createClient } from '../client'
+import type { Account, Class, Data, Doc, PluginConfiguration, Ref, Timestamp, type Space } from '../classes'
+import { type ClientConnection, createClient, type SubscribedWorkspaceInfo } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
@@ -41,7 +41,7 @@ function filterPlugin (plugin: Plugin): (txes: Tx[]) => Tx[] {
 describe('client', () => {
   it('should create client and spaces', async () => {
     const klass = core.class.Space
-    const client = new TxOperations(await createClient(connect), core.account.System)
+    const client = new TxOperations(await createClient(connect), core.account.System, core.workspace.Model)
     const result = await client.findAll(klass, {})
     expect(result).toHaveLength(2)
 
@@ -70,7 +70,7 @@ describe('client', () => {
   })
 
   it('should create client with plugins', async () => {
-    const txFactory = new TxFactory(core.account.System)
+    const txFactory = new TxFactory(core.account.System, core.workspace.Model)
     const txes = genMinModel()
 
     txes.push(
@@ -87,7 +87,7 @@ describe('client', () => {
       )
     )
 
-    async function connectPlugin (handler: (tx: Tx) => void): Promise<ClientConnection> {
+    async function connectPlugin (handler: (tx: Tx[]) => void): Promise<ClientConnection> {
       const hierarchy = new Hierarchy()
 
       for (const tx of txes) hierarchy.tx(tx)
@@ -104,19 +104,37 @@ describe('client', () => {
       }
 
       return new (class implements ClientConnection {
-        handler?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+        handler?: (
+          event: ClientConnectEvent,
+          lastTx: Record<WorkspaceUuid, string | undefined> | undefined,
+          data: any
+        ) => Promise<void>
 
         set onConnect (
-          handler: ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined
+          handler:
+          | ((
+            event: ClientConnectEvent,
+            lastTx: Record<WorkspaceUuid, string | undefined> | undefined,
+            data: any
+          ) => Promise<void>)
+          | undefined
         ) {
           this.handler = handler
-          void this.handler?.(ClientConnectEvent.Connected, '', {})
+          void this.handler?.(ClientConnectEvent.Connected, {}, {})
         }
 
         get onConnect ():
-        | ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>)
+        | ((
+          event: ClientConnectEvent,
+          lastTx: Record<WorkspaceUuid, string | undefined> | undefined,
+          data: any
+        ) => Promise<void>)
         | undefined {
           return this.handler
+        }
+
+        async getAccount (): Promise<Account> {
+          return systemAccount
         }
 
         isConnected = (): boolean => true
@@ -137,26 +155,32 @@ describe('client', () => {
 
         close = async (): Promise<void> => {}
 
-        loadChunk = async (domain: Domain, idx?: number): Promise<DocChunk> => ({
+        loadChunk = async (): Promise<DocChunk> => ({
           idx: -1,
           docs: [],
           finished: true
         })
 
-        async getDomainHash (domain: Domain): Promise<string> {
+        async getDomainHash (): Promise<string> {
           return generateId()
         }
 
-        async closeChunk (idx: number): Promise<void> {}
-        async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+        async closeChunk (): Promise<void> {}
+        async loadDocs (): Promise<Doc[]> {
           return []
         }
 
-        async upload (domain: Domain, docs: Doc[]): Promise<void> {}
-        async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+        async upload (): Promise<void> {}
+        async clean (): Promise<void> {}
         async loadModel (last: Timestamp): Promise<Tx[]> {
           return txes
         }
+
+        async subscribe (): Promise<SubscribedWorkspaceInfo> {
+          return {}
+        }
+
+        async unsubscribe (): Promise<void> {}
 
         async sendForceClose (): Promise<void> {}
       })()
@@ -173,8 +197,9 @@ describe('client', () => {
     const txCreateDoc1 = txFactory.createTxCreateDoc(core.class.PluginConfiguration, core.space.Model, pluginData1)
     txes.push(txCreateDoc1)
     const client1 = new TxOperations(
-      await createClient(connectPlugin, filterPlugin('testPlugin1' as Plugin)),
-      core.account.System
+      await createClient(connectPlugin, { modelFilter: filterPlugin('testPlugin1' as Plugin) }),
+      core.account.System,
+      core.workspace.Model
     )
     const result1 = await client1.findAll(core.class.PluginConfiguration, {})
 
@@ -193,8 +218,9 @@ describe('client', () => {
     const txCreateDoc2 = txFactory.createTxCreateDoc(core.class.PluginConfiguration, core.space.Model, pluginData2)
     txes.push(txCreateDoc2)
     const client2 = new TxOperations(
-      await createClient(connectPlugin, filterPlugin('testPlugin1' as Plugin)),
-      core.account.System
+      await createClient(connectPlugin, { modelFilter: filterPlugin('testPlugin1' as Plugin) }),
+      core.account.System,
+      core.workspace.Model
     )
     const result2 = await client2.findAll(core.class.PluginConfiguration, {})
 
@@ -219,8 +245,9 @@ describe('client', () => {
     )
     txes.push(txUpdateDoc)
     const client3 = new TxOperations(
-      await createClient(connectPlugin, filterPlugin('testPlugin2' as Plugin)),
-      core.account.System
+      await createClient(connectPlugin, { modelFilter: filterPlugin('testPlugin2' as Plugin) }),
+      core.account.System,
+      core.workspace.Model
     )
     const result3 = await client3.findAll(core.class.PluginConfiguration, {})
 

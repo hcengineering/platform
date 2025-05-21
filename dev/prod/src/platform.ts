@@ -67,7 +67,7 @@ import { uploaderId } from '@hcengineering/uploader'
 import { mediaId } from '@hcengineering/media'
 import recorder, { recorderId } from '@hcengineering/recorder'
 import { viewId } from '@hcengineering/view'
-import workbench, { workbenchId } from '@hcengineering/workbench'
+import workbench, { workbenchId, workbenchAppsId } from '@hcengineering/workbench'
 import { mailId } from '@hcengineering/mail'
 import { chatId } from '@hcengineering/chat'
 import github, { githubId } from '@hcengineering/github'
@@ -146,6 +146,7 @@ import { initThemeStore, setDefaultLanguage } from '@hcengineering/theme'
 import { preferenceId } from '@hcengineering/preference'
 import { uiId } from '@hcengineering/ui/src/plugin'
 import { configureAnalytics } from './analytics'
+
 
 export interface Config {
   ACCOUNTS_URL: string
@@ -487,6 +488,7 @@ export async function configurePlatform() {
     uiPlugin.metadata.Routes,
     new Map([
       [workbenchId, workbench.component.WorkbenchApp],
+      [workbenchAppsId, workbench.component.WorkbenchApps],
       [loginId, login.component.LoginApp],
       [onboardId, onboard.component.OnboardApp],
       [githubId, github.component.ConnectApp],

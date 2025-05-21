@@ -1,13 +1,14 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
-import contact, { Channel, Contact as PContact, getFirstName, getLastName } from '@hcengineering/contact'
+import contact, { Channel, getFirstName, getLastName, Contact as PContact } from '@hcengineering/contact'
 import core, {
-  PersonId,
   Blob,
   Client,
   Doc,
   Hierarchy,
   MeasureContext,
+  PersonId,
   Ref,
+  systemAccountUuid,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -16,8 +17,7 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  systemAccountUuid,
-  WorkspaceDataId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
@@ -50,13 +50,13 @@ export class WorkspaceWorker {
     private readonly ctx: MeasureContext,
     private readonly client: Client,
     private readonly storageAdapter: StorageAdapter,
-    private readonly workspace: WorkspaceDataId,
+    private readonly workspace: WorkspaceUuid,
     private readonly userStorage: Collection<UserRecord>,
     private readonly lastMsgStorage: Collection<LastMsgRecord>,
     private readonly channelsStorage: Collection<WorkspaceChannel>
   ) {
     // eslint-disable-next-line
-    this.client.notify = (...tx) => void this.txHandler(...tx)
+    this.client.notify = (tx) => void this.txHandler(tx)
     this.hierarchy = this.client.getHierarchy()
   }
 
@@ -81,7 +81,7 @@ export class WorkspaceWorker {
     this.clients.set(rec.phone, { conn })
   }
 
-  private async txHandler (...txes: Tx[]): Promise<void> {
+  private async txHandler (txes: Tx[]): Promise<void> {
     for (const tx of txes) {
       switch (tx._class) {
         case core.class.TxCreateDoc: {
@@ -140,12 +140,12 @@ export class WorkspaceWorker {
   static async create (
     ctx: MeasureContext,
     storageAdapter: StorageAdapter,
-    workspace: WorkspaceDataId,
+    workspace: WorkspaceUuid,
     userStorage: Collection<UserRecord>,
     lastMsgStorage: Collection<LastMsgRecord>,
     channelsStorage: Collection<WorkspaceChannel>
   ): Promise<WorkspaceWorker> {
-    const token = generateToken(systemAccountUuid, workspace as any, { service: 'telegram' }) // TODO: FIXME
+    const token = generateToken(systemAccountUuid, workspace, { service: 'telegram' }) // TODO: FIXME
     const client = await createPlatformClient(token)
 
     const worker = new WorkspaceWorker(
@@ -285,7 +285,7 @@ export class WorkspaceWorker {
       return
     }
 
-    const txOp = new TxOperations(this.client, core.account.System)
+    const txOp = new TxOperations(this.client, core.account.System, this.workspace)
 
     if (signOut) {
       console.log('Signout', this.workspace, phone)
@@ -358,7 +358,7 @@ export class WorkspaceWorker {
       }
     }
 
-    const factory = new TxFactory(msg.modifiedBy)
+    const factory = new TxFactory(msg.modifiedBy, this.workspace)
     const tx = factory.createTxUpdateDoc(msg._class, msg.space, msg._id, {
       status: 'sent'
     })
@@ -543,7 +543,7 @@ export class WorkspaceWorker {
   }
 
   private makePlatformMsg (event: Event, record: UserRecord, channel: Channel): TxCUD<TelegramMessage> {
-    const factory = new TxFactory(record.userId as any) // TODO: FIXME
+    const factory = new TxFactory(record.userId as any, this.workspace) // TODO: FIXME
     const modifiedOn = event.msg.date * 1000
     const tx = factory.createTxCollectionCUD<Channel, TelegramMessage>(
       channel._class,
@@ -657,7 +657,7 @@ export class WorkspaceWorker {
     createTx: TxCUD<TelegramMessage>
   ): Promise<void> {
     const msg = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<TelegramMessage>)
-    const factory = new TxFactory(record.userId as any) // TODO: FIXME
+    const factory = new TxFactory(record.userId as any, this.workspace) // TODO: FIXME
     const files = await getFiles(event.msg)
     for (const file of files) {
       try {

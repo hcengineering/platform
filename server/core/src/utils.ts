@@ -24,10 +24,12 @@ import core, {
   type Ref,
   type SearchResult,
   type SessionData,
+  type SubscribedWorkspaceInfo,
   type Tx,
   type TxResult,
   type TxWorkspaceEvent,
-  type WorkspaceIds
+  type WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import { createHash, type Hash } from 'crypto'
@@ -202,8 +204,12 @@ export class SessionDataImpl implements SessionData {
   }
 }
 
-export function createBroadcastEvent (classes: Ref<Class<Doc>>[]): TxWorkspaceEvent<BulkUpdateEvent> {
+export function createBroadcastEvent (
+  workspace: WorkspaceUuid,
+  classes: Ref<Class<Doc>>[]
+): TxWorkspaceEvent<BulkUpdateEvent> {
   return {
+    _uuid: workspace,
     _class: core.class.TxWorkspaceEvent,
     _id: generateId(),
     event: WorkspaceEvent.BulkUpdate,
@@ -260,17 +266,19 @@ export function wrapPipeline (
     findAll: (_class, query, options) => pipeline.findAll(ctx, _class, query, options),
     findOne: async (_class, query, options) =>
       (await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })).shift(),
-    clean: (domain, docs) => backupOps.clean(ctx, domain, docs),
+    clean: (workspaceId, domain, docs) => backupOps.clean(ctx, domain, docs),
     close: () => pipeline.close(),
-    closeChunk: (idx) => backupOps.closeChunk(ctx, idx),
+    closeChunk: (workspaceId, idx) => backupOps.closeChunk(ctx, idx),
     getHierarchy: () => pipeline.context.hierarchy,
     getModel: () => pipeline.context.modelDb,
-    loadChunk: (domain, idx) => backupOps.loadChunk(ctx, domain, idx),
-    getDomainHash: (domain) => backupOps.getDomainHash(ctx, domain),
-    loadDocs: (domain, docs) => backupOps.loadDocs(ctx, domain, docs),
-    upload: (domain, docs) => backupOps.upload(ctx, domain, docs),
+    loadChunk: (workspaceId, domain, idx) => backupOps.loadChunk(ctx, domain, idx),
+    getDomainHash: (workspaceid, domain) => backupOps.getDomainHash(ctx, domain),
+    loadDocs: (workspaceId, domain, docs) => backupOps.loadDocs(ctx, domain, docs),
+    upload: (workspaceId, domain, docs) => backupOps.upload(ctx, domain, docs),
     searchFulltext: async (query, options) => ({ docs: [], total: 0 }),
     sendForceClose: async () => {},
+    getAvailableWorkspaces: () => [],
+    getWorkspaces: () => ({}),
     tx: async (tx) => {
       const result = await pipeline.tx(ctx, [tx])
       if (doBroadcast) {
@@ -286,17 +294,43 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
   class TestClientConnection implements ClientConnection {
     isConnected = (): boolean => true
 
-    handler?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+    handler?: (
+      event: ClientConnectEvent,
+      lastTx: Record<WorkspaceUuid, string | undefined> | undefined,
+      data: any
+    ) => Promise<void>
 
-    set onConnect (
-      handler: ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined
-    ) {
-      this.handler = handler
-      void this.handler?.(ClientConnectEvent.Connected, '', {})
+    async subscribe (): Promise<SubscribedWorkspaceInfo> {
+      return {}
     }
 
-    get onConnect (): ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined {
+    async unsubscribe (): Promise<void> {}
+
+    set onConnect (
+      handler:
+      | ((
+        event: ClientConnectEvent,
+        lastTx: Record<WorkspaceUuid, string | undefined> | undefined,
+        data: any
+      ) => Promise<void>)
+      | undefined
+    ) {
+      this.handler = handler
+      void this.handler?.(ClientConnectEvent.Connected, {}, {})
+    }
+
+    get onConnect ():
+    | ((
+      event: ClientConnectEvent,
+      lastTx: Record<WorkspaceUuid, string | undefined> | undefined,
+      data: any
+    ) => Promise<void>)
+    | undefined {
       return this.handler
+    }
+
+    async getAccount (): Promise<Account> {
+      return systemAccount
     }
 
     pushHandler (): void {}
@@ -319,23 +353,23 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
 
     async close (): Promise<void> {}
 
-    async loadChunk (domain: Domain): Promise<DocChunk> {
+    async loadChunk (workspaceId: WorkspaceUuid, domain: Domain): Promise<DocChunk> {
       throw new Error('unsupported')
     }
 
-    async getDomainHash (domain: Domain): Promise<string> {
+    async getDomainHash (workspaceId: WorkspaceUuid, domain: Domain): Promise<string> {
       return await storageAdapter.getDomainHash(ctx, domain)
     }
 
-    async closeChunk (idx: number): Promise<void> {}
+    async closeChunk (workspaceId: WorkspaceUuid, idx: number): Promise<void> {}
 
-    async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    async loadDocs (workspaceId: WorkspaceUuid, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
       return []
     }
 
-    async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+    async upload (workspaceId: WorkspaceUuid, domain: Domain, docs: Doc[]): Promise<void> {}
 
-    async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+    async clean (workspaceId: WorkspaceUuid, domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 
     async loadModel (): Promise<Tx[]> {
       return txes

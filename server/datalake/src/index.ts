@@ -128,6 +128,7 @@ export class DatalakeService implements StorageAdapter {
 
             for (const blob of res.blobs) {
               buffer.push({
+                _uuid: wsIds.uuid,
                 _id: blob.name as Ref<Blob>,
                 _class: core.class.Blob,
                 etag: blob.etag,
@@ -153,6 +154,7 @@ export class DatalakeService implements StorageAdapter {
     const result = await this.retry(ctx, () => this.client.statObject(ctx, wsIds.uuid, objectName))
     if (result !== undefined) {
       return {
+        _uuid: wsIds.uuid,
         provider: '',
         _class: core.class.Blob,
         _id: objectName as Ref<Blob>,

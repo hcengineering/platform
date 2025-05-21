@@ -386,12 +386,13 @@ export async function getRegionInfo (doNavigate: boolean = true): Promise<Region
 
 export async function selectWorkspace (
   workspaceUrl: string,
-  token?: string | null | undefined
+  token?: string | null | undefined,
+  singleWorkspace: boolean = true
 ): Promise<[Status, WorkspaceLoginInfo | null]> {
   const actualToken = token ?? getMetadata(presentation.metadata.Token) ?? undefined
 
   try {
-    const loginInfo = await getAccountClient(actualToken).selectWorkspace(workspaceUrl)
+    const loginInfo = await getAccountClient(actualToken).selectWorkspace(workspaceUrl, singleWorkspace)
 
     return [OK, loginInfo]
   } catch (err: any) {

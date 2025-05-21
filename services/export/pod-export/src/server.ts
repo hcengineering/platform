@@ -189,7 +189,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
       const platformClient = await createPlatformClient(token)
       const account = decodedToken.account
 
-      const txOperations = new TxOperations(platformClient, socialId)
+      const txOperations = new TxOperations(platformClient, socialId, wsIds.uuid)
 
       res.status(200).send({ message: 'Export started' })
 
@@ -242,7 +242,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
       }
 
       const platformClient = await createPlatformClient(token)
-      const txOperations = new TxOperations(platformClient, socialId)
+      const txOperations = new TxOperations(platformClient, socialId, wsIds.uuid)
 
       const exportDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
       try {

@@ -148,8 +148,14 @@ export default plugin(presentationId, {
     CollaboratorUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
     Endpoint: '' as Metadata<string>,
+
+    // Identifier of personal workspace
+    PersonalWorkspaceUuid: '' as Metadata<WorkspaceUuid>,
+
+    // Identifier of target workspace  + data
     WorkspaceUuid: '' as Metadata<WorkspaceUuid>,
     WorkspaceDataId: '' as Metadata<WorkspaceDataId>,
+
     FrontUrl: '' as Asset,
     LinkPreviewUrl: '' as Metadata<string>,
     UploadConfig: '' as Metadata<UploadConfig>,

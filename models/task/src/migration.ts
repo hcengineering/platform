@@ -19,7 +19,7 @@ import {
   DOMAIN_SEQUENCE,
   DOMAIN_STATUS,
   DOMAIN_TX,
-  TxOperations,
+  type TxOperations,
   toIdMap,
   type Attribute,
   type Class,
@@ -602,10 +602,8 @@ export const taskOperation: MigrateOperation = {
       {
         state: 'u-task-001',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-
           await createOrUpdate(
-            tx,
+            client,
             tags.class.TagCategory,
             core.space.Workspace,
             {

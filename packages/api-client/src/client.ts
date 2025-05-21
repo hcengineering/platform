@@ -105,7 +105,7 @@ class PlatformClientImpl implements PlatformClient {
     private readonly connection: Client,
     private readonly user: PersonId
   ) {
-    this.client = new TxOperations(connection, user)
+    this.client = new TxOperations(connection, user, workspace)
     this.markup = createMarkupOperations(url, workspace, token, config)
   }
 

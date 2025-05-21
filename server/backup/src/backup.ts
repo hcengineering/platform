@@ -40,7 +40,7 @@ import core, {
   type WorkspaceIds,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import { BlobClient, createClient } from '@hcengineering/server-client'
 import { estimateDocSize, type StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { deepEqual } from 'fast-equals'
@@ -622,7 +622,7 @@ export async function cloneWorkspace (
   //         await sourceConnection.close()
   //       })
   //       await ctx.with('close-target', {}, async (ctx) => {
-  //         await targetConnection.sendForceClose()
+  //         await targetConnection.sendForceClose(workspaceId)
   //         await targetConnection.close()
   //       })
   //     }
@@ -949,7 +949,7 @@ export async function backup (
       }
       while (true) {
         try {
-          const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(domain, idx))
+          const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(workspaceId, domain, idx))
           if (domain === DOMAIN_BLOB) {
             result.blobsSize += currentChunk.size ?? 0
           } else {
@@ -1022,7 +1022,7 @@ export async function backup (
               workspace: workspaceId
             })
             await ctx.with('closeChunk', {}, async () => {
-              await connection.closeChunk(idx as number)
+              await connection.closeChunk(workspaceId, idx as number)
             })
             break
           }
@@ -1030,7 +1030,7 @@ export async function backup (
           ctx.error('failed to load chunks', { error: err })
           if (idx !== undefined) {
             await ctx.with('closeChunk', {}, async () => {
-              await connection.closeChunk(idx as number)
+              await connection.closeChunk(workspaceId, idx as number)
             })
           }
           // Try again
@@ -1069,7 +1069,7 @@ export async function backup (
         removed: 0
       }
 
-      const dHash = await connection.getDomainHash(domain)
+      const dHash = await connection.getDomainHash(workspaceId, domain)
       if (backupInfo.domainHashes[domain] === dHash && !fullCheck) {
         ctx.info('no changes in domain', { domain })
         return
@@ -1111,6 +1111,7 @@ export async function backup (
             same,
             async (docs) => {
               const serverDocs = await connection.loadDocs(
+                workspaceId,
                 domain,
                 docs.map((it) => it._id)
               )
@@ -1193,7 +1194,7 @@ export async function backup (
         })
         let docs: Doc[] = []
         try {
-          docs = await ctx.with('<<<< load-docs', {}, async () => await connection.loadDocs(domain, needRetrieve))
+          docs = await ctx.with('<<<< load-docs', {}, async () => await connection.loadDocs(workspaceId, domain, needRetrieve))
           lastSize = docs.reduce((p, it) => p + estimateDocSize(it), 0)
           if (docs.length !== needRetrieve.length) {
             ctx.error('failed to retrieve all documents', {
@@ -1644,7 +1645,7 @@ export async function backupSize (storage: BackupStorage): Promise<void> {
 /**
  * @public
  */
-export async function backupDownload (storage: BackupStorage, storeIn: string): Promise<void> {
+export async function backupDownload (storage: BackupStorage, storeIn: string, skipDomains: Set<string>): Promise<void> {
   const infoFile = 'backup.json.gz'
   const sizeFile = 'backup.size.gz'
 
@@ -1654,15 +1655,16 @@ export async function backupDownload (storage: BackupStorage, storeIn: string): 
   let size = 0
 
   const backupInfo: BackupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
-  console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
+  console.log('Downloading workspace:', backupInfo.workspace ?? '', backupInfo.version, backupInfo.snapshots.length)
 
   let sizeInfo: Record<string, number> = {}
   if (await storage.exists(sizeFile)) {
+    console.log('Parse size file')
     sizeInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(sizeFile))).toString())
   }
-  console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
 
-  const addFileSize = async (file: string | undefined | null, force: boolean = false): Promise<void> => {
+  const downloadFile = async (file: string | undefined | null, force: boolean = false): Promise<void> => {
+    console.log('Download file', file)
     if (file != null) {
       const target = join(storeIn, file)
       const dir = dirname(target)
@@ -1699,17 +1701,21 @@ export async function backupDownload (storage: BackupStorage, storeIn: string): 
 
   // Let's calculate data size for backup
   for (const sn of backupInfo.snapshots) {
-    for (const [, d] of Object.entries(sn.domains)) {
-      await addFileSize(d.snapshot)
+    console.log('processing', sn.date)
+    for (const [k, d] of Object.entries(sn.domains)) {
+      if (skipDomains.has(k)) {
+        continue
+      }
+      await downloadFile(d.snapshot)
       for (const snp of d.snapshots ?? []) {
-        await addFileSize(snp)
+        await downloadFile(snp)
       }
       for (const snp of d.storage ?? []) {
-        await addFileSize(snp)
+        await downloadFile(snp)
       }
     }
   }
-  await addFileSize(infoFile, true)
+  await downloadFile(infoFile, true)
 
   console.log('Backup size', size / (1024 * 1024), 'Mb')
 }
@@ -1828,7 +1834,7 @@ export async function restore (
     recheck?: boolean
     include?: Set<string>
     skip?: Set<string>
-    getConnection?: () => Promise<CoreClient & BackupClient>
+    getConnection: () => Promise<CoreClient & BackupClient>
     storageAdapter?: StorageAdapter
     token?: string
     progress?: (progress: number) => Promise<void>
@@ -1878,26 +1884,10 @@ export async function restore (
     opt.token ??
     generateToken(systemAccountUuid, workspaceId, {
       service: 'backup',
-      mode: 'backup',
-      model: 'upgrade'
+      mode: 'backup'
     })
 
-  const connection =
-    opt.getConnection !== undefined
-      ? await opt.getConnection()
-      : ((await createClient(transactorUrl, token)) as CoreClient & BackupClient)
-
-  if (opt.getConnection === undefined) {
-    try {
-      let serverEndpoint = await getTransactorEndpoint(token, 'external')
-      serverEndpoint = serverEndpoint.replaceAll('wss://', 'https://').replace('ws://', 'http://')
-      await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close`, {
-        method: 'PUT'
-      })
-    } catch (err: any) {
-      // Ignore
-    }
-  }
+  const connection = await opt.getConnection()
 
   const blobClient = new BlobClient(transactorUrl, token, wsIds, { storageAdapter: opt.storageAdapter })
   console.log('connected')
@@ -1935,7 +1925,7 @@ export async function restore (
   }
 
   async function processDomain (c: Domain): Promise<void> {
-    const dHash = await connection.getDomainHash(c)
+    const dHash = await connection.getDomainHash(workspaceId, c)
     if (backupInfo.domainHashes[c] === dHash) {
       ctx.info('no changes in domain', { domain: c })
       return
@@ -1964,7 +1954,7 @@ export async function restore (
           await opt.progress?.(domainProgress)
         }
         const st = Date.now()
-        const it = await connection.loadChunk(c, idx)
+        const it = await connection.loadChunk(workspaceId, c, idx)
         dataSize += it.size ?? 0
         chunks++
 
@@ -1987,7 +1977,7 @@ export async function restore (
       }
     } finally {
       if (idx !== undefined) {
-        await connection.closeChunk(idx)
+        await connection.closeChunk(workspaceId, idx)
       }
     }
     ctx.info('loaded', {
@@ -2056,6 +2046,7 @@ export async function restore (
           // We need to download all documents and compare them.
           const serverDocs = toIdMap(
             await connection.loadDocs(
+              workspaceId,
               c,
               docs.map((it) => it._id)
             )
@@ -2072,7 +2063,7 @@ export async function restore (
           })
         }
         try {
-          await connection.upload(c, docsToSend)
+          await connection.upload(workspaceId, c, docsToSend)
         } catch (err: any) {
           ctx.error('error during upload', { err, docs: JSON.stringify(docs) })
         }
@@ -2264,7 +2255,7 @@ export async function restore (
       while (docsToRemove.length > 0) {
         const part = docsToRemove.splice(0, 10000)
         try {
-          await connection.clean(c, part)
+          await connection.clean(workspaceId, c, part)
         } catch (err: any) {
           ctx.error('failed to clean, will retry', { error: err, workspaceId })
           docsToRemove.push(...part)
@@ -2324,7 +2315,7 @@ export async function restore (
     return false
   } finally {
     if (opt.getConnection === undefined && connection !== undefined) {
-      await connection.sendForceClose()
+      await connection.sendForceClose(workspaceId)
       await connection.close()
     }
   }

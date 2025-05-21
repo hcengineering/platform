@@ -79,6 +79,7 @@ class BenchmarkDbAdapter extends DummyDbAdapter {
       const dataSize =
         typeof request.size === 'number' ? request.size : request.size.from + Math.random() * request.size.to
       result.push({
+        _uuid: core.workspace.Any,
         _class: core.class.BenchmarkDoc,
         _id: generateId(),
         modifiedBy: core.account.System,

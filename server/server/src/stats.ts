@@ -5,8 +5,8 @@ import {
   metricsAggregate,
   type MetricsData
 } from '@hcengineering/core'
-import { type SessionManager } from '@hcengineering/server-core'
 import os from 'node:os'
+import { type SessionManager } from './types'
 
 /**
  * @public

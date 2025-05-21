@@ -15,6 +15,7 @@
 -->
 <script lang="ts">
   import type { Space } from '@hcengineering/core'
+  import { singleWorkspace, getClient } from '@hcengineering/presentation'
 
   export let value: Space
   export let accent = false
@@ -23,5 +24,8 @@
 {#if value}
   <span class:fs-bold={accent}>
     {value.name}
+    {#if !$singleWorkspace}
+      {getClient().getWorkspaces()[value._uuid]?.name}
+    {/if}
   </span>
 {/if}

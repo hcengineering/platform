@@ -49,7 +49,7 @@ export class WorkspaceClient {
   private async initClient (workspace: WorkspaceUuid): Promise<Client> {
     const token = generateToken(systemAccountUuid, workspace, { service: 'love' })
     const client = await getClient(token)
-    this.client = new TxOperations(client, core.account.System)
+    this.client = new TxOperations(client, core.account.System, workspace)
     return this.client
   }
 

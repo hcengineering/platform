@@ -367,7 +367,9 @@ class Client {
 
   private getSocialId (): SocialID {
     const me = getCurrentAccount()
-    const hulySocialId = me.fullSocialIds.find((it) => it.type === SocialIdType.HULY && it.verifiedOn !== undefined)
+    const hulySocialId = Array.from(me.fullSocialIds.values()).find(
+      (it) => it.type === SocialIdType.HULY && it.verifiedOn !== undefined
+    )
     const id = hulySocialId?._id ?? me.primarySocialId
     if (id == null || id === '') {
       throw new Error('Social id not found')

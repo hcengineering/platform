@@ -109,9 +109,11 @@ export class GmailClient {
     private socialId: SocialId
   ) {
     this.email = email
+
     this.integrationToken = serviceToken(wsInfo.workspace)
     this.tokenStorage = new TokenStorage(this.ctx, wsInfo.workspace, this.integrationToken)
-    this.client = new TxOperations(client, this.socialId._id)
+    this.client = new TxOperations(client, this.socialId._id, wsInfo.workspace)
+
     this.account = this.user.userId
     this.attachmentHandler = new AttachmentHandler(ctx, wsInfo, storageAdapter, this.gmail, this.client)
     const keyValueClient = getKvsClient(this.integrationToken)

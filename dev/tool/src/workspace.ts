@@ -111,7 +111,7 @@ export async function updateField (
     if (cmd.type === 'boolean') valueToPut = cmd.value === 'true'
     setByPath(doc, cmd.attribute.split('.'), valueToPut)
 
-    await connection.upload(connection.getHierarchy().getDomain(doc?._class), [doc])
+    await connection.upload(workspaceId, connection.getHierarchy().getDomain(doc?._class), [doc])
   } finally {
     await connection.close()
   }

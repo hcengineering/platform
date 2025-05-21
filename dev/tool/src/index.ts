@@ -36,6 +36,7 @@ import {
 } from '@hcengineering/server-backup'
 import serverClientPlugin, { getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import {
+  createBackupPipeline,
   registerAdapterFactory,
   registerDestroyFactory,
   registerServerPlugins,
@@ -88,8 +89,12 @@ import {
   shutdownPostgres
 } from '@hcengineering/postgres'
 import {
+  createDummyStorageAdapter,
   QueueTopic,
   workspaceEvents,
+  wrapPipeline,
+  type Pipeline,
+  type PipelineFactory,
   type QueueWorkspaceMessage,
   type StorageAdapter
 } from '@hcengineering/server-core'
@@ -1163,6 +1168,16 @@ export function devTool (
 
           const workspaceStorage: StorageAdapter | undefined =
             storageConfig !== undefined ? buildStorageFromConfig(storageConfig) : undefined
+
+          const { dbUrl, txes } = prepareTools()
+
+          const pipelineFactory: PipelineFactory = createBackupPipeline(toolCtx, dbUrl, txes, {
+            externalStorage: workspaceStorage ?? createDummyStorageAdapter(),
+            usePassedCtx: true
+          })
+
+          let pipeline: Pipeline | undefined
+
           await restore(toolCtx, await getWorkspaceTransactorEndpoint(workspace), wsIds, storage, {
             date: parseInt(date ?? '-1'),
             merge: cmd.merge,
@@ -1171,7 +1186,13 @@ export function devTool (
             include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';')),
             skip: new Set(cmd.skip.split(';')),
             storageAdapter: workspaceStorage,
-            historyFile: cmd.historyFile
+            historyFile: cmd.historyFile,
+            getConnection: async () => {
+              if (pipeline === undefined) {
+                pipeline = await pipelineFactory(toolCtx, wsIds, () => {}, null, null)
+              }
+              return wrapPipeline(toolCtx, pipeline, wsIds)
+            }
           })
           const queue = getPlatformQueue('tool', ws.region)
           const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
@@ -1350,14 +1371,15 @@ export function devTool (
 
   program
     .command('backup-s3-download <bucketName> <dirName> <storeIn>')
+    .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .description('Download a full backup from s3 to local dir')
-    .action(async (bucketName: string, dirName: string, storeIn: string, cmd) => {
+    .action(async (bucketName: string, dirName: string, storeIn: string, cmd: { skip: string }) => {
       const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
       const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
       const backupIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
       try {
         const storage = await createStorageBackupStorage(toolCtx, storageAdapter, backupIds, dirName)
-        await backupDownload(storage, storeIn)
+        await backupDownload(storage, storeIn, new Set(cmd.skip.split(';')))
       } catch (err: any) {
         toolCtx.error('failed to size backup', { err })
       }

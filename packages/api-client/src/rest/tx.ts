@@ -15,6 +15,7 @@
 
 import {
   type Account,
+  type AccountWorkspace,
   type Class,
   type Client,
   type Doc,
@@ -31,13 +32,14 @@ import {
   type Tx,
   TxOperations,
   type TxResult,
-  type WithLookup
+  type WithLookup,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { RestClientImpl } from './rest'
 
 export async function createRestTxOperations (
   endpoint: string,
-  workspaceId: string,
+  workspaceId: WorkspaceUuid,
   token: string
 ): Promise<TxOperations> {
   const restClient = new RestClientImpl(endpoint, workspaceId, token)
@@ -45,19 +47,34 @@ export async function createRestTxOperations (
   const account = await restClient.getAccount()
   const { hierarchy, model } = await restClient.getModel()
 
-  return new TxOperations(new RestTxClient(restClient, hierarchy, model, account), account.socialIds[0])
+  return new TxOperations(new RestTxClient(restClient, hierarchy, model, account), account.socialIds[0], workspaceId)
 }
 
 class RestTxClient implements Client {
+  hierarchy: Hierarchy
+  model: ModelDb
   constructor (
     readonly client: RestClientImpl,
-    readonly hierarchy: Hierarchy,
-    readonly model: ModelDb,
+    _hierarchy: Hierarchy,
+    _model: ModelDb,
     readonly account: Account
-  ) {}
+  ) {
+    this.hierarchy = _hierarchy
+    this.model = _model
+  }
 
   close (): Promise<void> {
     return Promise.resolve()
+  }
+
+  getAvailableWorkspaces (): WorkspaceUuid[] {
+    return Array.from(Object.entries(this.account.workspaces))
+      .filter(([, v]) => !v.maintenance && v.enabled)
+      .map(([it]) => it as WorkspaceUuid)
+  }
+
+  getWorkspaces (): Record<WorkspaceUuid, AccountWorkspace> {
+    return this.account.workspaces
   }
 
   async findAll<T extends Doc>(

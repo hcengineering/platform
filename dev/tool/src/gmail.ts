@@ -274,15 +274,15 @@ export async function loadAccounts (ws: WorkspaceInfoWithStatus): Promise<(Doc &
   let idx: number | undefined
 
   while (true) {
-    const info = await client.loadChunk(DOMAIN_MODEL_TX, idx)
+    const info = await client.loadChunk(ws.uuid, DOMAIN_MODEL_TX, idx)
     idx = info.idx
     const ids = Array.from(info.docs.map((it) => it.id as Ref<Doc>))
-    const docs = (await client.loadDocs(DOMAIN_MODEL_TX, ids)).filter((it) =>
+    const docs = (await client.loadDocs(ws.uuid, DOMAIN_MODEL_TX, ids)).filter((it) =>
       TxProcessor.isExtendsCUD(it._class)
     ) as TxCUD<Doc>[]
     accountsTxes.push(...docs)
     if (info.finished && idx !== undefined) {
-      await client.closeChunk(info.idx)
+      await client.closeChunk(ws.uuid, info.idx)
       break
     }
   }

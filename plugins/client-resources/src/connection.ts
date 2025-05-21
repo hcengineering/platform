@@ -22,13 +22,27 @@ import client, {
   pingConst,
   pongConst
 } from '@hcengineering/client'
+import { EventResult } from '@hcengineering/communication-sdk-types'
+import {
+  Collaborator,
+  FindCollaboratorsParams,
+  FindLabelsParams,
+  FindMessagesGroupsParams,
+  FindMessagesParams,
+  FindNotificationContextParams,
+  FindNotificationsParams,
+  Label,
+  Message,
+  MessagesGroup,
+  NotificationContext
+} from '@hcengineering/communication-types'
 import core, {
   Account,
+  type AccountUuid,
   Class,
   ClientConnectEvent,
   ClientConnection,
   clone,
-  Handler,
   Doc,
   DocChunk,
   DocumentQuery,
@@ -36,6 +50,7 @@ import core, {
   FindOptions,
   FindResult,
   generateId,
+  Handler,
   LoadModelResponse,
   type MeasureContext,
   MeasureMetricsContext,
@@ -49,9 +64,13 @@ import core, {
   Tx,
   TxApplyIf,
   TxHandler,
+  type TxOptions,
   TxResult,
+  type TxWorkspaceEvent,
+  WorkspaceEvent,
   type WorkspaceUuid
 } from '@hcengineering/core'
+import type { SubscribedWorkspaceInfo } from '@hcengineering/core/src/client/types'
 import platform, {
   broadcastEvent,
   getMetadata,
@@ -60,22 +79,8 @@ import platform, {
   Status,
   UNAUTHORIZED
 } from '@hcengineering/platform'
+import { HelloRequest, HelloResponse, type RateLimitInfo, ReqId, type Response, RPCHandler } from '@hcengineering/rpc'
 import { uncompress } from 'snappyjs'
-import { HelloRequest, HelloResponse, ReqId, type Response, RPCHandler, type RateLimitInfo } from '@hcengineering/rpc'
-import { EventResult } from '@hcengineering/communication-sdk-types'
-import {
-  FindLabelsParams,
-  FindMessagesGroupsParams,
-  FindMessagesParams,
-  FindNotificationContextParams,
-  FindNotificationsParams,
-  FindCollaboratorsParams,
-  Label,
-  Message,
-  MessagesGroup,
-  NotificationContext,
-  Collaborator
-} from '@hcengineering/communication-types'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
@@ -128,19 +133,15 @@ class Connection implements ClientConnection {
   private readonly sessionId: string | undefined
   private closed = false
 
-  private upgrading: boolean = false
-
   private pingResponse: number = Date.now()
 
   private helloReceived: boolean = false
 
   private account: Account | undefined
 
-  onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
-
   rpcHandler: RPCHandler
 
-  lastHash?: string
+  lastHash?: Record<WorkspaceUuid, string | undefined>
 
   handlers: Handler[] = []
 
@@ -148,7 +149,6 @@ class Connection implements ClientConnection {
     private readonly ctx: MeasureContext,
     private readonly url: string,
     handler: TxHandler,
-    readonly workspace: WorkspaceUuid,
     readonly user: PersonUuid,
     readonly opt?: ClientFactoryOptions
   ) {
@@ -172,7 +172,6 @@ class Connection implements ClientConnection {
     }
     this.rpcHandler = opt?.useGlobalRPCHandler === true ? globalRPCHandler : new RPCHandler()
     this.pushHandler(handler)
-    this.onConnect = opt?.onConnect
 
     this.scheduleOpen(this.ctx, false)
   }
@@ -181,9 +180,9 @@ class Connection implements ClientConnection {
     this.handlers.push(handler)
   }
 
-  async getLastHash (ctx: MeasureContext): Promise<string | undefined> {
+  async getLastHash (ctx: MeasureContext): Promise<Record<WorkspaceUuid, string | undefined>> {
     await this.waitOpenConnection(ctx)
-    return this.lastHash
+    return this.lastHash ?? {}
   }
 
   private schedulePing (socketId: number): void {
@@ -195,11 +194,11 @@ class Connection implements ClientConnection {
         clearInterval(interval)
         return
       }
-      if (!this.upgrading && this.pingResponse !== 0 && Date.now() - this.pingResponse > hangTimeout) {
+      if (this.pingResponse !== 0 && Date.now() - this.pingResponse > hangTimeout) {
         // No ping response from server.
 
         if (this.websocket !== null) {
-          console.log('no ping response from server. Closing socket.', socketId, this.workspace, this.user)
+          console.log('no ping response from server. Closing socket.', socketId, this.user)
           clearInterval(this.interval)
           this.websocket.close(1000)
           return
@@ -332,12 +331,6 @@ class Connection implements ClientConnection {
         if (resp.error?.code === UNAUTHORIZED.code) {
           this.opt?.onUnauthorized?.()
         }
-        if (resp.error?.code === platform.status.WorkspaceArchived) {
-          this.opt?.onArchived?.()
-        }
-        if (resp.error?.code === platform.status.WorkspaceMigration) {
-          this.opt?.onMigration?.()
-        }
       }
 
       if (resp.id !== undefined) {
@@ -366,12 +359,6 @@ class Connection implements ClientConnection {
 
     if (resp.id === -1) {
       this.delay = 0
-      if (resp.result?.state === 'upgrading') {
-        void this.onConnect?.(ClientConnectEvent.Maintenance, undefined, resp.result.stats)
-        this.upgrading = true
-        this.delay = 3
-        return
-      }
       if (resp.result === 'hello') {
         const helloResp = resp as HelloResponse
         this.binaryMode = helloResp.binary
@@ -393,13 +380,9 @@ class Connection implements ClientConnection {
           return
         }
         this.account = helloResp.account
-        this.helloReceived = true
-        if (this.upgrading) {
-          // We need to call upgrade since connection is upgraded
-          this.opt?.onUpgrade?.()
-        }
+        this.opt?.onAccount?.(this.account)
 
-        this.upgrading = false
+        this.helloReceived = true
         // Notify all waiting connection listeners
         const handlers = this.onConnectHandlers.splice(0, this.onConnectHandlers.length)
         for (const h of handlers) {
@@ -410,13 +393,15 @@ class Connection implements ClientConnection {
           v.reconnect?.()
         }
 
-        void this.onConnect?.(
-          helloResp.reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected,
-          helloResp.lastTx,
-          this.sessionId
-        )?.catch((err) => {
-          this.ctx.error('failed to call onConnect', { err })
-        })
+        void this.opt
+          ?.onConnect?.(
+            helloResp.reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected,
+            helloResp.lastTx,
+            this.sessionId
+          )
+          ?.catch((err) => {
+            this.ctx.error('failed to call onConnect', { err })
+          })
         this.schedulePing(socketId)
         return
       } else {
@@ -435,7 +420,7 @@ class Connection implements ClientConnection {
 
       if (promise === undefined) {
         console.error(
-          new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.user}`),
+          new Error(`unknown response id: ${resp.id as string} ${this.user}`),
           JSON.stringify(this.requests)
         )
         return
@@ -460,7 +445,7 @@ class Connection implements ClientConnection {
             if (c.data.total !== 0) {
               total = c.data.total
             }
-            if (c.data.lookupMap !== undefined) {
+            if (c.data.lookupMap != null) {
               lookupMap = c.data.lookupMap
             }
             result = result.concat(c.data)
@@ -493,7 +478,6 @@ class Connection implements ClientConnection {
           resp.error,
           'result: ',
           resp.result,
-          this.workspace,
           this.user
         )
         promise.reject(new PlatformError(resp.error))
@@ -518,14 +502,25 @@ class Connection implements ClientConnection {
       const txArr = Array.isArray(resp.result) ? (resp.result as Tx[]) : [resp.result as Tx]
 
       for (const tx of txArr) {
-        if (tx?._class === core.class.TxModelUpgrade) {
-          console.log('Processing upgrade', this.workspace, this.user)
-          this.opt?.onUpgrade?.()
+        if (tx?._class === core.class.TxWorkspaceEvent) {
+          const event = tx as TxWorkspaceEvent
+          // TODO: Check
+          if (event.event === WorkspaceEvent.WorkspaceMaintenance || event.event === WorkspaceEvent.WorkpaceActive) {
+            console.log('Processing upgrade', event.workspace, this.user)
+
+            if (this.account !== undefined) {
+              const ws = this.account.workspaces[event._uuid]
+              if (ws != null) {
+                ws.maintenance = event.event === WorkspaceEvent.WorkspaceMaintenance
+                this.opt?.onAccount?.(this.account)
+              }
+            }
+          }
           return
         }
       }
       this.handlers.forEach((handler) => {
-        handler(...txArr)
+        handler(txArr)
       })
 
       clearTimeout(this.incomingTimer)
@@ -707,7 +702,7 @@ class Connection implements ClientConnection {
         this.delay += 1
       }
       if (opened) {
-        console.error('client websocket error:', socketId, this.url, this.workspace, this.user)
+        console.error('client websocket error:', socketId, this.url, this.user)
       }
       void broadcastEvent(client.event.NetworkRequests, -1).catch((err) => {
         this.ctx.error('failed to broadcast', { err })
@@ -841,7 +836,7 @@ class Connection implements ClientConnection {
         }
       }
     })
-    if (result.lookupMap !== undefined) {
+    if (result.lookupMap != null) {
       // We need to extract lookup map to document lookups
       for (const d of result) {
         if (d.$lookup !== undefined) {
@@ -875,10 +870,10 @@ class Connection implements ClientConnection {
     return result
   }
 
-  tx (tx: Tx): Promise<TxResult> {
+  tx (tx: Tx, options?: TxOptions): Promise<TxResult> {
     return this.sendRequest({
       method: 'tx',
-      params: [tx],
+      params: [tx, options],
       retry: async () => {
         if (tx._class === core.class.TxApplyIf) {
           return (await this.findAll(core.class.Tx, { _id: (tx as TxApplyIf).txes[0]._id }, { limit: 1 })).length === 0
@@ -888,36 +883,42 @@ class Connection implements ClientConnection {
     })
   }
 
-  loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
-    return this.sendRequest({ method: 'loadChunk', params: [domain, idx] })
+  loadChunk (workspaceId: WorkspaceUuid, domain: Domain, idx?: number): Promise<DocChunk> {
+    return this.sendRequest({ method: 'loadChunk', params: [workspaceId, domain, idx] })
   }
 
-  async getDomainHash (domain: Domain): Promise<string> {
-    return await this.sendRequest({ method: 'getDomainHash', params: [domain] })
+  async getDomainHash (workspaceId: WorkspaceUuid, domain: Domain): Promise<string> {
+    return await this.sendRequest({ method: 'getDomainHash', params: [workspaceId, domain] })
   }
 
-  closeChunk (idx: number): Promise<void> {
-    return this.sendRequest({ method: 'closeChunk', params: [idx] })
+  closeChunk (workspaceId: WorkspaceUuid, idx: number): Promise<void> {
+    return this.sendRequest({ method: 'closeChunk', params: [workspaceId, idx] })
   }
 
-  loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return this.sendRequest({ method: 'loadDocs', params: [domain, docs] })
+  loadDocs (workspaceId: WorkspaceUuid, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return this.sendRequest({ method: 'loadDocs', params: [workspaceId, domain, docs] })
   }
 
-  upload (domain: Domain, docs: Doc[]): Promise<void> {
-    return this.sendRequest({ method: 'upload', params: [domain, docs] })
+  upload (workspaceId: WorkspaceUuid, domain: Domain, docs: Doc[]): Promise<void> {
+    return this.sendRequest({ method: 'upload', params: [workspaceId, domain, docs] })
   }
 
-  clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    return this.sendRequest({ method: 'clean', params: [domain, docs] })
+  clean (workspaceId: WorkspaceUuid, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    return this.sendRequest({ method: 'clean', params: [workspaceId, domain, docs] })
   }
 
   searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return this.sendRequest({ method: 'searchFulltext', params: [query, options] })
   }
 
-  sendForceClose (): Promise<void> {
-    return this.sendRequest({ method: 'forceClose', params: [], allowReconnect: false, overrideId: -2, once: true })
+  sendForceClose (workspace: WorkspaceUuid): Promise<void> {
+    return this.sendRequest({
+      method: 'forceClose',
+      params: [workspace],
+      allowReconnect: false,
+      overrideId: -2,
+      once: true
+    })
   }
 
   async sendEvent (event: Event): Promise<EventResult> {
@@ -954,6 +955,17 @@ class Connection implements ClientConnection {
   async unsubscribeQuery (id: number): Promise<void> {
     await this.sendRequest({ method: 'unsubscribeQuery', params: [id] })
   }
+
+  async subscribe (subscription: {
+    accounts?: AccountUuid[]
+    workspaces?: WorkspaceUuid[]
+  }): Promise<SubscribedWorkspaceInfo> {
+    return await this.sendRequest({ method: 'subscribe', params: [subscription] })
+  }
+
+  async unsubscribe (subscription: { accounts?: AccountUuid[], workspaces?: WorkspaceUuid[] }): Promise<void> {
+    await this.sendRequest({ method: 'unsubscribe', params: [subscription] })
+  }
 }
 
 /**
@@ -962,7 +974,6 @@ class Connection implements ClientConnection {
 export function connect (
   url: string,
   handler: TxHandler,
-  workspace: WorkspaceUuid,
   user: PersonUuid,
   opt?: ClientFactoryOptions
 ): ClientConnection {
@@ -970,7 +981,6 @@ export function connect (
     opt?.ctx?.newChild?.('connection', {}) ?? new MeasureMetricsContext('connection', {}),
     url,
     handler,
-    workspace,
     user,
     opt
   )

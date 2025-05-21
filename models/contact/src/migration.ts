@@ -261,6 +261,7 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
     if (socialId == null) continue
 
     const socialIdObj: SocialIdentity = {
+      _uuid: client.wsIds.uuid,
       _id: socialId as SocialIdentityRef,
       _class: contact.class.SocialIdentity,
       space: contact.space.Contacts,
@@ -428,6 +429,7 @@ async function createUserProfiles (client: MigrationClient): Promise<void> {
 
         const title = d.name != null && d.name !== '' ? formatName(d.name) : 'Profile'
         const userProfile: UserProfile = {
+          _uuid: client.wsIds.uuid,
           _id: generateId(),
           _class: contact.class.UserProfile,
           space: contact.space.Contacts,

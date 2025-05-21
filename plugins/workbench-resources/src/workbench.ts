@@ -99,6 +99,7 @@ const syncTabLoc = reduceCalls(async (): Promise<void> => {
 
     const me = getCurrentAccount()
     const newTab: WorkbenchTab = {
+      _uuid: getClient().workspaceUuid,
       _id: generateId(),
       _class: workbench.class.WorkbenchTab,
       space: core.space.Workspace,
