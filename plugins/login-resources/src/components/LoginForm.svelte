@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type IntlString, type Status } from '@hcengineering/platform'
+  import { type IntlString, Severity, Status } from '@hcengineering/platform'
 
-  import { type BottomAction, LoginMethods } from '../index'
+  import { type BottomAction, doLoginAsGuest, doLoginNavigate, LoginMethods } from '../index'
   import LoginPasswordForm from './LoginPasswordForm.svelte'
   import LoginOtpForm from './LoginOtpForm.svelte'
   import BottomActionComponent from './BottomAction.svelte'
@@ -50,22 +50,50 @@
       method = LoginMethods.Otp
     }
   }
+
+  async function guestLogin () {
+    let status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
+    const [loginStatus, result] = await doLoginAsGuest()
+    status = loginStatus
+
+    if (onLogin !== undefined) {
+      void onLogin(result, status)
+    } else {
+      await doLoginNavigate(
+        result,
+        (st) => {
+          status = st
+        },
+        navigateUrl
+      )
+    }
+  }
+
+  const loginAsGuest: BottomAction = {
+    i18n: login.string.LoginAsGuest,
+    func: () => {
+      void guestLogin()
+    }
+  }
 </script>
 
 {#if method === LoginMethods.Otp}
   <LoginOtpForm {navigateUrl} {signUpDisabled} {email} {caption} {subtitle} {onLogin} on:change={changeMethod} />
-  <div class="action">
-    <BottomActionComponent action={loginWithPasswordAction} />
-  </div>
 {:else}
   <LoginPasswordForm {navigateUrl} {signUpDisabled} {email} {caption} {subtitle} {onLogin} on:change={changeMethod} />
-  <div class="action">
-    <BottomActionComponent action={loginWithCodeAction} />
-  </div>
 {/if}
+<div class="actions">
+  <BottomActionComponent action={method === LoginMethods.Otp ? loginWithPasswordAction : loginWithCodeAction} />
+  <div class="login-as-guest">
+    <BottomActionComponent action={loginAsGuest} />
+  </div>
+</div>
 
 <style lang="scss">
-  .action {
+  .actions {
     margin-left: 5rem;
+  }
+  .login-as-guest {
+    margin-top: 1rem;
   }
 </style>

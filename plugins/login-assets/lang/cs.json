@@ -72,6 +72,7 @@
     "SignToProceed": "Přihlaste se, abyste mohli pokračovat",
     "Proceed": "Pokračovat",
     "SetPasswordLater": "Nastavím heslo později",
-    "SetPasswordNow": "Nastavím heslo nyní"
+    "SetPasswordNow": "Nastavím heslo nyní",
+    "LoginAsGuest": "Pokračovat jako host"
   }
 }

@@ -43,7 +43,7 @@
     getAccountDisplayName,
     getHref,
     getWorkspaces,
-    goTo,
+    goTo, isReadOnlyGuestAccount,
     navigateToWorkspace,
     selectWorkspace,
     unArchive
@@ -56,12 +56,14 @@
   let status = OK
   let accountPromise: Promise<LoginInfo | null>
   let account: LoginInfo | null | undefined = undefined
+  let isReadOnlyGuest: boolean = true
 
   let flagToUpdateWorkspaces = false
 
   async function loadAccount (): Promise<void> {
     accountPromise = getAccount()
     account = await accountPromise
+    isReadOnlyGuest = await isReadOnlyGuestAccount(account)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -193,7 +195,7 @@
           </div>
         {/each}
 
-        {#if workspaces.length === 0 && account?.token != null}
+        {#if workspaces.length === 0 && account?.token != null && !isReadOnlyGuest}
           <div class="form-row send">
             <Button
               label={login.string.CreateWorkspace}
@@ -209,7 +211,7 @@
     </Scroller>
     <div class="grow-separator" />
     <div class="footer">
-      {#if workspaces.length > 0}
+      {#if workspaces.length > 0 && !isReadOnlyGuest}
         <div>
           <span><Label label={login.string.WantAnotherWorkspace} /></span>
           <NavLink

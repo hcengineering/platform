@@ -72,6 +72,7 @@
     "SignToProceed": "Bitte melden Sie sich an, um fortzufahren",
     "Proceed": "Fortfahren",
     "SetPasswordLater": "Ich werde später ein Passwort festlegen",
-    "SetPasswordNow": "Ich werde jetzt ein Passwort festlegen"
+    "SetPasswordNow": "Ich werde jetzt ein Passwort festlegen",
+    "LoginAsGuest": "Als Gast fortfahren"
   }
 }

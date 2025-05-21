@@ -1510,6 +1510,16 @@ export async function getSocialIds (
   return socialIds.filter((si) => si.isDeleted !== true)
 }
 
+export async function isReadOnlyGuest (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<boolean> {
+  const { account } = decodeTokenVerbose(ctx, token)
+  return account === READONLY_GUEST_ACCOUNT
+}
+
 export async function getPerson (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1857,6 +1867,7 @@ export type AccountMethods =
   | 'addSocialIdToPerson'
   | 'updateSocialId'
   | 'getAccountInfo'
+  | 'isReadOnlyGuest'
 
 /**
  * @public
@@ -1911,6 +1922,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getWorkspaceMembers: wrap(getWorkspaceMembers),
     getMailboxOptions: wrap(getMailboxOptions),
     getAccountInfo: wrap(getAccountInfo),
+    isReadOnlyGuest: wrap(isReadOnlyGuest),
 
     /* SERVICE METHODS */
     ...getServiceMethods()
