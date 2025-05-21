@@ -1580,12 +1580,33 @@ export class GithubWorker implements IntegrationManager {
               { error: { $ne: null }, url: null },
               { limit: 50 }
             )
+
             if (withError.length === 0) {
               break
             }
             const ops = derivedClient.apply()
             for (const d of withError) {
               await ops.remove(d)
+            }
+            await ops.commit()
+          }
+
+          while (true) {
+            if (this.closing) {
+              break
+            }
+            const withError = await derivedClient.findAll<any>(
+              github.class.DocSyncInfo,
+              { error: { $ne: null } },
+              { limit: 50 }
+            )
+
+            if (withError.length === 0) {
+              break
+            }
+            const ops = derivedClient.apply()
+            for (const d of withError) {
+              await ops.update(d, { error: null, needSync: '' })
             }
             await ops.commit()
           }
