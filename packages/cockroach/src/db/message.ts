@@ -91,7 +91,7 @@ export class MessagesDb extends BaseDb {
     const placeholders = keys.map((key, i) => `$${i + 1}::${(messageSchema as any)[key]}`)
     const conflictClause =
       externalId != null
-        ? `ON CONFLICT (workspace_id, card_id, external_id)
+        ? `ON CONFLICT (workspace_id, card_id, external_id) WHERE external_id IS NOT NULL
      DO UPDATE SET external_id = EXCLUDED.external_id`
         : ''
 
