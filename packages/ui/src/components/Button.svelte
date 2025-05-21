@@ -31,6 +31,7 @@
   import Label from './Label.svelte'
   import Spinner from './Spinner.svelte'
   import { Analytics } from '@hcengineering/analytics'
+  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
 
   export let label: IntlString | undefined = undefined
   export let labelParams: Record<string, any> = {}
@@ -72,6 +73,9 @@
   export let stopPropagation: boolean = true
   export let event: string | undefined = undefined
 
+  const account = getCurrentAccount()
+  $: readOnlyRole = account?.role === AccountRole.ReadOnlyGuest
+
   $: iconSize = iconProps?.size !== undefined ? iconProps.size : size && size === 'inline' ? 'inline' : 'small'
   $: iconRightSize = iconRightProps?.size !== undefined ? iconRightProps.size : 'x-small'
   let iconOnly: boolean = false
@@ -99,10 +103,10 @@
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
-      if (!disabled) {
+      if (!disabled && !readOnlyRole) {
         input?.focus()
       }
-      return !disabled && input != null
+      return !disabled && !readOnlyRole && input != null
     },
     isFocus: () => document.activeElement === input
   })
@@ -141,7 +145,7 @@
   class:notSelected
   class:iconL={(icon || $$slots.icon) && (label || $$slots.content)}
   class:iconR={(iconRight || $$slots.iconRight) && (label || $$slots.content)}
-  disabled={disabled || loading}
+  disabled={disabled || readOnlyRole || loading}
   class:short
   class:resetIconSize={resetIconSize === 'full'}
   style:min-width={minWidth}
