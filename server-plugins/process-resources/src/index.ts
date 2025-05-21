@@ -559,7 +559,7 @@ export async function CreateToDo (
   execution: Execution,
   control: TriggerControl
 ): Promise<ExecuteResult | undefined> {
-  if (params.user === undefined || params.state === undefined || params.title === undefined) return
+  if (params.user === undefined || params.title === undefined) return
   const res: Tx[] = []
   const rollback: Tx[] = []
   const id = generateId<ProcessToDo>()
@@ -573,7 +573,7 @@ export async function CreateToDo (
         collection: 'todos',
         workslots: 0,
         execution: execution._id,
-        state: params.state,
+        state: execution.currentState,
         title: params.title,
         user: params.user,
         description: params.description ?? '',

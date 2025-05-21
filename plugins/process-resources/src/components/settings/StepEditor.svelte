@@ -22,6 +22,7 @@
 
   export let step: Step<Doc>
   export let process: Process
+  export let withoutHeader: boolean = false
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -44,16 +45,18 @@
 
 {#if method !== undefined}
   <div class="content clear-mins">
-    <div class="header">
-      <div class="fs-title title text-xl">
-        <Label label={method.label} />
-      </div>
-      {#if method.description}
-        <div class="descr">
-          <Label label={method.description} />
+    {#if !withoutHeader}
+      <div class="header">
+        <div class="fs-title title text-xl">
+          <Label label={method.label} />
         </div>
-      {/if}
-    </div>
+        {#if method.description}
+          <div class="descr">
+            <Label label={method.description} />
+          </div>
+        {/if}
+      </div>
+    {/if}
     {#if method.editor !== undefined}
       <Component is={method.editor} props={{ step, process }} on:change={change} />
     {/if}
