@@ -48,4 +48,5 @@
   selectedCard={card?._id}
   on:selectType
   on:selectCard
+  on:favorites
 />

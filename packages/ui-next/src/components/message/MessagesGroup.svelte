@@ -21,7 +21,6 @@
   import DateSeparator from '../DateSeparator.svelte'
   import MessagePresenter from './MessagePresenter.svelte'
   import MessagesSeparator from './MessagesSeparator.svelte'
-  import { isMessageEmpty } from '../../utils'
 
   export let card: Card
   export let date: Timestamp
@@ -56,9 +55,7 @@
       {#if separatorIndex !== 0 && index === separatorIndex}
         <MessagesSeparator bind:element={separatorDiv} />
       {/if}
-      {#if !isMessageEmpty(message)}
-        <MessagePresenter {message} {card} editable={!readonly} {compact} />
-      {/if}
+      <MessagePresenter {message} {card} editable={!readonly} {compact} />
     {/each}
   </div>
 </div>

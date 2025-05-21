@@ -25,9 +25,11 @@
   export let types: MasterTag[] = []
   export let level: number = 0
   export let config: NavigatorConfig
+  export let applicationId: string
   export let space: CardSpace | undefined = undefined
   export let selectedType: Ref<MasterTag> | undefined = undefined
   export let selectedCard: Ref<Card> | undefined = undefined
+  export let selectedSpecial: string | undefined = undefined
 
   $: sortedTypes = sortNavigatorTypes(types, config)
 </script>
@@ -37,7 +39,16 @@
 {/if}
 
 {#if config.variant === 'cards'}
-  {#each sortedTypes as type (type._id)}
-    <NavigatorCards {type} {space} {config} {selectedType} {selectedCard} on:selectType on:selectCard />
-  {/each}
+  <NavigatorCards
+    types={sortedTypes}
+    {space}
+    {config}
+    {selectedType}
+    {selectedCard}
+    {selectedSpecial}
+    {applicationId}
+    on:selectType
+    on:selectCard
+    on:favorites
+  />
 {/if}
