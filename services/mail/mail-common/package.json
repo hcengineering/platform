@@ -60,7 +60,6 @@
     "@hcengineering/mail": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-storage": "^0.6.0",
-    "async-mutex": "^0.5.0",
     "kafkajs": "^2.2.4",
     "sanitize-html": "^2.15.0",
     "turndown": "^7.2.0",
