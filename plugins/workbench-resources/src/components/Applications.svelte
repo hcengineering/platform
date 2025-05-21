@@ -85,7 +85,7 @@
           />
         </NavLink>
       {/each}
-      {#if (topApps.length > 0)}
+      {#if topApps.length > 0}
         <div class="divider" />
       {/if}
       {#each midApps as app}

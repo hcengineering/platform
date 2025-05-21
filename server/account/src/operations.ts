@@ -96,7 +96,9 @@ import {
   verifyAllowedRole,
   verifyAllowedServices,
   verifyPassword,
-  wrap, updateAllowReadOnlyGuests, READONLY_GUEST_ACCOUNT
+  wrap,
+  updateAllowReadOnlyGuests,
+  READONLY_GUEST_ACCOUNT
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -125,7 +127,7 @@ export async function loginAsGuest (
   }
   return {
     account: guestPerson.uuid as AccountUuid,
-    token: generateToken(guestPerson.uuid, undefined),
+    token: generateToken(guestPerson.uuid, undefined)
   }
 }
 

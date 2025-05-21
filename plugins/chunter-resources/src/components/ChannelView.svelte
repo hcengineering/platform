@@ -56,7 +56,9 @@
     isThreadOpened = newLocation.path[4] != null
   })
 
-  $: readonly = acc.role === AccountRole.ReadOnlyGuest || (hierarchy.isDerived(object._class, core.class.Space) ? readonly || (object as Space).archived : readonly)
+  $: readonly =
+    acc.role === AccountRole.ReadOnlyGuest ||
+    (hierarchy.isDerived(object._class, core.class.Space) ? readonly || (object as Space).archived : readonly)
   $: showJoinOverlay = shouldShowJoinOverlay(object)
   $: isDocChat = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
   $: withAside =

@@ -43,7 +43,8 @@
     getAccountDisplayName,
     getHref,
     getWorkspaces,
-    goTo, isReadOnlyGuestAccount,
+    goTo,
+    isReadOnlyGuestAccount,
     navigateToWorkspace,
     selectWorkspace,
     unArchive

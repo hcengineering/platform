@@ -695,7 +695,7 @@ export async function updateAllowReadOnlyGuests (
 
   let guestPerson = await db.person.findOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid })
   if (guestPerson == null) {
-    await db.person.insertOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid, firstName: 'Readonly', lastName: 'Guest' })
+    await db.person.insertOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid, firstName: 'Anonymous', lastName: 'Guest' })
     await createAccount(db, READONLY_GUEST_ACCOUNT as PersonUuid, true)
     guestPerson = await db.person.findOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid })
   }
@@ -708,7 +708,10 @@ export async function updateAllowReadOnlyGuests (
   if (guestPerson === null || guestAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
-  const guestSocialIds = await db.socialId.find({ personUuid: READONLY_GUEST_ACCOUNT as PersonUuid, verifiedOn: { $gt: 0 } })
+  const guestSocialIds = await db.socialId.find({
+    personUuid: READONLY_GUEST_ACCOUNT as PersonUuid,
+    verifiedOn: { $gt: 0 }
+  })
 
   return { guestPerson, guestSocialIds: guestSocialIds.filter((si) => si.isDeleted !== true) }
 }

@@ -157,7 +157,8 @@
 
   const apps: Application[] = client
     .getModel()
-    .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } }).filter((it) => isAppAllowed(it, account))
+    .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
+    .filter((it) => isAppAllowed(it, account))
 
   console.log(apps)
 
@@ -826,7 +827,9 @@
           <NavLink
             app={notificationId}
             shrink={0}
-            disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId}
+            disabled={!$deviceInfo.navigator.visible &&
+              $deviceInfo.navigator.float &&
+              currentAppAlias === notificationId}
           >
             <AppItem
               icon={notification.icon.Notifications}
@@ -836,7 +839,11 @@
                 $deviceInfo.navigator.visible}
               on:click={(e) => {
                 if (e.metaKey || e.ctrlKey) return
-                if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId) {
+                if (
+                  !$deviceInfo.navigator.visible &&
+                  $deviceInfo.navigator.float &&
+                  currentAppAlias === notificationId
+                ) {
                   toggleNav()
                 } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
                   e.preventDefault()
