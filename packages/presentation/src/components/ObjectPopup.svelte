@@ -74,10 +74,13 @@
   let noSearchField: boolean = false
   let search: string = ''
   let objects: Doc[] = []
+  let selObjects: Doc[] = []
+  let resObjects: Doc[] = []
 
   let extraItems: Ref<Doc>[] = []
 
   const query = createQuery()
+  const sQuery = createQuery() // Query for selected objects
 
   $: noSearchField = searchMode === 'disabled'
   $: _idExtra = typeof docQuery?._id === 'object' ? docQuery?._id : {}
@@ -88,6 +91,7 @@
   } else {
     extraItems = []
   }
+
   $: fquery = {
     ...(docQuery ?? {}),
     ...(() => {
@@ -109,20 +113,45 @@
       }
     })()
   }
+
   $: query.query<Doc>(
     _class,
     fquery,
     (result) => {
       result.sort(sort)
-      if (created.length > 0) {
-        const cmap = new Set(created.map((it) => it._id))
-        objects = [...created, ...result.filter((d) => !cmap.has(d._id))].filter(filter)
-      } else {
-        objects = result.filter(filter)
-      }
+      resObjects = result
     },
     { ...(options ?? {}), limit: 200 }
   )
+
+  $: if (selectedObjects.length > 0) {
+    sQuery.query<Doc>(
+      _class,
+      search !== ''
+        ? { [searchField]: { $like: '%' + search + '%' }, _id: { $in: selectedObjects } }
+        : { _id: { $in: selectedObjects } },
+      (result) => {
+        result.sort(sort)
+        selObjects = result
+      },
+      {}
+    )
+  } else {
+    sQuery.unsubscribe()
+  }
+
+  $: {
+    if (created.length > 0 || selObjects.length > 0) {
+      const cmap = new Set(created.map((it) => it._id))
+      const smap = new Set(selObjects.map((it) => it._id))
+
+      objects = [...created, ...selObjects, ...resObjects.filter((d) => !cmap.has(d._id) && !smap.has(d._id))].filter(
+        filter
+      )
+    } else {
+      objects = resObjects.filter(filter)
+    }
+  }
 
   async function searchSpotlight (search: string): Promise<SearchItem[]> {
     return (await searchFor('spotlight', search, category, 50)).items
@@ -150,7 +179,10 @@
   {embedded}
   {loading}
   {type}
-  on:update
+  on:update={(e) => {
+    selectedObjects = e.detail
+    dispatch('update', e.detail)
+  }}
   on:close
   on:changeContent
   on:search={(e) => (search = e.detail)}
@@ -170,6 +202,12 @@
       <div class="menu-group__header">
         <span class="overflow-label">
           <Label label={presentation.string.Created} />
+        </span>
+      </div>
+    {:else if selectedObjects.length > 0 && selectedObjects.find((it) => it === item._id) !== undefined}
+      <div class="menu-group__header">
+        <span class="overflow-label">
+          <Label label={presentation.string.Selected} />
         </span>
       </div>
     {:else if $$slots.category}
