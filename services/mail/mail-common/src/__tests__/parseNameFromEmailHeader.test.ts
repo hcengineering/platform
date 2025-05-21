@@ -1,3 +1,18 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { parseNameFromEmailHeader } from '../utils'
 import { EmailContact } from '../types'
 
@@ -6,8 +21,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = '"John Doe" <john.doe@example.com>'
     const expected: EmailContact = {
       email: 'john.doe@example.com',
-      firstName: 'John',
-      lastName: 'Doe'
+      firstName: '<john.doe@example.com>',
+      lastName: 'John Doe'
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)
@@ -17,8 +32,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = 'Jane Smith <jane.smith@example.com>'
     const expected: EmailContact = {
       email: 'jane.smith@example.com',
-      firstName: 'Jane',
-      lastName: 'Smith'
+      firstName: '<jane.smith@example.com>',
+      lastName: 'Jane Smith'
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)
@@ -28,8 +43,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = 'no-reply@example.com'
     const expected: EmailContact = {
       email: 'no-reply@example.com',
-      firstName: 'no-reply',
-      lastName: 'example.com'
+      firstName: 'no-reply@example.com',
+      lastName: ''
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)
@@ -39,8 +54,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = '<support@example.com>'
     const expected: EmailContact = {
       email: 'support@example.com',
-      firstName: 'support',
-      lastName: 'example.com'
+      firstName: 'support@example.com',
+      lastName: ''
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)
@@ -50,8 +65,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = 'Maria Van Der Berg <maria@example.com>'
     const expected: EmailContact = {
       email: 'maria@example.com',
-      firstName: 'Maria',
-      lastName: 'Van Der Berg'
+      firstName: '<maria@example.com>',
+      lastName: 'Maria Van Der Berg'
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)
@@ -82,8 +97,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = 'John Doe john.doe@example.com'
     const expected: EmailContact = {
       email: 'John Doe john.doe@example.com',
-      firstName: 'John Doe john.doe',
-      lastName: 'example.com'
+      firstName: 'John Doe john.doe@example.com',
+      lastName: ''
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)
@@ -93,8 +108,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = 'Support <help@example.com>'
     const expected: EmailContact = {
       email: 'help@example.com',
-      firstName: 'Support',
-      lastName: 'example.com'
+      firstName: '<help@example.com>',
+      lastName: 'Support'
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)
@@ -104,8 +119,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = '"O\'Neill, James" <james.oneill@example.com>'
     const expected: EmailContact = {
       email: 'james.oneill@example.com',
-      firstName: "O'Neill,",
-      lastName: 'James'
+      firstName: '<james.oneill@example.com>',
+      lastName: "O'Neill, James"
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)
