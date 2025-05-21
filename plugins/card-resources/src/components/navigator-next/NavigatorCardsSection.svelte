@@ -23,7 +23,7 @@
     getClient
   } from '@hcengineering/presentation'
   import { Label, NotificationContext, NotificationType } from '@hcengineering/communication-types'
-  import { Button } from '@hcengineering/ui'
+  import ui, { Button, ModernButton } from '@hcengineering/ui'
 
   import type { CardsNavigatorConfig } from '../../types'
   import cardPlugin from '../../plugin'
@@ -184,10 +184,12 @@
       </svelte:fragment>
 
       {#if hasMore}
-        <div class="all-button">
-          <Button
-            label={getEmbeddedLabel('More')}
-            kind={'ghost'}
+        <div class="show-more">
+          <ModernButton
+            label={ui.string.ShowMore}
+            kind="tertiary"
+            inheritFont
+            size="extra-small"
             on:click={(e) => {
               e.stopPropagation()
               e.preventDefault()
@@ -201,7 +203,8 @@
 {/if}
 
 <style lang="scss">
-  .all-button {
-    margin-left: 1.75rem;
+  .show-more {
+    margin: var(--spacing-1);
+    font-size: 0.75rem;
   }
 </style>
