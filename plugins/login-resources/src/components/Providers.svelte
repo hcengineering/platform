@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { concatLink, type ProviderInfo } from '@hcengineering/core'
+  import { concatLink } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
+  import { type ProviderInfo } from '@hcengineering/account-client'
   import { AnySvelteComponent, Button, Grid, deviceOptionsStore, getCurrentLocation } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import login from '../plugin'
@@ -12,41 +13,27 @@
   interface Provider {
     name: string
     component: AnySvelteComponent
-    displayName: null
+    displayName?: string
   }
 
-  const providers: Provider[] = [
-    {
-      name: 'google',
-      component: Google,
-      displayName: null
-    },
-    {
-      name: 'github',
-      component: Github,
-      displayName: null
-    },
-    {
-      name: 'openid',
-      component: OpenId,
-      displayName: null
-    }
-  ]
+  const providerMap: Record<string, AnySvelteComponent> = {
+    google: Google,
+    github: Github,
+    openid: OpenId
+  }
 
   let enabledProviders: Provider[] = []
 
   onMount(() => {
     void getProviders().then((res: ProviderInfo[]) => {
-      enabledProviders = providers
+      enabledProviders = res
         .map((provider) => {
-          const match = res.find((r) => r.name === provider.name)
-          if (!match) return null
+          const component = providerMap[provider.name]
           return {
             ...provider,
-            displayName: match.displayName
+            component
           }
         })
-        .filter((p): p is Provider & { displayName: string } => p !== null)
     })
   })
 
