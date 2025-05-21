@@ -28,6 +28,9 @@ interface Config extends BaseConfig {
   FooterMessage: string
   InitLimit: number
   Version: IntegrationVersion
+  QueueConfig: string
+  QueueRegion: string
+  CommunicationTopic: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -41,7 +44,10 @@ const envMap: { [key in keyof Config]: string } = {
   InitLimit: 'INIT_LIMIT',
   KvsUrl: 'KVS_URL',
   StorageConfig: 'STORAGE_CONFIG',
-  Version: 'VERSION'
+  Version: 'VERSION',
+  QueueConfig: 'QUEUE_CONFIG',
+  QueueRegion: 'QUEUE_REGION',
+  CommunicationTopic: 'COMMUNICATION_TOPIC'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -65,7 +71,10 @@ const config: Config = (() => {
     FooterMessage: process.env[envMap.FooterMessage] ?? '<br><br><p>Sent via <a href="https://huly.io">Huly</a></p>',
     KvsUrl: process.env[envMap.KvsUrl],
     StorageConfig: process.env[envMap.StorageConfig],
-    Version: version
+    Version: version,
+    QueueConfig: process.env[envMap.QueueConfig] ?? '',
+    QueueRegion: process.env[envMap.QueueRegion] ?? '',
+    CommunicationTopic: process.env[envMap.CommunicationTopic] ?? 'hulygun'
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)
@@ -74,6 +83,14 @@ const config: Config = (() => {
 
   if (missingEnv.length > 0) {
     throw Error(`Missing env variables: ${missingEnv.join(', ')}`)
+  }
+  if (version === IntegrationVersion.V2) {
+    if (params.QueueConfig === '') {
+      throw Error('Missing env variable: QUEUE_CONFIG')
+    }
+    if (params.CommunicationTopic === '') {
+      throw Error('Missing env variable: COMMUNICATION_TOPIC')
+    }
   }
 
   return params as Config

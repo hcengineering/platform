@@ -22,7 +22,8 @@ import { createRestTxOperations } from '@hcengineering/api-client'
 
 // Mock dependencies
 jest.mock('@hcengineering/mail-common', () => ({
-  createMessages: jest.fn()
+  createMessages: jest.fn(),
+  getProducer: jest.fn().mockReturnValue({})
 }))
 
 jest.mock('../client', () => ({
@@ -177,6 +178,7 @@ describe('handleMtaHook', () => {
       mockCtx,
       mockTxOperations, // This should be the TxOperations mock, not kvsClient
       {}, // This should be the KeyValueClient mock
+      {},
       client.mailServiceToken,
       mockLoginInfo, // Added workspace login info
       expect.objectContaining({
@@ -221,6 +223,7 @@ describe('handleMtaHook', () => {
       mockCtx,
       mockTxOperations,
       {},
+      {},
       client.mailServiceToken,
       mockLoginInfo,
       expect.objectContaining({
@@ -245,6 +248,7 @@ describe('handleMtaHook', () => {
       client.baseConfig,
       mockCtx,
       mockTxOperations,
+      {},
       {},
       client.mailServiceToken,
       mockLoginInfo,
@@ -275,6 +279,7 @@ describe('handleMtaHook', () => {
       mockCtx,
       mockTxOperations,
       {},
+      {},
       client.mailServiceToken,
       mockLoginInfo,
       expect.objectContaining({
@@ -298,6 +303,7 @@ describe('handleMtaHook', () => {
       client.baseConfig,
       mockCtx,
       mockTxOperations,
+      {},
       {},
       client.mailServiceToken,
       mockLoginInfo,
@@ -326,6 +332,7 @@ describe('handleMtaHook', () => {
       client.baseConfig,
       mockCtx,
       mockTxOperations,
+      {},
       {},
       client.mailServiceToken,
       mockLoginInfo,

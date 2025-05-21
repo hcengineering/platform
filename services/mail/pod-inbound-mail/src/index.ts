@@ -21,8 +21,11 @@ import { MeasureContext, MeasureMetricsContext, newMetrics } from '@hcengineerin
 import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
+import { initQueue, closeQueue } from '@hcengineering/mail-common'
+
 import { handleMtaHook } from './handlerMta'
 import config from './config'
+import { baseConfig } from './client'
 
 type RequestHandler = (req: Request, res: Response, ctx: MeasureContext, next?: NextFunction) => Promise<void>
 
@@ -42,6 +45,8 @@ async function main (): Promise<void> {
   })
 
   setMetadata(serverToken.metadata.Secret, config.secret)
+
+  initQueue(ctx, 'inbound-mail', baseConfig)
 
   const app = express()
 
@@ -91,7 +96,7 @@ async function main (): Promise<void> {
 
   const shutdown = (): void => {
     server.close(() => {
-      process.exit()
+      void closeQueue().then(() => process.exit())
     })
   }
 

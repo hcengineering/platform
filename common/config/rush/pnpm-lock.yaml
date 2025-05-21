@@ -4076,7 +4076,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/card-resources@file:projects/card-resources.tgz':
-    resolution: {integrity: sha512-CdWQQYWbLy+4AITDmlv2q7Sw96mSzRsslUOU/87wDljEuIubpEKNhfccS42ImusNZMXj4yvd5wwM9ajjBMRKkg==, tarball: file:projects/card-resources.tgz}
+    resolution: {integrity: sha512-pMv5ceyUDDEJBQbuNCHXE72Px6MNS16zvjzmK7M+PZxOmOXFNwldGCq/jPhslXqJXC24WjqpHCiQZ0gs7dN9uA==, tarball: file:projects/card-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/card@file:projects/card.tgz':
@@ -4412,7 +4412,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz':
-    resolution: {integrity: sha512-4ThjG7u37BfKgOUzqyVxZ+uCt5Z7Yv2DX192wxBuTbl1EX3t50XjTERnjt4Iw0rYFhXc7lOKZygYF1u8a3APhA==, tarball: file:projects/mail-common.tgz}
+    resolution: {integrity: sha512-DuWl8K6KBwPKVeIaSqUfgTwasFy+KEpU0zrPicIkuDaMILOKGCkmVM7YESS/ggiBlKxtyIOwKRDYeka1dhtxZw==, tarball: file:projects/mail-common.tgz}
     version: 0.0.0
 
   '@rush-temp/mail@file:projects/mail.tgz':
@@ -4896,11 +4896,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
-    resolution: {integrity: sha512-5rn2Y1X7GtTiOKR5vbkqo5oB/zEeQXOiSw4nTPL8xp/Jx66PDnGjkwkHqBlberol5hG2/ns8im3Zqxql5O2VXw==, tarball: file:projects/pod-gmail.tgz}
+    resolution: {integrity: sha512-zgEk+yi5UCh/xDEFIoancdkzC+k/3o+yuyZ7JW6OiH4oi8xam0FJLk0ZgpPgEheHiD0qU2OfDPS5cymaivQTew==, tarball: file:projects/pod-gmail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
-    resolution: {integrity: sha512-vRYTZhVYb2trqlb5uKFKAPJq7Ay7EaTFy6FijfUTRqitr9QJEREl4PKdf752cOFUfgC8L5uHTH6Q2rgbvsXSug==, tarball: file:projects/pod-inbound-mail.tgz}
+    resolution: {integrity: sha512-EQdkJNUsw+xUAs74SJ+44fJCrR/kNeSCRzm3Dah9tFlhIcTZl5d80ir8VotOXBZ4McKxAFo3is05crGMDxP04Q==, tarball: file:projects/pod-inbound-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
@@ -4992,7 +4992,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/process@file:projects/process.tgz':
-    resolution: {integrity: sha512-3vz9X1/VX0PmWuKw9m3Nlfp2CjFZo2MpgCRdLfPaeo6EHExPeSitbfYl7LojLsGo5Uk7tSnUOwMSgd/GOndOVA==, tarball: file:projects/process.tgz}
+    resolution: {integrity: sha512-FLoi1Ooh3ntse8Czmk9pyT2ASy8VHz1xGUUXf38t09UKTZ/8SfqwrOtNWYuVnyIrZ3zVVmSL7xcOWmcn5AdTSw==, tarball: file:projects/process.tgz}
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
@@ -5216,7 +5216,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-gmail-resources@file:projects/server-gmail-resources.tgz':
-    resolution: {integrity: sha512-VUZuCBA60lmGBsC072eJNhPcfGLWGWaQKj6NmEZSutJt2M0dzchgdC5iWr+AX+fhE3pmDJhNW8hYdU06Y5FeZg==, tarball: file:projects/server-gmail-resources.tgz}
+    resolution: {integrity: sha512-PsKe9cztrK9Mj6TZO5scM/IArHSVaiJ+SMNwMoz6j8Kb2jZBP3a36wWG0Ly5GuDU7m272NE8bjuKUNmzM+kfZQ==, tarball: file:projects/server-gmail-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/server-gmail@file:projects/server-gmail.tgz':
@@ -5616,7 +5616,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/workbench-resources@file:projects/workbench-resources.tgz':
-    resolution: {integrity: sha512-N00MR4MXHz3pMLbTWfIwQCKUpwtaLTtx2lu+UR9QYhn2CiMT/tyVqfxtN2Pkbf0sj5VG5euI6jsnKskYgUY74g==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-UfLCpybz5EEeX1qnGkQgS0cKEvptFzYm8D8YR9uIqSlfRAnCjKpEFTexnvbXZQeUsjvbIwkMQYsSbyhk/pYrGg==, tarball: file:projects/workbench-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/workbench@file:projects/workbench.tgz':
@@ -20013,6 +20013,8 @@ snapshots:
   '@rush-temp/mail-common@file:projects/mail-common.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
       '@hcengineering/communication-rest-client': 0.1.187(typescript@5.7.3)
+      '@hcengineering/communication-sdk-types': 0.1.187(typescript@5.7.3)
+      '@hcengineering/communication-shared': 0.1.187(typescript@5.7.3)
       '@hcengineering/communication-types': 0.1.187(typescript@5.7.3)
       '@tsconfig/node16': 1.0.4
       '@types/express': 4.17.21
@@ -20031,6 +20033,7 @@ snapshots:
       eslint-plugin-node: 11.1.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      kafkajs: 2.2.4
       prettier: 3.2.5
       sanitize-html: 2.16.0
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
@@ -22412,6 +22415,7 @@ snapshots:
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@6.0.4)':
     dependencies:
+      '@hcengineering/communication-sdk-types': 0.1.187(typescript@5.3.3)
       '@tsconfig/node16': 1.0.4
       '@types/cors': 2.8.17
       '@types/express': 4.17.21
@@ -22464,6 +22468,7 @@ snapshots:
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
       '@hcengineering/communication-rest-client': 0.1.187(typescript@5.7.3)
+      '@hcengineering/communication-sdk-types': 0.1.187(typescript@5.7.3)
       '@hcengineering/communication-types': 0.1.187(typescript@5.7.3)
       '@tsconfig/node16': 1.0.4
       '@types/cors': 2.8.17
