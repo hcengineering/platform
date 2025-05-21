@@ -243,7 +243,7 @@ async function saveMessageToSpaces (
           space._id,
           mail.tag.MailThread,
           {},
-          Date.now(),
+          createdDate,
           owner
         )
         threadId = newThreadId as Ref<Card>
