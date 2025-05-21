@@ -39,13 +39,21 @@
 
   let editable: boolean = false
   $: editable = hasAccountRole(me, AccountRole.Maintainer)
+  let canViewMinutes: boolean = false
+  $: canViewMinutes = hasAccountRole(me, AccountRole.User)
 </script>
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
     <Breadcrumb title={selectedFloor?.name ?? ''} size={'large'} isCurrent />
     <svelte:fragment slot="beforeTitle">
-      <ViewletSelector bind:viewlet bind:preference bind:loading viewletQuery={{ attachTo: lovePlg.class.Floor }} />
+      <ViewletSelector
+        bind:viewlet
+        bind:preference
+        bind:loading
+        hidden={!canViewMinutes}
+        viewletQuery={{ attachTo: lovePlg.class.Floor }}
+      />
     </svelte:fragment>
     <svelte:fragment slot="actions">
       {#if editable}
