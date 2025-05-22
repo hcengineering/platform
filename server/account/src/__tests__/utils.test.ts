@@ -1098,6 +1098,7 @@ describe('account utils', () => {
       const mockWorkspace = {
         uuid: 'workspace-uuid' as WorkspaceUuid,
         url: workspaceUrl,
+        allowReadOnlyGuest: false,
         region: 'us',
         dataId: 'test-data-id'
       }

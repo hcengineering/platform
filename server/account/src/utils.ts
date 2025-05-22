@@ -565,6 +565,7 @@ export async function selectWorkspace (
   }
 
   if (workspace == null) {
+    ctx.error('Workspace not found in selectWorkspace', { workspaceUrl, kind, accountUuid, extra })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
   }
 
@@ -599,6 +600,17 @@ export async function selectWorkspace (
       role: AccountRole.DocGuest
     }
   }
+  
+  if (accountUuid === systemAccountUuid || extra?.admin === 'true') {
+    return {
+      account: accountUuid,
+      token: generateToken(accountUuid, workspace.uuid, extra),
+      endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
+      workspace: workspace.uuid,
+      workspaceUrl: workspace.url,
+      role: AccountRole.Owner
+    }
+  }
 
   let role = await db.getWorkspaceRole(accountUuid, workspace.uuid)
   let account = await db.account.findOne({ uuid: accountUuid })
@@ -620,17 +632,6 @@ export async function selectWorkspace (
 
   if (accountUuid !== systemAccountUuid && meta !== undefined) {
     void setTimezoneIfNotDefined(ctx, db, accountUuid, account, meta)
-  }
-
-  if (accountUuid === systemAccountUuid || extra?.admin === 'true') {
-    return {
-      account: accountUuid,
-      token: generateToken(accountUuid, workspace.uuid, extra),
-      endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
-      workspace: workspace.uuid,
-      workspaceUrl: workspace.url,
-      role: AccountRole.Owner
-    }
   }
 
   if (role === AccountRole.ReadOnlyGuest) {
