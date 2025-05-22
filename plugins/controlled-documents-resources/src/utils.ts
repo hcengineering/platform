@@ -283,8 +283,22 @@ async function createRequest<T extends Doc> (
   approveTx: Tx,
   rejectedTx?: Tx,
   areAllApprovesRequired = true
-): Promise<Ref<Request>> {
-  return await client.addCollection(reqClass, space, attachedTo, attachedToClass, 'requests', {
+): Promise<Ref<Request> | undefined> {
+  const sequentialRequestClassGroup = [documents.class.DocumentReviewRequest, documents.class.DocumentApprovalRequest]
+
+  const ops = client.apply('create-qms-doc-request')
+
+  if (sequentialRequestClassGroup.includes(reqClass)) {
+    for (const _class of sequentialRequestClassGroup) {
+      ops.notMatch(_class, {
+        attachedTo,
+        attachedToClass,
+        status: RequestStatus.Active
+      })
+    }
+  }
+
+  const ref = await ops.addCollection(reqClass, space, attachedTo, attachedToClass, 'requests', {
     requested: users,
     approved: [],
     tx: approveTx,
@@ -292,6 +306,12 @@ async function createRequest<T extends Doc> (
     status: RequestStatus.Active,
     requiredApprovesCount: areAllApprovesRequired ? users.length : 1
   })
+
+  const commit = await ops.commit()
+
+  if (commit.result) {
+    return ref
+  }
 }
 
 async function getActiveRequest (
