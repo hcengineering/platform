@@ -119,9 +119,12 @@
     ? readonly || (channel as Space).archived
     : readonly
 
-  $: separatorIndex = account.role === AccountRole.ReadOnlyGuest
-    ? messages.length - 1
-    : ($newTimestampStore !== undefined ? messages.findIndex((message) => (message.createdOn ?? 0) >= ($newTimestampStore ?? 0)) : -1)
+  $: separatorIndex =
+    account.role === AccountRole.ReadOnlyGuest
+      ? messages.length - 1
+      : $newTimestampStore !== undefined
+        ? messages.findIndex((message) => (message.createdOn ?? 0) >= ($newTimestampStore ?? 0))
+        : -1
 
   $: if (!freeze && !isPageHidden && isScrollInitialized) {
     read()
@@ -615,7 +618,11 @@
       {@const isSelected = message._id === selectedMessageId}
       {@const canGroup = canGroupChatMessages(message, messages[index - 1])}
       {#if separatorIndex === index}
-        <ActivityMessagesSeparator bind:element={separatorDiv} label={activity.string.New} visible={account.role !== AccountRole.ReadOnlyGuest}/>
+        <ActivityMessagesSeparator
+          bind:element={separatorDiv}
+          label={activity.string.New}
+          visible={account.role !== AccountRole.ReadOnlyGuest}
+        />
       {/if}
 
       {#if !isThread && message.createdOn && $datesStore.includes(message.createdOn)}

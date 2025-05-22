@@ -1,5 +1,4 @@
 <script lang="ts">
-
   import { AnySvelteComponent, NavGroup, Scroller } from '@hcengineering/ui'
   import ChatNavItem from './chat/navigator/ChatNavItem.svelte'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -47,15 +46,14 @@
       items = newItems
     }
   )
-
 </script>
 
 <Scroller shrink>
   {#if items.length > 0}
     <NavGroup
-      _id='channels'
-      label='channels'
-      categoryName='channels'
+      _id="channels"
+      label="channels"
+      categoryName="channels"
       highlighted={items.some((it) => it.id === object?._id)}
       isFold={false}
       empty={items.length === 0}
