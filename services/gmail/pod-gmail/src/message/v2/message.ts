@@ -16,7 +16,7 @@ import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 import sanitizeHtml from 'sanitize-html'
 
-import { PersonId, TxOperations, type MeasureContext } from '@hcengineering/core'
+import { type MeasureContext, PersonId, TxOperations } from '@hcengineering/core'
 import {
   createMessages,
   parseEmailHeader,

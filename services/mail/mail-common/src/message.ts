@@ -46,6 +46,32 @@ import { PersonSpacesCacheFactory } from './personSpaces'
 import { ChannelCache, ChannelCacheFactory } from './channel'
 import { ThreadLookupService } from './thread'
 
+/**
+ * Creates mail messages in the platform
+ *
+ * This function processes an email message and creates corresponding chat messages. It handles:
+ * - Ensuring persons exist for email addresses
+ * - Finding or creating channels for participants
+ * - Creating threads for messages
+ * - Uploading attachments to storage
+ * - Sending message events to Kafka
+ *
+ * @param {BaseConfig} config - Configuration options including storage and Kafka settings
+ * @param {MeasureContext} ctx - Context for logging and performance measurement
+ * @param {TxOperations} txClient - Client for database transactions
+ * @param {KeyValueClient} keyValueClient - Client for key-value storage operations
+ * @param {Producer} producer - Kafka producer for sending message events
+ * @param {string} token - Authentication token for API calls
+ * @param {WorkspaceLoginInfo} wsInfo - Workspace information including ID and URLs
+ * @param {EmailMessage} message - The email message to process
+ * @param {Attachment[]} attachments - Array of attachments for the message
+ * @param {PersonId[]} [targetPersons] - Optional list of specific persons who should receive the message.
+ *                                       If not provided, all existing accounts from email addresses will be used.
+ * @returns {Promise<void>} A promise that resolves when all messages have been created
+ * @throws Will log errors but not throw exceptions for partial failures
+ *
+ * @public
+ */
 export async function createMessages (
   config: BaseConfig,
   ctx: MeasureContext,
@@ -56,7 +82,6 @@ export async function createMessages (
   wsInfo: WorkspaceLoginInfo,
   message: EmailMessage,
   attachments: Attachment[],
-  // Persons who should receive messages in the platform, all existing accounts from email addresses by default
   targetPersons?: PersonId[]
 ): Promise<void> {
   const { mailId, from, subject, replyTo } = message
