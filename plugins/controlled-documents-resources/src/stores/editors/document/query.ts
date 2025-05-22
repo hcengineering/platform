@@ -120,9 +120,7 @@ const queryReviewRequestFx = createEffect(
       documents.class.DocumentReviewRequest,
       { attachedTo: _id, attachedToClass: _class, status: RequestStatus.Active },
       (result) => {
-        if (result !== null && result !== undefined && result.length > 0) {
-          reviewRequestUpdated(result[0])
-        }
+        reviewRequestUpdated(result[0] ?? null)
       }
     )
   }
@@ -158,9 +156,7 @@ const queryApprovalRequestFx = createEffect(
       documents.class.DocumentApprovalRequest,
       { attachedTo: _id, attachedToClass: _class, status: RequestStatus.Active },
       (result) => {
-        if (result !== null && result !== undefined && result.length > 0) {
-          approvalRequestUpdated(result[0])
-        }
+        approvalRequestUpdated(result[0] ?? null)
       }
     )
   }
