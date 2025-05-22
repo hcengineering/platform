@@ -156,6 +156,7 @@
     "BetaWarningDe": "Als Beta gekennzeichnete Module sind zu experimentellen Zwecken verfügbar und funktionieren möglicherweise nicht vollständig. Wir empfehlen derzeit nicht, sich auf Beta-Funktionen für kritische Arbeiten zu verlassen.",
     "IntegrationFailed": "Integration konnte nicht erstellt werden",
     "IntegrationError": "Bitte versuchen Sie es erneut oder wenden Sie sich an den Support, wenn das Problem weiterhin besteht",
-    "EmailIsUsed": "E-Mail-Adresse wird in einem anderen Konto verwendet"
+    "EmailIsUsed": "E-Mail-Adresse wird in einem anderen Konto verwendet",
+    "Customize": "Anpassen"
   }
 }

@@ -156,6 +156,7 @@
     "BetaWarning": "标记为测试版的模块可用于实验目的，可能无法完全正常工作。我们不建议在此时依赖测试版功能进行关键工作。",
     "IntegrationFailed": "创建集成失败",
     "IntegrationError": "请重试，如果问题仍然存在，请联系客服支持",
-    "EmailIsUsed": "该电子邮件地址已被其他账户使用"
+    "EmailIsUsed": "该电子邮件地址已被其他账户使用",
+    "Customize": "自定义"
   }
 }

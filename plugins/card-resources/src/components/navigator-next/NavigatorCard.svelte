@@ -39,13 +39,13 @@
 
   let activeAction: string | undefined = undefined
 
-  function toggleFavoriteCard (_id: Ref<Card>): void {
+  function toggleFavoriteCard (): void {
     if (favorite !== undefined) {
       void client.remove(favorite)
     } else {
       void client.createDoc(cardPlugin.class.FavoriteCard, core.space.Workspace, {
         application: applicationId,
-        attachedTo: _id
+        attachedTo: card._id
       })
     }
   }
