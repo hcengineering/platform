@@ -870,12 +870,14 @@
         class:vertical-mobile={$deviceInfo.navigator.direction === 'vertical'}
         class:mini={appsMini}
       >
-        <AppItem
-          icon={IconSettings}
-          label={setting.string.Settings}
-          size={appsMini ? 'small' : 'large'}
-          on:click={() => showPopup(AppSwitcher, { apps }, popupPosition)}
-        />
+        {#if account.role !== AccountRole.ReadOnlyGuest}
+          <AppItem
+            icon={IconSettings}
+            label={setting.string.Settings}
+            size={appsMini ? 'small' : 'large'}
+            on:click={() => showPopup(AppSwitcher, { apps }, popupPosition)}
+          />
+        {/if}
         <a href={supportLink} target="_blank" rel="noopener noreferrer">
           <AppItem
             icon={support.icon.Support}
@@ -1048,9 +1050,7 @@
       {#if $sidebarStore.variant === SidebarVariant.EXPANDED && !$sidebarStore.float}
         <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
       {/if}
-      {#if account.role !== AccountRole.ReadOnlyGuest}
-        <WidgetsBar />
-      {/if}
+      <WidgetsBar />
     </div>
   </div>
   <Dock />
