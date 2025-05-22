@@ -26,7 +26,7 @@
   } from '@hcengineering/notification-resources'
   import { createEventDispatcher } from 'svelte'
   import view from '@hcengineering/view'
-  import { AccountRole, Doc, getCurrentAccount } from '@hcengineering/core'
+  import { Doc } from '@hcengineering/core'
 
   import NavItem from './NavItem.svelte'
   import { ChatNavItemModel } from '../types'
@@ -38,7 +38,6 @@
   export let isSelected = false
   export let type: 'type-link' | 'type-tag' | 'type-anchor-link' | 'type-object' = 'type-link'
 
-  const me = getCurrentAccount()
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
@@ -49,21 +48,17 @@
   let count: number | null = null
   let actions: Action[] = []
 
-  if (me.role !== AccountRole.ReadOnlyGuest) {
-    notificationClient.inboxNotificationsByContext.subscribe((res) => {
-      if (context === undefined) {
-        return
-      }
+  notificationClient.inboxNotificationsByContext.subscribe((res) => {
+    if (context === undefined) {
+      return
+    }
 
-      notifications = (res.get(context._id) ?? []).filter((n) => {
-        if (isActivityNotification(n)) return true
+    notifications = (res.get(context._id) ?? []).filter((n) => {
+      if (isActivityNotification(n)) return true
 
-        return isMentionNotification(n) && hierarchy.isDerived(n.mentionedInClass, chunter.class.ChatMessage)
-      })
+      return isMentionNotification(n) && hierarchy.isDerived(n.mentionedInClass, chunter.class.ChatMessage)
     })
-  } else {
-    context = undefined
-  }
+  })
 
   $: void getNotificationsCount(context, notifications).then((res) => {
     count = res === 0 ? null : res
@@ -134,7 +129,7 @@
   {count}
   title={item.title}
   description={item.description}
-  secondaryNotifyMarker={(context?.lastViewedTimestamp ?? 0) < (context?.lastUpdateTimestamp ?? 0)}
+  secondaryNotifyMarker={context === undefined ? false : (context?.lastViewedTimestamp ?? 0) < (context?.lastUpdateTimestamp ?? 0)}
   {actions}
   {type}
   on:click={() => {

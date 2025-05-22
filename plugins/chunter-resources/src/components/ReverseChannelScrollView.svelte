@@ -15,7 +15,17 @@
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { ActivityMessagePresenter, canGroupMessages, messageInFocus } from '@hcengineering/activity-resources'
-  import core, { Doc, generateId, getCurrentAccount, Ref, Space, Timestamp, Tx, TxCUD } from '@hcengineering/core'
+  import core, {
+    AccountRole,
+    Doc,
+    generateId,
+    getCurrentAccount,
+    Ref,
+    Space,
+    Timestamp,
+    Tx,
+    TxCUD
+  } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { addTxListener, getClient, removeTxListener } from '@hcengineering/presentation'
@@ -51,7 +61,8 @@
   const loadMoreThreshold = 200
   const newSeparatorOffset = 150
 
-  const socialStrings = getCurrentAccount().socialIds
+  const account = getCurrentAccount()
+  const socialStrings = account.socialIds
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()
@@ -108,10 +119,9 @@
     ? readonly || (channel as Space).archived
     : readonly
 
-  $: separatorIndex =
-    $newTimestampStore !== undefined
-      ? messages.findIndex((message) => (message.createdOn ?? 0) >= ($newTimestampStore ?? 0))
-      : -1
+  $: separatorIndex = account.role === AccountRole.ReadOnlyGuest
+    ? messages.length - 1
+    : ($newTimestampStore !== undefined ? messages.findIndex((message) => (message.createdOn ?? 0) >= ($newTimestampStore ?? 0)) : -1)
 
   $: if (!freeze && !isPageHidden && isScrollInitialized) {
     read()
@@ -605,7 +615,7 @@
       {@const isSelected = message._id === selectedMessageId}
       {@const canGroup = canGroupChatMessages(message, messages[index - 1])}
       {#if separatorIndex === index}
-        <ActivityMessagesSeparator bind:element={separatorDiv} label={activity.string.New} />
+        <ActivityMessagesSeparator bind:element={separatorDiv} label={activity.string.New} visible={account.role !== AccountRole.ReadOnlyGuest}/>
       {/if}
 
       {#if !isThread && message.createdOn && $datesStore.includes(message.createdOn)}

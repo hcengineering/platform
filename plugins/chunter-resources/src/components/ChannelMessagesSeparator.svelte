@@ -18,16 +18,19 @@
 
   export let label: IntlString
   export let params: any = undefined
+  export let visible: boolean = true
 
   export let element: HTMLDivElement | undefined | null = undefined
 </script>
 
 <div class="w-full text-sm flex-center whitespace-nowrap" bind:this={element}>
-  <div class="line mr-3" />
-  <div class="label">
-    <Label {label} {params} />
-  </div>
-  <div class="line ml-3" />
+  {#if visible}
+    <div class="line mr-3" />
+    <div class="label">
+      <Label {label} {params} />
+    </div>
+    <div class="line ml-3" />
+  {/if}
 </div>
 
 <style lang="scss">

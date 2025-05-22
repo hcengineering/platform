@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, Class } from '@hcengineering/core'
+  import { Doc, Ref, Class, getCurrentAccount, AccountRole } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     Component,
@@ -40,11 +40,13 @@
   import { chatSpecials } from './utils'
   import { SelectChannelEvent } from './types'
   import { openChannel, openThreadInSidebar } from '../../navigation'
+  import ReadonlyChannelNavigator from '../ReadonlyChannelNavigator.svelte'
 
   const notificationsClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = notificationsClient.contextByDoc
   const objectQuery = createQuery()
   const client = getClient()
+  const me = getCurrentAccount()
 
   const navigatorModel: NavigatorModel = {
     spaces: [],
@@ -174,7 +176,11 @@
       class:fly={$deviceInfo.navigator.float}
     >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
-        <ChatNavigator {object} {currentSpecial} on:select={handleChannelSelected} />
+        {#if me.role === AccountRole.ReadOnlyGuest}
+          <ReadonlyChannelNavigator {object} on:select={handleChannelSelected} />
+        {:else}
+          <ChatNavigator {object} {currentSpecial} on:select={handleChannelSelected} />
+        {/if}
       </div>
       {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
         <Separator name="chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
