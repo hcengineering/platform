@@ -98,10 +98,15 @@ export function connect(connectionString: string, database?: string): PostgresCl
   if (existing === undefined) {
     const sql = postgres(connectionString, {
       database,
-      max: 5,
-      fetch_types: false,
-      prepare: true,
+      max: 10,
+      min: 2,
+      fetch_types: true,
+      debug: false,
+      notice: false,
+      onnotice() {},
+      onparameter() {},
       ...extraOptions,
+      prepare: true,
       connection: {
         application_name: 'communication'
       }

@@ -13,38 +13,47 @@
 // limitations under the License.
 //
 
-import { type CardID, type Message, type MessageID, SortingOrder } from '@hcengineering/communication-types'
+import {
+  type CardID,
+  type Message,
+  type MessageID,
+  SortingOrder,
+  type WorkspaceID
+} from '@hcengineering/communication-types'
 import { loadGroupFile } from '@hcengineering/communication-yaml'
 import { applyPatches } from '@hcengineering/communication-shared'
 
-import type { TriggerCtx } from '../types'
+import type { DbAdapter } from '@hcengineering/communication-sdk-types'
 
 export async function findMessage(
-  ctx: TriggerCtx,
+  db: DbAdapter,
+  filesUrl: string,
+  workspace: WorkspaceID,
   card: CardID,
   id: MessageID,
   created: Date
 ): Promise<Message | undefined> {
-  const message = (await ctx.db.findMessages({ card, id, limit: 1, files: true }))[0]
+  const message = (await db.findMessages({ card, id, limit: 1, files: true }))[0]
   if (message !== undefined) {
     return message
   }
-  return await findMessageInFiles(ctx, card, id, created)
+  return await findMessageInFiles(db, filesUrl, workspace, card, id, created)
 }
 
 export async function findMessageInFiles(
-  ctx: TriggerCtx,
+  db: DbAdapter,
+  filesUrl: string,
+  workspace: WorkspaceID,
   card: CardID,
   id: MessageID,
   created: Date
 ): Promise<Message | undefined> {
-  const filesUrl = ctx.metadata.filesUrl
   if (filesUrl === '') {
     return undefined
   }
 
   const group = (
-    await ctx.db.findMessagesGroups({
+    await db.findMessagesGroups({
       card,
       fromDate: { lessOrEqual: created },
       toDate: { greaterOrEqual: created },
@@ -59,7 +68,7 @@ export async function findMessageInFiles(
   }
 
   try {
-    const parsedFile = await loadGroupFile(ctx.workspace, filesUrl, group, { retries: 3 })
+    const parsedFile = await loadGroupFile(workspace, filesUrl, group, { retries: 3 })
     const messageFromFile = parsedFile.messages.find((it) => it.id === id)
     if (messageFromFile === undefined) {
       return undefined
@@ -69,7 +78,7 @@ export async function findMessageInFiles(
 
     return patches.length > 0 ? applyPatches(messageFromFile, patches) : messageFromFile
   } catch (e) {
-    ctx.ctx.error('Failed to find message in files', { card, id, created })
-    ctx.ctx.error('Error:', { error: e })
+    console.error('Failed to find message in files', { card, id, created })
+    console.error('Error:', { error: e })
   }
 }

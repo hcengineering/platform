@@ -82,6 +82,7 @@ export interface FindNotificationsParams extends FindParams {
   read?: boolean
   created?: Partial<Record<ComparisonOperator, Date>> | Date
   account?: AccountID | AccountID[]
+  card?: CardID
   message?: boolean
 }
 

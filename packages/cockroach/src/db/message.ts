@@ -30,7 +30,6 @@ import {
   type SocialID,
   SortingOrder,
   type Thread,
-  type File,
   type BlobMetadata
 } from '@hcengineering/communication-types'
 
@@ -47,12 +46,7 @@ import {
 } from './schema'
 import { getCondition } from './utils'
 import { toMessage, toMessagesGroup, toThread } from './mapping'
-import type {
-  RemoveFileQuery,
-  RemoveMessageQuery,
-  RemoveThreadQuery,
-  ThreadUpdates
-} from '@hcengineering/communication-sdk-types'
+import type { RemoveFileQuery, RemoveThreadQuery, ThreadUpdates } from '@hcengineering/communication-sdk-types'
 
 export class MessagesDb extends BaseDb {
   // Message
@@ -105,40 +99,6 @@ export class MessagesDb extends BaseDb {
     const idR = result[0].id as MessageID
 
     return { id: idR, created: createdR }
-  }
-
-  async removeMessages(card: CardID, query: RemoveMessageQuery): Promise<MessageID[]> {
-    const where: string[] = ['workspace_id = $1::uuid', 'card_id = $2::varchar']
-    const values: any[] = [this.workspace, card]
-    const { ids, socialIds } = query
-    let index = values.length + 1
-
-    if (socialIds?.length === 1) {
-      where.push(`creator = $${index++}::varchar`)
-      values.push(socialIds[0])
-    }
-
-    if (socialIds != null && socialIds.length > 1) {
-      where.push(`creator = ANY($${index++}::varchar[])`)
-      values.push(socialIds)
-    }
-
-    if (ids && ids.length === 1) {
-      where.push(`id = $${index++}::int8`)
-      values.push(ids[0])
-    } else if ((ids?.length ?? 0) > 1) {
-      where.push(`id = ANY($${index++}::int8[])`)
-      values.push(ids)
-    }
-
-    const sql = `DELETE
-                 FROM ${TableName.Message}
-                 WHERE ${where.join(' AND ')}
-                 RETURNING id::text`
-
-    const result = await this.execute(sql, values, 'remove messages')
-
-    return result.map((row: any) => row.id)
   }
 
   async createPatch(
@@ -554,7 +514,6 @@ export class MessagesDb extends BaseDb {
         ON m.workspace_id = p.workspace_id
         AND m.card_id = p.card_id
         AND m.id = p.message_id
-      WHERE p.type = 'update'
       GROUP BY p.workspace_id, p.card_id, p.message_id
     )
   `

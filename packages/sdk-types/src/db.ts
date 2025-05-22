@@ -59,7 +59,6 @@ export interface DbAdapter {
     externalId?: string,
     id?: MessageID
   ): Promise<{ id: MessageID; created: Date }>
-  removeMessages(card: CardID, query: RemoveMessageQuery): Promise<MessageID[]>
 
   createPatch(
     card: CardID,
@@ -161,11 +160,6 @@ export interface DbAdapter {
   getAccountsByPersonIds(ids: string[]): Promise<AccountID[]>
 
   close(): void
-}
-
-export type RemoveMessageQuery = {
-  ids?: MessageID[]
-  socialIds?: SocialID[]
 }
 
 export type RemoveFileQuery = Partial<Pick<File, 'message' | 'blobId'>>

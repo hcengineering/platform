@@ -28,6 +28,7 @@ export interface FileMessage {
   type: MessageType
   content: RichText
   creator: SocialID
+  removed: boolean
   data?: MessageData
   externalId?: string
   created: Date
@@ -44,6 +45,7 @@ export interface FileBlob {
   size: number
   creator: SocialID
   created: Date
+  meta: Record<string, any>
 }
 
 export interface FileReaction {

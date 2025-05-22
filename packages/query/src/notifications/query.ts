@@ -25,6 +25,8 @@ import {
   type WorkspaceID
 } from '@hcengineering/communication-types'
 import {
+  type CardRemovedEvent,
+  CardResponseEventType,
   type FileCreatedEvent,
   type FileRemovedEvent,
   type FindClient,
@@ -49,7 +51,13 @@ import { QueryResult } from '../result'
 import { WindowImpl } from '../window'
 import { addFile, createThread, loadMessageFromGroup, matchNotification, removeFile, updateThread } from '../utils'
 
-const allowedPatchTypes = [PatchType.update, PatchType.addFile, PatchType.removeFile, PatchType.updateThread]
+const allowedPatchTypes = [
+  PatchType.update,
+  PatchType.remove,
+  PatchType.addFile,
+  PatchType.removeFile,
+  PatchType.updateThread
+]
 
 export class NotificationQuery implements PagedQuery<Notification, FindNotificationsParams> {
   private result: QueryResult<Notification> | Promise<QueryResult<Notification>>
@@ -131,6 +139,10 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
         break
       case MessageResponseEventType.ThreadUpdated:
         await this.onThreadUpdated(event)
+        break
+      case CardResponseEventType.CardRemoved:
+        await this.onCardRemoved(event)
+        break
     }
   }
 
@@ -335,8 +347,10 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   }
 
   private async onCreatePatchEvent(event: PatchCreatedEvent): Promise<void> {
-    const isUpdated = await this.updateMessage(event.card, event.patch.message, (message) =>
-      applyPatch(message, event.patch, allowedPatchTypes)
+    if (this.params.message !== true) return
+    const isUpdated = await this.updateMessage(
+      (it) => this.matchNotificationByMessage(it, event.card, event.patch.message),
+      (message) => applyPatch(message, event.patch, allowedPatchTypes)
     )
     if (isUpdated) {
       void this.notify()
@@ -344,8 +358,10 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   }
 
   private async onFileCreated(event: FileCreatedEvent): Promise<void> {
-    const isUpdated = await this.updateMessage(event.card, event.file.message, (message) =>
-      addFile(message, event.file)
+    if (this.params.message !== true) return
+    const isUpdated = await this.updateMessage(
+      (it) => this.matchNotificationByMessage(it, event.card, event.file.message),
+      (message) => addFile(message, event.file)
     )
     if (isUpdated) {
       void this.notify()
@@ -353,8 +369,10 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   }
 
   private async onFileRemoved(event: FileRemovedEvent): Promise<void> {
-    const isUpdated = await this.updateMessage(event.card, event.message, (message) =>
-      removeFile(message, event.blobId)
+    if (this.params.message !== true) return
+    const isUpdated = await this.updateMessage(
+      (it) => this.matchNotificationByMessage(it, event.card, event.message),
+      (message) => removeFile(message, event.blobId)
     )
     if (isUpdated) {
       void this.notify()
@@ -362,14 +380,17 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   }
 
   private async onThreadCreated(event: ThreadCreatedEvent): Promise<void> {
-    const isUpdated = await this.updateMessage(event.thread.card, event.thread.message, (message) =>
-      createThread(
-        message,
-        event.thread.thread,
-        event.thread.threadType,
-        event.thread.repliesCount,
-        event.thread.lastReply
-      )
+    if (this.params.message !== true) return
+    const isUpdated = await this.updateMessage(
+      (it) => this.matchNotificationByMessage(it, event.thread.card, event.thread.message),
+      (message) =>
+        createThread(
+          message,
+          event.thread.thread,
+          event.thread.threadType,
+          event.thread.repliesCount,
+          event.thread.lastReply
+        )
     )
     if (isUpdated) {
       void this.notify()
@@ -377,8 +398,22 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   }
 
   private async onThreadUpdated(event: ThreadUpdatedEvent): Promise<void> {
-    const isUpdated = await this.updateMessage(event.card, event.message, (message) =>
-      updateThread(message, event.thread, event.updates.replies, event.updates.lastReply)
+    if (this.params.message !== true) return
+    const isUpdated = await this.updateMessage(
+      (it) => this.matchNotificationByMessage(it, event.card, event.message),
+      (message) => updateThread(message, event.thread, event.updates.replies, event.updates.lastReply)
+    )
+    if (isUpdated) {
+      void this.notify()
+    }
+  }
+
+  private async onCardRemoved(event: CardRemovedEvent): Promise<void> {
+    if (this.params.message !== true) return
+    if (this.result instanceof Promise) this.result = await this.result
+    const isUpdated = await this.updateMessage(
+      (it) => it.message != null && it.message.thread?.thread === event.card,
+      (message) => ({ ...message, thread: undefined })
     )
     if (isUpdated) {
       void this.notify()
@@ -416,23 +451,29 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     })
   }
 
+  private matchNotificationByMessage(notification: Notification, card: CardID, messageId: MessageID): boolean {
+    return notification.messageId === messageId && notification.message != null && notification.message.card === card
+  }
+
   private async updateMessage(
-    card: CardID,
-    messageId: MessageID,
+    matchFn: (notification: Notification) => boolean,
     updater: (message: Message) => Message
   ): Promise<boolean> {
     if (this.params.message !== true) return false
     if (this.result instanceof Promise) this.result = await this.result
 
     const result = this.result.getResult()
-    const toUpdate = result.find((it) => it.messageId === messageId && it.message && it.message.card === card)
-    if (toUpdate == null) return false
+    let isUpdated = false
+    for (const notification of result) {
+      const isMatched = matchFn(notification)
+      if (!isMatched) continue
+      isUpdated = true
+      this.result.update({
+        ...notification,
+        message: notification.message != null ? updater(notification.message) : notification.message
+      })
+    }
 
-    this.result.update({
-      ...toUpdate,
-      message: toUpdate.message != null ? updater(toUpdate.message) : toUpdate.message
-    })
-
-    return true
+    return isUpdated
   }
 }

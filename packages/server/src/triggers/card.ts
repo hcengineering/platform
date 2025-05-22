@@ -42,6 +42,7 @@ async function removeLabels(ctx: TriggerCtx, event: CardRemovedEvent): Promise<R
 
 async function removeThreads(ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
   await ctx.db.removeThreads({ card: event.card })
+  await ctx.db.removeThreads({ thread: event.card })
   return []
 }
 

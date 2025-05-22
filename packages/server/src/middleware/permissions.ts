@@ -19,7 +19,9 @@ import {
   NotificationRequestEventType,
   type EventResult,
   type RequestEvent,
-  type SessionData
+  type SessionData,
+  type CreatePatchEvent,
+  type DbAdapter
 } from '@hcengineering/communication-sdk-types'
 import { systemAccountUuid } from '@hcengineering/core'
 import type {
@@ -36,9 +38,11 @@ import type {
 import { ApiError } from '../error'
 import type { Middleware, MiddlewareContext, QueryId } from '../types'
 import { BaseMiddleware } from './base'
+import { findMessage } from '../triggers/utils.ts'
 
 export class PermissionsMiddleware extends BaseMiddleware implements Middleware {
   constructor(
+    readonly db: DbAdapter,
     readonly context: MiddlewareContext,
     next?: Middleware
   ) {
@@ -48,8 +52,12 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
   async event(session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
     if (derived) return await this.provideEvent(session, event, derived)
     switch (event.type) {
+      case MessageRequestEventType.CreatePatch: {
+        this.checkSocialId(session, event.creator)
+        await this.checkPatch(session, event)
+        break
+      }
       case MessageRequestEventType.CreateMessage:
-      case MessageRequestEventType.CreatePatch:
       case MessageRequestEventType.CreateReaction:
       case MessageRequestEventType.RemoveReaction:
       case MessageRequestEventType.RemoveFile:
@@ -79,6 +87,28 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
     }
 
     return this.provideEvent(session, event, derived)
+  }
+
+  async checkPatch(session: SessionData, event: CreatePatchEvent): Promise<void> {
+    const account = session.account
+    if (systemAccountUuid === account.uuid) return
+    const socialIds = account.socialIds
+
+    const message = await findMessage(
+      this.db,
+      this.context.metadata.filesUrl,
+      this.context.workspace,
+      event.card,
+      event.message,
+      event.messageCreated
+    )
+    if (message === undefined) {
+      throw ApiError.notFound('Message of patch not found.')
+    }
+
+    if (!socialIds.includes(message.creator)) {
+      throw ApiError.forbidden('Patch creator is not author of the message')
+    }
   }
 
   async findNotificationContexts(

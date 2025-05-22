@@ -26,6 +26,7 @@ export interface Message {
   content: RichText
   creator: SocialID
   created: Date
+  removed: boolean
   data?: MessageData
   externalId?: string
 
@@ -37,7 +38,9 @@ export interface Message {
 
 export enum MessageType {
   Message = 'message',
-  Activity = 'activity'
+  Activity = 'activity',
+  Thread = 'thread',
+  ThreadRoot = 'threadRoot'
 }
 
 export type MessageData = ActivityMessageData | Record<string, any>
@@ -123,9 +126,14 @@ export interface RemoveFilePatch extends BasePatch {
   type: PatchType.removeFile
   data: RemoveFilePatchData
 }
+export interface RemovePatch extends BasePatch {
+  type: PatchType.remove
+  data: {}
+}
 
 export type Patch =
   | UpdatePatch
+  | RemovePatch
   | AddReactionPatch
   | RemoveReactionPatch
   | AddFilePatch
@@ -133,6 +141,7 @@ export type Patch =
   | UpdateThreadPatch
 
 export type PatchData =
+  | RemovePatchData
   | UpdatePatchData
   | AddReactionPatchData
   | RemoveReactionPatchData
@@ -147,6 +156,7 @@ export interface UpdateThreadPatchData {
 }
 
 export interface UpdatePatchData {
+  type?: MessageType
   content?: RichText
   data?: MessageData
 }
@@ -170,8 +180,11 @@ export interface RemoveFilePatchData {
   blobId: BlobID
 }
 
+type RemovePatchData = {}
+
 export enum PatchType {
   update = 'update',
+  remove = 'remove',
   addReaction = 'addReaction',
   removeReaction = 'removeReaction',
   addFile = 'addFile',

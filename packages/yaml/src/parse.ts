@@ -69,6 +69,7 @@ export function parseYaml(data: string): ParsedFile {
       edited: message.edited,
       creator: message.creator,
       created: message.created,
+      removed: message.removed,
       data: message.data,
       externalId: message.externalId,
       thread: message.thread

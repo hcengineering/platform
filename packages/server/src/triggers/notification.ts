@@ -16,13 +16,16 @@
 import {
   type AddedCollaboratorsEvent,
   LabelRequestEventType,
+  MessageResponseEventType,
   type NotificationContextUpdatedEvent,
   NotificationRequestEventType,
   NotificationResponseEventType,
+  type PatchCreatedEvent,
   type RemovedCollaboratorsEvent,
   type RequestEvent
 } from '@hcengineering/communication-sdk-types'
-import { NewMessageLabelID, NotificationType, SubscriptionLabelID } from '@hcengineering/communication-types'
+import { NewMessageLabelID, NotificationType, PatchType, SubscriptionLabelID } from '@hcengineering/communication-types'
+import { groupByArray } from '@hcengineering/core'
 
 import type { TriggerCtx, TriggerFn, Triggers } from '../types'
 
@@ -107,6 +110,31 @@ async function onNotificationContextUpdated(
   return result
 }
 
+async function onMessagesRemoved(ctx: TriggerCtx, event: PatchCreatedEvent): Promise<RequestEvent[]> {
+  if (event.patch.type !== PatchType.remove) return []
+
+  const notifications = await ctx.db.findNotifications({
+    card: event.card,
+    messageId: event.patch.message
+  })
+
+  if (notifications.length === 0) return []
+
+  const result: RequestEvent[] = []
+
+  const byContextId = groupByArray(notifications, (it) => it.context)
+  for (const [context, ns] of byContextId.entries()) {
+    result.push({
+      type: NotificationRequestEventType.RemoveNotifications,
+      context: context,
+      account: ns[0].account,
+      ids: notifications.map((it) => it.id)
+    })
+  }
+
+  return result
+}
+
 const triggers: Triggers = [
   [
     'on_notification_context_updated',
@@ -114,7 +142,8 @@ const triggers: Triggers = [
     onNotificationContextUpdated as TriggerFn
   ],
   ['on_added_collaborators', NotificationResponseEventType.AddedCollaborators, onAddedCollaborators as TriggerFn],
-  ['on_removed_collaborators', NotificationResponseEventType.RemovedCollaborators, onRemovedCollaborators as TriggerFn]
+  ['on_removed_collaborators', NotificationResponseEventType.RemovedCollaborators, onRemovedCollaborators as TriggerFn],
+  ['remove_notifications_on_messages_removed', MessageResponseEventType.PatchCreated, onMessagesRemoved as TriggerFn]
 ]
 
 export default triggers

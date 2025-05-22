@@ -28,6 +28,7 @@ export interface Collaborator {
 export interface Notification {
   id: NotificationID
   context: ContextID
+  account: AccountID
   type: NotificationType
   read: boolean
   created: Date

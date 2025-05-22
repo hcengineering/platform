@@ -14,19 +14,16 @@
 //
 
 import {
-  type CreatePatchEvent,
   type FileCreatedEvent,
   type FileRemovedEvent,
   type MessageCreatedEvent,
   MessageRequestEventType,
   MessageResponseEventType,
   type MessagesGroupCreatedEvent,
-  type MessagesRemovedEvent,
   NotificationRequestEventType,
   type PatchCreatedEvent,
   type RequestEvent,
-  type ThreadCreatedEvent,
-  type UpdateThreadEvent
+  type ThreadCreatedEvent
 } from '@hcengineering/communication-sdk-types'
 import {
   type AddFilePatchData,
@@ -43,42 +40,43 @@ import { markdownToMarkup } from '@hcengineering/text-markdown'
 
 import type { TriggerCtx, TriggerFn, Triggers } from '../types'
 import { findAccount } from '../utils'
-import { findMessageInFiles } from './utils'
+import { findMessage, findMessageInFiles } from './utils'
 
 async function onMessagesGroupCreated(ctx: TriggerCtx, event: MessagesGroupCreatedEvent): Promise<RequestEvent[]> {
   ctx.registeredCards.delete(event.group.card)
   return []
 }
 
-async function onMessagesRemoved(ctx: TriggerCtx, event: MessagesRemovedEvent): Promise<RequestEvent[]> {
-  const { card } = event
+async function onMessagesRemoved(ctx: TriggerCtx, event: PatchCreatedEvent): Promise<RequestEvent[]> {
+  const { card, patch } = event
+  if (patch.type !== PatchType.remove) return []
   const thread = await ctx.db.findThread(card)
   if (thread === undefined) return []
 
   const socialId = ctx.account.primarySocialId
+  const result: RequestEvent[] = []
 
-  return event.messages.flatMap(() => {
-    const patchEvent: CreatePatchEvent = {
-      type: MessageRequestEventType.CreatePatch,
-      patchType: PatchType.updateThread,
-      card: thread.card,
-      message: thread.message,
-      messageCreated: thread.messageCreated,
-      data: { thread: thread.thread, threadType: thread.threadType, replies: 'decrement' },
-      creator: socialId
-    }
-    const threadEvent: UpdateThreadEvent = {
-      type: MessageRequestEventType.UpdateThread,
-      card: thread.card,
-      message: thread.message,
-      thread: thread.thread,
-      updates: {
-        replies: 'decrement'
-      }
-    }
-
-    return [patchEvent, threadEvent]
+  result.push({
+    type: MessageRequestEventType.CreatePatch,
+    patchType: PatchType.updateThread,
+    card: thread.card,
+    message: thread.message,
+    messageCreated: thread.messageCreated,
+    data: { thread: thread.thread, threadType: thread.threadType, replies: 'decrement' },
+    creator: socialId
   })
+
+  result.push({
+    type: MessageRequestEventType.UpdateThread,
+    card: thread.card,
+    message: thread.message,
+    thread: thread.thread,
+    updates: {
+      replies: 'decrement'
+    }
+  })
+
+  return result
 }
 
 async function onFileCreated(ctx: TriggerCtx, event: FileCreatedEvent): Promise<RequestEvent[]> {
@@ -231,7 +229,14 @@ async function onThreadCreated(ctx: TriggerCtx, event: ThreadCreatedEvent): Prom
   const result: RequestEvent[] = []
 
   if (message === undefined) {
-    message = await findMessageInFiles(ctx, event.thread.card, event.thread.message, event.thread.messageCreated)
+    message = await findMessageInFiles(
+      ctx.db,
+      ctx.metadata.filesUrl,
+      ctx.workspace,
+      event.thread.card,
+      event.thread.message,
+      event.thread.messageCreated
+    )
 
     if (message !== undefined) {
       result.push({
@@ -246,14 +251,24 @@ async function onThreadCreated(ctx: TriggerCtx, event: ThreadCreatedEvent): Prom
     }
   }
 
-  if (message === undefined) {
+  if (message === undefined || message.type !== MessageType.Message) {
     return []
   }
+
+  result.push({
+    type: MessageRequestEventType.CreatePatch,
+    patchType: PatchType.update,
+    card: event.thread.card,
+    message: event.thread.message,
+    messageCreated: event.thread.messageCreated,
+    data: { type: MessageType.Thread },
+    creator: message.creator
+  })
 
   const messageId = generateMessageId()
   result.push({
     type: MessageRequestEventType.CreateMessage,
-    messageType: message.type,
+    messageType: MessageType.ThreadRoot,
     card: event.thread.thread,
     cardType: event.thread.threadType,
     content: message.content,
@@ -299,7 +314,7 @@ const triggers: Triggers = [
   ['register_card_on_message_created', MessageResponseEventType.MessageCreated, registerCard as TriggerFn],
   ['register_card_on_patch_created', MessageResponseEventType.PatchCreated, registerCard as TriggerFn],
   ['on_messages_group_created', MessageResponseEventType.MessagesGroupCreated, onMessagesGroupCreated as TriggerFn],
-  ['remove_reply_on_messages_removed', MessageResponseEventType.MessagesRemoved, onMessagesRemoved as TriggerFn],
+  ['remove_reply_on_messages_removed', MessageResponseEventType.PatchCreated, onMessagesRemoved as TriggerFn],
   ['on_file_created', MessageResponseEventType.FileCreated, onFileCreated as TriggerFn],
   ['on_file_removed', MessageResponseEventType.FileRemoved, onFileRemoved as TriggerFn],
   ['on_thread_created', MessageResponseEventType.ThreadCreated, onThreadCreated as TriggerFn]

@@ -55,7 +55,6 @@ import type {
   RemoveCollaboratorsQuery,
   RemoveFileQuery,
   RemoveLabelQuery,
-  RemoveMessageQuery,
   RemoveNotificationContextQuery,
   RemoveNotificationsQuery,
   RemoveThreadQuery,
@@ -67,7 +66,7 @@ import { MessagesDb } from './db/message'
 import { NotificationsDb } from './db/notification'
 import { connect, type PostgresClientReference } from './connection'
 import { type Logger, type Options, type SqlClient, type SqlParams, type SqlRow } from './types'
-import { injectVars } from './utils'
+import { convertArrayParams } from './utils'
 import { initSchema } from './init'
 import { LabelsDb } from './db/label'
 
@@ -98,10 +97,6 @@ export class CockroachAdapter implements DbAdapter {
     id?: MessageID
   ): Promise<{ id: MessageID; created: Date }> {
     return await this.message.createMessage(card, type, content, creator, created, data, externalId, id)
-  }
-
-  async removeMessages(card: CardID, query: RemoveMessageQuery): Promise<MessageID[]> {
-    return await this.message.removeMessages(card, query)
   }
 
   async createPatch(
@@ -335,14 +330,13 @@ class CockroachClient implements SqlClient {
   ) {}
 
   async execute<T = SqlRow>(query: string, params?: SqlParams): Promise<T[]> {
-    const sql = params !== undefined && params.length > 0 ? injectVars(query, params) : query
-    return await this.sql.unsafe<T[]>(sql)
+    const convertedParams = convertArrayParams(params)
+    return this.sql.unsafe<T[]>(query, convertedParams)
   }
 
   cursor<T = SqlRow>(query: string, params?: SqlParams, size?: number): AsyncIterable<NonNullable<T[][number]>[]> {
-    // const sql = params !== undefined && params.length > 0 ? injectVars(query, params) : query
-
-    return this.sql.unsafe<T[]>(query, params).cursor(size)
+    const convertedParams = convertArrayParams(params)
+    return this.sql.unsafe<T[]>(query, convertedParams).cursor(size)
   }
 
   close(): void {

@@ -109,14 +109,39 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     if (this.result instanceof Promise) this.result = await this.result
 
     const result = this.result.getResult()
+    const currentLength = this.result.length
     let updated = false
+
+    if (this.params.cardType != null) {
+      const cardTypes = Array.isArray(this.params.cardType) ? this.params.cardType : [this.params.cardType]
+      if (cardTypes.includes(event.cardType)) {
+        const labels = await this.find(this.params)
+        this.result = new QueryResult(labels, getId)
+        void this.notify()
+        return
+      }
+    }
+
     for (const label of result) {
       if (label.card == event.card) {
-        this.result.update({ ...label, cardType: event.cardType })
+        const updatedLabel: Label = { ...label, cardType: event.cardType }
+        const matched = this.match(updatedLabel)
+        if (matched) {
+          this.result.update(updatedLabel)
+        } else {
+          this.result.delete(getId(label))
+        }
         updated = true
       }
     }
+
     if (updated) {
+      const newLength = this.result.length
+      if (this.params.limit && newLength < currentLength && newLength >= this.params.limit) {
+        const labels = await this.find(this.params)
+        this.result = new QueryResult(labels, getId)
+      }
+
       void this.notify()
     }
   }

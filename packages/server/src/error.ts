@@ -32,6 +32,10 @@ export class ApiError extends Error {
     return new ApiError(403, `Forbidden: ${message}`)
   }
 
+  static notFound(message: string): ApiError {
+    return new ApiError(404, `Not Found: ${message}`)
+  }
+
   toJSON() {
     return {
       code: this.code,

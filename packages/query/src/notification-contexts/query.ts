@@ -31,7 +31,6 @@ import {
   type FileRemovedEvent,
   type FindClient,
   MessageResponseEventType,
-  type MessagesRemovedEvent,
   type NotificationContextCreatedEvent,
   type NotificationContextRemovedEvent,
   type NotificationContextUpdatedEvent,
@@ -62,7 +61,13 @@ import {
 } from '../utils'
 import { SortingOrder } from '@hcengineering/communication-types'
 
-const allowedPatchTypes = [PatchType.update, PatchType.addFile, PatchType.removeFile, PatchType.updateThread]
+const allowedPatchTypes = [
+  PatchType.update,
+  PatchType.remove,
+  PatchType.addFile,
+  PatchType.removeFile,
+  PatchType.updateThread
+]
 export class NotificationContextsQuery implements PagedQuery<NotificationContext, FindNotificationContextParams> {
   private result: QueryResult<NotificationContext> | Promise<QueryResult<NotificationContext>>
   private forward: Promise<NotificationContext[]> | NotificationContext[] = []
@@ -122,10 +127,6 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     switch (event.type) {
       case MessageResponseEventType.PatchCreated: {
         await this.onCreatePatchEvent(event)
-        break
-      }
-      case MessageResponseEventType.MessagesRemoved: {
-        await this.onMessagesRemovedEvent(event)
         break
       }
       case NotificationResponseEventType.NotificationCreated: {
@@ -382,30 +383,6 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       void this.notify()
     }
   }
-  private async onMessagesRemovedEvent(event: MessagesRemovedEvent): Promise<void> {
-    if (this.params.notifications == null) return
-    if (this.forward instanceof Promise) this.forward = await this.forward
-    if (this.backward instanceof Promise) this.backward = await this.backward
-    if (this.result instanceof Promise) this.result = await this.result
-
-    const context = this.result.getResult().find((it) => it.card === event.card)
-
-    if (context === undefined) return
-    const filtered = (context.notifications ?? []).filter(
-      (it) => it.messageId == null || !event.messages.includes(it.messageId)
-    )
-    if (filtered.length === (context.notifications?.length ?? 0)) return
-    const contextUpdated = (await this.find({ id: context.id, limit: 1, notifications: this.params.notifications }))[0]
-    if (contextUpdated !== undefined) {
-      this.result.update(contextUpdated)
-    } else {
-      this.result.update({
-        ...context,
-        notifications: filtered
-      })
-    }
-    void this.notify()
-  }
 
   private async onRemoveNotificationEvent(event: NotificationsRemovedEvent): Promise<void> {
     if (this.params.notifications == null) return
@@ -628,16 +605,29 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
 
   async onCardRemoved(event: CardRemovedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
-    let deleted = false
+    let updated = false
     const result = this.result.getResult()
     for (const context of result) {
       if (context.card == event.card) {
         this.result.delete(context.id)
-        deleted = true
+        updated = true
       }
     }
 
-    if (deleted) {
+    if (this.params.notifications?.message === true) {
+      const result = updated ? this.result.getResult() : []
+      for (const context of result) {
+        const notifications = context.notifications ?? []
+        for (const notification of notifications) {
+          if (notification.message != null && notification.message.thread?.thread === event.card) {
+            updated = true
+            notification.message.thread = undefined
+          }
+        }
+      }
+    }
+
+    if (updated) {
       if (this.params.limit && this.result.length < this.params.limit && result.length >= this.params.limit) {
         const contexts = await this.find(this.params)
         this.result = new QueryResult(contexts, (x) => x.id)

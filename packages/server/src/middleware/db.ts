@@ -52,7 +52,6 @@ import {
   MessageRequestEventType,
   MessageResponseEventType,
   type MessagesGroupCreatedEvent,
-  type MessagesRemovedEvent,
   type NotificationContextCreatedEvent,
   type NotificationContextRemovedEvent,
   type NotificationContextUpdatedEvent,
@@ -67,9 +66,7 @@ import {
   type RemoveCollaboratorsEvent,
   type RemoveFileEvent,
   type RemoveLabelEvent,
-  type RemoveMessagesEvent,
   type RemoveMessagesGroupEvent,
-  type RemoveMessagesResult,
   type RemoveNotificationContextEvent,
   type RemoveNotificationsEvent,
   type RemoveReactionEvent,
@@ -82,10 +79,11 @@ import {
   type UpdateNotificationEvent,
   type UpdateThreadEvent
 } from '@hcengineering/communication-sdk-types'
-import { systemAccountUuid } from '@hcengineering/core'
 
 import type { Middleware, MiddlewareContext } from '../types'
 import { BaseMiddleware } from './base'
+import { systemAccountUuid } from '@hcengineering/core'
+import { findMessage } from '../triggers/utils.ts'
 
 interface Result {
   responseEvent?: ResponseEvent
@@ -141,8 +139,6 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     switch (event.type) {
       case MessageRequestEventType.CreateMessage:
         return await this.createMessage(event)
-      case MessageRequestEventType.RemoveMessages:
-        return await this.removeMessages(event, session)
       case MessageRequestEventType.CreatePatch:
         return await this.createPatch(event)
       case MessageRequestEventType.CreateReaction:
@@ -246,6 +242,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     )
     const message: Message = {
       id: result.id,
+      removed: false,
       type: event.messageType,
       card: event.card,
       content: event.content,
@@ -269,7 +266,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async createPatch(event: CreatePatchEvent): Promise<Result> {
-    const created = new Date()
+    const created = event.created ?? new Date()
     await this.db.createPatch(
       event.card,
       event.message,
@@ -296,33 +293,6 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
     return {
       responseEvent
-    }
-  }
-
-  private async removeMessages(event: RemoveMessagesEvent, session: SessionData): Promise<Result> {
-    if (event.messages.length === 0)
-      return {
-        result: {
-          messages: []
-        }
-      }
-    const account = session.account
-    const socialIds = systemAccountUuid === account.uuid ? undefined : account.socialIds
-    const deleted = await this.db.removeMessages(event.card, { ids: event.messages, socialIds })
-
-    const responseEvent: MessagesRemovedEvent = {
-      _id: event._id,
-      type: MessageResponseEventType.MessagesRemoved,
-      card: event.card,
-      messages: deleted
-    }
-    const result: RemoveMessagesResult = {
-      messages: deleted
-    }
-
-    return {
-      responseEvent,
-      result
     }
   }
 
@@ -440,6 +410,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         type: NotificationResponseEventType.NotificationCreated,
         notification: {
           id,
+          account: event.account,
           type: event.notificationType,
           content: event.content ?? {},
           context: event.context,
@@ -447,8 +418,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
           messageCreated: event.messageCreated,
           read: event.read ?? false,
           created: event.created
-        },
-        account: event.account
+        }
       }
     }
   }

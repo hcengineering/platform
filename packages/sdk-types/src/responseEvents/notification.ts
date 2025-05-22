@@ -51,7 +51,6 @@ export type NotificationResponseEvent =
 export interface NotificationCreatedEvent extends BaseResponseEvent {
   type: NotificationResponseEventType.NotificationCreated
   notification: Notification
-  account: AccountID
 }
 
 export interface NotificationUpdatedEvent extends BaseResponseEvent {

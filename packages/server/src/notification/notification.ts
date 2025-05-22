@@ -75,7 +75,7 @@ async function removeReactionNotification(
   creator: SocialID
 ): Promise<RequestEvent[]> {
   const result: RequestEvent[] = []
-  const msg = await findMessage(ctx, card, message, messageCreated)
+  const msg = await findMessage(ctx.db, ctx.metadata.filesUrl, ctx.workspace, card, message, messageCreated)
   if (msg === undefined) return result
 
   const messageAccount = await findAccount(ctx, msg.creator)
@@ -138,7 +138,7 @@ async function notifyReaction(
 ): Promise<RequestEvent[]> {
   const result: RequestEvent[] = []
 
-  const msg = await findMessage(ctx, card, message, messageCreated)
+  const msg = await findMessage(ctx.db, ctx.metadata.filesUrl, ctx.workspace, card, message, messageCreated)
   if (msg == null) return result
 
   const messageAccount = await findAccount(ctx, msg.creator)

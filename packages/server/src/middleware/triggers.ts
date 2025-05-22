@@ -31,6 +31,12 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   ) {
     super(context, next)
     this.ctx = context.ctx.newChild('triggers', {})
+    setInterval(
+      () => {
+        this.context.registeredCards.clear()
+      },
+      60 * 60 * 1000
+    ) // 1hour
   }
 
   async response(session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {

@@ -21,19 +21,20 @@ import {
   type SessionData,
   NotificationRequestEventType
 } from '@hcengineering/communication-sdk-types'
-import type {
-  Collaborator,
-  FindCollaboratorsParams,
-  FindLabelsParams,
-  FindMessagesGroupsParams,
-  FindMessagesParams,
-  FindNotificationContextParams,
-  FindNotificationsParams,
-  Label,
-  Message,
-  MessagesGroup,
-  Notification,
-  NotificationContext
+import {
+  type Collaborator,
+  type FindCollaboratorsParams,
+  type FindLabelsParams,
+  type FindMessagesGroupsParams,
+  type FindMessagesParams,
+  type FindNotificationContextParams,
+  type FindNotificationsParams,
+  type Label,
+  type Message,
+  type MessagesGroup,
+  type Notification,
+  type NotificationContext,
+  PatchType
 } from '@hcengineering/communication-types'
 import { z } from 'zod'
 
@@ -102,9 +103,6 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
     switch (event.type) {
       case MessageRequestEventType.CreateMessage:
         this.validate(event, CreateMessageEventSchema)
-        break
-      case MessageRequestEventType.RemoveMessages:
-        this.validate(event, RemoveMessagesEventSchema)
         break
       case MessageRequestEventType.CreatePatch:
         this.validate(event, CreatePatchEventSchema)
@@ -180,7 +178,7 @@ const MessageID = z.string()
 const NotificationID = z.string()
 const MessageType = z.string()
 const MessagesGroup = z.any()
-const PatchType = z.string()
+const PatchTypeSchema = z.enum([PatchType.update, PatchType.remove])
 const RichText = z.string()
 const SocialID = z.string()
 const SortingOrder = z.number()
@@ -289,20 +287,15 @@ const CreateMessageEventSchema = BaseRequestEventSchema.extend({
   id: MessageID.optional()
 }).strict()
 
-const RemoveMessagesEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.RemoveMessages),
-  card: CardID,
-  messages: z.array(MessageID).nonempty()
-}).strict()
-
 const CreatePatchEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.CreatePatch),
-  patchType: PatchType,
+  patchType: PatchTypeSchema,
   card: CardID,
   message: MessageID,
   messageCreated: DateSchema,
   data: PatchData,
-  creator: SocialID
+  creator: SocialID,
+  created: DateSchema.optional()
 }).strict()
 
 const CreateReactionEventSchema = BaseRequestEventSchema.extend({

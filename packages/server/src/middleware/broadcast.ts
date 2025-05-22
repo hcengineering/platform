@@ -190,12 +190,6 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
           Array.from(info.messageQueries.values()),
           new Set(Array.from(info.contextQueries.values()).flatMap((it) => Array.from(it)))
         )
-      case MessageResponseEventType.MessagesRemoved:
-        return this.matchMessagesQuery(
-          { card: event.card, ids: event.messages },
-          Array.from(info.messageQueries.values()),
-          new Set(Array.from(info.contextQueries.values()).flatMap((it) => Array.from(it)))
-        )
       case MessageResponseEventType.ReactionCreated:
         return this.matchMessagesQuery(
           { card: event.card, ids: [event.reaction.message] },
@@ -227,7 +221,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
           new Set()
         )
       case NotificationResponseEventType.NotificationCreated:
-        return info.account === event.account
+        return info.account === event.notification.account
       case NotificationResponseEventType.NotificationsRemoved:
         return info.account === event.account
       case NotificationResponseEventType.NotificationUpdated:

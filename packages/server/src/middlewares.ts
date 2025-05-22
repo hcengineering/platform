@@ -55,7 +55,7 @@ export async function buildMiddlewares(
 ): Promise<Middlewares> {
   const createFns: MiddlewareCreateFn[] = [
     async (context, next) => new ValidateMiddleware(context, next),
-    async (context, next) => new PermissionsMiddleware(context, next),
+    async (context, next) => new PermissionsMiddleware(db, context, next),
     async (context, next) => new DateMiddleware(context, next),
     async (context, next) => new BroadcastMiddleware(broadcast, context, next),
     async (context, next) => new DatabaseMiddleware(db, context, next),

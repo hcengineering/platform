@@ -56,8 +56,7 @@ export interface RestClient {
     content: RichText,
     creator: SocialID
   ) => Promise<void>
-  removeMessage: (card: CardID, message: MessageID) => Promise<MessageID | undefined>
-  removeMessages: (card: CardID, messages: MessageID[]) => Promise<MessageID[]>
+  removeMessage: (card: CardID, message: MessageID, messageCreated: Date, creator: SocialID) => Promise<void>
 
   createFile: (
     card: CardID,

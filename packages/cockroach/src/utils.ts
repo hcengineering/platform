@@ -52,3 +52,32 @@ function escape(value: any): string {
       throw new Error(`Unsupported value type: ${typeof value}`)
   }
 }
+
+export function convertArrayParams(params?: unknown[]): any[] | undefined {
+  if (params === undefined) return undefined
+
+  return params.map((param) => {
+    if (!Array.isArray(param)) return param
+
+    if (param.length === 0) return '{}'
+
+    const sanitized = param.map((item) => {
+      if (item === null || item === undefined) return 'NULL'
+
+      if (typeof item === 'number' || typeof item === 'boolean') {
+        return String(item)
+      }
+
+      if (typeof item === 'string') {
+        const escaped = item.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+        return `"${escaped}"`
+      }
+
+      const json = JSON.stringify(item)
+      const escapedJson = json.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+      return `"${escapedJson}"`
+    })
+
+    return `{${sanitized.join(',')}}`
+  })
+}

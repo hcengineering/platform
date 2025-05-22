@@ -32,8 +32,6 @@ import type { BaseRequestEvent } from './common'
 
 export enum MessageRequestEventType {
   CreateMessage = 'createMessage',
-  RemoveMessages = 'removeMessages',
-
   CreatePatch = 'createPatch',
 
   CreateReaction = 'createReaction',
@@ -57,7 +55,6 @@ export type MessageRequestEvent =
   | CreateReactionEvent
   | CreateThreadEvent
   | RemoveFileEvent
-  | RemoveMessagesEvent
   | RemoveMessagesGroupEvent
   | RemoveReactionEvent
   | UpdateThreadEvent
@@ -75,12 +72,6 @@ export interface CreateMessageEvent extends BaseRequestEvent {
   id?: MessageID
 }
 
-export interface RemoveMessagesEvent extends BaseRequestEvent {
-  type: MessageRequestEventType.RemoveMessages
-  card: CardID
-  messages: MessageID[]
-}
-
 export interface CreatePatchEvent extends BaseRequestEvent {
   type: MessageRequestEventType.CreatePatch
   patchType: PatchType
@@ -89,6 +80,7 @@ export interface CreatePatchEvent extends BaseRequestEvent {
   messageCreated: Date
   data: PatchData
   creator: SocialID
+  created?: Date
 }
 
 export interface CreateReactionEvent extends BaseRequestEvent {
@@ -162,13 +154,9 @@ export interface RemoveMessagesGroupEvent extends BaseRequestEvent {
   blobId: BlobID
 }
 
-export type MessageEventResult = CreateMessageResult | RemoveMessagesResult
+export type MessageEventResult = CreateMessageResult
 
 export interface CreateMessageResult {
   id: MessageID
   created: Date
-}
-
-export interface RemoveMessagesResult {
-  messages: MessageID[]
 }

@@ -35,7 +35,8 @@ import {
   type MessageData,
   type Label,
   type CardType,
-  type BlobMetadata
+  type BlobMetadata,
+  type AccountID
 } from '@hcengineering/communication-types'
 import { applyPatches } from '@hcengineering/communication-shared'
 
@@ -63,6 +64,7 @@ interface RawMessage extends MessageDb {
 }
 
 interface RawNotification extends NotificationDb {
+  account: AccountID
   message_id: MessageID
   message_type?: MessageType
   message_content?: RichText
@@ -108,6 +110,7 @@ export function toMessage(raw: RawMessage): Message {
     content: raw.content,
     creator: raw.creator,
     created: new Date(raw.created),
+    removed: false,
     data: raw.data,
     externalId: raw.external_id,
     thread:
@@ -130,7 +133,7 @@ export function toMessage(raw: RawMessage): Message {
     return rawMessage
   }
 
-  return applyPatches(rawMessage, patches, [PatchType.update])
+  return applyPatches(rawMessage, patches, [PatchType.update, PatchType.remove])
 }
 
 export function toReaction(raw: ReactionDb): Reaction {
@@ -202,7 +205,7 @@ export function toNotificationContext(raw: RawContext): NotificationContext {
     lastNotify: raw.last_notify != null ? new Date(raw.last_notify) : undefined,
     notifications: (raw.notifications ?? [])
       .filter((it) => it.id != null)
-      .map((it) => toNotificationRaw(raw.id, raw.card_id, it))
+      .map((it) => toNotificationRaw(raw.id, raw.card_id, { ...it, account: raw.account }))
   }
 }
 
@@ -260,6 +263,7 @@ function toNotificationRaw(id: ContextID, card: CardID, raw: RawNotification): N
       id: String(raw.message_id) as MessageID,
       type: raw.message_type,
       card,
+      removed: false,
       content: raw.message_content,
       data: raw.message_data,
       externalId: raw.message_external_id,
@@ -272,13 +276,14 @@ function toNotificationRaw(id: ContextID, card: CardID, raw: RawNotification): N
     }
 
     if (patches.length > 0) {
-      message = applyPatches(message, patches, [PatchType.update])
+      message = applyPatches(message, patches, [PatchType.update, PatchType.remove])
     }
   }
 
   if (message != null) {
     return {
       id: String(raw.id) as NotificationID,
+      account: raw.account,
       read: Boolean(raw.read),
       type: raw.type,
       messageId: String(raw.message_id) as MessageID,
@@ -305,6 +310,7 @@ function toNotificationRaw(id: ContextID, card: CardID, raw: RawNotification): N
 
   return {
     id: String(raw.id) as NotificationID,
+    account: raw.account,
     type: raw.type,
     read: Boolean(raw.read),
     messageId: String(raw.message_id) as MessageID,

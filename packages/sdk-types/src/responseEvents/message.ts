@@ -30,7 +30,6 @@ import type { BaseResponseEvent } from './common'
 
 export enum MessageResponseEventType {
   MessageCreated = 'messageCreated',
-  MessagesRemoved = 'messagesRemoved',
 
   PatchCreated = 'patchCreated',
 
@@ -53,7 +52,6 @@ export type MessageResponseEvent =
   | MessageCreatedEvent
   | MessagesGroupCreatedEvent
   | MessagesGroupRemovedEvent
-  | MessagesRemovedEvent
   | PatchCreatedEvent
   | ReactionCreatedEvent
   | ReactionRemovedEvent
@@ -64,12 +62,6 @@ export interface MessageCreatedEvent extends BaseResponseEvent {
   type: MessageResponseEventType.MessageCreated
   cardType: CardType
   message: Message
-}
-
-export interface MessagesRemovedEvent extends BaseResponseEvent {
-  type: MessageResponseEventType.MessagesRemoved
-  card: CardID
-  messages: MessageID[]
 }
 
 export interface PatchCreatedEvent extends BaseResponseEvent {

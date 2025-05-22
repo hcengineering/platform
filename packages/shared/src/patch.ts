@@ -34,14 +34,24 @@ export function applyPatches(message: Message, patches: Patch[], allowedPatchTyp
 }
 
 export function applyPatch(message: Message, patch: Patch, allowedPatchTypes: PatchType[] = []): Message {
-  if (allowedPatchTypes.length > 0 && !allowedPatchTypes.includes(patch.type)) return message
+  if ((allowedPatchTypes.length > 0 && !allowedPatchTypes.includes(patch.type)) || message.removed) return message
   switch (patch.type) {
     case PatchType.update:
       return {
         ...message,
+        type: patch.data.type ?? message.type,
         edited: patch.created,
         content: patch.data.content ?? message.content,
         data: patch.data.data ?? message.data
+      }
+    case PatchType.remove:
+      return {
+        ...message,
+        content: '',
+        files: [],
+        reactions: [],
+        thread: undefined,
+        removed: true
       }
     case PatchType.addReaction:
       return addReaction(message, {
@@ -64,6 +74,8 @@ export function applyPatch(message: Message, patch: Patch, allowedPatchTypes: Pa
 }
 
 function addReaction(message: Message, reaction: Reaction): Message {
+  const isExist = message.reactions.some((it) => it.reaction === reaction.reaction && it.creator === reaction.creator)
+  if (isExist) return message
   message.reactions.push(reaction)
   return message
 }
@@ -108,6 +120,8 @@ function updateThread(message: Message, data: UpdateThreadPatchData, created: Da
 }
 
 function addFile(message: Message, data: AddFilePatchData, created: Date, creator: SocialID): Message {
+  const isExists = message.files.some((it) => it.blobId === data.blobId)
+  if (isExists !== undefined) return message
   message.files.push({
     ...data,
     card: message.card,

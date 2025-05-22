@@ -19,8 +19,7 @@ import {
   MessageRequestEventType,
   type EventResult,
   type RequestEvent,
-  type CreateMessageResult,
-  type RemoveMessagesResult
+  type CreateMessageResult
 } from '@hcengineering/communication-sdk-types'
 import {
   type FindMessagesGroupsParams,
@@ -139,18 +138,16 @@ class RestClientImpl implements RestClient {
     })
   }
 
-  async removeMessage(card: CardID, message: MessageID): Promise<MessageID | undefined> {
-    return (await this.removeMessages(card, [message]))[0]
-  }
-
-  async removeMessages(card: CardID, messages: MessageID[]): Promise<MessageID[]> {
-    const result = await this.event({
-      type: MessageRequestEventType.RemoveMessages,
+  async removeMessage(card: CardID, message: MessageID, messageCreated: Date, creator: SocialID): Promise<void> {
+    await this.event({
+      type: MessageRequestEventType.CreatePatch,
+      patchType: PatchType.remove,
+      messageCreated,
       card,
-      messages
+      message,
+      creator,
+      data: {}
     })
-
-    return (result as RemoveMessagesResult).messages
   }
 
   async createFile(
