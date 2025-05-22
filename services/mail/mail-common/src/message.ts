@@ -55,7 +55,9 @@ export async function createMessages (
   token: string,
   wsInfo: WorkspaceLoginInfo,
   message: EmailMessage,
-  attachments: Attachment[]
+  attachments: Attachment[],
+  // Persons who should receive messages in the platform, all existing accounts from email addresses by default
+  targetPersons?: PersonId[]
 ): Promise<void> {
   const { mailId, from, subject, replyTo } = message
   const tos = [...(message.to ?? []), ...(message.copy ?? [])]
@@ -82,7 +84,7 @@ export async function createMessages (
   }
 
   const modifiedBy = fromPerson.socialId
-  const participants = [fromPerson.socialId, ...toPersons.map((p) => p.socialId)]
+  const participants = targetPersons ?? [fromPerson.socialId, ...toPersons.map((p) => p.socialId)]
   const content = getMdContent(ctx, message)
 
   const attachedBlobs: Attachment[] = []
