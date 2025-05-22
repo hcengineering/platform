@@ -174,7 +174,7 @@ class Client {
       card,
       message,
       messageCreated,
-      data: { },
+      data: {},
       creator: this.getSocialId()
     }
     await this.sendEvent(event)

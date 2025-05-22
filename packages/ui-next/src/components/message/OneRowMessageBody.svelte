@@ -37,32 +37,32 @@
   }
 
   let isDeleted = false
-  $:isDeleted = (message.type === MessageType.Thread && message.thread == null) || message.removed
+  $: isDeleted = (message.type === MessageType.Thread && message.thread == null) || message.removed
 </script>
 
 <div class="message__body">
   {#if !hideAvatar}
     <div class="message__avatar">
       {#if !isDeleted}
-      <PersonPreviewProvider value={author}>
-        <Avatar name={author?.name} person={author} size="x-small" />
-      </PersonPreviewProvider>
-        {:else }
+        <PersonPreviewProvider value={author}>
+          <Avatar name={author?.name} person={author} size="x-small" />
+        </PersonPreviewProvider>
+      {:else}
         <Avatar icon={IconDelete} size="x-small" />
-        {/if}
+      {/if}
     </div>
   {/if}
   {#if !isDeleted}
-  <div class="message__header">
-    <PersonPreviewProvider value={author}>
-      <div class="message__username">
-        {formatName(author?.name ?? '')}
+    <div class="message__header">
+      <PersonPreviewProvider value={author}>
+        <div class="message__username">
+          {formatName(author?.name ?? '')}
+        </div>
+      </PersonPreviewProvider>
+      <div class="message__date">
+        {formatDate(message.created)}
       </div>
-    </PersonPreviewProvider>
-    <div class="message__date">
-      {formatDate(message.created)}
     </div>
-  </div>
   {/if}
 
   <div class="message__text">
@@ -70,10 +70,10 @@
   </div>
 </div>
 {#if !isDeleted}
-<div class="message__footer">
-  <MessageFooter {message} {replies} />
-</div>
-  {/if}
+  <div class="message__footer">
+    <MessageFooter {message} {replies} />
+  </div>
+{/if}
 
 <style lang="scss">
   .message__body {

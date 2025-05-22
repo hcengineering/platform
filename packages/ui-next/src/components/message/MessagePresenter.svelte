@@ -49,7 +49,7 @@
   let isDeleted = false
   let author: Person | undefined
 
-  $:isDeleted = message.removed || (message.type === MessageType.Thread && message.thread == null)
+  $: isDeleted = message.removed || (message.type === MessageType.Thread && message.thread == null)
   $: void updateAuthor(message.creator)
 
   function canEdit (): boolean {
@@ -224,11 +224,9 @@
     position: relative;
     padding: 0.5rem 4rem;
 
-    transition: background-color 0s ease 0s;
-
     &:hover:not(.noHover) {
       background: var(--global-ui-BackgroundColor);
-      transition: background-color 0s ease 0.05s;
+
       .message__actions {
         visibility: visible;
       }

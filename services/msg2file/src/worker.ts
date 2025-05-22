@@ -21,7 +21,6 @@ import {
   type MessageID,
   type WorkspaceID,
   SortingOrder,
-  type Message,
   MessagesGroup,
   BlobID
 } from '@hcengineering/communication-types'
@@ -183,7 +182,13 @@ async function applyPatchesToGroup (
         return applyPatches(message, patches)
       }
     })
-    const blob = await uploadGroupFile(ctx, storage, workspace, parsedFile.metadata, updatedMessages.map(deserializeMessage))
+    const blob = await uploadGroupFile(
+      ctx,
+      storage,
+      workspace,
+      parsedFile.metadata,
+      updatedMessages.map(deserializeMessage)
+    )
     await createGroup(
       client,
       group.card,

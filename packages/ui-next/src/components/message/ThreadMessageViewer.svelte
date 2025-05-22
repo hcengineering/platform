@@ -52,19 +52,19 @@
     threadCard = undefined
   }
 
-  $:threadClass = threadCard?._class ?? thread?.threadType ?? '' as Ref<Class<Card>>
+  $: threadClass = threadCard?._class ?? thread?.threadType ?? ('' as Ref<Class<Card>>)
   $: label = hierarchy.hasClass(threadClass) ? hierarchy.getClass(threadClass).label : undefined
-  $:isDeleted = isLoaded && threadCard == null
+  $: isDeleted = isLoaded && threadCard == null
 </script>
 
 <div class="thread-view">
   {#if label && !isDeleted}
-  <div class="thread-type">
-    <span class="overflow-label">
-    <Label {label} />
+    <div class="thread-type">
+      <span class="overflow-label">
+        <Label {label} />
       </span>
-  </div>
-    {/if}
+    </div>
+  {/if}
   {#if threadCard}
     <ObjectPresenter
       objectId={threadCard._id}
@@ -73,7 +73,7 @@
       colorInherit
       shouldShowAvatar={false}
     />
-    {:else if isDeleted}
+  {:else if isDeleted}
     <div class="deletedText">
       <Label label={uiNext.string.ThreadWasRemoved} />
     </div>

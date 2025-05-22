@@ -33,18 +33,16 @@
   <ThreadMessageViewer {message} thread={message.thread} />
 {:else if isActivityMessage(message)}
   <ActivityMessageViewer {message} {card} />
-{:else}
-  {#if message.removed}
-    <span class="overflow-label removed-label">
+{:else if message.removed}
+  <span class="overflow-label removed-label">
     <Label label={uiNext.string.MessageWasRemoved} />
-    </span>
-  {:else}
-    <MarkupMessageViewer message={toMarkup(message.content)} />
-  {/if}
+  </span>
+{:else}
+  <MarkupMessageViewer message={toMarkup(message.content)} />
 {/if}
 
 <style lang="scss">
   .removed-label {
     color: var(--theme-text-placeholder-color);
   }
-  </style>
+</style>

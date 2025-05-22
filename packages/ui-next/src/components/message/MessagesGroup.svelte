@@ -47,8 +47,9 @@
   <div class="messages-group__messages">
     {#each messages as message, index (message.id)}
       {@const previousMessage = messages[index - 1]}
-      {@const compact = !message.removed &&
-              !previousMessage?.removed &&
+      {@const compact =
+        !message.removed &&
+        !previousMessage?.removed &&
         previousMessage !== undefined &&
         previousMessage.creator === message.creator &&
         previousMessage.type === message.type &&

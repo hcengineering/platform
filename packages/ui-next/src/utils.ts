@@ -24,7 +24,7 @@ import {
 import { markupToJSON, jsonToMarkup, markupToText } from '@hcengineering/text'
 import { showPopup } from '@hcengineering/ui'
 import { markupToMarkdown, markdownToMarkup } from '@hcengineering/text-markdown'
-import {MessageType, type Message } from '@hcengineering/communication-types'
+import { MessageType, type Message } from '@hcengineering/communication-types'
 import { getClient, getCommunicationClient } from '@hcengineering/presentation'
 import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
 import cardPlugin, { type Card } from '@hcengineering/card'

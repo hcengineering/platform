@@ -20,7 +20,6 @@
   import { Card } from '@hcengineering/card'
 
   import uiNext from '../../plugin'
-  import { toMarkup } from '../../utils'
   import MessageInput from './MessageInput.svelte'
   import Label from '../Label.svelte'
   import MessageContentViewer from './MessageContentViewer.svelte'
@@ -45,11 +44,11 @@
 {#if compact}
   <div class="message__body">
     <div class="time-container">
-    <div class="message__time message--time_hoverable">
-      <div class="message__date">
-        {formatDate(message.created)}
+      <div class="message__time message--time_hoverable">
+        <div class="message__date">
+          {formatDate(message.created)}
+        </div>
       </div>
-    </div>
     </div>
 
     <div class="message__content">
@@ -61,7 +60,6 @@
         <MessageInput
           {card}
           {message}
-          content={toMarkup(message.content)}
           onCancel={() => {
             isEditing = false
           }}
@@ -106,7 +104,6 @@
         <MessageInput
           {card}
           {message}
-          content={toMarkup(message.content)}
           onCancel={() => {
             isEditing = false
           }}
