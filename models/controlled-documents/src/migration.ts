@@ -473,15 +473,14 @@ async function migrateInvalidDocumentState (client: MigrationClient): Promise<vo
 
 async function migrateCancelDuplicateActiveRequests (client: MigrationClient): Promise<void> {
   const reviews = await client.find<DocumentReviewRequest>(DOMAIN_REQUEST, {
-    _class: documents.class.DocumentReviewRequest,
-    status: RequestStatus.Active
+    _class: documents.class.DocumentReviewRequest
   })
   const approvals = await client.find<DocumentApprovalRequest>(DOMAIN_REQUEST, {
-    _class: documents.class.DocumentApprovalRequest,
-    status: RequestStatus.Active
+    _class: documents.class.DocumentApprovalRequest
   })
 
-  const requests = [...reviews, ...approvals]
+  const requests = [...reviews, ...approvals].sort((a, b) => (b.createdOn ?? 0) - (a.createdOn ?? 0))
+
   const requestsByDoc = new Map<Ref<ControlledDocument>, (DocumentApprovalRequest | DocumentReviewRequest)[]>()
   for (const request of requests) {
     const attachedTo = request.attachedTo as Ref<ControlledDocument>
@@ -498,7 +497,8 @@ async function migrateCancelDuplicateActiveRequests (client: MigrationClient): P
   for (const entry of requestsByDoc.entries()) {
     const requests = entry[1]
     if (requests.length < 2) continue
-    requestsToCancel.push(...requests.slice(1))
+    const tail = requests.slice(1).filter((r) => r.status === RequestStatus.Active)
+    requestsToCancel.push(...tail)
   }
 
   const operations: {
