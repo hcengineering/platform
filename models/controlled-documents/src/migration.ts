@@ -17,8 +17,10 @@ import {
   ControlledDocumentState,
   createChangeControl,
   createDocumentTemplate,
+  type DocumentApprovalRequest,
   type DocumentCategory,
   type DocumentMeta,
+  type DocumentReviewRequest,
   documentsId,
   DocumentState,
   type ProjectMeta
@@ -57,6 +59,8 @@ import tags from '@hcengineering/tags'
 import { compareDocumentVersions } from '@hcengineering/controlled-documents/src'
 import { makeRank } from '@hcengineering/rank'
 import documents, { DOMAIN_DOCUMENTS } from './index'
+import { DOMAIN_REQUEST } from '@hcengineering/model-request'
+import { RequestStatus } from '@hcengineering/request'
 
 async function createTemplatesSpace (tx: TxOperations): Promise<void> {
   const existingSpace = await tx.findOne(documents.class.DocumentSpace, {
@@ -515,6 +519,50 @@ async function migrateInvalidPlannedEffectiveDate (client: MigrationClient): Pro
   await client.bulk(DOMAIN_DOCUMENTS, operations)
 }
 
+async function migrateCancelDuplicateActiveRequests (client: MigrationClient): Promise<void> {
+  const reviews = await client.find<DocumentReviewRequest>(DOMAIN_REQUEST, {
+    _class: documents.class.DocumentReviewRequest
+  })
+  const approvals = await client.find<DocumentApprovalRequest>(DOMAIN_REQUEST, {
+    _class: documents.class.DocumentApprovalRequest
+  })
+
+  const requests = [...reviews, ...approvals].sort((a, b) => (b.createdOn ?? 0) - (a.createdOn ?? 0))
+
+  const requestsByDoc = new Map<Ref<ControlledDocument>, (DocumentApprovalRequest | DocumentReviewRequest)[]>()
+  for (const request of requests) {
+    const attachedTo = request.attachedTo as Ref<ControlledDocument>
+    const entry = requestsByDoc.get(attachedTo)
+    if (entry === undefined) {
+      requestsByDoc.set(attachedTo, [request])
+    } else {
+      entry.push(request)
+    }
+  }
+
+  const requestsToCancel: (DocumentApprovalRequest | DocumentReviewRequest)[] = []
+
+  for (const entry of requestsByDoc.entries()) {
+    const requests = entry[1]
+    if (requests.length < 2) continue
+    const tail = requests.slice(1).filter((r) => r.status === RequestStatus.Active)
+    requestsToCancel.push(...tail)
+  }
+
+  const operations: {
+    filter: MigrationDocumentQuery<DocumentApprovalRequest | DocumentReviewRequest>
+    update: MigrateUpdate<DocumentApprovalRequest | DocumentReviewRequest>
+  }[] = []
+  for (const doc of requestsToCancel) {
+    operations.push({
+      filter: { _id: doc._id },
+      update: { status: RequestStatus.Cancelled }
+    })
+  }
+
+  await client.bulk(DOMAIN_REQUEST, operations)
+}
+
 export const documentsOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
     await tryMigrate(mode, client, documentsId, [
@@ -552,6 +600,10 @@ export const documentsOperation: MigrateOperation = {
       {
         state: 'migrateInvalidPlannedEffectiveDate',
         func: migrateInvalidPlannedEffectiveDate
+      },
+      {
+        state: 'migrateCancelDuplicateActiveRequests',
+        func: migrateCancelDuplicateActiveRequests
       }
     ])
   },
