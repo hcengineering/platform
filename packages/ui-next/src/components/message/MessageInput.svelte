@@ -75,7 +75,7 @@
     draft = message != null ? messageToDraft(message) : getDraft(card._id)
   }
 
-  function _saveDraft (draft): void {
+  function _saveDraft (draft: MessageDraft): void {
     if (message === undefined) {
       saveDraft(card._id, draft)
     }
@@ -275,7 +275,12 @@
     }
   }
 
+  function isEmptyDraft (): boolean {
+    return isEmptyMarkup(draft.content) && draft.files.length === 0
+  }
+
   function hasChanges (files: UploadedFile[], message: Message | undefined): boolean {
+    if (isEmptyDraft()) return false
     if (message === undefined) return files.length > 0
     if (message.files.length !== files.length) return true
     if (message.files.some((it) => !files.some((f) => f.blobId === it.blobId))) return true
