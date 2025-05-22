@@ -15,10 +15,10 @@
 
 <script lang="ts">
   import { getPersonBySocialId, Person } from '@hcengineering/contact'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, getCommunicationClient } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
   import { getCurrentAccount } from '@hcengineering/core'
-  import { getEventPositionElement, showPopup, Action as MenuAction } from '@hcengineering/ui'
+  import ui, { getEventPositionElement, showPopup, Action as MenuAction, IconDelete } from '@hcengineering/ui'
   import { personByPersonIdStore } from '@hcengineering/contact-resources'
   import type { SocialID } from '@hcengineering/communication-types'
   import { Message, MessageType } from '@hcengineering/communication-types'
@@ -42,17 +42,27 @@
   export let hideAvatar: boolean = false
 
   const client = getClient()
+  const communicationClient = getCommunicationClient()
   const me = getCurrentAccount()
 
   let isEditing = false
+  let isDeleted = false
   let author: Person | undefined
 
+  $:isDeleted = message.removed || (message.type === MessageType.Thread && message.thread == null)
   $: void updateAuthor(message.creator)
 
   function canEdit (): boolean {
     if (!editable) return false
     if (message.type !== MessageType.Message) return false
     if (message.thread != null) return false
+
+    return me.socialIds.includes(message.creator)
+  }
+
+  function canRemove (): boolean {
+    if (!editable) return false
+    if (message.type !== MessageType.Message) return false
 
     return me.socialIds.includes(message.creator)
   }
@@ -72,6 +82,12 @@
   async function handleEdit (): Promise<void> {
     if (!canEdit()) return
     isEditing = true
+  }
+
+  async function handleRemove (): Promise<void> {
+    if (!canRemove()) return
+    message.removed = true
+    await communicationClient.removeMessage(message.card, message.id, message.created)
   }
 
   function isInside (x: number, y: number, rect: DOMRect): boolean {
@@ -147,6 +163,14 @@
         })
       }
 
+      if (canRemove()) {
+        actions.push({
+          label: ui.string.Remove,
+          icon: IconDelete,
+          action: handleRemove
+        })
+      }
+
       showPopup(Menu, { actions }, getEventPositionElement(event), () => {})
     }
   }
@@ -161,19 +185,21 @@
 <div
   class="message"
   id={`${message.id}`}
-  on:contextmenu={editable && !isEditing ? handleContextMenu : undefined}
+  on:contextmenu={editable && !isEditing && !isDeleted ? handleContextMenu : undefined}
   class:active={isActionsOpened && !isEditing}
   class:noHover={!editable}
   style:padding
 >
-  {#if !isEditing && editable}
+  {#if !isEditing && editable && !isDeleted}
     <div class="message__actions" class:opened={isActionsOpened}>
       <MessageActionsPanel
         {message}
         editable={canEdit()}
         canReply={canReply()}
+        canRemove={canRemove()}
         bind:isOpened={isActionsOpened}
         on:edit={handleEdit}
+        on:remove={handleRemove}
         on:reply={() => {
           void replyToThread(message, card)
         }}
@@ -181,7 +207,7 @@
     </div>
   {/if}
 
-  {#if isThread || message.type === MessageType.Activity}
+  {#if isThread || message.type === MessageType.Activity || message.removed}
     <OneRowMessageBody {message} {card} {author} {replies} {hideAvatar} />
   {:else}
     <MessageBody {message} {card} {author} bind:isEditing {compact} {replies} {hideAvatar} />

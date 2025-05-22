@@ -37,7 +37,7 @@
   }
 
   let isDeleted = false
-  $:isDeleted = message.type === MessageType.Thread && message.thread == null
+  $:isDeleted = (message.type === MessageType.Thread && message.thread == null) || message.removed
 </script>
 
 <div class="message__body">

@@ -28,6 +28,10 @@
     "Yesterday": "Včera",
     "YesterdayAt": "Včera v {time}",
     "AndMore": "a {count} dalších",
-    "IsTyping": "{count, plural, =1 {píše} other {píší}}"
+    "IsTyping": "{count, plural, =1 {píše} other {píší}}",
+    "Loading": "Načítání...",
+    "MessageIn": "Zpráva #{title}",
+    "ThreadWasDeleted": "Tato vlákno byla smazána.",
+    "MessageWasRemoved": "Tato zpráva byla odstraněna."
   }
 }

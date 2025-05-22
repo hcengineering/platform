@@ -167,6 +167,19 @@ class Client {
     await this.sendEvent(event)
   }
 
+  async removeMessage (card: CardID, message: MessageID, messageCreated: Date): Promise<void> {
+    const event: CreatePatchEvent = {
+      type: MessageRequestEventType.CreatePatch,
+      patchType: PatchType.remove,
+      card,
+      message,
+      messageCreated,
+      data: { },
+      creator: this.getSocialId()
+    }
+    await this.sendEvent(event)
+  }
+
   async createReaction (card: CardID, message: MessageID, messageCreated: Date, reaction: string): Promise<void> {
     const event: CreateReactionEvent = {
       type: MessageRequestEventType.CreateReaction,

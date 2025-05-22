@@ -19,7 +19,8 @@
   import cardPlugin, { Card } from '@hcengineering/card'
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import { Label } from '@hcengineering/ui'
-  import {Class, type Ref} from '@hcengineering/core'
+  import { Class, type Ref } from '@hcengineering/core'
+  import uiNext from '../../plugin'
 
   export let message: Message
   export let thread: Thread | undefined
@@ -59,7 +60,9 @@
 <div class="thread-view">
   {#if label && !isDeleted}
   <div class="thread-type">
+    <span class="overflow-label">
     <Label {label} />
+      </span>
   </div>
     {/if}
   {#if threadCard}
@@ -72,7 +75,7 @@
     />
     {:else if isDeleted}
     <div class="deletedText">
-      This thread was deleted.
+      <Label label={uiNext.string.ThreadWasRemoved} />
     </div>
   {/if}
 </div>
