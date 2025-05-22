@@ -35,7 +35,7 @@ import core, {
 import { TriggerControl } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
 import view from '@hcengineering/view'
-import { NotificationRequestEventType } from '@hcengineering/communication-sdk-types'
+import { CardRequestEventType, NotificationRequestEventType } from '@hcengineering/communication-sdk-types'
 import { getEmployee, getPersonSpaces } from '@hcengineering/server-contact'
 import contact from '@hcengineering/contact'
 
@@ -277,6 +277,14 @@ async function OnCardRemove (ctx: TxRemoveDoc<Card>[], control: TriggerControl):
     )
   }
 
+  void control.communicationApi?.event(
+    { account: systemAccount },
+    {
+      type: CardRequestEventType.RemoveCard,
+      card: removedCard._id
+    }
+  )
+
   return res
 }
 
@@ -336,6 +344,16 @@ async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl):
   }
   if (updateTx.operations.title !== undefined) {
     res.push(...(await updateParentInfoName(control, doc._id, updateTx.operations.title, doc._id)))
+  }
+  if ((updateTx.operations as any)._class !== undefined) {
+    void control.communicationApi?.event(
+      { account: systemAccount },
+      {
+        type: CardRequestEventType.UpdateCardType,
+        card: doc._id,
+        cardType: (updateTx.operations as any)._class
+      }
+    )
   }
 
   return res

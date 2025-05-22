@@ -28,6 +28,7 @@
   export let kind: ButtonKind = 'regular'
   export let size: ButtonSize = 'medium'
   export let isCard: boolean = false
+  export let width: string | undefined = undefined
 
   const _classes = isCard ? [card.class.Card, contactPlugin.class.Contact] : [core.class.Doc]
   const exclude = !isCard ? [card.class.Card] : []
@@ -74,13 +75,11 @@
   $: refClass !== undefined && dispatch('change', { type: TypeRef(refClass) })
 </script>
 
-<div class="hulyModal-content__settingsSet-line">
-  <span class="label">
-    <Label label={core.string.Class} />
-  </span>
-  {#if editable}
-    <DropdownLabelsIntl label={core.string.Class} items={classes} width="8rem" bind:selected={refClass} {kind} {size} />
-  {:else if selected}
-    <Label label={selected.label} />
-  {/if}
-</div>
+<span class="label">
+  <Label label={core.string.Class} />
+</span>
+{#if editable}
+  <DropdownLabelsIntl label={core.string.Class} items={classes} {width} bind:selected={refClass} {kind} {size} />
+{:else if selected}
+  <Label label={selected.label} />
+{/if}

@@ -696,7 +696,8 @@ describe('MongoAccountDB', () => {
         hasNext: jest.fn().mockReturnValue(false),
         close: jest.fn()
       })),
-      updateOne: jest.fn()
+      updateOne: jest.fn(),
+      ensureIndices: jest.fn()
     }
 
     mockWorkspace = {

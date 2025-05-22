@@ -625,6 +625,7 @@ export interface BlobType {
   type: string
 
   name: string
+  size: number
 
   metadata?: BlobMetadata
 }

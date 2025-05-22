@@ -211,7 +211,7 @@
               </a>
             </div>
             <div class="info-content flex-row-center">
-              {#if isAttachment(value)}{filesize(value.size, { spacer: '' })}{/if}
+              {#if value.size != null}{filesize(value.size, { spacer: '' })}{/if}
               <span class="actions inline-flex clear-mins ml-1 gap-1">
                 <span>•</span>
                 <a class="no-line colorInherit" href={valueRef.src} download={value.name} bind:this={download}>

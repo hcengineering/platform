@@ -273,10 +273,14 @@ export class WatchController {
         return
       }
     }
-    if (calendarId != null) {
-      await watchCalendar(user, email, calendarId, googleClient)
-    } else {
-      await watchCalendars(user, email, googleClient)
+    try {
+      if (calendarId != null) {
+        await watchCalendar(user, email, calendarId, googleClient)
+      } else {
+        await watchCalendars(user, email, googleClient)
+      }
+    } catch (err: any) {
+      console.error('Watch add error', user.workspace, user.userId, calendarId, err)
     }
   }
 }

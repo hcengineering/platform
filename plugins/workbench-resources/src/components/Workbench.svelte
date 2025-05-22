@@ -873,7 +873,7 @@
         {#if account.role !== AccountRole.ReadOnlyGuest}
           <AppItem
             icon={IconSettings}
-            label={setting.string.Settings}
+            label={setting.string.Customize}
             size={appsMini ? 'small' : 'large'}
             on:click={() => showPopup(AppSwitcher, { apps }, popupPosition)}
           />

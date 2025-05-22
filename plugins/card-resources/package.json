@@ -41,7 +41,7 @@
   "dependencies": {
     "@hcengineering/presence": "^0.6.0",
     "@hcengineering/presentation": "^0.6.3",
-    "@hcengineering/communication-types": "0.1.180",
+    "@hcengineering/communication-types": "0.1.189",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/setting": "^0.6.17",
@@ -69,6 +69,7 @@
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/ui-next": "^0.6.0",
     "@hcengineering/communication": "^0.6.0",
+    "@hcengineering/preference": "^0.6.13",
     "fast-equals": "^5.2.2",
     "svelte": "^4.2.19"
   }

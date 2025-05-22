@@ -49,10 +49,14 @@ async function shouldMigrate (
   }
 }
 
-export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: AccountDB): Promise<void> {
+export async function migrateFromOldAccounts (
+  oldAccsUrl: string,
+  accountDB: AccountDB,
+  oldAccsNs?: string
+): Promise<void> {
   const migrationKey = 'migrate-from-old-accounts'
   // Check if old accounts exist
-  const [oldAccountDb, closeOldDb] = await getMongoAccountDB(oldAccsUrl)
+  const [oldAccountDb, closeOldDb] = await getMongoAccountDB(oldAccsUrl, oldAccsNs)
   let processingHandle
 
   try {
@@ -234,6 +238,7 @@ async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promi
 
     await createAccount(accountDB, personUuid, account.confirmed, false, account.createdOn)
     if (account.hash != null && account.salt != null) {
+      // NOTE: for Mongo->CR migration use db method to update password instead
       await accountDB.account.updateOne({ uuid: personUuid as AccountUuid }, { hash: account.hash, salt: account.salt })
     }
   } else {

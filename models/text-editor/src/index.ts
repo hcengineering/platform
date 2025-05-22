@@ -33,6 +33,7 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { EditorKitOptions } from '@hcengineering/text-editor-resources/src/kits/editor-kit'
 import textEditor from './plugin'
+import view from '@hcengineering/view'
 
 export { textEditorOperation } from './migration'
 export { default } from './plugin'
@@ -461,5 +462,37 @@ export function createModel (builder: Builder): void {
     label: textEditor.string.Comment,
     category: 110,
     index: 10
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'preview',
+    action: textEditor.function.CopyPreviewLinkAction,
+    icon: view.icon.Copy,
+    visibilityTester: textEditor.function.ShouldShowCopyPreviewLinkAction,
+    label: view.string.CopyToClipboard,
+    category: 115,
+    index: 10
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'preview',
+    action: textEditor.function.ConvertToLinkPreviewAction,
+    icon: textEditor.icon.LinkPreview,
+    visibilityTester: textEditor.function.ShouldShowConvertToLinkPreviewAction,
+    isActive: textEditor.function.ConvertToLinkPreviewActionIsActive,
+    label: textEditor.string.ConvertToLinkPreview,
+    category: 120,
+    index: 10
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'preview',
+    action: textEditor.function.ConvertToEmbedPreviewAction,
+    icon: textEditor.icon.EmbedPreview,
+    visibilityTester: textEditor.function.ShouldShowConvertToEmbedPreviewAction,
+    isActive: textEditor.function.ConvertToEmbedPreviewActionIsActive,
+    label: textEditor.string.ConvertToEmbedPreview,
+    category: 120,
+    index: 20
   })
 }

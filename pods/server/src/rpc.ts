@@ -344,8 +344,21 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
           name: combineName(firstName, lastName),
           personUuid: uuid
         })
+        const createUniquePersonTx = txFactory.createTxApplyIf(
+          core.space.Workspace,
+          socialId,
+          [],
+          [
+            {
+              _class: contact.class.Person,
+              query: { personUuid: uuid }
+            }
+          ],
+          [createPersonTx],
+          'createLocalPerson'
+        )
 
-        await session.txRaw(ctx, createPersonTx)
+        await session.txRaw(ctx, createUniquePersonTx)
         personRef = createPersonTx.objectId
       }
 

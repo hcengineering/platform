@@ -2,6 +2,8 @@
   "string": {
     "Messages": "Mensajes",
     "FirstMessages": "Primeros Mensajes",
-    "LatestMessages": "Últimos Mensajes"
+    "LatestMessages": "Últimos Mensajes",
+    "Subscribe": "Suscribirse",
+    "Unsubscribe": "Anular suscripción"
   }
 }

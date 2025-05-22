@@ -26,6 +26,7 @@ import {
 } from '@hcengineering/core'
 import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
+import { Preference } from '@hcengineering/preference'
 
 export * from './analytics'
 
@@ -88,6 +89,11 @@ export interface CardViewDefaults extends MasterTag {
   defaultNavigation?: string
 }
 
+export interface FavoriteCard extends Preference {
+  attachedTo: Ref<Card>
+  application: string
+}
+
 /**
  * @public
  */
@@ -106,7 +112,8 @@ const cardPlugin = plugin(cardId, {
     MasterTagEditorSection: '' as Ref<Class<MasterTagEditorSection>>,
     CardSpace: '' as Ref<Class<CardSpace>>,
     Role: '' as Ref<Class<Role>>,
-    CardSection: '' as Ref<Class<CardSection>>
+    CardSection: '' as Ref<Class<CardSection>>,
+    FavoriteCard: '' as Ref<Class<FavoriteCard>>
   },
   mixin: {
     CardViewDefaults: '' as Ref<Mixin<CardViewDefaults>>
@@ -139,7 +146,8 @@ const cardPlugin = plugin(cardId, {
     Card: '' as IntlString,
     Cards: '' as IntlString,
     CardApplication: '' as IntlString,
-    Views: '' as IntlString
+    Views: '' as IntlString,
+    Labels: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,
@@ -150,6 +158,9 @@ const cardPlugin = plugin(cardId, {
   },
   ids: {
     CardWidget: '' as Ref<Doc>
+  },
+  component: {
+    LabelsPresenter: '' as AnyComponent
   }
 })
 

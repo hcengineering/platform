@@ -35,7 +35,7 @@
   export let skipLabel = false
   export let actions: Action[] = []
   export let hoverable = true
-  export let hoverStyles: 'borderedHover' | 'filledHover' | 'none' = 'borderedHover'
+  export let hoverStyles: 'filledHover' | 'none' = 'filledHover'
   export let withShowMore: boolean = true
   export let hideLink = false
   export let compact = false

@@ -25,6 +25,7 @@
   export let editable: boolean = true
   export let kind: ButtonKind = 'regular'
   export let size: ButtonSize = 'medium'
+  export let width: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const items: DropdownIntlItem[] = [
@@ -52,23 +53,22 @@
   })
 </script>
 
-<div class="hulyModal-content__settingsSet-line">
-  <span class="label">
-    <Label label={setting.string.DateMode} />
-  </span>
-  {#if editable}
-    <DropdownLabelsIntl
-      {selected}
-      {items}
-      {kind}
-      {size}
-      label={setting.string.DateMode}
-      on:selected={(res) => {
-        selected = res.detail
-        dispatch('change', { type: TypeDate(res.detail) })
-      }}
-    />
-  {:else}
-    <Label {label} />
-  {/if}
-</div>
+<span class="label">
+  <Label label={setting.string.DateMode} />
+</span>
+{#if editable}
+  <DropdownLabelsIntl
+    {selected}
+    {items}
+    {kind}
+    {size}
+    {width}
+    label={setting.string.DateMode}
+    on:selected={(res) => {
+      selected = res.detail
+      dispatch('change', { type: TypeDate(res.detail) })
+    }}
+  />
+{:else}
+  <Label {label} />
+{/if}

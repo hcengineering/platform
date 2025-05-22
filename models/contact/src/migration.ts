@@ -459,6 +459,33 @@ async function createUserProfiles (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fixSocialIdCase (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('contact fixSocialIdCase', {})
+  ctx.info('Fixing social id case...')
+
+  const socialIds = await client.traverse<SocialIdentity>(DOMAIN_CHANNEL, {
+    _class: contact.class.SocialIdentity
+  })
+
+  let updated = 0
+  while (true) {
+    const docs = await socialIds.next(200)
+    if (docs === null || docs?.length === 0) {
+      break
+    }
+
+    for (const d of docs) {
+      const newKey = d.key.toLowerCase()
+      const newVal = d.value.toLowerCase()
+      if (newKey !== d.key || newVal !== d.value) {
+        await client.update(DOMAIN_CHANNEL, { _id: d._id }, { key: newKey, value: newVal })
+        updated++
+      }
+    }
+  }
+  ctx.info('Finished fixing social id case. Total updated:', { updated })
+}
+
 export const contactOperation: MigrateOperation = {
   async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
     await tryMigrate(mode, client, contactId, [
@@ -640,6 +667,11 @@ export const contactOperation: MigrateOperation = {
         state: 'create-user-profiles',
         mode: 'upgrade',
         func: createUserProfiles
+      },
+      {
+        state: 'fix-social-id-case',
+        mode: 'upgrade',
+        func: fixSocialIdCase
       }
     ])
   },

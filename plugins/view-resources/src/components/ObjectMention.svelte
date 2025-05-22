@@ -31,6 +31,7 @@
   export let component: AnyComponent | undefined = undefined
   export let disabled: boolean = false
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
+  export let transparent: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -124,7 +125,7 @@
     data-label={displayTitle}
     use:tooltip={docTooltip}
   >
-    <DocNavLink object={doc} component={docComponent} {disabled} inlineReference {onClick}>
+    <DocNavLink object={doc} component={docComponent} {disabled} inlineReference {onClick} {transparent}>
       {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{displayTitle}
     </DocNavLink>
   </span>

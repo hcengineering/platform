@@ -72,41 +72,20 @@ export function parseNameFromEmailHeader (headerValue: string | undefined): Emai
 
   if (match == null) {
     const address = headerValue.trim()
-    const parts = address.split('@')
     return {
       email: address,
-      firstName: parts[0],
-      lastName: parts[1]
+      firstName: address,
+      lastName: ''
     }
   }
 
   const displayName = match[1]?.trim()
   const email = match[2].trim()
 
-  if (displayName == null || displayName === '') {
-    const parts = email.split('@')
-    return {
-      email,
-      firstName: parts[0],
-      lastName: parts[1]
-    }
-  }
-
-  const nameParts = displayName.split(/\s+/)
-  let firstName: string | undefined
-  let lastName: string | undefined
-
-  if (nameParts.length === 1) {
-    firstName = nameParts[0]
-  } else if (nameParts.length > 1) {
-    firstName = nameParts[0]
-    lastName = nameParts.slice(1).join(' ')
-  }
-
-  const parts = email.split('@')
+  const wrappedEmail = displayName != null && displayName.length > 0 ? `<${email}>` : email
   return {
     email,
-    firstName: firstName ?? parts[0],
-    lastName: lastName ?? parts[1]
+    firstName: wrappedEmail,
+    lastName: displayName ?? ''
   }
 }

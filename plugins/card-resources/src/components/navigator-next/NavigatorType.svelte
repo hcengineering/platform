@@ -15,11 +15,10 @@
 
 <script lang="ts">
   import view from '@hcengineering/view'
-  import { IconAdd } from '@hcengineering/ui'
+  import { IconAdd, NavGroup, Action, NavItem } from '@hcengineering/ui'
   import { Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
   import { CardSpace, MasterTag } from '@hcengineering/card'
-  import { Section, Action } from '@hcengineering/ui-next'
   import { IconWithEmoji, getClient } from '@hcengineering/presentation'
 
   import type { NavigatorConfig } from '../../types'
@@ -27,12 +26,12 @@
   import { createCard } from '../../utils'
 
   export let type: MasterTag
-  export let level: number = 0
+  export let level: number = -1
   export let space: CardSpace | undefined = undefined
   export let config: NavigatorConfig
   export let selectedType: Ref<MasterTag> | undefined = undefined
   export let empty: boolean = false
-  export let bold: boolean = false
+  export let active: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -52,10 +51,9 @@
         id: 'create-card',
         label: cardPlugin.string.CreateCard,
         icon: IconAdd,
-        action: () => {
-          void handleCreateCard()
-        },
-        order: 1
+        action: async (): Promise<void> => {
+          await handleCreateCard()
+        }
       })
     }
 
@@ -63,19 +61,50 @@
   }
 </script>
 
-<Section
-  id={type._id}
-  title={type.label}
-  {level}
-  selected={selectedType === type._id}
-  icon={type.icon === view.ids.IconWithEmoji ? IconWithEmoji : type.icon}
-  iconProps={type.icon === view.ids.IconWithEmoji ? { icon: type.color } : {}}
-  {empty}
-  {bold}
-  actions={getActions()}
-  on:click={() => {
-    dispatch('selectType', type)
-  }}
->
-  <slot />
-</Section>
+{#if level > -1}
+  <NavItem
+    _id={type._id}
+    label={type.label}
+    icon={type.icon === view.ids.IconWithEmoji ? IconWithEmoji : type.icon}
+    iconProps={type.icon === view.ids.IconWithEmoji ? { icon: type.color } : {}}
+    isFold
+    {empty}
+    {level}
+    selected={selectedType === type._id}
+    on:click={(e) => {
+      e.stopPropagation()
+      e.preventDefault()
+      dispatch('selectType', type)
+    }}
+  >
+    <svelte:fragment slot="dropbox">
+      <slot />
+    </svelte:fragment>
+  </NavItem>
+{:else}
+  <NavGroup
+    _id={type._id}
+    categoryName={type._id}
+    label={type.label}
+    icon={type.icon === view.ids.IconWithEmoji ? IconWithEmoji : type.icon}
+    iconProps={type.icon === view.ids.IconWithEmoji ? { icon: type.color } : {}}
+    highlighted={active}
+    selected={selectedType === type._id}
+    {empty}
+    isFold
+    visible={active}
+    type="selectable-header"
+    actions={getActions()}
+    on:click={(e) => {
+      e.stopPropagation()
+      e.preventDefault()
+      dispatch('selectType', type)
+    }}
+  >
+    <div class="mt-0-5" />
+    <slot />
+    <svelte:fragment slot="visible" let:isOpen>
+      <slot name="visible" {isOpen} />
+    </svelte:fragment>
+  </NavGroup>
+{/if}

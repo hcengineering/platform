@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { getCurrentAccount, Timestamp } from '@hcengineering/core'
+  import { getCurrentAccount, Timestamp, isOtherHour } from '@hcengineering/core'
   import { Message } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
 
@@ -46,10 +46,16 @@
   <DateSeparator {date} />
   <div class="messages-group__messages">
     {#each messages as message, index (message.id)}
+      {@const previousMessage = messages[index - 1]}
+      {@const compact =
+        previousMessage !== undefined &&
+        previousMessage.creator === message.creator &&
+        previousMessage.type === message.type &&
+        !isOtherHour(previousMessage.created.getTime(), message.created.getTime())}
       {#if separatorIndex !== 0 && index === separatorIndex}
         <MessagesSeparator bind:element={separatorDiv} />
       {/if}
-      <MessagePresenter {message} {card} editable={!readonly} />
+      <MessagePresenter {message} {card} editable={!readonly} {compact} />
     {/each}
   </div>
 </div>

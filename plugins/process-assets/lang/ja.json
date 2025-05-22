@@ -50,7 +50,19 @@
     "RequestFromUser": "ユーザーからのリクエスト",
     "EnterValue": "値を入力",
     "OnToDoClose": "ToDo完了時",
-    "OnSubProcessesDone": "サブプロセス完了時"
+    "OnSubProcessesDone": "サブプロセス完了時",
+    "RequestResult": "結果をリクエスト",
+    "NoResultRequired": "結果は不要",
+    "From": "から",
+    "To": "へ",
+    "Trigger": "トリガー",
+    "Actions": "アクション",
+    "Transition": "遷移",
+    "OnToDoRemove": "ToDo削除時",
+    "DeleteTransition": "遷移を削除",
+    "DeleteTransitionConfirm": "遷移を削除しますか？",
+    "AddTransition": "遷移を追加",
+    "ToDo": "ToDo"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
@@ -62,6 +74,7 @@
     "ObjectNotFound": "オブジェクトが見つかりません: {_id}",
     "EmptyRelatedObjectValue": "関連オブジェクト {parent} の値が空です: {attr}",
     "InternalServerError": "内部サーバーエラー。サポートにお問い合わせください。エラーID: {errorId}",
-    "EmptyFunctionResult": "関数結果が空です {func}"
+    "EmptyFunctionResult": "関数結果が空です {func}",
+    "ContextValueNotProvided": "コンテキスト値が提供されていません: {name}"
   }
 }

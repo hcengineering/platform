@@ -412,7 +412,7 @@ export function createModel (builder: Builder): void {
     workbench.class.Application,
     core.space.Model,
     {
-      label: setting.string.Setting,
+      label: setting.string.Settings,
       icon: setting.icon.Setting,
       alias: settingId,
       hidden: true,

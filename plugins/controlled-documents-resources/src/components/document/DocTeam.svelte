@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { Label } from '@hcengineering/ui'
-  import { TypedSpace, type Data, type Ref, type Permission } from '@hcengineering/core'
-  import { type Employee, type PermissionsStore, getCurrentEmployee } from '@hcengineering/contact'
+  import { getCurrentEmployee, type Employee } from '@hcengineering/contact'
+  import { UserBoxItems, getPermittedPersons, permissionsStore } from '@hcengineering/contact-resources'
   import documents, { type ControlledDocument } from '@hcengineering/controlled-documents'
-  import { UserBoxItems, permissionsStore } from '@hcengineering/contact-resources'
+  import { TypedSpace, type Data, type Ref } from '@hcengineering/core'
+  import { Label } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
   export let controlledDoc: Data<ControlledDocument>
   export let space: Ref<TypedSpace>
@@ -34,23 +34,23 @@
 
   $: permissionsSpace = space === documents.space.UnsortedTemplates ? documents.space.QualityDocuments : space
 
-  function getPermittedPersons (
-    permission: Ref<Permission>,
-    space: Ref<TypedSpace>,
-    permissionsStore: PermissionsStore
-  ): Ref<Employee>[] {
-    return Array.from(permissionsStore.ap[space]?.[permission] ?? []) as Ref<Employee>[]
-  }
+  $: permittedReviewers = getPermittedPersons(
+    documents.permission.ReviewDocument,
+    permissionsSpace,
+    $permissionsStore
+  ) as Ref<Employee>[]
 
-  $: permittedReviewers = getPermittedPersons(documents.permission.ReviewDocument, permissionsSpace, $permissionsStore)
-
-  $: permittedApprovers = getPermittedPersons(documents.permission.ApproveDocument, permissionsSpace, $permissionsStore)
+  $: permittedApprovers = getPermittedPersons(
+    documents.permission.ApproveDocument,
+    permissionsSpace,
+    $permissionsStore
+  ) as Ref<Employee>[]
 
   $: permittedCoAuthors = getPermittedPersons(
     documents.permission.CoAuthorDocument,
     permissionsSpace,
     $permissionsStore
-  ).filter((person) => person !== currentEmployee)
+  ).filter((person) => person !== currentEmployee) as Ref<Employee>[]
 
   function handleUsersUpdated (type: 'reviewers' | 'approvers' | 'coAuthors', users: Ref<Employee>[]): void {
     dispatch('update', { type, users })

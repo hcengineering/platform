@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { IntlString, Metadata, plugin, Plugin } from '@hcengineering/platform'
+import { Asset, IntlString, Metadata, plugin, Plugin } from '@hcengineering/platform'
 import { CardSection } from '@hcengineering/card'
 import { Ref } from '@hcengineering/core'
 
@@ -23,13 +23,19 @@ export * from './types'
 export const communicationId = 'communication' as Plugin
 
 export default plugin(communicationId, {
+  icon: {
+    Bell: '' as Asset,
+    BellCrossed: '' as Asset
+  },
   metadata: {
     Enabled: '' as Metadata<boolean>
   },
   string: {
     Messages: '' as IntlString,
     FirstMessages: '' as IntlString,
-    LatestMessages: '' as IntlString
+    LatestMessages: '' as IntlString,
+    Subscribe: '' as IntlString,
+    Unsubscribe: '' as IntlString
   },
   ids: {
     CardMessagesSection: '' as Ref<CardSection>

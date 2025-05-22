@@ -28,14 +28,16 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@hcengineering/card": "^0.6.0",
+    "@hcengineering/communication": "^0.6.0",
+    "@hcengineering/communication-resources": "^0.6.0",
+    "@hcengineering/model-card": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/model": "^0.6.11",
     "@hcengineering/model-core": "^0.6.0",
+    "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/card": "^0.6.0",
-    "@hcengineering/communication": "^0.6.0",
-    "@hcengineering/communication-resources": "^0.6.0",
     "@hcengineering/ui": "^0.6.15"
   }
 }

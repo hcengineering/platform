@@ -14,174 +14,129 @@
 -->
 
 <script lang="ts">
-  import { Card, CardSpace, MasterTag } from '@hcengineering/card'
-  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
-  import {
-    createLabelsQuery,
-    createNotificationContextsQuery,
-    createQuery,
-    getClient
-  } from '@hcengineering/presentation'
-  import uiNext, { Button, ButtonVariant, NavItem } from '@hcengineering/ui-next'
+  import cardPlugin, { Card, CardSpace, FavoriteCard, MasterTag } from '@hcengineering/card'
+  import { Ref, WithLookup } from '@hcengineering/core'
+  import { createQuery, createNotificationContextsQuery } from '@hcengineering/presentation'
+  import view from '@hcengineering/view'
+  import { NotificationContext, NotificationType, SortingOrder } from '@hcengineering/communication-types'
+  import { NavGroup } from '@hcengineering/ui'
+  import preference from '@hcengineering/preference'
   import { createEventDispatcher } from 'svelte'
-  import { Label, NotificationContext } from '@hcengineering/communication-types'
 
   import type { CardsNavigatorConfig } from '../../types'
-  import cardPlugin from '../../plugin'
-  import NavigatorType from './NavigatorType.svelte'
+  import NavigatorCard from './NavigatorCard.svelte'
+  import NavigatorCardsSection from './NavigatorCardsSection.svelte'
 
-  export let type: MasterTag
+  export let types: MasterTag[] = []
   export let config: CardsNavigatorConfig
+  export let applicationId: string
   export let space: CardSpace | undefined = undefined
   export let selectedType: Ref<MasterTag> | undefined = undefined
   export let selectedCard: Ref<Card> | undefined = undefined
+  export let selectedSpecial: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
+  const favoritesQuery = createQuery()
+  const contextsQuery = createNotificationContextsQuery()
 
-  const cardsQuery = createQuery()
-  const labelsQuery = createLabelsQuery()
-  const notificationContextsQuery = createNotificationContextsQuery()
+  let favorites: WithLookup<FavoriteCard>[] = []
+  let contexts: NotificationContext[] = []
 
-  let cards: WithLookup<Card>[] = []
-  let sortedCards: WithLookup<Card>[] = []
-  let total = -1
-  let contextByCard = new Map<Ref<Card>, NotificationContext>()
-  let labels: Label[] = []
-  let isLabelsLoaded = false
-  let isLoading: boolean = true
-
-  let sort: 'alphabetical' | 'recent' | undefined
-  $: sort = config.specialSorting?.[type._id] ?? config.defaultSorting ?? 'alphabetical'
-
-  let limit = config.limit
-
-  $: if ((config.labelFilter?.length ?? 0) > 0) {
-    labelsQuery.query(
-      {
-        label: config.labelFilter,
-        cardType: hierarchy.getDescendants(type._id),
-        limit: Math.max(limit, 100)
-      },
-      (res) => {
-        labels = res
-        isLabelsLoaded = true
+  $: favoritesQuery.query(
+    cardPlugin.class.FavoriteCard,
+    { application: applicationId },
+    (res) => {
+      favorites = res
+        .filter((it) => it.$lookup?.attachedTo != null)
+        .sort((a, b) => {
+          const aTitle = a.$lookup?.attachedTo?.title ?? ''
+          const bTitle = b.$lookup?.attachedTo?.title ?? ''
+          return aTitle.localeCompare(bTitle)
+        })
+    },
+    {
+      lookup: {
+        attachedTo: [cardPlugin.class.Card, { parent: cardPlugin.class.Card }]
       }
-    )
-  } else {
-    labelsQuery.unsubscribe()
-    labels = []
-    isLabelsLoaded = true
-  }
+    }
+  )
 
-  $: ids = (config.labelFilter?.length ?? 0) > 0 ? labels.map((it) => it.card) : undefined
-
-  $: if (isLabelsLoaded) {
-    cardsQuery.query<Card>(
-      type._id,
+  $: if (favorites.length > 0) {
+    contextsQuery.query(
       {
-        ...(ids === undefined ? {} : { _id: { $in: ids as Ref<Card>[] } }),
-        ...(space !== undefined ? { space: space._id } : {})
-      },
-      (res) => {
-        cards = res
-        total = res.total
-        isLoading = false
-      },
-      {
-        total: true,
-        limit,
-        sort: sort === 'alphabetical' ? { title: SortingOrder.Ascending } : { modifiedOn: SortingOrder.Descending },
-        lookup: {
-          parent: cardPlugin.class.Card
-        }
-      }
-    )
-  }
-
-  $: if ((ids?.length ?? 0) > 0 || cards.length > 0) {
-    notificationContextsQuery.query(
-      {
-        card: ids ?? cards.map((it) => it._id),
+        card: favorites.map((it) => it.attachedTo),
         notifications: {
-          order: SortingOrder.Descending,
           read: false,
+          type: NotificationType.Message,
+          order: SortingOrder.Descending,
           limit: 10
         }
       },
       (res) => {
-        contextByCard = new Map(res.getResult().map((it) => [it.card, it]))
+        contexts = res.getResult()
       }
     )
   } else {
-    notificationContextsQuery.unsubscribe()
-    contextByCard = new Map()
+    contexts = []
+    contextsQuery.unsubscribe()
   }
 
-  $: empty = total === 0
-
-  $: sortedCards = sortCards(cards, contextByCard)
-
-  function sortCards (cards: Card[], contextByCard: Map<Ref<Card>, NotificationContext>): Card[] {
-    const sort = config.specialSorting?.[type._id] ?? config.defaultSorting ?? 'alphabetical'
-    if (sort === 'alphabetical') {
-      return cards.sort((a, b) => a.title.localeCompare(b.title))
-    } else if (sort === 'recent') {
-      return cards.sort((card1, card2) => {
-        const context1 = contextByCard.get(card1._id)
-        const context2 = contextByCard.get(card2._id)
-        const lastUpdate1 = context1?.lastUpdate.getTime() ?? 0
-        const lastUpdate2 = context2?.lastUpdate.getTime() ?? 0
-
-        return lastUpdate2 - lastUpdate1
-      })
-    }
-
-    return cards
+  function getCard (favorite: WithLookup<FavoriteCard>): Card | undefined {
+    return favorite.$lookup?.attachedTo
   }
 </script>
 
-{#if !isLoading}
-  {#if !empty || config.hideEmpty !== true || config.fixedTypes?.includes(type._id)}
-    <NavigatorType {type} {config} {space} {selectedType} {empty} bold on:selectType on:selectCard>
-      {#each sortedCards as card (card._id)}
-        {@const clazz = hierarchy.getClass(card._class)}
-        {@const context = contextByCard.get(card._id)}
-        <NavItem
-          label={card.title}
-          secondLabel={card.$lookup?.parent?.title}
-          icon={clazz.icon ?? cardPlugin.icon.Card}
-          selected={selectedCard === card._id}
-          paddingLeft="1.75rem"
-          notify={context && context.lastUpdate.getTime() > context.lastView.getTime()}
-          notificationsCount={context?.notifications?.length ?? 0}
-          on:click={(e) => {
-            e.stopPropagation()
-            e.preventDefault()
-            dispatch('selectCard', card)
-          }}
-        />
-      {/each}
-
-      {#if total > cards.length}
-        <div class="all-button">
-          <Button
-            labelIntl={uiNext.string.All}
-            labelParams={{ count: total }}
-            variant={ButtonVariant.Ghost}
-            on:click={() => {
-              limit += config.limit
-            }}
-          />
-        </div>
+{#if favorites.length > 0}
+  {@const active = favorites.some((it) => it.attachedTo === selectedCard)}
+  <NavGroup
+    _id="favorites"
+    categoryName="favorites"
+    icon={view.icon.Star}
+    label={preference.string.Starred}
+    highlighted={active}
+    type="selectable-header"
+    isFold
+    empty={false}
+    visible={active}
+    selected={selectedSpecial === 'favorites'}
+    noDivider
+    on:click={(e) => {
+      e.stopPropagation()
+      e.preventDefault()
+      dispatch('favorites')
+    }}
+  >
+    <div class="mt-0-5" />
+    {#each favorites as favorite (favorite.attachedTo)}
+      {@const card = getCard(favorite)}
+      {#if card}
+        {@const context = contexts.find((it) => it.card === card._id)}
+        <NavigatorCard {card} {context} {favorite} {applicationId} {selectedCard} on:selectCard />
       {/if}
-    </NavigatorType>
-  {/if}
-{/if}
+    {/each}
 
-<style lang="scss">
-  .all-button {
-    margin-left: 1.75rem;
-  }
-</style>
+    <svelte:fragment slot="visible" let:isOpen>
+      {@const visibleItem = favorites.find(({ attachedTo }) => attachedTo === selectedCard)}
+      {#if visibleItem !== undefined && !isOpen}
+        {@const card = getCard(visibleItem)}
+        {#if card}
+          {@const context = contexts.find((it) => it.card === card._id)}
+          <NavigatorCard {card} {context} favorite={visibleItem} {applicationId} {selectedCard} on:selectCard />
+        {/if}
+      {/if}
+    </svelte:fragment>
+  </NavGroup>
+{/if}
+{#each types as type (type._id)}
+  <NavigatorCardsSection
+    {type}
+    {space}
+    {config}
+    {selectedType}
+    {selectedCard}
+    {applicationId}
+    {favorites}
+    on:selectType
+    on:selectCard
+  />
+{/each}

@@ -41,6 +41,7 @@ import { EmojiNode } from '../nodes/emoji'
 import { TodoItemNode, TodoListNode } from '../nodes/todo'
 
 import { DefaultKit, DefaultKitOptions } from './default-kit'
+import { EmbedNode } from '../nodes/embed'
 
 const headingLevels: Level[] = [1, 2, 3, 4, 5, 6]
 
@@ -111,7 +112,8 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       NoteBaseExtension,
       TextStyle.configure({}),
       TextColor.configure({}),
-      BackgroundColor.configure({ types: ['tableCell'] })
+      BackgroundColor.configure({ types: ['tableCell'] }),
+      EmbedNode.configure({})
     ]
   }
 })

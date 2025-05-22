@@ -19,7 +19,7 @@ import { getClient } from './client'
 import { getUserByEmail } from './kvsUtils'
 import { IncomingSyncManager } from './sync'
 import { GoogleEmail, Token } from './types'
-import { getGoogleClient, getServiceToken } from './utils'
+import { getGoogleClient, getWorkspaceToken } from './utils'
 
 export class PushHandler {
   constructor (
@@ -29,7 +29,7 @@ export class PushHandler {
 
   async sync (token: Token, calendarId: string | null): Promise<void> {
     await this.ctx.with('Push handler', { workspace: token.workspace, user: token.userId }, async () => {
-      const client = await getClient(getServiceToken())
+      const client = await getClient(getWorkspaceToken(token.workspace))
       const txOp = new TxOperations(client, core.account.System)
       const res = getGoogleClient()
       res.auth.setCredentials(token)

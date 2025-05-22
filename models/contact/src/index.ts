@@ -391,8 +391,25 @@ export function createModel (builder: Builder): void {
               _class: contact.mixin.Employee,
               icon: contact.icon.Person,
               label: contact.string.Employee,
+              baseQuery: {
+                role: { $ne: 'GUEST' }
+              },
               createLabel: contact.string.CreateEmployee,
               createComponent: contact.component.CreateEmployee
+            }
+          },
+          {
+            id: 'guests',
+            component: workbench.component.SpecialView,
+            icon: contact.icon.Person,
+            label: contact.string.Guest,
+            componentProps: {
+              _class: contact.mixin.Employee,
+              icon: contact.icon.Person,
+              label: contact.string.Guest,
+              baseQuery: {
+                role: 'GUEST'
+              }
             }
           },
           {

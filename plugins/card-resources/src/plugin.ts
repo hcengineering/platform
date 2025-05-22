@@ -28,6 +28,7 @@ export default mergeIds(cardId, card, {
     MasterTags: '' as AnyComponent,
     CreateTag: '' as AnyComponent,
     CardPresenter: '' as AnyComponent,
+    FavoriteCardPresenter: '' as AnyComponent,
     EditCard: '' as AnyComponent,
     Main: '' as AnyComponent,
     GeneralSection: '' as AnyComponent,
@@ -46,7 +47,6 @@ export default mergeIds(cardId, card, {
     CardArrayEditor: '' as AnyComponent,
     NewCardHeader: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent,
-    LabelsPresenter: '' as AnyComponent,
     RolesSection: '' as AnyComponent,
     EditRole: '' as AnyComponent,
     CardWidget: '' as AnyComponent
@@ -98,7 +98,6 @@ export default mergeIds(cardId, card, {
     SelectType: '' as IntlString,
     CreateSpace: '' as IntlString,
     NumberTypes: '' as IntlString,
-    Labels: '' as IntlString,
     Properties: '' as IntlString,
     NoChildren: '' as IntlString
   }

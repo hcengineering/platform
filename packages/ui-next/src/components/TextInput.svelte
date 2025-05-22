@@ -17,7 +17,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { EmptyMarkup, isEmptyMarkup, areEqualMarkups } from '@hcengineering/text'
   import { TextEditorHandler } from '@hcengineering/text-editor'
-  import { handler, registerFocus } from '@hcengineering/ui'
+  import { Button, ButtonIcon, handler, registerFocus } from '@hcengineering/ui'
   import { FocusPosition } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { EditorView } from '@tiptap/pm/view'
@@ -29,13 +29,12 @@
     TextEditor
   } from '@hcengineering/text-editor-resources'
 
-  import Button from './Button.svelte'
   import IconSend from './icons/IconSend.svelte'
   import uiNext from '../plugin'
   import { IconComponent, TextInputAction } from '../types'
 
   export let content: Markup = EmptyMarkup
-  export let hasNonTextContent = false
+  export let hasChanges = false
   export let sendIcon: IconComponent | undefined = undefined
   export let sendLabel: IntlString | undefined = undefined
   export let placeholder: IntlString | undefined = undefined
@@ -58,15 +57,15 @@
 
   $: setContent(content)
 
-  function canSubmit (loading: boolean, content: Markup, hasNonTextContent: boolean): boolean {
+  function canSubmit (loading: boolean, content: Markup, hasChanges: boolean): boolean {
     if (loading) return false
 
     const isEmptyContent = isEmpty || isEmptyMarkup(content)
 
-    if (isEmptyContent && !hasNonTextContent) return false
+    if (isEmptyContent && !hasChanges) return false
 
     const isContentChanged = !areEqualMarkups(content, _initialContent)
-    return isContentChanged || hasNonTextContent
+    return isContentChanged || hasChanges
   }
 
   function setContent (content: Markup): void {
@@ -143,7 +142,9 @@
 
 <div class="text-input">
   {#if $$slots.header}
-    <slot name="header" />
+    <div class="text-input__header">
+      <slot name="header" />
+    </div>
   {/if}
   <div class="text-input__text">
     <TextEditor
@@ -159,7 +160,7 @@
       {placeholderParams}
       {onPaste}
       on:content={(ev) => {
-        if (canSubmit(loading, content, hasNonTextContent)) {
+        if (canSubmit(loading, content, hasChanges)) {
           dispatch('submit', ev.detail)
           content = EmptyMarkup
           editor?.clear?.()
@@ -185,10 +186,12 @@
   <div class="text_input__footer">
     <div class="text_input__actions">
       {#each sortedActions as action}
-        <Button
+        <ButtonIcon
           disabled={action.disabled}
           icon={action.icon}
           iconSize="small"
+          size="small"
+          kind="tertiary"
           tooltip={{ label: action.label }}
           on:click={handler(action, (a, evt) => {
             if (a.disabled !== true) {
@@ -202,15 +205,18 @@
       {#if onCancel !== undefined}
         <Button
           disabled={loading}
-          labelIntl={uiNext.string.Cancel}
-          tooltip={{ label: uiNext.string.Cancel }}
+          label={uiNext.string.Cancel}
+          kind="ghost"
+          showTooltip={{ label: uiNext.string.Cancel }}
           on:click={onCancel}
         />
       {/if}
-      <Button
+      <ButtonIcon
+        disabled={loading || !canSubmit(loading, content, hasChanges)}
         icon={sendIcon ?? IconSend}
         iconSize="small"
-        disabled={loading ?? !canSubmit(loading, content, hasNonTextContent)}
+        size="small"
+        kind="tertiary"
         tooltip={{ label: sendLabel ?? uiNext.string.Send }}
         on:click={submit}
       />
@@ -246,6 +252,13 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    min-width: 0;
+  }
+
+  .text-input__header {
+    display: flex;
+    width: 100%;
+    min-width: 0;
   }
 
   .text_input__actions {

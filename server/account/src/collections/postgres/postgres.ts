@@ -292,6 +292,42 @@ implements DbCollection<T> {
     return res[0][idKey]
   }
 
+  async insertMany (data: Array<Partial<T>>, client?: Sql): Promise<K extends keyof T ? Array<T[K]> : undefined> {
+    const snakeData = convertKeysToSnakeCase(data)
+    const columns = new Set<string>()
+    for (const record of snakeData) {
+      Object.keys(record).forEach((k) => columns.add(k))
+    }
+    const columnsList = Array.from(columns).sort()
+
+    const values: any[] = []
+    for (const record of snakeData) {
+      const recordValues = columnsList.map((col) => record[col] ?? null)
+      values.push(...recordValues)
+    }
+
+    const placeholders = snakeData
+      .map((_: any, i: number) => `(${columnsList.map((_, j) => `$${i * columnsList.length + j + 1}`).join(', ')})`)
+      .join(', ')
+
+    const sql = `
+      INSERT INTO ${this.getTableName()} 
+      (${columnsList.map((k) => `"${k}"`).join(', ')})
+      VALUES ${placeholders}
+      RETURNING *
+    `
+
+    const _client = client ?? this.client
+    const res: any = await _client.unsafe(sql, values)
+    const idKey = this.idKey
+
+    if (idKey === undefined) {
+      return undefined as any
+    }
+
+    return res.map((r: any) => r[idKey])
+  }
+
   protected buildUpdateClause (ops: Operations<T>, lastRefIdx: number = 0): [string, any[]] {
     const updateChunks: string[] = []
     const values: any[] = []
@@ -653,6 +689,19 @@ export class PostgresAccountDB implements AccountDB {
   async assignWorkspace (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this
       .client`INSERT INTO ${this.client(this.getWsMembersTableName())} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`
+  }
+
+  async batchAssignWorkspace (data: [AccountUuid, WorkspaceUuid, AccountRole][]): Promise<void> {
+    const placeholders = data.map((_: any, i: number) => `($${i * 3 + 1}, $${i * 3 + 2}, $${i * 3 + 3})`).join(', ')
+    const values = data.flat()
+
+    const sql = `
+      INSERT INTO ${this.getWsMembersTableName()} 
+      (account_uuid, workspace_uuid, role)
+      VALUES ${placeholders}
+    `
+
+    await this.client.unsafe(sql, values)
   }
 
   async unassignWorkspace (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid): Promise<void> {

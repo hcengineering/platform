@@ -34,7 +34,6 @@
   export let adaptiveName: boolean = false
   export let disabled: boolean = false
   export let style: 'modern' | undefined = undefined
-  export let clickable: boolean = false
 
   function handleClick (): void {
     dispatch('click')
@@ -73,7 +72,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     bind:this={element}
-    class="hulyAvatar-container hulyAvatarSize-{size} {variant} {style} {clickable ? 'clickable' : ''}"
+    class="hulyAvatar-container hulyAvatarSize-{size} {variant} {style}"
     class:no-img={!hasImg && color}
     class:bordered={!hasImg && color === undefined}
     class:border={bColor !== undefined}
@@ -97,7 +96,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     bind:this={element}
-    class="hulyAvatar-container hulyAvatarSize-{size} {variant} {style} {clickable ? 'clickable' : ''}"
+    class="hulyAvatar-container hulyAvatarSize-{size} {variant} {style}"
     class:no-img={!hasImg && color}
     class:bordered={!hasImg && color === undefined}
     class:border={bColor !== undefined}
@@ -122,22 +121,12 @@
       />
     {:else}
       <div class="icon">
-        <Icon icon={icon ?? AvatarIcon} fill={'var(--white-color)'} size={'full'} />
+        <Icon
+          icon={icon ?? AvatarIcon}
+          fill={color ? 'var(--primary-button-color)' : 'var(--theme-caption-color)'}
+          size={'full'}
+        />
       </div>
     {/if}
   </div>
 {/if}
-
-<style>
-  .clickable {
-    cursor: pointer;
-  }
-  .clickable > * {
-    pointer-events: none;
-  }
-  .clickable img {
-    pointer-events: none;
-    user-select: none;
-    -webkit-user-drag: none;
-  }
-</style>

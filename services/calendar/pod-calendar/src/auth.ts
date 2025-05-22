@@ -25,7 +25,7 @@ import { getClient } from './client'
 import { addUserByEmail, removeUserByEmail } from './kvsUtils'
 import { IncomingSyncManager, lock } from './sync'
 import { CALENDAR_INTEGRATION, GoogleEmail, SCOPES, State, Token, User } from './types'
-import { getGoogleClient, getServiceToken } from './utils'
+import { getGoogleClient, getWorkspaceToken } from './utils'
 import { WatchController } from './watch'
 
 interface AuthResult {
@@ -58,7 +58,7 @@ export class AuthController {
     await ctx.with('Create auth controller', { workspace: state.workspace, user: state.userId }, async () => {
       const mutex = await lock(`${state.workspace}:${state.userId}`)
       try {
-        const client = await getClient(getServiceToken())
+        const client = await getClient(getWorkspaceToken(state.workspace))
         const txOp = new TxOperations(client, core.account.System)
         const controller = new AuthController(ctx, accountClient, txOp, state)
         await controller.process(code)
@@ -78,7 +78,7 @@ export class AuthController {
     await ctx.with('Signout auth controller', { workspace, userId }, async () => {
       const mutex = await lock(`${workspace}:${userId}`)
       try {
-        const client = await getClient(getServiceToken())
+        const client = await getClient(getWorkspaceToken(workspace))
         const txOp = new TxOperations(client, core.account.System)
         const controller = new AuthController(ctx, accountClient, txOp, {
           userId,
@@ -243,7 +243,7 @@ export class AuthController {
       secret: JSON.stringify(_token)
     }
     try {
-      const currentIntegration = this.accountClient.getIntegrationSecret({
+      const currentIntegration = await this.accountClient.getIntegrationSecret({
         socialId: this.user.userId,
         kind: CALENDAR_INTEGRATION,
         workspaceUuid: this.user.workspace,

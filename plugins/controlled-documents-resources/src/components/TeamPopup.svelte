@@ -4,18 +4,18 @@
 //
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { RequestStatus } from '@hcengineering/request'
-  import { Label, ModernDialog, showPopup } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
   import { Employee } from '@hcengineering/contact'
-  import { Class, Ref } from '@hcengineering/core'
-  import { UserBoxItems, permissionsStore } from '@hcengineering/contact-resources'
+  import { UserBoxItems, getPermittedPersons, permissionsStore } from '@hcengineering/contact-resources'
   import documents, {
     ControlledDocument,
     ControlledDocumentState,
     DocumentRequest
   } from '@hcengineering/controlled-documents'
+  import { Class, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { RequestStatus } from '@hcengineering/request'
+  import { Label, ModernDialog, showPopup } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
   import documentsRes from '../plugin'
   import { sendApprovalRequest, sendReviewRequest } from '../utils'
@@ -38,7 +38,7 @@
   const permissionId = isReviewRequest ? documents.permission.ReviewDocument : documents.permission.ApproveDocument
   $: permissionsSpace =
     controlledDoc.space === documents.space.UnsortedTemplates ? documents.space.QualityDocuments : controlledDoc.space
-  $: permittedPeople = $permissionsStore.ap[permissionsSpace]?.[permissionId] ?? new Set()
+  $: permittedPeople = new Set(getPermittedPersons(permissionId, permissionsSpace, $permissionsStore))
   $: permittedEmployees = Array.from(permittedPeople) as Ref<Employee>[]
 
   let docRequest: DocumentRequest | undefined

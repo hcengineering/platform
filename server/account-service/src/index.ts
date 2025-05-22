@@ -50,6 +50,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   }
 
   const oldAccsUrl = process.env.OLD_ACCOUNTS_URL ?? (dbUrl.startsWith('mongodb://') ? dbUrl : undefined)
+  const oldAccsNs = process.env.OLD_ACCOUNTS_NS
 
   const transactorUri = process.env.TRANSACTOR_URL
   if (transactorUri === undefined) {
@@ -112,7 +113,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   const accountsDb = getAccountDB(dbUrl, dbNs)
   const migrations = accountsDb.then(async ([db]) => {
     if (oldAccsUrl !== undefined) {
-      await migrateFromOldAccounts(oldAccsUrl, db)
+      await migrateFromOldAccounts(oldAccsUrl, db, oldAccsNs)
       console.log('Migrations verified/done')
     }
   })

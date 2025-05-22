@@ -154,6 +154,10 @@
     "DisablePermissionsConfirmation": "Are you sure you want to disable role-based access control? All roles and permissions will be disabled.",
     "EnablePermissionsConfirmation": "Are you sure you want to enable role-based access control? All roles and permissions will be enabled.",
     "BetaWarning": "Modules labeled as beta are available for experimental purposes and may not be fully functional. We do not recommend relying on beta features for critical work at this time.",
+    "IntegrationFailed": "Failed to create integration",
+    "IntegrationError": "Please try again or contact support if the problem persists",
+    "EmailIsUsed": "Email address is already used by another account",
+    "Customize": "Customize",
     "GuestAccess": "Anonymous guests",
     "GuestAccessDescription": "Allows anonymous users to visit your workspace in read-only mode"
   }

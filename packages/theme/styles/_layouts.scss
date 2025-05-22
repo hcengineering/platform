@@ -320,7 +320,8 @@ input.search {
 .flex-presenter, .inline-presenter {
   flex-wrap: nowrap;
   min-width: 0;
-  cursor: pointer;
+
+  &:not(.no-pointer) { cursor: pointer; }
 
   .icon {
     color: var(--theme-dark-color);

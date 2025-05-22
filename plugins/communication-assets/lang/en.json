@@ -2,6 +2,8 @@
   "string": {
     "Messages": "Messages",
     "FirstMessages": "First messages",
-    "LatestMessages": "Latest messages"
+    "LatestMessages": "Latest messages",
+    "Subscribe": "Subscribe",
+    "Unsubscribe": "Unsubscribe"
   }
 }

@@ -203,6 +203,7 @@ export interface AccountDB {
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
   updateAllowReadOnlyGuests: (workspaceId: WorkspaceUuid, readOnlyGuestsAllowed: boolean) => Promise<void>
   assignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
+  batchAssignWorkspace: (data: [AccountUuid, WorkspaceUuid, AccountRole][]) => Promise<void>
   updateWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
   unassignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<void>
   getWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<AccountRole | null>
@@ -224,6 +225,7 @@ export interface DbCollection<T> {
   find: (query: Query<T>, sort?: Sort<T>, limit?: number) => Promise<T[]>
   findOne: (query: Query<T>) => Promise<T | null>
   insertOne: (data: Partial<T>) => Promise<any>
+  insertMany: (data: Partial<T>[]) => Promise<any>
   updateOne: (query: Query<T>, ops: Operations<T>) => Promise<void>
   deleteMany: (query: Query<T>) => Promise<void>
 }

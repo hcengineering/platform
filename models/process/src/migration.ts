@@ -75,19 +75,8 @@ async function migrateStateFuncs (client: MigrationUpgradeClient): Promise<void>
         }
       }
     }
-    const endAction = state.endAction
-    if (endAction?.params != null) {
-      for (const key of Object.keys(endAction.params)) {
-        const value = (endAction.params as any)[key]
-        const context = getContext(value)
-        if (context !== undefined) {
-          ;(endAction.params as any)[key] = context
-          changed = true
-        }
-      }
-    }
     if (changed) {
-      await txOp.updateDoc(state._class, state.space, state._id, { actions, endAction })
+      await txOp.updateDoc(state._class, state.space, state._id, { actions })
     }
   }
 }
