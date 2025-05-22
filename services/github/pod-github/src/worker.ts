@@ -1156,6 +1156,30 @@ export class GithubWorker implements IntegrationManager {
         state: wrongAuthentications
       })
     }
+
+    const fixWrongLastGithubAccount = 'migrate-lastGithubAccount'
+
+    if (migrations.find((it) => it.plugin === githubId && it.state === fixWrongLastGithubAccount) === undefined) {
+      while (true) {
+        const syncInfos = await this.client.findAll(
+          github.class.DocSyncInfo,
+          { lastGithubUser: { $ne: null } },
+          { limit: 500 }
+        )
+        if (syncInfos.length === 0) {
+          break
+        }
+        const ops = this._client.apply()
+        for (const auth of syncInfos) {
+          await ops.update(auth, { lastGithubUser: null })
+        }
+        await ops.commit()
+      }
+      await derivedClient.createDoc(core.class.MigrationState, core.space.Configuration, {
+        plugin: githubId,
+        state: fixWrongLastGithubAccount
+      })
+    }
   }
 
   async syncAndWait (): Promise<void> {
@@ -1606,7 +1630,18 @@ export class GithubWorker implements IntegrationManager {
             }
             const ops = derivedClient.apply()
             for (const d of withError) {
-              await ops.update(d, { error: null, needSync: '' })
+              const errStr = JSON.stringify(d.error)
+              // Skip this error's and not retry
+              const skipError =
+                errStr.includes('Bad credentials') ||
+                errStr.includes('Resource not accessible by integration') ||
+                errStr.includes('does not have permission to update') ||
+                errStr.includes('State cannot be changed') ||
+                errStr.includes('Not Found') ||
+                errStr.includes('Could not resolve to a node with the global') ||
+                errStr.includes('Body is too long, Body is too long')
+
+              await ops.update(d, { error: null, needSync: skipError ? githubSyncVersion : '' })
             }
             await ops.commit()
           }

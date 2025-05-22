@@ -365,6 +365,11 @@ export async function OnToDoUpdate (txes: Tx[], control: TriggerControl): Promis
     const description = updTx.operations.description
     const visibility = updTx.operations.visibility
     if (doneOn != null) {
+      const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: updTx.objectId }))[0]
+      if (todo === undefined || todo.doneOn != null) {
+        // Do not process already processed todos.
+        continue
+      }
       const events = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: updTx.objectId })
       const resEvents: WorkSlot[] = []
       for (const event of events) {
@@ -405,10 +410,7 @@ export async function OnToDoUpdate (txes: Tx[], control: TriggerControl): Promis
           resEvents.push(event)
         }
       }
-      const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: updTx.objectId }))[0]
-      if (todo === undefined) {
-        continue
-      }
+
       const funcs = control.hierarchy.classHierarchyMixin<Class<Doc>, OnToDo>(
         todo.attachedToClass,
         serverTime.mixin.OnToDo
