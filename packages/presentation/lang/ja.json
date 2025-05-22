@@ -29,6 +29,7 @@
     "MakePrivate": "非公開にする",
     "MakePrivateDescription": "メンバーのみ閲覧可能です",
     "Created": "作成済み",
+    "Selected": "選択中",
     "NoResults": "表示する結果がありません",
     "Next": "次へ",
     "FailedToPreview": "プレビューに失敗しました",
@@ -48,4 +49,3 @@
     "FileTooLarge": "ファイルサイズが大きすぎます"
   }
 }
-  

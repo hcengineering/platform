@@ -6,7 +6,7 @@ export class CommonPage {
       const searchWord = fullWordSearch ? name : name.split(' ')[0]
       await page.locator('div.selectPopup input').fill(searchWord)
     }
-    await page.locator('div.selectPopup div.list-item:first-child').click({ delay: 100 })
+    await page.locator('div.selectPopup div.list-item', { hasText: name }).click({ delay: 100 })
   }
 
   async selectListItem (page: Page, name: string): Promise<void> {
