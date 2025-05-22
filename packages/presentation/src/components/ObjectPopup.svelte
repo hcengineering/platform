@@ -198,13 +198,13 @@
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="category" let:item>
-    {#if created.length > 0 && created.find((it) => it._id === item._id) !== undefined}
+    {#if created.length > 0 && created.includes(item._id)}
       <div class="menu-group__header">
         <span class="overflow-label">
           <Label label={presentation.string.Created} />
         </span>
       </div>
-    {:else if selectedObjects.length > 0 && selectedObjects.find((it) => it === item._id) !== undefined}
+    {:else if selectedObjects.length > 0 && selectedObjects.includes(item._id)}
       <div class="menu-group__header">
         <span class="overflow-label">
           <Label label={presentation.string.Selected} />
