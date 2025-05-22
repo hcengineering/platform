@@ -25,19 +25,13 @@
       const newItems: ChatNavItemModel[] = []
       for (const object of res) {
         const { _class } = object
-        const iconMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectIcon)
         const titleIntl = hierarchy.getClass(_class).label
-        let icon: AnySvelteComponent | undefined = undefined
-
-        if (iconMixin?.component !== undefined) {
-          icon = await getResource(iconMixin.component)
-        }
 
         newItems.push({
           id: object._id,
           object,
           title: (await getChannelName(object._id, object._class, object)) ?? (await translate(titleIntl, {})),
-          icon: icon ?? getObjectIcon(_class),
+          icon: getObjectIcon(_class),
           iconProps: { showStatus: true },
           iconSize: 'small',
           withIconBackground: true
@@ -52,7 +46,7 @@
   {#if items.length > 0}
     <NavGroup
       _id="channels"
-      label="channels"
+      label={chunter.string.Channel}
       categoryName="channels"
       highlighted={items.some((it) => it.id === object?._id)}
       isFold={false}
@@ -60,7 +54,7 @@
       visible={true}
     >
       {#each items as item (item.id)}
-        <ChatNavItem isSelected={item.id === object?._id} {item} type={'type-object'} on:select />
+        <ChatNavItem context={undefined} isSelected={item.id === object?._id} {item} type={'type-object'} on:select />
       {/each}
     </NavGroup>
   {/if}
