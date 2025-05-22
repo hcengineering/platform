@@ -600,7 +600,7 @@ export async function selectWorkspace (
       role: AccountRole.DocGuest
     }
   }
-  
+
   if (accountUuid === systemAccountUuid || extra?.admin === 'true') {
     return {
       account: accountUuid,
