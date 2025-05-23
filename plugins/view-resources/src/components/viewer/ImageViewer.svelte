@@ -27,6 +27,8 @@
   export let drawings: any
   export let createDrawing: (data: any) => Promise<any>
 
+  export let setLoading: ((loading: boolean) => void) | undefined = undefined
+
   $: originalWidth = metadata?.originalWidth
   $: originalHeight = metadata?.originalHeight
   $: pixelRatio = metadata?.pixelRatio ?? 1
@@ -38,6 +40,12 @@
   $: height = imageHeight != null ? `min(${imageHeight}px, ${fit ? '100%' : '80vh'})` : '100%'
 
   let loading = true
+  function _setLoading (newState: boolean): void {
+    loading = newState
+    setLoading?.(loading)
+  }
+
+  $: if (value !== undefined) _setLoading(true)
 </script>
 
 {#await getBlobRef(value, name) then blobRef}
@@ -58,7 +66,7 @@
   >
     <img
       on:load={() => {
-        loading = false
+        _setLoading(false)
       }}
       class="object-contain mx-auto"
       style:max-width={width}

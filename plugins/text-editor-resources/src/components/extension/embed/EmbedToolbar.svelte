@@ -91,7 +91,13 @@
 </script>
 
 {#if cursor && actions.length > 0}
-  <div class="embed-toolbar flex" class:reference={showSrc && !!reference} contenteditable="false">
+  <div
+    class="embed-toolbar flex theme-dark"
+    class:reference={showSrc && !!reference}
+    contenteditable="false"
+    tabindex="-1"
+    data-block-editor-blur="true"
+  >
     <div class="text-editor-toolbar buttons-group xsmall-gap">
       {#if showSrc}
         {#if !reference}
@@ -110,7 +116,15 @@
         {/if}
 
         {#each category as [_, action]}
-          <TextActionButton {action} {editor} size="small" {actionCtx} listenCursorUpdate blockMouseEvents={false} />
+          <TextActionButton
+            {action}
+            {editor}
+            size="small"
+            {actionCtx}
+            listenCursorUpdate
+            blockMouseEvents={false}
+            tooltipOptions={{ direction: 'top' }}
+          />
         {/each}
       {/each}
     </div>
@@ -127,25 +141,19 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--theme-link-color);
+
+    &:hover {
+      color: var(--theme-link-color);
+    }
   }
 
   .embed-toolbar {
     position: relative;
     padding: 0.25rem;
-    background-color: var(--theme-comp-header-color);
+    background-color: var(--primary-button-default);
     border-radius: 0.5rem;
     box-shadow: var(--button-shadow);
 
-    &.reference::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: var(--theme-mention-bg-color);
-      pointer-events: none;
-      border-radius: 0.5rem;
-    }
+    --theme-link-color: var(--theme-content-color);
   }
 </style>
