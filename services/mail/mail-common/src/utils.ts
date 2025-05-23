@@ -33,7 +33,11 @@ export function getMdContent (ctx: MeasureContext, email: EmailMessage): string 
             const title = element.title ?? ''
             // Trim content to prevent empty lines inside links
             const trimmedContent = content.trim().replace(/\n\s*\n/g, ' ')
-            return `[${trimmedContent}](${href}${title})`
+            if (!href) {
+              return trimmedContent
+            }
+            const titlePart = title ? ` "${title}"` : ''
+            return `[${trimmedContent}](${href}${titlePart})`
           } catch (error: any) {
             ctx.warn('Failed to parse link', { error: error.message })
             return content
