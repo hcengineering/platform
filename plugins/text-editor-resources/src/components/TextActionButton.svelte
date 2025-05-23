@@ -17,7 +17,7 @@
   import { type Editor } from '@tiptap/core'
   import { type TextEditorAction, type ActionContext } from '@hcengineering/text-editor'
   import { getResource } from '@hcengineering/platform'
-  import { Icon, IconSize, tooltip } from '@hcengineering/ui'
+  import { Icon, IconSize, tooltip, type LabelAndProps } from '@hcengineering/ui'
   import tr from 'date-fns/locale/tr'
   import { Transaction } from '@tiptap/pm/state'
 
@@ -27,6 +27,7 @@
   export let actionCtx: ActionContext
   export let blockMouseEvents = true
   export let listenCursorUpdate = false
+  export let tooltipOptions: LabelAndProps | undefined = undefined
 
   const dispatch = createEventDispatcher()
   let selected: boolean = false
@@ -85,7 +86,7 @@
 <button
   class="button {size}"
   class:selected
-  use:tooltip={{ label: action.label }}
+  use:tooltip={{ label: action.label, ...tooltipOptions }}
   tabindex="0"
   data-id={'btn' + action.label.split(':').pop()}
   on:click={handleClick}

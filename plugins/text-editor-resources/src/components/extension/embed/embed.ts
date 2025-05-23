@@ -20,12 +20,13 @@ import textEditor from '@hcengineering/text-editor'
 import { DebouncedCaller } from '@hcengineering/ui'
 import { type Editor, type Range } from '@tiptap/core'
 import { Fragment, type Node, type ResolvedPos, Slice } from '@tiptap/pm/model'
-import { Plugin, PluginKey, Selection, type Transaction } from '@tiptap/pm/state'
+import { type EditorState, Plugin, PluginKey, Selection, type Transaction } from '@tiptap/pm/state'
 import { type EditorView } from '@tiptap/pm/view'
 import tippy from 'tippy.js'
 import { SvelteRenderer } from '../../node-view'
 import { buildReferenceUrl, parseReferenceUrl } from '../reference'
 import EmbedToolbar from './EmbedToolbar.svelte'
+import { AddMarkStep } from '@tiptap/pm/transform'
 
 export interface EmbedNodeOptions {
   providers: EmbedNodeProvider[]
@@ -38,8 +39,12 @@ export interface EmbedNodeViewHandle {
   destroy?: () => void
 }
 
-export type EmbedNodeView = (root: HTMLDivElement) => EmbedNodeViewHandle | undefined
-export type EmbedNodeProvider = (src: string) => Promise<EmbedNodeView | undefined>
+export interface EmbedNodeProvider {
+  buildView: (src: string) => Promise<EmbedNodeView | undefined>
+  autoEmbedUrl?: (src: string) => boolean
+}
+
+export type EmbedNodeView = (editor: Editor, root: HTMLDivElement) => EmbedNodeViewHandle | undefined
 export type EmbedNodeProviderConstructor<T> = (options: T) => EmbedNodeProvider
 
 export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
@@ -98,15 +103,22 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
       root.setAttribute('data-embed-src', node.attrs.src)
       root.classList.add('embed-node')
 
+      setLoadingState(editor.view, root, true)
+      root.setAttribute('block-editor-blur', 'true')
+
       let handle: EmbedNodeViewHandle | undefined
 
-      void providerPromise.then((view) => {
-        view = view ?? StubEmbedNodeView
-        handle = view(root)
-        if (handle !== undefined) {
-          root.classList.add(`embed-${handle.name}`)
-        }
-      })
+      void providerPromise
+        .then((view) => {
+          view = view ?? StubEmbedNodeView
+          handle = view(editor, root)
+          if (handle !== undefined) {
+            root.classList.add(`embed-${handle.name}`)
+          }
+        })
+        .finally(() => {
+          setLoadingState(editor.view, root, false)
+        })
 
       return {
         dom: root,
@@ -147,6 +159,7 @@ const embedControlPluginKey = new PluginKey('embedControlPlugin')
 export function EmbedControlPlugin (editor: Editor, options: EmbedNodeOptions): Plugin {
   return new Plugin<EmbedControlState>({
     key: embedControlPluginKey,
+
     state: {
       init () {
         return {
@@ -163,24 +176,32 @@ export function EmbedControlPlugin (editor: Editor, options: EmbedNodeOptions): 
           return { ...prev, cursor: meta.cursor }
         }
 
-        if (tr.docChanged && prev.cursor !== null) {
-          const from = tr.mapping.map(prev.cursor.from, -1)
-          const cursor = resolveCursor(prev, newState.doc.resolve(from))
+        if (tr.docChanged) {
+          const cursor = prev.cursor
+          const fromSelection = cursor === null || cursor.selected === true
 
-          updateCursor(tr, cursor)
-          return { ...prev, cursor }
+          const from = fromSelection ? newState.selection.from : tr.mapping.map(cursor.from, -1)
+
+          const newCursor = resolveCursor(newState.doc.resolve(from))
+
+          if (newCursor !== null && (cursor?.selected === true || fromSelection)) {
+            newCursor.selected = true
+          }
+
+          updateCursor(tr, newCursor, prev)
+          return { ...prev, cursor: newCursor }
         }
 
         if (!oldState.selection.eq(newState.selection)) {
           const $pos = newState.doc.resolve(newState.selection.from)
-          const cursor = resolveCursor(prev, $pos)
+          const cursor = resolveCursor($pos)
 
           if (cursor !== null) {
             cursor.selected = true
-            updateCursor(tr, cursor)
+            updateCursor(tr, cursor, prev)
             return { ...prev, cursor }
           } else if (prev.cursor !== null && prev.cursor.selected === true) {
-            updateCursor(tr, null)
+            updateCursor(tr, null, prev)
             return { ...prev, cursor: null }
           }
         }
@@ -188,16 +209,34 @@ export function EmbedControlPlugin (editor: Editor, options: EmbedNodeOptions): 
         return prev
       }
     },
+
     view (view) {
-      interface State {
-        cursor: EmbedControlCursor | null
-      }
-      let state: State = {
-        cursor: null
-      }
+      let cursor: EmbedControlCursor | null = null
+      let blockToolbarUpdate = false
+      let rect: DOMRect = getReferenceRect(view, 0, 0)
 
       const getReferenceClientRect = (): DOMRect => {
-        return getReferenceRect(view, state.cursor?.from ?? 0, state.cursor?.to ?? 0)
+        const from = cursor?.from ?? 0
+        const to = cursor?.to ?? 0
+
+        blockToolbarUpdate = false
+        view.state.doc.nodesBetween(from, to, (node, pos) => {
+          const element = view.nodeDOM(pos)
+          if (!(element instanceof HTMLElement)) return
+          if (element.dataset.loading === 'true') {
+            blockToolbarUpdate = true
+            return false
+          }
+        })
+
+        if (blockToolbarUpdate) {
+          return rect
+        }
+
+        const newRect = getReferenceRect(view, from, to)
+        rect = newRect
+
+        return newRect
       }
 
       const listener = (event: MouseEvent): void => {
@@ -210,28 +249,32 @@ export function EmbedControlPlugin (editor: Editor, options: EmbedNodeOptions): 
 
       const renderer = new SvelteRenderer(EmbedToolbar, {
         element: container,
-        props: { editor, cursor: state.cursor }
+        props: { editor, cursor }
       })
-      renderer.updateProps({ editor, cursor: state.cursor })
+      renderer.updateProps({ editor, cursor })
 
-      const updateState = (newState: State): void => {
-        if (newState.cursor?.selected === true) {
-          const pluginState = getEmbedControlState(editor)
-          pluginState?.debounce.updateCursor.call(() => {
-            /* reset pending mouse move event handling */
-          })
-        }
-        if (!tippynode.state.isShown && newState.cursor !== null) {
+      const updateToolbar = (): void => {
+        getReferenceClientRect()
+        killPendingMouseEvents()
+
+        if (blockToolbarUpdate) return
+
+        if (!tippynode.state.isShown && cursor !== null) {
           tippynode.show()
-          tippynode.setProps({})
         }
-        if (tippynode.state.isShown && newState.cursor === null) {
+        if (tippynode.state.isShown && cursor === null) {
           tippynode.hide()
-        } else {
-          tippynode.setProps({})
         }
-        state = newState
-        renderer.updateProps({ editor, cursor: state.cursor })
+
+        renderer.updateProps({ editor, cursor })
+        tippynode.setProps({})
+      }
+
+      const killPendingMouseEvents = (): void => {
+        const pluginState = getEmbedControlState(editor)
+        pluginState?.debounce.updateCursor.call(() => {
+          /* reset pending mouse move event handling */
+        })
       }
 
       const tippynode = (this.tippynode = tippy(view.dom, {
@@ -243,17 +286,44 @@ export function EmbedControlPlugin (editor: Editor, options: EmbedNodeOptions): 
         maxWidth: 640,
         interactive: true,
         trigger: 'manual',
-        placement: 'top-start',
+        placement: 'top-end',
         hideOnClick: 'toggle',
         onDestroy: () => {},
         appendTo: () => options.popupContainer ?? document.body,
-        zIndex: 10000
+        zIndex: 10000,
+        popperOptions: {
+          modifiers: [
+            {
+              name: 'flip',
+              options: {
+                fallbackPlacements: ['top-start', 'bottom-end', 'bottom-start']
+              }
+            }
+          ]
+        }
       }))
 
-      editor.on('transaction', ({ transaction }) => {
+      editor.on('transaction', ({ editor, transaction }) => {
+        cursor = getEmbedControlCursor(editor)
         const meta = transaction.getMeta(embedControlPluginKey) as EmbedControlTxMeta
-        if (meta?.cursor !== undefined) {
-          updateState({ cursor: meta.cursor })
+        const loadingState = transaction.getMeta('loadingState') as boolean | undefined
+        if (meta?.cursor !== undefined || loadingState !== undefined) {
+          if (loadingState === true) {
+            updateToolbar()
+          } else {
+            requestAnimationFrame(() => {
+              updateToolbar()
+            })
+          }
+        }
+      })
+
+      editor.on('blur', (e) => {
+        const target = e.event.relatedTarget
+        const ignore = scanForDataMarker(target as HTMLElement | null, 'blockEditorBlur')
+
+        if (!ignore) {
+          view.dispatch(updateCursor(view.state.tr, null))
         }
       })
 
@@ -263,32 +333,107 @@ export function EmbedControlPlugin (editor: Editor, options: EmbedNodeOptions): 
           window.removeEventListener('mousemove', listener)
         }
       }
+    },
+
+    appendTransaction: (transactions, oldState, newState) => {
+      // editor.on('transaction', ...) fires for root transactions
+      // but not for internal transactions appended via plugins,
+      // so we need to propagate metadata to the rest of transactions.
+      let meta: EmbedControlTxMeta | undefined
+      for (const tx of transactions) {
+        meta = (tx.getMeta(embedControlPluginKey) as EmbedControlTxMeta) ?? meta
+      }
+      if (meta !== undefined) {
+        for (const tx of transactions) {
+          setMeta(tx, meta)
+        }
+      }
+
+      if (transactions.length > 1) {
+        const rest = transactions.slice(1)
+        for (const tx of rest) {
+          if (tx.steps.length !== 1) continue
+          const step = tx.steps[0]
+          if (!(step instanceof AddMarkStep)) continue
+          if (step.mark.type.name !== 'link') continue
+
+          const src = step.mark.attrs.href as string | undefined
+          if (src === undefined) continue
+
+          const $pos = newState.doc.resolve(step.from)
+          const index = $pos.index()
+          const parent = $pos.parent
+          if ($pos.depth !== 1 || parent.type.name !== 'paragraph') continue
+
+          let canConvert = true
+          for (let i = 0; i < parent.childCount; i++) {
+            const child = parent.child(i)
+            if (i === index) continue
+            if (child.type.name !== 'text') {
+              canConvert = false
+              break
+            }
+            if (child.textContent.trim() !== '') {
+              canConvert = false
+              break
+            }
+          }
+
+          if (canConvert) {
+            const embedTx = tryAutoEmbedUrl(newState, options.providers, step, src)
+            if (embedTx !== undefined) {
+              return embedTx
+            }
+          }
+        }
+      }
+
+      return null
     }
   })
+}
+
+function tryAutoEmbedUrl (
+  state: EditorState,
+  providers: EmbedNodeProvider[],
+  { from, to }: Range,
+  src: string
+): Transaction | undefined {
+  const provider = providers.find((p) => p.autoEmbedUrl !== undefined && p.autoEmbedUrl(src))
+  if (provider === undefined) return
+  const embedNode = state.schema.nodes.embed.create({ src })
+  const fragment = Fragment.from(embedNode)
+
+  const tr = state.tr
+  return replacePreviewContent({ from, to }, fragment, tr, true)
+}
+
+function scanForDataMarker (target: HTMLElement | null, field: string): boolean {
+  while (target != null) {
+    if (target.dataset[field] === 'true') {
+      return true
+    }
+    target = target.parentElement
+  }
+  return false
 }
 
 function updateCursorFromMouseEvent (view: EditorView, event: MouseEvent): void {
   const state = embedControlPluginKey.getState(view.state) as EmbedControlState
   const prevCursor = state?.cursor ?? null
 
-  let target = event?.target as HTMLElement | null
-  let blockCursorUpdate = false
-  let disableCursor = false
-
-  while (target != null) {
-    if (target.dataset.blockCursorUpdate === 'true') {
-      blockCursorUpdate = true
-    }
-    if (target.dataset.disableCursor === 'true') {
-      disableCursor = true
-    }
-    target = target.parentElement
-  }
+  const target = event?.target as HTMLElement | null
+  const blockCursorUpdate = scanForDataMarker(target, 'blockCursorUpdate')
+  const disableCursor = scanForDataMarker(target, 'disableCursor')
 
   if (blockCursorUpdate) return
 
   const coords = { left: event.clientX, top: event.clientY }
-  const newCursor = disableCursor ? null : resolveCursor(state, resolveCursorPositionFromCoords(view, coords))
+  const newCursor = disableCursor ? null : resolveCursor(resolveCursorPositionFromCoords(view, coords))
+
+  if (prevCursor?.selected === true && newCursor === null) {
+    return
+  }
 
   if (eqCursors(newCursor, prevCursor)) {
     return
@@ -333,15 +478,12 @@ async function matchUrl (providers: EmbedControlState['providers'], url?: string
   if (url === undefined) return
 
   for (const provider of providers) {
-    const view = await provider(url)
+    const view = await provider.buildView(url)
     if (view !== undefined) return view
   }
 }
 
-function resolveCursorChildNode (
-  state: EmbedControlState,
-  $pos?: ResolvedPos
-): { node: Node | null, index: number, offset: number } | null {
+function resolveCursorChildNode ($pos?: ResolvedPos): { node: Node | null, index: number, offset: number } | null {
   if ($pos === undefined) return null
 
   const parent = $pos.parent
@@ -364,10 +506,10 @@ function resolveCursorChildNode (
   return nodeAfter ?? nodeBefore
 }
 
-function resolveCursor (state: EmbedControlState, $pos?: ResolvedPos): EmbedControlCursor | null {
+function resolveCursor ($pos?: ResolvedPos): EmbedControlCursor | null {
   if ($pos === undefined) return null
 
-  const child = resolveCursorChildNode(state, $pos)
+  const child = resolveCursorChildNode($pos)
   const node = child?.node ?? null
 
   if (child === null || node === null) return null
@@ -416,8 +558,15 @@ function isLink (node: Node, strict: boolean = false): boolean {
   return false
 }
 
-function updateCursor (tr: Transaction, cursor: EmbedControlCursor | null): Transaction {
-  return tr.setMeta(embedControlPluginKey, { cursor }).setMeta('contextCursorUpdate', true)
+function setMeta (tr: Transaction, meta: EmbedControlTxMeta): Transaction {
+  return tr.setMeta(embedControlPluginKey, meta).setMeta('contextCursorUpdate', true)
+}
+
+function updateCursor (tr: Transaction, cursor: EmbedControlCursor | null, state?: EmbedControlState): Transaction {
+  state?.debounce?.updateCursor.call(() => {
+    /* reset pending mouse move event handling */
+  })
+  return setMeta(tr, { cursor })
 }
 
 function getEmbedControlState (editor: Editor): EmbedControlState | undefined {
@@ -493,7 +642,7 @@ export async function convertToLinkPreviewAction (editor: Editor, event: MouseEv
   const from = cursor.from
   const to = cursor.to
 
-  const tr = replacePreviewContent({ from, to }, fragment, editor.state.tr, editor)
+  const tr = replacePreviewContent({ from, to }, fragment, editor.state.tr)
   editor.view.dispatch(tr)
 }
 
@@ -515,7 +664,7 @@ export async function convertToEmbedPreviewAction (editor: Editor, event: MouseE
   const to = cursor.to
 
   const tr = editor.state.tr
-  replacePreviewContent({ from, to }, fragment, tr, editor)
+  replacePreviewContent({ from, to }, fragment, tr, true)
 
   editor.view.focus()
   editor.view.dispatch(tr)
@@ -573,11 +722,8 @@ export function replacePreviewContent (
   { from, to }: Range,
   fragment: Fragment,
   tr: Transaction,
-  editor: Editor
+  selected: boolean = false
 ): Transaction {
-  const state = getEmbedControlState(editor)
-  if (state === undefined) return tr
-
   const slice = new Slice(fragment, 0, 0)
   tr.replaceRange(from, to, slice)
 
@@ -597,13 +743,17 @@ export function replacePreviewContent (
 
   tr.setSelection(selection)
 
-  const cursor = resolveCursor(state, tr.doc.resolve(isOnlyBlockContent ? start : end))
+  const cursor = resolveCursor(tr.doc.resolve(isOnlyBlockContent ? start : end))
+  if (selected && cursor !== null) {
+    cursor.selected = true
+  }
+
   updateCursor(tr, cursor)
 
   return tr
 }
 
-const StubEmbedNodeView: EmbedNodeView = (root: HTMLElement) => {
+const StubEmbedNodeView: EmbedNodeView = (editor: Editor, root: HTMLElement) => {
   const hint = document.createElement('p')
   const hintIcon = hint.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))
   const hintSpan = hint.appendChild(document.createElement('span'))
@@ -664,4 +814,13 @@ function getReferenceRect (view: EditorView, from: number, to: number): DOMRect 
 
 function minmax (value = 0, min = 0, max = 0): number {
   return Math.min(Math.max(value, min), max)
+}
+
+export function setLoadingState (view: EditorView, element: HTMLElement, loading: boolean): void {
+  if (loading) {
+    element.setAttribute('data-loading', 'true')
+  } else {
+    element.removeAttribute('data-loading')
+  }
+  view.dispatch(view.state.tr.setMeta('loadingState', loading))
 }
