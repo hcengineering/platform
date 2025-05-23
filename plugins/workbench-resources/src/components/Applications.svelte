@@ -22,7 +22,7 @@
   import workbench from '@hcengineering/workbench'
   import { inboxId } from '@hcengineering/inbox'
 
-  import { isAppAllowed } from '../utils'
+  import { isAllowedToRole } from '../utils'
   import AppItem from './AppItem.svelte'
 
   export let active: Ref<Application> | undefined
@@ -56,7 +56,11 @@
 
   $: topApps = apps.filter((it) => it.position === 'top')
   $: midApps = apps.filter(
-    (it) => !hiddenAppsIds.includes(it._id) && isAppAllowed(it, me) && it.position !== 'top' && it.position !== 'bottom'
+    (it) =>
+      !hiddenAppsIds.includes(it._id) &&
+      isAllowedToRole(it.accessLevel, me) &&
+      it.position !== 'top' &&
+      it.position !== 'bottom'
   )
   $: bottomApps = apps.filter((it) => it.position === 'bottom')
 </script>

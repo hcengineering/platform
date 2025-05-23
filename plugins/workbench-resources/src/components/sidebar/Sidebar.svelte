@@ -15,13 +15,13 @@
 <script lang="ts">
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { panelstore } from '@hcengineering/ui'
-  import { WidgetPreference } from '@hcengineering/workbench'
+  import { Widget, WidgetPreference } from '@hcengineering/workbench'
 
   import workbench from '../../plugin'
   import { sidebarStore, SidebarVariant } from '../../sidebar'
   import SidebarExpanded from './SidebarExpanded.svelte'
   import SidebarMini from './SidebarMini.svelte'
-  import { isAppAllowed } from '../../utils'
+  import { isAllowedToRole } from '../../utils'
   import { getCurrentAccount } from '@hcengineering/core'
 
   const account = getCurrentAccount()
@@ -29,8 +29,8 @@
 
   const widgets = client
     .getModel()
-    .findAllSync(workbench.class.Widget, {})
-    .filter((it) => isAppAllowed(it, account))
+    .findAllSync<Widget>(workbench.class.Widget, {})
+    .filter((it) => isAllowedToRole(it.accessLevel, account))
   const preferencesQuery = createQuery()
 
   let preferences: WidgetPreference[] = []

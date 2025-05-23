@@ -17,7 +17,7 @@
   import type { Application } from '@hcengineering/workbench'
   import { createQuery } from '@hcengineering/presentation'
   import workbench from '@hcengineering/workbench'
-  import { hideApplication, isAppAllowed, showApplication } from '../utils'
+  import { hideApplication, isAllowedToRole, showApplication } from '../utils'
   import { Loading, IconCheck, Label, Icon } from '@hcengineering/ui'
   // import Drag from './icons/Drag.svelte'
 
@@ -69,7 +69,7 @@
   const me = getCurrentAccount()
 
   const filteredApps = apps.filter(
-    (it) => !hiddenAppsIds.includes(it._id) && isAppAllowed(it, me) && it.position !== 'top'
+    (it) => !hiddenAppsIds.includes(it._id) && isAllowedToRole(it.accessLevel, me) && it.position !== 'top'
   )
 </script>
 
