@@ -1736,8 +1736,8 @@ importers:
         specifier: ~22.8.7
         version: 22.8.8
       electron:
-        specifier: ^35.0.3
-        version: 35.0.3
+        specifier: ^36.3.1
+        version: 36.3.1
       electron-builder:
         specifier: ^25.1.8
         version: 25.1.8
@@ -4172,7 +4172,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop-1@file:projects/desktop-1.tgz':
-    resolution: {integrity: sha512-rsHmRGdl06oTqUIcR9dPSRKa4Fr+aiBNUfdnskyM/yzol/YQcaOhrOmStUArrr+l0ey5qSVX40GNrRuDK5RQJA==, tarball: file:projects/desktop-1.tgz}
+    resolution: {integrity: sha512-+3xHE79pZH3p6fzQkqin/6vH7inebwonxQgQiODe0wVygulmUFPWwFFEI4rtraGZYiivKUmJ5zCd+dCckLu6KQ==, tarball: file:projects/desktop-1.tgz}
     version: 0.0.0
 
   '@rush-temp/desktop-preferences-assets@file:projects/desktop-preferences-assets.tgz':
@@ -4188,7 +4188,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-nfD+5Z3H2YZOhYd17GM4bArHHPFx7Jkxnf65ODiy05bVFUHbj3YaC0btFbq5l83NFWL94YL3yPvXe1P87MqI0w==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-ksJbenEj9NJb3b0bGinpUWssVjPWzaWfUEy+kRMqG1gBaFMqhtqBXNNuyLbtAywAaX9uMqSosGCE/E265qRfAw==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -8512,8 +8512,8 @@ packages:
   electron-windows-badge@1.1.0:
     resolution: {integrity: sha512-hWFbUk9u3fQHcKzTAcjZAN7XH9bL9oH9g20RRDU/DVDNqdMI03GzlBZfR/R8R1krYu9AT4biLqSCAxnt9LMAfA==}
 
-  electron@35.0.3:
-    resolution: {integrity: sha512-kjQAYEWXSr2TyK19IZoF85dzFIBaYuX7Yp/C+34b5Y/jmI2z270CGie+RjmEGMMitsy0G8YJKftukhYMuWlK6g==}
+  electron@36.3.1:
+    resolution: {integrity: sha512-LeOZ+tVahmctHaAssLCGRRUa2SAO09GXua3pKdG+WzkbSDMh+3iOPONNVPTqGp8HlWnzGj4r6mhsIbM2RgH+eQ==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -18113,7 +18113,7 @@ snapshots:
       '@vercel/webpack-asset-relocator-loader': 1.7.4
       cross-env: 7.0.3
       dotenv: 16.0.3
-      electron: 35.0.3
+      electron: 36.3.1
       electron-builder: 25.1.8
       electron-squirrel-startup: 1.0.1
       node-loader: 2.0.0(webpack@5.97.1)
@@ -18229,7 +18229,7 @@ snapshots:
       css-loader: 5.2.7(webpack@5.97.1)
       dotenv: 16.0.3
       dotenv-webpack: 8.0.1(webpack@5.97.1)
-      electron: 35.0.3
+      electron: 36.3.1
       electron-context-menu: 4.0.4
       electron-log: 5.1.7
       electron-squirrel-startup: 1.0.1
@@ -31556,7 +31556,7 @@ snapshots:
 
   electron-windows-badge@1.1.0: {}
 
-  electron@35.0.3:
+  electron@36.3.1:
     dependencies:
       '@electron/get': 2.0.3
       '@types/node': 22.13.12

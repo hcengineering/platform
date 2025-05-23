@@ -33,10 +33,6 @@ export const addMenus = (getWindow: () => BrowserWindow, sendCommand: (cmd: stri
           click: () => { sendCommand('select-workspace') }
         },
         {
-          label: 'Backup...',
-          click: () => { sendCommand('start-backup') }
-        },
-        {
           label: 'Logout',
           click: () => { sendCommand('logout') }
         },
