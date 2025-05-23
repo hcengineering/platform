@@ -144,7 +144,7 @@
     }
 
     for (const file of message.files) {
-      if (draft.files.find((it) => it.blobId === file.blobId)) continue
+      if (files.find((it) => it.blobId === file.blobId)) continue
       void deleteFile(file.blobId)
       await communicationClient.removeFile(card._id, message.id, message.created, file.blobId)
     }
