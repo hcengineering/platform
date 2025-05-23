@@ -37,7 +37,7 @@ export async function parseContent (
     return { content: mta.message.contents, attachments: [] }
   }
 
-  const email = await getEmailContent(mta.message.contents)
+  const email = await getEmailContent(mta.message.contents, contentType)
 
   let content = email.text ?? ''
   let isMarkdown = false
@@ -88,7 +88,7 @@ export function getHeader (mta: MtaMessage, header: string): string | undefined 
   return mta.message.headers.find((header) => header[0].toLowerCase() === h)?.[1]?.trim()
 }
 
-async function getEmailContent (mtaContent: string): Promise<ReadedEmlJson> {
+async function getEmailContent (mtaContent: string, contentType: string): Promise<ReadedEmlJson> {
   if (mtaContent == null) {
     return {
       text: '',
@@ -97,9 +97,7 @@ async function getEmailContent (mtaContent: string): Promise<ReadedEmlJson> {
     } as any
   }
   const contentRegex = /Content-Type/i
-  const content = contentRegex.test(mtaContent)
-    ? mtaContent
-    : `Content-Type: ${guessContentType(mtaContent)}\r\n${mtaContent}`
+  const content = contentRegex.test(mtaContent) ? mtaContent : `Content-Type: ${contentType}\r\n${mtaContent}`
   const email = await new Promise<ReadedEmlJson>((resolve, reject) => {
     readEml(content, (err, json) => {
       if (err !== undefined && err !== null) {
@@ -127,14 +125,6 @@ export function removeContentTypeHeader (content: string): string {
 
   const contentTypeRegex = /^Content-Type:.*?(?:\r\n|\n|\r)/im
   return content.replace(contentTypeRegex, '')
-}
-
-function guessContentType (content: string): string {
-  // Simple heuristic - if it contains HTML tags, it's likely HTML
-  if (/<[a-z][\s\S]*>/i.test(content)) {
-    return 'text/html; charset="UTF-8"'
-  }
-  return 'text/plain; charset="UTF-8"'
 }
 
 function isEmptyString (str: string | undefined): boolean {
