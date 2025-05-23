@@ -12,44 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { createHash, randomUUID } from 'crypto'
-import { readEml, ReadedEmlJson } from 'eml-parse-js'
+import { createHash } from 'crypto'
 import { Request, Response } from 'express'
-import TurndownService from 'turndown'
-import sanitizeHtml from 'sanitize-html'
 import { MeasureContext } from '@hcengineering/core'
-import {
-  type Attachment,
-  type EmailContact,
-  type EmailMessage,
-  createMessages,
-  getProducer
-} from '@hcengineering/mail-common'
+import { type EmailContact, type EmailMessage, createMessages, getProducer } from '@hcengineering/mail-common'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
 
 import { mailServiceToken, baseConfig, kvsClient } from './client'
 import config from './config'
-
-export interface MtaMessage {
-  envelope: {
-    from: {
-      address: string
-    }
-    to: {
-      address: string
-    }[]
-  }
-  message: {
-    headers: string[][]
-    contents: string
-  }
-}
-
-function getHeader (mta: MtaMessage, header: string): string | undefined {
-  const h = header.toLowerCase()
-  return mta.message.headers.find((header) => header[0].toLowerCase() === h)?.[1]?.trim()
-}
+import { MtaMessage } from './types'
+import { getHeader, parseContent } from './utils'
 
 export async function handleMtaHook (req: Request, res: Response, ctx: MeasureContext): Promise<void> {
   try {
@@ -140,75 +113,6 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
     // Any error in the mta-hook should not prevent the mail server from handling emails
     res.status(200).send({ action: 'accept' })
   }
-}
-
-async function parseContent (
-  ctx: MeasureContext,
-  mta: MtaMessage
-): Promise<{ content: string, attachments: Attachment[] }> {
-  const contentType = getHeader(mta, 'Content-Type')
-  if (contentType === undefined) {
-    throw new Error('Content-Type header not found')
-  }
-
-  if (contentType.toLowerCase().startsWith('text/plain')) {
-    return { content: mta.message.contents, attachments: [] }
-  }
-
-  const contents = `Content-Type: ${contentType}\r\n${mta.message.contents}`
-  const email = await new Promise<ReadedEmlJson>((resolve, reject) => {
-    readEml(contents, (err, json) => {
-      if (err !== undefined && err !== null) {
-        reject(err)
-      } else if (json === undefined) {
-        reject(new Error('Failed to parse email'))
-      } else {
-        resolve(json)
-      }
-    })
-  })
-
-  let content = email.text ?? ''
-  let isMarkdown = false
-  if (email.html !== undefined) {
-    try {
-      const html = sanitizeHtml(email.html)
-      const tds = new TurndownService()
-      content = tds.turndown(html)
-      isMarkdown = true
-    } catch (error) {
-      ctx.warn('Failed to parse html content', { error })
-    }
-  }
-
-  const attachments: Attachment[] = []
-  if (config.storageConfig !== undefined) {
-    for (const a of email.attachments ?? []) {
-      if (a.name === undefined || a.name.length === 0) {
-        // EML parser returns attachments with empty name for parts of content
-        // that do not have "Content-Disposition: attachment" e.g. for part
-        // Content-Type: text/calendar; charset="UTF-8"; method=REQUEST
-        continue
-      }
-      const attachment: Attachment = {
-        id: randomUUID(),
-        name: a.name,
-        data: Buffer.from(a.data64, 'base64'),
-        contentType: a.contentType.split(';')[0].trim()
-      }
-      attachments.push(attachment)
-
-      // For inline images, replace the CID references with the blob id
-      if (isMarkdown && a.inline && a.id !== undefined) {
-        const cid = a.id.replace(/[<>]/g, '')
-        content = content.replaceAll(
-          new RegExp(`!\\[.*?\\]\\(cid:${cid}\\)`, 'g'),
-          `![${a.name}](cid:${attachment.id})`
-        )
-      }
-    }
-  }
-  return { content, attachments }
 }
 
 function getEmailContact (email: string): EmailContact {
