@@ -16,9 +16,11 @@
 import { Request, Response } from 'express'
 import { MeasureContext } from '@hcengineering/core'
 import { createMessages } from '@hcengineering/mail-common'
-import { type MtaMessage, handleMtaHook } from '../handlerMta'
-import * as client from '../client'
 import { createRestTxOperations } from '@hcengineering/api-client'
+
+import { handleMtaHook } from '../handlerMta'
+import * as client from '../client'
+import { type MtaMessage } from '../types'
 
 // Mock dependencies
 jest.mock('@hcengineering/mail-common', () => ({
@@ -388,4 +390,175 @@ describe('handleMtaHook', () => {
       }
     }
   }
+
+  it('should process HTML email correctly', async () => {
+    // Mock request with HTML content
+    const htmlContent = '<html><body><h1>Hello</h1><p>This is an <b>HTML</b> test email</p></body></html>'
+    mockReq = {
+      headers: { 'x-hook-token': 'test-hook-token' },
+      body: createValidMtaMessage('sender@example.com', ['recipient@example.com'], {
+        subject: 'HTML Test Subject',
+        contentType: 'text/html; charset=utf-8',
+        content: htmlContent
+      })
+    }
+
+    await handleMtaHook(mockReq as Request, mockRes as Response, mockCtx)
+
+    // Should return 200
+    expect(mockStatus).toHaveBeenCalledWith(200)
+    expect(mockSend).toHaveBeenCalledWith({ action: 'accept' })
+
+    // Should process the message with both HTML and text content
+    expect(createMessages).toHaveBeenCalledWith(
+      client.baseConfig,
+      mockCtx,
+      mockTxOperations,
+      {},
+      {},
+      client.mailServiceToken,
+      mockLoginInfo,
+      expect.objectContaining({
+        mailId: expect.any(String),
+        from: { email: 'sender@example.com', firstName: 'sender', lastName: 'example.com' },
+        to: [{ email: 'recipient@example.com', firstName: 'recipient', lastName: 'example.com' }],
+        subject: 'HTML Test Subject',
+        content: htmlContent,
+        incoming: true
+      }),
+      [] // attachments
+    )
+  })
+
+  it('should process multipart email with both HTML and text correctly', async () => {
+    // Create a multipart email with both text and HTML
+    const textContent = 'This is the plain text version'
+    const htmlContent = '<html><body><p>This is the HTML version</p></body></html>'
+
+    // Mock message with multipart content by setting multiple headers and contents
+    const multipartMessage = {
+      envelope: {
+        from: { address: 'sender@example.com' },
+        to: [{ address: 'recipient@example.com' }]
+      },
+      message: {
+        headers: [
+          ['Content-Type', 'multipart/alternative; boundary="boundary-string"'],
+          ['Subject', 'Multipart Test Email'],
+          ['From', 'Sender <sender@example.com>'],
+          ['To', 'Recipient <recipient@example.com>']
+        ],
+        contents: [
+          {
+            headers: [['Content-Type', 'text/plain; charset=utf-8']],
+            content: textContent
+          },
+          {
+            headers: [['Content-Type', 'text/html; charset=utf-8']],
+            content: htmlContent
+          }
+        ]
+      }
+    }
+
+    mockReq = {
+      headers: { 'x-hook-token': 'test-hook-token' },
+      body: multipartMessage
+    }
+
+    await handleMtaHook(mockReq as Request, mockRes as Response, mockCtx)
+
+    // Should return 200
+    expect(mockStatus).toHaveBeenCalledWith(200)
+    expect(mockSend).toHaveBeenCalledWith({ action: 'accept' })
+
+    // Should process the message with both content types
+    expect(createMessages).toHaveBeenCalledWith(
+      client.baseConfig,
+      mockCtx,
+      mockTxOperations,
+      {},
+      {},
+      client.mailServiceToken,
+      mockLoginInfo,
+      expect.objectContaining({
+        mailId: expect.any(String),
+        from: { email: 'sender@example.com', firstName: 'Sender', lastName: '' },
+        to: [{ email: 'recipient@example.com', firstName: 'Recipient', lastName: '' }],
+        subject: 'Multipart Test Email',
+        content: 'This is the HTML version',
+        incoming: true
+      }),
+      []
+    )
+  })
+
+  it('should handle HTML email with inline images correctly', async () => {
+    // HTML content with embedded image reference
+    const htmlWithImage =
+      '<html><body><p>Test with image:</p><img src="cid:image1@example.com" alt="Test Image"></body></html>'
+
+    // Create image attachment
+    const imageAttachment = {
+      headers: [
+        ['Content-Type', 'image/jpeg'],
+        ['Content-Disposition', 'inline; filename="image.jpg"'],
+        ['Content-ID', '<image1@example.com>']
+      ],
+      content: 'base64encodedcontent' // Would normally be a Base64 string
+    }
+
+    // Create multipart message with HTML and image
+    const multipartMessage = {
+      envelope: {
+        from: { address: 'sender@example.com' },
+        to: [{ address: 'recipient@example.com' }]
+      },
+      message: {
+        headers: [
+          ['Content-Type', 'multipart/related; boundary="boundary-string"'],
+          ['Subject', 'Email with Inline Image'],
+          ['From', 'Sender <sender@example.com>'],
+          ['To', 'Recipient <recipient@example.com>']
+        ],
+        contents: [
+          {
+            headers: [['Content-Type', 'text/html; charset=utf-8']],
+            content: htmlWithImage
+          },
+          imageAttachment
+        ]
+      }
+    }
+
+    mockReq = {
+      headers: { 'x-hook-token': 'test-hook-token' },
+      body: multipartMessage
+    }
+
+    await handleMtaHook(mockReq as Request, mockRes as Response, mockCtx)
+
+    // Should process message with attachments
+    expect(createMessages).toHaveBeenCalledWith(
+      client.baseConfig,
+      mockCtx,
+      mockTxOperations,
+      {},
+      {},
+      client.mailServiceToken,
+      mockLoginInfo,
+      expect.objectContaining({
+        htmlContent: htmlWithImage
+        // Other fields as expected
+      }),
+      expect.arrayContaining([
+        expect.objectContaining({
+          contentType: 'image/jpeg',
+          name: 'image.jpg',
+          contentId: '<image1@example.com>'
+          // Other attachment fields
+        })
+      ])
+    )
+  })
 })
