@@ -28,6 +28,10 @@
     "Yesterday": "Gestern",
     "YesterdayAt": "Gestern um {time}",
     "AndMore": "und {count} weitere",
-    "IsTyping": "{count, plural, =1 {schreibt} other {schreiben}}"
+    "IsTyping": "{count, plural, =1 {schreibt} other {schreiben}}",
+    "Loading": "Laden...",
+    "MessageIn": "Nachricht #{title}",
+    "ThreadWasDeleted": "Dieser Thread wurde gelöscht.",
+    "MessageWasRemoved": "Diese Nachricht wurde entfernt."
   }
 }

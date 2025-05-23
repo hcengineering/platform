@@ -19,37 +19,52 @@
   import cardPlugin, { Card } from '@hcengineering/card'
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import { Label } from '@hcengineering/ui'
-  import { type Ref } from '@hcengineering/core'
+  import { Class, type Ref } from '@hcengineering/core'
+  import uiNext from '../../plugin'
 
   export let message: Message
-  export let thread: Thread
+  export let thread: Thread | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const threadCardQuery = createQuery()
 
   let threadCard: Card | undefined
+  let isLoaded = false
 
-  $: threadCardQuery.query(
-    cardPlugin.class.Card,
-    { _id: thread.thread as Ref<Card> },
-    (res) => {
-      threadCard = res[0]
-    },
-    { limit: 1 }
-  )
+  $: if (thread !== undefined) {
+    threadCardQuery.query(
+      cardPlugin.class.Card,
+      { _id: thread.thread as Ref<Card> },
+      (res) => {
+        threadCard = res[0]
+        isLoaded = true
+      },
+      { limit: 1 }
+    )
+  } else {
+    threadCard = undefined
+    threadCardQuery.unsubscribe()
+    isLoaded = true
+  }
 
-  $: if (thread.thread !== threadCard?._id) {
+  $: if (thread?.thread !== threadCard?._id) {
     threadCard = undefined
   }
 
-  $: label = hierarchy.getClass(threadCard?._class ?? thread.threadType).label
+  $: threadClass = threadCard?._class ?? thread?.threadType ?? ('' as Ref<Class<Card>>)
+  $: label = hierarchy.hasClass(threadClass) ? hierarchy.getClass(threadClass).label : undefined
+  $: isDeleted = isLoaded && threadCard == null
 </script>
 
 <div class="thread-view">
-  <div class="thread-type">
-    <Label {label} />
-  </div>
+  {#if label && !isDeleted}
+    <div class="thread-type">
+      <span class="overflow-label">
+        <Label {label} />
+      </span>
+    </div>
+  {/if}
   {#if threadCard}
     <ObjectPresenter
       objectId={threadCard._id}
@@ -58,6 +73,10 @@
       colorInherit
       shouldShowAvatar={false}
     />
+  {:else if isDeleted}
+    <div class="deletedText">
+      <Label label={uiNext.string.ThreadWasRemoved} />
+    </div>
   {/if}
 </div>
 
@@ -82,5 +101,9 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
+  }
+
+  .deletedText {
+    color: var(--theme-text-placeholder-color);
   }
 </style>

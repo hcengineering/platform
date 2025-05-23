@@ -28,6 +28,10 @@
     "Yesterday": "昨天",
     "YesterdayAt": "昨天 于 {time}",
     "AndMore": "和其他 {count} 条",
-    "IsTyping": "{count, plural, =1 {正在输入} other {正在输入}}"
+    "IsTyping": "{count, plural, =1 {正在输入} other {正在输入}}",
+    "Loading": "加载中...",
+    "MessageIn": "消息 #{title}",
+    "ThreadWasDeleted": "此线程已被删除。",
+    "MessageWasRemoved": "此消息已被删除。"
   }
 }
