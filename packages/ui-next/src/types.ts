@@ -17,7 +17,7 @@ import { type Asset, type IntlString } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
 import { type TextEditorHandler } from '@hcengineering/text-editor'
 import { type BlobID } from '@hcengineering/communication-types'
-import type { BlobMetadata, Ref, Timestamp } from '@hcengineering/core'
+import type { BlobMetadata, Markup, Ref, Timestamp } from '@hcengineering/core'
 import type { Person } from '@hcengineering/contact'
 
 export interface NavigationSection {
@@ -68,4 +68,9 @@ export interface Action {
 export interface PresenceTyping {
   person: Ref<Person>
   lastTyping: Timestamp
+}
+
+export interface MessageDraft {
+  content: Markup
+  files: UploadedFile[]
 }

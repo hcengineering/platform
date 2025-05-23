@@ -30,6 +30,8 @@
     "AndMore": "and {count} more",
     "IsTyping": "{count, plural, =1 {is typing} other {are typing}}...",
     "Loading": "Loading...",
-    "MessageIn": "Message #{title}"
+    "MessageIn": "Message #{title}",
+    "ThreadWasRemoved": "This thread was removed.",
+    "MessageWasRemoved": "This message was removed."
   }
 }

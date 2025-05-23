@@ -101,6 +101,9 @@
     "@hcengineering/view-assets": "^0.6.11",
     "@hcengineering/task-assets": "^0.6.19",
     "@hcengineering/chunter-assets": "^0.6.18",
+    "@hcengineering/chat-assets": "^0.6.0",
+    "@hcengineering/card-assets": "^0.6.0",
+    "@hcengineering/mail-assets": "^0.6.0",
     "@hcengineering/recruit-assets": "^0.6.23",
     "@hcengineering/setting-assets": "^0.6.15",
     "@hcengineering/support-assets": "^0.6.5",
@@ -172,6 +175,9 @@
     "@hcengineering/survey-assets": "^0.6.0",
     "@hcengineering/server-process": "^0.6.0",
     "@hcengineering/server-process-resources": "^0.6.0",
+    "@hcengineering/chat": "^0.6.0",
+    "@hcengineering/card": "^0.6.0",
+    "@hcengineering/mail": "^0.6.0",
     "@hcengineering/kafka": "^0.6.0"
   }
 }

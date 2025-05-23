@@ -34,6 +34,9 @@ import { viewId } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import { timeId } from '@hcengineering/time'
 import { surveyId } from '@hcengineering/survey'
+import { chatId } from '@hcengineering/chat'
+import { cardId } from '@hcengineering/card'
+import { mailId } from '@hcengineering/mail'
 import coreEng from '@hcengineering/core/lang/en.json'
 import loginEng from '@hcengineering/login-assets/lang/en.json'
 import platformEng from '@hcengineering/platform/lang/en.json'
@@ -70,6 +73,9 @@ import viewEn from '@hcengineering/view-assets/lang/en.json'
 import workbenchEn from '@hcengineering/workbench-assets/lang/en.json'
 import timeEn from '@hcengineering/time-assets/lang/en.json'
 import surveyEn from '@hcengineering/survey-assets/lang/en.json'
+import chatEn from '@hcengineering/chat-assets/lang/en.json'
+import cardEn from '@hcengineering/card-assets/lang/en.json'
+import mailEn from '@hcengineering/mail-assets/lang/en.json'
 
 export function registerStringLoaders (): void {
   addStringsLoader(coreId, async (lang: string) => coreEng)
@@ -109,4 +115,7 @@ export function registerStringLoaders (): void {
   addStringsLoader(githubId, async (lang: string) => githubEn)
   addStringsLoader(timeId, async (lang: string) => timeEn)
   addStringsLoader(surveyId, async (lang: string) => surveyEn)
+  addStringsLoader(chatId, async (lang: string) => chatEn)
+  addStringsLoader(cardId, async (lang: string) => cardEn)
+  addStringsLoader(mailId, async (lang: string) => mailEn)
 }

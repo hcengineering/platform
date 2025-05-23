@@ -14,8 +14,8 @@
 -->
 
 <script lang="ts">
-  import { Markup, RateLimiter } from '@hcengineering/core'
-  import { tick, createEventDispatcher, onDestroy } from 'svelte'
+  import { Markup, RateLimiter, Ref } from '@hcengineering/core'
+  import { tick, createEventDispatcher } from 'svelte'
   import {
     uploadFile,
     deleteFile,
@@ -23,7 +23,7 @@
     getClient,
     getFileMetadata
   } from '@hcengineering/presentation'
-  import { Message } from '@hcengineering/communication-types'
+  import { Message, MessageID } from '@hcengineering/communication-types'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import { areEqualMarkups, isEmptyMarkup, EmptyMarkup } from '@hcengineering/text'
   import { updateMyPresence } from '@hcengineering/presence-resources'
@@ -35,11 +35,12 @@
   import { defaultMessageInputActions, toMarkdown } from '../../utils'
   import uiNext from '../../plugin'
   import IconPlus from '../icons/IconPlus.svelte'
-  import { type TextInputAction, UploadedFile, type PresenceTyping } from '../../types'
+  import { type TextInputAction, UploadedFile, type PresenceTyping, MessageDraft } from '../../types'
   import TypingPresenter from '../TypingPresenter.svelte'
+  import { getDraft, messageToDraft, saveDraft, getEmptyDraft, removeDraft } from '../../draft'
+
   export let card: Card
   export let message: Message | undefined = undefined
-  export let content: Markup | undefined = undefined
   export let title: string = ''
   export let onCancel: (() => void) | undefined = undefined
   export let onSubmit: ((markdown: string, files: UploadedFile[]) => Promise<void>) | undefined = undefined
@@ -50,26 +51,47 @@
   const client = getClient()
   const me = getCurrentEmployee()
 
-  let files: UploadedFile[] =
-    message?.files?.map((it) => ({
-      blobId: it.blobId,
-      type: it.type,
-      filename: it.filename,
-      size: it.size,
-      metadata: it.meta
-    })) ?? []
+  let prevCard: Ref<Card> | undefined = card._id
+  let prevMessage: MessageID | undefined = message?.id
+  let draft: MessageDraft = message != null ? messageToDraft(message) : getDraft(card._id)
+
   let inputElement: HTMLInputElement
 
   let progress = false
+
+  $: if (prevCard !== card._id) {
+    prevCard = card._id
+    initDraft()
+  }
+
+  $: if (prevMessage !== message?.id) {
+    prevMessage = message?.id
+    initDraft()
+  }
+
+  $: _saveDraft(draft)
+
+  function initDraft (): void {
+    draft = message != null ? messageToDraft(message) : getDraft(card._id)
+  }
+
+  function _saveDraft (draft: MessageDraft): void {
+    if (message === undefined) {
+      saveDraft(card._id, draft)
+    }
+  }
 
   async function handleSubmit (event: CustomEvent<Markup>): Promise<void> {
     event.preventDefault()
     event.stopPropagation()
 
     const markup = event.detail
-    const filesToLoad = files
+    const filesToLoad = draft.files
 
-    files = []
+    draft = getEmptyDraft()
+    if (message === undefined) {
+      removeDraft(card._id)
+    }
 
     const markdown = toMarkdown(markup)
 
@@ -151,14 +173,19 @@
     const uuid = await uploadFile(file)
     const metadata = await getFileMetadata(file, uuid)
 
-    files.push({
-      blobId: uuid,
-      type: file.type,
-      filename: file.name,
-      size: file.size,
-      metadata
-    })
-    files = files
+    draft = {
+      ...draft,
+      files: [
+        ...draft.files,
+        {
+          blobId: uuid,
+          type: file.type,
+          filename: file.name,
+          size: file.size,
+          metadata
+        }
+      ]
+    }
   }
 
   const attachAction: TextInputAction = {
@@ -170,24 +197,16 @@
     },
     order: 1000
   }
-  onDestroy(() => {
-    for (const file of files) {
-      const fromMessage = message?.files.some((it) => it.blobId === file.blobId)
-      if (!fromMessage) {
-        void deleteFile(file.blobId)
-      }
-    }
-  })
 
   async function handleCancel (): Promise<void> {
     onCancel?.()
-    for (const file of files) {
+    for (const file of draft.files) {
       const fromMessage = message?.files.some((it) => it.blobId === file.blobId)
       if (!fromMessage) {
         void deleteFile(file.blobId)
       }
     }
-    files = []
+    draft = getEmptyDraft()
   }
 
   async function loadFiles (evt: ClipboardEvent): Promise<void> {
@@ -241,6 +260,10 @@
 
   let newMarkup: Markup | undefined = undefined
   async function onUpdate (event: CustomEvent<Markup>): Promise<void> {
+    draft = {
+      ...draft,
+      content: event.detail
+    }
     if (message !== undefined) return
     newMarkup = event.detail
     if (!isEmptyMarkup(newMarkup)) {
@@ -252,13 +275,18 @@
     }
   }
 
+  function isEmptyDraft (): boolean {
+    return isEmptyMarkup(draft.content) && draft.files.length === 0
+  }
+
   function hasChanges (files: UploadedFile[], message: Message | undefined): boolean {
+    if (isEmptyDraft()) return false
     if (message === undefined) return files.length > 0
     if (message.files.length !== files.length) return true
     if (message.files.some((it) => !files.some((f) => f.blobId === it.blobId))) return true
-    if (newMarkup === undefined || content === undefined) return false
+    if (newMarkup === undefined || draft.content === undefined) return false
 
-    return !areEqualMarkups(content, newMarkup ?? EmptyMarkup)
+    return !areEqualMarkups(draft.content, newMarkup ?? EmptyMarkup)
   }
 </script>
 
@@ -281,11 +309,11 @@
     on:change={fileSelected}
   />
   <TextInput
-    {content}
+    content={draft.content}
     placeholder={title !== '' ? uiNext.string.MessageIn : undefined}
     placeholderParams={title !== '' ? { title } : undefined}
     loading={progress}
-    hasChanges={hasChanges(files, message)}
+    hasChanges={hasChanges(draft.files, message)}
     actions={[...defaultMessageInputActions, attachAction]}
     on:submit={handleSubmit}
     on:update={onUpdate}
@@ -293,9 +321,9 @@
     onPaste={pasteAction}
   >
     <div slot="header" class="header">
-      {#if files.length > 0}
-        <div class="flex-row-center files-list scroll-divider-color flex-gap-2">
-          {#each files as file (file.blobId)}
+      {#if draft.files.length > 0}
+        <div class="flex-row-center files-list scroll-divider-color flex-gap-2 mt-2">
+          {#each draft.files as file (file.blobId)}
             <div class="item flex">
               <AttachmentPresenter
                 value={{
@@ -309,7 +337,11 @@
                 removable
                 on:remove={(result) => {
                   if (result !== undefined) {
-                    files = files.filter((it) => it.blobId !== file.blobId)
+                    draft = {
+                      ...draft,
+                      files: draft.files.filter((it) => it.blobId !== file.blobId)
+                    }
+
                     if (!message?.files?.some((it) => it.blobId === file.blobId)) {
                       void deleteFile(file.blobId)
                     }
@@ -337,7 +369,6 @@
   }
 
   .files-list {
-    padding: 0.5rem;
     overflow-x: auto;
     overflow-y: hidden;
 

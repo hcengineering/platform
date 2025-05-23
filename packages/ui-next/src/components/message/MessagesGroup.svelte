@@ -48,6 +48,8 @@
     {#each messages as message, index (message.id)}
       {@const previousMessage = messages[index - 1]}
       {@const compact =
+        !message.removed &&
+        !previousMessage?.removed &&
         previousMessage !== undefined &&
         previousMessage.creator === message.creator &&
         previousMessage.type === message.type &&
