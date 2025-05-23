@@ -78,6 +78,10 @@ describe('getMdContent', () => {
     // Verify we have the expected guest entries
     expect(result).toContain('John Doe')
     expect(result).toContain('Sarah Jones')
+
+    expect(result).toContain('[Yes](https://example.com/1)')
+    expect(result).toContain('[No](https://example.com/2)')
+    expect(result).toContain('[Maybe](https://example.com/3)')
   })
 
   it('should handle undefined content gracefully', () => {
