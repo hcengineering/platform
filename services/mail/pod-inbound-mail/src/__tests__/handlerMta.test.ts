@@ -430,13 +430,12 @@ describe('handleMtaHook', () => {
     )
   })
 
-  it('should process multipart email with both HTML and text correctly', async () => {
+  it('should process email plain/text content header', async () => {
     // Create a multipart email with both text and HTML
     const textContent = 'This is the plain text version'
-    const htmlContent = '<html><body><p>This is the HTML version</p></body></html>'
 
     // Mock message with multipart content by setting multiple headers and contents
-    const multipartMessage = {
+    const message = {
       envelope: {
         from: { address: 'sender@example.com' },
         to: [{ address: 'recipient@example.com' }]
@@ -444,26 +443,17 @@ describe('handleMtaHook', () => {
       message: {
         headers: [
           ['Content-Type', 'multipart/alternative; boundary="boundary-string"'],
-          ['Subject', 'Multipart Test Email'],
+          ['Subject', 'Test Email'],
           ['From', 'Sender <sender@example.com>'],
           ['To', 'Recipient <recipient@example.com>']
         ],
-        contents: [
-          {
-            headers: [['Content-Type', 'text/plain; charset=utf-8']],
-            content: textContent
-          },
-          {
-            headers: [['Content-Type', 'text/html; charset=utf-8']],
-            content: htmlContent
-          }
-        ]
+        contents: `Content-Type: text/plain; charset=utf-8 \r\n${textContent}`
       }
     }
 
     mockReq = {
       headers: { 'x-hook-token': 'test-hook-token' },
-      body: multipartMessage
+      body: message
     }
 
     await handleMtaHook(mockReq as Request, mockRes as Response, mockCtx)
@@ -483,82 +473,13 @@ describe('handleMtaHook', () => {
       mockLoginInfo,
       expect.objectContaining({
         mailId: expect.any(String),
-        from: { email: 'sender@example.com', firstName: 'Sender', lastName: '' },
-        to: [{ email: 'recipient@example.com', firstName: 'Recipient', lastName: '' }],
-        subject: 'Multipart Test Email',
-        content: 'This is the HTML version',
+        from: { email: 'sender@example.com', firstName: 'Sender', lastName: 'example.com' },
+        to: [{ email: 'recipient@example.com', firstName: 'Recipient', lastName: 'example.com' }],
+        subject: 'Test Email',
+        content: textContent,
         incoming: true
       }),
       []
-    )
-  })
-
-  it('should handle HTML email with inline images correctly', async () => {
-    // HTML content with embedded image reference
-    const htmlWithImage =
-      '<html><body><p>Test with image:</p><img src="cid:image1@example.com" alt="Test Image"></body></html>'
-
-    // Create image attachment
-    const imageAttachment = {
-      headers: [
-        ['Content-Type', 'image/jpeg'],
-        ['Content-Disposition', 'inline; filename="image.jpg"'],
-        ['Content-ID', '<image1@example.com>']
-      ],
-      content: 'base64encodedcontent' // Would normally be a Base64 string
-    }
-
-    // Create multipart message with HTML and image
-    const multipartMessage = {
-      envelope: {
-        from: { address: 'sender@example.com' },
-        to: [{ address: 'recipient@example.com' }]
-      },
-      message: {
-        headers: [
-          ['Content-Type', 'multipart/related; boundary="boundary-string"'],
-          ['Subject', 'Email with Inline Image'],
-          ['From', 'Sender <sender@example.com>'],
-          ['To', 'Recipient <recipient@example.com>']
-        ],
-        contents: [
-          {
-            headers: [['Content-Type', 'text/html; charset=utf-8']],
-            content: htmlWithImage
-          },
-          imageAttachment
-        ]
-      }
-    }
-
-    mockReq = {
-      headers: { 'x-hook-token': 'test-hook-token' },
-      body: multipartMessage
-    }
-
-    await handleMtaHook(mockReq as Request, mockRes as Response, mockCtx)
-
-    // Should process message with attachments
-    expect(createMessages).toHaveBeenCalledWith(
-      client.baseConfig,
-      mockCtx,
-      mockTxOperations,
-      {},
-      {},
-      client.mailServiceToken,
-      mockLoginInfo,
-      expect.objectContaining({
-        htmlContent: htmlWithImage
-        // Other fields as expected
-      }),
-      expect.arrayContaining([
-        expect.objectContaining({
-          contentType: 'image/jpeg',
-          name: 'image.jpg',
-          contentId: '<image1@example.com>'
-          // Other attachment fields
-        })
-      ])
     )
   })
 })

@@ -17,9 +17,7 @@ import { readEml, ReadedEmlJson } from 'eml-parse-js'
 import TurndownService from 'turndown'
 import sanitizeHtml from 'sanitize-html'
 import { MeasureContext } from '@hcengineering/core'
-import {
-  type Attachment
-} from '@hcengineering/mail-common'
+import { type Attachment } from '@hcengineering/mail-common'
 
 import { MtaMessage } from './types'
 import config from './config'
@@ -37,10 +35,11 @@ export async function parseContent (
     return { content: mta.message.contents, attachments: [] }
   }
 
+  // TODO: UBERF-11029 - remove this logging after testing
+  console.log('Parsing email content', mta.message.contents)
   const email = await getEmailContent(mta.message.contents)
 
   let content = email.text ?? ''
-  console.log('Content:', content)
   let isMarkdown = false
   if (email.html !== undefined) {
     try {
@@ -116,10 +115,19 @@ async function getEmailContent (mtaContent: string): Promise<ReadedEmlJson> {
   if (isEmptyString(email.text) && isEmptyString(email.html)) {
     return {
       ...email,
-      text: mtaContent
+      text: removeContentTypeHeader(mtaContent)
     }
   }
   return email
+}
+
+export function removeContentTypeHeader (content: string): string {
+  if (content == null) {
+    return content
+  }
+
+  const contentTypeRegex = /^Content-Type:.*?(?:\r\n|\n|\r)/im
+  return content.replace(contentTypeRegex, '')
 }
 
 function guessContentType (content: string): string {

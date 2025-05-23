@@ -15,12 +15,7 @@
 import { createHash } from 'crypto'
 import { Request, Response } from 'express'
 import { MeasureContext } from '@hcengineering/core'
-import {
-  type EmailContact,
-  type EmailMessage,
-  createMessages,
-  getProducer
-} from '@hcengineering/mail-common'
+import { type EmailContact, type EmailMessage, createMessages, getProducer } from '@hcengineering/mail-common'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
 
