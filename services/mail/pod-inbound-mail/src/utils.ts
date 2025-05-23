@@ -26,6 +26,8 @@ export async function parseContent (
   ctx: MeasureContext,
   mta: MtaMessage
 ): Promise<{ content: string, attachments: Attachment[] }> {
+  // TODO: UBERF-11029 - remove this logging after testing
+  ctx.info('Parsing email content', { content: mta.message.contents })
   const contentType = getHeader(mta, 'Content-Type')
   if (contentType === undefined) {
     throw new Error('Content-Type header not found')
@@ -35,8 +37,6 @@ export async function parseContent (
     return { content: mta.message.contents, attachments: [] }
   }
 
-  // TODO: UBERF-11029 - remove this logging after testing
-  console.log('Parsing email content', mta.message.contents)
   const email = await getEmailContent(mta.message.contents)
 
   let content = email.text ?? ''
@@ -46,7 +46,6 @@ export async function parseContent (
       const html = sanitizeHtml(email.html)
       const tds = new TurndownService()
       content = tds.turndown(html)
-      console.log('HTML Content:', content)
 
       isMarkdown = true
     } catch (error) {
