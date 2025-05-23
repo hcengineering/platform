@@ -26,14 +26,13 @@
 
   onMount(() => {
     void getProviders().then((res: ProviderInfo[]) => {
-      enabledProviders = res
-        .map((provider) => {
-          const component = providerMap[provider.name]
-          return {
-            ...provider,
-            component
-          }
-        })
+      enabledProviders = res.map((provider) => {
+        const component = providerMap[provider.name]
+        return {
+          ...provider,
+          component
+        }
+      })
     })
   })
 
