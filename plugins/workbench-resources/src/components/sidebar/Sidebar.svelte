@@ -21,10 +21,16 @@
   import { sidebarStore, SidebarVariant } from '../../sidebar'
   import SidebarExpanded from './SidebarExpanded.svelte'
   import SidebarMini from './SidebarMini.svelte'
+  import { isAppAllowed } from '../../utils'
+  import { getCurrentAccount } from '@hcengineering/core'
 
+  const account = getCurrentAccount()
   const client = getClient()
 
-  const widgets = client.getModel().findAllSync(workbench.class.Widget, {})
+  const widgets = client
+    .getModel()
+    .findAllSync(workbench.class.Widget, {})
+    .filter((it) => isAppAllowed(it, account))
   const preferencesQuery = createQuery()
 
   let preferences: WidgetPreference[] = []

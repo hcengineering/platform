@@ -112,13 +112,15 @@
   let actions: Action[] = []
   $: {
     actions = []
-    actions.push({
-      icon: view.icon.Setting,
-      label: setting.string.Settings,
-      action: async () => {
-        selectCategory()
-      }
-    })
+    if (hasAccountRole(account, AccountRole.DocGuest)) {
+      actions.push({
+        icon: view.icon.Setting,
+        label: setting.string.Settings,
+        action: async () => {
+          selectCategory()
+        }
+      })
+    }
     actions.push(...getMenu(items, ['main']))
     if (hasAccountRole(account, AccountRole.User)) {
       actions.push({
