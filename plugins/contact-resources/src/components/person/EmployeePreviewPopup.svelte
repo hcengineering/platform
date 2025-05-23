@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Employee, Person } from '@hcengineering/contact'
-  import { AccountUuid, Class, Doc, Ref } from '@hcengineering/core'
+  import { AccountRole, AccountUuid, Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import { ButtonIcon, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
@@ -32,6 +32,7 @@
   export let _id: Ref<Employee>
   export let disabled: boolean = false
 
+  const me = getCurrentAccount()
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -41,10 +42,12 @@
 
   $: employee = $employeeByIdStore.get(_id) ?? $personByIdStore.get(_id)
   $: isEmployee = $employeeByIdStore.has(_id)
+  $: readonlyAccount = me.role === AccountRole.ReadOnlyGuest
   $: void loadPersonTimezone(employee)
 
   async function viewProfile (): Promise<void> {
     if (employee === undefined) return
+    if (readonlyAccount) return
     const panelComponent = hierarchy.classHierarchyMixin(employee._class as Ref<Class<Doc>>, view.mixin.ObjectPanel)
     const comp = panelComponent?.component ?? view.component.EditDoc
     const loc = await getObjectLinkFragment(hierarchy, employee, {}, comp)
@@ -64,13 +67,15 @@
       <div class="flex-presenter">
         <DeactivatedHeader>
           <div slot="actions">
-            <div class="flex-presenter flex-gap-2 flex-center">
-              <ComponentExtensions
-                extension={contact.extension.EmployeePopupActions}
-                props={{ employee, icon: contact.icon.Chat, type: 'type-button-icon' }}
-              />
-              <ButtonIcon icon={contact.icon.User} size="small" iconSize="small" on:click={viewProfile} />
-            </div>
+            {#if false}
+              <div class="flex-presenter flex-gap-2 flex-center">
+                <ComponentExtensions
+                  extension={contact.extension.EmployeePopupActions}
+                  props={{ employee, icon: contact.icon.Chat, type: 'type-button-icon' }}
+                />
+                <ButtonIcon icon={contact.icon.User} size="small" iconSize="small" on:click={viewProfile} />
+              </div>
+            {/if}
           </div>
         </DeactivatedHeader>
       </div>
@@ -87,7 +92,7 @@
           showStatus={isEmployee}
           statusSize="medium"
           style="modern"
-          clickable
+          clickable={!readonlyAccount}
           on:click={viewProfile}
         />
         <div class="flex-col flex-gap-0-5 pl-1">
@@ -117,7 +122,7 @@
             name={employee?.name}
             {disabled}
             style="modern"
-            clickable
+            clickable={!readonlyAccount}
             on:click={viewProfile}
           />
         </div>
@@ -128,7 +133,7 @@
     {/if}
   </div>
   <div slot="actions">
-    {#if !disabled}
+    {#if !disabled && !readonlyAccount}
       <div class="flex-presenter flex-gap-2 flex-center">
         <div class="button-container">
           <ComponentExtensions
