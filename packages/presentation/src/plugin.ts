@@ -119,6 +119,7 @@ export default plugin(presentationId, {
     MakePrivateDescription: '' as IntlString,
     OpenInANewTab: '' as IntlString,
     Created: '' as IntlString,
+    Selected: '' as IntlString,
     NoResults: '' as IntlString,
     Next: '' as IntlString,
     FailedToPreview: '' as IntlString,

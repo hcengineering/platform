@@ -728,7 +728,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     if (allResolved) {
       // We need to complete or remove todo, in case all are resolved.
       if (!Array.from(approvedOrChangesRequested.values()).includes('CHANGES_REQUESTED')) {
-        const todos = allTodos.filter((it) => it.purpose === 'fix')
+        const todos = allTodos.filter((it) => it.purpose === 'fix' && it.doneOn == null)
         for (const t of todos) {
           await this.markDoneOrDeleteTodo(t)
         }
@@ -853,7 +853,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
   private async markDoneOrDeleteTodo (td: WithLookup<GithubTodo>): Promise<void> {
     // Let's mark as done in any case
-    await this.client.update(td, {
+    await this.client.diffUpdate(td, {
       doneOn: Date.now()
     })
   }

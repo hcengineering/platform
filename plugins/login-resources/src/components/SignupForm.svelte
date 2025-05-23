@@ -27,6 +27,7 @@
   import OtpForm from './OtpForm.svelte'
 
   export let signUpDisabled = false
+  export let localLoginHidden = false
   export let navigateUrl: string | undefined = undefined
   export let useOTP = true // False only for dev/tests
 
@@ -65,7 +66,7 @@
   let step = OtpLoginSteps.Email
   let otpRetryOn = 0
 
-  if (signUpDisabled) {
+  if (signUpDisabled || localLoginHidden) {
     goTo('login')
   }
 

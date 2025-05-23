@@ -71,7 +71,8 @@
 
   $: showCategories =
     created.length > 0 ||
-    objects.map((it) => getObjectValue(groupBy, it)).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
+    objects.map((it) => getObjectValue(groupBy, it)).filter((it, index, arr) => arr.indexOf(it) === index).length > 1 ||
+    selectedObjects.length > 0
 
   let presenter: AnySvelteComponent | undefined = undefined
   $: if (type === 'presenter') {
@@ -159,6 +160,9 @@
   function getGroup (doc: Doc, groupBy: any): any {
     if (created.find((it) => it._id === doc._id) !== undefined) {
       return '_created'
+    }
+    if ((selectedObjects ?? []).find((it) => it === doc._id) !== undefined) {
+      return '_selected'
     }
     return getObjectValue(groupBy, toAny(doc))
   }
