@@ -23,6 +23,24 @@ export function getMdContent (ctx: MeasureContext, email: EmailMessage): string 
     try {
       const html = sanitizeHtml(email.content)
       const tds = new TurndownService()
+
+      tds.addRule('links', {
+        filter: 'a',
+        replacement: function (content, node: Node) {
+          try {
+            const element = node as HTMLElement
+            const href = element.getAttribute('href')
+            const title = element.title ?? ''
+            // Trim content to prevent empty lines inside links
+            const trimmedContent = content.trim().replace(/\n\s*\n/g, ' ')
+            return `[${trimmedContent}](${href}${title})`
+          } catch (error: any) {
+            ctx.warn('Failed to parse link', { error: error.message })
+            return content
+          }
+        }
+      })
+
       return tds.turndown(html)
     } catch (error) {
       ctx.warn('Failed to parse html content', { error })
