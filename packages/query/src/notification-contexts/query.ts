@@ -343,9 +343,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
   }
 
   private async onFileCreated(event: FileCreatedEvent): Promise<void> {
-    const isUpdated = await this.updateMessage(event.card, event.file.message, (message) =>
-      addFile(message, event.file)
-    )
+    const isUpdated = await this.updateMessage(event.card, event.message, (message) => addFile(message, event.file))
     if (isUpdated) {
       void this.notify()
     }

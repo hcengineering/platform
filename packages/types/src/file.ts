@@ -14,7 +14,7 @@
 //
 
 import type { BlobID, CardID, CardType, RichText, SocialID } from './core'
-import type { Message, MessageID, MessageType, MessageData } from './message'
+import type { Message, MessageID, MessageType, MessageData, LinkPreview, Reaction, File } from './message'
 
 export interface FileMetadata {
   card: CardID
@@ -33,8 +33,9 @@ export interface FileMessage {
   externalId?: string
   created: Date
   edited?: Date
-  reactions: FileReaction[]
-  files: FileBlob[]
+  reactions: Reaction[]
+  files: File[]
+  links: LinkPreview[]
   thread?: FileThread
 }
 
@@ -46,12 +47,6 @@ export interface FileBlob {
   creator: SocialID
   created: Date
   meta: Record<string, any>
-}
-
-export interface FileReaction {
-  reaction: string
-  creator: SocialID
-  created: Date
 }
 
 export interface FileThread {

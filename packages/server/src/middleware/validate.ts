@@ -161,6 +161,12 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
       case NotificationRequestEventType.UpdateNotificationContext:
         this.validate(event, UpdateNotificationContextEventSchema)
         break
+      case MessageRequestEventType.CreateLinkPreview:
+        this.validate(event, CreateLinkPreviewEventSchema)
+        break
+      case MessageRequestEventType.RemoveLinkPreview:
+        this.validate(event, RemoveLinkPreviewEventSchema)
+        break
     }
     return await this.provideEvent(session, deserializeEvent(event), derived)
   }
@@ -201,6 +207,7 @@ const FindMessagesParamsSchema = FindParamsSchema.extend({
   files: z.boolean().optional(),
   reactions: z.boolean().optional(),
   replies: z.boolean().optional(),
+  links: z.boolean().optional(),
   created: dateOrRecordSchema.optional()
 }).strict()
 
@@ -321,12 +328,14 @@ const CreateFileEventSchema = BaseRequestEventSchema.extend({
   card: CardID,
   message: MessageID,
   messageCreated: DateSchema,
-  blobId: BlobID,
-  size: z.number(),
-  fileType: z.string(),
-  filename: z.string(),
-  creator: SocialID,
-  meta: z.record(z.string(), z.any()).optional()
+  data: z.object({
+    blobId: BlobID,
+    size: z.number(),
+    type: z.string(),
+    filename: z.string(),
+    meta: z.record(z.string(), z.any()).optional()
+  }),
+  creator: SocialID
 }).strict()
 
 const RemoveFileEventSchema = BaseRequestEventSchema.extend({
@@ -336,6 +345,38 @@ const RemoveFileEventSchema = BaseRequestEventSchema.extend({
   messageCreated: DateSchema,
   creator: SocialID,
   blobId: BlobID
+}).strict()
+
+const CreateLinkPreviewEventSchema = BaseRequestEventSchema.extend({
+  type: z.literal(MessageRequestEventType.CreateLinkPreview),
+  card: CardID,
+  message: MessageID,
+  messageCreated: DateSchema,
+  data: z.object({
+    url: z.string(),
+    host: z.string(),
+    title: z.string().optional(),
+    description: z.string().optional(),
+    favicon: z.string().optional(),
+    hostname: z.string().optional(),
+    image: z
+      .object({
+        url: z.string(),
+        width: z.number().optional(),
+        height: z.number().optional()
+      })
+      .optional()
+  }),
+  creator: SocialID
+}).strict()
+
+const RemoveLinkPreviewEventSchema = BaseRequestEventSchema.extend({
+  type: z.literal(MessageRequestEventType.RemoveLinkPreview),
+  card: CardID,
+  message: MessageID,
+  messageCreated: DateSchema,
+  id: z.string(),
+  creator: SocialID
 }).strict()
 
 const CreateThreadEventSchema = BaseRequestEventSchema.extend({
@@ -456,6 +497,8 @@ function deserializeEvent(event: RequestEvent): RequestEvent {
     case MessageRequestEventType.RemoveReaction:
     case MessageRequestEventType.CreateReaction:
     case MessageRequestEventType.CreatePatch:
+    case MessageRequestEventType.CreateLinkPreview:
+    case MessageRequestEventType.RemoveLinkPreview:
       return {
         ...event,
         messageCreated: deserializeDate(event.messageCreated)!

@@ -41,11 +41,12 @@ import type {
   LabelID,
   CardType,
   PatchData,
-  File,
-  BlobMetadata,
   NotificationContent,
   NotificationType,
-  ComparisonOperator
+  ComparisonOperator,
+  FileData,
+  LinkPreviewData,
+  LinkPreviewID
 } from '@hcengineering/communication-types'
 
 export interface DbAdapter {
@@ -95,15 +96,22 @@ export interface DbAdapter {
     card: CardID,
     message: MessageID,
     messageCreated: Date,
-    blobId: BlobID,
-    fileType: string,
-    filename: string,
-    size: number,
-    meta: BlobMetadata | undefined,
+    data: FileData,
     creator: SocialID,
     created: Date
   ): Promise<void>
   removeFiles(card: CardID, query: RemoveFileQuery): Promise<void>
+
+  createLinkPreview(
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    data: LinkPreviewData,
+    creator: SocialID,
+    created: Date
+  ): Promise<LinkPreviewID>
+
+  removeLinkPreview(card: CardID, message: MessageID, id: LinkPreviewID): Promise<void>
 
   createThread(
     card: CardID,
@@ -162,7 +170,10 @@ export interface DbAdapter {
   close(): void
 }
 
-export type RemoveFileQuery = Partial<Pick<File, 'message' | 'blobId'>>
+export type RemoveFileQuery = {
+  message: MessageID
+  blobId: BlobID
+}
 export type RemoveThreadQuery = Partial<Pick<Thread, 'card' | 'thread' | 'message'>>
 export type RemoveCollaboratorsQuery = {
   accounts?: AccountID[]

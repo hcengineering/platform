@@ -83,18 +83,9 @@ export function parseYaml(data: string): ParsedFile {
             lastReply: message.thread.lastReply
           }
         : undefined,
-      files: message.files.map((file) => ({
-        ...file,
-        message: message.id,
-        messageCreated: message.created,
-        card: metadata.card
-      })),
-      reactions: message.reactions.map((reaction) => ({
-        message: message.id,
-        reaction: reaction.reaction,
-        creator: reaction.creator,
-        created: reaction.created
-      }))
+      files: message.files,
+      reactions: message.reactions,
+      links: message.links ?? []
     }))
   }
 }

@@ -30,12 +30,15 @@ import {
   type SocialID,
   SortingOrder,
   type Thread,
-  type BlobMetadata
+  type FileData,
+  type LinkPreviewData,
+  type LinkPreviewID
 } from '@hcengineering/communication-types'
 
 import { BaseDb } from './base'
 import {
   type FileDb,
+  type LinkPreviewDb,
   type MessageDb,
   messageSchema,
   type MessagesGroupDb,
@@ -146,11 +149,7 @@ export class MessagesDb extends BaseDb {
     card: CardID,
     message: MessageID,
     messageCreated: Date,
-    blobId: BlobID,
-    fileType: string,
-    filename: string,
-    size: number,
-    meta: BlobMetadata | undefined,
+    data: FileData,
     creator: SocialID,
     created: Date
   ): Promise<void> {
@@ -158,14 +157,14 @@ export class MessagesDb extends BaseDb {
       workspace_id: this.workspace,
       card_id: card,
       message_id: message,
-      blob_id: blobId,
-      type: fileType,
-      filename,
-      size,
+      blob_id: data.blobId,
+      type: data.type,
+      filename: data.filename,
+      size: data.size,
       creator,
       created,
       message_created: messageCreated,
-      meta
+      meta: data.meta
     }
     const sql = `INSERT INTO ${TableName.File} (workspace_id, card_id, message_id, blob_id, type, filename, creator,
                                                 created, message_created, size, meta)
@@ -211,6 +210,60 @@ export class MessagesDb extends BaseDb {
                  WHERE ${whereClauses.join(' AND ')}`
 
     await this.execute(sql, whereValues, 'remove files')
+  }
+
+  async createLinkPreview(
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    data: LinkPreviewData,
+    creator: SocialID,
+    created: Date
+  ): Promise<LinkPreviewID> {
+    const db: Omit<LinkPreviewDb, 'id'> = {
+      workspace_id: this.workspace,
+      card_id: card,
+      message_id: message,
+      message_created: messageCreated,
+      url: data.url,
+      host: data.host,
+      title: data.title ?? null,
+      description: data.description ?? null,
+      favicon: data.favicon ?? null,
+      hostname: data.hostname ?? null,
+      image: data.image ?? null,
+      creator,
+      created
+    }
+    const sql = `INSERT INTO ${TableName.LinkPreview} (workspace_id, card_id, message_id, url, host, title, description, favicon, hostname, image, creator, created, message_created)
+                 VALUES ($1::uuid, $2::varchar, $3::int8, $4::varchar, $5::varchar, $6::varchar, $7::varchar, $8::varchar, $9::varchar, $10::jsonb, $11::varchar, $12::timestamptz, $13::timestamptz)
+                 RETURNING id::text`
+    const result = await this.execute(
+      sql,
+      [
+        db.workspace_id,
+        db.card_id,
+        db.message_id,
+        db.url,
+        db.host,
+        db.title,
+        db.description,
+        db.favicon,
+        db.hostname,
+        db.image,
+        db.creator,
+        db.created,
+        db.message_created
+      ],
+      'insert link preview'
+    )
+
+    return result[0].id as LinkPreviewID
+  }
+
+  async removeLinkPreview(card: CardID, message: MessageID, id: LinkPreviewID): Promise<void> {
+    const sql = `DELETE FROM ${TableName.LinkPreview} WHERE workspace_id = $1::uuid AND card_id = $2::varchar AND message_id = $3::int8 AND id = $4::int8`
+    await this.execute(sql, [this.workspace, card, message, id], 'remove link preview')
   }
 
   // Reaction
@@ -411,6 +464,7 @@ export class MessagesDb extends BaseDb {
     WITH
     ${this.buildCteLimitedMessages(where, orderBy, limit)}
     ${this.buildCteAggregatedFiles(params)}
+    ${this.buildCteAggregatedLinkPreviews(params)}
     ${this.buildCteAggregatedReactions(params)}
     ${this.buildCteAggregatedPatches()}
     ${this.buildMainSelect(params)}
@@ -449,9 +503,6 @@ export class MessagesDb extends BaseDb {
         f.card_id,
         f.message_id,
         jsonb_agg(jsonb_build_object(
-          'card_id', f.card_id,
-          'message_id', f.message_id::text,
-          'message_created', f.message_created,
           'blob_id', f.blob_id,
           'type', f.type,
           'size', f.size,
@@ -470,6 +521,36 @@ export class MessagesDb extends BaseDb {
   `
   }
 
+  private buildCteAggregatedLinkPreviews(params: FindMessagesParams): string {
+    if (!params.links) return ''
+    return `,
+    agg_link_previews AS (
+      SELECT
+        l.workspace_id,
+        l.card_id,
+        l.message_id,
+        jsonb_agg(jsonb_build_object(
+          'id', l.id::text,
+          'url', l.url,
+          'host', l.host,
+          'title', l.title,
+          'description', l.description,
+          'favicon', l.favicon,
+          'hostname', l.hostname,
+          'image', l.image,
+          'creator', l.creator,
+          'created', l.created
+      )) AS link_previews
+      FROM ${TableName.LinkPreview} l
+      INNER JOIN limited_messages m
+        ON m.workspace_id = l.workspace_id
+        AND m.card_id = l.card_id
+        AND m.id = l.message_id
+      GROUP BY l.workspace_id, l.card_id, l.message_id
+    )
+  `
+  }
+
   private buildCteAggregatedReactions(params: FindMessagesParams): string {
     if (!params.reactions) return ''
     return `,
@@ -479,7 +560,6 @@ export class MessagesDb extends BaseDb {
         r.card_id,
         r.message_id,
         jsonb_agg(jsonb_build_object(
-          'message_id', r.message_id::text,
           'reaction', r.reaction,
           'creator', r.creator,
           'created', r.created
@@ -526,6 +606,9 @@ export class MessagesDb extends BaseDb {
       : ''
 
     const selectFiles = params.files ? `COALESCE(f.files, '[]'::jsonb) AS files,` : `'[]'::jsonb AS files,`
+    const selectLinks = params.links
+      ? `COALESCE(l.link_previews, '[]'::jsonb) AS link_previews,`
+      : `'[]'::jsonb AS link_previews,`
 
     const selectReactions = params.reactions
       ? `COALESCE(r.reactions, '[]'::jsonb) AS reactions,`
@@ -537,6 +620,14 @@ export class MessagesDb extends BaseDb {
       ON f.workspace_id = m.workspace_id
       AND f.card_id = m.card_id
       AND f.message_id = m.id`
+      : ''
+
+    const joinLinks = params.links
+      ? `
+    LEFT JOIN agg_link_previews l
+      ON l.workspace_id = m.workspace_id
+      AND l.card_id = m.card_id
+      AND l.message_id = m.id`
       : ''
 
     const joinReactions = params.reactions
@@ -557,16 +648,18 @@ export class MessagesDb extends BaseDb {
                m.data,
                m.external_id,
                ${selectReplies}
-                   ${selectFiles}
-                   ${selectReactions}
-                   COALESCE(p.patches, '[]'::jsonb) AS patches
+               ${selectFiles}
+               ${selectLinks}
+               ${selectReactions}
+               COALESCE(p.patches, '[]'::jsonb) AS patches
         FROM limited_messages m
                  LEFT JOIN ${TableName.Thread} t
                            ON t.workspace_id = m.workspace_id
                                AND t.card_id = m.card_id
                                AND t.message_id = m.id
-                                   ${joinFiles}
-                                       ${joinReactions}
+                 ${joinFiles}
+                 ${joinLinks}
+                 ${joinReactions}
                  LEFT JOIN agg_patches p
                            ON p.workspace_id = m.workspace_id
                                AND p.card_id = m.card_id

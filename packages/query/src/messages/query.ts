@@ -35,6 +35,8 @@ import {
   type FileCreatedEvent,
   type FileRemovedEvent,
   type FindClient,
+  type LinkPreviewCreatedEvent,
+  type LinkPreviewRemovedEvent,
   type MessageCreatedEvent,
   MessageRequestEventType,
   MessageResponseEventType,
@@ -60,7 +62,7 @@ import {
   type QueryId
 } from '../types'
 import { WindowImpl } from '../window'
-import { addFile, addReaction, removeFile, removeReaction } from '../utils.ts'
+import { addFile, addLinkPreview, addReaction, removeFile, removeLinkPreview, removeReaction } from '../utils.ts'
 
 const GROUPS_LIMIT = 4
 
@@ -169,6 +171,14 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
         await this.onFileRemovedEvent(event)
         break
       }
+      case MessageResponseEventType.LinkPreviewCreated: {
+        await this.onLinkPreviewCreatedEvent(event)
+        break
+      }
+      case MessageResponseEventType.LinkPreviewRemoved: {
+        await this.onLinkPreviewRemovedEvent(event)
+        break
+      }
       case MessageResponseEventType.ThreadCreated:
         await this.onThreadCreatedEvent(event)
         break
@@ -231,7 +241,8 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       edited: undefined,
       thread: undefined,
       reactions: [],
-      files: []
+      files: [],
+      links: []
     }
 
     if (!this.match(tmpMessage)) return
@@ -869,17 +880,17 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       created: event.reaction.created
     }
 
-    const message = this.result.get(reaction.message)
+    const message = this.result.get(event.message)
     if (message !== undefined) {
       this.result.update(addReaction(message, reaction))
       void this.notify()
     }
 
-    const fromNextBuffer = this.next.buffer.find((it) => it.id === reaction.message)
+    const fromNextBuffer = this.next.buffer.find((it) => it.id === event.message)
     if (fromNextBuffer !== undefined) {
       addReaction(fromNextBuffer, reaction)
     }
-    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === reaction.message)
+    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === event.message)
     if (fromPrevBuffer !== undefined) {
       addReaction(fromPrevBuffer, reaction)
     }
@@ -907,11 +918,11 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   private async onFileCreatedEvent(event: FileCreatedEvent): Promise<void> {
-    if (this.params.files !== true || event.file.card !== this.params.card) return
+    if (this.params.files !== true || event.card !== this.params.card) return
     if (this.result instanceof Promise) this.result = await this.result
 
     const { file } = event
-    const message = this.result.get(file.message)
+    const message = this.result.get(event.message)
     if (message !== undefined) {
       if (!message.files.some((it) => it.blobId === file.blobId)) {
         message.files.push(file)
@@ -920,14 +931,57 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       }
     }
 
-    const fromNextBuffer = this.next.buffer.find((it) => it.id === file.message)
+    const fromNextBuffer = this.next.buffer.find((it) => it.id === event.message)
     if (fromNextBuffer !== undefined) {
       addFile(fromNextBuffer, file)
     }
-    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === file.message)
+    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === event.message)
     if (fromPrevBuffer !== undefined) {
       addFile(fromPrevBuffer, file)
     }
+  }
+
+  private async onLinkPreviewCreatedEvent(event: LinkPreviewCreatedEvent): Promise<void> {
+    if (this.params.links !== true || this.params.card !== event.card) return
+    if (this.result instanceof Promise) this.result = await this.result
+    const message = this.result.get(event.message)
+    const { linkPreview } = event
+    if (message !== undefined) {
+      if (!message.links.some((it) => it.id === linkPreview.id)) {
+        message.links.push(linkPreview)
+        this.result.update(message)
+        await this.notify()
+      }
+    }
+
+    const fromNextBuffer = this.next.buffer.find((it) => it.id === event.message)
+    if (fromNextBuffer !== undefined) {
+      addLinkPreview(fromNextBuffer, linkPreview)
+    }
+    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === event.message)
+    if (fromPrevBuffer !== undefined) {
+      addLinkPreview(fromPrevBuffer, linkPreview)
+    }
+  }
+
+  private async onLinkPreviewRemovedEvent(event: LinkPreviewRemovedEvent): Promise<void> {
+    if (this.params.links !== true || this.params.card !== event.card) return
+    if (this.result instanceof Promise) this.result = await this.result
+    const message = this.result.get(event.message)
+    if (message !== undefined) {
+      const links = message.links.filter((it) => it.id !== event.id)
+      if (links.length === message.links.length) return
+
+      const updated = {
+        ...message,
+        links
+      }
+      this.result.update(updated)
+      await this.notify()
+    }
+
+    this.next.buffer = this.next.buffer.map((it) => (it.id === event.message ? removeLinkPreview(it, event.id) : it))
+    this.prev.buffer = this.prev.buffer.map((it) => (it.id === event.message ? removeLinkPreview(it, event.id) : it))
   }
 
   private async onFileRemovedEvent(event: FileRemovedEvent): Promise<void> {

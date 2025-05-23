@@ -20,6 +20,8 @@ import {
   type CardType,
   type File,
   type FindNotificationsParams,
+  type LinkPreview,
+  type LinkPreviewID,
   type Message,
   type MessageID,
   type MessagesGroup,
@@ -125,6 +127,23 @@ export function removeFile(message: Message, blobId: BlobID): Message {
   return {
     ...message,
     files
+  }
+}
+
+export function addLinkPreview(message: Message, linkPreview: LinkPreview): Message {
+  const current = message.links.find((it) => it.id === linkPreview.id)
+  if (current === undefined) {
+    message.links.push(linkPreview)
+  }
+  return message
+}
+
+export function removeLinkPreview(message: Message, id: LinkPreviewID): Message {
+  const links = message.links.filter((it) => it.id !== id)
+  if (links.length === message.links.length) return message
+  return {
+    ...message,
+    links
   }
 }
 

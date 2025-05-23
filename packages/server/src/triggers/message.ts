@@ -40,7 +40,7 @@ import { markdownToMarkup } from '@hcengineering/text-markdown'
 
 import type { TriggerCtx, TriggerFn, Triggers } from '../types'
 import { findAccount } from '../utils'
-import { findMessage, findMessageInFiles } from './utils'
+import { findMessageInFiles } from './utils'
 
 async function onMessagesGroupCreated(ctx: TriggerCtx, event: MessagesGroupCreatedEvent): Promise<RequestEvent[]> {
   ctx.registeredCards.delete(event.group.card)
@@ -80,7 +80,7 @@ async function onMessagesRemoved(ctx: TriggerCtx, event: PatchCreatedEvent): Pro
 }
 
 async function onFileCreated(ctx: TriggerCtx, event: FileCreatedEvent): Promise<RequestEvent[]> {
-  const message = (await ctx.db.findMessages({ card: event.card, id: event.file.message, limit: 1 }))[0]
+  const message = (await ctx.db.findMessages({ card: event.card, id: event.message, limit: 1 }))[0]
   if (message !== undefined) return []
 
   const { file } = event
@@ -96,8 +96,8 @@ async function onFileCreated(ctx: TriggerCtx, event: FileCreatedEvent): Promise<
       type: MessageRequestEventType.CreatePatch,
       patchType: PatchType.addFile,
       card: event.card,
-      message: file.message,
-      messageCreated: file.messageCreated,
+      message: event.message,
+      messageCreated: event.messageCreated,
       data: patchData,
       creator: file.creator
     }
@@ -285,11 +285,13 @@ async function onThreadCreated(ctx: TriggerCtx, event: ThreadCreatedEvent): Prom
       card: event.thread.thread,
       message: messageId,
       messageCreated: message.created,
-      blobId: file.blobId,
-      fileType: file.type,
-      filename: file.filename,
-      size: file.size,
-      meta: file.meta,
+      data: {
+        blobId: file.blobId,
+        type: file.type,
+        filename: file.filename,
+        size: file.size,
+        meta: file.meta
+      },
       creator: file.creator
     })
   }

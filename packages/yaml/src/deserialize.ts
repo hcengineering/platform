@@ -35,19 +35,8 @@ export function deserializeMessage(message: Message): FileMessage {
             lastReply: message.thread.lastReply
           }
         : undefined,
-    files: message.files.map((file) => ({
-      blobId: file.blobId,
-      type: file.type,
-      filename: file.filename,
-      size: file.size,
-      created: file.created,
-      creator: file.creator,
-      meta: file.meta ?? {}
-    })),
-    reactions: message.reactions.map((reaction) => ({
-      reaction: reaction.reaction,
-      creator: reaction.creator,
-      created: reaction.created
-    }))
+    files: message.files,
+    reactions: message.reactions,
+    links: message.links
   }
 }

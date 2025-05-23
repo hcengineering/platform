@@ -360,7 +360,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   private async onFileCreated(event: FileCreatedEvent): Promise<void> {
     if (this.params.message !== true) return
     const isUpdated = await this.updateMessage(
-      (it) => this.matchNotificationByMessage(it, event.card, event.file.message),
+      (it) => this.matchNotificationByMessage(it, event.card, event.message),
       (message) => addFile(message, event.file)
     )
     if (isUpdated) {

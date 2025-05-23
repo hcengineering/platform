@@ -30,7 +30,8 @@ import type {
   MessageData,
   BlobID,
   CardID,
-  CardType
+  CardType,
+  FileData
 } from '@hcengineering/communication-types'
 
 export interface RestClient {
@@ -62,10 +63,7 @@ export interface RestClient {
     card: CardID,
     message: MessageID,
     messageCreated: Date,
-    blobId: BlobID,
-    fileType: string,
-    filename: string,
-    size: number,
+    data: FileData,
     creator: SocialID
   ) => Promise<void>
   removeFile: (

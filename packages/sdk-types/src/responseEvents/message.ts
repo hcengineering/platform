@@ -24,7 +24,9 @@ import type {
   Thread,
   MessagesGroup,
   BlobID,
-  CardType
+  CardType,
+  LinkPreview,
+  LinkPreviewID
 } from '@hcengineering/communication-types'
 import type { BaseResponseEvent } from './common'
 
@@ -38,6 +40,9 @@ export enum MessageResponseEventType {
 
   FileCreated = 'fileCreated',
   FileRemoved = 'fileRemoved',
+
+  LinkPreviewCreated = 'linkPreviewCreated',
+  LinkPreviewRemoved = 'linkPreviewRemoved',
 
   ThreadCreated = 'threadCreated',
   ThreadUpdated = 'threadUpdated',
@@ -57,6 +62,8 @@ export type MessageResponseEvent =
   | ReactionRemovedEvent
   | ThreadCreatedEvent
   | ThreadUpdatedEvent
+  | LinkPreviewCreatedEvent
+  | LinkPreviewRemovedEvent
 
 export interface MessageCreatedEvent extends BaseResponseEvent {
   type: MessageResponseEventType.MessageCreated
@@ -73,8 +80,9 @@ export interface PatchCreatedEvent extends BaseResponseEvent {
 export interface ReactionCreatedEvent extends BaseResponseEvent {
   type: MessageResponseEventType.ReactionCreated
   card: CardID
-  reaction: Reaction
+  message: MessageID
   messageCreated: Date
+  reaction: Reaction
 }
 
 export interface ReactionRemovedEvent extends BaseResponseEvent {
@@ -89,7 +97,25 @@ export interface ReactionRemovedEvent extends BaseResponseEvent {
 export interface FileCreatedEvent extends BaseResponseEvent {
   type: MessageResponseEventType.FileCreated
   card: CardID
+  message: MessageID
+  messageCreated: Date
   file: File
+}
+
+export interface LinkPreviewCreatedEvent extends BaseResponseEvent {
+  type: MessageResponseEventType.LinkPreviewCreated
+  card: CardID
+  message: MessageID
+  messageCreated: Date
+  linkPreview: LinkPreview
+}
+
+export interface LinkPreviewRemovedEvent extends BaseResponseEvent {
+  type: MessageResponseEventType.LinkPreviewRemoved
+  card: CardID
+  message: MessageID
+  messageCreated: Date
+  id: LinkPreviewID
 }
 
 export interface FileRemovedEvent extends BaseResponseEvent {

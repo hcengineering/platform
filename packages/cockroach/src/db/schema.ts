@@ -27,7 +27,9 @@ import {
   type NotificationID,
   type LabelID,
   type CardType,
-  type BlobMetadata
+  type BlobMetadata,
+  type LinkPreviewImage,
+  type LinkPreviewID
 } from '@hcengineering/communication-types'
 import type { NotificationContent, NotificationType } from '@hcengineering/communication-types'
 
@@ -41,7 +43,8 @@ export enum TableName {
   Reaction = 'communication.reactions',
   Thread = 'communication.thread',
   Collaborators = 'communication.collaborators',
-  Label = 'communication.label'
+  Label = 'communication.label',
+  LinkPreview = 'communication.link_preview'
 }
 
 export interface MessageDb {
@@ -112,6 +115,22 @@ export interface FileDb {
   message_created: Date
 }
 
+export interface LinkPreviewDb {
+  workspace_id: WorkspaceID
+  id: LinkPreviewID
+  card_id: CardID
+  message_id: MessageID
+  message_created: Date
+  url: string
+  host: string
+  title: string | null
+  description: string | null
+  favicon: string | null
+  hostname: string | null
+  image: LinkPreviewImage | null
+  creator: SocialID
+  created: Date
+}
 export interface ThreadDb {
   workspace_id: WorkspaceID
   card_id: CardID

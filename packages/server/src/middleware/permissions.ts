@@ -61,6 +61,8 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
       case MessageRequestEventType.CreateReaction:
       case MessageRequestEventType.RemoveReaction:
       case MessageRequestEventType.RemoveFile:
+      case MessageRequestEventType.CreateLinkPreview:
+      case MessageRequestEventType.RemoveLinkPreview:
       case MessageRequestEventType.CreateFile: {
         this.checkSocialId(session, event.creator)
         break

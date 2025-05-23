@@ -48,6 +48,7 @@ export interface FindMessagesParams extends FindParams {
   files?: boolean
   reactions?: boolean
   replies?: boolean
+  links?: boolean
   created?: Partial<Record<ComparisonOperator, Date>> | Date
 }
 

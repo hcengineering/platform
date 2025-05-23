@@ -36,7 +36,9 @@ import {
   type Label,
   type CardType,
   type BlobMetadata,
-  type AccountID
+  type AccountID,
+  type LinkPreview,
+  type LinkPreviewID
 } from '@hcengineering/communication-types'
 import { applyPatches } from '@hcengineering/communication-shared'
 
@@ -50,7 +52,8 @@ import {
   type PatchDb,
   type ReactionDb,
   type ThreadDb,
-  type LabelDb
+  type LabelDb,
+  type LinkPreviewDb
 } from './schema'
 
 interface RawMessage extends MessageDb {
@@ -61,6 +64,7 @@ interface RawMessage extends MessageDb {
   patches?: PatchDb[]
   files?: FileDb[]
   reactions?: ReactionDb[]
+  link_previews?: LinkPreviewDb[]
 }
 
 interface RawNotification extends NotificationDb {
@@ -102,7 +106,6 @@ type RawContext = ContextDb & { id: ContextID } & {
 
 export function toMessage(raw: RawMessage): Message {
   const patches = (raw.patches ?? []).map((it) => toPatch(it))
-
   const rawMessage: Message = {
     id: String(raw.id) as MessageID,
     type: raw.type,
@@ -126,7 +129,8 @@ export function toMessage(raw: RawMessage): Message {
           }
         : undefined,
     reactions: (raw.reactions ?? []).map(toReaction),
-    files: (raw.files ?? []).map(toFile)
+    files: (raw.files ?? []).map(toFile),
+    links: (raw.link_previews ?? []).map(toLinkPreview)
   }
 
   if (patches.length === 0) {
@@ -138,7 +142,6 @@ export function toMessage(raw: RawMessage): Message {
 
 export function toReaction(raw: ReactionDb): Reaction {
   return {
-    message: String(raw.message_id) as MessageID,
     reaction: raw.reaction,
     creator: raw.creator,
     created: new Date(raw.created)
@@ -147,9 +150,6 @@ export function toReaction(raw: ReactionDb): Reaction {
 
 export function toFile(raw: Omit<FileDb, 'workspace_id'>): File {
   return {
-    card: raw.card_id,
-    message: String(raw.message_id) as MessageID,
-    messageCreated: new Date(raw.message_created),
     blobId: raw.blob_id,
     type: raw.type,
     filename: raw.filename,
@@ -157,6 +157,21 @@ export function toFile(raw: Omit<FileDb, 'workspace_id'>): File {
     meta: raw.meta,
     creator: raw.creator,
     created: new Date(raw.created)
+  }
+}
+
+export function toLinkPreview(raw: LinkPreviewDb): LinkPreview {
+  return {
+    id: String(raw.id) as LinkPreviewID,
+    url: raw.url,
+    host: raw.host,
+    title: raw.title ?? undefined,
+    description: raw.description ?? undefined,
+    favicon: raw.favicon ?? undefined,
+    hostname: raw.hostname ?? undefined,
+    image: raw.image ?? undefined,
+    created: new Date(raw.created),
+    creator: raw.creator
   }
 }
 
@@ -272,7 +287,8 @@ function toNotificationRaw(id: ContextID, card: CardID, raw: RawNotification): N
       edited: undefined,
       reactions: [],
       files: messageFiles ?? [],
-      thread
+      thread,
+      links: []
     }
 
     if (patches.length > 0) {

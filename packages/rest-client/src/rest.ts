@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type BlobMetadata, concatLink } from '@hcengineering/core'
+import { concatLink } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
   MessageRequestEventType,
@@ -38,7 +38,8 @@ import {
   type CardType,
   type MessageType,
   PatchType,
-  type BlobID
+  type BlobID,
+  type FileData
 } from '@hcengineering/communication-types'
 import { retry } from '@hcengineering/communication-shared'
 
@@ -154,23 +155,15 @@ class RestClientImpl implements RestClient {
     card: CardID,
     message: MessageID,
     messageCreated: Date,
-    blobId: BlobID,
-    fileType: string,
-    filename: string,
-    size: number,
-    creator: SocialID,
-    meta?: BlobMetadata
+    data: FileData,
+    creator: SocialID
   ): Promise<void> {
     await this.event({
       type: MessageRequestEventType.CreateFile,
       card,
       message,
       messageCreated,
-      blobId,
-      fileType,
-      filename,
-      size,
-      meta,
+      data,
       creator
     })
   }

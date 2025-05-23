@@ -191,23 +191,10 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
           new Set(Array.from(info.contextQueries.values()).flatMap((it) => Array.from(it)))
         )
       case MessageResponseEventType.ReactionCreated:
-        return this.matchMessagesQuery(
-          { card: event.card, ids: [event.reaction.message] },
-          Array.from(info.messageQueries.values()),
-          new Set()
-        )
       case MessageResponseEventType.ReactionRemoved:
-        return this.matchMessagesQuery(
-          { card: event.card, ids: [event.message] },
-          Array.from(info.messageQueries.values()),
-          new Set()
-        )
+      case MessageResponseEventType.LinkPreviewCreated:
+      case MessageResponseEventType.LinkPreviewRemoved:
       case MessageResponseEventType.FileCreated:
-        return this.matchMessagesQuery(
-          { card: event.card, ids: [event.file.message] },
-          Array.from(info.messageQueries.values()),
-          new Set()
-        )
       case MessageResponseEventType.FileRemoved:
         return this.matchMessagesQuery(
           { card: event.card, ids: [event.message] },

@@ -49,7 +49,7 @@ export async function notify(ctx: TriggerCtx, event: ResponseEvent): Promise<Req
       return await notifyMessage(ctx, event.message, event.cardType)
     }
     case MessageResponseEventType.ReactionCreated: {
-      return await notifyReaction(ctx, event.card, event.reaction.message, event.messageCreated, event.reaction)
+      return await notifyReaction(ctx, event.card, event.message, event.messageCreated, event.reaction)
     }
     case MessageResponseEventType.ReactionRemoved: {
       return await removeReactionNotification(

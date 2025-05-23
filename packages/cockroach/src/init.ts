@@ -109,7 +109,8 @@ function getMigrations(): [string, string][] {
     migrationV2_4(),
     migrationV2_5(),
     migrationV2_6(),
-    migrationV2_7()
+    migrationV2_7(),
+    migrationV3_1()
   ]
 }
 
@@ -332,4 +333,31 @@ function migrationV2_7(): [string, string] {
       SET last_notify = last_update;`
 
   return ['set_last_notify_to_last_update-v2_7', sql]
+}
+
+function migrationV3_1(): [string, string] {
+  const sql = `
+      CREATE TABLE IF NOT EXISTS communication.link_preview
+      (
+          id              INT8         NOT NULL DEFAULT unique_rowid(),
+          workspace_id    UUID         NOT NULL,
+          card_id         VARCHAR(255) NOT NULL,
+          message_id      INT8         NOT NULL,
+          message_created TIMESTAMPTZ  NOT NULL,
+          url             TEXT         NOT NULL,
+          host            TEXT         NOT NULL,
+          hostname        TEXT,
+          title           TEXT,
+          description     TEXT,
+          favicon         TEXT,
+          image           JSONB,
+          creator         VARCHAR(255) NOT NULL,
+          created         TIMESTAMPTZ  NOT NULL DEFAULT now(),
+          PRIMARY KEY (id)
+      );
+
+      CREATE INDEX IF NOT EXISTS workspace_id_card_id_message_id_idx ON communication.link_preview (workspace_id, card_id, message_id);
+  `
+
+  return ['init_link_preview-v3_1', sql]
 }

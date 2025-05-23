@@ -34,6 +34,7 @@ export interface Message {
   thread?: Thread
   reactions: Reaction[]
   files: File[]
+  links: LinkPreview[]
 }
 
 export enum MessageType {
@@ -193,23 +194,46 @@ export enum PatchType {
 }
 
 export interface Reaction {
-  message: MessageID
   reaction: string
   creator: SocialID
   created: Date
 }
 
-export interface File {
-  card: CardID
-  message: MessageID
-  messageCreated: Date
+export interface FileData {
   blobId: BlobID
   type: string
   filename: string
   size: number
-  creator: SocialID
   meta?: BlobMetadata
+}
+
+export interface File extends FileData {
+  creator: SocialID
   created: Date
+}
+
+export type LinkPreviewID = string & { __linkPreviewId: true }
+
+export interface LinkPreviewData {
+  url: string
+  host: string
+  title?: string
+  description?: string
+  favicon?: string
+  hostname?: string
+  image?: LinkPreviewImage
+}
+
+export interface LinkPreview extends LinkPreviewData {
+  id: LinkPreviewID
+  creator: SocialID
+  created: Date
+}
+
+export interface LinkPreviewImage {
+  url: string
+  width?: number
+  height?: number
 }
 
 export interface Thread {

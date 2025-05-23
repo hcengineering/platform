@@ -55,7 +55,6 @@ export function applyPatch(message: Message, patch: Patch, allowedPatchTypes: Pa
       }
     case PatchType.addReaction:
       return addReaction(message, {
-        message: message.id,
         reaction: patch.data.reaction,
         creator: patch.creator,
         created: patch.created
@@ -124,11 +123,8 @@ function addFile(message: Message, data: AddFilePatchData, created: Date, creato
   if (isExists !== undefined) return message
   message.files.push({
     ...data,
-    card: message.card,
-    message: message.id,
     created,
-    creator,
-    messageCreated: message.created
+    creator
   })
   return message
 }

@@ -88,6 +88,7 @@ interface BaseMessageQueryParams {
   files?: boolean
   reactions?: boolean
   replies?: boolean
+  links?: boolean
 }
 
 export interface ManyMessagesQueryParams extends BaseMessageQueryParams {

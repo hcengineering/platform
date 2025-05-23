@@ -43,9 +43,11 @@ import {
   type CardType,
   type MessageData,
   type PatchData,
-  type BlobMetadata,
   NotificationType,
-  type NotificationContent
+  type NotificationContent,
+  type FileData,
+  type LinkPreviewData,
+  type LinkPreviewID
 } from '@hcengineering/communication-types'
 import type {
   DbAdapter,
@@ -148,30 +150,30 @@ export class CockroachAdapter implements DbAdapter {
     card: CardID,
     message: MessageID,
     messageCreated: Date,
-    blobId: BlobID,
-    fileType: string,
-    filename: string,
-    size: number,
-    meta: BlobMetadata | undefined,
+    data: FileData,
     creator: SocialID,
     created: Date
   ): Promise<void> {
-    await this.message.createFile(
-      card,
-      message,
-      messageCreated,
-      blobId,
-      fileType,
-      filename,
-      size,
-      meta,
-      creator,
-      created
-    )
+    await this.message.createFile(card, message, messageCreated, data, creator, created)
   }
 
   async removeFiles(card: CardID, query: RemoveFileQuery): Promise<void> {
     await this.message.removeFiles(card, query)
+  }
+
+  async createLinkPreview(
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    data: LinkPreviewData,
+    creator: SocialID,
+    created: Date
+  ): Promise<LinkPreviewID> {
+    return await this.message.createLinkPreview(card, message, messageCreated, data, creator, created)
+  }
+
+  async removeLinkPreview(card: CardID, message: MessageID, id: LinkPreviewID): Promise<void> {
+    await this.message.removeLinkPreview(card, message, id)
   }
 
   async createThread(

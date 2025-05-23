@@ -35,6 +35,7 @@ import {
   CardResponseEventType,
   type CreateFileEvent,
   type CreateLabelEvent,
+  type CreateLinkPreviewEvent,
   type CreateMessageEvent,
   type CreateMessagesGroupEvent,
   type CreateNotificationContextEvent,
@@ -48,6 +49,8 @@ import {
   type FileRemovedEvent,
   LabelRequestEventType,
   LabelResponseEventType,
+  type LinkPreviewCreatedEvent,
+  type LinkPreviewRemovedEvent,
   type MessageCreatedEvent,
   MessageRequestEventType,
   MessageResponseEventType,
@@ -66,6 +69,7 @@ import {
   type RemoveCollaboratorsEvent,
   type RemoveFileEvent,
   type RemoveLabelEvent,
+  type RemoveLinkPreviewEvent,
   type RemoveMessagesGroupEvent,
   type RemoveNotificationContextEvent,
   type RemoveNotificationsEvent,
@@ -82,8 +86,6 @@ import {
 
 import type { Middleware, MiddlewareContext } from '../types'
 import { BaseMiddleware } from './base'
-import { systemAccountUuid } from '@hcengineering/core'
-import { findMessage } from '../triggers/utils.ts'
 
 interface Result {
   responseEvent?: ResponseEvent
@@ -181,6 +183,10 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         return await this.updateCardType(event)
       case CardRequestEventType.RemoveCard:
         return await this.removeCard(event)
+      case MessageRequestEventType.CreateLinkPreview:
+        return await this.createLinkPreview(event)
+      case MessageRequestEventType.RemoveLinkPreview:
+        return await this.removeLinkPreview(event)
     }
   }
 
@@ -251,7 +257,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       data: event.data,
       externalId: event.externalId,
       reactions: [],
-      files: []
+      files: [],
+      links: []
     }
     const responseEvent: MessageCreatedEvent = {
       _id: event._id,
@@ -308,7 +315,6 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     )
 
     const reaction: Reaction = {
-      message: event.message,
       reaction: event.reaction,
       creator: event.creator,
       created
@@ -317,8 +323,9 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       _id: event._id,
       type: MessageResponseEventType.ReactionCreated,
       card: event.card,
-      reaction,
-      messageCreated: event.messageCreated
+      message: event.message,
+      messageCreated: event.messageCreated,
+      reaction
     }
     return {
       responseEvent
@@ -343,32 +350,16 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
 
   private async createFile(event: CreateFileEvent): Promise<Result> {
     const created = new Date()
-    await this.db.createFile(
-      event.card,
-      event.message,
-      event.messageCreated,
-      event.blobId,
-      event.fileType,
-      event.filename,
-      event.size,
-      event.meta,
-      event.creator,
-      created
-    )
+    await this.db.createFile(event.card, event.message, event.messageCreated, event.data, event.creator, created)
     const responseEvent: FileCreatedEvent = {
       _id: event._id,
       type: MessageResponseEventType.FileCreated,
       card: event.card,
+      message: event.message,
+      messageCreated: event.messageCreated,
       file: {
-        card: event.card,
-        message: event.message,
-        messageCreated: event.messageCreated,
-        blobId: event.blobId,
-        type: event.fileType,
-        filename: event.filename,
-        size: event.size,
+        ...event.data,
         creator: event.creator,
-        meta: event.meta,
         created
       }
     }
@@ -388,6 +379,52 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       blobId: event.blobId,
       creator: event.creator
     }
+    return {
+      responseEvent
+    }
+  }
+
+  private async createLinkPreview(event: CreateLinkPreviewEvent): Promise<Result> {
+    const created = new Date()
+    const id = await this.db.createLinkPreview(
+      event.card,
+      event.message,
+      event.messageCreated,
+      event.data,
+      event.creator,
+      created
+    )
+
+    const responseEvent: LinkPreviewCreatedEvent = {
+      _id: event._id,
+      type: MessageResponseEventType.LinkPreviewCreated,
+      card: event.card,
+      message: event.message,
+      messageCreated: event.messageCreated,
+      linkPreview: {
+        id,
+        ...event.data,
+        creator: event.creator,
+        created
+      }
+    }
+
+    return {
+      responseEvent
+    }
+  }
+
+  private async removeLinkPreview(event: RemoveLinkPreviewEvent): Promise<Result> {
+    await this.db.removeLinkPreview(event.card, event.message, event.id)
+    const responseEvent: LinkPreviewRemovedEvent = {
+      _id: event._id,
+      type: MessageResponseEventType.LinkPreviewRemoved,
+      card: event.card,
+      message: event.message,
+      messageCreated: event.messageCreated,
+      id: event.id
+    }
+
     return {
       responseEvent
     }

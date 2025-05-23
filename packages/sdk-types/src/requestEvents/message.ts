@@ -25,7 +25,9 @@ import type {
   MessageData,
   CardType,
   PatchData,
-  BlobMetadata
+  LinkPreviewID,
+  FileData,
+  LinkPreviewData
 } from '@hcengineering/communication-types'
 
 import type { BaseRequestEvent } from './common'
@@ -39,6 +41,9 @@ export enum MessageRequestEventType {
 
   CreateFile = 'createFile',
   RemoveFile = 'removeFile',
+
+  CreateLinkPreview = 'createLinkPreview',
+  RemoveLinkPreview = 'removeLinkPreview',
 
   CreateThread = 'createThread',
   UpdateThread = 'updateThread',
@@ -58,6 +63,8 @@ export type MessageRequestEvent =
   | RemoveMessagesGroupEvent
   | RemoveReactionEvent
   | UpdateThreadEvent
+  | CreateLinkPreviewEvent
+  | RemoveLinkPreviewEvent
 
 export interface CreateMessageEvent extends BaseRequestEvent {
   type: MessageRequestEventType.CreateMessage
@@ -106,12 +113,8 @@ export interface CreateFileEvent extends BaseRequestEvent {
   card: CardID
   message: MessageID
   messageCreated: Date
-  blobId: BlobID
-  size: number
-  fileType: string
-  filename: string
+  data: FileData
   creator: SocialID
-  meta?: BlobMetadata
 }
 
 export interface RemoveFileEvent extends BaseRequestEvent {
@@ -120,6 +123,24 @@ export interface RemoveFileEvent extends BaseRequestEvent {
   message: MessageID
   messageCreated: Date
   blobId: BlobID
+  creator: SocialID
+}
+
+export interface CreateLinkPreviewEvent extends BaseRequestEvent {
+  type: MessageRequestEventType.CreateLinkPreview
+  card: CardID
+  message: MessageID
+  messageCreated: Date
+  data: LinkPreviewData
+  creator: SocialID
+}
+
+export interface RemoveLinkPreviewEvent extends BaseRequestEvent {
+  type: MessageRequestEventType.RemoveLinkPreview
+  card: CardID
+  message: MessageID
+  messageCreated: Date
+  id: LinkPreviewID
   creator: SocialID
 }
 
