@@ -223,6 +223,16 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
 
   app.get('/image/:transform/:workspace/:name', withBlob, wrapRequest(ctx, 'transformImage', handleImageGet)) // no auth
 
+  const sendErrorToAnalytics = (err: any): boolean => {
+    const ignoreMessages = [
+      'Unexpected end of form', // happens when the client closes the connection before the upload is complete
+      'Premature close', // happens when the client closes the connection before the upload is complete
+      'File too large' // happens when the file exceeds the limit set by express-fileupload
+    ]
+
+    return !ignoreMessages.includes(err.message)
+  }
+
   app.use((err: any, _req: any, res: any, _next: any) => {
     ctx.error(err.message, { code: err.code, message: err.message })
     if (err instanceof ApiError) {
@@ -230,7 +240,11 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
       return
     }
 
-    Analytics.handleError(err)
+    // do not send some errors to analytics
+    if (sendErrorToAnalytics(err)) {
+      Analytics.handleError(err)
+    }
+
     res.status(500).json({ message: err.message?.length > 0 ? err.message : 'Internal Server Error' })
   })
 
