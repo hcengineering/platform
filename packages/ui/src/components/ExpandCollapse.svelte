@@ -21,14 +21,14 @@
   afterUpdate(() => dispatch('changeContent'))
 </script>
 
-<div class="root" hidden={!isExpanded}>
-  <div class="flex-no-shrink clear-mins">
+<div class="expandcollapse-container" hidden={!isExpanded}>
+  <div class="expandcollapse-content">
     <slot />
   </div>
 </div>
 
 <style lang="scss">
-  .root {
+  .expandcollapse-container {
     min-height: 0;
     flex-shrink: 0;
 
@@ -37,6 +37,12 @@
     }
     &::-webkit-scrollbar:horizontal {
       height: 0;
+    }
+
+    .expandcollapse-content {
+      flex-shrink: 0;
+      min-width: 0;
+      min-height: 0;
     }
   }
 </style>

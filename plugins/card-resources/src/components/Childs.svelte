@@ -16,16 +16,7 @@
   import { Card, CardEvents } from '@hcengineering/card'
   import core, { Data, Doc, fillDefaults, MarkupBlobRef, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    Label,
-    Scroller,
-    ModernButton,
-    getCurrentLocation,
-    IconAdd,
-    navigate,
-    resizeObserver,
-    Section
-  } from '@hcengineering/ui'
+  import { Label, ButtonIcon, getCurrentLocation, IconAdd, navigate, resizeObserver, Section } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import {
     List,
@@ -147,10 +138,9 @@
     <div class="buttons-group xsmall-gap">
       <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
       {#if !$restrictionStore.readonly && !readonly}
-        <ModernButton
+        <ButtonIcon
           id="add-child-card"
           icon={IconAdd}
-          label={card.string.CreateChild}
           size={'small'}
           kind={'tertiary'}
           tooltip={{ label: card.string.CreateChild, direction: 'bottom' }}
@@ -163,39 +153,37 @@
   </svelte:fragment>
   <svelte:fragment slot="content">
     {#if (object?.children ?? 0) > 0 && viewOptions !== undefined && viewlet}
-      <Scroller horizontal>
-        <div
-          class="list"
-          use:resizeObserver={(evt) => {
-            listWidth = evt.clientWidth
+      <div
+        class="list"
+        use:resizeObserver={(evt) => {
+          listWidth = evt.clientWidth
+        }}
+      >
+        <List
+          bind:this={list}
+          {listProvider}
+          _class={card.class.Card}
+          query={{
+            parent: object._id
           }}
-        >
-          <List
-            bind:this={list}
-            {listProvider}
-            _class={card.class.Card}
-            query={{
-              parent: object._id
-            }}
-            selectedObjectIds={$selection ?? []}
-            configurations={undefined}
-            {config}
-            {viewOptions}
-            compactMode={listWidth <= 600}
-            on:docs
-            on:row-focus={(event) => {
-              listProvider.updateFocus(event.detail ?? undefined)
-            }}
-            on:check={(event) => {
-              listProvider.updateSelection(event.detail.docs, event.detail.value)
-            }}
-            on:content={(evt) => {
-              docs = evt.detail
-              listProvider.update(evt.detail)
-            }}
-          />
-        </div>
-      </Scroller>
+          selectedObjectIds={$selection ?? []}
+          configurations={undefined}
+          {config}
+          {viewOptions}
+          compactMode={listWidth <= 600}
+          on:docs
+          on:row-focus={(event) => {
+            listProvider.updateFocus(event.detail ?? undefined)
+          }}
+          on:check={(event) => {
+            listProvider.updateSelection(event.detail.docs, event.detail.value)
+          }}
+          on:content={(evt) => {
+            docs = evt.detail
+            listProvider.update(evt.detail)
+          }}
+        />
+      </div>
     {:else if !readonly}
       <div class="antiSection-empty" class:solid={emptyKind === 'create'} class:noBorder={emptyKind === 'placeholder'}>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
