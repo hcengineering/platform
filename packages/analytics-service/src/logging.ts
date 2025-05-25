@@ -1,7 +1,6 @@
 //
 // Copyright © 2024 Hardcore Engineering Inc.
 //
-import { Analytics } from '@hcengineering/analytics'
 import { MeasureLogger, ParamsType } from '@hcengineering/core'
 import { basename, dirname, join } from 'path'
 import winston from 'winston'
@@ -79,13 +78,6 @@ export class SplitLogger implements MeasureLogger {
   }
 
   error (message: string, obj?: Record<string, any>): void {
-    // Check if obj has error inside, so we could send it to Analytics
-    for (const v of Object.values(obj ?? {})) {
-      if (v instanceof Error) {
-        Analytics.handleError(v)
-      }
-    }
-
     if (this.opts.parent !== undefined) {
       this.opts.parent.error({ message, ...obj })
     }
