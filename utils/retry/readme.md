@@ -55,7 +55,7 @@ The package provides several delay strategies to control the timing between retr
 Exponential Backoff
 Increases the delay exponentially between retries, which is ideal for backing off from overloaded services:
 
-```
+```typescript
 import { withRetry, DelayStrategyFactory } from '@hcengineering/retry'
 
 await withRetry(
@@ -74,7 +74,7 @@ await withRetry(
 
 Fixed Delay
 Uses the same delay for all retry attempts, useful when retrying after a fixed cooldown period:
-```
+```typescript
 import { withRetry, DelayStrategyFactory } from '@hcengineering/retry'
 
 await withRetry(
@@ -90,7 +90,7 @@ await withRetry(
 ```
 Fibonacci Delay
 Uses the Fibonacci sequence to calculate delays, providing a more moderate growth rate than exponential backoff:
-```
+```typescript
 import { withRetry, DelayStrategyFactory } from '@hcengineering/retry'
 
 await withRetry(
