@@ -21,8 +21,8 @@ importers:
         specifier: ^16.4.5
         version: 16.4.7
       ws:
-        specifier: ^8.18.0
-        version: 8.18.0
+        specifier: ^8.18.2
+        version: 8.18.2
     devDependencies:
       '@types/node':
         specifier: ~20.11.16
@@ -1501,8 +1501,8 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
-  ws@8.18.0:
-    resolution: {integrity: sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==}
+  ws@8.18.2:
+    resolution: {integrity: sha512-DMricUmwGZUVr++AEAe2uiVM7UoO9MAVZMDu05UQOaUII0lp+zOzLLU4Xqh/JvTqklB1T4uELaaPBKyjE1r4fQ==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -1535,7 +1535,7 @@ snapshots:
       cross-fetch: 3.1.8
       deepmerge: 4.3.1
       events: 3.3.0
-      ws: 8.18.0
+      ws: 8.18.2
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -1655,7 +1655,7 @@ snapshots:
       livekit-server-sdk: 2.9.7
       pino: 8.21.0
       pino-pretty: 11.3.0
-      ws: 8.18.0
+      ws: 8.18.2
       zod: 3.24.1
     transitivePeerDependencies:
       - bufferutil
@@ -3149,7 +3149,7 @@ snapshots:
 
   wrappy@1.0.2: {}
 
-  ws@8.18.0: {}
+  ws@8.18.2: {}
 
   yocto-queue@0.1.0: {}
 
