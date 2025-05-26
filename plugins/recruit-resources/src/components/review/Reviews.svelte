@@ -63,7 +63,7 @@
     {/if}
   </div>
   {#if reviews > 0}
-    <Scroller horizontal>
+    <Scroller horizontal noFade={false}>
       <Table
         _class={recruit.class.Review}
         config={[
