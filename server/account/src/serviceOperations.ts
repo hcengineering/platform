@@ -551,7 +551,7 @@ export async function addSocialIdToPerson (
   const { person, type, value, confirmed, displayValue } = params
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  verifyAllowedServices(['github', 'telegram-bot', 'gmail', 'tool', 'workspace'], extra)
+  verifyAllowedServices(['github', 'telegram-bot', 'gmail', 'tool', 'workspace', 'hulygram'], extra)
 
   return await addSocialId(db, person, type, value, confirmed, displayValue)
 }
