@@ -71,25 +71,25 @@ export async function withRetry<T> (
   while (attempt <= config.maxRetries) {
     try {
       return await operation()
-    } catch (err: any) {
-      lastError = err
+    } catch (error: any) {
+      lastError = error
       const isLastAttempt = attempt >= config.maxRetries
 
       if (isLastAttempt) {
         logger.error(`${operationName} failed after ${attempt} attempts`, {
-          error: err.message,
+          error,
           attempt,
           maxRetries: config.maxRetries
         })
-        throw err
+        throw error
       }
-      if (!config.isRetryable(err)) {
+      if (!config.isRetryable(error)) {
         logger.error(`${operationName} failed with non-retriable error`, {
-          error: err.message,
+          error,
           attempt,
           maxRetries: config.maxRetries
         })
-        throw err
+        throw error
       }
 
       // Calculate next delay with jitter
@@ -100,7 +100,7 @@ export async function withRetry<T> (
       const actualDelay = Math.min(delayMs + jitterAmount, config.maxDelayMs)
 
       logger.warn(`${operationName} failed, retrying in ${Math.round(actualDelay)}ms`, {
-        error: err.message,
+        error,
         attempt,
         nextAttempt: attempt + 1,
         delayMs: Math.round(actualDelay)

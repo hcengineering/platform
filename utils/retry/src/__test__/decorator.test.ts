@@ -43,6 +43,7 @@ describe('Retryable decorator', () => {
 
   it('should retry failed operations', async () => {
     // Create a test class with decorated method that fails initially then succeeds
+    const error = new Error('First attempt failed')
     class TestService {
       callCount = 0
 
@@ -50,7 +51,7 @@ describe('Retryable decorator', () => {
       async testMethod (param1: string, param2: number): Promise<string> {
         this.callCount++
         if (this.callCount === 1) {
-          throw new Error('First attempt failed')
+          throw error
         }
         return `${param1}-${param2}`
       }
@@ -68,7 +69,7 @@ describe('Retryable decorator', () => {
     expect(mockLogger.warn).toHaveBeenCalledWith(
       expect.stringContaining('testMethod failed'),
       expect.objectContaining({
-        error: 'First attempt failed',
+        error,
         attempt: 1
       })
     )
