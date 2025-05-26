@@ -37,7 +37,6 @@
   export let showEmbedded = false
   export let hideFooter = false
   export let actions: Action[] = []
-  export let skipLabel = false
   export let hoverable = true
   export let hoverStyles: 'filledHover' = 'filledHover'
   export let hideLink = false
@@ -92,7 +91,6 @@
   {showEmbedded}
   {hideFooter}
   {actions}
-  {skipLabel}
   {hoverable}
   {hoverStyles}
   showDatePreposition
