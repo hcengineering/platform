@@ -18,6 +18,8 @@
     "PleaseTypeMessage": "コメントを入力して続行...",
     "NoRequests": "リクエストはありません",
     "Cancel": "キャンセル",
-    "Cancelled": "キャンセル済み"
+    "Cancelled": "キャンセル済み",
+    "NewRequest": "新しいリクエスト",
+    "CancelRequest": "リクエストをキャンセル"
   }
 }

@@ -18,6 +18,8 @@
     "PleaseTypeMessage": "Zadejte prosím zprávu ke komentáři, abyste mohli pokračovat...",
     "NoRequests": "Žádné žádosti",
     "Cancel": "Zrušit",
-    "Cancelled": "Zrušeno"
+    "Cancelled": "Zrušeno",
+    "NewRequest": "Nový požadavek",
+    "CancelRequest": "Zrušit požadavek"
   }
 }

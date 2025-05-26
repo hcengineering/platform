@@ -14,8 +14,20 @@
 //
 
 import { DocUpdateMessage } from '@hcengineering/activity'
-import core, { Doc, Tx, TxCUD, TxCreateDoc, TxProcessor, TxUpdateDoc, type MeasureContext } from '@hcengineering/core'
-import notification from '@hcengineering/notification'
+import core, {
+  Doc,
+  Tx,
+  TxCUD,
+  TxCreateDoc,
+  TxProcessor,
+  TxUpdateDoc,
+  type MeasureContext,
+  Ref,
+  PersonId,
+  AccountUuid,
+  combineAttributes
+} from '@hcengineering/core'
+import notification, { NotificationType } from '@hcengineering/notification'
 import { getResource, translate } from '@hcengineering/platform'
 import request, { Request, RequestStatus } from '@hcengineering/request'
 import { pushDocUpdateMessages } from '@hcengineering/server-activity-resources'
@@ -28,6 +40,7 @@ import {
   getSenderInfo,
   getTextPresenter
 } from '@hcengineering/server-notification-resources'
+import { Person } from '@hcengineering/contact'
 
 /**
  * @public
@@ -191,10 +204,54 @@ export async function requestTextPresenter (doc: Doc, control: TriggerControl): 
   return title
 }
 
+export const sendRequestMatch = (
+  tx: TxCreateDoc<Request> | TxUpdateDoc<Request>,
+  doc: Doc,
+  person: Ref<Person>,
+  socialIds: PersonId[],
+  type: NotificationType,
+  control: TriggerControl,
+  account: AccountUuid
+): boolean => {
+  if (tx._class === core.class.TxCreateDoc) {
+    const createTx = tx as TxCreateDoc<Request>
+    const request = TxProcessor.createDoc2Doc(createTx)
+
+    return request.requested.includes(person)
+  } else if (tx._class === core.class.TxUpdateDoc) {
+    const updateTx = tx as TxUpdateDoc<Request>
+    const pushed: Ref<Person>[] = combineAttributes([updateTx.operations], 'requested', '$push', '$each') ?? []
+
+    return pushed.includes(person)
+  }
+
+  return false
+}
+
+export const removeRequestMatch = (
+  tx: TxUpdateDoc<Request>,
+  doc: Doc,
+  person: Ref<Person>,
+  socialIds: PersonId[],
+  type: NotificationType,
+  control: TriggerControl,
+  account: AccountUuid
+): boolean => {
+  if (tx._class === core.class.TxUpdateDoc) {
+    const removed: Ref<Person>[] = combineAttributes([tx.operations], 'requested', '$pull', '$in') ?? []
+
+    return removed.includes(person)
+  }
+
+  return false
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
-    RequestTextPresenter: requestTextPresenter
+    RequestTextPresenter: requestTextPresenter,
+    SendRequestMatch: sendRequestMatch,
+    RemoveRequestMatch: removeRequestMatch
   },
   trigger: {
     OnRequest
