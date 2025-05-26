@@ -20,26 +20,30 @@
   export let icon: number | number[] | Ref<Blob>
   export let size: IconSize
 
-  let value: string = parseIcon(icon)
+  let value: string | undefined = parseIcon(icon)
 
-  function parseIcon (icon: number | number[] | Ref<Blob>): string {
+  function parseIcon (icon: number | number[] | Ref<Blob>): string | undefined {
     if (typeof icon === 'object' && '__ref' in icon) {
-      return null
+      return undefined
     }
     try {
-      return Array.isArray(icon) ? fromCodePoint(...icon) : fromCodePoint(icon)
+      return Array.isArray(icon) ? fromCodePoint(...icon) : fromCodePoint(icon as number)
     } catch (err) {}
-    return null
+    return undefined
+  }
+
+  function asRef (value: number | number[] | Ref<Blob>): Ref<Blob> {
+    return value as Ref<Blob>
   }
 
   $: value = parseIcon(icon)
 </script>
 
 <div class="emoji-{size} flex-row-center emoji">
-  {#if value != null}
+  {#if value !== undefined}
     {value}
   {:else}
-    {#await getBlobRef(icon) then iconBlob}
+    {#await getBlobRef(asRef(icon)) then iconBlob}
       <img src={iconBlob.src} srcset={iconBlob.srcset} alt="icon" />
     {/await}
   {/if}
