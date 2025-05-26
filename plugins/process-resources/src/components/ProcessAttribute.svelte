@@ -42,6 +42,7 @@
   export let attribute: AnyAttribute
   export let editor: AnySvelteComponent | undefined
   export let allowRemove: boolean = false
+  export let forbidValue: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -96,19 +97,21 @@
       />
     {:else}
       <div class="w-full">
-        <svelte:component
-          this={editor}
-          label={attribute?.label}
-          placeholder={attribute?.label}
-          kind={'ghost'}
-          size={'large'}
-          width={'100%'}
-          justify={'left'}
-          type={attribute?.type}
-          {value}
-          {onChange}
-          {focus}
-        />
+        {#if !forbidValue}
+          <svelte:component
+            this={editor}
+            label={attribute?.label}
+            placeholder={attribute?.label}
+            kind={'ghost'}
+            size={'large'}
+            width={'100%'}
+            justify={'left'}
+            type={attribute?.type}
+            {value}
+            {onChange}
+            {focus}
+          />
+        {/if}
       </div>
     {/if}
     <div class="button flex-row-center">

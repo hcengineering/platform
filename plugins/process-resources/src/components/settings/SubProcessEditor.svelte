@@ -13,15 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Process, Step } from '@hcengineering/process'
-  import { DropdownLabels, DropdownTextItem, Label } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
   import card from '@hcengineering/card'
+  import { Doc, RefTo } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Execution, parseContext, Process, Step } from '@hcengineering/process'
+  import { DropdownLabels, DropdownTextItem, Label, Toggle } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
+  import { getContextAttribute } from '../../utils'
+  import ProcessAttributeEditor from './ProcessAttributeEditor.svelte'
 
   export let process: Process
-  export let step: Step<Process>
+  export let step: Step<Execution>
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  let _id = step.params._id
+  $: context = parseContext(step.params.card)
+  $: attr = getContextAttribute(client, context, process.masterTag)
+  $: masterTag = (attr?.type as RefTo<Doc>)?.to ?? process.masterTag
 
   const dispatch = createEventDispatcher()
 
@@ -32,10 +43,10 @@
     }
   }
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
+  let thisCard: boolean = step.params.card === undefined
+
   $: ancestors = hierarchy
-    .getAncestors(process.masterTag)
+    .getAncestors(masterTag)
     .filter((it) => !hierarchy.isMixin(it) && hierarchy.isDerived(it, card.class.Card))
 
   let processes: Process[] = []
@@ -46,21 +57,49 @@
     label: it.name
   }))
 
-  $: selected =
-    (step.params as any)._id !== undefined ? items.find((it) => it.id === (step.params as any)._id)?.id : undefined
+  $: selected = _id !== undefined ? items.find((it) => it.id === _id)?.id : undefined
 
   const query = createQuery()
 
   $: query.query(plugin.class.Process, { masterTag: { $in: ancestors } }, (res) => {
     processes = res.filter((it) => it._id !== process._id)
   })
+
+  function changeThis (): void {
+    _id = undefined
+    step.params = {}
+    dispatch('change', step)
+  }
+
+  function changeTarget (e: CustomEvent<any>): void {
+    _id = undefined
+    step.params.card = e.detail.value
+  }
 </script>
 
 <div class="grid">
+  <Label label={plugin.string.CurrentCard} />
+  <Toggle bind:on={thisCard} on:change={changeThis} />
+  {#if !thisCard}
+    <ProcessAttributeEditor
+      {process}
+      _class={plugin.class.Execution}
+      key={'card'}
+      object={step.params}
+      allowRemove
+      forbidValue
+      on:remove={() => {
+        thisCard = true
+        changeThis()
+      }}
+      on:change={changeTarget}
+    />
+  {/if}
   <Label label={plugin.string.Process} />
   <DropdownLabels
     autoSelect={false}
     enableSearch={false}
+    width={'100%'}
     {items}
     {selected}
     placeholder={plugin.string.Process}
