@@ -76,25 +76,25 @@
   let integration: Integration = 'Loading'
   let state: UIState = { mode: 'Loading' }
 
-  $: {
-    function h (handler: () => Promise<Integration>) {
-      return () => {
-        handler()
-          .then((i) => {
-            integration = i
-          })
-          .catch((error) => {
-            state = {
-              mode: 'Error',
-              hint: error.message,
-              buttons: {
-                primary: { label: ui.string.Ok, handler: close }
-              }
+  function h (handler: () => Promise<Integration>) {
+    return () => {
+      handler()
+        .then((i) => {
+          integration = i
+        })
+        .catch((error) => {
+          state = {
+            mode: 'Error',
+            hint: error.message,
+            buttons: {
+              primary: { label: ui.string.Ok, handler: close }
             }
-          })
-      }
+          }
+        })
     }
+  }
 
+  $: {
     if (integration === 'Loading') {
       state = { mode: 'Loading' }
     } else if (integration === 'Missing') {
@@ -184,7 +184,7 @@
     }
   }
 
-  init().catch(console.error)
+  void init()
 </script>
 
 <div class="card">
@@ -198,25 +198,17 @@
 
   <div class="content">
     {#if state.mode === 'Loading'}
-      <p>
-        <Label label={telegram.string.Loading} />
-      </p>
+      <Label label={telegram.string.Loading} />
     {:else if state.mode === 'WantPhone'}
-      <p>
-        <Label label={telegram.string.PhoneDescr} />
-      </p>
+      <Label label={telegram.string.PhoneDescr} />
 
       <EditBox label={telegram.string.Phone} placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
     {:else if state.mode === 'WantCode'}
-      <p>
-        <Label label={telegram.string.CodeDescr} />
-      </p>
+      <Label label={telegram.string.CodeDescr} />
 
       <PinPad length={5} bind:value={code} bind:error />
     {:else if state.mode === 'WantPassword'}
-      <p>
-        <Label label={telegram.string.PasswordDescr} />
-      </p>
+      <Label label={telegram.string.PasswordDescr} />
 
       <EditBox
         label={telegram.string.Password}
@@ -225,9 +217,7 @@
         bind:value={password}
       />
     {:else if state.mode === 'Authorized'}
-      <p>
-        <Label label={telegram.string.IntegrationConnected} params={{ phone: state.hint }} />
-      </p>
+      <Label label={telegram.string.IntegrationConnected} params={{ phone: state.hint }} />
     {:else if state.mode === 'Error'}
       <p>Error: {state.hint}</p>
     {/if}
