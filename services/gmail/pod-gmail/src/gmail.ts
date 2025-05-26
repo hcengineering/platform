@@ -237,7 +237,7 @@ export class GmailClient {
         await this.client.createDoc(setting.class.Integration, core.space.Workspace, {
           type: gmail.integrationType.Gmail,
           disabled: false,
-          value: this.socialId._id
+          value: this.email ?? this.socialId.value
         })
       }
     } catch (err: any) {
