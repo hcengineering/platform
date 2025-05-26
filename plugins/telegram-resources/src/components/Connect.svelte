@@ -20,7 +20,6 @@
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
   import { concatLink } from '@hcengineering/core'
-  import Error from '@hcengineering/ui/src/components/icons/Error.svelte'
 
   type Integration = { status: 'authorized' | 'wantcode' | 'wantpassword', number: string } | 'Loading' | 'Missing'
 
@@ -174,7 +173,14 @@
       }
     } catch (ex: any) {
       console.error(ex)
-      state = { mode: 'Error', hint: ex.message }
+      state = {
+        mode: 'Error',
+        hint: ex.message,
+
+        buttons: {
+          primary: { label: ui.string.Ok, handler: close }
+        }
+      }
     }
   }
 
@@ -222,8 +228,6 @@
       <p>
         <Label label={telegram.string.IntegrationConnected} params={{ phone: state.hint }} />
       </p>
-    {:else if state.mode === 'Unauthorized'}
-      Unauthorized
     {:else if state.mode === 'Error'}
       <p>Error: {state.hint}</p>
     {/if}
