@@ -270,11 +270,11 @@ async function migrateWorkspace (
     return
   }
 
-  const createdBy =
+  let createdBy =
     workspace.createdBy !== undefined ? accountsEmailToUuid[workspace.createdBy] : ('N/A' as AccountUuid)
   if (createdBy === undefined) {
     console.log('No account found for workspace', workspace.workspace, 'created by', workspace.createdBy)
-    return
+    createdBy = 'N/A' as AccountUuid
   }
 
   const existingWorkspace = await accountDB.workspace.findOne({ url: workspace.workspaceUrl })
