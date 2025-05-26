@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Component, Icon, showPopup } from '@hcengineering/ui'
+  import { Component, Icon, Label, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import contact from '@hcengineering/contact'
 
@@ -48,6 +48,7 @@
   }
 
   function onBrokenLinkClick (event: MouseEvent): void {
+    if (withoutDoc) return
     showPopup(MessageBox, {
       label: presentation.string.UnableToFollowMention,
       message: presentation.string.AccessDenied,
@@ -57,8 +58,13 @@
 </script>
 
 {#if !doc && title}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span class="antiMention" class:transparent class:broken on:click={onBrokenLinkClick}>
-    {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{title}
+    {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{#if _id === contact.mention.Here}<span class="lower"
+        ><Label label={contact.string.Here} /></span
+      >{:else if _id === contact.mention.Everyone}<span class="lower"><Label label={contact.string.Everyone} /></span
+      >{:else}{title}{/if}
   </span>
 {:else if doc}
   <Component
