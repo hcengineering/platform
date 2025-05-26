@@ -119,7 +119,7 @@ describe('parseNameFromEmailHeader', () => {
     const input = '"O\'Neill, James" <james.oneill@example.com>'
     const expected: EmailContact = {
       email: 'james.oneill@example.com',
-      firstName: 'O\'Neill',
+      firstName: "O'Neill",
       lastName: 'James'
     }
 
