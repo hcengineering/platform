@@ -21,21 +21,23 @@
     deleteFile,
     getCommunicationClient,
     getClient,
-    getFileMetadata
+    getFileMetadata,
+    isLinkPreviewEnabled
   } from '@hcengineering/presentation'
-  import { Message, MessageID } from '@hcengineering/communication-types'
-  import { AttachmentPresenter } from '@hcengineering/attachment-resources'
-  import { areEqualMarkups, isEmptyMarkup, EmptyMarkup } from '@hcengineering/text'
+  import { Message, MessageID, FileData, LinkPreviewData } from '@hcengineering/communication-types'
+  import { AttachmentPresenter, LinkPreviewCard } from '@hcengineering/attachment-resources'
+  import { areEqualMarkups, isEmptyMarkup } from '@hcengineering/text'
   import { updateMyPresence } from '@hcengineering/presence-resources'
   import { ThrottledCaller } from '@hcengineering/ui'
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { Card } from '@hcengineering/card'
+  import { setPlatformStatus, unknownError } from '@hcengineering/platform'
 
   import TextInput from '../TextInput.svelte'
-  import { defaultMessageInputActions, toMarkdown } from '../../utils'
+  import { defaultMessageInputActions, toMarkdown, toMarkup, loadLinkPreviewData } from '../../utils'
   import uiNext from '../../plugin'
   import IconPlus from '../icons/IconPlus.svelte'
-  import { type TextInputAction, UploadedFile, type PresenceTyping, MessageDraft } from '../../types'
+  import { type TextInputAction, type PresenceTyping, MessageDraft } from '../../types'
   import TypingPresenter from '../TypingPresenter.svelte'
   import { getDraft, messageToDraft, saveDraft, getEmptyDraft, removeDraft } from '../../draft'
 
@@ -43,7 +45,7 @@
   export let message: Message | undefined = undefined
   export let title: string = ''
   export let onCancel: (() => void) | undefined = undefined
-  export let onSubmit: ((markdown: string, files: UploadedFile[]) => Promise<void>) | undefined = undefined
+  export let onSubmit: ((markdown: string, files: FileData[]) => Promise<void>) | undefined = undefined
 
   const throttle = new ThrottledCaller(500)
   const dispatch = createEventDispatcher()
@@ -51,11 +53,16 @@
   const client = getClient()
   const me = getCurrentEmployee()
 
+  const maxLinkPreviewCount = 4
+  const previewUrls = new Map<string, boolean>()
+  const linksData = new Map<string, LinkPreviewData | null>()
+
   let prevCard: Ref<Card> | undefined = card._id
   let prevMessage: MessageID | undefined = message?.id
   let draft: MessageDraft = message != null ? messageToDraft(message) : getDraft(card._id)
 
   let inputElement: HTMLInputElement
+  let refContainer: HTMLElement | undefined | null = undefined
 
   let progress = false
 
@@ -73,9 +80,13 @@
 
   function initDraft (): void {
     draft = message != null ? messageToDraft(message) : getDraft(card._id)
+    previewUrls.clear()
   }
 
   function _saveDraft (draft: MessageDraft): void {
+    for (const link of draft.links) {
+      previewUrls.set(link.url, true)
+    }
     if (message === undefined) {
       saveDraft(card._id, draft)
     }
@@ -87,8 +98,11 @@
 
     const markup = event.detail
     const filesToLoad = draft.files
+    const linksToLoad = draft.links
+    const urlsToLoad = Array.from(previewUrls.keys()).filter((it) => previewUrls.get(it) === true)
 
     draft = getEmptyDraft()
+    previewUrls.clear()
     if (message === undefined) {
       removeDraft(card._id)
     }
@@ -101,52 +115,58 @@
     }
 
     if (message === undefined) {
-      await createMessage(markdown, filesToLoad)
+      await createMessage(markdown, filesToLoad, linksToLoad, urlsToLoad)
       dispatch('sent')
     } else {
-      await editMessage(message, markdown, filesToLoad)
+      await editMessage(message, markdown, filesToLoad, linksToLoad)
     }
   }
 
-  async function createMessage (markdown: string, files: UploadedFile[]): Promise<void> {
+  async function createMessage (
+    markdown: string,
+    files: FileData[],
+    links: LinkPreviewData[],
+    urlsToLoad: string[]
+  ): Promise<void> {
     const { id, created } = await communicationClient.createMessage(card._id, card._class, markdown)
-
-    for (const file of files) {
-      await communicationClient.createFile(
-        card._id,
-        id,
-        created,
-        file.blobId,
-        file.type,
-        file.filename,
-        file.size,
-        file.metadata
-      )
+    void client.update(card, {}, false, Date.now())
+    void Promise.all(files.map((file) => communicationClient.createFile(card._id, id, created, file)))
+    for (const link of links) {
+      void communicationClient.createLinkPreview(card._id, id, created, link)
     }
-    await client.update(card, {}, false, Date.now())
+
+    for (const url of urlsToLoad) {
+      if (links.some((it) => it.url === url)) continue
+      const fetchedData = linksData.get(url)
+      if (fetchedData === null) continue
+      const data = fetchedData ?? (await loadLinkPreviewData(url))
+      if (data === undefined) continue
+      void communicationClient.createLinkPreview(card._id, id, created, data)
+    }
   }
 
-  async function editMessage (message: Message, markdown: string, files: UploadedFile[]): Promise<void> {
+  async function editMessage (
+    message: Message,
+    markdown: string,
+    files: FileData[],
+    links: LinkPreviewData[]
+  ): Promise<void> {
     await communicationClient.updateMessage(card._id, message.id, message.created, markdown)
 
     for (const file of files) {
-      if (message.files.find((it) => it.blobId === file.blobId)) continue
-      await communicationClient.createFile(
-        card._id,
-        message.id,
-        message.created,
-        file.blobId,
-        file.type,
-        file.filename,
-        file.size,
-        file.metadata
-      )
+      if (message.files.some((it) => it.blobId === file.blobId)) continue
+      await communicationClient.createFile(card._id, message.id, message.created, file)
     }
 
     for (const file of message.files) {
-      if (files.find((it) => it.blobId === file.blobId)) continue
+      if (files.some((it) => it.blobId === file.blobId)) continue
       void deleteFile(file.blobId)
       await communicationClient.removeFile(card._id, message.id, message.created, file.blobId)
+    }
+
+    for (const link of links) {
+      if (message.links.some((it) => it.url === link.url)) continue
+      await communicationClient.createLinkPreview(card._id, message.id, message.created, link)
     }
 
     dispatch('edited')
@@ -171,7 +191,7 @@
 
   async function addFile (file: File): Promise<void> {
     const uuid = await uploadFile(file)
-    const metadata = await getFileMetadata(file, uuid)
+    const meta = await getFileMetadata(file, uuid)
 
     draft = {
       ...draft,
@@ -182,7 +202,7 @@
           type: file.type,
           filename: file.name,
           size: file.size,
-          metadata
+          meta
         }
       ]
     }
@@ -258,15 +278,79 @@
     progress = false
   }
 
-  let newMarkup: Markup | undefined = undefined
+  function isValidUrl (s: string): boolean {
+    let url: URL
+    try {
+      url = new URL(s)
+    } catch {
+      return false
+    }
+    return url.protocol.startsWith('http')
+  }
+
+  function updateLinkPreview (): void {
+    if (refContainer == null) return
+    const hrefs = refContainer.getElementsByTagName('a')
+    const validUrls = Array.from(hrefs)
+      .filter((it) => it.target === '_blank' && isValidUrl(it.href) && it.rel !== '')
+      .map((it) => it.href)
+    const newUrls = new Set<string>()
+    const removedUrls = new Set<string>()
+
+    for (const [url] of previewUrls.entries()) {
+      const found = validUrls.find((it) => it === url)
+      if (found === undefined) {
+        removedUrls.add(url)
+      }
+    }
+    for (const url of validUrls) {
+      if (previewUrls.has(url)) continue
+      previewUrls.set(url, true)
+      newUrls.add(url)
+    }
+
+    for (const url of removedUrls) {
+      previewUrls.delete(url)
+      draft = {
+        ...draft,
+        links: draft.links.filter((it) => it.url !== url)
+      }
+    }
+    if (newUrls.size > 0) {
+      void loadLinks(Array.from(newUrls))
+    }
+  }
+
+  async function loadLinks (urls: string[]): Promise<void> {
+    const draftId = draft._id
+
+    for (const url of urls) {
+      try {
+        const data = linksData.get(url) ?? (await loadLinkPreviewData(url))
+        linksData.set(url, data ?? null)
+        if (data === undefined || !previewUrls.has(url)) continue
+        if (draftId !== draft._id) return
+        draft = {
+          ...draft,
+          links: [...draft.links, data]
+        }
+      } catch (err: any) {
+        void setPlatformStatus(unknownError(err))
+      }
+    }
+  }
+
   async function onUpdate (event: CustomEvent<Markup>): Promise<void> {
     draft = {
       ...draft,
       content: event.detail
     }
+    const visiblePreviewUrls = Array.from(previewUrls.keys()).filter((it) => previewUrls.get(it) === true)
+    if (isLinkPreviewEnabled() && visiblePreviewUrls.length < maxLinkPreviewCount) {
+      updateLinkPreview()
+    }
     if (message !== undefined) return
-    newMarkup = event.detail
-    if (!isEmptyMarkup(newMarkup)) {
+    if (!isEmptyMarkup(draft.content)) {
       throttle.call(() => {
         const room = { objectId: card._id, objectClass: card._class }
         const typing: PresenceTyping = { person: me, lastTyping: Date.now() }
@@ -279,20 +363,20 @@
     return isEmptyMarkup(draft.content) && draft.files.length === 0
   }
 
-  function hasChanges (files: UploadedFile[], message: Message | undefined): boolean {
+  function hasChanges (files: FileData[], message: Message | undefined): boolean {
     if (isEmptyDraft()) return false
     if (message === undefined) return files.length > 0
     if (message.files.length !== files.length) return true
     if (message.files.some((it) => !files.some((f) => f.blobId === it.blobId))) return true
-    if (newMarkup === undefined || draft.content === undefined) return false
 
-    return !areEqualMarkups(draft.content, newMarkup ?? EmptyMarkup)
+    return !areEqualMarkups(draft.content, toMarkup(message.content))
   }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
+  bind:this={refContainer}
   class="flex-col no-print w-full"
   on:dragover|preventDefault={() => {}}
   on:dragleave={() => {}}
@@ -321,7 +405,7 @@
     onPaste={pasteAction}
   >
     <div slot="header" class="header">
-      {#if draft.files.length > 0}
+      {#if draft.files.length > 0 || draft.links.length > 0}
         <div class="flex-row-center files-list scroll-divider-color flex-gap-2 mt-2">
           {#each draft.files as file (file.blobId)}
             <div class="item flex">
@@ -331,7 +415,7 @@
                   name: file.filename,
                   type: file.type,
                   size: file.size,
-                  metadata: file.metadata
+                  metadata: file.meta
                 }}
                 showPreview
                 removable
@@ -344,6 +428,37 @@
 
                     if (!message?.files?.some((it) => it.blobId === file.blobId)) {
                       void deleteFile(file.blobId)
+                    }
+                  }
+                }}
+              />
+            </div>
+          {/each}
+          {#if draft.links.length > 0 && draft.files.length > 0}
+            <div class="divider" />
+          {/if}
+
+          {#each draft.links as link}
+            <div class="item flex">
+              <LinkPreviewCard
+                value={{
+                  url: link.url,
+                  host: link.host,
+                  title: link.title,
+                  description: link.description,
+                  hostname: link.hostname,
+                  image: link.image?.url,
+                  imageWidth: link.image?.width,
+                  imageHeight: link.image?.height,
+                  icon: link.favicon
+                }}
+                on:remove={(event) => {
+                  const result = event.detail
+                  if (result !== undefined) {
+                    previewUrls.set(result.url, false)
+                    draft = {
+                      ...draft,
+                      links: draft.links.filter((it) => it.url !== result.url)
                     }
                   }
                 }}
@@ -368,13 +483,14 @@
     width: 100%;
   }
 
+  .divider {
+    height: 100%;
+    border-left: 1px solid var(--theme-divider-color);
+  }
   .files-list {
     overflow-x: auto;
     overflow-y: hidden;
-
-    .item + .item {
-      padding-left: 1rem;
-      border-left: 1px solid var(--theme-divider-color);
-    }
+    display: flex;
+    gap: 0.5rem;
   }
 </style>

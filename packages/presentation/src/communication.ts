@@ -34,7 +34,10 @@ import {
   type Label,
   type FindLabelsParams,
   type FindCollaboratorsParams,
-  type Collaborator
+  type Collaborator,
+  type FileData,
+  type LinkPreviewData,
+  type LinkPreviewID
 } from '@hcengineering/communication-types'
 import {
   type CreateFileEvent,
@@ -55,15 +58,16 @@ import {
   NotificationRequestEventType,
   type RemoveNotificationContextEvent,
   type UpdateNotificationEvent,
-  type UpdateNotificationQuery
+  type UpdateNotificationQuery,
+  type CreateLinkPreviewEvent,
+  type RemoveLinkPreviewEvent
 } from '@hcengineering/communication-sdk-types'
 import {
   type Client as PlatformClient,
   type ClientConnection as PlatformConnection,
   getCurrentAccount,
   SocialIdType,
-  generateId,
-  type BlobMetadata
+  generateId
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
 import {
@@ -223,26 +227,13 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async createFile (
-    card: CardID,
-    message: MessageID,
-    messageCreated: Date,
-    blobId: BlobID,
-    fileType: string,
-    filename: string,
-    size: number,
-    meta?: BlobMetadata
-  ): Promise<void> {
+  async createFile (card: CardID, message: MessageID, messageCreated: Date, data: FileData): Promise<void> {
     const event: CreateFileEvent = {
       type: MessageRequestEventType.CreateFile,
       card,
       message,
       messageCreated,
-      blobId,
-      fileType,
-      filename,
-      size,
-      meta,
+      data,
       creator: this.getSocialId()
     }
     await this.sendEvent(event)
@@ -255,6 +246,35 @@ class Client {
       message,
       messageCreated,
       blobId,
+      creator: this.getSocialId()
+    }
+    await this.sendEvent(event)
+  }
+
+  async createLinkPreview (
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    data: LinkPreviewData
+  ): Promise<void> {
+    const event: CreateLinkPreviewEvent = {
+      type: MessageRequestEventType.CreateLinkPreview,
+      card,
+      message,
+      messageCreated,
+      data,
+      creator: this.getSocialId()
+    }
+    await this.sendEvent(event)
+  }
+
+  async removeLinkPreview (card: CardID, message: MessageID, messageCreated: Date, id: LinkPreviewID): Promise<void> {
+    const event: RemoveLinkPreviewEvent = {
+      type: MessageRequestEventType.RemoveLinkPreview,
+      card,
+      message,
+      messageCreated,
+      id,
       creator: this.getSocialId()
     }
     await this.sendEvent(event)

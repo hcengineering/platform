@@ -21,11 +21,16 @@ import {
   type Ref,
   SortingOrder
 } from '@hcengineering/core'
-import { markupToJSON, jsonToMarkup, markupToText } from '@hcengineering/text'
+import { jsonToMarkup, markupToJSON, markupToText } from '@hcengineering/text'
 import { showPopup } from '@hcengineering/ui'
-import { markupToMarkdown, markdownToMarkup } from '@hcengineering/text-markdown'
-import { MessageType, type Message } from '@hcengineering/communication-types'
-import { getClient, getCommunicationClient } from '@hcengineering/presentation'
+import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
+import { type Message, MessageType, type LinkPreviewData } from '@hcengineering/communication-types'
+import {
+  canDisplayLinkPreview,
+  fetchLinkPreviewDetails,
+  getClient,
+  getCommunicationClient
+} from '@hcengineering/presentation'
 import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
 import cardPlugin, { type Card } from '@hcengineering/card'
 import { openDoc } from '@hcengineering/view-resources'
@@ -156,4 +161,30 @@ export function isMessageEmpty (message: Message): boolean {
     message.edited == null &&
     message.type === MessageType.Message
   )
+}
+
+export async function loadLinkPreviewData (url: string): Promise<LinkPreviewData | undefined> {
+  try {
+    const meta = await fetchLinkPreviewDetails(url)
+    if (canDisplayLinkPreview(meta) && meta.url !== undefined && meta.host !== undefined) {
+      return {
+        url: meta.url,
+        host: meta.host,
+        hostname: meta.hostname,
+        title: meta.title,
+        description: meta.description,
+        favicon: meta.icon,
+        image:
+          meta.image != null
+            ? {
+                url: meta.image,
+                width: meta.imageWidth,
+                height: meta.imageHeight
+              }
+            : undefined
+      }
+    }
+  } catch (err: any) {
+    console.error(err)
+  }
 }
