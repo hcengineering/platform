@@ -1,5 +1,5 @@
 import type { AccountClient, IntegrationSecret } from '@hcengineering/account-client'
-import core, { systemAccountUuid, type PersonId, type WorkspaceUuid } from '@hcengineering/core'
+import core, { systemAccountUuid, type MeasureContext, type PersonId, type WorkspaceUuid } from '@hcengineering/core'
 import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import type { GithubUserRecord } from './types'
@@ -43,7 +43,12 @@ export class UserManager {
     }
   }
 
-  async getAccountByRef (workspace: WorkspaceUuid, ref: PersonId): Promise<GithubUserRecord | undefined> {
+  failedRefs = new Set<string>()
+  async getAccountByRef (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    ref: PersonId
+  ): Promise<GithubUserRecord | undefined> {
     const key = `${workspace}.${ref}`
     let rec = this.refUserCache.get(key)
     if (rec !== undefined) {
@@ -53,17 +58,26 @@ export class UserManager {
       return undefined
     }
 
-    const secrets = await this.accountClient.listIntegrationsSecrets({ kind: 'github-user', socialId: ref })
-    if (secrets.length === 0) {
-      return
-    }
-
-    rec = this.secretToUserRecord(secrets[0], secrets[0].key)
-    if (rec !== undefined) {
-      if (this.refUserCache.size > 1000) {
-        this.refUserCache.clear()
+    try {
+      if (this.failedRefs.has(ref)) {
+        // Ignore failed refs
+        return
       }
-      this.refUserCache.set(key, rec)
+      const secrets = await this.accountClient.listIntegrationsSecrets({ kind: 'github-user', socialId: ref })
+      if (secrets.length === 0) {
+        return
+      }
+
+      rec = this.secretToUserRecord(secrets[0], secrets[0].key)
+      if (rec !== undefined) {
+        if (this.refUserCache.size > 1000) {
+          this.refUserCache.clear()
+        }
+        this.refUserCache.set(key, rec)
+      }
+    } catch (err: any) {
+      this.failedRefs.add(ref)
+      ctx.warn('failed to get user by ref', { workspace, ref, err })
     }
     return rec
   }

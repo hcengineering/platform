@@ -18,6 +18,8 @@
     "PleaseTypeMessage": "Digite uma mensagem de comentário para continuar...",
     "NoRequests": "Sem solicitações",
     "Cancel": "Cancelar",
-    "Cancelled": "Cancelado"
+    "Cancelled": "Cancelado",
+    "NewRequest": "Nova solicitação",
+    "CancelRequest": "Cancelar solicitação"
   }
 }

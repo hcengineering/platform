@@ -114,7 +114,7 @@
     "express": "^4.21.2",
     "cors": "^2.8.5",
     "body-parser": "^1.20.3",
-    "mongodb": "^6.12.0",
+    "mongodb": "^6.16.0",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/preference": "^0.6.13",
     "@hcengineering/login": "^0.6.12",
@@ -170,6 +170,6 @@
     "@hcengineering/server-guest-resources": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/analytics-service": "^0.6.0",
-    "ws": "^8.18.0"
+    "ws": "^8.18.2"
   }
 }

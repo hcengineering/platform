@@ -674,7 +674,7 @@ export class PlatformWorker {
   }
 
   async getAccountByRef (workspace: WorkspaceUuid, ref: PersonId): Promise<GithubUserRecord | undefined> {
-    return await this.userManager.getAccountByRef(workspace, ref)
+    return await this.userManager.getAccountByRef(this.ctx, workspace, ref)
   }
 
   private async updateInstallation (installationId: number): Promise<void> {

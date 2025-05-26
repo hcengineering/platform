@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import { createEventDispatcher, afterUpdate, onMount } from 'svelte'
   import { resizeObserver, isSafari, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { GRID_WIDTH } from '@hcengineering/love'
 
@@ -69,6 +69,14 @@
   }
   afterUpdate(() => {
     if (rows !== oldRows && mode === 'fit') checkGrid()
+  })
+  onMount(() => {
+    if (mode === 'fit' && floorContainer !== undefined) {
+      const rect = floorContainer.getBoundingClientRect()
+      wrapperWidth = rect.width
+      wrapperHeight = rect.height
+      checkGrid()
+    }
   })
 </script>
 

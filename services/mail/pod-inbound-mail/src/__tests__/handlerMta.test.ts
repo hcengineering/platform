@@ -394,6 +394,10 @@ describe('handleMtaHook', () => {
   it('should process HTML email correctly', async () => {
     // Mock request with HTML content
     const htmlContent = '<html><body><h1>Hello</h1><p>This is an <b>HTML</b> test email</p></body></html>'
+    const expectedContent = `Hello
+=====
+
+This is an **HTML** test email`
     mockReq = {
       headers: { 'x-hook-token': 'test-hook-token' },
       body: createValidMtaMessage('sender@example.com', ['recipient@example.com'], {
@@ -423,7 +427,7 @@ describe('handleMtaHook', () => {
         from: { email: 'sender@example.com', firstName: 'sender', lastName: 'example.com' },
         to: [{ email: 'recipient@example.com', firstName: 'recipient', lastName: 'example.com' }],
         subject: 'HTML Test Subject',
-        content: htmlContent,
+        content: expectedContent,
         incoming: true
       }),
       [] // attachments
