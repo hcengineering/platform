@@ -40,12 +40,71 @@ For class methods, you can use the `@Retryable` decorator for clean, declarative
 import { Retryable } from '@hcengineering/retry'
 
 class UserService {
-  @Retryable({ maxRetries: 3, initialDelayMs: 500 })
+  @Retryable({ maxRetries: 5 })
   async getUserProfile(userId: string): Promise<UserProfile> {
     // This method will automatically retry on failure
     return await this.api.fetchUserProfile(userId)
   }
 }
+```
+
+### Delay Strategies
+
+The package provides several delay strategies to control the timing between retry attempts:
+
+Exponential Backoff
+Increases the delay exponentially between retries, which is ideal for backing off from overloaded services:
+
+```
+import { withRetry, DelayStrategyFactory } from '@hcengineering/retry'
+
+await withRetry(
+  async () => await api.getData(),
+  {
+    maxRetries: 5,
+    delayStrategy: DelayStrategyFactory.exponentialBackoff({
+      initialDelayMs: 100,  // Start with 100ms
+      maxDelayMs: 10000,    // Cap at 10 seconds
+      backoffFactor: 2,     // Double the delay each time (100, 200, 400, 800, 1600)
+      jitter: 0.2           // Add ±20% randomness
+    })
+  }
+)
+```
+
+Fixed Delay
+Uses the same delay for all retry attempts, useful when retrying after a fixed cooldown period:
+```
+import { withRetry, DelayStrategyFactory } from '@hcengineering/retry'
+
+await withRetry(
+  async () => await api.getData(),
+  {
+    maxRetries: 3,
+    delayStrategy: DelayStrategyFactory.fixed({
+      delayMs: 1000,        // Always wait 1 second between retries
+      jitter: 0.1           // Optional: add ±10% randomness
+    })
+  }
+)
+```
+Fibonacci Delay
+Uses the Fibonacci sequence to calculate delays, providing a more moderate growth rate than exponential backoff:
+```
+import { withRetry, DelayStrategyFactory } from '@hcengineering/retry'
+
+await withRetry(
+  async () => await api.getData(),
+  {
+    maxRetries: 6,
+    delayStrategy: DelayStrategyFactory.fibonacci({
+      baseDelayMs: 100,     // Base unit for Fibonacci sequence
+      maxDelayMs: 10000,    // Maximum delay cap
+      jitter: 0.2           // Add ±20% randomness
+    })
+  }
+)
+// Delays follow Fibonacci sequence: 100ms, 200ms, 300ms, 500ms, 800ms, ...
 ```
 
 ### Custom Retry Conditions

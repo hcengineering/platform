@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { DelayStrategyFactory } from '../delay'
 import { Retryable } from '../decorator'
 import { type RetryOptions } from '../retry'
 
@@ -29,11 +30,14 @@ describe('Retryable decorator', () => {
     info: jest.fn()
   }
 
+  // Update the mock options to use delay strategy
   const mockOptions: Partial<RetryOptions> = {
-    initialDelayMs: 10,
-    maxDelayMs: 100,
     maxRetries: 3,
-    backoffFactor: 2,
+    delayStrategy: DelayStrategyFactory.exponentialBackoff({
+      initialDelayMs: 10,
+      maxDelayMs: 100,
+      backoffFactor: 2
+    }),
     logger: mockLogger
   }
 
@@ -127,8 +131,11 @@ describe('Retryable decorator', () => {
   it('should throw after max retries are exhausted', async () => {
     class TestService {
       @Retryable({
-        ...mockOptions,
-        maxRetries: 2 // Only try twice total (initial + 1 retry)
+        maxRetries: 2, // Only try twice total (initial + 1 retry)
+        delayStrategy: DelayStrategyFactory.fixed({
+          delayMs: 10
+        }),
+        logger: mockLogger
       })
       async alwaysFailingMethod (): Promise<string> {
         throw new Error('Persistent failure')
@@ -179,7 +186,9 @@ describe('Retryable decorator', () => {
     class TestService {
       @Retryable({
         maxRetries: 5, // Should try up to 5 times total
-        initialDelayMs: 10,
+        delayStrategy: DelayStrategyFactory.fixed({
+          delayMs: 10
+        }),
         logger: mockLogger
       })
       async unstableMethod (): Promise<string> {
@@ -200,7 +209,7 @@ describe('Retryable decorator', () => {
     expect(mockLogger.warn).toHaveBeenCalledTimes(3) // Should have logged 3 warnings
   })
 
-  it('should respect different delay settings', async () => {
+  it('should respect different delay strategies', async () => {
     // Override the setTimeout mock to capture delay values
     const delayValues: number[] = []
     jest.spyOn(global, 'setTimeout').mockImplementation((fn: any, delay: number | undefined) => {
@@ -214,10 +223,12 @@ describe('Retryable decorator', () => {
     class TestService {
       @Retryable({
         maxRetries: 4,
-        initialDelayMs: 100,
-        maxDelayMs: 500,
-        backoffFactor: 2,
-        jitter: 0 // Disable jitter for predictable tests
+        delayStrategy: DelayStrategyFactory.exponentialBackoff({
+          initialDelayMs: 100,
+          maxDelayMs: 500,
+          backoffFactor: 2,
+          jitter: 0 // Disable jitter for predictable tests
+        })
       })
       async delayingMethod (): Promise<string> {
         callCount++
@@ -236,6 +247,64 @@ describe('Retryable decorator', () => {
     expect(delayValues[0]).toBe(100) // initial delay
     expect(delayValues[1]).toBe(200) // 2x initial
     expect(delayValues[2]).toBe(400) // 4x initial
+  })
+
+  it('should test various delay strategies', async () => {
+    // Override the setTimeout mock to capture delay values
+    const delayValues: number[] = []
+    jest.spyOn(global, 'setTimeout').mockImplementation((fn: any, delay: number | undefined) => {
+      delayValues.push(delay ?? 0)
+      fn()
+      return 1 as any
+    })
+
+    // Test Fixed strategy
+    let callCount = 0
+    class FixedTestService {
+      @Retryable({
+        maxRetries: 3,
+        delayStrategy: DelayStrategyFactory.fixed({
+          delayMs: 100,
+          jitter: 0 // Disable jitter for predictable tests
+        })
+      })
+      async method (): Promise<string> {
+        callCount++
+        if (callCount < 3) {
+          throw new Error(`Attempt ${callCount} failed`)
+        }
+        return 'success'
+      }
+    }
+
+    delayValues.length = 0 // Reset captured delays
+    await new FixedTestService().method()
+    expect(delayValues).toEqual([100, 100]) // Should be constant
+
+    // Test Fibonacci strategy
+    callCount = 0
+    class FibonacciTestService {
+      @Retryable({
+        maxRetries: 4,
+        delayStrategy: DelayStrategyFactory.fibonacci({
+          baseDelayMs: 100,
+          maxDelayMs: 1000,
+          jitter: 0 // Disable jitter for predictable tests
+        })
+      })
+      async method (): Promise<string> {
+        callCount++
+        if (callCount < 4) {
+          throw new Error(`Attempt ${callCount} failed`)
+        }
+        return 'success'
+      }
+    }
+
+    delayValues.length = 0 // Reset captured delays
+    await new FibonacciTestService().method()
+    // Fibonacci sequence delay pattern
+    expect(delayValues).toEqual([100, 200, 300]) // fib(2)=1, fib(3)=2, fib(4)=3 multiplied by baseDelayMs
   })
 
   it('should handle methods returning non-promises', async () => {
@@ -288,7 +357,9 @@ describe('Retryable decorator', () => {
       callCount = 0
 
       @Retryable({
-        ...mockOptions,
+        maxRetries: 3,
+        delayStrategy: DelayStrategyFactory.fixed({ delayMs: 10 }),
+        logger: mockLogger,
         isRetryable: (err) => {
           // Only retry errors with "retry" in the message
           return err instanceof Error && err.message.includes('Please retry')

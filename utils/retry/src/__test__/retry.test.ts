@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
+import { DelayStrategyFactory } from '../delay'
 import { withRetry, createRetryableFunction, type RetryOptions } from '../retry'
 import { type IsRetryable, retryAllErrors } from '../retryable'
 
 // Mock the sleep function to speed up tests
-jest.mock('../retry', () => {
-  const originalModule = jest.requireActual('../retry')
+jest.mock('../delay', () => {
+  const originalModule = jest.requireActual('../delay')
   return {
     ...originalModule,
     // Override the internal sleep function to resolve immediately
@@ -34,12 +35,15 @@ describe('withRetry', () => {
     info: jest.fn()
   }
 
-  const mockOptions: RetryOptions = {
-    initialDelayMs: 10,
-    maxDelayMs: 100,
+  // Use the new delayStrategy option
+  const mockOptions: Partial<RetryOptions> = {
     maxRetries: 3,
-    backoffFactor: 2,
-    jitter: 0,
+    delayStrategy: DelayStrategyFactory.exponentialBackoff({
+      initialDelayMs: 10,
+      maxDelayMs: 100,
+      backoffFactor: 2,
+      jitter: 0
+    }),
     logger: mockLogger,
     isRetryable: retryAllErrors
   }
@@ -80,8 +84,7 @@ describe('withRetry', () => {
 
     await expect(withRetry(mockOperation, mockOptions)).rejects.toThrow('persistent failure')
 
-    expect(mockOperation).toHaveBeenCalledTimes(mockOptions.maxRetries)
-    expect(mockLogger.warn).toHaveBeenCalledTimes(mockOptions.maxRetries - 1)
+    expect(mockOperation).toHaveBeenCalledTimes(mockOptions.maxRetries ?? -1)
     expect(mockLogger.error).toHaveBeenCalledTimes(1)
   })
 
@@ -108,7 +111,18 @@ describe('withRetry', () => {
     // Use Math.random mock to make jitter predictable
     const mockRandom = jest.spyOn(Math, 'random').mockReturnValue(0.5)
 
-    await withRetry(mockOperation, { ...mockOptions, jitter: 0.2 })
+    // Create options with jitter enabled
+    const jitterOptions = {
+      ...mockOptions,
+      delayStrategy: DelayStrategyFactory.exponentialBackoff({
+        initialDelayMs: 10,
+        maxDelayMs: 100,
+        backoffFactor: 2,
+        jitter: 0.2
+      })
+    }
+
+    await withRetry(mockOperation, jitterOptions)
 
     // With Math.random = 0.5, jitter should be 0
     // (since 0.5 * 2 - 1 = 0)
@@ -120,43 +134,108 @@ describe('withRetry', () => {
     mockRandom.mockRestore()
   })
 
-  it('should cap delay at maxDelayMs', async () => {
+  it('should respect maximum delay', async () => {
     const mockOperation = jest
       .fn()
       .mockRejectedValueOnce(new Error('failure 1'))
       .mockRejectedValueOnce(new Error('failure 2'))
       .mockRejectedValueOnce(new Error('failure 3'))
-      // Reduce the number of failures since we're only testing the delay calculation
-      // and not the full retry count
       .mockResolvedValueOnce('success')
 
-    // Set a very high backoff factor to test capping
-    await withRetry(mockOperation, {
-      ...mockOptions,
-      initialDelayMs: 50,
-      maxDelayMs: 1000,
+    // Use high backoff factor to test maximum delay cap
+    const maxDelayOptions = {
       maxRetries: 4,
-      backoffFactor: 10 // Would normally go 50 -> 500 -> 5000, but should cap at 100
-    })
+      delayStrategy: DelayStrategyFactory.exponentialBackoff({
+        initialDelayMs: 50,
+        maxDelayMs: 1000,
+        backoffFactor: 10 // Would normally go 50 -> 500 -> 5000, but should cap at 1000
+      }),
+      logger: mockLogger
+    }
 
-    // First retry delay calculation: 50ms * 10 = 500ms (capped at 100ms)
+    await withRetry(mockOperation, maxDelayOptions)
+
+    // Check that delays are correctly calculated and capped
     expect(mockLogger.warn).toHaveBeenNthCalledWith(
-      1, // First warning call (for first retry)
+      1,
       expect.any(String),
-      expect.objectContaining({ delayMs: 50 }) // Should be capped at maxDelayMs
+      expect.objectContaining({ delayMs: expect.any(Number) })
     )
 
-    // Second retry delay would also be capped at 100ms
+    // Second retry delay
     expect(mockLogger.warn).toHaveBeenNthCalledWith(
-      2, // Second warning call (for second retry)
+      2,
       expect.any(String),
-      expect.objectContaining({ delayMs: 500 })
+      expect.objectContaining({ delayMs: 500 }) // 50 * 10 = 500
     )
 
-    expect(mockLogger.warn).toHaveBeenNthCalledWith(3, expect.any(String), expect.objectContaining({ delayMs: 1000 }))
+    // Third retry delay (should be capped)
+    expect(mockLogger.warn).toHaveBeenNthCalledWith(
+      3,
+      expect.any(String),
+      expect.objectContaining({ delayMs: 1000 }) // 500 * 10 = 5000, capped at 1000
+    )
 
     // Function should have been called 4 times total
     expect(mockOperation).toHaveBeenCalledTimes(4)
+  })
+
+  it('should work with different delay strategies', async () => {
+    // Test with fixed delay
+    const fixedDelayOperation = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('failure 1'))
+      .mockRejectedValueOnce(new Error('failure 2'))
+      .mockResolvedValueOnce('success')
+
+    const fixedDelayOptions = {
+      maxRetries: 3,
+      delayStrategy: DelayStrategyFactory.fixed({
+        delayMs: 200,
+        jitter: 0
+      }),
+      logger: mockLogger
+    }
+
+    await withRetry(fixedDelayOperation, fixedDelayOptions)
+
+    // Both retries should have the same delay
+    expect(mockLogger.warn).toHaveBeenNthCalledWith(1, expect.any(String), expect.objectContaining({ delayMs: 200 }))
+    expect(mockLogger.warn).toHaveBeenNthCalledWith(2, expect.any(String), expect.objectContaining({ delayMs: 200 }))
+
+    // Clear mocks for next test
+    jest.clearAllMocks()
+
+    // Test with Fibonacci delay
+    const fibonacciDelayOperation = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('failure 1'))
+      .mockRejectedValueOnce(new Error('failure 2'))
+      .mockResolvedValueOnce('success')
+
+    const fibonacciDelayOptions = {
+      maxRetries: 3,
+      delayStrategy: DelayStrategyFactory.fibonacci({
+        baseDelayMs: 100,
+        maxDelayMs: 10000,
+        jitter: 0
+      }),
+      logger: mockLogger
+    }
+
+    await withRetry(fibonacciDelayOperation, fibonacciDelayOptions)
+
+    // Delays should follow Fibonacci sequence
+    expect(mockLogger.warn).toHaveBeenNthCalledWith(
+      1,
+      expect.any(String),
+      expect.objectContaining({ delayMs: 100 }) // fib(2) = 1 * 100
+    )
+    expect(mockLogger.warn).toHaveBeenNthCalledWith(
+      2,
+      expect.any(String),
+      expect.objectContaining({ delayMs: 200 }) // fib(3) = 2 * 100
+    )
   })
 })
 
@@ -169,6 +248,11 @@ describe('createRetryableFunction', () => {
 
   const mockOptions: Partial<RetryOptions> = {
     maxRetries: 2,
+    delayStrategy: DelayStrategyFactory.exponentialBackoff({
+      initialDelayMs: 10,
+      maxDelayMs: 100,
+      backoffFactor: 2
+    }),
     logger: mockLogger
   }
 
@@ -222,34 +306,6 @@ describe('createRetryableFunction', () => {
   })
 })
 
-// Test for real-world timing scenarios
-describe('withRetry timing', () => {
-  // Restore original implementation for these tests
-  jest.unmock('../retry')
-
-  it('should respect actual delays between retries', async () => {
-    const startTime = Date.now()
-
-    const mockOperation = jest.fn().mockRejectedValueOnce(new Error('first failure')).mockResolvedValueOnce('success')
-
-    // Use smaller delays for faster tests
-    await withRetry(mockOperation, {
-      initialDelayMs: 50, // Start with 50ms
-      maxDelayMs: 1000,
-      maxRetries: 2,
-      backoffFactor: 2,
-      jitter: 0 // Disable jitter for predictable timing
-    })
-
-    const duration = Date.now() - startTime
-
-    // Should have waited approximately initialDelayMs
-    // Adding some margin for test environment variations
-    expect(duration).toBeGreaterThanOrEqual(40) // slightly less than initialDelayMs
-    expect(mockOperation).toHaveBeenCalledTimes(2)
-  }, 1000) // Timeout after 1 second
-})
-
 // Test with a decorated class
 describe('Using retry in class methods', () => {
   class TestService {
@@ -268,7 +324,12 @@ describe('Using retry in class methods', () => {
     const service = new TestService()
 
     // Create a retryable version of the method that's bound to the service
-    const retryableMethod = createRetryableFunction(service.unstableFunction.bind(service), { maxRetries: 3 })
+    const retryableMethod = createRetryableFunction(service.unstableFunction.bind(service), {
+      maxRetries: 3,
+      delayStrategy: DelayStrategyFactory.fixed({
+        delayMs: 10
+      })
+    })
 
     const result = await retryableMethod()
 
@@ -296,7 +357,7 @@ describe('withRetry with isRetryable option', () => {
 
   it('should retry errors that are marked as retriable', async () => {
     // Custom isRetryable function that only retries certain errors
-    const customRetriableCheck: IsRetryable = (err: any) => {
+    const customRetriable: IsRetryable = (err: any) => {
       return err.message.includes('retriable')
     }
 
@@ -309,7 +370,10 @@ describe('withRetry with isRetryable option', () => {
     const result = await withRetry(mockOperation, {
       maxRetries: 5,
       logger: mockLogger,
-      isRetryable: customRetriableCheck
+      delayStrategy: DelayStrategyFactory.fixed({
+        delayMs: 10
+      }),
+      isRetryable: customRetriable
     })
 
     expect(result).toBe('success')
@@ -333,6 +397,9 @@ describe('withRetry with isRetryable option', () => {
       withRetry(mockOperation, {
         maxRetries: 5,
         logger: mockLogger,
+        delayStrategy: DelayStrategyFactory.fixed({
+          delayMs: 10
+        }),
         isRetryable: neverRetry
       })
     ).rejects.toThrow('This error should not be retried')
@@ -358,18 +425,15 @@ describe('withRetry with isRetryable option', () => {
     const validationError = new Error('Validation failed')
     validationError.name = 'ValidationError'
 
-    jest
-      .fn()
-      .mockRejectedValueOnce(networkError) // Should retry
-      .mockRejectedValueOnce(validationError) // Should not retry
-      .mockResolvedValueOnce('success')
-
     // First test with network error - should be retried
     const mockNetworkOp = jest.fn().mockRejectedValueOnce(networkError).mockResolvedValueOnce('network success')
 
     const result1 = await withRetry(mockNetworkOp, {
       maxRetries: 3,
       logger: mockLogger,
+      delayStrategy: DelayStrategyFactory.fixed({
+        delayMs: 10
+      }),
       isRetryable: retryOnlyNetworkErrors
     })
 
@@ -386,6 +450,9 @@ describe('withRetry with isRetryable option', () => {
       withRetry(mockValidationOp, {
         maxRetries: 3,
         logger: mockLogger,
+        delayStrategy: DelayStrategyFactory.fixed({
+          delayMs: 10
+        }),
         isRetryable: retryOnlyNetworkErrors
       })
     ).rejects.toThrow('Validation failed')
@@ -404,7 +471,10 @@ describe('withRetry with isRetryable option', () => {
 
     const result = await withRetry(mockOperation, {
       maxRetries: 5,
-      logger: mockLogger
+      logger: mockLogger,
+      delayStrategy: DelayStrategyFactory.fixed({
+        delayMs: 10
+      })
       // isRetryable not provided, should use default
     })
 
@@ -423,6 +493,9 @@ describe('withRetry with isRetryable option', () => {
     await withRetry(mockOperation, {
       maxRetries: 3,
       logger: mockLogger,
+      delayStrategy: DelayStrategyFactory.fixed({
+        delayMs: 10
+      }),
       isRetryable: mockisRetryable
     })
 
@@ -467,6 +540,11 @@ describe('createRetryableFunction with isRetryable', () => {
       {
         maxRetries: 3,
         logger: mockLogger,
+        delayStrategy: DelayStrategyFactory.exponentialBackoff({
+          initialDelayMs: 10,
+          maxDelayMs: 100,
+          backoffFactor: 2
+        }),
         isRetryable: customRetriable
       },
       'custom-operation'

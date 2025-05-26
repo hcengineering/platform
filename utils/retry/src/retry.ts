@@ -14,23 +14,18 @@
 //
 import { defaultLogger, type Logger } from './logger'
 import { type IsRetryable, retryAllErrors } from './retryable'
+import { type DelayStrategy, DelayStrategyFactory, sleep } from './delay'
 
 /**
  * Configuration options for the retry mechanism
  */
 export interface RetryOptions {
-  /** Initial delay between retries in milliseconds */
-  initialDelayMs: number
-  /** Maximum delay between retries in milliseconds */
-  maxDelayMs: number
   /** Maximum number of retry attempts */
   maxRetries: number
-  /** Backoff factor for exponential delay increase */
-  backoffFactor: number
   /** Function to determine if an error is retriable */
   isRetryable: IsRetryable
-  /** Optional jitter factor (0-1) to add randomness to delay times */
-  jitter?: number
+  /** Strategy for calculating delay between retries */
+  delayStrategy: DelayStrategy
   /** Logger to use (defaults to console logger) */
   logger?: Logger
 }
@@ -39,13 +34,15 @@ export interface RetryOptions {
  * Default retry options
  */
 export const DEFAULT_RETRY_OPTIONS: RetryOptions = {
-  initialDelayMs: 1000,
-  maxDelayMs: 30000,
   maxRetries: 5,
-  backoffFactor: 1.5,
-  jitter: 0.2,
-  logger: defaultLogger,
-  isRetryable: retryAllErrors
+  isRetryable: retryAllErrors,
+  delayStrategy: DelayStrategyFactory.exponentialBackoff({
+    initialDelayMs: 1000,
+    maxDelayMs: 30000,
+    backoffFactor: 1.5,
+    jitter: 0.2
+  }),
+  logger: defaultLogger
 }
 
 /**
@@ -64,7 +61,6 @@ export async function withRetry<T> (
 ): Promise<T> {
   const config: RetryOptions = { ...DEFAULT_RETRY_OPTIONS, ...options }
   const logger = config.logger ?? defaultLogger
-  let delayMs = config.initialDelayMs
   let attempt = 1
   let lastError: Error | undefined
 
@@ -92,38 +88,24 @@ export async function withRetry<T> (
         throw error
       }
 
-      // Calculate next delay with jitter
-      let jitterAmount = 0
-      if (config.jitter != null && config.jitter > 0) {
-        jitterAmount = delayMs * config.jitter * (Math.random() * 2 - 1)
-      }
-      const actualDelay = Math.min(delayMs + jitterAmount, config.maxDelayMs)
+      // Get delay for next attempt from strategy
+      const delayMs = Math.round(config.delayStrategy.getDelay(attempt))
 
-      logger.warn(`${operationName} failed, retrying in ${Math.round(actualDelay)}ms`, {
+      logger.warn(`${operationName} failed, retrying in ${delayMs}ms`, {
         error,
         attempt,
         nextAttempt: attempt + 1,
-        delayMs: Math.round(actualDelay)
+        delayMs
       })
 
       // Wait before retry
-      await sleep(actualDelay)
-
-      // Increase delay for next attempt (exponential backoff)
-      delayMs = Math.min(delayMs * config.backoffFactor, config.maxDelayMs)
+      await sleep(delayMs)
       attempt++
     }
   }
 
   // This should not be reached due to the throw in the last iteration
   throw lastError ?? new Error(`${operationName} failed for unknown reason`)
-}
-
-/**
- * Promise-based sleep function
- */
-function sleep (ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
