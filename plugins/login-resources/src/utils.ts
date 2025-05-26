@@ -296,6 +296,8 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
       loc.path.length = 2
       navigate(loc)
     }
+
+    return null
   }
 
   try {
@@ -912,7 +914,9 @@ export async function doLoginNavigate (
   navigateUrl?: string
 ): Promise<void> {
   if (result != null) {
-    await logIn(result)
+    if (result.token != null) {
+      await logIn(result)
+    }
 
     if (navigateUrl !== undefined) {
       try {
