@@ -18,6 +18,9 @@ import sanitizeHtml from 'sanitize-html'
 import { MeasureContext } from '@hcengineering/core'
 import { EmailContact, EmailMessage } from './types'
 
+const NAME_EMAIL_PATTERN = /^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/
+const NAME_SEGMENT_REGEX = /[\s,;]+/
+
 export function getMdContent (ctx: MeasureContext, email: EmailMessage): string {
   if (email.content !== undefined) {
     try {
@@ -89,8 +92,7 @@ export function parseNameFromEmailHeader (headerValue: string | undefined): Emai
   }
 
   // Match pattern like: "Name" <email@example.com> or Name <email@example.com>
-  const nameEmailPattern = /^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/
-  const match = headerValue.trim().match(nameEmailPattern)
+  const match = headerValue.trim().match(NAME_EMAIL_PATTERN)
 
   if (match == null) {
     const address = headerValue.trim()
@@ -104,10 +106,24 @@ export function parseNameFromEmailHeader (headerValue: string | undefined): Emai
   const displayName = match[1]?.trim()
   const email = match[2].trim()
 
-  const wrappedEmail = displayName != null && displayName.length > 0 ? `<${email}>` : email
+  if (displayName == null || displayName === '') {
+    return {
+      email,
+      firstName: email,
+      lastName: ''
+    }
+  }
+  const nameParts = displayName.split(NAME_SEGMENT_REGEX).filter((part) => part !== '')
+  if (nameParts.length === 2) {
+    return {
+      email,
+      firstName: nameParts[0],
+      lastName: nameParts[1]
+    }
+  }
   return {
     email,
-    firstName: wrappedEmail,
-    lastName: displayName ?? ''
+    firstName: displayName,
+    lastName: ''
   }
 }
