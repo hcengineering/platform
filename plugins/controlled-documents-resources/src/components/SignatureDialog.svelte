@@ -84,7 +84,7 @@
     const accountClient = getAccountClient(accountsUrl)
 
     try {
-      // await accountClient.login(email, password)
+      await accountClient.login(email, password)
 
       return OK
     } catch (err: any) {
