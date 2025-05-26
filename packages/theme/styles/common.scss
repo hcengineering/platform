@@ -870,10 +870,18 @@
   .message.outcoming { border-radius: 0.75rem 0.125rem 0.125rem 0.75rem; }
 }
 
+.emoji {
+  font-size: 1.3em;
+  width: auto;
+  vertical-align: middle;
+  display: inline-block;
+  margin-top: -0.1em;
+}
+
 .emoji > img {
   display: inline-block;
   vertical-align: sub;
-  height: 1.3em;
+  height: 1.15em;
   width: auto;
   margin: 0 0.05em 0 0.1em;
   padding: 0;
