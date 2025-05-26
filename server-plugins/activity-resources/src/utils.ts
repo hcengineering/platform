@@ -443,7 +443,7 @@ export async function getNewActivityUpdates (
     if (isUnset && hierarchy.isMixin(key as any)) {
       const tag = key as Ref<Tag>
       const clazz = hierarchy.getClass(tag)
-      console.log('d', hierarchy.isDerived(clazz._class, cardPlugin.class.Tag))
+
       if (hierarchy.isDerived(clazz._class, cardPlugin.class.Tag)) {
         result.push({
           type: ActivityUpdateType.Tag,

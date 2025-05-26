@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { getCurrentAccount, type Ref } from '@hcengineering/core'
+import { getCurrentAccount, type Ref, generateId } from '@hcengineering/core'
 import { derived, get } from 'svelte/store'
 import { type Location, location } from '@hcengineering/ui'
 import { type Card } from '@hcengineering/card'
@@ -32,19 +32,21 @@ function geLocalStorageKey (card: Ref<Card>): string | undefined {
 
 export function getEmptyDraft (): MessageDraft {
   return {
+    _id: generateId(),
     content: EmptyMarkup,
-    files: []
+    files: [],
+    links: []
   }
 }
 
 export function getDraft (card: Ref<Card>): MessageDraft {
   const key = geLocalStorageKey(card)
-  console.log('getDraft ket', key)
+
   if (key === undefined) {
     return getEmptyDraft()
   }
   const stored = localStorage.getItem(key)
-  console.log('getDraft stored', stored)
+
   if (stored == null) {
     return getEmptyDraft()
   }
@@ -52,8 +54,10 @@ export function getDraft (card: Ref<Card>): MessageDraft {
   try {
     const data = JSON.parse(stored)
     return {
-      content: data.content,
-      files: data.files
+      _id: data._id ?? generateId(),
+      content: data.content ?? EmptyMarkup,
+      files: data.files ?? [],
+      links: data.links ?? []
     }
   } catch (e) {
     console.error(e)
@@ -75,7 +79,18 @@ export function saveDraft (card: Ref<Card>, draft: MessageDraft): void {
 
 export function messageToDraft (message: Message): MessageDraft {
   return {
+    _id: message.id,
     content: toMarkup(message.content),
+    links: message.links.map((it) => ({
+      id: it.id,
+      url: it.url,
+      host: it.host,
+      hostname: it.hostname,
+      title: it.title,
+      description: it.description,
+      favicon: it.favicon,
+      image: it.image
+    })),
     files: message.files.map((it) => ({
       blobId: it.blobId,
       type: it.type,
