@@ -328,8 +328,8 @@
       try {
         const data = linksData.get(url) ?? (await loadLinkPreviewData(url))
         linksData.set(url, data ?? null)
-        if (data === undefined) continue
-        if (draftId !== draft._id || !previewUrls.has(url)) return
+        if (data === undefined || !previewUrls.has(url)) continue
+        if (draftId !== draft._id) return
         draft = {
           ...draft,
           links: [...draft.links, data]
