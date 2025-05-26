@@ -608,18 +608,19 @@ export async function UpdateCard (
 }
 
 export async function RunSubProcess (
-  params: MethodParams<Process>,
+  params: MethodParams<Execution>,
   execution: Execution,
   control: TriggerControl
 ): Promise<ExecuteResult | undefined> {
   if (params._id === undefined) return
+  const card = params.card ?? execution.card
   const processId = params._id as Ref<Process>
   const target = control.modelDb.findObject(processId)
   if (target === undefined) return
   if (target.parallelExecutionForbidden === true) {
     const currentExecution = await control.findAll(control.ctx, process.class.Execution, {
       process: target._id,
-      card: execution.card,
+      card,
       done: false
     })
     if (currentExecution.length > 0) {
@@ -634,7 +635,7 @@ export async function RunSubProcess (
     control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
       process: processId,
       currentState: target.initState,
-      card: execution.card,
+      card,
       context: emptyContext,
       status: ExecutionStatus.Active,
       rollback: [],
