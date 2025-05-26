@@ -13,17 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata, IntlString } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import ui, { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation from '@hcengineering/presentation'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
-  import { concatLink } from '@hcengineering/core'
-
-  type Integration = { status: 'authorized' | 'wantcode' | 'wantpassword', number: string } | 'Loading' | 'Missing'
-
-  const url = getMetadata(telegram.metadata.TelegramURL) ?? ''
+  import { command, list, type Integration } from '../api'
 
   let phone: string = ''
   let code: string = ''
@@ -34,33 +29,6 @@
 
   function close (): void {
     dispatch('close')
-  }
-
-  async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?: any): Promise<any> {
-    const base = concatLink(url, 'api/integrations')
-
-    const response = await fetch(concatLink(base, path ?? ''), {
-      method,
-      headers: {
-        Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
-        'Content-Type': 'application/json'
-      },
-      ...(body !== undefined ? { body: JSON.stringify(body) } : {})
-    })
-
-    if (response.status === 200) {
-      return await response.json()
-    } else {
-      throw new Error(`Unexpected response: ${response.status}`)
-    }
-  }
-
-  async function list (): Promise<Array<Integration>> {
-    return await request('GET')
-  }
-
-  async function command (phone: string, command: 'start' | 'next' | 'cancel', input?: string): Promise<Integration> {
-    return await request('POST', phone, { command, input })
   }
 
   interface UIState {
