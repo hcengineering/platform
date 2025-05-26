@@ -485,7 +485,13 @@ export async function moveAccountDbFromMongoToPG (
   ctx.info('Account database migration completed')
 }
 
-export async function migrateCreatedModifiedBy (ctx: MeasureMetricsContext, dbUrl: string, domains?: string[], maxLifetimeSec?: number, batchSize?: number): Promise<void> {
+export async function migrateCreatedModifiedBy (
+  ctx: MeasureMetricsContext,
+  dbUrl: string,
+  domains?: string[],
+  maxLifetimeSec?: number,
+  batchSize?: number
+): Promise<void> {
   if (!dbUrl.startsWith('postgresql')) {
     throw new Error('Only CockroachDB is supported')
   }
@@ -556,7 +562,8 @@ export async function migrateCreatedModifiedBy (ctx: MeasureMetricsContext, dbUr
         AND column_name IN ('createdBy', 'modifiedBy')
         GROUP BY table_name
       `
-      const filteredTables = (domains == null || domains.length === 0) ? tables : tables.filter((t) => domains.includes(t.table_name))
+      const filteredTables =
+        domains == null || domains.length === 0 ? tables : tables.filter((t) => domains.includes(t.table_name))
       ctx.info(`Found ${filteredTables.length} tables to process`, { domains: filteredTables.map((t) => t.table_name) })
 
       // Process each table
@@ -618,7 +625,9 @@ export async function migrateCreatedModifiedBy (ctx: MeasureMetricsContext, dbUr
 
           const duration = (Date.now() - startTime) / 1000
           const rate = Math.round(createdByCount.count / duration)
-          ctx.info(`Updated createdBy for ${tableName}: ${createdByCount.count} rows in ${duration}s (${rate} rows/sec)`)
+          ctx.info(
+            `Updated createdBy for ${tableName}: ${createdByCount.count} rows in ${duration}s (${rate} rows/sec)`
+          )
         }
 
         if (modifiedByCount.count > 0) {

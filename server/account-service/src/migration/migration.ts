@@ -270,8 +270,7 @@ async function migrateWorkspace (
     return
   }
 
-  let createdBy =
-    workspace.createdBy !== undefined ? accountsEmailToUuid[workspace.createdBy] : ('N/A' as AccountUuid)
+  let createdBy = workspace.createdBy !== undefined ? accountsEmailToUuid[workspace.createdBy] : ('N/A' as AccountUuid)
   if (createdBy === undefined) {
     console.log('No account found for workspace', workspace.workspace, 'created by', workspace.createdBy)
     createdBy = 'N/A' as AccountUuid
