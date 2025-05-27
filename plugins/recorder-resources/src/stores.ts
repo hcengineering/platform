@@ -35,7 +35,7 @@ export const useScreenShareSound = writable(false, (set) => {
   set(getUseScreenShareSound())
 })
 
-export const recordingResolution = writable(DefaultOptions.videoRes, (set) => {
+export const recordingResolution = writable<number>(DefaultOptions.videoRes, (set) => {
   set(getRecordingResolution())
 })
 

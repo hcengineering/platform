@@ -16,7 +16,7 @@
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { getFileUrl } from '@hcengineering/presentation'
-  import HLS, { HlsConfig, LoaderConfig, LoaderContext, LoaderCallbacks, LoadPolicy } from 'hls.js'
+  import HLS, { HlsConfig, LoaderConfiguration, LoaderContext, LoaderCallbacks, LoadPolicy } from 'hls.js'
   import { onDestroy, onMount } from 'svelte'
   import Plyr from 'plyr'
 
@@ -41,11 +41,18 @@
       this.load = this.load.bind(this)
     }
 
-    load (context: LoaderContext, config: LoaderConfig, callbacks: LoaderCallbacks<LoaderContext>): void {
+    load (context: LoaderContext, config: LoaderConfiguration, callbacks: LoaderCallbacks<LoaderContext>): void {
       const url = new URL(context.url)
       const pathname = url.pathname.endsWith('/') ? url.pathname.slice(0, -1) : url.pathname
       const blobId = pathname.split('/').pop()
-      context.url = getFileUrl(blobId, '')
+      if (blobId !== undefined) {
+        context.url = getFileUrl(blobId, '')
+      }
+
+      const headers = context.headers ?? {}
+      headers.Authorization = `Bearer ${token}`
+      context.headers = headers
+
       super.load(context, config, callbacks)
     }
   }
