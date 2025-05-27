@@ -296,11 +296,10 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
       loc.path.length = 2
       navigate(loc)
     }
-
-    return null
   }
 
   try {
+    // even if "token" is null here it still might be supplied from the cookie
     return await getAccountClient(token).getLoginInfoByToken()
   } catch (err: any) {
     if (err instanceof PlatformError) {
@@ -310,10 +309,12 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
         setMetadata(presentation.metadata.Token, null)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
 
-        const loc = getCurrentLocation()
-        loc.path[1] = 'login'
-        loc.path.length = 2
-        navigate(loc)
+        if (doNavigate) {
+          const loc = getCurrentLocation()
+          loc.path[1] = 'login'
+          loc.path.length = 2
+          navigate(loc)
+        }
         return null
       }
 
