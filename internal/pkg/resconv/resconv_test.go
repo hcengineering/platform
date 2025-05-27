@@ -92,6 +92,11 @@ func Test_Resconv_ShouldReturnCorrectPrefixes(t *testing.T) {
 			expected: []string{"1080p", "720p"},
 		},
 		{
+			name:     "pixels between 1k and 2k",
+			res:      "2880:1800",
+			expected: []string{"1080p", "720p"},
+		},
+		{
 			name:     "pixels equal to 2k",
 			res:      "3840:2160",
 			expected: []string{"1080p", "720p"},

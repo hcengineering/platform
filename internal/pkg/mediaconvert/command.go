@@ -76,8 +76,8 @@ func BuildAudioCommand(opts *Options) []string {
 // BuildRawVideoCommand returns an extremely lightweight ffmpeg command for converting raw video without extra cost.
 func BuildRawVideoCommand(opts *Options) []string {
 	return append(buildCommonComamnd(opts),
-		"-c:v",
-		"copy",
+		"-c:a", "copy", // Copy audio stream
+		"-c:v", "copy", // Copy video stream
 		"-hls_time", "5",
 		"-hls_flags", "split_by_time",
 		"-hls_list_size", "0",
@@ -101,8 +101,8 @@ func BuildScalingVideoCommand(opts *Options) []string {
 	for _, level := range opts.ScalingLevels {
 		result = append(result,
 			"-vf", "scale=-2:"+level[:len(level)-1],
-			"-c:v",
-			"libx264",
+			"-c:a", "copy", // Copy audio stream
+			"-c:v", "libx264",
 			"-preset", "veryfast",
 			"-crf", "23",
 			"-g", "60",
