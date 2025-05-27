@@ -73,7 +73,7 @@
     "express": "^4.21.2",
     "js-yaml": "^4.1.0",
     "node-cron": "^3.0.3",
-    "postgres": "^3.4.5",
+    "postgres": "^3.4.7",
     "uuid": "^8.3.2"
   }
 }

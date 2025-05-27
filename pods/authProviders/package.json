@@ -45,7 +45,7 @@
     "@types/querystringify": "^2.0.2"
   },
   "dependencies": {
-    "mongodb": "^6.12.0",
+    "mongodb": "^6.16.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/account": "^0.6.0",
     "@hcengineering/account-client": "^0.6.0",

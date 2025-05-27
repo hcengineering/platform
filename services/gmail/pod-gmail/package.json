@@ -86,7 +86,7 @@
     "gaxios": "^5.0.1",
     "jwt-simple": "^0.5.6",
     "uuid": "^8.3.2",
-    "ws": "^8.18.0",
+    "ws": "^8.18.2",
     "@hcengineering/analytics-service": "^0.6.0",
     "sanitize-html": "^2.15.0"
   }
