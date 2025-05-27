@@ -63,7 +63,8 @@
     "DeleteTransition": "Excluir transição",
     "DeleteTransitionConfirm": "Você deseja excluir a transição?",
     "AddTransition": "Adicionar transição",
-    "ToDo": "Tarefa"
+    "ToDo": "Tarefa",
+    "CurrentCard": "Cartão Atual"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

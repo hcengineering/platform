@@ -63,7 +63,8 @@
     "DeleteTransition": "Übergang löschen",
     "DeleteTransitionConfirm": "Übergang löschen?",
     "AddTransition": "Übergang hinzufügen",
-    "ToDo": "Aufgabe"
+    "ToDo": "Aufgabe",
+    "CurrentCard": "Aktuelle Karte"
   },  
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",
