@@ -75,7 +75,6 @@
 
     oldName = res.name
     name = oldName
-    console.log(res.allowReadOnlyGuest)
     allowReadOnlyGuests = res.allowReadOnlyGuest ?? false
     loading = false
   }

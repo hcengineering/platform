@@ -160,7 +160,6 @@
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
     .filter((it) => isAllowedToRole(it.accessLevel, account))
 
-  console.log(apps)
 
   let panelInstance: PanelInstance
   let popupInstance: Popup
