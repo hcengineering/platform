@@ -24,6 +24,7 @@
   export let hasMenu: boolean = false
   export let noPrint: boolean = false
   export let autoFocus: boolean = false
+  export let noFocus: boolean = false
   export let inheritFont: boolean = false
   export let focusIndex = -1
   export let tooltip: LabelAndProps | undefined = undefined
@@ -54,6 +55,7 @@
   {focusIndex}
   {tooltip}
   {autoFocus}
+  {noFocus}
   {id}
   {dataId}
   on:click

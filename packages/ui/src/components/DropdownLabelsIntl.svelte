@@ -41,6 +41,7 @@
   export let minW0 = true
   export let focusIndex: number = -1
   export let dataId: string | undefined = undefined
+  export let noFocus: boolean = false
 
   let container: HTMLElement
   let opened: boolean = false
@@ -89,6 +90,7 @@
     {kind}
     {disabled}
     {justify}
+    {noFocus}
     showTooltip={{ label, direction: labelDirection }}
     on:click={openPopup}
   >

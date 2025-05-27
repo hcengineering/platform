@@ -13,14 +13,33 @@
 // limitations under the License.
 //
 
+import { getMetadata } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
+
+import { DefaultOptions } from './const'
 import { Recorder } from './recorder'
-import { type Uploader, type TusUploaderOptions, TusUploader } from './uploader'
+import { type RecordingOptions, type RecordingResult } from './types'
+import { type Uploader, TusUploader } from './uploader'
+import { getVideoDimensions } from './utils'
 
-export function createScreenRecorder (mediaStream: MediaStream, options: TusUploaderOptions): ScreenRecorder {
-  const recorder = new Recorder({ mediaStream })
-  const uploader = new TusUploader(recorder.asStream(), options)
+import plugin from './plugin'
 
-  return new ScreenRecorder(mediaStream, recorder, uploader)
+export function createScreenRecorder (options: RecordingOptions): ScreenRecorder {
+  const name = options.name
+  const stream = options.stream
+  const videoBps = options.videoBps ?? DefaultOptions.videoBps
+  const audioBps = options.audioBps ?? DefaultOptions.audioBps
+  const chunkIntervalMs = options.chunkIntervalMs ?? DefaultOptions.chunkIntervalMs
+
+  const { width, height } = getVideoDimensions(stream)
+
+  const token = getMetadata(presentation.metadata.Token) ?? ''
+  const workspace = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
+  const endpoint = getMetadata(plugin.metadata.StreamUrl) ?? ''
+
+  const recorder = new Recorder(stream, { chunkIntervalMs, audioBps, videoBps })
+  const uploader = new TusUploader(recorder.asStream(), { token, workspace, endpoint, name, width, height })
+  return new ScreenRecorder(stream, recorder, uploader)
 }
 
 export class ScreenRecorder {
@@ -47,9 +66,9 @@ export class ScreenRecorder {
     this.recorder.resume()
   }
 
-  public async stop (): Promise<void> {
+  public async stop (): Promise<RecordingResult> {
     this.recorder.stop()
-    await this.uploader.wait()
+    return await this.uploader.wait()
   }
 
   public async cancel (): Promise<void> {

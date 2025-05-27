@@ -15,7 +15,39 @@
 
 import { type PopupResult } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
-import { type RecordingState } from './types'
+import { DefaultOptions } from './const'
+import { type CameraPosition, type CameraSize, type RecordingState } from './types'
+import {
+  getRecordingCameraPosition,
+  getRecordingCameraSize,
+  getRecordingResolution,
+  getUseScreenShareSound,
+  setRecordingCameraPosition,
+  setRecordingCameraSize,
+  setRecordingResolution,
+  setUseScreenShareSound
+} from './utils'
 
 export const recorder = writable<PopupResult | null>(null)
 export const recording = writable<RecordingState | null>(null)
+
+export const useScreenShareSound = writable(false, (set) => {
+  set(getUseScreenShareSound())
+})
+
+export const recordingResolution = writable<number>(DefaultOptions.videoRes, (set) => {
+  set(getRecordingResolution())
+})
+
+export const recordingCameraSize = writable<CameraSize>('medium', (set) => {
+  set(getRecordingCameraSize())
+})
+
+export const recordingCameraPosition = writable<CameraPosition>('bottom-left', (set) => {
+  set(getRecordingCameraPosition())
+})
+
+useScreenShareSound.subscribe(setUseScreenShareSound)
+recordingResolution.subscribe(setRecordingResolution)
+recordingCameraSize.subscribe(setRecordingCameraSize)
+recordingCameraPosition.subscribe(setRecordingCameraPosition)

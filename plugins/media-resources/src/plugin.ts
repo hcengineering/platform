@@ -31,8 +31,6 @@ export default mergeIds(mediaId, media, {
     DefaultCam: '' as IntlString,
     DefaultMic: '' as IntlString,
     DefaultSpeaker: '' as IntlString,
-    TurnOnCam: '' as IntlString,
-    TurnOffCam: '' as IntlString,
     On: '' as IntlString,
     Off: '' as IntlString
   }

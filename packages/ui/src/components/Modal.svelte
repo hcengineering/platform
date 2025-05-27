@@ -17,7 +17,6 @@
   import { IntlString } from '@hcengineering/platform'
   import Header from './Header.svelte'
   import Label from './Label.svelte'
-  import ButtonIcon from './ButtonIcon.svelte'
   import ButtonBase from './ButtonBase.svelte'
   import Scroller from './Scroller.svelte'
   import ui from '..'
@@ -32,20 +31,29 @@
   export let okLabel: IntlString = ui.string.Ok
   export let padding: string | undefined = undefined
   export let hidden: boolean = false
-  export let allowFullsize: boolean = false
   export let noTopIndent: boolean = false
   export let hideFooter: boolean = false
   export let adaptive: 'default' | 'freezeActions' | 'doubleRow' | 'disabled' = 'disabled'
   export let showCancelButton: boolean = true
+  export let scrollableContent = true
 
   const dispatch = createEventDispatcher()
 
   function close (): void {
-    if (onCancel) onCancel()
-    else dispatch('close')
+    if (onCancel !== undefined) {
+      onCancel()
+    } else {
+      dispatch('close')
+    }
   }
-  function onKeyDown (ev: KeyboardEvent) {
-    if (ev.key === 'Escape') close()
+
+  function onKeyDown (ev: KeyboardEvent): void {
+    if (ev.key === 'Escape') {
+      ev.preventDefault()
+      ev.stopPropagation()
+
+      close()
+    }
   }
 
   $: typePadding =
@@ -61,9 +69,9 @@
 <div class="hulyModal-container {type} {width ?? ''}" class:hidden class:noTopIndent>
   <Header
     {type}
-    {allowFullsize}
     {adaptive}
     on:close={close}
+    closeOnEscape={false}
     hideBefore={!$$slots.beforeTitle}
     hideActions={!$$slots.actions}
   >
@@ -78,16 +86,20 @@
   </Header>
   <slot name="beforeContent" />
   <div class="hulyModal-content">
-    <Scroller
-      padding={padding ?? typePadding}
-      bottomPadding={type === 'type-popup'
-        ? undefined
-        : type === 'type-aside'
-          ? 'var(--spacing-2)'
-          : 'var(--spacing-4)'}
-    >
+    {#if scrollableContent}
+      <Scroller
+        padding={padding ?? typePadding}
+        bottomPadding={type === 'type-popup'
+          ? undefined
+          : type === 'type-aside'
+            ? 'var(--spacing-2)'
+            : 'var(--spacing-4)'}
+      >
+        <slot />
+      </Scroller>
+    {:else}
       <slot />
-    </Scroller>
+    {/if}
   </div>
   <slot name="afterContent" />
   {#if type !== 'type-component' && !hideFooter}

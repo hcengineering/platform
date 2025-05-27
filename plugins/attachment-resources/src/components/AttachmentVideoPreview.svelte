@@ -16,7 +16,8 @@
   import type { Attachment } from '@hcengineering/attachment'
   import type { BlobType, WithLookup } from '@hcengineering/core'
   import { getFileUrl, getVideoMeta } from '@hcengineering/presentation'
-  import { HlsVideo, Video } from '@hcengineering/ui'
+  import { HlsVideo } from '@hcengineering/hls'
+  import { Video } from '@hcengineering/ui'
 
   export let value: WithLookup<Attachment> | BlobType
   export let preload = false
@@ -64,7 +65,7 @@
 
 <div class="container" style="width:{toStyle(dimensions.width)}; height:{toStyle(dimensions.height)}">
   {#await getVideoMeta(file, name) then meta}
-    {@const src = getFileUrl(file, name)}
+    {@const src = getFileUrl(file, '')}
 
     {#if meta?.hls?.source !== undefined}
       <HlsVideo {src} {preload} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} />
