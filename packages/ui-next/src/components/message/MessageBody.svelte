@@ -54,7 +54,7 @@
     <div class="message__content">
       {#if !isEditing && message.content !== ''}
         <div class="message__text">
-          <MessageContentViewer {message} {card} />
+          <MessageContentViewer {message} {card} {author} />
         </div>
       {:else if isEditing}
         <MessageInput
@@ -98,7 +98,7 @@
       </div>
       {#if !isEditing && message.content !== ''}
         <div class="message__text">
-          <MessageContentViewer {message} {card} />
+          <MessageContentViewer {message} {card} {author}/>
         </div>
       {:else if isEditing}
         <MessageInput

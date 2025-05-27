@@ -32,6 +32,8 @@
     "Loading": "Chargement...",
     "MessageIn": "Message #{title}",
     "ThreadWasDeleted": "Ce fil de discussion a été supprimé.",
-    "MessageWasRemoved": "Ce message a été supprimé."
+    "MessageWasRemoved": "Ce message a été supprimé.",
+    "JoinedThe": "A rejoint le",
+    "LeftThe": "A quitté le"
   }
 }

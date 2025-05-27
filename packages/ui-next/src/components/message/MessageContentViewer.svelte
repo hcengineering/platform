@@ -18,6 +18,7 @@
   import { Message, MessageType } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
   import { Label } from '@hcengineering/ui'
+  import { Person } from '@hcengineering/contact'
 
   import ActivityMessageViewer from './ActivityMessageViewer.svelte'
   import { toMarkup } from '../../utils'
@@ -27,12 +28,13 @@
 
   export let card: Card
   export let message: Message
+  export let author: Person | undefined
 </script>
 
 {#if message.type === MessageType.Thread || message.thread != null}
   <ThreadMessageViewer {message} thread={message.thread} />
 {:else if isActivityMessage(message)}
-  <ActivityMessageViewer {message} {card} />
+  <ActivityMessageViewer {message} {card} {author} />
 {:else if message.removed}
   <span class="overflow-label removed-label">
     <Label label={uiNext.string.MessageWasRemoved} />

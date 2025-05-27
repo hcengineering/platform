@@ -31,6 +31,8 @@
     "Loading": "Загрузка...",
     "MessageIn": "Сообщение #{title}",
     "ThreadWasDeleted": "Этот поток был удален.",
-    "MessageWasRemoved": "Это сообщение было удалено."
+    "MessageWasRemoved": "Это сообщение было удалено.",
+    "JoinedThe": "Присоединился(aсь) к",
+    "LeftThe": "Покинул(a) к"
   }
 }

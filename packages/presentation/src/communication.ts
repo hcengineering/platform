@@ -213,16 +213,19 @@ class Client {
       type: NotificationRequestEventType.AddCollaborators,
       card,
       cardType,
-      collaborators
+      collaborators,
+      creator: this.getSocialId()
     }
     await this.sendEvent(event)
   }
 
-  async removeCollaborators (card: CardID, collaborators: AccountID[]): Promise<void> {
+  async removeCollaborators (card: CardID, cardType: CardType, collaborators: AccountID[]): Promise<void> {
     const event: RemoveCollaboratorsEvent = {
       type: NotificationRequestEventType.RemoveCollaborators,
       card,
-      collaborators
+      cardType,
+      collaborators,
+      creator: this.getSocialId()
     }
     await this.sendEvent(event)
   }

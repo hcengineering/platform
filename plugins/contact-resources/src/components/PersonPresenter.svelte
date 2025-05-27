@@ -45,6 +45,7 @@
   export let type: ObjectPresenterType = 'link'
   export let showStatus: boolean = false
   export let overflowLabel = true
+  export let inlineBlock = false
 
   const client = getClient()
   $: personValue = typeof value === 'string' ? $personByIdStore.get(value) : value
@@ -102,6 +103,7 @@
     {type}
     {showStatus}
     {overflowLabel}
+    {inlineBlock}
     on:accent-color
   />
 {/if}

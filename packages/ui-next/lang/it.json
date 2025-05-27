@@ -32,6 +32,8 @@
     "Loading": "Caricamento...",
     "MessageIn": "Messaggio #{title}",
     "ThreadWasDeleted": "Questo thread è stato eliminato.",
-    "MessageWasRemoved": "Questo messaggio è stato rimosso."
+    "MessageWasRemoved": "Questo messaggio è stato rimosso.",
+    "JoinedThe": "Unisciti al",
+    "LeftThe": "Abbandonato dal"
   }
 }
