@@ -38,6 +38,7 @@ import {
 import { generateToken } from '@hcengineering/server-token'
 import { FileModelLogger, prepareTools } from '@hcengineering/server-tool'
 import path from 'path'
+import { randomUUID } from 'crypto'
 
 import { Analytics } from '@hcengineering/analytics'
 import {
@@ -188,8 +189,9 @@ export class WorkspaceWorker {
         await this.doSleep(ctx, opt)
       } else {
         void this.exec(async () => {
+          const operationJobUuid = randomUUID()
           await ctx
-            .with('workspaceOperation', { mode: workspace.mode }, (ctx) =>
+            .with('workspaceOperation', { operationJobUuid, mode: workspace.mode }, (ctx) =>
               this.doWorkspaceOperation(ctx, workspace, opt)
             )
             .catch((err) => {
