@@ -159,11 +159,9 @@ export async function uploadFile (
             void callbackLimiter.exec(async () => {
               await onFileUploaded({
                 uuid,
+                file,
                 name: metadata.name,
-                type: metadata.type,
-                size: file.size,
                 path: metadata.relativePath,
-                lastModified: file.lastModified,
                 metadata
               })
             })

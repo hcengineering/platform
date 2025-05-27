@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Blob, type Ref } from '@hcengineering/core'
+import { type Blob as PlatformBlob, type Ref } from '@hcengineering/core'
 import { showPopup } from '@hcengineering/ui'
 import { type FileUploadOptions } from '@hcengineering/uploader'
 import { get } from 'svelte/store'
@@ -25,12 +25,11 @@ import { type RecordingOptions, type RecordingResult } from './types'
 
 export async function record ({ onFileUploaded }: FileUploadOptions): Promise<void> {
   const onSuccess = async (result: RecordingResult): Promise<void> => {
+    const file = new Blob([], { type: result.type })
     await onFileUploaded?.({
-      uuid: result.uuid as Ref<Blob>,
+      uuid: result.uuid as Ref<PlatformBlob>,
       name: result.name,
-      type: result.type,
-      size: 0,
-      lastModified: Date.now()
+      file
     })
   }
   showPopup(RecordingPopup, { onSuccess }, 'centered')

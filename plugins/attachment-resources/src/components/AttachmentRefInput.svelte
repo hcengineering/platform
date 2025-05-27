@@ -46,7 +46,7 @@
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
   import { AttachIcon, ReferenceInput } from '@hcengineering/text-editor-resources'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
-  import { type FileUploadCallback, type UploadHandlerDefinition, getUploadHandlers } from '@hcengineering/uploader'
+  import { type FileUploadCallbackParams, type UploadHandlerDefinition, getUploadHandlers } from '@hcengineering/uploader'
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import attachment from '../plugin'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
@@ -185,7 +185,7 @@
     try {
       const uuid = await uploadFile(file)
       const metadata = meta ?? (await getFileMetadata(file, uuid))
-      await _createAttachment(uuid, file.name, file.size, file.type, file.lastModified, metadata)
+      await _createAttachment(uuid, file.name, file, metadata)
     } catch (err: any) {
       void setPlatformStatus(unknownError(err))
     }
@@ -194,9 +194,7 @@
   async function _createAttachment (
     file: Ref<PlatformBlob>,
     name: string,
-    size: number,
-    type: string,
-    lastModified: number,
+    blob: File | Blob,
     metadata?: BlobMetadata
   ): Promise<void> {
     try {
@@ -213,9 +211,9 @@
         attachedToClass: _class,
         name,
         file,
-        type,
-        size,
-        lastModified,
+        type: blob.type,
+        size: blob.size,
+        lastModified: blob instanceof File ? blob.lastModified : Date.now(),
         metadata
       })
       newAttachments.add(_id)
@@ -430,26 +428,34 @@
     return false
   }
 
-  async function onFileUploaded ({ uuid, name, type, size, lastModified, metadata }: FileUploadCallback): Promise<void> {
+  async function onFileUploaded ({ uuid, name, file, metadata }: FileUploadCallbackParams): Promise<void> {
     try {
-      await _createAttachment(uuid, name, size, type, lastModified, metadata)
+      await _createAttachment(uuid, name, file, metadata)
     } catch (err: any) {
       void setPlatformStatus(unknownError(err))
     }
   }
 
+  async function uploadWith (uploader: UploadHandlerDefinition): Promise<void> {
+    const upload = await getResource(uploader.handler)
+    await upload({ onFileUploaded })
+  }
+
   let uploadActions: RefAction[] = []
   $: void getUploadHandlers({ category: 'media' }).then((handlers) => {
     let index = 1000
-    uploadActions = handlers.map((handler: UploadHandlerDefinition) => ({
-      order: handler.order ?? ++index,
-      label: handler.label,
-      icon: handler.icon,
-      action: async () => {
-        const upload = await getResource(handler.handler)
-        await upload({ onFileUploaded })
-      }
-    }))
+    const actions: RefAction[] = []
+    for (const handler of handlers) {
+      actions.push({
+        order: handler.order ?? index++,
+        label: handler.label,
+        icon: handler.icon,
+        action: () => {
+          void uploadWith(handler)
+        }
+      })
+    }
+    uploadActions = actions
   })
 </script>
 
