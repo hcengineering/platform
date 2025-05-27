@@ -32,7 +32,8 @@
 
   $: clazz = hierarchy.getClass(card._class)
   $: isAuthorJoined = author?.personUuid && update.added.length === 1 && update.added.includes(author.personUuid as any)
-  $: isAuthorLeft =author?.personUuid && update.removed.length === 1 && update.removed.includes(author.personUuid as any)
+  $: isAuthorLeft =
+    author?.personUuid && update.removed.length === 1 && update.removed.includes(author.personUuid as any)
 </script>
 
 {#if isAuthorJoined}

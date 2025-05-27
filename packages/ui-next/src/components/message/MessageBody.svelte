@@ -98,7 +98,7 @@
       </div>
       {#if !isEditing && message.content !== ''}
         <div class="message__text">
-          <MessageContentViewer {message} {card} {author}/>
+          <MessageContentViewer {message} {card} {author} />
         </div>
       {:else if isEditing}
         <MessageInput
