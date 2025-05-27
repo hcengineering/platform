@@ -27,7 +27,7 @@ export async function parseContent (
   mta: MtaMessage
 ): Promise<{ content: string, attachments: Attachment[] }> {
   // TODO: UBERF-11029 - remove this logging after testing
-  ctx.info('Parsing email content', { content: mta.message.contents })
+  ctx.info('Parsing email content', { mta })
   const contentType = getHeader(mta, 'Content-Type')
   if (contentType === undefined) {
     throw new Error('Content-Type header not found')
@@ -37,7 +37,7 @@ export async function parseContent (
     return { content: mta.message.contents, attachments: [] }
   }
 
-  const email = await getEmailContent(mta.message.contents, contentType)
+  const email = await getEmailContent(mta)
 
   let content = email.text ?? ''
   let isMarkdown = false
@@ -83,23 +83,34 @@ export async function parseContent (
   return { content, attachments }
 }
 
+export function convertMtaToEml (mta: MtaMessage): string {
+  return `MIME-Version: 1.0
+Date: ${new Date().toUTCString()}
+From: ${mta.envelope.from.address}
+To: ${mta.envelope.to.map((to) => to.address).join(', ')}
+Content-Type: ${getHeader(mta, 'Content-Type') ?? 'text/plain; charset=utf-8'}
+
+${unescapeString(mta.message.contents)}`
+}
+
+function unescapeString (str: string): string {
+  return str
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '\r')
+    .replace(/\\t/g, '\t')
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, '\\')
+}
+
 export function getHeader (mta: MtaMessage, header: string): string | undefined {
   const h = header.toLowerCase()
   return mta.message.headers.find((header) => header[0].toLowerCase() === h)?.[1]?.trim()
 }
 
-async function getEmailContent (mtaContent: string, contentType: string): Promise<ReadedEmlJson> {
-  if (mtaContent == null) {
-    return {
-      text: '',
-      html: '',
-      attachments: []
-    } as any
-  }
-  const contentRegex = /Content-Type/i
-  const content = contentRegex.test(mtaContent) ? mtaContent : `Content-Type: ${contentType}\r\n${mtaContent}`
+async function getEmailContent (mta: MtaMessage): Promise<ReadedEmlJson> {
+  const eml = convertMtaToEml(mta)
   const email = await new Promise<ReadedEmlJson>((resolve, reject) => {
-    readEml(content, (err, json) => {
+    readEml(eml, (err, json) => {
       if (err !== undefined && err !== null) {
         reject(new Error(`Email parsing error: ${err.message}`))
       } else if (json === undefined) {
@@ -112,7 +123,7 @@ async function getEmailContent (mtaContent: string, contentType: string): Promis
   if (isEmptyString(email.text) && isEmptyString(email.html)) {
     return {
       ...email,
-      text: removeContentTypeHeader(mtaContent)
+      text: removeContentTypeHeader(mta.message.contents)
     }
   }
   return email

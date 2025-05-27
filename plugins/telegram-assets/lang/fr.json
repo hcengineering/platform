@@ -1,5 +1,8 @@
 {
   "string": {
+    "Loading": "Chargement...",
+    "IntegrationConnected": "Connecté en tant que {phone}",
+    "Disconnect": "Déconnecter",
     "SharedMessages": "messages Telegram partagés",
     "Next": "Suivant",
     "Back": "Retour",
