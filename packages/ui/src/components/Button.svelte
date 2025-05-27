@@ -31,7 +31,6 @@
   import Label from './Label.svelte'
   import Spinner from './Spinner.svelte'
   import { Analytics } from '@hcengineering/analytics'
-  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
 
   export let label: IntlString | undefined = undefined
   export let labelParams: Record<string, any> = {}
