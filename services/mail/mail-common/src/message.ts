@@ -64,8 +64,8 @@ import { ThreadLookupService } from './thread'
  * @param {WorkspaceLoginInfo} wsInfo - Workspace information including ID and URLs
  * @param {EmailMessage} message - The email message to process
  * @param {Attachment[]} attachments - Array of attachments for the message
- * @param {PersonId[]} [targetPersons] - Optional list of specific persons who should receive the message.
- *                                       If not provided, all existing accounts from email addresses will be used.
+ * @param {MailRecipient[]} [recipients] - Optional list of specific persons who should receive the message.
+ *                                         If not provided, all existing accounts from email addresses will be used.
  * @returns {Promise<void>} A promise that resolves when all messages have been created
  * @throws Will log errors but not throw exceptions for partial failures
  *
