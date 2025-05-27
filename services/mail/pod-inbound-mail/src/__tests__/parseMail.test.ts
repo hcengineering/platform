@@ -60,7 +60,7 @@ describe('parseContent', () => {
     expect(result.content).toContain('Attached huly.png')
 
     // Verify attachment was extracted
-    expect(result.attachments.length).toBeGreaterThan(0)
+    expect(result.attachments.length).toBe(1)
 
     // Check attachment properties
     const attachment = result.attachments[0]
@@ -71,5 +71,45 @@ describe('parseContent', () => {
 
     // Verify attachment data is a Buffer
     expect(Buffer.isBuffer(attachment.data)).toBe(true)
+    expect(attachment.name).toBe('huly.png')
+  })
+
+  test('should parse email with 2 attachments', async () => {
+    const attachmentEml = await fs.readFile(path.join(__dirname, '__mocks__/2attachments.txt'), 'utf-8')
+    // Create MTA message from the sample email file
+    const mtaMessage: MtaMessage = {
+      envelope: {
+        from: { address: 'test1@example.com' },
+        to: [{ address: 'test2@example.com' }]
+      },
+      message: {
+        headers: [['Content-Type', 'multipart/mixed; boundary="00000000000016290e0636150598"']],
+        contents: attachmentEml
+      }
+    }
+
+    const result = await parseContent(mockContext, mtaMessage)
+
+    // Verify content was parsed
+    expect(result.content).toContain('Send huly.png and cat.png')
+
+    // Verify attachment was extracted
+    expect(result.attachments.length).toBe(2)
+
+    // Check attachment properties
+    const attachment = result.attachments[0]
+    expect(attachment).toHaveProperty('id')
+    expect(attachment).toHaveProperty('name')
+    expect(attachment).toHaveProperty('data')
+    expect(attachment).toHaveProperty('contentType')
+
+    // Verify attachment data is a Buffer
+    expect(Buffer.isBuffer(attachment.data)).toBe(true)
+    expect(attachment.name).toBe('huly.png')
+
+    const catAttachment = result.attachments[1]
+    // Verify attachment data is a Buffer
+    expect(Buffer.isBuffer(catAttachment.data)).toBe(true)
+    expect(catAttachment.name).toBe('cat.png')
   })
 })

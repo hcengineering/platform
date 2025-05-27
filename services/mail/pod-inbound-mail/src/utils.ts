@@ -27,7 +27,7 @@ export async function parseContent (
   mta: MtaMessage
 ): Promise<{ content: string, attachments: Attachment[] }> {
   // TODO: UBERF-11029 - remove this logging after testing
-  ctx.info('Parsing email content', { content: mta.message.contents })
+  ctx.info('Parsing email content', { mta })
   const contentType = getHeader(mta, 'Content-Type')
   if (contentType === undefined) {
     throw new Error('Content-Type header not found')
@@ -98,6 +98,8 @@ function unescapeString (str: string): string {
     .replace(/\\n/g, '\n')
     .replace(/\\r/g, '\r')
     .replace(/\\t/g, '\t')
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, '\\')
 }
 
 export function getHeader (mta: MtaMessage, header: string): string | undefined {
