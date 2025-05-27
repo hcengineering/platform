@@ -87,7 +87,7 @@ export function convertMtaToEml (mta: MtaMessage): string {
   return `MIME-Version: 1.0
 Date: ${new Date().toUTCString()}
 From: ${mta.envelope.from.address}
-To: ${mta.envelope.to.map(to => to.address).join(', ')}
+To: ${mta.envelope.to.map((to) => to.address).join(', ')}
 Content-Type: ${getHeader(mta, 'Content-Type') ?? 'text/plain; charset=utf-8'}
 
 ${unescapeString(mta.message.contents)}`
