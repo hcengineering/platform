@@ -438,7 +438,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           pullRequestExternal.body
         )
 
-        const op = this.client.apply()
+        let op = this.client.apply()
         let createdPullRequest: GithubPullRequest | undefined
 
         await this.ctx.withLog(
@@ -464,16 +464,21 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           { url: pullRequestExternal.url }
         )
 
+        await op.commit()
         const pullRequestObj =
           createdPullRequest ??
           (await this.client.findOne(github.class.GithubPullRequest, {
             _id: info._id as unknown as Ref<GithubPullRequest>
           }))
         if (pullRequestObj !== undefined) {
-          await this.todoSync(op, pullRequestObj, pullRequestExternal, info, account)
+          op = this.client.apply()
+          try {
+            await this.todoSync(op, pullRequestObj, pullRequestExternal, info, account)
+          } catch (err: any) {
+            this.ctx.error('failed to sync todos', { err, url: pullRequestExternal.url, id: pullRequestObj._id })
+          }
+          await op.commit()
         }
-
-        await op.commit()
 
         // To sync reviews/review threads in case they are created before us.
         await syncChilds(info, this.client, derivedClient)
@@ -555,7 +560,11 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
   async afterSync (existing: Issue, account: PersonId, issueExternal: any, info: DocSyncInfo): Promise<void> {
     const pullRequest = existing as GithubPullRequest
-    await this.todoSync(this.client, pullRequest, issueExternal as PullRequestExternalData, info, account)
+    try {
+      await this.todoSync(this.client, pullRequest, issueExternal as PullRequestExternalData, info, account)
+    } catch (err: any) {
+      this.ctx.error('failed to sync todos', { err, url: issueExternal.url, id: pullRequest._id })
+    }
   }
 
   async todoSync (
