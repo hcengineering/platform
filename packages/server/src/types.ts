@@ -23,6 +23,7 @@ import type {
   SessionData
 } from '@hcengineering/communication-sdk-types'
 import type {
+  AccountID,
   CardID,
   Collaborator,
   FindCollaboratorsParams,
@@ -36,6 +37,7 @@ import type {
   MessagesGroup,
   Notification,
   NotificationContext,
+  SocialID,
   WorkspaceID
 } from '@hcengineering/communication-types'
 
@@ -85,6 +87,7 @@ export interface MiddlewareContext {
   workspace: WorkspaceID
   metadata: Metadata
   registeredCards: Set<CardID>
+  accountBySocialID: Map<SocialID, AccountID>
 
   derived?: Middleware
   head?: Middleware
@@ -101,6 +104,7 @@ export interface TriggerCtx {
   workspace: WorkspaceID
   account: Account
   registeredCards: Set<CardID>
+  accountBySocialID: Map<SocialID, AccountID>
   derived: boolean
   execute: (event: RequestEvent) => Promise<EventResult>
 }

@@ -68,7 +68,7 @@ import { MessagesDb } from './db/message'
 import { NotificationsDb } from './db/notification'
 import { connect, type PostgresClientReference } from './connection'
 import { type Logger, type Options, type SqlClient, type SqlParams, type SqlRow } from './types'
-import { convertArrayParams } from './utils'
+import { convertArrayParams, formatName } from './utils'
 import { initSchema } from './init'
 import { LabelsDb } from './db/label'
 
@@ -307,6 +307,18 @@ export class CockroachAdapter implements DbAdapter {
     const result = await this.sql.execute(sql, [this.workspace, ids])
 
     return result?.map((it) => it.personUuid as AccountID).filter((it) => it != null) ?? []
+  }
+
+  async getNameByAccount(id: AccountID): Promise<string | undefined> {
+    const sql = `SELECT data ->> 'name' AS name
+                 FROM public.contact
+                 WHERE "workspaceId" = $1::uuid
+                   AND data ->> 'personUuid' = $2
+                 LIMIT 1`
+    const result = await this.sql.execute(sql, [this.workspace, id])
+    const name = result[0]?.name
+
+    return name ? formatName(name) : undefined
   }
 }
 

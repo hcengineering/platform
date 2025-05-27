@@ -810,7 +810,6 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
     if (exists !== undefined) return
     if (!this.match(message)) return
-    if (message.content.trim() === '') return
 
     if (this.result.isTail()) {
       const eventId = event._id

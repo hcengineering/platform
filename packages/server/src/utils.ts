@@ -24,15 +24,25 @@ export async function findAccount(ctx: TriggerCtx, socialString: SocialID): Prom
   if (ctx.account.socialIds.includes(socialString)) {
     return ctx.account.uuid
   }
+  const cached = ctx.accountBySocialID.get(socialString)
+  if (cached !== undefined) {
+    return cached
+  }
 
   const url = ctx.metadata.accountsUrl ?? ''
   if (url === '') return undefined
 
   const token = generateToken(systemAccountUuid)
-  const account = getAccountClient(ctx.metadata.accountsUrl, token)
+  const accountClient = getAccountClient(ctx.metadata.accountsUrl, token)
 
   try {
-    return (await account.findPersonBySocialId(socialString, true)) as AccountID | undefined
+    const account = (await accountClient.findPersonBySocialId(socialString, true)) as AccountID | undefined
+
+    if (account != null) {
+      ctx.accountBySocialID.set(socialString, account)
+    }
+
+    return account
   } catch (err: any) {
     ctx.ctx.warn('Cannot find account', { socialString, err })
   }

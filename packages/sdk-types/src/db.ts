@@ -166,6 +166,7 @@ export interface DbAdapter {
   updateLabels(card: CardID, update: LabelUpdates): Promise<void>
 
   getAccountsByPersonIds(ids: string[]): Promise<AccountID[]>
+  getNameByAccount(id: AccountID): Promise<string | undefined>
 
   close(): void
 }

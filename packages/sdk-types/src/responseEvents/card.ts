@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { CardID, CardType } from '@hcengineering/communication-types'
+import type { CardID, CardType, SocialID } from '@hcengineering/communication-types'
 
 import type { BaseResponseEvent } from './common'
 
@@ -28,6 +28,8 @@ export interface CardTypeUpdatedEvent extends BaseResponseEvent {
   type: CardResponseEventType.CardTypeUpdated
   card: CardID
   cardType: CardType
+  creator: SocialID
+  created?: Date
 }
 
 export interface CardRemovedEvent extends BaseResponseEvent {

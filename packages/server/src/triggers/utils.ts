@@ -14,16 +14,21 @@
 //
 
 import {
+  type AccountID,
   type CardID,
   type Message,
   type MessageID,
+  type RichText,
+  type SocialID,
   SortingOrder,
   type WorkspaceID
 } from '@hcengineering/communication-types'
 import { loadGroupFile } from '@hcengineering/communication-yaml'
 import { applyPatches } from '@hcengineering/communication-shared'
-
 import type { DbAdapter } from '@hcengineering/communication-sdk-types'
+
+import type { TriggerCtx } from '../types.ts'
+import { findAccount } from '../utils.ts'
 
 export async function findMessage(
   db: DbAdapter,
@@ -81,4 +86,45 @@ export async function findMessageInFiles(
     console.error('Failed to find message in files', { card, id, created })
     console.error('Error:', { error: e })
   }
+}
+
+export async function getNameBySocialID(ctx: TriggerCtx, id: SocialID) {
+  const account = await findAccount(ctx, id)
+  return account ? ((await ctx.db.getNameByAccount(account)) ?? 'System') : 'System'
+}
+
+export async function getAddCollaboratorsMessageContent(
+  ctx: TriggerCtx,
+  sender: AccountID | undefined,
+  collaborators: AccountID[]
+): Promise<RichText> {
+  const senderName = sender ? ((await ctx.db.getNameByAccount(sender)) ?? 'System') : 'System'
+
+  if (sender && collaborators.length === 1 && collaborators.includes(sender)) {
+    return `${senderName} joined`
+  }
+
+  const collaboratorsNames = (await Promise.all(collaborators.map((it) => ctx.db.getNameByAccount(it)))).filter(
+    (it): it is string => it != null && it !== ''
+  )
+
+  return `${senderName} added ${collaboratorsNames.join(', ')}`
+}
+
+export async function getRemoveCollaboratorsMessageContent(
+  ctx: TriggerCtx,
+  sender: AccountID | undefined,
+  collaborators: AccountID[]
+): Promise<RichText> {
+  const senderName = sender ? ((await ctx.db.getNameByAccount(sender)) ?? 'System') : 'System'
+
+  if (sender && collaborators.length === 1 && collaborators.includes(sender)) {
+    return `${senderName} left`
+  }
+
+  const collaboratorsNames = (await Promise.all(collaborators.map((it) => ctx.db.getNameByAccount(it)))).filter(
+    (it): it is string => it != null && it !== ''
+  )
+
+  return `${senderName} removed ${collaboratorsNames.join(', ')}`
 }

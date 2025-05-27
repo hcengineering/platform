@@ -14,12 +14,13 @@
 //
 
 import {
+  CardRequestEventType,
+  type EventResult,
   LabelRequestEventType,
   MessageRequestEventType,
-  type EventResult,
+  NotificationRequestEventType,
   type RequestEvent,
-  type SessionData,
-  NotificationRequestEventType
+  type SessionData
 } from '@hcengineering/communication-sdk-types'
 import {
   type Collaborator,
@@ -335,7 +336,8 @@ const CreateFileEventSchema = BaseRequestEventSchema.extend({
     filename: z.string(),
     meta: z.record(z.string(), z.any()).optional()
   }),
-  creator: SocialID
+  creator: SocialID,
+  created: DateSchema.optional()
 }).strict()
 
 const RemoveFileEventSchema = BaseRequestEventSchema.extend({
@@ -475,33 +477,45 @@ const AddCollaboratorsEventSchema = BaseRequestEventSchema.extend({
   card: CardID,
   cardType: CardType,
   collaborators: z.array(AccountID).nonempty(),
-  date: DateSchema.optional()
+  created: DateSchema.optional(),
+  creator: SocialID
 }).strict()
 
 const RemoveCollaboratorsEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.RemoveCollaborators),
   card: CardID,
-  collaborators: z.array(AccountID)
+  cardType: CardType,
+  collaborators: z.array(AccountID).nonempty(),
+  creator: SocialID,
+  created: DateSchema.optional()
 }).strict()
 
 function deserializeEvent(event: RequestEvent): RequestEvent {
   switch (event.type) {
     case MessageRequestEventType.CreateMessage:
+    case CardRequestEventType.UpdateCardType:
+    case NotificationRequestEventType.AddCollaborators:
+    case NotificationRequestEventType.RemoveCollaborators:
       return {
         ...event,
         created: deserializeDate(event.created)
       }
     case MessageRequestEventType.CreateThread:
     case MessageRequestEventType.RemoveFile:
-    case MessageRequestEventType.CreateFile:
     case MessageRequestEventType.RemoveReaction:
     case MessageRequestEventType.CreateReaction:
-    case MessageRequestEventType.CreatePatch:
     case MessageRequestEventType.CreateLinkPreview:
     case MessageRequestEventType.RemoveLinkPreview:
       return {
         ...event,
         messageCreated: deserializeDate(event.messageCreated)!
+      }
+    case MessageRequestEventType.CreatePatch:
+    case MessageRequestEventType.CreateFile:
+      return {
+        ...event,
+        messageCreated: deserializeDate(event.messageCreated)!,
+        created: deserializeDate(event.created)
       }
     case MessageRequestEventType.UpdateThread:
       return {
@@ -519,11 +533,6 @@ function deserializeEvent(event: RequestEvent): RequestEvent {
           fromDate: deserializeDate(event.group.fromDate)!,
           toDate: deserializeDate(event.group.toDate)!
         }
-      }
-    case NotificationRequestEventType.AddCollaborators:
-      return {
-        ...event,
-        date: deserializeDate(event.date)
       }
     case NotificationRequestEventType.CreateNotification:
       return {

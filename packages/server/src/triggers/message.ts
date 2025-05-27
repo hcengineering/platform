@@ -153,7 +153,8 @@ async function registerCard(ctx: TriggerCtx, event: MessageCreatedEvent | PatchC
 }
 
 async function addCollaborators(ctx: TriggerCtx, event: MessageCreatedEvent): Promise<RequestEvent[]> {
-  const { creator } = event.message
+  const { creator, type } = event.message
+  if (type === MessageType.Activity) return []
   const account = await findAccount(ctx, creator)
   const collaborators: AccountUuid[] = []
 
@@ -181,7 +182,8 @@ async function addCollaborators(ctx: TriggerCtx, event: MessageCreatedEvent): Pr
       card: event.message.card,
       cardType: event.cardType,
       collaborators,
-      date: event.message.created
+      creator: event.message.creator,
+      created: new Date(event.message.created.getTime() - 1)
     }
   ]
 }

@@ -115,6 +115,7 @@ export interface CreateFileEvent extends BaseRequestEvent {
   messageCreated: Date
   data: FileData
   creator: SocialID
+  created?: Date
 }
 
 export interface RemoveFileEvent extends BaseRequestEvent {

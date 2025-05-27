@@ -14,14 +14,15 @@
 //
 
 import {
+  CardRequestEventType,
+  type CreatePatchEvent,
+  type DbAdapter,
+  type EventResult,
   LabelRequestEventType,
   MessageRequestEventType,
   NotificationRequestEventType,
-  type EventResult,
   type RequestEvent,
-  type SessionData,
-  type CreatePatchEvent,
-  type DbAdapter
+  type SessionData
 } from '@hcengineering/communication-sdk-types'
 import { systemAccountUuid } from '@hcengineering/core'
 import type {
@@ -57,6 +58,9 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
         await this.checkPatch(session, event)
         break
       }
+      case CardRequestEventType.UpdateCardType:
+      case NotificationRequestEventType.AddCollaborators:
+      case NotificationRequestEventType.RemoveCollaborators:
       case MessageRequestEventType.CreateMessage:
       case MessageRequestEventType.CreateReaction:
       case MessageRequestEventType.RemoveReaction:

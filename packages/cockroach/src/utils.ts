@@ -81,3 +81,16 @@ export function convertArrayParams(params?: unknown[]): any[] | undefined {
     return `{${sanitized.join(',')}}`
   })
 }
+
+const SEP = ','
+function getFirstName(name: string): string {
+  return name !== undefined ? name.substring(name.indexOf(SEP) + 1) : ''
+}
+
+function getLastName(name: string): string {
+  return name !== undefined ? name.substring(0, name.indexOf(SEP)) : ''
+}
+
+export function formatName(name: string): string {
+  return getFirstName(name) + ' ' + getLastName(name)
+}

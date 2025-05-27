@@ -16,6 +16,7 @@
 import {
   type AddedCollaboratorsEvent,
   LabelRequestEventType,
+  MessageRequestEventType,
   MessageResponseEventType,
   type NotificationContextUpdatedEvent,
   NotificationRequestEventType,
@@ -24,13 +25,24 @@ import {
   type RemovedCollaboratorsEvent,
   type RequestEvent
 } from '@hcengineering/communication-sdk-types'
-import { NewMessageLabelID, NotificationType, PatchType, SubscriptionLabelID } from '@hcengineering/communication-types'
+import {
+  type ActivityCollaboratorsUpdate,
+  ActivityUpdateType,
+  MessageType,
+  NewMessageLabelID,
+  NotificationType,
+  PatchType,
+  SubscriptionLabelID
+} from '@hcengineering/communication-types'
 import { groupByArray } from '@hcengineering/core'
 
 import type { TriggerCtx, TriggerFn, Triggers } from '../types'
+import { findAccount } from '../utils.ts'
+import { getAddCollaboratorsMessageContent, getRemoveCollaboratorsMessageContent } from './utils.ts'
 
 async function onAddedCollaborators(ctx: TriggerCtx, event: AddedCollaboratorsEvent): Promise<RequestEvent[]> {
   const { card, cardType, collaborators } = event
+  if (collaborators.length === 0) return []
   const result: RequestEvent[] = []
 
   for (const collaborator of collaborators) {
@@ -42,11 +54,33 @@ async function onAddedCollaborators(ctx: TriggerCtx, event: AddedCollaboratorsEv
       label: SubscriptionLabelID
     })
   }
+
+  const account = await findAccount(ctx, event.creator)
+
+  const updateDate: ActivityCollaboratorsUpdate = {
+    type: ActivityUpdateType.Collaborators,
+    added: collaborators,
+    removed: []
+  }
+  result.push({
+    type: MessageRequestEventType.CreateMessage,
+    messageType: MessageType.Activity,
+    card,
+    cardType,
+    content: await getAddCollaboratorsMessageContent(ctx, account, collaborators),
+    creator: event.creator,
+    created: event.created,
+    data: {
+      action: 'update',
+      update: updateDate
+    }
+  })
   return result
 }
 
 async function onRemovedCollaborators(ctx: TriggerCtx, event: RemovedCollaboratorsEvent): Promise<RequestEvent[]> {
   const { card, collaborators } = event
+  if (collaborators.length === 0) return []
   const result: RequestEvent[] = []
   const contexts = await ctx.db.findNotificationContexts({ card, account: event.collaborators })
   for (const collaborator of collaborators) {
@@ -69,6 +103,27 @@ async function onRemovedCollaborators(ctx: TriggerCtx, event: RemovedCollaborato
       })
     }
   }
+
+  const updateDate: ActivityCollaboratorsUpdate = {
+    type: ActivityUpdateType.Collaborators,
+    added: [],
+    removed: collaborators
+  }
+  const account = await findAccount(ctx, event.creator)
+  result.push({
+    type: MessageRequestEventType.CreateMessage,
+    messageType: MessageType.Activity,
+    card,
+    cardType: event.cardType,
+    content: await getRemoveCollaboratorsMessageContent(ctx, account, collaborators),
+    creator: event.creator,
+    created: event.created,
+    data: {
+      action: 'update',
+      update: updateDate
+    }
+  })
+
   return result
 }
 

@@ -14,7 +14,7 @@
 //
 
 import type { Attribute, BlobMetadata, Class, Mixin, Ref } from '@hcengineering/core'
-import type { BlobID, CardID, CardType, ID, RichText, SocialID } from './core'
+import type { AccountID, BlobID, CardID, CardType, ID, RichText, SocialID } from './core'
 import type { Card, Tag } from '@hcengineering/card'
 
 export type MessageID = ID & { message: true }
@@ -56,16 +56,33 @@ export interface ActivityMessageData {
   update?: ActivityUpdate
 }
 
-export type ActivityUpdate = ActivityAttributeUpdate | ActivityTagUpdate
+export type ActivityUpdate =
+  | ActivityAttributeUpdate
+  | ActivityTagUpdate
+  | ActivityTypeUpdate
+  | ActivityCollaboratorsUpdate
 export enum ActivityUpdateType {
   Attribute = 'attribute',
-  Tag = 'tag'
+  Tag = 'tag',
+  Collaborators = 'collaborators',
+  Type = 'type'
 }
 
 export interface ActivityTagUpdate {
   type: ActivityUpdateType.Tag
   tag: Ref<Tag>
   action: 'add' | 'remove'
+}
+
+export interface ActivityCollaboratorsUpdate {
+  type: ActivityUpdateType.Collaborators
+  added: AccountID[]
+  removed: AccountID[]
+}
+
+export interface ActivityTypeUpdate {
+  type: ActivityUpdateType.Type
+  newType: CardType
 }
 
 type AttributeValue = string | number | null

@@ -17,11 +17,39 @@ import {
   type CardRemovedEvent,
   CardResponseEventType,
   type CardTypeUpdatedEvent,
+  MessageRequestEventType,
   NotificationRequestEventType,
   type RequestEvent
 } from '@hcengineering/communication-sdk-types'
+import { type ActivityTypeUpdate, ActivityUpdateType, MessageType } from '@hcengineering/communication-types'
 
 import type { TriggerCtx, TriggerFn, Triggers } from '../types'
+import { getNameBySocialID } from './utils.ts'
+
+async function createActivityOnCardTypeUpdate(ctx: TriggerCtx, event: CardTypeUpdatedEvent): Promise<RequestEvent[]> {
+  const updateDate: ActivityTypeUpdate = {
+    type: ActivityUpdateType.Type,
+    newType: event.cardType
+  }
+
+  const sender = await getNameBySocialID(ctx, event.creator)
+
+  return [
+    {
+      type: MessageRequestEventType.CreateMessage,
+      messageType: MessageType.Activity,
+      card: event.card,
+      cardType: event.cardType,
+      content: `${sender} changed type`,
+      creator: event.creator,
+      created: event.created,
+      data: {
+        action: 'update',
+        update: updateDate
+      }
+    }
+  ]
+}
 
 async function onCardTypeUpdates(ctx: TriggerCtx, event: CardTypeUpdatedEvent): Promise<RequestEvent[]> {
   await ctx.db.updateCollaborators({ card: event.card }, { cardType: event.cardType })
@@ -61,6 +89,11 @@ async function removeNotificationContexts(ctx: TriggerCtx, event: CardRemovedEve
 
 const triggers: Triggers = [
   ['on_card_type_updates', CardResponseEventType.CardTypeUpdated, onCardTypeUpdates as TriggerFn],
+  [
+    'create_activity_on_card_type_updates',
+    CardResponseEventType.CardTypeUpdated,
+    createActivityOnCardTypeUpdate as TriggerFn
+  ],
   ['remove_collaborators_on_card_removed', CardResponseEventType.CardRemoved, removeCollaborators as TriggerFn],
   ['remove_labels_on_card_removed', CardResponseEventType.CardRemoved, removeLabels as TriggerFn],
   ['remove_threads_on_card_removed', CardResponseEventType.CardRemoved, removeThreads as TriggerFn],

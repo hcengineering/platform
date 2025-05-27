@@ -66,7 +66,8 @@ export async function buildMiddlewares(
     ctx,
     metadata,
     workspace,
-    registeredCards: new Set()
+    registeredCards: new Set(),
+    accountBySocialID: new Map()
   }
 
   return await Middlewares.create(ctx, context, createFns)

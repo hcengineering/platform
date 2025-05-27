@@ -21,7 +21,8 @@ import type {
   CardType,
   NotificationType,
   NotificationContent,
-  NotificationID
+  NotificationID,
+  SocialID
 } from '@hcengineering/communication-types'
 import type { BaseRequestEvent } from './common'
 import type { UpdateNotificationQuery } from '../db.ts'
@@ -107,13 +108,17 @@ export interface AddCollaboratorsEvent extends BaseRequestEvent {
   card: CardID
   cardType: CardType
   collaborators: AccountID[]
-  date?: Date
+  creator: SocialID
+  created?: Date
 }
 
 export interface RemoveCollaboratorsEvent extends BaseRequestEvent {
   type: NotificationRequestEventType.RemoveCollaborators
   card: CardID
+  cardType: CardType
   collaborators: AccountID[]
+  creator: SocialID
+  created?: Date
 }
 
 export type NotificationEventResult = CreateNotificationContextResult | {}

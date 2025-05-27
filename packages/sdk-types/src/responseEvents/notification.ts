@@ -20,7 +20,8 @@ import type {
   Notification,
   AccountID,
   CardType,
-  NotificationID
+  NotificationID,
+  SocialID
 } from '@hcengineering/communication-types'
 import type { BaseResponseEvent } from './common'
 import type { NotificationUpdates, UpdateNotificationQuery } from '../db'
@@ -91,11 +92,15 @@ export interface AddedCollaboratorsEvent extends BaseResponseEvent {
   card: CardID
   cardType: CardType
   collaborators: AccountID[]
-  date: Date
+  created: Date
+  creator: SocialID
 }
 
 export interface RemovedCollaboratorsEvent extends BaseResponseEvent {
   type: NotificationResponseEventType.RemovedCollaborators
   card: CardID
+  cardType: CardType
   collaborators: AccountID[]
+  created: Date
+  creator: SocialID
 }

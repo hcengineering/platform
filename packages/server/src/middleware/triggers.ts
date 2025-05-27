@@ -46,6 +46,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       workspace: this.context.workspace,
       account: session.account,
       registeredCards: this.context.registeredCards,
+      accountBySocialID: this.context.accountBySocialID,
       derived,
       execute: async (event: RequestEvent) => {
         return (await this.context.head?.event(session, event, true)) ?? {}

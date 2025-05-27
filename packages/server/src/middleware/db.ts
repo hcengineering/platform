@@ -205,8 +205,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async addCollaborators(event: AddCollaboratorsEvent): Promise<Result> {
-    const date = event.date ?? new Date()
-    const added = await this.db.addCollaborators(event.card, event.cardType, event.collaborators, date)
+    const created = event.created ?? new Date()
+    const added = await this.db.addCollaborators(event.card, event.cardType, event.collaborators, created)
     if (added.length === 0) return {}
     return {
       responseEvent: {
@@ -215,13 +215,15 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         card: event.card,
         cardType: event.cardType,
         collaborators: added,
-        date
+        creator: event.creator,
+        created
       }
     }
   }
 
   private async removeCollaborators(event: RemoveCollaboratorsEvent): Promise<Result> {
     if (event.collaborators.length === 0) return {}
+    const created = event.created ?? new Date()
     await this.db.removeCollaborators(event.card, { accounts: event.collaborators })
 
     return {
@@ -229,7 +231,10 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         _id: event._id,
         type: NotificationResponseEventType.RemovedCollaborators,
         card: event.card,
-        collaborators: event.collaborators
+        cardType: event.cardType,
+        collaborators: event.collaborators,
+        creator: event.creator,
+        created
       }
     }
   }
@@ -349,7 +354,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async createFile(event: CreateFileEvent): Promise<Result> {
-    const created = new Date()
+    const created = event.created ?? new Date()
     await this.db.createFile(event.card, event.message, event.messageCreated, event.data, event.creator, created)
     const responseEvent: FileCreatedEvent = {
       _id: event._id,
@@ -641,7 +646,9 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         _id: event._id,
         type: CardResponseEventType.CardTypeUpdated,
         card: event.card,
-        cardType: event.cardType
+        cardType: event.cardType,
+        creator: event.creator,
+        created: event.created ?? new Date()
       }
     }
   }

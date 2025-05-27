@@ -14,8 +14,10 @@
 //
 
 import {
+  CardRequestEventType,
   type EventResult,
   MessageRequestEventType,
+  NotificationRequestEventType,
   type RequestEvent,
   type SessionData
 } from '@hcengineering/communication-sdk-types'
@@ -35,9 +37,14 @@ export class DateMiddleware extends BaseMiddleware implements Middleware {
   async event(session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
     if (derived) return await this.provideEvent(session, event, derived)
     switch (event.type) {
+      case MessageRequestEventType.CreateFile:
+      case MessageRequestEventType.CreatePatch:
+      case NotificationRequestEventType.RemoveCollaborators:
+      case NotificationRequestEventType.AddCollaborators:
+      case CardRequestEventType.UpdateCardType:
       case MessageRequestEventType.CreateMessage: {
-        if (!this.isSystem(session)) {
-          delete event.created
+        if (!this.isSystem(session) || event.created == null) {
+          event.created = new Date()
         }
         break
       }
