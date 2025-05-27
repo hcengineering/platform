@@ -299,7 +299,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
   async getReviewers (issue: PullRequestExternalData): Promise<PersonId[]> {
     // Find Assignees and reviewers
-    const ids: UserInfo[] = issue.reviewRequests.nodes.map((it: any) => it.requestedReviewer)
+    const ids: UserInfo[] = (issue.reviewRequests.nodes ?? []).map((it: any) => it.requestedReviewer)
 
     const values: PersonId[] = []
 
@@ -310,7 +310,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       }
     }
 
-    for (const n of issue.latestReviews.nodes) {
+    for (const n of issue.latestReviews.nodes ?? []) {
       const acc = await this.provider.getAccount(n.author)
       if (acc !== undefined) {
         values.push(acc)
@@ -629,14 +629,14 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     const approvedOrChangesRequested = new Map<PersonId, PullRequestReviewState>()
     const reviewStates = new Map<PersonId, PullRequestReviewState[]>()
 
-    const sortedReviews: (Review & { date: number })[] = external.reviews.nodes
+    const sortedReviews: (Review & { date: number })[] = (external.reviews.nodes ?? [])
       .filter((it) => it != null)
       .map((it) => ({
         ...it,
         date: new Date(it.updatedAt ?? it.submittedAt ?? it.createdAt).getTime()
       }))
 
-    for (const it of external.latestReviews.nodes) {
+    for (const it of external.latestReviews.nodes ?? []) {
       if (sortedReviews.some((qt) => it.id === qt.id)) {
         continue
       }
@@ -700,7 +700,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     const changeRequestPersons = await this.getPersonsFromId(Array.from(changeRequestPersonsIds))
 
     let allResolved = true
-    for (const r of external.reviewThreads.nodes) {
+    for (const r of external.reviewThreads.nodes ?? []) {
       if (!r.isResolved) {
         allResolved = false
         for (const c of changeRequestPersons) {
@@ -1209,11 +1209,11 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       if (ext == null) {
         continue
       }
-      if (ext.reviews.nodes.length < ext.reviews.totalCount) {
+      if ((ext.reviews.nodes ?? []).length < ext.reviews.totalCount) {
         // TODO: We need to fetch missing items.
       }
 
-      if (ext.reviewThreads.nodes.length < ext.reviewThreads.totalCount) {
+      if ((ext.reviewThreads.nodes ?? []).length < ext.reviewThreads.totalCount) {
         // TODO: We need to fetch missing items.
       }
 
@@ -1225,10 +1225,10 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         repo,
         github.class.GithubReview,
         {},
-        (ext) => ext.reviews.nodes
+        (ext) => ext.reviews.nodes ?? []
       )
       await syncDerivedDocuments(derivedClient, d, ext, prj, repo, github.class.GithubReviewThread, {}, (ext) =>
-        ext.reviewThreads.nodes.map((it) => ({
+        (ext.reviewThreads.nodes ?? []).map((it) => ({
           ...it,
           url: it.id,
           createdAt: new Date(it.comments.nodes[0].createdAt ?? Date.now()).toISOString(),

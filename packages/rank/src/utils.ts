@@ -35,6 +35,12 @@ export function genRanks (count: number): Rank[] {
 /** @public */
 export function makeRank (prev: Rank | undefined, next: Rank | undefined): Rank {
   try {
+    if (prev != null && prev.trim() === '') {
+      prev = undefined
+    }
+    if (next != null && next.trim() === '') {
+      next = undefined
+    }
     if (prev !== undefined && next !== undefined) {
       const prevLexoRank = LexoRank.parse(prev)
       const nextLexoRank = LexoRank.parse(next)
