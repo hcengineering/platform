@@ -12,9 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+interface LockRequest {
+  promise: Promise<void>
+  resolve: () => void
+}
 export class SyncMutex {
   // Queue of pending promises for each lock key
-  private readonly locks = new Map<string, Array<{ promise: Promise<void>, resolve: () => void }>>()
+  private readonly locks = new Map<string, Array<LockRequest>>()
 
   async lock (key: string): Promise<() => void> {
     // Initialize queue if it doesn't exist
@@ -22,7 +27,7 @@ export class SyncMutex {
       this.locks.set(key, [])
     }
 
-    const queue = this.locks.get(key) ?? []
+    const queue = this.locks.get(key) as Array<LockRequest>
 
     // Create a new lock request
     let releaseFn!: () => void
@@ -44,11 +49,7 @@ export class SyncMutex {
 
         // If there are more locks in the queue, resolve the next one
         if (queue.length > 0) {
-          try {
-            queue[0].resolve()
-          } catch (error) {
-            console.error(`Error resolving next lock in queue for key "${key}":`, error)
-          }
+          queue[0].resolve()
         }
 
         // If queue is empty, clean up
@@ -56,11 +57,7 @@ export class SyncMutex {
           this.locks.delete(key)
         }
 
-        try {
-          resolve()
-        } catch (error) {
-          console.error(`Error resolving lock release for key "${key}":`, error)
-        }
+        resolve()
       }
     })
 
