@@ -412,7 +412,11 @@ describe('createMessages', () => {
     )
 
     // Assert
-    expect(mockPersonSpacesCache.getPersonSpaces).toHaveBeenCalledWith('test-mail-id', 'to-uuid-1', 'test-mail@example.com')
+    expect(mockPersonSpacesCache.getPersonSpaces).toHaveBeenCalledWith(
+      'test-mail-id',
+      'to-uuid-1',
+      'test-mail@example.com'
+    )
 
     // Verify the total number of calls matches the number of targetPersons
     expect(mockPersonSpacesCache.getPersonSpaces).toHaveBeenCalledTimes(1)
@@ -447,8 +451,16 @@ describe('createMessages', () => {
     )
 
     // Assert
-    expect(mockPersonSpacesCache.getPersonSpaces).toHaveBeenCalledWith('test-mail-id', 'to-uuid-1', 'to-person-email-1@example.com')
-    expect(mockPersonSpacesCache.getPersonSpaces).toHaveBeenCalledWith('test-mail-id', 'to-uuid-2', 'to-person-email-2@example.com')
+    expect(mockPersonSpacesCache.getPersonSpaces).toHaveBeenCalledWith(
+      'test-mail-id',
+      'to-uuid-1',
+      'to-person-email-1@example.com'
+    )
+    expect(mockPersonSpacesCache.getPersonSpaces).toHaveBeenCalledWith(
+      'test-mail-id',
+      'to-uuid-2',
+      'to-person-email-2@example.com'
+    )
 
     // Verify the total number of calls matches the number of targetPersons
     expect(mockPersonSpacesCache.getPersonSpaces).toHaveBeenCalledTimes(2)
