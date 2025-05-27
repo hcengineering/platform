@@ -63,7 +63,8 @@
     "DeleteTransition": "Eliminar transición",
     "DeleteTransitionConfirm": "¿Desea eliminar la transición?",
     "AddTransition": "Agregar transición",
-    "ToDo": "Tarea"
+    "ToDo": "Tarea",
+    "CurrentCard": "Tarjeta actual"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",

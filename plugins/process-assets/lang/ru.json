@@ -63,7 +63,8 @@
     "DeleteTransition": "Удалить переход",
     "DeleteTransitionConfirm": "Вы хотите удалить переход?",
     "AddTransition": "Добавить переход",
-    "ToDo": "ToDo"
+    "ToDo": "ToDo",
+    "CurrentCard": "Текущая карточка"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
