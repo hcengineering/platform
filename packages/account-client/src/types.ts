@@ -109,3 +109,8 @@ export interface IntegrationSecret {
 }
 
 export type IntegrationSecretKey = Omit<IntegrationSecret, 'secret'>
+
+export interface ProviderInfo {
+  name: string
+  displayName?: string
+}

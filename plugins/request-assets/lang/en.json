@@ -18,6 +18,8 @@
     "PleaseTypeMessage": "Please type comment message to continue...",
     "NoRequests": "No requests",
     "Cancel": "Cancel",
-    "Cancelled": "Cancelled"
+    "Cancelled": "Cancelled",
+    "NewRequest": "New Request",
+    "CancelRequest": "Cancel Request"
   }
 }

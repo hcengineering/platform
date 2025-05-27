@@ -621,6 +621,7 @@
         {doc}
         value={message}
         skipLabel={isThread || isChunterSpace}
+        hideLink
         hoverStyles="filledHover"
         attachmentImageSize="x-large"
         type={canGroup ? 'short' : 'default'}

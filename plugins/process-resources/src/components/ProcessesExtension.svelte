@@ -149,7 +149,7 @@
           }}
         />
         {#if docsProvided && docs.length === 0}
-          <div class="flex-center content-color">
+          <div class="flex-center content-color empty-content">
             <Label label={process.string.NoProcesses} />
           </div>
         {/if}
@@ -157,3 +157,9 @@
     </div>
   </svelte:fragment>
 </Section>
+
+<style lang="scss">
+  .antiSection-empty:has(.empty-content) :global(.list-container) {
+    display: none;
+  }
+</style>

@@ -52,7 +52,7 @@
     <Scroller padding="0.75rem 0.25rem">
       {#each references as reference}
         <Lazy>
-          <ActivityReferencePresenter value={reference} hoverStyles="filledHover" />
+          <ActivityReferencePresenter value={reference} hoverStyles="filledHover" hideLink />
         </Lazy>
       {/each}
     </Scroller>

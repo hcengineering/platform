@@ -19,7 +19,8 @@ import type {
   OtpInfo,
   RegionInfo,
   WorkspaceLoginInfo,
-  WorkspaceInviteInfo
+  WorkspaceInviteInfo,
+  ProviderInfo
 } from '@hcengineering/account-client'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
@@ -842,8 +843,8 @@ export async function getLoginInfoFromQuery (): Promise<LoginInfo | WorkspaceLog
   }
 }
 
-export async function getProviders (): Promise<string[]> {
-  let providers: string[]
+export async function getProviders (): Promise<ProviderInfo[]> {
+  let providers: ProviderInfo[]
 
   try {
     providers = await getAccountClient(null).getProviders()

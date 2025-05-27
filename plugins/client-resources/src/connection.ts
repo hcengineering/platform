@@ -318,7 +318,12 @@ class Connection implements ClientConnection {
 
     if (resp.error !== undefined) {
       if (resp.error?.code === UNAUTHORIZED.code || resp.terminate === true) {
-        Analytics.handleError(new PlatformError(resp.error))
+        if (
+          resp.error.code !== platform.status.WorkspaceArchived ||
+          resp.error.code !== platform.status.WorkspaceNotFound
+        ) {
+          Analytics.handleError(new PlatformError(resp.error))
+        }
         this.closed = true
         this.websocket?.close()
         if (resp.error?.code === UNAUTHORIZED.code) {

@@ -1,4 +1,5 @@
 import { type AccountDB } from '@hcengineering/account'
+import { type ProviderInfo } from '@hcengineering/account-client'
 import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } from '@hcengineering/core'
 import Router from 'koa-router'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
@@ -14,9 +15,11 @@ export function registerGoogle (
   frontUrl: string,
   brandings: BrandingMap,
   signUpDisabled?: boolean
-): string | undefined {
+): ProviderInfo | undefined {
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
   const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
+  const name = 'google'
+  const displayName = process.env.GOOGLE_DISPLAY_NAME
 
   const redirectURL = '/auth/google/callback'
   if (GOOGLE_CLIENT_ID === undefined || GOOGLE_CLIENT_SECRET === undefined) return
@@ -85,5 +88,5 @@ export function registerGoogle (
     }
   )
 
-  return 'google'
+  return { name, displayName }
 }

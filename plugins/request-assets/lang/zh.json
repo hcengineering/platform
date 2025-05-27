@@ -18,6 +18,8 @@
     "PleaseTypeMessage": "请键入评论消息以继续...",
     "NoRequests": "没有请求",
     "Cancel": "取消",
-    "Cancelled": "已取消"
+    "Cancelled": "已取消",
+    "NewRequest": "新请求",
+    "CancelRequest": "取消请求"
   }
 }

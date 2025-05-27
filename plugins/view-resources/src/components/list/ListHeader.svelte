@@ -298,11 +298,13 @@
       }
     }
     &.subLevel {
-      top: 2.75rem;
+      top: 0;
       padding: 0 2.5rem;
       background: var(--theme-list-subheader-color);
-      border-left: 1px solid var(--theme-list-subheader-divider);
-      border-right: 1px solid var(--theme-list-subheader-divider);
+      border-left: 1px solid transparent;
+      border-right: 1px solid transparent;
+      // border-left: 1px solid var(--theme-list-subheader-divider);
+      // border-right: 1px solid var(--theme-list-subheader-divider);
       border-bottom: 1px solid var(--theme-list-subheader-divider);
       // here should be top 3rem for sticky, but with ExpandCollapse it gives strange behavior
 

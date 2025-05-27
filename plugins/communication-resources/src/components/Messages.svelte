@@ -157,6 +157,7 @@
         replies: true,
         files: true,
         reactions: true,
+        links: true,
         order: SortingOrder.Ascending,
         limit
       }
@@ -167,6 +168,7 @@
       replies: true,
       files: true,
       reactions: true,
+      links: true,
       order,
       limit,
       from: unread && initialLastView != null ? initialLastView : undefined

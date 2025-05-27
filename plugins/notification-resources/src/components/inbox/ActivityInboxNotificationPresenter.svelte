@@ -25,7 +25,7 @@
     combineActivityMessages,
     sortActivityMessages
   } from '@hcengineering/activity-resources'
-  import { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
+  import activity, { ActivityMessage, DisplayActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
   import { Action, Component } from '@hcengineering/ui'
   import { getActions } from '@hcengineering/view-resources'
   import { getResource } from '@hcengineering/platform'
@@ -55,6 +55,24 @@
 
   $: updateViewlet(viewlets, displayMessage)
 
+  function matchViewlet (viewlet: ActivityNotificationViewlet, message: DisplayActivityMessage): boolean {
+    const hierarchy = client.getHierarchy()
+    const matched = matchQuery([message], viewlet.messageMatch, message._class, hierarchy, true)[0]
+    if (matched !== undefined) return true
+
+    if (hierarchy.isDerived(message._class, activity.class.DocUpdateMessage)) {
+      const dum = message as DocUpdateMessage
+      const dumUpdated: DocUpdateMessage = {
+        ...dum,
+        objectClass: hierarchy.getParentClass(dum.objectClass)
+      }
+      const matched = matchQuery([dumUpdated], viewlet.messageMatch, message._class, hierarchy, true)[0]
+      return matched !== undefined
+    }
+
+    return false
+  }
+
   function updateViewlet (viewlets: ActivityNotificationViewlet[], message?: DisplayActivityMessage): void {
     if (viewlets.length === 0 || message === undefined) {
       viewlet = undefined
@@ -62,8 +80,8 @@
     }
 
     for (const v of viewlets) {
-      const matched = matchQuery([message], v.messageMatch, message._class, client.getHierarchy(), true)
-      if (matched.length > 0) {
+      const matched = matchViewlet(v, message)
+      if (matched) {
         viewlet = v
         return
       }

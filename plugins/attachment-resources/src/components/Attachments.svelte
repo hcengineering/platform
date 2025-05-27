@@ -156,7 +156,7 @@
       </div>
     </AttachmentDroppable>
   {:else if wSection < 640}
-    <Scroller horizontal>
+    <Scroller horizontal noFade={false}>
       <Table
         _class={attachmentClass}
         config={[
