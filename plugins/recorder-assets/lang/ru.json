@@ -9,7 +9,22 @@
     "CancelRecordingConfirm": "Вы уверены, что хотите отменить запись?",
     "RestartRecording": "Перезапустить запись",
     "RestartRecordingConfirm": "Вы уверены, что хотите перезапустить запись?",
-    "RecordingTitle": "Запись экрана {date}",
-    "ClickToSkip": "Нажмите для пропуска"
+    "ScreenRecordingName": "Запись экрана {date}",
+    "CameraRecordingName": "Запись камеры {date}",
+    "ClickToSkip": "Нажмите для пропуска",
+    "RecordVideo": "Записать видео",
+    "ShareWithAudio": "Поделиться с аудио",
+    "ShareScreen": "Поделиться экраном",
+    "StopSharing": "Остановить",
+    "SelectVideoToRecord": "Включите видеокамеру или поделитесь экраном, чтобы записать видео",
+    "CameraSize": "Размер камеры",
+    "CameraPos": "Положение камеры",
+    "Small": "Маленькая",
+    "Medium": "Средняя",
+    "Large": "Большая",
+    "TopLeft": "Слева вверху",
+    "TopRight": "Справа вверху",
+    "BottomLeft": "Слева внизу",
+    "BottomRight": "Справа внизу"
   }
 }

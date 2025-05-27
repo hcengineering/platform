@@ -33,11 +33,21 @@
   let processing = false
 
   const manager = createFocusManager()
+
+  function onKeyDown (ev: KeyboardEvent): void {
+    if (ev.key === 'Escape') {
+      ev.preventDefault()
+      ev.stopPropagation()
+
+      dispatch('close', false)
+    }
+  }
 </script>
 
 <FocusHandler {manager} />
 
-<div class="msgbox-container">
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="msgbox-container" on:keydown={onKeyDown}>
   <div class="overflow-label fs-title mb-4">
     {#if labelStr !== undefined}
       {labelStr}

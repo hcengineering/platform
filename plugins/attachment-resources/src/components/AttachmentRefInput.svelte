@@ -15,6 +15,8 @@
 <script lang="ts">
   import { Attachment, AttachmentMetadata } from '@hcengineering/attachment'
   import {
+    Blob as PlatformBlob,
+    BlobMetadata,
     Class,
     Doc,
     IdMap,
@@ -26,7 +28,7 @@
     generateId,
     toIdMap
   } from '@hcengineering/core'
-  import { Asset, IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { Asset, IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     DraftController,
     canDisplayLinkPreview,
@@ -44,6 +46,11 @@
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
   import { AttachIcon, ReferenceInput } from '@hcengineering/text-editor-resources'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
+  import {
+    type FileUploadCallbackParams,
+    type UploadHandlerDefinition,
+    getUploadHandlers
+  } from '@hcengineering/uploader'
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import attachment from '../plugin'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
@@ -182,6 +189,19 @@
     try {
       const uuid = await uploadFile(file)
       const metadata = meta ?? (await getFileMetadata(file, uuid))
+      await _createAttachment(uuid, file.name, file, metadata)
+    } catch (err: any) {
+      void setPlatformStatus(unknownError(err))
+    }
+  }
+
+  async function _createAttachment (
+    file: Ref<PlatformBlob>,
+    name: string,
+    blob: File | Blob,
+    metadata?: BlobMetadata
+  ): Promise<void> {
+    try {
       const _id: Ref<Attachment> = generateId()
 
       attachments.set(_id, {
@@ -193,11 +213,11 @@
         space,
         attachedTo: objectId,
         attachedToClass: _class,
-        name: file.name,
-        file: uuid,
-        type: file.type,
-        size: file.size,
-        lastModified: file.lastModified,
+        name,
+        file,
+        type: blob.type,
+        size: blob.size,
+        lastModified: blob instanceof File ? blob.lastModified : Date.now(),
         metadata
       })
       newAttachments.add(_id)
@@ -411,6 +431,36 @@
 
     return false
   }
+
+  async function onFileUploaded ({ uuid, name, file, metadata }: FileUploadCallbackParams): Promise<void> {
+    try {
+      await _createAttachment(uuid, name, file, metadata)
+    } catch (err: any) {
+      void setPlatformStatus(unknownError(err))
+    }
+  }
+
+  async function uploadWith (uploader: UploadHandlerDefinition): Promise<void> {
+    const upload = await getResource(uploader.handler)
+    await upload({ onFileUploaded })
+  }
+
+  let uploadActions: RefAction[] = []
+  $: void getUploadHandlers({ category: 'media' }).then((handlers) => {
+    let index = 1000
+    const actions: RefAction[] = []
+    for (const handler of handlers) {
+      actions.push({
+        order: handler.order ?? index++,
+        label: handler.label,
+        icon: handler.icon,
+        action: () => {
+          void uploadWith(handler)
+        }
+      })
+    }
+    uploadActions = actions
+  })
 </script>
 
 <div class="flex-col no-print" bind:this={refContainer}>
@@ -455,7 +505,8 @@
             inputFile.click()
           },
           order: 1001
-        }
+        },
+        ...uploadActions
       ]}
       showHeader={attachments.size > 0 || progress}
       haveAttachment={attachments.size > 0}

@@ -44,6 +44,7 @@
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/login": "^0.6.12",
+    "@hcengineering/hls": "^0.6.0",
     "@hcengineering/panel": "^0.6.23",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/preference": "^0.6.13",

@@ -25,6 +25,12 @@ export function addPermissionHandlers (session: Session): void {
       return
     }
 
+    if (permission === 'display-capture') {
+      const granted = systemPreferences.getMediaAccessStatus('screen') === 'granted'
+      result(granted)
+      return
+    }
+
     if (permission !== 'media') {
       result(true)
       return

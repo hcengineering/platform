@@ -11,11 +11,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import drive, { createFile } from '@hcengineering/drive'
-import { translate } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
-import { type FileUploadCallback, type FileUploadCallbackParams } from '@hcengineering/uploader'
-import recorder from './plugin'
+import { type IntlString, translate } from '@hcengineering/platform'
+import { DefaultOptions } from './const'
+import { type CameraPosition, type CameraSize } from './types'
+
+export function getRecordingResolution (): number {
+  const value = localStorage.getItem('recorder.resolution')
+  const parsedValue = parseInt(value ?? '')
+  return Number.isInteger(parsedValue) ? parsedValue : DefaultOptions.videoRes
+}
+
+export function setRecordingResolution (resolution: number): void {
+  localStorage.setItem('recorder.resolution', resolution.toString())
+}
+
+export function getRecordingCameraSize (): CameraSize {
+  const value = localStorage.getItem('recorder.camera.size')
+  return (value as CameraSize) ?? DefaultOptions.cameraSize
+}
+
+export function setRecordingCameraSize (size: CameraSize): void {
+  localStorage.setItem('recorder.camera.size', size)
+}
+
+export function getRecordingCameraPosition (): CameraPosition {
+  const value = localStorage.getItem('recorder.camera.pos')
+  return (value as CameraPosition) ?? 'bottom-left'
+}
+
+export function setRecordingCameraPosition (pos: CameraPosition): void {
+  localStorage.setItem('recorder.camera.pos', pos)
+}
+
+export function getUseScreenShareSound (): boolean {
+  const value = localStorage.getItem('recorder.screen.sound')
+  return value === 'true'
+}
+
+export function setUseScreenShareSound (value: boolean): void {
+  localStorage.setItem('recorder.screen.sound', value.toString())
+}
 
 export function formatElapsedTime (elapsed: number): string {
   const seconds = Math.floor(elapsed / 1000)
@@ -28,7 +63,7 @@ export function formatElapsedTime (elapsed: number): string {
   return hours > 0 ? `${hours}:${displayMinutes}:${displaySeconds}` : `${displayMinutes}:${displaySeconds}`
 }
 
-export async function formatRecordingName (date: Date): Promise<string> {
+export async function formatRecordingName (label: IntlString, date: Date): Promise<string> {
   const timeStr = date.toLocaleTimeString()
   const dateStr = date.toLocaleDateString(undefined, {
     day: 'numeric',
@@ -36,21 +71,65 @@ export async function formatRecordingName (date: Date): Promise<string> {
     year: 'numeric'
   })
 
-  return await translate(recorder.string.RecordingTitle, { date: dateStr + ' ' + timeStr })
+  return await translate(label, { date: dateStr + ' ' + timeStr })
 }
 
-export const createRecordingInDrive: FileUploadCallback = async (params: FileUploadCallbackParams): Promise<void> => {
-  const { uuid, name, file, metadata } = params
+export function combineMediaStreams (...streams: MediaStream[]): MediaStream {
+  const tracks: MediaStreamTrack[] = []
 
-  const client = getClient()
-  const data = {
-    file: uuid,
-    size: file.size,
-    type: file.type,
-    lastModified: file instanceof File ? file.lastModified : Date.now(),
-    title: name,
-    metadata
+  for (const stream of streams) {
+    tracks.push(...stream.getTracks())
   }
 
-  await createFile(client, recorder.space.Drive, drive.ids.Root, data)
+  return new MediaStream(tracks)
+}
+
+export const getVideoDimensions = (stream: MediaStream): { width: number, height: number } => {
+  const tracks = stream.getVideoTracks()
+  if (tracks.length > 0) {
+    let maxWidth = 0
+    let maxHeight = 0
+
+    for (const track of tracks) {
+      const { width, height } = track.getSettings()
+      maxWidth = Math.max(maxWidth, width ?? 0)
+      maxHeight = Math.max(maxHeight, height ?? 0)
+    }
+
+    if (maxWidth === 0 || maxHeight === 0) {
+      throw new Error('No video tracks found')
+    }
+
+    return { width: maxWidth, height: maxHeight }
+  }
+
+  throw new Error('No video tracks found')
+}
+
+export function whenStreamEnded (stream: MediaStream, fn: () => void): () => void {
+  fn = once(fn)
+
+  const tracks = stream.getTracks()
+  for (const track of tracks) {
+    track.onended = fn
+  }
+
+  return () => {
+    for (const track of tracks) {
+      track.onended = null
+    }
+  }
+}
+
+export function once<P extends any[], T> (fn: (...args: P) => T): (...args: P) => T {
+  let called = false
+  let result: T
+
+  return (...args: any) => {
+    if (!called) {
+      called = true
+      result = fn(...args)
+    }
+    return result
+  }
 }

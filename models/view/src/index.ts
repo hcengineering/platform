@@ -861,7 +861,7 @@ export function createModel (builder: Builder): void {
       category: view.category.GeneralNavigation,
       input: 'none',
       target: core.class.Doc,
-      context: { mode: 'browser' }
+      context: { mode: ['browser'] }
     },
     view.action.MoveLeft
   )
@@ -875,7 +875,7 @@ export function createModel (builder: Builder): void {
       category: view.category.GeneralNavigation,
       input: 'none',
       target: core.class.Doc,
-      context: { mode: 'browser' }
+      context: { mode: ['browser'] }
     },
     view.action.MoveRight
   )

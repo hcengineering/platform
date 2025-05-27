@@ -24,6 +24,7 @@ import core, { TDoc } from '@hcengineering/model-core'
 export class TUploadHandler extends TDoc implements UploadHandlerDefinition {
   icon!: Asset
   label!: IntlString
-  description?: IntlString
+  order?: number
+  category?: string
   handler!: Resource<UploadHandler>
 }

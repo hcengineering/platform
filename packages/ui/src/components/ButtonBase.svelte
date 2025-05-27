@@ -36,6 +36,7 @@
   export let hasMenu: boolean = false
   export let noPrint: boolean = false
   export let autoFocus: boolean = false
+  export let noFocus: boolean = false
   export let type: ButtonBaseType
   export let inheritColor: boolean = false
   export let inheritFont: boolean = false
@@ -100,6 +101,7 @@
   class:menu={hasMenu}
   class:iconOnly
   class:no-print={noPrint}
+  class:no-focus={noFocus}
   disabled={loading || disabled}
   data-id={dataId}
   use:tp={tooltip}

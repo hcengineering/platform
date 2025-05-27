@@ -29,7 +29,9 @@ export function createModel (builder: Builder): void {
   builder.createDoc(uploader.class.UploadHandlerDefinition, core.space.Model, {
     handler: recorder.function.Record,
     label: recorder.string.Record,
-    icon: recorder.icon.Record
+    icon: recorder.icon.Record,
+    category: 'media',
+    order: 1005
   })
 
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
