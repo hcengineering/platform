@@ -1,5 +1,8 @@
 {
   "string": {
+    "Loading": "Загрузка...",
+    "IntegrationConnected": "Подключено как {phone}",
+    "Disconnect": "Отключить",
     "SharedMessages": "опубликованные сообщения Telegram",
     "Next": "Далее",
     "Back": "Назад",

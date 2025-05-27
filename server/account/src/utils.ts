@@ -1478,7 +1478,7 @@ export async function setTimezoneIfNotDefined (
 export const integrationServices = [
   'github',
   'telegram-bot',
-  'telegram',
+  'hulygram',
   'mailbox',
   'caldav',
   'gmail',
