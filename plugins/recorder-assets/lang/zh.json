@@ -9,7 +9,13 @@
     "CancelRecordingConfirm": "您确定要取消录制吗？",
     "RestartRecording": "重新开始录制",
     "RestartRecordingConfirm": "您确定要重新开始录制吗？",
-    "RecordingTitle": "屏幕录制 {date}",
-    "ClickToSkip": "点击跳过"
+    "ScreenRecordingName": "屏幕录制 {date}",
+    "CameraRecordingName": "相机录制 {date}",
+    "ClickToSkip": "点击跳过",
+    "RecordVideo": "录制视频",
+    "ShareWithAudio": "共享音频",
+    "ShareScreen": "共享屏幕",
+    "StopSharing": "停止共享",
+    "SelectVideoToRecord": "启用摄像头或共享屏幕以进行录制"
   }
 }

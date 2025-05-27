@@ -20,7 +20,7 @@ import {
   toFileWithPath,
   type UploadHandlerDefinition
 } from '@hcengineering/uploader'
-import { type Ref, type Blob, RateLimiter } from '@hcengineering/core'
+import { type DocumentQuery, type Blob, type Ref, RateLimiter } from '@hcengineering/core'
 import { type FileUpload, type Upload, trackUpload, untrackUpload, updateUploads } from './store'
 import uploader from './plugin'
 import { generateFileId, getFileUploadParams, getClient } from '@hcengineering/presentation'
@@ -64,9 +64,11 @@ export async function uploadXHR (folders: boolean, options: FileUploadOptions): 
   input.click()
 }
 
-export async function getUploadHandlers (): Promise<UploadHandlerDefinition[]> {
+export async function getUploadHandlers (
+  query?: DocumentQuery<UploadHandlerDefinition>
+): Promise<UploadHandlerDefinition[]> {
   const client = getClient()
-  return await client.findAll<UploadHandlerDefinition>(uploader.class.UploadHandlerDefinition, {})
+  return await client.findAll<UploadHandlerDefinition>(uploader.class.UploadHandlerDefinition, query ?? {})
 }
 
 const callbackLimiter = new RateLimiter(1)
@@ -156,11 +158,12 @@ export async function uploadFile (
           try {
             void callbackLimiter.exec(async () => {
               await onFileUploaded({
-                type: metadata.type,
                 uuid,
                 name: metadata.name,
-                file,
+                type: metadata.type,
+                size: file.size,
                 path: metadata.relativePath,
+                lastModified: file.lastModified,
                 metadata
               })
             })

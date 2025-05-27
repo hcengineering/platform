@@ -9,7 +9,13 @@
     "CancelRecordingConfirm": "Opravdu chcete zrušit nahrávání?",
     "RestartRecording": "Restart nahrávání",
     "RestartRecordingConfirm": "Opravdu chcete restartovat nahrávání?",
-    "RecordingTitle": "Nahrávání obrazovky {date}",
-    "ClickToSkip": "Kliknutím přeskočíte"
+    "ScreenRecordingName": "Nahrávání obrazovky {date}",
+    "CameraRecordingName": "Nahrávání kamery {date}",
+    "ClickToSkip": "Kliknutím přeskočíte",
+    "RecordVideo": "Nahrát video",
+    "ShareWithAudio": "Sdílet se zvukem",
+    "ShareScreen": "Sdílet obrazovku",
+    "StopSharing": "Zastavit sdílení",
+    "SelectVideoToRecord": "Povolit kameru nebo sdílet obrazovku pro nahrávání"
   }
 }

@@ -9,7 +9,13 @@
     "CancelRecordingConfirm": "Are you sure you want to cancel recording?",
     "RestartRecording": "Restart recording",
     "RestartRecordingConfirm": "Are you sure you want to restart recording?",
-    "RecordingTitle": "Screen Recording {date}",
-    "ClickToSkip": "Click to skip"
+    "ScreenRecordingName": "Screen Recording {date}",
+    "CameraRecordingName": "Camera Recording {date}",
+    "ClickToSkip": "Click to skip",
+    "RecordVideo": "Record video",
+    "ShareWithAudio": "Share with audio",
+    "ShareScreen": "Share screen",
+    "StopSharing": "Stop sharing",
+    "SelectVideoToRecord": "Enable video camera or share screen to record"
   }
 }

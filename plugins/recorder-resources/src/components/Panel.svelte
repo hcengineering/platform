@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import media from '@hcengineering/media'
+  import media, { getDisplayMedia } from '@hcengineering/media'
   import { MessageBox } from '@hcengineering/presentation'
   import { Button, IconClose, IconDelete, closeTooltip, showPopup } from '@hcengineering/ui'
   import { type FileUploadCallback } from '@hcengineering/uploader'
@@ -31,7 +31,7 @@
     stopRecording
   } from '../recording'
   import { recording } from '../stores'
-  import { formatElapsedTime, formatRecordingName } from '../utils'
+  import { formatElapsedTime } from '../utils'
 
   import Countdown from './Countdown.svelte'
   import IconRestart from './icons/Restart.svelte'
@@ -39,6 +39,7 @@
   import IconPlay from './icons/Play.svelte'
   import IconStop from './icons/Stop.svelte'
   import IconRecord from './icons/Record.svelte'
+  import { RecordingResult } from '../types'
 
   export let cameraStream: MediaStream | null = null
   export let dragging = false
@@ -78,19 +79,41 @@
       return
     }
 
+    let screenStream: MediaStream
+    try {
+      screenStream = await getDisplayMedia({
+        video: {
+          frameRate: { ideal: 30 }
+        }
+      })
+
+      for (const track of screenStream.getVideoTracks()) {
+        track.onended = () => {
+          void stopRecording()
+        }
+      }
+    } catch (err: any) {
+      if (err.name === 'NotAllowedError') {
+        console.debug('User denied screen capture permission', err)
+      } else {
+        console.error('Failed to get display media', err)
+      }
+      return
+    }
+
     await startRecording({
-      cameraStream,
-      microphoneStream: null,
+      screenStream,
+      // cameraStream,
+      // microphoneStream: null,
       fps: 30,
-      onSuccess: async (blobId: string) => {
+      onSuccess: async (result: RecordingResult) => {
         if (onFileUploaded !== undefined) {
-          const name = await formatRecordingName(new Date())
-          const blob = new Blob([], { type: 'video/x-mpegURL' })
           await onFileUploaded({
             uuid: blobId as Ref<Blob>,
-            name,
-            type: blob.type,
-            file: blob,
+            name: result.name,
+            type: 'video/x-mpegURL',
+            size: 0,
+            lastModified: new Date(),
             path: undefined,
             metadata: undefined,
             navigateOnUpload: true

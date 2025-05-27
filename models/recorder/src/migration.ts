@@ -13,37 +13,9 @@
 // limitations under the License.
 //
 
-import drive from '@hcengineering/drive'
-import {
-  type MigrateOperation,
-  type MigrationClient,
-  type MigrationUpgradeClient,
-  createDefaultSpace,
-  tryUpgrade
-} from '@hcengineering/model'
-import { recorderId } from '@hcengineering/recorder'
-import recorder from './plugin'
+import type { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 
 export const recorderOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {},
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
-    await tryUpgrade(mode, state, client, recorderId, [
-      {
-        state: 'create-drive',
-        func: async (client) => {
-          await createDefaultSpace(
-            client,
-            recorder.space.Drive,
-            {
-              name: 'Screen Recordings',
-              description: 'Screen recordings',
-              type: drive.spaceType.DefaultDrive,
-              autoJoin: true
-            },
-            drive.class.Drive
-          )
-        }
-      }
-    ])
-  }
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

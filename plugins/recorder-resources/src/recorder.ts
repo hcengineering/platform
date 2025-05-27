@@ -14,35 +14,46 @@
 //
 
 import { ChunkReader } from './stream'
+import { formatElapsedTime } from './utils'
 
 const chunkIntervalMs = 1000
 
 export interface RecorderOptions {
-  mediaStream: MediaStream
+  chunkIntervalMs?: number
+  audioBps?: number
+  videoBps?: number
 }
 
 export class Recorder {
   private readonly mediaRecorder: MediaRecorder
   private readonly chunkStream: ChunkReader
-  private readonly mediaStream: MediaStream
+  private readonly chunkInterval: number
   // Total elapsed recording time in milliseconds (excluding pauses)
   private elapsedMs: number = 0
   // Timestamp when recording or resuming started; null if paused or not started
   private lastStartTime: number | null = null
 
-  constructor (options: RecorderOptions) {
-    const { mediaStream } = options
-
+  constructor (
+    private readonly mediaStream: MediaStream,
+    private readonly options: RecorderOptions
+  ) {
     const supportedTypes = getSupportedMimeTypes()
     if (supportedTypes.length === 0) {
       throw new Error('Recorder: video recording is not supported')
     }
 
-    const mimeType = supportedTypes[0]
-    this.mediaStream = mediaStream
+    this.chunkInterval = options.chunkIntervalMs ?? chunkIntervalMs
     this.chunkStream = new ChunkReader()
-    this.mediaRecorder = new MediaRecorder(mediaStream, { mimeType })
+
+    this.mediaRecorder = new MediaRecorder(mediaStream, {
+      mimeType: supportedTypes[0],
+      audioBitsPerSecond: options.audioBps,
+      videoBitsPerSecond: options.videoBps
+    })
+
     this.mediaRecorder.ondataavailable = async (e) => {
+      const kb = Math.floor(e.data.size / 1024)
+      console.debug('Recorder: MediaRecorder data available', formatElapsedTime(e.timecode), `${kb}KB`)
       this.chunkStream.push(e.data)
     }
     this.mediaRecorder.onstart = () => {
@@ -51,6 +62,12 @@ export class Recorder {
     this.mediaRecorder.onstop = () => {
       console.debug('Recorder: MediaRecorder stopped', new Date().toISOString())
       this.chunkStream.close()
+    }
+    this.mediaRecorder.onpause = () => {
+      console.debug('Recorder: MediaRecorder paused', new Date().toISOString())
+    }
+    this.mediaRecorder.onresume = () => {
+      console.debug('Recorder: MediaRecorder resumed', new Date().toISOString())
     }
     this.mediaRecorder.onerror = (ev) => {
       console.error('Recorder: MediaRecorder error:', ev)
@@ -65,7 +82,7 @@ export class Recorder {
   public start (): void {
     this.elapsedMs = 0
     this.lastStartTime = Date.now()
-    this.mediaRecorder.start(chunkIntervalMs)
+    this.mediaRecorder.start(this.chunkInterval)
     console.debug('Recorder: recording started', new Date().toISOString())
   }
 

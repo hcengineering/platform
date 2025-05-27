@@ -1,3 +1,4 @@
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
@@ -80,6 +81,7 @@
           selected={fullSize}
           id={'btnDialogFullScreen'}
           showTooltip={{ label: fullSize ? ui.string.NormalSize : ui.string.FullSize }}
+          noFocus
           on:click={() => (toggleFullSize = !toggleFullSize)}
         />
       {/if}

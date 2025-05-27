@@ -19,13 +19,15 @@
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { createEventDispatcher } from 'svelte'
 
+  import { type CameraSize } from '../types'
+
   import IconCircleLarge from './icons/CircleLarge.svelte'
   import IconCircleMedium from './icons/CircleMedium.svelte'
   import IconCircleSmall from './icons/CircleSmall.svelte'
 
   export let stream: MediaStream | null
   export let isCamEnabled: boolean = true
-  export let size: 'small' | 'medium' | 'large' = 'medium'
+  export let size: CameraSize = 'medium'
 
   const me = getCurrentEmployee()
   const meName = $personByIdStore.get(me)?.name
@@ -59,7 +61,7 @@
 <div class="container {size}">
   {#if stream != null && isCamEnabled}
     <!-- svelte-ignore a11y-media-has-caption -->
-    <video bind:this={video} autoplay muted playsinline />
+    <video bind:this={video} autoplay muted playsinline disablepictureinpicture />
   {:else}
     <Avatar variant={'circle'} size={'full'} name={meName} person={meAvatar} showStatus={false} adaptiveName />
   {/if}

@@ -468,6 +468,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/hls",
+      "projectFolder": "packages/hls",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/theme",
       "projectFolder": "packages/theme",
       "shouldPublish": true

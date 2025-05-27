@@ -9,7 +9,13 @@
     "CancelRecordingConfirm": "¿Está seguro de que desea cancelar la grabación?",
     "RestartRecording": "Reiniciar grabación",
     "RestartRecordingConfirm": "¿Está seguro de que desea reiniciar la grabación?",
-    "RecordingTitle": "Grabación de pantalla {date}",
-    "ClickToSkip": "Haz clic para saltar"
+    "ScreenRecordingName": "Grabación de pantalla {date}",
+    "CameraRecordingName": "Grabación de cámara {date}",
+    "ClickToSkip": "Haz clic para saltar",
+    "RecordVideo": "Grabar video",
+    "ShareWithAudio": "Compartir con audio",
+    "ShareScreen": "Compartir pantalla",
+    "StopSharing": "Detener compartir",
+    "SelectVideoToRecord": "Habilitar cámara de video o compartir pantalla para grabar"
   }
 }

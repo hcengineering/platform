@@ -262,14 +262,23 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
     return current
   }
 
-  const callback: FileUploadCallback = async ({ uuid, name, file, path, metadata, navigateOnUpload }) => {
+  const callback: FileUploadCallback = async ({
+    uuid,
+    name,
+    size,
+    type,
+    lastModified,
+    path,
+    metadata,
+    navigateOnUpload
+  }) => {
     const folder = await findParent(path)
     try {
       const data = {
         file: uuid,
-        size: file.size,
-        type: file.type,
-        lastModified: file instanceof File ? file.lastModified : Date.now(),
+        size,
+        type,
+        lastModified,
         title: name,
         metadata
       }
@@ -281,7 +290,7 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
         navigate(getFileLink(createdFile))
       }
 
-      Analytics.handleEvent(DriveEvents.FileUploaded, { ok: true, type: file.type, size: file.size, name })
+      Analytics.handleEvent(DriveEvents.FileUploaded, { ok: true, type, size, name })
     } catch (err) {
       void setPlatformStatus(unknownError(err))
     }

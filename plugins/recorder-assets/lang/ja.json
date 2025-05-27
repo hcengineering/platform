@@ -9,7 +9,13 @@
     "CancelRecordingConfirm": "録音をキャンセルしてもよろしいですか？",
     "RestartRecording": "録音を再開",
     "RestartRecordingConfirm": "録音を再開してもよろしいですか？",
-    "RecordingTitle": "画面録画 {date}",
-    "ClickToSkip": "クリックしてスキップ"
+    "ScreenRecordingName": "画面録音 {date}",
+    "CameraRecordingName": "カメラ録音 {date}",
+    "ClickToSkip": "クリックしてスキップ",
+    "RecordVideo": "ビデオを記録",
+    "ShareWithAudio": "音声付きで共有",
+    "ShareScreen": "画面を共有",
+    "StopSharing": "共有を停止",
+    "SelectVideoToRecord": "ビデオカメラを有効にするか、画面を共有して録音します"
   }
 }

@@ -9,7 +9,13 @@
     "CancelRecordingConfirm": "Möchten Sie die Aufnahme abbrechen?",
     "RestartRecording": "Aufnahme neu starten",
     "RestartRecordingConfirm": "Möchten Sie die Aufnahme neu starten?",
-    "RecordingTitle": "Bildschirmaufnahme {date}",
-    "ClickToSkip": "Zum Überspringen klicken"
+    "ScreenRecordingName": "Bildschirmaufnahme {date}",
+    "CameraRecordingName": "Kameraaufnahme {date}",
+    "ClickToSkip": "Zum Überspringen klicken",
+    "RecordVideo": "Video aufnehmen",
+    "ShareWithAudio": "Mit Audio teilen",
+    "ShareScreen": "Bildschirm teilen",
+    "StopSharing": "Teilen stoppen",
+    "SelectVideoToRecord": "Aktivieren Sie die Kamera oder teilen Sie den Bildschirm, um aufzunehmen"
   }
 }
