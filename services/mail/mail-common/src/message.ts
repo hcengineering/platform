@@ -109,7 +109,7 @@ export async function createMessages (
   }
 
   const modifiedBy = fromPerson.socialId
-  const participants = targetPersons ?? [fromPerson.socialId, ...toPersons.map((p) => p.socialId)]
+  const participants = [fromPerson.socialId, ...toPersons.map((p) => p.socialId)]
   const content = getMdContent(ctx, message)
 
   const attachedBlobs: Attachment[] = []
@@ -141,42 +141,19 @@ export async function createMessages (
     }
   }
 
-  try {
-    const spaces = await personSpacesCache.getPersonSpaces(mailId, fromPerson.uuid, from.email)
-    if (spaces.length > 0) {
-      await saveMessageToSpaces(
-        config,
-        ctx,
-        txClient,
-        producer,
-        threadLookup,
-        wsInfo,
-        mailId,
-        spaces,
-        participants,
-        modifiedBy,
-        subject,
-        content,
-        attachedBlobs,
-        from.email,
-        fromPerson.socialId,
-        message.sendOn,
-        channelCache,
-        replyTo
-      )
-    }
-  } catch (error) {
-    ctx.error('Failed to save message to personal spaces', {
-      error,
-      mailId,
-      personUuid: fromPerson.uuid,
-      email: from
-    })
-  }
+  const allPersons = [{ ...fromPerson, address: from.email }, ...toPersons]
+  const recipients =
+    targetPersons !== undefined && targetPersons.length > 0
+      ? targetPersons.map((p) => allPersons.find((ap) => ap.socialId === p))
+      : allPersons
 
-  for (const to of toPersons) {
+  for (const person of recipients) {
+    if (person === undefined) {
+      ctx.warn('Person not found for target', { mailId, targetPersons })
+      continue
+    }
     try {
-      const spaces = await personSpacesCache.getPersonSpaces(mailId, to.uuid, to.address)
+      const spaces = await personSpacesCache.getPersonSpaces(mailId, person.uuid, person.address)
       if (spaces.length > 0) {
         await saveMessageToSpaces(
           config,
@@ -192,15 +169,15 @@ export async function createMessages (
           subject,
           content,
           attachedBlobs,
-          to.address,
-          to.socialId,
+          person.address,
+          person.socialId,
           message.sendOn,
           channelCache,
           replyTo
         )
       }
     } catch (error) {
-      ctx.error('Failed to save message spaces', { error, mailId, personUuid: to.uuid, email: to.address })
+      ctx.error('Failed to save message spaces', { error, mailId, personUuid: person.uuid, email: person.address })
     }
   }
 }
