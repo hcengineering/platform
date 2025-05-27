@@ -61,7 +61,7 @@
     {createDrawing}
     active={drawingAvailable && !loading}
     readonly={drawingAvailable && !drawingEditable}
-    class="object-contain mx-auto"
+    class="flex-center clear-mins w-full h-full"
     style={`max-width:${width};max-height:${height}`}
   >
     <img
