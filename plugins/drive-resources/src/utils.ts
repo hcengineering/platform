@@ -262,14 +262,7 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
     return current
   }
 
-  const callback: FileUploadCallback = async ({
-    uuid,
-    name,
-    file,
-    path,
-    metadata,
-    navigateOnUpload
-  }) => {
+  const callback: FileUploadCallback = async ({ uuid, name, file, path, metadata, navigateOnUpload }) => {
     const folder = await findParent(path)
     try {
       const data = {

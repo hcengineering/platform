@@ -46,7 +46,11 @@
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
   import { AttachIcon, ReferenceInput } from '@hcengineering/text-editor-resources'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
-  import { type FileUploadCallbackParams, type UploadHandlerDefinition, getUploadHandlers } from '@hcengineering/uploader'
+  import {
+    type FileUploadCallbackParams,
+    type UploadHandlerDefinition,
+    getUploadHandlers
+  } from '@hcengineering/uploader'
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import attachment from '../plugin'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
