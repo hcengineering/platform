@@ -67,6 +67,7 @@
     "WorkspaceSettings": "Workspace settings",
     "Select": "Select",
     "AddOwner": "Add owner",
+    "ReadonlyGuest": "Readonly",
     "User": "User",
     "Maintainer": "Maintainer",
     "Owner": "Owner",

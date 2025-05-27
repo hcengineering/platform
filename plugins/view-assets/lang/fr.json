@@ -123,12 +123,14 @@
     "Copied": "Copié",
     "Title": "Titre",
     "HideArchived": "Masquer les archives",
-    "RemoveRelation": "Supprimer la relation",  
+    "RemoveRelation": "Supprimer la relation",
     "RemoveRelationConfirmation": "Voulez-vous supprimer la relation ?",
     "MasterDetail": "Maître-détail",
     "Tree": "Arbre",
     "Document": "Document",
     "Loading": "Chargement...",
-    "NoRelations": "Aucune relation"
+    "NoRelations": "Aucune relation",
+    "ReadOnlyWarningTitle": "Rejoignez-nous",
+    "ReadOnlyWarningMessage": "Pour obtenir un accès complet à cet espace de travail et participer, contactez l'administrateur."
   }
 }

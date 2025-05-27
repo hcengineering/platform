@@ -67,6 +67,7 @@
     "WorkspaceSettings": "工作区设置",
     "Select": "选择",
     "AddOwner": "添加所有者",
+    "ReadonlyGuest": "只读",
     "User": "用户",
     "Maintainer": "维护者",
     "Owner": "所有者",

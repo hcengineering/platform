@@ -129,6 +129,8 @@
     "Tree": "ツリー",
     "Document": "ドキュメント",
     "Loading": "読み込み中...",
-    "NoRelations": "関係なし"
+    "NoRelations": "関係なし",
+    "ReadOnlyWarningTitle": "参加する",
+    "ReadOnlyWarningMessage": "ワークスペースへのフルアクセスと参加権限を取得するには、管理者に連絡してください。"
   }
 }

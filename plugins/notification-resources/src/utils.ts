@@ -28,39 +28,40 @@ import {
 import { Analytics } from '@hcengineering/analytics'
 import chunter, { type ThreadMessage } from '@hcengineering/chunter'
 import core, {
-  SortingOrder,
-  getCurrentAccount,
+  AccountRole,
   type Class,
   type Doc,
   type DocumentUpdate,
+  getCurrentAccount,
   type Ref,
+  SortingOrder,
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
 import notification, {
-  notificationId,
   type ActivityInboxNotification,
-  type NotificationType,
   type Collaborators,
   type DisplayInboxNotification,
   type DocNotifyContext,
   type InboxNotification,
   type MentionInboxNotification,
+  notificationId,
   type NotificationProvider,
   type NotificationProviderSetting,
+  type NotificationType,
   type NotificationTypeSetting
 } from '@hcengineering/notification'
 import { getMetadata, getResource } from '@hcengineering/platform'
-import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
 import {
   getCurrentLocation,
   getLocation,
+  type Location,
   locationStorageKeyId,
   navigate,
   parseLocation,
-  showPopup,
-  type Location,
-  type ResolvedLocation
+  type ResolvedLocation,
+  showPopup
 } from '@hcengineering/ui'
 import view, { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
 import { getObjectLinkId, parseLinkId } from '@hcengineering/view-resources'
@@ -344,9 +345,10 @@ export async function getDisplayInboxNotifications (
   filter: InboxNotificationsFilter = 'all',
   objectClass?: Ref<Class<Doc>>
 ): Promise<DisplayInboxNotification[]> {
+  if (getCurrentAccount()?.role === AccountRole.ReadOnlyGuest) return []
+
   const result: DisplayInboxNotification[] = []
   const activityNotifications: Array<WithLookup<ActivityInboxNotification>> = []
-
   for (const notification of notifications) {
     if (filter === 'unread' && notification.isViewed) {
       continue
@@ -705,6 +707,7 @@ export async function checkPermission (value: boolean): Promise<boolean> {
 }
 
 function addWorkerListener (): void {
+  if (getCurrentAccount()?.role === AccountRole.ReadOnlyGuest) return
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data !== undefined && event.data.type === 'notification-click') {
       const { url, _id } = event.data

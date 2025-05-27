@@ -176,11 +176,7 @@
       class:fly={$deviceInfo.navigator.float}
     >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
-        {#if me.role === AccountRole.ReadOnlyGuest}
-          <ReadonlyChannelNavigator {object} on:select={handleChannelSelected} />
-        {:else}
-          <ChatNavigator {object} {currentSpecial} on:select={handleChannelSelected} />
-        {/if}
+        <ChatNavigator {object} {currentSpecial} on:select={handleChannelSelected} />
       </div>
       {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
         <Separator name="chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />

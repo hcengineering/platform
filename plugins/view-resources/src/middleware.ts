@@ -1,10 +1,6 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  type Hierarchy,
-  type TxApplyIf,
-  type TxCUD,
-  TxProcessor,
-  generateId,
+  AccountRole,
   type AnyAttribute,
   type Attribute,
   type Class,
@@ -13,15 +9,22 @@ import core, {
   type DocumentQuery,
   type FindOptions,
   type FindResult,
+  generateId,
+  getCurrentAccount,
+  type Hierarchy,
   type Ref,
   type RefTo,
   type Tx,
+  type TxApplyIf,
+  type TxCUD,
+  TxProcessor,
   type TxResult
 } from '@hcengineering/core'
 import { getResource, translate } from '@hcengineering/platform'
-import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
+import { BasePresentationMiddleware, MessageBox, type PresentationMiddleware } from '@hcengineering/presentation'
 import view, { type IAggregationManager } from '@hcengineering/view'
 import notification from '@hcengineering/notification'
+import { showPopup } from '@hcengineering/ui'
 
 /**
  * @public
@@ -322,5 +325,51 @@ export class AnalyticsMiddleware extends BasePresentationMiddleware implements P
         }
       }
     }
+  }
+}
+
+/**
+ * @public
+ */
+export class ReadOnlyAccessMiddleware extends BasePresentationMiddleware implements PresentationMiddleware {
+  private messageShown: boolean = false
+
+  private constructor (client: Client, next?: PresentationMiddleware) {
+    super(client, next)
+  }
+
+  async notifyTx (...tx: Tx[]): Promise<void> {
+    await this.provideNotifyTx(...tx)
+  }
+
+  async close (): Promise<void> {
+    await this.provideClose()
+  }
+
+  static create (client: Client, next?: PresentationMiddleware): ReadOnlyAccessMiddleware {
+    return new ReadOnlyAccessMiddleware(client, next)
+  }
+
+  async tx (tx: Tx): Promise<TxResult> {
+    if (getCurrentAccount()?.role === AccountRole.ReadOnlyGuest) {
+      if (!this.messageShown) {
+        this.messageShown = true
+        showPopup(
+          MessageBox,
+          {
+            label: view.string.ReadOnlyWarningTitle,
+            message: view.string.ReadOnlyWarningMessage,
+            canSubmit: false,
+            dangerous: false
+          },
+          undefined,
+          () => {
+            this.messageShown = false
+          }
+        )
+      }
+      return {}
+    }
+    return await this.provideTx(tx)
   }
 }

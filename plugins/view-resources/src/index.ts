@@ -137,7 +137,7 @@ import {
   valueNinResult
 } from './filter'
 
-import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
+import { AggregationMiddleware, AnalyticsMiddleware, ReadOnlyAccessMiddleware } from './middleware'
 import { hideArchived, showEmptyGroups } from './viewOptions'
 import {
   canArchiveSpace,
@@ -360,6 +360,7 @@ export default async (): Promise<Resources> => ({
     CreateDocMiddleware: AggregationMiddleware.create,
     // eslint-disable-next-line @typescript-eslint/unbound-method
     AnalyticsMiddleware: AnalyticsMiddleware.create,
+    ReadOnlyAccessMiddleware: ReadOnlyAccessMiddleware.create,
     CanDeleteObject: canDeleteObject,
     CanEditSpace: canEditSpace,
     CanArchiveSpace: canArchiveSpace,

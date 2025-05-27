@@ -128,12 +128,14 @@
     "Copied": "Kopiert",
     "Title": "Titel",
     "HideArchived": "Archivierte ausblenden",
-    "RemoveRelation": "Beziehung entfernen",  
+    "RemoveRelation": "Beziehung entfernen",
     "RemoveRelationConfirmation": "Möchten Sie die Beziehung entfernen?",
     "MasterDetail": "Master-detail",
     "Tree": "Baum",
     "Document": "Dokument",
     "Loading": "Laden...",
-    "NoRelations": "Keine Beziehungen"
+    "NoRelations": "Keine Beziehungen",
+    "ReadOnlyWarningTitle": "Mitmachen",
+    "ReadOnlyWarningMessage": "Um vollen Zugriff auf diesen Arbeitsbereich und Teilnahmefunktionen zu erhalten, wenden Sie sich bitte an den Administrator."
   }
 }

@@ -67,6 +67,7 @@
     "WorkspaceSettings": "ワークスペース設定",
     "Select": "選択",
     "AddOwner": "所有者を追加",
+    "ReadonlyGuest": "読み取り専用",
     "User": "ユーザー",
     "Maintainer": "メンテナー",
     "Owner": "所有者",

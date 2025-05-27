@@ -23,15 +23,16 @@ import { isReactionMessage } from '@hcengineering/activity-resources'
 import aiBot from '@hcengineering/ai-bot'
 import { summarizeMessages as aiSummarizeMessages, translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
-import contact, { getCurrentEmployee, getName, type Employee, type Person } from '@hcengineering/contact'
+import contact, { type Employee, getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
 import { employeeByAccountStore, employeeByIdStore, PersonIcon } from '@hcengineering/contact-resources'
 import core, {
-  getCurrentAccount,
-  notEmpty,
+  AccountRole,
   type AccountUuid,
   type Class,
   type Client,
   type Doc,
+  getCurrentAccount,
+  notEmpty,
   type Ref,
   type Space,
   type Timestamp
@@ -42,11 +43,11 @@ import {
   isActivityNotification,
   isMentionNotification
 } from '@hcengineering/notification-resources'
-import { getMetadata, translate, type Asset } from '@hcengineering/platform'
+import { type Asset, getMetadata, translate } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { languageStore, type AnySvelteComponent } from '@hcengineering/ui'
+import { type AnySvelteComponent, languageStore } from '@hcengineering/ui'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
-import { get, writable, type Unsubscriber } from 'svelte/store'
+import { get, type Unsubscriber, writable } from 'svelte/store'
 
 import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
@@ -244,7 +245,6 @@ export async function getChannelName (
 
 export function getUnreadThreadsCount (): number {
   const notificationClient = InboxNotificationsClientImpl.getClient()
-
   const threadIds = get(notificationClient.activityInboxNotifications)
     .filter(({ attachedToClass, isViewed }) => attachedToClass === chunter.class.ThreadMessage && !isViewed)
     .map(({ $lookup }) => $lookup?.attachedTo?.attachedTo)
@@ -394,7 +394,7 @@ export async function readChannelMessages (
   messages: DisplayActivityMessage[],
   contextId: Ref<DocNotifyContext>
 ): Promise<void> {
-  if (messages.length === 0) {
+  if (messages.length === 0 || getCurrentAccount()?.role === AccountRole.ReadOnlyGuest) {
     return
   }
 

@@ -660,6 +660,15 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    presentation.class.PresentationMiddlewareFactory,
+    core.space.Model,
+    {
+      createPresentationMiddleware: view.function.ReadOnlyAccessMiddleware
+    },
+    view.pipeline.ReadOnlyAccessMiddleware
+  )
+
+  builder.createDoc(
     presentation.class.FilePreviewExtension,
     core.space.Model,
     {

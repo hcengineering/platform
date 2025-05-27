@@ -73,9 +73,6 @@
   export let stopPropagation: boolean = true
   export let event: string | undefined = undefined
 
-  const account = getCurrentAccount()
-  $: readOnlyRole = account?.role === AccountRole.ReadOnlyGuest
-
   $: iconSize = iconProps?.size !== undefined ? iconProps.size : size && size === 'inline' ? 'inline' : 'small'
   $: iconRightSize = iconRightProps?.size !== undefined ? iconRightProps.size : 'x-small'
   let iconOnly: boolean = false
@@ -103,10 +100,10 @@
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
-      if (!disabled && !readOnlyRole) {
+      if (!disabled) {
         input?.focus()
       }
-      return !disabled && !readOnlyRole && input != null
+      return !disabled && input != null
     },
     isFocus: () => document.activeElement === input
   })
@@ -145,7 +142,7 @@
   class:notSelected
   class:iconL={(icon || $$slots.icon) && (label || $$slots.content)}
   class:iconR={(iconRight || $$slots.iconRight) && (label || $$slots.content)}
-  disabled={disabled || readOnlyRole || loading}
+  disabled={disabled || loading}
   class:short
   class:resetIconSize={resetIconSize === 'full'}
   style:min-width={minWidth}

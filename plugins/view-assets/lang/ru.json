@@ -125,12 +125,14 @@
     "Copied": "Скопировано",
     "Title": "Заголовок",
     "HideArchived": "Скрыть архивные",
-    "RemoveRelation": "Удалить связь",  
+    "RemoveRelation": "Удалить связь",
     "RemoveRelationConfirmation": "Вы хотите удалить связь?",
     "MasterDetail": "Мастер-деталь",
     "Tree": "Дерево",
     "Document": "Документ",
     "Loading": "Загрузка...",
-    "NoRelations": "Нет связей"
+    "NoRelations": "Нет связей",
+    "ReadOnlyWarningTitle": "Присоединиться",
+    "ReadOnlyWarningMessage": "Для получения полного доступа к рабочему пространству и участия обратитесь к администратору."
   }
 }

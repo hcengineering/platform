@@ -67,6 +67,7 @@
     "WorkspaceSettings": "Ajustes del espacio de trabajo",
     "Select": "Seleccionar",
     "AddOwner": "Añadir propietario",
+    "ReadonlyGuest": "Solo lectura",
     "User": "Usuario",
     "Maintainer": "Mantenedor",
     "Owner": "Propietario",

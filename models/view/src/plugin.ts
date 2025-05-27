@@ -159,7 +159,8 @@ export default mergeIds(viewId, view, {
   },
   pipeline: {
     PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>,
-    AnalyticsMiddleware: '' as Ref<PresentationMiddlewareFactory>
+    AnalyticsMiddleware: '' as Ref<PresentationMiddlewareFactory>,
+    ReadOnlyAccessMiddleware: '' as Ref<PresentationMiddlewareFactory>
   },
   extension: {
     Audio: '' as Ref<FilePreviewExtension>,
