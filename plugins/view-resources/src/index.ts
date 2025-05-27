@@ -360,6 +360,7 @@ export default async (): Promise<Resources> => ({
     CreateDocMiddleware: AggregationMiddleware.create,
     // eslint-disable-next-line @typescript-eslint/unbound-method
     AnalyticsMiddleware: AnalyticsMiddleware.create,
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     ReadOnlyAccessMiddleware: ReadOnlyAccessMiddleware.create,
     CanDeleteObject: canDeleteObject,
     CanEditSpace: canEditSpace,
