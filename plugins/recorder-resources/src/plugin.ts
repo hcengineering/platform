@@ -40,6 +40,15 @@ export default mergeIds(recorderId, plugin, {
     SelectVideoToRecord: '' as IntlString,
     ShareWithAudio: '' as IntlString,
     ShareScreen: '' as IntlString,
-    StopSharing: '' as IntlString
+    StopSharing: '' as IntlString,
+    CameraSize: '' as IntlString,
+    CameraPos: '' as IntlString,
+    Small: '' as IntlString,
+    Medium: '' as IntlString,
+    Large: '' as IntlString,
+    TopLeft: '' as IntlString,
+    TopRight: '' as IntlString,
+    BottomLeft: '' as IntlString,
+    BottomRight: '' as IntlString
   }
 })

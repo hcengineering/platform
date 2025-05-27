@@ -41,12 +41,16 @@
         return 0.15
     }
   }
-  function updateCameraSize (cameraSize: CameraSize, canvasWidth: number, canvasHeight: number): void {
+
+  function updateCameraPos (
+    cameraSize: CameraSize,
+    cameraPos: CameraPosition,
+    canvasWidth: number,
+    canvasHeight: number
+  ): void {
     const size = getCameraSize(cameraSize)
     cameraR = size * Math.min(canvasWidth, canvasHeight)
-  }
 
-  function updateCameraPos (cameraPos: CameraPosition, canvasWidth: number, canvasHeight: number): void {
     const cameraM = Math.min(canvasWidth, canvasHeight) * 0.05
     switch (cameraPos) {
       case 'top-left':
@@ -77,8 +81,7 @@
   let cameraVideo: HTMLVideoElement | null = null
   let screenVideo: HTMLVideoElement | null = null
 
-  $: updateCameraSize(cameraSize, canvasWidth, canvasHeight)
-  $: updateCameraPos(cameraPos, canvasWidth, canvasHeight)
+  $: updateCameraPos(cameraSize, cameraPos, canvasWidth, canvasHeight)
   $: updateVideoSources(screenStream, cameraStream)
 
   function updateVideoSources (screenStream: MediaStream | null, cameraStream: MediaStream | null): void {

@@ -68,6 +68,7 @@
   import IconStop from './icons/Stop.svelte'
   import RecordingCanvas from './RecordingCanvas.svelte'
   import ShareSettingsPopup from './ShareSettingsPopup.svelte'
+  import SettingsPopup from './SettingsPopup.svelte'
 
   export let onSuccess: (result: RecordingResult) => Promise<void> = async () => {}
 
@@ -211,10 +212,6 @@
         },
         audio: $useScreenShareSound
       })
-      for (const track of screenStream.getVideoTracks()) {
-        const settings = track.getSettings()
-        console.log('Screen track settings', settings)
-      }
     } catch (err: any) {
       if (err.name === 'NotAllowedError') {
         console.debug('User denied screen capture permission', err)
@@ -377,9 +374,7 @@
   }
 
   function handleSettingsClick (e: MouseEvent): void {
-    showPopup(SelectPopup, { value: [] }, eventToHTMLElement(e), () => {
-      // TODO
-    })
+    showPopup(SettingsPopup, { value: [] }, eventToHTMLElement(e))
   }
 
   let canvas: HTMLCanvasElement

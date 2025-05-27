@@ -16,6 +16,15 @@
     "ShareWithAudio": "音声付きで共有",
     "ShareScreen": "画面を共有",
     "StopSharing": "共有を停止",
-    "SelectVideoToRecord": "ビデオカメラを有効にするか、画面を共有して録音します"
+    "SelectVideoToRecord": "ビデオカメラを有効にするか、画面を共有して録音します",
+    "CameraSize": "カメラサイズ",
+    "CameraPos": "カメラ位置",
+    "Small": "小さい",
+    "Medium": "中",
+    "Large": "大きい",
+    "TopLeft": "左上",
+    "TopRight": "右上",
+    "BottomLeft": "左下",
+    "BottomRight": "右下"
   }
 }

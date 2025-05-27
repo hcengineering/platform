@@ -16,6 +16,15 @@
     "ShareWithAudio": "Share with audio",
     "ShareScreen": "Share screen",
     "StopSharing": "Stop sharing",
-    "SelectVideoToRecord": "Enable video camera or share screen to record"
+    "SelectVideoToRecord": "Enable video camera or share screen to record",
+    "CameraSize": "Camera size",
+    "CameraPos": "Camera position",
+    "Small": "Small",
+    "Medium": "Medium",
+    "Large": "Large",
+    "TopLeft": "Top left",
+    "TopRight": "Top right",
+    "BottomLeft": "Bottom left",
+    "BottomRight": "Bottom right"
   }
 }

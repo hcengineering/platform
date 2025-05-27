@@ -16,6 +16,15 @@
     "ShareWithAudio": "Sdílet se zvukem",
     "ShareScreen": "Sdílet obrazovku",
     "StopSharing": "Zastavit sdílení",
-    "SelectVideoToRecord": "Povolit kameru nebo sdílet obrazovku pro nahrávání"
+    "SelectVideoToRecord": "Povolit kameru nebo sdílet obrazovku pro nahrávání",
+    "CameraSize": "Velikost kamery",
+    "CameraPos": "Pozice kamery",
+    "Small": "Malá",
+    "Medium": "Střední",
+    "Large": "Velká",
+    "TopLeft": "Vlevo nahoře",
+    "TopRight": "Vpravo nahoře",
+    "BottomLeft": "Vlevo dole",
+    "BottomRight": "Vpravo dole"
   }
 }

@@ -16,6 +16,15 @@
     "ShareWithAudio": "Partager avec audio",
     "ShareScreen": "Partager l'écran",
     "StopSharing": "Arrêter le partage",
-    "SelectVideoToRecord": "Activer la caméra vidéo ou partager l'écran pour enregistrer"
+    "SelectVideoToRecord": "Activer la caméra vidéo ou partager l'écran pour enregistrer",
+    "CameraSize": "Taille de la caméra",
+    "CameraPos": "Position de la caméra",
+    "Small": "Petit",
+    "Medium": "Moyen",
+    "Large": "Grand",
+    "TopLeft": "En haut à gauche",
+    "TopRight": "En haut à droite",
+    "BottomLeft": "En bas à gauche",
+    "BottomRight": "En bas à droite"
   }
 }

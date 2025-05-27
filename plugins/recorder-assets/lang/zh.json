@@ -16,6 +16,15 @@
     "ShareWithAudio": "共享音频",
     "ShareScreen": "共享屏幕",
     "StopSharing": "停止共享",
-    "SelectVideoToRecord": "启用摄像头或共享屏幕以进行录制"
+    "SelectVideoToRecord": "启用摄像头或共享屏幕以进行录制",
+    "CameraSize": "摄像头大小",
+    "CameraPos": "摄像头位置",
+    "Small": "小",
+    "Medium": "中",
+    "Large": "大",
+    "TopLeft": "左上",
+    "TopRight": "右上",
+    "BottomLeft": "左下",
+    "BottomRight": "右下"
   }
 }
