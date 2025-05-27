@@ -43,6 +43,10 @@ export async function list (): Promise<Integration[]> {
   return await request('GET')
 }
 
-export async function command (phone: string, command: 'start' | 'next' | 'cancel', input?: string): Promise<Integration> {
+export async function command (
+  phone: string,
+  command: 'start' | 'next' | 'cancel',
+  input?: string
+): Promise<Integration> {
   return await request('POST', phone, { command, input })
 }
