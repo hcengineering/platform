@@ -27,7 +27,6 @@ import {
   type TxOperations,
   Doc,
   generateId,
-  PersonUuid,
   RateLimiter,
   Space
 } from '@hcengineering/core'
@@ -39,7 +38,7 @@ import { MessageRequestEventType } from '@hcengineering/communication-sdk-types'
 import { generateMessageId } from '@hcengineering/communication-shared'
 
 import { BaseConfig, type Attachment } from './types'
-import { EmailMessage } from './types'
+import { EmailMessage, MailRecipient } from './types'
 import { getMdContent } from './utils'
 import { PersonCacheFactory } from './person'
 import { PersonSpacesCacheFactory } from './personSpaces'
@@ -82,7 +81,7 @@ export async function createMessages (
   wsInfo: WorkspaceLoginInfo,
   message: EmailMessage,
   attachments: Attachment[],
-  targetPersons?: PersonId[]
+  recipients?: MailRecipient[]
 ): Promise<void> {
   const { mailId, from, subject, replyTo } = message
   const tos = [...(message.to ?? []), ...(message.copy ?? [])]
@@ -95,13 +94,13 @@ export async function createMessages (
 
   const fromPerson = await personCache.ensurePerson(from)
 
-  const toPersons: { address: string, uuid: PersonUuid, socialId: PersonId }[] = []
+  const toPersons: MailRecipient[] = []
   for (const to of tos) {
     const toPerson = await personCache.ensurePerson(to)
     if (toPerson === undefined) {
       continue
     }
-    toPersons.push({ address: to.email, ...toPerson })
+    toPersons.push({ email: to.email, ...toPerson })
   }
   if (toPersons.length === 0) {
     ctx.error('Unable to create message without a proper TO', { mailId, from })
@@ -141,19 +140,12 @@ export async function createMessages (
     }
   }
 
-  const allPersons = [{ ...fromPerson, address: from.email }, ...toPersons]
-  const recipients =
-    targetPersons !== undefined && targetPersons.length > 0
-      ? targetPersons.map((p) => allPersons.find((ap) => ap.socialId === p))
-      : allPersons
+  const allPersons = [{ ...fromPerson, email: from.email }, ...toPersons]
+  const messageRecipients = recipients != null && recipients.length > 0 ? recipients : allPersons
 
-  for (const person of recipients) {
-    if (person === undefined) {
-      ctx.warn('Person not found for target', { mailId, targetPersons })
-      continue
-    }
+  for (const person of messageRecipients) {
     try {
-      const spaces = await personSpacesCache.getPersonSpaces(mailId, person.uuid, person.address)
+      const spaces = await personSpacesCache.getPersonSpaces(mailId, person.uuid, person.email)
       if (spaces.length > 0) {
         await saveMessageToSpaces(
           config,
@@ -169,7 +161,7 @@ export async function createMessages (
           subject,
           content,
           attachedBlobs,
-          person.address,
+          person.email,
           person.socialId,
           message.sendOn,
           channelCache,
@@ -177,7 +169,7 @@ export async function createMessages (
         )
       }
     } catch (error) {
-      ctx.error('Failed to save message spaces', { error, mailId, personUuid: person.uuid, email: person.address })
+      ctx.error('Failed to save message spaces', { error, mailId, personUuid: person.uuid, email: person.email })
     }
   }
 }
