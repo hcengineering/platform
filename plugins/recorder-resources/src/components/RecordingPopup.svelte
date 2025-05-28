@@ -315,8 +315,12 @@
     )
   }
 
+  export function canClose (): boolean {
+    return state === null || state.state === 'stopped'
+  }
+
   function handleClose (): void {
-    if (state === null || state.state === 'stopped') {
+    if (canClose()) {
       dispatch('close')
     }
   }
