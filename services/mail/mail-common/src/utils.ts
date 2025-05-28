@@ -15,9 +15,8 @@
 import TurndownService from 'turndown'
 import sanitizeHtml from 'sanitize-html'
 
-import { MeasureContext, Ref } from '@hcengineering/core'
+import { MeasureContext } from '@hcengineering/core'
 import { EmailContact, EmailMessage } from './types'
-import { PersonSpace } from '@hcengineering/contact'
 
 const NAME_EMAIL_PATTERN = /^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/
 const NAME_SEGMENT_REGEX = /[\s,;]+/
@@ -127,8 +126,4 @@ export function parseNameFromEmailHeader (headerValue: string | undefined): Emai
     firstName: displayName,
     lastName: ''
   }
-}
-
-export function getThreadLookupKey (mailId: string, spaceId: Ref<PersonSpace>): string {
-  return `mail-thread-lookup:${mailId}:${spaceId}`
 }
