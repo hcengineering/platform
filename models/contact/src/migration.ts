@@ -22,7 +22,6 @@ import {
   DOMAIN_TX,
   generateId,
   type MarkupBlobRef,
-  MeasureMetricsContext,
   type PersonId,
   type PersonUuid,
   type Ref,
@@ -114,8 +113,7 @@ async function getOldPersonAccounts (
 }
 
 async function fillAccountUuids (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('contact fillAccountUuids', {})
-  ctx.info('filling account uuids...')
+  client.logger.log('filling account uuids...', {})
   const iterator = await client.traverse<Person>(DOMAIN_CONTACT, { _class: contact.class.Person })
 
   try {
@@ -170,8 +168,7 @@ async function fillAccountUuids (client: MigrationClient): Promise<void> {
 }
 
 async function assignWorkspaceRoles (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('contact assignWorkspaceRoles', {})
-  ctx.info('assigning workspace roles...')
+  client.logger.log('assigning workspace roles...', {})
   const oldPersonAccounts = await getOldPersonAccounts(client)
   for (const { person, email, role } of oldPersonAccounts) {
     // check it's an active employee
@@ -187,16 +184,15 @@ async function assignWorkspaceRoles (client: MigrationClient): Promise<void> {
     try {
       await client.accountClient.updateWorkspaceRoleBySocialKey(buildSocialIdString(socialKey), role)
     } catch (err: any) {
-      ctx.error('Failed to update workspace role', { email, ...socialKey, role, err })
+      client.logger.error('Failed to update workspace role', { email, ...socialKey, role, err })
     }
   }
 
-  ctx.info('finished assigning workspace roles', { users: oldPersonAccounts.length })
+  client.logger.log('finished assigning workspace roles', { users: oldPersonAccounts.length })
 }
 
 async function assignEmployeeRoles (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('contact assignEmployeeRoles', {})
-  ctx.info('assigning roles to employees...')
+  client.logger.log('assigning roles to employees...', {})
 
   const wsMembers = await client.accountClient.getWorkspaceMembers()
   const persons = await client.traverse<Person>(DOMAIN_CONTACT, {
@@ -241,13 +237,12 @@ async function assignEmployeeRoles (client: MigrationClient): Promise<void> {
     }
   } finally {
     await persons.close()
-    ctx.info('finished assigning roles to employees...')
+    client.logger.log('finished assigning roles to employees...', {})
   }
 }
 
 async function createSocialIdentities (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('createSocialIdentities', {})
-  ctx.info('processing person accounts ', {})
+  client.logger.log('processing person accounts ', {})
 
   const socialIdBySocialKey = new Map<string, PersonId | null>()
   const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
@@ -287,8 +282,7 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
 }
 
 async function migrateMergedAccounts (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('migrateMergedAccounts', {})
-  ctx.info('migrating merged person accounts ', {})
+  client.logger.log('migrating merged person accounts ', {})
   const accountsByPerson = new Map<string, any[]>()
   const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
     objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
@@ -363,14 +357,13 @@ async function migrateMergedAccounts (client: MigrationClient): Promise<void> {
         await client.accountClient.addSocialIdToPerson(primaryAccount, addTarget.type, addTarget.value, false)
       }
     } catch (err: any) {
-      ctx.error('Failed to merge accounts for person', { person, oldAccounts, err })
+      client.logger.error('Failed to merge accounts for person', { person, oldAccounts, err })
     }
   }
 }
 
 async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('contact ensureGlobalPersonsForLocalAccounts', {})
-  ctx.info('ensuring global persons for local accounts ', {})
+  client.logger.log('ensuring global persons for local accounts ', {})
 
   const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
     objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
@@ -393,16 +386,21 @@ async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient): Pr
       await client.accountClient.ensurePerson(socialIdKey.type, socialIdKey.value, effectiveFirstName, lastName)
       count++
     } catch (err: any) {
-      ctx.error('Failed to ensure person', { socialIdKey, email: pAcc.email, firstName, lastName, effectiveFirstName })
+      client.logger.error('Failed to ensure person', {
+        socialIdKey,
+        email: pAcc.email,
+        firstName,
+        lastName,
+        effectiveFirstName
+      })
       console.error(err)
     }
   }
-  ctx.info('finished ensuring global persons for local accounts. Total persons ensured: ', { count })
+  client.logger.log('finished ensuring global persons for local accounts. Total persons ensured: ', { count })
 }
 
 async function createUserProfiles (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('contact createUserProfiles', {})
-  ctx.info('creating user profiles for persons...')
+  client.logger.log('creating user profiles for persons...', {})
 
   const persons = await client.traverse<Person>(DOMAIN_CONTACT, {
     _class: contact.class.Person,
@@ -455,13 +453,12 @@ async function createUserProfiles (client: MigrationClient): Promise<void> {
     }
   } finally {
     await persons.close()
-    ctx.info('finished creating user profiles for persons...')
+    client.logger.log('finished creating user profiles for persons...', {})
   }
 }
 
 async function fixSocialIdCase (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('contact fixSocialIdCase', {})
-  ctx.info('Fixing social id case...')
+  client.logger.log('Fixing social id case...', {})
 
   const socialIds = await client.traverse<SocialIdentity>(DOMAIN_CHANNEL, {
     _class: contact.class.SocialIdentity
@@ -483,7 +480,7 @@ async function fixSocialIdCase (client: MigrationClient): Promise<void> {
       }
     }
   }
-  ctx.info('Finished fixing social id case. Total updated:', { updated })
+  client.logger.log('Finished fixing social id case. Total updated:', { updated })
 }
 
 export const contactOperation: MigrateOperation = {

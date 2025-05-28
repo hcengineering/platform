@@ -191,6 +191,10 @@ export class MeasureMetricsContext implements MeasureContext {
   end (): void {
     this.done()
   }
+
+  getParams (): ParamsType {
+    return this.params
+  }
 }
 
 export class NoMetricsContext implements MeasureContext {
@@ -260,6 +264,10 @@ export class NoMetricsContext implements MeasureContext {
   }
 
   end (): void {}
+
+  getParams (): ParamsType {
+    return {}
+  }
 }
 
 /**

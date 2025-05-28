@@ -17,7 +17,6 @@ import chunter from '@hcengineering/chunter'
 import contact, { type PersonSpace } from '@hcengineering/contact'
 import core, {
   DOMAIN_TX,
-  MeasureMetricsContext,
   type PersonId,
   type Class,
   type Doc,
@@ -247,17 +246,16 @@ export async function migrateDuplicateContexts (client: MigrationClient): Promis
  * @returns
  */
 async function migrateAccounts (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('notification migrateAccounts', {})
   const hierarchy = client.hierarchy
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
   const socialIdBySocialKey = new Map<string, PersonId | null>()
   const socialIdByOldAccount = new Map<string, PersonId | null>()
   const accountUuidByOldAccount = new Map<string, AccountUuid | null>()
 
-  ctx.info('processing collaborators ', {})
+  client.logger.log('processing collaborators ', {})
   for (const domain of client.hierarchy.domains()) {
     if (['tx'].includes(domain)) continue
-    ctx.info('processing domain ', { domain })
+    client.logger.log('processing domain ', { domain })
     let processed = 0
     const iterator = await client.traverse(domain, {})
 
@@ -298,17 +296,17 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
         }
 
         processed += docs.length
-        ctx.info('...processed', { count: processed })
+        client.logger.log('...processed', { count: processed })
       }
 
-      ctx.info('finished processing domain ', { domain, processed })
+      client.logger.log('finished processing domain ', { domain, processed })
     } finally {
       await iterator.close()
     }
   }
-  ctx.info('finished processing collaborators ', {})
+  client.logger.log('finished processing collaborators ', {})
 
-  ctx.info('processing notifications fields ', {})
+  client.logger.log('processing notifications fields ', {})
   function chunkArray<T> (array: T[], chunkSize: number): T[][] {
     const chunks: T[][] = []
     for (let i = 0; i < array.length; i += chunkSize) {
@@ -387,16 +385,16 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
       await client.bulk(DOMAIN_NOTIFICATION, operationsChunk)
       processed++
       if (operationsChunks.length > 1) {
-        ctx.info('processed chunk', { processed, of: operationsChunks.length })
+        client.logger.log('processed chunk', { processed, of: operationsChunks.length })
       }
     }
   } else {
-    ctx.info('no user accounts to migrate')
+    client.logger.log('no user accounts to migrate', {})
   }
 
-  ctx.info('finished processing notifications fields ', {})
+  client.logger.log('finished processing notifications fields ', {})
 
-  ctx.info('processing doc notify contexts ', {})
+  client.logger.log('processing doc notify contexts ', {})
   const dncIterator = await client.traverse<DocNotifyContext>(DOMAIN_DOC_NOTIFY, {
     _class: notification.class.DocNotifyContext
   })
@@ -432,14 +430,14 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
       }
 
       processed += docs.length
-      ctx.info('...processed', { count: processed })
+      client.logger.log('...processed', { count: processed })
     }
   } finally {
     await dncIterator.close()
   }
-  ctx.info('finished processing doc notify contexts ', {})
+  client.logger.log('finished processing doc notify contexts ', {})
 
-  ctx.info('processing push subscriptions ', {})
+  client.logger.log('processing push subscriptions ', {})
   const psIterator = await client.traverse<PushSubscription>(DOMAIN_USER_NOTIFY, {
     _class: notification.class.PushSubscription
   })
@@ -475,12 +473,12 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
       }
 
       processed += docs.length
-      ctx.info('...processed', { count: processed })
+      client.logger.log('...processed', { count: processed })
     }
   } finally {
     await psIterator.close()
   }
-  ctx.info('finished processing push subscriptions ', {})
+  client.logger.log('finished processing push subscriptions ', {})
 }
 
 export async function migrateSettings (client: MigrationClient): Promise<void> {
