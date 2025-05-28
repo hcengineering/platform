@@ -63,7 +63,8 @@
     "DeleteTransitionConfirm": "遷移を削除しますか？",
     "AddTransition": "遷移を追加",
     "ToDo": "ToDo",
-    "CurrentCard": "現在のカード"
+    "CurrentCard": "現在のカード",
+    "Data": "データ"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
