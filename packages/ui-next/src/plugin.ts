@@ -51,7 +51,9 @@ export const uiNext = plugin(uiNextId, {
     Loading: '' as IntlString,
     MessageIn: '' as IntlString,
     ThreadWasRemoved: '' as IntlString,
-    MessageWasRemoved: '' as IntlString
+    MessageWasRemoved: '' as IntlString,
+    JoinedThe: '' as IntlString,
+    LeftThe: '' as IntlString
   }
 })
 

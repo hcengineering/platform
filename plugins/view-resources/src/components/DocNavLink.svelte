@@ -33,6 +33,7 @@
   export let noOverflow: boolean = false
   export let inlineReference: boolean = false
   export let transparent: boolean = false
+  export let inlineBlock = false
 
   let _disabled = disabled || $restrictionStore.disableNavigation
   $: _disabled = disabled || $restrictionStore.disableNavigation
@@ -72,6 +73,7 @@
   {noOverflow}
   {inlineReference}
   {transparent}
+  {inlineBlock}
 >
   <slot />
 </NavLink>

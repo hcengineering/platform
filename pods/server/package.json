@@ -61,7 +61,7 @@
   "dependencies": {
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/analytics-service": "^0.6.0",
-    "@hcengineering/communication-server": "0.1.192",
+    "@hcengineering/communication-server": "0.1.194",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/kafka": "^0.6.0",

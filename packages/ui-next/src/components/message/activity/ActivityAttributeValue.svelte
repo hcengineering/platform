@@ -37,7 +37,7 @@
   })
 </script>
 
-<span class="flex-center flex-gap-1">
+<span class="flex-center flex-gap-1 no-word-wrap">
   <span class="icon mr-1">
     <Icon {icon} size="small" />
   </span>
@@ -45,7 +45,7 @@
   <slot name="text" />
 
   {#each attributeValues as value}
-    <span class="bold">
+    <span class="bold overflow-label clear-mins">
       {#if value != null && typeof value === 'object'}
         <ObjectPresenter {value} shouldShowAvatar={false} accent />
       {:else}
