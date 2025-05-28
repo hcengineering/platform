@@ -83,7 +83,7 @@ async function wait (sec: number): Promise<void> {
 
 export class GmailClient {
   private readonly account: AccountUuid
-  private email: string | undefined = undefined
+  private email: string
   private readonly tokenStorage: TokenStorage
   private readonly client: TxOperations
   private watchTimer: NodeJS.Timeout | undefined = undefined
@@ -374,7 +374,7 @@ export class GmailClient {
       const profile = await this.gmail.getProfile({
         userId: 'me'
       })
-      this.email = profile.data.emailAddress ?? undefined
+      this.email = profile.data.emailAddress ?? this.email
       if (this.email !== undefined) return this.email
       await wait(5)
     }
@@ -394,7 +394,7 @@ export class GmailClient {
     try {
       this.ctx.info('Register client', { socialId: this.socialId._id, email: this.email })
       const controller = GmailController.getGmailController()
-      controller.addClient(this.socialId._id, this.user.workspace, this)
+      controller.addClient(this.socialId._id, this.user.workspace, this.email, this)
     } catch (err) {
       this.ctx.error('Add client error', {
         workspaceUuid: this.user.workspace,
