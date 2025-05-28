@@ -31,7 +31,7 @@ func Test_BuildVideoCommand_Scaling(t *testing.T) {
 		ScalingLevels: []string{"720p", "480p"},
 	})
 
-	const expected = `-threads 4 -i pipe:0 -vf scale=-2:720 -c:v libx264 -preset veryfast -crf 23 -g 60 -hls_time 5 -hls_flags split_by_time -hls_list_size 0 -hls_segment_filename test/1/1_%03d_720p.ts test/1/1_720p_master.m3u8 -vf scale=-2:480 -c:v libx264 -preset veryfast -crf 23 -g 60 -hls_time 5 -hls_flags split_by_time -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
+	const expected = `-threads 4 -i pipe:0 -vf scale=-2:720 -c:a copy -c:v libx264 -preset veryfast -crf 23 -g 60 -hls_time 5 -hls_flags split_by_time -hls_list_size 0 -hls_segment_filename test/1/1_%03d_720p.ts test/1/1_720p_master.m3u8 -vf scale=-2:480 -c:a copy -c:v libx264 -preset veryfast -crf 23 -g 60 -hls_time 5 -hls_flags split_by_time -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
 
 	require.Contains(t, expected, strings.Join(scaleCommand, " "))
 }
@@ -45,7 +45,7 @@ func Test_BuildVideoCommand_Raw(t *testing.T) {
 		Level:    resconv.Level("651:490"),
 	})
 
-	const expected = `"-threads 4 -i pipe:0 -c:v copy -hls_time 5 -hls_flags split_by_time -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
+	const expected = `"-threads 4 -i pipe:0 -c:a copy -c:v copy -hls_time 5 -hls_flags split_by_time -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
 
 	require.Contains(t, expected, strings.Join(rawCommand, " "))
 }
