@@ -18,6 +18,7 @@ import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { Card } from '@hcengineering/card'
 import { PersonSpace } from '@hcengineering/contact'
 
+import { getThreadLookupKey } from './utils'
 export interface ThreadInfo {
   threadId: Ref<Card>
 }
@@ -60,7 +61,7 @@ export class ThreadLookupService {
         this.ctx.warn('Invalid parameters for thread lookup', { mailId, spaceId })
         return undefined
       }
-      const key = this.getLookupKey(mailId, spaceId)
+      const key = getThreadLookupKey(mailId, spaceId)
       const lookup = await this.keyValueClient.getValue<ThreadInfo>(key)
 
       if (lookup !== null) {
@@ -81,7 +82,7 @@ export class ThreadLookupService {
 
   async setThreadId (mailId: string, spaceId: Ref<PersonSpace>, threadId: Ref<Card>): Promise<void> {
     try {
-      const key = this.getLookupKey(mailId, spaceId)
+      const key = getThreadLookupKey(mailId, spaceId)
 
       const lookupInfo: ThreadInfo = {
         threadId
@@ -109,15 +110,11 @@ export class ThreadLookupService {
 
   async deleteMapping (mailId: string, spaceId: Ref<PersonSpace>): Promise<void> {
     try {
-      const key = this.getLookupKey(mailId, spaceId)
+      const key = getThreadLookupKey(mailId, spaceId)
       await this.keyValueClient.deleteKey(key)
       this.ctx.info('Deleted thread mapping', { mailId, spaceId })
     } catch (error) {
       this.ctx.error('Failed to delete thread mapping', { mailId, spaceId, error })
     }
-  }
-
-  private getLookupKey (mailId: string, spaceId: Ref<PersonSpace>): string {
-    return `mail-thread-lookup:${mailId}:${spaceId}`
   }
 }

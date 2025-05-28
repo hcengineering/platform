@@ -2527,6 +2527,11 @@
       "packageName": "@hcengineering/model-emoji",
       "projectFolder": "models/emoji",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/retry",
+      "projectFolder": "packages/retry",
+      "shouldPublish": false
     }
   ]
 }
