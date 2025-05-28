@@ -64,7 +64,8 @@
     "DeleteTransitionConfirm": "Do you want to delete transition?",
     "AddTransition": "Add transition",
     "ToDo": "ToDo",
-    "CurrentCard": "Current card"
+    "CurrentCard": "Current card",
+    "Data": "Data"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

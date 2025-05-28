@@ -18,14 +18,24 @@
 
   import ActivityUpdateTagViewer from './ActivityUpdateTagViewer.svelte'
   import ActivityUpdateAttributeViewer from './ActivityUpdateAttributeViewer.svelte'
+  import ActivityUpdateCollaboratorsViewer from './ActivityUpdateCollaboratorsViewer.svelte'
+  import { Person } from '@hcengineering/contact'
+  import { Card } from '@hcengineering/card'
+  import ActivityUpdateTypeViewer from './ActivityUpdateTypeViewer.svelte'
 
   export let model: AttributeModel | undefined = undefined
   export let update: ActivityUpdate
   export let content: RichText
+  export let card: Card
+  export let author: Person | undefined
 </script>
 
 {#if update.type === ActivityUpdateType.Attribute && model}
   <ActivityUpdateAttributeViewer {model} {update} />
 {:else if update.type === ActivityUpdateType.Tag}
   <ActivityUpdateTagViewer {update} {content} />
+{:else if update.type === ActivityUpdateType.Collaborators}
+  <ActivityUpdateCollaboratorsViewer {update} {card} {author} />
+{:else if update.type === ActivityUpdateType.Type}
+  <ActivityUpdateTypeViewer {update} />
 {/if}

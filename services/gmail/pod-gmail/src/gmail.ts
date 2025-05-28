@@ -26,6 +26,7 @@ import {
   isWorkspaceLoginInfo,
   AccountClient
 } from '@hcengineering/account-client'
+import { MailRecipient } from '@hcengineering/mail-common'
 
 import { encode64 } from './base64'
 import config from './config'
@@ -114,6 +115,11 @@ export class GmailClient {
     this.account = this.user.userId
     this.attachmentHandler = new AttachmentHandler(ctx, wsInfo, storageAdapter, this.gmail, this.client)
     const keyValueClient = getKvsClient(this.integrationToken)
+    const recipient: MailRecipient = {
+      email: this.email,
+      socialId: this.socialId._id,
+      uuid: this.user.userId
+    }
     this.messageManager = createMessageManager(
       ctx,
       this.client,
@@ -122,7 +128,7 @@ export class GmailClient {
       this.attachmentHandler,
       this.workspace,
       this.integrationToken,
-      socialId
+      recipient
     )
     this.syncManager = new SyncManager(
       ctx,

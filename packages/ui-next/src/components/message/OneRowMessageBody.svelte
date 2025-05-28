@@ -66,7 +66,7 @@
   {/if}
 
   <div class="message__text">
-    <MessageContentViewer {message} {card} />
+    <MessageContentViewer {message} {card} {author} />
   </div>
 </div>
 {#if !isDeleted}
@@ -81,6 +81,7 @@
     align-items: center;
     gap: 1rem;
     min-width: 0;
+    max-width: 100%;
     overflow: hidden;
   }
 
@@ -90,6 +91,7 @@
     align-items: center;
     justify-content: center;
     width: 2.5rem;
+    min-width: 2.5rem;
   }
 
   .message__header {

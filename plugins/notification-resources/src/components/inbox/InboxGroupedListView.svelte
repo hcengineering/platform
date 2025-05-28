@@ -61,12 +61,11 @@
   function updateDisplayData (data: InboxData): void {
     let result: [Ref<DocNotifyContext>, DisplayInboxNotification[]][] = Array.from(data.entries())
     if (archivedContexts.size > 0) {
-      result = result.filter(([contextId, d]) => {
+      result = result.filter(([contextId]) => {
         const context = $contextByIdStore.get(contextId)
         return (
           !archivedContexts.has(contextId) ||
-          (context?.lastUpdateTimestamp ?? 0) > (archivedContexts.get(contextId) ?? 0) ||
-          (d[0]?.createdOn ?? 0) > (archivedContexts.get(contextId) ?? 0)
+          (context?.lastUpdateTimestamp ?? 0) > (archivedContexts.get(contextId) ?? 0)
         )
       })
     }

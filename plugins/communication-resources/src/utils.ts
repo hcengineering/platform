@@ -21,7 +21,7 @@ import communication from './plugin'
 export async function unsubscribe (card: Card): Promise<void> {
   const client = getCommunicationClient()
   const me = getCurrentAccount()
-  await client.removeCollaborators(card._id, [me.uuid])
+  await client.removeCollaborators(card._id, card._class, [me.uuid])
 }
 
 export async function subscribe (card: Card): Promise<void> {

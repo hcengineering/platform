@@ -57,7 +57,6 @@
 
   const signUpDisabled = getMetadata(login.metadata.DisableSignUp) ?? false
   const localLoginHidden = getMetadata(login.metadata.HideLocalLogin) ?? false
-  console.log('Ratte: ', localLoginHidden)
   const useOTP = getMetadata(presentation.metadata.MailUrl) != null && getMetadata(presentation.metadata.MailUrl) !== ''
   let navigateUrl: string | undefined
 

@@ -15,23 +15,21 @@
 <script lang="ts">
   import { AttributeModel } from '@hcengineering/view'
   import { ActivityAttributeUpdate } from '@hcengineering/communication-types'
+  import { IconEdit } from '@hcengineering/ui'
 
-  import ActivitySetAttributesViewer from './ActivitySetAttributeViewer.svelte'
-  import ActivityAddAttributeViewer from './ActivityAddAttributeViewer.svelte'
-  import ActivityRemoveAttributeViewer from './ActivityRemoveAttributeViewer.svelte'
+  import Label from '../../Label.svelte'
+  import ActivityAttributeValue from './ActivityAttributeValue.svelte'
+  import uiNext from '../../../plugin'
 
   export let model: AttributeModel
-  export let update: ActivityAttributeUpdate
+  export let value: ActivityAttributeUpdate['removed']
+
+  $: icon = IconEdit
 </script>
 
-{#if update?.set !== undefined}
-  <ActivitySetAttributesViewer {model} value={update.set} />
-{/if}
-
-{#if (update.added?.length ?? 0) > 0}
-  <ActivityAddAttributeViewer {model} value={update.added ?? []} />
-{/if}
-
-{#if (update.removed?.length ?? 0) > 0}
-  <ActivityRemoveAttributeViewer {model} value={update.removed ?? []} />
-{/if}
+<ActivityAttributeValue {model} {icon} values={value}>
+  <svelte:fragment slot="text">
+    <Label label={model.label} />
+    <span class="lower"><Label label={uiNext.string.Removed} />:</span>
+  </svelte:fragment>
+</ActivityAttributeValue>

@@ -51,6 +51,7 @@
   export let showStatus: boolean = false
   export let type: ObjectPresenterType = 'link'
   export let overflowLabel = true
+  export let inlineBlock = false
 
   const client = getClient()
 
@@ -119,6 +120,7 @@
       {maxWidth}
       {showStatus}
       {overflowLabel}
+      {inlineBlock}
     />
   {/if}
 {:else if shouldShowPlaceholder}

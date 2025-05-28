@@ -13,41 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
-  import { ProcessContext, State, Transition } from '@hcengineering/process'
-  import { Label } from '@hcengineering/ui'
-  import TransitionPresenter from '../settings/TransitionPresenter.svelte'
-  import process from '../../plugin'
+  import { ProcessContext } from '@hcengineering/process'
+  import ProcessContextRawPresenter from './ProcessContextRawPresenter.svelte'
 
   export let context: ProcessContext
-
-  const client = getClient()
-  const model = client.getModel()
-
-  $: producer = model.findObject(context.producer)
-  $: action = producer?.actions?.find((it) => it._id === context.action)
-  $: method = action && model.findObject(action.methodId)
-
-  function isState (it: State | Transition): it is State {
-    return it._class === process.class.State
-  }
 </script>
 
 {#if context.name !== undefined && context.name !== ''}
   {context.name}
 {:else}
-  {#if context.isResult}
-    <Label label={process.string.Result} />:
-  {/if}
-  {#if producer !== undefined}
-    {#if isState(producer)}
-      {producer.title}
-    {:else}
-      <TransitionPresenter transition={producer} />
-    {/if}
-  {/if}
-  {#if method !== undefined}
-    ->
-    <Label label={method.label} />
-  {/if}
+  <ProcessContextRawPresenter {context} />
 {/if}
