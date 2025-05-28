@@ -41,4 +41,4 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: hardcoreeng/stream:${{ inputs.version }}
+          tags: hardcoreeng/service_stream:${{ inputs.version }}
