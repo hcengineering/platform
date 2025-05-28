@@ -43,6 +43,7 @@
   export let loading: boolean = false
   export let focusIndex: number | undefined = undefined
   export let hasDropdown: boolean = true
+  export let noFocus: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -63,6 +64,7 @@
     disabled={disabled || loading}
     shape={hasDropdown ? 'rectangle-right' : undefined}
     {justify}
+    {noFocus}
     shrink={1}
     borderStyle="none"
     on:click
@@ -90,6 +92,7 @@
       {size}
       {disabled}
       {loading}
+      {noFocus}
     >
       <div slot="icon">
         {#if dropdownIcon}

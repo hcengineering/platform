@@ -20,6 +20,10 @@ describe('makeRank', () => {
     expect(makeRank(undefined, undefined)).toBe('0|hzzzzz:')
   })
 
+  it('check rank on empty string', () => {
+    expect(makeRank(undefined, '')).toBe('0|hzzzzz:')
+  })
+
   it.each([
     ['0|hzzzzz:', '0|i00007:'],
     ['0|i00007:', '0|i0000f:'],

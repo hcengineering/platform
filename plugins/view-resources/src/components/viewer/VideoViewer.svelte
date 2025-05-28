@@ -15,7 +15,8 @@
 <script lang="ts">
   import { type Blob, type BlobMetadata, type Ref } from '@hcengineering/core'
   import { getFileUrl, getVideoMeta } from '@hcengineering/presentation'
-  import { HlsVideo, Video } from '@hcengineering/ui'
+  import { HlsVideo } from '@hcengineering/hls'
+  import { Video } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
   export let name: string
@@ -37,15 +38,15 @@
   style:max-height={fit ? '100%' : maxHeight}
 >
   {#if contentType.toLowerCase().endsWith('x-mpegurl')}
-    {@const src = getFileUrl(value, name)}
+    {@const src = getFileUrl(value, '')}
     <HlsVideo {src} hlsSrc={src} preload={true} />
   {:else}
     {#await getVideoMeta(value, name) then meta}
       {#if meta?.hls?.source !== undefined}
-        {@const src = getFileUrl(value, name)}
+        {@const src = getFileUrl(value, '')}
         <HlsVideo {src} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
       {:else}
-        {@const src = getFileUrl(value, name)}
+        {@const src = getFileUrl(value, '')}
         <Video {src} {name} />
       {/if}
     {/await}

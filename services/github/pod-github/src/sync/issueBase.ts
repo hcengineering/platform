@@ -99,7 +99,7 @@ export abstract class IssueSyncManagerBase {
     // Find Assignees and reviewers
     const assignees: PersonId[] = []
 
-    for (const o of issue.assignees.nodes) {
+    for (const o of issue.assignees.nodes ?? []) {
       const acc = await this.provider.getAccount(o)
       if (acc !== undefined) {
         assignees.push(acc)
@@ -477,7 +477,7 @@ export abstract class IssueSyncManagerBase {
           : undefined
       // Check external
 
-      const currentAssignees = issueExternal.assignees.nodes.map((it) => it.id)
+      const currentAssignees = (issueExternal.assignees.nodes ?? []).map((it) => it.id)
       currentAssignees.sort((a, b) => a.localeCompare(b))
 
       issueUpdate.assigneeIds = info !== undefined ? [info.id] : []

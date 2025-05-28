@@ -11,8 +11,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Ref } from '@hcengineering/core'
-import { type Drive } from '@hcengineering/drive'
 import { Asset, plugin, Plugin, Resource, Metadata } from '@hcengineering/platform'
 import { type UploadHandler } from '@hcengineering/uploader'
 
@@ -30,9 +28,6 @@ const recordPlugin = plugin(recorderId, {
   },
   metadata: {
     StreamUrl: '' as Metadata<string>
-  },
-  space: {
-    Drive: '' as Ref<Drive>
   },
   function: {
     Record: '' as Resource<UploadHandler>

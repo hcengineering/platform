@@ -26,16 +26,23 @@ export { uploader as default }
 
 export function createModel (builder: Builder): void {
   builder.createModel(TUploadHandler)
+
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: workbench.extensions.WorkbenchExtensions,
     component: uploader.component.WorkbenchExtension
   })
+
   builder.createDoc(uploader.class.UploadHandlerDefinition, core.space.Model, {
+    order: 1001,
+    category: 'files',
     handler: uploader.function.UploadFilesHandler,
     label: uploader.string.UploadFiles,
     icon: uploader.icon.UploadFilesIcon
   })
+
   builder.createDoc(uploader.class.UploadHandlerDefinition, core.space.Model, {
+    order: 1002,
+    category: 'files',
     handler: uploader.function.UploadFoldersHandler,
     label: uploader.string.UploadFolders,
     icon: uploader.icon.UploadFoldersIcon

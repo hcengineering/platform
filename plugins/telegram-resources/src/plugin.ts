@@ -21,6 +21,10 @@ import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 export default mergeIds(telegramId, telegram, {
   string: {
+    Loading: '' as IntlString,
+    IntegrationConnected: '' as IntlString,
+
+    Disconnect: '' as IntlString,
     Next: '' as IntlString,
     Back: '' as IntlString,
     Connect: '' as IntlString,

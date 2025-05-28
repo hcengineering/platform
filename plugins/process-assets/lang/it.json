@@ -63,7 +63,8 @@
     "DeleteTransition": "Elimina transizione",
     "DeleteTransitionConfirm": "Vuoi eliminare la transizione?",
     "AddTransition": "Aggiungi transizione",
-    "ToDo": "Attività"
+    "ToDo": "Attività",
+    "CurrentCard": "Scheda corrente"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",
