@@ -64,7 +64,7 @@
     "@hcengineering/chat": "^0.6.0",
     "@hcengineering/client": "^0.6.18",
     "@hcengineering/client-resources": "^0.6.27",
-    "@hcengineering/communication-sdk-types": "0.1.193",
+    "@hcengineering/communication-sdk-types": "0.1.194",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/kvs-client": "^0.6.0",
     "@hcengineering/mail-common": "^0.6.0",
