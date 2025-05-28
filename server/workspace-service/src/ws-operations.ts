@@ -50,7 +50,7 @@ export async function createWorkspace (
   ) => Promise<void>,
   external: boolean = false
 ): Promise<void> {
-  const childLogger = ctx.newChild('createWorkspace', {}, {})
+  const childLogger = ctx.newChild('createWorkspace', ctx.getParams(), {})
   const ctxModellogger: ModelLogger = {
     log: (msg, data) => {
       childLogger.info(msg, data)

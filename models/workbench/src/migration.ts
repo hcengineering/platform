@@ -20,7 +20,7 @@ import {
 } from '@hcengineering/model'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import workbench, { type WorkbenchTab } from '@hcengineering/workbench'
-import core, { type AccountUuid, DOMAIN_TX, MeasureMetricsContext } from '@hcengineering/core'
+import core, { type AccountUuid, DOMAIN_TX } from '@hcengineering/core'
 import { getAccountUuidBySocialKey, getSocialKeyByOldAccount } from '@hcengineering/model-core'
 
 import { workbenchId } from '.'
@@ -30,8 +30,7 @@ async function removeTabs (client: MigrationClient): Promise<void> {
 }
 
 async function migrateTabsToSocialIds (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('workbench migrateTabsToSocialIds', {})
-  ctx.info('migrating workbench tabs to social ids...')
+  client.logger.log('migrating workbench tabs to social ids...', {})
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
   const tabs = await client.find<WorkbenchTab>(DOMAIN_PREFERENCE, { _class: workbench.class.WorkbenchTab })
   for (const tab of tabs) {
@@ -40,12 +39,11 @@ async function migrateTabsToSocialIds (client: MigrationClient): Promise<void> {
       await client.update(DOMAIN_PREFERENCE, { _id: tab._id }, { attachedTo: newAttachedTo })
     }
   }
-  ctx.info('migrating workbench tabs to social ids completed...')
+  client.logger.log('migrating workbench tabs to social ids completed...', {})
 }
 
 async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('workbench migrateSocialIdsToGlobalAccounts', {})
-  ctx.info('migrating workbench tabs to global accounts...')
+  client.logger.log('migrating workbench tabs to global accounts...', {})
   const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
   const tabs = await client.find<WorkbenchTab>(DOMAIN_PREFERENCE, { _class: workbench.class.WorkbenchTab })
@@ -55,7 +53,7 @@ async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promi
       await client.update(DOMAIN_PREFERENCE, { _id: tab._id }, { attachedTo: newAttachedTo })
     }
   }
-  ctx.info('migrating workbench tabs to global accounts completed...')
+  client.logger.log('migrating workbench tabs to global accounts completed...', {})
 }
 
 export const workbenchOperation: MigrateOperation = {

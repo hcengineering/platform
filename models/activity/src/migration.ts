@@ -26,7 +26,6 @@ import core, {
   type Doc,
   type Domain,
   groupByArray,
-  MeasureMetricsContext,
   type PersonId,
   type Ref,
   type Space
@@ -203,12 +202,11 @@ async function migrateActivityMarkup (client: MigrationClient): Promise<void> {
 }
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('activity migrateAccountsToSocialIds', {})
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
   const socialIdBySocialKey = new Map<string, PersonId | null>()
   const socialIdByOldAccount = new Map<string, PersonId | null>()
 
-  ctx.info('processing activity reactions ', {})
+  client.logger.log('processing activity reactions ', {})
   const iterator = await client.traverse(DOMAIN_REACTION, { _class: activity.class.Reaction })
 
   try {
@@ -247,12 +245,12 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
       }
 
       processed += docs.length
-      ctx.info('...processed', { count: processed })
+      client.logger.log('...processed', { count: processed })
     }
   } finally {
     await iterator.close()
   }
-  ctx.info('finished processing activity reactions ', {})
+  client.logger.log('finished processing activity reactions ', {})
 }
 
 /**
@@ -262,10 +260,9 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
  * @returns
  */
 async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('activity migrateAccountsToSocialIds', {})
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
   const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
-  ctx.info('processing activity doc updates ', {})
+  client.logger.log('processing activity doc updates ', {})
 
   function getUpdatedClass (attrKey: string): string {
     return ['members', 'owners', 'user'].includes(attrKey) ? core.class.TypeAccountUuid : core.class.TypePersonId
@@ -354,13 +351,13 @@ async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<vo
       }
 
       processed += docs.length
-      ctx.info('...processed', { count: processed })
+      client.logger.log('...processed', { count: processed })
     }
   } finally {
     await iterator.close()
   }
 
-  ctx.info('finished processing activity doc updates ', {})
+  client.logger.log('finished processing activity doc updates ', {})
 }
 
 export const activityOperation: MigrateOperation = {

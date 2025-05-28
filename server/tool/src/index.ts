@@ -268,6 +268,7 @@ export async function upgradeModel (
 
   const { hierarchy, modelDb, model } = await buildModel(ctx, newModel)
   const { migrateClient: preMigrateClient } = await prepareMigrationClient(
+    ctx,
     pipeline,
     hierarchy,
     modelDb,
@@ -302,6 +303,7 @@ export async function upgradeModel (
   })
 
   const { migrateClient, migrateState } = await prepareMigrationClient(
+    ctx,
     pipeline,
     hierarchy,
     modelDb,
@@ -390,6 +392,7 @@ export async function upgradeModel (
 }
 
 async function prepareMigrationClient (
+  ctx: MeasureContext,
   pipeline: Pipeline,
   hierarchy: Hierarchy,
   model: ModelDb,
@@ -410,7 +413,8 @@ async function prepareMigrationClient (
     storageAdapter,
     accountClient,
     wsIds,
-    queue
+    queue,
+    ctx
   )
   const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
   const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
