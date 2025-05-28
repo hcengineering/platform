@@ -526,6 +526,9 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async removeNotificationContext(event: RemoveNotificationContextEvent): Promise<Result> {
+    const context = (await this.db.findNotificationContexts({ id: event.context, account: event.account }))[0]
+    if (context === undefined) return {}
+
     await this.db.removeContexts({
       id: event.context,
       account: event.account
@@ -533,8 +536,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     const responseEvent: NotificationContextRemovedEvent = {
       _id: event._id,
       type: NotificationResponseEventType.NotificationContextRemoved,
-      context: event.context,
-      account: event.account
+      context
     }
     return {
       responseEvent

@@ -512,7 +512,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     if (this.result instanceof Promise) this.result = await this.result
 
     const length = this.result.length
-    const deleted = this.result.delete(event.context)
+    const deleted = this.result.delete(event.context.id)
 
     if (deleted != null) {
       if (this.params.limit && length >= this.params.limit && this.result.length < this.params.limit) {

@@ -110,7 +110,8 @@ function getMigrations(): [string, string][] {
     migrationV2_5(),
     migrationV2_6(),
     migrationV2_7(),
-    migrationV3_1()
+    migrationV3_1(),
+    migrationV4_1()
   ]
 }
 
@@ -360,4 +361,11 @@ function migrationV3_1(): [string, string] {
   `
 
   return ['init_link_preview-v3_1', sql]
+}
+
+function migrationV4_1(): [string, string] {
+  const sql = `
+      CREATE INDEX IF NOT EXISTS notifications_context_id_read_created_desc_idx ON communication.notifications (context_id, read, created DESC);
+    `
+  return ['add_index_notifications_context_id_read_created_desc-v4_1', sql]
 }

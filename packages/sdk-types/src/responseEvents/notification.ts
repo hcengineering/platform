@@ -74,8 +74,7 @@ export interface NotificationContextCreatedEvent extends BaseResponseEvent {
 
 export interface NotificationContextRemovedEvent extends BaseResponseEvent {
   type: NotificationResponseEventType.NotificationContextRemoved
-  context: ContextID
-  account: AccountID
+  context: NotificationContext
 }
 
 export interface NotificationContextUpdatedEvent extends BaseResponseEvent {

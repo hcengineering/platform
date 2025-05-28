@@ -321,16 +321,16 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   private async onRemoveNotificationContextEvent(event: NotificationContextRemovedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
 
-    if (this.params.context != null && this.params.context !== event.context) return
+    if (this.params.context != null && this.params.context !== event.context.id) return
 
-    if (event.context === this.params.context) {
+    if (event.context.id === this.params.context) {
       if (this.result.length === 0) return
       this.result.deleteAll()
       this.result.setHead(true)
       this.result.setTail(true)
       void this.notify()
     } else {
-      const toRemove = this.result.getResult().filter((it) => it.context === event.context)
+      const toRemove = this.result.getResult().filter((it) => it.context === event.context.id)
       if (toRemove.length === 0) return
       const length = this.result.length
 

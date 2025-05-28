@@ -216,7 +216,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
       case NotificationResponseEventType.NotificationContextCreated:
         return info.account === event.context.account
       case NotificationResponseEventType.NotificationContextRemoved:
-        return info.account === event.account
+        return info.account === event.context.account
       case NotificationResponseEventType.NotificationContextUpdated:
         return info.account === event.account
       case MessageResponseEventType.MessagesGroupCreated:

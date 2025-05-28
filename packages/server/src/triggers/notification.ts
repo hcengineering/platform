@@ -18,6 +18,7 @@ import {
   LabelRequestEventType,
   MessageRequestEventType,
   MessageResponseEventType,
+  type NotificationContextRemovedEvent,
   type NotificationContextUpdatedEvent,
   NotificationRequestEventType,
   NotificationResponseEventType,
@@ -165,6 +166,24 @@ async function onNotificationContextUpdated(
   return result
 }
 
+async function onNotificationContextRemoved(
+  ctx: TriggerCtx,
+  event: NotificationContextRemovedEvent
+): Promise<RequestEvent[]> {
+  const { context } = event
+
+  const result: RequestEvent[] = []
+
+  result.push({
+    type: LabelRequestEventType.RemoveLabel,
+    label: NewMessageLabelID,
+    card: context.card,
+    account: context.account
+  })
+
+  return result
+}
+
 async function onMessagesRemoved(ctx: TriggerCtx, event: PatchCreatedEvent): Promise<RequestEvent[]> {
   if (event.patch.type !== PatchType.remove) return []
 
@@ -195,6 +214,11 @@ const triggers: Triggers = [
     'on_notification_context_updated',
     NotificationResponseEventType.NotificationContextUpdated,
     onNotificationContextUpdated as TriggerFn
+  ],
+  [
+    'on_notification_context_removed',
+    NotificationResponseEventType.NotificationContextRemoved,
+    onNotificationContextRemoved as TriggerFn
   ],
   ['on_added_collaborators', NotificationResponseEventType.AddedCollaborators, onAddedCollaborators as TriggerFn],
   ['on_removed_collaborators', NotificationResponseEventType.RemovedCollaborators, onRemovedCollaborators as TriggerFn],
