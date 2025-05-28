@@ -109,6 +109,10 @@ export function showPopup (
     })
   }
   closePopupOp()
+  const anchor = document.activeElement as HTMLElement
+  const editable = anchor?.isContentEditable || anchor?.tagName === 'INPUT' || anchor?.tagName === 'TEXTAREA'
+  if (anchor != null && !editable) anchor.blur()
+
   const _element = element instanceof HTMLElement ? getPopupPositionElement(element) : element
   const data: Omit<CompAndProps, 'is'> = {
     id,
