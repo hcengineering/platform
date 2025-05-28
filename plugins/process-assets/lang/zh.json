@@ -64,7 +64,8 @@
     "DeleteTransitionConfirm": "您确定要删除转换吗？",
     "AddTransition": "添加转换",
     "ToDo": "待办事项",
-    "CurrentCard": "当前卡片"
+    "CurrentCard": "当前卡片",
+    "Data": "数据"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

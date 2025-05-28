@@ -64,7 +64,8 @@
     "DeleteTransitionConfirm": "Voulez-vous supprimer la transition ?",
     "AddTransition": "Ajouter une transition",
     "ToDo": "Tâche",
-    "CurrentCard": "Carte actuelle"
+    "CurrentCard": "Carte actuelle",
+    "Data": "Données"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

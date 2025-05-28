@@ -64,7 +64,8 @@
     "DeleteTransitionConfirm": "Opravdu chcete smazat přechod?",
     "AddTransition": "Přidat přechod",
     "ToDo": "Úkol",
-    "CurrentCard": "Aktuální karta"
+    "CurrentCard": "Aktuální karta",
+    "Data": "Data"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

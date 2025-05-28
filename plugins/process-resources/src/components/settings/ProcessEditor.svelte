@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, Ref } from '@hcengineering/core'
+  import core, { Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
-  import { ContextId, Process, SelectedExecutonContext, State, Step } from '@hcengineering/process'
+  import { Process, SelectedExecutonContext, State } from '@hcengineering/process'
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
   import {
     Button,
@@ -27,6 +27,7 @@
     IconAdd,
     IconDelete,
     IconDescription,
+    IconDetails,
     navigate,
     NavItem,
     Scroller,
@@ -40,6 +41,7 @@
   import { getToDoEndAction } from '../../utils'
   import AsideStepEditor from './AsideStepEditor.svelte'
   import StateEditor from './StateEditor.svelte'
+  import ContextEditor from './ContextEditor.svelte'
 
   export let _id: Ref<Process>
   export let visibleSecondNav: boolean = true
@@ -161,6 +163,14 @@
   const sectionRefs: Record<string, HTMLElement | undefined> = {}
 
   defineSeparators('spaceTypeEditor', secondNavSeparators)
+
+  function handleContext (): void {
+    $settingsStore = {
+      id: value?._id,
+      component: ContextEditor,
+      props: { readonly, process: value }
+    }
+  }
 </script>
 
 <div class="hulyComponent-content__container columns">
@@ -189,7 +199,16 @@
         <div class="hulyComponent-content gap">
           <div class="header flex-between">
             <EditBox bind:value={value.name} on:change={saveName} placeholder={process.string.Untitled} />
-            <ButtonIcon icon={IconDelete} size="small" kind="secondary" on:click={handleDelete} />
+            <div class="flex-row-center flex-gap-2">
+              <ButtonIcon
+                icon={IconDetails}
+                tooltip={{ label: process.string.Data }}
+                size="small"
+                kind="secondary"
+                on:click={handleContext}
+              />
+              <ButtonIcon icon={IconDelete} size="small" kind="secondary" on:click={handleDelete} />
+            </div>
           </div>
           <div>
             <ToggleWithLabel

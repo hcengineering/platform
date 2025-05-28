@@ -116,6 +116,7 @@ export default mergeIds(processId, process, {
     DeleteTransitionConfirm: '' as IntlString,
     AddTransition: '' as IntlString,
     ToDo: '' as IntlString,
-    CurrentCard: '' as IntlString
+    CurrentCard: '' as IntlString,
+    Data: '' as IntlString
   }
 })
