@@ -39,6 +39,7 @@ import type {
   IntegrationKey,
   IntegrationSecret,
   IntegrationSecretKey,
+  Query,
   SocialId,
   Workspace,
   WorkspaceEvent,
@@ -294,8 +295,10 @@ export async function updateWorkspaceInfo (
   }
   progress = Math.round(progress)
 
+  const ts = Date.now()
   const update: Partial<WorkspaceStatus> = {}
   const wsUpdate: Partial<Workspace> = {}
+  const query: Query<WorkspaceStatus> = { workspaceUuid: workspace.uuid }
   switch (event) {
     case 'create-started':
       update.mode = 'creating'
@@ -330,6 +333,7 @@ export async function updateWorkspaceInfo (
       break
     case 'progress':
       update.processingProgress = progress
+      query.processingProgress = { $lte: progress }
       break
     case 'migrate-backup-started':
       update.mode = 'migration-backup'
@@ -382,6 +386,7 @@ export async function updateWorkspaceInfo (
       break
     case 'ping':
     default:
+      query.lastProcessingTime = { $lte: ts }
       break
   }
 
@@ -389,13 +394,10 @@ export async function updateWorkspaceInfo (
     update.processingMessage = message
   }
 
-  await db.workspaceStatus.updateOne(
-    { workspaceUuid: workspace.uuid },
-    {
-      lastProcessingTime: Date.now(), // Some operations override it.
-      ...update
-    }
-  )
+  await db.workspaceStatus.updateOne(query, {
+    lastProcessingTime: ts, // Some operations override it.
+    ...update
+  })
 
   if (Object.keys(wsUpdate).length !== 0) {
     await db.workspace.updateOne({ uuid: workspace.uuid }, wsUpdate)
