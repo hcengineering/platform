@@ -61,13 +61,14 @@ export async function job (ctx: MeasureContext, storage: StorageAdapter, db: Pos
         await rateLimiter.add(async () => {
           await ctx.with(
             'process',
+            {},
+            async () => {
+              await processRecord(ctx, record, db, storage)
+            },
             {
               workspace: record.workspace,
               card: record.card,
               attempt: record.attempt
-            },
-            async () => {
-              await processRecord(ctx, record, db, storage)
             }
           )
         })

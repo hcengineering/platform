@@ -563,7 +563,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       undefined,
       undefined,
       this.model,
-      new Map()
+      new Map(),
+      'fulltext'
     )
   }
 

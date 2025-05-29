@@ -133,7 +133,12 @@ export function createServerPipeline (
       TxMiddleware.create, // Store tx into transaction domain
       ...(opt.disableTriggers === true ? [] : [TriggersMiddleware.create]),
       ...(opt.fulltextUrl !== undefined
-        ? [FullTextMiddleware.create(opt.fulltextUrl, generateToken(systemAccountUuid, workspace.uuid))]
+        ? [
+            FullTextMiddleware.create(
+              opt.fulltextUrl,
+              generateToken(systemAccountUuid, workspace.uuid, { service: 'transactor' })
+            )
+          ]
         : []),
       LowLevelMiddleware.create,
       QueryJoinMiddleware.create,

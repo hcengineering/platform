@@ -186,17 +186,24 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
     const context = await getContext(rawToken, token)
 
     rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
-    await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
-      try {
-        const response: RpcResponse = await rpcCtx.with(request.method, {}, (ctx) => {
-          return method(ctx, context, documentId, request.payload, { hocuspocus, storageAdapter, transformer })
-        })
-        res.status(200).send(response)
-      } catch (err: any) {
-        Analytics.handleError(err)
-        res.status(500).send({ error: err.message })
+    await rpcCtx.with(
+      '/rpc',
+      {
+        service: token.extra?.service ?? '🤦‍♂️user',
+        method: request.method
+      },
+      async (ctx) => {
+        try {
+          const response: RpcResponse = await rpcCtx.with(request.method, {}, (ctx) => {
+            return method(ctx, context, documentId, request.payload, { hocuspocus, storageAdapter, transformer })
+          })
+          res.status(200).send(response)
+        } catch (err: any) {
+          Analytics.handleError(err)
+          res.status(500).send({ error: err.message })
+        }
       }
-    })
+    )
   })
 
   const wss = new WebSocketServer({

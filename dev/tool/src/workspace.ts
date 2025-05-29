@@ -157,7 +157,7 @@ export async function backupRestore (
       dataId: workspace.dataId,
       url: workspace.url
     }
-    const result: boolean = await ctx.with('restore', { workspace: workspace.url }, (ctx) =>
+    const result: boolean = await ctx.with('restore', {}, (ctx) =>
       restore(ctx, '', wsUrl, storage, {
         date: -1,
         skip: new Set(skipDomains),

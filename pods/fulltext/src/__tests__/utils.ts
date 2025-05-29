@@ -76,7 +76,7 @@ export async function preparePipeline (
 
   const middlewares: MiddlewareCreator[] = [
     TxMiddleware.create, // Store tx into transaction domain
-    FullTextMiddleware.create('', generateToken(systemAccountUuid, wsIds.uuid)),
+    FullTextMiddleware.create('', generateToken(systemAccountUuid, wsIds.uuid, { service: 'fulltext' })),
     LowLevelMiddleware.create,
     QueryJoinMiddleware.create,
     DomainFindMiddleware.create,

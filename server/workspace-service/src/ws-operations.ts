@@ -322,7 +322,8 @@ export async function upgradeWorkspaceWith (
       undefined,
       undefined,
       pipeline.context.modelDb,
-      new Map()
+      new Map(),
+      'workspace'
     )
     ctx.contextData = contextData
     await handleWsEvent?.('upgrade-started', version, 0)

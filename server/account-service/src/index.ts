@@ -295,7 +295,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   router.put('/api/v1/manage', async (req, res) => {
     try {
-      const token = req.query.token as string
+      const token = (req.query.token as string) ?? extractToken(req.headers)
       const payload = decodeToken(token)
       if (payload.extra?.admin !== 'true') {
         req.res.writeHead(404, {})
@@ -358,7 +358,15 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       host = new URL(origin).host
     }
     const branding = host !== undefined ? brandings[host] : null
-    const result = await measureCtx.with(request.method, {}, (mctx) => {
+
+    let service = ''
+    try {
+      service = (token != null ? decodeToken(token).extra?.service : undefined) ?? '🤦‍♂️user'
+    } catch (err) {
+      // Ignore
+    }
+
+    const result = await measureCtx.with(request.method, { service }, (mctx) => {
       if (method === undefined || typeof method !== 'function') {
         const response = {
           id: request.id,

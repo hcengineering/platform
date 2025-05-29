@@ -563,6 +563,8 @@ export interface ClientSessionCtx {
  */
 export interface Session {
   workspace: WorkspaceIds
+
+  token: Token
   createTime: number
 
   // Session restore information
