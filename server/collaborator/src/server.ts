@@ -189,7 +189,7 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
     await rpcCtx.with(
       '/rpc',
       {
-        service: token.extra?.service ?? '🤦‍♂️user',
+        source: token.extra?.service ?? '🤦‍♂️user',
         method: request.method
       },
       async (ctx) => {

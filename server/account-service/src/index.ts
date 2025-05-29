@@ -359,14 +359,14 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }
     const branding = host !== undefined ? brandings[host] : null
 
-    let service = ''
+    let source = ''
     try {
-      service = (token != null ? decodeToken(token).extra?.service : undefined) ?? '🤦‍♂️user'
+      source = (token != null ? decodeToken(token).extra?.service : undefined) ?? '🤦‍♂️user'
     } catch (err) {
       // Ignore
     }
 
-    const result = await measureCtx.with(request.method, { service }, (mctx) => {
+    const result = await measureCtx.with(request.method, { source }, (mctx) => {
       if (method === undefined || typeof method !== 'function') {
         const response = {
           id: request.id,

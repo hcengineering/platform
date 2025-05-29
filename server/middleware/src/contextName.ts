@@ -53,7 +53,7 @@ export class ContextNameMiddleware extends BaseMiddleware implements Middleware 
 
     const result = await ctx.with(
       measureName !== undefined ? `📶 ${measureName}` : 'client-tx',
-      { service: ctx.contextData.service },
+      { source: ctx.contextData.service },
       (ctx) => {
         ;({ opLogMetrics, op } = registerOperationLog(ctx))
         return this.provideTx(ctx, txes)

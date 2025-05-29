@@ -21,7 +21,7 @@ export interface MetricsData {
   value: number
   topResult?: {
     value: number
-    time: number
+    time?: number
     params: FullParamsType
   }[]
 }

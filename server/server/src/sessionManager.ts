@@ -497,7 +497,7 @@ export class TSessionManager implements SessionManager {
     rawToken: string,
     sessionId: string | undefined
   ): Promise<AddSessionResponse> {
-    return await ctx.with('📲 add-session', { service: token.extra?.service ?? '🤦‍♂️user' }, async (ctx) => {
+    return await ctx.with('📲 add-session', { source: token.extra?.service ?? '🤦‍♂️user' }, async (ctx) => {
       let account: LoginInfoWithWorkspaces | undefined
 
       try {
@@ -1096,7 +1096,7 @@ export class TSessionManager implements SessionManager {
     workspaceId: WorkspaceUuid
   ): Promise<void> {
     const userCtx = requestCtx.newChild('📞 client', {
-      service: service.token.extra?.service ?? '🤦‍♂️user',
+      source: service.token.extra?.service ?? '🤦‍♂️user',
       mode: '🧭 handleRequest'
     })
     const rateLimit = this.limitter.checkRateLimit(service.getUser())
@@ -1220,7 +1220,7 @@ export class TSessionManager implements SessionManager {
     }
 
     const userCtx = requestCtx.newChild('📞 client', {
-      service: service.token.extra?.service ?? '🤦‍♂️user',
+      source: service.token.extra?.service ?? '🤦‍♂️user',
       mode: '🧭 handleRPC'
     })
 

@@ -68,7 +68,7 @@ export class DomainFindMiddleware extends BaseMiddleware implements Middleware {
     }
     return ctx.with(
       p + '-find-all',
-      { service: ctx.contextData?.service ?? 'system', _class },
+      { source: ctx.contextData?.service ?? 'system', _class },
       (ctx) => {
         return this.adapterManager.getAdapter(domain, false).findAll(ctx, _class, query, options)
       },

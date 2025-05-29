@@ -165,7 +165,7 @@
                     </FixedColumn>
                     <FixedColumn key="f3">
                       <div class="p-1">
-                        {toTime(r.time)}
+                        {toTime(r.time ?? 0)}
                       </div>
                     </FixedColumn>
                   </div>

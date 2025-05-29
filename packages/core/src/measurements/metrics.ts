@@ -35,8 +35,7 @@ function getUpdatedTopResult (
 
   const newValue = {
     value: time,
-    params,
-    time: 0
+    params
   }
 
   if (result.length > 6) {
@@ -118,7 +117,7 @@ export function updateMeasure (
         const r = (param.topResult ?? []).find((it) => it.params[`${v}`] === true)
         if (r !== undefined) {
           r.value += 1 // Counter of operations
-          r.time += value ?? ed - st
+          r.time = (r.time ?? 0) + (value ?? ed - st)
         } else {
           param.topResult.push({ params: { [`${v}`]: true }, value: 1, time: value ?? ed - st })
         }
