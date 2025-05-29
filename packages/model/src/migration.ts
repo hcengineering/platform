@@ -11,6 +11,7 @@ import core, {
   Domain,
   FindOptions,
   Hierarchy,
+  MeasureContext,
   MigrationState,
   ModelDb,
   ObjQueryType,
@@ -118,6 +119,8 @@ export interface MigrationClient {
   wsIds: WorkspaceIds
 
   reindex: (domain: Domain, classes: Ref<Class<Doc>>[]) => Promise<void>
+  readonly logger: ModelLogger
+  readonly ctx: MeasureContext
 }
 
 /**
@@ -174,10 +177,10 @@ export async function tryMigrate (
     if (states.has(migration.state)) continue
     if (migration.mode == null || migration.mode === mode) {
       try {
-        console.log('running migration', plugin, migration.state)
+        client.logger.log('running migration', { plugin, state: migration.state })
         await migration.func(client, mode)
       } catch (err: any) {
-        console.error(err)
+        client.logger.error('Failed to run migration', { plugin, state: migration.state, err })
         Analytics.handleError(err)
         continue
       }

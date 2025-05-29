@@ -19,6 +19,7 @@ import {
   isArchivingMode,
   isMigrationMode,
   isRestoringMode,
+  MeasureMetricsContext,
   systemAccountUuid,
   type BrandingMap,
   type Data,
@@ -38,6 +39,7 @@ import {
 import { generateToken } from '@hcengineering/server-token'
 import { FileModelLogger, prepareTools } from '@hcengineering/server-tool'
 import path from 'path'
+import { randomUUID } from 'crypto'
 
 import { Analytics } from '@hcengineering/analytics'
 import {
@@ -188,14 +190,14 @@ export class WorkspaceWorker {
         await this.doSleep(ctx, opt)
       } else {
         void this.exec(async () => {
-          await ctx
-            .with('workspaceOperation', { mode: workspace.mode }, (ctx) =>
-              this.doWorkspaceOperation(ctx, workspace, opt)
-            )
-            .catch((err) => {
-              Analytics.handleError(err)
-              ctx.error('error', { err })
-            })
+          const job = randomUUID().slice(-8)
+          const opContext = new MeasureMetricsContext(`ws op with job ${job}`, { job })
+          try {
+            await this.doWorkspaceOperation(opContext, workspace, opt)
+          } catch (err: any) {
+            Analytics.handleError(err)
+            ctx.error('error', { err })
+          }
         })
       }
     }
@@ -234,6 +236,7 @@ export class WorkspaceWorker {
 
     ctx.info('---CREATING----', {
       workspace: ws.uuid,
+      mode: ws.mode,
       version: this.version,
       region: this.region
     })
@@ -339,6 +342,7 @@ export class WorkspaceWorker {
 
     ctx.info('---UPGRADING----', {
       workspace: ws.uuid,
+      mode: ws.mode,
       workspaceVersion,
       requestedVersion: this.version,
       region: this.region

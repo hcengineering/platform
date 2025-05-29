@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { type AccountUuid, MeasureMetricsContext, type Ref, type Space } from '@hcengineering/core'
+import core, { type AccountUuid, type Ref, type Space } from '@hcengineering/core'
 import {
   migrateSpace,
   type MigrateUpdate,
@@ -35,11 +35,10 @@ import { DOMAIN_SETTING } from '.'
  * @returns
  */
 async function migrateAccounts (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('setting migrateAccounts', {})
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
   const accountUuidByOldAccount = new Map<string, AccountUuid | null>()
 
-  ctx.info('processing setting integration shared ', {})
+  client.logger.log('processing setting integration shared ', {})
   const iterator = await client.traverse(DOMAIN_SETTING, { _class: setting.class.Integration })
 
   try {
@@ -77,12 +76,12 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
       }
 
       processed += docs.length
-      ctx.info('...processed', { count: processed })
+      client.logger.log('...processed', { count: processed })
     }
   } finally {
     await iterator.close()
   }
-  ctx.info('finished processing setting integration shared ', {})
+  client.logger.log('finished processing setting integration shared ', {})
 }
 
 export const settingOperation: MigrateOperation = {

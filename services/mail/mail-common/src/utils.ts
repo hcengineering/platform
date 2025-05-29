@@ -127,3 +127,7 @@ export function parseNameFromEmailHeader (headerValue: string | undefined): Emai
     lastName: ''
   }
 }
+
+export function normalizeEmail (email: string): string {
+  return email.toLowerCase().trim()
+}

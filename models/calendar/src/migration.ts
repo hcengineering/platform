@@ -14,14 +14,7 @@
 //
 
 import { type Calendar, calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
-import core, {
-  type AccountUuid,
-  type Doc,
-  MeasureMetricsContext,
-  type Ref,
-  type Space,
-  toIdMap
-} from '@hcengineering/core'
+import core, { type AccountUuid, type Doc, type Ref, type Space, toIdMap } from '@hcengineering/core'
 import {
   createDefaultSpace,
   type MigrateOperation,
@@ -41,7 +34,6 @@ function getCalendarId (val: string): Ref<Calendar> {
 }
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('calendar migrateAccountsToSocialIds', {})
   const hierarchy = client.hierarchy
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
   const eventClasses = hierarchy.getDescendants(calendar.class.Event)
@@ -50,19 +42,19 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
     _class: calendar.class.Calendar
   })
 
-  ctx.info('processing internal calendars')
+  client.logger.log('processing internal calendars', {})
 
   for (const calendar of calendars) {
     const id = calendar._id
     if (!id.endsWith('_calendar')) {
-      ctx.warn('Wrong calendar id format', { calendar: calendar._id })
+      client.logger.error('Wrong calendar id format', { calendar: calendar._id })
       continue
     }
 
     const account = id.substring(0, id.length - 9)
     const socialId = socialKeyByAccount[account]
     if (socialId === undefined) {
-      ctx.warn('no socialId for account', { account })
+      client.logger.error('no socialId for account', { account })
       continue
     }
 
@@ -97,7 +89,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
         const account = id.substring(0, id.length - 9)
         const socialId = socialKeyByAccount[account]
         if (socialId === undefined) {
-          ctx.warn('no socialId for account', { account })
+          client.logger.error('no socialId for account', { account })
           continue
         }
 
@@ -114,17 +106,16 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
       }
 
       processedEvents += events.length
-      ctx.info('...processed events', { count: processedEvents })
+      client.logger.log('...processed events', { count: processedEvents })
     }
 
-    ctx.info('finished processing events')
+    client.logger.log('finished processing events', {})
   } finally {
     await eventsIterator.close()
   }
 }
 
 async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('calendar migrateSocialIdsToAccountUuids', {})
   const hierarchy = client.hierarchy
   const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
@@ -134,19 +125,19 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
     _class: calendar.class.Calendar
   })
 
-  ctx.info('processing internal calendars')
+  client.logger.log('processing internal calendars', {})
 
   for (const calendar of calendars) {
     const id = calendar._id
     if (!id.endsWith('_calendar')) {
-      ctx.warn('Wrong calendar id format', { calendar: calendar._id })
+      client.logger.error('Wrong calendar id format', { calendar: calendar._id })
       continue
     }
 
     const socialKey = id.substring(0, id.length - 9)
     const accountUuid = await getAccountUuidBySocialKey(client, socialKey, accountUuidBySocialKey)
     if (accountUuid == null) {
-      ctx.warn('no account uuid for social key', { socialKey })
+      client.logger.error('no account uuid for social key', { socialKey })
       continue
     }
 
@@ -181,7 +172,7 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
         const socialKey = id.substring(0, id.length - 9)
         const accountUuid = await getAccountUuidBySocialKey(client, socialKey, accountUuidBySocialKey)
         if (accountUuid == null) {
-          ctx.warn('no account uuid for social key', { socialKey })
+          client.logger.error('no account uuid for social key', { socialKey })
           continue
         }
 
@@ -198,10 +189,10 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
       }
 
       processedEvents += events.length
-      ctx.info('...processed events', { count: processedEvents })
+      client.logger.log('...processed events', { count: processedEvents })
     }
 
-    ctx.info('finished processing events')
+    client.logger.log('finished processing events', {})
   } finally {
     await eventsIterator.close()
   }

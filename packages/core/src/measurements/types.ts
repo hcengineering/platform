@@ -100,6 +100,7 @@ export interface MeasureContext<Q = any> {
   logger: MeasureLogger
 
   parent?: MeasureContext
+  getParams: () => ParamsType
 
   measure: (name: string, value: number, override?: boolean) => void
 

@@ -140,7 +140,7 @@ export function start (
       ctx.newChild('💬 communication api', {}),
       workspace.uuid,
       dbUrl,
-      broadcastSessions
+      broadcastSessions as any // FIXME when communication will be inside the repo
     )
   }
 
