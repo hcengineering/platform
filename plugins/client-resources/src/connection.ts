@@ -310,6 +310,9 @@ class Connection implements ClientConnection {
       )
       this.currentRateLimit = resp.rateLimit
       if (this.currentRateLimit.remaining < this.currentRateLimit.limit / 3) {
+        if (this.slowDownTimer < 50) {
+          this.slowDownTimer += 50
+        }
         this.slowDownTimer++
       } else if (this.slowDownTimer > 0) {
         this.slowDownTimer--

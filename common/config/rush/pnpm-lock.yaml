@@ -5537,7 +5537,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-97pzx1qZJlMkJmWU1JEKOII/g4WM7evf3NZuj+9uHAvqjtpfHJDZ7QYzA4P7tMz+DVmCNjqUxWQyCSvHz5MqJA==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-M5PhT+eqpWqh6vTLuYmcQhjIYmRyoYNGc7pFOmozt4RgKb5s0V5AwfqIkPr23DiBZm7Q9aYrscp1NxXx/RObOg==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -27335,6 +27335,7 @@ snapshots:
   '@rush-temp/tool@file:projects/tool.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)':
     dependencies:
       '@elastic/elasticsearch': 7.17.14
+      '@faker-js/faker': 8.4.1
       '@types/jest': 29.5.12
       '@types/mime-types': 2.1.4
       '@types/minio': 7.0.18

@@ -1211,7 +1211,7 @@ export class TSessionManager implements SessionManager {
     requestCtx: MeasureContext,
     service: S,
     ws: ConnectionSocket,
-    operation: (ctx: ClientSessionCtx) => Promise<void>
+    operation: (ctx: ClientSessionCtx, rateLimit: RateLimitInfo | undefined) => Promise<void>
   ): Promise<RateLimitInfo | undefined> {
     const rateLimitStatus = this.limitter.checkRateLimit(service.getUser())
     // If remaining is 0, rate limit is exceeded
@@ -1252,7 +1252,7 @@ export class TSessionManager implements SessionManager {
             ws,
             rateLimitStatus
           )
-          await operation(uctx)
+          await operation(uctx, rateLimitStatus)
         })
       } catch (err: any) {
         Analytics.handleError(err)
