@@ -103,6 +103,7 @@
 
   $: if (state !== null && state.state === 'stopped') {
     dispatch('close')
+    recording.set(null)
   }
 
   async function updateCameraStream (
@@ -269,6 +270,8 @@
 
   async function handleStopRecording (): Promise<void> {
     await stopRecording()
+    camEnabled = false
+    micEnabled = false
   }
 
   async function handleRestartRecording (): Promise<void> {
@@ -412,6 +415,8 @@
   }
 
   function onKeyDown (e: KeyboardEvent): void {
+    if (state?.state === 'stopping') return
+
     if (e.key === 'Enter') {
       e.preventDefault()
       e.stopPropagation()
@@ -455,7 +460,7 @@
 >
   <div class="container p-3">
     {#if state !== null && state.state === 'stopped'}
-      <div class="placeholder flex-col-center justify-center">OK</div>
+      <!-- Maybe show recording result -->
     {:else if mainStream === null}
       <div class="placeholder flex-col-center justify-center">
         {#if cameraStreamPromise === null}
@@ -590,6 +595,8 @@
             icon={IconStop}
             iconProps={{ size: 'small' }}
             label={plugin.string.Stop}
+            disabled={state.state === 'stopping'}
+            loading={state.state === 'stopping'}
             noFocus
             on:click={handleStopRecording}
           />
