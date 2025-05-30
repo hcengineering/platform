@@ -12,11 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+<script context="module" lang="ts">
+  let fullScreenMode: boolean = false
+
+  export function getFullScreenMode (): boolean {
+    return fullScreenMode
+  }
+  function setFullScreenMode (value: boolean): void {
+    fullScreenMode = value
+  }
+</script>
+
 <script lang="ts">
   import { popupstore as popups } from '../popups'
   import { modalStore as modals } from '../modals'
 
   import PopupInstance from './PopupInstance.svelte'
+  import { onDestroy, onMount } from 'svelte'
 
   export let contentPanel: HTMLElement | undefined = undefined
   export let fullScreen: boolean = false
@@ -27,11 +39,18 @@
     instances.forEach((p) => p.fitPopupInstance())
   }
 
+  onMount(() => {
+    if (fullScreen) setFullScreenMode(true)
+  })
+  onDestroy(() => {
+    if (fullScreen) setFullScreenMode(false)
+  })
+
   const shouldDisplayPopup = (popup: any): boolean => {
     return (
-      (fullScreen && document.fullscreenElement != null && popup.element !== 'full-centered') ||
-      (!fullScreen && document.fullscreenElement != null && popup.element === 'full-centered') ||
-      (!fullScreen && document.fullscreenElement == null)
+      (fullScreen && fullScreenMode && popup.element !== 'full-centered') ||
+      (!fullScreen && fullScreenMode && popup.element === 'full-centered') ||
+      (!fullScreen && !fullScreenMode)
     )
   }
 

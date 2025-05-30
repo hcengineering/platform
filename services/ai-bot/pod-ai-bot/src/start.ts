@@ -63,7 +63,10 @@ export const start = async (): Promise<void> => {
   ctx.info('AI person uuid', { personUuid })
 
   const storage = await getDbStorage()
-  const socialIds: SocialId[] = await getAccountClient(config.AccountsURL, generateToken(personUuid)).getSocialIds()
+  const socialIds: SocialId[] = await getAccountClient(
+    config.AccountsURL,
+    generateToken(personUuid, undefined, { service: 'aibot' })
+  ).getSocialIds()
 
   const aiControl = new AIControl(personUuid, socialIds, storage, ctx)
 

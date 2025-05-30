@@ -151,16 +151,25 @@
           {#if childExpandable}
             <div class="p-1" style:margin-left={`${level * 0.5 + 0.5}rem`}>
               {#each vv.topResult ?? [] as r}
-                <Expandable>
-                  <svelte:fragment slot="title">
-                    <div class="flex-row-center flex-between flex-grow">
-                      Time:{toTime(r.value)}
-                    </div>
-                  </svelte:fragment>
-                  <pre class="select-text">
-                    {JSON.stringify(r, null, 2)}
-                  </pre>
-                </Expandable>
+                <FixedColumn key="row-f">
+                  <div class="flex-row-center">
+                    <FixedColumn key="f1">
+                      <div class="p-1">
+                        {Object.entries(r.params)[0][0]}
+                      </div>
+                    </FixedColumn>
+                    <FixedColumn key="f2">
+                      <div class="p-1">
+                        {r.value}
+                      </div>
+                    </FixedColumn>
+                    <FixedColumn key="f3">
+                      <div class="p-1">
+                        {toTime(r.time ?? 0)}
+                      </div>
+                    </FixedColumn>
+                  </div>
+                </FixedColumn>
               {/each}
             </div>
           {/if}

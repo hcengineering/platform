@@ -282,16 +282,21 @@ export class PlatformWorker {
     }
     ctx.info('add integration', { workspace, installationId, accountId })
 
-    await ctx.with('add integration', { workspace, installationId, accountId }, async (ctx) => {
-      await accountsClient.createIntegration({
-        kind: 'github',
-        workspaceUuid: record.workspace,
-        socialId: record.accountId,
-        data: { installationId: record.installationId }
-      })
+    await ctx.with(
+      'add integration',
+      {},
+      async (ctx) => {
+        await accountsClient.createIntegration({
+          kind: 'github',
+          workspaceUuid: record.workspace,
+          socialId: record.accountId,
+          data: { installationId: record.installationId }
+        })
 
-      this.integrations.push(record)
-    })
+        this.integrations.push(record)
+      },
+      { workspace, installationId, accountId }
+    )
     // We need to query installations to be sure we have it, in case event is delayed or not received.
     await this.updateInstallation(installationId)
 
@@ -491,14 +496,16 @@ export class PlatformWorker {
           if (!revoke) {
             const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
             if (personSpace !== undefined && person.personUuid !== undefined) {
-              await createNotification(client, person, {
-                user: person.personUuid,
-                space: personSpace._id,
-                message: github.string.AuthenticatedWithGithub,
-                props: {
-                  login: update.login
-                }
-              })
+              if (update.login != null) {
+                await createNotification(client, person, {
+                  user: person.personUuid,
+                  space: personSpace._id,
+                  message: github.string.AuthenticatedWithGithub,
+                  props: {
+                    login: update.login
+                  }
+                })
+              }
             }
 
             if (dta?._id !== undefined) {

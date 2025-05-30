@@ -95,7 +95,7 @@ export class WorkspaceIndexer {
       throw new PlatformError(unknownError('Default adapter should be set'))
     }
 
-    const token = generateToken(systemAccountUuid, workspace.uuid)
+    const token = generateToken(systemAccountUuid, workspace.uuid, { service: 'fulltext' })
     const transactorEndpoint = await endpointProvider(token)
 
     result.fulltext = new FullTextIndexPipeline(

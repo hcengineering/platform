@@ -24,7 +24,7 @@ export async function getClient (
   workspaceUuid: WorkspaceUuid,
   socialId?: PersonId
 ): Promise<{ client: TxOperations, accountClient: AccountClient }> {
-  const token = generateToken(systemAccountUuid, workspaceUuid)
+  const token = generateToken(systemAccountUuid, workspaceUuid, { service: 'calendar-mailer' })
   let accountClient = getAccountClient(config.accountsUrl, token)
 
   if (socialId !== undefined && socialId !== core.account.System) {
@@ -32,7 +32,7 @@ export async function getClient (
     if (personUuid === undefined) {
       throw new Error('Global person not found')
     }
-    const token = generateToken(personUuid, workspaceUuid)
+    const token = generateToken(personUuid, workspaceUuid, { service: 'calendar-mailer' })
     accountClient = getAccountClient(config.accountsUrl, token)
   }
 

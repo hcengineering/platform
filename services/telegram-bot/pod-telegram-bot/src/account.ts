@@ -30,7 +30,7 @@ import { IntegrationInfo } from './types'
 
 export async function getAccountPerson (account: AccountUuid): Promise<Person | undefined> {
   try {
-    const accountClient = getAccountClient(generateToken(account))
+    const accountClient = getAccountClient(generateToken(account, undefined, { service: 'telegram-bot' }))
     return await accountClient.getPerson()
   } catch (e) {
     console.error(e)
@@ -40,7 +40,7 @@ export async function getAccountPerson (account: AccountUuid): Promise<Person | 
 
 export async function getAccountSocialIds (account: AccountUuid): Promise<SocialId[]> {
   try {
-    const accountClient = getAccountClient(generateToken(account))
+    const accountClient = getAccountClient(generateToken(account, undefined, { service: 'telegram-bot' }))
     return await accountClient.getSocialIds()
   } catch (e) {
     console.error(e)
@@ -49,7 +49,7 @@ export async function getAccountSocialIds (account: AccountUuid): Promise<Social
 }
 
 export async function listIntegrationsByAccount (account: AccountUuid): Promise<IntegrationInfo[]> {
-  const client = getAccountClient(generateToken(account))
+  const client = getAccountClient(generateToken(account, undefined, { serviece: 'telegram-bot' }))
   const integrations = await client.listIntegrations({ kind: 'telegram-bot' })
   if (integrations.length === 0) return []
   const socialIds = await getAccountSocialIds(account)
@@ -118,7 +118,7 @@ export async function getAnyIntegrationByAccount (
   account: AccountUuid,
   workspace?: WorkspaceUuid
 ): Promise<IntegrationInfo | undefined> {
-  const client = getAccountClient(generateToken(account))
+  const client = getAccountClient(generateToken(account, undefined, { service: 'telegram-bot' }))
   const integrations = await client.listIntegrations({ kind: 'telegram-bot', workspaceUuid: workspace })
   if (integrations.length === 0) return undefined
 
