@@ -896,7 +896,7 @@ describe('markupToMarkdown', () => {
                 content: []
               }
             ]
-          },
+          }
         ]
       },
       markdown: '<sub><a href="http://localhost/embed?c=%3Ca%3E">http://localhost/embed?c=&lt;a&gt;</a></sub>'
