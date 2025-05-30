@@ -158,7 +158,7 @@ export class WorkspaceWorker {
         )
         break
       } catch (err: any) {
-        ctx.error('error', { err })
+        ctx.error('error during handshake', { err })
       }
     }
 
@@ -187,6 +187,7 @@ export class WorkspaceWorker {
         }
       })
       if (workspace == null) {
+        // no workspaces available, sleep before another attempt
         await this.doSleep(ctx, opt)
       } else {
         void this.exec(async () => {
@@ -196,9 +197,11 @@ export class WorkspaceWorker {
             await this.doWorkspaceOperation(opContext, workspace, opt)
           } catch (err: any) {
             Analytics.handleError(err)
-            ctx.error('error', { err })
+            opContext.error('error', { err })
           }
         })
+        // sleep for a little bit to avoid bombarding the account service, also add jitter to avoid simultaneous requests from multiple workspace services
+        await new Promise((resolve) => setTimeout(resolve, Math.random() * 400 + 200))
       }
     }
   }
@@ -286,7 +289,7 @@ export class WorkspaceWorker {
 
       await this.workspaceQueue.send(ws.uuid, [workspaceEvents.created()])
     } catch (err: any) {
-      await opt.errorHandler(ws, err)
+      void opt.errorHandler(ws, err)
 
       logger.log('error', err)
 
@@ -385,7 +388,7 @@ export class WorkspaceWorker {
       })
       await this.workspaceQueue.send(ws.uuid, [workspaceEvents.upgraded()])
     } catch (err: any) {
-      await opt.errorHandler(ws, err)
+      void opt.errorHandler(ws, err)
 
       logger.log('error', err)
 
@@ -720,8 +723,10 @@ export class WorkspaceWorker {
         resolve()
         this.wakeup = this.defaultWakeup
       }
-      // sleep for 5 seconds for the next operation, or until a wakeup event
-      const sleepHandle = setTimeout(wakeup, opt.waitTimeout)
+      // sleep for N (5 by default) seconds for the next operation, or until a wakeup event
+      // add jitter to avoid simultaneous requests from multiple workspace services
+      const maxJitter = opt.waitTimeout * 0.2
+      const sleepHandle = setTimeout(wakeup, opt.waitTimeout + Math.random() * maxJitter)
 
       this.wakeup = () => {
         clearTimeout(sleepHandle)

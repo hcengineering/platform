@@ -223,7 +223,7 @@ class ConnectionMgr {
             await client.execute('ROLLBACK;')
             console.error({ message: 'failed to process tx', error: err.message, cause: err })
 
-            if (err.code !== '40001' || tries === maxTries) {
+            if (!['40001', 'CONNECTION_CLOSED'].includes(err.code) || tries === maxTries) {
               return err
             } else {
               console.log('Transaction failed. Retrying.')
@@ -267,7 +267,7 @@ class ConnectionMgr {
             return { result: await fn(client) }
           } catch (err: any) {
             console.error({ message: 'failed to process sql', error: err.message, cause: err })
-            if (err.code !== '40001' || tries === maxTries) {
+            if (!['40001', 'CONNECTION_CLOSED'].includes(err.code) || tries === maxTries) {
               return err
             } else {
               console.log('Read Transaction failed. Retrying.')

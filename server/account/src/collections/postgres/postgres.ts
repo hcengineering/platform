@@ -723,6 +723,8 @@ export class PostgresAccountDB implements AccountDB {
     return (
       err.code === '40001' || // Retry transaction
       err.code === '55P03' || // Lock not available
+      err.code === 'CONNECTION_CLOSED' || // This error is thrown if the connection was closed without an error.
+      err.code === 'CONNECTION_DESTROYED' || // This error is thrown for any queries that were pending when the timeout to sql.end({ timeout: X }) was reached.
       msg.includes('RETRY_SERIALIZABLE')
     )
   }
