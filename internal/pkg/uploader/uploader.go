@@ -133,7 +133,6 @@ func (u *uploaderImpl) scanInitialFiles() {
 
 		u.logger.Info("initial file scan complete", zap.String("dir", u.options.Dir), zap.Int("count", len(initFiles)))
 	}()
-
 }
 
 func (u *uploaderImpl) stop(rollback bool) {
@@ -276,7 +275,6 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 				}
 			}
 
-
 			break
 		}
 
@@ -295,9 +293,13 @@ func (u *uploaderImpl) startWatch(ready chan<- struct{}) {
 		close(ready)
 		return
 	}
-	defer watcher.Close()
+	defer func() {
+		if err := watcher.Close(); err != nil {
+			logger.Error("can not close watcher", zap.Error(err))
+		}
+	}()
 
-	if err := watcher.AddWatch(u.options.Dir, inotifyCloseWrite | inotifyMovedTo); err != nil {
+	if err := watcher.AddWatch(u.options.Dir, inotifyCloseWrite|inotifyMovedTo); err != nil {
 		logger.Error("can not start watching", zap.Error(err))
 		close(ready)
 		return

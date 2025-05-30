@@ -128,7 +128,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	}
 
 	defer func() {
-		if err := os.RemoveAll(destinationFolder); err != nil {
+		if err = os.RemoveAll(destinationFolder); err != nil {
 			logger.Error("failed to cleanup temporary folder", zap.Error(err))
 		}
 	}()
@@ -182,7 +182,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	var level = resconv.Level(res)
 	var opts = Options{
 		Input:         sourceFilePath,
-		OutputDir:      p.cfg.OutputDir,
+		OutputDir:     p.cfg.OutputDir,
 		Level:         level,
 		ScalingLevels: append(resconv.SubLevels(res), level),
 		UploadID:      task.ID,

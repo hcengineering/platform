@@ -97,7 +97,7 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 
 	var commandOptions = Options{
 		Input:         "pipe:0",
-		OutputDir:      s.conf.OutputDir,
+		OutputDir:     s.conf.OutputDir,
 		Threads:       s.conf.MaxThreadCount,
 		UploadID:      info.ID,
 		Level:         level,
