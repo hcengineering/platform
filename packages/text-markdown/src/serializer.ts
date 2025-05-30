@@ -33,6 +33,7 @@ interface IState {
   renderInline: (parent: MarkupNode) => void
   renderList: (node: MarkupNode, delim: string, firstDelim: FirstDelim) => void
   esc: (str: string, startOfLine?: boolean) => string
+  htmlEsc: (str: string) => string
   quote: (str: string) => string
   repeat: (str: string, n: number) => string
   markString: (mark: MarkupMark, open: boolean, parent: MarkupNode, index: number) => string
@@ -273,6 +274,20 @@ export const storeNodes: Record<string, NodeProcessor> = {
   table: (state, node) => {
     state.write(state.renderHtml(node))
     state.closeBlock(node)
+  },
+  embed: (state, node) => {
+    const attrs = nodeAttrs(node)
+    const embedUrl = attrs.src as string
+    if (state.renderAHref === true) {
+      state.write(`<a href="${encodeURI(embedUrl)}">${state.htmlEsc(embedUrl)}</a>`)
+    } else {
+      const encoded = encodeURI(embedUrl)
+      if (encoded === embedUrl) {
+        state.write(`<${state.esc(embedUrl)}>`)
+      } else {
+        state.write(`[${state.esc(embedUrl)}](${encoded})`)
+      }
+    }
   }
 }
 
@@ -766,6 +781,19 @@ export class MarkdownState implements IState {
       str = str.replace(/^[:#\-*+]/, '\\$&').replace(/^(\d+)\./, '$1\\.')
     }
     return str
+  }
+
+  htmlEsc (str: string): string {
+    if (str == null) {
+      return ''
+    }
+
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
   }
 
   quote (str: string): string {
