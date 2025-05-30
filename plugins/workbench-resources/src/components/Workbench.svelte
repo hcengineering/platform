@@ -472,7 +472,9 @@
 
     if (currentAppAlias !== app) {
       clear(1)
-      const newApplication: Application | undefined = await client.findOne<Application>(workbench.class.Application, { alias: app })
+      const newApplication: Application | undefined = await client.findOne<Application>(workbench.class.Application, {
+        alias: app
+      })
       if (newApplication?.accessLevel === undefined || hasAccountRole(account, newApplication.accessLevel)) {
         currentApplication = newApplication
         currentAppAlias = currentApplication?.alias
