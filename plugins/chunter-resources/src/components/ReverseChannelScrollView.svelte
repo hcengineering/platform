@@ -15,17 +15,7 @@
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { ActivityMessagePresenter, canGroupMessages, messageInFocus } from '@hcengineering/activity-resources'
-  import core, {
-    AccountRole,
-    Doc,
-    generateId,
-    getCurrentAccount,
-    Ref,
-    Space,
-    Timestamp,
-    Tx,
-    TxCUD
-  } from '@hcengineering/core'
+  import core, { Doc, generateId, getCurrentAccount, Ref, Space, Timestamp, Tx, TxCUD } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { addTxListener, getClient, removeTxListener } from '@hcengineering/presentation'
@@ -120,11 +110,9 @@
     : readonly
 
   $: separatorIndex =
-    account.role === AccountRole.ReadOnlyGuest
-      ? messages.length - 1
-      : $newTimestampStore !== undefined
-        ? messages.findIndex((message) => (message.createdOn ?? 0) >= ($newTimestampStore ?? 0))
-        : -1
+    $newTimestampStore !== undefined
+      ? messages.findIndex((message) => (message.createdOn ?? 0) >= ($newTimestampStore ?? 0))
+      : -1
 
   $: if (!freeze && !isPageHidden && isScrollInitialized) {
     read()
@@ -618,11 +606,7 @@
       {@const isSelected = message._id === selectedMessageId}
       {@const canGroup = canGroupChatMessages(message, messages[index - 1])}
       {#if separatorIndex === index}
-        <ActivityMessagesSeparator
-          bind:element={separatorDiv}
-          label={activity.string.New}
-          visible={account.role !== AccountRole.ReadOnlyGuest}
-        />
+        <ActivityMessagesSeparator bind:element={separatorDiv} label={activity.string.New} />
       {/if}
 
       {#if !isThread && message.createdOn && $datesStore.includes(message.createdOn)}

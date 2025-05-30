@@ -302,7 +302,8 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
       account,
       socialIds,
       space: personSpace._id,
-      employee: employee._id
+      employee: employee._id,
+      role: employee.role
     }
 
     const senderInfo: SenderInfo = await getSenderInfo(control.ctx, tx.modifiedBy, control)

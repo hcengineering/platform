@@ -16,12 +16,8 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  getCurrentAccount,
-  MeasureMetricsContext,
-  reduceCalls,
-  TxOperations,
-  TxProcessor,
   type Account,
+  AccountRole,
   type ArrOf,
   type AttachedDoc,
   type Class,
@@ -31,9 +27,12 @@ import core, {
   type DocumentQuery,
   type FindOptions,
   type FindResult,
+  getCurrentAccount,
   type Hierarchy,
+  MeasureMetricsContext,
   type Mixin,
   type Obj,
+  reduceCalls,
   type Ref,
   type RefTo,
   type SearchOptions,
@@ -43,6 +42,8 @@ import core, {
   type Tx,
   type TxApplyIf,
   type TxCUD,
+  TxOperations,
+  TxProcessor,
   type TxResult,
   type Type,
   type TypeAny,
@@ -51,14 +52,14 @@ import core, {
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
-import { getRawCurrentLocation, workspaceId, type AnyComponent, type AnySvelteComponent } from '@hcengineering/ui'
+import { type AnyComponent, type AnySvelteComponent, getRawCurrentLocation, workspaceId } from '@hcengineering/ui'
 import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
 import { get, writable } from 'svelte/store'
 
 import { type KeyedAttribute } from '..'
-import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
+import { OptimizeQueryMiddleware, type PresentationPipeline, PresentationPipelineImpl } from './pipeline'
 import plugin from './plugin'
 
 export { reduceCalls } from '@hcengineering/core'
@@ -182,6 +183,7 @@ class UIClient extends TxOperations implements Client {
   }
 
   private async notifyEarly (tx: Tx): Promise<void> {
+    if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
     if (tx._class === core.class.TxApplyIf) {
       const applyTx = tx as TxApplyIf
 

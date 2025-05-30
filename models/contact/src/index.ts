@@ -387,6 +387,7 @@ export function createModel (builder: Builder): void {
             component: workbench.component.SpecialView,
             icon: contact.icon.Person,
             label: contact.string.Employee,
+            accessLevel: AccountRole.DocGuest,
             componentProps: {
               _class: contact.mixin.Employee,
               icon: contact.icon.Person,
@@ -403,6 +404,7 @@ export function createModel (builder: Builder): void {
             component: workbench.component.SpecialView,
             icon: contact.icon.Person,
             label: contact.string.Guest,
+            accessLevel: AccountRole.DocGuest,
             componentProps: {
               _class: contact.mixin.Employee,
               icon: contact.icon.Person,
@@ -417,6 +419,7 @@ export function createModel (builder: Builder): void {
             component: workbench.component.SpecialView,
             icon: contact.icon.Person,
             label: contact.string.Person,
+            accessLevel: AccountRole.DocGuest,
             componentProps: {
               _class: contact.class.Person,
               baseQuery: {
@@ -433,6 +436,7 @@ export function createModel (builder: Builder): void {
             component: workbench.component.SpecialView,
             icon: contact.icon.Company,
             label: contact.string.Organization,
+            accessLevel: AccountRole.DocGuest,
             componentProps: {
               _class: contact.class.Organization,
               icon: contact.icon.Company,

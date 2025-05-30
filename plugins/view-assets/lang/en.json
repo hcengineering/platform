@@ -135,7 +135,7 @@
     "Document": "Document",
     "Loading": "Loading...",
     "NoRelations": "No relations",
-    "ReadOnlyWarningTitle": "Join us",
-    "ReadOnlyWarningMessage": "To gain full access to this workspace and participate, please contact the administrator."
+    "ReadOnlyWarningTitle": "Read only mode",
+    "ReadOnlyWarningMessage": "Contact the administrator to gain full access to this workspace."
   }
 }

@@ -3,22 +3,33 @@ import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
 import { ensureEmployee, setCurrentEmployee } from '@hcengineering/contact'
 import core, {
+  type Account,
+  AccountRole,
+  type Client,
   ClientConnectEvent,
   concatLink,
   isWorkspaceCreating,
+  type MeasureMetricsContext,
   metricsToString,
+  type Person as GlobalPerson,
   pickPrimarySocialId,
   setCurrentAccount,
-  versionToString,
-  type Account,
-  type Client,
-  type Person as GlobalPerson,
-  type MeasureMetricsContext,
   type SocialId,
-  type Version
+  type Version,
+  versionToString
 } from '@hcengineering/core'
 import login, { loginId, type Pages } from '@hcengineering/login'
-import { broadcastEvent, getMetadata, getResource, OK, setMetadata, translateCB } from '@hcengineering/platform'
+import platform, {
+  PlatformEvent,
+  broadcastEvent,
+  getMetadata,
+  getResource,
+  OK,
+  setMetadata,
+  Severity,
+  Status,
+  translateCB
+} from '@hcengineering/platform'
 import presentation, {
   loadServerConfig,
   purgeClient,
@@ -370,6 +381,10 @@ export async function connect (title: string): Promise<Client | undefined> {
   console.log('Logged in with account: ', me)
   setCurrentAccount(me)
   setCurrentEmployee(employee)
+
+  if (me.role === AccountRole.ReadOnlyGuest) {
+    await broadcastEvent(PlatformEvent, new Status(Severity.INFO, platform.status.ReadOnlyAccount, {}))
+  }
 
   try {
     version = await ctx.with(

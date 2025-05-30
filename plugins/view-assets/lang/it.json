@@ -130,7 +130,7 @@
     "Document": "Documento",
     "Loading": "Caricamento...",
     "NoRelations": "Nessuna relazione",
-    "ReadOnlyWarningTitle": "Unisciti",
-    "ReadOnlyWarningMessage": "Per ottenere l'accesso completo a quest'area di lavoro e partecipare, contatta l'amministratore."
+    "ReadOnlyWarningTitle": "Modalità sola lettura",
+    "ReadOnlyWarningMessage": "Contatta l'amministratore per ottenere l'accesso completo a quest'area di lavoro."
   }
 }

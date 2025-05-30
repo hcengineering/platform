@@ -135,7 +135,7 @@
     "Document": "Dokument",
     "Loading": "Načítání...",
     "NoRelations": "Žádné vztahy",
-    "ReadOnlyWarningTitle": "Přidejte se",
-    "ReadOnlyWarningMessage": "Pro úplný přístup k tomuto pracovnímu prostoru a možnost účasti kontaktujte administrátora."
+    "ReadOnlyWarningTitle": "Režim pouze pro čtení",
+    "ReadOnlyWarningMessage": "Pro úplný přístup k tomuto pracovnímu prostoru kontaktujte administrátora."
   }
 }

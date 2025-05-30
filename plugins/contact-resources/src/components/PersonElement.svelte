@@ -19,7 +19,6 @@
   import { ObjectPresenterType } from '@hcengineering/view'
 
   import Avatar from './Avatar.svelte'
-  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
 
   export let value: Person | Employee | undefined | null
   export let name: string
@@ -38,25 +37,13 @@
   export let type: ObjectPresenterType = 'link'
   export let showStatus = true
   export let overflowLabel = true
-
-  const me = getCurrentAccount()
-
-  $: readonlyAccount = me.role === AccountRole.ReadOnlyGuest
 </script>
 
 {#if value}
   {#if inline}
-    <ObjectMention object={value} disabled={disabled || readonlyAccount} onClick={onEdit} />
+    <ObjectMention object={value} {disabled} onClick={onEdit} />
   {:else if type === 'link'}
-    <DocNavLink
-      object={value}
-      onClick={onEdit}
-      disabled={disabled || readonlyAccount}
-      {noUnderline}
-      {colorInherit}
-      {accent}
-      noOverflow
-    >
+    <DocNavLink object={value} onClick={onEdit} {disabled} {noUnderline} {colorInherit} {accent} noOverflow>
       <span
         use:tooltip={disabled ? undefined : showTooltip}
         class="antiPresenter h-full"

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AccountRole, Doc, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import core, { Doc, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import {
     defineSeparators,
     getCurrentLocation,
@@ -56,9 +56,7 @@
     isThreadOpened = newLocation.path[4] != null
   })
 
-  $: readonly =
-    acc.role === AccountRole.ReadOnlyGuest ||
-    (hierarchy.isDerived(object._class, core.class.Space) ? readonly || (object as Space).archived : readonly)
+  $: readonly = hierarchy.isDerived(object._class, core.class.Space) ? readonly || (object as Space).archived : readonly
   $: showJoinOverlay = shouldShowJoinOverlay(object)
   $: isDocChat = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
   $: withAside =

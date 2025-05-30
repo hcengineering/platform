@@ -130,7 +130,7 @@
     "Document": "Document",
     "Loading": "Chargement...",
     "NoRelations": "Aucune relation",
-    "ReadOnlyWarningTitle": "Rejoignez-nous",
-    "ReadOnlyWarningMessage": "Pour obtenir un accès complet à cet espace de travail et participer, contactez l'administrateur."
+    "ReadOnlyWarningTitle": "Mode lecture seule",
+    "ReadOnlyWarningMessage": "Contactez l'administrateur pour obtenir un accès complet à cet espace de travail."
   }
 }

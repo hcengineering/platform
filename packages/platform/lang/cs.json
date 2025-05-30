@@ -20,6 +20,7 @@
     "WorkspaceAlreadyExists": "Pracovní prostor již existuje",
     "InvalidOtp": "Neplatný kód",
     "InviteNotFound": "Pozvánka s email:{email} nebyla nalezena.",
-    "WorkspaceLimitReached": "Dosáhli jste limitu pracovních prostorů. Kontaktujte nás..."
+    "WorkspaceLimitReached": "Dosáhli jste limitu pracovních prostorů. Kontaktujte nás...",
+    "ReadOnlyAccount": "Režim pouze pro čtení"
   }
 }

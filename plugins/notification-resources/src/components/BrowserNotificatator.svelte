@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { BrowserNotification } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { addNotification, getCurrentResolvedLocation, Location, NotificationSeverity } from '@hcengineering/ui'
@@ -25,8 +25,6 @@
 
   import { checkPermission, pushAllowed, subscribePush } from '../utils'
   import Notification from './Notification.svelte'
-
-  const me = getCurrentAccount()
 
   async function check (allowed: boolean): Promise<void> {
     if (allowed) {
@@ -50,7 +48,7 @@
       },
       (res) => {
         if (res.length > 0) {
-          void notify(me?.role === AccountRole.ReadOnlyGuest ? res[res.length - 1] : res[0])
+          void notify(res[0])
         }
       }
     )
@@ -87,14 +85,14 @@
     const sidebarObjectId = getSidebarObject()?._id
 
     if (_id && _id === sidebarObjectId) {
-      if (me?.role !== AccountRole.ReadOnlyGuest) await client.remove(value)
+      await client.remove(value)
       return
     }
 
     const locObjectId = await getObjectIdFromLocation(getCurrentResolvedLocation())
 
     if (_id && _id === locObjectId) {
-      if (me?.role !== AccountRole.ReadOnlyGuest) await client.remove(value)
+      await client.remove(value)
       return
     }
     addNotification(
@@ -105,7 +103,6 @@
       NotificationSeverity.Info,
       `notification-${value.objectId}`
     )
-    if (me?.role === AccountRole.ReadOnlyGuest) return
     await client.remove(value)
   }
 

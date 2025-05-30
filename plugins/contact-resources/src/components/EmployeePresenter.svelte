@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
-  import { AccountRole, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
+  import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import ui, { IconSize } from '@hcengineering/ui'
@@ -27,7 +27,6 @@
   export let compact: boolean = false
   export let showStatus: boolean = false
 
-  const me = getCurrentAccount()
   const client = getClient()
   const h = client.getHierarchy()
 
@@ -36,8 +35,6 @@
   $: employeeValue = person != null ? h.as(person, contact.mixin.Employee) : undefined
 
   $: active = employeeValue?.active ?? false
-
-  $: readonlyAccount = me.role === AccountRole.ReadOnlyGuest
 </script>
 
 <PersonPresenter
@@ -49,7 +46,7 @@
   {shouldShowName}
   {avatarSize}
   {shouldShowPlaceholder}
-  disabled={disabled || readonlyAccount}
+  {disabled}
   {inline}
   {colorInherit}
   {accent}

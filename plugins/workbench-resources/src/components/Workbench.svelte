@@ -256,7 +256,7 @@
 
   onMount(() => {
     pushRootBarComponent('right', view.component.SearchSelector)
-    if (account.role !== AccountRole.ReadOnlyGuest) pushRootBarComponent('left', workbench.component.WorkbenchTabs, 30)
+    pushRootBarComponent('left', workbench.component.WorkbenchTabs, 30)
     void getResource(login.function.GetWorkspaces).then(async (getWorkspaceFn) => {
       $workspacesStore = await getWorkspaceFn()
       await updateWindowTitle(getLocation())
@@ -275,12 +275,10 @@
   let hasInboxNotifications = false
 
   void getResource(notification.function.HasInboxNotifications).then((f) => {
-    if (account.role === AccountRole.ReadOnlyGuest) return
     hasNotificationsFn = f
   })
 
   $: void hasNotificationsFn?.($inboxNotificationsByContextStore).then((res) => {
-    if (account.role === AccountRole.ReadOnlyGuest) return
     hasInboxNotifications = res
   })
 
@@ -821,41 +819,33 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        {#if account.role !== AccountRole.ReadOnlyGuest}
-          <NavLink
-            app={notificationId}
-            shrink={0}
-            disabled={!$deviceInfo.navigator.visible &&
-              $deviceInfo.navigator.float &&
-              currentAppAlias === notificationId}
-          >
-            <AppItem
-              icon={notification.icon.Notifications}
-              label={notification.string.Inbox}
-              selected={currentAppAlias === notificationId || inboxPopup !== undefined}
-              navigator={(currentAppAlias === notificationId || inboxPopup !== undefined) &&
-                $deviceInfo.navigator.visible}
-              on:click={(e) => {
-                if (e.metaKey || e.ctrlKey) return
-                if (
-                  !$deviceInfo.navigator.visible &&
-                  $deviceInfo.navigator.float &&
-                  currentAppAlias === notificationId
-                ) {
-                  toggleNav()
-                } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  navigate(lastLoc)
-                  lastLoc = undefined
-                } else {
-                  lastLoc = $location
-                }
-              }}
-              notify={hasInboxNotifications}
-            />
-          </NavLink>
-        {/if}
+        <NavLink
+          app={notificationId}
+          shrink={0}
+          disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId}
+        >
+          <AppItem
+            icon={notification.icon.Notifications}
+            label={notification.string.Inbox}
+            selected={currentAppAlias === notificationId || inboxPopup !== undefined}
+            navigator={(currentAppAlias === notificationId || inboxPopup !== undefined) &&
+              $deviceInfo.navigator.visible}
+            on:click={(e) => {
+              if (e.metaKey || e.ctrlKey) return
+              if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId) {
+                toggleNav()
+              } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
+                e.preventDefault()
+                e.stopPropagation()
+                navigate(lastLoc)
+                lastLoc = undefined
+              } else {
+                lastLoc = $location
+              }
+            }}
+            notify={hasInboxNotifications}
+          />
+        </NavLink>
         <Applications
           {apps}
           active={currentApplication?._id}
@@ -868,14 +858,12 @@
         class:vertical-mobile={$deviceInfo.navigator.direction === 'vertical'}
         class:mini={appsMini}
       >
-        {#if account.role !== AccountRole.ReadOnlyGuest}
-          <AppItem
-            icon={IconSettings}
-            label={setting.string.Customize}
-            size={appsMini ? 'small' : 'large'}
-            on:click={() => showPopup(AppSwitcher, { apps }, popupPosition)}
-          />
-        {/if}
+        <AppItem
+          icon={IconSettings}
+          label={setting.string.Customize}
+          size={appsMini ? 'small' : 'large'}
+          on:click={() => showPopup(AppSwitcher, { apps }, popupPosition)}
+        />
         <a href={supportLink} target="_blank" rel="noopener noreferrer">
           <AppItem
             icon={support.icon.Support}

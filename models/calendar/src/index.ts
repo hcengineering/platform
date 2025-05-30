@@ -35,8 +35,7 @@ import {
   type Markup,
   type Ref,
   type Timestamp,
-  type PersonId,
-  AccountRole
+  type PersonId
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -196,8 +195,7 @@ export function createModel (builder: Builder): void {
       label: calendar.string.Calendar,
       type: WidgetType.Fixed,
       icon: calendar.icon.Calendar,
-      component: calendar.component.CalendarWidget,
-      accessLevel: AccountRole.DocGuest
+      component: calendar.component.CalendarWidget
     },
     calendar.ids.CalendarWidget
   )

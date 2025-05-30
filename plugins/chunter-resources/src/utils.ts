@@ -26,7 +26,6 @@ import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage 
 import contact, { type Employee, getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
 import { employeeByAccountStore, employeeByIdStore, PersonIcon } from '@hcengineering/contact-resources'
 import core, {
-  AccountRole,
   type AccountUuid,
   type Class,
   type Client,
@@ -394,7 +393,7 @@ export async function readChannelMessages (
   messages: DisplayActivityMessage[],
   contextId: Ref<DocNotifyContext>
 ): Promise<void> {
-  if (messages.length === 0 || getCurrentAccount()?.role === AccountRole.ReadOnlyGuest) {
+  if (messages.length === 0) {
     return
   }
 

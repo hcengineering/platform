@@ -28,7 +28,6 @@ import {
 import { Analytics } from '@hcengineering/analytics'
 import chunter, { type ThreadMessage } from '@hcengineering/chunter'
 import core, {
-  AccountRole,
   type Class,
   type Doc,
   type DocumentUpdate,
@@ -345,8 +344,6 @@ export async function getDisplayInboxNotifications (
   filter: InboxNotificationsFilter = 'all',
   objectClass?: Ref<Class<Doc>>
 ): Promise<DisplayInboxNotification[]> {
-  if (getCurrentAccount()?.role === AccountRole.ReadOnlyGuest) return []
-
   const result: DisplayInboxNotification[] = []
   const activityNotifications: Array<WithLookup<ActivityInboxNotification>> = []
   for (const notification of notifications) {
@@ -707,7 +704,6 @@ export async function checkPermission (value: boolean): Promise<boolean> {
 }
 
 function addWorkerListener (): void {
-  if (getCurrentAccount()?.role === AccountRole.ReadOnlyGuest) return
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data !== undefined && event.data.type === 'notification-click') {
       const { url, _id } = event.data

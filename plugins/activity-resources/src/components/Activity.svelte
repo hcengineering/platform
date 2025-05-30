@@ -20,9 +20,9 @@
     DisplayActivityMessage,
     WithReferences
   } from '@hcengineering/activity'
-  import { AccountRole, Class, Doc, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Grid, Label, Section, Spinner, location, Lazy } from '@hcengineering/ui'
+  import { Grid, Section, Spinner, location, Lazy } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
   import ActivityExtensionComponent from './ActivityExtension.svelte'
@@ -42,7 +42,6 @@
   const hierarchy = client.getHierarchy()
   const activityMessagesQuery = createQuery()
   const refsQuery = createQuery()
-  const account = getCurrentAccount()
 
   let extensions: ActivityExtension[] = []
 
@@ -213,8 +212,6 @@
 
   $: allMessages = sortActivityMessages(messages.concat(refs))
 
-  $: readOnlyRole = account?.role === AccountRole.ReadOnlyGuest
-
   async function updateActivityMessages (objectId: Ref<Doc>, order: SortingOrder): Promise<void> {
     isMessagesLoading = true
 
@@ -273,7 +270,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="content">
-    {#if isNewestFirst && showCommenInput && !readOnlyRole}
+    {#if isNewestFirst && showCommenInput}
       <div class="ref-input newest-first">
         <ActivityExtensionComponent
           kind="input"
@@ -300,7 +297,6 @@
                 type={canGroup ? 'short' : 'default'}
                 isHighlighted={selectedMessageId === message._id}
                 withShowMore
-                readonly={readOnlyRole}
               />
             {:else}
               <Lazy>
@@ -311,7 +307,6 @@
                   type={canGroup ? 'short' : 'default'}
                   isHighlighted={selectedMessageId === message._id}
                   withShowMore
-                  readonly={readOnlyRole}
                 />
               </Lazy>
             {/if}
@@ -319,7 +314,7 @@
         </Grid>
       {/if}
     </div>
-    {#if showCommenInput && !isNewestFirst && !readOnlyRole}
+    {#if showCommenInput && !isNewestFirst}
       <div class="ref-input oldest-first">
         <ActivityExtensionComponent
           kind="input"

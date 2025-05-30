@@ -15,7 +15,6 @@
 import activity from '@hcengineering/activity'
 import {
   type Account,
-  AccountRole,
   type Class,
   type Client,
   type Doc,
@@ -85,7 +84,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     }
   )
 
-  private readOnlyAccount: boolean = false
   private readonly contextsQuery = createQuery(true)
   private readonly otherInboxNotificationsQuery = createQuery(true)
   private readonly activityInboxNotificationsQuery = createQuery(true)
@@ -97,7 +95,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   private async init (client: Client, account: Account): Promise<void> {
-    this.readOnlyAccount = account.role === AccountRole.ReadOnlyGuest
     this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
@@ -155,8 +152,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async readDoc (_id: Ref<Doc>): Promise<void> {
-    if (this.readOnlyAccount) return
-
     const docNotifyContext = this._contextByDoc.get(_id)
 
     if (docNotifyContext === undefined) {
@@ -179,7 +174,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async forceReadDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
-    if (this.readOnlyAccount) return
     const context = this._contextByDoc.get(_id)
 
     if (context !== undefined) {
@@ -223,7 +217,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async readNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
-    if (this.readOnlyAccount) return
     const notificationsToRead = (get(this.inboxNotifications) ?? []).filter(
       ({ _id, isViewed }) => ids.includes(_id) && !isViewed
     )
@@ -234,7 +227,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async unreadNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
-    if (this.readOnlyAccount) return
     const notificationsToUnread = (get(this.inboxNotifications) ?? []).filter(({ _id }) => ids.includes(_id))
 
     for (const notification of notificationsToUnread) {
@@ -243,7 +235,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async archiveNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
-    if (this.readOnlyAccount) return
     const inboxNotifications = (get(this.inboxNotifications) ?? []).filter(({ _id }) => ids.includes(_id))
     for (const notification of inboxNotifications) {
       await client.update(notification, { archived: true, isViewed: true })
@@ -251,7 +242,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async archiveAllNotifications (): Promise<void> {
-    if (this.readOnlyAccount) return
     const ops = getClient().apply(undefined, 'archiveAllNotifications', true)
 
     try {
@@ -280,7 +270,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async readAllNotifications (): Promise<void> {
-    if (this.readOnlyAccount) return
     const ops = getClient().apply(undefined, 'readAllNotifications', true)
 
     try {
@@ -306,7 +295,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async unreadAllNotifications (): Promise<void> {
-    if (this.readOnlyAccount) return
     const ops = getClient().apply(undefined, 'unreadAllNotifications', true)
 
     try {

@@ -26,7 +26,7 @@
   } from '@hcengineering/notification-resources'
   import { createEventDispatcher } from 'svelte'
   import view from '@hcengineering/view'
-  import { AccountRole, Doc, getCurrentAccount } from '@hcengineering/core'
+  import { Doc } from '@hcengineering/core'
 
   import NavItem from './NavItem.svelte'
   import { ChatNavItemModel } from '../types'
@@ -38,7 +38,6 @@
   export let isSelected = false
   export let type: 'type-link' | 'type-tag' | 'type-anchor-link' | 'type-object' = 'type-link'
 
-  const me = getCurrentAccount()
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
@@ -130,7 +129,7 @@
   {count}
   title={item.title}
   description={item.description}
-  secondaryNotifyMarker={me?.role === AccountRole.ReadOnlyGuest || context === undefined
+  secondaryNotifyMarker={context === undefined
     ? false
     : (context?.lastViewedTimestamp ?? 0) < (context?.lastUpdateTimestamp ?? 0)}
   {actions}

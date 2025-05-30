@@ -98,7 +98,6 @@
     "Language": "言語",
     "DaysWOValue": "{days, plural, =1 {日} other {日}}",
     "WeeksWOValue": "{weeks, plural, =1 {週} other {週}}",
-    "MonthsWOValue": "{months, plural, =1 {か月} other {か月}}",
-    "ReadOnlyModeWarning": "読み取り専用モード"
+    "MonthsWOValue": "{months, plural, =1 {か月} other {か月}}"
   }
 }
