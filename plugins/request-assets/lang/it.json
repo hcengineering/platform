@@ -18,6 +18,8 @@
     "PleaseTypeMessage": "Per favore, digita un commento per continuare...",
     "NoRequests": "Nessuna richiesta",
     "Cancel": "Annulla",
-    "Cancelled": "Annullato"
+    "Cancelled": "Annullato",
+    "NewRequest": "Nuova richiesta",
+    "CancelRequest": "Annulla richiesta"
   }
 }

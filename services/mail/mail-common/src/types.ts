@@ -11,6 +11,9 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+import { PersonId, PersonUuid } from '@hcengineering/core'
+
 //
 export interface Attachment {
   id: string
@@ -39,6 +42,12 @@ export interface EmailMessage {
   incoming: boolean
   subject: string
   sendOn: number
+}
+
+export interface MailRecipient {
+  email: string
+  uuid: PersonUuid
+  socialId: PersonId
 }
 
 export interface BaseConfig {

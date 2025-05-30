@@ -104,6 +104,7 @@ export interface PostgresDbCollectionOptions<T extends Record<string, any>, K ex
   ns?: string
   fieldTypes?: Record<string, string>
   timestampFields?: Array<keyof T>
+  withRetryClient?: <R>(callback: (client: Sql) => Promise<R>) => Promise<R>
 }
 
 export class PostgresDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined>
@@ -247,6 +248,15 @@ implements DbCollection<T> {
     return res as T
   }
 
+  async unsafe (sql: string, values: any[], client?: Sql): Promise<any[]> {
+    if (this.options.withRetryClient !== undefined) {
+      return await this.options.withRetryClient((_client) => _client.unsafe(sql, values))
+    } else {
+      const _client = client ?? this.client
+      return await _client.unsafe(sql, values)
+    }
+  }
+
   async find (query: Query<T>, sort?: Sort<T>, limit?: number, client?: Sql): Promise<T[]> {
     const sqlChunks: string[] = [this.buildSelectClause()]
     const [whereClause, whereValues] = this.buildWhereClause(query)
@@ -264,8 +274,7 @@ implements DbCollection<T> {
     }
 
     const finalSql: string = sqlChunks.join(' ')
-    const _client = client ?? this.client
-    const result = await _client.unsafe(finalSql, whereValues)
+    const result = await this.unsafe(finalSql, whereValues, client)
 
     return result.map((row) => this.convertToObj(row))
   }
@@ -281,8 +290,7 @@ implements DbCollection<T> {
 
     const sql = `INSERT INTO ${this.getTableName()} (${keys.map((k) => `"${k}"`).join(', ')}) VALUES (${keys.map((_, idx) => `$${idx + 1}`).join(', ')}) RETURNING *`
 
-    const _client = client ?? this.client
-    const res: any | undefined = await _client.unsafe(sql, values)
+    const res: any | undefined = await this.unsafe(sql, values, client)
     const idKey = this.idKey
 
     if (idKey === undefined) {
@@ -317,8 +325,7 @@ implements DbCollection<T> {
       RETURNING *
     `
 
-    const _client = client ?? this.client
-    const res: any = await _client.unsafe(sql, values)
+    const res: any = await this.unsafe(sql, values, client)
     const idKey = this.idKey
 
     if (idKey === undefined) {
@@ -370,8 +377,7 @@ implements DbCollection<T> {
     }
 
     const finalSql = sqlChunks.join(' ')
-    const _client = client ?? this.client
-    await _client.unsafe(finalSql, [...updateValues, ...whereValues])
+    await this.unsafe(finalSql, [...updateValues, ...whereValues], client)
   }
 
   async deleteMany (query: Query<T>, client?: Sql): Promise<void> {
@@ -383,8 +389,7 @@ implements DbCollection<T> {
     }
 
     const finalSql = sqlChunks.join(' ')
-    const _client = client ?? this.client
-    await _client.unsafe(finalSql, whereValues)
+    await this.unsafe(finalSql, whereValues, client)
   }
 }
 
@@ -393,8 +398,12 @@ export class AccountPostgresDbCollection
   implements DbCollection<Account> {
   private readonly passwordKeys = ['hash', 'salt']
 
-  constructor (client: Sql, ns?: string) {
-    super('account', client, { idKey: 'uuid', ns })
+  constructor (
+    client: Sql,
+    ns?: string,
+    withRetryClient?: PostgresDbCollectionOptions<Account, 'uuid'>['withRetryClient']
+  ) {
+    super('account', client, { idKey: 'uuid', ns, withRetryClient })
   }
 
   getPasswordsTableName (): string {
@@ -466,6 +475,12 @@ export class AccountPostgresDbCollection
 }
 
 export class PostgresAccountDB implements AccountDB {
+  private readonly retryOptions = {
+    maxAttempts: 5,
+    initialDelayMs: 100,
+    maxDelayMs: 2000
+  }
+
   readonly wsMembersName = 'workspace_members'
 
   person: PostgresDbCollection<Person, 'uuid'>
@@ -485,36 +500,45 @@ export class PostgresAccountDB implements AccountDB {
     readonly client: Sql,
     readonly ns: string = 'global_account'
   ) {
-    this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, { ns, idKey: 'uuid' })
-    this.account = new AccountPostgresDbCollection(client, ns)
+    const withRetryClient = this.withRetry
+    this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, { ns, idKey: 'uuid', withRetryClient })
+    this.account = new AccountPostgresDbCollection(client, ns, withRetryClient)
     this.socialId = new PostgresDbCollection<SocialId, '_id'>('social_id', client, {
       ns,
       idKey: '_id',
-      timestampFields: ['createdOn', 'verifiedOn']
+      timestampFields: ['createdOn', 'verifiedOn'],
+      withRetryClient
     })
     this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client, {
       ns,
-      timestampFields: ['lastProcessingTime', 'lastVisit']
+      timestampFields: ['lastProcessingTime', 'lastVisit'],
+      withRetryClient
     })
     this.workspace = new PostgresDbCollection<Workspace, 'uuid'>('workspace', client, {
       ns,
       idKey: 'uuid',
-      timestampFields: ['createdOn']
+      timestampFields: ['createdOn'],
+      withRetryClient
     })
     this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client, {
       ns,
-      timestampFields: ['time']
+      timestampFields: ['time'],
+      withRetryClient
     })
     this.otp = new PostgresDbCollection<OTP>('otp', client, { ns, timestampFields: ['expiresOn', 'createdOn'] })
     this.invite = new PostgresDbCollection<WorkspaceInvite, 'id'>('invite', client, {
       ns,
       idKey: 'id',
-      timestampFields: ['expiresOn']
+      timestampFields: ['expiresOn'],
+      withRetryClient
     })
-    this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>('mailbox', client, { ns })
-    this.mailboxSecret = new PostgresDbCollection<MailboxSecret>('mailbox_secrets', client, { ns })
-    this.integration = new PostgresDbCollection<Integration>('integrations', client, { ns })
-    this.integrationSecret = new PostgresDbCollection<IntegrationSecret>('integration_secrets', client, { ns })
+    this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>('mailbox', client, { ns, withRetryClient })
+    this.mailboxSecret = new PostgresDbCollection<MailboxSecret>('mailbox_secrets', client, { ns, withRetryClient })
+    this.integration = new PostgresDbCollection<Integration>('integrations', client, { ns, withRetryClient })
+    this.integrationSecret = new PostgresDbCollection<IntegrationSecret>('integration_secrets', client, {
+      ns,
+      withRetryClient
+    })
   }
 
   getWsMembersTableName (): string {
@@ -670,6 +694,37 @@ export class PostgresAccountDB implements AccountDB {
         // Ignore errors since they likely mean constraints were already removed by another concurrent migration
       }
     }
+  }
+
+  withRetry = async <T>(callback: (client: Sql) => Promise<T>): Promise<T> => {
+    let attempt = 0
+    let delay = this.retryOptions.initialDelayMs
+
+    while (true) {
+      try {
+        return (await this.client.begin(callback)) as T
+      } catch (err: any) {
+        attempt++
+
+        if (!this.isRetryableError(err) || attempt >= this.retryOptions.maxAttempts) {
+          throw err
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, delay))
+
+        delay = Math.min(delay * 2, this.retryOptions.maxDelayMs)
+      }
+    }
+  }
+
+  private isRetryableError (err: any): boolean {
+    const msg: string = err?.message ?? ''
+
+    return (
+      err.code === '40001' || // Retry transaction
+      err.code === '55P03' || // Lock not available
+      msg.includes('RETRY_SERIALIZABLE')
+    )
   }
 
   async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<WorkspaceUuid> {

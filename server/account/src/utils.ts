@@ -34,7 +34,7 @@ import {
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
-import { getDBClient } from '@hcengineering/postgres'
+import { getDBClient, setDBExtraOptions } from '@hcengineering/postgres'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import otpGenerator from 'otp-generator'
 
@@ -83,6 +83,11 @@ export async function getAccountDB (uri: string, dbNs?: string): Promise<[Accoun
       }
     ]
   } else {
+    setDBExtraOptions({
+      connection: {
+        application_name: 'account'
+      }
+    })
     const client = getDBClient(sharedPipelineContextVars, uri)
     const pgClient = await client.getClient()
     const pgAccount = new PostgresAccountDB(pgClient, dbNs ?? 'global_account')
@@ -1569,7 +1574,7 @@ export async function setTimezoneIfNotDefined (
 export const integrationServices = [
   'github',
   'telegram-bot',
-  'telegram',
+  'hulygram',
   'mailbox',
   'caldav',
   'gmail',

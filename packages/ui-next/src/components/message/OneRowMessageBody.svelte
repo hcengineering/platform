@@ -16,8 +16,9 @@
 <script lang="ts">
   import { PersonPreviewProvider, Avatar } from '@hcengineering/contact-resources'
   import { formatName, Person } from '@hcengineering/contact'
-  import { Message } from '@hcengineering/communication-types'
+  import { Message, MessageType } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
+  import { IconDelete } from '@hcengineering/ui'
 
   import MessageContentViewer from './MessageContentViewer.svelte'
   import MessageFooter from './MessageFooter.svelte'
@@ -34,34 +35,45 @@
       minute: 'numeric'
     })
   }
+
+  let isDeleted = false
+  $: isDeleted = (message.type === MessageType.Thread && message.thread == null) || message.removed
 </script>
 
 <div class="message__body">
   {#if !hideAvatar}
     <div class="message__avatar">
-      <PersonPreviewProvider value={author}>
-        <Avatar name={author?.name} person={author} size="x-small" />
-      </PersonPreviewProvider>
+      {#if !isDeleted}
+        <PersonPreviewProvider value={author}>
+          <Avatar name={author?.name} person={author} size="x-small" />
+        </PersonPreviewProvider>
+      {:else}
+        <Avatar icon={IconDelete} size="x-small" />
+      {/if}
     </div>
   {/if}
-  <div class="message__header">
-    <PersonPreviewProvider value={author}>
-      <div class="message__username">
-        {formatName(author?.name ?? '')}
+  {#if !isDeleted}
+    <div class="message__header">
+      <PersonPreviewProvider value={author}>
+        <div class="message__username">
+          {formatName(author?.name ?? '')}
+        </div>
+      </PersonPreviewProvider>
+      <div class="message__date">
+        {formatDate(message.created)}
       </div>
-    </PersonPreviewProvider>
-    <div class="message__date">
-      {formatDate(message.created)}
     </div>
-  </div>
+  {/if}
 
   <div class="message__text">
-    <MessageContentViewer {message} {card} />
+    <MessageContentViewer {message} {card} {author} />
   </div>
 </div>
-<div class="message__footer">
-  <MessageFooter {message} {replies} />
-</div>
+{#if !isDeleted}
+  <div class="message__footer">
+    <MessageFooter {message} {replies} />
+  </div>
+{/if}
 
 <style lang="scss">
   .message__body {
@@ -69,6 +81,7 @@
     align-items: center;
     gap: 1rem;
     min-width: 0;
+    max-width: 100%;
     overflow: hidden;
   }
 
@@ -78,6 +91,7 @@
     align-items: center;
     justify-content: center;
     width: 2.5rem;
+    min-width: 2.5rem;
   }
 
   .message__header {

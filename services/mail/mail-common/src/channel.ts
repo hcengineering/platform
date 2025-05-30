@@ -18,6 +18,7 @@ import chat from '@hcengineering/chat'
 import mail from '@hcengineering/mail'
 import { PersonSpace } from '@hcengineering/contact'
 import { SyncMutex } from './mutex'
+import { normalizeEmail } from './utils'
 
 const createMutex = new SyncMutex()
 
@@ -190,8 +191,4 @@ export const ChannelCacheFactory = {
   get instanceCount (): number {
     return ChannelCacheFactory.instances.size
   }
-}
-
-function normalizeEmail (email: string): string {
-  return email.toLowerCase().trim()
 }

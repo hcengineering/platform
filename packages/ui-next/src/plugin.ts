@@ -49,7 +49,11 @@ export const uiNext = plugin(uiNextId, {
     AndMore: '' as IntlString,
     IsTyping: '' as IntlString,
     Loading: '' as IntlString,
-    MessageIn: '' as IntlString
+    MessageIn: '' as IntlString,
+    ThreadWasRemoved: '' as IntlString,
+    MessageWasRemoved: '' as IntlString,
+    JoinedThe: '' as IntlString,
+    LeftThe: '' as IntlString
   }
 })
 

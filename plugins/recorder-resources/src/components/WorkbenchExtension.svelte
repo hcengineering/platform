@@ -7,7 +7,7 @@
   let parentElement: HTMLDivElement
 
   onMount(() => {
-    pushRootBarComponent('right', recorder.component.RecorderExt, 1300)
+    // pushRootBarComponent('right', recorder.component.RecorderExt, 1300)
   })
 </script>
 

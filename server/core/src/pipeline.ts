@@ -45,7 +45,7 @@ export async function createPipeline (
   constructors: MiddlewareCreator[],
   context: PipelineContext
 ): Promise<Pipeline> {
-  return await PipelineImpl.create(ctx.newChild('pipeline-operations', {}), constructors, context)
+  return await PipelineImpl.create(ctx, constructors, context)
 }
 
 class PipelineImpl implements Pipeline {

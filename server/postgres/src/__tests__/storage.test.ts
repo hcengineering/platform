@@ -247,6 +247,9 @@ describe('postgres operations', () => {
 
     const sortDesc = await client.findAll(taskPlugin.class.Task, {}, { sort: { name: SortingOrder.Descending } })
     expect(sortDesc[0].name).toMatch('my-task-4')
+
+    const sortEmpty = await client.findAll(taskPlugin.class.Task, {}, { sort: {} })
+    expect(sortEmpty).toHaveLength(5)
   })
 
   it('check attached', async () => {

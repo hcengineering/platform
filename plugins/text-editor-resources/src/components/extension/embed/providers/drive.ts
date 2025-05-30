@@ -22,9 +22,10 @@ import {
   getPreviewType,
   type FilePreviewExtension
 } from '@hcengineering/presentation'
+import { type Editor } from '@tiptap/core'
 import { SvelteRenderer } from '../../../node-view'
 import { parseReferenceUrl } from '../../reference'
-import { type EmbedNodeProviderConstructor } from '../embed'
+import { setLoadingState, type EmbedNodeProviderConstructor } from '../embed'
 
 export interface DriveEmbedOptions {
   _x?: number
@@ -32,46 +33,52 @@ export interface DriveEmbedOptions {
 
 export const defaultDriveEmbedOptions: DriveEmbedOptions = {}
 
-export const DriveEmbedProvider: EmbedNodeProviderConstructor<DriveEmbedOptions> = (options) => async (src: string) => {
-  const ref = parseReferenceUrl(src)
-  if (ref?.objectclass !== drive.class.File || ref.id === undefined) {
-    return
-  }
+export const DriveEmbedProvider: EmbedNodeProviderConstructor<DriveEmbedOptions> = (options) => ({
+  buildView: async (src: string) => {
+    const ref = parseReferenceUrl(src)
+    if (ref?.objectclass !== drive.class.File || ref.id === undefined) {
+      return
+    }
 
-  const client = getClient()
-  const file = await client.findOne(drive.class.File, { _id: ref.id as Ref<File> })
-  if (file === undefined) return
+    const client = getClient()
+    const file = await client.findOne(drive.class.File, { _id: ref.id as Ref<File> })
+    if (file === undefined) return
 
-  const version = await client.findOne(drive.class.FileVersion, { attachedTo: file._id, version: file.version })
-  if (version === undefined) return
+    const version = await client.findOne(drive.class.FileVersion, { attachedTo: file._id, version: file.version })
+    if (version === undefined) return
 
-  const allPreviewTypesPromise = new Promise<FilePreviewExtension[]>((resolve) => {
-    $previewTypes.subscribe((types) => {
-      if (types.length > 0) resolve(types)
+    const allPreviewTypesPromise = new Promise<FilePreviewExtension[]>((resolve) => {
+      $previewTypes.subscribe((types) => {
+        if (types.length > 0) resolve(types)
+      })
     })
-  })
 
-  const allPreviewTypes = await allPreviewTypesPromise
-  const previewType = await getPreviewType(version.type, allPreviewTypes)
+    const allPreviewTypes = await allPreviewTypesPromise
+    const previewType = await getPreviewType(version.type, allPreviewTypes)
 
-  if (previewType === undefined) return
+    if (previewType === undefined) return
 
-  return (root: HTMLDivElement) => {
-    const renderer = new SvelteRenderer(FilePreview as any, {
-      element: root,
-      props: {
-        file: version.file,
-        contentType: version.type,
-        name: version.title,
-        metadata: version.metadata,
-        embedded: true
+    return (editor: Editor, root: HTMLDivElement) => {
+      const setLoading = (loading: boolean): void => {
+        setLoadingState(editor.view, root, loading)
       }
-    })
-    return {
-      name: 'drive',
-      destroy: () => {
-        renderer.destroy()
+      const renderer = new SvelteRenderer(FilePreview as any, {
+        element: root,
+        props: {
+          file: version.file,
+          contentType: version.type,
+          name: version.title,
+          metadata: version.metadata,
+          embedded: true,
+          setLoading
+        }
+      })
+      return {
+        name: 'drive',
+        destroy: () => {
+          renderer.destroy()
+        }
       }
     }
   }
-}
+})

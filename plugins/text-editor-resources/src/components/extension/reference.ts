@@ -22,7 +22,7 @@ import { ReferenceNode, type ReferenceNodeProps, type ReferenceOptions } from '@
 import Suggestion, { type SuggestionKeyDownProps, type SuggestionOptions, type SuggestionProps } from './suggestion'
 
 import { type Class, type Doc, type Ref } from '@hcengineering/core'
-import { getMetadata, getResource } from '@hcengineering/platform'
+import { getMetadata, getResource, translate } from '@hcengineering/platform'
 import presentation, { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
 
@@ -131,9 +131,20 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
 
       let broken = false
 
-      const renderLabel = (props: ReferenceNodeProps): void => {
+      const renderLabel = async (props: ReferenceNodeProps): Promise<void> => {
         root.setAttribute('data-label', props.label)
-        titleSpan.innerText = `${iconUrl !== '' ? '' : options.suggestion.char}${props.label ?? props.id}`
+
+        if (props.id === contact.mention.Here) {
+          const trans = await translate(contact.string.Here, {})
+          titleSpan.innerText = `${iconUrl !== '' ? '' : options.suggestion.char}${trans}`
+          root.classList.add('lower')
+        } else if (props.id === contact.mention.Everyone) {
+          const trans = await translate(contact.string.Everyone, {})
+          titleSpan.innerText = `${iconUrl !== '' ? '' : options.suggestion.char}${trans}`
+          root.classList.add('lower')
+        } else {
+          titleSpan.innerText = `${iconUrl !== '' ? '' : options.suggestion.char}${props.label ?? props.id}`
+        }
         if (broken) {
           root.classList.add('broken')
         } else {
@@ -166,14 +177,14 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
       }
 
       const titleSpan = root.appendChild(document.createElement('span'))
-      renderLabel({ id, objectclass, label: node.attrs.label })
+      void renderLabel({ id, objectclass, label: node.attrs.label })
 
       if (id !== undefined && objectclass !== undefined && !withoutDoc) {
         query.query(objectclass, { _id: id }, async (result) => {
           const obj = result[0]
           broken = obj === undefined
           if (broken) {
-            renderLabel({ id, objectclass, label: node.attrs.label })
+            void renderLabel({ id, objectclass, label: node.attrs.label })
             resetTooltipHandle(undefined)
           } else {
             const label = await getReferenceLabel(objectclass, id, obj)
@@ -184,7 +195,7 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
               tooltipOptions = undefined
             }
             resetTooltipHandle(tooltip(root, tooltipOptions))
-            renderLabel({ id, objectclass, label })
+            void renderLabel({ id, objectclass, label })
           }
         })
       } else if (withoutDoc) {
@@ -194,7 +205,7 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
       return {
         dom: root,
         update (node, decorations) {
-          renderLabel({ id, objectclass, label: node.attrs.label })
+          void renderLabel({ id, objectclass, label: node.attrs.label })
           return true
         },
         destroy () {

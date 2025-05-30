@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Card } from '@hcengineering/card'
+import { type Card, type MasterTag } from '@hcengineering/card'
 import core, {
   generateId,
   type AnyAttribute,
@@ -42,6 +42,7 @@ import {
   type Process,
   type ProcessFunction,
   type RelatedContext,
+  type SelectedContext,
   type SelectedUserRequest,
   type State,
   type Step,
@@ -65,6 +66,32 @@ export function isTypeEqual (toCheck: Type<any> | undefined, attr: Type<any>): b
 
 export function generateContextId (): ContextId {
   return generateId() as string as ContextId
+}
+
+export function getContextAttribute (
+  client: Client,
+  context: SelectedContext | undefined,
+  masterTag: Ref<MasterTag>
+): AnyAttribute | undefined {
+  if (context === undefined) return
+  const h = client.getHierarchy()
+  const model = client.getModel()
+  if (context.type === 'attribute') {
+    return h.findAttribute(masterTag, context.key)
+  }
+  if (context.type === 'nested') {
+    const attr = h.findAttribute(masterTag, context.path)
+    if (attr === undefined) return
+    const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
+    const targetClass = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
+    return h.findAttribute(targetClass, context.key)
+  }
+  if (context.type === 'relation') {
+    const assoc = model.findObject(context.association)
+    if (assoc === undefined) return
+    const targetClass = context.direction === 'A' ? assoc.classA : assoc.classB
+    return h.findAttribute(targetClass, context.key)
+  }
 }
 
 export async function pickTransition (

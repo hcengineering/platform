@@ -61,9 +61,9 @@
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/workbench-resources": "^0.6.1",
-    "@livekit/krisp-noise-filter": "^0.2.16",
-    "@livekit/track-processors": "^0.3.3",
-    "livekit-client": "^2.9.9",
+    "@livekit/krisp-noise-filter": "^0.3.0",
+    "@livekit/track-processors": "^0.5.6",
+    "livekit-client": "^2.13.3",
     "svelte": "^4.2.19"
   }
 }

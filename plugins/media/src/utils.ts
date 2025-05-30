@@ -139,8 +139,9 @@ export function cleanupDeviceLabel (label: string): string {
   )
 }
 
-export async function getCameraStream (
-  deviceId: MediaDeviceInfo['deviceId'] | undefined,
+export async function getMediaStream (
+  camDeviceId: MediaDeviceInfo['deviceId'] | undefined,
+  micDeviceId: MediaDeviceInfo['deviceId'] | undefined,
   constraints?: MediaStreamConstraints
 ): Promise<MediaStream | null> {
   if (navigator?.mediaDevices === undefined) {
@@ -149,19 +150,30 @@ export async function getCameraStream (
   }
 
   let video: MediaTrackConstraints | boolean
+  let audio: MediaTrackConstraints | boolean
 
   if (constraints?.video === undefined) {
-    video = deviceId !== undefined ? { deviceId: { exact: deviceId } } : true
+    video = camDeviceId !== undefined ? { deviceId: { exact: camDeviceId } } : true
   } else if (constraints.video === true) {
-    video = deviceId !== undefined ? { deviceId: { exact: deviceId } } : true
+    video = camDeviceId !== undefined ? { deviceId: { exact: camDeviceId } } : true
   } else if (constraints.video === false) {
     video = false
   } else {
-    video = { deviceId: { exact: deviceId }, ...constraints.video }
+    video = { ...constraints.video, deviceId: { exact: camDeviceId } }
+  }
+
+  if (constraints?.audio === undefined) {
+    audio = micDeviceId !== undefined ? { deviceId: { exact: micDeviceId } } : true
+  } else if (constraints.audio === true) {
+    audio = micDeviceId !== undefined ? { deviceId: { exact: micDeviceId } } : true
+  } else if (constraints.audio === false) {
+    audio = false
+  } else {
+    audio = { ...constraints.audio, deviceId: { exact: micDeviceId } }
   }
 
   try {
-    return await navigator.mediaDevices.getUserMedia({ ...constraints, video })
+    return await navigator.mediaDevices.getUserMedia({ ...constraints, video, audio })
   } catch (err: any) {
     console.warn('Failed to get camera stream', err)
     return null
@@ -169,7 +181,7 @@ export async function getCameraStream (
 }
 
 export async function getMicrophoneStream (
-  deviceId: MediaDeviceInfo['deviceId'],
+  deviceId: MediaDeviceInfo['deviceId'] | undefined,
   constraints?: MediaStreamConstraints
 ): Promise<MediaStream | null> {
   if (navigator?.mediaDevices === undefined) {
@@ -180,13 +192,13 @@ export async function getMicrophoneStream (
   let audio: MediaTrackConstraints | boolean
 
   if (constraints?.audio === undefined) {
-    audio = { deviceId }
+    audio = deviceId !== undefined ? { deviceId: { exact: deviceId } } : true
   } else if (constraints.audio === true) {
-    audio = { deviceId }
+    audio = deviceId !== undefined ? { deviceId: { exact: deviceId } } : true
   } else if (constraints.audio === false) {
     audio = false
   } else {
-    audio = { deviceId, ...constraints.audio }
+    audio = { ...constraints.audio, deviceId: { exact: deviceId } }
   }
 
   try {

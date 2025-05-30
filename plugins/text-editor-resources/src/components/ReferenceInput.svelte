@@ -112,10 +112,16 @@
   }
 
   let actions: RefAction[] = defaultRefActions.concat(...extraActions).sort((a, b) => a.order - b.order)
+  let modelActions: RefAction[] = []
 
-  void getModelRefActions().then((modelActions) => {
-    actions = actions.concat(...modelActions).sort((a, b) => a.order - b.order)
+  void getModelRefActions().then((actions) => {
+    modelActions = actions
   })
+
+  $: actions = defaultRefActions
+    .concat(...extraActions)
+    .concat(...modelActions)
+    .sort((a, b) => a.order - b.order)
 
   export function submit (): void {
     editor?.submit()
@@ -199,7 +205,10 @@
     <div class="buttons-panel flex-between clear-mins">
       <div class="buttons-group {shrinkButtons ? 'xxsmall-gap' : 'xsmall-gap'}">
         {#if showActions}
-          {#each actions as a}
+          {#each actions as a, idx (a)}
+            {#if idx !== 0 && a.order % 10 === 0}
+              <div class="buttons-divider" />
+            {/if}
             <Button
               disabled={a.disabled}
               icon={a.icon}
@@ -207,15 +216,13 @@
               kind="ghost"
               showTooltip={{ label: a.label }}
               size={buttonSize}
+              noFocus
               on:click={handler(a, (a, evt) => {
                 if (a.disabled !== true) {
                   handleAction(a, evt)
                 }
               })}
             />
-            {#if a.order % 10 === 1}
-              <div class="buttons-divider" />
-            {/if}
           {/each}
         {/if}
       </div>

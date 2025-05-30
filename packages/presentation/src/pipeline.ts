@@ -1,4 +1,3 @@
-import { Analytics } from '@hcengineering/analytics'
 import {
   toFindResult,
   type Class,
@@ -118,7 +117,6 @@ export class PresentationPipelineImpl implements PresentationPipeline {
           return toFindResult([], -1)
         }
       }
-      Analytics.handleError(err as Error)
       const status = unknownError(err)
       await setPlatformStatus(status)
       return toFindResult([], -1)
@@ -144,7 +142,6 @@ export class PresentationPipelineImpl implements PresentationPipeline {
           return
         }
       }
-      Analytics.handleError(err as Error)
       const status = unknownError(err)
       await setPlatformStatus(status)
     }
@@ -178,7 +175,6 @@ export class PresentationPipelineImpl implements PresentationPipeline {
           return {}
         }
       }
-      Analytics.handleError(err as Error)
       const status = unknownError(err)
       await setPlatformStatus(status)
       return {}

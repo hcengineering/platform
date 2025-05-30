@@ -19,7 +19,8 @@ import type {
   OtpInfo,
   RegionInfo,
   WorkspaceLoginInfo,
-  WorkspaceInviteInfo
+  WorkspaceInviteInfo,
+  ProviderInfo
 } from '@hcengineering/account-client'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
@@ -328,6 +329,7 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
   }
 
   try {
+    // even if "token" is null here it still might be supplied from the cookie
     return await getAccountClient(token).getLoginInfoByToken()
   } catch (err: any) {
     if (err instanceof PlatformError) {
@@ -337,10 +339,12 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
         setMetadata(presentation.metadata.Token, null)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
 
-        const loc = getCurrentLocation()
-        loc.path[1] = 'login'
-        loc.path.length = 2
-        navigate(loc)
+        if (doNavigate) {
+          const loc = getCurrentLocation()
+          loc.path[1] = 'login'
+          loc.path.length = 2
+          navigate(loc)
+        }
         return null
       }
 
@@ -872,8 +876,8 @@ export async function getLoginInfoFromQuery (): Promise<LoginInfo | WorkspaceLog
   }
 }
 
-export async function getProviders (): Promise<string[]> {
-  let providers: string[]
+export async function getProviders (): Promise<ProviderInfo[]> {
+  let providers: ProviderInfo[]
 
   try {
     providers = await getAccountClient(null).getProviders()
@@ -941,7 +945,9 @@ export async function doLoginNavigate (
   navigateUrl?: string
 ): Promise<void> {
   if (result != null) {
-    await logIn(result)
+    if (result.token != null) {
+      await logIn(result)
+    }
 
     if (navigateUrl !== undefined) {
       try {

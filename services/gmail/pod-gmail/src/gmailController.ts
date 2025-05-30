@@ -22,6 +22,7 @@ import {
   type PersonId
 } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
+import { normalizeEmail } from '@hcengineering/mail-common'
 
 import { decode64 } from './base64'
 import config from './config'
@@ -43,6 +44,8 @@ export class GmailController {
   PersonId,
   Map<WorkspaceUuid, GmailClient>
   >()
+
+  private readonly personIdByEmail = new Map<string, PersonId>()
 
   private readonly initLimitter = new RateLimiter(config.InitLimit)
   private readonly authProvider
@@ -162,22 +165,30 @@ export class GmailController {
   push (message: string): void {
     const data = JSON.parse(decode64(message))
     const email = data.emailAddress
-    const clients = this.clients.get(email)
-    if (clients === undefined) {
-      this.ctx.info('No clients found', { email })
+    const socialId = this.personIdByEmail.get(normalizeEmail(email))
+    if (socialId === undefined) {
+      this.ctx.warn('No socialId found for email', { email })
       return
     }
+
+    const clients = this.clients.get(socialId)
+    if (clients === undefined) {
+      this.ctx.info('No clients found', { email, socialId })
+      return
+    }
+    this.ctx.info('Processing push', { clients: clients.size, email })
     for (const client of clients.values()) {
       void client.sync()
     }
   }
 
-  addClient (socialId: PersonId, workspace: WorkspaceUuid, client: GmailClient): void {
+  addClient (socialId: PersonId, workspace: WorkspaceUuid, email: string, client: GmailClient): void {
     let userClients = this.clients.get(socialId)
     if (userClients === undefined) {
       userClients = new Map<WorkspaceUuid, GmailClient>()
       this.clients.set(socialId, userClients)
     }
+    this.personIdByEmail.set(normalizeEmail(email), socialId)
 
     const existingClient = userClients.get(workspace)
     if (existingClient != null) {

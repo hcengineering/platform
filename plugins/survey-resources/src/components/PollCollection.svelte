@@ -18,7 +18,7 @@
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Survey } from '@hcengineering/survey'
-  import { Button, IconAdd, Label, Section, navigate, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, Section, navigate, showPopup, Scroller } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { Table, ViewletSelector, ViewletSettingButton, getObjectLinkFragment } from '@hcengineering/view-resources'
   import SurveyPopup from './SurveyPopup.svelte'
@@ -79,14 +79,16 @@
 
   <svelte:fragment slot="content">
     {#if polls > 0 && viewlet}
-      <Table
-        _class={survey.class.Poll}
-        config={preference?.config ?? viewlet.config}
-        options={viewlet.options}
-        query={{ attachedTo: objectId }}
-        loadingProps={{ length: polls }}
-        {readonly}
-      />
+      <Scroller horizontal noFade={false}>
+        <Table
+          _class={survey.class.Poll}
+          config={preference?.config ?? viewlet.config}
+          options={viewlet.options}
+          query={{ attachedTo: objectId }}
+          loadingProps={{ length: polls }}
+          {readonly}
+        />
+      </Scroller>
     {:else}
       <div class="antiSection-empty solid flex-col mt-3">
         <span class="content-dark-color">

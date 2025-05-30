@@ -20,7 +20,6 @@
   import { Card } from '@hcengineering/card'
 
   import uiNext from '../../plugin'
-  import { toMarkup } from '../../utils'
   import MessageInput from './MessageInput.svelte'
   import Label from '../Label.svelte'
   import MessageContentViewer from './MessageContentViewer.svelte'
@@ -44,22 +43,23 @@
 
 {#if compact}
   <div class="message__body">
-    <div class="message__time message--time_hoverable">
-      <div class="message__date">
-        {formatDate(message.created)}
+    <div class="time-container">
+      <div class="message__time message--time_hoverable">
+        <div class="message__date">
+          {formatDate(message.created)}
+        </div>
       </div>
     </div>
 
     <div class="message__content">
       {#if !isEditing && message.content !== ''}
         <div class="message__text">
-          <MessageContentViewer {message} {card} />
+          <MessageContentViewer {message} {card} {author} />
         </div>
       {:else if isEditing}
         <MessageInput
           {card}
           {message}
-          content={toMarkup(message.content)}
           onCancel={() => {
             isEditing = false
           }}
@@ -98,13 +98,12 @@
       </div>
       {#if !isEditing && message.content !== ''}
         <div class="message__text">
-          <MessageContentViewer {message} {card} />
+          <MessageContentViewer {message} {card} {author} />
         </div>
       {:else if isEditing}
         <MessageInput
           {card}
           {message}
-          content={toMarkup(message.content)}
           onCancel={() => {
             isEditing = false
           }}
@@ -125,7 +124,8 @@
     gap: 1rem;
     align-self: stretch;
     min-width: 0;
-    overflow: hidden;
+    position: relative;
+    //overflow: hidden;
   }
 
   .message__avatar {
@@ -185,13 +185,19 @@
     flex: 1;
   }
 
-  .message__time {
-    display: flex;
+  .time-container {
+    position: relative;
     width: 2.5rem;
+  }
+
+  .message__time {
+    position: absolute;
+    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 1.313rem;
+    right: 0;
     visibility: hidden;
   }
 </style>

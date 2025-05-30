@@ -95,7 +95,7 @@ export class ClientSession implements Session {
   isAdmin: boolean
 
   constructor (
-    protected readonly token: Token,
+    readonly token: Token,
     readonly workspace: WorkspaceIds,
     readonly account: Account,
     readonly info: LoginInfoWithWorkspaces,
@@ -164,7 +164,8 @@ export class ClientSession implements Session {
       undefined,
       undefined,
       ctx.pipeline.context.modelDb,
-      ctx.socialStringsToUsers
+      ctx.socialStringsToUsers,
+      this.token.extra?.service ?? '🤦‍♂️user'
     )
     ctx.ctx.contextData = contextData
   }

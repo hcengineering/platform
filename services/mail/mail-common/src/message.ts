@@ -27,7 +27,6 @@ import {
   type TxOperations,
   Doc,
   generateId,
-  PersonUuid,
   RateLimiter,
   Space
 } from '@hcengineering/core'
@@ -39,13 +38,39 @@ import { MessageRequestEventType } from '@hcengineering/communication-sdk-types'
 import { generateMessageId } from '@hcengineering/communication-shared'
 
 import { BaseConfig, type Attachment } from './types'
-import { EmailMessage } from './types'
+import { EmailMessage, MailRecipient } from './types'
 import { getMdContent } from './utils'
 import { PersonCacheFactory } from './person'
 import { PersonSpacesCacheFactory } from './personSpaces'
 import { ChannelCache, ChannelCacheFactory } from './channel'
 import { ThreadLookupService } from './thread'
 
+/**
+ * Creates mail messages in the platform
+ *
+ * This function processes an email message and creates corresponding chat messages. It handles:
+ * - Ensuring persons exist for email addresses
+ * - Finding or creating channels for participants
+ * - Creating threads for messages
+ * - Uploading attachments to storage
+ * - Sending message events to Kafka
+ *
+ * @param {BaseConfig} config - Configuration options including storage and Kafka settings
+ * @param {MeasureContext} ctx - Context for logging and performance measurement
+ * @param {TxOperations} txClient - Client for database transactions
+ * @param {KeyValueClient} keyValueClient - Client for key-value storage operations
+ * @param {Producer} producer - Kafka producer for sending message events
+ * @param {string} token - Authentication token for API calls
+ * @param {WorkspaceLoginInfo} wsInfo - Workspace information including ID and URLs
+ * @param {EmailMessage} message - The email message to process
+ * @param {Attachment[]} attachments - Array of attachments for the message
+ * @param {MailRecipient[]} [recipients] - Optional list of specific persons who should receive the message.
+ *                                         If not provided, all existing accounts from email addresses will be used.
+ * @returns {Promise<void>} A promise that resolves when all messages have been created
+ * @throws Will log errors but not throw exceptions for partial failures
+ *
+ * @public
+ */
 export async function createMessages (
   config: BaseConfig,
   ctx: MeasureContext,
@@ -55,7 +80,8 @@ export async function createMessages (
   token: string,
   wsInfo: WorkspaceLoginInfo,
   message: EmailMessage,
-  attachments: Attachment[]
+  attachments: Attachment[],
+  recipients?: MailRecipient[]
 ): Promise<void> {
   const { mailId, from, subject, replyTo } = message
   const tos = [...(message.to ?? []), ...(message.copy ?? [])]
@@ -68,13 +94,13 @@ export async function createMessages (
 
   const fromPerson = await personCache.ensurePerson(from)
 
-  const toPersons: { address: string, uuid: PersonUuid, socialId: PersonId }[] = []
+  const toPersons: MailRecipient[] = []
   for (const to of tos) {
     const toPerson = await personCache.ensurePerson(to)
     if (toPerson === undefined) {
       continue
     }
-    toPersons.push({ address: to.email, ...toPerson })
+    toPersons.push({ email: to.email, ...toPerson })
   }
   if (toPersons.length === 0) {
     ctx.error('Unable to create message without a proper TO', { mailId, from })
@@ -114,42 +140,12 @@ export async function createMessages (
     }
   }
 
-  try {
-    const spaces = await personSpacesCache.getPersonSpaces(mailId, fromPerson.uuid, from.email)
-    if (spaces.length > 0) {
-      await saveMessageToSpaces(
-        config,
-        ctx,
-        txClient,
-        producer,
-        threadLookup,
-        wsInfo,
-        mailId,
-        spaces,
-        participants,
-        modifiedBy,
-        subject,
-        content,
-        attachedBlobs,
-        from.email,
-        fromPerson.socialId,
-        message.sendOn,
-        channelCache,
-        replyTo
-      )
-    }
-  } catch (error) {
-    ctx.error('Failed to save message to personal spaces', {
-      error,
-      mailId,
-      personUuid: fromPerson.uuid,
-      email: from
-    })
-  }
+  const allPersons = [{ ...fromPerson, email: from.email }, ...toPersons]
+  const messageRecipients = recipients != null && recipients.length > 0 ? recipients : allPersons
 
-  for (const to of toPersons) {
+  for (const person of messageRecipients) {
     try {
-      const spaces = await personSpacesCache.getPersonSpaces(mailId, to.uuid, to.address)
+      const spaces = await personSpacesCache.getPersonSpaces(mailId, person.uuid, person.email)
       if (spaces.length > 0) {
         await saveMessageToSpaces(
           config,
@@ -165,15 +161,15 @@ export async function createMessages (
           subject,
           content,
           attachedBlobs,
-          to.address,
-          to.socialId,
+          person.email,
+          person.socialId,
           message.sendOn,
           channelCache,
           replyTo
         )
       }
     } catch (error) {
-      ctx.error('Failed to save message spaces', { error, mailId, personUuid: to.uuid, email: to.address })
+      ctx.error('Failed to save message spaces', { error, mailId, personUuid: person.uuid, email: person.email })
     }
   }
 }

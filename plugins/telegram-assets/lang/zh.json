@@ -1,5 +1,8 @@
 {
   "string": {
+    "Loading": "加载中...",
+    "IntegrationConnected": "已连接为 {phone}",
+    "Disconnect": "断开连接",
     "SharedMessages": "共享的 Telegram 消息",
     "Next": "下一步",
     "Back": "上一步",

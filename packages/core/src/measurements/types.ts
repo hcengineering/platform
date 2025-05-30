@@ -21,6 +21,7 @@ export interface MetricsData {
   value: number
   topResult?: {
     value: number
+    time?: number
     params: FullParamsType
   }[]
 }
@@ -100,6 +101,7 @@ export interface MeasureContext<Q = any> {
   logger: MeasureLogger
 
   parent?: MeasureContext
+  getParams: () => ParamsType
 
   measure: (name: string, value: number, override?: boolean) => void
 

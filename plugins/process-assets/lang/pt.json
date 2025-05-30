@@ -9,7 +9,7 @@
     "DeleteState": "Excluir Estado",
     "DeleteStateConfirm": "Você deseja excluir o estado?",
     "RunProcess": "Executar Processo",
-    "Processes": "Processos",
+    "Processes": "Processos (beta)",
     "Untitled": "Sem título",
     "States": "Estados",
     "AddState": "Adicionar Estado",
@@ -63,7 +63,9 @@
     "DeleteTransition": "Excluir transição",
     "DeleteTransitionConfirm": "Você deseja excluir a transição?",
     "AddTransition": "Adicionar transição",
-    "ToDo": "Tarefa"
+    "ToDo": "Tarefa",
+    "CurrentCard": "Cartão Atual",
+    "Data": "Dados"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

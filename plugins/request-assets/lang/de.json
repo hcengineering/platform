@@ -18,6 +18,8 @@
     "PleaseTypeMessage": "Bitte geben Sie eine Kommentarnachricht ein, um fortzufahren...",
     "NoRequests": "Keine Anfragen",
     "Cancel": "Abbrechen",
-    "Cancelled": "Abgebrochen"
+    "Cancelled": "Abgebrochen",
+    "NewRequest": "Neue Anfrage",
+    "CancelRequest": "Anfrage abbrechen"
   }
 }

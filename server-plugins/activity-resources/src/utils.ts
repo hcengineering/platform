@@ -403,6 +403,25 @@ export function getCollectionAttribute (
   return undefined
 }
 
+function getAttrClass (
+  hierarchy: Hierarchy,
+  objectClass: Ref<Class<Doc>>,
+  attrKey: string
+): Ref<Class<Doc>> | undefined {
+  const clazz = hierarchy.findAttribute(objectClass, attrKey)
+
+  if (clazz === undefined) return undefined
+
+  if (hierarchy.isDerived(clazz.type._class, core.class.RefTo)) {
+    return (clazz.type as RefTo<Doc>).to
+  } else if (hierarchy.isDerived(clazz.type._class, core.class.ArrOf)) {
+    const of = (clazz.type as ArrOf<AttachedDoc>).of
+    return of._class === core.class.RefTo ? (of as RefTo<Doc>).to : of._class
+  }
+
+  return clazz.type._class
+}
+
 export async function getNewActivityUpdates (
   control: TriggerControl,
   originTx: TxCUD<Card>,
@@ -443,7 +462,7 @@ export async function getNewActivityUpdates (
     if (isUnset && hierarchy.isMixin(key as any)) {
       const tag = key as Ref<Tag>
       const clazz = hierarchy.getClass(tag)
-      console.log('d', hierarchy.isDerived(clazz._class, cardPlugin.class.Tag))
+
       if (hierarchy.isDerived(clazz._class, cardPlugin.class.Tag)) {
         result.push({
           type: ActivityUpdateType.Tag,
@@ -453,20 +472,7 @@ export async function getNewActivityUpdates (
       }
     }
 
-    let attrClass: Ref<Class<Doc>> | undefined
-    const clazz = hierarchy.findAttribute(mixin ?? card._class, key)
-
-    if (clazz !== undefined && 'to' in clazz.type) {
-      attrClass = clazz.type.to as Ref<Class<Doc>>
-    } else if (clazz !== undefined && hierarchy.isDerived(clazz.type._class, core.class.ArrOf)) {
-      attrClass = (clazz.type as ArrOf<Doc>).of._class
-    } else if (clazz !== undefined && 'of' in clazz?.type) {
-      attrClass = (clazz.type.of as RefTo<Doc>).to
-    }
-
-    if (attrClass == null && clazz?.type?._class !== undefined) {
-      attrClass = clazz.type._class
-    }
+    const attrClass: Ref<Class<Doc>> | undefined = getAttrClass(hierarchy, mixin ?? card._class, key)
 
     if (attrClass === undefined) {
       continue

@@ -254,14 +254,7 @@ export async function benchmark (
                   // operations = 0
                   requestTime = 0
                   // transfer = 0
-                  const r = extract(
-                    json.metrics as Metrics,
-                    '🧲 session',
-                    'client',
-                    'handleRequest',
-                    'process',
-                    'find-all'
-                  )
+                  const r = extract(json.metrics as Metrics, '🧲 session', 'client', 'process', 'find-all')
                   operations = (r?.operations ?? 0) - oldOperations
                   oldOperations = r?.operations ?? 0
 

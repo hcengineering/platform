@@ -8,6 +8,7 @@ services:
       - STREAM_ENDPOINT_URL=datalake://huly.local:4030
       - STREAM_INSECURE=true
       - STREAM_SERVER_SECRET=secret
+      - STREAM_MAX_PARALLEL_SCALING_COUNT=6
       - AWS_ACCESS_KEY_ID=minioadmin
       - AWS_SECRET_ACCESS_KEY=minioadmin
     ports:

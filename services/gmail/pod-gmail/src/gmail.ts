@@ -26,6 +26,7 @@ import {
   isWorkspaceLoginInfo,
   AccountClient
 } from '@hcengineering/account-client'
+import { MailRecipient } from '@hcengineering/mail-common'
 
 import { encode64 } from './base64'
 import config from './config'
@@ -82,7 +83,7 @@ async function wait (sec: number): Promise<void> {
 
 export class GmailClient {
   private readonly account: AccountUuid
-  private email: string | undefined = undefined
+  private email: string
   private readonly tokenStorage: TokenStorage
   private readonly client: TxOperations
   private watchTimer: NodeJS.Timeout | undefined = undefined
@@ -114,6 +115,11 @@ export class GmailClient {
     this.account = this.user.userId
     this.attachmentHandler = new AttachmentHandler(ctx, wsInfo, storageAdapter, this.gmail, this.client)
     const keyValueClient = getKvsClient(this.integrationToken)
+    const recipient: MailRecipient = {
+      email: this.email,
+      socialId: this.socialId._id,
+      uuid: this.user.userId
+    }
     this.messageManager = createMessageManager(
       ctx,
       this.client,
@@ -122,7 +128,7 @@ export class GmailClient {
       this.attachmentHandler,
       this.workspace,
       this.integrationToken,
-      socialId
+      recipient
     )
     this.syncManager = new SyncManager(
       ctx,
@@ -237,7 +243,7 @@ export class GmailClient {
         await this.client.createDoc(setting.class.Integration, core.space.Workspace, {
           type: gmail.integrationType.Gmail,
           disabled: false,
-          value: this.socialId._id
+          value: this.email ?? this.socialId.value
         })
       }
     } catch (err: any) {
@@ -368,7 +374,7 @@ export class GmailClient {
       const profile = await this.gmail.getProfile({
         userId: 'me'
       })
-      this.email = profile.data.emailAddress ?? undefined
+      this.email = profile.data.emailAddress ?? this.email
       if (this.email !== undefined) return this.email
       await wait(5)
     }
@@ -388,7 +394,7 @@ export class GmailClient {
     try {
       this.ctx.info('Register client', { socialId: this.socialId._id, email: this.email })
       const controller = GmailController.getGmailController()
-      controller.addClient(this.socialId._id, this.user.workspace, this)
+      controller.addClient(this.socialId._id, this.user.workspace, this.email, this)
     } catch (err) {
       this.ctx.error('Add client error', {
         workspaceUuid: this.user.workspace,

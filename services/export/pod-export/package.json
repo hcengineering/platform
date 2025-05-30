@@ -71,7 +71,7 @@
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.21.2",
-    "ws": "^8.18.0",
+    "ws": "^8.18.2",
     "@hcengineering/drive": "^0.6.0",
     "@hcengineering/export": "^0.6.0",
     "uuid": "^8.3.2",

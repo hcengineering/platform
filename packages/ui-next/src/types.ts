@@ -16,8 +16,8 @@
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
 import { type TextEditorHandler } from '@hcengineering/text-editor'
-import { type BlobID } from '@hcengineering/communication-types'
-import type { BlobMetadata, Ref, Timestamp } from '@hcengineering/core'
+import { type LinkPreviewData, type FileData } from '@hcengineering/communication-types'
+import type { Markup, Ref, Timestamp } from '@hcengineering/core'
 import type { Person } from '@hcengineering/contact'
 
 export interface NavigationSection {
@@ -48,14 +48,6 @@ export interface TextInputAction {
   disabled?: boolean
 }
 
-export interface UploadedFile {
-  blobId: BlobID
-  type: string
-  filename: string
-  size: number
-  metadata?: BlobMetadata
-}
-
 export interface Action {
   id: string
   label: IntlString
@@ -68,4 +60,11 @@ export interface Action {
 export interface PresenceTyping {
   person: Ref<Person>
   lastTyping: Timestamp
+}
+
+export interface MessageDraft {
+  _id: string
+  content: Markup
+  files: FileData[]
+  links: LinkPreviewData[]
 }

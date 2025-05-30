@@ -26,6 +26,7 @@
   export let key: string
   export let object: Record<string, any>
   export let allowRemove: boolean = false
+  export let forbidValue: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -67,6 +68,7 @@
   {value}
   masterTag={process.masterTag}
   {allowRemove}
+  {forbidValue}
   on:remove
   on:change={(e) => {
     onChange(e.detail)

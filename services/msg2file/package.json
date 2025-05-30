@@ -57,11 +57,11 @@
   "dependencies": {
     "@hcengineering/api-client": "^0.6.0",
     "@hcengineering/card": "^0.6.0",
-    "@hcengineering/communication-types": "0.1.189",
-    "@hcengineering/communication-shared": "0.1.189",
-    "@hcengineering/communication-yaml": "0.1.189",
-    "@hcengineering/communication-sdk-types": "0.1.189",
-    "@hcengineering/communication-rest-client": "0.1.189",
+    "@hcengineering/communication-types": "0.1.194",
+    "@hcengineering/communication-shared": "0.1.194",
+    "@hcengineering/communication-yaml": "0.1.194",
+    "@hcengineering/communication-sdk-types": "0.1.194",
+    "@hcengineering/communication-rest-client": "0.1.194",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-client": "^0.6.0",
@@ -73,7 +73,7 @@
     "express": "^4.21.2",
     "js-yaml": "^4.1.0",
     "node-cron": "^3.0.3",
-    "postgres": "^3.4.5",
+    "postgres": "^3.4.7",
     "uuid": "^8.3.2"
   }
 }

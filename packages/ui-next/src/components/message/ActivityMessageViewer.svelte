@@ -22,9 +22,11 @@
   import ActivityObjectValue from './activity/ActivityObjectValue.svelte'
   import ActivityUpdateViewer from './activity/ActivityUpdateViewer.svelte'
   import { getAttributeModel } from '../../activity'
+  import { Person } from '@hcengineering/contact'
 
   export let card: Card
   export let message: ActivityMessage
+  export let author: Person | undefined
 
   const client = getClient()
 
@@ -41,5 +43,5 @@
 {#if data.action === 'create'}
   <ActivityObjectValue {message} {card} />
 {:else if data.update && data.action === 'update'}
-  <ActivityUpdateViewer update={data.update} model={attributeModel} content={message.content} />
+  <ActivityUpdateViewer update={data.update} model={attributeModel} content={message.content} {author} {card} />
 {/if}

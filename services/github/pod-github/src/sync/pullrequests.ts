@@ -299,7 +299,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
   async getReviewers (issue: PullRequestExternalData): Promise<PersonId[]> {
     // Find Assignees and reviewers
-    const ids: UserInfo[] = issue.reviewRequests.nodes.map((it: any) => it.requestedReviewer)
+    const ids: UserInfo[] = (issue.reviewRequests.nodes ?? []).map((it: any) => it.requestedReviewer)
 
     const values: PersonId[] = []
 
@@ -310,7 +310,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       }
     }
 
-    for (const n of issue.latestReviews.nodes) {
+    for (const n of issue.latestReviews.nodes ?? []) {
       const acc = await this.provider.getAccount(n.author)
       if (acc !== undefined) {
         values.push(acc)
@@ -438,7 +438,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           pullRequestExternal.body
         )
 
-        const op = this.client.apply()
+        let op = this.client.apply()
         let createdPullRequest: GithubPullRequest | undefined
 
         await this.ctx.withLog(
@@ -464,16 +464,21 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           { url: pullRequestExternal.url }
         )
 
+        await op.commit()
         const pullRequestObj =
           createdPullRequest ??
           (await this.client.findOne(github.class.GithubPullRequest, {
             _id: info._id as unknown as Ref<GithubPullRequest>
           }))
         if (pullRequestObj !== undefined) {
-          await this.todoSync(op, pullRequestObj, pullRequestExternal, info, account)
+          op = this.client.apply()
+          try {
+            await this.todoSync(op, pullRequestObj, pullRequestExternal, info, account)
+          } catch (err: any) {
+            this.ctx.error('failed to sync todos', { err, url: pullRequestExternal.url, id: pullRequestObj._id })
+          }
+          await op.commit()
         }
-
-        await op.commit()
 
         // To sync reviews/review threads in case they are created before us.
         await syncChilds(info, this.client, derivedClient)
@@ -555,7 +560,11 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
   async afterSync (existing: Issue, account: PersonId, issueExternal: any, info: DocSyncInfo): Promise<void> {
     const pullRequest = existing as GithubPullRequest
-    await this.todoSync(this.client, pullRequest, issueExternal as PullRequestExternalData, info, account)
+    try {
+      await this.todoSync(this.client, pullRequest, issueExternal as PullRequestExternalData, info, account)
+    } catch (err: any) {
+      this.ctx.error('failed to sync todos', { err, url: issueExternal.url, id: pullRequest._id })
+    }
   }
 
   async todoSync (
@@ -620,14 +629,14 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     const approvedOrChangesRequested = new Map<PersonId, PullRequestReviewState>()
     const reviewStates = new Map<PersonId, PullRequestReviewState[]>()
 
-    const sortedReviews: (Review & { date: number })[] = external.reviews.nodes
+    const sortedReviews: (Review & { date: number })[] = (external.reviews.nodes ?? [])
       .filter((it) => it != null)
       .map((it) => ({
         ...it,
         date: new Date(it.updatedAt ?? it.submittedAt ?? it.createdAt).getTime()
       }))
 
-    for (const it of external.latestReviews.nodes) {
+    for (const it of external.latestReviews.nodes ?? []) {
       if (sortedReviews.some((qt) => it.id === qt.id)) {
         continue
       }
@@ -691,7 +700,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     const changeRequestPersons = await this.getPersonsFromId(Array.from(changeRequestPersonsIds))
 
     let allResolved = true
-    for (const r of external.reviewThreads.nodes) {
+    for (const r of external.reviewThreads.nodes ?? []) {
       if (!r.isResolved) {
         allResolved = false
         for (const c of changeRequestPersons) {
@@ -728,7 +737,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     if (allResolved) {
       // We need to complete or remove todo, in case all are resolved.
       if (!Array.from(approvedOrChangesRequested.values()).includes('CHANGES_REQUESTED')) {
-        const todos = allTodos.filter((it) => it.purpose === 'fix')
+        const todos = allTodos.filter((it) => it.purpose === 'fix' && it.doneOn == null)
         for (const t of todos) {
           await this.markDoneOrDeleteTodo(t)
         }
@@ -853,7 +862,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
   private async markDoneOrDeleteTodo (td: WithLookup<GithubTodo>): Promise<void> {
     // Let's mark as done in any case
-    await this.client.update(td, {
+    await this.client.diffUpdate(td, {
       doneOn: Date.now()
     })
   }
@@ -1200,11 +1209,11 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       if (ext == null) {
         continue
       }
-      if (ext.reviews.nodes.length < ext.reviews.totalCount) {
+      if ((ext.reviews.nodes ?? []).length < ext.reviews.totalCount) {
         // TODO: We need to fetch missing items.
       }
 
-      if (ext.reviewThreads.nodes.length < ext.reviewThreads.totalCount) {
+      if ((ext.reviewThreads.nodes ?? []).length < ext.reviewThreads.totalCount) {
         // TODO: We need to fetch missing items.
       }
 
@@ -1216,10 +1225,10 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         repo,
         github.class.GithubReview,
         {},
-        (ext) => ext.reviews.nodes
+        (ext) => ext.reviews.nodes ?? []
       )
       await syncDerivedDocuments(derivedClient, d, ext, prj, repo, github.class.GithubReviewThread, {}, (ext) =>
-        ext.reviewThreads.nodes.map((it) => ({
+        (ext.reviewThreads.nodes ?? []).map((it) => ({
           ...it,
           url: it.id,
           createdAt: new Date(it.comments.nodes[0].createdAt ?? Date.now()).toISOString(),

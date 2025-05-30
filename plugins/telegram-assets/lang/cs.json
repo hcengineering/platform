@@ -1,5 +1,8 @@
 {
   "string": {
+    "Loading": "Načítání...",
+    "IntegrationConnected": "Připojeno jako {phone}",
+    "Disconnect": "Odpojit",
     "SharedMessages": "Sdílené zprávy Telegramu",
     "Next": "Další",
     "Back": "Zpět",

@@ -32,6 +32,8 @@ export const mediaPlugin = plugin(mediaId, {
     CamOff: '' as Asset
   },
   string: {
+    TurnOnCam: '' as IntlString,
+    TurnOffCam: '' as IntlString,
     TurnOnMic: '' as IntlString,
     TurnOffMic: '' as IntlString
   }
