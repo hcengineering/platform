@@ -21,8 +21,6 @@
   <Label label={plugin.string.CameraSize} />
   <DropdownLabelsIntl
     items={sizes}
-    placeholder={plugin.string.CameraSize}
-    enableSearch={false}
     justify={'left'}
     width={'100%'}
     selected={$recordingCameraSize}
@@ -34,8 +32,6 @@
   <Label label={plugin.string.CameraPos} />
   <DropdownLabelsIntl
     items={poses}
-    placeholder={plugin.string.CameraPos}
-    enableSearch={false}
     justify={'left'}
     width={'100%'}
     selected={$recordingCameraPosition}
