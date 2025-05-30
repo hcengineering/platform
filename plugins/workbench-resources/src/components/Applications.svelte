@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import core, { getCurrentAccount, type Ref } from '@hcengineering/core'
+  import core, { type Ref } from '@hcengineering/core'
   import { createNotificationsQuery, createQuery } from '@hcengineering/presentation'
   import { Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
@@ -22,7 +22,6 @@
   import workbench from '@hcengineering/workbench'
   import { inboxId } from '@hcengineering/inbox'
 
-  import { isAllowedToRole } from '../utils'
   import AppItem from './AppItem.svelte'
 
   export let active: Ref<Application> | undefined
@@ -52,16 +51,8 @@
     hasNewInboxNotifications = res.getResult().length > 0
   })
 
-  const me = getCurrentAccount()
-
   $: topApps = apps.filter((it) => it.position === 'top')
-  $: midApps = apps.filter(
-    (it) =>
-      !hiddenAppsIds.includes(it._id) &&
-      isAllowedToRole(it.accessLevel, me) &&
-      it.position !== 'top' &&
-      it.position !== 'bottom'
-  )
+  $: midApps = apps.filter((it) => !hiddenAppsIds.includes(it._id) && it.position !== 'top' && it.position !== 'bottom')
   $: bottomApps = apps.filter((it) => it.position === 'bottom')
 </script>
 
