@@ -21,7 +21,7 @@ import { getClient } from '@hcengineering/kvs-client'
 import config from './config'
 
 // TODO: Find account UUID from mailboxes and use personal workspace
-export const mailServiceToken = generateToken(systemAccountUuid, undefined, { service: 'mail' }, config.secret)
+export const mailServiceToken = generateToken(systemAccountUuid, undefined, { service: 'inbound-mail' }, config.secret)
 export const baseConfig: BaseConfig = {
   AccountsURL: config.accountsUrl,
   KvsUrl: config.kvsUrl,

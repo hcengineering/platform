@@ -133,7 +133,7 @@ export class Collector {
       return true
     }
 
-    const rawToken = generateToken(token.account, token.workspace, token.extra)
+    const rawToken = generateToken(token.account, token.workspace, { ...token.extra, service: 'analytics-collector' })
     const wsInfo = await getAccountClient(config.AccountsUrl, rawToken).getWorkspaceInfo()
     this.ctx.info('workspace info', wsInfo)
 

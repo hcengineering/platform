@@ -84,7 +84,9 @@ export function updateMeasure (
 
   const fParams = typeof fullParams === 'function' ? fullParams() : fullParams
   // Update params if required
-  for (const [k, v] of Object.entries(params)) {
+  const pparams = Object.entries(params)
+  if (pparams.length > 0) {
+    const [k, v] = pparams[0]
     let params = metrics.params[k]
     if (params === undefined) {
       params = {}
@@ -106,7 +108,22 @@ export function updateMeasure (
       param.operations++
     }
     // Do not update top results for params.
-    // param.topResult = getUpdatedTopResult(param.topResult, ed - st, fParams)
+    if (pparams.length > 1) {
+      // We need to update all other params as counters.
+      if (param.topResult === undefined) {
+        param.topResult = []
+      }
+      for (const [, v] of pparams.slice(1)) {
+        const r = (param.topResult ?? []).find((it) => it.params[`${v}`] === true)
+        if (r !== undefined) {
+          r.value += 1 // Counter of operations
+          r.time = (r.time ?? 0) + (value ?? ed - st)
+        } else {
+          param.topResult.push({ params: { [`${v}`]: true }, value: 1, time: value ?? ed - st })
+        }
+      }
+      param.topResult.sort((a, b) => b.value - a.value)
+    }
   }
   // Update leaf data
   if (override === true) {
