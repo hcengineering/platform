@@ -24,7 +24,7 @@ import {
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import view, { type Filter, type FilteredView, type ViewletPreference, viewId } from '@hcengineering/view'
 import { getSocialIdFromOldAccount, getSocialKeyByOldAccount, getUniqueAccounts } from '@hcengineering/model-core'
-import core, { type AccountUuid, MeasureMetricsContext, type PersonId } from '@hcengineering/core'
+import core, { type AccountUuid, type PersonId } from '@hcengineering/core'
 
 import { DOMAIN_VIEW } from '.'
 
@@ -82,10 +82,9 @@ async function removeDoneStateFilter (client: MigrationClient): Promise<void> {
 }
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('view migrateAccountsToSocialIds', {})
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
 
-  ctx.info('processing view filtered view users ', {})
+  client.logger.log('processing view filtered view users ', {})
   const iterator = await client.traverse(DOMAIN_VIEW, { _class: view.class.FilteredView })
 
   try {
@@ -118,19 +117,18 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
       }
 
       processed += docs.length
-      ctx.info('...processed', { count: processed })
+      client.logger.log('...processed', { count: processed })
     }
   } finally {
     await iterator.close()
   }
-  ctx.info('finished processing view filtered view users ', {})
+  client.logger.log('finished processing view filtered view users ', {})
 }
 
 async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('view migrateSocialIdsToGlobalAccounts', {})
   const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
-  ctx.info('processing view filtered view users ', {})
+  client.logger.log('processing view filtered view users ', {})
   const iterator = await client.traverse(DOMAIN_VIEW, { _class: view.class.FilteredView })
 
   try {
@@ -163,22 +161,21 @@ async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promi
       }
 
       processed += docs.length
-      ctx.info('...processed', { count: processed })
+      client.logger.log('...processed', { count: processed })
     }
   } finally {
     await iterator.close()
   }
-  ctx.info('finished processing view filtered view users ', {})
+  client.logger.log('finished processing view filtered view users ', {})
 }
 
 async function migrateAccsInSavedFilters (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('view migrateAccsInSavedFilters', {})
   const hierarchy = client.hierarchy
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
   const socialIdBySocialKey = new Map<string, PersonId | null>()
   const socialIdByOldAccount = new Map<string, PersonId | null>()
 
-  ctx.info('processing view filtered view accounts in filters ', {})
+  client.logger.log('processing view filtered view accounts in filters ', {})
   const affectedViews = await client.find<FilteredView>(DOMAIN_VIEW, {
     _class: view.class.FilteredView,
     filters: { $regex: '%core:class:Account%' }
@@ -243,7 +240,7 @@ async function migrateAccsInSavedFilters (client: MigrationClient): Promise<void
     }
   }
 
-  ctx.info('finished processing view filtered view accounts in filters ', {})
+  client.logger.log('finished processing view filtered view accounts in filters ', {})
 }
 
 export const viewOperation: MigrateOperation = {

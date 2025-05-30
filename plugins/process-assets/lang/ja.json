@@ -9,7 +9,7 @@
     "DeleteState": "状態を削除",
     "DeleteStateConfirm": "状態を削除しますか？",
     "RunProcess": "プロセスを実行",
-    "Processes": "プロセス",
+    "Processes": "プロセス (ベータ)",
     "Untitled": "無題",
     "States": "状態",
     "AddState": "状態を追加",
@@ -62,7 +62,9 @@
     "DeleteTransition": "遷移を削除",
     "DeleteTransitionConfirm": "遷移を削除しますか？",
     "AddTransition": "遷移を追加",
-    "ToDo": "ToDo"
+    "ToDo": "ToDo",
+    "CurrentCard": "現在のカード",
+    "Data": "データ"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

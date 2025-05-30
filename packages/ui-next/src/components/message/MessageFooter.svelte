@@ -14,11 +14,11 @@
 -->
 
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, getCommunicationClient } from '@hcengineering/presentation'
   import cardPlugin, { Card } from '@hcengineering/card'
-  import { Ref } from '@hcengineering/core'
-  import { AttachmentPreview } from '@hcengineering/attachment-resources'
-  import { Message, MessageType } from '@hcengineering/communication-types'
+  import { Ref, getCurrentAccount } from '@hcengineering/core'
+  import { AttachmentPreview, LinkPreview } from '@hcengineering/attachment-resources'
+  import { Message, MessageType, LinkPreviewID } from '@hcengineering/communication-types'
   import { openDoc } from '@hcengineering/view-resources'
 
   import ReactionsList from '../ReactionsList.svelte'
@@ -29,8 +29,11 @@
   export let replies: boolean = true
   export let files: boolean = true
 
+  const me = getCurrentAccount()
+  const communicationClient = getCommunicationClient()
+
   function canReply (): boolean {
-    return message.type === MessageType.Message
+    return message.type === MessageType.Message || message.type === MessageType.Thread
   }
 
   async function handleReaction (event: CustomEvent<string>): Promise<void> {
@@ -51,7 +54,11 @@
     await openDoc(client.getHierarchy(), c)
   }
 
-  $: isThread = message.thread != null
+  $: isThread = message.thread != null || message.type === MessageType.Thread
+
+  async function removeLinkPreview (id: LinkPreviewID): Promise<void> {
+    await communicationClient.removeLinkPreview(message.card, message.id, message.created, id)
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -62,6 +69,29 @@
       <AttachmentPreview
         value={{ file: file.blobId, type: file.type, name: file.filename, size: file.size, metadata: file.meta }}
         imageSize="x-large"
+      />
+    {/each}
+  </div>
+{/if}
+{#if !isThread && (message.links ?? []).length > 0}
+  <div class="message__links">
+    {#each message.links as link (link.id)}
+      <LinkPreview
+        isOwn={me.socialIds.includes(message.creator)}
+        on:delete={() => {
+          void removeLinkPreview(link.id)
+        }}
+        linkPreview={{
+          url: link.url,
+          host: link.host,
+          title: link.title,
+          description: link.description,
+          hostname: link.hostname,
+          image: link.image?.url,
+          imageWidth: link.image?.width,
+          imageHeight: link.image?.height,
+          icon: link.favicon
+        }}
       />
     {/each}
   </div>
@@ -98,6 +128,15 @@
   }
 
   .message__files {
+    display: grid;
+    grid-gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, 25rem);
+    min-height: 2.5rem;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .message__links {
     display: grid;
     grid-gap: 0.75rem;
     grid-template-columns: repeat(auto-fit, 25rem);

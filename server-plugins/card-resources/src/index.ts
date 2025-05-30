@@ -353,7 +353,9 @@ async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl):
       {
         type: CardRequestEventType.UpdateCardType,
         card: doc._id,
-        cardType: (updateTx.operations as any)._class
+        cardType: (updateTx.operations as any)._class,
+        creator: updateTx.createdBy ?? updateTx.modifiedBy,
+        created: new Date(updateTx.createdOn ?? updateTx.modifiedOn)
       }
     )
   }
@@ -438,7 +440,9 @@ async function updateCollaborators (control: TriggerControl, ctx: TxCreateDoc<Ca
         type: NotificationRequestEventType.AddCollaborators,
         card: tx.objectId,
         cardType: tx.objectClass,
-        collaborators
+        collaborators,
+        creator: tx.createdBy ?? tx.modifiedBy,
+        created: new Date(tx.createdOn ?? tx.modifiedOn)
       }
     )
   }

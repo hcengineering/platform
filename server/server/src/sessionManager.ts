@@ -120,6 +120,7 @@ export class TSessionManager implements SessionManager {
 
   now: number = Date.now()
 
+  ticksContext: MeasureContext
   constructor (
     readonly ctx: MeasureContext,
     readonly timeouts: Timeouts,
@@ -144,6 +145,8 @@ export class TSessionManager implements SessionManager {
     }
     this.workspaceProducer = this.queue.getProducer(ctx.newChild('queue', {}), QueueTopic.Workspace)
     this.usersProducer = this.queue.getProducer(ctx.newChild('queue', {}), QueueTopic.Users)
+
+    this.ticksContext = ctx.newChild('ticks', {})
   }
 
   scheduleMaintenance (timeMinutes: number): void {
@@ -217,7 +220,7 @@ export class TSessionManager implements SessionManager {
               break
             }
           }
-          void this.getWorkspaceInfo(workspace.token, connected).catch(() => {
+          void this.getWorkspaceInfo(this.ticksContext, workspace.token, connected).catch(() => {
             // Ignore
           })
         } catch (err: any) {
@@ -279,7 +282,7 @@ export class TSessionManager implements SessionManager {
           this.ctx.warn('session hang, closing...', { wsId, user: s.session.getUser() })
 
           // Force close workspace if only one client and it hang.
-          void this.close(this.ctx, s.socket, wsId).catch((err) => {
+          void this.close(this.ticksContext, s.socket, wsId).catch((err) => {
             this.ctx.error('failed to close', err)
           })
           continue
@@ -292,7 +295,7 @@ export class TSessionManager implements SessionManager {
           // And ping other wize
           s.session.lastPing = now
           if (s.socket.checkState()) {
-            void s.socket.send(this.ctx, { result: pingConst }, s.session.binaryMode, s.session.useCompression)
+            void s.socket.send(this.ticksContext, { result: pingConst }, s.session.binaryMode, s.session.useCompression)
           }
         }
         for (const r of s.session.requests.values()) {
@@ -342,7 +345,12 @@ export class TSessionManager implements SessionManager {
     )
   }
 
-  async getWorkspaceInfo (token: string, updateLastVisit = true): Promise<WorkspaceInfoWithStatus | undefined> {
+  @withContext('🧭 get-workspace-info')
+  async getWorkspaceInfo (
+    ctx: MeasureContext,
+    token: string,
+    updateLastVisit = true
+  ): Promise<WorkspaceInfoWithStatus | undefined> {
     try {
       return await getAccountClient(this.accountsUrl, token).getWorkspaceInfo(updateLastVisit)
     } catch (err: any) {
@@ -353,7 +361,8 @@ export class TSessionManager implements SessionManager {
     }
   }
 
-  async getLoginWithWorkspaceInfo (token: string): Promise<LoginInfoWithWorkspaces | undefined> {
+  @withContext('🧭 get-login-with-workspace-info')
+  async getLoginWithWorkspaceInfo (ctx: MeasureContext, token: string): Promise<LoginInfoWithWorkspaces | undefined> {
     try {
       const accountClient = getAccountClient(this.accountsUrl, token)
       return await accountClient.getLoginWithWorkspaceInfo()
@@ -373,6 +382,7 @@ export class TSessionManager implements SessionManager {
 
   tickCounter = 0
 
+  @withContext('🧭 get-workspace')
   async getWorkspace (
     ctx: MeasureContext,
     workspaceUuid: WorkspaceUuid,
@@ -479,7 +489,6 @@ export class TSessionManager implements SessionManager {
     return { workspace }
   }
 
-  @withContext('📲 add-session')
   async addSession (
     ctx: MeasureContext,
     ws: ConnectionSocket,
@@ -487,92 +496,94 @@ export class TSessionManager implements SessionManager {
     rawToken: string,
     sessionId: string | undefined
   ): Promise<AddSessionResponse> {
-    let account: LoginInfoWithWorkspaces | undefined
+    return await ctx.with('📲 add-session', { source: token.extra?.service ?? '🤦‍♂️user' }, async (ctx) => {
+      let account: LoginInfoWithWorkspaces | undefined
 
-    try {
-      account = await this.getLoginWithWorkspaceInfo(rawToken)
-    } catch (err: any) {
-      return { error: err }
-    }
+      try {
+        account = await this.getLoginWithWorkspaceInfo(ctx, rawToken)
+      } catch (err: any) {
+        return { error: err }
+      }
 
-    if (account === undefined) {
-      return { error: new Error('Account not found or not available'), terminate: true }
-    }
+      if (account === undefined) {
+        return { error: new Error('Account not found or not available'), terminate: true }
+      }
 
-    let wsInfo = account.workspaces[token.workspace]
+      let wsInfo = account.workspaces[token.workspace]
 
-    if (wsInfo === undefined) {
-      // In case of guest or system account
-      // We need to get workspace info for system account.
-      const workspaceInfo = await this.getWorkspaceInfo(rawToken, false)
-      if (workspaceInfo === undefined) {
+      if (wsInfo === undefined) {
+        // In case of guest or system account
+        // We need to get workspace info for system account.
+        const workspaceInfo = await this.getWorkspaceInfo(ctx, rawToken, false)
+        if (workspaceInfo === undefined) {
+          return { error: new Error('Workspace not found or not available'), terminate: true }
+        }
+        wsInfo = {
+          url: workspaceInfo.url,
+          mode: workspaceInfo.mode,
+          dataId: workspaceInfo.dataId,
+          version: {
+            versionMajor: workspaceInfo.versionMajor,
+            versionMinor: workspaceInfo.versionMinor,
+            versionPatch: workspaceInfo.versionPatch
+          },
+          role: AccountRole.Owner,
+          endpoint: { externalUrl: '', internalUrl: '', region: workspaceInfo.region ?? '' },
+          progress: workspaceInfo.processingProgress
+        }
+      }
+      const { workspace, resp } = await this.getWorkspace(ctx.parent ?? ctx, token.workspace, wsInfo, token, ws)
+      if (resp !== undefined) {
+        return resp
+      }
+
+      if (workspace === undefined || account === undefined) {
+        // Should not happen
         return { error: new Error('Workspace not found or not available'), terminate: true }
       }
-      wsInfo = {
-        url: workspaceInfo.url,
-        mode: workspaceInfo.mode,
-        dataId: workspaceInfo.dataId,
-        version: {
-          versionMajor: workspaceInfo.versionMajor,
-          versionMinor: workspaceInfo.versionMinor,
-          versionPatch: workspaceInfo.versionPatch
-        },
-        role: AccountRole.Owner,
-        endpoint: { externalUrl: '', internalUrl: '', region: workspaceInfo.region ?? '' },
-        progress: workspaceInfo.processingProgress
+
+      const oldSession = sessionId !== undefined ? workspace.sessions?.get(sessionId) : undefined
+      if (oldSession !== undefined) {
+        // Just close old socket for old session id.
+        await this.close(ctx, oldSession.socket, workspace.wsId.uuid)
       }
-    }
-    const { workspace, resp } = await this.getWorkspace(ctx, token.workspace, wsInfo, token, ws)
-    if (resp !== undefined) {
-      return resp
-    }
 
-    if (workspace === undefined || account === undefined) {
-      // Should not happen
-      return { error: new Error('Workspace not found or not available'), terminate: true }
-    }
+      const session = this.createSession(token, workspace.wsId, account)
 
-    const oldSession = sessionId !== undefined ? workspace.sessions?.get(sessionId) : undefined
-    if (oldSession !== undefined) {
-      // Just close old socket for old session id.
-      await this.close(ctx, oldSession.socket, workspace.wsId.uuid)
-    }
+      session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
+      session.sessionInstanceId = generateId()
+      const tickHash = this.tickCounter % ticksPerSecond
 
-    const session = this.createSession(token, workspace.wsId, account)
+      this.sessions.set(ws.id, { session, socket: ws, tickHash })
+      // We need to delete previous session with Id if found.
+      this.tickCounter++
+      workspace.sessions.set(session.sessionId, { session, socket: ws, tickHash })
 
-    session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
-    session.sessionInstanceId = generateId()
-    const tickHash = this.tickCounter % ticksPerSecond
+      const accountUuid = account.account
+      if (accountUuid !== systemAccountUuid && accountUuid !== guestAccount) {
+        await this.usersProducer.send(workspace.wsId.uuid, [
+          userEvents.login({
+            user: accountUuid,
+            sessions: this.countUserSessions(workspace, accountUuid),
+            socialIds: account.socialIds.map((it) => it._id)
+          })
+        ])
+      }
 
-    this.sessions.set(ws.id, { session, socket: ws, tickHash })
-    // We need to delete previous session with Id if found.
-    this.tickCounter++
-    workspace.sessions.set(session.sessionId, { session, socket: ws, tickHash })
+      // Mark workspace as init completed and we had at least one client.
+      if (!workspace.workspaceInitCompleted) {
+        workspace.workspaceInitCompleted = true
+      }
 
-    const accountUuid = account.account
-    if (accountUuid !== systemAccountUuid && accountUuid !== guestAccount) {
-      await this.usersProducer.send(workspace.wsId.uuid, [
-        userEvents.login({
-          user: accountUuid,
-          sessions: this.countUserSessions(workspace, accountUuid),
-          socialIds: account.socialIds.map((it) => it._id)
-        })
-      ])
-    }
-
-    // Mark workspace as init completed and we had at least one client.
-    if (!workspace.workspaceInitCompleted) {
-      workspace.workspaceInitCompleted = true
-    }
-
-    if (this.timeMinutes > 0) {
-      void ws
-        .send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
-        .catch((err) => {
-          ctx.error('failed to send maintenance warning', err)
-        })
-    }
-    return { session, context: workspace.context, workspaceId: workspace.wsId.uuid }
+      if (this.timeMinutes > 0) {
+        void ws
+          .send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
+          .catch((err) => {
+            ctx.error('failed to send maintenance warning', err)
+          })
+      }
+      return { session, context: workspace.context, workspaceId: workspace.wsId.uuid }
+    })
   }
 
   private async switchToUpgradeSession (
@@ -743,7 +754,7 @@ export class TSessionManager implements SessionManager {
     }
     const workspace: Workspace = new Workspace(
       context,
-      generateToken(systemAccountUuid, token.workspace),
+      generateToken(systemAccountUuid, token.workspace, { service: 'transactor' }),
       factory,
       this.tickCounter % ticksPerSecond,
       workspaceSoftShutdownTicks,
@@ -1077,14 +1088,17 @@ export class TSessionManager implements SessionManager {
     () => Date.now()
   )
 
-  handleRequest<S extends Session>(
+  async handleRequest<S extends Session>(
     requestCtx: MeasureContext,
     service: S,
     ws: ConnectionSocket,
     request: Request<any>,
     workspaceId: WorkspaceUuid
   ): Promise<void> {
-    const userCtx = requestCtx.newChild('📞 client', {})
+    const userCtx = requestCtx.newChild('📞 client', {
+      source: service.token.extra?.service ?? '🤦‍♂️user',
+      mode: '🧭 handleRequest'
+    })
     const rateLimit = this.limitter.checkRateLimit(service.getUser())
     // If remaining is 0, rate limit is exceeded
     if (rateLimit?.remaining === 0) {
@@ -1098,104 +1112,102 @@ export class TSessionManager implements SessionManager {
         service.binaryMode,
         service.useCompression
       )
-      return Promise.resolve()
+      return
     }
 
     // Calculate total number of clients
     const reqId = generateId()
 
     const st = Date.now()
-    return userCtx
-      .with('🧭 handleRequest', {}, async (ctx) => {
-        if (request.time != null) {
-          const delta = Date.now() - request.time
-          requestCtx.measure('msg-receive-delta', delta)
-        }
-        const workspace = this.workspaces.get(workspaceId)
-        if (workspace === undefined || workspace.closing !== undefined) {
-          await ws.send(
-            ctx,
-            {
-              id: request.id,
-              error: unknownError('Workspace is closing')
-            },
-            service.binaryMode,
-            service.useCompression
-          )
-          return
-        }
-        if (request.id === -1 && request.method === 'hello') {
-          await this.handleHello<S>(request, service, ctx, workspace, ws, requestCtx)
-          return
-        }
-        if (request.id === -2 && request.method === 'forceClose') {
-          // TODO: we chould allow this only for admin or system accounts
-          let done = false
-          const wsRef = this.workspaces.get(workspaceId)
-          if (wsRef?.upgrade ?? false) {
-            done = true
-            this.ctx.warn('FORCE CLOSE', { workspace: workspaceId })
-            // In case of upgrade, we need to force close workspace not in interval handler
-            await this.forceClose(workspaceId, ws)
-          }
-          const forceCloseResponse: Response<any> = {
+    try {
+      if (request.time != null) {
+        const delta = Date.now() - request.time
+        requestCtx.measure('msg-receive-delta', delta)
+      }
+      const workspace = this.workspaces.get(workspaceId)
+      if (workspace === undefined || workspace.closing !== undefined) {
+        await ws.send(
+          userCtx,
+          {
             id: request.id,
-            result: done
-          }
-          await ws.send(ctx, forceCloseResponse, service.binaryMode, service.useCompression)
-          return
+            error: unknownError('Workspace is closing')
+          },
+          service.binaryMode,
+          service.useCompression
+        )
+        return
+      }
+      if (request.id === -1 && request.method === 'hello') {
+        await this.handleHello<S>(request, service, userCtx, workspace, ws, requestCtx)
+        return
+      }
+      if (request.id === -2 && request.method === 'forceClose') {
+        // TODO: we chould allow this only for admin or system accounts
+        let done = false
+        const wsRef = this.workspaces.get(workspaceId)
+        if (wsRef?.upgrade ?? false) {
+          done = true
+          this.ctx.warn('FORCE CLOSE', { workspace: workspaceId })
+          // In case of upgrade, we need to force close workspace not in interval handler
+          await this.forceClose(workspaceId, ws)
+        }
+        const forceCloseResponse: Response<any> = {
+          id: request.id,
+          result: done
+        }
+        await ws.send(userCtx, forceCloseResponse, service.binaryMode, service.useCompression)
+        return
+      }
+
+      service.requests.set(reqId, {
+        id: reqId,
+        params: request,
+        start: st
+      })
+      if (request.id === -1 && request.method === '#upgrade') {
+        ws.close()
+        return
+      }
+
+      const f = (service as any)[request.method]
+      try {
+        const params = [...request.params]
+
+        if (ws.isBackpressure()) {
+          await ws.backpressure(userCtx)
         }
 
-        service.requests.set(reqId, {
-          id: reqId,
-          params: request,
-          start: st
-        })
-        if (request.id === -1 && request.method === '#upgrade') {
-          ws.close()
-          return
-        }
-
-        const f = (service as any)[request.method]
-        try {
-          const params = [...request.params]
-
-          if (ws.isBackpressure()) {
-            await ws.backpressure(ctx)
-          }
-
-          await workspace.with(async (pipeline, communicationApi) => {
-            await ctx.with('🧨 process', {}, (callTx) =>
-              f.apply(service, [
-                this.createOpContext(callTx, userCtx, pipeline, communicationApi, request.id, service, ws, rateLimit),
-                ...params
-              ])
-            )
-          })
-        } catch (err: any) {
-          Analytics.handleError(err)
-          if (LOGGING_ENABLED) {
-            this.ctx.error('error handle request', { error: err, request })
-          }
-          await ws.send(
-            userCtx,
-            {
-              id: request.id,
-              error: unknownError(err),
-              result: JSON.parse(JSON.stringify(err?.stack))
-            },
-            service.binaryMode,
-            service.useCompression
+        await workspace.with(async (pipeline, communicationApi) => {
+          await userCtx.with('🧨 process', {}, (callTx) =>
+            f.apply(service, [
+              this.createOpContext(callTx, userCtx, pipeline, communicationApi, request.id, service, ws, rateLimit),
+              ...params
+            ])
           )
+        })
+      } catch (err: any) {
+        Analytics.handleError(err)
+        if (LOGGING_ENABLED) {
+          this.ctx.error('error handle request', { error: err, request })
         }
-      })
-      .finally(() => {
-        userCtx.end()
-        service.requests.delete(reqId)
-      })
+        await ws.send(
+          userCtx,
+          {
+            id: request.id,
+            error: unknownError(err),
+            result: JSON.parse(JSON.stringify(err?.stack))
+          },
+          service.binaryMode,
+          service.useCompression
+        )
+      }
+    } finally {
+      userCtx.end()
+      service.requests.delete(reqId)
+    }
   }
 
-  handleRPC<S extends Session>(
+  async handleRPC<S extends Session>(
     requestCtx: MeasureContext,
     service: S,
     ws: ConnectionSocket,
@@ -1204,65 +1216,66 @@ export class TSessionManager implements SessionManager {
     const rateLimitStatus = this.limitter.checkRateLimit(service.getUser())
     // If remaining is 0, rate limit is exceeded
     if (rateLimitStatus?.remaining === 0) {
-      return Promise.resolve(rateLimitStatus)
+      return await Promise.resolve(rateLimitStatus)
     }
 
-    const userCtx = requestCtx.newChild('📞 client', {})
+    const userCtx = requestCtx.newChild('📞 client', {
+      source: service.token.extra?.service ?? '🤦‍♂️user',
+      mode: '🧭 handleRPC'
+    })
 
     // Calculate total number of clients
     const reqId = generateId()
 
     const st = Date.now()
-    return userCtx
-      .with('🧭 handleRPC', {}, async (ctx) => {
-        const workspace = this.workspaces.get(service.workspace.uuid)
-        if (workspace === undefined || workspace.closing !== undefined) {
-          throw new Error('Workspace is closing')
-        }
+    try {
+      const workspace = this.workspaces.get(service.workspace.uuid)
+      if (workspace === undefined || workspace.closing !== undefined) {
+        throw new Error('Workspace is closing')
+      }
 
-        service.requests.set(reqId, {
-          id: reqId,
-          params: {},
-          start: st
-        })
+      service.requests.set(reqId, {
+        id: reqId,
+        params: {},
+        start: st
+      })
 
-        try {
-          await workspace.with(async (pipeline, communicationApi) => {
-            const uctx = this.createOpContext(
-              ctx,
-              userCtx,
-              pipeline,
-              communicationApi,
-              reqId,
-              service,
-              ws,
-              rateLimitStatus
-            )
-            await operation(uctx)
-          })
-        } catch (err: any) {
-          Analytics.handleError(err)
-          if (LOGGING_ENABLED) {
-            this.ctx.error('error handle request', { error: err })
-          }
-          await ws.send(
+      try {
+        await workspace.with(async (pipeline, communicationApi) => {
+          const uctx = this.createOpContext(
             userCtx,
-            {
-              id: reqId,
-              error: unknownError(err),
-              result: JSON.parse(JSON.stringify(err?.stack))
-            },
-            service.binaryMode,
-            service.useCompression
+            userCtx,
+            pipeline,
+            communicationApi,
+            reqId,
+            service,
+            ws,
+            rateLimitStatus
           )
-          throw err
+          await operation(uctx)
+        })
+      } catch (err: any) {
+        Analytics.handleError(err)
+        if (LOGGING_ENABLED) {
+          this.ctx.error('error handle request', { error: err })
         }
-        return undefined
-      })
-      .finally(() => {
-        userCtx.end()
-        service.requests.delete(reqId)
-      })
+        await ws.send(
+          userCtx,
+          {
+            id: reqId,
+            error: unknownError(err),
+            result: JSON.parse(JSON.stringify(err?.stack))
+          },
+          service.binaryMode,
+          service.useCompression
+        )
+        throw err
+      }
+      return undefined
+    } finally {
+      userCtx.end()
+      service.requests.delete(reqId)
+    }
   }
 
   entryToUserStats = (session: Session, socket: ConnectionSocket): UserStatistics => {

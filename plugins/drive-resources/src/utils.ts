@@ -284,7 +284,6 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
       Analytics.handleEvent(DriveEvents.FileUploaded, { ok: true, type: file.type, size: file.size, name })
     } catch (err) {
       void setPlatformStatus(unknownError(err))
-      Analytics.handleEvent(DriveEvents.FileUploaded, { ok: false, name })
     }
   }
 

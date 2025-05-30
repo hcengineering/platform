@@ -61,7 +61,7 @@
     {/if}
   </div>
   {#if (vacancies ?? 0) > 0}
-    <Scroller horizontal>
+    <Scroller horizontal noFade={false}>
       <Table
         _class={recruit.class.Vacancy}
         {config}

@@ -468,6 +468,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/hls",
+      "projectFolder": "packages/hls",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/theme",
       "projectFolder": "packages/theme",
       "shouldPublish": true
@@ -2521,6 +2526,11 @@
     {
       "packageName": "@hcengineering/model-emoji",
       "projectFolder": "models/emoji",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/retry",
+      "projectFolder": "packages/retry",
       "shouldPublish": false
     }
   ]

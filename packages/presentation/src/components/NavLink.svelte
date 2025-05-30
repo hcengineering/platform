@@ -28,6 +28,7 @@
   export let noOverflow: boolean = false
   export let inlineReference: boolean = false
   export let transparent: boolean = false
+  export let inlineBlock = false
 
   function clickHandler (e: MouseEvent): void {
     if (disabled) return
@@ -73,6 +74,7 @@
     class:noUnderline={noUnderline || disabled}
     class:noOverflow
     class:inline
+    class:inlineBlock
     class:colorInherit
     class:antiMention={inlineReference}
     class:transparent
@@ -88,6 +90,7 @@
     class:noUnderline={noUnderline || disabled}
     class:noOverflow
     class:inline
+    class:inlineBlock
     class:colorInherit
     class:antiMention={inlineReference}
     class:transparent
@@ -122,6 +125,10 @@
       display: inline-flex;
       align-items: center;
       text-decoration: none;
+    }
+
+    &.inlineBlock {
+      display: inline-block;
     }
 
     &.noUnderline {

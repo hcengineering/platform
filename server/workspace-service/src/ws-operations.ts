@@ -50,7 +50,7 @@ export async function createWorkspace (
   ) => Promise<void>,
   external: boolean = false
 ): Promise<void> {
-  const childLogger = ctx.newChild('createWorkspace', {}, {})
+  const childLogger = ctx.newChild('createWorkspace', ctx.getParams(), {})
   const ctxModellogger: ModelLogger = {
     log: (msg, data) => {
       childLogger.info(msg, data)
@@ -322,7 +322,8 @@ export async function upgradeWorkspaceWith (
       undefined,
       undefined,
       pipeline.context.modelDb,
-      new Map()
+      new Map(),
+      'workspace'
     )
     ctx.contextData = contextData
     await handleWsEvent?.('upgrade-started', version, 0)

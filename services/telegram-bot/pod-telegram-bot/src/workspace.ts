@@ -55,7 +55,7 @@ export class WorkspaceClient {
     ctx: MeasureContext,
     storage: StorageAdapter
   ): Promise<WorkspaceClient> {
-    const token = generateToken(account, workspace)
+    const token = generateToken(account, workspace, { service: 'telegram-bot' })
     const endpoint = await getTransactorEndpoint(token)
     const client = createRestClient(endpoint, workspace, token)
     const model = await client.getModel()

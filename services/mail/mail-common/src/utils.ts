@@ -18,11 +18,36 @@ import sanitizeHtml from 'sanitize-html'
 import { MeasureContext } from '@hcengineering/core'
 import { EmailContact, EmailMessage } from './types'
 
+const NAME_EMAIL_PATTERN = /^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/
+const NAME_SEGMENT_REGEX = /[\s,;]+/
+
 export function getMdContent (ctx: MeasureContext, email: EmailMessage): string {
   if (email.content !== undefined) {
     try {
       const html = sanitizeHtml(email.content)
       const tds = new TurndownService()
+
+      tds.addRule('links', {
+        filter: 'a',
+        replacement: function (content, node: Node) {
+          try {
+            const element = node as HTMLElement
+            const href = element.getAttribute('href')
+            const title = element.title ?? ''
+            // Trim content to prevent empty lines inside links
+            const trimmedContent = content.trim().replace(/\n\s*\n/g, ' ')
+            if (href == null) {
+              return trimmedContent
+            }
+            const titlePart = title !== '' ? ` "${title}"` : ''
+            return `[${trimmedContent}](${href}${titlePart})`
+          } catch (error: any) {
+            ctx.warn('Failed to parse link', { error: error.message })
+            return content
+          }
+        }
+      })
+
       return tds.turndown(html)
     } catch (error) {
       ctx.warn('Failed to parse html content', { error })
@@ -67,8 +92,7 @@ export function parseNameFromEmailHeader (headerValue: string | undefined): Emai
   }
 
   // Match pattern like: "Name" <email@example.com> or Name <email@example.com>
-  const nameEmailPattern = /^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/
-  const match = headerValue.trim().match(nameEmailPattern)
+  const match = headerValue.trim().match(NAME_EMAIL_PATTERN)
 
   if (match == null) {
     const address = headerValue.trim()
@@ -82,10 +106,28 @@ export function parseNameFromEmailHeader (headerValue: string | undefined): Emai
   const displayName = match[1]?.trim()
   const email = match[2].trim()
 
-  const wrappedEmail = displayName != null && displayName.length > 0 ? `<${email}>` : email
+  if (displayName == null || displayName === '') {
+    return {
+      email,
+      firstName: email,
+      lastName: ''
+    }
+  }
+  const nameParts = displayName.split(NAME_SEGMENT_REGEX).filter((part) => part !== '')
+  if (nameParts.length === 2) {
+    return {
+      email,
+      firstName: nameParts[0],
+      lastName: nameParts[1]
+    }
+  }
   return {
     email,
-    firstName: wrappedEmail,
-    lastName: displayName ?? ''
+    firstName: displayName,
+    lastName: ''
   }
+}
+
+export function normalizeEmail (email: string): string {
+  return email.toLowerCase().trim()
 }

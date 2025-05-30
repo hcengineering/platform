@@ -887,7 +887,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         try {
           const response: any = await this.ctx.with(
             'graphql.listIssue',
-            { prj: prj.name, repo: repo.name },
+            {},
             () =>
               integration.octokit.graphql(
                 `query listIssues {

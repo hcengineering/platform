@@ -251,7 +251,7 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: max-content;
+    height: 100%;
     min-width: auto;
     min-height: auto;
   }

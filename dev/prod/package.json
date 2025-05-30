@@ -276,8 +276,8 @@
     "@hcengineering/emoji": "^0.6.0",
     "@hcengineering/emoji-assets": "^0.6.0",
     "@hcengineering/emoji-resources": "^0.6.0",
-    "@sentry/svelte": "^8.52.1",
-    "posthog-js": "~1.122.0",
+    "@sentry/svelte": "^9.22.0",
+    "posthog-js": "^1.246.0",
     "readable-stream": "^4.7.0",
     "svelte": "^4.2.19"
   }

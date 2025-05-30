@@ -47,7 +47,7 @@
     "typescript": "^5.3.3",
     "ts-node": "^10.8.0",
     "ts-node-dev": "^2.0.0",
-    "electron": "^35.0.3",
+    "electron": "^36.3.1",
     "@types/node": "~20.11.16",
     "copy-webpack-plugin": "^11.0.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
@@ -254,9 +254,9 @@
     "electron-store": "^8.2.0",
     "electron-log": "^5.1.7",
     "electron-updater": "^6.3.4",
-    "livekit-client": "^2.9.9",
+    "livekit-client": "^2.13.3",
     "@hcengineering/server-backup": "^0.6.0",
-    "ws": "^8.18.0"
+    "ws": "^8.18.2"
   },
   "productName": "Huly Desktop",
   "description": "Huly Desktop experience",

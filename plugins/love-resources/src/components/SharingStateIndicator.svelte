@@ -41,23 +41,25 @@
   $: disabled = !$screenSharing && !$isConnected
 </script>
 
-{#if $isSharingEnabled}
-  <button
-    class="hulyStatusBarButton mini positive positiveContent"
-    class:pressed
-    use:tooltip={{ label: love.string.Sharing, direction: 'bottom' }}
-    on:click={handleShowPopup}
-  >
-    <IconShare size={'small'} />
-  </button>
-{:else}
-  <button
-    class="hulyStatusBarButton mini disabled"
-    class:pressed
-    {disabled}
-    use:tooltip={{ label: love.string.Share, direction: 'bottom' }}
-    on:click={handleShare}
-  >
-    <IconShare size={'small'} />
-  </button>
+{#if $isConnected}
+  {#if $isSharingEnabled}
+    <button
+      class="hulyStatusBarButton mini positive positiveContent"
+      class:pressed
+      use:tooltip={{ label: love.string.Sharing, direction: 'bottom' }}
+      on:click={handleShowPopup}
+    >
+      <IconShare size={'small'} />
+    </button>
+  {:else}
+    <button
+      class="hulyStatusBarButton mini disabled"
+      class:pressed
+      {disabled}
+      use:tooltip={{ label: love.string.Share, direction: 'bottom' }}
+      on:click={handleShare}
+    >
+      <IconShare size={'small'} />
+    </button>
+  {/if}
 {/if}

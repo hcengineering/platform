@@ -37,13 +37,23 @@
   export let type: ObjectPresenterType = 'link'
   export let showStatus = true
   export let overflowLabel = true
+  export let inlineBlock = false
 </script>
 
 {#if value}
   {#if inline}
     <ObjectMention object={value} {disabled} onClick={onEdit} />
   {:else if type === 'link'}
-    <DocNavLink object={value} onClick={onEdit} {disabled} {noUnderline} {colorInherit} {accent} noOverflow>
+    <DocNavLink
+      object={value}
+      onClick={onEdit}
+      {disabled}
+      {noUnderline}
+      {colorInherit}
+      {accent}
+      {inlineBlock}
+      noOverflow
+    >
       <span
         use:tooltip={disabled ? undefined : showTooltip}
         class="antiPresenter h-full"

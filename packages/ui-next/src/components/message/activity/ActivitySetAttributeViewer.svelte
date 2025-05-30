@@ -15,8 +15,8 @@
 <script lang="ts">
   import { AttributeModel } from '@hcengineering/view'
   import { ActivityAttributeUpdate } from '@hcengineering/communication-types'
+  import { IconEdit } from '@hcengineering/ui'
 
-  import IconPen from '../../icons/IconPen.svelte'
   import Icon from '../../Icon.svelte'
   import Label from '../../Label.svelte'
   import { isMarkupAttribute } from '../../../activity'
@@ -26,7 +26,7 @@
   export let model: AttributeModel
   export let value: ActivityAttributeUpdate['set']
 
-  $: icon = model.icon ?? IconPen
+  $: icon = model.icon ?? IconEdit
   $: isUnset = value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0)
 </script>
 

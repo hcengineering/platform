@@ -400,4 +400,4 @@ services:
       - PASSWORD=password
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
-      - STATS_URL=http://huly.local:4900
+      - STATS_URL=http://huly.local:4901

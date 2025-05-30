@@ -16,13 +16,14 @@ import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 import sanitizeHtml from 'sanitize-html'
 
-import { TxOperations, type MeasureContext } from '@hcengineering/core'
+import { type MeasureContext, TxOperations } from '@hcengineering/core'
 import {
   createMessages,
   parseEmailHeader,
   parseNameFromEmailHeader,
   EmailMessage,
-  getProducer
+  getProducer,
+  MailRecipient
 } from '@hcengineering/mail-common'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { AccountClient, isWorkspaceLoginInfo, WorkspaceLoginInfo } from '@hcengineering/account-client'
@@ -40,7 +41,8 @@ export class MessageManagerV2 implements IMessageManager {
     private readonly txClient: TxOperations,
     private readonly keyValueClient: KeyValueClient,
     private readonly accountClient: AccountClient,
-    private readonly token: string
+    private readonly token: string,
+    private readonly recipient: MailRecipient
   ) {}
 
   async saveMessage (message: GaxiosResponse<gmail_v1.Schema$Message>, me: string): Promise<void> {
@@ -65,7 +67,8 @@ export class MessageManagerV2 implements IMessageManager {
       this.token,
       this.wsInfo,
       res,
-      attachments
+      attachments,
+      [this.recipient]
     )
   }
 }

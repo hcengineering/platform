@@ -36,13 +36,14 @@ export class MigrateClientImpl implements MigrationClient {
     readonly storageAdapter: StorageAdapter,
     readonly accountClient: AccountClient,
     readonly wsIds: WorkspaceIds,
-    readonly queue: PlatformQueueProducer<QueueWorkspaceMessage>
+    readonly queue: PlatformQueueProducer<QueueWorkspaceMessage>,
+    ctx?: MeasureContext
   ) {
     if (this.pipeline.context.lowLevelStorage === undefined) {
       throw new Error('lowLevelStorage is not defined')
     }
     this.lowLevel = this.pipeline.context.lowLevelStorage
-    this.ctx = new MeasureMetricsContext('migrateClient', {})
+    this.ctx = ctx ?? new MeasureMetricsContext('migrateClient', {})
   }
 
   migrateState = new Map<string, Set<string>>()

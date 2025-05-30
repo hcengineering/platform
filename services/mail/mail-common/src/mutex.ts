@@ -12,31 +12,67 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+interface LockRequest {
+  promise: Promise<void>
+  resolve: () => void
+}
 export class SyncMutex {
-  private readonly locks = new Map<string, Promise<void>>()
+  // Queue of pending promises for each lock key
+  private readonly locks = new Map<string, Array<LockRequest>>()
 
   async lock (key: string): Promise<() => void> {
-    // Wait for any existing lock to be released
-    const currentLock = this.locks.get(key)
-    if (currentLock != null) {
-      await currentLock
+    // Initialize queue if it doesn't exist
+    if (!this.locks.has(key)) {
+      this.locks.set(key, [])
     }
 
-    // Create a new lock
+    const queue = this.locks.get(key) as Array<LockRequest>
+
+    // Create a new lock request
     let releaseFn!: () => void
-    const newLock = new Promise<void>((resolve) => {
-      releaseFn = resolve
+    let resolveLockAcquired!: () => void
+
+    // This promise resolves when the lock is acquired
+    const lockAcquired = new Promise<void>((resolve) => {
+      resolveLockAcquired = resolve
     })
 
-    // Store the lock
-    this.locks.set(key, newLock)
+    // This promise resolves when the lock is released
+    const lockReleased = new Promise<void>((resolve) => {
+      releaseFn = () => {
+        // Remove this lock from the queue
+        const index = queue.findIndex((item) => item.promise === lockReleased)
+        if (index !== -1) {
+          queue.splice(index, 1)
+        }
+
+        // If there are more locks in the queue, resolve the next one
+        if (queue.length > 0) {
+          queue[0].resolve()
+        }
+
+        // If queue is empty, clean up
+        if (queue.length === 0) {
+          this.locks.delete(key)
+        }
+
+        resolve()
+      }
+    })
+
+    // Add this lock to the queue
+    queue.push({ promise: lockReleased, resolve: resolveLockAcquired })
+
+    // If this is the first lock in the queue, resolve it immediately
+    if (queue.length === 1) {
+      resolveLockAcquired()
+    }
+
+    // Wait until this lock is acquired
+    await lockAcquired
 
     // Return the release function
-    return () => {
-      if (this.locks.get(key) === newLock) {
-        this.locks.delete(key)
-      }
-      releaseFn()
-    }
+    return releaseFn
   }
 }

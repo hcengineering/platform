@@ -28,6 +28,12 @@
     "Yesterday": "Ayer",
     "YesterdayAt": "Ayer a las {time}",
     "AndMore": "y {count} más",
-    "IsTyping": "{count, plural, =1 {está escribiendo} other {están escribiendo}}"
+    "IsTyping": "{count, plural, =1 {está escribiendo} other {están escribiendo}}",
+    "Loading": "Cargando...",
+    "MessageIn": "Mensaje #{title}",
+    "ThreadWasDeleted": "Este hilo fue eliminado.",
+    "MessageWasRemoved": "Este mensaje fue eliminado.",
+    "JoinedThe": "Unido al",
+    "LeftThe": "Dejó el"
   }
 }

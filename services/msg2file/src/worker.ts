@@ -21,7 +21,6 @@ import {
   type MessageID,
   type WorkspaceID,
   SortingOrder,
-  type Message,
   MessagesGroup,
   BlobID
 } from '@hcengineering/communication-types'
@@ -62,13 +61,14 @@ export async function job (ctx: MeasureContext, storage: StorageAdapter, db: Pos
         await rateLimiter.add(async () => {
           await ctx.with(
             'process',
+            {},
+            async () => {
+              await processRecord(ctx, record, db, storage)
+            },
             {
               workspace: record.workspace,
               card: record.card,
               attempt: record.attempt
-            },
-            async () => {
-              await processRecord(ctx, record, db, storage)
             }
           )
         })
@@ -175,7 +175,7 @@ async function applyPatchesToGroup (
     const file = await getFile(storage, ctx, workspace, group.blobId)
     const parsedFile = await parseFileStream(file)
     const patchesByMessage = groupByArray(group.patches, (it) => it.message)
-    const updatedMessages: Message[] = parsedFile.messages.map((message) => {
+    const updatedMessages = parsedFile.messages.map((message) => {
       const patches = patchesByMessage.get(message.id) ?? []
       if (patches.length === 0) {
         return message
@@ -183,7 +183,13 @@ async function applyPatchesToGroup (
         return applyPatches(message, patches)
       }
     })
-    const blob = await uploadGroupFile(ctx, storage, workspace, parsedFile.metadata, updatedMessages)
+    const blob = await uploadGroupFile(
+      ctx,
+      storage,
+      workspace,
+      parsedFile.metadata,
+      updatedMessages.map(deserializeMessage)
+    )
     await createGroup(
       client,
       group.card,
@@ -253,6 +259,14 @@ async function newMessages2file (
       messagesFromExistingGroup.length > 0 ? messages.slice(messagesFromExistingGroup.length) : messages
 
     await pushMessagesToExistingGroup(client, card, messagesFromExistingGroup, ctx, storage, workspace)
+
+    if (messages.length < config.MinSyncMessagesCount) {
+      const ids = [...messagesFromExistingGroup].map((it) => it.id)
+      await removeMessages(db, workspace, card._id, [...ids])
+      await removePatches(db, workspace, card._id, [...ids])
+      break
+    }
+
     const savedMessages = await createNewGroup(client, card, newMessages, ctx, storage, workspace)
 
     const ids = [...messagesFromExistingGroup, ...savedMessages].map((it) => it.id)

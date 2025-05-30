@@ -124,7 +124,7 @@
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
         "DB_URL": "postgresql://root@huly.local:26258/defaultdb?sslmode=disable",
         // "GREEN_URL": "http://huly.local:6767?token=secret",
-        "SERVER_PORT": "3334",
+        "SERVER_PORT": "3335",
         "METRICS_CONSOLE": "false",
         "DEBUG_PRINT_SQL": "true",
         "METRICS_FILE": "${workspaceRoot}/metrics.txt", // Show metrics in console evert 30 seconds.,
@@ -135,7 +135,7 @@
         "FRONT_URL": "http://localhost:8083",
         "ACCOUNTS_URL": "http://localhost:3003",
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
-        "MODEL_VERSION": "0.7.75",
+        "MODEL_VERSION": "0.7.110",
         "STATS_URL": "http://huly.local:4901",
         "QUEUE_CONFIG": "localhost:19093"
       },
@@ -248,7 +248,7 @@
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
-        "PORT": "4900",
+        "PORT": "4901",
         "SERVER_SECRET": "secret"
       },
       "runtimeVersion": "20",
@@ -312,7 +312,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "0.7.75",
+        "MODEL_VERSION": "0.7.110",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
         "BACKUP_BUCKET": "dev-backups",
@@ -572,27 +572,25 @@
       "request": "launch",
       "args": ["src/index.ts"],
       "env": {
-        "MONGO_URL": "mongodb://localhost:27017",
         "SERVER_SECRET": "secret",
-        "ACCOUNTS_URL": "http://localhost:3000",
+        "ACCOUNTS_URL": "http://localhost:3003",
         "APP_ID": "${env:POD_GITHUB_APPID}",
         "CLIENT_ID": "${env:POD_GITHUB_CLIENTID}",
         "CLIENT_SECRET": "${env:POD_GITHUB_CLIENT_SECRET}",
         "PRIVATE_KEY": "${env:POD_GITHUB_PRIVATE_KEY}",
-        "COLLABORATOR_URL": "ws://huly.local:3078",
-        "MINIO_ENDPOINT": "localhost",
+        "COLLABORATOR_URL": "ws://huly.local:3079",
+        "MINIO_ENDPOINT": "localhost:9002",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "PLATFORM_OPERATION_LOGGING": "true",
         "FRONT_URL": "http://localhost:8080",
         "PORT": "3500",
-        "STATS_URL": "http://huly.local:4900"
+        "STATS_URL": "http://huly.local:4901"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/services/github/pod-github",
       "protocol": "inspector",
-      "attachSimplePort": 0,
       "outputCapture": "std"
     },
     {

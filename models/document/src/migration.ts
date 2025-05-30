@@ -17,7 +17,6 @@ import {
   DOMAIN_MODEL_TX,
   DOMAIN_TX,
   makeDocCollabId,
-  MeasureMetricsContext,
   type Ref,
   SortingOrder,
   type Class,
@@ -184,7 +183,6 @@ async function renameFields (client: MigrationClient): Promise<void> {
 }
 
 async function renameFieldsRevert (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('renameFieldsRevert', {})
   const storage = client.storageAdapter
 
   type ExDocument = Document & {
@@ -209,7 +207,7 @@ async function renameFieldsRevert (client: MigrationClient): Promise<void> {
 
     try {
       const collabId = makeDocCollabId(document, 'content')
-      const ydoc = await loadCollabYdoc(ctx, storage, client.wsIds, collabId)
+      const ydoc = await loadCollabYdoc(client.ctx, storage, client.wsIds, collabId)
       if (ydoc === undefined) {
         continue
       }
@@ -220,9 +218,9 @@ async function renameFieldsRevert (client: MigrationClient): Promise<void> {
 
       yDocCopyXmlField(ydoc, 'description', 'content')
 
-      await saveCollabYdoc(ctx, storage, client.wsIds, collabId, ydoc)
+      await saveCollabYdoc(client.ctx, storage, client.wsIds, collabId, ydoc)
     } catch (err) {
-      ctx.error('error document content migration', { error: err, document: document.title })
+      client.logger.error('error document content migration', { error: err, document: document.title })
     }
   }
 
@@ -245,7 +243,6 @@ async function renameFieldsRevert (client: MigrationClient): Promise<void> {
 }
 
 async function restoreContentField (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('restoreContentField', {})
   const storage = client.storageAdapter
 
   const documents = await client.find<Document>(DOMAIN_DOCUMENT, {
@@ -256,9 +253,9 @@ async function restoreContentField (client: MigrationClient): Promise<void> {
   for (const document of documents) {
     try {
       const collabId = makeDocCollabId(document, 'content')
-      const ydoc = await loadCollabYdoc(ctx, storage, client.wsIds, collabId)
+      const ydoc = await loadCollabYdoc(client.ctx, storage, client.wsIds, collabId)
       if (ydoc === undefined) {
-        ctx.error('document content not found', { document: document.title })
+        client.logger.error('document content not found', { document: document.title })
         continue
       }
 
@@ -270,13 +267,13 @@ async function restoreContentField (client: MigrationClient): Promise<void> {
       if (ydoc.share.has('')) {
         yDocCopyXmlField(ydoc, '', 'content')
         if (ydoc.share.has('content')) {
-          await saveCollabYdoc(ctx, storage, client.wsIds, collabId, ydoc)
+          await saveCollabYdoc(client.ctx, storage, client.wsIds, collabId, ydoc)
         } else {
-          ctx.error('document content still not found', { document: document.title })
+          client.logger.error('document content still not found', { document: document.title })
         }
       }
     } catch (err) {
-      ctx.error('error document content migration', { error: err, document: document.title })
+      client.logger.error('error document content migration', { error: err, document: document.title })
     }
   }
 }
@@ -292,10 +289,9 @@ async function migrateRanks (client: MigrationClient): Promise<void> {
 }
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('document migrateAccountsToSocialIds', {})
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
 
-  ctx.info('processing document lockedBy ', {})
+  client.logger.log('processing document lockedBy ', {})
   const iterator = await client.traverse(DOMAIN_DOCUMENT, { _class: document.class.Document })
 
   try {
@@ -328,19 +324,18 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
       }
 
       processed += docs.length
-      ctx.info('...processed', { count: processed })
+      client.logger.log('...processed', { count: processed })
     }
   } finally {
     await iterator.close()
   }
-  ctx.info('finished processing document lockedBy ', {})
+  client.logger.log('finished processing document lockedBy ', {})
 }
 
 async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('document migrateSocialIdsToGlobalAccounts', {})
   const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
-  ctx.info('processing document lockedBy ', {})
+  client.logger.log('processing document lockedBy ', {})
   const iterator = await client.traverse(DOMAIN_DOCUMENT, { _class: document.class.Document })
 
   try {
@@ -375,12 +370,12 @@ async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promi
       }
 
       processed += docs.length
-      ctx.info('...processed', { count: processed })
+      client.logger.log('...processed', { count: processed })
     }
   } finally {
     await iterator.close()
   }
-  ctx.info('finished processing document lockedBy ', {})
+  client.logger.log('finished processing document lockedBy ', {})
 }
 
 async function removeOldClasses (client: MigrationClient): Promise<void> {

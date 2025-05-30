@@ -9,7 +9,7 @@
     "DeleteState": "Delete State",
     "DeleteStateConfirm": "Do you want to delete state?",
     "RunProcess": "Run process",
-    "Processes": "Processes",
+    "Processes": "Processes (beta)",
     "Untitled": "Untitled",
     "States": "States",
     "AddState": "Add state",
@@ -63,7 +63,9 @@
     "DeleteTransition": "Delete transition",
     "DeleteTransitionConfirm": "Do you want to delete transition?",
     "AddTransition": "Add transition",
-    "ToDo": "ToDo"
+    "ToDo": "ToDo",
+    "CurrentCard": "Current card",
+    "Data": "Data"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

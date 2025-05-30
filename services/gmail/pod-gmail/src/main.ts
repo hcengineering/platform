@@ -163,8 +163,8 @@ export const main = async (): Promise<void> => {
           gmailController.push(data)
 
           res.send()
-        } catch (err) {
-          ctx.error('Push request failed', { message: JSON.stringify(err) })
+        } catch (err: any) {
+          ctx.error('Push request failed', { message: err.message })
           res.status(500).send()
         }
       }

@@ -27,7 +27,6 @@ import core, {
   makeCollabJsonId,
   makeCollabYdocId,
   makeDocCollabId,
-  MeasureMetricsContext,
   RateLimiter,
   SocialIdType,
   systemAccountUuid,
@@ -40,7 +39,6 @@ import core, {
   type Class,
   type Doc,
   type Domain,
-  type MeasureContext,
   type PersonId,
   type Ref,
   type Role,
@@ -169,7 +167,6 @@ async function migrateStatusTransactions (client: MigrationClient): Promise<void
 }
 
 async function migrateCollaborativeContentToStorage (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('migrate_content', {})
   const storageAdapter = client.storageAdapter
 
   const hierarchy = client.hierarchy
@@ -190,8 +187,8 @@ async function migrateCollaborativeContentToStorage (client: MigrationClient): P
 
     const iterator = await client.traverse(domain, query)
     try {
-      ctx.info('processing', { _class })
-      await processMigrateContentFor(ctx, domain, attributes, client, storageAdapter, iterator)
+      client.logger.log('processing', { _class })
+      await processMigrateContentFor(domain, attributes, client, storageAdapter, iterator)
     } finally {
       await iterator.close()
     }
@@ -199,7 +196,6 @@ async function migrateCollaborativeContentToStorage (client: MigrationClient): P
 }
 
 async function processMigrateContentFor (
-  ctx: MeasureContext,
   domain: Domain,
   attributes: AnyAttribute[],
   client: MigrationClient,
@@ -239,9 +235,9 @@ async function processMigrateContentFor (
           if (value != null && value.startsWith('{')) {
             try {
               const buffer = Buffer.from(value)
-              await storageAdapter.put(ctx, client.wsIds, blobId, buffer, 'application/json', buffer.length)
+              await storageAdapter.put(client.ctx, client.wsIds, blobId, buffer, 'application/json', buffer.length)
             } catch (err) {
-              ctx.error('failed to process document', { _class: doc._class, _id: doc._id, err })
+              client.logger.error('failed to process document', { _class: doc._class, _id: doc._id, err })
             }
 
             update[attributeName] = blobId
@@ -263,7 +259,7 @@ async function processMigrateContentFor (
     }
 
     processed += docs.length
-    ctx.info('...processed', { count: processed })
+    client.logger.log('...processed', { count: processed })
   }
 }
 
@@ -303,7 +299,6 @@ export async function migrateBackupMixins (client: MigrationClient): Promise<voi
 }
 
 async function migrateCollaborativeDocsToJson (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('migrateCollaborativeDocsToJson', {})
   const storageAdapter = client.storageAdapter
 
   const hierarchy = client.hierarchy
@@ -324,8 +319,8 @@ async function migrateCollaborativeDocsToJson (client: MigrationClient): Promise
 
     const iterator = await client.traverse(domain, query)
     try {
-      ctx.info('processing', { _class })
-      await processMigrateJsonForDomain(ctx, domain, attributes, client, storageAdapter, iterator)
+      client.logger.log('processing', { _class })
+      await processMigrateJsonForDomain(domain, attributes, client, storageAdapter, iterator)
     } finally {
       await iterator.close()
     }
@@ -398,13 +393,12 @@ export function getSocialKeyByOldEmail (rawEmail: string): SocialKey {
  * @returns
  */
 async function migrateAccounts (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('core migrateAccounts', {})
   const hierarchy = client.hierarchy
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
   const socialIdBySocialKey = new Map<string, PersonId | null>()
   const socialIdByOldAccount = new Map<string, PersonId | null>()
 
-  ctx.info('migrating createdBy and modifiedBy')
+  client.logger.log('migrating createdBy and modifiedBy', {})
   function chunkArray<T> (array: T[], chunkSize: number): T[][] {
     const chunks: T[][] = []
     for (let i = 0; i < array.length; i += chunkSize) {
@@ -414,7 +408,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
   }
 
   for (const domain of client.hierarchy.domains()) {
-    ctx.info('processing domain ', { domain })
+    client.logger.log('processing domain ', { domain })
     const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
     const groupByCreated = await client.groupBy<any, Doc>(domain, 'createdBy', {})
     const groupByModified = await client.groupBy<any, Doc>(domain, 'modifiedBy', {})
@@ -459,7 +453,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
 
     if (operations.length > 0) {
       const operationsChunks = chunkArray(operations, 40)
-      ctx.info('chunks to process ', { total: operationsChunks.length })
+      client.logger.log('chunks to process ', { total: operationsChunks.length })
       let processed = 0
       for (const operationsChunk of operationsChunks) {
         if (operationsChunk.length === 0) continue
@@ -467,15 +461,15 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
         await client.bulk(domain, operationsChunk)
         processed++
         if (operationsChunks.length > 1) {
-          ctx.info('processed chunk', { processed, of: operationsChunks.length })
+          client.logger.log('processed chunk', { processed, of: operationsChunks.length })
         }
       }
     } else {
-      ctx.info('no user accounts to migrate')
+      client.logger.log('no user accounts to migrate', {})
     }
   }
 
-  ctx.info('finished migrating createdBy and modifiedBy')
+  client.logger.log('finished migrating createdBy and modifiedBy', {})
 
   const spaceTypes = client.model.findAllSync(core.class.SpaceType, {})
   const spaceTypesById = toIdMap(spaceTypes)
@@ -493,7 +487,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
 
   const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
-  ctx.info('processing spaces members, owners and roles assignment', {})
+  client.logger.log('processing spaces members, owners and roles assignment', {})
   let processedSpaces = 0
   const spacesIterator = await client.traverse(DOMAIN_SPACE, {})
 
@@ -563,15 +557,15 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
       }
 
       processedSpaces += spaces.length
-      ctx.info('...spaces processed', { count: processedSpaces })
+      client.logger.log('...spaces processed', { count: processedSpaces })
     }
 
-    ctx.info('finished processing spaces members, owners and roles assignment', { processedSpaces })
+    client.logger.log('finished processing spaces members, owners and roles assignment', { processedSpaces })
   } finally {
     await spacesIterator.close()
   }
 
-  ctx.info('processing space types members', {})
+  client.logger.log('processing space types members', {})
   let updatedSpaceTypes = 0
   for (const spaceType of spaceTypes) {
     if (spaceType.members === undefined || spaceType.members.length === 0) continue
@@ -601,7 +595,10 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
     await client.create(DOMAIN_MODEL_TX, tx)
     updatedSpaceTypes++
   }
-  ctx.info('finished processing space types members', { totalSpaceTypes: spaceTypes.length, updatedSpaceTypes })
+  client.logger.log('finished processing space types members', {
+    totalSpaceTypes: spaceTypes.length,
+    updatedSpaceTypes
+  })
 }
 
 export async function getAccountUuidBySocialKey (
@@ -746,7 +743,6 @@ export async function getUniqueAccountsFromOldAccounts (
 }
 
 async function processMigrateJsonForDomain (
-  ctx: MeasureContext,
   domain: Domain,
   attributes: AnyAttribute[],
   client: MigrationClient,
@@ -767,7 +763,7 @@ async function processMigrateJsonForDomain (
 
     for (const doc of docs) {
       await rateLimiter.add(async () => {
-        const update = await processMigrateJsonForDoc(ctx, doc, attributes, client, storageAdapter)
+        const update = await processMigrateJsonForDoc(doc, attributes, client, storageAdapter)
         if (Object.keys(update).length > 0) {
           operations.push({ filter: { _id: doc._id }, update })
         }
@@ -781,12 +777,11 @@ async function processMigrateJsonForDomain (
     }
 
     processed += docs.length
-    ctx.info('...processed', { count: processed })
+    client.logger.log('...processed', { count: processed })
   }
 }
 
 async function processMigrateJsonForDoc (
-  ctx: MeasureContext,
   doc: Doc,
   attributes: AnyAttribute[],
   client: MigrationClient,
@@ -813,7 +808,7 @@ async function processMigrateJsonForDoc (
     if (value.startsWith('{')) {
       // For some reason we have documents that are already markups
       const jsonId = await retry(5, async () => {
-        return await saveCollabJson(ctx, storageAdapter, wsIds, collabId, value)
+        return await saveCollabJson(client.ctx, storageAdapter, wsIds, collabId, value)
       })
 
       update[attributeName] = jsonId
@@ -835,17 +830,22 @@ async function processMigrateJsonForDoc (
       const ydocId = makeCollabYdocId(collabId)
       if (ydocId !== currentYdocId) {
         await retry(5, async () => {
-          const stat = await storageAdapter.stat(ctx, wsIds, currentYdocId)
+          const stat = await storageAdapter.stat(client.ctx, wsIds, currentYdocId)
           if (stat !== undefined) {
-            const data = await storageAdapter.read(ctx, wsIds, currentYdocId)
+            const data = await storageAdapter.read(client.ctx, wsIds, currentYdocId)
             const buffer = Buffer.concat(data as any)
-            await storageAdapter.put(ctx, wsIds, ydocId, buffer, 'application/ydoc', buffer.length)
+            await storageAdapter.put(client.ctx, wsIds, ydocId, buffer, 'application/ydoc', buffer.length)
           }
         })
       }
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err)
-      ctx.warn('failed to process collaborative doc', { workspace: wsIds.uuid, collabId, currentYdocId, error })
+      client.logger.error('failed to process collaborative doc', {
+        workspace: wsIds.uuid,
+        collabId,
+        currentYdocId,
+        error
+      })
     }
 
     const unset = update.$unset ?? {}

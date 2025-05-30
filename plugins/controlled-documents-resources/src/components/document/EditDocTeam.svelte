@@ -21,7 +21,7 @@
     DocumentReviewRequest,
     DocumentState
   } from '@hcengineering/controlled-documents'
-  import { Ref } from '@hcengineering/core'
+  import { DocumentUpdate, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Scroller } from '@hcengineering/ui'
 
@@ -88,16 +88,51 @@
       }
 
       const requiredApprovesCount = users.length
+      const requestedQuery: DocumentUpdate<DocumentReviewRequest | DocumentApprovalRequest> = {}
 
+      if (addedPersons.size > 0) {
+        requestedQuery.$push = { requested: { $each: Array.from(addedPersons), $position: 0 } }
+      }
+      if (removedPersons.size > 0) {
+        requestedQuery.$pull = { requested: { $in: Array.from(removedPersons) } }
+      }
+
+      if (Object.keys(requestedQuery).length > 0) {
+        await ops.update(request, requestedQuery)
+      }
       await ops.update(request, {
-        requested: users,
         approved,
         approvedDates,
         requiredApprovesCount
       })
     }
 
-    await ops.update(controlledDoc, { [type]: users })
+    const added = new Set()
+    const removed = new Set()
+
+    for (const user of users) {
+      if (!controlledDoc[type].includes(user as Ref<Employee>)) {
+        added.add(user)
+      }
+    }
+
+    for (const user of controlledDoc[type]) {
+      if (!users.includes(user)) {
+        removed.add(user)
+      }
+    }
+
+    const updateQuery: DocumentUpdate<ControlledDocument> = {}
+    if (added.size > 0) {
+      updateQuery.$push = { [type]: { $each: Array.from(added), $position: 0 } }
+    }
+    if (removed.size > 0) {
+      updateQuery.$pull = { [type]: { $in: Array.from(removed) } }
+    }
+
+    if (Object.keys(updateQuery).length > 0) {
+      await ops.update(controlledDoc, updateQuery)
+    }
     await ops.commit()
   }
 </script>

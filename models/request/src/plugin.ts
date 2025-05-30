@@ -24,14 +24,18 @@ import type { NotificationGroup, NotificationType } from '@hcengineering/notific
 export default mergeIds(requestId, request, {
   component: {
     EditRequest: '' as AnyComponent,
-    NotificationRequestView: '' as AnyComponent
+    NotificationRequestView: '' as AnyComponent,
+    RequestedChangedNotification: '' as AnyComponent
   },
   ids: {
     RequestNotificationGroup: '' as Ref<NotificationGroup>,
-    CreateRequestNotification: '' as Ref<NotificationType>
+    CreateRequestNotification: '' as Ref<NotificationType>,
+    RemoveRequestNotification: '' as Ref<NotificationType>
   },
   string: {
     Status: '' as IntlString,
-    Requested: '' as IntlString
+    Requested: '' as IntlString,
+    NewRequest: '' as IntlString,
+    CancelRequest: '' as IntlString
   }
 })

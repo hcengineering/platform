@@ -18,6 +18,8 @@
     "PleaseTypeMessage": "Пожалуйста, оставьте комментарий, чтобы продолжить...",
     "NoRequests": "Нет запросов",
     "Cancel": "Отменить",
-    "Cancelled": "Отменен"
+    "Cancelled": "Отменен",
+    "NewRequest": "Новый запрос",
+    "CancelRequest": "Отмена запроса"
   }
 }

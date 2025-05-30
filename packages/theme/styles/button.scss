@@ -18,7 +18,7 @@
   }
   span { white-space: nowrap; }
 
-  &:focus {
+  &:not(.no-focus):focus {
     outline: 2px solid var(--global-focus-BorderColor);
     outline-offset: 2px;
   }
@@ -628,9 +628,10 @@
   border: 1px solid transparent;
 
   button {
-    font-weight: 500;
     font-size: 0.875rem;
     border: none;
+
+    &.accent { font-weight: 500; }
 
     .btn-icon {
       width: var(--spacing-2_5);
@@ -660,6 +661,7 @@
     padding: 0;
 
     .btn-icon {
+      color: var(--theme-dark-color);
       width: var(--global-min-Size);
       height: var(--global-min-Size);
     }
@@ -708,6 +710,9 @@
     height: var(--global-small-Size);
     border-radius: var(--small-BorderRadius);
 
+    button {
+      font-size: .8125rem;
+    }
     button:first-child {
       border-top-left-radius: var(--small-BorderRadius);
       border-bottom-left-radius: var(--small-BorderRadius);
@@ -715,6 +720,10 @@
     button:last-child {
       border-top-right-radius: var(--small-BorderRadius);
       border-bottom-right-radius: var(--small-BorderRadius);
+    }
+    button .btn-icon {
+      width: var(--spacing-2);
+      height: var(--spacing-2);
     }
     .hulySplitButton-main {
       padding: 0 var(--spacing-0_5) 0 var(--spacing-1);
@@ -790,7 +799,7 @@
       color: var(--button-subtle-LabelColor);
 
       &:enabled {
-        &:hover {
+        &:not(.no-focus):hover {
           background-color: var(--button-secondary-hover-BackgroundColor);
         }
         &:active,
@@ -804,7 +813,7 @@
         }
       }
     }
-    &:not(.disabled):focus-within {
+    &:not(.disabled):not(.no-focus):focus-within {
       border-color: var(--theme-button-focused-border);
     }
     &.disabled {
@@ -889,7 +898,7 @@
     &.primary .hulySplitButton-second::after {
       background-color: var(--primary-button-color);
     }
-    &:focus-within .hulySplitButton-second::after {
+    &:not(.no-focus):focus-within .hulySplitButton-second::after {
       content: none;
     }
   }

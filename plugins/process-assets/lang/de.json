@@ -9,7 +9,7 @@
     "DeleteState": "Status löschen",
     "DeleteStateConfirm": "Status löschen?",
     "RunProcess": "Prozess ausführen",
-    "Processes": "Prozesse",
+    "Processes": "Prozesse (Beta)",
     "Untitled": "Ohne Titel",
     "States": "Status",
     "AddState": "Status hinzufügen",
@@ -63,7 +63,9 @@
     "DeleteTransition": "Übergang löschen",
     "DeleteTransitionConfirm": "Übergang löschen?",
     "AddTransition": "Übergang hinzufügen",
-    "ToDo": "Aufgabe"
+    "ToDo": "Aufgabe",
+    "CurrentCard": "Aktuelle Karte",
+    "Data": "Daten"
   },  
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

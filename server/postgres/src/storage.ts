@@ -522,7 +522,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
         // todo handle custom sorting
       }
     }
-    return `ORDER BY ${res.join(', ')}`
+    if (res.length > 0) {
+      return `ORDER BY ${res.join(', ')}`
+    } else {
+      return ''
+    }
   }
 
   buildRawQuery<T extends Doc>(
@@ -1170,7 +1174,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
         // todo handle custom sorting
       }
     }
-    return `ORDER BY ${res.join(', ')}`
+    if (res.length > 0) {
+      return `ORDER BY ${res.join(', ')}`
+    } else {
+      return ''
+    }
   }
 
   private buildQuery<T extends Doc>(

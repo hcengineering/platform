@@ -169,7 +169,8 @@ export class SessionDataImpl implements SessionData {
     _removedMap: Map<Ref<Doc>, Doc> | undefined,
     _contextCache: Map<string, any> | undefined,
     readonly modelDb: ModelDb,
-    readonly socialStringsToUsers: Map<PersonId, AccountUuid>
+    readonly socialStringsToUsers: Map<PersonId, AccountUuid>,
+    readonly service: string
   ) {
     this._removedMap = _removedMap
     this._contextCache = _contextCache
@@ -246,7 +247,8 @@ export function wrapPipeline (
     undefined,
     undefined,
     pipeline.context.modelDb,
-    new Map()
+    new Map(),
+    'transactor'
   )
   ctx.contextData = contextData
   if (pipeline.context.lowLevelStorage === undefined) {

@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { showPopup, ButtonIcon } from '@hcengineering/ui'
+  import ui, { showPopup, ButtonIcon, IconDelete } from '@hcengineering/ui'
   import { Message } from '@hcengineering/communication-types'
   import { createEventDispatcher } from 'svelte'
   import emojiPlugin from '@hcengineering/emoji'
@@ -30,6 +30,7 @@
   export let canReply: boolean = true
   export let canReact: boolean = true
   export let isOpened: boolean = false
+  export let canRemove: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -85,6 +86,18 @@
         order: 30,
         action: () => {
           dispatch('edit')
+        }
+      })
+    }
+
+    if (canRemove) {
+      actions.push({
+        id: 'remove',
+        label: ui.string.Remove,
+        icon: IconDelete,
+        order: 999,
+        action: () => {
+          dispatch('remove')
         }
       })
     }

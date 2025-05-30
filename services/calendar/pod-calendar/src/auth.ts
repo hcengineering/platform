@@ -55,17 +55,22 @@ export class AuthController {
     state: State,
     code: string
   ): Promise<void> {
-    await ctx.with('Create auth controller', { workspace: state.workspace, user: state.userId }, async () => {
-      const mutex = await lock(`${state.workspace}:${state.userId}`)
-      try {
-        const client = await getClient(getWorkspaceToken(state.workspace))
-        const txOp = new TxOperations(client, core.account.System)
-        const controller = new AuthController(ctx, accountClient, txOp, state)
-        await controller.process(code)
-      } finally {
-        mutex()
-      }
-    })
+    await ctx.with(
+      'Create auth controller',
+      {},
+      async () => {
+        const mutex = await lock(`${state.workspace}:${state.userId}`)
+        try {
+          const client = await getClient(getWorkspaceToken(state.workspace))
+          const txOp = new TxOperations(client, core.account.System)
+          const controller = new AuthController(ctx, accountClient, txOp, state)
+          await controller.process(code)
+        } finally {
+          mutex()
+        }
+      },
+      { workspace: state.workspace, user: state.userId }
+    )
   }
 
   static async signout (
@@ -75,22 +80,27 @@ export class AuthController {
     workspace: WorkspaceUuid,
     value: GoogleEmail
   ): Promise<void> {
-    await ctx.with('Signout auth controller', { workspace, userId }, async () => {
-      const mutex = await lock(`${workspace}:${userId}`)
-      try {
-        const client = await getClient(getWorkspaceToken(workspace))
-        const txOp = new TxOperations(client, core.account.System)
-        const controller = new AuthController(ctx, accountClient, txOp, {
-          userId,
-          workspace
-        })
-        await controller.signout(value)
-      } catch (err) {
-        ctx.error('signout', { workspace, userId, err })
-      } finally {
-        mutex()
-      }
-    })
+    await ctx.with(
+      'Signout auth controller',
+      {},
+      async () => {
+        const mutex = await lock(`${workspace}:${userId}`)
+        try {
+          const client = await getClient(getWorkspaceToken(workspace))
+          const txOp = new TxOperations(client, core.account.System)
+          const controller = new AuthController(ctx, accountClient, txOp, {
+            userId,
+            workspace
+          })
+          await controller.signout(value)
+        } catch (err) {
+          ctx.error('signout', { workspace, userId, err })
+        } finally {
+          mutex()
+        }
+      },
+      { workspace, userId }
+    )
   }
 
   private async signout (value: GoogleEmail): Promise<void> {
@@ -167,7 +177,7 @@ export class AuthController {
   private async setWorkspaceIntegration (res: AuthResult): Promise<void> {
     await this.ctx.with(
       'Set workspace integration',
-      { user: this.user.userId, workspace: this.user.workspace, email: res.email },
+      {},
       async () => {
         const integrations = await this.client.findAll(setting.class.Integration, {
           createdBy: this.user.userId,
@@ -207,26 +217,36 @@ export class AuthController {
             })
           }
         }
+      },
+      {
+        user: this.user.userId,
+        workspace: this.user.workspace,
+        email: res.email
       }
     )
   }
 
   private async createAccIntegrationIfNotExists (): Promise<void> {
-    await this.ctx.with('Create account integration if not exists', { user: this.user.userId }, async () => {
-      const integration = await this.accountClient.getIntegration({
-        socialId: this.user.userId,
-        kind: CALENDAR_INTEGRATION,
-        workspaceUuid: this.user.workspace
-      })
-      if (integration != null) {
-        return
-      }
-      await this.accountClient.createIntegration({
-        socialId: this.user.userId,
-        kind: CALENDAR_INTEGRATION,
-        workspaceUuid: this.user.workspace
-      })
-    })
+    await this.ctx.with(
+      'Create account integration if not exists',
+      {},
+      async () => {
+        const integration = await this.accountClient.getIntegration({
+          socialId: this.user.userId,
+          kind: CALENDAR_INTEGRATION,
+          workspaceUuid: this.user.workspace
+        })
+        if (integration != null) {
+          return
+        }
+        await this.accountClient.createIntegration({
+          socialId: this.user.userId,
+          kind: CALENDAR_INTEGRATION,
+          workspaceUuid: this.user.workspace
+        })
+      },
+      { user: this.user.userId }
+    )
   }
 
   private async updateToken (token: Credentials, email: GoogleEmail): Promise<void> {

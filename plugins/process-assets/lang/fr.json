@@ -9,7 +9,7 @@
     "DeleteState": "Supprimer l'état",
     "DeleteStateConfirm": "Voulez-vous supprimer l'état ?",
     "RunProcess": "Exécuter le processus",
-    "Processes": "Processus",
+    "Processes": "Processus (bêta)",
     "Untitled": "Sans titre",
     "States": "États",
     "AddState": "Ajouter un état",
@@ -63,7 +63,9 @@
     "DeleteTransition": "Supprimer la transition",
     "DeleteTransitionConfirm": "Voulez-vous supprimer la transition ?",
     "AddTransition": "Ajouter une transition",
-    "ToDo": "Tâche"
+    "ToDo": "Tâche",
+    "CurrentCard": "Carte actuelle",
+    "Data": "Données"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

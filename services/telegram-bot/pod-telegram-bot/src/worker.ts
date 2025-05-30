@@ -292,7 +292,7 @@ export class PlatformWorker {
     }
 
     try {
-      const accountClient = getAccountClient(generateToken(account, workspaceId))
+      const accountClient = getAccountClient(generateToken(account, workspaceId, { service: 'telegram-bot' }))
       const result = await accountClient.getWorkspaceInfo(false)
 
       if (result === undefined) {

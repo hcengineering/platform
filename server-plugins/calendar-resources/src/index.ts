@@ -319,7 +319,7 @@ async function sendEventToService (
       method: 'POST',
       keepalive: true,
       headers: {
-        Authorization: 'Bearer ' + generateToken(systemAccountUuid, workspace),
+        Authorization: 'Bearer ' + generateToken(systemAccountUuid, workspace, { service: 'calendar' }),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({

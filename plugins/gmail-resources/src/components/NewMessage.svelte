@@ -135,7 +135,6 @@
         }
       )
     } catch (err: any) {
-      Analytics.handleError(err)
       setPlatformStatus(unknownError(err))
     }
   }

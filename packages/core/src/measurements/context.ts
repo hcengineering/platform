@@ -168,7 +168,9 @@ export class MeasureMetricsContext implements MeasureContext {
   ): Promise<T> {
     const st = platformNow()
     const r = this.with(name, params, op, fullParams)
-    void r.finally(() => {
+    r.catch(() => {
+      // Ignore logging errors to prevent unhandled rejections
+    }).finally(() => {
       this.logger.logOperation(name, platformNowDiff(st), { ...params, ...fullParams })
     })
     return r
@@ -188,6 +190,10 @@ export class MeasureMetricsContext implements MeasureContext {
 
   end (): void {
     this.done()
+  }
+
+  getParams (): ParamsType {
+    return this.params
   }
 }
 
@@ -258,6 +264,10 @@ export class NoMetricsContext implements MeasureContext {
   }
 
   end (): void {}
+
+  getParams (): ParamsType {
+    return {}
+  }
 }
 
 /**

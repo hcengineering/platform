@@ -24,7 +24,6 @@ import * as path from 'path'
 
 import { Config, NotificationParams } from '../ui/types'
 import { getOptions } from './args'
-import { cancelBackup, startBackup } from './backup'
 import { addMenus } from './menu'
 import { addPermissionHandlers } from './permissions'
 import autoUpdater from './updater'
@@ -184,9 +183,13 @@ function handleAuthRedirects (window: BrowserWindow): void {
 }
 
 const createWindow = async (): Promise<void> => {
+  // Restore window position if available
+  const restoredBounds: any = settings.get('windowBounds')
   mainWindow = new BrowserWindow({
-    width: defaultWidth,
-    height: defaultHeight,
+    width: restoredBounds?.width ?? defaultWidth,
+    height: restoredBounds?.height ?? defaultHeight,
+    x: restoredBounds?.x ?? undefined,
+    y: restoredBounds?.y ?? undefined,
     titleBarStyle: isMac ? 'hidden' : 'default',
     trafficLightPosition: { x: 10, y: 10 },
     roundedCorners: true,
@@ -195,7 +198,7 @@ const createWindow = async (): Promise<void> => {
       devTools: true,
       sandbox: false,
       nodeIntegration: true,
-      backgroundThrottling: false,
+      // backgroundThrottling: false,
       partition: sessionPartition,
       preload: path.join(app.getAppPath(), 'dist', 'main', 'preload.js')
     }
@@ -212,6 +215,14 @@ const createWindow = async (): Promise<void> => {
   // In this example, only windows with the `about:blank` url will be created.
   // All other urls will be blocked.
   hookOpenWindow(mainWindow)
+
+  // Save window position on close
+  mainWindow.on('close', () => {
+    const bounds = mainWindow?.getBounds()
+    if (bounds !== undefined) {
+      settings.set('windowBounds', bounds)
+    }
+  })
 
   if (isMac) {
     mainWindow.on('close', (event) => {
@@ -315,60 +326,11 @@ ipcMain.on('set-front-cookie', function (event, host: string, name: string, valu
   void win?.webContents?.session.cookies.set(cv)
 })
 
-const DEEP_LINKS_PROTOCOL = 'huly'
-/*
-  Copy-paste from official tutorial for deep links
-  https://www.electronjs.org/docs/latest/tutorial/launch-app-from-url-in-another-app
-*/
-if (process.defaultApp) {
-  if (process.argv.length >= 2) {
-    app.setAsDefaultProtocolClient(DEEP_LINKS_PROTOCOL, process.execPath, [path.resolve(process.argv[1])])
-  }
-} else {
-  app.setAsDefaultProtocolClient(DEEP_LINKS_PROTOCOL)
-}
-
 const gotTheLock = app.requestSingleInstanceLock()
 
 if (!gotTheLock) {
   app.quit()
 }
-
-let deepLink = ''
-let haveDeepLinkHandler = false
-function tryToOpenDeepLink (link?: string): void {
-  if (mainWindow == null || !haveDeepLinkHandler) {
-    if (link != null) {
-      deepLink = link
-    }
-    return
-  }
-
-  const url = link ?? deepLink
-  const httpsUrl = url.replace(`${DEEP_LINKS_PROTOCOL}://`, 'https://')
-  mainWindow.webContents.send('handle-deep-link', httpsUrl)
-}
-
-// Add windows / linux handler for second instance
-// This is because Windows try to open second instance from the deep link
-app.on('second-instance', (event, commandLine, workingDirectory) => {
-  if (mainWindow != null) {
-    if (mainWindow.isMinimized()) mainWindow.restore()
-    mainWindow.focus()
-  }
-
-  const url = commandLine.pop()
-  console.log('Opening url', url)
-
-  if (url != null) {
-    tryToOpenDeepLink(url)
-  }
-})
-
-ipcMain.on('on-deep-link-handler', () => {
-  haveDeepLinkHandler = true
-  tryToOpenDeepLink()
-})
 
 ipcMain.handle('get-screen-access', () => systemPreferences.getMediaAccessStatus('screen') === 'granted')
 ipcMain.handle('get-screen-sources', () => {
@@ -383,20 +345,8 @@ ipcMain.handle('get-screen-sources', () => {
   })
 })
 
-// MacOS implementation
-// Handle the protocol. In this case, we choose to show an Error Box.
-app.on('open-url', (event, url) => {
-  if (url == null) {
-    return
-  }
-  tryToOpenDeepLink(url)
-})
-
 async function onReady (): Promise<void> {
   await createWindow()
-
-  const customProtocolArg = process.argv.find((arg) => arg.startsWith(`${DEEP_LINKS_PROTOCOL}://`)) ?? ''
-  tryToOpenDeepLink(customProtocolArg)
 
   if (serverChanged) {
     mainWindow?.webContents.send('logout')
@@ -419,15 +369,20 @@ if (isMac) {
       mainWindow.show()
     }
   })
+}
+app.on('before-quit', () => {
+  if (mainWindow !== undefined && !mainWindow.isDestroyed()) {
+    const bounds = mainWindow.getBounds()
+    settings.set('windowBounds', bounds)
+  }
+  // Note: in case the app is exited by auto-updater all windows will be destroyed at this point
+  if (mainWindow === undefined || mainWindow.isDestroyed()) return
 
-  app.on('before-quit', () => {
-    // Note: in case the app is exited by auto-updater all windows will be destroyed at this point
-    if (mainWindow === undefined || mainWindow.isDestroyed()) return
-
+  if (isMac) {
     mainWindow?.removeAllListeners('close')
     mainWindow?.close()
-  })
-}
+  }
+})
 
 // Note: it is reset when the app is relaunched after update
 let isUpdating = false
@@ -470,17 +425,4 @@ autoUpdater.on('update-downloaded', (info) => {
   mainWindow?.removeAllListeners('close')
 
   autoUpdater.quitAndInstall()
-})
-
-ipcMain.on('start-backup', (event, token, endpoint, wsIds) => {
-  console.log('start backup', token, endpoint, wsIds)
-  if (mainWindow != null) {
-    startBackup(mainWindow, token, endpoint, wsIds, (cmd: string, ...args: any[]) => {
-      mainWindow?.webContents.send(cmd, ...args)
-    })
-  }
-})
-
-ipcMain.on('cancel-backup', (event) => {
-  cancelBackup()
 })

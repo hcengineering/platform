@@ -14,42 +14,37 @@
 //
 
 import * as tus from 'tus-js-client'
+import type { RecordingResult } from './types'
 import type { ChunkReader } from './stream'
-
-export interface UploadResult {
-  blobId?: string
-  error?: any
-}
 
 export interface Uploader {
   start: () => void
   cancel: () => Promise<void>
-  wait: () => Promise<UploadResult>
+  wait: () => Promise<RecordingResult>
 }
 
 export interface TusUploaderOptions {
+  name: string
   endpoint: string
   workspace: string
   token: string
   width: number
   height: number
-  /** Optional callback invoked on successful upload with generated blobId */
-  onSuccess?: (blobId: string) => void
-  /** Optional callback invoked on upload error */
-  onError?: (error: any) => void
 }
 
 export class TusUploader implements Uploader {
   private readonly upload: tus.Upload
-  private readonly waiterPromise: Promise<UploadResult>
-  private waiterResolve: (value: UploadResult) => void = () => {}
+  private readonly waiterPromise: Promise<RecordingResult>
+  private waiterResolve: (value: RecordingResult) => void = () => {}
+  private waiterReject: (reason?: any) => void = () => {}
 
   constructor (reader: ChunkReader, options: TusUploaderOptions) {
-    const { endpoint, workspace, token, width, height, onSuccess, onError } = options
+    const { endpoint, workspace, token, width, height } = options
     const resolution = width + ':' + height
 
-    this.waiterPromise = new Promise<UploadResult>((resolve) => {
+    this.waiterPromise = new Promise<RecordingResult>((resolve, reject) => {
       this.waiterResolve = resolve
+      this.waiterReject = reject
     })
 
     console.debug('TusUploader: uploading', workspace, endpoint)
@@ -67,19 +62,15 @@ export class TusUploader implements Uploader {
           console.error('TusUploader: upload URL does not contain upload ID')
           return
         }
-        const blobId = uploadId + '_master.m3u8'
-        // invoke callback if provided
-        onSuccess?.(blobId)
-        this.waiterResolve({ blobId })
+
+        const name = options.name
+        const uuid = uploadId + '_master.m3u8'
+        const type = 'video/x-mpegURL'
+        this.waiterResolve({ name, uuid, type })
       },
       onError: (error) => {
         console.error('TusUploader: upload failed:', error)
-        // invoke error callback if provided
-        onError?.(error)
-        this.waiterResolve({ error })
-      },
-      onProgress: (progress) => {
-        console.debug('TusUploader: upload progress:', progress)
+        this.waiterReject(error)
       }
     })
   }
@@ -88,11 +79,15 @@ export class TusUploader implements Uploader {
     this.upload.start()
   }
 
-  public async wait (): Promise<UploadResult> {
+  public async wait (): Promise<RecordingResult> {
     return await this.waiterPromise
   }
 
   public async cancel (): Promise<void> {
-    await this.upload.abort()
+    try {
+      await this.upload.abort()
+    } catch (error) {
+      console.error('TusUploader: abort failed:', error)
+    }
   }
 }

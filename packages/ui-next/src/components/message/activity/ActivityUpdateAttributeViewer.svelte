@@ -17,6 +17,8 @@
   import { ActivityAttributeUpdate } from '@hcengineering/communication-types'
 
   import ActivitySetAttributesViewer from './ActivitySetAttributeViewer.svelte'
+  import ActivityAddAttributeViewer from './ActivityAddAttributeViewer.svelte'
+  import ActivityRemoveAttributeViewer from './ActivityRemoveAttributeViewer.svelte'
 
   export let model: AttributeModel
   export let update: ActivityAttributeUpdate
@@ -24,4 +26,12 @@
 
 {#if update?.set !== undefined}
   <ActivitySetAttributesViewer {model} value={update.set} />
+{/if}
+
+{#if (update.added?.length ?? 0) > 0}
+  <ActivityAddAttributeViewer {model} value={update.added ?? []} />
+{/if}
+
+{#if (update.removed?.length ?? 0) > 0}
+  <ActivityRemoveAttributeViewer {model} value={update.removed ?? []} />
 {/if}

@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import { MeasureContext, TxOperations, SocialId } from '@hcengineering/core'
+import { MeasureContext, TxOperations } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { AccountClient } from '@hcengineering/account-client'
+import { type MailRecipient } from '@hcengineering/mail-common'
 
 import config from '../config'
 import { AttachmentHandler } from './attachments'
@@ -32,11 +33,11 @@ export function createMessageManager (
   attachmentHandler: AttachmentHandler,
   workspace: { getChannel: (email: string) => Channel | undefined },
   token: string,
-  socialId: SocialId
+  recipient: MailRecipient
 ): IMessageManager {
   if (config.Version === 'v2') {
-    return new MessageManagerV2(ctx, attachmentHandler, client, keyValueClient, accountClient, token)
+    return new MessageManagerV2(ctx, attachmentHandler, client, keyValueClient, accountClient, token, recipient)
   } else {
-    return new MessageManagerV1(ctx, client, attachmentHandler, socialId._id, workspace)
+    return new MessageManagerV1(ctx, client, attachmentHandler, recipient.socialId, workspace)
   }
 }

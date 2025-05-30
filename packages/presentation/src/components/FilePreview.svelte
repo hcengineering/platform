@@ -37,6 +37,7 @@
   export let props: Record<string, any> = {}
   export let fit: boolean = false
   export let embedded: boolean = false
+  export let setLoading: ((loading: boolean) => void) | undefined = undefined
 
   let download: HTMLAnchorElement
   let parentWidth: number
@@ -102,7 +103,10 @@
         <Label label={presentation.string.FailedToPreview} />
       </div>
     {:else if previewType !== undefined}
-      <Component is={previewType.component} props={{ value: file, name, contentType, metadata, ...props, fit }} />
+      <Component
+        is={previewType.component}
+        props={{ value: file, name, contentType, metadata, ...props, fit, setLoading }}
+      />
     {:else if loading}
       <Loading />
     {:else}

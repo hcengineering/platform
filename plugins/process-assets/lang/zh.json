@@ -9,7 +9,7 @@
     "DeleteState": "删除状态",
     "DeleteStateConfirm": "您确定要删除状态吗？",
     "RunProcess": "运行过程",
-    "Processes": "过程",
+    "Processes": "过程 (测试版)",
     "Untitled": "无标题",
     "States": "状态",
     "AddState": "添加状态",
@@ -63,7 +63,9 @@
     "DeleteTransition": "删除转换",
     "DeleteTransitionConfirm": "您确定要删除转换吗？",
     "AddTransition": "添加转换",
-    "ToDo": "待办事项"
+    "ToDo": "待办事项",
+    "CurrentCard": "当前卡片",
+    "Data": "数据"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

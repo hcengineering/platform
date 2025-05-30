@@ -12,8 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+<script context="module" lang="ts">
+  let fullScreenMode: boolean = false
+
+  export function getFullScreenMode (): boolean {
+    return fullScreenMode
+  }
+  function setFullScreenMode (value: boolean): void {
+    fullScreenMode = value
+  }
+</script>
+
 <script lang="ts">
-  import { afterUpdate, onDestroy } from 'svelte'
+  import { afterUpdate, onDestroy, onMount } from 'svelte'
   import { resizeObserver } from '../resize'
   import { closeTooltip, tooltipstore as tooltip } from '../tooltips'
   import { modalStore as modals } from '../modals'
@@ -66,8 +77,14 @@
     visibility: 'hidden',
     classList: ''
   }
-  const shouldHideTooltip = (): boolean =>
-    (fullScreen && document.fullscreenElement == null) || (!fullScreen && document.fullscreenElement != null)
+
+  onMount(() => {
+    if (fullScreen) setFullScreenMode(true)
+  })
+  onDestroy(() => {
+    if (fullScreen) setFullScreenMode(false)
+  })
+  const shouldHideTooltip = (): boolean => (fullScreen && !fullScreenMode) || (!fullScreen && fullScreenMode)
 
   const clearStyles = (): void => {
     shown = false

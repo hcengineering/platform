@@ -13,27 +13,33 @@
 // limitations under the License.
 //
 
+import { type Editor } from '@tiptap/core'
 import { type EmbedNodeProviderConstructor } from '../embed'
 
-export const YoutubeEmbedProvider: EmbedNodeProviderConstructor<YoutubeEmbedUrlOptions> = (options) => async (src) => {
-  const url = getEmbedUrlFromYoutubeUrl(src, options)
-  if (url === undefined) return
+export const YoutubeEmbedProvider: EmbedNodeProviderConstructor<YoutubeEmbedUrlOptions> = (options) => ({
+  buildView: async (src) => {
+    const url = getEmbedUrlFromYoutubeUrl(src, options)
+    if (url === undefined) return
 
-  return (root: HTMLDivElement) => {
-    const iframe = document.createElement('iframe')
-    iframe.src = url
-    for (const key in options.iframe) {
-      const value = (options as any)[key]
-      if (value !== undefined) {
-        iframe.setAttribute(key, `${value}`)
+    return (editor: Editor, root: HTMLDivElement) => {
+      const iframe = document.createElement('iframe')
+      iframe.src = url
+      for (const key in options.iframe) {
+        const value = (options as any)[key]
+        if (value !== undefined) {
+          iframe.setAttribute(key, `${value}`)
+        }
+      }
+      root.appendChild(iframe)
+      return {
+        name: 'youtube'
       }
     }
-    root.appendChild(iframe)
-    return {
-      name: 'youtube'
-    }
+  },
+  autoEmbedUrl: (src: string) => {
+    return getEmbedUrlFromYoutubeUrl(src, options) !== undefined
   }
-}
+})
 
 export const isValidYoutubeUrl = (url: string): boolean => {
   return url.match(YOUTUBE_REGEX) !== null

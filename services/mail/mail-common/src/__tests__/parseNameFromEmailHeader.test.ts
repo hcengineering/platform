@@ -21,8 +21,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = '"John Doe" <john.doe@example.com>'
     const expected: EmailContact = {
       email: 'john.doe@example.com',
-      firstName: '<john.doe@example.com>',
-      lastName: 'John Doe'
+      firstName: 'John',
+      lastName: 'Doe'
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)
@@ -32,8 +32,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = 'Jane Smith <jane.smith@example.com>'
     const expected: EmailContact = {
       email: 'jane.smith@example.com',
-      firstName: '<jane.smith@example.com>',
-      lastName: 'Jane Smith'
+      firstName: 'Jane',
+      lastName: 'Smith'
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)
@@ -65,8 +65,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = 'Maria Van Der Berg <maria@example.com>'
     const expected: EmailContact = {
       email: 'maria@example.com',
-      firstName: '<maria@example.com>',
-      lastName: 'Maria Van Der Berg'
+      firstName: 'Maria Van Der Berg',
+      lastName: ''
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)
@@ -108,8 +108,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = 'Support <help@example.com>'
     const expected: EmailContact = {
       email: 'help@example.com',
-      firstName: '<help@example.com>',
-      lastName: 'Support'
+      firstName: 'Support',
+      lastName: ''
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)
@@ -119,8 +119,8 @@ describe('parseNameFromEmailHeader', () => {
     const input = '"O\'Neill, James" <james.oneill@example.com>'
     const expected: EmailContact = {
       email: 'james.oneill@example.com',
-      firstName: '<james.oneill@example.com>',
-      lastName: "O'Neill, James"
+      firstName: "O'Neill",
+      lastName: 'James'
     }
 
     expect(parseNameFromEmailHeader(input)).toEqual(expected)

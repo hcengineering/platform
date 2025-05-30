@@ -17,22 +17,34 @@
   import { MessageViewer as MarkupMessageViewer } from '@hcengineering/presentation'
   import { Message, MessageType } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
+  import { Label } from '@hcengineering/ui'
+  import { Person } from '@hcengineering/contact'
 
   import ActivityMessageViewer from './ActivityMessageViewer.svelte'
   import { toMarkup } from '../../utils'
   import { isActivityMessage } from '../../activity'
   import ThreadMessageViewer from './ThreadMessageViewer.svelte'
+  import uiNext from '../../plugin'
 
   export let card: Card
   export let message: Message
+  export let author: Person | undefined
 </script>
 
-{#if message.thread != null}
+{#if message.type === MessageType.Thread || message.thread != null}
   <ThreadMessageViewer {message} thread={message.thread} />
-{:else if message.type === MessageType.Message}
-  <MarkupMessageViewer message={toMarkup(message.content)} />
 {:else if isActivityMessage(message)}
-  <ActivityMessageViewer {message} {card} />
+  <ActivityMessageViewer {message} {card} {author} />
+{:else if message.removed}
+  <span class="overflow-label removed-label">
+    <Label label={uiNext.string.MessageWasRemoved} />
+  </span>
 {:else}
   <MarkupMessageViewer message={toMarkup(message.content)} />
 {/if}
+
+<style lang="scss">
+  .removed-label {
+    color: var(--theme-text-placeholder-color);
+  }
+</style>

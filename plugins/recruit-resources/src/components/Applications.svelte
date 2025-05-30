@@ -54,7 +54,7 @@
 
   <svelte:fragment slot="content">
     {#if applications > 0 && viewlet !== undefined && !loading}
-      <Scroller horizontal>
+      <Scroller horizontal noFade={false}>
         <Table
           _class={recruit.class.Applicant}
           config={preference?.config ?? viewlet.config}

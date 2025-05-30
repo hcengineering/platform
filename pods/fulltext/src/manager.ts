@@ -116,7 +116,14 @@ export class WorkspaceManager {
     for (const m of msg) {
       const ws = m.id as WorkspaceUuid
 
-      const indexer = await this.getIndexer(this.ctx, ws, generateToken(systemAccountUuid, ws), true)
+      const indexer = await this.getIndexer(
+        this.ctx,
+        ws,
+        generateToken(systemAccountUuid, ws, {
+          service: 'fulltext'
+        }),
+        true
+      )
       await indexer?.fulltext.processDocuments(this.ctx, m.value, control)
     }
   }
@@ -135,7 +142,12 @@ export class WorkspaceManager {
           mm.type === QueueWorkspaceEvent.Restored ||
           mm.type === QueueWorkspaceEvent.FullReindex
         ) {
-          const indexer = await this.getIndexer(this.ctx, ws, generateToken(systemAccountUuid, ws), true)
+          const indexer = await this.getIndexer(
+            this.ctx,
+            ws,
+            generateToken(systemAccountUuid, ws, { service: 'fulltext' }),
+            true
+          )
           if (indexer !== undefined) {
             await indexer.dropWorkspace() // TODO: Add heartbeat
             const classes = await indexer.getIndexClassess()
@@ -149,7 +161,7 @@ export class WorkspaceManager {
           mm.type === QueueWorkspaceEvent.Archived ||
           mm.type === QueueWorkspaceEvent.ClearIndex
         ) {
-          const token = generateToken(systemAccountUuid, ws)
+          const token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
           const workspaceInfo = await this.getWorkspaceInfo(token)
           if (workspaceInfo !== undefined) {
             if (workspaceInfo.dataId != null) {
@@ -158,7 +170,12 @@ export class WorkspaceManager {
             await this.fulltextAdapter.clean(this.ctx, workspaceInfo.uuid)
           }
         } else if (mm.type === QueueWorkspaceEvent.Reindex) {
-          const indexer = await this.getIndexer(this.ctx, ws, generateToken(systemAccountUuid, ws), true)
+          const indexer = await this.getIndexer(
+            this.ctx,
+            ws,
+            generateToken(systemAccountUuid, ws, { service: 'fulltext' }),
+            true
+          )
           const mmd = mm as QueueWorkspaceReindexMessage
           await indexer?.reindex(this.ctx, mmd.domain, mmd.classes, control)
         }

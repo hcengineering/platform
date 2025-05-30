@@ -35,6 +35,7 @@
     "@hcengineering/server-request": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/model-request": "^0.6.0",
-    "@hcengineering/server-notification": "^0.6.1"
+    "@hcengineering/server-notification": "^0.6.1",
+    "@hcengineering/notification": "^0.6.23"
   }
 }
