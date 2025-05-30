@@ -91,20 +91,10 @@ func New(ctx context.Context, s storage.Storage, opts Options) Uploader {
 
 	res.uploadCtx, res.uploadCancel = context.WithCancel(context.Background())
 
-	_ = os.MkdirAll(opts.Dir, os.ModePerm)
-	res.workerWaitGroup.Add(1)
-
-	go func() {
-		defer res.workerWaitGroup.Done()
-		initFiles, _ := os.ReadDir(opts.Dir)
-		for _, f := range initFiles {
-			var filePath = filepath.Join(opts.Dir, f.Name())
-			if filePath == opts.SourceFile {
-				continue
-			}
-			res.filesCh <- filePath
-		}
-	}()
+	err := os.MkdirAll(opts.Dir, os.ModePerm)
+	if err != nil {
+		res.logger.Error("can not create upload directory", zap.Error(err), zap.String("dir", opts.Dir))
+	}
 
 	return res
 }
@@ -115,6 +105,35 @@ func (u *uploaderImpl) Stop() {
 
 func (u *uploaderImpl) Cancel() {
 	u.stop(true)
+}
+
+func (u *uploaderImpl) scanInitialFiles() {
+	u.workerWaitGroup.Add(1)
+
+	go func() {
+		defer u.workerWaitGroup.Done()
+
+		initFiles, err := os.ReadDir(u.options.Dir)
+		if err != nil {
+			u.logger.Error("failed to read initial files", zap.Error(err), zap.String("dir", u.options.Dir))
+			return
+		}
+
+		for _, f := range initFiles {
+			if f.IsDir() {
+				continue
+			}
+
+			var filePath = filepath.Join(u.options.Dir, f.Name())
+			if filePath == u.options.SourceFile {
+				continue
+			}
+			u.filesCh <- filePath
+		}
+
+		u.logger.Info("initial file scan complete", zap.String("dir", u.options.Dir), zap.Int("count", len(initFiles)))
+	}()
+
 }
 
 func (u *uploaderImpl) stop(rollback bool) {
@@ -147,8 +166,14 @@ func (u *uploaderImpl) stop(rollback bool) {
 }
 
 func (u *uploaderImpl) Start() {
+	watcherReady := make(chan struct{})
+
 	u.startWorkers()
-	u.startWatch()
+	go u.startWatch(watcherReady)
+
+	<-watcherReady
+
+	u.scanInitialFiles()
 }
 
 func (u *uploaderImpl) startWorkers() {
@@ -230,19 +255,27 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 		if err != nil {
 			logger.Error("attempt failed", zap.Error(err))
 		} else {
-			if !u.shouldDeleteOnStop(f) {
-				_ = os.Remove(f)
-				logger.Debug("removed file locally")
-			}
+			// Mark the file as uploaded
 			u.sentFiles.Store(f, struct{}{})
 			logger.Debug("file uploaded")
 
+			// Update the file's parent if SourceFile is set
 			if u.options.SourceFile != "" {
 				err = u.storage.SetParent(ctx, f, u.options.SourceFile)
 				if err != nil {
 					logger.Error("can not set blob parent", zap.Error(err), zap.String("filename", f), zap.String("source", u.options.SourceFile))
 				}
 			}
+
+			// Delete the file locally if it should be deleted
+			if !u.shouldDeleteOnStop(f) {
+				if err := os.Remove(f); err != nil {
+					logger.Error("failed to remove file locally", zap.Error(err), zap.String("file", f))
+				} else {
+					logger.Debug("removed file locally")
+				}
+			}
+
 
 			break
 		}
@@ -251,28 +284,26 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 	}
 }
 
-func (u *uploaderImpl) startWatch() {
+func (u *uploaderImpl) startWatch(ready chan<- struct{}) {
+	defer close(u.watcherDoneCh)
+
 	var logger = u.logger.With(zap.String("func", "startWatch"))
 	var watcher, err = inotify.NewWatcher()
 
 	if err != nil {
 		logger.Error("can not start file watcher", zap.Error(err))
+		close(ready)
+		return
+	}
+	defer watcher.Close()
+
+	if err := watcher.AddWatch(u.options.Dir, inotifyCloseWrite | inotifyMovedTo); err != nil {
+		logger.Error("can not start watching", zap.Error(err))
+		close(ready)
 		return
 	}
 
-	if err := watcher.AddWatch(u.options.Dir, inotifyCloseWrite); err != nil {
-		logger.Error("can not start watching for close write", zap.Error(err))
-		return
-	}
-	if err := watcher.AddWatch(u.options.Dir, inotifyMovedTo); err != nil {
-		logger.Error("can not start watching for moved to", zap.Error(err))
-		return
-	}
-	defer func() {
-		_ = watcher.Close()
-		close(u.watcherDoneCh)
-	}()
-
+	close(ready)
 	logger.Debug("watching for file updates")
 	defer logger.Debug("done")
 
