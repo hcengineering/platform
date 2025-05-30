@@ -60,7 +60,11 @@ func (t *trascodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.scheduler.Schedule(&task)
+	if err := t.scheduler.Schedule(&task); err != nil {
+		w.WriteHeader(http.StatusTooManyRequests)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 

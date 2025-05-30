@@ -24,7 +24,7 @@ import (
 
 func Test_BuildVideoCommand_Scaling(t *testing.T) {
 	var scaleCommand = mediaconvert.BuildScalingVideoCommand(&mediaconvert.Options{
-		OuputDir:      "test",
+		OutputDir:      "test",
 		Input:         "pipe:0",
 		UploadID:      "1",
 		Threads:       4,
@@ -38,7 +38,7 @@ func Test_BuildVideoCommand_Scaling(t *testing.T) {
 
 func Test_BuildVideoCommand_Raw(t *testing.T) {
 	var rawCommand = mediaconvert.BuildRawVideoCommand(&mediaconvert.Options{
-		OuputDir: "test",
+		OutputDir: "test",
 		Input:    "pipe:0",
 		UploadID: "1",
 		Threads:  4,
