@@ -52,6 +52,7 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
+  setDBExtraOptions,
   shutdownPostgres
 } from '@hcengineering/postgres'
 import { doBackupWorkspace, doRestoreWorkspace } from '@hcengineering/server-backup'
@@ -107,6 +108,7 @@ export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
 export class WorkspaceWorker {
   runningTasks: number = 0
   resolveBusy: (() => void) | null = null
+  id = randomUUID().slice(-8)
 
   constructor (
     readonly workspaceQueue: PlatformQueueProducer<QueueWorkspaceMessage>,
@@ -146,6 +148,7 @@ export class WorkspaceWorker {
     this.wakeup = this.defaultWakeup
     const token = generateToken(systemAccountUuid, undefined, { service: 'workspace' })
 
+    ctx.info(`Starting workspace service worker ${this.id} with limit ${this.limit}...`)
     ctx.info('Sending a handshake to the account service...')
     const accountClient = getAccountClient(this.accountsUrl, token)
 
@@ -163,6 +166,8 @@ export class WorkspaceWorker {
     }
 
     ctx.info('Successfully connected to the account service')
+
+    setDBExtraOptions({ connection: { application_name: `workspace-${this.id}` } })
 
     registerTxAdapterFactory('mongodb', createMongoTxAdapter)
     registerAdapterFactory('mongodb', createMongoAdapter)
