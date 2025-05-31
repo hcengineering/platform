@@ -332,16 +332,26 @@ function tokenHandlers (
 
   handlers.html_inline = (state: MarkdownParseState, tok: Token) => {
     try {
+      const top = state.top()
+      if (tok.content.trim() === '</a>' && top?.type === MarkupNodeType.embed) {
+        top.content = []
+        state.closeNode()
+        return
+      }
       const markup = htmlParser(tok.content)
       if (markup.content !== undefined) {
         // unwrap content from wrapping paragraph
         const shouldUnwrap =
           markup.content.length === 1 &&
           markup.content[0].type === MarkupNodeType.paragraph &&
-          state.top()?.type === MarkupNodeType.paragraph
+          top?.type === MarkupNodeType.paragraph
 
         const content = nodeContent(shouldUnwrap ? markup.content[0] : markup)
         for (const c of content) {
+          if (c.type === MarkupNodeType.embed) {
+            state.openNode(MarkupNodeType.embed, c.attrs ?? {})
+            continue
+          }
           state.push(c)
         }
       }

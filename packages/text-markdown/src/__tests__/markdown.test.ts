@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { MarkupNode } from '@hcengineering/text-core'
 import { markdownToMarkup, markupToMarkdown } from '..'
 import { isMarkdownsEquals } from '../compare'
 
@@ -774,6 +773,65 @@ Lorem ipsum dolor sit amet.
           }
         ]
       }
+    },
+    {
+      name: 'embed',
+      markdown: '<a href="http://localhost/embed" data-type="embed">http:&#x2F;&#x2F;localhost&#x2F;embed</a>',
+      markup: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'embed',
+                attrs: { src: 'http://localhost/embed' },
+                content: []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      name: 'embed-uri-escape',
+      markdown:
+        '<a href="http://localhost/embed%20spaces" data-type="embed">http:&#x2F;&#x2F;localhost&#x2F;embed spaces</a>',
+      markup: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'embed',
+                attrs: { src: 'http://localhost/embed spaces' },
+                content: []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      name: 'embed-html-escape',
+      markdown:
+        '<a href="http://localhost/embed%3Chtml%3E" data-type="embed">http:&#x2F;&#x2F;localhost&#x2F;embed&lt;html&gt;</a>',
+      markup: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'embed',
+                attrs: { src: 'http://localhost/embed<html>' },
+                content: []
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 
@@ -848,64 +906,6 @@ describe('markdownToMarkup -> markupToMarkdown', () => {
       const json = markdownToMarkup(markdown, options)
       const serialized = markupToMarkdown(json, options)
       expect(serialized).toEqualMarkdown(markdown)
-    })
-  })
-})
-
-describe('markupToMarkdown', () => {
-  const tests: Array<{ name: string, markup: object, markdown: string }> = [
-    {
-      name: 'embed',
-      markup: {
-        type: 'doc',
-        content: [
-          {
-            type: 'embed',
-            attrs: { src: 'http://localhost/embed' },
-            content: []
-          }
-        ]
-      },
-      markdown: '<http://localhost/embed>'
-    },
-    {
-      name: 'embed-spaces',
-      markup: {
-        type: 'doc',
-        content: [
-          {
-            type: 'embed',
-            attrs: { src: 'http://localhost/embed spaces' },
-            content: []
-          }
-        ]
-      },
-      markdown: '[http://localhost/embed spaces](http://localhost/embed%20spaces)'
-    },
-    {
-      name: 'embed-sub',
-      markup: {
-        type: 'doc',
-        content: [
-          {
-            type: 'subLink',
-            content: [
-              {
-                type: 'embed',
-                attrs: { src: 'http://localhost/embed?c=<a>' },
-                content: []
-              }
-            ]
-          }
-        ]
-      },
-      markdown: '<sub><a href="http://localhost/embed?c=%3Ca%3E">http://localhost/embed?c=&lt;a&gt;</a></sub>'
-    }
-  ]
-  tests.forEach(({ name, markup, markdown }) => {
-    it(name, () => {
-      const serialized = markupToMarkdown(markup as MarkupNode, options)
-      expect(serialized).toEqual(markdown)
     })
   })
 })

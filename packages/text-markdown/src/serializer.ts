@@ -278,16 +278,10 @@ export const storeNodes: Record<string, NodeProcessor> = {
   embed: (state, node) => {
     const attrs = nodeAttrs(node)
     const embedUrl = attrs.src as string
-    if (state.renderAHref === true) {
-      state.write(`<a href="${encodeURI(embedUrl)}">${state.htmlEsc(embedUrl)}</a>`)
-    } else {
-      const encoded = encodeURI(embedUrl)
-      if (encoded === embedUrl) {
-        state.write(`<${state.esc(embedUrl)}>`)
-      } else {
-        state.write(`[${state.esc(embedUrl)}](${encoded})`)
-      }
-    }
+    state.write(`<a href="${encodeURI(embedUrl)}" data-type="embed">`)
+    // Slashes are escaped to prevent autolink creation
+    state.write(state.htmlEsc(embedUrl).replace(/\//g, '&#x2F;'))
+    state.write('</a>')
   }
 }
 
