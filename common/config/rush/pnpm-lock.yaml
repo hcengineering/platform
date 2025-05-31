@@ -135,7 +135,7 @@ importers:
         version: file:projects/analytics-service.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/api-client':
         specifier: file:./projects/api-client.tgz
-        version: file:projects/api-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(esbuild@0.24.2)(utf-8-validate@6.0.4)
+        version: file:projects/api-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(esbuild@0.24.2)(utf-8-validate@6.0.4)
       '@rush-temp/api-tests':
         specifier: file:./projects/api-tests.tgz
         version: file:projects/api-tests.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -255,7 +255,7 @@ importers:
         version: file:projects/core.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/datalake':
         specifier: file:./projects/datalake.tgz
-        version: file:projects/datalake.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(esbuild@0.24.2)
+        version: file:projects/datalake.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)
       '@rush-temp/desktop':
         specifier: file:./projects/desktop.tgz
         version: file:projects/desktop.tgz(@babel/core@7.23.9)(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4)
@@ -504,7 +504,7 @@ importers:
         version: file:projects/model-communication.tgz
       '@rush-temp/model-contact':
         specifier: file:./projects/model-contact.tgz
-        version: file:projects/model-contact.tgz(encoding@0.1.13)
+        version: file:projects/model-contact.tgz
       '@rush-temp/model-controlled-documents':
         specifier: file:./projects/model-controlled-documents.tgz
         version: file:projects/model-controlled-documents.tgz
@@ -1571,8 +1571,8 @@ importers:
         specifier: ^3.0.11
         version: 3.0.11
       '@types/node-fetch':
-        specifier: ~2.6.2
-        version: 2.6.11
+        specifier: ^2.6.12
+        version: 2.6.12
       '@types/nodemailer':
         specifier: ^6.4.17
         version: 6.4.17
@@ -1690,9 +1690,6 @@ importers:
       cross-env:
         specifier: ~7.0.3
         version: 7.0.3
-      cross-fetch:
-        specifier: ^3.1.5
-        version: 3.1.8(encoding@0.1.13)
       crypto-js:
         specifier: ^4.2.0
         version: 4.2.0
@@ -1985,8 +1982,8 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3
       node-fetch:
-        specifier: ^2.6.6
-        version: 2.7.0(encoding@0.1.13)
+        specifier: ^3.3.2
+        version: 3.3.2
       node-forge:
         specifier: ^1.3.1
         version: 1.3.1
@@ -3985,7 +3982,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/api-client@file:projects/api-client.tgz':
-    resolution: {integrity: sha512-qO22anOwSBlLJlU2HyslnbsH5CsaxmKUY1HCAwa/sqp0KeOGvwYtVJjH8sE/yNU3lCQZ+Fd1A9nSPIcSwmV5Pw==, tarball: file:projects/api-client.tgz}
+    resolution: {integrity: sha512-veFXTUw0aba0/pvZCiBe+BgtHFqInloCareQbAR/SAkw5fDECx0LlLvFBy4EiPSQWXNGivtX7kITyQvxfmiOdw==, tarball: file:projects/api-client.tgz}
     version: 0.0.0
 
   '@rush-temp/api-tests@file:projects/api-tests.tgz':
@@ -4145,7 +4142,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/datalake@file:projects/datalake.tgz':
-    resolution: {integrity: sha512-1vIORSiK/b09GyLIUKWdeisoiIuYbPozOorFt23QzYIszVe/OGZR4Zhqgo/7LFUt00tgFyNcBIUYyWg9xd4uDQ==, tarball: file:projects/datalake.tgz}
+    resolution: {integrity: sha512-VZk76+UuUXWq9+0k2244uLQYNbwkDzdsi3/0qIpLWxJiOGak46LhF+DCxgRALF9fymMbqpMlWNpu5ym+vXGbbA==, tarball: file:projects/datalake.tgz}
     version: 0.0.0
 
   '@rush-temp/desktop-1@file:projects/desktop-1.tgz':
@@ -4473,7 +4470,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-contact@file:projects/model-contact.tgz':
-    resolution: {integrity: sha512-+wfUTUKjOzRKHOpcINUdbA6SGyJOYE+hxIiY2ZAL/3x6CqWb720+uhpkmNqb88ZXubhrOCT4z/nDXg29QkqL4A==, tarball: file:projects/model-contact.tgz}
+    resolution: {integrity: sha512-pUqoMMgSoArIiZmW9SL5BBapmezesVqgb6k0lCNNswPAP+UoKOChFTyqNAzzeTZ1AiLms4hvXbPEVlM1tKMKfg==, tarball: file:projects/model-contact.tgz}
     version: 0.0.0
 
   '@rush-temp/model-controlled-documents@file:projects/model-controlled-documents.tgz':
@@ -6500,8 +6497,8 @@ packages:
   '@types/node-cron@3.0.11':
     resolution: {integrity: sha512-0ikrnug3/IyneSHqCBeslAhlK2aBfYek1fGo4bP4QnZPmiqSGRK+Oy7ZMisLWkesffJvQ1cqAcBnJC+8+nxIAg==}
 
-  '@types/node-fetch@2.6.11':
-    resolution: {integrity: sha512-24xFj9R5+rfQJLRyM56qh+wnVSYhyXC2tkoBndtY0U+vubqNsYXGjufB2nn8Q6gt0LrARwL6UBtMCSVCwl4B1g==}
+  '@types/node-fetch@2.6.12':
+    resolution: {integrity: sha512-8nneRWKCg3rMtF69nLQJnOYUcbafYeFSjqkw3jCRLsqkWFlHaoQrr5mXmofFGOx3DKn7UfmBMyov8ySvLRVldA==}
 
   '@types/node-forge@1.3.11':
     resolution: {integrity: sha512-FQx220y22OKNTqaByeBGqHWYz4cl94tpcxeFdvBo3wjG6XPBuZ0BNgNZRV5J5TFmmcsJ4IzsLkmGRiQbnYsBEQ==}
@@ -8078,6 +8075,10 @@ packages:
   dagre-d3-es@7.0.11:
     resolution: {integrity: sha512-tvlJLyQf834SylNKax8Wkzco/1ias1OPw8DcUMDE7oUIoSEW25riQVuiu/0OWEFqT0cxHT3Pa9/D82Jr47IONw==}
 
+  data-uri-to-buffer@4.0.1:
+    resolution: {integrity: sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A==}
+    engines: {node: '>= 12'}
+
   data-uri-to-buffer@6.0.2:
     resolution: {integrity: sha512-7hvf7/GW8e86rW0ptuwS3OcBGDjIi6SZva7hCyWC0yYry2cOPmLIjXAUHI6DK2HsnwJd9ifmt57i8eV2n4YNpw==}
     engines: {node: '>= 14'}
@@ -9050,6 +9051,10 @@ packages:
   fecha@4.2.3:
     resolution: {integrity: sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==}
 
+  fetch-blob@3.2.0:
+    resolution: {integrity: sha512-7yAQpD2UMJzLi1Dqv7qFYnPbaPx7ZfFK6PiIxQ4PfkGPyNyl2Ugx+a/umUonmKqjhM4DnfbMvdX6otXq83soQQ==}
+    engines: {node: ^12.20 || >= 14.13}
+
   fflate@0.4.8:
     resolution: {integrity: sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==}
 
@@ -9194,6 +9199,10 @@ packages:
   formdata-node@4.4.1:
     resolution: {integrity: sha512-0iirZp3uVDjVGt9p49aTaqjk84TrglENEDuqfdlZQ1roC9CWlPk6Avf8EEnZNcAqPonwkG35x4n3ww/1THYAeQ==}
     engines: {node: '>= 12.20'}
+
+  formdata-polyfill@4.0.10:
+    resolution: {integrity: sha512-buewHzMvYL29jdeQTVILecSaZKnt/RJWjoZCF5OW60Z67/GmSLBkOFM7qh1PI3zFNtJbaZL5eQu1vLfazOwj4g==}
+    engines: {node: '>=12.20.0'}
 
   formdata@0.10.4:
     resolution: {integrity: sha512-IsHa+GYLLXHx0RmpUmzQTdwxDjNinxD+1zKOYPLaRwiqTfex5caQhOzgPIjFgJkL0O884Ers76BSHzXJxHvPLw==}
@@ -11101,6 +11110,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
@@ -11110,6 +11120,10 @@ packages:
     peerDependenciesMeta:
       encoding:
         optional: true
+
+  node-fetch@3.3.2:
+    resolution: {integrity: sha512-dRB78srN/l6gqWulah9SrxeYnxeddIG30+GOqK/9OlLVyLg3HPnr6SqOWTWOXKRwC2eGYCkZ59NNuSgvSrpgOA==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   node-forge@1.3.1:
     resolution: {integrity: sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA==}
@@ -13473,6 +13487,10 @@ packages:
     resolution: {integrity: sha512-OpiIUe8cuGjrj3mMBFWY+e4MMIkW3SVT+7vEIjvD9kejGUypv8GPDf84JdPWskK8zMRIJ6xYGm+Kxr8YkPyA0A==}
     engines: {node: '>= 16'}
     hasBin: true
+
+  web-streams-polyfill@3.3.3:
+    resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
+    engines: {node: '>= 8'}
 
   web-streams-polyfill@4.0.0-beta.3:
     resolution: {integrity: sha512-QW95TCTaHmsYfHDybGMwO5IJIM93I/6vTRk+daHTWFPhwh+C8Cg7j7XyKrwrj8Ib6vYXe0ocYNrmzY4xAAN6ug==}
@@ -16754,11 +16772,11 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/api-client@file:projects/api-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(esbuild@0.24.2)(utf-8-validate@6.0.4)':
+  '@rush-temp/api-client@file:projects/api-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(esbuild@0.24.2)(utf-8-validate@6.0.4)':
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
-      '@types/node-fetch': 2.6.11
+      '@types/node-fetch': 2.6.12
       '@types/snappyjs': 0.7.1
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
@@ -16770,7 +16788,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       form-data: 4.0.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      node-fetch: 2.7.0(encoding@0.1.13)
+      node-fetch: 3.3.2
       prettier: 3.2.5
       simplytyped: 3.3.0(typescript@5.6.2)
       snappyjs: 0.7.0
@@ -16787,7 +16805,6 @@ snapshots:
       - babel-jest
       - babel-plugin-macros
       - bufferutil
-      - encoding
       - esbuild
       - node-notifier
       - supports-color
@@ -18029,11 +18046,11 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/datalake@file:projects/datalake.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(esbuild@0.24.2)':
+  '@rush-temp/datalake@file:projects/datalake.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)':
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
-      '@types/node-fetch': 2.6.11
+      '@types/node-fetch': 2.6.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       eslint: 8.56.0
@@ -18043,7 +18060,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       form-data: 4.0.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      node-fetch: 2.7.0(encoding@0.1.13)
+      node-fetch: 3.3.2
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -18055,7 +18072,6 @@ snapshots:
       - '@swc/wasm'
       - babel-jest
       - babel-plugin-macros
-      - encoding
       - esbuild
       - node-notifier
       - supports-color
@@ -20410,11 +20426,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@rush-temp/model-contact@file:projects/model-contact.tgz(encoding@0.1.13)':
+  '@rush-temp/model-contact@file:projects/model-contact.tgz':
     dependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      cross-fetch: 3.1.8(encoding@0.1.13)
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.3.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
@@ -20423,7 +20438,6 @@ snapshots:
       prettier: 3.2.5
       typescript: 5.3.3
     transitivePeerDependencies:
-      - encoding
       - supports-color
 
   '@rush-temp/model-controlled-documents@file:projects/model-controlled-documents.tgz':
@@ -29090,7 +29104,7 @@ snapshots:
 
   '@types/node-cron@3.0.11': {}
 
-  '@types/node-fetch@2.6.11':
+  '@types/node-fetch@2.6.12':
     dependencies:
       '@types/node': 20.11.19
       form-data: 4.0.0
@@ -31144,6 +31158,8 @@ snapshots:
       d3: 7.9.0
       lodash-es: 4.17.21
 
+  data-uri-to-buffer@4.0.1: {}
+
   data-uri-to-buffer@6.0.2: {}
 
   data-urls@3.0.2:
@@ -32401,6 +32417,11 @@ snapshots:
 
   fecha@4.2.3: {}
 
+  fetch-blob@3.2.0:
+    dependencies:
+      node-domexception: 1.0.0
+      web-streams-polyfill: 3.3.3
+
   fflate@0.4.8: {}
 
   file-api@0.10.4:
@@ -32555,6 +32576,10 @@ snapshots:
     dependencies:
       node-domexception: 1.0.0
       web-streams-polyfill: 4.0.0-beta.3
+
+  formdata-polyfill@4.0.10:
+    dependencies:
+      fetch-blob: 3.2.0
 
   formdata@0.10.4:
     dependencies:
@@ -34876,6 +34901,12 @@ snapshots:
     optionalDependencies:
       encoding: 0.1.13
 
+  node-fetch@3.3.2:
+    dependencies:
+      data-uri-to-buffer: 4.0.1
+      fetch-blob: 3.2.0
+      formdata-polyfill: 4.0.10
+
   node-forge@1.3.1: {}
 
   node-gyp-build-optional-packages@5.2.2:
@@ -35073,7 +35104,7 @@ snapshots:
   openai@4.56.0(encoding@0.1.13)(zod@3.23.8):
     dependencies:
       '@types/node': 18.19.17
-      '@types/node-fetch': 2.6.11
+      '@types/node-fetch': 2.6.12
       abort-controller: 3.0.0
       agentkeepalive: 4.5.0
       form-data-encoder: 1.7.2
@@ -37619,6 +37650,8 @@ snapshots:
       minimist: 1.2.8
     transitivePeerDependencies:
       - supports-color
+
+  web-streams-polyfill@3.3.3: {}
 
   web-streams-polyfill@4.0.0-beta.3: {}
 

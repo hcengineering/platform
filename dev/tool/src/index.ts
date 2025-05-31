@@ -58,6 +58,7 @@ import {
   MeasureMetricsContext,
   metricsToString,
   SocialIdType,
+  systemAccountEmail,
   systemAccountUuid,
   type AccountUuid,
   type Data,
@@ -194,7 +195,6 @@ export function devTool (
       console.error(err)
     }
     closeAccountsDb()
-    console.log(`closing database connection to '${uri}'...`)
     await shutdownMongo()
   }
 
@@ -1670,9 +1670,13 @@ export function devTool (
     .option('--admin', 'Generate token with admin access', false)
     .action(async (name: string, workspace: string, opt: { admin: boolean }) => {
       await withAccountDatabase(async (db) => {
+        if (name === systemAccountEmail) {
+          name = systemAccountUuid
+        }
+        const wsByUrl = await db.workspace.findOne({ url: workspace })
         const account = await db.socialId.findOne({ key: name })
         console.log(
-          generateToken(account?.personUuid ?? (name as AccountUuid), workspace as WorkspaceUuid, {
+          generateToken(account?.personUuid ?? (name as AccountUuid), wsByUrl?.uuid ?? (workspace as WorkspaceUuid), {
             ...(opt.admin ? { admin: 'true' } : {})
           })
         )
@@ -1687,7 +1691,7 @@ export function devTool (
     .action(async (workspace: string, opt: { admin: boolean, count: string }) => {
       const count = parseInt(opt.count)
       const token = generateToken(systemAccountUuid, workspace as WorkspaceUuid, {
-        ...(opt.admin ? { admin: 'true' } : {})
+        ...(opt.admin ? { admin: 'true', service: 'tool' } : { service: 'tool' })
       })
       const endpoint = await getTransactorEndpoint(token, 'external')
       const client = createRestClient(endpoint, workspace, token)

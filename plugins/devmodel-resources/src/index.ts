@@ -102,7 +102,7 @@ export class PresentationClientHook implements ClientHook {
         ' =>model',
         client.getModel(),
         getMetadata(devmodel.metadata.DevModel),
-        platformNow() - startTime,
+        platformNowDiff(startTime),
         this.stackLine()
       )
     }
@@ -129,7 +129,7 @@ export class PresentationClientHook implements ClientHook {
         ' =>model',
         client.getModel(),
         getMetadata(devmodel.metadata.DevModel),
-        platformNow() - startTime,
+        platformNowDiff(startTime),
         JSON.stringify(result).length,
         this.stackLine()
       )
