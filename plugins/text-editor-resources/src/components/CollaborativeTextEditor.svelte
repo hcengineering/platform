@@ -72,7 +72,6 @@
   import { createLocalProvider, createRemoteProvider } from '../provider/utils'
   import { addTableHandler } from '../utils'
 
-  import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { SavedBoard } from './extension/drawingBoard'
@@ -468,17 +467,8 @@
           history: false,
           submit: false,
           toolbar: {
-            element: textToolbarElement,
-            boundary,
-            isHidden: () => !showToolbar
-          },
-          image: {
-            toolbar: {
-              element: imageToolbarElement,
-              boundary,
-              appendTo: () => boundary ?? element,
-              isHidden: () => !showToolbar
-            }
+            boundary: boundary ?? element,
+            popupContainer: editorPopupContainer
           },
           mermaid: {
             ...mermaidOptions,
@@ -487,10 +477,6 @@
           },
           drawingBoard: {
             getSavedBoard
-          },
-          embed: {
-            boundary: boundary ?? element,
-            popupContainer: editorPopupContainer
           },
           ...kitOptions
         }),
@@ -584,23 +570,6 @@
       <Loading />
     </div>
   {/if}
-
-  <TextEditorToolbar
-    bind:toolbar={textToolbarElement}
-    visible={showToolbar}
-    {editor}
-    formatButtonSize={buttonSize}
-    on:focus={handleFocus}
-  />
-
-  <TextEditorToolbar
-    bind:toolbar={imageToolbarElement}
-    kind="image"
-    visible={showToolbar}
-    {editor}
-    formatButtonSize={buttonSize}
-    on:focus={handleFocus}
-  />
 
   <div class="textInput">
     <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />

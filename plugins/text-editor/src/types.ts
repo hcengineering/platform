@@ -188,13 +188,11 @@ export interface ActiveDescriptor {
   params?: any
 }
 
-export type TextEditorActionKind = 'text' | 'image' | 'table' | 'preview'
-
 /**
  * Defines a text action for text action editor
  */
 export interface TextEditorAction extends Doc {
-  kind?: TextEditorActionKind
+  tags?: string[]
   action: TogglerDescriptor | Resource<TextActionFunction>
   visibilityTester?: Resource<TextActionVisibleFunction>
   icon: Asset

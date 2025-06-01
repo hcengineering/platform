@@ -64,6 +64,7 @@
     if (blockMouseEvents) {
       event.preventDefault()
       event.stopPropagation()
+      editor.view.focus()
     }
 
     const handler = action.action

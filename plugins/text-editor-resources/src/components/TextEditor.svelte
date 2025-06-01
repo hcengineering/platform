@@ -27,7 +27,6 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
   import { deleteAttachment } from '../command/deleteAttachment'
-  import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { getEditorKit } from '../../src/kits/editor-kit'
 
@@ -141,8 +140,6 @@
   let needFocus = false
   let focused = false
   let posFocus: FocusPosition | undefined = undefined
-  let textToolbarElement: HTMLElement
-  let imageToolbarElement: HTMLElement
 
   export function focus (position?: FocusPosition): void {
     posFocus = position
@@ -173,21 +170,11 @@
             mode: 'compact',
             file: canEmbedFiles ? {} : false,
             dropcursor,
-            image: canEmbedImages
-              ? {
-                  toolbar: {
-                    element: imageToolbarElement,
-                    boundary
-                  }
-                }
-              : false,
+            image: canEmbedImages ? {} : false,
             drawingBoard: false,
             textAlign: false,
             submit: supportSubmit ? { submit } : false,
-            toolbar: {
-              element: textToolbarElement,
-              boundary
-            }
+            toolbar: { boundary }
           }),
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions
@@ -234,11 +221,5 @@
     needFocus = true
   }
 </script>
-
-<TextEditorToolbar bind:toolbar={textToolbarElement} {editor} on:focus={handleFocus} />
-
-{#if canEmbedImages}
-  <TextEditorToolbar bind:toolbar={imageToolbarElement} kind="image" {editor} on:focus={handleFocus} />
-{/if}
 
 <div class="select-text" style="width: 100%;" bind:this={element} />

@@ -1,6 +1,6 @@
 <!--
 //
-// Copyright © 2023, 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,33 +15,34 @@
 //
 -->
 <script lang="ts">
-  import { NodeViewProps } from '../../node-view'
-  import textEditor, { ActionContext, TextEditorAction } from '@hcengineering/text-editor'
-  import { ObjectNode, createQuery } from '@hcengineering/presentation'
-  import TextActionButton from '../../TextActionButton.svelte'
   import { getResource } from '@hcengineering/platform'
-  import { onDestroy } from 'svelte'
-  import { Transaction } from '@tiptap/pm/state'
-  import { EmbedControlCursor, shouldShowLink } from './embed'
-  import { parseReferenceUrl } from '../reference'
+  import { createQuery } from '@hcengineering/presentation'
+  import textEditor, { ActionContext, TextEditorAction } from '@hcengineering/text-editor'
+  import { NodeViewProps } from '../../node-view'
+  import TextActionButton from '../../TextActionButton.svelte'
+  import { type ToolbarCursor } from './toolbar'
+  import { Component } from '@hcengineering/ui'
 
   export let editor: NodeViewProps['editor']
-  export let cursor: EmbedControlCursor | null = null
+  export let cursor: ToolbarCursor<any> | null = null
 
   const actionsQuery = createQuery()
-  const actionCtx: ActionContext = {
+  $: actionCtx = {
     mode: 'full',
-    tag: 'embed-toolbar'
-  }
+    tag: cursor?.tag ?? 'none'
+  } satisfies ActionContext
 
   let allActions: TextEditorAction[] = []
   let actions: TextEditorAction[] = []
 
   async function updateActions (newActions: TextEditorAction[], ctx: ActionContext): Promise<void> {
-    allActions = newActions
     const out: TextEditorAction[] = []
     for (const action of newActions) {
       const tester = action.visibilityTester
+
+      if (!(action.tags ?? ['text']).includes(ctx.tag ?? 'text')) {
+        continue
+      }
 
       if (tester === undefined) {
         out.push(action)
@@ -57,23 +58,11 @@
     actions = out
   }
 
-  const listener = ({ transaction }: { transaction: Transaction }) => {
-    if (transaction.getMeta('contextCursorUpdate') === true) {
-      actions = []
-      void updateActions(allActions, actionCtx)
-    }
-  }
-
-  if (editor !== undefined) {
-    editor.on('transaction', listener)
-    onDestroy(() => {
-      editor.off('transaction', listener)
-    })
-  }
-
-  actionsQuery.query(textEditor.class.TextEditorAction, { kind: 'preview' }, (result) => {
-    void updateActions([...result], actionCtx)
+  actionsQuery.query(textEditor.class.TextEditorAction, {}, (result) => {
+    allActions = [...result]
   })
+
+  $: void updateActions(allActions, actionCtx)
 
   $: categories = actions.reduce<[number, TextEditorAction][][]>((acc, action) => {
     const { category, index } = action
@@ -86,29 +75,24 @@
     category.sort((a, b) => a[0] - b[0])
   })
 
-  $: showSrc = shouldShowLink(cursor)
-  $: reference = cursor?.src !== undefined ? parseReferenceUrl(cursor.src) : undefined
+  $: style = cursor?.viewOptions?.style ?? 'contrast'
+
+  $: head = cursor?.viewOptions?.head
+  $: console.log(head)
 </script>
 
 {#if cursor && actions.length > 0}
   <div
-    class="embed-toolbar flex theme-dark"
-    class:reference={showSrc && !!reference}
+    class="toolbar flex theme-dark"
     contenteditable="false"
-    tabindex="-1"
+    class:theme-dark={style === 'contrast'}
+    class:toolbar-contrast={style === 'contrast'}
+    class:toolbar-regular={style === 'regular'}
     data-block-editor-blur="true"
   >
     <div class="text-editor-toolbar buttons-group xsmall-gap">
-      {#if showSrc}
-        {#if !reference}
-          <a class="link" href={cursor.src} target="_blank">{cursor.src}</a>
-        {/if}
-        {#if reference}
-          <ObjectNode _id={reference.id} _class={reference.objectclass} title={reference.label} transparent />
-        {/if}
-        {#if reference}
-          <div class="buttons-divider" />
-        {/if}
+      {#if head}
+        <Component is={head.component} props={{ editor, cursor, ...head.props }} />
       {/if}
       {#each Object.values(categories) as category, index}
         {#if index > 0}
@@ -122,7 +106,7 @@
             size="small"
             {actionCtx}
             listenCursorUpdate
-            blockMouseEvents={false}
+            blockMouseEvents={true}
             tooltipOptions={{ direction: 'top' }}
           />
         {/each}
@@ -147,13 +131,21 @@
     }
   }
 
-  .embed-toolbar {
+  .toolbar {
     position: relative;
     padding: 0.25rem;
-    background-color: var(--primary-button-default);
     border-radius: 0.5rem;
-    box-shadow: var(--button-shadow);
 
-    --theme-link-color: var(--theme-content-color);
+    &.toolbar-contrast {
+      background-color: var(--primary-button-default);
+      --theme-link-color: var(--theme-content-color);
+      box-shadow: var(--button-shadow);
+    }
+
+    &.toolbar-regular {
+      background-color: var(--theme-comp-header-color);
+      --theme-link-color: var(--theme-content-color);
+      box-shadow: var(--button-shadow);
+    }
   }
 </style>
