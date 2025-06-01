@@ -77,7 +77,7 @@ export async function saveLiveKitSessionBilling (ctx: MeasureContext, sessionId:
   const workspace = session.roomName.split('_')[0] as WorkspaceUuid
   const endpoint = concatLink(config.BillingUrl, `/api/v1/billing/${workspace}/livekit/session`)
 
-  const token = generateToken(systemAccountUuid, workspace)
+  const token = generateToken(systemAccountUuid, workspace, { service: 'love' })
 
   try {
     const res = await fetch(endpoint, {
@@ -116,7 +116,7 @@ export async function saveLiveKitEgressBilling (ctx: MeasureContext, egress: Egr
   const workspace = egress.roomName.split('_')[0] as WorkspaceUuid
   const endpoint = concatLink(config.BillingUrl, `/api/v1/billing/${workspace}/livekit/egress`)
 
-  const token = generateToken(systemAccountUuid, workspace)
+  const token = generateToken(systemAccountUuid, workspace, { service: 'love' })
 
   try {
     const res = await fetch(endpoint, {

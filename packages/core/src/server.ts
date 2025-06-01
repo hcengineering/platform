@@ -46,6 +46,7 @@ export interface SessionData {
   contextCache: Map<string, any>
   removedMap: Map<Ref<Doc>, Doc>
   account: Account
+  service: string
   sessionId: string
   admin?: boolean
   isTriggerCtx?: boolean

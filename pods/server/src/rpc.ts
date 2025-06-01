@@ -40,6 +40,7 @@ interface RPCClientInfo {
   client: ConnectionSocket
   session: Session
   workspaceId: string
+  context: MeasureContext
 }
 
 const gzipAsync = promisify(gzip)
@@ -173,12 +174,12 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
           })
           return
         }
-        transactorRpc = { session: s.session, client: cs, workspaceId: s.workspaceId }
+        transactorRpc = { session: s.session, client: cs, workspaceId: s.workspaceId, context: s.context }
         rpcSessions.set(token, transactorRpc)
       }
 
       const rpc = transactorRpc
-      const rateLimit = await sessions.handleRPC(ctx, rpc.session, rpc.client, async (ctx, rateLimit) => {
+      const rateLimit = await sessions.handleRPC(rpc.context, rpc.session, rpc.client, async (ctx, rateLimit) => {
         await operation(ctx, rpc.session, rateLimit, token)
       })
       if (rateLimit !== undefined) {

@@ -21,7 +21,7 @@ import { serviceToken } from './utils'
 
 export async function getAccountPerson (account: AccountUuid): Promise<Person | undefined> {
   try {
-    const accountClient = getAccountClient(generateToken(account))
+    const accountClient = getAccountClient(generateToken(account, undefined, { service: 'gmail' }))
     return await accountClient.getPerson()
   } catch (e) {
     console.error(e)
@@ -31,7 +31,7 @@ export async function getAccountPerson (account: AccountUuid): Promise<Person | 
 
 export async function getAccountSocialIds (account: AccountUuid): Promise<SocialId[]> {
   try {
-    const accountClient = getAccountClient(generateToken(account))
+    const accountClient = getAccountClient(generateToken(account, undefined, { service: 'gmail' }))
     return await accountClient.getSocialIds()
   } catch (e) {
     console.error(e)

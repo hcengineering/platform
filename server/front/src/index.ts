@@ -57,9 +57,9 @@ async function storageUpload (
   const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
   const resp = await ctx.with(
     'storage upload',
-    { workspace: wsIds.uuid },
+    {},
     (ctx) => storageAdapter.put(ctx, wsIds, uuid, data, file.mimetype, file.size),
-    { file: file.name, contentType: file.mimetype }
+    { file: file.name, contentType: file.mimetype, workspace: wsIds.uuid }
   )
 
   ctx.info('storage upload', resp)
@@ -522,15 +522,18 @@ export function start (
 
           const range = req.headers.range
           if (range !== undefined) {
-            await ctx.with('file-range', { workspace: wsIds.uuid }, (ctx) =>
-              getFileRange(ctx, blobInfo as PlatformBlob, range, config.storageAdapter, wsIds, res)
+            await ctx.with(
+              'file-range',
+              {},
+              (ctx) => getFileRange(ctx, blobInfo as PlatformBlob, range, config.storageAdapter, wsIds, res),
+              { workspace: wsIds.uuid }
             )
           } else {
             await ctx.with(
               'file',
-              { workspace: wsIds.uuid },
+              {},
               (ctx) => getFile(ctx, blobInfo as PlatformBlob, config.storageAdapter, wsIds, req, res),
-              { uuid }
+              { uuid, workspace: wsIds.uuid }
             )
           }
         } catch (error: any) {

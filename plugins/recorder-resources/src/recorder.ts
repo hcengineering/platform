@@ -96,13 +96,56 @@ export class Recorder {
     return this.chunkStream
   }
 
-  public stop (): void {
+  public async stop (): Promise<void> {
     if (this.lastStartTime !== null) {
       this.elapsedMs += Date.now() - this.lastStartTime
       this.lastStartTime = null
     }
 
+    // If the recorder is paused, we need to resume it before stopping
     try {
+      if (this.mediaRecorder.state === 'paused') {
+        const resumed = new Promise<void>((resolve) => {
+          const timeout = setTimeout(resolve, 500)
+          this.mediaRecorder.addEventListener(
+            'resume',
+            () => {
+              clearTimeout(timeout)
+              resolve()
+            },
+            { once: true }
+          )
+        })
+        this.mediaRecorder.resume()
+        await resumed
+      }
+    } catch (err) {
+      console.error('Recorder: error resuming MediaRecorder:', err)
+    }
+
+    // Ensure we wait for any pending data to be available
+    try {
+      if (this.mediaRecorder.state === 'recording') {
+        const dataavailable = new Promise<void>((resolve) => {
+          const timeout = setTimeout(resolve, 500)
+          this.mediaRecorder.addEventListener(
+            'dataavailable',
+            () => {
+              clearTimeout(timeout)
+              resolve()
+            },
+            { once: true }
+          )
+        })
+        this.mediaRecorder.requestData()
+        await dataavailable
+      }
+    } catch (err) {
+      console.error('Recorder: error requesting data from MediaRecorder:', err)
+    }
+
+    try {
+      // After requesting data, we can safely stop the recorder
       this.mediaRecorder.stop()
     } catch (err) {
       console.error('Recorder: error stopping MediaRecorder:', err)
@@ -111,6 +154,7 @@ export class Recorder {
         track.stop()
       }
     }
+
     console.debug('Recorder: recording stopped, duration:', this.getRecordedTimeMs(), 'ms')
   }
 

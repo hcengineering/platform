@@ -36,30 +36,35 @@ export class AuthenticationExtension implements Extension {
     const ctx = this.configuration.ctx
     const { workspaceId } = decodeDocumentId(data.documentName)
 
-    return await ctx.with('authenticate', { workspaceId }, async () => {
-      const token = decodeToken(data.token)
-      const readonly = isGuest(token)
+    return await ctx.with(
+      'authenticate',
+      {},
+      async () => {
+        const token = decodeToken(data.token)
+        const readonly = isGuest(token)
 
-      ctx.info('authenticate', {
-        workspaceId,
-        account: token.account,
-        mode: token.extra?.mode ?? '',
-        readonly
-      })
+        ctx.info('authenticate', {
+          workspaceId,
+          account: token.account,
+          mode: token.extra?.mode ?? '',
+          readonly
+        })
 
-      if (readonly) {
-        data.connection.readOnly = true
-      }
+        if (readonly) {
+          data.connection.readOnly = true
+        }
 
-      // verify workspace can be accessed with the token
-      const ids = await getWorkspaceIds(data.token)
+        // verify workspace can be accessed with the token
+        const ids = await getWorkspaceIds(data.token)
 
-      // verify workspace uuid in the document matches the token
-      if (ids.uuid !== workspaceId) {
-        throw new Error('documentName must include workspace id')
-      }
+        // verify workspace uuid in the document matches the token
+        if (ids.uuid !== workspaceId) {
+          throw new Error('documentName must include workspace id')
+        }
 
-      return buildContext(data, ids)
-    })
+        return buildContext(data, ids)
+      },
+      { workspaceId }
+    )
   }
 }

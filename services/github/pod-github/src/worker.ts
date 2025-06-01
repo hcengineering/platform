@@ -1557,7 +1557,7 @@ export class GithubWorker implements IntegrationManager {
       }
       await this.ctx.withLog(
         'external sync',
-        { installation: integration.installationName, workspace: this.workspace.uuid },
+        {},
         async () => {
           const enabled = integration.enabled && integration.octokit !== undefined
 
@@ -1652,13 +1652,15 @@ export class GithubWorker implements IntegrationManager {
             }
             await this.ctx.withLog(
               'external sync',
-              { _class: _class.join(', '), workspace: this.workspace.uuid },
+              { _class: _class.join(', ') },
               async () => {
                 await mapper.externalFullSync(integration, derivedClient, _projects, _repositories)
-              }
+              },
+              { installation: integration.installationName, workspace: this.workspace.uuid }
             )
           }
-        }
+        },
+        { installation: integration.installationName, workspace: this.workspace.uuid }
       )
     }
   }

@@ -320,7 +320,7 @@ export function startHttpServer (
         }
         await ctx.with(
           'storage upload',
-          { workspace: wsIds.uuid },
+          {},
           async (ctx) => {
             await externalStorage.put(
               ctx,
@@ -336,7 +336,7 @@ export function startHttpServer (
             })
             res.end(JSON.stringify({ success: true }))
           },
-          { file: name, contentType }
+          { file: name, contentType, workspace: wsIds.uuid }
         )
       } catch (err: any) {
         Analytics.handleError(err)

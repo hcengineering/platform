@@ -100,13 +100,14 @@ export function initStatisticsContext (
   let errorToSend = 0
 
   if (metricsFile !== undefined || ops?.logConsole === true || statsUrl !== undefined) {
+    metricsContext.info('using stats url', { statsUrl, service: serviceName ?? '' })
     if (metricsFile !== undefined) {
       console.info('storing measurements into local file', metricsFile)
     }
     let oldMetricsValue = ''
     const serviceId = encodeURIComponent(os.hostname() + '-' + serviceName)
 
-    let prev: Promise<void> | undefined
+    let prev: Promise<void> | Promise<any> | undefined
     const handleError = (err: any): void => {
       errorToSend++
       if (errorToSend % 2 === 0) {
@@ -138,7 +139,7 @@ export function initStatisticsContext (
           return
         }
         if (statsUrl !== undefined) {
-          const token = generateToken(systemAccountUuid, undefined, { service: 'true' })
+          const token = generateToken(systemAccountUuid, undefined, { service: serviceName })
           const data: ServiceStatistics = {
             serviceName: ops?.serviceName?.() ?? serviceName,
             cpu: getCPUInfo(),
@@ -149,20 +150,18 @@ export function initStatisticsContext (
 
           const statData = JSON.stringify(data)
 
-          prev = fetch(
-            concatLink(statsUrl, '/api/v1/statistics') + `/?token=${encodeURIComponent(token)}&name=${serviceId}`,
-            {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: statData
-            }
-          )
-            .catch(handleError)
-            .then(() => {
+          prev = fetch(concatLink(statsUrl, '/api/v1/statistics') + `/?name=${serviceId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              authorization: `Bearer ${token}`
+            },
+            body: statData
+          })
+            .finally(() => {
               prev = undefined
             })
+            .catch(handleError)
         }
       } catch (err: any) {
         handleError(err)

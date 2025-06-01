@@ -20,7 +20,7 @@ export interface RecordingState {
   recorder: ScreenRecorder
   options: RecordingOptions
   stream: MediaStream
-  state: 'recording' | 'paused' | 'stopped'
+  state: 'recording' | 'paused' | 'stopping' | 'stopped'
 }
 
 export interface RecordingOptions {
