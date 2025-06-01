@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Sql } from 'postgres'
+import { Sql, TransactionSql } from 'postgres'
 import {
   type Data,
   type Version,
@@ -249,11 +249,12 @@ implements DbCollection<T> {
   }
 
   async unsafe (sql: string, values: any[], client?: Sql): Promise<any[]> {
-    if (this.options.withRetryClient !== undefined) {
+    if (client !== undefined) {
+      return await client.unsafe(sql, values)
+    } else if (this.options.withRetryClient !== undefined) {
       return await this.options.withRetryClient((_client) => _client.unsafe(sql, values))
     } else {
-      const _client = client ?? this.client
-      return await _client.unsafe(sql, values)
+      return await this.client.unsafe(sql, values)
     }
   }
 
@@ -696,7 +697,7 @@ export class PostgresAccountDB implements AccountDB {
     }
   }
 
-  withRetry = async <T>(callback: (client: Sql) => Promise<T>): Promise<T> => {
+  withRetry = async <T>(callback: (client: TransactionSql) => Promise<T>): Promise<T> => {
     let attempt = 0
     let delay = this.retryOptions.initialDelayMs
 
@@ -724,23 +725,25 @@ export class PostgresAccountDB implements AccountDB {
       err.code === '40001' || // Retry transaction
       err.code === '55P03' || // Lock not available
       err.code === 'CONNECTION_CLOSED' || // This error is thrown if the connection was closed without an error.
-      err.code === 'CONNECTION_DESTROYED' || // This error is thrown for any queries that were pending when the timeout to sql.end({ timeout: X }) was reached.
+      err.code === 'CONNECTION_DESTROYED' || // This error is thrown for any queries that were pending when the timeout to sql.end({ timeout: X }) was reached. If the DB client is being closed completely retry will result in CONNECTION_ENDED which is not retried so should be fine.
       msg.includes('RETRY_SERIALIZABLE')
     )
   }
 
   async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<WorkspaceUuid> {
-    return await this.client.begin(async (client) => {
-      const workspaceUuid = await this.workspace.insertOne(data, client)
-      await this.workspaceStatus.insertOne({ ...status, workspaceUuid }, client)
+    return await this.withRetry(async (rTx) => {
+      const workspaceUuid = await this.workspace.insertOne(data, rTx)
+      await this.workspaceStatus.insertOne({ ...status, workspaceUuid }, rTx)
 
       return workspaceUuid
     })
   }
 
   async assignWorkspace (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
-    await this
-      .client`INSERT INTO ${this.client(this.getWsMembersTableName())} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`
+    await this.withRetry(
+      async (rTx) =>
+        await rTx`INSERT INTO ${this.client(this.getWsMembersTableName())} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`
+    )
   }
 
   async batchAssignWorkspace (data: [AccountUuid, WorkspaceUuid, AccountRole][]): Promise<void> {
@@ -753,41 +756,51 @@ export class PostgresAccountDB implements AccountDB {
       VALUES ${placeholders}
     `
 
-    await this.client.unsafe(sql, values)
+    await this.withRetry(async (rTx) => await rTx.unsafe(sql, values))
   }
 
   async unassignWorkspace (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid): Promise<void> {
-    await this
-      .client`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+    await this.withRetry(
+      async (rTx) =>
+        await rTx`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+    )
   }
 
   async updateWorkspaceRole (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
-    await this
-      .client`UPDATE ${this.client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+    await this.withRetry(
+      async (rTx) =>
+        await rTx`UPDATE ${this.client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+    )
   }
 
   async getWorkspaceRole (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid): Promise<AccountRole | null> {
-    const res = await this
-      .client`SELECT role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+    return await this.withRetry(async (rTx) => {
+      const res =
+        await rTx`SELECT role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
 
-    return res[0]?.role ?? null
+      return res[0]?.role ?? null
+    })
   }
 
   async getWorkspaceRoles (accountUuid: AccountUuid): Promise<Map<WorkspaceUuid, AccountRole>> {
-    const res = await this
-      .client`SELECT workspace_uuid, role FROM ${this.client(this.getWsMembersTableName())} WHERE account_uuid = ${accountUuid}`
+    return await this.withRetry(async (rTx) => {
+      const res =
+        await rTx`SELECT workspace_uuid, role FROM ${this.client(this.getWsMembersTableName())} WHERE account_uuid = ${accountUuid}`
 
-    return new Map(res.map((it) => [it.workspace_uuid as WorkspaceUuid, it.role]))
+      return new Map(res.map((it) => [it.workspace_uuid as WorkspaceUuid, it.role]))
+    })
   }
 
   async getWorkspaceMembers (workspaceUuid: WorkspaceUuid): Promise<WorkspaceMemberInfo[]> {
-    const res: any = await this
-      .client`SELECT account_uuid, role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid}`
+    return await this.withRetry(async (rTx) => {
+      const res: any =
+        await rTx`SELECT account_uuid, role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid}`
 
-    return res.map((p: any) => ({
-      person: p.account_uuid,
-      role: p.role
-    }))
+      return res.map((p: any) => ({
+        person: p.account_uuid,
+        role: p.role
+      }))
+    })
   }
 
   async getAccountWorkspaces (accountUuid: AccountUuid): Promise<WorkspaceInfoWithStatus[]> {
@@ -821,15 +834,17 @@ export class PostgresAccountDB implements AccountDB {
            ORDER BY s.last_visit DESC
     `
 
-    const res: any = await this.client.unsafe(sql, [accountUuid])
+    return await this.withRetry(async (rTx) => {
+      const res: any = await rTx.unsafe(sql, [accountUuid])
 
-    for (const row of res) {
-      row.created_on = convertTimestamp(row.created_on)
-      row.status.last_processing_time = convertTimestamp(row.status.last_processing_time)
-      row.status.last_visit = convertTimestamp(row.status.last_visit)
-    }
+      for (const row of res) {
+        row.created_on = convertTimestamp(row.created_on)
+        row.status.last_processing_time = convertTimestamp(row.status.last_processing_time)
+        row.status.last_visit = convertTimestamp(row.status.last_visit)
+      }
 
-    return convertKeysToCamelCase(res)
+      return convertKeysToCamelCase(res)
+    })
   }
 
   async getPendingWorkspace (
@@ -926,31 +941,34 @@ export class PostgresAccountDB implements AccountDB {
     // Note: SKIP LOCKED is supported starting from Postgres 9.5 and CockroachDB v22.2.1
     sqlChunks.push('FOR UPDATE SKIP LOCKED')
 
-    // We must have all the conditions in the DB query and we cannot filter anything in the code
-    // because of possible concurrency between account services.
-    let res: any | undefined
-    await this.client.begin(async (client) => {
-      res = await client.unsafe(sqlChunks.join(' '), values)
+    return await this.withRetry(async (rTx) => {
+      // We must have all the conditions in the DB query and we cannot filter anything in the code
+      // because of possible concurrency between account services.
+      const res: any = await rTx.unsafe(sqlChunks.join(' '), values)
 
       if ((res.length ?? 0) > 0) {
-        await client.unsafe(
+        await rTx.unsafe(
           `UPDATE ${this.workspaceStatus.getTableName()} SET processing_attempts = processing_attempts + 1, "last_processing_time" = $1 WHERE workspace_uuid = $2`,
           [Date.now(), res[0].uuid]
         )
       }
-    })
 
-    return convertKeysToCamelCase(res[0]) as WorkspaceInfoWithStatus
+      return convertKeysToCamelCase(res[0]) as WorkspaceInfoWithStatus
+    })
   }
 
   async setPassword (accountUuid: AccountUuid, hash: Buffer, salt: Buffer): Promise<void> {
-    await this
-      .client`UPSERT INTO ${this.client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash.buffer as any}::bytea, ${salt.buffer as any}::bytea)`
+    await this.withRetry(
+      async (rTx) =>
+        await rTx`UPSERT INTO ${this.client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash.buffer as any}::bytea, ${salt.buffer as any}::bytea)`
+    )
   }
 
   async resetPassword (accountUuid: AccountUuid): Promise<void> {
-    await this
-      .client`DELETE FROM ${this.client(this.account.getPasswordsTableName())} WHERE account_uuid = ${accountUuid}`
+    await this.withRetry(
+      async (rTx) =>
+        await rTx`DELETE FROM ${this.client(this.account.getPasswordsTableName())} WHERE account_uuid = ${accountUuid}`
+    )
   }
 
   protected getMigrations (): [string, string][] {

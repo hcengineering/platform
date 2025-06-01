@@ -223,7 +223,7 @@ class ConnectionMgr {
             await client.execute('ROLLBACK;')
             console.error({ message: 'failed to process tx', error: err.message, cause: err })
 
-            if (!['40001', 'CONNECTION_CLOSED'].includes(err.code) || tries === maxTries) {
+            if (!this.isRetryableError(err) || tries === maxTries) {
               return err
             } else {
               console.log('Transaction failed. Retrying.')
@@ -267,7 +267,7 @@ class ConnectionMgr {
             return { result: await fn(client) }
           } catch (err: any) {
             console.error({ message: 'failed to process sql', error: err.message, cause: err })
-            if (!['40001', 'CONNECTION_CLOSED'].includes(err.code) || tries === maxTries) {
+            if (!this.isRetryableError(err) || tries === maxTries) {
               return err
             } else {
               console.log('Read Transaction failed. Retrying.')
@@ -329,6 +329,18 @@ class ConnectionMgr {
       this.connections().set(id, conn)
     }
     return conn
+  }
+
+  private isRetryableError (err: any): boolean {
+    const msg: string = err?.message ?? ''
+
+    return (
+      err.code === '40001' || // Retry transaction
+      err.code === '55P03' || // Lock not available
+      err.code === 'CONNECTION_CLOSED' || // This error is thrown if the connection was closed without an error.
+      err.code === 'CONNECTION_DESTROYED' || // This error is thrown for any queries that were pending when the timeout to sql.end({ timeout: X }) was reached. If the DB client is being closed completely retry will result in CONNECTION_ENDED which is not retried so should be fine.
+      msg.includes('RETRY_SERIALIZABLE')
+    )
   }
 }
 
