@@ -139,12 +139,12 @@ class ConnectionInfo {
     readonly managed: boolean
   ) {}
 
-  async withReserve (action: (reservedClient: DBClient) => Promise<any>): Promise<any> {
+  async withReserve (action: (reservedClient: DBClient) => Promise<any>, forced: boolean = false): Promise<any> {
     let reserved: DBClient | undefined
 
     // Check if we have at least one available connection and reserve one more if required.
     if (this.available.length === 0) {
-      if (this.managed) {
+      if (this.managed || forced) {
         reserved = await this.client.reserve()
       }
     } else {
@@ -219,7 +219,7 @@ class ConnectionMgr {
               return false
             }
           }
-        })
+        }, true)
         if (retry === true) {
           break
         }
