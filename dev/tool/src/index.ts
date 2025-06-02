@@ -1704,9 +1704,9 @@ export function devTool (
           if (existsSync(bdir)) {
             await mkdir(bdir, { recursive: true })
           }
-          const bytes = await resp.bytes()
+          const bytes = await resp.arrayBuffer()
           console.log('writing to', opt.output)
-          await writeFile(opt.output, bytes, { encoding: 'binary' })
+          await writeFile(opt.output, new Uint8Array(bytes))
         } else {
           console.error('failed to stop profile', resp.headers)
         }
