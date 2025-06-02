@@ -51,7 +51,7 @@
     "prettier": "^3.1.0",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.8.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "@hcengineering/account": "^0.6.0",

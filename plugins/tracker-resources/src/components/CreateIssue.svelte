@@ -318,7 +318,7 @@
                   const val = tagElements.get(p)
                   return val !== undefined ? tagAsRef(val) : undefined
                 })
-                .filter((p) => p !== undefined) as TagReference[])
+                .filter((p) => p !== undefined))
             : [],
         status: currentProject?.defaultIssueStatus
       }
@@ -340,7 +340,7 @@
               const val = tagElements.get(p)
               return val !== undefined ? tagAsRef(val) : undefined
             })
-            .filter((p) => p !== undefined) as TagReference[])
+            .filter((p) => p !== undefined))
         : []
 
     if (object.kind !== undefined) {

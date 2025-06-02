@@ -30,7 +30,7 @@
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
-    "typescript": "^5.3.3",
+    "typescript": "^5.8.3",
     "esbuild": "^0.24.2"
   },
   "dependencies": {

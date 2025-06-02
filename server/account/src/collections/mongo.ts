@@ -19,9 +19,9 @@ import {
   type Version,
   type WorkspaceMemberInfo,
   type WorkspaceUuid,
-  AccountUuid,
+  type AccountUuid,
   buildSocialIdString,
-  SocialKey
+  type SocialKey
 } from '@hcengineering/core'
 import type {
   Collection,
