@@ -15,14 +15,14 @@
 import activity from '@hcengineering/activity'
 import {
   type Account,
-  type Class,
   type Client,
-  type Doc,
+  SortingOrder,
   getCurrentAccount,
+  toIdMap,
+  type Class,
+  type Doc,
   type IdMap,
   type Ref,
-  SortingOrder,
-  toIdMap,
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
