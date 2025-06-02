@@ -20,6 +20,7 @@
     "WorkspaceAlreadyExists": "Рабочее пространство уже существует",
     "InvalidOtp": "Неверный код",
     "InviteNotFound": "Приглашение с email:{email} не найдено.",
-    "WorkspaceLimitReached": "Вы достигли лимита рабочих пространств. Свяжитесь с нами..."
+    "WorkspaceLimitReached": "Вы достигли лимита рабочих пространств. Свяжитесь с нами...",
+    "ReadOnlyAccount": "Режим только для чтения"
   }
 }

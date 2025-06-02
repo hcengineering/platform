@@ -68,6 +68,7 @@ export default mergeIds(settingId, setting, {
     LeaveDescr: '' as IntlString,
     Select: '' as IntlString,
     AddOwner: '' as IntlString,
+    ReadonlyGuest: '' as IntlString,
     User: '' as IntlString,
     Maintainer: '' as IntlString,
     Guest: '' as IntlString,
@@ -123,6 +124,8 @@ export default mergeIds(settingId, setting, {
     EnablePermissions: '' as IntlString,
     DisablePermissionsConfirmation: '' as IntlString,
     EnablePermissionsConfirmation: '' as IntlString,
-    BetaWarning: '' as IntlString
+    BetaWarning: '' as IntlString,
+    GuestAccess: '' as IntlString,
+    GuestAccessDescription: '' as IntlString
   }
 })

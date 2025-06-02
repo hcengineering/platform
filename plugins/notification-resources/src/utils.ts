@@ -28,39 +28,39 @@ import {
 import { Analytics } from '@hcengineering/analytics'
 import chunter, { type ThreadMessage } from '@hcengineering/chunter'
 import core, {
-  SortingOrder,
-  getCurrentAccount,
   type Class,
   type Doc,
   type DocumentUpdate,
+  getCurrentAccount,
   type Ref,
+  SortingOrder,
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
 import notification, {
-  notificationId,
   type ActivityInboxNotification,
-  type NotificationType,
   type Collaborators,
   type DisplayInboxNotification,
   type DocNotifyContext,
   type InboxNotification,
   type MentionInboxNotification,
+  notificationId,
   type NotificationProvider,
   type NotificationProviderSetting,
+  type NotificationType,
   type NotificationTypeSetting
 } from '@hcengineering/notification'
 import { getMetadata, getResource } from '@hcengineering/platform'
-import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
 import {
   getCurrentLocation,
   getLocation,
+  type Location,
   locationStorageKeyId,
   navigate,
   parseLocation,
-  showPopup,
-  type Location,
-  type ResolvedLocation
+  type ResolvedLocation,
+  showPopup
 } from '@hcengineering/ui'
 import view, { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
 import { getObjectLinkId, parseLinkId } from '@hcengineering/view-resources'
@@ -346,7 +346,6 @@ export async function getDisplayInboxNotifications (
 ): Promise<DisplayInboxNotification[]> {
   const result: DisplayInboxNotification[] = []
   const activityNotifications: Array<WithLookup<ActivityInboxNotification>> = []
-
   for (const notification of notifications) {
     if (filter === 'unread' && notification.isViewed) {
       continue

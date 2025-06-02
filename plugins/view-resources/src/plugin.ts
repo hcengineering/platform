@@ -102,6 +102,7 @@ export default mergeIds(viewId, view, {
   },
   function: {
     CreateDocMiddleware: '' as Resource<PresentationMiddlewareCreator>,
-    AnalyticsMiddleware: '' as Resource<PresentationMiddlewareCreator>
+    AnalyticsMiddleware: '' as Resource<PresentationMiddlewareCreator>,
+    ReadOnlyAccessMiddleware: '' as Resource<PresentationMiddlewareCreator>
   }
 })

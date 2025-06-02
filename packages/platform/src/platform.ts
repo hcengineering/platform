@@ -167,7 +167,8 @@ export default plugin(platformId, {
     InvalidOtp: '' as StatusCode,
     InviteNotFound: '' as StatusCode<{ email: string }>,
     MailboxError: '' as StatusCode<{ reason: string }>,
-    SocialIdAlreadyExists: '' as StatusCode
+    SocialIdAlreadyExists: '' as StatusCode,
+    ReadOnlyAccount: '' as StatusCode
   },
   metadata: {
     locale: '' as Metadata<string>,

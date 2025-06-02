@@ -68,6 +68,7 @@ export default mergeIds(loginId, login, {
     CanFindCode: '' as IntlString,
     LoginWithCode: '' as IntlString,
     LoginWithPassword: '' as IntlString,
+    LoginAsGuest: '' as IntlString,
     SignUpWithCode: '' as IntlString,
     SignUpWithPassword: '' as IntlString,
     Hello: '' as IntlString,
@@ -75,6 +76,7 @@ export default mergeIds(loginId, login, {
     SignToProceed: '' as IntlString,
     Proceed: '' as IntlString,
     SetPasswordLater: '' as IntlString,
-    SetPasswordNow: '' as IntlString
+    SetPasswordNow: '' as IntlString,
+    SignUpToCreateWorkspace: '' as IntlString
   }
 })

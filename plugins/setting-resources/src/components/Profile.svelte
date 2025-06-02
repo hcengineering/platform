@@ -68,7 +68,7 @@
           navigate({ path: [loginId, 'selectWorkspace'] })
         } else {
           await logOut()
-          navigate({ path: [loginId, 'login'] })
+          navigate({ path: [loginId] })
         }
       }
     })

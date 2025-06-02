@@ -104,11 +104,16 @@ export interface AccountClient {
    */
   signUp: (email: string, password: string, first: string, last: string) => Promise<LoginInfo>
   login: (email: string, password: string) => Promise<LoginInfo>
+  loginAsGuest: () => Promise<LoginInfo>
+  isReadOnlyGuest: () => Promise<boolean>
   getPerson: () => Promise<Person>
   getPersonInfo: (account: PersonUuid) => Promise<PersonInfo>
   getSocialIds: () => Promise<SocialId[]>
   getWorkspaceMembers: () => Promise<WorkspaceMemberInfo[]>
   updateWorkspaceRole: (account: string, role: AccountRole) => Promise<void>
+  updateAllowReadOnlyGuests: (
+    readOnlyGuestsAllowed: boolean
+  ) => Promise<{ guestPerson: Person, guestSocialIds: SocialId[] } | undefined>
   updateWorkspaceName: (name: string) => Promise<void>
   deleteWorkspace: () => Promise<void>
   findPersonBySocialKey: (socialKey: string, requireAccount?: boolean) => Promise<PersonUuid | undefined>
@@ -528,6 +533,24 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
+  async loginAsGuest (): Promise<LoginInfo> {
+    const request = {
+      method: 'loginAsGuest' as const,
+      params: {}
+    }
+
+    return await this.rpc(request)
+  }
+
+  async isReadOnlyGuest (): Promise<boolean> {
+    const request = {
+      method: 'isReadOnlyGuest' as const,
+      params: {}
+    }
+
+    return await this.rpc(request)
+  }
+
   async getPerson (): Promise<Person> {
     const request = {
       method: 'getPerson' as const,
@@ -595,6 +618,17 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async updateAllowReadOnlyGuests (
+    readOnlyGuestsAllowed: boolean
+  ): Promise<{ guestPerson: Person, guestSocialIds: SocialId[] } | undefined> {
+    const request = {
+      method: 'updateAllowReadOnlyGuests' as const,
+      params: { readOnlyGuestsAllowed }
+    }
+
+    return await this.rpc(request)
   }
 
   async getWorkspaceMembers (): Promise<WorkspaceMemberInfo[]> {

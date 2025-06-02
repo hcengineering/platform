@@ -140,7 +140,7 @@
             </div>
           </div>
         {:else}
-          <ChannelComponent {context} {object} {autofocus} />
+          <ChannelComponent {readonly} {context} {object} {autofocus} />
         {/if}
       {/key}
     </div>

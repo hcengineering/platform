@@ -557,6 +557,13 @@ async function createNotifyContext (
     }
   }
 
+  const lastViewedTimestamp =
+    receiver.role === 'GUEST'
+      ? Number.MAX_VALUE
+      : receiver.socialIds.some((it) => it === sender)
+        ? updateTimestamp
+        : undefined
+
   const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, receiver.space, {
     user: receiver.account,
     objectId,
@@ -566,7 +573,7 @@ async function createNotifyContext (
     hidden: false,
     tx: tx?._id,
     lastUpdateTimestamp: updateTimestamp,
-    lastViewedTimestamp: receiver.socialIds.some((it) => it === sender) ? updateTimestamp : undefined
+    lastViewedTimestamp
   })
 
   contextsCache.contexts.set(cacheKey, createTx.objectId)

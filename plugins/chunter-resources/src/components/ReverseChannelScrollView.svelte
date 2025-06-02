@@ -51,7 +51,8 @@
   const loadMoreThreshold = 200
   const newSeparatorOffset = 150
 
-  const socialStrings = getCurrentAccount().socialIds
+  const account = getCurrentAccount()
+  const socialStrings = account.socialIds
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()

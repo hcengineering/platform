@@ -71,6 +71,8 @@
     "SignToProceed": "続行するにはサインインしてください",
     "Proceed": "続行",
     "SetPasswordLater": "後でパスワードを設定します",
-    "SetPasswordNow": "今すぐパスワードを設定します"
+    "SetPasswordNow": "今すぐパスワードを設定します",
+    "LoginAsGuest": "ゲストとして続行",
+    "SignUpToCreateWorkspace": "ゲストアクセス可能なワークスペースはありません。登録して独自のワークスペースを作成してください。"
   }
 }

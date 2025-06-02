@@ -92,12 +92,17 @@
   )
 
   let status = OK
+  let readonlyAccount = false
   let maintenanceTime = -1
 
   addEventListener(PlatformEvent, async (_event, _status: Status) => {
     if (_status.code === platform.status.MaintenanceWarning) {
       maintenanceTime = _status.params.time
     } else {
+      if (readonlyAccount) return
+      if (_status.code === platform.status.ReadOnlyAccount) {
+        readonlyAccount = true
+      }
       status = _status
     }
   })

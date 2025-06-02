@@ -71,6 +71,8 @@
     "SignToProceed": "请登录以继续",
     "Proceed": "继续",
     "SetPasswordLater": "稍后设置密码",
-    "SetPasswordNow": "现在设置密码"
+    "SetPasswordNow": "现在设置密码",
+    "LoginAsGuest": "以访客身份继续",
+    "SignUpToCreateWorkspace": "没有支持访客访问的工作区。请注册以创建您自己的工作区。"
   }
 }

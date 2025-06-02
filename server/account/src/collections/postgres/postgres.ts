@@ -736,6 +736,11 @@ export class PostgresAccountDB implements AccountDB {
     })
   }
 
+  async updateAllowReadOnlyGuests (workspaceId: WorkspaceUuid, readOnlyGuestsAllowed: boolean): Promise<void> {
+    await this
+      .client`UPDATE ${this.client(this.workspace.getTableName())} SET allow_read_only_guest = ${readOnlyGuestsAllowed} WHERE uuid = ${workspaceId}`
+  }
+
   async assignWorkspace (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this
       .client`INSERT INTO ${this.client(this.getWsMembersTableName())} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`

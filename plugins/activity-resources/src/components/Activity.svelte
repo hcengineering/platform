@@ -22,7 +22,7 @@
   } from '@hcengineering/activity'
   import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Grid, Label, Section, Spinner, location, Lazy } from '@hcengineering/ui'
+  import { Grid, Section, Spinner, location, Lazy } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
   import ActivityExtensionComponent from './ActivityExtension.svelte'
