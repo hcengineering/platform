@@ -199,15 +199,6 @@ const styleRules: HtmlStyleRule[] = [
 ]
 
 const markRules: Record<string, HtmlMarkRule> = {
-  a: {
-    mark: MarkupMarkType.link,
-    getAttrs: (attributes: Record<string, string>) => {
-      return {
-        href: attributes.href,
-        title: attributes.title
-      }
-    }
-  },
   b: {
     mark: MarkupMarkType.bold
   },
@@ -413,6 +404,30 @@ const specialRules: Record<string, HtmlSpecialRule> = {
         // do nothing
       } else {
         state.closeMark(MarkupMarkType.code)
+      }
+    }
+  },
+  a: {
+    handleOpenTag: (state: HtmlParseState, tag: string, attributes: Record<string, string>) => {
+      const dataType = attributes['data-type']
+      if (dataType === 'embed') {
+        state.openNode(MarkupNodeType.embed, {
+          src: decodeURI(attributes.href)
+        })
+      } else {
+        state.openMark(MarkupMarkType.link, {
+          href: attributes.href,
+          title: attributes.title
+        })
+      }
+    },
+    handleCloseTag: (state: HtmlParseState, tag: string) => {
+      const top = state.top()
+      if (top?.type === MarkupNodeType.embed) {
+        delete top.content
+        state.closeNode(MarkupNodeType.embed)
+      } else {
+        state.closeMark(MarkupMarkType.link)
       }
     }
   }
