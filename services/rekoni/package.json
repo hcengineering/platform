@@ -41,7 +41,7 @@
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/html-to-text": "^8.1.1",
-    "@types/node": "~20.11.16",
+    "@types/node": "^22.15.29",
     "node-loader": "~2.0.0",
     "@types/body-parser": "~1.19.2",
     "@types/mime-types": "~2.1.1",
