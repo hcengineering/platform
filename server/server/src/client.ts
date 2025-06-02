@@ -251,8 +251,8 @@ export class ClientSession implements Session {
       onEnd = useReserveContext ? ctx.pipeline.context.adapterManager?.reserveContext?.(cid) : undefined
       const handleAyncs = async (): Promise<void> => {
         try {
-          for (const r of (ctx.ctx.contextData as SessionData).asyncRequests ?? []) {
-            await r()
+          for (const r of asyncs) {
+            await r(ctx.ctx)
           }
         } finally {
           onEnd?.()
