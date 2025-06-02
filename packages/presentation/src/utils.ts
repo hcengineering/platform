@@ -22,6 +22,7 @@ import core, {
   type AttachedDoc,
   type Class,
   type Client,
+  type ClientConnection,
   type Collection,
   type Doc,
   type DocumentQuery,
@@ -31,6 +32,7 @@ import core, {
   type Hierarchy,
   MeasureMetricsContext,
   type Mixin,
+  type ModelDb,
   type Obj,
   reduceCalls,
   type Ref,
@@ -59,8 +61,8 @@ import { onDestroy } from 'svelte'
 import { get, writable } from 'svelte/store'
 
 import { type KeyedAttribute } from '..'
-import { OptimizeQueryMiddleware, type PresentationPipeline, PresentationPipelineImpl } from './pipeline'
-import plugin from './plugin'
+import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
+import plugin, { type ClientHook } from './plugin'
 
 export { reduceCalls } from '@hcengineering/core'
 
@@ -98,7 +100,6 @@ export const uiContext = new MeasureMetricsContext('client-ui', {})
 export const pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
 
 class UIClient extends TxOperations implements Client {
-  hook = getMetadata(plugin.metadata.ClientHook)
   constructor (
     client: Client,
     private readonly liveQuery: Client
@@ -157,9 +158,6 @@ class UIClient extends TxOperations implements Client {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    if (this.hook !== undefined) {
-      return await this.hook.findAll(this.liveQuery, _class, query, options)
-    }
     return await this.liveQuery.findAll(_class, query, options)
   }
 
@@ -168,17 +166,13 @@ class UIClient extends TxOperations implements Client {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
-    if (this.hook !== undefined) {
-      return await this.hook.findOne(this.liveQuery, _class, query, options)
-    }
     return await this.liveQuery.findOne(_class, query, options)
   }
 
   override async tx (tx: Tx): Promise<TxResult> {
-    void this.notifyEarly(tx)
-    if (this.hook !== undefined) {
-      return await this.hook.tx(this.client, tx)
-    }
+    void this.notifyEarly(tx).catch((err) => {
+      console.error(err)
+    })
     return await this.client.tx(tx)
   }
 
@@ -222,9 +216,6 @@ class UIClient extends TxOperations implements Client {
   }
 
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    if (this.hook !== undefined) {
-      return await this.hook.searchFulltext(this.client, query, options)
-    }
     return await this.client.searchFulltext(query, options)
   }
 }
@@ -280,6 +271,73 @@ export function addRefreshListener (r: RefreshListener): void {
   refreshListeners.add(r)
 }
 
+class ClientHookImpl implements Client {
+  constructor (
+    private readonly client: Client,
+    private readonly hook: ClientHook
+  ) {}
+
+  set notify (op: (...tx: Tx[]) => void) {
+    this.client.notify = op
+  }
+
+  get notify (): ((...tx: Tx[]) => void) | undefined {
+    return this.client.notify
+  }
+
+  getHierarchy (): Hierarchy {
+    return this.client.getHierarchy()
+  }
+
+  getModel (): ModelDb {
+    return this.client.getModel()
+  }
+
+  async findOne<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<WithLookup<T> | undefined> {
+    if (this.hook !== undefined) {
+      return await this.hook.findOne(this.client, _class, query, options)
+    }
+    return await this.client.findOne(_class, query, options)
+  }
+
+  get getConnection (): (() => ClientConnection) | undefined {
+    return this.client.getConnection
+  }
+
+  async close (): Promise<void> {
+    await this.client.close()
+  }
+
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
+    if (this.hook !== undefined) {
+      return await this.hook.findAll(this.client, _class, query, options)
+    }
+    return await this.client.findAll(_class, query, options)
+  }
+
+  async tx (tx: Tx): Promise<TxResult> {
+    if (this.hook !== undefined) {
+      return await this.hook.tx(this.client, tx)
+    }
+    return await this.client.tx(tx)
+  }
+
+  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    if (this.hook !== undefined) {
+      return await this.hook.searchFulltext(this.client, query, options)
+    }
+    return await this.client.searchFulltext(query, options)
+  }
+}
+
 /**
  * @public
  */
@@ -293,6 +351,12 @@ export async function setClient (_client: Client): Promise<void> {
   }
   if (pipeline !== undefined) {
     await pipeline.close()
+  }
+
+  const hook = getMetadata(plugin.metadata.ClientHook)
+
+  if (hook !== undefined) {
+    _client = new ClientHookImpl(_client, hook)
   }
 
   const needRefresh = liveQuery !== undefined
