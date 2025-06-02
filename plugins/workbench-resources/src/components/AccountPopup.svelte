@@ -165,7 +165,7 @@
         label: setting.string.Signout,
         action: async () => {
           await logOut()
-          navigate({ path: [loginId, 'login'] })
+          navigate({ path: [loginId] })
         },
         group: 'end'
       }

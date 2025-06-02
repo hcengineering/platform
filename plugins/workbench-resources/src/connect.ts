@@ -97,7 +97,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     )
     // something went wrong with selecting workspace with the selected token
     await logOut()
-    navigate({ path: [loginId, 'login'] })
+    navigate({ path: [loginId] })
     return
   }
 

@@ -776,7 +776,7 @@
       size={'small'}
       on:click={() => {
         void logOut().then(() => {
-          navigate({ path: [loginId, 'login'] })
+          navigate({ path: [loginId] })
         })
       }}
     />
