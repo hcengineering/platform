@@ -1701,7 +1701,7 @@ export function devTool (
         })
         if (resp.ok) {
           const bdir = basename(opt.output)
-          if (existsSync(bdir)) {
+          if (!existsSync(bdir)) {
             await mkdir(bdir, { recursive: true })
           }
           const bytes = await resp.arrayBuffer()
