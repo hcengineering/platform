@@ -52,7 +52,6 @@
     "@hcengineering/rank": "^0.6.4",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",
-    "@hcengineering/workbench": "^0.6.16",
-    "cross-fetch": "^3.1.5"
+    "@hcengineering/workbench": "^0.6.16"
   }
 }

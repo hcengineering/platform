@@ -277,7 +277,7 @@ async function getCreateReferencesTxes (
       refs.push(...attrReferences)
     } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
       const blobId = (createdDoc as any)[attr.name] as Ref<Blob>
-      if (blobId != null) {
+      if (blobId != null && blobId !== '') {
         try {
           const buffer = await storage.read(ctx, control.workspace, blobId)
           const markup = Buffer.concat(buffer as any).toString()
