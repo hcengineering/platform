@@ -24,7 +24,7 @@ import (
 
 func Test_BuildVideoCommand_Scaling(t *testing.T) {
 	var scaleCommand = mediaconvert.BuildScalingVideoCommand(&mediaconvert.Options{
-		OuputDir:      "test",
+		OutputDir:     "test",
 		Input:         "pipe:0",
 		UploadID:      "1",
 		Threads:       4,
@@ -38,11 +38,11 @@ func Test_BuildVideoCommand_Scaling(t *testing.T) {
 
 func Test_BuildVideoCommand_Raw(t *testing.T) {
 	var rawCommand = mediaconvert.BuildRawVideoCommand(&mediaconvert.Options{
-		OuputDir: "test",
-		Input:    "pipe:0",
-		UploadID: "1",
-		Threads:  4,
-		Level:    resconv.Level("651:490"),
+		OutputDir: "test",
+		Input:     "pipe:0",
+		UploadID:  "1",
+		Threads:   4,
+		Level:     resconv.Level("651:490"),
 	})
 
 	const expected = `"-threads 4 -i pipe:0 -c:a copy -c:v copy -hls_time 5 -hls_flags split_by_time -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`

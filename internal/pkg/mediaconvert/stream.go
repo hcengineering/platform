@@ -115,7 +115,7 @@ func (s *StreamCoordinator) AsConcatableUpload(upload handler.Upload) handler.Co
 func (w *Stream) start(ctx context.Context, options *Options) error {
 	defer w.logger.Debug("start done")
 	w.reader = w.writer.Transpile()
-	if err := manifest.GenerateHLSPlaylist(append(options.ScalingLevels, options.Level), options.OuputDir, options.UploadID); err != nil {
+	if err := manifest.GenerateHLSPlaylist(append(options.ScalingLevels, options.Level), options.OutputDir, options.UploadID); err != nil {
 		return err
 	}
 	w.commandGroup.Add(1)

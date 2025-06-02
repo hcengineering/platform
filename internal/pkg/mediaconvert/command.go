@@ -32,7 +32,7 @@ import (
 // Options represents configuration for the ffmpeg command
 type Options struct {
 	Input         string
-	OuputDir      string
+	OutputDir     string
 	ScalingLevels []string
 	Level         string
 	Threads       int
@@ -56,7 +56,7 @@ func newFfmpegCommand(ctx context.Context, in io.Reader, args []string) (*exec.C
 	return result, nil
 }
 
-func buildCommonComamnd(opts *Options) []string {
+func buildCommonCommand(opts *Options) []string {
 	return []string{
 		"-threads", fmt.Sprint(opts.Threads),
 		"-i", opts.Input,
@@ -65,24 +65,24 @@ func buildCommonComamnd(opts *Options) []string {
 
 // BuildAudioCommand returns flags for getting the audio from the input
 func BuildAudioCommand(opts *Options) []string {
-	var commonPart = buildCommonComamnd(opts)
+	var commonPart = buildCommonCommand(opts)
 
 	return append(commonPart,
 		"-vn", "-acodec",
-		"copy", filepath.Join(opts.OuputDir, opts.UploadID),
+		"copy", filepath.Join(opts.OutputDir, opts.UploadID),
 	)
 }
 
 // BuildRawVideoCommand returns an extremely lightweight ffmpeg command for converting raw video without extra cost.
 func BuildRawVideoCommand(opts *Options) []string {
-	return append(buildCommonComamnd(opts),
+	return append(buildCommonCommand(opts),
 		"-c:a", "copy", // Copy audio stream
 		"-c:v", "copy", // Copy video stream
 		"-hls_time", "5",
 		"-hls_flags", "split_by_time",
 		"-hls_list_size", "0",
-		"-hls_segment_filename", filepath.Join(opts.OuputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", opts.Level)),
-		filepath.Join(opts.OuputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, opts.Level)))
+		"-hls_segment_filename", filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", opts.Level)),
+		filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, opts.Level)))
 }
 
 // BuildThumbnailCommand creates a command that creates a thumbnail for the input video
@@ -90,13 +90,13 @@ func BuildThumbnailCommand(opts *Options) []string {
 	return append([]string{},
 		"-i", opts.Input,
 		"-vframes", "1",
-		filepath.Join(opts.OuputDir, opts.UploadID, opts.UploadID+".jpg"),
+		filepath.Join(opts.OutputDir, opts.UploadID, opts.UploadID+".jpg"),
 	)
 }
 
 // BuildScalingVideoCommand returns flags for ffmpeg for video scaling
 func BuildScalingVideoCommand(opts *Options) []string {
-	var result = buildCommonComamnd(opts)
+	var result = buildCommonCommand(opts)
 
 	for _, level := range opts.ScalingLevels {
 		result = append(result,
@@ -109,8 +109,8 @@ func BuildScalingVideoCommand(opts *Options) []string {
 			"-hls_time", "5",
 			"-hls_flags", "split_by_time",
 			"-hls_list_size", "0",
-			"-hls_segment_filename", filepath.Join(opts.OuputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", level)),
-			filepath.Join(opts.OuputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, level)))
+			"-hls_segment_filename", filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", level)),
+			filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, level)))
 	}
 
 	return result

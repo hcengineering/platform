@@ -62,15 +62,15 @@ type Scheduler struct {
 }
 
 // Schedule schedules a task to transcode
-func (p *Scheduler) Schedule(t *Task) {
+func (p *Scheduler) Schedule(t *Task) error {
 	t.ID = uuid.NewString()
 	t.Status = "planned"
 
 	select {
 	case p.taskCh <- t:
-		p.logger.Sugar().Debugf("task %v is scheduled", t)
+		return nil
 	default:
-		p.logger.Error("task channel is full")
+		return fmt.Errorf("task queue is full")
 	}
 }
 
@@ -127,6 +127,12 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		return
 	}
 
+	defer func() {
+		if err = os.RemoveAll(destinationFolder); err != nil {
+			logger.Error("failed to cleanup temporary folder", zap.Error(err))
+		}
+	}()
+
 	logger.Debug("phase 3: get the remote file")
 
 	remoteStorage, err := storage.NewStorageByURL(ctx, p.cfg.Endpoint(), p.cfg.EndpointURL.Scheme, tokenString, task.Workspace)
@@ -176,7 +182,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	var level = resconv.Level(res)
 	var opts = Options{
 		Input:         sourceFilePath,
-		OuputDir:      p.cfg.OutputDir,
+		OutputDir:     p.cfg.OutputDir,
 		Level:         level,
 		ScalingLevels: append(resconv.SubLevels(res), level),
 		UploadID:      task.ID,
