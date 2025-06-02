@@ -72,6 +72,7 @@
     "Proceed": "Continuer",
     "SetPasswordLater": "Je définirai un mot de passe plus tard",
     "SetPasswordNow": "Je définirai un mot de passe maintenant",
-    "LoginAsGuest": "Continuer en tant qu'invité"
+    "LoginAsGuest": "Continuer en tant qu'invité",
+    "SignUpToCreateWorkspace": "Aucun espace de travail avec accès invité. Veuillez vous inscrire pour créer le vôtre."
   }
 }

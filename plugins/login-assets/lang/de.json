@@ -73,6 +73,7 @@
     "Proceed": "Fortfahren",
     "SetPasswordLater": "Ich werde später ein Passwort festlegen",
     "SetPasswordNow": "Ich werde jetzt ein Passwort festlegen",
-    "LoginAsGuest": "Als Gast fortfahren"
+    "LoginAsGuest": "Als Gast fortfahren",
+    "SignUpToCreateWorkspace": "Keine Arbeitsbereiche mit Gastzugang. Bitte registrieren Sie sich, um Ihren eigenen zu erstellen."
   }
 }

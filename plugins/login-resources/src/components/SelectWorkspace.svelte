@@ -162,6 +162,9 @@
     </div>
   {:then}
     <Scroller padding={'.125rem 0'} maxHeight={35}>
+      {#if workspaces.length === 0 && account?.token != null && isReadOnlyGuest}
+        <span class="readonly-warning"><Label label={login.string.SignUpToCreateWorkspace} /></span>
+      {/if}
       <div class="form">
         {#each workspaces
           .filter((it) => search === '' || (it.name?.includes(search) ?? false) || it.url.includes(search))
@@ -196,14 +199,14 @@
           </div>
         {/each}
 
-        {#if workspaces.length === 0 && account?.token != null && !isReadOnlyGuest}
+        {#if workspaces.length === 0 && account?.token != null}
           <div class="form-row send">
             <Button
-              label={login.string.CreateWorkspace}
+              label={isReadOnlyGuest ? login.string.SignUp : login.string.CreateWorkspace}
               kind={'primary'}
               width="100%"
               on:click={() => {
-                goTo('createWorkspace')
+                goTo(isReadOnlyGuest ? 'signup' : 'createWorkspace')
               }}
             />
           </div>
@@ -280,6 +283,10 @@
         padding: 1rem;
         border-radius: 1rem;
       }
+    }
+    .readonly-warning {
+      margin-bottom: 1.5rem;
+      color: var(--theme-caption-color);
     }
     .grow-separator {
       flex-grow: 1;

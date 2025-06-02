@@ -72,6 +72,7 @@
     "Proceed": "Procedere",
     "SetPasswordLater": "Imposterò una password più tardi",
     "SetPasswordNow": "Imposterò una password ora",
-    "LoginAsGuest": "Continua come ospite"
+    "LoginAsGuest": "Continua come ospite",
+    "SignUpToCreateWorkspace": "Nessuna area di lavoro con accesso ospite. Per favore, registrati per crearne una tua."
   }
 }
