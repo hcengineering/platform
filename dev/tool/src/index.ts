@@ -111,7 +111,7 @@ import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './ut
 
 import { createRestClient } from '@hcengineering/api-client'
 import { mkdir, writeFile } from 'fs/promises'
-import { basename } from 'path'
+import { basename, dirname } from 'path'
 import { existsSync } from 'fs'
 
 const colorConstants = {
@@ -1700,7 +1700,7 @@ export function devTool (
           method: 'PUT'
         })
         if (resp.ok) {
-          const bdir = basename(opt.output)
+          const bdir = dirname(opt.output)
           if (!existsSync(bdir)) {
             await mkdir(bdir, { recursive: true })
           }
