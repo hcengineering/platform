@@ -51,12 +51,11 @@ export async function stopRecording (): Promise<void> {
   const current = get(recording)
   const popup = get(recorder)
   if (current !== null && current.state === 'recording') {
-    recording.set({ ...current, state: 'stopped' })
-
+    recording.set({ ...current, state: 'stopping' })
     const result = await current.recorder.stop()
     await current.options.onSuccess?.(result)
 
-    recording.set(null)
+    recording.set({ ...current, state: 'stopped' })
     popup?.close()
   } else {
     console.warn('Recording is not in `recording` state', current)
@@ -80,7 +79,7 @@ export async function restartRecording (): Promise<void> {
     await current.recorder.start()
     recording.set({ ...current, state: 'recording' })
   } else {
-    console.warn('Recording is not in `paused` state', current)
+    console.warn('Recording not started', current)
   }
 }
 

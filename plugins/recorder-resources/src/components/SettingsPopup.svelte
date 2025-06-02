@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { DropdownLabels, DropdownTextItem, Label } from '@hcengineering/ui'
+  import { DropdownLabelsIntl, DropdownIntlItem, Label } from '@hcengineering/ui'
   import plugin from '../plugin'
   import { recordingCameraPosition, recordingCameraSize } from '../stores'
 
-  const sizes: DropdownTextItem[] = [
+  const sizes: DropdownIntlItem[] = [
     { label: plugin.string.Small, id: 'small' },
     { label: plugin.string.Medium, id: 'medium' },
     { label: plugin.string.Large, id: 'large' }
   ]
 
-  const poses: DropdownTextItem[] = [
+  const poses: DropdownIntlItem[] = [
     { label: plugin.string.TopLeft, id: 'top-left' },
     { label: plugin.string.TopRight, id: 'top-right' },
     { label: plugin.string.BottomLeft, id: 'bottom-left' },
@@ -19,10 +19,8 @@
 
 <div class="antiPopup p-4 grid">
   <Label label={plugin.string.CameraSize} />
-  <DropdownLabels
+  <DropdownLabelsIntl
     items={sizes}
-    placeholder={plugin.string.CameraSize}
-    enableSearch={false}
     justify={'left'}
     width={'100%'}
     selected={$recordingCameraSize}
@@ -32,10 +30,8 @@
   />
 
   <Label label={plugin.string.CameraPos} />
-  <DropdownLabels
+  <DropdownLabelsIntl
     items={poses}
-    placeholder={plugin.string.CameraPos}
-    enableSearch={false}
     justify={'left'}
     width={'100%'}
     selected={$recordingCameraPosition}

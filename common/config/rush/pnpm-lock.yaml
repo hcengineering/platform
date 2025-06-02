@@ -504,7 +504,7 @@ importers:
         version: file:projects/model-communication.tgz
       '@rush-temp/model-contact':
         specifier: file:./projects/model-contact.tgz
-        version: file:projects/model-contact.tgz(encoding@0.1.13)
+        version: file:projects/model-contact.tgz
       '@rush-temp/model-controlled-documents':
         specifier: file:./projects/model-controlled-documents.tgz
         version: file:projects/model-controlled-documents.tgz
@@ -1572,7 +1572,7 @@ importers:
         version: 3.0.11
       '@types/node-fetch':
         specifier: ~2.6.2
-        version: 2.6.11
+        version: 2.6.12
       '@types/nodemailer':
         specifier: ^6.4.17
         version: 6.4.17
@@ -1690,9 +1690,6 @@ importers:
       cross-env:
         specifier: ~7.0.3
         version: 7.0.3
-      cross-fetch:
-        specifier: ^3.1.5
-        version: 3.1.8(encoding@0.1.13)
       crypto-js:
         specifier: ^4.2.0
         version: 4.2.0
@@ -4473,7 +4470,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-contact@file:projects/model-contact.tgz':
-    resolution: {integrity: sha512-+wfUTUKjOzRKHOpcINUdbA6SGyJOYE+hxIiY2ZAL/3x6CqWb720+uhpkmNqb88ZXubhrOCT4z/nDXg29QkqL4A==, tarball: file:projects/model-contact.tgz}
+    resolution: {integrity: sha512-pUqoMMgSoArIiZmW9SL5BBapmezesVqgb6k0lCNNswPAP+UoKOChFTyqNAzzeTZ1AiLms4hvXbPEVlM1tKMKfg==, tarball: file:projects/model-contact.tgz}
     version: 0.0.0
 
   '@rush-temp/model-controlled-documents@file:projects/model-controlled-documents.tgz':
@@ -5537,7 +5534,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-97pzx1qZJlMkJmWU1JEKOII/g4WM7evf3NZuj+9uHAvqjtpfHJDZ7QYzA4P7tMz+DVmCNjqUxWQyCSvHz5MqJA==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-M5PhT+eqpWqh6vTLuYmcQhjIYmRyoYNGc7pFOmozt4RgKb5s0V5AwfqIkPr23DiBZm7Q9aYrscp1NxXx/RObOg==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -6500,8 +6497,8 @@ packages:
   '@types/node-cron@3.0.11':
     resolution: {integrity: sha512-0ikrnug3/IyneSHqCBeslAhlK2aBfYek1fGo4bP4QnZPmiqSGRK+Oy7ZMisLWkesffJvQ1cqAcBnJC+8+nxIAg==}
 
-  '@types/node-fetch@2.6.11':
-    resolution: {integrity: sha512-24xFj9R5+rfQJLRyM56qh+wnVSYhyXC2tkoBndtY0U+vubqNsYXGjufB2nn8Q6gt0LrARwL6UBtMCSVCwl4B1g==}
+  '@types/node-fetch@2.6.12':
+    resolution: {integrity: sha512-8nneRWKCg3rMtF69nLQJnOYUcbafYeFSjqkw3jCRLsqkWFlHaoQrr5mXmofFGOx3DKn7UfmBMyov8ySvLRVldA==}
 
   '@types/node-forge@1.3.11':
     resolution: {integrity: sha512-FQx220y22OKNTqaByeBGqHWYz4cl94tpcxeFdvBo3wjG6XPBuZ0BNgNZRV5J5TFmmcsJ4IzsLkmGRiQbnYsBEQ==}
@@ -11101,6 +11098,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
@@ -16758,7 +16756,7 @@ snapshots:
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
-      '@types/node-fetch': 2.6.11
+      '@types/node-fetch': 2.6.12
       '@types/snappyjs': 0.7.1
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
@@ -18033,7 +18031,7 @@ snapshots:
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
-      '@types/node-fetch': 2.6.11
+      '@types/node-fetch': 2.6.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       eslint: 8.56.0
@@ -20410,11 +20408,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@rush-temp/model-contact@file:projects/model-contact.tgz(encoding@0.1.13)':
+  '@rush-temp/model-contact@file:projects/model-contact.tgz':
     dependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      cross-fetch: 3.1.8(encoding@0.1.13)
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.3.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
@@ -20423,7 +20420,6 @@ snapshots:
       prettier: 3.2.5
       typescript: 5.3.3
     transitivePeerDependencies:
-      - encoding
       - supports-color
 
   '@rush-temp/model-controlled-documents@file:projects/model-controlled-documents.tgz':
@@ -27335,6 +27331,7 @@ snapshots:
   '@rush-temp/tool@file:projects/tool.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)':
     dependencies:
       '@elastic/elasticsearch': 7.17.14
+      '@faker-js/faker': 8.4.1
       '@types/jest': 29.5.12
       '@types/mime-types': 2.1.4
       '@types/minio': 7.0.18
@@ -29089,7 +29086,7 @@ snapshots:
 
   '@types/node-cron@3.0.11': {}
 
-  '@types/node-fetch@2.6.11':
+  '@types/node-fetch@2.6.12':
     dependencies:
       '@types/node': 20.11.19
       form-data: 4.0.0
@@ -35072,7 +35069,7 @@ snapshots:
   openai@4.56.0(encoding@0.1.13)(zod@3.23.8):
     dependencies:
       '@types/node': 18.19.17
-      '@types/node-fetch': 2.6.11
+      '@types/node-fetch': 2.6.12
       abort-controller: 3.0.0
       agentkeepalive: 4.5.0
       form-data-encoder: 1.7.2

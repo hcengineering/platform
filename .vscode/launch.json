@@ -367,9 +367,7 @@
         "METRICS_CONSOLE": "true",
         "ACCOUNTS_URL": "http://localhost:3000",
         "MONGO_URL": "mongodb://localhost:27017",
-        "MINIO_ACCESS_KEY": "minioadmin",
-        "MINIO_SECRET_KEY": "minioadmin",
-        "MINIO_ENDPOINT": "localhost"
+        "STORAGE_CONFIG": "datalake|http://localhost:4030"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -763,8 +761,8 @@
       "env": {
         "PORT": "4030",
         "SECRET": "secret",
-        "DB_URL": "",
-        "BUCKETS": "",
+        "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
+        "BUCKETS": "blobs,eu|http://localhost:9000?accessKey=minioadmin&secretKey=minioadmin",
         "ACCOUNTS_URL": "http://localhost:3000",
         "STATS_URL": "http://huly.local:4900",
         "STREAM_URL": "http://huly.local:1080/recording"

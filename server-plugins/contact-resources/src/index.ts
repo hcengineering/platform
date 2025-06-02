@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import card from '@hcengineering/card'
 import contact, {
   Channel,
   Contact,
@@ -38,7 +39,6 @@ import core, {
   MarkupBlobRef,
   Ref,
   SocialIdType,
-  SortingOrder,
   type Space,
   SpaceType,
   systemAccountUuid,
@@ -50,10 +50,9 @@ import core, {
   TxUpdateDoc,
   TypedSpace
 } from '@hcengineering/core'
-import { makeRank } from '@hcengineering/rank'
-import card from '@hcengineering/card'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
+import { makeRank } from '@hcengineering/rank'
 import { getAccountBySocialId, getCurrentPerson } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { workbenchId } from '@hcengineering/workbench'
@@ -169,13 +168,10 @@ export async function OnPersonCreate (_txes: Tx[], control: TriggerControl): Pro
   const result: Tx[] = []
   for (const tx of _txes) {
     const ctx = tx as TxCreateDoc<Person>
-    const lastOne = (
-      await control.findAll(control.ctx, card.class.Card, {}, { sort: { rank: SortingOrder.Descending }, limit: 1 })
-    )[0]
     const userProfileTx = control.txFactory.createTxCreateDoc<UserProfile>(contact.class.UserProfile, ctx.objectSpace, {
       person: ctx.objectId,
       title: formatName(ctx.attributes.name),
-      rank: makeRank(lastOne?.rank, undefined),
+      rank: makeRank(undefined, undefined),
       content: '' as MarkupBlobRef,
       parentInfo: [],
       blobs: {}

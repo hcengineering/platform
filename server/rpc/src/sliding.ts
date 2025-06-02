@@ -44,12 +44,11 @@ export class SlidingWindowRateLimitter {
       rateLimit.requests.push(now + (rateLimit.rejectedRequests > this.rateLimitMax * 2 ? this.rateLimitWindow * 5 : 0))
     }
 
-    if (rateLimit.requests.length > this.rateLimitMax) {
+    if (rateLimit.requests.length >= this.rateLimitMax) {
       rateLimit.rejectedRequests++
 
       // Find when the oldest request will exit the window
-      const someRequest = Math.round(Math.random() * rateLimit.requests.length)
-      const nextAvailableTime = rateLimit.requests[someRequest] + this.rateLimitWindow
+      const nextAvailableTime = rateLimit.requests[0] + this.rateLimitWindow
 
       return {
         remaining: 0,

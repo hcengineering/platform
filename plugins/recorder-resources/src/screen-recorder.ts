@@ -67,12 +67,12 @@ export class ScreenRecorder {
   }
 
   public async stop (): Promise<RecordingResult> {
-    this.recorder.stop()
+    await this.recorder.stop()
     return await this.uploader.wait()
   }
 
   public async cancel (): Promise<void> {
-    this.recorder.stop()
+    await this.recorder.stop()
     await this.uploader.cancel()
   }
 }
