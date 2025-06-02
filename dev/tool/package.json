@@ -45,7 +45,7 @@
     "ts-node": "^10.8.0",
     "esbuild": "^0.24.2",
     "@types/minio": "~7.0.11",
-    "@types/node": "~20.11.16",
+    "@types/node": "^22.15.29",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",

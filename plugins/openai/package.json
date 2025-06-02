@@ -36,7 +36,7 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "prettier-plugin-svelte": "^3.2.2",
-    "@types/node": "~20.11.16"
+    "@types/node": "^22.15.29"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
