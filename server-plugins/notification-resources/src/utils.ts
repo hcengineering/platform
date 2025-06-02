@@ -222,6 +222,7 @@ export async function isShouldNotifyTx (
   notificationControl: NotificationProviderControl,
   docUpdateMessage?: DocUpdateMessage
 ): Promise<NotifyResult> {
+  if (receiver.role === 'GUEST') return new Map<Ref<NotificationProvider>, NotificationType[]>()
   const types = getMatchedTypes(control, tx, isOwn, isSpace, docUpdateMessage?.attributeUpdates?.attrKey)
   const modifiedByPersonId = tx.modifiedBy
   const result = new Map<Ref<NotificationProvider>, NotificationType[]>()
@@ -487,11 +488,11 @@ export async function getReceiversInfo (
 ): Promise<ReceiverInfo[]> {
   if (accounts.length === 0) return []
 
-  const employees: Pick<Employee, '_id' | 'personUuid'>[] = await control.findAll(
+  const employees: Pick<Employee, '_id' | 'personUuid' | 'role'>[] = await control.findAll(
     ctx,
     contact.mixin.Employee,
     { personUuid: { $in: accounts }, active: true },
-    { projection: { _id: 1, personUuid: 1 } }
+    { projection: { _id: 1, personUuid: 1, role: 1 } }
   )
   if (employees.length === 0) return []
 
@@ -518,6 +519,7 @@ export async function getReceiversInfo (
 
       const info: ReceiverInfo = {
         employee: employee._id,
+        role: employee.role,
         space: space._id,
         account,
         socialIds: socialIdsByEmployee.get(employee._id)?.map((it) => it._id) ?? []

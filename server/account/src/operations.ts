@@ -96,7 +96,9 @@ import {
   verifyAllowedRole,
   verifyAllowedServices,
   verifyPassword,
-  wrap
+  wrap,
+  updateAllowReadOnlyGuests,
+  READONLY_GUEST_ACCOUNT
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -109,6 +111,25 @@ const workspaceLimitPerUser =
 /* =================================== */
 /* ============OPERATIONS============= */
 /* =================================== */
+
+/**
+ * Given an email and password, logs the user in and returns the account information and token.
+ */
+export async function loginAsGuest (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<LoginInfo> {
+  const guestPerson = await db.person.findOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid })
+  if (guestPerson == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+  return {
+    account: guestPerson.uuid as AccountUuid,
+    token: generateToken(guestPerson.uuid, undefined)
+  }
+}
 
 /**
  * Given an email and password, logs the user in and returns the account information and token.
@@ -1491,6 +1512,16 @@ export async function getSocialIds (
   return socialIds.filter((si) => si.isDeleted !== true)
 }
 
+export async function isReadOnlyGuest (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<boolean> {
+  const { account } = decodeTokenVerbose(ctx, token)
+  return account === READONLY_GUEST_ACCOUNT
+}
+
 export async function getPerson (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1797,6 +1828,7 @@ export type AccountMethods =
   | AccountServiceMethods
   | 'login'
   | 'loginOtp'
+  | 'loginAsGuest'
   | 'signUp'
   | 'signUpOtp'
   | 'validateOtp'
@@ -1828,6 +1860,7 @@ export type AccountMethods =
   | 'getPerson'
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
+  | 'updateAllowReadOnlyGuests'
   | 'findPersonBySocialKey'
   | 'findPersonBySocialId'
   | 'findSocialIdBySocialKey'
@@ -1840,6 +1873,7 @@ export type AccountMethods =
   | 'addSocialIdToPerson'
   | 'updateSocialId'
   | 'getAccountInfo'
+  | 'isReadOnlyGuest'
 
 /**
  * @public
@@ -1849,6 +1883,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     /* OPERATIONS */
     login: wrap(login),
     loginOtp: wrap(loginOtp),
+    loginAsGuest: wrap(loginAsGuest),
     ...(hasSignUp ? { signUp: wrap(signUp) } : {}),
     ...(hasSignUp ? { signUpOtp: wrap(signUpOtp) } : {}),
     validateOtp: wrap(validateOtp),
@@ -1871,6 +1906,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     updateWorkspaceName: wrap(updateWorkspaceName),
     deleteWorkspace: wrap(deleteWorkspace),
     updateWorkspaceRole: wrap(updateWorkspaceRole),
+    updateAllowReadOnlyGuests: wrap(updateAllowReadOnlyGuests),
     createMailbox: wrap(createMailbox),
     getMailboxes: wrap(getMailboxes),
     deleteMailbox: wrap(deleteMailbox),
@@ -1892,6 +1928,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getWorkspaceMembers: wrap(getWorkspaceMembers),
     getMailboxOptions: wrap(getMailboxOptions),
     getAccountInfo: wrap(getAccountInfo),
+    isReadOnlyGuest: wrap(isReadOnlyGuest),
 
     /* SERVICE METHODS */
     ...getServiceMethods()

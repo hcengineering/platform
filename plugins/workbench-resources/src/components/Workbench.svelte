@@ -55,6 +55,7 @@
     getCurrentLocation,
     getLocation,
     IconSettings,
+    isSameSegments,
     Label,
     languageStore,
     Location,
@@ -63,7 +64,6 @@
     locationToUrl,
     mainSeparators,
     navigate,
-    showPanel,
     PanelInstance,
     Popup,
     PopupAlignment,
@@ -71,15 +71,15 @@
     PopupResult,
     popupstore,
     pushRootBarComponent,
+    resizeObserver,
     ResolvedLocation,
     resolvedLocationStore,
     Separator,
     setResolvedLocation,
+    showPanel,
     showPopup,
     TooltipInstance,
-    workbenchSeparators,
-    resizeObserver,
-    isSameSegments
+    workbenchSeparators
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
@@ -101,7 +101,7 @@
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
-  import { buildNavModel, logOut, workspacesStore } from '../utils'
+  import { buildNavModel, isAllowedToRole, logOut, workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import AppSwitcher from './AppSwitcher.svelte'
@@ -158,6 +158,7 @@
   const apps: Application[] = client
     .getModel()
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
+    .filter((it) => isAllowedToRole(it.accessLevel, account))
 
   let panelInstance: PanelInstance
   let popupInstance: Popup
@@ -195,6 +196,7 @@
     (res) => {
       tabs = res
       tabsStore.set(tabs)
+      if (account.role === AccountRole.ReadOnlyGuest) return
       if (!areTabsLoaded) {
         void initCurrentTab(tabs)
         areTabsLoaded = true
@@ -264,6 +266,7 @@
   })
 
   const workspaceId = $location.path[1]
+
   const inboxClient = InboxNotificationsClientImpl.createClient()
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
@@ -469,9 +472,14 @@
 
     if (currentAppAlias !== app) {
       clear(1)
-      currentApplication = await client.findOne<Application>(workbench.class.Application, { alias: app })
-      currentAppAlias = currentApplication?.alias
-      navigatorModel = await buildNavModel(client, currentApplication)
+      const newApplication: Application | undefined = await client.findOne<Application>(workbench.class.Application, {
+        alias: app
+      })
+      if (newApplication?.accessLevel === undefined || hasAccountRole(account, newApplication.accessLevel)) {
+        currentApplication = newApplication
+        currentAppAlias = currentApplication?.alias
+        navigatorModel = await buildNavModel(client, currentApplication)
+      }
     }
 
     if (

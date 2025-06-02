@@ -281,6 +281,7 @@ export function createModel (builder: Builder): void {
     workbench.class.Application,
     core.space.Model,
     {
+      accessLevel: AccountRole.DocGuest,
       label: love.string.Office,
       icon: love.icon.Love,
       alias: loveId,
@@ -298,7 +299,8 @@ export function createModel (builder: Builder): void {
       label: love.string.Office,
       type: WidgetType.Fixed,
       icon: love.icon.Love,
-      component: love.component.LoveWidget
+      component: love.component.LoveWidget,
+      accessLevel: AccountRole.DocGuest
     },
     love.ids.LoveWidget
   )

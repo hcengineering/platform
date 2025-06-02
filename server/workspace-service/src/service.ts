@@ -52,6 +52,7 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
+  setDBExtraOptions,
   shutdownPostgres
 } from '@hcengineering/postgres'
 import { doBackupWorkspace, doRestoreWorkspace } from '@hcengineering/server-backup'
@@ -107,6 +108,7 @@ export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
 export class WorkspaceWorker {
   runningTasks: number = 0
   resolveBusy: (() => void) | null = null
+  id = randomUUID().slice(-8)
 
   constructor (
     readonly workspaceQueue: PlatformQueueProducer<QueueWorkspaceMessage>,
@@ -146,6 +148,7 @@ export class WorkspaceWorker {
     this.wakeup = this.defaultWakeup
     const token = generateToken(systemAccountUuid, undefined, { service: 'workspace' })
 
+    ctx.info(`Starting workspace service worker ${this.id} with limit ${this.limit}...`)
     ctx.info('Sending a handshake to the account service...')
     const accountClient = getAccountClient(this.accountsUrl, token)
 
@@ -158,11 +161,13 @@ export class WorkspaceWorker {
         )
         break
       } catch (err: any) {
-        ctx.error('error', { err })
+        ctx.error('error during handshake', { err })
       }
     }
 
     ctx.info('Successfully connected to the account service')
+
+    setDBExtraOptions({ connection: { application_name: `workspace-${this.id}` } })
 
     registerTxAdapterFactory('mongodb', createMongoTxAdapter)
     registerAdapterFactory('mongodb', createMongoAdapter)
@@ -187,6 +192,7 @@ export class WorkspaceWorker {
         }
       })
       if (workspace == null) {
+        // no workspaces available, sleep before another attempt
         await this.doSleep(ctx, opt)
       } else {
         void this.exec(async () => {
@@ -196,9 +202,11 @@ export class WorkspaceWorker {
             await this.doWorkspaceOperation(opContext, workspace, opt)
           } catch (err: any) {
             Analytics.handleError(err)
-            ctx.error('error', { err })
+            opContext.error('error', { err })
           }
         })
+        // sleep for a little bit to avoid bombarding the account service, also add jitter to avoid simultaneous requests from multiple workspace services
+        await new Promise((resolve) => setTimeout(resolve, Math.random() * 400 + 200))
       }
     }
   }
@@ -286,7 +294,7 @@ export class WorkspaceWorker {
 
       await this.workspaceQueue.send(ws.uuid, [workspaceEvents.created()])
     } catch (err: any) {
-      await opt.errorHandler(ws, err)
+      void opt.errorHandler(ws, err)
 
       logger.log('error', err)
 
@@ -385,7 +393,7 @@ export class WorkspaceWorker {
       })
       await this.workspaceQueue.send(ws.uuid, [workspaceEvents.upgraded()])
     } catch (err: any) {
-      await opt.errorHandler(ws, err)
+      void opt.errorHandler(ws, err)
 
       logger.log('error', err)
 
@@ -720,8 +728,10 @@ export class WorkspaceWorker {
         resolve()
         this.wakeup = this.defaultWakeup
       }
-      // sleep for 5 seconds for the next operation, or until a wakeup event
-      const sleepHandle = setTimeout(wakeup, opt.waitTimeout)
+      // sleep for N (5 by default) seconds for the next operation, or until a wakeup event
+      // add jitter to avoid simultaneous requests from multiple workspace services
+      const maxJitter = opt.waitTimeout * 0.2
+      const sleepHandle = setTimeout(wakeup, opt.waitTimeout + Math.random() * maxJitter)
 
       this.wakeup = () => {
         clearTimeout(sleepHandle)

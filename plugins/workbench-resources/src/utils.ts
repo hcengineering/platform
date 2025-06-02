@@ -17,6 +17,7 @@
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import type {
   Account,
+  AccountRole,
   Class,
   Client,
   Doc,
@@ -141,9 +142,9 @@ export async function doNavigate (
   }
 }
 
-export function isAppAllowed (app: Application, acc: Account): boolean {
-  if (app.accessLevel === undefined) return true
-  return hasAccountRole(acc, app.accessLevel)
+export function isAllowedToRole (role: AccountRole | undefined, acc: Account): boolean {
+  if (role === undefined) return true
+  return hasAccountRole(acc, role)
 }
 
 export async function hideApplication (app: Application): Promise<void> {

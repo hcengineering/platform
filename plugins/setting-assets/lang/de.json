@@ -67,6 +67,7 @@
     "WorkspaceSettings": "Arbeitsbereich-Einstellungen",
     "Select": "Auswählen",
     "AddOwner": "Eigentümer hinzufügen",
+    "ReadonlyGuest": "Nur Lesen",
     "User": "Benutzer",
     "Maintainer": "Betreuer",
     "Owner": "Eigentümer",
@@ -157,6 +158,8 @@
     "IntegrationFailed": "Integration konnte nicht erstellt werden",
     "IntegrationError": "Bitte versuchen Sie es erneut oder wenden Sie sich an den Support, wenn das Problem weiterhin besteht",
     "EmailIsUsed": "E-Mail-Adresse wird in einem anderen Konto verwendet",
-    "Customize": "Anpassen"
+    "Customize": "Anpassen",
+    "GuestAccess": "Anonyme Gäste",
+    "GuestAccessDescription": "Ermöglicht anonymen Benutzern den schreibgeschützten Zugriff auf den Arbeitsbereich"
   }
 }

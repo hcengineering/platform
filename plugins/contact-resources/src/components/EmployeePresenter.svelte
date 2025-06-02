@@ -4,7 +4,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import ui, { IconSize } from '@hcengineering/ui'
-  import { PersonLabelTooltip, personByIdStore } from '..'
+  import { personByIdStore, PersonLabelTooltip } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import contact from '../plugin'
   import { getPreviewPopup } from './person/utils'

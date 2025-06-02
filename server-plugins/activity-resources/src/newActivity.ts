@@ -75,7 +75,8 @@ async function createMessages (
   for (const data of result) {
     void api.event(
       {
-        account: systemAccount
+        // TODO: We should decide what to do with communications package and remove this workaround
+        account: systemAccount as any
       },
       {
         type: MessageRequestEventType.CreateMessage,

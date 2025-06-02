@@ -67,6 +67,7 @@
     "WorkspaceSettings": "Workspace settings",
     "Select": "Select",
     "AddOwner": "Add owner",
+    "ReadonlyGuest": "Readonly",
     "User": "User",
     "Maintainer": "Maintainer",
     "Owner": "Owner",
@@ -157,6 +158,8 @@
     "IntegrationFailed": "Failed to create integration",
     "IntegrationError": "Please try again or contact support if the problem persists",
     "EmailIsUsed": "Email address is already used by another account",
-    "Customize": "Customize"
+    "Customize": "Customize",
+    "GuestAccess": "Anonymous guests",
+    "GuestAccessDescription": "Allows anonymous users to visit your workspace in read-only mode"
   }
 }

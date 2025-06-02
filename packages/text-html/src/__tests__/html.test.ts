@@ -431,6 +431,87 @@ const tests: Array<{ name: string, markup: object, html: string }> = [
       ]
     },
     html: '<p>hello <span data-type="reference" data-id="64708c79c8f2613474dea38b" data-objectclass="contact:class:Person" data-label="John Doe">@John Doe</span></p>'
+  },
+  {
+    name: 'embed',
+    markup: {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          attrs: {
+            textAlign: null
+          },
+          content: [
+            {
+              type: 'text',
+              text: 'hello '
+            },
+            {
+              type: 'embed',
+              attrs: {
+                src: 'http://localhost/embed'
+              }
+            }
+          ]
+        }
+      ]
+    },
+    html: '<p>hello <a href="http://localhost/embed" data-type="embed">http://localhost/embed</a></p>'
+  },
+  {
+    name: 'embed-uri-escape',
+    markup: {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          attrs: {
+            textAlign: null
+          },
+          content: [
+            {
+              type: 'text',
+              text: 'hello '
+            },
+            {
+              type: 'embed',
+              attrs: {
+                src: 'http://localhost/embed spaces'
+              }
+            }
+          ]
+        }
+      ]
+    },
+    html: '<p>hello <a href="http://localhost/embed%20spaces" data-type="embed">http://localhost/embed spaces</a></p>'
+  },
+  {
+    name: 'embed-html-escape',
+    markup: {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          attrs: {
+            textAlign: null
+          },
+          content: [
+            {
+              type: 'text',
+              text: 'hello '
+            },
+            {
+              type: 'embed',
+              attrs: {
+                src: 'http://localhost/embed<html>'
+              }
+            }
+          ]
+        }
+      ]
+    },
+    html: '<p>hello <a href="http://localhost/embed%3Chtml%3E" data-type="embed">http://localhost/embed&lt;html&gt;</a></p>'
   }
 ]
 

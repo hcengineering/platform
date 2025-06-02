@@ -74,6 +74,8 @@ export interface Widget extends Doc {
 
   closeIfNoTabs?: boolean
   onTabClose?: Resource<(tab: WidgetTab) => Promise<void>>
+
+  accessLevel?: AccountRole
 }
 
 /** @public */

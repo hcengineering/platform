@@ -143,7 +143,9 @@ export const uis = plugin(uiId, {
     Language: '' as IntlString,
     DaysWOValue: '' as IntlString,
     WeeksWOValue: '' as IntlString,
-    MonthsWOValue: '' as IntlString
+    MonthsWOValue: '' as IntlString,
+
+    ReadOnlyModeWarning: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,

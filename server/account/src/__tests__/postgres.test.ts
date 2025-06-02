@@ -577,6 +577,7 @@ describe('PostgresAccountDB', () => {
             uuid: workspaceId,
             name: 'Test',
             url: 'test',
+            allowReadOnlyGuest: false,
             created_on: '1234567890000',
             status: {
               mode: 'active',
@@ -597,6 +598,7 @@ describe('PostgresAccountDB', () => {
           uuid: workspaceId,
           name: 'Test',
           url: 'test',
+          allowReadOnlyGuest: false,
           createdOn: 1234567890000,
           status: {
             mode: 'active',

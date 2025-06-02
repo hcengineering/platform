@@ -451,7 +451,8 @@ export class ClientSession implements Session {
   private getCommunicationCtx (): CommunicationSession {
     return {
       sessionId: this.sessionId,
-      account: this.account
+      // TODO: We should decide what to do with communications package and remove this workaround
+      account: this.account as any
     }
   }
 }

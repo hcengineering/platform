@@ -1098,6 +1098,7 @@ describe('account utils', () => {
       const mockWorkspace = {
         uuid: 'workspace-uuid' as WorkspaceUuid,
         url: workspaceUrl,
+        allowReadOnlyGuest: false,
         region: 'us',
         dataId: 'test-data-id'
       }
@@ -1936,7 +1937,8 @@ describe('account utils', () => {
     const mockWorkspace: Workspace = {
       uuid: 'test-workspace-uuid' as WorkspaceUuid,
       name: 'Test Workspace',
-      url: 'test-workspace'
+      url: 'test-workspace',
+      allowReadOnlyGuest: false
     }
 
     test('should generate invite email content', async () => {
