@@ -175,6 +175,8 @@
     "utf-8-validate": "^6.0.4",
     "msgpackr": "^1.11.2",
     "msgpackr-extract": "^3.0.3",
-    "@hcengineering/kafka": "^0.6.0"
+    "@hcengineering/kafka": "^0.6.0",
+    "@hcengineering/api-client": "^0.6.0",
+    "@faker-js/faker": "^8.4.1"
   }
 }

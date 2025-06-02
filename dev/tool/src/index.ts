@@ -34,7 +34,7 @@ import {
   createStorageBackupStorage,
   restore
 } from '@hcengineering/server-backup'
-import serverClientPlugin, { getAccountClient } from '@hcengineering/server-client'
+import serverClientPlugin, { getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import {
   registerAdapterFactory,
   registerDestroyFactory,
@@ -47,6 +47,7 @@ import {
 import serverToken, { generateToken } from '@hcengineering/server-token'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 
+import { faker } from '@faker-js/faker'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
@@ -56,7 +57,10 @@ import {
   AccountRole,
   MeasureMetricsContext,
   metricsToString,
+  SocialIdType,
+  systemAccountEmail,
   systemAccountUuid,
+  type AccountUuid,
   type Data,
   type Doc,
   type PersonId,
@@ -93,17 +97,19 @@ import { getAccountDBUrl, getKvsUrl, getMongoDBUrl } from './__start'
 // import { fillGithubUsers, fixAccountEmails, renameAccount } from './account'
 import { changeConfiguration } from './configuration'
 
-import { performGithubAccountMigrations } from './github'
-import {
-  migrateCreatedModifiedBy,
-  ensureGlobalPersonsForLocalAccounts,
-  moveAccountDbFromMongoToPG,
-  migrateMergedAccounts,
-  filterMergedAccountsInMembers
-} from './db'
-import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
-import { performGmailAccountMigrations } from './gmail'
 import { performCalendarAccountMigrations } from './calendar'
+import {
+  ensureGlobalPersonsForLocalAccounts,
+  filterMergedAccountsInMembers,
+  migrateCreatedModifiedBy,
+  migrateMergedAccounts,
+  moveAccountDbFromMongoToPG
+} from './db'
+import { performGithubAccountMigrations } from './github'
+import { performGmailAccountMigrations } from './gmail'
+import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
+
+import { createRestClient } from '@hcengineering/api-client'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -189,7 +195,6 @@ export function devTool (
       console.error(err)
     }
     closeAccountsDb()
-    console.log(`closing database connection to '${uri}'...`)
     await shutdownMongo()
   }
 
@@ -1659,13 +1664,43 @@ export function devTool (
   //   })
   // })
 
-  // program
-  // .command('generate-token <name> <workspace>')
-  // .description('generate token')
-  // .option('--admin', 'Generate token with admin access', false)
-  // .action(async (name: string, workspace: string, opt: { admin: boolean }) => {
-  //   console.log(generateToken(name, getWorkspaceId(workspace), { ...(opt.admin ? { admin: 'true' } : {}) }))
-  // })
+  program
+    .command('generate-token <name> <workspace>')
+    .description('generate token')
+    .option('--admin', 'Generate token with admin access', false)
+    .action(async (name: string, workspace: string, opt: { admin: boolean }) => {
+      await withAccountDatabase(async (db) => {
+        if (name === systemAccountEmail) {
+          name = systemAccountUuid
+        }
+        const wsByUrl = await db.workspace.findOne({ url: workspace })
+        const account = await db.socialId.findOne({ key: name })
+        console.log(
+          generateToken(account?.personUuid ?? (name as AccountUuid), wsByUrl?.uuid ?? (workspace as WorkspaceUuid), {
+            ...(opt.admin ? { admin: 'true' } : {})
+          })
+        )
+      })
+    })
+
+  program
+    .command('generate-persons <workspace>')
+    .description('generate a random persons into workspace')
+    .option('--admin', 'Generate token with admin access', false)
+    .option('--count <count>', 'Number of persons to generate', '1000')
+    .action(async (workspace: string, opt: { admin: boolean, count: string }) => {
+      const count = parseInt(opt.count)
+      const token = generateToken(systemAccountUuid, workspace as WorkspaceUuid, {
+        ...(opt.admin ? { admin: 'true', service: 'tool' } : { service: 'tool' })
+      })
+      const endpoint = await getTransactorEndpoint(token, 'external')
+      const client = createRestClient(endpoint, workspace, token)
+      for (let i = 0; i < count; i++) {
+        const email = `${faker.internet.email()}`
+        await client.ensurePerson(SocialIdType.EMAIL, email, faker.person.firstName(), faker.person.lastName())
+      }
+    })
+
   // program
   // .command('decode-token <token>')
   // .description('decode token')
