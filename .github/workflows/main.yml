@@ -408,7 +408,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: profiling
+          name: profiling-pg
           path: ./tests/profiles
       - name: 'Store docker logs'
         if: always()
