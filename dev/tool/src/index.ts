@@ -110,6 +110,9 @@ import { performGmailAccountMigrations } from './gmail'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 
 import { createRestClient } from '@hcengineering/api-client'
+import { mkdir, writeFile } from 'fs/promises'
+import { basename } from 'path'
+import { existsSync } from 'fs'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -1681,6 +1684,33 @@ export function devTool (
           })
         )
       })
+    })
+  program
+    .command('profile <endpoint> <mode>')
+    .description('Enable or disable profiling')
+    .option('-o, --output <output>', 'Output file', 'profile.cpuprofile')
+    .action(async (endpoint: string, mode: string, opt: { output: string }) => {
+      const token = generateToken(systemAccountUuid, '' as WorkspaceUuid, { admin: 'true' })
+      if (mode === 'start') {
+        await fetch(`${endpoint}/api/v1/manage?token=${token}&operation=profile-start`, {
+          method: 'PUT'
+        })
+      } else {
+        const resp = await fetch(`${endpoint}/api/v1/manage?token=${token}&operation=profile-stop`, {
+          method: 'PUT'
+        })
+        if (resp.ok) {
+          const bdir = basename(opt.output)
+          if (existsSync(bdir)) {
+            await mkdir(bdir, { recursive: true })
+          }
+          const bytes = await resp.bytes()
+          console.log('writing to', opt.output)
+          await writeFile(opt.output, bytes, { encoding: 'binary' })
+        } else {
+          console.error('failed to stop profile', resp.headers)
+        }
+      }
     })
 
   program
