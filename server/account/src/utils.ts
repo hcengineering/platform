@@ -66,7 +66,11 @@ import { isAdminEmail } from './admin'
 export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
 export const READONLY_GUEST_ACCOUNT = '83bbed9a-0867-4851-be32-31d49d1d42ce'
 
-export async function getAccountDB (uri: string, dbNs?: string): Promise<[AccountDB, () => void]> {
+export async function getAccountDB (
+  uri: string,
+  dbNs?: string,
+  appName: string = 'account'
+): Promise<[AccountDB, () => void]> {
   const isMongo = uri.startsWith('mongodb://')
 
   if (isMongo) {
@@ -85,7 +89,7 @@ export async function getAccountDB (uri: string, dbNs?: string): Promise<[Accoun
   } else {
     setDBExtraOptions({
       connection: {
-        application_name: 'account'
+        application_name: appName
       }
     })
     const client = getDBClient(sharedPipelineContextVars, uri)
