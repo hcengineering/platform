@@ -318,9 +318,8 @@ export function getDBClient (
       database,
       max: 10,
       min: 2,
-      connect_timeout: 10,
-      idle_timeout: 30,
-      max_lifetime: 300,
+      connect_timeout: 30,
+      idle_timeout: 0,
       transform: {
         undefined: null
       },

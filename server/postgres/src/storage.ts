@@ -139,12 +139,12 @@ class ConnectionInfo {
     readonly managed: boolean
   ) {}
 
-  async withReserve (reserveOrPool: boolean, action: (reservedClient: DBClient) => Promise<any>): Promise<any> {
+  async withReserve (action: (reservedClient: DBClient) => Promise<any>): Promise<any> {
     let reserved: DBClient | undefined
 
     // Check if we have at least one available connection and reserve one more if required.
     if (this.available.length === 0) {
-      if (reserveOrPool) {
+      if (this.managed) {
         reserved = await this.client.reserve()
       }
     } else {
@@ -164,23 +164,11 @@ class ConnectionInfo {
         } catch (err: any) {
           console.error('failed to release', err)
         }
-      } else {
-        // after use we put into available
-        if (reserved !== undefined) {
+      } else if (reserved !== undefined) {
+        if (this.available.length > 0) {
+          reserved?.release()
+        } else {
           this.available.push(reserved)
-        }
-
-        if (this.available.length > 1) {
-          // We need to release any >= 1
-          const toRelease = this.available.splice(1, this.available.length - 1)
-
-          for (const r of toRelease) {
-            try {
-              r.release()
-            } catch (err: any) {
-              console.error('failed to relase', err)
-            }
-          }
         }
       }
     }
@@ -212,7 +200,7 @@ class ConnectionMgr {
 
     try {
       while (true) {
-        const retry: boolean | Error = await connection.withReserve(true, async (client) => {
+        const retry: boolean | Error = await connection.withReserve(async (client) => {
           tries++
           try {
             await client.execute('BEGIN;')
@@ -261,7 +249,7 @@ class ConnectionMgr {
 
     try {
       while (true) {
-        const retry: false | { result: any } | Error = await connection.withReserve(false, async (client) => {
+        const retry: false | { result: any } | Error = await connection.withReserve(async (client) => {
           tries++
           try {
             return { result: await fn(client) }
