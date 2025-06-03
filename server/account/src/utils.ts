@@ -143,7 +143,7 @@ export function wrap (
   ): Promise<any> {
     return await accountMethod(ctx, db, branding, token, { ...request.params }, meta)
       .then((result) => ({ id: request.id, result }))
-      .catch((err) => {
+      .catch((err: Error) => {
         const status =
           err instanceof PlatformError
             ? err.status
@@ -158,9 +158,9 @@ export function wrap (
 
         if (status.code === platform.status.InternalServerError) {
           Analytics.handleError(err)
-          ctx.error('error', { status, err })
+          ctx.error('Error while processing account method', { method: accountMethod.name, status, origErr: err })
         } else {
-          ctx.error('error', { status })
+          ctx.error('Error while processing account method', { method: accountMethod.name, status })
         }
 
         return {
