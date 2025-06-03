@@ -117,7 +117,6 @@ export class StorageExtension implements Extension {
   }
 
   async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
-    console.log('onStoreDocument', { context, documentName })
     const { ctx } = this.configuration
     const { connectionId } = context
 
@@ -139,7 +138,6 @@ export class StorageExtension implements Extension {
   }
 
   async onDisconnect ({ context, documentName, document }: withContext<onDisconnectPayload>): Promise<any> {
-    console.log('onDisconnect', { context, documentName })
     const { ctx } = this.configuration
     const { connectionId } = context
 
