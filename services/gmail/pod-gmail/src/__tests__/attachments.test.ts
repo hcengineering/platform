@@ -40,8 +40,7 @@ describe('AttachmentHandler', () => {
     error: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
-    end: jest.fn(),
-    getParams: jest.fn()
+    end: jest.fn()
   }
   const mockWorkspaceLoginInfo: WorkspaceLoginInfo = {
     endpoint: 'wss://test-endpoint.com',

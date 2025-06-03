@@ -16,7 +16,7 @@ import { Producer } from 'kafkajs'
 
 import { WorkspaceLoginInfo } from '@hcengineering/account-client'
 import { type Card } from '@hcengineering/card'
-import { MessageType } from '@hcengineering/communication-types'
+import { MessageID, MessageType } from '@hcengineering/communication-types'
 import chat from '@hcengineering/chat'
 import { PersonSpace } from '@hcengineering/contact'
 import {
@@ -25,20 +25,25 @@ import {
   type PersonId,
   type Ref,
   type TxOperations,
-  Doc,
+  AccountUuid,
   generateId,
-  RateLimiter,
-  Space
+  RateLimiter
 } from '@hcengineering/core'
-import mail from '@hcengineering/mail'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import { MessageRequestEventType } from '@hcengineering/communication-sdk-types'
+import {
+  AddCollaboratorsEvent,
+  MessageRequestEventType,
+  CreateFileEvent,
+  CreateMessageEvent,
+  CreateThreadEvent,
+  NotificationRequestEventType
+} from '@hcengineering/communication-sdk-types'
 import { generateMessageId } from '@hcengineering/communication-shared'
 
 import { BaseConfig, type Attachment } from './types'
-import { EmailMessage, MailRecipient } from './types'
+import { EmailMessage, MailRecipient, MessageData } from './types'
 import { getMdContent } from './utils'
 import { PersonCacheFactory } from './person'
 import { PersonSpacesCacheFactory } from './personSpaces'
@@ -161,8 +166,7 @@ export async function createMessages (
           subject,
           content,
           attachedBlobs,
-          person.email,
-          person.socialId,
+          person,
           message.sendOn,
           channelCache,
           replyTo
@@ -188,8 +192,7 @@ async function saveMessageToSpaces (
   subject: string,
   content: string,
   attachments: Attachment[],
-  me: string,
-  owner: PersonId,
+  recipient: MailRecipient,
   createdDate: number,
   channelCache: ChannelCache,
   inReplyTo?: string
@@ -198,8 +201,6 @@ async function saveMessageToSpaces (
   for (const space of spaces) {
     const spaceId = space._id
     await rateLimiter.add(async () => {
-      ctx.info('Saving message to space', { mailId, space: spaceId })
-
       let threadId = await threadLookup.getThreadId(mailId, spaceId)
       if (threadId !== undefined) {
         ctx.info('Message is already in the thread, skip', { mailId, threadId, spaceId })
@@ -208,13 +209,9 @@ async function saveMessageToSpaces (
 
       if (inReplyTo !== undefined) {
         threadId = await threadLookup.getParentThreadId(inReplyTo, spaceId)
-        if (threadId !== undefined) {
-          ctx.info('Found existing thread', { mailId, threadId, spaceId })
-        }
       }
-      let channel: Ref<Doc<Space>> | undefined
+      const channel = await channelCache.getOrCreateChannel(spaceId, participants, recipient.email, recipient.socialId)
       if (threadId === undefined) {
-        channel = await channelCache.getOrCreateChannel(spaceId, participants, me, owner)
         const newThreadId = await client.createDoc(
           chat.masterTag.Thread,
           space._id,
@@ -233,78 +230,143 @@ async function saveMessageToSpaces (
           createdDate,
           modifiedBy
         )
-        await client.createMixin(
-          newThreadId,
-          chat.masterTag.Thread,
-          space._id,
-          mail.tag.MailThread,
-          {},
-          createdDate,
-          owner
-        )
         threadId = newThreadId as Ref<Card>
-        ctx.info('Created new thread', { mailId, threadId, spaceId })
       }
 
-      const messageId = generateMessageId()
       const created = new Date(createdDate)
 
-      const messageData = Buffer.from(
-        JSON.stringify({
-          type: MessageRequestEventType.CreateMessage,
-          messageType: MessageType.Message,
-          card: threadId,
-          cardType: chat.masterTag.Thread,
-          content,
-          creator: modifiedBy,
-          created,
-          id: messageId
-        })
-      )
-      await producer.send({
-        topic: config.CommunicationTopic,
-        messages: [
-          {
-            key: Buffer.from(channel ?? spaceId),
-            value: messageData,
-            headers: {
-              WorkspaceUuid: wsInfo.workspace
-            }
-          }
-        ]
-      })
-      ctx.info('Send message event', { mailId, messageId, threadId })
+      const messageData: MessageData = {
+        subject,
+        content,
+        channel,
+        created,
+        modifiedBy,
+        mailId,
+        spaceId,
+        threadId,
+        workspace: wsInfo.workspace,
+        recipient
+      }
 
-      const fileData: Buffer[] = attachments.map((a) =>
-        Buffer.from(
-          JSON.stringify({
-            type: MessageRequestEventType.CreateFile,
-            card: threadId,
-            message: messageId,
-            messageCreated: created,
-            blobId: a.id as Ref<Blob>,
-            fileType: a.contentType,
-            filename: a.name,
-            size: a.data.length,
-            creator: modifiedBy
-          })
-        )
-      )
-      const fileEvents = fileData.map((data) => ({
-        key: Buffer.from(channel ?? spaceId),
-        value: data,
-        headers: {
-          WorkspaceUuid: wsInfo.workspace
-        }
-      }))
-      await producer.send({
-        topic: config.CommunicationTopic,
-        messages: fileEvents
-      })
-      ctx.info('Send file events', { mailId, messageId, threadId, count: fileEvents.length })
+      const messageId = await createMailMessage(producer, config, messageData)
+      await addCollaborators(producer, config, messageData, threadId)
+      await createMailThread(producer, config, messageData, messageId)
+      await createFiles(producer, config, attachments, messageData, threadId, messageId)
 
       await threadLookup.setThreadId(mailId, space._id, threadId)
     })
   }
   await rateLimiter.waitProcessing()
+}
+
+async function createMailThread (
+  producer: Producer,
+  config: BaseConfig,
+  data: MessageData,
+  messageId: MessageID
+): Promise<void> {
+  const threadEvent: CreateThreadEvent = {
+    type: MessageRequestEventType.CreateThread,
+    card: data.channel,
+    message: messageId,
+    messageCreated: data.created,
+    thread: data.threadId,
+    threadType: chat.masterTag.Thread
+  }
+  const thread = Buffer.from(JSON.stringify(threadEvent))
+  await sendToCommunicationTopic(producer, config, data, thread)
+}
+
+async function createMailMessage (producer: Producer, config: BaseConfig, data: MessageData): Promise<MessageID> {
+  const messageId = generateMessageId()
+  const createMessageEvent: CreateMessageEvent = {
+    type: MessageRequestEventType.CreateMessage,
+    messageType: MessageType.Message,
+    card: data.channel,
+    cardType: chat.masterTag.Thread,
+    content: data.content,
+    creator: data.modifiedBy,
+    created: data.created,
+    id: messageId
+  }
+  const createMessageData = Buffer.from(JSON.stringify(createMessageEvent))
+  await sendToCommunicationTopic(producer, config, data, createMessageData)
+  return messageId
+}
+
+async function createFiles (
+  producer: Producer,
+  config: BaseConfig,
+  attachments: Attachment[],
+  messageData: MessageData,
+  threadId: Ref<Card>,
+  messageId: MessageID
+): Promise<void> {
+  const fileData: Buffer[] = attachments.map((a) => {
+    const creeateFileEvent: CreateFileEvent = {
+      type: MessageRequestEventType.CreateFile,
+      card: threadId,
+      message: messageId,
+      messageCreated: messageData.created,
+      creator: messageData.modifiedBy,
+      data: {
+        blobId: a.id as Ref<Blob>,
+        type: a.contentType,
+        filename: a.name,
+        size: a.data.length
+      }
+    }
+    return Buffer.from(JSON.stringify(creeateFileEvent))
+  })
+  const fileEvents = fileData.map((data) => ({
+    key: Buffer.from(messageData.channel ?? messageData.spaceId),
+    value: data,
+    headers: {
+      WorkspaceUuid: messageData.workspace
+    }
+  }))
+  await producer.send({
+    topic: config.CommunicationTopic,
+    messages: fileEvents
+  })
+}
+
+async function addCollaborators (
+  producer: Producer,
+  config: BaseConfig,
+  data: MessageData,
+  threadId: Ref<Card>
+): Promise<void> {
+  if (data.recipient.socialId === data.modifiedBy) {
+    return // Message author should be automatically added as a collaborator
+  }
+  const addCollaboratorsEvent: AddCollaboratorsEvent = {
+    type: NotificationRequestEventType.AddCollaborators,
+    card: threadId,
+    cardType: chat.masterTag.Thread,
+    collaborators: [data.recipient.uuid as AccountUuid],
+    creator: data.modifiedBy
+  }
+  const createMessageData = Buffer.from(JSON.stringify(addCollaboratorsEvent))
+  await sendToCommunicationTopic(producer, config, data, createMessageData)
+}
+
+async function sendToCommunicationTopic (
+  producer: Producer,
+  config: BaseConfig,
+  messageData: MessageData,
+  content: Buffer
+): Promise<void> {
+  await producer.send({
+    topic: config.CommunicationTopic,
+    messages: [
+      {
+        key: Buffer.from(messageData.channel ?? messageData.spaceId),
+        value: content,
+        headers: {
+          WorkspaceUuid: messageData.workspace
+        }
+      }
+    ]
+  })
 }
