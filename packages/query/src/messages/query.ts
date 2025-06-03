@@ -16,6 +16,7 @@
 import {
   type FindMessagesGroupsParams,
   type FindMessagesParams,
+  type LinkPreview,
   type Message,
   type MessageID,
   type MessagesGroup,
@@ -23,8 +24,10 @@ import {
   type ParsedFile,
   type Patch,
   PatchType,
+  type Reaction,
   SortingOrder,
-  type WorkspaceID
+  type WorkspaceID,
+  type File
 } from '@hcengineering/communication-types'
 import {
   type CardRemovedEvent,
@@ -92,6 +95,11 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     hasGroups: true,
     buffer: [] as Message[]
   }
+
+  private createdFiles: Map<MessageID, File[]> = new Map()
+  private createdReactions: Map<MessageID, Reaction[]> = new Map()
+  private createdLinkPreviews: Map<MessageID, LinkPreview[]> = new Map()
+  private createdPatches: Map<MessageID, Patch[]> = new Map()
 
   private readonly tmpMessages = new Map<string, MessageID>()
   private isCardRemoved = false
@@ -258,7 +266,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
             await this.notify()
           }
         } else {
-          const updatedMessage = { ...tmpMessage, id: resultId }
+          const updatedMessage = this.fillMessage({ ...tmpMessage, id: resultId })
           this.result.delete(tmpId)
 
           this.insertMessage(this.result, updatedMessage)
@@ -802,14 +810,35 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     })
   }
 
+  private fillMessage(origin: Message): Message {
+    let message = origin
+    if (this.params.files === true) {
+      message.files = this.createdFiles.get(message.id) ?? []
+    }
+    if (this.params.reactions === true) {
+      message.reactions = this.createdReactions.get(message.id) ?? []
+    }
+    if (this.params.links === true) {
+      message.links = this.createdLinkPreviews.get(message.id) ?? []
+    }
+    const patches = this.createdPatches.get(message.id) ?? []
+    message = applyPatches(message, patches)
+    return message
+  }
+
   private async onMessageCreatedEvent(event: MessageCreatedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
     if (this.params.card !== event.message.card) return
-    const { message } = event
+    let message = event.message
     const exists = this.result.get(message.id)
 
-    if (exists !== undefined) return
+    if (exists !== undefined) {
+      this.cleanCache(message.id)
+      return
+    }
     if (!this.match(message)) return
+
+    message = this.fillMessage(message)
 
     if (this.result.isTail()) {
       const eventId = event._id
@@ -843,11 +872,21 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       }
       await this.notify()
     }
+    this.cleanCache(message.id)
+  }
+
+  private cleanCache(message: MessageID): void {
+    this.createdFiles.delete(message)
+    this.createdReactions.delete(message)
+    this.createdLinkPreviews.delete(message)
+    this.createdPatches.delete(message)
   }
 
   private async onPatchCreatedEvent(event: PatchCreatedEvent): Promise<void> {
     if (this.params.card !== event.card) return
     if (!this.isAllowedPatch(event.patch.type)) return
+    const current = this.createdPatches.get(event.patch.message) ?? []
+    this.createdPatches.set(event.patch.message, [...current, event.patch])
     if (this.result instanceof Promise) this.result = await this.result
 
     const { patch } = event
@@ -870,9 +909,10 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   private async onReactionCreatedEvent(event: ReactionCreatedEvent): Promise<void> {
-    if (this.params.reactions !== true) return
+    if (this.params.reactions !== true || this.params.card !== event.card) return
+    const current = this.createdReactions.get(event.message) ?? []
+    this.createdReactions.set(event.message, [...current, event.reaction])
     if (this.result instanceof Promise) this.result = await this.result
-    if (this.params.card !== event.card) return
 
     const reaction = {
       ...event.reaction,
@@ -896,9 +936,11 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   private async onReactionRemovedEvent(event: ReactionRemovedEvent): Promise<void> {
-    if (this.params.reactions !== true) return
+    if (this.params.reactions !== true || this.params.card !== event.card) return
+    const current = this.createdReactions.get(event.message) ?? []
+    const reactions = current.filter((it) => it.reaction !== event.reaction || it.creator !== event.creator)
+    this.createdReactions.set(event.message, reactions)
     if (this.result instanceof Promise) this.result = await this.result
-    if (this.params.card !== event.card) return
 
     const message = this.result.get(event.message)
     if (message !== undefined) {
@@ -916,8 +958,20 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     )
   }
 
+  private updateFilesCache(message: MessageID, files: File[]): void {
+    const filesCache = this.createdFiles.get(message) ?? []
+    this.createdFiles.set(message, filesCache)
+    for (const file of files) {
+      const current = filesCache.find((it) => it.blobId === file.blobId)
+      if (current === undefined) {
+        filesCache.push(file)
+      }
+    }
+  }
+
   private async onFileCreatedEvent(event: FileCreatedEvent): Promise<void> {
     if (this.params.files !== true || event.card !== this.params.card) return
+    this.updateFilesCache(event.message, [event.file])
     if (this.result instanceof Promise) this.result = await this.result
 
     const { file } = event
@@ -942,6 +996,8 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   private async onLinkPreviewCreatedEvent(event: LinkPreviewCreatedEvent): Promise<void> {
     if (this.params.links !== true || this.params.card !== event.card) return
+    const current = this.createdLinkPreviews.get(event.message) ?? []
+    this.createdLinkPreviews.set(event.message, [...current, event.linkPreview])
     if (this.result instanceof Promise) this.result = await this.result
     const message = this.result.get(event.message)
     const { linkPreview } = event
@@ -965,6 +1021,9 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   private async onLinkPreviewRemovedEvent(event: LinkPreviewRemovedEvent): Promise<void> {
     if (this.params.links !== true || this.params.card !== event.card) return
+    const current = this.createdLinkPreviews.get(event.message) ?? []
+    const linkPreviews = current.filter((it) => it.id !== event.id)
+    this.createdLinkPreviews.set(event.message, linkPreviews)
     if (this.result instanceof Promise) this.result = await this.result
     const message = this.result.get(event.message)
     if (message !== undefined) {
@@ -986,6 +1045,9 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   private async onFileRemovedEvent(event: FileRemovedEvent): Promise<void> {
     if (this.params.files !== true) return
     if (this.params.card !== event.card) return
+    const current = this.createdFiles.get(event.message) ?? []
+    const files = current.filter((it) => it.blobId !== event.blobId)
+    this.createdFiles.set(event.message, files)
     if (this.result instanceof Promise) this.result = await this.result
 
     const message = this.result.get(event.message)
