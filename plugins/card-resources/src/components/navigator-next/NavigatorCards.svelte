@@ -56,7 +56,7 @@
     },
     {
       lookup: {
-        attachedTo: [cardPlugin.class.Card, { parent: cardPlugin.class.Card }]
+        attachedTo: cardPlugin.class.Card
       }
     }
   )

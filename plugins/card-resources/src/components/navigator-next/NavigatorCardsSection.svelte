@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { Card, CardSpace, FavoriteCard, MasterTag } from '@hcengineering/card'
-  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Ref, SortingOrder } from '@hcengineering/core'
   import {
     createLabelsQuery,
     createNotificationContextsQuery,
@@ -26,7 +26,6 @@
   import ui, { ModernButton } from '@hcengineering/ui'
 
   import type { CardsNavigatorConfig } from '../../types'
-  import cardPlugin from '../../plugin'
   import NavigatorType from './NavigatorType.svelte'
   import NavigatorCard from './NavigatorCard.svelte'
 
@@ -45,8 +44,7 @@
   const labelsQuery = createLabelsQuery()
   const notificationContextsQuery = createNotificationContextsQuery()
 
-  let cards: WithLookup<Card>[] = []
-  let sortedCards: WithLookup<Card>[] = []
+  let cards: Card[] = []
   let contextByCard = new Map<Ref<Card>, NotificationContext>()
   let labels: Label[] = []
   let isLabelsLoaded = false
@@ -96,10 +94,7 @@
       },
       {
         limit: limit + 1,
-        sort: sort === 'alphabetical' ? { title: SortingOrder.Ascending } : { modifiedOn: SortingOrder.Descending },
-        lookup: {
-          parent: cardPlugin.class.Card
-        }
+        sort: sort === 'alphabetical' ? { title: SortingOrder.Ascending } : { modifiedOn: SortingOrder.Descending }
       }
     )
   }

@@ -15,10 +15,10 @@
 
 <script lang="ts">
   import { Card, FavoriteCard, MasterTag } from '@hcengineering/card'
-  import core, { Class, Ref, WithLookup } from '@hcengineering/core'
+  import core, { Class, Ref } from '@hcengineering/core'
   import { getClient, IconWithEmoji } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
-  import { IconMoreV, NavItem, Action, ButtonIcon, NavGroup } from '@hcengineering/ui'
+  import { IconMoreV, NavItem, Action, ButtonIcon } from '@hcengineering/ui'
   import { NotificationContext } from '@hcengineering/communication-types'
   import view from '@hcengineering/view'
   import { showMenu } from '@hcengineering/view-resources'
@@ -28,7 +28,7 @@
   import { CardsNavigatorConfig } from '../../types'
 
   export let type: Ref<MasterTag> | undefined = undefined
-  export let card: WithLookup<Card>
+  export let card: Card
   export let context: NotificationContext | undefined = undefined
   export let favorite: FavoriteCard | undefined = undefined
   export let applicationId: string
@@ -82,8 +82,8 @@
 
   $: clazz = hierarchy.getClass(card._class) as Class<Card> & { color?: number }
 
-  function getCardTitle (card: WithLookup<Card>): string {
-    const parent = card.$lookup?.parent
+  function getCardTitle (card: Card): string {
+    const parent = card.parentInfo[card.parentInfo.length - 1]
     if (parent != null) {
       return `${card.title} (${parent.title})`
     }
