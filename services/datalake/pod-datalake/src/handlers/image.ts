@@ -90,7 +90,9 @@ export async function handleImageGet (
     tempDir.rm(tmpFile, outFile)
   }
 
+  req.on('error', cleanup)
   req.on('close', cleanup)
+  res.on('error', cleanup)
   res.on('finish', cleanup)
 
   const blob = await datalake.get(ctx, workspace, name, {})
@@ -138,7 +140,7 @@ async function runPipeline (
   let pipeline: sharp.Sharp | undefined
 
   try {
-    pipeline = sharp(inFile)
+    pipeline = sharp(inFile, { sequentialRead: true })
 
     // auto orient image based on exif to prevent resize use wrong orientation
     pipeline = pipeline.rotate()
@@ -212,25 +214,21 @@ function getImageTransformParams (accept: string, transform: string): ImageTrans
 async function writeTempFile (path: string, stream: Readable): Promise<void> {
   const outp = createWriteStream(path)
 
-  stream.pipe(outp)
-
   await new Promise<void>((resolve, reject) => {
-    stream.on('error', (err) => {
-      stream.destroy()
-      outp.destroy()
-      reject(err)
-    })
+    const cleanup = (err?: any): void => {
+      if (!stream.destroyed) stream.destroy()
+      if (!outp.destroyed) outp.destroy()
+      if (err !== undefined) reject(err)
+    }
 
-    outp.on('finish', () => {
-      stream.destroy()
-      resolve()
-    })
+    stream.on('error', cleanup)
+    outp.on('finish', resolve)
+    outp.on('error', cleanup)
 
-    outp.on('error', (err) => {
-      stream.destroy()
-      outp.destroy()
-      reject(err)
-    })
+    stream.pipe(outp)
+  }).finally(() => {
+    if (!stream.destroyed) stream.destroy()
+    if (!outp.destroyed) outp.destroy()
   })
 }
 
