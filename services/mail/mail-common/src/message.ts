@@ -200,6 +200,7 @@ async function saveMessageToSpaces (
   const rateLimiter = new RateLimiter(10)
   for (const space of spaces) {
     const spaceId = space._id
+    let isReply = false
     await rateLimiter.add(async () => {
       let threadId = await threadLookup.getThreadId(mailId, spaceId)
       if (threadId !== undefined) {
@@ -209,6 +210,7 @@ async function saveMessageToSpaces (
 
       if (inReplyTo !== undefined) {
         threadId = await threadLookup.getParentThreadId(inReplyTo, spaceId)
+        isReply = threadId !== undefined
       }
       const channel = await channelCache.getOrCreateChannel(spaceId, participants, recipient.email, recipient.socialId)
       if (threadId === undefined) {
@@ -245,12 +247,15 @@ async function saveMessageToSpaces (
         spaceId,
         threadId,
         workspace: wsInfo.workspace,
-        recipient
+        recipient,
+        isReply
       }
 
-      const messageId = await createMailMessage(producer, config, messageData)
-      await addCollaborators(producer, config, messageData, threadId)
-      await createMailThread(producer, config, messageData, messageId)
+      const messageId = await createMailMessage(producer, config, messageData, threadId)
+      if (!isReply) {
+        await addCollaborators(producer, config, messageData, threadId)
+        await createMailThread(producer, config, messageData, messageId)
+      }
       await createFiles(producer, config, attachments, messageData, threadId, messageId)
 
       await threadLookup.setThreadId(mailId, space._id, threadId)
@@ -277,12 +282,17 @@ async function createMailThread (
   await sendToCommunicationTopic(producer, config, data, thread)
 }
 
-async function createMailMessage (producer: Producer, config: BaseConfig, data: MessageData): Promise<MessageID> {
+async function createMailMessage (
+  producer: Producer,
+  config: BaseConfig,
+  data: MessageData,
+  threadId: Ref<Card>
+): Promise<MessageID> {
   const messageId = generateMessageId()
   const createMessageEvent: CreateMessageEvent = {
     type: MessageRequestEventType.CreateMessage,
     messageType: MessageType.Message,
-    card: data.channel,
+    card: data.isReply ? threadId : data.channel,
     cardType: chat.masterTag.Thread,
     content: data.content,
     creator: data.modifiedBy,

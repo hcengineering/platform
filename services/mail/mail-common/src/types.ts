@@ -72,4 +72,5 @@ export interface MessageData {
   workspace: WorkspaceUuid
   threadId: Ref<Card>
   recipient: MailRecipient
+  isReply: boolean
 }
