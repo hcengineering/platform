@@ -72,7 +72,7 @@
         } else {
           if (result.email == null) {
             console.error('No email in auto join info')
-            navigate({ path: [loginId, 'login'] })
+            navigate({ path: [loginId] })
             return
           }
 
@@ -82,7 +82,7 @@
       }
     } catch (err: any) {
       console.error('Failed to check auto join', err)
-      navigate({ path: [loginId, 'login'] })
+      navigate({ path: [loginId] })
       return
     }
 

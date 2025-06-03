@@ -1,7 +1,7 @@
 {
   "string": {
     "Setting": "设置",
-    "Spaces": "空间", 
+    "Spaces": "空间",
     "Integrations": "集成",
     "Support": "支持",
     "Privacy": "隐私",
@@ -67,6 +67,7 @@
     "WorkspaceSettings": "工作区设置",
     "Select": "选择",
     "AddOwner": "添加所有者",
+    "ReadonlyGuest": "只读",
     "User": "用户",
     "Maintainer": "维护者",
     "Owner": "所有者",
@@ -157,6 +158,8 @@
     "IntegrationFailed": "创建集成失败",
     "IntegrationError": "请重试，如果问题仍然存在，请联系客服支持",
     "EmailIsUsed": "该电子邮件地址已被其他账户使用",
-    "Customize": "自定义"
+    "Customize": "自定义",
+    "GuestAccess": "匿名访客",
+    "GuestAccessDescription": "允许匿名用户以只读模式访问工作区"
   }
 }

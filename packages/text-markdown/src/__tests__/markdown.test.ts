@@ -773,6 +773,65 @@ Lorem ipsum dolor sit amet.
           }
         ]
       }
+    },
+    {
+      name: 'embed',
+      markdown: '<a href="http://localhost/embed" data-type="embed">http:&#x2F;&#x2F;localhost&#x2F;embed</a>',
+      markup: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'embed',
+                attrs: { src: 'http://localhost/embed' },
+                content: []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      name: 'embed-uri-escape',
+      markdown:
+        '<a href="http://localhost/embed%20spaces" data-type="embed">http:&#x2F;&#x2F;localhost&#x2F;embed spaces</a>',
+      markup: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'embed',
+                attrs: { src: 'http://localhost/embed spaces' },
+                content: []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      name: 'embed-html-escape',
+      markdown:
+        '<a href="http://localhost/embed%3Chtml%3E" data-type="embed">http:&#x2F;&#x2F;localhost&#x2F;embed&lt;html&gt;</a>',
+      markup: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'embed',
+                attrs: { src: 'http://localhost/embed<html>' },
+                content: []
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 

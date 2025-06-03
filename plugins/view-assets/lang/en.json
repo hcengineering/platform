@@ -134,6 +134,8 @@
     "Tree": "Tree",
     "Document": "Document",
     "Loading": "Loading...",
-    "NoRelations": "No relations"
+    "NoRelations": "No relations",
+    "ReadOnlyWarningTitle": "Read only mode",
+    "ReadOnlyWarningMessage": "Contact the administrator to gain full access to this workspace."
   }
 }

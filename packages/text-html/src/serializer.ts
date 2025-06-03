@@ -281,6 +281,11 @@ function addNodeContent (builder: NodeBuilder, node?: MarkupNode): void {
     builder.addText('<!-- ')
     addNodes(builder, nodes)
     builder.addText(' -->')
+  } else if (node.type === MarkupNodeType.embed) {
+    const src = toString(attrs.src) ?? ''
+    builder.openTag('a', { href: encodeURI(src), 'data-type': 'embed' })
+    builder.addText(escapeHtml(src))
+    builder.closeTag('a')
   } else {
     // Handle unknown node types as div with data attribute
     builder.openTag('div', { 'data-node-type': node.type })

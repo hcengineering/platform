@@ -195,13 +195,13 @@ async function assignEmployeeRoles (client: MigrationClient): Promise<void> {
   client.logger.log('assigning roles to employees...', {})
 
   const wsMembers = await client.accountClient.getWorkspaceMembers()
-  const persons = await client.traverse<Person>(DOMAIN_CONTACT, {
+  const personsIterator = await client.traverse<Person>(DOMAIN_CONTACT, {
     _class: contact.class.Person
   })
 
   try {
     while (true) {
-      const docs = await persons.next(50)
+      const docs = await personsIterator.next(50)
       if (docs === null || docs?.length === 0) {
         break
       }
@@ -236,7 +236,7 @@ async function assignEmployeeRoles (client: MigrationClient): Promise<void> {
       }
     }
   } finally {
-    await persons.close()
+    await personsIterator.close()
     client.logger.log('finished assigning roles to employees...', {})
   }
 }
@@ -402,7 +402,7 @@ async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient): Pr
 async function createUserProfiles (client: MigrationClient): Promise<void> {
   client.logger.log('creating user profiles for persons...', {})
 
-  const persons = await client.traverse<Person>(DOMAIN_CONTACT, {
+  const personsIterator = await client.traverse<Person>(DOMAIN_CONTACT, {
     _class: contact.class.Person,
     profile: { $exists: false }
   })
@@ -418,7 +418,7 @@ async function createUserProfiles (client: MigrationClient): Promise<void> {
 
   try {
     while (true) {
-      const docs = await persons.next(200)
+      const docs = await personsIterator.next(200)
       if (docs === null || docs?.length === 0) {
         break
       }
@@ -452,7 +452,7 @@ async function createUserProfiles (client: MigrationClient): Promise<void> {
       }
     }
   } finally {
-    await persons.close()
+    await personsIterator.close()
     client.logger.log('finished creating user profiles for persons...', {})
   }
 }
@@ -460,27 +460,31 @@ async function createUserProfiles (client: MigrationClient): Promise<void> {
 async function fixSocialIdCase (client: MigrationClient): Promise<void> {
   client.logger.log('Fixing social id case...', {})
 
-  const socialIds = await client.traverse<SocialIdentity>(DOMAIN_CHANNEL, {
+  const socialIdsIterator = await client.traverse<SocialIdentity>(DOMAIN_CHANNEL, {
     _class: contact.class.SocialIdentity
   })
-
   let updated = 0
-  while (true) {
-    const docs = await socialIds.next(200)
-    if (docs === null || docs?.length === 0) {
-      break
-    }
 
-    for (const d of docs) {
-      const newKey = d.key.toLowerCase()
-      const newVal = d.value.toLowerCase()
-      if (newKey !== d.key || newVal !== d.value) {
-        await client.update(DOMAIN_CHANNEL, { _id: d._id }, { key: newKey, value: newVal })
-        updated++
+  try {
+    while (true) {
+      const docs = await socialIdsIterator.next(200)
+      if (docs === null || docs?.length === 0) {
+        break
+      }
+
+      for (const d of docs) {
+        const newKey = d.key.toLowerCase()
+        const newVal = d.value.toLowerCase()
+        if (newKey !== d.key || newVal !== d.value) {
+          await client.update(DOMAIN_CHANNEL, { _id: d._id }, { key: newKey, value: newVal })
+          updated++
+        }
       }
     }
+  } finally {
+    await socialIdsIterator.close()
+    client.logger.log('Finished fixing social id case. Total updated:', { updated })
   }
-  client.logger.log('Finished fixing social id case. Total updated:', { updated })
 }
 
 export const contactOperation: MigrateOperation = {

@@ -67,6 +67,7 @@
     "WorkspaceSettings": "ワークスペース設定",
     "Select": "選択",
     "AddOwner": "所有者を追加",
+    "ReadonlyGuest": "読み取り専用",
     "User": "ユーザー",
     "Maintainer": "メンテナー",
     "Owner": "所有者",
@@ -157,6 +158,8 @@
     "IntegrationFailed": "統合に失敗しました",
     "IntegrationError": "問題が解決しない場合は、もう一度お試しいただくか、サポートにお問い合わせください",
     "EmailIsUsed": "メールアドレスは他のアカウントで使用されています",
-    "Customize": "カスタマイズ"
+    "Customize": "カスタマイズ",
+    "GuestAccess": "匿名ゲスト",
+    "GuestAccessDescription": "匿名ユーザーがワークスペースを読み取り専用モードで閲覧できます"
   }
 }

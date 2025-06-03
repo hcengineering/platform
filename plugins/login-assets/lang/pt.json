@@ -71,6 +71,8 @@
     "SignToProceed": "Por favor, inicie sessão para continuar",
     "Proceed": "Continuar",
     "SetPasswordLater": "Vou definir uma senha mais tarde",
-    "SetPasswordNow": "Vou definir uma senha agora"
+    "SetPasswordNow": "Vou definir uma senha agora",
+    "LoginAsGuest": "Continuar como convidado",
+    "SignUpToCreateWorkspace": "Não há espaços de trabalho com acesso de convidado. Por favor, cadastre-se para criar o seu."
   }
 }

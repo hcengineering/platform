@@ -233,7 +233,9 @@ const view = plugin(viewId, {
     MasterDetail: '' as IntlString,
     Tree: '' as IntlString,
     Document: '' as IntlString,
-    Loading: '' as IntlString
+    Loading: '' as IntlString,
+    ReadOnlyWarningTitle: '' as IntlString,
+    ReadOnlyWarningMessage: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

@@ -22,33 +22,33 @@
     Class,
     type CollaborativeDoc,
     type Doc,
-    type Ref,
     generateId,
     getCurrentAccount,
-    makeDocCollabId
+    makeDocCollabId,
+    type Ref
   } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import {
     DrawingCmd,
-    KeyedAttribute,
     getAttribute,
     getClient,
     getFileUrl,
     getImageSize,
-    imageSizeToRatio
+    imageSizeToRatio,
+    KeyedAttribute
   } from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
   import {
     AnySvelteComponent,
     Button,
+    getEventPositionElement,
+    getPopupPositionElement,
     IconScribble,
     IconSize,
     Loading,
     PopupAlignment,
-    ThrottledCaller,
-    getEventPositionElement,
-    getPopupPositionElement,
-    themeStore
+    themeStore,
+    ThrottledCaller
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
@@ -83,7 +83,7 @@
   import { InlineCommentCollaborationExtension } from './extension/inlineComment'
   import { LeftMenuExtension } from './extension/leftMenu'
   import { mermaidOptions } from './extension/mermaid'
-  import { ReferenceExtension, referenceConfig } from './extension/reference'
+  import { referenceConfig, ReferenceExtension } from './extension/reference'
   import { type FileAttachFunction } from './extension/types'
   import { inlineCommandsConfig } from './extensions'
 
@@ -121,7 +121,7 @@
   const dispatch = createEventDispatcher()
 
   const account = getCurrentAccount()
-  $: isGuest = account.role === AccountRole.DocGuest
+  $: isGuest = account.role === AccountRole.DocGuest || account.role === AccountRole.ReadOnlyGuest
 
   const objectClass = object._class
   const objectId = object._id
@@ -142,7 +142,7 @@
   let remoteSynced = false
 
   $: loading = !localSynced && !remoteSynced
-  $: editable = !readonly && !contentError && remoteSynced
+  $: editable = !readonly && !contentError && remoteSynced && account.role !== AccountRole.ReadOnlyGuest
 
   void localProvider.loaded.then(() => (localSynced = true))
   void remoteProvider.loaded.then(() => (remoteSynced = true))

@@ -168,7 +168,8 @@ export async function createWorkspace (
 
       await handleWsEvent?.('create-done', version, 100, '')
     } catch (err: any) {
-      await handleWsEvent?.('ping', version, 0, `Create failed: ${err.message}`)
+      void handleWsEvent?.('ping', version, 0, `Create failed: ${err.message}`)
+      throw err
     } finally {
       await pipeline.close()
       await storageAdapter.close()
@@ -350,7 +351,7 @@ export async function upgradeWorkspaceWith (
     await handleWsEvent?.('upgrade-done', version, 100, '')
   } catch (err: any) {
     ctx.error('upgrade-failed', { message: err.message })
-    await handleWsEvent?.('ping', version, 0, `Upgrade failed: ${err.message}`)
+    void handleWsEvent?.('ping', version, 0, `Upgrade failed: ${err.message}`)
     throw err
   } finally {
     clearInterval(updateProgressHandle)
