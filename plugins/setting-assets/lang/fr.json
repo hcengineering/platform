@@ -67,6 +67,7 @@
     "WorkspaceSettings": "Paramètres de l'espace de travail",
     "Select": "Sélectionner",
     "AddOwner": "Ajouter un propriétaire",
+    "ReadonlyGuest": "Lecture seule",
     "User": "Utilisateur",
     "Maintainer": "Mainteneur",
     "Owner": "Propriétaire",
@@ -157,6 +158,8 @@
     "IntegrationFailed": "Échec de la création de l'intégration",
     "IntegrationError": "Veuillez réessayer ou contacter le support si le problème persiste",
     "EmailIsUsed": "L'adresse e-mail est déjà utilisée par un autre compte",
-    "Customize": "Personnaliser"
+    "Customize": "Personnaliser",
+    "GuestAccess": "Invités anonymes",
+    "GuestAccessDescription": "Autorise les utilisateurs anonymes à accéder à l'espace de travail en lecture seule"
   }
 }

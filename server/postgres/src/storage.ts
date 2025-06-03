@@ -139,12 +139,12 @@ class ConnectionInfo {
     readonly managed: boolean
   ) {}
 
-  async withReserve (reserveOrPool: boolean, action: (reservedClient: DBClient) => Promise<any>): Promise<any> {
+  async withReserve (action: (reservedClient: DBClient) => Promise<any>, forced: boolean = false): Promise<any> {
     let reserved: DBClient | undefined
 
     // Check if we have at least one available connection and reserve one more if required.
     if (this.available.length === 0) {
-      if (reserveOrPool) {
+      if (this.managed || forced) {
         reserved = await this.client.reserve()
       }
     } else {
@@ -164,23 +164,11 @@ class ConnectionInfo {
         } catch (err: any) {
           console.error('failed to release', err)
         }
-      } else {
-        // after use we put into available
-        if (reserved !== undefined) {
+      } else if (reserved !== undefined) {
+        if (this.available.length > 0) {
+          reserved?.release()
+        } else {
           this.available.push(reserved)
-        }
-
-        if (this.available.length > 1) {
-          // We need to release any >= 1
-          const toRelease = this.available.splice(1, this.available.length - 1)
-
-          for (const r of toRelease) {
-            try {
-              r.release()
-            } catch (err: any) {
-              console.error('failed to relase', err)
-            }
-          }
         }
       }
     }
@@ -212,7 +200,7 @@ class ConnectionMgr {
 
     try {
       while (true) {
-        const retry: boolean | Error = await connection.withReserve(true, async (client) => {
+        const retry: boolean | Error = await connection.withReserve(async (client) => {
           tries++
           try {
             await client.execute('BEGIN;')
@@ -223,7 +211,7 @@ class ConnectionMgr {
             await client.execute('ROLLBACK;')
             console.error({ message: 'failed to process tx', error: err.message, cause: err })
 
-            if (err.code !== '40001' || tries === maxTries) {
+            if (!this.isRetryableError(err) || tries === maxTries) {
               return err
             } else {
               console.log('Transaction failed. Retrying.')
@@ -231,7 +219,7 @@ class ConnectionMgr {
               return false
             }
           }
-        })
+        }, true)
         if (retry === true) {
           break
         }
@@ -261,13 +249,13 @@ class ConnectionMgr {
 
     try {
       while (true) {
-        const retry: false | { result: any } | Error = await connection.withReserve(false, async (client) => {
+        const retry: false | { result: any } | Error = await connection.withReserve(async (client) => {
           tries++
           try {
             return { result: await fn(client) }
           } catch (err: any) {
             console.error({ message: 'failed to process sql', error: err.message, cause: err })
-            if (err.code !== '40001' || tries === maxTries) {
+            if (!this.isRetryableError(err) || tries === maxTries) {
               return err
             } else {
               console.log('Read Transaction failed. Retrying.')
@@ -329,6 +317,18 @@ class ConnectionMgr {
       this.connections().set(id, conn)
     }
     return conn
+  }
+
+  private isRetryableError (err: any): boolean {
+    const msg: string = err?.message ?? ''
+
+    return (
+      err.code === '40001' || // Retry transaction
+      err.code === '55P03' || // Lock not available
+      err.code === 'CONNECTION_CLOSED' || // This error is thrown if the connection was closed without an error.
+      err.code === 'CONNECTION_DESTROYED' || // This error is thrown for any queries that were pending when the timeout to sql.end({ timeout: X }) was reached. If the DB client is being closed completely retry will result in CONNECTION_ENDED which is not retried so should be fine.
+      msg.includes('RETRY_SERIALIZABLE')
+    )
   }
 }
 

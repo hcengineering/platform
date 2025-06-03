@@ -323,7 +323,7 @@ export async function upgradeModel (
       modelDb,
       pipeline,
       async (value) => {
-        await progress(90 + (Math.min(value, 100) / 100) * 10)
+        await progress(10 + (Math.min(value, 100) / 100) * 10)
       },
       wsIds.uuid
     )

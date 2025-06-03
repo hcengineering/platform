@@ -67,6 +67,7 @@
     "WorkspaceSettings": "Ajustes del espacio de trabajo",
     "Select": "Seleccionar",
     "AddOwner": "Añadir propietario",
+    "ReadonlyGuest": "Solo lectura",
     "User": "Usuario",
     "Maintainer": "Mantenedor",
     "Owner": "Propietario",
@@ -148,6 +149,8 @@
     "IntegrationFailed": "Error al crear la integración",
     "IntegrationError": "Por favor, inténtelo de nuevo o contacte con soporte si el problema persiste",
     "EmailIsUsed": "El correo electrónico ya está en uso",
-    "Customize": "Personalizar"
+    "Customize": "Personalizar",
+    "GuestAccess": "Invitados anónimos",
+    "GuestAccessDescription": "Permite a usuarios anónimos visitar el espacio de trabajo en modo de solo lectura"
   }
 }

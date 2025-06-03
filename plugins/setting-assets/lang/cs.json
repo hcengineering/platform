@@ -67,6 +67,7 @@
     "WorkspaceSettings": "Nastavení pracovního prostoru",
     "Select": "Vybrat",
     "AddOwner": "Přidat vlastníka",
+    "ReadonlyGuest": "Pouze čtení",
     "User": "Uživatel",
     "Maintainer": "Správce",
     "Owner": "Vlastník",
@@ -157,6 +158,8 @@
     "IntegrationFailed": "Nepodařilo se vytvořit integraci",
     "IntegrationError": "Zkuste to prosím znovu nebo kontaktujte podporu, pokud problém přetrvává",
     "EmailIsUsed": "E-mailová adresa je již použita jiným účtem",
-    "Customize": "Přizpůsobit"
+    "Customize": "Přizpůsobit",
+    "GuestAccess": "Anonymní hosté",
+    "GuestAccessDescription": "Umožňuje anonymním uživatelům prohlížet pracovní prostor v režimu pouze pro čtení"
   }
 }

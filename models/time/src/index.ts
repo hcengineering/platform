@@ -195,7 +195,6 @@ export function createModel (builder: Builder): void {
     {
       label: time.string.Planner,
       icon: calendarPlugin.icon.Calendar,
-      accessLevel: AccountRole.User,
       alias: timeId,
       hidden: false,
       position: 'top',

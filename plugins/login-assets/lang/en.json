@@ -3,7 +3,7 @@
     "RequiredField": "Required field {field}",
     "FieldsDoNotMatch": "{field} don't match {field2}",
     "ConnectingToServer": "Connecting to server....",
-    "IncorrectValue": "Incorrect value {field}"    
+    "IncorrectValue": "Incorrect value {field}"
   },
   "string": {
     "LogIn": "Log In",
@@ -71,6 +71,8 @@
     "SignToProceed": "Please sign in to proceed",
     "Proceed": "Proceed",
     "SetPasswordLater": "I'll set a password later",
-    "SetPasswordNow": "I'll set a password now"
+    "SetPasswordNow": "I'll set a password now",
+    "LoginAsGuest": "Continue as a guest",
+    "SignUpToCreateWorkspace": "There are no workspaces with guest access. Please sign up to create your own."
   }
 }

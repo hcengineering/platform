@@ -123,12 +123,14 @@
     "Copied": "Copiado",
     "Title": "Título",
     "HideArchived": "Ocultar arquivado",
-    "RemoveRelation": "Remover relação",  
+    "RemoveRelation": "Remover relação",
     "RemoveRelationConfirmation": "Deseja remover a relação?",
     "MasterDetail": "Mestre-detalhe",
     "Tree": "Árvore",
     "Document": "Documento",
     "Loading": "Carregando...",
-    "NoRelations": "Sem relações"
+    "NoRelations": "Sem relações",
+    "ReadOnlyWarningTitle": "Modo somente leitura",
+    "ReadOnlyWarningMessage": "Contate o administrador para obter acesso completo a este espaço de trabalho."
   }
 }

@@ -16,7 +16,7 @@
     "style-loader": "^3.3.1",
     "file-loader": "^6.2.0",
     "sass-loader": "^13.2.0",
-    "@types/node": "~20.11.16",
+    "@types/node": "^22.15.29",
     "webpack-bundle-analyzer": "^4.10.2",
     "svgo-loader": "^3.0.0",
     "autoprefixer": "^10.4.14",

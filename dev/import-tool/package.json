@@ -37,7 +37,7 @@
     "eslint": "^8.54.0",
     "ts-node": "^10.8.0",
     "esbuild": "^0.24.2",
-    "@types/node": "~20.11.16",
+    "@types/node": "^22.15.29",
     "@typescript-eslint/parser": "^6.11.0",
     "typescript": "^5.3.3",
     "jest": "^29.7.0",

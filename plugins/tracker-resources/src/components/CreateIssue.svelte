@@ -19,36 +19,38 @@
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { Employee } from '@hcengineering/contact'
   import core, {
+    AccountRole,
     Class,
     Doc,
     DocData,
+    fillDefaults,
+    generateId,
+    getCurrentAccount,
+    makeCollabId,
+    makeDocCollabId,
     type PersonId,
     Ref,
     SortingOrder,
-    fillDefaults,
-    generateId,
-    makeCollabId,
-    makeDocCollabId,
     toIdMap
   } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import {
     Card,
+    createMarkup,
+    createQuery,
     DocCreateExtComponent,
     DocCreateExtensionManager,
     DraftController,
+    getClient,
+    getMarkup,
     KeyedAttribute,
     MessageBox,
     MultipleDraftController,
-    SpaceSelector,
-    createMarkup,
-    createQuery,
-    getClient,
-    getMarkup
+    SpaceSelector
   } from '@hcengineering/presentation'
-  import tags, { TagReference, type TagElement } from '@hcengineering/tags'
-  import { TaskType, makeRank } from '@hcengineering/task'
+  import tags, { type TagElement, TagReference } from '@hcengineering/tags'
+  import { makeRank, TaskType } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import {
@@ -65,15 +67,15 @@
     TrackerEvents
   } from '@hcengineering/tracker'
   import {
+    addNotification,
     Button,
     Component,
+    createFocusManager,
     DatePresenter,
     EditBox,
     FocusHandler,
     IconAttachment,
     Label,
-    addNotification,
-    createFocusManager,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
@@ -120,6 +122,7 @@
       draft = shouldSaveDraft ? val : undefined
     })
   )
+  const me = getCurrentAccount()
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const parentQuery = createQuery()
@@ -419,6 +422,7 @@
   })
 
   async function updateCurrentProjectPref (currentProject: Ref<Project>): Promise<void> {
+    if (me?.role === AccountRole.ReadOnlyGuest) return
     const spacePreferences = await client.findOne(tracker.class.ProjectTargetPreference, { attachedTo: currentProject })
     if (spacePreferences === undefined) {
       await client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {

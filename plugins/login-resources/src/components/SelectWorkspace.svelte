@@ -44,6 +44,7 @@
     getHref,
     getWorkspaces,
     goTo,
+    isReadOnlyGuestAccount,
     navigateToWorkspace,
     selectWorkspace,
     unArchive
@@ -56,12 +57,14 @@
   let status = OK
   let accountPromise: Promise<LoginInfo | null>
   let account: LoginInfo | null | undefined = undefined
+  let isReadOnlyGuest: boolean = true
 
   let flagToUpdateWorkspaces = false
 
   async function loadAccount (): Promise<void> {
     accountPromise = getAccount()
     account = await accountPromise
+    isReadOnlyGuest = await isReadOnlyGuestAccount(account)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -159,6 +162,9 @@
     </div>
   {:then}
     <Scroller padding={'.125rem 0'} maxHeight={35}>
+      {#if workspaces.length === 0 && account?.token != null && isReadOnlyGuest}
+        <span class="readonly-warning"><Label label={login.string.SignUpToCreateWorkspace} /></span>
+      {/if}
       <div class="form">
         {#each workspaces
           .filter((it) => search === '' || (it.name?.includes(search) ?? false) || it.url.includes(search))
@@ -196,11 +202,11 @@
         {#if workspaces.length === 0 && account?.token != null}
           <div class="form-row send">
             <Button
-              label={login.string.CreateWorkspace}
+              label={isReadOnlyGuest ? login.string.SignUp : login.string.CreateWorkspace}
               kind={'primary'}
               width="100%"
               on:click={() => {
-                goTo('createWorkspace')
+                goTo(isReadOnlyGuest ? 'signup' : 'createWorkspace')
               }}
             />
           </div>
@@ -209,7 +215,7 @@
     </Scroller>
     <div class="grow-separator" />
     <div class="footer">
-      {#if workspaces.length > 0}
+      {#if workspaces.length > 0 && !isReadOnlyGuest}
         <div>
           <span><Label label={login.string.WantAnotherWorkspace} /></span>
           <NavLink
@@ -277,6 +283,10 @@
         padding: 1rem;
         border-radius: 1rem;
       }
+    }
+    .readonly-warning {
+      margin-bottom: 1.5rem;
+      color: var(--theme-caption-color);
     }
     .grow-separator {
       flex-grow: 1;

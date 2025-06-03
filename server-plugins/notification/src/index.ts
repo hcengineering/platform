@@ -87,6 +87,7 @@ export interface NotificationPresenter extends Class<Doc> {
 export interface ReceiverInfo {
   account: AccountUuid
   employee: Ref<Employee>
+  role: 'USER' | 'GUEST' | undefined
   socialIds: PersonId[]
   space: Ref<PersonSpace>
 }

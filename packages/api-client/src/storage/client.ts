@@ -14,14 +14,12 @@
 //
 
 import core, { concatLink, WorkspaceUuid, Blob, Ref } from '@hcengineering/core'
-import FormData from 'form-data'
 import { Readable } from 'stream'
 import { StorageClient } from './types'
 import { loadServerConfig, ServerConfig } from '../config'
 import { NetworkError, NotFoundError, StorageError } from './error'
 import { AuthOptions } from '../types'
 import { getWorkspaceToken } from '../utils'
-import nodeFetch from 'node-fetch'
 
 interface ObjectMetadata {
   name: string
@@ -102,16 +100,13 @@ export class StorageClientImpl implements StorageClient {
   }
 
   async put (objectName: string, stream: Readable | Buffer | string, contentType: string, size?: number): Promise<Blob> {
+    const buffer = await toBuffer(stream)
+    const file = new File([buffer], objectName, { type: contentType })
     const formData = new FormData()
-    const options: FormData.AppendOptions = {
-      filename: objectName,
-      contentType,
-      knownLength: size
-    }
-    formData.append('file', stream, options)
+    formData.append('file', file)
     let response
     try {
-      response = await nodeFetch(this.uploadUrl, {
+      response = await fetch(this.uploadUrl, {
         method: 'POST',
         body: formData,
         headers: { ...this.headers }
@@ -165,6 +160,22 @@ export class StorageClientImpl implements StorageClient {
       method: 'DELETE',
       headers: { ...this.headers }
     })
+  }
+}
+
+async function toBuffer (data: Buffer | string | Readable): Promise<Buffer> {
+  if (Buffer.isBuffer(data)) {
+    return data
+  } else if (typeof data === 'string') {
+    return Buffer.from(data)
+  } else if (data instanceof Readable) {
+    const chunks: Buffer[] = []
+    for await (const chunk of data) {
+      chunks.push(chunk)
+    }
+    return Buffer.concat(chunks as any)
+  } else {
+    throw new TypeError('Unsupported data type')
   }
 }
 
