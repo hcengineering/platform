@@ -131,6 +131,10 @@ implements DbCollection<T> {
     }
   }
 
+  async exists (query: Query<T>): Promise<boolean> {
+    return (await this.findOne(query)) !== null
+  }
+
   async find (query: Query<T>, sort?: Sort<T>, limit?: number): Promise<T[]> {
     return await this.findCursor(getFilteredQuery(query), sort, limit).toArray()
   }
@@ -313,6 +317,10 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
     }
 
     return res
+  }
+
+  async exists (query: Query<WorkspaceStatus>): Promise<boolean> {
+    return await this.wsCollection.exists(this.toWsQuery(query))
   }
 
   async find (query: Query<WorkspaceStatus>, sort?: Sort<WorkspaceStatus>, limit?: number): Promise<WorkspaceStatus[]> {

@@ -119,7 +119,6 @@ export class DatalakeClient {
       if (err.name === 'NotFoundError') {
         return undefined
       }
-      console.error('failed to get object', { workspace, objectName, err })
       throw err
     }
 
@@ -151,7 +150,6 @@ export class DatalakeClient {
       if (err.name === 'NotFoundError') {
         return undefined
       }
-      console.error('failed to get partial object', { workspace, objectName, err })
       throw err
     }
 
@@ -180,7 +178,6 @@ export class DatalakeClient {
       if (err.name === 'NotFoundError') {
         return
       }
-      console.error('failed to stat object', { workspace, objectName, err })
       throw err
     }
 
@@ -205,7 +202,6 @@ export class DatalakeClient {
       })
     } catch (err: any) {
       if (err.name !== 'NotFoundError') {
-        console.error('failed to delete object', { workspace, objectName, err })
         throw err
       }
     }
@@ -230,19 +226,14 @@ export class DatalakeClient {
       }
     }
 
-    try {
-      if (size === undefined || size < 64 * 1024 * 1024) {
-        return await ctx.with('direct-upload', {}, (ctx) =>
-          this.uploadWithFormData(ctx, workspace, objectName, stream, { ...params, size })
-        )
-      } else {
-        return await ctx.with('multipart-upload', {}, (ctx) =>
-          this.uploadWithMultipart(ctx, workspace, objectName, stream, { ...params, size })
-        )
-      }
-    } catch (err) {
-      console.error('failed to put object', { workspace, objectName, err })
-      throw err
+    if (size === undefined || size < 64 * 1024 * 1024) {
+      return await ctx.with('direct-upload', {}, (ctx) =>
+        this.uploadWithFormData(ctx, workspace, objectName, stream, { ...params, size })
+      )
+    } else {
+      return await ctx.with('multipart-upload', {}, (ctx) =>
+        this.uploadWithMultipart(ctx, workspace, objectName, stream, { ...params, size })
+      )
     }
   }
 

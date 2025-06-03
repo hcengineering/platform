@@ -85,6 +85,10 @@ export async function handleBlobGet (
   res.status(status)
 
   pipeline(blob.body, res, (err) => {
+    if (!blob.body.destroyed) {
+      blob.body.destroy()
+    }
+
     if (err != null) {
       // ignore abort errors to avoid flooding the logs
       if (err.name === 'AbortError' || err.code === 'ERR_STREAM_PREMATURE_CLOSE') {
@@ -97,10 +101,6 @@ export async function handleBlobGet (
         res.status(500).send('Internal Server Error')
       }
     }
-  })
-
-  req.on('close', () => {
-    blob.body.destroy()
   })
 }
 

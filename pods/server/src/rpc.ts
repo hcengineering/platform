@@ -80,13 +80,13 @@ async function sendJson (
   extraHeaders?: OutgoingHttpHeaders
 ): Promise<void> {
   // Calculate ETag
-  let body: any = JSON.stringify(result, rpcJSONReplacer)
+  let body: Buffer = Buffer.from(JSON.stringify(result, rpcJSONReplacer), 'utf8')
 
   const etag = createHash('sha256').update(body).digest('hex')
   const headers: OutgoingHttpHeaders = {
     ...(extraHeaders ?? {}),
     ...keepAliveOptions,
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-cache',
     ETag: etag
   }

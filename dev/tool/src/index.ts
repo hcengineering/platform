@@ -1677,7 +1677,7 @@ export function devTool (
           name = systemAccountUuid
         }
         const wsByUrl = await db.workspace.findOne({ url: workspace })
-        const account = await db.socialId.findOne({ key: name })
+        const account = await db.socialId.findOne({ value: name })
         console.log(
           generateToken(account?.personUuid ?? (name as AccountUuid), wsByUrl?.uuid ?? (workspace as WorkspaceUuid), {
             ...(opt.admin ? { admin: 'true' } : {})
