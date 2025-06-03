@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import fs from 'fs/promises'
+import path from 'path'
 import { Request, Response } from 'express'
 import { MeasureContext } from '@hcengineering/core'
 import { createMessages } from '@hcengineering/mail-common'
@@ -481,6 +483,43 @@ This is an **HTML** test email`
         to: [{ email: 'recipient@example.com', firstName: 'Recipient', lastName: 'example.com' }],
         subject: 'Test Email',
         content: textContent,
+        incoming: true
+      }),
+      []
+    )
+  })
+
+  it('should decode encoded content in email', async () => {
+    // Create a multipart email with both text and HTML
+    const base64MessageData = await fs.readFile(path.join(__dirname, '__mocks__/base64Message.json'), 'utf-8')
+    const mtaMessage: MtaMessage = JSON.parse(base64MessageData)
+
+    mockReq = {
+      headers: { 'x-hook-token': 'test-hook-token' },
+      body: mtaMessage
+    }
+
+    await handleMtaHook(mockReq as Request, mockRes as Response, mockCtx)
+
+    // Should return 200
+    expect(mockStatus).toHaveBeenCalledWith(200)
+    expect(mockSend).toHaveBeenCalledWith({ action: 'accept' })
+
+    // Should process the message with both content types
+    expect(createMessages).toHaveBeenCalledWith(
+      client.baseConfig,
+      mockCtx,
+      mockTxOperations,
+      {},
+      {},
+      client.mailServiceToken,
+      mockLoginInfo,
+      expect.objectContaining({
+        mailId: expect.any(String),
+        from: { email: 'example1@test.com', firstName: 'Example', lastName: 'User1' },
+        to: [{ email: 'recipient2@example.com', firstName: 'Example', lastName: 'Recipient2' }],
+        subject: 'This is encoded email subject',
+        content: 'Test encoded email content',
         incoming: true
       }),
       []

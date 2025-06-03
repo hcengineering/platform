@@ -23,6 +23,7 @@ import { mailServiceToken, baseConfig, kvsClient } from './client'
 import config from './config'
 import { MtaMessage } from './types'
 import { getHeader, parseContent } from './utils'
+import { decodeEncodedWords } from './decode'
 
 export async function handleMtaHook (req: Request, res: Response, ctx: MeasureContext): Promise<void> {
   try {
@@ -60,7 +61,7 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
       }
     }
 
-    const subject = getHeader(mta, 'Subject') ?? ''
+    const subject = decodeEncodedWords(ctx, getHeader(mta, 'Subject') ?? '')
     const inReplyTo = getHeader(mta, 'In-Reply-To')
     const { content, attachments } = await parseContent(ctx, mta)
 
@@ -132,7 +133,7 @@ function extractContactName (
   // Match name part that appears before an email in angle brackets
   const nameMatch = fromHeader.match(/^\s*"?([^"<]+?)"?\s*<.+?>/)
   const encodedName = nameMatch?.[1].trim() ?? ''
-  const name = encodedName.length > 0 ? decodeMimeWord(ctx, encodedName) : ''
+  const name = encodedName.length > 0 ? decodeEncodedWords(ctx, encodedName) : ''
   let [firstName, lastName] = name.split(' ')
   if (firstName === undefined || firstName.length === 0) {
     firstName = email.split('@')[0]
@@ -141,28 +142,6 @@ function extractContactName (
     lastName = email.split('@')[1]
   }
   return { firstName, lastName }
-}
-
-function decodeMimeWord (ctx: MeasureContext, text: string): string {
-  return text.replace(/=\?([^?]+)\?([BQ])\?([^?]+)\?=/gi, (match, charset, encoding, content) => {
-    try {
-      if (encoding.toUpperCase() === 'B') {
-        // Base64 encoding
-        const buffer = Buffer.from(content, 'base64')
-        return buffer.toString(charset as BufferEncoding)
-      } else if (encoding.toUpperCase() === 'Q') {
-        // Quoted-printable encoding
-        const decoded = content
-          .replace(/_/g, ' ')
-          .replace(/=([0-9A-F]{2})/gi, (_: any, hex: string) => String.fromCharCode(parseInt(hex, 16)))
-        return Buffer.from(decoded).toString(charset as BufferEncoding)
-      }
-      return match
-    } catch (error) {
-      ctx.warn('Failed to decode encoded word', { error })
-      return match
-    }
-  })
 }
 
 function stripTags (email: string): string {

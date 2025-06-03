@@ -21,6 +21,7 @@ import { type Attachment } from '@hcengineering/mail-common'
 
 import { MtaMessage } from './types'
 import config from './config'
+import { getDecodedContent } from './decode'
 
 export async function parseContent (
   ctx: MeasureContext,
@@ -34,10 +35,10 @@ export async function parseContent (
   }
 
   if (contentType.toLowerCase().startsWith('text/plain')) {
-    return { content: mta.message.contents, attachments: [] }
+    return { content: getDecodedContent(ctx, mta), attachments: [] }
   }
 
-  const email = await getEmailContent(mta)
+  const email = await getEmailContent(ctx, mta)
 
   let content = email.text ?? ''
   let isMarkdown = false
@@ -83,14 +84,14 @@ export async function parseContent (
   return { content, attachments }
 }
 
-export function convertMtaToEml (mta: MtaMessage): string {
+export function convertMtaToEml (ctx: MeasureContext, mta: MtaMessage): string {
   return `MIME-Version: 1.0
 Date: ${new Date().toUTCString()}
 From: ${mta.envelope.from.address}
 To: ${mta.envelope.to.map((to) => to.address).join(', ')}
 Content-Type: ${getHeader(mta, 'Content-Type') ?? 'text/plain; charset=utf-8'}
 
-${unescapeString(mta.message.contents)}`
+${unescapeString(getDecodedContent(ctx, mta))}`
 }
 
 function unescapeString (str: string): string {
@@ -107,8 +108,8 @@ export function getHeader (mta: MtaMessage, header: string): string | undefined 
   return mta.message.headers.find((header) => header[0].toLowerCase() === h)?.[1]?.trim()
 }
 
-async function getEmailContent (mta: MtaMessage): Promise<ReadedEmlJson> {
-  const eml = convertMtaToEml(mta)
+async function getEmailContent (ctx: MeasureContext, mta: MtaMessage): Promise<ReadedEmlJson> {
+  const eml = convertMtaToEml(ctx, mta)
   const email = await new Promise<ReadedEmlJson>((resolve, reject) => {
     readEml(eml, (err, json) => {
       if (err !== undefined && err !== null) {
@@ -123,7 +124,7 @@ async function getEmailContent (mta: MtaMessage): Promise<ReadedEmlJson> {
   if (isEmptyString(email.text) && isEmptyString(email.html)) {
     return {
       ...email,
-      text: removeContentTypeHeader(mta.message.contents)
+      text: removeContentTypeHeader(getDecodedContent(ctx, mta))
     }
   }
   return email
