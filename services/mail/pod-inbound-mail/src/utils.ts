@@ -21,6 +21,7 @@ import { type Attachment } from '@hcengineering/mail-common'
 
 import { MtaMessage } from './types'
 import config from './config'
+import { getDecodedContent } from './decode'
 
 export async function parseContent (
   ctx: MeasureContext,
@@ -34,7 +35,7 @@ export async function parseContent (
   }
 
   if (contentType.toLowerCase().startsWith('text/plain')) {
-    return { content: mta.message.contents, attachments: [] }
+    return { content: getDecodedContent(mta), attachments: [] }
   }
 
   const email = await getEmailContent(mta)
@@ -90,7 +91,7 @@ From: ${mta.envelope.from.address}
 To: ${mta.envelope.to.map((to) => to.address).join(', ')}
 Content-Type: ${getHeader(mta, 'Content-Type') ?? 'text/plain; charset=utf-8'}
 
-${unescapeString(mta.message.contents)}`
+${unescapeString(getDecodedContent(mta))}`
 }
 
 function unescapeString (str: string): string {
@@ -123,7 +124,7 @@ async function getEmailContent (mta: MtaMessage): Promise<ReadedEmlJson> {
   if (isEmptyString(email.text) && isEmptyString(email.html)) {
     return {
       ...email,
-      text: removeContentTypeHeader(mta.message.contents)
+      text: removeContentTypeHeader(getDecodedContent(mta))
     }
   }
   return email
