@@ -14,7 +14,7 @@
 //
 
 import { type Card, cardId, DOMAIN_CARD } from '@hcengineering/card'
-import core, { TxOperations, type Client, type Data, type Doc } from '@hcengineering/core'
+import core, { type Ref, TxOperations, type Client, type Data, type Doc } from '@hcengineering/core'
 import {
   tryMigrate,
   tryUpgrade,
@@ -67,9 +67,67 @@ export const cardOperation: MigrateOperation = {
       {
         state: 'default-labels',
         func: defaultLabels
+      },
+      {
+        state: 'fill-parent-info',
+        mode: 'upgrade',
+        func: fillParentInfo
       }
     ])
   }
+}
+
+async function fillParentInfo (client: Client): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const cards = await client.findAll(card.class.Card, { parentInfo: { $exists: false }, parent: { $ne: null } })
+  const cache = new Map<Ref<Card>, Card>()
+  for (const val of cards) {
+    if (val.parent == null) continue
+    const parent = await getCardParentWithParentInfo(txOp, val.parent, cache)
+    if (parent !== undefined) {
+      const parentInfo = [
+        ...(parent.parentInfo ?? []),
+        {
+          _id: parent._id,
+          _class: parent._class,
+          title: parent.title
+        }
+      ]
+      await txOp.update(val, { parentInfo })
+      val.parentInfo = parentInfo
+      cache.set(val._id, val)
+    }
+  }
+}
+
+async function getCardParentWithParentInfo (
+  txOp: TxOperations,
+  _id: Ref<Card>,
+  cache: Map<Ref<Card>, Card>
+): Promise<Card | undefined> {
+  const doc = cache.get(_id) ?? (await txOp.findOne(card.class.Card, { _id }))
+  if (doc === undefined) return
+  if (doc.parentInfo === undefined) {
+    if (doc.parent == null) {
+      doc.parentInfo = []
+    } else {
+      const parent = await getCardParentWithParentInfo(txOp, doc.parent, cache)
+      if (parent !== undefined) {
+        doc.parentInfo = [
+          ...(parent.parentInfo ?? []),
+          {
+            _id: parent._id,
+            _class: parent._class,
+            title: parent.title
+          }
+        ]
+      } else {
+        doc.parentInfo = []
+      }
+    }
+  }
+  cache.set(doc._id, doc)
+  return doc
 }
 
 async function removeVariantViewlets (client: Client): Promise<void> {
