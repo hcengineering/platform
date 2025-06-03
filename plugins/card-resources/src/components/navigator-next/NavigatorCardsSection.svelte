@@ -62,8 +62,7 @@
     labelsQuery.query(
       {
         label: config.labelFilter,
-        cardType: hierarchy.getDescendants(type._id),
-        limit: Math.max(limit, 1000)
+        cardType: hierarchy.getDescendants(type._id)
       },
       (res) => {
         labels = res
@@ -82,6 +81,7 @@
     cardsQuery.query<Card>(
       type._id,
       {
+        // TODO: Should be join instead of $in. But for now labels and cards in different api.
         ...(ids === undefined ? {} : { _id: { $in: ids as Ref<Card>[] } }),
         ...(space !== undefined ? { space: space._id } : {})
       },
@@ -125,33 +125,11 @@
   }
 
   $: filteredCards = filterCards(cards, favorites)
-  $: sortedCards = sortCards(filteredCards, contextByCard)
+  $: sortedCards = filteredCards
   $: empty = sortedCards.length === 0
 
   function filterCards (cards: Card[], favorites: FavoriteCard[]): Card[] {
     return cards.filter((it) => !favorites.some((fav) => fav.attachedTo === it._id))
-  }
-
-  function sortCards (cards: Card[], contextByCard: Map<Ref<Card>, NotificationContext>): Card[] {
-    const sort = config.specialSorting?.[type._id] ?? config.defaultSorting ?? 'alphabetical'
-    if (sort === 'alphabetical') {
-      return cards.sort((a, b) => a.title.localeCompare(b.title))
-    } else if (sort === 'recent') {
-      return cards.sort((card1, card2) => {
-        const context1 = contextByCard.get(card1._id)
-        const context2 = contextByCard.get(card2._id)
-        const lastUpdate1 = context1?.lastUpdate.getTime()
-        const lastUpdate2 = context2?.lastUpdate.getTime()
-
-        if (lastUpdate1 == null && lastUpdate2 == null) return card2.modifiedOn - card1.modifiedOn
-        if (lastUpdate1 == null) return 1
-        if (lastUpdate2 == null) return -1
-
-        return lastUpdate2 - lastUpdate1
-      })
-    }
-
-    return cards
   }
 </script>
 
@@ -170,7 +148,16 @@
       {#each sortedCards as card (card._id)}
         {@const context = contextByCard.get(card._id)}
         {@const favorite = favorites.find((fav) => fav.attachedTo === card._id)}
-        <NavigatorCard type={type._id} {card} {context} {favorite} {applicationId} {selectedCard} on:selectCard />
+        <NavigatorCard
+          type={type._id}
+          {card}
+          {context}
+          {favorite}
+          {applicationId}
+          {selectedCard}
+          {config}
+          on:selectCard
+        />
       {/each}
 
       <svelte:fragment slot="visible" let:isOpen>
@@ -178,7 +165,15 @@
         {#if visibleItem !== undefined && !isOpen}
           {@const context = contextByCard.get(visibleItem._id)}
           {@const favorite = favorites.find((fav) => fav.attachedTo === visibleItem._id)}
-          <NavigatorCard card={visibleItem} {context} {favorite} {applicationId} {selectedCard} on:selectCard />
+          <NavigatorCard
+            card={visibleItem}
+            {context}
+            {favorite}
+            {applicationId}
+            {selectedCard}
+            {config}
+            on:selectCard
+          />
         {/if}
       </svelte:fragment>
 

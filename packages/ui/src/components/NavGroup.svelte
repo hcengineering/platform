@@ -99,6 +99,7 @@
   class:nested={type === 'nested' || type === 'nested-selectable'}
   class:selectable={type === 'nested-selectable' || type === 'selectable-header'}
   class:selectableHeader={type === 'selectable-header'}
+  class:noIcon={!icon}
   class:noDivider
 >
   <button

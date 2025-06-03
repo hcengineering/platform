@@ -25,7 +25,8 @@ export const communicationId = 'communication' as Plugin
 export default plugin(communicationId, {
   icon: {
     Bell: '' as Asset,
-    BellCrossed: '' as Asset
+    BellCrossed: '' as Asset,
+    File: '' as Asset
   },
   metadata: {
     Enabled: '' as Metadata<boolean>
@@ -35,7 +36,9 @@ export default plugin(communicationId, {
     FirstMessages: '' as IntlString,
     LatestMessages: '' as IntlString,
     Subscribe: '' as IntlString,
-    Unsubscribe: '' as IntlString
+    Unsubscribe: '' as IntlString,
+    File: '' as IntlString,
+    Files: '' as IntlString
   },
   ids: {
     CardMessagesSection: '' as Ref<CardSection>

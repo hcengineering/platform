@@ -2,7 +2,7 @@ import { getPersonBySocialId, formatName } from '@hcengineering/contact'
 import { Ref, TxOperations } from '@hcengineering/core'
 import notification, { DocNotifyContext, CommonInboxNotification, ActivityInboxNotification, InboxNotification } from '@hcengineering/notification'
 import { IntlString, addEventListener, translate } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
+import { getClient, createNotificationsQuery } from '@hcengineering/presentation'
 import { location } from '@hcengineering/ui'
 import workbench, { workbenchId } from '@hcengineering/workbench'
 import desktopPreferences, { defaultNotificationPreference } from '@hcengineering/desktop-preferences'
@@ -12,6 +12,8 @@ import { InboxNotificationsClientImpl, getDisplayInboxData } from '@hcengineerin
 import { IPCMainExposed } from './types'
 
 let client: TxOperations
+
+const notificationsQuery = createNotificationsQuery()
 
 async function hydrateNotificationAsYouCan (lastNotification: InboxNotification): Promise<{ title: string, body: string } | undefined> {
   // Let's try to do our best and figure out from who we have an notification
@@ -114,12 +116,18 @@ export function configureNotifications (): void {
   // because we generate them on a client
   let initTimestamp = 0
   const notificationHistory = new Map<string, number>()
+  let newUnreadNotifications = 0
 
   addEventListener(workbench.event.NotifyConnection, async () => {
     client = getClient()
     const electronAPI: IPCMainExposed = (window as any).electron
 
     const inboxClient = InboxNotificationsClientImpl.getClient()
+
+    notificationsQuery.query({ read: false, limit: 1000 }, res => {
+      newUnreadNotifications = res.getResult().length
+      electronAPI.setBadge(prevUnViewdNotificationsCount + newUnreadNotifications)
+    })
 
     async function handleNotifications (notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>): Promise<void> {
       const inboxData = await getDisplayInboxData(notificationsByContext)
@@ -138,7 +146,7 @@ export function configureNotifications (): void {
 
       if (prevUnViewdNotificationsCount !== unViewedNotifications.length) {
         if (preferences.showUnreadCounter) {
-          electronAPI.setBadge(unViewedNotifications.length)
+          electronAPI.setBadge(unViewedNotifications.length + newUnreadNotifications)
         }
         if (preferences.bounceAppIcon) {
           electronAPI.dockBounce()
@@ -179,7 +187,7 @@ export function configureNotifications (): void {
         electronAPI.setBadge(0)
       }
       if (!preferences.showUnreadCounter && newPreferences.showUnreadCounter) {
-        electronAPI.setBadge(prevUnViewdNotificationsCount)
+        electronAPI.setBadge(prevUnViewdNotificationsCount + newUnreadNotifications)
       }
       preferences = newPreferences
     })

@@ -42,7 +42,9 @@
     defaultSorting: 'recent',
     specialSorting: {
       [chat.masterTag.Channel]: 'alphabetical'
-    }
+    },
+    showTypeIcon: false,
+    showCardIcon: true
   }}
   applicationId={chatId}
   selectedType={type}

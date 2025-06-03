@@ -78,6 +78,8 @@ export interface AnySvelteComponentWithProps {
   props?: Record<string, any>
 }
 
+export type IconComponent = Asset | AnySvelteComponent | ComponentType
+
 export interface Action {
   id?: string
   label: IntlString

@@ -22,18 +22,27 @@
     resolvedLocationStore,
     Location,
     restoreLocation,
-    Component
+    Component,
+    closePopup,
+    Label,
+    ModernButton,
+    IconDelete,
+    closePanel,
+    getCurrentLocation
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, getCommunicationClient } from '@hcengineering/presentation'
   import { inboxId } from '@hcengineering/inbox'
   import view from '@hcengineering/view'
   import { NotificationContext } from '@hcengineering/communication-types'
+  import { SortingOrder } from '@hcengineering/core'
 
   import InboxNavigation from './InboxNavigation.svelte'
   import { getCardIdFromLocation, navigateToCard } from '../location'
+  import inbox from '../plugin'
 
   const client = getClient()
+  const communicationClient = getCommunicationClient()
 
   let replacedPanelElement: HTMLElement
   let card: Card | undefined = undefined
@@ -63,7 +72,9 @@
   }
 
   function selectCard (event: CustomEvent<{ context: NotificationContext, card: Card }>): void {
-    if (card?._id === event.detail.card._id) return
+    closePanel()
+    const loc = getCurrentLocation()
+    if (card?._id === event.detail.card._id && loc.path[2] === inboxId) return
     card = event.detail.card
     navigateToCard(card._id)
   }
@@ -79,15 +90,29 @@
   )
 
   defineSeparators('new-inbox', [
-    { minSize: 10, maxSize: 60, size: 30, float: 'navigator' },
+    { minSize: 15, maxSize: 60, size: 30, float: 'navigator' },
     { size: 'auto', minSize: 20, maxSize: 'auto' }
   ])
 
   $: $deviceInfo.replacedPanel = replacedPanelElement
   onDestroy(() => ($deviceInfo.replacedPanel = undefined))
+
+  let clearing = false
+  async function clearInbox (): Promise<void> {
+    if (clearing) return
+    try {
+      clearing = true
+      const contexts = await communicationClient.findNotificationContexts({ order: SortingOrder.Ascending })
+      await Promise.all(contexts.map((context) => communicationClient.removeNotificationContext(context.id)))
+      clearing = false
+    } catch (e) {
+      clearing = false
+      console.error(e)
+    }
+  }
 </script>
 
-<div class="hulyPanels-container inbox next-colors">
+<div class="hulyPanels-container inbox">
   {#if $deviceInfo.navigator.visible}
     <div
       class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
@@ -96,7 +121,22 @@
       class:fly={$deviceInfo.navigator.float}
     >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
-        <InboxNavigation {card} on:select={selectCard} />
+        <div class="hulyNavPanel-header withButton small inbox-header">
+          <span class="overflow-label"><Label label={inbox.string.Inbox} /></span>
+          <div class="flex-row-center flex-gap-2">
+            <ModernButton
+              label={inbox.string.ClearAll}
+              icon={IconDelete}
+              size="small"
+              iconSize="small"
+              on:click={clearInbox}
+              loading={clearing}
+            />
+          </div>
+        </div>
+        <div class="antiPanel-wrap__content hulyNavPanel-container">
+          <InboxNavigation {card} on:select={selectCard} />
+        </div>
       </div>
       {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
         <Separator name="new-inbox" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
@@ -128,16 +168,16 @@
 
 <style lang="scss">
   .inbox {
-    background: var(--next-background-color);
-    border-color: var(--next-border-color);
+    &__navigator {
+      position: relative;
+    }
+
+    &__panel {
+      position: relative;
+    }
   }
 
-  .inbox__navigator {
-    background: var(--next-background-color);
-    border-color: var(--next-border-color);
-  }
-
-  .inbox__panel {
-    position: relative;
+  .inbox-header {
+    border-bottom: 1px solid var(--theme-navpanel-border);
   }
 </style>

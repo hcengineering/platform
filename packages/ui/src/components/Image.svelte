@@ -21,6 +21,7 @@
   export let width: number | string
   export let height: number | string
   export let fit: string = 'contain'
+  export let loading: 'lazy' | 'eager' = 'eager'
 
   const dispatch = createEventDispatcher()
 
@@ -58,6 +59,7 @@
   alt={alt ?? ''}
   {width}
   {height}
+  {loading}
   style:object-fit={fit}
   on:error={handleError}
   on:loadstart={handleLoadStart}

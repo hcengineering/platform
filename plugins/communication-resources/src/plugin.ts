@@ -11,12 +11,49 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { mergeIds } from '@hcengineering/platform'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
 import communication, { communicationId } from '@hcengineering/communication'
 import { type AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(communicationId, communication, {
   component: {
     CardMessagesSection: '' as AnyComponent
+  },
+  string: {
+    Added: '' as IntlString,
+    All: '' as IntlString,
+    Attach: '' as IntlString,
+    Cancel: '' as IntlString,
+    Edit: '' as IntlString,
+    Edited: '' as IntlString,
+    Emoji: '' as IntlString,
+    HoursAgo: '' as IntlString,
+    JustNow: '' as IntlString,
+    LastReply: '' as IntlString,
+    Mention: '' as IntlString,
+    MinutesAgo: '' as IntlString,
+    MonthAt: '' as IntlString,
+    New: '' as IntlString,
+    Removed: '' as IntlString,
+    RepliesCount: '' as IntlString,
+    Reply: '' as IntlString,
+    Send: '' as IntlString,
+    Set: '' as IntlString,
+    ShowFormatting: '' as IntlString,
+    To: '' as IntlString,
+    Today: '' as IntlString,
+    Unset: '' as IntlString,
+    WeekdayAt: '' as IntlString,
+    YearAt: '' as IntlString,
+    Yesterday: '' as IntlString,
+    YesterdayAt: '' as IntlString,
+    AndMore: '' as IntlString,
+    IsTyping: '' as IntlString,
+    Loading: '' as IntlString,
+    MessageIn: '' as IntlString,
+    ThreadWasRemoved: '' as IntlString,
+    MessageWasRemoved: '' as IntlString,
+    JoinedThe: '' as IntlString,
+    LeftThe: '' as IntlString
   }
 })
