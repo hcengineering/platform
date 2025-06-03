@@ -141,9 +141,10 @@ describe('ChannelCache', () => {
       const error = new Error('Database error')
       mockClient.findOne.mockRejectedValue(error)
 
-      const result = await channelCache.getOrCreateChannel(spaceId, participants, emailAccount, personId)
+      await expect(channelCache.getOrCreateChannel(spaceId, participants, emailAccount, personId)).rejects.toThrow(
+        'Failed to create channel for test@example.com in space test-space-id: Database error'
+      )
 
-      expect(result).toBeUndefined()
       expect(mockCtx.error).toHaveBeenCalledWith('Failed to create channel', {
         me: emailAccount,
         space: spaceId,

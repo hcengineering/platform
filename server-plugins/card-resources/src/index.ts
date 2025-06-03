@@ -403,6 +403,21 @@ async function OnCardCreate (ctx: TxCreateDoc<Card>[], control: TriggerControl):
           }
         })
       )
+      if ((doc.parentInfo?.length ?? 0) === 0) {
+        const parentInfo = [
+          ...(parent.parentInfo ?? []),
+          {
+            _id: parent._id,
+            _class: parent._class,
+            title: parent.title
+          }
+        ]
+        res.push(
+          control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
+            parentInfo
+          })
+        )
+      }
     }
   }
 

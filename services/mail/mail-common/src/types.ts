@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { PersonId, PersonUuid } from '@hcengineering/core'
+import { Card } from '@hcengineering/card'
+import { PersonSpace } from '@hcengineering/contact'
+import { PersonId, PersonUuid, Ref, WorkspaceUuid } from '@hcengineering/core'
 
 //
 export interface Attachment {
@@ -57,4 +59,18 @@ export interface BaseConfig {
   QueueConfig: string
   QueueRegion: string
   CommunicationTopic: string
+}
+
+export interface MessageData {
+  subject: string
+  content: string
+  channel: Ref<Card>
+  created: Date
+  modifiedBy: PersonId
+  mailId: string
+  spaceId: Ref<PersonSpace>
+  workspace: WorkspaceUuid
+  threadId: Ref<Card>
+  recipient: MailRecipient
+  isReply: boolean
 }

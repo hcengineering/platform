@@ -146,13 +146,22 @@ export async function replyToThread (message: Message, parentCard: Card): Promis
     get(employeeByPersonIdStore).get(message.creator) ?? (await getEmployeeBySocialId(client, message.creator))
   const lastOne = await client.findOne(cardPlugin.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
   const title = createThreadTitle(message, parentCard)
-  const data = fillDefaults(
+  const data = fillDefaults<Card>(
     hierarchy,
     {
       title,
       rank: makeRank(lastOne?.rank, undefined),
       content: '' as MarkupBlobRef,
-      parent: parentCard._id
+      parent: parentCard._id,
+      blobs: {},
+      parentInfo: [
+        ...(parentCard.parentInfo ?? []),
+        {
+          _id: parentCard._id,
+          _class: parentCard._class,
+          title: parentCard.title
+        }
+      ]
     },
     chat.masterTag.Thread
   )

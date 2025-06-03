@@ -53,7 +53,7 @@ export interface SessionData {
   workspace: WorkspaceIds
   socialStringsToUsers: Map<PersonId, AccountUuid>
 
-  asyncRequests?: (() => Promise<void>)[]
+  asyncRequests?: ((ctx: MeasureContext) => Promise<void>)[]
 }
 
 /**
