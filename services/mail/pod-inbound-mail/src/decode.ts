@@ -17,12 +17,12 @@ import { MeasureContext } from '@hcengineering/core'
 import { MtaMessage } from './types'
 import { getHeader } from './utils'
 
-export function getDecodedContent (mta: MtaMessage): string {
+export function getDecodedContent (ctx: MeasureContext, mta: MtaMessage): string {
   const contentEncoding = getHeader(mta, 'Content-Transfer-Encoding')
-  return decodeContent(mta.message.contents, contentEncoding)
+  return decodeContent(ctx, mta.message.contents, contentEncoding)
 }
 
-export function decodeContent (content: string, encoding: string | undefined): string {
+export function decodeContent (ctx: MeasureContext, content: string, encoding: string | undefined): string {
   if (encoding == null || encoding.trim() === '') {
     return content
   }
@@ -33,8 +33,8 @@ export function decodeContent (content: string, encoding: string | undefined): s
     case 'base64':
       try {
         return Buffer.from(content, 'base64').toString('utf-8')
-      } catch (error) {
-        console.warn('Failed to decode base64 content:', error)
+      } catch (error: any) {
+        ctx.warn('Failed to decode base64 content:', { error: error.message })
         return content
       }
 
@@ -83,10 +83,48 @@ export function decodeEncodedWords (ctx: MeasureContext, text: string): string {
       }
 
       // Convert to string using the specified charset
-      return decodedBytes.toString(charset.toLowerCase() === 'utf-8' ? 'utf8' : charset)
+      const normalizedCharset = normalizeCharset(charset)
+      return decodedBytes.toString(normalizedCharset)
     } catch (error: any) {
       ctx.warn('Failed to decode encoded word:', { match, error: error.message })
       return match // Return original if decoding fails
     }
   })
+}
+
+function normalizeCharset (charset: string): BufferEncoding {
+  const normalized = charset.toLowerCase().trim()
+
+  // Map common charset aliases to Node.js Buffer encodings
+  switch (normalized) {
+    case 'utf-8':
+    case 'utf8':
+      return 'utf8'
+
+    case 'iso-8859-1':
+    case 'latin1':
+    case 'cp1252':
+    case 'windows-1252':
+      return 'latin1'
+
+    case 'ascii':
+    case 'us-ascii':
+      return 'ascii'
+
+    case 'utf-16':
+    case 'utf-16le':
+    case 'ucs-2':
+    case 'ucs2':
+      return 'utf16le'
+
+    case 'base64':
+      return 'base64'
+
+    case 'hex':
+      return 'hex'
+
+    // For any unsupported charset, default to utf8
+    default:
+      return 'utf8'
+  }
 }
