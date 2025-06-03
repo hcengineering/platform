@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import cardPlugin, { type Card } from '@hcengineering/card'
+import chat from '@hcengineering/chat'
+import { type LinkPreviewData, type Message, MessageType } from '@hcengineering/communication-types'
+import { getEmployeeBySocialId } from '@hcengineering/contact'
+import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
 import {
   fillDefaults,
   generateId,
@@ -21,28 +26,23 @@ import {
   type Ref,
   SortingOrder
 } from '@hcengineering/core'
-import { jsonToMarkup, markupToJSON, markupToText } from '@hcengineering/text'
-import { showPopup } from '@hcengineering/ui'
-import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
-import { type Message, MessageType, type LinkPreviewData } from '@hcengineering/communication-types'
+import emojiPlugin from '@hcengineering/emoji'
 import {
   canDisplayLinkPreview,
   fetchLinkPreviewDetails,
   getClient,
   getCommunicationClient
 } from '@hcengineering/presentation'
-import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
-import cardPlugin, { type Card } from '@hcengineering/card'
-import { openDoc } from '@hcengineering/view-resources'
-import { getEmployeeBySocialId } from '@hcengineering/contact'
-import { get } from 'svelte/store'
-import chat from '@hcengineering/chat'
 import { makeRank } from '@hcengineering/rank'
-import emojiPlugin from '@hcengineering/emoji'
+import { jsonToMarkup, markupToJSON, markupToText } from '@hcengineering/text'
+import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
+import { showPopup } from '@hcengineering/ui'
+import { openDoc } from '@hcengineering/view-resources'
+import { get } from 'svelte/store'
 
 import IconAt from './components/icons/IconAt.svelte'
-import { type TextInputAction } from './types'
 import uiNext from './plugin'
+import { type TextInputAction } from './types'
 
 export const defaultMessageInputActions: TextInputAction[] = [
   {
@@ -115,13 +115,22 @@ export async function replyToThread (message: Message, parentCard: Card): Promis
     get(employeeByPersonIdStore).get(message.creator) ?? (await getEmployeeBySocialId(client, message.creator))
   const lastOne = await client.findOne(cardPlugin.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
   const title = createThreadTitle(message, parentCard)
-  const data = fillDefaults(
+  const data = fillDefaults<Card>(
     hierarchy,
     {
       title,
       rank: makeRank(lastOne?.rank, undefined),
       content: '' as MarkupBlobRef,
-      parent: parentCard._id
+      parent: parentCard._id,
+      blobs: {},
+      parentInfo: [
+        ...(parentCard.parentInfo ?? []),
+        {
+          _id: parentCard._id,
+          _class: parentCard._class,
+          title: parentCard.title
+        }
+      ]
     },
     chat.masterTag.Thread
   )
