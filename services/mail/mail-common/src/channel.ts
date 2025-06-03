@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { MeasureContext, PersonId, Ref, TxOperations, Doc, WorkspaceUuid, generateId } from '@hcengineering/core'
+import { MeasureContext, PersonId, Ref, TxOperations, WorkspaceUuid, generateId } from '@hcengineering/core'
+import { type Card } from '@hcengineering/card'
 import chat from '@hcengineering/chat'
 import mail from '@hcengineering/mail'
 import { PersonSpace } from '@hcengineering/contact'
@@ -27,7 +28,7 @@ const createMutex = new SyncMutex()
  */
 export class ChannelCache {
   // Key is `${spaceId}:${normalizedEmail}`
-  private readonly cache = new Map<string, Ref<Doc>>()
+  private readonly cache = new Map<string, Ref<Card>>()
 
   constructor (
     private readonly ctx: MeasureContext,
@@ -43,7 +44,7 @@ export class ChannelCache {
     participants: PersonId[],
     email: string,
     owner: PersonId
-  ): Promise<Ref<Doc> | undefined> {
+  ): Promise<Ref<Card>> {
     const normalizedEmail = normalizeEmail(email)
     const cacheKey = `${spaceId}:${normalizedEmail}`
 
@@ -78,7 +79,7 @@ export class ChannelCache {
     participants: PersonId[],
     email: string,
     personId: PersonId
-  ): Promise<Ref<Doc> | undefined> {
+  ): Promise<Ref<Card>> {
     const normalizedEmail = normalizeEmail(email)
     try {
       // First try to find existing channel
@@ -86,7 +87,7 @@ export class ChannelCache {
 
       if (channel != null) {
         this.ctx.info('Using existing channel', { me: normalizedEmail, space, channel: channel._id })
-        return channel._id
+        return channel._id as Ref<Card>
       }
 
       return await this.createNewChannel(space, participants, normalizedEmail, personId)
@@ -101,7 +102,9 @@ export class ChannelCache {
       // Remove failed lookup from cache
       this.cache.delete(`${space}:${normalizedEmail}`)
 
-      return undefined
+      throw new Error(
+        `Failed to create channel for ${normalizedEmail} in space ${space}: ${err instanceof Error ? err.message : String(err)}`
+      )
     }
   }
 
@@ -110,7 +113,7 @@ export class ChannelCache {
     participants: PersonId[],
     email: string,
     personId: PersonId
-  ): Promise<Ref<Doc> | undefined> {
+  ): Promise<Ref<Card>> {
     const normalizedEmail = normalizeEmail(email)
     const mutexKey = `channel:${this.workspace}:${space}:${normalizedEmail}`
     const releaseLock = await createMutex.lock(mutexKey)
@@ -124,7 +127,7 @@ export class ChannelCache {
           space,
           channel: existingChannel._id
         })
-        return existingChannel._id
+        return existingChannel._id as Ref<Card>
       }
 
       // Create new channel if it doesn't exist
@@ -156,7 +159,7 @@ export class ChannelCache {
         personId
       )
 
-      return channelId
+      return channelId as Ref<Card>
     } finally {
       releaseLock()
     }
