@@ -15,6 +15,17 @@
 import { decodeContent, decodeEncodedWords } from '../decode'
 import { MeasureContext } from '@hcengineering/core'
 
+jest.mock(
+  '../config',
+  () => ({
+    hookToken: 'test-hook-token',
+    ignoredAddresses: ['ignored@example.com'],
+    storageConfig: 'test-storage-config',
+    workspaceUrl: 'test-workspace'
+  }),
+  { virtual: true }
+)
+
 const mockCtx: MeasureContext = {
   info: jest.fn(),
   error: jest.fn(),
