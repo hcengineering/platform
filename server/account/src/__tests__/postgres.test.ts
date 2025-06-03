@@ -662,8 +662,7 @@ describe('PostgresAccountDB', () => {
                AND (s.last_processing_time IS NULL OR s.last_processing_time < $1)
                AND (w.region IS NULL OR w.region = '')
                ORDER BY s.last_visit DESC
-               LIMIT 1
-               FOR UPDATE SKIP LOCKED`.replace(/\s+/g, ' ')
+               LIMIT 1`.replace(/\s+/g, ' ')
         )
         expect(mockClient.unsafe.mock.calls[0][1]).toEqual([NOW - processingTimeoutMs])
       })
@@ -721,8 +720,7 @@ describe('PostgresAccountDB', () => {
                AND (s.last_processing_time IS NULL OR s.last_processing_time < $5)
                AND (w.region IS NULL OR w.region = '')
                ORDER BY s.last_visit DESC
-               LIMIT 1
-               FOR UPDATE SKIP LOCKED`
+               LIMIT 1`
             .replace(/\s+/g, ' ')
             .replace(/\(\s/g, '(')
             .replace(/\s\)/g, ')')
@@ -793,8 +791,7 @@ describe('PostgresAccountDB', () => {
                AND (s.last_processing_time IS NULL OR s.last_processing_time < $5)
                AND (w.region IS NULL OR w.region = '')
                ORDER BY s.last_visit DESC
-               LIMIT 1
-               FOR UPDATE SKIP LOCKED`
+               LIMIT 1`
             .replace(/\s+/g, ' ')
             .replace(/\(\s/g, '(')
             .replace(/\s\)/g, ')')
@@ -883,8 +880,7 @@ describe('PostgresAccountDB', () => {
                AND (s.last_processing_time IS NULL OR s.last_processing_time < $5)
                AND (w.region IS NULL OR w.region = '')
                ORDER BY s.last_visit DESC
-               LIMIT 1
-               FOR UPDATE SKIP LOCKED`
+               LIMIT 1`
             .replace(/\s+/g, ' ')
             .replace(/\(\s/g, '(')
             .replace(/\s\)/g, ')')
@@ -936,8 +932,7 @@ describe('PostgresAccountDB', () => {
                AND (s.last_processing_time IS NULL OR s.last_processing_time < $1)
                AND region = $2
                ORDER BY s.last_visit DESC
-               LIMIT 1
-               FOR UPDATE SKIP LOCKED`
+               LIMIT 1`
             .replace(/\s+/g, ' ')
             .replace(/\(\s/g, '(')
             .replace(/\s\)/g, ')')

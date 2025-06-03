@@ -565,13 +565,17 @@ describe('account utils', () => {
     test('should handle PlatformError', async () => {
       const errorStatus = new Status(Severity.ERROR, 'test-error' as any, {})
       const mockMethod = jest.fn().mockRejectedValue(new PlatformError(errorStatus))
+      Object.defineProperty(mockMethod, 'name', { value: 'mockAccMethod' })
       const wrappedMethod = wrap(mockMethod)
       const request = { id: 'req1', params: [] }
 
       const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
 
       expect(result).toEqual({ error: errorStatus })
-      expect(mockCtx.error).toHaveBeenCalledWith('error', { status: errorStatus })
+      expect(mockCtx.error).toHaveBeenCalledWith('Error while processing account method', {
+        status: errorStatus,
+        method: 'mockAccMethod'
+      })
     })
 
     test('should handle TokenError', async () => {
@@ -589,15 +593,17 @@ describe('account utils', () => {
     test('should handle internal server error', async () => {
       const error = new Error('unexpected error')
       const mockMethod = jest.fn().mockRejectedValue(error)
+      Object.defineProperty(mockMethod, 'name', { value: 'mockAccMethod' })
       const wrappedMethod = wrap(mockMethod)
       const request = { id: 'req1', params: [] }
 
       const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
 
       expect(result.error.code).toBe(platform.status.InternalServerError)
-      expect(mockCtx.error).toHaveBeenCalledWith('error', {
+      expect(mockCtx.error).toHaveBeenCalledWith('Error while processing account method', {
         status: expect.any(Status),
-        err: error
+        origErr: error,
+        method: 'mockAccMethod'
       })
     })
 

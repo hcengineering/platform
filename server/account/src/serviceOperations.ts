@@ -57,7 +57,6 @@ import {
   getRolePower,
   getSocialIdByKey,
   getWorkspaceById,
-  getWorkspaceInfoWithStatusById,
   getWorkspacesInfoWithStatusByIds,
   verifyAllowedServices,
   wrap,
@@ -289,8 +288,8 @@ export async function updateWorkspaceInfo (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  const workspace = await getWorkspaceInfoWithStatusById(db, workspaceUuid)
-  if (workspace === null) {
+  const wsExists = await db.workspace.exists({ uuid: workspaceUuid })
+  if (!wsExists) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
   progress = Math.round(progress)
@@ -298,17 +297,24 @@ export async function updateWorkspaceInfo (
   const ts = Date.now()
   const update: Partial<WorkspaceStatus> = {}
   const wsUpdate: Partial<Workspace> = {}
-  const query: Query<WorkspaceStatus> = { workspaceUuid: workspace.uuid }
+  const query: Query<WorkspaceStatus> = { workspaceUuid }
+
+  // Only read status for certain events because it is not needed for others
+  // and it interferes with status updates when concurrency is high
+  let wsStatus: WorkspaceStatus | null = null
+  if (['create-started', 'upgrade-started', 'migrate-clean-done'].includes(event)) {
+    wsStatus = await db.workspaceStatus.findOne({ workspaceUuid })
+  }
   switch (event) {
     case 'create-started':
       update.mode = 'creating'
-      if (workspace.status.mode !== 'creating') {
+      if (wsStatus != null && wsStatus.mode !== 'creating') {
         update.processingAttempts = 0
       }
       update.processingProgress = progress
       break
     case 'upgrade-started':
-      if (workspace.status.mode !== 'upgrading') {
+      if (wsStatus != null && wsStatus.mode !== 'upgrading') {
         update.processingAttempts = 0
       }
       update.mode = 'upgrading'
@@ -350,7 +356,7 @@ export async function updateWorkspaceInfo (
       update.processingProgress = progress
       break
     case 'migrate-clean-done':
-      wsUpdate.region = workspace.status.targetRegion ?? ''
+      wsUpdate.region = wsStatus?.targetRegion ?? ''
       update.mode = 'pending-restore'
       update.processingProgress = progress
       update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
@@ -400,7 +406,7 @@ export async function updateWorkspaceInfo (
   })
 
   if (Object.keys(wsUpdate).length !== 0) {
-    await db.workspace.updateOne({ uuid: workspace.uuid }, wsUpdate)
+    await db.workspace.updateOne({ uuid: workspaceUuid }, wsUpdate)
   }
 }
 

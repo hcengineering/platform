@@ -61,7 +61,9 @@ export async function createWorkspace (
   }
 
   const createPingHandle = setInterval(() => {
-    void handleWsEvent?.('ping', version, 0)
+    handleWsEvent?.('ping', version, 0).catch((err: any) => {
+      ctx.error('Error while updating progress', { origErr: err })
+    })
   }, 5000)
 
   try {
@@ -309,7 +311,9 @@ export async function upgradeWorkspaceWith (
   let progress = 0
 
   const updateProgressHandle = setInterval(() => {
-    void handleWsEvent?.('progress', version, progress)
+    handleWsEvent?.('progress', version, progress).catch((err: any) => {
+      ctx.error('Error while updating progress', { origErr: err })
+    })
   }, 5000)
 
   try {

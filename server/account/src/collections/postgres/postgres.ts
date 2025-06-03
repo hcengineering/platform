@@ -258,6 +258,15 @@ implements DbCollection<T> {
     }
   }
 
+  async exists (query: Query<T>, client?: Sql): Promise<boolean> {
+    const [whereClause, whereValues] = this.buildWhereClause(query)
+    const sql = `SELECT EXISTS (SELECT 1 FROM ${this.getTableName()} ${whereClause})`
+
+    const result = await this.unsafe(sql, whereValues, client)
+
+    return result[0]?.exists === true
+  }
+
   async find (query: Query<T>, sort?: Sort<T>, limit?: number, client?: Sql): Promise<T[]> {
     const sqlChunks: string[] = [this.buildSelectClause()]
     const [whereClause, whereValues] = this.buildWhereClause(query)
@@ -483,6 +492,7 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   readonly wsMembersName = 'workspace_members'
+  readonly pendingWorkspaceLockName = '_pending_workspace_lock'
 
   person: PostgresDbCollection<Person, 'uuid'>
   account: AccountPostgresDbCollection
@@ -544,6 +554,10 @@ export class PostgresAccountDB implements AccountDB {
 
   getWsMembersTableName (): string {
     return `${this.ns}.${this.wsMembersName}`
+  }
+
+  getPendingWorkspaceLockTableName (): string {
+    return `${this.ns}.${this.pendingWorkspaceLockName}`
   }
 
   async init (): Promise<void> {
@@ -943,10 +957,9 @@ export class PostgresAccountDB implements AccountDB {
     sqlChunks.push(`WHERE ${whereChunks.join(' AND ')}`)
     sqlChunks.push('ORDER BY s.last_visit DESC')
     sqlChunks.push('LIMIT 1')
-    // Note: SKIP LOCKED is supported starting from Postgres 9.5 and CockroachDB v22.2.1
-    sqlChunks.push('FOR UPDATE SKIP LOCKED')
 
     return await this.withRetry(async (rTx) => {
+      await rTx`SELECT 1 FROM ${this.client(this.getPendingWorkspaceLockTableName())} WHERE id = 1 FOR UPDATE;`
       // We must have all the conditions in the DB query and we cannot filter anything in the code
       // because of possible concurrency between account services.
       const res: any = await rTx.unsafe(sqlChunks.join(' '), values)

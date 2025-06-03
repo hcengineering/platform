@@ -188,7 +188,7 @@ export class WorkspaceWorker {
         try {
           return await accountClient.getPendingWorkspace(this.region, this.version, this.operation)
         } catch (err) {
-          ctx.error('Error getting pending workspace:', { err })
+          ctx.error('Error getting pending workspace:', { origErr: err })
         }
       })
       if (workspace == null) {
@@ -202,7 +202,7 @@ export class WorkspaceWorker {
             await this.doWorkspaceOperation(opContext, workspace, opt)
           } catch (err: any) {
             Analytics.handleError(err)
-            opContext.error('error', { err })
+            opContext.error('Error while performing workspace operation', { origErr: err })
           }
         })
         // sleep for a little bit to avoid bombarding the account service, also add jitter to avoid simultaneous requests from multiple workspace services
