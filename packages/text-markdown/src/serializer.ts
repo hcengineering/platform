@@ -352,12 +352,12 @@ export const storeMarks: Record<string, MarkProcessor> = {
         const { inAutolink } = state
         state.inAutolink = undefined
 
-        const url =
-          (mark.attrs?.href as string)
-            // eslint-disable-next-line
-            .replace(/[\(\)"]/g, '\\$&')
-            .replaceAll('<', '\\<')
-            .replaceAll('>', '\\>') ?? ''
+        const href = (mark.attrs?.href as string) ?? ''
+        const url = href
+          // eslint-disable-next-line
+          .replace(/[\(\)"]/g, '\\$&')
+          .replaceAll('<', '\\<')
+          .replaceAll('>', '\\>')
         const hasSpaces = url.includes(' ')
 
         return inAutolink === true
