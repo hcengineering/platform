@@ -45,7 +45,7 @@
     "ts-node-dev": "^2.0.0",
     "ts-standard": "^12.0.2",
     "bson": "^6.10.3",
-    "typescript": "^5.3.3",
+    "typescript": "^5.8.3",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",

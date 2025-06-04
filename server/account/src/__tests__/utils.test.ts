@@ -16,14 +16,14 @@
 import {
   AccountRole,
   type AccountUuid,
-  Branding,
-  MeasureContext,
-  Person,
-  PersonId,
-  PersonUuid,
+  type Branding,
+  type MeasureContext,
+  type Person,
+  type PersonId,
+  type PersonUuid,
   SocialIdType,
   systemAccountUuid,
-  WorkspaceUuid
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import {
   generateWorkspaceUrl,
@@ -72,7 +72,7 @@ import platform, { getMetadata, PlatformError, Severity, Status } from '@hcengin
 import { decodeTokenVerbose, generateToken, TokenError } from '@hcengineering/server-token'
 import { randomBytes } from 'crypto'
 
-import { AccountDB, AccountEventType, Workspace } from '../types'
+import { type AccountDB, AccountEventType, type Workspace } from '../types'
 import { accountPlugin } from '../plugin'
 
 // Mock platform with minimum required functionality

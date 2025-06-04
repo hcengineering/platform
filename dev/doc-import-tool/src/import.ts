@@ -1,24 +1,24 @@
-import attachment, { Attachment } from '@hcengineering/attachment'
+import attachment, { type Attachment } from '@hcengineering/attachment'
 import { getClient as getCollaboratorClient } from '@hcengineering/collaborator-client'
 import documents, {
-  ChangeControl,
-  ControlledDocument,
+  type ChangeControl,
+  type ControlledDocument,
   DEFAULT_PERIODIC_REVIEW_INTERVAL,
-  Document,
-  DocumentCategory,
+  type Document,
+  type DocumentCategory,
   DocumentState,
-  DocumentTemplate,
+  type DocumentTemplate,
   createChangeControl,
   createControlledDocFromTemplate,
   createDocumentTemplate
 } from '@hcengineering/controlled-documents'
 import core, {
-  AttachedData,
-  BackupClient,
-  Client as CoreClient,
-  Data,
-  MeasureContext,
-  Ref,
+  type AttachedData,
+  type BackupClient,
+  type Client as CoreClient,
+  type Data,
+  type MeasureContext,
+  type Ref,
   TxOperations,
   generateId,
   makeDocCollabId,
@@ -30,9 +30,9 @@ import { generateToken } from '@hcengineering/server-token'
 import { findAll, getOuterHTML } from 'domutils'
 import { parseDocument } from 'htmlparser2'
 
-import { Config } from './config'
-import { ExtractedFile } from './extract/extract'
-import { ExtractedSection } from './extract/sections'
+import { type Config } from './config'
+import { type ExtractedFile } from './extract/extract'
+import { type ExtractedSection } from './extract/sections'
 
 export default async function importExtractedFile (
   ctx: MeasureContext,

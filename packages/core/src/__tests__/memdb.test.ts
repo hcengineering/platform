@@ -13,23 +13,23 @@
 // limitations under the License.
 //
 
-import { Client } from '..'
+import { type Client } from '..'
 import type { Class, Doc, Obj, Ref } from '../classes'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
 import { TxOperations } from '../operations'
 import {
-  DocumentQuery,
-  FindOptions,
+  type DocumentQuery,
+  type FindOptions,
   SortingOrder,
-  WithLookup,
-  SearchQuery,
-  SearchOptions,
-  SearchResult
+  type WithLookup,
+  type SearchQuery,
+  type SearchOptions,
+  type SearchResult
 } from '../storage'
-import { Tx } from '../tx'
-import { genMinModel, test, TestMixin } from './minmodel'
+import { type Tx } from '../tx'
+import { genMinModel, test, type TestMixin } from './minmodel'
 
 const txes = genMinModel()
 

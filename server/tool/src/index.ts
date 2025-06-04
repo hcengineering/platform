@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { AccountClient } from '@hcengineering/account-client'
+import { type AccountClient } from '@hcengineering/account-client'
 import core, {
-  Branding,
+  type Branding,
   coreId,
   DOMAIN_BENCHMARK,
   DOMAIN_MIGRATION,
@@ -24,31 +24,37 @@ import core, {
   DOMAIN_TX,
   groupByArray,
   Hierarchy,
-  MeasureContext,
-  MigrationState,
+  type MeasureContext,
+  type MigrationState,
   ModelDb,
   platformNow,
   platformNowDiff,
   systemAccountUuid,
-  Tx,
-  TxOperations,
-  WorkspaceIds,
-  WorkspaceUuid,
+  type Tx,
+  type TxOperations,
+  type WorkspaceIds,
+  type WorkspaceUuid,
   type Client,
   type PersonInfo,
   type Ref,
   type WithLookup
 } from '@hcengineering/core'
-import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate, type MigrateMode } from '@hcengineering/model'
+import {
+  consoleModelLogger,
+  type MigrateOperation,
+  type ModelLogger,
+  tryMigrate,
+  type MigrateMode
+} from '@hcengineering/model'
 import {
   DomainIndexHelperImpl,
-  Pipeline,
-  StorageAdapter,
+  type Pipeline,
+  type StorageAdapter,
   type DbAdapter,
   type PlatformQueueProducer,
   type QueueWorkspaceMessage
 } from '@hcengineering/server-core'
-import { InitScript, WorkspaceInitializer } from './initializer'
+import { type InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
