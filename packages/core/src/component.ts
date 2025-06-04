@@ -62,7 +62,7 @@ import type {
   Version,
   AccountUuid
 } from './classes'
-import { Status, StatusCategory } from './status'
+import { type Status, type StatusCategory } from './status'
 import type {
   Tx,
   TxApplyIf,

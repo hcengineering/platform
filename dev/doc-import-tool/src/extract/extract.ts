@@ -1,10 +1,10 @@
 import { parseDocument } from 'htmlparser2'
-import { AnyNode, Document } from 'domhandler'
+import { type AnyNode, type Document } from 'domhandler'
 import { findAll } from 'domutils'
 
-import { FileSpec, FileSpecType, TocFileSpec } from './types'
+import { type FileSpec, FileSpecType, type TocFileSpec } from './types'
 import { createMetadataExtractor } from './meta'
-import { ExtractedSection, TocSectionExtractor, extractSections } from './sections'
+import { type ExtractedSection, TocSectionExtractor, extractSections } from './sections'
 
 /**
  * @public

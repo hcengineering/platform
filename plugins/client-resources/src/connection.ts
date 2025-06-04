@@ -165,7 +165,7 @@ class Connection implements ClientConnection {
         sessionStorage.removeItem(sKey)
       }
       window.addEventListener('beforeunload', () => {
-        sessionStorage.setItem(sKey, sessionId as string)
+        sessionStorage.setItem(sKey, sessionId)
       })
     } else {
       this.sessionId = generateId()

@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Sql, TransactionSql } from 'postgres'
+import { type Sql, type TransactionSql } from 'postgres'
 import {
   type Data,
   type Version,
   type Person,
   type WorkspaceMemberInfo,
-  AccountRole,
+  type AccountRole,
   type WorkspaceUuid,
   type AccountUuid
 } from '@hcengineering/core'

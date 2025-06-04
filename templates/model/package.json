@@ -4,17 +4,20 @@
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
-  "#overrideKeys": ["main", "types", "svelte"],
+  "#overrideKeys": [
+    "main",
+    "types",
+    "svelte"
+  ],
   "scripts": {
     "_phase:build": "compile transpile src",
     "_phase:validate": "compile validate",
     "_phase:format": "format src",
     "build": "compile",
-    "build:watch": "compile",      
+    "build:watch": "compile",
     "format": "format src"
   },
-  "peerDependencies": {
-  },
+  "peerDependencies": {},
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
@@ -24,12 +27,16 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint": "^8.54.0",
     "prettier": "^3.1.0",
-    "typescript":"^5.3.3"
+    "typescript": "^5.8.3",
+    "@types/node": "^22.15.29"
   },
   "#replaces": [
     ".eslintrc.js",
     "tsconfig.json",
     "config/rig.json"
   ],
-  "#clean": ["@types/heft-jest", "@rushstack/heft"]
+  "#clean": [
+    "@types/heft-jest",
+    "@rushstack/heft"
+  ]
 }

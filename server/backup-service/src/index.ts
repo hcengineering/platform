@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 import {
-  MeasureContext,
+  type MeasureContext,
   systemAccountUuid,
   type Branding,
   type WorkspaceIds,
-  WorkspaceInfoWithStatus
+  type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { backupService, doBackupWorkspace } from '@hcengineering/server-backup'

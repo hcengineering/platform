@@ -14,15 +14,25 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { BackupClient, DocChunk } from './backup'
-import { Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
+import { type BackupClient, type DocChunk } from './backup'
+import { type Class, DOMAIN_MODEL, type Doc, type Domain, type Ref, type Timestamp } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
-import { MeasureContext, MeasureMetricsContext } from './measurements'
+import { type MeasureContext, MeasureMetricsContext } from './measurements'
 import { ModelDb } from './memdb'
-import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup } from './storage'
-import { SearchOptions, SearchQuery, SearchResult } from './storage'
-import { Tx, TxCUD, WorkspaceEvent, type TxWorkspaceEvent } from './tx'
+import type {
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  FulltextStorage,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
+  Storage,
+  TxResult,
+  WithLookup
+} from './storage'
+import { type Tx, type TxCUD, type TxWorkspaceEvent, WorkspaceEvent } from './tx'
 import { platformNow, platformNowDiff, toFindResult } from './utils'
 
 /**
@@ -299,7 +309,7 @@ export async function createClient (
         // We have upgrade procedure and need rebuild all stuff.
         hierarchy = new Hierarchy()
         model = new ModelDb(hierarchy)
-        ;(client as ClientImpl).setModel(hierarchy, model)
+        client.setModel(hierarchy, model)
 
         ctx.withSync('build-model', {}, (ctx) => {
           buildModel(ctx, current, modelFilter, hierarchy, model)

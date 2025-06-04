@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { ClientConnectEvent, DocChunk, generateId } from '..'
+import { ClientConnectEvent, type DocChunk, generateId } from '..'
 import type { Class, Doc, Domain, Ref, Timestamp } from '../classes'
-import { ClientConnection } from '../client'
+import { type ClientConnection } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'

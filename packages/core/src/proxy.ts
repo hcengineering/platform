@@ -1,5 +1,5 @@
 import { PlatformError, unknownError } from '@hcengineering/platform'
-import { Ref } from '.'
+import { type Ref } from '.'
 import type { Doc, Mixin } from './classes'
 
 const PROXY_TARGET_KEY = '$___proxy_target'
