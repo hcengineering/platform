@@ -44,7 +44,7 @@ import { generateMessageId } from '@hcengineering/communication-shared'
 
 import { BaseConfig, type Attachment } from './types'
 import { EmailMessage, MailRecipient, MessageData } from './types'
-import { getMdContent } from './utils'
+import { getBlobMetadata, getMdContent } from './utils'
 import { PersonCacheFactory } from './person'
 import { PersonSpacesCacheFactory } from './personSpaces'
 import { ChannelCache, ChannelCacheFactory } from './channel'
@@ -252,7 +252,7 @@ async function saveMessageToSpaces (
       }
 
       const messageId = await createMailMessage(producer, config, messageData, threadId)
-      await createFiles(producer, config, attachments, messageData, threadId, messageId)
+      await createFiles(ctx, producer, config, attachments, messageData, threadId, messageId)
       if (!isReply) {
         await addCollaborators(producer, config, messageData, threadId)
         await createMailThread(producer, config, messageData, messageId)
@@ -305,6 +305,7 @@ async function createMailMessage (
 }
 
 async function createFiles (
+  ctx: MeasureContext,
   producer: Producer,
   config: BaseConfig,
   attachments: Attachment[],
@@ -313,7 +314,7 @@ async function createFiles (
   messageId: MessageID
 ): Promise<void> {
   const fileData: Buffer[] = attachments.map((a) => {
-    const creeateFileEvent: CreateFileEvent = {
+    const createFileEvent: CreateFileEvent = {
       type: MessageRequestEventType.CreateFile,
       card: messageData.isReply ? threadId : messageData.channel,
       message: messageId,
@@ -323,10 +324,11 @@ async function createFiles (
         blobId: a.id as Ref<Blob>,
         type: a.contentType,
         filename: a.name,
-        size: a.data.length
+        size: a.data.length,
+        meta: getBlobMetadata(ctx, a)
       }
     }
-    return Buffer.from(JSON.stringify(creeateFileEvent))
+    return Buffer.from(JSON.stringify(createFileEvent))
   })
   const fileEvents = fileData.map((data) => ({
     key: Buffer.from(messageData.channel ?? messageData.spaceId),
