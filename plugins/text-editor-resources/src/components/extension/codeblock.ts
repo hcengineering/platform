@@ -23,6 +23,8 @@ import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
 import { createLowlight } from 'lowlight'
 import { isChangeEditable } from './editable'
+import { TextSelection } from '@tiptap/pm/state'
+import { Fragment } from '@tiptap/pm/model'
 
 type Lowlight = ReturnType<typeof createLowlight>
 
@@ -40,11 +42,32 @@ export const CodeBlockHighlighExtension = CodeBlockLowlight.extend<CodeBlockLowl
 
   addCommands () {
     return {
-      setCodeBlock:
-        (attributes) =>
-          ({ commands }) => {
-            return commands.setNode(this.name, attributes)
-          },
+      setCodeBlock: (attributes) => ({ editor, commands }) => {
+        return commands.command(({ tr, dispatch }) => {
+          const { from, to } = tr.selection
+          const codeBlockType = editor.schema.nodes[this.name]
+          const paragraphType = editor.schema.nodes.paragraph
+
+          if (!codeBlockType || !paragraphType) {
+            return false
+          }
+
+          const codeBlockNode = codeBlockType.create(attributes)
+          const paragraphNode = paragraphType.create()
+
+          const fragmentToInsert = Fragment.fromArray([codeBlockNode, paragraphNode])
+
+          tr.replaceWith(from, to, fragmentToInsert)
+
+          const newSelectionPos = from + codeBlockNode.nodeSize + 1
+          tr.setSelection(TextSelection.create(tr.doc, newSelectionPos))
+
+          if (dispatch) {
+            dispatch(tr.scrollIntoView())
+          }
+          return true
+        })
+      },
       toggleCodeBlock:
         (attributes) =>
           ({ chain, commands, state }) => {
@@ -60,10 +83,10 @@ export const CodeBlockHighlighExtension = CodeBlockLowlight.extend<CodeBlockLowl
                 }
                 if (node.type.name !== 'paragraph') {
                   if (pos + 1 <= from && pos + node.nodeSize - 1 >= to) {
-                  // skip nodes outside of the selected range
+                    // skip nodes outside of the selected range
                     return false
                   } else {
-                  // cannot merge non-paragraph nodes inside selection
+                    // cannot merge non-paragraph nodes inside selection
                     hasParagraphsOnlySelected = false
                     return false
                   }
@@ -78,10 +101,17 @@ export const CodeBlockHighlighExtension = CodeBlockLowlight.extend<CodeBlockLowl
               if (hasParagraphsOnlySelected && textArr.length > 1) {
                 return chain()
                   .command(({ state, tr }) => {
-                    tr.replaceRangeWith(from, to, this.type.create(attributes, state.schema.text(textArr.join('\n'))))
+                    const codeBlockNode = this.type.create(attributes, state.schema.text(textArr.join('\n')))
+                    const paragraphNode = state.schema.nodes.paragraph.create()
+                    const fragmentToInsert = Fragment.fromArray([codeBlockNode, paragraphNode])
+                    
+                    tr.replaceWith(from, to, fragmentToInsert)
+                    
+                    const newSelectionPos = from + codeBlockNode.nodeSize + 1
+                    tr.setSelection(TextSelection.create(tr.doc, newSelectionPos))
+                    
                     return true
                   })
-                  .setTextSelection({ from: from + 2, to: from + 2 })
                   .run()
               }
             }
@@ -94,19 +124,64 @@ export const CodeBlockHighlighExtension = CodeBlockLowlight.extend<CodeBlockLowl
     return [
       textblockTypeInputRule({
         find: backtickInputRegex,
-        type: this.type
+        type: this.type,
+        getAttributes: (match) => {
+          return { language: match[3] || null }
+        }
       }),
       textblockTypeInputRule({
         find: tildeInputRegex,
-        type: this.type
+        type: this.type,
+        getAttributes: (match) => {
+          return { language: match[3] || null }
+        }
       })
     ]
   },
 
   addProseMirrorPlugins () {
-    return [...(this.parent?.() ?? []), LanguageSelector(this.options)]
+    return [...(this.parent?.() ?? []), LanguageSelector(this.options), CodeBlockEnhancer()]
   }
 })
+
+function CodeBlockEnhancer(): Plugin {
+  return new Plugin({
+    key: new PluginKey('codeblock-enhancer'),
+    appendTransaction(transactions, oldState, newState) {
+      const tr = newState.tr
+      let modified = false
+
+      transactions.forEach(transaction => {
+        if (!transaction.docChanged) return
+
+        transaction.steps.forEach((step: any) => {
+          if (step.slice) {
+            const content = step.slice.content
+            content.descendants((node: any, pos: number) => {
+              if (node.type.name === 'codeBlock') {
+                const nodePos = step.from + pos
+                const nodeEnd = nodePos + node.nodeSize
+                
+                const nextNode = newState.doc.nodeAt(nodeEnd)
+                
+                if (!nextNode || nextNode.type.name !== 'paragraph') {
+                  const paragraphType = newState.schema.nodes.paragraph
+                  if (paragraphType) {
+                    const newParagraph = paragraphType.create()
+                    tr.insert(nodeEnd, newParagraph)
+                    modified = true
+                  }
+                }
+              }
+            })
+          }
+        })
+      })
+
+      return modified ? tr : null
+    }
+  })
+}
 
 export function LanguageSelector (options: CodeBlockLowlightOptions): Plugin {
   return new Plugin<DecorationSet>({
