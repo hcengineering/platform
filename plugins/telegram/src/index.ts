@@ -14,7 +14,7 @@
 //
 
 import { ChannelItem } from '@hcengineering/contact'
-import { AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import { AttachedDoc, Class, Doc, IntegrationKind, Ref, Timestamp } from '@hcengineering/core'
 import { NotificationProvider, NotificationType } from '@hcengineering/notification'
 import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -57,6 +57,11 @@ export interface SharedTelegramMessage extends BaseTelegramMessage {
 export interface SharedTelegramMessages extends AttachedDoc {
   messages: SharedTelegramMessage[]
 }
+
+/**
+ * @public
+ */
+export const telegramIntegrationKind = 'telegram-bot' as IntegrationKind
 
 /**
  * @public

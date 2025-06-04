@@ -62,7 +62,6 @@ export interface ProjectCredentialsData {
   client_secret: string
   redirect_uris: string[]
 }
-export const GMAIL_INTEGRATION = 'gmail'
 
 export enum SecretType {
   TOKEN = 'token'

@@ -14,7 +14,7 @@
 //
 
 import { ChannelItem } from '@hcengineering/contact'
-import type { PersonId, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import type { PersonId, AttachedDoc, Class, Doc, Ref, Timestamp, IntegrationKind } from '@hcengineering/core'
 import { NotificationProvider, NotificationType } from '@hcengineering/notification'
 import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -75,6 +75,11 @@ export interface SharedMessage extends Doc {
 export interface SharedMessages extends AttachedDoc {
   messages: SharedMessage[]
 }
+
+/**
+ * @public
+ */
+export const gmailIntegrationKind = 'gmail' as IntegrationKind
 
 /**
  * @public

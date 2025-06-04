@@ -66,6 +66,7 @@ import CreateAttributePopup from './components/CreateAttributePopup.svelte'
 import CreateRelation from './components/CreateRelation.svelte'
 import EditRelation from './components/EditRelation.svelte'
 import Mailboxes from './components/Mailboxes.svelte'
+import NewIntegrations from './components/integrations/NewIntegrations.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
 
@@ -109,6 +110,7 @@ export default async (): Promise<Resources> => ({
     Password,
     WorkspaceSettings,
     Integrations,
+    NewIntegrations,
     Support,
     Privacy,
     Terms,

@@ -14,7 +14,7 @@
 //
 
 import { AccountClient, IntegrationSecret } from '@hcengineering/account-client'
-import calendar from '@hcengineering/calendar'
+import calendar, { calendarIntegrationKind } from '@hcengineering/calendar'
 import contact, { getPrimarySocialId } from '@hcengineering/contact'
 import core, { AccountUuid, MeasureContext, PersonId, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import setting from '@hcengineering/setting'
@@ -24,7 +24,7 @@ import { encode64 } from './base64'
 import { getClient } from './client'
 import { addUserByEmail, removeUserByEmail } from './kvsUtils'
 import { IncomingSyncManager, lock } from './sync'
-import { CALENDAR_INTEGRATION, GoogleEmail, SCOPES, State, Token, User } from './types'
+import { GoogleEmail, SCOPES, State, Token, User } from './types'
 import { getGoogleClient, getWorkspaceToken } from './utils'
 import { WatchController } from './watch'
 
@@ -113,7 +113,7 @@ export class AuthController {
     }
     await removeUserByEmail(this.user, value)
     const data = {
-      kind: CALENDAR_INTEGRATION,
+      kind: calendarIntegrationKind,
       workspaceUuid: this.user.workspace,
       key: value,
       socialId: this.user.userId
@@ -233,7 +233,7 @@ export class AuthController {
       async () => {
         const integration = await this.accountClient.getIntegration({
           socialId: this.user.userId,
-          kind: CALENDAR_INTEGRATION,
+          kind: calendarIntegrationKind,
           workspaceUuid: this.user.workspace
         })
         if (integration != null) {
@@ -241,7 +241,7 @@ export class AuthController {
         }
         await this.accountClient.createIntegration({
           socialId: this.user.userId,
-          kind: CALENDAR_INTEGRATION,
+          kind: calendarIntegrationKind,
           workspaceUuid: this.user.workspace
         })
       },
@@ -257,7 +257,7 @@ export class AuthController {
     }
     const data: IntegrationSecret = {
       socialId: this.user.userId,
-      kind: CALENDAR_INTEGRATION,
+      kind: calendarIntegrationKind,
       workspaceUuid: this.user.workspace,
       key: email,
       secret: JSON.stringify(_token)
@@ -265,7 +265,7 @@ export class AuthController {
     try {
       const currentIntegration = await this.accountClient.getIntegrationSecret({
         socialId: this.user.userId,
-        kind: CALENDAR_INTEGRATION,
+        kind: calendarIntegrationKind,
         workspaceUuid: this.user.workspace,
         key: email
       })

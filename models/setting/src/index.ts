@@ -15,7 +15,7 @@
 
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
-import { AccountRole, DOMAIN_MODEL, type Blob, type Domain, type Ref, type AccountUuid } from '@hcengineering/core'
+import { AccountRole, DOMAIN_MODEL, type Blob, type Domain, type Ref, type AccountUuid, type IntegrationKind } from '@hcengineering/core'
 import { Mixin, Model, type Builder, UX } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
@@ -86,6 +86,8 @@ export class TIntegrationType extends TDoc implements IntegrationType {
   reconnectComponent?: AnyComponent
   onDisconnect!: Handler
   configureComponent?: AnyComponent
+  kind!: IntegrationKind
+  stateComponent?: AnyComponent
 }
 
 @Mixin(setting.mixin.Editable, core.class.Class)
@@ -213,6 +215,20 @@ export function createModel (builder: Builder): void {
       order: 1500
     },
     setting.ids.Integrations
+  )
+  builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
+      name: 'new-integrations',
+      label: setting.string.Integrations,
+      icon: setting.icon.Integrations,
+      component: setting.component.NewIntegrations,
+      group: 'settings-account',
+      role: AccountRole.User,
+      order: 1600
+    },
+    setting.ids.NewIntegrations
   )
   builder.createDoc(
     setting.class.SettingsCategory,

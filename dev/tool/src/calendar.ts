@@ -1,4 +1,4 @@
-import calendar from '@hcengineering/calendar'
+import calendar, { calendarIntegrationKind } from '@hcengineering/calendar'
 import {
   type PersonId,
   type WorkspaceInfoWithStatus,
@@ -56,8 +56,6 @@ interface SyncHistory {
 interface WorkspaceInfoProvider {
   getWorkspaceInfo: (workspaceUuid: WorkspaceUuid) => Promise<WorkspaceInfoWithStatus | undefined>
 }
-
-const CALENDAR_INTEGRATION = 'google-calendar'
 
 export async function performCalendarAccountMigrations (db: Db, region: string | null, kvsUrl: string): Promise<void> {
   console.log('Start calendar migrations')
@@ -144,14 +142,14 @@ async function migrateCalendarIntegrations (
         }
         // Check/create integration in account
         const existing = await accountClient.getIntegration({
-          kind: CALENDAR_INTEGRATION,
+          kind: calendarIntegrationKind,
           workspaceUuid: ws.uuid,
           socialId: personId
         })
 
         if (existing == null) {
           await accountClient.createIntegration({
-            kind: CALENDAR_INTEGRATION,
+            kind: calendarIntegrationKind,
             workspaceUuid: ws.uuid,
             socialId: personId
           })
@@ -159,7 +157,7 @@ async function migrateCalendarIntegrations (
 
         const existingToken = await accountClient.getIntegrationSecret({
           key: token.email,
-          kind: CALENDAR_INTEGRATION,
+          kind: calendarIntegrationKind,
           socialId: personId,
           workspaceUuid: ws.uuid
         })
@@ -172,7 +170,7 @@ async function migrateCalendarIntegrations (
         if (existingToken == null) {
           await accountClient.addIntegrationSecret({
             key: newToken.email,
-            kind: CALENDAR_INTEGRATION,
+            kind: calendarIntegrationKind,
             socialId: personId,
             secret: JSON.stringify(newToken),
             workspaceUuid: newToken.workspace
@@ -184,7 +182,7 @@ async function migrateCalendarIntegrations (
           }
           await accountClient.updateIntegrationSecret({
             key: newToken.email,
-            kind: CALENDAR_INTEGRATION,
+            kind: calendarIntegrationKind,
             socialId: personId,
             secret: JSON.stringify(updatedToken),
             workspaceUuid: newToken.workspace
@@ -213,7 +211,7 @@ async function migrateCalendarHistory (
     const calendarHistory = db.collection<OldHistory>('calendarHistories')
     const calendarHistories = await calendarHistory.find({}).toArray()
 
-    const kvsClient = getKvsClient(CALENDAR_INTEGRATION, kvsUrl, token)
+    const kvsClient = getKvsClient(calendarIntegrationKind, kvsUrl, token)
 
     for (const history of [...calendarHistories, ...allHistories]) {
       try {
@@ -231,8 +229,8 @@ async function migrateCalendarHistory (
 
         const key =
           history.calendarId != null
-            ? `${CALENDAR_INTEGRATION}:eventHistory:${ws.uuid}:${personId}:${history.email}:${history.calendarId}`
-            : `${CALENDAR_INTEGRATION}:calendarsHistory:${ws.uuid}:${personId}:${history.email}`
+            ? `${calendarIntegrationKind}:eventHistory:${ws.uuid}:${personId}:${history.email}:${history.calendarId}`
+            : `${calendarIntegrationKind}:calendarsHistory:${ws.uuid}:${personId}:${history.email}`
 
         await kvsClient.setValue(key, history.historyId)
       } catch (e) {
@@ -248,7 +246,7 @@ async function migrateCalendarHistory (
         continue
       }
 
-      const key = `${CALENDAR_INTEGRATION}:calendarSync:${ws.uuid}`
+      const key = `${calendarIntegrationKind}:calendarSync:${ws.uuid}`
       await kvsClient.setValue(key, history.timestamp)
     }
     console.log('Finished migrating gmail history, count:', allHistories.length)

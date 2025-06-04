@@ -14,7 +14,7 @@
 //
 
 import { AccountClient } from '@hcengineering/account-client'
-import calendar, { Event, ExternalCalendar } from '@hcengineering/calendar'
+import calendar, { Event, ExternalCalendar, calendarIntegrationKind } from '@hcengineering/calendar'
 import core, {
   MeasureContext,
   RateLimiter,
@@ -23,15 +23,16 @@ import core, {
   WorkspaceUuid,
   type Ref
 } from '@hcengineering/core'
+import contact, { getPersonRefsBySocialIds, Person } from '@hcengineering/contact'
+import setting from '@hcengineering/setting'
+
 import { CalendarClient } from './calendar'
 import { getClient } from './client'
 import config from './config'
 import { addUserByEmail, getSyncHistory, setSyncHistory } from './kvsUtils'
 import { getWorkspaceTokens } from './tokens'
-import { CALENDAR_INTEGRATION, GoogleEmail, Token } from './types'
+import { GoogleEmail, Token } from './types'
 import { getWorkspaceToken } from './utils'
-import contact, { getPersonRefsBySocialIds, Person } from '@hcengineering/contact'
-import setting from '@hcengineering/setting'
 
 export class WorkspaceClient {
   private readonly clients = new Map<GoogleEmail, CalendarClient>()
@@ -216,7 +217,7 @@ async function getTokenByEvent (
   if (_calendar === undefined) return
   const res = await accountClient.getIntegrationSecret({
     socialId: event.user,
-    kind: CALENDAR_INTEGRATION,
+    kind: calendarIntegrationKind,
     workspaceUuid: workspace,
     key: _calendar.externalUser
   })

@@ -63,6 +63,7 @@ import setting from '@hcengineering/setting'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import workbench from '@hcengineering/model-workbench'
 import { WidgetType } from '@hcengineering/workbench'
+import { calendarIntegrationKind } from '@hcengineering/calendar'
 
 import calendar from './plugin'
 
@@ -230,7 +231,8 @@ export function createModel (builder: Builder): void {
       createComponent: calendar.component.IntegrationConnect,
       onDisconnect: calendar.handler.DisconnectHandler,
       reconnectComponent: calendar.component.IntegrationConnect,
-      configureComponent: calendar.component.IntegrationConfigure
+      configureComponent: calendar.component.IntegrationConfigure,
+      kind: calendarIntegrationKind
     },
     calendar.integrationType.Calendar
   )

@@ -74,7 +74,8 @@ import {
   type GithubUserInfo,
   type LastReviewState,
   type MinimizeReason,
-  type PullRequestMergeable
+  type PullRequestMergeable,
+  githubIntegrationKind
 } from '@hcengineering/github'
 
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
@@ -582,7 +583,8 @@ export function createModel (builder: Builder): void {
       icon: github.component.GithubIcon,
       allowMultiple: false,
       createComponent: github.component.Connect,
-      configureComponent: github.component.Configure
+      configureComponent: github.component.Configure,
+      kind: githubIntegrationKind
     },
     github.integrationType.Github
   )

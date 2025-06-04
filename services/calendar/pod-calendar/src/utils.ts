@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { RecurringRule } from '@hcengineering/calendar'
+import { RecurringRule, calendarIntegrationKind } from '@hcengineering/calendar'
 import { systemAccountUuid, Timestamp, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { OAuth2Client } from 'google-auth-library'
 import { calendar_v3, google } from 'googleapis'
 import config from './config'
-import { CALENDAR_INTEGRATION, ReccuringData, State, type Token, type User } from './types'
+import { ReccuringData, State, type Token, type User } from './types'
 
 export class DeferredPromise<T = any> {
   public readonly promise: Promise<T>
@@ -263,11 +263,11 @@ export function getServiceToken (): string {
 }
 
 export function getWorkspaceToken (workspace: WorkspaceUuid): string {
-  return generateToken(systemAccountUuid, workspace, { service: CALENDAR_INTEGRATION })
+  return generateToken(systemAccountUuid, workspace, { service: calendarIntegrationKind })
 }
 
 function generateServiceToken (): string {
-  return generateToken(systemAccountUuid, undefined, { service: CALENDAR_INTEGRATION })
+  return generateToken(systemAccountUuid, undefined, { service: calendarIntegrationKind })
 }
 
 export function getGoogleClient (): {

@@ -17,6 +17,7 @@ import type {
   Class,
   Client,
   Doc,
+  IntegrationKind,
   Markup,
   Mixin,
   PersonId,
@@ -155,6 +156,11 @@ export interface Schedule extends Doc {
   availability: ScheduleAvailability
   timeZone: string
 }
+
+/**
+ * @public
+ */
+export const calendarIntegrationKind = 'google-calendar' as IntegrationKind
 
 /**
  * @public

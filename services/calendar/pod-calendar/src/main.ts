@@ -19,6 +19,7 @@ import { setMetadata } from '@hcengineering/platform'
 import serverClient, { getAccountClient } from '@hcengineering/server-client'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
+import { calendarIntegrationKind } from '@hcengineering/calendar'
 import { type IncomingHttpHeaders } from 'http'
 import { join } from 'path'
 import { AuthController } from './auth'
@@ -26,7 +27,7 @@ import { decode64 } from './base64'
 import { CalendarController } from './calendarController'
 import config from './config'
 import { createServer, listen } from './server'
-import { CALENDAR_INTEGRATION, GoogleEmail, type Endpoint, type State } from './types'
+import { GoogleEmail, type Endpoint, type State } from './types'
 import { getServiceToken } from './utils'
 import { WatchController } from './watch'
 import { PushHandler } from './pushHandler'
@@ -40,14 +41,14 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 }
 
 export const main = async (): Promise<void> => {
-  const ctx = initStatisticsContext(CALENDAR_INTEGRATION, {
+  const ctx = initStatisticsContext(calendarIntegrationKind, {
     factory: () =>
       new MeasureMetricsContext(
         'calendar',
         {},
         {},
         newMetrics(),
-        new SplitLogger(CALENDAR_INTEGRATION, {
+        new SplitLogger(calendarIntegrationKind, {
           root: join(process.cwd(), 'logs'),
           enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
         })

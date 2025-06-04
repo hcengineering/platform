@@ -91,6 +91,7 @@ export interface Integration {
   kind: string // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
   workspaceUuid: WorkspaceUuid | null
   data?: Record<string, any>
+  disabled?: boolean
 }
 
 export interface SocialId extends SocialIdBase {

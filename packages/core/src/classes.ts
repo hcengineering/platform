@@ -870,3 +870,8 @@ export interface AccountInfo {
 }
 
 export type SocialKey = Pick<SocialId, 'type' | 'value'>
+
+/**
+ * @public
+ */
+export type IntegrationKind = string & { __IntegrationKind: true }

@@ -33,11 +33,12 @@ import attachment from '@hcengineering/model-attachment'
 import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import setting from '@hcengineering/setting'
-import type {
-  NewTelegramMessage,
-  SharedTelegramMessage,
-  SharedTelegramMessages,
-  TelegramMessage
+import {
+  type NewTelegramMessage,
+  type SharedTelegramMessage,
+  type SharedTelegramMessages,
+  type TelegramMessage,
+  telegramIntegrationKind
 } from '@hcengineering/telegram'
 import templates from '@hcengineering/templates'
 import view from '@hcengineering/view'
@@ -161,7 +162,8 @@ export function createModel (builder: Builder): void {
       allowMultiple: false,
       createComponent: telegram.component.Connect,
       reconnectComponent: telegram.component.Reconnect,
-      onDisconnect: telegram.handler.DisconnectHandler
+      onDisconnect: telegram.handler.DisconnectHandler,
+      kind: telegramIntegrationKind
     },
     telegram.integrationType.Telegram
   )

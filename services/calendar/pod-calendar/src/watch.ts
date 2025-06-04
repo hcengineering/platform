@@ -2,10 +2,11 @@ import { AccountClient } from '@hcengineering/account-client'
 import { generateId, isActiveMode, PersonId, WorkspaceUuid } from '@hcengineering/core'
 import { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
+import { calendarIntegrationKind } from '@hcengineering/calendar'
 import config from './config'
 import { getKvsClient } from './kvsUtils'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
-import { CALENDAR_INTEGRATION, EventWatch, GoogleEmail, Token, User, Watch, WatchBase } from './types'
+import { EventWatch, GoogleEmail, Token, User, Watch, WatchBase } from './types'
 import { getGoogleClient } from './utils'
 
 export class WatchClient {
@@ -31,7 +32,7 @@ export class WatchClient {
 
   private async getWatches (): Promise<Record<string, Watch>> {
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:${this.user.workspace}:${this.user.userId}:${this.user.email}`
+    const key = `${calendarIntegrationKind}:watch:${this.user.workspace}:${this.user.userId}:${this.user.email}`
     const watches = await client.listKeys<Watch>(key)
     return watches ?? {}
   }
@@ -104,7 +105,7 @@ async function watchCalendars (user: User, email: GoogleEmail, googleClient: cal
   const res = await googleClient.calendarList.watch({ requestBody: body })
   if (res.data.expiration != null && res.data.resourceId !== null) {
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:${user.workspace}:${user.userId}:${email}:null`
+    const key = `${calendarIntegrationKind}:watch:${user.workspace}:${user.userId}:${email}:null`
     await client.setValue<Watch>(key, {
       userId: user.userId,
       workspace: user.workspace,
@@ -133,7 +134,7 @@ async function watchCalendar (
   const res = await googleClient.events.watch({ calendarId, requestBody: body })
   if (res.data.expiration != null && res.data.resourceId != null) {
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:${user.workspace}:${user.userId}:${email}:${calendarId}`
+    const key = `${calendarIntegrationKind}:watch:${user.workspace}:${user.userId}:${email}:${calendarId}`
     await client.setValue<Watch>(key, {
       userId: user.userId,
       workspace: user.workspace,
@@ -164,7 +165,7 @@ export class WatchController {
 
   private async getUserWatches (userId: PersonId, workspace: WorkspaceUuid): Promise<Record<string, Watch>> {
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:${workspace}:${userId}`
+    const key = `${calendarIntegrationKind}:watch:${workspace}:${userId}`
     return (await client.listKeys<Watch>(key)) ?? {}
   }
 
@@ -176,7 +177,7 @@ export class WatchController {
     }
     const token = await this.accountClient.getIntegrationSecret({
       socialId: user.userId,
-      kind: CALENDAR_INTEGRATION,
+      kind: calendarIntegrationKind,
       workspaceUuid: user.workspace,
       key: user.email
     })
@@ -204,7 +205,7 @@ export class WatchController {
   async checkAll (): Promise<void> {
     const expired = Date.now() + 24 * 60 * 60 * 1000
     const client = getKvsClient()
-    const key = `${CALENDAR_INTEGRATION}:watch:`
+    const key = `${calendarIntegrationKind}:watch:`
     const watches = (await client.listKeys<Watch>(key)) ?? {}
     const toRefresh: Watch[] = []
     for (const key in watches) {
@@ -230,7 +231,7 @@ export class WatchController {
     const ids = [...workspaces]
     if (ids.length === 0) return
     const infos = await this.accountClient.getWorkspacesInfo(ids)
-    const tokens = await this.accountClient.listIntegrationsSecrets({ kind: CALENDAR_INTEGRATION })
+    const tokens = await this.accountClient.listIntegrationsSecrets({ kind: calendarIntegrationKind })
     for (const group of groups.values()) {
       try {
         const userId = group[0].userId
@@ -267,7 +268,7 @@ export class WatchController {
   ): Promise<void> {
     if (!force) {
       const client = getKvsClient()
-      const key = `${CALENDAR_INTEGRATION}:watch:${user.workspace}:${user.userId}:${email}:${calendarId ?? 'null'}`
+      const key = `${calendarIntegrationKind}:watch:${user.workspace}:${user.userId}:${email}:${calendarId ?? 'null'}`
       const exists = await client.getValue<Watch>(key)
       if (exists != null) {
         return

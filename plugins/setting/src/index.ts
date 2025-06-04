@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref, AccountUuid } from '@hcengineering/core'
+import type { AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref, AccountUuid, IntegrationKind } from '@hcengineering/core'
 import type { Metadata, Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, Resource, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
@@ -37,8 +37,10 @@ export interface IntegrationType extends Doc {
   label: IntlString
   description: IntlString
   descriptionComponent?: AnyComponent
+  stateComponent?: AnyComponent
   icon: AnyComponent
   allowMultiple: boolean
+  kind: IntegrationKind
 
   createComponent?: AnyComponent
   onDisconnect?: Handler
@@ -127,6 +129,7 @@ export default plugin(settingId, {
     Password: '' as Ref<Doc>,
     Setting: '' as Ref<Doc>,
     Integrations: '' as Ref<Doc>,
+    NewIntegrations: '' as Ref<Doc>,
     Relations: '' as Ref<Doc>,
     Support: '' as Ref<Doc>,
     Privacy: '' as Ref<Doc>,
@@ -163,6 +166,7 @@ export default plugin(settingId, {
     Password: '' as AnyComponent,
     WorkspaceSettings: '' as AnyComponent,
     Integrations: '' as AnyComponent,
+    NewIntegrations: '' as AnyComponent,
     Support: '' as AnyComponent,
     Privacy: '' as AnyComponent,
     Terms: '' as AnyComponent,

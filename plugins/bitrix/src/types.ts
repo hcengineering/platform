@@ -1,5 +1,5 @@
 import { ChannelProvider } from '@hcengineering/contact'
-import { AnyAttribute, AttachedDoc, Class, Doc, Mixin, Ref } from '@hcengineering/core'
+import { AnyAttribute, AttachedDoc, Class, Doc, IntegrationKind, Mixin, Ref } from '@hcengineering/core'
 import { ExpertKnowledge, InitialKnowledge, MeaningfullKnowledge } from '@hcengineering/tags'
 import { ProjectType } from '@hcengineering/task'
 
@@ -375,3 +375,8 @@ string,
   urlShow: string
 }
 >
+
+/**
+ * @public
+ */
+export const bitrixIntegrationKind = 'bitrix' as IntegrationKind
