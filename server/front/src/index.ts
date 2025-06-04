@@ -529,12 +529,10 @@ export function start (
               { workspace: wsIds.uuid }
             )
           } else {
-            await ctx.with(
-              'file',
-              {},
-              (ctx) => getFile(ctx, blobInfo, config.storageAdapter, wsIds, req, res),
-              { uuid, workspace: wsIds.uuid }
-            )
+            await ctx.with('file', {}, (ctx) => getFile(ctx, blobInfo, config.storageAdapter, wsIds, req, res), {
+              uuid,
+              workspace: wsIds.uuid
+            })
           }
         } catch (error: any) {
           if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {

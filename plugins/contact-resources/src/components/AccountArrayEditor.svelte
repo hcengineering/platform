@@ -86,9 +86,7 @@
     void update?.()
   })
 
-  $: employees = (value ?? [])
-    .map((p) => $personRefByAccountUuidStore.get(p))
-    .filter((p) => p !== undefined)
+  $: employees = (value ?? []).map((p) => $personRefByAccountUuidStore.get(p)).filter((p) => p !== undefined)
   $: docQuery =
     excludeItems.length === 0 && includeItems.length === 0
       ? {}

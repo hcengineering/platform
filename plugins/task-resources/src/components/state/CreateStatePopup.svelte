@@ -189,12 +189,11 @@
       status = await client.findOne(_class, { _id })
     }
 
-    const sameCategory = (
-      _taskType.statuses
-        .map((it) => $statusStore.byId.get(it))
-        .filter((it) => it !== undefined)
-        .filter((it) => it?.category === status?.category)
-    ).filter((it, idx, arr) => arr.findIndex((qt) => qt._id === it._id) === idx)
+    const sameCategory = _taskType.statuses
+      .map((it) => $statusStore.byId.get(it))
+      .filter((it) => it !== undefined)
+      .filter((it) => it?.category === status?.category)
+      .filter((it, idx, arr) => arr.findIndex((qt) => qt._id === it._id) === idx)
 
     canDelete = sameCategory.length > 1
     selectableStates = sameCategory.filter((it) => it._id !== status?._id)

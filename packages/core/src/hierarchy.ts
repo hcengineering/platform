@@ -607,9 +607,10 @@ export class Hierarchy {
     const classes = Array.from(this.classifiers.values()).filter(
       (it) => this.isClass(it) || this._isMixin(it)
     ) as Class<Doc>[]
-    return (classes.map((it) => it.domain).filter((it) => it !== undefined)).filter(
-      (it, idx, array) => array.findIndex((pt) => pt === it) === idx
-    )
+    return classes
+      .map((it) => it.domain)
+      .filter((it) => it !== undefined)
+      .filter((it, idx, array) => array.findIndex((pt) => pt === it) === idx)
   }
 
   getClassifierProp (cl: Ref<Class<Doc>>, prop: string): any | undefined {
