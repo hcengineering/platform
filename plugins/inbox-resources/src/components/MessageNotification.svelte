@@ -15,23 +15,13 @@
 
 <script lang="ts">
   import { Notification } from '@hcengineering/communication-types'
-  import { MessagePresenter } from '@hcengineering/ui-next'
   import { Card } from '@hcengineering/card'
+  import NotificationPreview from './preview/NotificationPreview.svelte'
 
   export let notification: Notification
   export let card: Card
 </script>
 
 {#if notification.message}
-  <div class="notification">
-    <MessagePresenter {card} message={notification.message} editable={false} padding="0.5rem 1rem" />
-  </div>
+  <NotificationPreview {card} message={notification.message} date={notification.created} />
 {/if}
-
-<style lang="scss">
-  .notification {
-    position: relative;
-    cursor: pointer;
-    user-select: none;
-  }
-</style>

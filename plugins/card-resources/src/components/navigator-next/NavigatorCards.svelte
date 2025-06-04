@@ -56,7 +56,7 @@
     },
     {
       lookup: {
-        attachedTo: [cardPlugin.class.Card, { parent: cardPlugin.class.Card }]
+        attachedTo: cardPlugin.class.Card
       }
     }
   )
@@ -91,7 +91,7 @@
   <NavGroup
     _id="favorites"
     categoryName="favorites"
-    icon={view.icon.Star}
+    icon={config.showTypeIcon ? view.icon.Star : undefined}
     label={preference.string.Starred}
     highlighted={active}
     type="selectable-header"
@@ -111,7 +111,7 @@
       {@const card = getCard(favorite)}
       {#if card}
         {@const context = contexts.find((it) => it.card === card._id)}
-        <NavigatorCard {card} {context} {favorite} {applicationId} {selectedCard} on:selectCard />
+        <NavigatorCard {card} {context} {favorite} {applicationId} {selectedCard} {config} on:selectCard />
       {/if}
     {/each}
 
@@ -121,7 +121,15 @@
         {@const card = getCard(visibleItem)}
         {#if card}
           {@const context = contexts.find((it) => it.card === card._id)}
-          <NavigatorCard {card} {context} favorite={visibleItem} {applicationId} {selectedCard} on:selectCard />
+          <NavigatorCard
+            {card}
+            {context}
+            favorite={visibleItem}
+            {applicationId}
+            {selectedCard}
+            {config}
+            on:selectCard
+          />
         {/if}
       {/if}
     </svelte:fragment>

@@ -32,6 +32,7 @@
   export let selectedType: Ref<MasterTag> | undefined = undefined
   export let empty: boolean = false
   export let active: boolean = false
+  export let showIcon: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -86,7 +87,7 @@
     _id={type._id}
     categoryName={type._id}
     label={type.label}
-    icon={type.icon === view.ids.IconWithEmoji ? IconWithEmoji : type.icon}
+    icon={showIcon ? (type.icon === view.ids.IconWithEmoji ? IconWithEmoji : type.icon) : undefined}
     iconProps={type.icon === view.ids.IconWithEmoji ? { icon: type.color } : {}}
     highlighted={active}
     selected={selectedType === type._id}

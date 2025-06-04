@@ -1,5 +1,9 @@
 {
   "string": {
-    "Inbox": "Входящие"
+    "Inbox": "Входящие",
+    "ReactedToYourMessage": "отреагировал(а) на ваше сообщение",
+    "ClearAll": "Очистить всё",
+    "InboxIsClear": "Входящие пусты",
+    "YouDontHaveAnyNewMessages": "У вас нет новых сообщений"
   }
 }

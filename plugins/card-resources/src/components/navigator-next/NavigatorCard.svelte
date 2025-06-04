@@ -15,8 +15,8 @@
 
 <script lang="ts">
   import { Card, FavoriteCard, MasterTag } from '@hcengineering/card'
-  import core, { Ref, WithLookup } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import core, { Class, Ref } from '@hcengineering/core'
+  import { getClient, IconWithEmoji } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import { IconMoreV, NavItem, Action, ButtonIcon } from '@hcengineering/ui'
   import { NotificationContext } from '@hcengineering/communication-types'
@@ -25,13 +25,15 @@
   import preference from '@hcengineering/preference'
 
   import cardPlugin from '../../plugin'
+  import { CardsNavigatorConfig } from '../../types'
 
   export let type: Ref<MasterTag> | undefined = undefined
-  export let card: WithLookup<Card>
+  export let card: Card
   export let context: NotificationContext | undefined = undefined
   export let favorite: FavoriteCard | undefined = undefined
   export let applicationId: string
   export let selectedCard: Ref<Card> | undefined = undefined
+  export let config: CardsNavigatorConfig
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -78,21 +80,25 @@
     }
   ]
 
-  $: clazz = hierarchy.getClass(card._class)
+  $: clazz = hierarchy.getClass(card._class) as Class<Card> & { color?: number }
 
-  function getCardTitle (card: WithLookup<Card>): string {
-    const parent = card.$lookup?.parent
+  function getCardTitle (card: Card): string {
+    const parent = card.parentInfo[card.parentInfo.length - 1]
     if (parent != null) {
       return `${card.title} (${parent.title})`
     }
 
     return card.title
   }
+
+  $: iconId = clazz.icon ?? cardPlugin.icon.Card
+  $: icon = iconId === view.ids.IconWithEmoji ? IconWithEmoji : iconId
 </script>
 
 <NavItem
   _id={card._id}
-  icon={clazz.icon ?? cardPlugin.icon.Card}
+  icon={config.showCardIcon ? icon : undefined}
+  iconProps={iconId === view.ids.IconWithEmoji ? { icon: clazz.color } : {}}
   iconSize="small"
   title={getCardTitle(card)}
   selected={selectedCard === card._id}
@@ -143,23 +149,6 @@
 </NavItem>
 
 <style lang="scss">
-  .action {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    padding: var(--spacing-0_5);
-    color: var(--global-tertiary-TextColor);
-    border: none;
-    border-radius: var(--extra-small-BorderRadius);
-    outline: none;
-
-    &:hover,
-    &.pressed {
-      color: var(--global-primary-TextColor);
-      background-color: var(--global-ui-highlight-BackgroundColor);
-    }
-  }
   .notify {
     display: flex;
     align-items: center;

@@ -2,13 +2,12 @@
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -18,10 +17,10 @@
   import { Card } from '@hcengineering/card'
   import { createEventDispatcher } from 'svelte'
   import { getCommunicationClient } from '@hcengineering/presentation'
+  import { CheckBox, Spinner } from '@hcengineering/ui'
 
   import InboxNotification from './InboxNotification.svelte'
   import InboxCardIcon from './InboxCardIcon.svelte'
-  import { CheckBox, Spinner } from '@hcengineering/ui'
 
   export let context: NotificationContext
   export let card: Card
@@ -34,7 +33,7 @@
   $: displayNotifications = (context.notifications ?? []).filter((it) => it.message != null).slice(0, 3)
 
   let isRemoving = false
-  async function handleCheck (): Promise<void> {
+  async function handleToggle (): Promise<void> {
     isRemoving = true
     try {
       await communicationClient.removeNotificationContext(context.id)
@@ -46,47 +45,42 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div
-  class="card"
-  class:selected
-  on:click={() => {
-    dispatch('select', { context, card })
-  }}
->
-  <div class="header">
+<div class="inbox-card" class:selected on:click={() => dispatch('select', { context, card })}>
+  <div class="inbox-card__header">
     <InboxCardIcon {card} count={context.notifications?.filter((x) => !x.read)?.length ?? 0} />
-    <div class="labels">
-      <span class="title overflow-label clear-mins" title={card.title}>
+    <div class="inbox-card__labels">
+      <span class="inbox-card__title overflow-label clear-mins" title={card.title}>
         {card.title}
       </span>
     </div>
-
-    <div class="remove-checkbox flex-center min-w-6">
+    <div class="inbox-card__remove">
       {#if isRemoving}
         <Spinner size="small" />
       {:else}
-        <CheckBox kind="todo" size="medium" on:value={handleCheck} />
+        <CheckBox kind="todo" size="medium" on:value={handleToggle} />
       {/if}
     </div>
   </div>
-  <div class="content">
-    <div class="notifications">
+
+  <div class="inbox-card__content">
+    <div class="inbox-card__notifications">
       {#each displayNotifications as notification}
-        <InboxNotification {notification} {card} />
+        <div class="inbox-card__notification">
+          <div class="inbox-card__marker" />
+          <InboxNotification {notification} {card} />
+        </div>
       {/each}
     </div>
   </div>
 </div>
 
 <style lang="scss">
-  .card {
+  .inbox-card {
     display: flex;
-    position: relative;
     flex-direction: column;
+    position: relative;
     cursor: pointer;
-    padding: 0 1rem;
-    padding-top: 1rem;
-    padding-bottom: 0.5rem;
+    padding: 1rem 0.5rem 0.5rem;
     border-bottom: 1px solid var(--global-ui-BorderColor);
     min-height: 5.625rem;
 
@@ -98,50 +92,81 @@
       background-color: var(--global-ui-highlight-BackgroundColor);
     }
 
-    .header {
-      position: relative;
+    &__header {
       display: flex;
       align-items: center;
       gap: 0.75rem;
       margin-left: var(--spacing-0_5);
     }
 
-    .title {
+    &__labels {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+      color: var(--global-primary-TextColor);
+      font-size: 0.875rem;
+      overflow: hidden;
+    }
+
+    &__title {
       font-weight: 400;
       color: var(--global-primary-TextColor);
-      min-width: 0;
-      margin-right: 1rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-  }
 
-  .notifications {
-    display: flex;
-    width: 100%;
-    min-width: 0;
-    flex-direction: column;
-    margin-top: var(--spacing-1);
-  }
+    &__remove {
+      display: flex;
+      align-items: center;
+      margin-left: auto;
+      min-width: 1.5rem;
+    }
 
-  .labels {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    color: var(--global-primary-TextColor);
-    font-size: 0.875rem;
-    gap: 0.25rem;
-    min-width: 0;
-    overflow: hidden;
-    margin-right: 4rem;
-  }
+    &__content {
+      display: flex;
+      width: 100%;
+      padding-left: 0.5rem;
+    }
 
-  .content {
-    display: flex;
-    width: 100%;
-  }
+    &__notifications {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      min-width: 0;
+      margin-top: var(--spacing-1);
+    }
 
-  .remove-checkbox {
-    display: flex;
-    align-items: center;
-    margin-left: auto;
+    &__notification {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      user-select: none;
+
+      &:first-child .inbox-card__marker {
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+      }
+
+      &:last-child .inbox-card__marker {
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+      }
+
+      &:hover .inbox-card__marker {
+        border-radius: 0.5rem;
+        background: var(--global-primary-LinkColor);
+      }
+    }
+
+    &__marker {
+      position: absolute;
+      width: 0.25rem;
+      height: 100%;
+      background: var(--global-ui-highlight-BackgroundColor);
+      border-radius: 0;
+    }
   }
 </style>

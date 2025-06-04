@@ -48,6 +48,7 @@
     <a target="_blank" href={url}>
       <img
         src={previewSrc}
+        loading="lazy"
         class="link-preview__image"
         alt="link-preview"
         width={`${width}px`}
@@ -61,6 +62,7 @@
   {:else}
     <img
       src={previewSrc}
+      loading="lazy"
       class="link-preview__image"
       alt="link-preview"
       width={`${width}px`}

@@ -14,11 +14,17 @@
 //
 
 import inbox, { inboxId } from '@hcengineering/inbox'
-import { mergeIds } from '@hcengineering/platform'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(inboxId, inbox, {
   component: {
     InboxApplication: '' as AnyComponent
+  },
+  string: {
+    ReactedToYourMessage: '' as IntlString,
+    ClearAll: '' as IntlString,
+    InboxIsClear: '' as IntlString,
+    YouDontHaveAnyNewMessages: '' as IntlString
   }
 })

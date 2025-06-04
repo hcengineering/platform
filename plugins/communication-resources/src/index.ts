@@ -18,6 +18,13 @@ import { type Resources } from '@hcengineering/platform'
 import CardMessagesSection from './components/CardMessagesSection.svelte'
 import { unsubscribe, subscribe, canSubscribe, canUnsubscribe } from './utils'
 
+export { isActivityMessage } from './activity'
+
+export { default as MessagePresenter } from './components/message/MessagePresenter.svelte'
+export { default as MessageInput } from './components/message/MessageInput.svelte'
+export { default as ThreadMessageViewer } from './components/message/ThreadMessageViewer.svelte'
+export { default as ActivityMessageViewer } from './components/message/ActivityMessageViewer.svelte'
+
 export default async (): Promise<Resources> => ({
   component: {
     CardMessagesSection

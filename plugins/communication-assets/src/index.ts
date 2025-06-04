@@ -19,6 +19,7 @@ import communication, { communicationId } from '@hcengineering/communication'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(communication.icon, {
   Bell: `${icons}#bell`,
-  BellCrossed: `${icons}#bell-crossed`
+  BellCrossed: `${icons}#bell-crossed`,
+  File: `${icons}#file`
 })
 addStringsLoader(communicationId, async (lang: string) => await import(`../lang/${lang}.json`))

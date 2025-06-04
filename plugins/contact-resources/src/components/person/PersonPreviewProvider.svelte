@@ -8,10 +8,23 @@
 
   export let value: Ref<Person> | WithLookup<Person> | null | undefined
   export let showPopup: boolean = true
+  export let inline: boolean = false
 
   $: person = typeof value === 'string' ? ($personByIdStore.get(value) as Person) : (value as Person)
 </script>
 
-<div class="flex" use:tooltip={getPreviewPopup(person, showPopup)}>
-  <slot />
-</div>
+{#if inline}
+  <span class="inline" use:tooltip={getPreviewPopup(person, showPopup)}>
+    <slot />
+  </span>
+{:else}
+  <div class="flex" use:tooltip={getPreviewPopup(person, showPopup)}>
+    <slot />
+  </div>
+{/if}
+
+<style lang="scss">
+  .inline {
+    display: inline-block;
+  }
+</style>

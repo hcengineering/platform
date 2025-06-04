@@ -48,10 +48,9 @@
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/ui": "^0.6.15",
-    "@hcengineering/ui-next": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
-    "@hcengineering/communication-types": "0.1.194",
+    "@hcengineering/communication-types": "0.1.195",
     "@hcengineering/emoji": "^0.6.0",
     "@hcengineering/emoji-resources": "^0.6.0",
     "svelte": "^4.2.19"
