@@ -199,10 +199,6 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
 
             setImageProps(val.src, val.srcset)
             imageSrcCache.set(fileId, { src: val.src, srcset: val.srcset })
-
-            void imgElement.decode().finally(() => {
-              setLoadingState(view, container, false)
-            })
           })
         }
       } else {

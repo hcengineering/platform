@@ -150,7 +150,7 @@
     margin: 0 calc(var(--table-offscreen-spacing) * -1);
 
     .table-scroller {
-      padding: 0.5rem 0;
+      padding: 1.5rem 0;
       padding-left: var(--table-offscreen-spacing);
       margin-right: var(--table-offscreen-spacing);
       overflow-x: scroll;
@@ -196,7 +196,7 @@
         right: calc(var(--table-offscreen-spacing) - 1.5rem);
         top: 0;
         bottom: 0;
-        margin: 0.5rem 0;
+        margin: 1.5rem 0;
 
         .table-button {
           width: 1.25rem;
@@ -204,7 +204,7 @@
       }
 
       &__row {
-        bottom: -1rem;
+        bottom: -0.25rem;
         left: var(--table-offscreen-spacing);
         right: var(--table-offscreen-spacing);
 

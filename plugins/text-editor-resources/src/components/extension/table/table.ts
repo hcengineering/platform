@@ -112,7 +112,7 @@ function resolveCursor (props: ResolveCursorProps): TableCursor | null {
     props: {},
     nodes,
     viewOptions: {
-      offset: selection instanceof CellSelection ? [0, 12] : [0, 0]
+      offset: selection instanceof CellSelection ? [0, 12] : [0, -12]
     }
   }
 
