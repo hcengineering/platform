@@ -15,8 +15,8 @@
 //
 import { type IntlString, type Plugin } from '@hcengineering/platform'
 import { ClientConnectEvent, type DocChunk } from '..'
+import type { Class, Data, Doc, Domain, PluginConfiguration, Ref, Space, Timestamp } from '../classes'
 import { ClassifierKind, DOMAIN_MODEL } from '../classes'
-import type { Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp, type Space } from '../classes'
 import { type ClientConnection, createClient } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'

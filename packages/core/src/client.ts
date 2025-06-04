@@ -20,8 +20,8 @@ import core from './component'
 import { Hierarchy } from './hierarchy'
 import { type MeasureContext, MeasureMetricsContext } from './measurements'
 import { ModelDb } from './memdb'
-import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup, type SearchOptions, type SearchQuery, type SearchResult } from './storage'
-import { type Tx, type TxCUD, WorkspaceEvent, type TxWorkspaceEvent } from './tx'
+import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, SearchOptions, SearchQuery, SearchResult, Storage, TxResult, WithLookup } from './storage'
+import { type Tx, type TxCUD, type TxWorkspaceEvent, WorkspaceEvent } from './tx'
 import { platformNow, platformNowDiff, toFindResult } from './utils'
 
 /**
