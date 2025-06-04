@@ -194,8 +194,6 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
       let isCursorRangeLoading = false
       let rect: DOMRect = getReferenceRectFromRange(view, 0, 0)
 
-      console.log(options.boundary)
-
       const getTippyProps = (viewOptions?: ToolbarViewOptions): Partial<TippyProps> => ({
         delay: [0, 0],
         duration: [0, 0],
