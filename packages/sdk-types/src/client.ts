@@ -29,19 +29,19 @@ import type {
 import type { EventResult, RequestEvent, ResponseEvent } from './event'
 
 export interface FindClient {
-  onEvent(event: ResponseEvent): void
+  onEvent: (event: ResponseEvent) => void
 
-  onRequest(event: RequestEvent, promise: Promise<EventResult>): void
+  findMessages: (params: FindMessagesParams, queryId?: number) => Promise<Message[]>
 
-  findMessages(params: FindMessagesParams, queryId?: number): Promise<Message[]>
+  findMessagesGroups: (params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
 
-  findMessagesGroups(params: FindMessagesGroupsParams): Promise<MessagesGroup[]>
+  findNotificationContexts: (params: FindNotificationContextParams, queryId?: number) => Promise<NotificationContext[]>
 
-  findNotificationContexts(params: FindNotificationContextParams, queryId?: number): Promise<NotificationContext[]>
+  findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<Notification[]>
 
-  findNotifications(params: FindNotificationsParams, queryId?: number): Promise<Notification[]>
+  findLabels: (params: FindLabelsParams, queryId?: number) => Promise<Label[]>
 
-  findLabels(params: FindLabelsParams, queryId?: number): Promise<Label[]>
+  onRequest: (event: RequestEvent, promise: Promise<EventResult>) => void
 
-  unsubscribeQuery(id: number): Promise<void>
+  unsubscribeQuery: (id: number) => Promise<void>
 }

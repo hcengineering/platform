@@ -121,6 +121,7 @@ export interface RemoveCollaboratorsEvent extends BaseRequestEvent {
   created?: Date
 }
 
+// eslint-disable-next-line  @typescript-eslint/ban-types
 export type NotificationEventResult = CreateNotificationContextResult | {}
 
 export interface CreateNotificationContextResult {

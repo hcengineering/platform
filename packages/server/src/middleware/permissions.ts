@@ -39,10 +39,10 @@ import type {
 import { ApiError } from '../error'
 import type { Middleware, MiddlewareContext, QueryId } from '../types'
 import { BaseMiddleware } from './base'
-import { findMessage } from '../triggers/utils.ts'
+import { findMessage } from '../triggers/utils'
 
 export class PermissionsMiddleware extends BaseMiddleware implements Middleware {
-  constructor(
+  constructor (
     readonly db: DbAdapter,
     readonly context: MiddlewareContext,
     next?: Middleware
@@ -50,7 +50,7 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
     super(context, next)
   }
 
-  async event(session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
     if (derived) return await this.provideEvent(session, event, derived)
     switch (event.type) {
       case MessageRequestEventType.CreatePatch: {
@@ -92,10 +92,10 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
         break
     }
 
-    return this.provideEvent(session, event, derived)
+    return await this.provideEvent(session, event, derived)
   }
 
-  async checkPatch(session: SessionData, event: CreatePatchEvent): Promise<void> {
+  async checkPatch (session: SessionData, event: CreatePatchEvent): Promise<void> {
     const account = session.account
     if (systemAccountUuid === account.uuid) return
     const socialIds = account.socialIds
@@ -117,7 +117,7 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
     }
   }
 
-  async findNotificationContexts(
+  async findNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
     queryId?: QueryId
@@ -126,7 +126,7 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
     return await this.provideFindNotificationContexts(session, paramsWithAccount, queryId)
   }
 
-  async findNotifications(
+  async findNotifications (
     session: SessionData,
     params: FindNotificationsParams,
     queryId?: QueryId
@@ -135,26 +135,26 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
     return await this.provideFindNotifications(session, paramsWithAccount, queryId)
   }
 
-  async findLabels(session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
+  async findLabels (session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
     const paramsWithAccount = this.expandParamsWithAccount(session, params)
     return await this.provideFindLabels(session, paramsWithAccount, queryId)
   }
 
-  private checkSocialId(session: SessionData, creator: SocialID): void {
+  private checkSocialId (session: SessionData, creator: SocialID): void {
     const account = session.account
     if (!account.socialIds.includes(creator) && systemAccountUuid !== account.uuid) {
       throw ApiError.forbidden('social ID is not allowed')
     }
   }
 
-  private checkAccount(session: SessionData, creator: AccountID): void {
+  private checkAccount (session: SessionData, creator: AccountID): void {
     const account = session.account
     if (account.uuid !== creator && systemAccountUuid !== account.uuid) {
       throw ApiError.forbidden('account is not allowed')
     }
   }
 
-  private onlySystemAccount(session: SessionData): void {
+  private onlySystemAccount (session: SessionData): void {
     const account = session.account
     if (systemAccountUuid !== account.uuid) {
       throw ApiError.forbidden('only system account is allowed')

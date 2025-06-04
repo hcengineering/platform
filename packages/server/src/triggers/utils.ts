@@ -27,10 +27,10 @@ import { loadGroupFile } from '@hcengineering/communication-yaml'
 import { applyPatches } from '@hcengineering/communication-shared'
 import type { DbAdapter } from '@hcengineering/communication-sdk-types'
 
-import type { TriggerCtx } from '../types.ts'
-import { findAccount } from '../utils.ts'
+import type { TriggerCtx } from '../types'
+import { findAccount } from '../utils'
 
-export async function findMessage(
+export async function findMessage (
   db: DbAdapter,
   filesUrl: string,
   workspace: WorkspaceID,
@@ -45,7 +45,7 @@ export async function findMessage(
   return await findMessageInFiles(db, filesUrl, workspace, card, id, created)
 }
 
-export async function findMessageInFiles(
+export async function findMessageInFiles (
   db: DbAdapter,
   filesUrl: string,
   workspace: WorkspaceID,
@@ -88,19 +88,19 @@ export async function findMessageInFiles(
   }
 }
 
-export async function getNameBySocialID(ctx: TriggerCtx, id: SocialID) {
+export async function getNameBySocialID (ctx: TriggerCtx, id: SocialID): Promise<string> {
   const account = await findAccount(ctx, id)
-  return account ? ((await ctx.db.getNameByAccount(account)) ?? 'System') : 'System'
+  return account != null ? ((await ctx.db.getNameByAccount(account)) ?? 'System') : 'System'
 }
 
-export async function getAddCollaboratorsMessageContent(
+export async function getAddCollaboratorsMessageContent (
   ctx: TriggerCtx,
   sender: AccountID | undefined,
   collaborators: AccountID[]
 ): Promise<RichText> {
-  const senderName = sender ? ((await ctx.db.getNameByAccount(sender)) ?? 'System') : 'System'
+  const senderName = sender != null ? ((await ctx.db.getNameByAccount(sender)) ?? 'System') : 'System'
 
-  if (sender && collaborators.length === 1 && collaborators.includes(sender)) {
+  if (sender != null && collaborators.length === 1 && collaborators.includes(sender)) {
     return `${senderName} joined`
   }
 
@@ -111,14 +111,14 @@ export async function getAddCollaboratorsMessageContent(
   return `${senderName} added ${collaboratorsNames.join(', ')}`
 }
 
-export async function getRemoveCollaboratorsMessageContent(
+export async function getRemoveCollaboratorsMessageContent (
   ctx: TriggerCtx,
   sender: AccountID | undefined,
   collaborators: AccountID[]
 ): Promise<RichText> {
-  const senderName = sender ? ((await ctx.db.getNameByAccount(sender)) ?? 'System') : 'System'
+  const senderName = sender != null ? ((await ctx.db.getNameByAccount(sender)) ?? 'System') : 'System'
 
-  if (sender && collaborators.length === 1 && collaborators.includes(sender)) {
+  if (sender != null && collaborators.length === 1 && collaborators.includes(sender)) {
     return `${senderName} left`
   }
 

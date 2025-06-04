@@ -16,7 +16,7 @@
 import { SortingOrder } from '@hcengineering/core'
 
 import type { MessageID } from './message'
-import { type ContextID, type NotificationID, NotificationType } from './notification'
+import type { ContextID, NotificationID, NotificationType } from './notification'
 import type { AccountID, BlobID, CardID, CardType } from './core'
 import type { LabelID } from './label'
 
@@ -25,15 +25,15 @@ export { SortingOrder }
 export type ComparisonOperator = 'less' | 'lessOrEqual' | 'greater' | 'greaterOrEqual' | 'notEqual'
 
 export interface Window<T> {
-  getResult(): T[]
+  getResult: () => T[]
 
-  loadNextPage(): Promise<void>
+  loadNextPage: () => Promise<void>
 
-  loadPrevPage(): Promise<void>
+  loadPrevPage: () => Promise<void>
 
-  hasNextPage(): boolean
+  hasNextPage: () => boolean
 
-  hasPrevPage(): boolean
+  hasPrevPage: () => boolean
 }
 
 interface FindParams {

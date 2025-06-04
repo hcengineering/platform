@@ -15,7 +15,7 @@
 
 import type { Metadata } from './types'
 
-export function getMetadata(): Metadata {
+export function getMetadata (): Metadata {
   return {
     msg2fileUrl: process.env.MSG2FILE_URL ?? '',
     accountsUrl: process.env.ACCOUNTS_URL ?? '',

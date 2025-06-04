@@ -31,7 +31,7 @@ import {
 import { QueryResult } from '../result'
 import { type Query, type QueryId } from '../types'
 
-function getId(label: Label): string {
+function getId (label: Label): string {
   return `${label.label}:${label.card}:${label.account}`
 }
 
@@ -39,7 +39,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
   private result: Promise<QueryResult<Label>> | QueryResult<Label>
   private isCardRemoved = false
 
-  constructor(
+  constructor (
     private readonly client: FindClient,
     private readonly workspace: WorkspaceID,
     private readonly filesUrl: string,
@@ -56,7 +56,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
   }
 
-  async onEvent(event: ResponseEvent): Promise<void> {
+  async onEvent (event: ResponseEvent): Promise<void> {
     if (this.isCardRemoved) return
     switch (event.type) {
       case LabelResponseEventType.LabelCreated:
@@ -75,19 +75,19 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
   }
 
-  async onLabelCreated(event: LabelCreatedEvent): Promise<void> {
+  async onLabelCreated (event: LabelCreatedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
-    if (this.params.limit && this.result.length >= this.params.limit) return
+    if (this.params.limit != null && this.result.length >= this.params.limit) return
 
     const match = this.match(event.label)
     if (!match) return
     const existing = this.result.get(getId(event.label))
-    if (existing) return
+    if (existing != null) return
     this.result.push(event.label)
     void this.notify()
   }
 
-  async onLabelRemoved(event: LabelRemovedEvent): Promise<void> {
+  async onLabelRemoved (event: LabelRemovedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
 
     const existing = this.result
@@ -97,7 +97,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     const prevLength = this.result.length
     this.result.delete(getId(existing))
 
-    if (this.params.limit && this.result.length < this.params.limit && prevLength >= this.params.limit) {
+    if (this.params.limit != null && this.result.length < this.params.limit && prevLength >= this.params.limit) {
       const labels = await this.find(this.params)
       this.result = new QueryResult(labels, getId)
     }
@@ -105,7 +105,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     void this.notify()
   }
 
-  async onCardTypeUpdated(event: CardTypeUpdatedEvent): Promise<void> {
+  async onCardTypeUpdated (event: CardTypeUpdatedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
 
     const result = this.result.getResult()
@@ -123,7 +123,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
 
     for (const label of result) {
-      if (label.card == event.card) {
+      if (label.card === event.card) {
         const updatedLabel: Label = { ...label, cardType: event.cardType }
         const matched = this.match(updatedLabel)
         if (matched) {
@@ -137,7 +137,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
 
     if (updated) {
       const newLength = this.result.length
-      if (this.params.limit && newLength < currentLength && newLength >= this.params.limit) {
+      if (this.params.limit != null && newLength < currentLength && newLength >= this.params.limit) {
         const labels = await this.find(this.params)
         this.result = new QueryResult(labels, getId)
       }
@@ -146,7 +146,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
   }
 
-  async onCardRemoved(event: CardRemovedEvent): Promise<void> {
+  async onCardRemoved (event: CardRemovedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
 
     if (this.params.card === event.card) {
@@ -160,23 +160,24 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     const prevLength = this.result.length
     let deleted = false
     for (const label of result) {
-      if (label.card == event.card) {
+      if (label.card === event.card) {
         this.result.delete(label.label)
         deleted = true
       }
     }
 
     if (deleted) {
-      if (this.params.limit && this.result.length < this.params.limit && prevLength >= this.params.limit) {
+      if (this.params.limit != null && this.result.length < this.params.limit && prevLength >= this.params.limit) {
         const labels = await this.find(this.params)
         this.result = new QueryResult(labels, getId)
       }
       void this.notify()
     }
   }
-  async onRequest(event: RequestEvent, promise: Promise<EventResult>): Promise<void> {}
 
-  private async initResult(): Promise<QueryResult<Label>> {
+  async onRequest (event: RequestEvent, promise: Promise<EventResult>): Promise<void> {}
+
+  private async initResult (): Promise<QueryResult<Label>> {
     try {
       const res = await this.find(this.params)
       const result = new QueryResult(res, getId)
@@ -189,20 +190,20 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
   }
 
-  async unsubscribe(): Promise<void> {
+  async unsubscribe (): Promise<void> {
     await this.client.unsubscribeQuery(this.id)
   }
 
-  removeCallback(): void {
+  removeCallback (): void {
     this.callback = () => {}
   }
 
-  setCallback(callback: QueryCallback<Label>): void {
+  setCallback (callback: QueryCallback<Label>): void {
     this.callback = callback
     void this.notify()
   }
 
-  copyResult(): QueryResult<Label> | undefined {
+  copyResult (): QueryResult<Label> | undefined {
     if (this.result instanceof Promise) {
       return undefined
     }
@@ -210,19 +211,19 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     return this.result.copy()
   }
 
-  private async find(params: FindLabelsParams): Promise<Label[]> {
+  private async find (params: FindLabelsParams): Promise<Label[]> {
     if (this.isCardRemoved) return []
     return await this.client.findLabels(params, this.id)
   }
 
-  private async notify(): Promise<void> {
+  private async notify (): Promise<void> {
     if (this.callback == null) return
     if (this.result instanceof Promise) this.result = await this.result
     const result = this.result.getResult()
     this.callback(result)
   }
 
-  private match(label: Label): boolean {
+  private match (label: Label): boolean {
     if (this.params.account != null && this.params.account !== label.account) {
       return false
     }

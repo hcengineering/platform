@@ -46,7 +46,7 @@ import { TriggersMiddleware } from './middleware/triggers'
 import { ValidateMiddleware } from './middleware/validate'
 import { DateMiddleware } from './middleware/date'
 
-export async function buildMiddlewares(
+export async function buildMiddlewares (
   ctx: MeasureContext,
   workspace: WorkspaceID,
   metadata: Metadata,
@@ -78,12 +78,12 @@ export class Middlewares {
 
   private readonly middlewares: Middleware[] = []
 
-  private constructor(
+  private constructor (
     private readonly ctx: MeasureContext,
     private readonly context: MiddlewareContext
   ) {}
 
-  static async create(
+  static async create (
     ctx: MeasureContext,
     context: MiddlewareContext,
     createFns: MiddlewareCreateFn[]
@@ -96,12 +96,12 @@ export class Middlewares {
     return middlewares
   }
 
-  private async buildChain(
+  private async buildChain (
     ctx: MeasureContext,
     createFns: MiddlewareCreateFn[],
     context: MiddlewareContext
   ): Promise<Middleware | undefined> {
-    let current: Middleware | undefined = undefined
+    let current: Middleware | undefined
     for (let index = createFns.length - 1; index >= 0; index--) {
       const createFn = createFns[index]
       try {
@@ -119,17 +119,17 @@ export class Middlewares {
     return current
   }
 
-  async findMessages(session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
+  async findMessages (session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
     if (this.head === undefined) return []
     return await this.head.findMessages(session, params, queryId)
   }
 
-  async findMessagesGroups(session: SessionData, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+  async findMessagesGroups (session: SessionData, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
     if (this.head === undefined) return []
     return await this.head.findMessagesGroups(session, params)
   }
 
-  async findNotificationContexts(
+  async findNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
     queryId?: QueryId
@@ -138,7 +138,7 @@ export class Middlewares {
     return await this.head.findNotificationContexts(session, params, queryId)
   }
 
-  async findNotifications(
+  async findNotifications (
     session: SessionData,
     params: FindNotificationsParams,
     queryId?: QueryId
@@ -147,32 +147,32 @@ export class Middlewares {
     return await this.head.findNotifications(session, params, queryId)
   }
 
-  async findLabels(session: SessionData, params: FindLabelsParams): Promise<Label[]> {
+  async findLabels (session: SessionData, params: FindLabelsParams): Promise<Label[]> {
     if (this.head === undefined) return []
     return await this.head.findLabels(session, params)
   }
 
-  async findCollaborators(session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
+  async findCollaborators (session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
     if (this.head === undefined) return []
     return await this.head.findCollaborators(session, params)
   }
 
-  async unsubscribeQuery(session: SessionData, id: number): Promise<void> {
+  async unsubscribeQuery (session: SessionData, id: number): Promise<void> {
     if (this.head === undefined) return
     this.head?.unsubscribeQuery(session, id)
   }
 
-  async event(session: SessionData, event: RequestEvent): Promise<EventResult> {
+  async event (session: SessionData, event: RequestEvent): Promise<EventResult> {
     if (this.head === undefined) return {}
     return (await this.head?.event(session, event, false)) ?? {}
   }
 
-  async closeSession(sessionId: string): Promise<void> {
+  async closeSession (sessionId: string): Promise<void> {
     if (this.head === undefined) return
     this.head.closeSession(sessionId)
   }
 
-  async close(): Promise<void> {
+  async close (): Promise<void> {
     for (const mw of this.middlewares) {
       try {
         mw.close()

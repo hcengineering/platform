@@ -39,11 +39,11 @@ import {
 
 import type { TriggerCtx } from '../types'
 import { findAccount } from '../utils'
-import { findMessage } from '../triggers/utils.ts'
+import { findMessage } from '../triggers/utils'
 
 const BATCH_SIZE = 500
 
-export async function notify(ctx: TriggerCtx, event: ResponseEvent): Promise<RequestEvent[]> {
+export async function notify (ctx: TriggerCtx, event: ResponseEvent): Promise<RequestEvent[]> {
   switch (event.type) {
     case MessageResponseEventType.MessageCreated: {
       return await notifyMessage(ctx, event.message, event.cardType)
@@ -66,7 +66,7 @@ export async function notify(ctx: TriggerCtx, event: ResponseEvent): Promise<Req
   return []
 }
 
-async function removeReactionNotification(
+async function removeReactionNotification (
   ctx: TriggerCtx,
   card: CardID,
   message: MessageID,
@@ -94,9 +94,9 @@ async function removeReactionNotification(
 
   if (toDelete === undefined) return result
 
-  const context = (await ctx.db.findNotificationContexts({ card: card, account: messageAccount, limit: 1 }))[0]
+  const context = (await ctx.db.findNotificationContexts({ card, account: messageAccount, limit: 1 }))[0]
   if (context == null) return result
-  if (context.lastNotify && context.lastNotify.getTime() === toDelete.created.getTime()) {
+  if (context.lastNotify != null && context.lastNotify.getTime() === toDelete.created.getTime()) {
     const lastNotification = (
       await ctx.db.findNotifications({
         account: messageAccount,
@@ -129,7 +129,7 @@ async function removeReactionNotification(
 
   return result
 }
-async function notifyReaction(
+async function notifyReaction (
   ctx: TriggerCtx,
   card: CardID,
   message: MessageID,
@@ -147,7 +147,7 @@ async function notifyReaction(
   const reactionAccount = await findAccount(ctx, reaction.creator)
   if (reactionAccount === messageAccount) return result
 
-  const context = (await ctx.db.findNotificationContexts({ card: card, account: messageAccount }))[0]
+  const context = (await ctx.db.findNotificationContexts({ card, account: messageAccount }))[0]
   let contextId: ContextID | undefined = context?.id
 
   if (context == null) {
@@ -165,7 +165,7 @@ async function notifyReaction(
     notificationType: NotificationType.Reaction,
     account: messageAccount,
     context: contextId,
-    message: message,
+    message,
     messageCreated,
     created: reaction.created,
     content
@@ -182,7 +182,7 @@ async function notifyReaction(
   return result
 }
 
-async function notifyMessage(ctx: TriggerCtx, message: Message, cardType: CardType): Promise<RequestEvent[]> {
+async function notifyMessage (ctx: TriggerCtx, message: Message, cardType: CardType): Promise<RequestEvent[]> {
   const cursor = ctx.db.getCollaboratorsCursor(message.card, message.created, BATCH_SIZE)
   const creatorAccount = await findAccount(ctx, message.creator)
   const result: RequestEvent[] = []
@@ -212,7 +212,7 @@ async function notifyMessage(ctx: TriggerCtx, message: Message, cardType: CardTy
   return result
 }
 
-async function processCollaborator(
+async function processCollaborator (
   ctx: TriggerCtx,
   cardType: CardType,
   message: Message,
@@ -250,16 +250,16 @@ async function processCollaborator(
   return result
 }
 
-async function createOrUpdateContext(
+async function createOrUpdateContext (
   ctx: TriggerCtx,
   message: Message,
   collaborator: AccountID,
   isOwn: boolean,
   context?: NotificationContext
 ): Promise<{
-  contextId: ContextID | undefined
-  events: RequestEvent[]
-}> {
+    contextId: ContextID | undefined
+    events: RequestEvent[]
+  }> {
   if (context == null) {
     const contextId = await createContext(
       ctx,
@@ -297,7 +297,7 @@ async function createOrUpdateContext(
   }
 }
 
-async function createContext(
+async function createContext (
   ctx: TriggerCtx,
   account: AccountID,
   card: CardID,
@@ -326,7 +326,7 @@ async function createContext(
   }
 }
 
-function isContextRead(context: NotificationContext): boolean {
+function isContextRead (context: NotificationContext): boolean {
   const { lastView, lastUpdate } = context
 
   if (lastView == null) {

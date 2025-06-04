@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-export function getCondition(
+export function getCondition (
   table: string,
   dbField: string,
   startIndex: number,
   param: any,
   type: string
-): { where: string; values: any[]; index: number } | undefined {
+): { where: string, values: any[], index: number } | undefined {
   const conditions: string[] = []
   const values: any[] = []
   let index = startIndex

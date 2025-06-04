@@ -45,7 +45,7 @@ import type {
 } from '@hcengineering/communication-sdk-types'
 
 export class NotificationsDb extends BaseDb {
-  async addCollaborators(
+  async addCollaborators (
     card: CardID,
     cardType: CardType,
     collaborators: AccountID[],
@@ -68,7 +68,7 @@ export class NotificationsDb extends BaseDb {
     return result.map((it: any) => it.account)
   }
 
-  async removeCollaborators(card: CardID, query: RemoveCollaboratorsQuery): Promise<void> {
+  async removeCollaborators (card: CardID, query: RemoveCollaboratorsQuery): Promise<void> {
     const { accounts } = query
     if (accounts === undefined) {
       const sql = `DELETE FROM ${TableName.Collaborators} WHERE workspace_id = $1::uuid AND card_id = $2::varchar`
@@ -92,7 +92,7 @@ export class NotificationsDb extends BaseDb {
     }
   }
 
-  getCollaboratorsCursor(
+  getCollaboratorsCursor (
     card: CardID,
     date: Date,
     size?: number
@@ -108,7 +108,7 @@ export class NotificationsDb extends BaseDb {
     return this.client.cursor<Collaborator>(sql, [this.workspace, card, date], size)
   }
 
-  async createNotification(
+  async createNotification (
     context: ContextID,
     message: MessageID,
     messageCreated: Date,
@@ -137,7 +137,7 @@ export class NotificationsDb extends BaseDb {
     return result[0].id as NotificationID
   }
 
-  async updateNotification(query: UpdateNotificationQuery, updates: NotificationUpdates): Promise<void> {
+  async updateNotification (query: UpdateNotificationQuery, updates: NotificationUpdates): Promise<void> {
     const where: string[] = [
       'nc.workspace_id = $1::uuid',
       'nc.id = $2::int8',
@@ -175,7 +175,7 @@ export class NotificationsDb extends BaseDb {
     await this.execute(sql, [...values, updates.read], 'update notification')
   }
 
-  async removeNotifications(query: RemoveNotificationsQuery): Promise<NotificationID[]> {
+  async removeNotifications (query: RemoveNotificationsQuery): Promise<NotificationID[]> {
     const { context, account, ids } = query
     if (ids.length === 0) return []
     const where: string[] = [
@@ -205,7 +205,7 @@ export class NotificationsDb extends BaseDb {
     return result.map((row: any) => row.id)
   }
 
-  async createContext(
+  async createContext (
     account: AccountID,
     card: CardID,
     lastUpdate: Date,
@@ -231,7 +231,7 @@ export class NotificationsDb extends BaseDb {
     return result[0].id as ContextID
   }
 
-  async removeContexts(query: RemoveNotificationContextQuery): Promise<void> {
+  async removeContexts (query: RemoveNotificationContextQuery): Promise<void> {
     const db: Partial<ContextDb> & { id?: ContextID } = {
       id: query.id,
       card_id: query.card,
@@ -253,7 +253,7 @@ export class NotificationsDb extends BaseDb {
     await this.execute(sql, whereValues, 'remove notification context')
   }
 
-  async updateContext(context: ContextID, account: AccountID, updates: NotificationContextUpdates): Promise<void> {
+  async updateContext (context: ContextID, account: AccountID, updates: NotificationContextUpdates): Promise<void> {
     const dbData: Partial<ContextDb> = {}
 
     if (updates.lastView != null) {
@@ -281,7 +281,7 @@ export class NotificationsDb extends BaseDb {
     await this.execute(sql, [this.workspace, context, account, ...values], 'update notification context')
   }
 
-  async findContexts(params: FindNotificationContextParams): Promise<NotificationContext[]> {
+  async findContexts (params: FindNotificationContextParams): Promise<NotificationContext[]> {
     const withNotifications = params.notifications != null
     const withMessages = params.notifications?.message === true
 
@@ -434,7 +434,7 @@ export class NotificationsDb extends BaseDb {
     return result.map((it: any) => toNotificationContext(it))
   }
 
-  async findNotifications(params: FindNotificationsParams): Promise<Notification[]> {
+  async findNotifications (params: FindNotificationsParams): Promise<Notification[]> {
     const withMessage = params.message === true
 
     let select =
@@ -513,14 +513,14 @@ export class NotificationsDb extends BaseDb {
     return result.map((it: any) => toNotification(it))
   }
 
-  async updateCollaborators(params: FindCollaboratorsParams, data: Partial<Collaborator>): Promise<void> {
+  async updateCollaborators (params: FindCollaboratorsParams, data: Partial<Collaborator>): Promise<void> {
     const dbData: Partial<CollaboratorDb> = {
       account: data.account,
       card_id: data.card,
       card_type: data.cardType
     }
 
-    const entries = Object.entries(dbData).filter(([_, value]) => value != undefined)
+    const entries = Object.entries(dbData).filter(([_, value]) => value != null)
     if (entries.length === 0) return
 
     entries.unshift(['workspace_id', this.workspace])
@@ -535,7 +535,8 @@ export class NotificationsDb extends BaseDb {
 
     await this.execute(sql, [...setValues, ...whereValues], 'update collaborators')
   }
-  async findCollaborators(params: FindCollaboratorsParams): Promise<Collaborator[]> {
+
+  async findCollaborators (params: FindCollaboratorsParams): Promise<Collaborator[]> {
     const { where, values } = this.buildCollaboratorsWhere(params)
     const select = `
             SELECT *
@@ -552,11 +553,11 @@ export class NotificationsDb extends BaseDb {
     return result.map((it: any) => toCollaborator(it))
   }
 
-  private buildCollaboratorsWhere(
+  private buildCollaboratorsWhere (
     params: FindCollaboratorsParams,
     startIndex: number = 0,
     prefix: string = 'c.'
-  ): { where: string; values: any[] } {
+  ): { where: string, values: any[] } {
     const where: string[] = []
     const values: any[] = []
     let index = startIndex + 1
@@ -580,7 +581,7 @@ export class NotificationsDb extends BaseDb {
     return { where: `WHERE ${where.join(' AND ')}`, values }
   }
 
-  private buildContextWhere(params: FindNotificationContextParams): {
+  private buildContextWhere (params: FindNotificationContextParams): {
     where: string
     values: any[]
     index: number
@@ -627,14 +628,14 @@ export class NotificationsDb extends BaseDb {
     return { where: `WHERE ${where.join(' AND ')}`, values, index }
   }
 
-  private buildNotificationWhere(
+  private buildNotificationWhere (
     params: FindNotificationsParams,
     initialIndex?: number,
     skipWorkspace?: boolean
   ): {
-    where: string
-    values: any[]
-  } {
+      where: string
+      values: any[]
+    } {
     const where: string[] = skipWorkspace === true ? [] : ['nc.workspace_id = $1::uuid']
     const values: any[] = skipWorkspace === true ? [] : [this.workspace]
     let index = (initialIndex ?? 0) + values.length + 1

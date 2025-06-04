@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type LiveQueries } from '@hcengineering/communication-query'
+import { type LiveQueries, MessageQueryParams } from '@hcengineering/communication-query'
 import type { PagedQueryCallback, QueryCallback } from '@hcengineering/communication-sdk-types'
 import {
   type FindLabelsParams,
@@ -25,13 +25,12 @@ import {
   type Notification
 } from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
-import type { MessageQueryParams } from '@hcengineering/communication-query'
 
 class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
   private oldQuery: P | undefined
   private oldCallback: C | undefined
 
-  constructor(
+  constructor (
     protected readonly lq: LiveQueries,
     onDestroy: (fn: () => void) => void
   ) {
@@ -42,7 +41,7 @@ class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
 
   unsubscribe: () => void = () => {}
 
-  query(params: P, callback: C): boolean {
+  query (params: P, callback: C): boolean {
     if (!this.needUpdate(params, callback)) {
       return false
     }
@@ -50,7 +49,7 @@ class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
     return true
   }
 
-  private doQuery(query: P, callback: C): void {
+  private doQuery (query: P, callback: C): void {
     this.unsubscribe()
     this.oldCallback = callback
     this.oldQuery = query
@@ -65,13 +64,13 @@ class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createQuery(params: P, callback: C): { unsubscribe: () => void } {
+  createQuery (params: P, callback: C): { unsubscribe: () => void } {
     return {
       unsubscribe: () => {}
     }
   }
 
-  private needUpdate(params: P, callback: C): boolean {
+  private needUpdate (params: P, callback: C): boolean {
     if (!deepEqual(params, this.oldQuery)) return true
     if (!deepEqual(callback.toString(), this.oldCallback?.toString())) return true
     return false
@@ -79,43 +78,43 @@ class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
 }
 
 export class MessagesQuery extends BaseQuery<MessageQueryParams, PagedQueryCallback<Message>> {
-  override createQuery(params: MessageQueryParams, callback: PagedQueryCallback<Message>): { unsubscribe: () => void } {
+  override createQuery (params: MessageQueryParams, callback: PagedQueryCallback<Message>): { unsubscribe: () => void } {
     return this.lq.queryMessages(params, callback)
   }
 }
 
 export class NotificationsQuery extends BaseQuery<FindNotificationsParams, PagedQueryCallback<Notification>> {
-  override createQuery(
+  override createQuery (
     params: FindNotificationsParams,
     callback: PagedQueryCallback<Notification>
   ): {
-    unsubscribe: () => void
-  } {
+      unsubscribe: () => void
+    } {
     return this.lq.queryNotifications(params, callback)
   }
 }
 
 export class NotificationContextsQuery extends BaseQuery<
-  FindNotificationContextParams,
-  PagedQueryCallback<NotificationContext>
+FindNotificationContextParams,
+PagedQueryCallback<NotificationContext>
 > {
-  override createQuery(
+  override createQuery (
     params: FindNotificationContextParams,
     callback: PagedQueryCallback<NotificationContext>
   ): {
-    unsubscribe: () => void
-  } {
+      unsubscribe: () => void
+    } {
     return this.lq.queryNotificationContexts(params, callback)
   }
 }
 
 export class LabelsQuery extends BaseQuery<FindLabelsParams, QueryCallback<Label>> {
-  override createQuery(
+  override createQuery (
     params: FindLabelsParams,
     callback: QueryCallback<Label>
   ): {
-    unsubscribe: () => void
-  } {
+      unsubscribe: () => void
+    } {
     return this.lq.queryLabels(params, callback)
   }
 }

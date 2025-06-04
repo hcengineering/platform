@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-export * from './core'
-export * from './file'
+export type * from './core'
+export type * from './file'
 export * from './message'
 export * from './notification'
 export * from './query'

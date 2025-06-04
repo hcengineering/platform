@@ -15,7 +15,7 @@
 
 import type { FileMessage, Message } from '@hcengineering/communication-types'
 
-export function deserializeMessage(message: Message): FileMessage {
+export function deserializeMessage (message: Message): FileMessage {
   return {
     id: message.id,
     type: message.type,

@@ -1,27 +1,34 @@
 ## 📡 Platform Communication Package
 
 A modular communication package for platform-level messaging —
-built with [Bun](https://bun.sh).
+built with [Rush](https://rushjs.io/).
 
 ---
 
 ### 📦 Installation
 
-Install dependencies using Bun:
+Install rush:
 
 ```bash
-  bun install
+  npm install -g @microsoft/rush
+```
+
+Install dependencies:
+
+```bash
+  rush update
 ```
 
 ### Build packages
 
 ```bash
-  bun run build
+  rush build
+  rush validate
 ```
 
 ### Lint & format
 
 ```bash
-  bun run lint
-  bun run format
+  rush lint
+  rush format
 ```

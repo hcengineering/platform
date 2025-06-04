@@ -24,23 +24,23 @@ export type { MessageQueryParams } from '@hcengineering/communication-query'
 let lq: LiveQueries
 let onDestroy: (fn: () => void) => void = () => {}
 
-export function createMessagesQuery(): MessagesQuery {
+export function createMessagesQuery (): MessagesQuery {
   return new MessagesQuery(lq, onDestroy)
 }
 
-export function createNotificationsQuery(): NotificationsQuery {
+export function createNotificationsQuery (): NotificationsQuery {
   return new NotificationsQuery(lq, onDestroy)
 }
 
-export function createNotificationContextsQuery(): NotificationContextsQuery {
+export function createNotificationContextsQuery (): NotificationContextsQuery {
   return new NotificationContextsQuery(lq, onDestroy)
 }
 
-export function createLabelsQuery(): LabelsQuery {
+export function createLabelsQuery (): LabelsQuery {
   return new LabelsQuery(lq, onDestroy)
 }
 
-export function initLiveQueries(
+export function initLiveQueries (
   client: FindClient,
   workspace: WorkspaceID,
   filesUrl: string,

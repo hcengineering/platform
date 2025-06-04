@@ -27,14 +27,14 @@ import type { Middleware, MiddlewareContext } from '../types'
 import { BaseMiddleware } from './base'
 
 export class DateMiddleware extends BaseMiddleware implements Middleware {
-  constructor(
+  constructor (
     readonly context: MiddlewareContext,
     next?: Middleware
   ) {
     super(context, next)
   }
 
-  async event(session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
     if (derived) return await this.provideEvent(session, event, derived)
     switch (event.type) {
       case MessageRequestEventType.CreateFile:
@@ -52,10 +52,10 @@ export class DateMiddleware extends BaseMiddleware implements Middleware {
         break
     }
 
-    return this.provideEvent(session, event, derived)
+    return await this.provideEvent(session, event, derived)
   }
 
-  private isSystem(session: SessionData): boolean {
+  private isSystem (session: SessionData): boolean {
     const account = session.account
     return systemAccountUuid === account.uuid
   }

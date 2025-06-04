@@ -51,14 +51,15 @@ interface SessionInfo {
 export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
   private readonly dataBySessionId = new Map<string, SessionInfo>()
 
-  constructor(
+  constructor (
     private readonly broadcastFn: BroadcastSessionsFunc,
     readonly context: MiddlewareContext,
     next?: Middleware
   ) {
     super(context, next)
   }
-  async findMessages(session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
+
+  async findMessages (session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
     this.createSession(session)
 
     const result = await this.provideFindMessages(session, params, queryId)
@@ -68,7 +69,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     return result
   }
 
-  async findMessagesGroups(
+  async findMessagesGroups (
     session: SessionData,
     params: FindMessagesGroupsParams,
     queryId?: QueryId
@@ -77,7 +78,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     return await this.provideFindMessagesGroups(session, params, queryId)
   }
 
-  async findNotificationContexts(
+  async findNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
     queryId?: QueryId
@@ -91,7 +92,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     return result
   }
 
-  async findNotifications(
+  async findNotifications (
     session: SessionData,
     params: FindNotificationsParams,
     queryId?: QueryId
@@ -100,17 +101,17 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     return await this.provideFindNotifications(session, params, queryId)
   }
 
-  async findLabels(session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
+  async findLabels (session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
     this.createSession(session)
     return await this.provideFindLabels(session, params, queryId)
   }
 
-  async event(session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
     this.createSession(session)
     return await this.provideEvent(session, event, derived)
   }
 
-  unsubscribeQuery(session: SessionData, queryId: number): void {
+  unsubscribeQuery (session: SessionData, queryId: number): void {
     if (session.sessionId == null) return
     const data = this.dataBySessionId.get(session.sessionId)
     if (data == null) return
@@ -119,7 +120,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     data.contextQueries.delete(queryId)
   }
 
-  async response(session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
+  async response (session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
     const sessionIds: string[] = []
     for (const [sessionId, session] of this.dataBySessionId.entries()) {
       if (this.match(event, session)) {
@@ -137,22 +138,22 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     await this.provideResponse(session, event, derived)
   }
 
-  closeSession(sessionId: string): void {
+  closeSession (sessionId: string): void {
     this.dataBySessionId.delete(sessionId)
   }
 
-  close(): void {
+  close (): void {
     this.dataBySessionId.clear()
   }
 
-  private subscribeMessageQuery(session: SessionData, queryId: QueryId, params: Record<string, any>): void {
+  private subscribeMessageQuery (session: SessionData, queryId: QueryId, params: Record<string, any>): void {
     const data = this.createSession(session)
     if (data == null) return
 
     data.messageQueries.set(queryId, params as FindMessagesParams)
   }
 
-  private subscribeContextQuery(session: SessionData, queryId: QueryId, result: NotificationContext[]): void {
+  private subscribeContextQuery (session: SessionData, queryId: QueryId, result: NotificationContext[]): void {
     const data = this.createSession(session)
     if (data == null) return
 
@@ -162,7 +163,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     data.contextQueries.set(queryId, new Set([...current, ...cards]))
   }
 
-  private createSession(session: SessionData): SessionInfo | undefined {
+  private createSession (session: SessionData): SessionInfo | undefined {
     const id = session.sessionId
     if (id == null) return
     if (!this.dataBySessionId.has(id)) {
@@ -176,7 +177,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     return this.dataBySessionId.get(id)
   }
 
-  private match(event: ResponseEvent, info: SessionInfo): boolean {
+  private match (event: ResponseEvent, info: SessionInfo): boolean {
     switch (event.type) {
       case MessageResponseEventType.MessageCreated:
         return this.matchMessagesQuery(
@@ -238,8 +239,8 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private matchMessagesQuery(
-    params: { ids: MessageID[]; card: CardID },
+  private matchMessagesQuery (
+    params: { ids: MessageID[], card: CardID },
     queries: FindMessagesParams[],
     cards: Set<CardID>
   ): boolean {

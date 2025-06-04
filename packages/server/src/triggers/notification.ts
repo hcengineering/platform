@@ -38,10 +38,10 @@ import {
 import { groupByArray } from '@hcengineering/core'
 
 import type { TriggerCtx, TriggerFn, Triggers } from '../types'
-import { findAccount } from '../utils.ts'
-import { getAddCollaboratorsMessageContent, getRemoveCollaboratorsMessageContent } from './utils.ts'
+import { findAccount } from '../utils'
+import { getAddCollaboratorsMessageContent, getRemoveCollaboratorsMessageContent } from './utils'
 
-async function onAddedCollaborators(ctx: TriggerCtx, event: AddedCollaboratorsEvent): Promise<RequestEvent[]> {
+async function onAddedCollaborators (ctx: TriggerCtx, event: AddedCollaboratorsEvent): Promise<RequestEvent[]> {
   const { card, cardType, collaborators } = event
   if (collaborators.length === 0) return []
   const result: RequestEvent[] = []
@@ -79,7 +79,7 @@ async function onAddedCollaborators(ctx: TriggerCtx, event: AddedCollaboratorsEv
   return result
 }
 
-async function onRemovedCollaborators(ctx: TriggerCtx, event: RemovedCollaboratorsEvent): Promise<RequestEvent[]> {
+async function onRemovedCollaborators (ctx: TriggerCtx, event: RemovedCollaboratorsEvent): Promise<RequestEvent[]> {
   const { card, collaborators } = event
   if (collaborators.length === 0) return []
   const result: RequestEvent[] = []
@@ -128,7 +128,7 @@ async function onRemovedCollaborators(ctx: TriggerCtx, event: RemovedCollaborato
   return result
 }
 
-async function onNotificationContextUpdated(
+async function onNotificationContextUpdated (
   ctx: TriggerCtx,
   event: NotificationContextUpdatedEvent
 ): Promise<RequestEvent[]> {
@@ -166,7 +166,7 @@ async function onNotificationContextUpdated(
   return result
 }
 
-async function onNotificationContextRemoved(
+async function onNotificationContextRemoved (
   ctx: TriggerCtx,
   event: NotificationContextRemovedEvent
 ): Promise<RequestEvent[]> {
@@ -184,7 +184,7 @@ async function onNotificationContextRemoved(
   return result
 }
 
-async function onMessagesRemoved(ctx: TriggerCtx, event: PatchCreatedEvent): Promise<RequestEvent[]> {
+async function onMessagesRemoved (ctx: TriggerCtx, event: PatchCreatedEvent): Promise<RequestEvent[]> {
   if (event.patch.type !== PatchType.remove) return []
 
   const notifications = await ctx.db.findNotifications({
@@ -200,7 +200,7 @@ async function onMessagesRemoved(ctx: TriggerCtx, event: PatchCreatedEvent): Pro
   for (const [context, ns] of byContextId.entries()) {
     result.push({
       type: NotificationRequestEventType.RemoveNotifications,
-      context: context,
+      context,
       account: ns[0].account,
       ids: notifications.map((it) => it.id)
     })

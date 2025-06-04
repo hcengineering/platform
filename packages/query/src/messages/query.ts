@@ -65,7 +65,7 @@ import {
   type QueryId
 } from '../types'
 import { WindowImpl } from '../window'
-import { addFile, addLinkPreview, addReaction, removeFile, removeLinkPreview, removeReaction } from '../utils.ts'
+import { addFile, addLinkPreview, addReaction, removeFile, removeLinkPreview, removeReaction } from '../utils'
 
 const GROUPS_LIMIT = 4
 
@@ -96,15 +96,15 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     buffer: [] as Message[]
   }
 
-  private createdFiles: Map<MessageID, File[]> = new Map()
-  private createdReactions: Map<MessageID, Reaction[]> = new Map()
-  private createdLinkPreviews: Map<MessageID, LinkPreview[]> = new Map()
-  private createdPatches: Map<MessageID, Patch[]> = new Map()
+  private readonly createdFiles = new Map<MessageID, File[]>()
+  private readonly createdReactions = new Map<MessageID, Reaction[]>()
+  private readonly createdLinkPreviews = new Map<MessageID, LinkPreview[]>()
+  private readonly createdPatches = new Map<MessageID, Patch[]>()
 
   private readonly tmpMessages = new Map<string, MessageID>()
   private isCardRemoved = false
 
-  constructor(
+  constructor (
     private readonly client: FindClient,
     private readonly workspace: WorkspaceID,
     private readonly filesUrl: string,
@@ -152,7 +152,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  async onEvent(event: ResponseEvent): Promise<void> {
+  async onEvent (event: ResponseEvent): Promise<void> {
     if (this.isCardRemoved) return
     switch (event.type) {
       case MessageResponseEventType.MessageCreated: {
@@ -196,7 +196,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  async onCardRemoved(event: CardRemovedEvent): Promise<void> {
+  async onCardRemoved (event: CardRemovedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
     if (this.params.card === event.card) {
       this.isCardRemoved = true
@@ -220,7 +220,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  async onRequest(event: RequestEvent, promise: Promise<EventResult>): Promise<void> {
+  async onRequest (event: RequestEvent, promise: Promise<EventResult>): Promise<void> {
     if (this.isCardRemoved) return
     switch (event.type) {
       case MessageRequestEventType.CreateMessage: {
@@ -230,7 +230,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  async onCreateMessageRequest(event: CreateMessageEvent, promise: Promise<CreateMessageResult>): Promise<void> {
+  async onCreateMessageRequest (event: CreateMessageEvent, promise: Promise<CreateMessageResult>): Promise<void> {
     if (this.params.card !== event.card) return
     const eventId = event._id
     if (eventId == null) return
@@ -291,7 +291,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  private insertMessage(result: QueryResult<Message>, message: Message): void {
+  private insertMessage (result: QueryResult<Message>, message: Message): void {
     if (this.params.order === SortingOrder.Ascending) {
       result.push(message)
     } else {
@@ -299,11 +299,11 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  async unsubscribe(): Promise<void> {
+  async unsubscribe (): Promise<void> {
     await this.client.unsubscribeQuery(this.id)
   }
 
-  async requestLoadNextPage(): Promise<void> {
+  async requestLoadNextPage (): Promise<void> {
     if (this.isCardRemoved) return
     if (this.result instanceof Promise) this.result = await this.result
 
@@ -318,7 +318,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  async requestLoadPrevPage(): Promise<void> {
+  async requestLoadPrevPage (): Promise<void> {
     if (this.isCardRemoved) return
     if (this.result instanceof Promise) this.result = await this.result
     if (!this.result.isHead()) {
@@ -332,16 +332,16 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  removeCallback(): void {
+  removeCallback (): void {
     this.callback = () => {}
   }
 
-  setCallback(callback: PagedQueryCallback<Message>): void {
+  setCallback (callback: PagedQueryCallback<Message>): void {
     this.callback = callback
     void this.notify()
   }
 
-  copyResult(): QueryResult<Message> | undefined {
+  copyResult (): QueryResult<Message> | undefined {
     if (this.result instanceof Promise) {
       return undefined
     }
@@ -349,7 +349,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return this.result.copy()
   }
 
-  private isInitLoadingForward(): boolean {
+  private isInitLoadingForward (): boolean {
     const { order } = this.params
 
     if (this.isOneMessageQuery(this.params)) {
@@ -359,7 +359,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return order === SortingOrder.Ascending
   }
 
-  private async loadPage(direction: Direction, result: QueryResult<Message>): Promise<QueryResult<Message>> {
+  private async loadPage (direction: Direction, result: QueryResult<Message>): Promise<QueryResult<Message>> {
     const { messages, fromDb } =
       direction === Direction.Forward ? await this.loadNextMessages(result) : await this.loadPrevMessages(result)
 
@@ -393,7 +393,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   // Load next
-  private async loadNextMessages(result: QueryResult<Message>): Promise<{ messages: Message[]; fromDb: boolean }> {
+  private async loadNextMessages (result: QueryResult<Message>): Promise<{ messages: Message[], fromDb: boolean }> {
     const messages: Message[] = this.next.buffer.splice(0, this.limit)
     if (messages.length >= this.limit) return { messages, fromDb: false }
 
@@ -411,7 +411,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return { messages, fromDb: dbMessages.length > 0 }
   }
 
-  private async findNextMessages(limit: number, result: QueryResult<Message>): Promise<Message[]> {
+  private async findNextMessages (limit: number, result: QueryResult<Message>): Promise<Message[]> {
     if (this.next.hasGroups) {
       return []
     }
@@ -436,9 +436,9 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   // Load prev
-  private async loadPrevMessages(
+  private async loadPrevMessages (
     result: QueryResult<Message>
-  ): Promise<{ messages: Message[]; fromDb: boolean; hasNext?: boolean }> {
+  ): Promise<{ messages: Message[], fromDb: boolean, hasNext?: boolean }> {
     const messages: Message[] = []
     const prevBuffer = this.prev.buffer
     const last = prevBuffer[prevBuffer.length - 1]
@@ -482,7 +482,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return { messages, fromDb: false }
   }
 
-  private async findPrevMessages(limit: number, result: QueryResult<Message>): Promise<Message[]> {
+  private async findPrevMessages (limit: number, result: QueryResult<Message>): Promise<Message[]> {
     if (!this.prev.hasMessages || result.isHead()) return []
 
     const first = this.params.order === SortingOrder.Ascending ? result.getFirst() : result.getLast()
@@ -502,7 +502,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     })
   }
 
-  getLoadGroupsParams(direction: Direction): Pick<FindMessagesGroupsParams, 'fromDate' | 'toDate'> | undefined {
+  getLoadGroupsParams (direction: Direction): Pick<FindMessagesGroupsParams, 'fromDate' | 'toDate'> | undefined {
     if (direction === Direction.Forward) {
       if (this.lastGroup != null) {
         return {
@@ -542,7 +542,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return undefined
   }
 
-  private async loadGroups(direction: Direction, result: QueryResult<Message>): Promise<void> {
+  private async loadGroups (direction: Direction, result: QueryResult<Message>): Promise<void> {
     let messagesCount = 0
     const lastResult = result.getLast()
     const toLoad: MessagesGroup[] = []
@@ -638,12 +638,12 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  private matchFileMessages(
+  private matchFileMessages (
     file: ParsedFile,
     direction: Direction,
     queryResult: QueryResult<Message>,
     filterDate?: Date
-  ): { next: Message[]; prev: Message[] } {
+  ): { next: Message[], prev: Message[] } {
     let result: Message[] = file.messages
     const params = this.params
     if (this.isOneMessageQuery(params)) {
@@ -687,7 +687,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return { next: nextResult, prev: prevResult }
   }
 
-  private async loadMessagesFromFiles(group: MessagesGroup): Promise<ParsedFile> {
+  private async loadMessagesFromFiles (group: MessagesGroup): Promise<ParsedFile> {
     const parsedFile = await loadGroupFile(this.workspace, this.filesUrl, group, { retries: 5 })
     const patches = group.patches ?? []
 
@@ -701,13 +701,13 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       messages:
         patches.length > 0
           ? parsedFile.messages.map((message) =>
-              applyPatches(message, patchesMap.get(message.id) ?? [], this.allowedPatches())
-            )
+            applyPatches(message, patchesMap.get(message.id) ?? [], this.allowedPatches())
+          )
           : parsedFile.messages
     }
   }
 
-  private async findGroupByDate(params: Date): Promise<MessagesGroup | undefined> {
+  private async findGroupByDate (params: Date): Promise<MessagesGroup | undefined> {
     const groups = await this.client.findMessagesGroups({
       card: this.params.card,
       fromDate: { lessOrEqual: params },
@@ -720,7 +720,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return groups[0]
   }
 
-  private async findGroups(
+  private async findGroups (
     direction: Direction,
     date?: Pick<FindMessagesGroupsParams, 'fromDate' | 'toDate'>
   ): Promise<MessagesGroup[]> {
@@ -747,16 +747,16 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     })
   }
 
-  private async find(params: FindMessagesParams): Promise<Message[]> {
+  private async find (params: FindMessagesParams): Promise<Message[]> {
     delete (params as any).from
     return await this.client.findMessages(params, this.id)
   }
 
-  private isOneMessageQuery(params: MessageQueryParams): params is OneMessageQueryParams {
+  private isOneMessageQuery (params: MessageQueryParams): params is OneMessageQueryParams {
     return 'id' in this.params && this.params.id != null
   }
 
-  private async notify(): Promise<void> {
+  private async notify (): Promise<void> {
     this.initialized = true
     if (this.callback == null) return
     if (this.result instanceof Promise) this.result = await this.result
@@ -764,7 +764,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     this.callback(new WindowImpl(result, this.result.isTail(), this.result.isHead(), this))
   }
 
-  private match(message: Message): boolean {
+  private match (message: Message): boolean {
     if (this.isOneMessageQuery(this.params) && this.params.id !== message.id) {
       return false
     }
@@ -774,7 +774,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return true
   }
 
-  private async onThreadCreatedEvent(event: ThreadCreatedEvent): Promise<void> {
+  private async onThreadCreatedEvent (event: ThreadCreatedEvent): Promise<void> {
     if (this.params.replies !== true) return
     if (this.params.card !== event.thread.card) return
     if (this.result instanceof Promise) this.result = await this.result
@@ -810,7 +810,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     })
   }
 
-  private fillMessage(origin: Message): Message {
+  private fillMessage (origin: Message): Message {
     let message = origin
     if (this.params.files === true) {
       message.files = this.createdFiles.get(message.id) ?? []
@@ -826,7 +826,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return message
   }
 
-  private async onMessageCreatedEvent(event: MessageCreatedEvent): Promise<void> {
+  private async onMessageCreatedEvent (event: MessageCreatedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
     if (this.params.card !== event.message.card) return
     let message = event.message
@@ -850,7 +850,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       const lastMessage = this.result.getLast()
       const firstMessage = this.result.getFirst()
 
-      function shouldResort(order: SortingOrder): boolean {
+      function shouldResort (order: SortingOrder): boolean {
         if (firstMessage == null || lastMessage == null) return false
         if (order === SortingOrder.Ascending) {
           return lastMessage.created > message.created
@@ -875,14 +875,14 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     this.cleanCache(message.id)
   }
 
-  private cleanCache(message: MessageID): void {
+  private cleanCache (message: MessageID): void {
     this.createdFiles.delete(message)
     this.createdReactions.delete(message)
     this.createdLinkPreviews.delete(message)
     this.createdPatches.delete(message)
   }
 
-  private async onPatchCreatedEvent(event: PatchCreatedEvent): Promise<void> {
+  private async onPatchCreatedEvent (event: PatchCreatedEvent): Promise<void> {
     if (this.params.card !== event.card) return
     if (!this.isAllowedPatch(event.patch.type)) return
     const current = this.createdPatches.get(event.patch.message) ?? []
@@ -908,7 +908,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  private async onReactionCreatedEvent(event: ReactionCreatedEvent): Promise<void> {
+  private async onReactionCreatedEvent (event: ReactionCreatedEvent): Promise<void> {
     if (this.params.reactions !== true || this.params.card !== event.card) return
     const current = this.createdReactions.get(event.message) ?? []
     this.createdReactions.set(event.message, [...current, event.reaction])
@@ -935,7 +935,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  private async onReactionRemovedEvent(event: ReactionRemovedEvent): Promise<void> {
+  private async onReactionRemovedEvent (event: ReactionRemovedEvent): Promise<void> {
     if (this.params.reactions !== true || this.params.card !== event.card) return
     const current = this.createdReactions.get(event.message) ?? []
     const reactions = current.filter((it) => it.reaction !== event.reaction || it.creator !== event.creator)
@@ -958,7 +958,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     )
   }
 
-  private updateFilesCache(message: MessageID, files: File[]): void {
+  private updateFilesCache (message: MessageID, files: File[]): void {
     const filesCache = this.createdFiles.get(message) ?? []
     this.createdFiles.set(message, filesCache)
     for (const file of files) {
@@ -969,7 +969,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  private async onFileCreatedEvent(event: FileCreatedEvent): Promise<void> {
+  private async onFileCreatedEvent (event: FileCreatedEvent): Promise<void> {
     if (this.params.files !== true || event.card !== this.params.card) return
     this.updateFilesCache(event.message, [event.file])
     if (this.result instanceof Promise) this.result = await this.result
@@ -994,7 +994,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  private async onLinkPreviewCreatedEvent(event: LinkPreviewCreatedEvent): Promise<void> {
+  private async onLinkPreviewCreatedEvent (event: LinkPreviewCreatedEvent): Promise<void> {
     if (this.params.links !== true || this.params.card !== event.card) return
     const current = this.createdLinkPreviews.get(event.message) ?? []
     this.createdLinkPreviews.set(event.message, [...current, event.linkPreview])
@@ -1019,7 +1019,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  private async onLinkPreviewRemovedEvent(event: LinkPreviewRemovedEvent): Promise<void> {
+  private async onLinkPreviewRemovedEvent (event: LinkPreviewRemovedEvent): Promise<void> {
     if (this.params.links !== true || this.params.card !== event.card) return
     const current = this.createdLinkPreviews.get(event.message) ?? []
     const linkPreviews = current.filter((it) => it.id !== event.id)
@@ -1042,7 +1042,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     this.prev.buffer = this.prev.buffer.map((it) => (it.id === event.message ? removeLinkPreview(it, event.id) : it))
   }
 
-  private async onFileRemovedEvent(event: FileRemovedEvent): Promise<void> {
+  private async onFileRemovedEvent (event: FileRemovedEvent): Promise<void> {
     if (this.params.files !== true) return
     if (this.params.card !== event.card) return
     const current = this.createdFiles.get(event.message) ?? []
@@ -1067,7 +1067,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     this.prev.buffer = this.prev.buffer.map((it) => (it.id === event.message ? removeFile(it, event.blobId) : it))
   }
 
-  private allowedPatches(): PatchType[] {
+  private allowedPatches (): PatchType[] {
     const result = [PatchType.update, PatchType.remove]
 
     if (this.params.reactions === true) {
@@ -1082,7 +1082,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return result
   }
 
-  private isAllowedPatch(type: PatchType): boolean {
+  private isAllowedPatch (type: PatchType): boolean {
     return this.allowedPatches().includes(type)
   }
 }

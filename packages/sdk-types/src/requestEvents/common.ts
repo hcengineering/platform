@@ -13,6 +13,6 @@
 // limitations under the License.
 //
 
-export type BaseRequestEvent = {
+export interface BaseRequestEvent {
   _id?: string
 }

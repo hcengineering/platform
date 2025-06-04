@@ -24,9 +24,9 @@ import {
 import { type ActivityTypeUpdate, ActivityUpdateType, MessageType } from '@hcengineering/communication-types'
 
 import type { TriggerCtx, TriggerFn, Triggers } from '../types'
-import { getNameBySocialID } from './utils.ts'
+import { getNameBySocialID } from './utils'
 
-async function createActivityOnCardTypeUpdate(ctx: TriggerCtx, event: CardTypeUpdatedEvent): Promise<RequestEvent[]> {
+async function createActivityOnCardTypeUpdate (ctx: TriggerCtx, event: CardTypeUpdatedEvent): Promise<RequestEvent[]> {
   const updateDate: ActivityTypeUpdate = {
     type: ActivityUpdateType.Type,
     newType: event.cardType
@@ -51,30 +51,30 @@ async function createActivityOnCardTypeUpdate(ctx: TriggerCtx, event: CardTypeUp
   ]
 }
 
-async function onCardTypeUpdates(ctx: TriggerCtx, event: CardTypeUpdatedEvent): Promise<RequestEvent[]> {
+async function onCardTypeUpdates (ctx: TriggerCtx, event: CardTypeUpdatedEvent): Promise<RequestEvent[]> {
   await ctx.db.updateCollaborators({ card: event.card }, { cardType: event.cardType })
   await ctx.db.updateLabels(event.card, { cardType: event.cardType })
   await ctx.db.updateThread(event.card, { threadType: event.cardType })
   return []
 }
 
-async function removeCollaborators(ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
+async function removeCollaborators (ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
   await ctx.db.removeCollaborators(event.card, {})
   return []
 }
 
-async function removeLabels(ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
+async function removeLabels (ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
   await ctx.db.removeLabels({ card: event.card })
   return []
 }
 
-async function removeThreads(ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
+async function removeThreads (ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
   await ctx.db.removeThreads({ card: event.card })
   await ctx.db.removeThreads({ thread: event.card })
   return []
 }
 
-async function removeNotificationContexts(ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
+async function removeNotificationContexts (ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
   const result: RequestEvent[] = []
   const contexts = await ctx.db.findNotificationContexts({ card: event.card })
   for (const context of contexts) {

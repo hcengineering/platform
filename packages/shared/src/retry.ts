@@ -18,7 +18,7 @@ export interface RetryOptions {
   delay?: number
 }
 
-export async function retry<T>(op: () => Promise<T>, { retries, delay }: RetryOptions): Promise<T> {
+export async function retry<T> (op: () => Promise<T>, { retries, delay }: RetryOptions): Promise<T> {
   let error: any
   while (retries > 0) {
     retries--

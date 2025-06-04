@@ -29,7 +29,7 @@ import { toLabel } from './mapping'
 import type { LabelUpdates, RemoveLabelQuery } from '@hcengineering/communication-sdk-types'
 
 export class LabelsDb extends BaseDb {
-  async createLabel(
+  async createLabel (
     label: LabelID,
     card: CardID,
     cardType: CardType,
@@ -54,7 +54,7 @@ export class LabelsDb extends BaseDb {
     )
   }
 
-  async removeLabels(query: RemoveLabelQuery): Promise<void> {
+  async removeLabels (query: RemoveLabelQuery): Promise<void> {
     const db: Partial<LabelDb> = {
       label_id: query.label,
       card_id: query.card,
@@ -77,7 +77,7 @@ export class LabelsDb extends BaseDb {
     await this.execute(sql, whereValues, 'remove labels')
   }
 
-  async updateLabels(card: CardID, updates: LabelUpdates): Promise<void> {
+  async updateLabels (card: CardID, updates: LabelUpdates): Promise<void> {
     const dbData: Partial<LabelDb> = {
       card_type: updates.cardType
     }
@@ -95,7 +95,7 @@ export class LabelsDb extends BaseDb {
     await this.execute(sql, [this.workspace, card, ...setValues], 'update labels')
   }
 
-  async findLabels(params: FindLabelsParams): Promise<Label[]> {
+  async findLabels (params: FindLabelsParams): Promise<Label[]> {
     const select = `SELECT *
                     FROM ${TableName.Label} l`
 
@@ -111,7 +111,7 @@ export class LabelsDb extends BaseDb {
     return result.map((it: any) => toLabel(it))
   }
 
-  buildWhere(params: FindLabelsParams, startIndex: number = 0, prefix = 'l.'): { where: string; values: any[] } {
+  buildWhere (params: FindLabelsParams, startIndex: number = 0, prefix = 'l.'): { where: string, values: any[] } {
     const where: string[] = []
     const values: any[] = []
     let index = startIndex + 1

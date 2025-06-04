@@ -93,7 +93,7 @@ interface Result {
 }
 
 export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
-  constructor(
+  constructor (
     private readonly db: DbAdapter,
     readonly context: MiddlewareContext,
     next?: Middleware
@@ -101,43 +101,43 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     super(context, next)
   }
 
-  async findMessages(_: SessionData, params: FindMessagesParams): Promise<Message[]> {
+  async findMessages (_: SessionData, params: FindMessagesParams): Promise<Message[]> {
     return await this.db.findMessages(params)
   }
 
-  async findMessagesGroups(_: SessionData, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+  async findMessagesGroups (_: SessionData, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
     return await this.db.findMessagesGroups(params)
   }
 
-  async findNotificationContexts(
+  async findNotificationContexts (
     _: SessionData,
     params: FindNotificationContextParams
   ): Promise<NotificationContext[]> {
     return await this.db.findNotificationContexts(params)
   }
 
-  async findNotifications(_: SessionData, params: FindNotificationsParams): Promise<Notification[]> {
+  async findNotifications (_: SessionData, params: FindNotificationsParams): Promise<Notification[]> {
     return await this.db.findNotifications(params)
   }
 
-  async findLabels(_: SessionData, params: FindLabelsParams): Promise<Label[]> {
+  async findLabels (_: SessionData, params: FindLabelsParams): Promise<Label[]> {
     return await this.db.findLabels(params)
   }
 
-  async findCollaborators(_: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
+  async findCollaborators (_: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
     return await this.db.findCollaborators(params)
   }
 
-  async event(session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
     const result = await this.processEvent(session, event)
-    if (result.responseEvent) {
+    if (result.responseEvent != null) {
       void this.context.head?.response(session, result.responseEvent, derived)
     }
 
     return result.result ?? {}
   }
 
-  private async processEvent(session: SessionData, event: RequestEvent): Promise<Result> {
+  private async processEvent (session: SessionData, event: RequestEvent): Promise<Result> {
     switch (event.type) {
       case MessageRequestEventType.CreateMessage:
         return await this.createMessage(event)
@@ -190,7 +190,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async updateThread(event: UpdateThreadEvent): Promise<Result> {
+  private async updateThread (event: UpdateThreadEvent): Promise<Result> {
     await this.db.updateThread(event.thread, event.updates)
     return {
       responseEvent: {
@@ -204,7 +204,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async addCollaborators(event: AddCollaboratorsEvent): Promise<Result> {
+  private async addCollaborators (event: AddCollaboratorsEvent): Promise<Result> {
     const created = event.created ?? new Date()
     const added = await this.db.addCollaborators(event.card, event.cardType, event.collaborators, created)
     if (added.length === 0) return {}
@@ -221,7 +221,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async removeCollaborators(event: RemoveCollaboratorsEvent): Promise<Result> {
+  private async removeCollaborators (event: RemoveCollaboratorsEvent): Promise<Result> {
     if (event.collaborators.length === 0) return {}
     const created = event.created ?? new Date()
     await this.db.removeCollaborators(event.card, { accounts: event.collaborators })
@@ -239,7 +239,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async createMessage(event: CreateMessageEvent): Promise<Result> {
+  private async createMessage (event: CreateMessageEvent): Promise<Result> {
     const created = event.created ?? new Date()
     const result = await this.db.createMessage(
       event.card,
@@ -277,7 +277,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async createPatch(event: CreatePatchEvent): Promise<Result> {
+  private async createPatch (event: CreatePatchEvent): Promise<Result> {
     const created = event.created ?? new Date()
     await this.db.createPatch(
       event.card,
@@ -289,14 +289,14 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       created
     )
 
-    const patch = {
+    const patch: Patch = {
       type: event.patchType,
       messageCreated: event.messageCreated,
       message: event.message,
       data: event.data,
       creator: event.creator,
       created
-    } as Patch
+    } as any
     const responseEvent: PatchCreatedEvent = {
       _id: event._id,
       type: MessageResponseEventType.PatchCreated,
@@ -308,7 +308,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async createReaction(event: CreateReactionEvent): Promise<Result> {
+  private async createReaction (event: CreateReactionEvent): Promise<Result> {
     const created = new Date()
     await this.db.createReaction(
       event.card,
@@ -337,7 +337,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async removeReaction(event: RemoveReactionEvent): Promise<Result> {
+  private async removeReaction (event: RemoveReactionEvent): Promise<Result> {
     await this.db.removeReaction(event.card, event.message, event.messageCreated, event.reaction, event.creator)
     const responseEvent: ReactionRemovedEvent = {
       _id: event._id,
@@ -353,7 +353,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async createFile(event: CreateFileEvent): Promise<Result> {
+  private async createFile (event: CreateFileEvent): Promise<Result> {
     const created = event.created ?? new Date()
     await this.db.createFile(event.card, event.message, event.messageCreated, event.data, event.creator, created)
     const responseEvent: FileCreatedEvent = {
@@ -373,7 +373,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async removeFile(event: RemoveFileEvent): Promise<Result> {
+  private async removeFile (event: RemoveFileEvent): Promise<Result> {
     await this.db.removeFiles(event.card, { message: event.message, blobId: event.blobId })
     const responseEvent: FileRemovedEvent = {
       _id: event._id,
@@ -389,7 +389,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async createLinkPreview(event: CreateLinkPreviewEvent): Promise<Result> {
+  private async createLinkPreview (event: CreateLinkPreviewEvent): Promise<Result> {
     const created = new Date()
     const id = await this.db.createLinkPreview(
       event.card,
@@ -419,7 +419,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async removeLinkPreview(event: RemoveLinkPreviewEvent): Promise<Result> {
+  private async removeLinkPreview (event: RemoveLinkPreviewEvent): Promise<Result> {
     await this.db.removeLinkPreview(event.card, event.message, event.id)
     const responseEvent: LinkPreviewRemovedEvent = {
       _id: event._id,
@@ -435,7 +435,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async createNotification(event: CreateNotificationEvent): Promise<Result> {
+  private async createNotification (event: CreateNotificationEvent): Promise<Result> {
     const id = await this.db.createNotification(
       event.context,
       event.message,
@@ -465,7 +465,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async updateNotification(event: UpdateNotificationEvent): Promise<Result> {
+  private async updateNotification (event: UpdateNotificationEvent): Promise<Result> {
     await this.db.updateNotification(event.query, event.updates)
     const responseEvent: NotificationUpdatedEvent = {
       _id: event._id,
@@ -478,7 +478,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async removeNotifications(event: RemoveNotificationsEvent): Promise<Result> {
+  private async removeNotifications (event: RemoveNotificationsEvent): Promise<Result> {
     const ids = await this.db.removeNotifications({
       context: event.context,
       account: event.account,
@@ -499,7 +499,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async createNotificationContext(event: CreateNotificationContextEvent): Promise<Result> {
+  private async createNotificationContext (event: CreateNotificationContextEvent): Promise<Result> {
     const id = await this.db.createContext(
       event.account,
       event.card,
@@ -525,7 +525,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async removeNotificationContext(event: RemoveNotificationContextEvent): Promise<Result> {
+  private async removeNotificationContext (event: RemoveNotificationContextEvent): Promise<Result> {
     const context = (await this.db.findNotificationContexts({ id: event.context, account: event.account }))[0]
     if (context === undefined) return {}
 
@@ -543,7 +543,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  async updateNotificationContext(event: UpdateNotificationContextEvent): Promise<Result> {
+  async updateNotificationContext (event: UpdateNotificationContextEvent): Promise<Result> {
     await this.db.updateContext(event.context, event.account, event.updates)
 
     const responseEvent: NotificationContextUpdatedEvent = {
@@ -560,7 +560,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  async createMessagesGroup(event: CreateMessagesGroupEvent): Promise<Result> {
+  async createMessagesGroup (event: CreateMessagesGroupEvent): Promise<Result> {
     const { fromDate, toDate, count, card, blobId } = event.group
     await this.db.createMessagesGroup(card, blobId, fromDate, toDate, count)
 
@@ -580,13 +580,13 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  async removeMessagesGroup(event: RemoveMessagesGroupEvent): Promise<Result> {
+  async removeMessagesGroup (event: RemoveMessagesGroupEvent): Promise<Result> {
     await this.db.removeMessagesGroup(event.card, event.blobId)
 
     return {}
   }
 
-  private async createThread(event: CreateThreadEvent): Promise<Result> {
+  private async createThread (event: CreateThreadEvent): Promise<Result> {
     const date = new Date()
     await this.db.createThread(event.card, event.message, event.messageCreated, event.thread, event.threadType, date)
     const responseEvent: ThreadCreatedEvent = {
@@ -607,7 +607,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async createLabel(event: CreateLabelEvent): Promise<Result> {
+  private async createLabel (event: CreateLabelEvent): Promise<Result> {
     const created = new Date()
     await this.db.createLabel(event.label, event.card, event.cardType, event.account, created)
     return {
@@ -625,7 +625,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async removeLabel(event: RemoveLabelEvent): Promise<Result> {
+  private async removeLabel (event: RemoveLabelEvent): Promise<Result> {
     await this.db.removeLabels({
       label: event.label,
       card: event.card,
@@ -642,7 +642,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async updateCardType(event: UpdateCardTypeEvent): Promise<Result> {
+  private async updateCardType (event: UpdateCardTypeEvent): Promise<Result> {
     return {
       responseEvent: {
         _id: event._id,
@@ -655,7 +655,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  private async removeCard(event: RemoveCardEvent): Promise<Result> {
+  private async removeCard (event: RemoveCardEvent): Promise<Result> {
     return {
       responseEvent: {
         _id: event._id,
@@ -665,7 +665,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  close(): void {
+  close (): void {
     this.db.close()
   }
 }

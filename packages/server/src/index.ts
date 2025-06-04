@@ -39,12 +39,12 @@ import type { BroadcastSessionsFunc, QueryId } from './types'
 import { buildMiddlewares, Middlewares } from './middlewares'
 
 export class Api implements ServerApi {
-  private constructor(
+  private constructor (
     private readonly ctx: MeasureContext,
     private readonly middlewares: Middlewares
   ) {}
 
-  static async create(
+  static async create (
     ctx: MeasureContext,
     workspace: WorkspaceID,
     dbUrl: string,
@@ -63,15 +63,15 @@ export class Api implements ServerApi {
     return new Api(ctx, middleware)
   }
 
-  async findMessages(session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
+  async findMessages (session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
     return await this.middlewares.findMessages(session, params, queryId)
   }
 
-  async findMessagesGroups(session: SessionData, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+  async findMessagesGroups (session: SessionData, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
     return await this.middlewares.findMessagesGroups(session, params)
   }
 
-  async findNotificationContexts(
+  async findNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
     queryId?: QueryId
@@ -79,7 +79,7 @@ export class Api implements ServerApi {
     return await this.middlewares.findNotificationContexts(session, params, queryId)
   }
 
-  async findNotifications(
+  async findNotifications (
     session: SessionData,
     params: FindNotificationsParams,
     queryId?: QueryId
@@ -87,27 +87,27 @@ export class Api implements ServerApi {
     return await this.middlewares.findNotifications(session, params, queryId)
   }
 
-  async findLabels(session: SessionData, params: FindLabelsParams): Promise<Label[]> {
+  async findLabels (session: SessionData, params: FindLabelsParams): Promise<Label[]> {
     return await this.middlewares.findLabels(session, params)
   }
 
-  async findCollaborators(session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
+  async findCollaborators (session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
     return await this.middlewares.findCollaborators(session, params)
   }
 
-  async unsubscribeQuery(session: SessionData, id: number): Promise<void> {
+  async unsubscribeQuery (session: SessionData, id: number): Promise<void> {
     await this.middlewares.unsubscribeQuery(session, id)
   }
 
-  async event(session: SessionData, event: RequestEvent): Promise<EventResult> {
+  async event (session: SessionData, event: RequestEvent): Promise<EventResult> {
     return await this.middlewares.event(session, event)
   }
 
-  async closeSession(sessionId: string): Promise<void> {
+  async closeSession (sessionId: string): Promise<void> {
     await this.middlewares.closeSession(sessionId)
   }
 
-  async close(): Promise<void> {
+  async close (): Promise<void> {
     await this.middlewares.close()
   }
 }

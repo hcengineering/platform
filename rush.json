@@ -1,0 +1,73 @@
+/**
+ * This is the main configuration file for Rush.
+ * For full documentation, please see https://rushjs.io
+ */
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.153.2",
+  "pnpmVersion": "9.15.3",
+  "nodeSupportedVersionRange": ">=20.0.0 <23.0.0",
+  "projectFolderMaxDepth": 2,
+  "gitPolicy": {},
+  "repository": {
+    "url": "https://github.com/hcengineering/communication",
+    "defaultBranch": "main",
+    "defaultRemote": "origin"
+  },
+  "eventHooks": {
+    "preRushInstall": [],
+    "postRushInstall": [],
+    "preRushBuild": [],
+    "postRushBuild": [],
+    "preRushx": [],
+    "postRushx": []
+  },
+  "variants": [],
+  "projects": [
+    {
+      "packageName": "@hcengineering/communication-types",
+      "projectFolder": "packages/types",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-sdk-types",
+      "projectFolder": "packages/sdk-types",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-shared",
+      "projectFolder": "packages/shared",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-yaml",
+      "projectFolder": "packages/yaml",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-rest-client",
+      "projectFolder": "packages/rest-client",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-cockroach",
+      "projectFolder": "packages/cockroach",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-server",
+      "projectFolder": "packages/server",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-query",
+      "projectFolder": "packages/query",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-client-query",
+      "projectFolder": "packages/client-query",
+      "shouldPublish": false
+    }
+  ]
+}

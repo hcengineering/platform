@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-export * from './client'
-export * from './db'
-export * from './query'
+export type * from './client'
+export type * from './db'
+export type * from './query'
 export * from './event'
-export * from './serverApi'
+export type * from './serverApi'

@@ -20,7 +20,7 @@ import type { AccountID, CardID, CardType } from './core'
 
 export type LabelID = Ref<TagElement>
 
-//TODO: import from @hcengineering/card
+// TODO: import from @hcengineering/card
 export const SubscriptionLabelID = 'card:label:Subscribed' as LabelID
 export const NewMessageLabelID = 'card:label:NewMessages' as LabelID
 

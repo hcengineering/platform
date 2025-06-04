@@ -34,32 +34,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.2.9
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           registry-url: 'https://npm.pkg.github.com'
           scope: '@hcengineering'
 
-      - name: Prepare deps
+      - name: Prepare .npmrc for GitHub Packages
         run: |
-          echo "@hcengineering:registry=https://npm.pkg.github.com" > .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
 
-      - name: Install dependencies
-        run: bun install
-
-      - name: Build
-        run: bun run build
-
-      - name: Check format
-        run: bun run format:check
-
-      - name: Lint
-        run: bun run lint
-
+      - name: Checking for mis-matching dependencies...
+        run: node common/scripts/install-run-rush.js check
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js update
+      - name: Rush rebuild
+        run: node common/scripts/install-run-rush.js build
+      - name: Rush validate
+        run: node common/scripts/install-run-rush.js validate
+      - name: Linting
+        run: node common/scripts/install-run-rush.js lint
+      - name: Formatting
+        run: node common/scripts/install-run-rush.js format

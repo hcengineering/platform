@@ -24,7 +24,7 @@ import {
   type UpdateThreadPatchData
 } from '@hcengineering/communication-types'
 
-export function applyPatches(message: Message, patches: Patch[], allowedPatchTypes: PatchType[] = []): Message {
+export function applyPatches (message: Message, patches: Patch[], allowedPatchTypes: PatchType[] = []): Message {
   if (patches.length === 0) return message
 
   for (const p of patches) {
@@ -33,7 +33,7 @@ export function applyPatches(message: Message, patches: Patch[], allowedPatchTyp
   return message
 }
 
-export function applyPatch(message: Message, patch: Patch, allowedPatchTypes: PatchType[] = []): Message {
+export function applyPatch (message: Message, patch: Patch, allowedPatchTypes: PatchType[] = []): Message {
   if ((allowedPatchTypes.length > 0 && !allowedPatchTypes.includes(patch.type)) || message.removed) return message
   switch (patch.type) {
     case PatchType.update:
@@ -72,14 +72,14 @@ export function applyPatch(message: Message, patch: Patch, allowedPatchTypes: Pa
   return message
 }
 
-function addReaction(message: Message, reaction: Reaction): Message {
+function addReaction (message: Message, reaction: Reaction): Message {
   const isExist = message.reactions.some((it) => it.reaction === reaction.reaction && it.creator === reaction.creator)
   if (isExist) return message
   message.reactions.push(reaction)
   return message
 }
 
-function removeReaction(message: Message, emoji: string, creator: SocialID): Message {
+function removeReaction (message: Message, emoji: string, creator: SocialID): Message {
   const reactions = message.reactions.filter((it) => it.reaction !== emoji || it.creator !== creator)
   if (reactions.length === message.reactions.length) return message
 
@@ -89,7 +89,7 @@ function removeReaction(message: Message, emoji: string, creator: SocialID): Mes
   }
 }
 
-function updateThread(message: Message, data: UpdateThreadPatchData, created: Date): Message {
+function updateThread (message: Message, data: UpdateThreadPatchData, created: Date): Message {
   const thread = message.thread ?? {
     card: message.card,
     message: message.id,
@@ -118,9 +118,9 @@ function updateThread(message: Message, data: UpdateThreadPatchData, created: Da
   }
 }
 
-function addFile(message: Message, data: AddFilePatchData, created: Date, creator: SocialID): Message {
+function addFile (message: Message, data: AddFilePatchData, created: Date, creator: SocialID): Message {
   const isExists = message.files.some((it) => it.blobId === data.blobId)
-  if (isExists !== undefined) return message
+  if (isExists) return message
   message.files.push({
     ...data,
     created,
@@ -129,7 +129,7 @@ function addFile(message: Message, data: AddFilePatchData, created: Date, creato
   return message
 }
 
-function removeFile(message: Message, blobId: BlobID): Message {
+function removeFile (message: Message, blobId: BlobID): Message {
   const files = message.files.filter((it) => it.blobId !== blobId)
   if (files.length === message.files.length) return message
 

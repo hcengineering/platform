@@ -62,7 +62,7 @@ const allowedPatchTypes = [
 export class NotificationQuery implements PagedQuery<Notification, FindNotificationsParams> {
   private result: QueryResult<Notification> | Promise<QueryResult<Notification>>
 
-  constructor(
+  constructor (
     private readonly client: FindClient,
     private readonly workspace: WorkspaceID,
     private readonly filesUrl: string,
@@ -86,7 +86,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async initResult(findParams: FindNotificationsParams, limit: number): Promise<QueryResult<Notification>> {
+  private async initResult (findParams: FindNotificationsParams, limit: number): Promise<QueryResult<Notification>> {
     try {
       const res = await this.find(findParams)
       const isComplete = res.length <= limit
@@ -104,7 +104,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  async onEvent(event: ResponseEvent): Promise<void> {
+  async onEvent (event: ResponseEvent): Promise<void> {
     switch (event.type) {
       case NotificationResponseEventType.NotificationCreated: {
         await this.onCreateNotificationEvent(event)
@@ -146,25 +146,25 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  async onRequest(event: RequestEvent): Promise<void> {}
+  async onRequest (event: RequestEvent): Promise<void> {}
 
-  async unsubscribe(): Promise<void> {
+  async unsubscribe (): Promise<void> {
     await this.client.unsubscribeQuery(this.id)
   }
 
-  async requestLoadNextPage(): Promise<void> {
+  async requestLoadNextPage (): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
 
     await this.loadPage(SortingOrder.Ascending, this.result.getLast()?.created)
   }
 
-  async requestLoadPrevPage(): Promise<void> {
+  async requestLoadPrevPage (): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
     await this.loadPage(SortingOrder.Descending, this.result.getFirst()?.created)
   }
 
-  private async loadPage(order: SortingOrder, created?: Date): Promise<void> {
-    if (!created) return
+  private async loadPage (order: SortingOrder, created?: Date): Promise<void> {
+    if (created == null) return
     if (this.result instanceof Promise) this.result = await this.result
 
     const limit = this.getLimit()
@@ -194,26 +194,26 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  removeCallback(): void {
+  removeCallback (): void {
     this.callback = () => {}
   }
 
-  setCallback(callback: PagedQueryCallback<Notification>): void {
+  setCallback (callback: PagedQueryCallback<Notification>): void {
     this.callback = callback
     void this.notify()
   }
 
-  copyResult(): QueryResult<Notification> | undefined {
+  copyResult (): QueryResult<Notification> | undefined {
     return this.result instanceof Promise ? undefined : this.result.copy()
   }
 
-  private async find(params: FindNotificationsParams): Promise<Notification[]> {
+  private async find (params: FindNotificationsParams): Promise<Notification[]> {
     const notifications = await this.client.findNotifications(params, this.id)
-    if (!params.message) return notifications
+    if (params.message !== true) return notifications
 
     return await Promise.all(
       notifications.map(async (notification) => {
-        if (notification.message || !notification.messageId) return notification
+        if (notification.message != null) return notification
         const message = await loadMessageFromGroup(
           notification.messageId,
           this.workspace,
@@ -221,14 +221,14 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
           notification.messageGroup,
           notification.patches
         )
-        return message ? { ...notification, message } : notification
+        return message != null ? { ...notification, message } : notification
       })
     )
   }
 
-  private async onCreateNotificationEvent(event: NotificationCreatedEvent): Promise<void> {
+  private async onCreateNotificationEvent (event: NotificationCreatedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
-    if (this.result.get(event.notification.id)) return
+    if (this.result.get(event.notification.id) != null) return
     if (!this.result.isTail()) return
 
     const match = matchNotification(event.notification, { ...this.params, created: undefined })
@@ -243,7 +243,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     await this.notify()
   }
 
-  private async onUpdateNotificationContextEvent(event: NotificationContextUpdatedEvent): Promise<void> {
+  private async onUpdateNotificationContextEvent (event: NotificationContextUpdatedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
     if (this.params.context != null && this.params.context !== event.context) return
 
@@ -255,14 +255,14 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
 
     const updated: Notification[] = toUpdate.map((it) => ({
       ...it,
-      read: it.type == NotificationType.Message ? lastView >= it.created : it.read
+      read: it.type === NotificationType.Message ? lastView >= it.created : it.read
     }))
 
     await this.updateNotificationRead(this.result, updated)
   }
 
-  private async updateNotificationRead(result: QueryResult<Notification>, updated: Notification[]): Promise<void> {
-    const isAllowed = (n: Notification) => {
+  private async updateNotificationRead (result: QueryResult<Notification>, updated: Notification[]): Promise<void> {
+    const isAllowed = (n: Notification): boolean => {
       if (this.params.read == null) return true
       return n.read === this.params.read
     }
@@ -284,11 +284,11 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async onUpdateNotificationEvent(event: NotificationUpdatedEvent): Promise<void> {
+  private async onUpdateNotificationEvent (event: NotificationUpdatedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
 
     const toUpdate = (
-      event.query.id
+      event.query.id != null
         ? [this.result.get(event.query.id)].filter((it): it is Notification => it != null)
         : this.result.getResult().filter((it) => matchNotification(it, event.query))
     ).filter((it) => it.read !== event.updates.read)
@@ -297,7 +297,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     await this.updateNotificationRead(this.result, updated)
   }
 
-  private async onRemoveNotificationsEvent(event: NotificationsRemovedEvent): Promise<void> {
+  private async onRemoveNotificationsEvent (event: NotificationsRemovedEvent): Promise<void> {
     if (this.params.context !== undefined && this.params.context !== event.context) return
     if (this.result instanceof Promise) this.result = await this.result
 
@@ -318,7 +318,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async onRemoveNotificationContextEvent(event: NotificationContextRemovedEvent): Promise<void> {
+  private async onRemoveNotificationContextEvent (event: NotificationContextRemovedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
 
     if (this.params.context != null && this.params.context !== event.context.id) return
@@ -346,7 +346,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async onCreatePatchEvent(event: PatchCreatedEvent): Promise<void> {
+  private async onCreatePatchEvent (event: PatchCreatedEvent): Promise<void> {
     if (this.params.message !== true) return
     const isUpdated = await this.updateMessage(
       (it) => this.matchNotificationByMessage(it, event.card, event.patch.message),
@@ -357,7 +357,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async onFileCreated(event: FileCreatedEvent): Promise<void> {
+  private async onFileCreated (event: FileCreatedEvent): Promise<void> {
     if (this.params.message !== true) return
     const isUpdated = await this.updateMessage(
       (it) => this.matchNotificationByMessage(it, event.card, event.message),
@@ -368,7 +368,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async onFileRemoved(event: FileRemovedEvent): Promise<void> {
+  private async onFileRemoved (event: FileRemovedEvent): Promise<void> {
     if (this.params.message !== true) return
     const isUpdated = await this.updateMessage(
       (it) => this.matchNotificationByMessage(it, event.card, event.message),
@@ -379,7 +379,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async onThreadCreated(event: ThreadCreatedEvent): Promise<void> {
+  private async onThreadCreated (event: ThreadCreatedEvent): Promise<void> {
     if (this.params.message !== true) return
     const isUpdated = await this.updateMessage(
       (it) => this.matchNotificationByMessage(it, event.thread.card, event.thread.message),
@@ -397,7 +397,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async onThreadUpdated(event: ThreadUpdatedEvent): Promise<void> {
+  private async onThreadUpdated (event: ThreadUpdatedEvent): Promise<void> {
     if (this.params.message !== true) return
     const isUpdated = await this.updateMessage(
       (it) => this.matchNotificationByMessage(it, event.card, event.message),
@@ -408,7 +408,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async onCardRemoved(event: CardRemovedEvent): Promise<void> {
+  private async onCardRemoved (event: CardRemovedEvent): Promise<void> {
     if (this.params.message !== true) return
     if (this.result instanceof Promise) this.result = await this.result
     const isUpdated = await this.updateMessage(
@@ -419,19 +419,20 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
       void this.notify()
     }
   }
-  private async notify(): Promise<void> {
-    if (!this.callback) return
+
+  private async notify (): Promise<void> {
+    if (this.callback == null) return
     if (this.result instanceof Promise) this.result = await this.result
 
     const window = new WindowImpl(this.result.getResult(), this.result.isTail(), this.result.isHead(), this)
     this.callback(window)
   }
 
-  private getLimit(): number {
+  private getLimit (): number {
     return this.params.limit ?? defaultQueryParams.limit
   }
 
-  private async reinit(limit: number): Promise<void> {
+  private async reinit (limit: number): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
     this.result = this.find({ ...this.params, limit: limit + 1 }).then((res) => {
       const isTail = res.length <= limit
@@ -451,11 +452,11 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     })
   }
 
-  private matchNotificationByMessage(notification: Notification, card: CardID, messageId: MessageID): boolean {
+  private matchNotificationByMessage (notification: Notification, card: CardID, messageId: MessageID): boolean {
     return notification.messageId === messageId && notification.message != null && notification.message.card === card
   }
 
-  private async updateMessage(
+  private async updateMessage (
     matchFn: (notification: Notification) => boolean,
     updater: (message: Message) => Message
   ): Promise<boolean> {

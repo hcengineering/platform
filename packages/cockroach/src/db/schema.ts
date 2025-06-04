@@ -29,9 +29,10 @@ import {
   type CardType,
   type BlobMetadata,
   type LinkPreviewImage,
-  type LinkPreviewID
+  type LinkPreviewID,
+  NotificationContent,
+  NotificationType
 } from '@hcengineering/communication-types'
-import type { NotificationContent, NotificationType } from '@hcengineering/communication-types'
 
 export enum TableName {
   File = 'communication.files',

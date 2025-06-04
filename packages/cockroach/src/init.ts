@@ -15,19 +15,21 @@
 
 import type postgres from 'postgres'
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 const migrationsTableName = 'communication._migrations'
 
 let isSchemaInitialized = false
 let initPromise: Promise<void> | null = null
 
-export function isInitialized(): boolean {
+export function isInitialized (): boolean {
   return isSchemaInitialized
 }
 
-export async function initSchema(sql: postgres.Sql): Promise<void> {
+export async function initSchema (sql: postgres.Sql): Promise<void> {
   if (isInitialized()) return
 
-  if (!initPromise) {
+  if (initPromise == null) {
     initPromise = (async () => {
       const maxAttempts = 3
       const retryDelay = 3000
@@ -57,11 +59,11 @@ export async function initSchema(sql: postgres.Sql): Promise<void> {
   await initPromise
 }
 
-function delay(ms: number): Promise<void> {
-  return new Promise((res) => setTimeout(res, ms))
+function delay (ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-async function init(sql: postgres.Sql) {
+async function init (sql: postgres.Sql): Promise<void> {
   if (isSchemaInitialized) return
   const start = performance.now()
   console.log('🗃️ Initializing schema...')
@@ -99,7 +101,7 @@ async function init(sql: postgres.Sql) {
   console.log(`🎉 All migrations complete in ${resTime.toFixed(2)} sec`)
 }
 
-function getMigrations(): [string, string][] {
+function getMigrations (): [string, string][] {
   return [
     migrationV1_1(),
     migrationV1_2(),
@@ -115,7 +117,7 @@ function getMigrations(): [string, string][] {
   ]
 }
 
-function migrationV1_1(): [string, string] {
+function migrationV1_1 (): [string, string] {
   const sql = `
       DROP SCHEMA IF EXISTS communication CASCADE;
       CREATE SCHEMA IF NOT EXISTS communication;
@@ -130,7 +132,7 @@ function migrationV1_1(): [string, string] {
   return ['recreate_schema-v1_1', sql]
 }
 
-function migrationV1_2(): [string, string] {
+function migrationV1_2 (): [string, string] {
   const sql = `
       CREATE TABLE IF NOT EXISTS communication.messages
       (
@@ -280,7 +282,7 @@ function migrationV1_2(): [string, string] {
   return ['reinit_tables-v1_2', sql]
 }
 
-function migrationV2_1(): [string, string] {
+function migrationV2_1 (): [string, string] {
   const sql = `
       ALTER TABLE communication.notifications
           ADD COLUMN IF NOT EXISTS type VARCHAR(255) NOT NULL DEFAULT 'message';
@@ -288,7 +290,7 @@ function migrationV2_1(): [string, string] {
   return ['add_type_column_to_notifications-v2_1', sql]
 }
 
-function migrationV2_2(): [string, string] {
+function migrationV2_2 (): [string, string] {
   const sql = `
       ALTER TABLE communication.notifications
           ADD COLUMN IF NOT EXISTS read BOOLEAN NOT NULL DEFAULT false;
@@ -296,12 +298,12 @@ function migrationV2_2(): [string, string] {
   return ['add_read_column_to_notifications-v2_2', sql]
 }
 
-function migrationV2_3(): [string, string] {
-  const sql = `UPDATE communication.notifications SET read = true; `
+function migrationV2_3 (): [string, string] {
+  const sql = 'UPDATE communication.notifications SET read = true; '
   return ['set_read_to_true-v2_3', sql]
 }
 
-function migrationV2_4(): [string, string] {
+function migrationV2_4 (): [string, string] {
   const sql = `
       ALTER TABLE communication.notifications
           ADD COLUMN IF NOT EXISTS message_created TIMESTAMPTZ;
@@ -309,7 +311,7 @@ function migrationV2_4(): [string, string] {
   return ['add_message_created_column_to_notifications-v2_4', sql]
 }
 
-function migrationV2_5(): [string, string] {
+function migrationV2_5 (): [string, string] {
   const sql = `
       UPDATE communication.notifications
       SET message_created = created;
@@ -320,7 +322,7 @@ function migrationV2_5(): [string, string] {
   return ['init_and_set_not_null_message_created_notifications-v2_4', sql]
 }
 
-function migrationV2_6(): [string, string] {
+function migrationV2_6 (): [string, string] {
   const sql = `
       ALTER TABLE communication.notification_context
           ADD COLUMN IF NOT EXISTS last_notify TIMESTAMPTZ;
@@ -328,7 +330,7 @@ function migrationV2_6(): [string, string] {
   return ['add_last_notify_column_to_notification_context-v2_6', sql]
 }
 
-function migrationV2_7(): [string, string] {
+function migrationV2_7 (): [string, string] {
   const sql = `
       UPDATE communication.notification_context
       SET last_notify = last_update;`
@@ -336,7 +338,7 @@ function migrationV2_7(): [string, string] {
   return ['set_last_notify_to_last_update-v2_7', sql]
 }
 
-function migrationV3_1(): [string, string] {
+function migrationV3_1 (): [string, string] {
   const sql = `
       CREATE TABLE IF NOT EXISTS communication.link_preview
       (
@@ -363,7 +365,7 @@ function migrationV3_1(): [string, string] {
   return ['init_link_preview-v3_1', sql]
 }
 
-function migrationV4_1(): [string, string] {
+function migrationV4_1 (): [string, string] {
   const sql = `
       CREATE INDEX IF NOT EXISTS notifications_context_id_read_created_desc_idx ON communication.notifications (context_id, read, created DESC);
     `

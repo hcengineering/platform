@@ -37,16 +37,16 @@ import type {
 import type { Middleware, MiddlewareContext, QueryId } from '../types'
 
 export class BaseMiddleware implements Middleware {
-  constructor(
+  constructor (
     readonly context: MiddlewareContext,
     protected readonly next?: Middleware
   ) {}
 
-  async findMessages(session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
+  async findMessages (session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
     return await this.provideFindMessages(session, params, queryId)
   }
 
-  async findMessagesGroups(
+  async findMessagesGroups (
     session: SessionData,
     params: FindMessagesGroupsParams,
     queryId?: QueryId
@@ -54,7 +54,7 @@ export class BaseMiddleware implements Middleware {
     return await this.provideFindMessagesGroups(session, params, queryId)
   }
 
-  async findNotificationContexts(
+  async findNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
     queryId?: QueryId
@@ -62,7 +62,7 @@ export class BaseMiddleware implements Middleware {
     return await this.provideFindNotificationContexts(session, params, queryId)
   }
 
-  async findNotifications(
+  async findNotifications (
     session: SessionData,
     params: FindNotificationsParams,
     queryId?: QueryId
@@ -70,106 +70,106 @@ export class BaseMiddleware implements Middleware {
     return await this.provideFindNotifications(session, params, queryId)
   }
 
-  async findLabels(session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
+  async findLabels (session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
     return await this.provideFindLabels(session, params, queryId)
   }
 
-  async findCollaborators(session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
+  async findCollaborators (session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
     return await this.provideFindCollaborators(session, params)
   }
 
-  async event(session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
     return await this.provideEvent(session, event, derived)
   }
 
-  async response(session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
-    return await this.provideResponse(session, event, derived)
+  async response (session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
+    await this.provideResponse(session, event, derived)
   }
 
-  unsubscribeQuery(session: SessionData, queryId: number): void {
+  unsubscribeQuery (session: SessionData, queryId: number): void {
     if (this.next !== undefined) {
-      return this.next.unsubscribeQuery(session, queryId)
+      this.next.unsubscribeQuery(session, queryId)
     }
   }
 
-  close(): void {}
-  closeSession(sessionId: string): void {}
+  close (): void {}
+  closeSession (sessionId: string): void {}
 
-  protected async provideEvent(session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
+  protected async provideEvent (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
     if (this.next !== undefined) {
-      return this.next.event(session, event, derived)
+      return await this.next.event(session, event, derived)
     }
     return {}
   }
 
-  protected async provideFindMessages(
+  protected async provideFindMessages (
     session: SessionData,
     params: FindMessagesParams,
     queryId?: QueryId
   ): Promise<Message[]> {
     if (this.next !== undefined) {
-      return this.next.findMessages(session, params, queryId)
+      return await this.next.findMessages(session, params, queryId)
     }
     return []
   }
 
-  protected async provideFindMessagesGroups(
+  protected async provideFindMessagesGroups (
     session: SessionData,
     params: FindMessagesGroupsParams,
     queryId?: QueryId
   ): Promise<MessagesGroup[]> {
     if (this.next !== undefined) {
-      return this.next.findMessagesGroups(session, params, queryId)
+      return await this.next.findMessagesGroups(session, params, queryId)
     }
     return []
   }
 
-  protected async provideFindNotificationContexts(
+  protected async provideFindNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
     queryId?: QueryId
   ): Promise<NotificationContext[]> {
     if (this.next !== undefined) {
-      return this.next.findNotificationContexts(session, params, queryId)
+      return await this.next.findNotificationContexts(session, params, queryId)
     }
     return []
   }
 
-  protected async provideFindNotifications(
+  protected async provideFindNotifications (
     session: SessionData,
     params: FindNotificationsParams,
     queryId?: QueryId
   ): Promise<Notification[]> {
     if (this.next !== undefined) {
-      return this.next.findNotifications(session, params, queryId)
+      return await this.next.findNotifications(session, params, queryId)
     }
     return []
   }
 
-  protected async provideFindLabels(
+  protected async provideFindLabels (
     session: SessionData,
     params: FindLabelsParams,
     queryId?: QueryId
   ): Promise<Label[]> {
     if (this.next !== undefined) {
-      return this.next.findLabels(session, params, queryId)
+      return await this.next.findLabels(session, params, queryId)
     }
     return []
   }
 
-  protected async provideFindCollaborators(
+  protected async provideFindCollaborators (
     session: SessionData,
     params: FindCollaboratorsParams
   ): Promise<Collaborator[]> {
     if (this.next !== undefined) {
-      return this.next.findCollaborators(session, params)
+      return await this.next.findCollaborators(session, params)
     }
     return []
   }
 
-  protected async provideResponse(session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
+  protected async provideResponse (session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
     if (this.next !== undefined) {
-      return this.next.response(session, event, derived)
+      await this.next.response(session, event, derived)
     }
   }
 }

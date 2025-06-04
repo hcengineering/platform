@@ -25,7 +25,7 @@ let counter = 0n
 /**
  * Generate 64-bit MessageID and return it as string.
  */
-export function generateMessageId(): MessageID {
+export function generateMessageId (): MessageID {
   const ts = BigInt(Date.now())
   counter = counter < MAX_SEQUENCE ? counter + 1n : 0n
 

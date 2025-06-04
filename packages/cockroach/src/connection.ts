@@ -29,7 +29,7 @@ class PostgresClientReferenceImpl {
   count: number
   client: postgres.Sql | Promise<postgres.Sql>
 
-  constructor(
+  constructor (
     client: postgres.Sql | Promise<postgres.Sql>,
     readonly onclose: () => void
   ) {
@@ -37,14 +37,14 @@ class PostgresClientReferenceImpl {
     this.client = client
   }
 
-  async getClient(): Promise<postgres.Sql> {
+  async getClient (): Promise<postgres.Sql> {
     if (this.client instanceof Promise) {
       this.client = await this.client
     }
     return this.client
   }
 
-  close(force: boolean = false): void {
+  close (force: boolean = false): void {
     this.count--
     if (this.count === 0 || force) {
       if (force) {
@@ -59,7 +59,7 @@ class PostgresClientReferenceImpl {
     }
   }
 
-  addRef(): void {
+  addRef (): void {
     this.count++
     console.log('Add postgres connection', this.count)
   }
@@ -67,12 +67,12 @@ class PostgresClientReferenceImpl {
 
 export class ClientRef implements PostgresClientReference {
   id = uuid()
-  constructor(readonly client: PostgresClientReferenceImpl) {
+  constructor (readonly client: PostgresClientReferenceImpl) {
     clientRefs.set(this.id, this)
   }
 
   closed = false
-  async getClient(): Promise<postgres.Sql> {
+  async getClient (): Promise<postgres.Sql> {
     if (!this.closed) {
       return await this.client.getClient()
     } else {
@@ -80,7 +80,7 @@ export class ClientRef implements PostgresClientReference {
     }
   }
 
-  close(): void {
+  close (): void {
     // Do not allow double close of connection client-query
     if (!this.closed) {
       clientRefs.delete(this.id)
@@ -90,7 +90,7 @@ export class ClientRef implements PostgresClientReference {
   }
 }
 
-export function connect(connectionString: string, database?: string): PostgresClientReference {
+export function connect (connectionString: string, database?: string): PostgresClientReference {
   const extraOptions = JSON.parse(process.env.POSTGRES_OPTIONS ?? '{}')
   const key = `${connectionString}${extraOptions}`
   let existing = connections.get(key)
@@ -103,8 +103,8 @@ export function connect(connectionString: string, database?: string): PostgresCl
       fetch_types: true,
       debug: false,
       notice: false,
-      onnotice() {},
-      onparameter() {},
+      onnotice () {},
+      onparameter () {},
       ...extraOptions,
       prepare: true,
       connection: {

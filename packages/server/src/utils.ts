@@ -20,7 +20,7 @@ import { getClient as getAccountClient } from '@hcengineering/account-client'
 
 import type { TriggerCtx } from './types'
 
-export async function findAccount(ctx: TriggerCtx, socialString: SocialID): Promise<AccountID | undefined> {
+export async function findAccount (ctx: TriggerCtx, socialString: SocialID): Promise<AccountID | undefined> {
   if (ctx.account.socialIds.includes(socialString)) {
     return ctx.account.uuid
   }

@@ -23,7 +23,7 @@ import type {
 } from '@hcengineering/communication-types'
 import yaml from 'js-yaml'
 
-export async function loadGroupFile(
+export async function loadGroupFile (
   workspace: WorkspaceID,
   filesUrl: string,
   group: MessagesGroup,
@@ -35,7 +35,7 @@ export async function loadGroupFile(
   return parseYaml(file)
 }
 
-async function fetchFile(url: string): Promise<string> {
+async function fetchFile (url: string): Promise<string> {
   const res = await fetch(url)
 
   if (!res.ok) {
@@ -49,14 +49,14 @@ async function fetchFile(url: string): Promise<string> {
   return await res.text()
 }
 
-function getFileUrl(workspace: WorkspaceID, urlTemplate: string, file: string): string {
+function getFileUrl (workspace: WorkspaceID, urlTemplate: string, file: string): string {
   return urlTemplate
     .replaceAll(':filename', encodeURIComponent(file))
     .replaceAll(':workspace', encodeURIComponent(workspace))
     .replaceAll(':blobId', encodeURIComponent(file))
 }
 
-export function parseYaml(data: string): ParsedFile {
+export function parseYaml (data: string): ParsedFile {
   const [metadata, messages] = yaml.loadAll(data) as [FileMetadata, FileMessage[]]
 
   return {
@@ -72,17 +72,18 @@ export function parseYaml(data: string): ParsedFile {
       removed: message.removed,
       data: message.data,
       externalId: message.externalId,
-      thread: message.thread
-        ? {
-            card: metadata.card,
-            message: message.id,
-            messageCreated: message.created,
-            thread: message.thread.thread,
-            threadType: message.thread.threadType,
-            repliesCount: message.thread.repliesCount,
-            lastReply: message.thread.lastReply
-          }
-        : undefined,
+      thread:
+        message.thread != null
+          ? {
+              card: metadata.card,
+              message: message.id,
+              messageCreated: message.created,
+              thread: message.thread.thread,
+              threadType: message.thread.threadType,
+              repliesCount: message.thread.repliesCount,
+              lastReply: message.thread.lastReply
+            }
+          : undefined,
       files: message.files,
       reactions: message.reactions,
       links: message.links ?? []

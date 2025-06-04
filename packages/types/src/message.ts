@@ -146,7 +146,7 @@ export interface RemoveFilePatch extends BasePatch {
 }
 export interface RemovePatch extends BasePatch {
   type: PatchType.remove
-  data: {}
+  data: RemovePatchData
 }
 
 export type Patch =
@@ -198,7 +198,8 @@ export interface RemoveFilePatchData {
   blobId: BlobID
 }
 
-type RemovePatchData = {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface RemovePatchData {}
 
 export enum PatchType {
   update = 'update',

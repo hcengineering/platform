@@ -35,7 +35,7 @@ import {
 import { loadGroupFile } from '@hcengineering/communication-yaml'
 import type { FindClient } from '@hcengineering/communication-sdk-types'
 
-export async function findMessage(
+export async function findMessage (
   client: FindClient,
   workspace: WorkspaceID,
   filesUrl: string,
@@ -53,7 +53,7 @@ export async function findMessage(
   return await findMessageInFiles(client, workspace, filesUrl, card, id, created)
 }
 
-export async function findMessageInFiles(
+export async function findMessageInFiles (
   client: FindClient,
   workspace: WorkspaceID,
   filesUrl: string,
@@ -96,7 +96,7 @@ export async function findMessageInFiles(
   }
 }
 
-export async function loadMessageFromGroup(
+export async function loadMessageFromGroup (
   id: MessageID,
   workspace: WorkspaceID,
   filesUrl: string,
@@ -113,14 +113,14 @@ export async function loadMessageFromGroup(
   return applyPatches(message, patches)
 }
 
-export function addFile(message: Message, file: File): Message {
+export function addFile (message: Message, file: File): Message {
   if (!message.files.some((it) => it.blobId === file.blobId)) {
     message.files.push(file)
   }
   return message
 }
 
-export function removeFile(message: Message, blobId: BlobID): Message {
+export function removeFile (message: Message, blobId: BlobID): Message {
   const files = message.files.filter((it) => it.blobId !== blobId)
   if (files.length === message.files.length) return message
 
@@ -130,7 +130,7 @@ export function removeFile(message: Message, blobId: BlobID): Message {
   }
 }
 
-export function addLinkPreview(message: Message, linkPreview: LinkPreview): Message {
+export function addLinkPreview (message: Message, linkPreview: LinkPreview): Message {
   const current = message.links.find((it) => it.id === linkPreview.id)
   if (current === undefined) {
     message.links.push(linkPreview)
@@ -138,7 +138,7 @@ export function addLinkPreview(message: Message, linkPreview: LinkPreview): Mess
   return message
 }
 
-export function removeLinkPreview(message: Message, id: LinkPreviewID): Message {
+export function removeLinkPreview (message: Message, id: LinkPreviewID): Message {
   const links = message.links.filter((it) => it.id !== id)
   if (links.length === message.links.length) return message
   return {
@@ -147,7 +147,7 @@ export function removeLinkPreview(message: Message, id: LinkPreviewID): Message 
   }
 }
 
-export function addReaction(message: Message, reaction: Reaction): Message {
+export function addReaction (message: Message, reaction: Reaction): Message {
   const current = message.reactions.find((it) => it.reaction === reaction.reaction && it.creator === reaction.creator)
   if (current === undefined) {
     message.reactions.push(reaction)
@@ -155,7 +155,7 @@ export function addReaction(message: Message, reaction: Reaction): Message {
   return message
 }
 
-export function removeReaction(message: Message, emoji: string, creator: SocialID): Message {
+export function removeReaction (message: Message, emoji: string, creator: SocialID): Message {
   const reactions = message.reactions.filter((it) => it.reaction !== emoji || it.creator !== creator)
   if (reactions.length === message.reactions.length) return message
 
@@ -165,7 +165,7 @@ export function removeReaction(message: Message, emoji: string, creator: SocialI
   }
 }
 
-export function createThread(
+export function createThread (
   message: Message,
   threadId: CardID,
   threadType: CardType,
@@ -188,7 +188,7 @@ export function createThread(
   return message
 }
 
-export function updateThread(
+export function updateThread (
   message: Message,
   thread: CardID,
   replies: 'increment' | 'decrement',
@@ -204,7 +204,7 @@ export function updateThread(
   return message
 }
 
-export function matchNotification(notification: Notification, params: FindNotificationsParams): boolean {
+export function matchNotification (notification: Notification, params: FindNotificationsParams): boolean {
   if (params.type !== undefined && params.type !== notification.type) return false
   if (params.read !== undefined && params.read !== notification.read) return false
   if (params.id !== undefined && params.id !== notification.id) return false
@@ -212,15 +212,15 @@ export function matchNotification(notification: Notification, params: FindNotifi
 
   const created = notification.created.getTime()
 
-  if (params.created) {
+  if (params.created != null) {
     if (params.created instanceof Date) {
       if (created !== params.created.getTime()) return false
     } else {
       const { greater, less, greaterOrEqual, lessOrEqual } = params.created
-      if (greater && created <= greater.getTime()) return false
-      if (less && created >= less.getTime()) return false
-      if (greaterOrEqual && created < greaterOrEqual.getTime()) return false
-      if (lessOrEqual && created > lessOrEqual.getTime()) return false
+      if (greater != null && created <= greater.getTime()) return false
+      if (less != null && created >= less.getTime()) return false
+      if (greaterOrEqual != null && created < greaterOrEqual.getTime()) return false
+      if (lessOrEqual != null && created > lessOrEqual.getTime()) return false
     }
   }
 

@@ -15,19 +15,19 @@
 
 import { uncompress } from 'snappyjs'
 
-function isDateString(value: any) {
+function isDateString (value: any): boolean {
   if (typeof value !== 'string') return false
   const dateStringRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/
 
   return dateStringRegex.test(value)
 }
 
-function reviver(key: string, value: any) {
+function reviver (key: string, value: any): Date {
   if (isDateString(value)) return new Date(value)
   return value
 }
 
-export async function extractJson<T>(response: Response): Promise<any> {
+export async function extractJson<T> (response: Response): Promise<any> {
   const encoding = response.headers.get('content-encoding')
   if (encoding === 'snappy') {
     const buffer = await response.arrayBuffer()

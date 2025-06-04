@@ -21,60 +21,60 @@ export class QueryResult<T> {
   private tail: boolean = false
   private head: boolean = false
 
-  get length(): number {
+  get length (): number {
     return this.objectById.size
   }
 
-  constructor(
+  constructor (
     messages: T[],
     private readonly getId: (it: T) => ID
   ) {
     this.objectById = new Map(messages.map((it) => [getId(it), it]))
   }
 
-  isTail(): boolean {
+  isTail (): boolean {
     return this.tail
   }
 
-  isHead(): boolean {
+  isHead (): boolean {
     return this.head
   }
 
-  setHead(head: boolean): void {
+  setHead (head: boolean): void {
     this.head = head
   }
 
-  setTail(tail: boolean): void {
+  setTail (tail: boolean): void {
     this.tail = tail
   }
 
-  getResult(): T[] {
+  getResult (): T[] {
     return Array.from(this.objectById.values())
   }
 
-  get(id: ID): Readonly<T> | undefined {
+  get (id: ID): Readonly<T> | undefined {
     return this.objectById.get(id)
   }
 
-  delete(id: ID): T | undefined {
+  delete (id: ID): T | undefined {
     const object = this.objectById.get(id)
     this.objectById.delete(id)
     return object
   }
 
-  deleteAll(): void {
+  deleteAll (): void {
     this.objectById.clear()
   }
 
-  push(object: T): void {
+  push (object: T): void {
     this.objectById.set(this.getId(object), object)
   }
 
-  unshift(object: T): void {
+  unshift (object: T): void {
     this.objectById = new Map([[this.getId(object), object], ...this.objectById])
   }
 
-  pop(): T | undefined {
+  pop (): T | undefined {
     const array = Array.from(this.objectById.values())
     const last = array[array.length - 1]
     if (last === undefined) return
@@ -82,36 +82,36 @@ export class QueryResult<T> {
     return last
   }
 
-  update(object: T): void {
+  update (object: T): void {
     this.objectById.set(this.getId(object), object)
   }
 
-  getFirst(): T | undefined {
+  getFirst (): T | undefined {
     return Array.from(this.objectById.values())[0]
   }
 
-  getLast(): T | undefined {
+  getLast (): T | undefined {
     return Array.from(this.objectById.values())[this.objectById.size - 1]
   }
 
-  prepend(objects: T[]): void {
+  prepend (objects: T[]): void {
     const current = Array.from(this.objectById.entries())
     this.objectById = new Map([...objects.map<[ID, T]>((object) => [this.getId(object), object]), ...current])
   }
 
-  append(objects: T[]): void {
+  append (objects: T[]): void {
     for (const object of objects) {
       this.objectById.set(this.getId(object), object)
     }
   }
 
-  sort(compare: (a: T, b: T) => number): void {
+  sort (compare: (a: T, b: T) => number): void {
     const current = Array.from(this.objectById.values())
     const sorted = current.sort(compare)
     this.objectById = new Map(sorted.map<[ID, T]>((object) => [this.getId(object), object]))
   }
 
-  copy(): QueryResult<T> {
+  copy (): QueryResult<T> {
     const copy = new QueryResult(Array.from(this.objectById.values()), this.getId)
 
     copy.setHead(this.head)

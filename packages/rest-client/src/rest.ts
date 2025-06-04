@@ -14,7 +14,6 @@
 //
 
 import { concatLink } from '@hcengineering/core'
-import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
   MessageRequestEventType,
   type EventResult,
@@ -48,14 +47,14 @@ import type { RestClient } from './types'
 
 const retries = 3
 
-export function createRestClient(endpoint: string, workspaceId: string, token: string): RestClient {
+export function createRestClient (endpoint: string, workspaceId: string, token: string): RestClient {
   return new RestClientImpl(endpoint, workspaceId, token)
 }
 
 class RestClientImpl implements RestClient {
   endpoint: string
 
-  constructor(
+  constructor (
     endpoint: string,
     readonly workspace: string,
     readonly token: string
@@ -63,7 +62,7 @@ class RestClientImpl implements RestClient {
     this.endpoint = endpoint.replace('ws', 'http')
   }
 
-  private jsonHeaders(): Record<string, string> {
+  private jsonHeaders (): Record<string, string> {
     return {
       'Content-Type': 'application/json',
       Authorization: 'Bearer ' + this.token,
@@ -71,7 +70,7 @@ class RestClientImpl implements RestClient {
     }
   }
 
-  private requestInit(): RequestInit {
+  private requestInit (): RequestInit {
     return {
       method: 'GET',
       keepalive: true,
@@ -79,7 +78,7 @@ class RestClientImpl implements RestClient {
     }
   }
 
-  async event(event: RequestEvent): Promise<EventResult> {
+  async event (event: RequestEvent): Promise<EventResult> {
     const response = await fetch(concatLink(this.endpoint, `/api/v1/event/${this.workspace}`), {
       method: 'POST',
       headers: {
@@ -90,12 +89,12 @@ class RestClientImpl implements RestClient {
       body: JSON.stringify(event)
     })
     if (!response.ok) {
-      throw new PlatformError(unknownError(response.statusText))
+      throw new Error(response.statusText)
     }
     return (await response.json()) as EventResult
   }
 
-  async createMessage(
+  async createMessage (
     card: CardID,
     cardType: CardType,
     content: RichText,
@@ -121,7 +120,7 @@ class RestClientImpl implements RestClient {
     return result as CreateMessageResult
   }
 
-  async updateMessage(
+  async updateMessage (
     card: CardID,
     message: MessageID,
     messageCreated: Date,
@@ -139,7 +138,7 @@ class RestClientImpl implements RestClient {
     })
   }
 
-  async removeMessage(card: CardID, message: MessageID, messageCreated: Date, creator: SocialID): Promise<void> {
+  async removeMessage (card: CardID, message: MessageID, messageCreated: Date, creator: SocialID): Promise<void> {
     await this.event({
       type: MessageRequestEventType.CreatePatch,
       patchType: PatchType.remove,
@@ -151,7 +150,7 @@ class RestClientImpl implements RestClient {
     })
   }
 
-  async createFile(
+  async createFile (
     card: CardID,
     message: MessageID,
     messageCreated: Date,
@@ -168,7 +167,7 @@ class RestClientImpl implements RestClient {
     })
   }
 
-  async removeFile(
+  async removeFile (
     card: CardID,
     message: MessageID,
     messageCreated: Date,
@@ -185,7 +184,7 @@ class RestClientImpl implements RestClient {
     })
   }
 
-  async findMessages(params: FindMessagesParams): Promise<Message[]> {
+  async findMessages (params: FindMessagesParams): Promise<Message[]> {
     const searchParams = new URLSearchParams()
     if (Object.keys(params).length > 0) {
       searchParams.append('params', JSON.stringify(params))
@@ -196,7 +195,7 @@ class RestClientImpl implements RestClient {
       async () => {
         const response = await fetch(requestUrl, this.requestInit())
         if (!response.ok) {
-          throw new PlatformError(unknownError(response.statusText))
+          throw new Error(response.statusText)
         }
         return await extractJson<MessagesGroup[]>(response)
       },
@@ -204,7 +203,7 @@ class RestClientImpl implements RestClient {
     )
   }
 
-  async findMessagesGroups(params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+  async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
     const searchParams = new URLSearchParams()
     if (Object.keys(params).length > 0) {
       searchParams.append('params', JSON.stringify(params))
@@ -217,7 +216,7 @@ class RestClientImpl implements RestClient {
       async () => {
         const response = await fetch(requestUrl, this.requestInit())
         if (!response.ok) {
-          throw new PlatformError(unknownError(response.statusText))
+          throw new Error(response.statusText)
         }
         return await extractJson<MessagesGroup[]>(response)
       },
@@ -225,7 +224,7 @@ class RestClientImpl implements RestClient {
     )
   }
 
-  async findNotificationContexts(params: FindNotificationContextParams): Promise<NotificationContext[]> {
+  async findNotificationContexts (params: FindNotificationContextParams): Promise<NotificationContext[]> {
     const searchParams = new URLSearchParams()
     if (Object.keys(params).length > 0) {
       searchParams.append('params', JSON.stringify(params))
@@ -238,7 +237,7 @@ class RestClientImpl implements RestClient {
       async () => {
         const response = await fetch(requestUrl, this.requestInit())
         if (!response.ok) {
-          throw new PlatformError(unknownError(response.statusText))
+          throw new Error(response.statusText)
         }
         return await extractJson<NotificationContext[]>(response)
       },
@@ -246,7 +245,7 @@ class RestClientImpl implements RestClient {
     )
   }
 
-  async findNotifications(params: FindNotificationsParams): Promise<Notification[]> {
+  async findNotifications (params: FindNotificationsParams): Promise<Notification[]> {
     const searchParams = new URLSearchParams()
     if (Object.keys(params).length > 0) {
       searchParams.append('params', JSON.stringify(params))
@@ -259,7 +258,7 @@ class RestClientImpl implements RestClient {
       async () => {
         const response = await fetch(requestUrl, this.requestInit())
         if (!response.ok) {
-          throw new PlatformError(unknownError(response.statusText))
+          throw new Error(response.statusText)
         }
         return await extractJson<Notification[]>(response)
       },

@@ -39,16 +39,12 @@ import {
 } from '@hcengineering/communication-types'
 import { z } from 'zod'
 
-import type { Middleware, MiddlewareContext, QueryId } from '../types'
+import type { Middleware, QueryId } from '../types'
 import { BaseMiddleware } from './base'
 import { ApiError } from '../error'
 
 export class ValidateMiddleware extends BaseMiddleware implements Middleware {
-  constructor(context: MiddlewareContext, next?: Middleware) {
-    super(context, next)
-  }
-
-  private validate(data: any, schema: z.ZodObject<any>): void {
+  private validate (data: any, schema: z.ZodObject<any>): void {
     const validationResult = schema.safeParse(data)
     if (!validationResult.success) {
       const errors = validationResult.error.errors.map((err) => err.message)
@@ -57,12 +53,12 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  async findMessages(session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
+  async findMessages (session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
     this.validate(params, FindMessagesParamsSchema)
     return await this.provideFindMessages(session, params, queryId)
   }
 
-  async findMessagesGroups(
+  async findMessagesGroups (
     session: SessionData,
     params: FindMessagesGroupsParams,
     queryId?: QueryId
@@ -71,7 +67,7 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
     return await this.provideFindMessagesGroups(session, params, queryId)
   }
 
-  async findNotificationContexts(
+  async findNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
     queryId?: QueryId
@@ -80,7 +76,7 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
     return await this.provideFindNotificationContexts(session, params, queryId)
   }
 
-  async findNotifications(
+  async findNotifications (
     session: SessionData,
     params: FindNotificationsParams,
     queryId?: QueryId
@@ -89,17 +85,17 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
     return await this.provideFindNotifications(session, params, queryId)
   }
 
-  async findLabels(session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
+  async findLabels (session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
     this.validate(params, FindLabelsParamsSchema)
     return await this.provideFindLabels(session, params, queryId)
   }
 
-  async findCollaborators(session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
+  async findCollaborators (session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]> {
     this.validate(params, FindCollaboratorsParamsSchema)
     return await this.provideFindCollaborators(session, params)
   }
 
-  async event(session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
     if (derived) return await this.provideEvent(session, event, derived)
     switch (event.type) {
       case MessageRequestEventType.CreateMessage:
@@ -184,7 +180,7 @@ const PatchData = z.any()
 const MessageID = z.string()
 const NotificationID = z.string()
 const MessageType = z.string()
-const MessagesGroup = z.any()
+const MessagesGroupSchema = z.any()
 const PatchTypeSchema = z.enum([PatchType.update, PatchType.remove])
 const RichText = z.string()
 const SocialID = z.string()
@@ -257,7 +253,7 @@ const FindCollaboratorsParamsSchema = FindParamsSchema.extend({
   card: CardID.optional(),
   account: z.union([AccountID, z.array(AccountID)]).optional()
 }).strict()
-//Events
+// Events
 
 const BaseRequestEventSchema = z
   .object({
@@ -265,7 +261,7 @@ const BaseRequestEventSchema = z
   })
   .strict()
 
-//Label events
+// Label events
 const CreateLabelEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(LabelRequestEventType.CreateLabel),
   label: LabelID,
@@ -401,7 +397,7 @@ const UpdateThreadEventSchema = BaseRequestEventSchema.extend({
 
 const CreateMessagesGroupEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.CreateMessagesGroup),
-  group: MessagesGroup
+  group: MessagesGroupSchema
 }).strict()
 
 const RemoveMessagesGroupEventSchema = BaseRequestEventSchema.extend({
@@ -490,7 +486,7 @@ const RemoveCollaboratorsEventSchema = BaseRequestEventSchema.extend({
   created: DateSchema.optional()
 }).strict()
 
-function deserializeEvent(event: RequestEvent): RequestEvent {
+function deserializeEvent (event: RequestEvent): RequestEvent {
   switch (event.type) {
     case MessageRequestEventType.CreateMessage:
     case CardRequestEventType.UpdateCardType:
@@ -508,12 +504,14 @@ function deserializeEvent(event: RequestEvent): RequestEvent {
     case MessageRequestEventType.RemoveLinkPreview:
       return {
         ...event,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         messageCreated: deserializeDate(event.messageCreated)!
       }
     case MessageRequestEventType.CreatePatch:
     case MessageRequestEventType.CreateFile:
       return {
         ...event,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         messageCreated: deserializeDate(event.messageCreated)!,
         created: deserializeDate(event.created)
       }
@@ -530,19 +528,24 @@ function deserializeEvent(event: RequestEvent): RequestEvent {
         ...event,
         group: {
           ...event.group,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           fromDate: deserializeDate(event.group.fromDate)!,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           toDate: deserializeDate(event.group.toDate)!
         }
       }
     case NotificationRequestEventType.CreateNotification:
       return {
         ...event,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         created: deserializeDate(event.created)!
       }
     case NotificationRequestEventType.CreateNotificationContext:
       return {
         ...event,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         lastView: deserializeDate(event.lastView)!,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         lastUpdate: deserializeDate(event.lastUpdate)!
       }
     case NotificationRequestEventType.UpdateNotificationContext:
@@ -550,7 +553,9 @@ function deserializeEvent(event: RequestEvent): RequestEvent {
         ...event,
         updates: {
           ...event.updates,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           lastView: deserializeDate(event.updates.lastView)!,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           lastUpdate: deserializeDate(event.updates.lastUpdate)!
         }
       }
@@ -559,7 +564,7 @@ function deserializeEvent(event: RequestEvent): RequestEvent {
   return event
 }
 
-function deserializeDate(date?: Date | string | undefined | null): Date | undefined {
+function deserializeDate (date?: Date | string | undefined | null): Date | undefined {
   if (date == null) return undefined
   if (date instanceof Date) return date
   return new Date(date)

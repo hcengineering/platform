@@ -104,7 +104,7 @@ type RawContext = ContextDb & { id: ContextID } & {
   notifications?: RawNotification[]
 }
 
-export function toMessage(raw: RawMessage): Message {
+export function toMessage (raw: RawMessage): Message {
   const patches = (raw.patches ?? []).map((it) => toPatch(it))
   const rawMessage: Message = {
     id: String(raw.id) as MessageID,
@@ -124,7 +124,7 @@ export function toMessage(raw: RawMessage): Message {
             messageCreated: new Date(raw.created),
             thread: raw.thread_id,
             threadType: raw.thread_type,
-            repliesCount: raw.replies_count ? parseInt(raw.replies_count as any) : 0,
+            repliesCount: raw.replies_count != null ? parseInt(raw.replies_count as any) : 0,
             lastReply: raw.last_reply ?? new Date()
           }
         : undefined,
@@ -140,7 +140,7 @@ export function toMessage(raw: RawMessage): Message {
   return applyPatches(rawMessage, patches, [PatchType.update, PatchType.remove])
 }
 
-export function toReaction(raw: ReactionDb): Reaction {
+export function toReaction (raw: ReactionDb): Reaction {
   return {
     reaction: raw.reaction,
     creator: raw.creator,
@@ -148,7 +148,7 @@ export function toReaction(raw: ReactionDb): Reaction {
   }
 }
 
-export function toFile(raw: Omit<FileDb, 'workspace_id'>): File {
+export function toFile (raw: Omit<FileDb, 'workspace_id'>): File {
   return {
     blobId: raw.blob_id,
     type: raw.type,
@@ -160,7 +160,7 @@ export function toFile(raw: Omit<FileDb, 'workspace_id'>): File {
   }
 }
 
-export function toLinkPreview(raw: LinkPreviewDb): LinkPreview {
+export function toLinkPreview (raw: LinkPreviewDb): LinkPreview {
   return {
     id: String(raw.id) as LinkPreviewID,
     url: raw.url,
@@ -175,7 +175,7 @@ export function toLinkPreview(raw: LinkPreviewDb): LinkPreview {
   }
 }
 
-export function toMessagesGroup(raw: MessagesGroupDb): MessagesGroup {
+export function toMessagesGroup (raw: MessagesGroupDb): MessagesGroup {
   return {
     card: raw.card_id,
     blobId: raw.blob_id,
@@ -186,7 +186,7 @@ export function toMessagesGroup(raw: MessagesGroupDb): MessagesGroup {
   }
 }
 
-export function toPatch(raw: Omit<PatchDb, 'workspace_id'>): Patch {
+export function toPatch (raw: Omit<PatchDb, 'workspace_id'>): Patch {
   return {
     type: raw.type,
     messageCreated: new Date(raw.message_created),
@@ -197,7 +197,7 @@ export function toPatch(raw: Omit<PatchDb, 'workspace_id'>): Patch {
   }
 }
 
-export function toThread(raw: ThreadDb): Thread {
+export function toThread (raw: ThreadDb): Thread {
   return {
     card: raw.card_id,
     message: String(raw.message_id) as MessageID,
@@ -209,7 +209,7 @@ export function toThread(raw: ThreadDb): Thread {
   }
 }
 
-export function toNotificationContext(raw: RawContext): NotificationContext {
+export function toNotificationContext (raw: RawContext): NotificationContext {
   const lastView = new Date(raw.last_view)
   return {
     id: String(raw.id) as ContextID,
@@ -224,7 +224,7 @@ export function toNotificationContext(raw: RawContext): NotificationContext {
   }
 }
 
-function toNotificationRaw(id: ContextID, card: CardID, raw: RawNotification): Notification {
+function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): Notification {
   const created = new Date(raw.created)
   let message: Message | undefined
 
@@ -261,17 +261,17 @@ function toNotificationRaw(id: ContextID, card: CardID, raw: RawNotification): N
       })
     )
 
-    let thread: Thread | undefined = undefined
+    let thread: Thread | undefined
 
     if (raw.message_thread_id != null && raw.message_thread_type != null) {
       thread = {
         card,
         message: String(raw.message_id) as MessageID,
-        messageCreated: raw.message_created ? new Date(raw.message_created) : created,
+        messageCreated: raw.message_created != null ? new Date(raw.message_created) : created,
         thread: raw.message_thread_id,
         threadType: raw.message_thread_type,
         repliesCount: Number(raw.message_replies ?? 0),
-        lastReply: raw.message_last_reply ? new Date(raw.message_last_reply) : created
+        lastReply: raw.message_last_reply != null ? new Date(raw.message_last_reply) : created
       }
     }
     message = {
@@ -338,11 +338,11 @@ function toNotificationRaw(id: ContextID, card: CardID, raw: RawNotification): N
   }
 }
 
-export function toNotification(raw: RawNotification & { card_id: CardID }): Notification {
+export function toNotification (raw: RawNotification & { card_id: CardID }): Notification {
   return toNotificationRaw(raw.context_id, raw.card_id, raw)
 }
 
-export function toCollaborator(raw: CollaboratorDb): Collaborator {
+export function toCollaborator (raw: CollaboratorDb): Collaborator {
   return {
     account: raw.account,
     cardType: raw.card_type,
@@ -350,7 +350,7 @@ export function toCollaborator(raw: CollaboratorDb): Collaborator {
   }
 }
 
-export function toLabel(raw: LabelDb): Label {
+export function toLabel (raw: LabelDb): Label {
   return {
     label: raw.label_id,
     card: raw.card_id,

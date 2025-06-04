@@ -19,7 +19,7 @@ import type { WorkspaceID } from '@hcengineering/communication-types'
 import { type Logger, type Options, type SqlClient } from '../types'
 
 export class BaseDb {
-  constructor(
+  constructor (
     readonly client: SqlClient,
     readonly workspace: WorkspaceID,
     readonly logger?: Logger,

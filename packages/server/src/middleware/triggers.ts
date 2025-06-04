@@ -24,7 +24,7 @@ import { notify } from '../notification/notification'
 export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   private readonly ctx: MeasureContext
 
-  constructor(
+  constructor (
     private readonly db: DbAdapter,
     context: MiddlewareContext,
     next?: Middleware
@@ -39,7 +39,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     ) // 1hour
   }
 
-  async response(session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
+  async response (session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
     const ctx: Omit<TriggerCtx, 'ctx'> = {
       metadata: this.context.metadata,
       db: this.db,
@@ -59,10 +59,10 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
         ctx: this.ctx.newChild('create-notifications', {})
       },
       event
-    ).then((res) => void this.propagate(session, res))
+    ).then((res) => this.propagate(session, res))
   }
 
-  private async applyTriggers(session: SessionData, event: ResponseEvent, ctx: Omit<TriggerCtx, 'ctx'>) {
+  private async applyTriggers (session: SessionData, event: ResponseEvent, ctx: Omit<TriggerCtx, 'ctx'>): Promise<void> {
     const matchedTriggers = triggers.filter(([_, type]) => type === event.type)
     if (matchedTriggers.length === 0) return
 
@@ -83,7 +83,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     await this.propagate(session, derived)
   }
 
-  private async propagate(session: SessionData, derived: RequestEvent[]) {
+  private async propagate (session: SessionData, derived: RequestEvent[]): Promise<void> {
     if (derived.length === 0) return
     if (this.context.head === undefined) return
     await Promise.all(derived.map((d) => this.context.head?.event(session, d, true)))

@@ -37,26 +37,26 @@ export interface SessionData {
 }
 
 export interface ServerApi {
-  findMessages(session: SessionData, params: FindMessagesParams, queryId?: number | string): Promise<Message[]>
-  findMessagesGroups(session: SessionData, params: FindMessagesGroupsParams): Promise<MessagesGroup[]>
-  findNotificationContexts(
+  findMessages: (session: SessionData, params: FindMessagesParams, queryId?: number | string) => Promise<Message[]>
+  findMessagesGroups: (session: SessionData, params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
+  findNotificationContexts: (
     session: SessionData,
     params: FindNotificationContextParams,
     queryId?: number | string
-  ): Promise<NotificationContext[]>
-  findNotifications(
+  ) => Promise<NotificationContext[]>
+  findNotifications: (
     session: SessionData,
     params: FindNotificationsParams,
     queryId?: number | string
-  ): Promise<Notification[]>
+  ) => Promise<Notification[]>
 
-  findLabels(session: SessionData, params: FindLabelsParams): Promise<Label[]>
-  findCollaborators(session: SessionData, params: FindCollaboratorsParams): Promise<Collaborator[]>
+  findLabels: (session: SessionData, params: FindLabelsParams) => Promise<Label[]>
+  findCollaborators: (session: SessionData, params: FindCollaboratorsParams) => Promise<Collaborator[]>
 
-  event(session: SessionData, event: RequestEvent): Promise<EventResult>
+  event: (session: SessionData, event: RequestEvent) => Promise<EventResult>
 
-  unsubscribeQuery(session: SessionData, id: number): Promise<void>
+  unsubscribeQuery: (session: SessionData, id: number) => Promise<void>
 
-  closeSession(sessionId: string): Promise<void>
-  close(): Promise<void>
+  closeSession: (sessionId: string) => Promise<void>
+  close: () => Promise<void>
 }

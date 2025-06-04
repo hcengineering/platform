@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type ResponseEvent } from '@hcengineering/communication-sdk-types'
+import { type ResponseEvent, EventResult, RequestEvent } from '@hcengineering/communication-sdk-types'
 import {
   SortingOrder,
   type Window,
@@ -21,7 +21,6 @@ import {
   type CardID,
   type MessageID
 } from '@hcengineering/communication-types'
-import type { EventResult, RequestEvent } from '@hcengineering/communication-sdk-types'
 
 import { QueryResult } from './result'
 

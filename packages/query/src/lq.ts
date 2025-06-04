@@ -51,7 +51,7 @@ export class LiveQueries {
   private readonly unsubscribed = new Set<QueryId>()
   private counter: number = 0
 
-  constructor(
+  constructor (
     private readonly client: FindClient,
     private readonly workspace: WorkspaceID,
     private readonly filesUrl: string
@@ -64,19 +64,19 @@ export class LiveQueries {
     }
   }
 
-  async onEvent(event: ResponseEvent): Promise<void> {
+  async onEvent (event: ResponseEvent): Promise<void> {
     for (const q of this.queries.values()) {
       void q.onEvent(event)
     }
   }
 
-  async onRequest(event: RequestEvent, promise: Promise<EventResult>): Promise<void> {
+  async onRequest (event: RequestEvent, promise: Promise<EventResult>): Promise<void> {
     for (const q of this.queries.values()) {
       void q.onRequest(event, promise)
     }
   }
 
-  queryMessages(params: MessageQueryParams, callback: PagedQueryCallback<Message>): CreateQueryResult {
+  queryMessages (params: MessageQueryParams, callback: PagedQueryCallback<Message>): CreateQueryResult {
     return this.createAndStoreQuery<Message, FindMessagesParams, MessagesQuery>(
       params,
       callback,
@@ -85,7 +85,7 @@ export class LiveQueries {
     )
   }
 
-  queryNotifications(params: FindNotificationsParams, callback: PagedQueryCallback<Notification>): CreateQueryResult {
+  queryNotifications (params: FindNotificationsParams, callback: PagedQueryCallback<Notification>): CreateQueryResult {
     return this.createAndStoreQuery<Notification, FindNotificationsParams, NotificationQuery>(
       params,
       callback,
@@ -94,7 +94,7 @@ export class LiveQueries {
     )
   }
 
-  queryNotificationContexts(params: FindNotificationContextParams, callback: any): CreateQueryResult {
+  queryNotificationContexts (params: FindNotificationContextParams, callback: any): CreateQueryResult {
     return this.createAndStoreQuery<NotificationContext, FindNotificationContextParams, NotificationContextsQuery>(
       params,
       callback,
@@ -103,7 +103,7 @@ export class LiveQueries {
     )
   }
 
-  queryLabels(params: FindLabelsParams, callback: any): CreateQueryResult {
+  queryLabels (params: FindLabelsParams, callback: any): CreateQueryResult {
     return this.createAndStoreQuery<Label, FindLabelsParams, LabelsQuery>(params, callback, LabelsQuery, (params) =>
       this.findLabelsQuery(params)
     )
@@ -151,32 +151,32 @@ export class LiveQueries {
   private findQuery<T extends AnyQuery>(params: FindParams, QueryClass: new (...args: any[]) => T): T | undefined {
     for (const query of this.queries.values()) {
       if (query instanceof QueryClass && this.queryCompare(params, query.params)) {
-        return query as T
+        return query
       }
     }
   }
 
-  private findMessagesQuery(params: FindMessagesParams): MessagesQuery | undefined {
+  private findMessagesQuery (params: FindMessagesParams): MessagesQuery | undefined {
     return this.findQuery(params, MessagesQuery)
   }
 
-  private findNotificationQuery(params: FindNotificationsParams): NotificationQuery | undefined {
+  private findNotificationQuery (params: FindNotificationsParams): NotificationQuery | undefined {
     return this.findQuery(params, NotificationQuery)
   }
 
-  private findNotificationContextsQuery(params: FindNotificationContextParams): NotificationContextsQuery | undefined {
+  private findNotificationContextsQuery (params: FindNotificationContextParams): NotificationContextsQuery | undefined {
     return this.findQuery(params, NotificationContextsQuery)
   }
 
-  private findLabelsQuery(params: FindLabelsParams): LabelsQuery | undefined {
+  private findLabelsQuery (params: FindLabelsParams): LabelsQuery | undefined {
     return this.findQuery(params, LabelsQuery)
   }
 
-  private queryCompare(q1: FindParams, q2: FindParams): boolean {
+  private queryCompare (q1: FindParams, q2: FindParams): boolean {
     return Object.keys(q1).length === Object.keys(q2).length && deepEqual(q1, q2)
   }
 
-  private removeOldQueries(): void {
+  private removeOldQueries (): void {
     const unsubscribed = Array.from(this.unsubscribed)
     for (let i = 0; i < this.unsubscribed.size / 2; i++) {
       const id = unsubscribed.shift()
@@ -185,7 +185,7 @@ export class LiveQueries {
     }
   }
 
-  private unsubscribe(id: QueryId): void {
+  private unsubscribe (id: QueryId): void {
     const query = this.queries.get(id)
     if (query == null) return
     void query.unsubscribe()
@@ -193,7 +193,7 @@ export class LiveQueries {
     this.unsubscribed.delete(id)
   }
 
-  private unsubscribeQuery(query: AnyQuery): void {
+  private unsubscribeQuery (query: AnyQuery): void {
     this.unsubscribed.add(query.id)
     query.removeCallback()
     if (this.unsubscribed.size > maxQueriesCache) {
@@ -201,7 +201,7 @@ export class LiveQueries {
     }
   }
 
-  close(): void {
+  close (): void {
     this.queries.clear()
     this.unsubscribed.clear()
   }

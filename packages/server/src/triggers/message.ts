@@ -42,12 +42,12 @@ import type { TriggerCtx, TriggerFn, Triggers } from '../types'
 import { findAccount } from '../utils'
 import { findMessageInFiles } from './utils'
 
-async function onMessagesGroupCreated(ctx: TriggerCtx, event: MessagesGroupCreatedEvent): Promise<RequestEvent[]> {
+async function onMessagesGroupCreated (ctx: TriggerCtx, event: MessagesGroupCreatedEvent): Promise<RequestEvent[]> {
   ctx.registeredCards.delete(event.group.card)
   return []
 }
 
-async function onMessagesRemoved(ctx: TriggerCtx, event: PatchCreatedEvent): Promise<RequestEvent[]> {
+async function onMessagesRemoved (ctx: TriggerCtx, event: PatchCreatedEvent): Promise<RequestEvent[]> {
   const { card, patch } = event
   if (patch.type !== PatchType.remove) return []
   const thread = await ctx.db.findThread(card)
@@ -79,7 +79,7 @@ async function onMessagesRemoved(ctx: TriggerCtx, event: PatchCreatedEvent): Pro
   return result
 }
 
-async function onFileCreated(ctx: TriggerCtx, event: FileCreatedEvent): Promise<RequestEvent[]> {
+async function onFileCreated (ctx: TriggerCtx, event: FileCreatedEvent): Promise<RequestEvent[]> {
   const message = (await ctx.db.findMessages({ card: event.card, id: event.message, limit: 1 }))[0]
   if (message !== undefined) return []
 
@@ -104,7 +104,7 @@ async function onFileCreated(ctx: TriggerCtx, event: FileCreatedEvent): Promise<
   ]
 }
 
-async function onFileRemoved(ctx: TriggerCtx, event: FileRemovedEvent): Promise<RequestEvent[]> {
+async function onFileRemoved (ctx: TriggerCtx, event: FileRemovedEvent): Promise<RequestEvent[]> {
   const message = (await ctx.db.findMessages({ card: event.card, id: event.message, limit: 1 }))[0]
   if (message !== undefined) return []
   const { blobId } = event
@@ -122,7 +122,7 @@ async function onFileRemoved(ctx: TriggerCtx, event: FileRemovedEvent): Promise<
   ]
 }
 
-async function registerCard(ctx: TriggerCtx, event: MessageCreatedEvent | PatchCreatedEvent): Promise<RequestEvent[]> {
+async function registerCard (ctx: TriggerCtx, event: MessageCreatedEvent | PatchCreatedEvent): Promise<RequestEvent[]> {
   const { workspace, metadata } = ctx
   let card: CardID
   switch (event.type) {
@@ -152,7 +152,7 @@ async function registerCard(ctx: TriggerCtx, event: MessageCreatedEvent | PatchC
   return []
 }
 
-async function addCollaborators(ctx: TriggerCtx, event: MessageCreatedEvent): Promise<RequestEvent[]> {
+async function addCollaborators (ctx: TriggerCtx, event: MessageCreatedEvent): Promise<RequestEvent[]> {
   const { creator, type } = event.message
   if (type === MessageType.Activity) return []
   const account = await findAccount(ctx, creator)
@@ -188,7 +188,7 @@ async function addCollaborators(ctx: TriggerCtx, event: MessageCreatedEvent): Pr
   ]
 }
 
-async function addThreadReply(ctx: TriggerCtx, event: MessageCreatedEvent): Promise<RequestEvent[]> {
+async function addThreadReply (ctx: TriggerCtx, event: MessageCreatedEvent): Promise<RequestEvent[]> {
   if (event.message.type !== MessageType.Message || ctx.derived) return []
   const { message } = event
   const thread = await ctx.db.findThread(message.card)
@@ -217,7 +217,7 @@ async function addThreadReply(ctx: TriggerCtx, event: MessageCreatedEvent): Prom
   ]
 }
 
-async function onThreadCreated(ctx: TriggerCtx, event: ThreadCreatedEvent): Promise<RequestEvent[]> {
+async function onThreadCreated (ctx: TriggerCtx, event: ThreadCreatedEvent): Promise<RequestEvent[]> {
   let message: Message | undefined = (
     await ctx.db.findMessages({
       card: event.thread.card,

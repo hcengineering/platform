@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-export function injectVars(sql: string, values: any[]): string {
+export function injectVars (sql: string, values: any[]): string {
   return sql.replaceAll(/(\$\d+)/g, (_, idx) => {
     return escape(values[parseInt(idx.substring(1)) - 1])
   })
 }
 
-function escape(value: any): string {
+function escape (value: any): string {
   if (value === null || value === undefined) {
     return 'NULL'
   }
@@ -53,7 +53,7 @@ function escape(value: any): string {
   }
 }
 
-export function convertArrayParams(params?: unknown[]): any[] | undefined {
+export function convertArrayParams (params?: unknown[]): any[] | undefined {
   if (params === undefined) return undefined
 
   return params.map((param) => {
@@ -83,14 +83,14 @@ export function convertArrayParams(params?: unknown[]): any[] | undefined {
 }
 
 const SEP = ','
-function getFirstName(name: string): string {
+function getFirstName (name: string): string {
   return name !== undefined ? name.substring(name.indexOf(SEP) + 1) : ''
 }
 
-function getLastName(name: string): string {
+function getLastName (name: string): string {
   return name !== undefined ? name.substring(0, name.indexOf(SEP)) : ''
 }
 
-export function formatName(name: string): string {
+export function formatName (name: string): string {
   return getFirstName(name) + ' ' + getLastName(name)
 }

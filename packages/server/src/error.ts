@@ -17,33 +17,33 @@ export class ApiError extends Error {
   public code: number
   public message: string
 
-  private constructor(code: number, message: string) {
+  private constructor (code: number, message: string) {
     super(message)
     this.code = code
     this.message = message
     Object.setPrototypeOf(this, ApiError.prototype)
   }
 
-  static badRequest(message: string): ApiError {
+  static badRequest (message: string): ApiError {
     return new ApiError(400, `Bad Request: ${message}`)
   }
 
-  static forbidden(message: string): ApiError {
+  static forbidden (message: string): ApiError {
     return new ApiError(403, `Forbidden: ${message}`)
   }
 
-  static notFound(message: string): ApiError {
+  static notFound (message: string): ApiError {
     return new ApiError(404, `Not Found: ${message}`)
   }
 
-  toJSON() {
+  toJSON (): object {
     return {
       code: this.code,
       message: this.message
     }
   }
 
-  toString(): string {
+  toString (): string {
     return JSON.stringify(this.toJSON())
   }
 }

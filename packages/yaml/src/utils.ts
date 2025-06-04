@@ -24,7 +24,7 @@ import {
 } from '@hcengineering/communication-types'
 import { loadGroupFile } from './parse'
 
-export async function findMessage(
+export async function findMessage (
   id: MessageID,
   card: CardID,
   created: Date,
@@ -51,7 +51,7 @@ export async function findMessage(
   return parsedFile.messages.find((it) => it.id === id)
 }
 
-async function findGroupByDate(client: FindClient, card: CardID, created: Date): Promise<MessagesGroup | undefined> {
+async function findGroupByDate (client: FindClient, card: CardID, created: Date): Promise<MessagesGroup | undefined> {
   const groups = await client.findMessagesGroups({
     card,
     fromDate: { lessOrEqual: created },
