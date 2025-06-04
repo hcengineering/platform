@@ -15,8 +15,8 @@
 import { aiBotAccountEmail } from '@hcengineering/ai-bot'
 import core, {
   AccountRole,
-  MeasureContext,
-  Tx,
+  type MeasureContext,
+  type Tx,
   TxProcessor,
   systemAccountUuid,
   type Doc,
@@ -25,7 +25,7 @@ import core, {
   type TxCUD
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import { BaseMiddleware, type Middleware, type TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 
 /**
  * @public

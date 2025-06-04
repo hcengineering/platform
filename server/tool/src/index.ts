@@ -39,7 +39,13 @@ import core, {
   type Ref,
   type WithLookup
 } from '@hcengineering/core'
-import { consoleModelLogger, type MigrateOperation, type ModelLogger, tryMigrate, type MigrateMode } from '@hcengineering/model'
+import {
+  consoleModelLogger,
+  type MigrateOperation,
+  type ModelLogger,
+  tryMigrate,
+  type MigrateMode
+} from '@hcengineering/model'
 import {
   DomainIndexHelperImpl,
   type Pipeline,

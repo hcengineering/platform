@@ -13,17 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { IntlString, Plugin } from '@hcengineering/platform'
-import { ClientConnectEvent, DocChunk } from '..'
-import type { Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
-import { ClassifierKind, DOMAIN_MODEL, Space } from '../classes'
-import { ClientConnection, createClient } from '../client'
+import { type IntlString, type Plugin } from '@hcengineering/platform'
+import { ClientConnectEvent, type DocChunk } from '..'
+import { ClassifierKind, DOMAIN_MODEL } from '../classes'
+import type { Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp, type Space } from '../classes'
+import { type ClientConnection, createClient } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
 import { TxOperations } from '../operations'
 import type { DocumentQuery, FindResult, SearchOptions, SearchQuery, SearchResult, TxResult } from '../storage'
-import { Tx, TxFactory, TxProcessor } from '../tx'
+import { type Tx, TxFactory, TxProcessor } from '../tx'
 import { fillConfiguration, generateId, pluginFilterTx } from '../utils'
 import { connect } from './connection'
 import { genMinModel } from './minmodel'

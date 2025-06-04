@@ -1,4 +1,13 @@
-import core, { type Class, type Doc, type Hierarchy, type Ref, systemAccount, type TxCreateDoc, type TxCUD, TxProcessor } from '@hcengineering/core'
+import core, {
+  type Class,
+  type Doc,
+  type Hierarchy,
+  type Ref,
+  systemAccount,
+  type TxCreateDoc,
+  type TxCUD,
+  TxProcessor
+} from '@hcengineering/core'
 import { type Card } from '@hcengineering/card'
 import { type TriggerControl } from '@hcengineering/server-core'
 import activity from '@hcengineering/activity'

@@ -13,44 +13,44 @@
 // limitations under the License.
 //
 
-import { getEmbeddedLabel, getMetadata, IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, getMetadata, type IntlString } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
 import { DOMAIN_BENCHMARK } from './benchmark'
 import {
-  Account,
+  type Account,
   AccountRole,
-  AnyAttribute,
-  AttachedDoc,
-  Class,
+  type AnyAttribute,
+  type AttachedDoc,
+  type Class,
   ClassifierKind,
-  Collection,
-  Doc,
-  DocData,
+  type Collection,
+  type Doc,
+  type DocData,
   DOMAIN_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
-  FullTextSearchContext,
+  type FullTextSearchContext,
   IndexKind,
-  Obj,
-  Permission,
-  Ref,
-  Role,
+  type Obj,
+  type Permission,
+  type Ref,
+  type Role,
   roleOrder,
-  SocialId,
+  type SocialId,
   SocialIdType,
-  SocialKey,
-  Space,
-  TypedSpace,
-  WorkspaceMode,
+  type SocialKey,
+  type Space,
+  type TypedSpace,
+  type WorkspaceMode,
   type Domain,
   type PluginConfiguration
 } from './classes'
 import core from './component'
-import { Hierarchy } from './hierarchy'
-import { TxOperations } from './operations'
+import { type Hierarchy } from './hierarchy'
+import { type TxOperations } from './operations'
 import { isPredicate } from './predicate'
-import { Branding, BrandingMap } from './server'
-import { DocumentQuery, FindResult } from './storage'
+import { type Branding, type BrandingMap } from './server'
+import { type DocumentQuery, type FindResult } from './storage'
 import { DOMAIN_TX, TxProcessor, type Tx, type TxCreateDoc, type TxCUD, type TxUpdateDoc } from './tx'
 
 function toHex (value: number, chars: number): string {

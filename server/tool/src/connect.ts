@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Client, type PersonUuid, systemAccountUuid, Tx, type WorkspaceUuid } from '@hcengineering/core'
+import { type Client, type PersonUuid, systemAccountUuid, type Tx, type WorkspaceUuid } from '@hcengineering/core'
 import { createClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 

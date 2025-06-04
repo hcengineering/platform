@@ -14,11 +14,11 @@
 //
 
 import { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Lookup, MeasureContext, ReverseLookups, getObjectValue } from '.'
+import { type Lookup, type MeasureContext, type ReverseLookups, getObjectValue } from '.'
 import type { Class, Doc, Ref } from './classes'
 
 import core from './component'
-import { Hierarchy } from './hierarchy'
+import { type Hierarchy } from './hierarchy'
 import { checkMixinKey, matchQuery, resultSort } from './query'
 import type {
   AssociationQuery,

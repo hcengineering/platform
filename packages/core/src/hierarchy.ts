@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { FindOptions, Lookup, ToClassRefT, WithLookup } from '.'
+import { type FindOptions, type Lookup, type ToClassRefT, type WithLookup } from '.'
 import type { AnyAttribute, Class, Classifier, Doc, Domain, Interface, Mixin, Obj, Ref } from './classes'
 import { ClassifierKind } from './classes'
 import { clone as deepClone } from './clone'

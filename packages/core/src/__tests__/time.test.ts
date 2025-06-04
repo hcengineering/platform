@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Timestamp } from '../classes'
+import { type Timestamp } from '../classes'
 import { getDay, convertToDay } from '..'
 
 const supportedTimezones: string[] = [

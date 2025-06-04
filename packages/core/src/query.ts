@@ -1,10 +1,10 @@
-import { DocumentQuery, type MemDb } from '.'
-import { Class, Doc, Enum, EnumOf, Ref } from './classes'
+import { type DocumentQuery, type MemDb } from '.'
+import { type Class, type Doc, type Enum, type EnumOf, type Ref } from './classes'
 import core from './component'
-import { Hierarchy } from './hierarchy'
+import { type Hierarchy } from './hierarchy'
 import { getObjectValue } from './objvalue'
 import { createPredicates, isPredicate } from './predicate'
-import { SortQuerySelector, SortingOrder, SortingQuery, SortingRules } from './storage'
+import { type SortQuerySelector, type SortingOrder, type SortingQuery, type SortingRules } from './storage'
 
 /**
  * @public
