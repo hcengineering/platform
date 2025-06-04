@@ -27,6 +27,7 @@ interface BaseNavigatorConfig {
 export interface TypesNavigatorConfig extends BaseNavigatorConfig {
   variant: 'types'
   hierarchyDepth?: number
+  showTypeIcon?: boolean
 }
 
 type Sorting = 'alphabetical' | 'recent'
@@ -38,6 +39,9 @@ export interface CardsNavigatorConfig extends BaseNavigatorConfig {
   fixedTypes?: Array<Ref<MasterTag>>
   defaultSorting?: Sorting
   specialSorting?: Record<Ref<MasterTag>, Sorting>
+
+  showTypeIcon?: boolean
+  showCardIcon?: boolean
 }
 
 export type NavigatorConfig = TypesNavigatorConfig | CardsNavigatorConfig

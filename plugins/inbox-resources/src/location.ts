@@ -17,8 +17,9 @@ import { type Card } from '@hcengineering/card'
 import type { Ref } from '@hcengineering/core'
 import { navigate, type Location, getCurrentResolvedLocation } from '@hcengineering/ui'
 import { inboxId } from '@hcengineering/inbox'
+import { type MessageID } from '@hcengineering/communication-types'
 
-// Url: /inbox/{cardId}
+// Url: /inbox/{cardId}?message={messageId}
 
 export function getCardIdFromLocation (loc: Location): Ref<Card> | undefined {
   if (loc.path[2] !== inboxId) {
@@ -27,7 +28,7 @@ export function getCardIdFromLocation (loc: Location): Ref<Card> | undefined {
   return loc.path[3] as Ref<Card>
 }
 
-export function navigateToCard (_id?: Ref<Card>): void {
+export function navigateToCard (_id?: Ref<Card>, message?: MessageID, messageCreated?: Date): void {
   const loc = getCurrentResolvedLocation()
 
   loc.path[2] = inboxId
@@ -36,6 +37,16 @@ export function navigateToCard (_id?: Ref<Card>): void {
     loc.path.length = 3
   } else {
     loc.path[3] = _id
+  }
+  delete loc.fragment
+
+  if (message != null && messageCreated != null) {
+    loc.query = {
+      ...loc.query,
+      message: encodeURIComponent(`${message}:${messageCreated.toISOString()}`)
+    }
+  } else {
+    delete loc.query?.message
   }
 
   navigate(loc)

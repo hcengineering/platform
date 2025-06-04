@@ -29,6 +29,7 @@
   import { Analytics } from '@hcengineering/analytics'
   import { translate } from '@hcengineering/platform'
   import { makeRank } from '@hcengineering/rank'
+  import { createEventDispatcher } from 'svelte'
 
   export let object: Card
   export let readonly: boolean = false
@@ -39,6 +40,7 @@
   let preference: ViewletPreference | undefined = undefined
 
   const query = createQuery()
+  const dispatch = createEventDispatcher()
 
   const viewletId = card.viewlet.CardChildList
 
@@ -51,8 +53,6 @@
       }
     }
   )
-
-  let docs: Doc[] = []
 
   $: query.query(
     view.class.Viewlet,
@@ -179,7 +179,9 @@
             listProvider.updateSelection(event.detail.docs, event.detail.value)
           }}
           on:content={(evt) => {
-            docs = evt.detail
+            if (evt.detail.length > 0) {
+              dispatch('loaded')
+            }
             listProvider.update(evt.detail)
           }}
         />

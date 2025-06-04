@@ -20,7 +20,7 @@
   import tag, { type TagElement } from '@hcengineering/tags'
   import { TagElementPresenter } from '@hcengineering/tags-resources'
 
-  export let value: Card
+  export let value: Card | undefined = undefined
 
   const client = getClient()
 
@@ -28,9 +28,10 @@
   let tags: TagElement[] = []
 
   const query = createLabelsQuery()
-  $: query.query({ card: value._id }, (res) => {
-    labels = res
-  })
+  $: value &&
+    query.query({ card: value._id }, (res) => {
+      labels = res
+    })
 
   $: client.findAll(tag.class.TagElement, { _id: { $in: labels.map((it) => it.label) } }).then((res) => {
     tags = res

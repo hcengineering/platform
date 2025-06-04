@@ -4,6 +4,8 @@ import SettingsEmojiTable from './components/settings/SettingsEmojiTable.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
 import { getCustomEmoji, getEmojiByEmoticon, getEmojiByShortCode } from './utils'
 
+export { default as EmojiPresenter } from './components/EmojiPresenter.svelte'
+
 export * from './utils'
 
 export default async (): Promise<Resources> => ({

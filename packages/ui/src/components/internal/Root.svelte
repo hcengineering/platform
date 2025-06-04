@@ -44,12 +44,14 @@
 
   onMount(() => {
     document.addEventListener('visibilitychange', visibilityChangeHandler)
+    window.addEventListener('wheel', handleWindowFocus)
     window.addEventListener('focus', handleWindowFocus)
     window.addEventListener('blur', handleWindowBlur)
   })
 
   onDestroy(() => {
     document.removeEventListener('visibilitychange', visibilityChangeHandler)
+    window.removeEventListener('wheel', handleWindowFocus)
     window.removeEventListener('focus', handleWindowFocus)
     window.removeEventListener('blur', handleWindowBlur)
   })

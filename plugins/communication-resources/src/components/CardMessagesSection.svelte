@@ -19,7 +19,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { MessagesNavigationAnchors } from '@hcengineering/communication'
 
-  import Messages from './Messages.svelte'
+  import MessagesList from './MessagesList.svelte'
 
   export let readonly: boolean = false
   export let doc: Card
@@ -59,7 +59,7 @@
 
 {#if scrollDiv != null && isContextLoaded && contentDiv != null}
   <div class="section-messages">
-    <Messages
+    <MessagesList
       card={doc}
       {readonly}
       context={notificationContext}

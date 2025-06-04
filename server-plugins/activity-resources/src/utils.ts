@@ -474,7 +474,11 @@ export async function getNewActivityUpdates (
 
     const attrClass: Ref<Class<Doc>> | undefined = getAttrClass(hierarchy, mixin ?? card._class, key)
 
-    if (attrClass === undefined) {
+    if (attrClass === undefined) continue
+    if (
+      hierarchy.isDerived(attrClass, core.class.TypeMarkup) ||
+      hierarchy.isDerived(attrClass, core.class.TypeCollaborativeDoc)
+    ) {
       continue
     }
 

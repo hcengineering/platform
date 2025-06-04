@@ -17,10 +17,10 @@
   import { Card } from '@hcengineering/card'
   import { resizeObserver } from '@hcengineering/ui'
   import { NotificationContext } from '@hcengineering/communication-types'
-  import { MessageInput } from '@hcengineering/ui-next'
   import { Ref } from '@hcengineering/core'
 
   import EditCardTableOfContents from './EditCardTableOfContents.svelte'
+  import { MessageInput } from '@hcengineering/communication-resources'
 
   export let _id: Ref<Card>
   export let doc: Card

@@ -173,6 +173,11 @@
     .hulyNavGroup-header__label { padding: 0 var(--spacing-0_75) 0 0; }
     &.isOpen .hulyNavGroup-header__label { background-color: var(--global-ui-BackgroundColor); }
   }
+
+  &.selectableHeader.noIcon {
+    .hulyNavGroup-header__label {     padding: var(--spacing-0_25) var(--spacing-0_5); }
+  }
+
   .hulyNavGroup-header:hover,
   &.nested .hulyNavGroup-header:hover {
     .hulyNavGroup-header__chevron { background-color: var(--global-ui-BackgroundColor); }

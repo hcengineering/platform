@@ -90,6 +90,7 @@
 
   <Image
     blob={value.file}
+    loading="lazy"
     alt={value.name}
     fit={dimensions.fit}
     width={dimensions.width}

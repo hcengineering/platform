@@ -109,7 +109,6 @@
     queryNoLookup,
     (res) => {
       fastDocs = res
-      // console.log('query, res', res)
       fastQueryIds = new Set(res.map((it) => it._id))
     },
     { ...categoryQueryOptions, limit: 1000 }
@@ -173,9 +172,6 @@
   const dispatch = createEventDispatcher()
 
   $: dispatch('content', docs)
-  $: if (docs.length > 0) {
-    dispatch('docs', docs)
-  }
 
   function uncheckAll (): void {
     dispatch('check', { docs, value: false })

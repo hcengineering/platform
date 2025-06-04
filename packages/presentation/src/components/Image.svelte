@@ -23,6 +23,7 @@
   export let width: number
   export let height: number
   export let responsive: boolean = false
+  export let loading: 'lazy' | 'eager' = 'eager'
 
   let blobSrc: { src: string, srcset: string } | undefined
 
@@ -37,6 +38,7 @@
   {alt}
   width={responsive ? '100%' : width}
   height={responsive ? '100%' : height}
+  {loading}
   {fit}
   on:load
   on:error
