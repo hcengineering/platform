@@ -317,6 +317,7 @@ test.describe('Content in the Documents tests', () => {
     const testNote: string = 'Test Note'
 
     await documentContentPage.addContentToTheNewLine(content, false)
+    await documentContentPage.applyToolbarCommand('Line 0', 'btnH1')
     await documentContentPage.applyToolbarCommand('Line 1', 'btnH1')
     await documentContentPage.applyToolbarCommand('Line 2', 'btnH2')
     await documentContentPage.applyToolbarCommand('Line 3', 'btnH3')
