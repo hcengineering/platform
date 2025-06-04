@@ -29,6 +29,7 @@
     "ShowFormatting": "Показать форматирование",
     "To": "В",
     "Today": "Сегодня",
+    "Unset": "Удалено",
     "WeekdayAt": "{weekday} в {time}",
     "YearAt": "{year} в {time}",
     "Yesterday": "Вчера",
@@ -37,7 +38,7 @@
     "IsTyping": "{count, plural, =1 {печатает} other {печатают}}...",
     "Loading": "Загрузка...",
     "MessageIn": "Сообщение #{title}",
-    "ThreadWasDeleted": "Этот поток был удален.",
+    "ThreadWasRemoved": "Этот поток был удален.",
     "MessageWasRemoved": "Это сообщение было удалено.",
     "JoinedThe": "Присоединился(aсь) к",
     "LeftThe": "Покинул(a) к"
