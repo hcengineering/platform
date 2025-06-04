@@ -252,11 +252,11 @@ async function saveMessageToSpaces (
       }
 
       const messageId = await createMailMessage(producer, config, messageData, threadId)
+      await createFiles(producer, config, attachments, messageData, threadId, messageId)
       if (!isReply) {
         await addCollaborators(producer, config, messageData, threadId)
         await createMailThread(producer, config, messageData, messageId)
       }
-      await createFiles(producer, config, attachments, messageData, threadId, messageId)
 
       await threadLookup.setThreadId(mailId, space._id, threadId)
     })
@@ -315,7 +315,7 @@ async function createFiles (
   const fileData: Buffer[] = attachments.map((a) => {
     const creeateFileEvent: CreateFileEvent = {
       type: MessageRequestEventType.CreateFile,
-      card: threadId,
+      card: messageData.isReply ? threadId : messageData.channel,
       message: messageId,
       messageCreated: messageData.created,
       creator: messageData.modifiedBy,
