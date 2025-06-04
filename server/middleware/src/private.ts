@@ -32,7 +32,12 @@ import core, {
   type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BaseMiddleware, type Middleware, type TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import {
+  BaseMiddleware,
+  type Middleware,
+  type TxMiddlewareResult,
+  type PipelineContext
+} from '@hcengineering/server-core'
 import { DOMAIN_PREFERENCE } from '@hcengineering/server-preference'
 
 /**

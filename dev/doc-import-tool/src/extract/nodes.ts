@@ -10,7 +10,15 @@ import {
   removeSubsets
 } from 'domutils'
 
-import { NodeType, type ListParams, type TableParams, type GenericParams, type TocParaSeqParams, type TagsWithTextSpec, type TagsSpec } from './types'
+import {
+  NodeType,
+  type ListParams,
+  type TableParams,
+  type GenericParams,
+  type TocParaSeqParams,
+  type TagsWithTextSpec,
+  type TagsSpec
+} from './types'
 import { clean, compareStrExact } from '../helpers'
 import { type Container, GenericContainer, ListContainer, TableContainer } from './container'
 

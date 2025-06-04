@@ -13,11 +13,23 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type PersonId, type PersonUuid, SocialIdType, type WorkspaceUuid } from '@hcengineering/core'
+import {
+  type MeasureContext,
+  type PersonId,
+  type PersonUuid,
+  SocialIdType,
+  type WorkspaceUuid
+} from '@hcengineering/core'
 import platform, { PlatformError, Status, Severity } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
 
-import { type AccountDB, type Integration, type IntegrationKey, type IntegrationSecret, type IntegrationSecretKey } from '../types'
+import {
+  type AccountDB,
+  type Integration,
+  type IntegrationKey,
+  type IntegrationSecret,
+  type IntegrationSecretKey
+} from '../types'
 import * as utils from '../utils'
 import {
   addIntegrationSecret,

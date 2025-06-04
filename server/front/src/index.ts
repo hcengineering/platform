@@ -525,14 +525,14 @@ export function start (
             await ctx.with(
               'file-range',
               {},
-              (ctx) => getFileRange(ctx, blobInfo as PlatformBlob, range, config.storageAdapter, wsIds, res),
+              (ctx) => getFileRange(ctx, blobInfo, range, config.storageAdapter, wsIds, res),
               { workspace: wsIds.uuid }
             )
           } else {
             await ctx.with(
               'file',
               {},
-              (ctx) => getFile(ctx, blobInfo as PlatformBlob, config.storageAdapter, wsIds, req, res),
+              (ctx) => getFile(ctx, blobInfo, config.storageAdapter, wsIds, req, res),
               { uuid, workspace: wsIds.uuid }
             )
           }

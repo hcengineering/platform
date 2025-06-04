@@ -25,7 +25,12 @@ import core, {
   type TxCUD
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BaseMiddleware, type Middleware, type TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import {
+  BaseMiddleware,
+  type Middleware,
+  type TxMiddlewareResult,
+  type PipelineContext
+} from '@hcengineering/server-core'
 
 /**
  * @public

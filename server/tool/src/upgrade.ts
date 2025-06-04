@@ -12,7 +12,12 @@ import {
   type WorkspaceIds,
   type Class
 } from '@hcengineering/core'
-import { type MigrateUpdate, type MigrationClient, type MigrationIterator, type ModelLogger } from '@hcengineering/model'
+import {
+  type MigrateUpdate,
+  type MigrationClient,
+  type MigrationIterator,
+  type ModelLogger
+} from '@hcengineering/model'
 import {
   type Pipeline,
   type StorageAdapter,

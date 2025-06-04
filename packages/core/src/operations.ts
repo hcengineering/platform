@@ -1,6 +1,15 @@
 import { Analytics } from '@hcengineering/analytics'
 import { deepEqual } from 'fast-equals'
-import { type DocumentUpdate, DOMAIN_MODEL, Hierarchy, type MixinData, type MixinUpdate, type ModelDb, platformNow, toFindResult } from '.'
+import {
+  type DocumentUpdate,
+  DOMAIN_MODEL,
+  Hierarchy,
+  type MixinData,
+  type MixinUpdate,
+  type ModelDb,
+  platformNow,
+  toFindResult
+} from '.'
 import type {
   PersonId,
   AnyAttribute,

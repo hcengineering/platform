@@ -29,7 +29,12 @@ import {
   type Timestamp,
   type Tx
 } from '@hcengineering/core'
-import { BaseMiddleware, type Middleware, type PipelineContext, type ServerFindOptions } from '@hcengineering/server-core'
+import {
+  BaseMiddleware,
+  type Middleware,
+  type PipelineContext,
+  type ServerFindOptions
+} from '@hcengineering/server-core'
 
 interface Query {
   key: string

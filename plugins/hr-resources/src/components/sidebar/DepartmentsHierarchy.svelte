@@ -55,7 +55,7 @@
     dispatch('selected', department)
   }
 
-  $: _departments = departments.map((it) => departmentById.get(it)).filter((it) => it !== undefined) as Department[]
+  $: _departments = departments.map((it) => departmentById.get(it)).filter((it) => it !== undefined)
   $: _descendants = new Map(_departments.map((it) => [it._id, getDescendants(it._id)]))
 </script>
 

@@ -160,7 +160,7 @@
         taskType.statuses
           .map((it) => $statusStore.byId.get(it))
           .filter((it) => it !== undefined)
-          .filter((it) => it?.category === _status.category) as Status[]
+          .filter((it) => it?.category === _status.category)
       ).filter((it, idx, arr) => arr.findIndex((qt) => qt._id === it._id) === idx)
 
       $settingsStore = {

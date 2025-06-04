@@ -25,7 +25,12 @@ import core, {
   type TxUpdateDoc,
   type Ref
 } from '@hcengineering/core'
-import { BaseMiddleware, type Middleware, type TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import {
+  BaseMiddleware,
+  type Middleware,
+  type TxMiddlewareResult,
+  type PipelineContext
+} from '@hcengineering/server-core'
 
 /**
  * @public

@@ -552,7 +552,7 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
         return errorPresenter
       }
     })
-  return (await Promise.all(model)).filter((a) => a !== undefined) as AttributeModel[]
+  return (await Promise.all(model)).filter((a) => a !== undefined)
 }
 
 export async function deleteObject (client: TxOperations, object: Doc): Promise<void> {
@@ -964,7 +964,7 @@ export async function getCategories (
  */
 export function getCategorySpaces (categories: CategoryType[]): Array<Ref<Space>> {
   return Array.from(
-    (categories.filter((it) => typeof it === 'object') as AggregateValue[]).reduce<Set<Ref<Space>>>((arr, val) => {
+    (categories.filter((it) => typeof it === 'object')).reduce<Set<Ref<Space>>>((arr, val) => {
       val.values.forEach((it) => arr.add(it.space))
       return arr
     }, new Set())
