@@ -59,6 +59,7 @@ export interface ToolbarViewOptions {
   style?: ToolbarStyle
   head?: AnySvelteComponentWithProps
   offset?: [number, number]
+  floating?: boolean
 }
 
 const defaultToolbarViewOptions: ToolbarViewOptions = {
@@ -193,7 +194,8 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
       let isCursorRangeLoading = false
       let rect: DOMRect = getReferenceRectFromRange(view, 0, 0)
 
-      const tippyAppendTo = options.popupContainer ?? document.body
+      console.log(options.boundary)
+
       const getTippyProps = (viewOptions?: ToolbarViewOptions): Partial<TippyProps> => ({
         delay: [0, 0],
         duration: [0, 0],
@@ -205,7 +207,7 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
         trigger: 'manual',
         placement: viewOptions?.placement,
         hideOnClick: 'toggle',
-        appendTo: tippyAppendTo,
+        appendTo: viewOptions?.floating !== true ? options.popupContainer ?? document.body : document.body,
         zIndex: 10000,
         offset: viewOptions?.offset,
         popperOptions: {
@@ -214,7 +216,9 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
               name: 'preventOverflow',
               options: {
                 boundary: options.boundary ?? document.body,
-                padding: 16
+                padding: 16,
+                altAxis: viewOptions?.floating === true,
+                tether: viewOptions?.floating !== true
               }
             },
             {
@@ -654,7 +658,6 @@ function minmax (value = 0, min = 0, max = 0): number {
 export function setLoadingState (view: EditorView, element: HTMLElement, loading: boolean): void {
   if (loading) {
     element.setAttribute('data-loading', 'true')
-    view.dispatch(view.state.tr.setMeta('loadingState', loading))
   } else {
     element.removeAttribute('data-loading')
     requestAnimationFrame(() => {
@@ -685,7 +688,8 @@ export const GeneralToolbarProvider: ToolbarProvider<any> = {
       viewOptions: {
         placement: 'top',
         fallbackPlacements: ['bottom'],
-        style: 'regular'
+        style: 'regular',
+        floating: true
       }
     }
 

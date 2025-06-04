@@ -466,6 +466,10 @@
           objectSpace,
           history: false,
           submit: false,
+          toolbar: {
+            boundary,
+            popupContainer: editorPopupContainer
+          },
           mermaid: {
             ...mermaidOptions,
             ydoc,

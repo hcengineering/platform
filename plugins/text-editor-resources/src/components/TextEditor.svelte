@@ -173,7 +173,7 @@
             image: canEmbedImages ? {} : false,
             drawingBoard: false,
             textAlign: false,
-            submit: supportSubmit ? { submit } : false,
+            submit: supportSubmit ? { submit } : false
           }),
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions
