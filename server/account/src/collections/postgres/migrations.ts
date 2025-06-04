@@ -28,7 +28,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV8Migration(ns),
     getV9Migration(ns),
     getV10Migration1(ns),
-    getV10Migration2(ns)
+    getV10Migration2(ns),
+    getV11Migration(ns)
   ]
 }
 
@@ -359,6 +360,21 @@ function getV10Migration2 (ns: string): [string, string] {
     `
     ALTER TABLE ${ns}.workspace
     ADD COLUMN IF NOT EXISTS allow_read_only_guest BOOL NOT NULL DEFAULT FALSE;
+    `
+  ]
+}
+
+function getV11Migration (ns: string): [string, string] {
+  return [
+    'account_db_v10_add_migrated_to_person',
+    `
+    CREATE TABLE IF NOT EXISTS ${ns}._pending_workspace_lock (
+      id INT8 DEFAULT 1 PRIMARY KEY,
+      CONSTRAINT single_row CHECK (id = 1)
+    );
+    
+    INSERT INTO ${ns}._pending_workspace_lock (id) VALUES (1)
+      ON CONFLICT (id) DO NOTHING;
     `
   ]
 }
