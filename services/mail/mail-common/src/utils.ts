@@ -14,9 +14,10 @@
 //
 import TurndownService from 'turndown'
 import sanitizeHtml from 'sanitize-html'
+import { imageSize } from 'image-size'
 
-import { MeasureContext } from '@hcengineering/core'
-import { EmailContact, EmailMessage } from './types'
+import { BlobMetadata, MeasureContext } from '@hcengineering/core'
+import { Attachment, EmailContact, EmailMessage } from './types'
 
 const NAME_EMAIL_PATTERN = /^(?:"?([^"<]+)"?\s*)?<([^>]+)>$/
 const NAME_SEGMENT_REGEX = /[\s,;]+/
@@ -130,4 +131,22 @@ export function parseNameFromEmailHeader (headerValue: string | undefined): Emai
 
 export function normalizeEmail (email: string): string {
   return email.toLowerCase().trim()
+}
+
+export function getBlobMetadata (ctx: MeasureContext, attachment: Attachment): BlobMetadata | undefined {
+  try {
+    const dimensions = imageSize(attachment.data)
+    return dimensions != null
+      ? {
+          originalHeight: dimensions.height,
+          originalWidth: dimensions.width
+        }
+      : undefined
+  } catch (error: any) {
+    ctx.warn('Failed to get blob metadata', {
+      error: error.message,
+      attachmentId: attachment.id
+    })
+    return undefined
+  }
 }

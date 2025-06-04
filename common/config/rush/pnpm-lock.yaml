@@ -4381,7 +4381,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-common@file:projects/mail-common.tgz':
-    resolution: {integrity: sha512-3mF2CTdNdTUi6sq+KOG6Tz1Jknrfp8+WggKdc/ZSgy3u5ASp8PcXTad3ihjXD0gRatFfrvNI+m3A90gB2zJMNg==, tarball: file:projects/mail-common.tgz}
+    resolution: {integrity: sha512-sdNydMgE2+6RUZLuoxs9vR5TuVhx0ZtgzXtR7GW2AqlG3O31iBo/WyST90ar4jftmjASKrJ4bSObnkuX7dnHyA==, tarball: file:projects/mail-common.tgz}
     version: 0.0.0
 
   '@rush-temp/mail@file:projects/mail.tgz':
@@ -20010,6 +20010,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-node: 11.1.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      image-size: 1.1.1
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.3.3))
       kafkajs: 2.2.4
       prettier: 3.2.5
