@@ -174,7 +174,6 @@
             drawingBoard: false,
             textAlign: false,
             submit: supportSubmit ? { submit } : false,
-            toolbar: { boundary }
           }),
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions

@@ -193,6 +193,12 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                   310,
                   ToolbarExtension.configure({
                     providers: [],
+                    context: {
+                      mode,
+                      objectId: this.options.objectId,
+                      objectClass: this.options.objectClass,
+                      objectSpace: this.options.objectSpace
+                    },
                     ...this.options.toolbar
                   })
                 ])

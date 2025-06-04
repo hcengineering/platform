@@ -25,12 +25,10 @@
 
   export let editor: NodeViewProps['editor']
   export let cursor: ToolbarCursor<any> | null = null
+  export let context: ActionContext
 
+  $: actionCtx = { ...context, tag: cursor?.tag ?? 'none' }
   const actionsQuery = createQuery()
-  $: actionCtx = {
-    mode: 'full',
-    tag: cursor?.tag ?? 'none'
-  } satisfies ActionContext
 
   let allActions: TextEditorAction[] = []
   let actions: TextEditorAction[] = []
@@ -78,7 +76,6 @@
   $: style = cursor?.viewOptions?.style ?? 'contrast'
 
   $: head = cursor?.viewOptions?.head
-  $: console.log(head)
 </script>
 
 {#if cursor && actions.length > 0}

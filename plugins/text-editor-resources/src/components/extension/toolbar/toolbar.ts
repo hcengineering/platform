@@ -23,6 +23,7 @@ import { deepEqual } from 'fast-equals'
 import tippy, { type Placement, type Props as TippyProps } from 'tippy.js'
 import { SvelteRenderer } from '../../node-view'
 import EditorToolbar from './EditorToolbar.svelte'
+import { type ActionContext } from '@hcengineering/text-editor'
 
 export interface ToolbarCursor<T> {
   source: CursorSource
@@ -71,6 +72,7 @@ export interface ToolbarOptions {
   providers: Array<ToolbarProvider<any>>
   boundary?: HTMLElement
   popupContainer?: HTMLElement
+  context: ActionContext
 }
 
 export enum CursorSource {
@@ -211,7 +213,7 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
             {
               name: 'preventOverflow',
               options: {
-                boundary: options.boundary ?? view.dom,
+                boundary: options.boundary ?? document.body,
                 padding: 16
               }
             },
@@ -279,7 +281,7 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
 
       const renderer = new SvelteRenderer(EditorToolbar, {
         element: container,
-        props: { editor, cursor: currCursor }
+        props: { editor, cursor: currCursor, context: options.context }
       })
       renderer.updateProps({ editor, cursor: currCursor })
 
