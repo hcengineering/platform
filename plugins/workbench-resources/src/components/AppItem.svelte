@@ -16,6 +16,7 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { AnySvelteComponent } from '@hcengineering/ui'
   import { Icon, Loading, tooltip } from '@hcengineering/ui'
+  import { tick } from 'svelte';
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
@@ -25,9 +26,21 @@
   export let loading: boolean = false
   export let notify: boolean = false
   export let navigator: boolean = false
+  export let blurOnClick: boolean = true;
+
+  let buttonElement: HTMLButtonElement;
+
+  async function handleInternalClick(event: MouseEvent) {
+    if (blurOnClick && event.detail !== 0) {
+      await tick();
+      buttonElement?.blur();
+    }
+  }
+
 </script>
 
 <button
+  bind:this={buttonElement}
   class="app {size} {kind}"
   class:loading
   class:selected
@@ -35,6 +48,7 @@
   id={'app-' + label}
   disabled={loading}
   use:tooltip={{ label }}
+  on:click={handleInternalClick} 
   on:click
 >
   {#if loading}
