@@ -1,34 +1,10 @@
-## 📡 Platform Communication Package
+# Important Notice
 
-A modular communication package for platform-level messaging —
-built with [Rush](https://rushjs.io/).
+**This repository is not a standalone project** and is intended to be used **only** as a submodule within https://github.com/hcengineering/platform.
 
----
+There is no separate CI, release pipeline, or independent build in this directory.
+All install and build commands must be run from the root of the main repository (for example: rush install && rush build).
+Changes in this folder will not take effect unless the parent repository initializes and updates this submodule.
 
-### 📦 Installation
 
-Install rush:
-
-```bash
-  npm install -g @microsoft/rush
-```
-
-Install dependencies:
-
-```bash
-  rush update
-```
-
-### Build packages
-
-```bash
-  rush build
-  rush validate
-```
-
-### Lint & format
-
-```bash
-  rush lint
-  rush format
-```
+Cloning this repository by itself will not provide the full dependency structure. To set everything up correctly, clone and initialize https://github.com/hcengineering/platform.

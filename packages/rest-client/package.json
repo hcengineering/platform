@@ -20,7 +20,7 @@
     "clean": "rm -rf lib && rm -rf types rm -rf node_modules"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.490",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "esbuild": "^0.24.2",
@@ -39,7 +39,7 @@
     "@hcengineering/communication-types": "^0.1.0",
     "@hcengineering/communication-sdk-types": "^0.1.0",
     "@hcengineering/communication-shared": "^0.1.0",
-    "@hcengineering/core": "^0.7.88",
+    "@hcengineering/core": "^0.6.32",
     "snappyjs": "^0.7.0"
   },
   "repository": {

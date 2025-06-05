@@ -31,8 +31,6 @@ import type {
 } from '@hcengineering/communication-types'
 import { createDbAdapter } from '@hcengineering/communication-cockroach'
 import type { EventResult, RequestEvent, ServerApi, SessionData } from '@hcengineering/communication-sdk-types'
-import { setMetadata } from '@hcengineering/platform'
-import serverToken from '@hcengineering/server-token'
 
 import { getMetadata } from './metadata'
 import type { BroadcastSessionsFunc, QueryId } from './types'
@@ -55,9 +53,6 @@ export class Api implements ServerApi {
     })
 
     const metadata = getMetadata()
-
-    setMetadata(serverToken.metadata.Secret, metadata.secret)
-
     const middleware = await buildMiddlewares(ctx, workspace, metadata, db, broadcast)
 
     return new Api(ctx, middleware)

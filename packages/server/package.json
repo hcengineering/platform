@@ -20,7 +20,7 @@
     "clean": "rm -rf lib && rm -rf types rm -rf node_modules"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.6.490",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "esbuild": "^0.24.2",
@@ -35,18 +35,17 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@hcengineering/account-client": "^0.7.88",
+    "@hcengineering/account-client": "^0.6.0",
     "@hcengineering/communication-cockroach": "^0.1.0",
     "@hcengineering/communication-sdk-types": "^0.1.0",
     "@hcengineering/communication-shared": "^0.1.0",
     "@hcengineering/communication-types": "^0.1.0",
     "@hcengineering/communication-yaml": "^0.1.0",
-    "@hcengineering/core": "^0.7.88",
-    "@hcengineering/platform": "^0.7.88",
-    "@hcengineering/server-token": "^0.7.88",
-    "@hcengineering/text-core": "^0.7.88",
-    "@hcengineering/text-markdown": "^0.7.88",
-    "zod": "^3.24.2"
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/server-token": "^0.6.11",
+    "@hcengineering/text-core": "^0.6.0",
+    "@hcengineering/text-markdown": "^0.6.0",
+    "zod": "^3.22.4"
   },
   "repository": {
     "type": "git",

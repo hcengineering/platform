@@ -136,7 +136,7 @@ async function registerCard (ctx: TriggerCtx, event: MessageCreatedEvent | Patch
   if (ctx.registeredCards.has(card) || metadata.msg2fileUrl === '') return []
 
   try {
-    const token = generateToken(systemAccountUuid, workspace)
+    const token = generateToken(systemAccountUuid, workspace, undefined, ctx.metadata.secret)
     await fetch(concatLink(metadata.msg2fileUrl, '/register/:card').replaceAll(':card', card), {
       method: 'POST',
       headers: {

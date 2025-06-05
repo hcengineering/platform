@@ -13,16 +13,16 @@ importers:
   ../../packages/client-query:
     dependencies:
       '@hcengineering/communication-query':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../query
       '@hcengineering/communication-sdk-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../sdk-types
       '@hcengineering/communication-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../types
       fast-equals:
-        specifier: ^5.0.1
+        specifier: ^5.2.2
         version: 5.2.2
     devDependencies:
       '@hcengineering/platform-rig':
@@ -68,24 +68,27 @@ importers:
   ../../packages/cockroach:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../shared
       '@hcengineering/communication-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../types
       postgres:
-        specifier: ^3.4.4
+        specifier: ^3.4.7
         version: 3.4.7
       uuid:
-        specifier: ^11.1.0
-        version: 11.1.0
+        specifier: ^8.3.2
+        version: 8.3.2
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: ^0.6.490
         version: 0.6.490(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)
+      '@types/uuid':
+        specifier: ^8.3.1
+        version: 8.3.4
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
@@ -126,27 +129,30 @@ importers:
   ../../packages/query:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../shared
       '@hcengineering/communication-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../types
       '@hcengineering/communication-yaml':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../yaml
       fast-equals:
-        specifier: ^5.0.1
+        specifier: ^5.2.2
         version: 5.2.2
       uuid:
-        specifier: ^11.1.0
-        version: 11.1.0
+        specifier: ^8.3.2
+        version: 8.3.2
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: ^0.6.490
         version: 0.6.490(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)
+      '@types/uuid':
+        specifier: ^8.3.1
+        version: 8.3.4
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
@@ -187,14 +193,14 @@ importers:
   ../../packages/rest-client:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../shared
       '@hcengineering/communication-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../types
       '@hcengineering/core':
         specifier: ^0.7.88
         version: 0.7.88
@@ -248,8 +254,8 @@ importers:
   ../../packages/sdk-types:
     dependencies:
       '@hcengineering/communication-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../types
       '@hcengineering/core':
         specifier: ^0.7.88
         version: 0.7.88
@@ -300,24 +306,21 @@ importers:
         specifier: ^0.7.88
         version: 0.7.88
       '@hcengineering/communication-cockroach':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../cockroach
       '@hcengineering/communication-sdk-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../shared
       '@hcengineering/communication-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../types
       '@hcengineering/communication-yaml':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../yaml
       '@hcengineering/core':
-        specifier: ^0.7.88
-        version: 0.7.88
-      '@hcengineering/platform':
         specifier: ^0.7.88
         version: 0.7.88
       '@hcengineering/server-token':
@@ -330,7 +333,7 @@ importers:
         specifier: ^0.7.88
         version: 0.7.88
       zod:
-        specifier: ^3.24.2
+        specifier: ^3.22.4
         version: 3.25.51
     devDependencies:
       '@hcengineering/platform-rig':
@@ -376,11 +379,11 @@ importers:
   ../../packages/shared:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../sdk-types
       '@hcengineering/communication-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../types
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: ^0.6.490
@@ -430,9 +433,6 @@ importers:
       '@hcengineering/core':
         specifier: ^0.7.88
         version: 0.7.88
-      '@hcengineering/tags':
-        specifier: ^0.7.88
-        version: 0.7.88
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: ^0.6.490
@@ -477,14 +477,14 @@ importers:
   ../../packages/yaml:
     dependencies:
       '@hcengineering/communication-sdk-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../sdk-types
       '@hcengineering/communication-shared':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../shared
       '@hcengineering/communication-types':
-        specifier: ^0.1.0
-        version: 0.1.195(typescript@5.8.3)
+        specifier: workspace:*
+        version: link:../types
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -895,36 +895,6 @@ packages:
   '@hcengineering/card@0.7.88':
     resolution: {integrity: sha512-3JDgocHFSGmQuKsrtQ5CTTm4rpd/PHahIx6oNX8sshDGpS2hnvNtrHNkJf39seIKiq0NNKmJ//Etl4I21h4c6w==, tarball: https://npm.pkg.github.com/download/@hcengineering/card/0.7.88/e39b9e182325945494f162f2dd6f16ef9bea0f3e}
 
-  '@hcengineering/communication-cockroach@0.1.195':
-    resolution: {integrity: sha512-C590LkRP5GgdZzgi33f8RlrCD3zeMsWfZWVffZ/sITitlDR4c1Vhv4nxU5ebpaPk+8Z645AcyhhS8nLXouFU/g==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-cockroach/0.1.195/48e97e7cdc1b13ef888dae3216f30a835e9b105d}
-    peerDependencies:
-      typescript: ^5.6.3
-
-  '@hcengineering/communication-query@0.1.195':
-    resolution: {integrity: sha512-e13HmmoDX3dKN/9Q2g/YzYFScyOkWI0JzZYen9E6OKchc42jqbJFx11S1nD+EJgY+UNhkMFMmI9qIEybNfXCsw==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-query/0.1.195/e7f8e84854e534cf76b2162c172777dea483c114}
-    peerDependencies:
-      typescript: ^5.6.3
-
-  '@hcengineering/communication-sdk-types@0.1.195':
-    resolution: {integrity: sha512-7c3o+qZ+4iJWDnJX6Yq6g62ZaybZO7uJf/jxfaoT0Ee1jtxgrltjXzWAJEK5LVpXzNN6oacVWxe7+W6vlZ6bQg==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-sdk-types/0.1.195/0adc1fcb52eb9ee69619808acba5e78e9a9aaa40}
-    peerDependencies:
-      typescript: ^5.6.3
-
-  '@hcengineering/communication-shared@0.1.195':
-    resolution: {integrity: sha512-i0Iq3Kil8IhbW9wS1MnzIjzmbNSP4ycZdsTZ61phKOYpShqDi0WubwMLmRzttnTHMLMTkuw77nXpHDuQCEsIrQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-shared/0.1.195/66db0b6e5c74227f07f791ad7a62d686b83561f2}
-    peerDependencies:
-      typescript: ^5.6.3
-
-  '@hcengineering/communication-types@0.1.195':
-    resolution: {integrity: sha512-a22nIhEZEGKVeY4pALG4OHROW3E6SKMDslyo1TNI9QR+upca/aX/gZxorc+HzLe3fkhj2BWkrDj3didGBBmJZQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-types/0.1.195/4bace160ae375c32f9c3e0b1814ce73944ec9829}
-    peerDependencies:
-      typescript: ^5.6.3
-
-  '@hcengineering/communication-yaml@0.1.195':
-    resolution: {integrity: sha512-vJrD8fYMYCOBJciYPV1oOy7z+4r80x4oG4ZFwYc/gMKe2J93z7uZajfBFSHfdhAH0iesIzykr1Ybk2DnL9+7Kw==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-yaml/0.1.195/d5864f390f1371f13cde0de387e792bef598c429}
-    peerDependencies:
-      typescript: ^5.6.3
-
   '@hcengineering/core@0.7.88':
     resolution: {integrity: sha512-c3GRTGAZYARu1kMt4TqkugmnuprYesZ4XZUeakReRtZdYei9tAF+i9xPpDKb4J3hvMC3u82LlEiV8iK26iXpTA==, tarball: https://npm.pkg.github.com/download/@hcengineering/core/0.7.88/ca01c3ccd43c85ea44b189d995b0693c5465956c}
 
@@ -938,14 +908,8 @@ packages:
   '@hcengineering/platform@0.7.88':
     resolution: {integrity: sha512-iFAwYQZjGox1NqEgUh8hiT1mRHdSJqYmYux0lkeIFyt8Nn/BAZOVXe0br0Dx7wXiueFPWhSZSeWVhxvBb78zoA==, tarball: https://npm.pkg.github.com/download/@hcengineering/platform/0.7.88/b3fbe09d6b849f7eb3641792682bf133103037f0}
 
-  '@hcengineering/preference@0.7.88':
-    resolution: {integrity: sha512-idzAlphM/HyNJfFMFwbpyKg6KvFTJ6rTaqgduNNJqkO4DsUCEF5/1WLNQMmiAeoFDY9y5+/mHJrx+1Ztq1XIuw==, tarball: https://npm.pkg.github.com/download/@hcengineering/preference/0.7.88/e1181dae3cb2eaf53fed66ddd3d5c4854717ccf0}
-
   '@hcengineering/server-token@0.7.88':
     resolution: {integrity: sha512-UQfW0E+v+PTwR7ICR+kSTQqAokpiV008ukqsxRSQJkCM4vmNYciUgd/7Y/ifDMFhKDvNyODb+wgAQs3QxkSbkA==, tarball: https://npm.pkg.github.com/download/@hcengineering/server-token/0.7.88/11b3a8247869a50037fcbb13572e16545116ff93}
-
-  '@hcengineering/tags@0.7.88':
-    resolution: {integrity: sha512-wpnVX/1Y8E4YPYnUcw+ZyVOpZvXYpboZC9D1btMqFs34CoMGc4tW1XT3YfsS8KxlkH6tsQjsAUvtWOPy2J46dg==, tarball: https://npm.pkg.github.com/download/@hcengineering/tags/0.7.88/f3f0de35b1be71d1f3f6711b8e4f161e0cf857eb}
 
   '@hcengineering/text-core@0.7.88':
     resolution: {integrity: sha512-mFri9SMzD99uR3/H0gZ4KEekYf3lEmJ2bqEQrjIVmi9z7+CzDTxmKnXeHKzcFpvQaLt5kmbPIoXM4MyxpK7ZXA==, tarball: https://npm.pkg.github.com/download/@hcengineering/text-core/0.7.88/7e53b0da9622709b2d1071049ead3843e0c45764}
@@ -961,9 +925,6 @@ packages:
 
   '@hcengineering/ui@0.7.88':
     resolution: {integrity: sha512-mzHXcX3aBC/OXUaV9F2hnB6+irwMfEYM5J1CnfqiHqgv3Hza20BZR6BrYe/nQCLb44DuHkXojbwL94AKK3QW6w==, tarball: https://npm.pkg.github.com/download/@hcengineering/ui/0.7.88/fce3392a59f706c248ba4b17714163e5725d5f01}
-
-  '@hcengineering/view@0.7.88':
-    resolution: {integrity: sha512-W3/OgCu9W+OGZ8v8hoT0bjoCNflvIcWFwFafk40FtWFxvqzObm41e5ZWNj3yGWFdlVsyN/Nqdjkyz0txWUXQAA==, tarball: https://npm.pkg.github.com/download/@hcengineering/view/0.7.88/8a13ddff0178ac3b705ebed683d0c1cc328c8e1c}
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -1144,6 +1105,9 @@ packages:
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
+
+  '@types/uuid@8.3.4':
+    resolution: {integrity: sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==}
 
   '@types/yargs-parser@21.0.3':
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
@@ -2834,8 +2798,8 @@ packages:
   url-polyfill@1.1.13:
     resolution: {integrity: sha512-tXzkojrv2SujumYthZ/WjF7jaSfNhSXlYMpE5AYdL2I3D7DCeo+mch8KtW2rUuKjDg+3VXODXHVgipt8yGY/eQ==}
 
-  uuid@11.1.0:
-    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+  uuid@8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
 
   v8-to-istanbul@9.3.0:
@@ -3238,51 +3202,6 @@ snapshots:
       '@hcengineering/platform': 0.7.88
       '@hcengineering/ui': 0.7.88
 
-  '@hcengineering/communication-cockroach@0.1.195(typescript@5.8.3)':
-    dependencies:
-      '@hcengineering/communication-sdk-types': 0.1.195(typescript@5.8.3)
-      '@hcengineering/communication-shared': 0.1.195(typescript@5.8.3)
-      '@hcengineering/communication-types': 0.1.195(typescript@5.8.3)
-      postgres: 3.4.7
-      typescript: 5.8.3
-      uuid: 11.1.0
-
-  '@hcengineering/communication-query@0.1.195(typescript@5.8.3)':
-    dependencies:
-      '@hcengineering/communication-sdk-types': 0.1.195(typescript@5.8.3)
-      '@hcengineering/communication-shared': 0.1.195(typescript@5.8.3)
-      '@hcengineering/communication-types': 0.1.195(typescript@5.8.3)
-      '@hcengineering/communication-yaml': 0.1.195(typescript@5.8.3)
-      fast-equals: 5.2.2
-      typescript: 5.8.3
-      uuid: 11.1.0
-
-  '@hcengineering/communication-sdk-types@0.1.195(typescript@5.8.3)':
-    dependencies:
-      '@hcengineering/communication-types': 0.1.195(typescript@5.8.3)
-      '@hcengineering/core': 0.7.88
-      typescript: 5.8.3
-
-  '@hcengineering/communication-shared@0.1.195(typescript@5.8.3)':
-    dependencies:
-      '@hcengineering/communication-sdk-types': 0.1.195(typescript@5.8.3)
-      '@hcengineering/communication-types': 0.1.195(typescript@5.8.3)
-      typescript: 5.8.3
-
-  '@hcengineering/communication-types@0.1.195(typescript@5.8.3)':
-    dependencies:
-      '@hcengineering/card': 0.7.88
-      '@hcengineering/core': 0.7.88
-      '@hcengineering/tags': 0.7.88
-      typescript: 5.8.3
-
-  '@hcengineering/communication-yaml@0.1.195(typescript@5.8.3)':
-    dependencies:
-      '@hcengineering/communication-shared': 0.1.195(typescript@5.8.3)
-      '@hcengineering/communication-types': 0.1.195(typescript@5.8.3)
-      js-yaml: 4.1.0
-      typescript: 5.8.3
-
   '@hcengineering/core@0.7.88':
     dependencies:
       '@hcengineering/analytics': 0.7.88
@@ -3299,24 +3218,11 @@ snapshots:
     dependencies:
       intl-messageformat: 10.7.16
 
-  '@hcengineering/preference@0.7.88':
-    dependencies:
-      '@hcengineering/core': 0.7.88
-      '@hcengineering/platform': 0.7.88
-      '@hcengineering/ui': 0.7.88
-
   '@hcengineering/server-token@0.7.88':
     dependencies:
       '@hcengineering/core': 0.7.88
       '@hcengineering/platform': 0.7.88
       jwt-simple: 0.5.6
-
-  '@hcengineering/tags@0.7.88':
-    dependencies:
-      '@hcengineering/core': 0.7.88
-      '@hcengineering/platform': 0.7.88
-      '@hcengineering/ui': 0.7.88
-      '@hcengineering/view': 0.7.88
 
   '@hcengineering/text-core@0.7.88':
     dependencies:
@@ -3356,13 +3262,6 @@ snapshots:
       hls.js: 1.6.5
       plyr: 3.7.8
       svelte: 4.2.20
-
-  '@hcengineering/view@0.7.88':
-    dependencies:
-      '@hcengineering/core': 0.7.88
-      '@hcengineering/platform': 0.7.88
-      '@hcengineering/preference': 0.7.88
-      '@hcengineering/ui': 0.7.88
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
@@ -3644,6 +3543,8 @@ snapshots:
 
   '@types/trusted-types@2.0.7':
     optional: true
+
+  '@types/uuid@8.3.4': {}
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -5773,7 +5674,7 @@ snapshots:
 
   url-polyfill@1.1.13: {}
 
-  uuid@11.1.0: {}
+  uuid@8.3.2: {}
 
   v8-to-istanbul@9.3.0:
     dependencies:

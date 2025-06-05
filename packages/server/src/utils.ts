@@ -32,7 +32,7 @@ export async function findAccount (ctx: TriggerCtx, socialString: SocialID): Pro
   const url = ctx.metadata.accountsUrl ?? ''
   if (url === '') return undefined
 
-  const token = generateToken(systemAccountUuid)
+  const token = generateToken(systemAccountUuid, undefined, undefined, ctx.metadata.secret)
   const accountClient = getAccountClient(ctx.metadata.accountsUrl, token)
 
   try {
