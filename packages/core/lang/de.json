@@ -60,7 +60,7 @@
     "UpdateSpaceDescription": "Gewährt Benutzern die Möglichkeit, den Arbeitsbereich zu aktualisieren",
     "ArchiveSpaceDescription": "Gewährt Benutzern die Möglichkeit, den Arbeitsbereich zu archivieren",
     "AutoJoin": "Automatisch beitreten",
-    "AutoJoinDescr": "Neue Mitarbeiter automatisch diesem Arbeitsbereich hinzufügen",
+    "AutoJoinDescr": "Neue Mitwirkende automatisch diesem Arbeitsbereich hinzufügen",
     "BlobSize": "Größe",
     "BlobContentType": "Inhaltstyp",
     "Relation": "Beziehung",
