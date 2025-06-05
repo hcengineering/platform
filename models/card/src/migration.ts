@@ -103,15 +103,21 @@ async function fillParentInfo (client: Client): Promise<void> {
 async function getCardParentWithParentInfo (
   txOp: TxOperations,
   _id: Ref<Card>,
-  cache: Map<Ref<Card>, Card>
+  cache: Map<Ref<Card>, Card>,
+  visited: Set<Ref<Card>> = new Set<Ref<Card>>()
 ): Promise<Card | undefined> {
+  if (visited.has(_id)) {
+    return undefined
+  }
   const doc = cache.get(_id) ?? (await txOp.findOne(card.class.Card, { _id }))
   if (doc === undefined) return
   if (doc.parentInfo === undefined) {
     if (doc.parent == null) {
       doc.parentInfo = []
     } else {
+      visited.add(_id) // Add current card to visited set before recursing
       const parent = await getCardParentWithParentInfo(txOp, doc.parent, cache)
+      visited.delete(_id)
       if (parent !== undefined) {
         doc.parentInfo = [
           ...(parent.parentInfo ?? []),
