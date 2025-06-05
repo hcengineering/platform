@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Asset, IntlString } from '@hcengineering/platform'
-import { Attribute, Doc, Domain, Ref } from './classes'
+import { type Asset, type IntlString } from '@hcengineering/platform'
+import { type Attribute, type Doc, type Domain, type Ref } from './classes'
 
 /**
  * @public

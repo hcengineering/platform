@@ -52,7 +52,7 @@
     "@types/jest": "^29.5.5",
     "prettier": "^3.1.0",
     "ts-node": "^10.8.0",
-    "typescript": "^5.3.3",
+    "typescript": "^5.8.3",
     "@types/morgan": "~1.9.9",
     "@types/on-headers": "^1.0.2"
   },

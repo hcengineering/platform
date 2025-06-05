@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Timestamp } from './classes'
+import { type Timestamp } from './classes'
 
 export function getDay (time: Timestamp): Timestamp {
   const date: Date = new Date(time)

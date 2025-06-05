@@ -13,33 +13,33 @@
 // limitations under the License.
 //
 
-import activity, { ActivityMessage, ActivityReference, UserMentionInfo } from '@hcengineering/activity'
-import contact, { Employee, Person } from '@hcengineering/contact'
+import activity, { type ActivityMessage, type ActivityReference, type UserMentionInfo } from '@hcengineering/activity'
+import contact, { type Employee, type Person } from '@hcengineering/contact'
 import core, {
-  PersonId,
-  Blob,
-  Class,
-  Data,
-  Doc,
-  Hierarchy,
-  Markup,
-  Ref,
-  Space,
-  Tx,
-  TxCreateDoc,
-  TxCUD,
+  type PersonId,
+  type Blob,
+  type Class,
+  type Data,
+  type Doc,
+  type Hierarchy,
+  type Markup,
+  type Ref,
+  type Space,
+  type Tx,
+  type TxCreateDoc,
+  type TxCUD,
   TxFactory,
-  TxMixin,
+  type TxMixin,
   TxProcessor,
-  TxRemoveDoc,
-  TxUpdateDoc,
-  Type,
+  type TxRemoveDoc,
+  type TxUpdateDoc,
+  type Type,
   type MeasureContext,
-  AccountUuid
+  type AccountUuid
 } from '@hcengineering/core'
-import notification, { MentionInboxNotification, NotificationType } from '@hcengineering/notification'
+import notification, { type MentionInboxNotification, type NotificationType } from '@hcengineering/notification'
 import { getPerson } from '@hcengineering/server-contact'
-import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
+import { type StorageAdapter, type TriggerControl } from '@hcengineering/server-core'
 import {
   getCommonNotificationTxes,
   getNotificationProviderControl,

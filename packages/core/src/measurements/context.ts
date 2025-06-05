@@ -3,11 +3,11 @@
 import { generateId, platformNow, platformNowDiff } from '../utils'
 import { childMetrics, newMetrics, updateMeasure } from './metrics'
 import {
-  FullParamsType,
-  MeasureContext,
-  MeasureLogger,
-  Metrics,
-  ParamsType,
+  type FullParamsType,
+  type MeasureContext,
+  type MeasureLogger,
+  type Metrics,
+  type ParamsType,
   type OperationLog,
   type OperationLogEntry
 } from './types'
