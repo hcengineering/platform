@@ -1122,6 +1122,7 @@ export function defineSearch (builder: Builder): void {
 export function defineTextActions (builder: Builder): void {
   // Comment category
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    tags: ['text'],
     action: documents.function.Comment,
     icon: chunter.icon.Chunter,
     visibilityTester: documents.function.IsCommentVisible,

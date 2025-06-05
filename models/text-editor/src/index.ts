@@ -14,30 +14,28 @@
 //
 
 import { DOMAIN_MODEL } from '@hcengineering/core'
-import { type Builder, Model } from '@hcengineering/model'
+import { Model, type Builder } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import {
+  type ActiveDescriptor,
   type ExtensionCreator,
-  type TextEditorExtensionFactory,
   type RefInputAction,
   type RefInputActionItem,
-  type TextEditorAction,
+  type TextActionActiveFunction,
   type TextActionFunction,
   type TextActionVisibleFunction,
-  type TextActionActiveFunction,
-  type ActiveDescriptor,
-  type TogglerDescriptor,
-  type TextEditorActionKind
+  type TextEditorAction,
+  type TextEditorExtensionFactory,
+  type TogglerDescriptor
 } from '@hcengineering/text-editor'
+import view from '@hcengineering/view'
+import textEditor from './plugin'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { EditorKitOptions } from '@hcengineering/text-editor-resources/src/kits/editor-kit'
-import textEditor from './plugin'
-import view from '@hcengineering/view'
-
+export { textEditorId } from '@hcengineering/text-editor'
 export { textEditorOperation } from './migration'
 export { default } from './plugin'
-export { textEditorId } from '@hcengineering/text-editor'
 export type { RefInputAction, RefInputActionItem }
 
 @Model(textEditor.class.RefInputActionItem, core.class.Doc, DOMAIN_MODEL)
@@ -57,7 +55,7 @@ export class TTextEditorExtensionFactory extends TDoc implements TextEditorExten
 
 @Model(textEditor.class.TextEditorAction, core.class.Doc, DOMAIN_MODEL)
 export class TTextEditorAction extends TDoc implements TextEditorAction {
-  kind?: TextEditorActionKind
+  tags?: string[]
   action!: TogglerDescriptor | Resource<TextActionFunction>
   visibilityTester?: Resource<TextActionVisibleFunction>
   icon!: Asset
@@ -127,7 +125,7 @@ function createImageAlignmentAction (builder: Builder, align: 'center' | 'left' 
   }
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    kind: 'image',
+    tags: ['image'],
     action: {
       command: 'setImageAlignment',
       params: {
@@ -171,7 +169,7 @@ function createTextAlignmentAction (builder: Builder, align: 'center' | 'left' |
   }
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    kind: 'text',
+    tags: ['text'],
     action: {
       command: 'setTextAlign',
       params: align
@@ -367,7 +365,7 @@ export function createModel (builder: Builder): void {
 
   // Table cell category
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    kind: 'table',
+    tags: ['table', 'tableCell'],
     action: textEditor.function.SetBackgroundColor,
     icon: textEditor.icon.Brush,
     visibilityTester: textEditor.function.IsTableToolbarContext,
@@ -378,7 +376,7 @@ export function createModel (builder: Builder): void {
 
   // Table category
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    kind: 'table',
+    tags: ['table'],
     action: textEditor.function.SelectTable,
     icon: textEditor.icon.SelectTable,
     visibilityTester: textEditor.function.IsTableToolbarContext,
@@ -388,7 +386,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    kind: 'table',
+    tags: ['table'],
     action: textEditor.function.OpenTableOptions,
     icon: textEditor.icon.TableProps,
     visibilityTester: textEditor.function.IsTableToolbarContext,
@@ -404,7 +402,7 @@ export function createModel (builder: Builder): void {
 
   // Image view category
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    kind: 'image',
+    tags: ['image'],
     action: textEditor.function.OpenImage,
     icon: textEditor.icon.ScaleOut,
     label: textEditor.string.ViewImage,
@@ -413,7 +411,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    kind: 'image',
+    tags: ['image'],
     action: textEditor.function.ExpandImage,
     icon: textEditor.icon.Expand,
     label: textEditor.string.ViewOriginal,
@@ -422,7 +420,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    kind: 'image',
+    tags: ['image'],
     action: textEditor.function.DownloadImage,
     icon: textEditor.icon.Download,
     label: textEditor.string.Download,
@@ -431,7 +429,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    kind: 'image',
+    tags: ['image'],
     action: textEditor.function.MoreImageActions,
     visibilityTester: textEditor.function.IsEditable,
     icon: textEditor.icon.MoreH,
@@ -465,7 +463,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    kind: 'preview',
+    tags: ['embed'],
     action: textEditor.function.CopyPreviewLinkAction,
     icon: view.icon.Copy,
     visibilityTester: textEditor.function.ShouldShowCopyPreviewLinkAction,
@@ -475,7 +473,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    kind: 'preview',
+    tags: ['embed'],
     action: textEditor.function.ConvertToLinkPreviewAction,
     icon: textEditor.icon.LinkPreview,
     visibilityTester: textEditor.function.ShouldShowConvertToLinkPreviewAction,
@@ -486,7 +484,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
-    kind: 'preview',
+    tags: ['embed'],
     action: textEditor.function.ConvertToEmbedPreviewAction,
     icon: textEditor.icon.EmbedPreview,
     visibilityTester: textEditor.function.ShouldShowConvertToEmbedPreviewAction,

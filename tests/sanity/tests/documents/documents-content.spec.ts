@@ -312,11 +312,12 @@ test.describe('Content in the Documents tests', () => {
   })
 
   test('Checking styles in a Document', async ({ page, browser, request }) => {
-    const content: string = [...new Array(20).keys()].map((index) => `Line ${index + 1}`).join('\n')
+    const content: string = [...new Array(21).keys()].map((index) => `Line ${index}`).join('\n')
     const testLink: string = 'http://test/link/123456'
     const testNote: string = 'Test Note'
 
     await documentContentPage.addContentToTheNewLine(content, false)
+    await documentContentPage.applyToolbarCommand('Line 0', 'btnH1')
     await documentContentPage.applyToolbarCommand('Line 1', 'btnH1')
     await documentContentPage.applyToolbarCommand('Line 2', 'btnH2')
     await documentContentPage.applyToolbarCommand('Line 3', 'btnH3')

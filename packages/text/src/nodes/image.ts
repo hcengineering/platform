@@ -19,6 +19,39 @@ import { getDataAttribute } from './utils'
 /**
  * @public
  */
+export type ImageAlignment = 'center' | 'left' | 'right'
+
+export interface ImageAlignmentOptions {
+  align?: ImageAlignment
+}
+
+export interface ImageSizeOptions {
+  height?: number | string
+  width?: number | string
+}
+
+declare module '@tiptap/core' {
+  export interface Commands<ReturnType> {
+    image: {
+      /**
+       * Add an image
+       */
+      setImage: (options: { src: string, alt?: string, title?: string }) => ReturnType
+      /**
+       * Set image alignment
+       */
+      setImageAlignment: (options: ImageAlignmentOptions) => ReturnType
+      /**
+       * Set image size
+       */
+      setImageSize: (options: ImageSizeOptions) => ReturnType
+    }
+  }
+}
+
+/**
+ * @public
+ */
 export interface ImageOptions {
   inline: boolean
   HTMLAttributes: Record<string, any>
@@ -110,60 +143,5 @@ export const ImageNode = Node.create<ImageOptions>({
     }
 
     return ['div', divAttributes, ['img', imgAttributes]]
-  },
-  addNodeView () {
-    return ({ node, HTMLAttributes }) => {
-      const container = document.createElement('div')
-      const imgElement = document.createElement('img')
-      container.append(imgElement)
-      const divAttributes = {
-        class: 'text-editor-image-container',
-        'data-type': this.name,
-        'data-align': node.attrs.align
-      }
-
-      for (const [k, v] of Object.entries(divAttributes)) {
-        if (v !== null) {
-          container.setAttribute(k, v)
-        }
-      }
-
-      const imgAttributes = mergeAttributes(
-        {
-          'data-type': this.name
-        },
-        this.options.HTMLAttributes,
-        HTMLAttributes
-      )
-      for (const [k, v] of Object.entries(imgAttributes)) {
-        if (k !== 'src' && k !== 'srcset' && v !== null) {
-          imgElement.setAttribute(k, v)
-        }
-      }
-      const fileId = imgAttributes['file-id']
-      if (fileId != null) {
-        const setBrokenImg = setTimeout(() => {
-          imgElement.src = this.options.loadingImgSrc ?? `platform://platform/files/workspace/?file=${fileId}`
-        }, 500)
-        if (fileId != null) {
-          void this.options.getBlobRef(fileId).then((val) => {
-            clearTimeout(setBrokenImg)
-            imgElement.src = val.src
-            imgElement.srcset = val.srcset
-          })
-        }
-      } else {
-        if (imgAttributes.srcset != null) {
-          imgElement.srcset = imgAttributes.srcset
-        }
-        if (imgAttributes.src != null) {
-          imgElement.src = imgAttributes.src
-        }
-      }
-
-      return {
-        dom: container
-      }
-    }
   }
 })
