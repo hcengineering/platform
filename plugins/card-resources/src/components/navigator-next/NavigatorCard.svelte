@@ -83,6 +83,7 @@
   $: clazz = hierarchy.getClass(card._class) as Class<Card> & { color?: number }
 
   function getCardTitle (card: Card): string {
+    if ((card?.parentInfo?.length ?? 0) === 0) return card.title
     const parent = card.parentInfo[card.parentInfo.length - 1]
     if (parent != null) {
       return `${card.title} (${parent.title})`
