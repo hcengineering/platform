@@ -13,19 +13,21 @@
 // limitations under the License.
 //
 
-import { type MeasureContext } from '@hcengineering/core'
+import { type MeasureContext, type Tx } from '@hcengineering/core'
+import { PlatformQueueProducer } from '@hcengineering/server-core'
 import { Readable } from 'stream'
 
 import { type BlobDB } from './db'
 import { digestToUUID, stringToUUID } from './encodings'
 import { type BlobHead, type BlobBody, type BlobList, type BlobStorage, type Datalake, type Location } from './types'
-import { requestHLS } from '../handlers/video'
 import { type S3Bucket } from '../s3'
+import { blobEvents } from './queue'
 
 export class DatalakeImpl implements Datalake {
   constructor (
     private readonly db: BlobDB,
     private readonly buckets: Array<{ location: Location, bucket: S3Bucket }>,
+    private readonly producer: PlatformQueueProducer<Tx>,
     private readonly options: {
       cacheControl: string
     }
@@ -108,6 +110,13 @@ export class DatalakeImpl implements Datalake {
     } else {
       await this.db.deleteBlob(ctx, { workspace, name })
     }
+
+    try {
+      const events = Array.isArray(name) ? name.map((n) => blobEvents.deleted(n)) : [blobEvents.deleted(name)]
+      await this.producer.send(workspace, events)
+    } catch (err) {
+      ctx.error('failed to send blob deleted event', { err })
+    }
   }
 
   async put (
@@ -138,6 +147,14 @@ export class DatalakeImpl implements Datalake {
     if (data !== null) {
       // Lucky boy, nothing to upload, use existing blob
       await this.db.createBlob(ctx, { workspace, name, hash, location })
+
+      try {
+        const event = blobEvents.created(name, { contentType, lastModified, size, etag: hash })
+        await this.producer.send(workspace, [event])
+      } catch (err) {
+        ctx.error('failed to send blob created event', { err })
+      }
+
       return { name, size, contentType, lastModified, etag: hash }
     } else {
       const putOptions = {
@@ -148,9 +165,14 @@ export class DatalakeImpl implements Datalake {
       }
       await bucket.put(ctx, filename, body, putOptions)
       await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
-      if (contentType.startsWith('video/')) {
-        void requestHLS(ctx, workspace, name)
+
+      try {
+        const event = blobEvents.created(name, { contentType, lastModified, size, etag: hash })
+        await this.producer.send(workspace, [event])
+      } catch (err) {
+        ctx.error('failed to send blob created event', { err })
       }
+
       return { name, size, contentType, lastModified, etag: hash }
     }
   }
@@ -173,10 +195,6 @@ export class DatalakeImpl implements Datalake {
       await Promise.all([bucket.delete(ctx, filename), this.db.createBlob(ctx, { workspace, name, hash, location })])
     } else {
       await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
-    }
-
-    if (contentType.startsWith('video/')) {
-      void requestHLS(ctx, workspace, name)
     }
 
     return { name, size, contentType, lastModified, etag: hash }

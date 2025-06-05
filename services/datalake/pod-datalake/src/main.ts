@@ -16,6 +16,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
 import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
@@ -48,7 +49,9 @@ export const main = async (): Promise<void> => {
       )
   })
 
-  const { app, close } = await createServer(metricsContext, config)
+  const queue = getPlatformQueue('datalake')
+
+  const { app, close } = await createServer(metricsContext, queue, config)
   const server = listen(app, config.Port)
 
   const shutdown = (): void => {
