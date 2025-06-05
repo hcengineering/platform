@@ -2,7 +2,7 @@ import { getPersonBySocialId, formatName } from '@hcengineering/contact'
 import { Ref, TxOperations } from '@hcengineering/core'
 import notification, { DocNotifyContext, CommonInboxNotification, ActivityInboxNotification, InboxNotification } from '@hcengineering/notification'
 import { IntlString, addEventListener, translate } from '@hcengineering/platform'
-import { getClient, createNotificationsQuery } from '@hcengineering/presentation'
+import { getClient } from '@hcengineering/presentation'
 import { location } from '@hcengineering/ui'
 import workbench, { workbenchId } from '@hcengineering/workbench'
 import desktopPreferences, { defaultNotificationPreference } from '@hcengineering/desktop-preferences'
@@ -12,8 +12,6 @@ import { InboxNotificationsClientImpl, getDisplayInboxData } from '@hcengineerin
 import { IPCMainExposed } from './types'
 
 let client: TxOperations
-
-const notificationsQuery = createNotificationsQuery()
 
 async function hydrateNotificationAsYouCan (lastNotification: InboxNotification): Promise<{ title: string, body: string } | undefined> {
   // Let's try to do our best and figure out from who we have an notification
@@ -116,7 +114,7 @@ export function configureNotifications (): void {
   // because we generate them on a client
   let initTimestamp = 0
   const notificationHistory = new Map<string, number>()
-  let newUnreadNotifications = 0
+  const newUnreadNotifications = 0
 
   addEventListener(workbench.event.NotifyConnection, async () => {
     client = getClient()
@@ -124,10 +122,11 @@ export function configureNotifications (): void {
 
     const inboxClient = InboxNotificationsClientImpl.getClient()
 
-    notificationsQuery.query({ read: false, limit: 1000 }, res => {
-      newUnreadNotifications = res.getResult().length
-      electronAPI.setBadge(prevUnViewdNotificationsCount + newUnreadNotifications)
-    })
+    // TODO: FIX ME
+    // notificationsQuery.query({ read: false, limit: 1000 }, res => {
+    //   newUnreadNotifications = res.getResult().length
+    //   electronAPI.setBadge(prevUnViewdNotificationsCount + newUnreadNotifications)
+    // })
 
     async function handleNotifications (notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>): Promise<void> {
       const inboxData = await getDisplayInboxData(notificationsByContext)
