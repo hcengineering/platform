@@ -20,6 +20,7 @@ import {
   CodeExtension,
   codeOptions,
   CommentNode,
+  type ImageOptions,
   InlineCommentMark,
   MarkdownNode,
   TextColor,
@@ -31,28 +32,28 @@ import { type Level } from '@tiptap/extension-heading'
 import TableHeader from '@tiptap/extension-table-header'
 import 'prosemirror-codemark/dist/codemark.css'
 
-import { EditableExtension } from '../components/extension/editable'
+import TextAlign, { type TextAlignOptions } from '@tiptap/extension-text-align'
 import { CodeBlockHighlighExtension, codeBlockHighlightOptions } from '../components/extension/codeblock'
-import { NoteExtension, type NoteOptions } from '../components/extension/note'
+import { DrawingBoardExtension, type DrawingBoardOptions } from '../components/extension/drawingBoard'
+import { EditableExtension } from '../components/extension/editable'
+import { EmbedNode, type EmbedNodeOptions } from '../components/extension/embed/embed'
+import { defaultDriveEmbedOptions, DriveEmbedProvider } from '../components/extension/embed/providers/drive'
+import { defaultYoutubeEmbedUrlOptions, YoutubeEmbedProvider } from '../components/extension/embed/providers/youtube'
 import { FileExtension, type FileOptions } from '../components/extension/fileExt'
 import { HardBreakExtension } from '../components/extension/hardBreak'
-import { ImageExtension, type ImageOptions } from '../components/extension/imageExt'
-import { InlineToolbarExtension } from '../components/extension/inlineToolbar'
+import { ImageExtension } from '../components/extension/imageExt'
+import { type IndendOptions, IndentExtension, indentExtensionOptions } from '../components/extension/indent'
+import { LinkUtilsExtension } from '../components/extension/link'
 import { ListKeymapExtension } from '../components/extension/listkeymap'
+import { MermaidExtension, type MermaidOptions, mermaidOptions } from '../components/extension/mermaid'
 import { NodeUuidExtension } from '../components/extension/nodeUuid'
+import { NoteExtension, type NoteOptions } from '../components/extension/note'
 import { ParagraphExtension } from '../components/extension/paragraph'
+import { TransformPastedContentExtension } from '../components/extension/paste'
 import { SubmitExtension, type SubmitOptions } from '../components/extension/submit'
 import { Table, TableCell, TableRow } from '../components/extension/table'
+import { ToolbarExtension, type ToolbarOptions } from '../components/extension/toolbar/toolbar'
 import { DefaultKit, type DefaultKitOptions } from './default-kit'
-import { MermaidExtension, type MermaidOptions, mermaidOptions } from '../components/extension/mermaid'
-import { DrawingBoardExtension, type DrawingBoardOptions } from '../components/extension/drawingBoard'
-import { type IndendOptions, IndentExtension, indentExtensionOptions } from '../components/extension/indent'
-import TextAlign, { type TextAlignOptions } from '@tiptap/extension-text-align'
-import { LinkUtilsExtension } from '../components/extension/link'
-import { TransformPastedContentExtension } from '../components/extension/paste'
-import { EmbedNode, type EmbedNodeOptions } from '../components/extension/embed/embed'
-import { defaultYoutubeEmbedUrlOptions, YoutubeEmbedProvider } from '../components/extension/embed/providers/youtube'
-import { defaultDriveEmbedOptions, DriveEmbedProvider } from '../components/extension/embed/providers/drive'
 
 export interface EditorKitOptions extends DefaultKitOptions {
   history?: false
@@ -77,14 +78,7 @@ export interface EditorKitOptions extends DefaultKitOptions {
   objectId?: Ref<Doc>
   objectClass?: Ref<Class<Doc>>
   objectSpace?: Ref<Space>
-  toolbar?:
-  | {
-    element?: HTMLElement
-    boundary?: HTMLElement
-    appendTo?: HTMLElement | (() => HTMLElement)
-    isHidden?: () => boolean
-  }
-  | false
+  toolbar?: Partial<ToolbarOptions> | false
   embed?: Partial<EmbedNodeOptions> | false
 }
 
@@ -104,33 +98,6 @@ export const tableKitExtensions: KitExtension[] = [
   [30, TableHeader.configure({})],
   [40, TableCell.configure({})]
 ]
-
-function getTippyOptions (
-  boundary?: HTMLElement,
-  appendTo?: HTMLElement | (() => HTMLElement),
-  placement?: string,
-  offset?: number[]
-): any {
-  return {
-    zIndex: 100000,
-    placement,
-    offset,
-    popperOptions: {
-      modifiers: [
-        {
-          name: 'preventOverflow',
-          options: {
-            boundary,
-            padding: 8,
-            altAxis: true,
-            tether: false
-          }
-        }
-      ]
-    },
-    ...(appendTo !== undefined ? { appendTo } : {})
-  }
-}
 
 /**
  * KitExtensionCreator is a tuple of an index and an ExtensionCreator.
@@ -221,6 +188,21 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                   })
                 ])
               }
+              if (this.options.toolbar !== false) {
+                staticKitExtensions.push([
+                  310,
+                  ToolbarExtension.configure({
+                    providers: [],
+                    context: {
+                      mode,
+                      objectId: this.options.objectId,
+                      objectClass: this.options.objectClass,
+                      objectSpace: this.options.objectSpace
+                    },
+                    ...this.options.toolbar
+                  })
+                ])
+              }
 
               if (mode === 'compact') {
                 staticKitExtensions.push([400, ParagraphExtension.configure()])
@@ -287,16 +269,6 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                   ...this.options.image
                 }
 
-                if (this.options.image?.toolbar !== undefined) {
-                  imageOptions.toolbar = {
-                    ...this.options.image?.toolbar,
-                    tippyOptions: getTippyOptions(
-                      this.options.image?.toolbar?.boundary,
-                      this.options.image?.toolbar?.appendTo
-                    )
-                  }
-                }
-
                 staticKitExtensions.push([800, ImageExtension.configure(imageOptions)])
               }
 
@@ -327,24 +299,6 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                   )
                 ])
               }
-
-              if (this.options.toolbar !== false) {
-                staticKitExtensions.push([
-                  900,
-                  InlineToolbarExtension.configure({
-                    tippyOptions: getTippyOptions(this.options.toolbar?.boundary, this.options.toolbar?.appendTo),
-                    element: this.options.toolbar?.element,
-                    isHidden: this.options.toolbar?.isHidden,
-                    ctx: {
-                      mode,
-                      objectId: this.options.objectId,
-                      objectClass: this.options.objectClass,
-                      objectSpace: this.options.objectSpace
-                    }
-                  })
-                ])
-              }
-
               staticKitExtensions.push([950, LinkUtilsExtension.configure({})])
 
               if (mode !== 'compact' && this.options.note !== false) {

@@ -55,6 +55,8 @@
   import DocumentPrintTitlePage from '../print/DocumentPrintTitlePage.svelte'
   import DocumentTitle from './DocumentTitle.svelte'
 
+  export let boundary: HTMLElement | undefined = undefined
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const user = getCollaborationUser()
@@ -279,6 +281,7 @@
           object={$controlledDocument}
           {attribute}
           {user}
+          {boundary}
           readonly={!$isEditable}
           editorAttributes={{ style: 'padding: 0 2em; margin: 0 -2em;' }}
           overflow="none"

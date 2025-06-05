@@ -131,7 +131,6 @@
         items={contexts}
         highlightIndex={contexts.findIndex((it) => it.card === card?._id)}
         noScroll
-        minHeight="5.625rem"
         kind="full-size"
         colorsSchema="lumia"
         lazy={true}

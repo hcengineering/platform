@@ -14,55 +14,21 @@
 //
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import { FilePreviewPopup, getFileUrl } from '@hcengineering/presentation'
-import { ImageNode, type ImageOptions as ImageNodeOptions } from '@hcengineering/text'
+import { ImageNode, type ImageOptions } from '@hcengineering/text'
 import textEditor from '@hcengineering/text-editor'
 import { getEventPositionElement, SelectPopup, showPopup } from '@hcengineering/ui'
-import { type Editor, nodeInputRule } from '@tiptap/core'
-import { type BubbleMenuOptions } from '@tiptap/extension-bubble-menu'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
-import { InlinePopupExtension } from './inlinePopup'
-
-/**
- * @public
- */
-export type ImageAlignment = 'center' | 'left' | 'right'
-
-/**
- * @public
- */
-export type ImageOptions = ImageNodeOptions & {
-  toolbar?: Omit<BubbleMenuOptions, 'pluginKey'> & {
-    isHidden?: () => boolean
-  }
-}
-
-export interface ImageAlignmentOptions {
-  align?: ImageAlignment
-}
-
-export interface ImageSizeOptions {
-  height?: number | string
-  width?: number | string
-}
-
-declare module '@tiptap/core' {
-  interface Commands<ReturnType> {
-    image: {
-      /**
-       * Add an image
-       */
-      setImage: (options: { src: string, alt?: string, title?: string }) => ReturnType
-      /**
-       * Set image alignment
-       */
-      setImageAlignment: (options: ImageAlignmentOptions) => ReturnType
-      /**
-       * Set image size
-       */
-      setImageSize: (options: ImageSizeOptions) => ReturnType
-    }
-  }
-}
+import { type Editor, mergeAttributes, nodeInputRule } from '@tiptap/core'
+import { type ResolvedPos, type Node } from '@tiptap/pm/model'
+import { type EditorState, Plugin, PluginKey } from '@tiptap/pm/state'
+import {
+  CursorSource,
+  getToolbarCursor,
+  registerToolbarProvider,
+  setLoadingState,
+  type ResolveCursorProps,
+  type ToolbarCursor
+} from './toolbar/toolbar'
+import { notEmpty } from '@hcengineering/core'
 
 /**
  * @public
@@ -105,21 +71,25 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
 
       setImageAlignment:
         (options) =>
-          ({ chain, tr }) => {
-            const { from } = tr.selection
+          ({ chain, tr, state }) => {
+            const cursor = getCursor(state)
+            if (cursor === null) return false
             return chain()
+              .setNodeSelection(cursor.range.from)
               .updateAttributes(this.name, { ...options })
-              .setNodeSelection(from)
+              .setNodeSelection(cursor.range.from)
               .run()
           },
 
       setImageSize:
         (options) =>
-          ({ chain, tr }) => {
-            const { from } = tr.selection
+          ({ chain, tr, state }) => {
+            const cursor = getCursor(state)
+            if (cursor === null) return false
             return chain()
+              .setNodeSelection(cursor.range.from)
               .updateAttributes(this.name, { ...options })
-              .setNodeSelection(from)
+              .setNodeSelection(cursor.range.from)
               .run()
           }
     }
@@ -169,49 +139,157 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
             )
           }
         }
-      })
+      }),
+      ImageToolbarPlugin()
     ]
   },
 
-  addExtensions () {
-    return [
-      InlinePopupExtension.configure({
-        ...this.options.toolbar,
-        shouldShow: ({ editor, view, state, oldState, from, to }) => {
-          if (this.options.toolbar?.isHidden?.() === true) {
-            return false
-          }
+  addNodeView () {
+    const imageSrcCache = new Map<string, { src: string, srcset: string }>()
 
-          if (editor.isDestroyed) {
-            return false
-          }
+    return ({ view, node, HTMLAttributes }) => {
+      const container = document.createElement('div')
+      const imgElement = document.createElement('img')
+      container.append(imgElement)
+      const divAttributes = {
+        class: 'text-editor-image-container',
+        'data-type': this.name,
+        'data-align': node.attrs.align
+      }
 
-          // For some reason shouldShow might be called after dismount and
-          // after destroying the editor. We should handle this just no to have
-          // any errors in runtime
-          const editorElement = editor.view.dom
-          if (editorElement === null || editorElement === undefined) {
-            return false
-          }
+      setLoadingState(view, container, true)
+      const setImageProps = (src: string | null, srcset: string | null): void => {
+        if (src != null) imgElement.src = src
+        if (srcset != null) imgElement.srcset = srcset
+        void imgElement.decode().finally(() => {
+          setLoadingState(view, container, false)
+        })
+      }
 
-          // When clicking on a element inside the bubble menu the editor "blur" event
-          // is called and the bubble menu item is focussed. In this case we should
-          // consider the menu as part of the editor and keep showing the menu
-          const isChildOfMenu = editorElement.contains(document.activeElement)
-          const hasEditorFocus = view.hasFocus() || isChildOfMenu
-          if (!hasEditorFocus) {
-            return false
-          }
-
-          return editor.isActive('image')
+      for (const [k, v] of Object.entries(divAttributes)) {
+        if (v !== null) {
+          container.setAttribute(k, v)
         }
-      })
-    ]
+      }
+
+      const imgAttributes = mergeAttributes(
+        {
+          'data-type': this.name
+        },
+        this.options.HTMLAttributes,
+        HTMLAttributes
+      )
+      for (const [k, v] of Object.entries(imgAttributes)) {
+        if (k !== 'src' && k !== 'srcset' && v !== null) {
+          imgElement.setAttribute(k, v)
+        }
+      }
+      const fileId = imgAttributes['file-id']
+      if (fileId !== null && imageSrcCache.has(fileId)) {
+        const cached = imageSrcCache.get(fileId)
+        setImageProps(cached?.src ?? null, cached?.srcset ?? null)
+      }
+      if (fileId != null) {
+        const setBrokenImg = setTimeout(() => {
+          imgElement.src = this.options.loadingImgSrc ?? `platform://platform/files/workspace/?file=${fileId}`
+        }, 500)
+        if (fileId != null) {
+          void this.options.getBlobRef(fileId).then((val) => {
+            clearTimeout(setBrokenImg)
+
+            setImageProps(val.src, val.srcset)
+            imageSrcCache.set(fileId, { src: val.src, srcset: val.srcset })
+          })
+        }
+      } else {
+        setImageProps(imgAttributes.src ?? null, imgAttributes.srcset ?? null)
+      }
+
+      container.setAttribute('data-toolbar-prevent-anchoring', 'true')
+      imgElement.setAttribute('data-toolbar-anchor', 'true')
+
+      return {
+        dom: container
+      }
+    }
   }
 })
 
+function ImageToolbarPlugin (): Plugin {
+  return new Plugin({
+    key: new PluginKey('image-toolbar'),
+
+    view: (view) => {
+      registerToolbarProvider(view, { name: 'image', resolveCursor, priority: 40 })
+      return {}
+    }
+  })
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface ImageToolbarCursorProps {}
+
+function resolveCursorChildNode ($pos?: ResolvedPos): { node: Node | null, index: number, offset: number } | null {
+  if ($pos === undefined) return null
+
+  const parent = $pos.parent
+  const offset = $pos.pos - $pos.start()
+
+  const children = [parent.childAfter(offset)].filter(notEmpty)
+  const node = children.find((n) => n.node?.type.name === ImageExtension.name)
+
+  return node ?? null
+}
+
+function resolveCursor (props: ResolveCursorProps): ToolbarCursor<ImageToolbarCursorProps> | null {
+  if (props.source === CursorSource.Selection && props.range.to - props.range.from !== 1) {
+    return null
+  }
+
+  if (props.range.to - props.range.from > 1) {
+    return null
+  }
+
+  const $pos = props.editorState.doc.resolve(props.range.from)
+
+  const child = resolveCursorChildNode($pos)
+  if (child == null) return null
+  if (child.node === null) return null
+
+  const pos = $pos.posAtIndex(child.index)
+
+  const newCursor: ToolbarCursor<ImageToolbarCursorProps> = {
+    tag: 'image',
+    props: {},
+    nodes: [{ node: child.node, pos }],
+    range: { from: pos, to: pos + child.node.nodeSize },
+    source: props.source,
+    requireAnchoring: true,
+    anchor: props.anchor,
+    viewOptions: {
+      style: 'regular'
+    }
+  }
+
+  return newCursor
+}
+
+function getImageNodeFromCursor (state: EditorState): Node | null {
+  const cursor = getCursor(state)
+
+  const node = cursor?.nodes[0].node
+  if (node === undefined || node.type.name !== ImageExtension.name) {
+    return null
+  }
+
+  return node
+}
+
 export async function openImage (editor: Editor): Promise<void> {
-  const attributes = editor.getAttributes('image')
+  const node = getImageNodeFromCursor(editor.state)
+  if (node === null) return
+
+  const attributes = node.attrs
   const fileId = attributes['file-id'] ?? attributes.src
   const fileName = attributes.alt ?? ''
   const fileType = attributes['data-file-type'] ?? 'image/*'
@@ -233,8 +311,19 @@ export async function openImage (editor: Editor): Promise<void> {
   })
 }
 
+function getCursor (state: EditorState): ToolbarCursor<ImageToolbarCursorProps> | null {
+  const cursor = getToolbarCursor<ImageToolbarCursorProps>(state)
+  if (cursor === null || cursor.tag !== 'image') {
+    return null
+  }
+  return cursor
+}
+
 export async function downloadImage (editor: Editor): Promise<void> {
-  const attributes = editor.getAttributes('image')
+  const node = getImageNodeFromCursor(editor.state)
+  if (node === null) return
+
+  const attributes = node.attrs
   const fileId = attributes['file-id'] ?? attributes.src
   const href = getFileUrl(fileId)
 
@@ -247,7 +336,10 @@ export async function downloadImage (editor: Editor): Promise<void> {
 }
 
 export async function expandImage (editor: Editor): Promise<void> {
-  const attributes = editor.getAttributes('image')
+  const node = getImageNodeFromCursor(editor.state)
+  if (node === null) return
+
+  const attributes = node.attrs
   const fileId = attributes['file-id'] ?? attributes.src
   const url = getFileUrl(fileId)
   window.open(url, '_blank')
