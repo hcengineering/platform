@@ -1,32 +1,32 @@
-import { AccountClient } from '@hcengineering/account-client'
+import { type AccountClient } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  Class,
-  Client,
+  type Class,
+  type Client,
   DOMAIN_MIGRATION,
   DOMAIN_TX,
-  Data,
-  Doc,
-  DocumentQuery,
-  Domain,
-  FindOptions,
-  Hierarchy,
-  MeasureContext,
-  MigrationState,
-  ModelDb,
-  ObjQueryType,
-  Rank,
-  Ref,
+  type Data,
+  type Doc,
+  type DocumentQuery,
+  type Domain,
+  type FindOptions,
+  type Hierarchy,
+  type MeasureContext,
+  type MigrationState,
+  type ModelDb,
+  type ObjQueryType,
+  type Rank,
+  type Ref,
   SortingOrder,
-  Space,
+  type Space,
   TxOperations,
-  UnsetOptions,
-  WorkspaceIds,
+  type UnsetOptions,
+  type WorkspaceIds,
   generateId
 } from '@hcengineering/core'
 import { makeRank } from '@hcengineering/rank'
-import { StorageAdapter } from '@hcengineering/storage'
-import { ModelLogger } from './utils'
+import { type StorageAdapter } from '@hcengineering/storage'
+import { type ModelLogger } from './utils'
 
 /**
  * @public

@@ -14,23 +14,23 @@
 //
 import {
   AccountRole,
-  AccountUuid,
-  Branding,
+  type AccountUuid,
+  type Branding,
   concatLink,
   generateId,
   groupByArray,
   isActiveMode,
-  MeasureContext,
+  type MeasureContext,
   type Person,
   type PersonId,
   type PersonUuid,
   roleOrder,
   SocialIdType,
-  SocialKey,
+  type SocialKey,
   systemAccountUuid,
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
-  WorkspaceMode,
-  WorkspaceUuid
+  type WorkspaceMode,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -48,18 +48,18 @@ import {
   type Account,
   type AccountDB,
   AccountEventType,
-  AccountMethodHandler,
-  Integration,
-  LoginInfo,
-  Meta,
-  OtpInfo,
+  type AccountMethodHandler,
+  type Integration,
+  type LoginInfo,
+  type Meta,
+  type OtpInfo,
   type RegionInfo,
   type SocialId,
   type Workspace,
-  WorkspaceInfoWithStatus,
-  WorkspaceInvite,
-  WorkspaceLoginInfo,
-  WorkspaceStatus
+  type WorkspaceInfoWithStatus,
+  type WorkspaceInvite,
+  type WorkspaceLoginInfo,
+  type WorkspaceStatus
 } from './types'
 import { isAdminEmail } from './admin'
 

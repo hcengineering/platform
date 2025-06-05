@@ -86,7 +86,7 @@ export class MemStorageAdapter implements StorageAdapter {
       buffer.push(stream)
     } else if (typeof stream === 'string') {
       buffer.push(Buffer.from(stream))
-    } else {
+    } else if (stream instanceof Readable) {
       await new Promise<void>((resolve, reject) => {
         stream.on('end', () => {
           resolve()

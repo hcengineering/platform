@@ -16,7 +16,7 @@
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import type { DocumentQuery } from './storage'
-import { WorkspaceDataId, WorkspaceUuid } from './utils'
+import { type WorkspaceDataId, type WorkspaceUuid } from './utils'
 
 /**
  * @public

@@ -296,6 +296,8 @@
   style:min-width={options?.props?.minWidth}
   style:min-height={options?.props?.minHeight}
   style:transform={options?.props?.transform}
+  data-block-editor-blur="true"
+  data-block-cursor-update="true"
   use:resizeObserver={(element) => {
     clientWidth = element.clientWidth
     clientHeight = element.clientHeight

@@ -229,14 +229,18 @@ export class DocumentContentPage extends CommonPage {
     await this.buttonOnToolbar(id).click()
   }
 
-  async selectLine (text: string): Promise<void> {
+  async selectLine (text: string, shallow: boolean = true): Promise<void> {
     const loc: Locator = this.page.locator('p', { hasText: text }).first()
     await expect(loc).toBeVisible()
-    await loc.click({ clickCount: 3 })
+    if (shallow) {
+      await loc.click({ clickCount: 3 })
+    } else {
+      await loc.selectText()
+    }
   }
 
   async applyToolbarCommand (text: string, btnId: string): Promise<void> {
-    await this.selectLine(text)
+    await this.selectLine(text, false)
     await this.clickButtonOnTooltip(btnId)
   }
 

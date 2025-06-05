@@ -1,6 +1,15 @@
 import { Analytics } from '@hcengineering/analytics'
 import { deepEqual } from 'fast-equals'
-import { DocumentUpdate, DOMAIN_MODEL, Hierarchy, MixinData, MixinUpdate, ModelDb, platformNow, toFindResult } from '.'
+import {
+  type DocumentUpdate,
+  DOMAIN_MODEL,
+  Hierarchy,
+  type MixinData,
+  type MixinUpdate,
+  type ModelDb,
+  platformNow,
+  toFindResult
+} from '.'
 import type {
   PersonId,
   AnyAttribute,
@@ -14,7 +23,7 @@ import type {
   Space,
   Timestamp
 } from './classes'
-import { Client } from './client'
+import { type Client } from './client'
 import core from './component'
 import type {
   DocumentQuery,
@@ -26,7 +35,7 @@ import type {
   TxResult,
   WithLookup
 } from './storage'
-import { DocumentClassQuery, Tx, TxApplyResult, TxCUD, TxFactory, TxProcessor } from './tx'
+import { type DocumentClassQuery, type Tx, type TxApplyResult, type TxCUD, TxFactory, TxProcessor } from './tx'
 
 /**
  * @public

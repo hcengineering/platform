@@ -14,17 +14,17 @@
 //
 
 import {
-  Class,
-  Doc,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
-  MeasureContext,
-  Ref,
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
+  type MeasureContext,
+  type Ref,
   clone,
   toFindResult
 } from '@hcengineering/core'
-import { BaseMiddleware, Middleware, type PipelineContext } from '@hcengineering/server-core'
+import { BaseMiddleware, type Middleware, type PipelineContext } from '@hcengineering/server-core'
 /**
  * @public
  */

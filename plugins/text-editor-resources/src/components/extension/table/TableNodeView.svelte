@@ -20,7 +20,8 @@
   import { NodeViewContent, NodeViewProps, NodeViewWrapper } from '../../node-view'
   import { findTable, insertColumn, insertRow } from './utils'
   import { TableMap, updateColumnsOnResize } from '@tiptap/pm/tables'
-  import TableToolbar from './TableToolbar.svelte'
+  import { getToolbarCursor, setToolbarMeta } from '../toolbar/toolbar'
+  import { getTableCursor } from './table'
 
   export let node: NodeViewProps['node']
   export let getPos: NodeViewProps['getPos']
@@ -84,12 +85,30 @@
   onDestroy(() => {
     editor.off('selectionUpdate', handleSelectionUpdate)
   })
+
+  function onScroll (event: Event): void {
+    if (editor === undefined) return
+    const editorState = editor.state
+    const currCursor = getToolbarCursor<any>(editorState)
+    if (currCursor === null) return
+
+    const table = findTable(editorState.selection)
+    if (table === undefined) return
+
+    const target = event.target
+    if (!(target instanceof HTMLElement)) return
+
+    const tableScrollOffset = target.scrollLeft
+    const cursor = { ...currCursor, props: { ...currCursor.props, scrollOffset: tableScrollOffset } }
+
+    editor.view.dispatch(setToolbarMeta(editorState.tr, { cursor }))
+  }
 </script>
 
 <!-- prettier-ignore -->
 <NodeViewWrapper class="table-node-wrapper" data-drag-handle>
   <div class="table-wrapper" class:table-selected={editable && focused}>
-    <div class="table-scroller">
+    <div class="table-scroller" on:scroll={(e) => { onScroll(e) }}>
       <table class={className} bind:this={tableElement}>
         <colgroup bind:this={colgroupElement} />
         <NodeViewContent as="tbody" />
@@ -97,9 +116,6 @@
     --></div><!--  https://github.com/sveltejs/svelte/issues/12765
     --><div class="table-toolbar-components" contenteditable="false">
       {#if editable && focused}
-        <div class="table-toolbar-container">
-          <TableToolbar {editor} />
-        </div>
         <!-- add col button -->
         <div class="table-button-container table-button-container__col flex">
           <div class="w-full h-full flex showOnHover">
@@ -134,7 +150,9 @@
     margin: 0 calc(var(--table-offscreen-spacing) * -1);
 
     .table-scroller {
-      padding: 1.25rem var(--table-offscreen-spacing);
+      padding: 1.5rem 0;
+      padding-left: var(--table-offscreen-spacing);
+      margin-right: var(--table-offscreen-spacing);
       overflow-x: scroll;
       scrollbar-width: auto;
     }
@@ -178,7 +196,7 @@
         right: calc(var(--table-offscreen-spacing) - 1.5rem);
         top: 0;
         bottom: 0;
-        margin: 1.25rem 0;
+        margin: 1.5rem 0;
 
         .table-button {
           width: 1.25rem;
@@ -195,12 +213,5 @@
         }
       }
     }
-  }
-
-  .table-toolbar-container {
-    position: absolute;
-    top: -1.5rem;
-    right: var(--table-offscreen-spacing);
-    z-index: 200;
   }
 </style>

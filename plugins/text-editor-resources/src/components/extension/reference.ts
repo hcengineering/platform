@@ -93,6 +93,8 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
           'data-id': node.attrs.id,
           'data-objectclass': node.attrs.objectclass,
           'data-label': node.attrs.label,
+          'data-toolbar-anchor': 'true',
+          'data-toolbar-prevent-anchoring': 'true',
           class: 'antiMention'
         },
         this.options.HTMLAttributes,

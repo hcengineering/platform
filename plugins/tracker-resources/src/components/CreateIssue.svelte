@@ -313,12 +313,12 @@
         dueDate: null,
         labels:
           p.labels !== undefined
-            ? (p.labels
-                .map((p) => {
-                  const val = tagElements.get(p)
-                  return val !== undefined ? tagAsRef(val) : undefined
-                })
-                .filter((p) => p !== undefined) as TagReference[])
+            ? p.labels
+              .map((p) => {
+                const val = tagElements.get(p)
+                return val !== undefined ? tagAsRef(val) : undefined
+              })
+              .filter((p) => p !== undefined)
             : [],
         status: currentProject?.defaultIssueStatus
       }
@@ -335,12 +335,12 @@
     appliedTemplateId = templateId
     object.labels =
       labels !== undefined
-        ? (labels
-            .map((p) => {
-              const val = tagElements.get(p)
-              return val !== undefined ? tagAsRef(val) : undefined
-            })
-            .filter((p) => p !== undefined) as TagReference[])
+        ? labels
+          .map((p) => {
+            const val = tagElements.get(p)
+            return val !== undefined ? tagAsRef(val) : undefined
+          })
+          .filter((p) => p !== undefined)
         : []
 
     if (object.kind !== undefined) {

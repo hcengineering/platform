@@ -25,7 +25,8 @@ import {
 import { type Editor } from '@tiptap/core'
 import { SvelteRenderer } from '../../../node-view'
 import { parseReferenceUrl } from '../../reference'
-import { setLoadingState, type EmbedNodeProviderConstructor } from '../embed'
+import { type EmbedNodeProviderConstructor } from '../embed'
+import { setLoadingState } from '../../toolbar/toolbar'
 
 export interface DriveEmbedOptions {
   _x?: number

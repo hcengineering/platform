@@ -33,7 +33,7 @@ async function sendPushToSubscription (
       await webpush.sendNotification(subscription, JSON.stringify(data))
     } catch (err: any) {
       if (err instanceof WebPushError) {
-        if (errorMessages.some((p) => JSON.stringify((err as WebPushError).body).includes(p))) {
+        if (errorMessages.some((p) => JSON.stringify(err.body).includes(p))) {
           result.push(subscription._id)
         }
       }
