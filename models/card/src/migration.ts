@@ -128,6 +128,7 @@ async function getCardParentWithParentInfo (
           }
         ]
       } else {
+        doc.parent = null
         doc.parentInfo = []
       }
     }
