@@ -154,7 +154,7 @@ export function createModel (builder: Builder): void {
       label: gmail.string.IntegrationLabel,
       description: gmail.string.IntegrationDescription,
       icon: gmail.component.IconGmail,
-      allowMultiple: false, // enable in future
+      allowMultiple: true,
       createComponent: gmail.component.Connect,
       onDisconnect: gmail.handler.DisconnectHandler,
       reconnectComponent: gmail.component.Connect,
