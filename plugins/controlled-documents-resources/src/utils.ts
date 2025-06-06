@@ -1090,14 +1090,16 @@ export async function extractValidationWorkflow (
       (a, b) => (a.createdOn ?? 0) - (b.createdOn ?? 0)
     )
 
-    const states: DocumentValidationState[] = [...snapshots, undefined].map((snapshot) => {
-      return {
+    const states = [...snapshots, undefined].map((snapshot) => {
+      const state: DocumentValidationState = {
         requests: [],
         snapshot,
         document,
         approvals: [],
         messages: []
       }
+
+      return state
     })
 
     for (const request of requests) {

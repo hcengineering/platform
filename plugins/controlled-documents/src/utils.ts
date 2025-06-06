@@ -20,15 +20,13 @@ import {
   Doc,
   DocumentQuery,
   DocumentUpdate,
-  Hierarchy,
   Rank,
   Ref,
   SortingOrder,
   Space,
   Timestamp,
   toIdMap,
-  TxOperations,
-  type PersonId
+  TxOperations
 } from '@hcengineering/core'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
 import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
@@ -53,7 +51,6 @@ import {
   ProjectDocument,
   ProjectMeta
 } from './types'
-import { RequestStatus } from '@hcengineering/request'
 
 /**
  * @public
@@ -678,6 +675,7 @@ export interface DocumentValidationState {
   snapshot?: DocumentSnapshot
   document: ControlledDocument
   approvals: DocumentApprovalState[]
+  messages: ChatMessage[]
   modifiedOn?: Timestamp
 }
 
