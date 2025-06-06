@@ -71,7 +71,7 @@ import core, {
 import login from '@hcengineering/login'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { getMetadata, getResource, type IntlString, translate } from '@hcengineering/platform'
-import presentation, { createQuery, getClient, onClient } from '@hcengineering/presentation'
+import presentation, { addTxListener, createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import {
   getCurrentResolvedLocation,
@@ -802,6 +802,8 @@ export async function getSocialIdByPersonId (personId: PersonId): Promise<Social
 
   return await getSocialIdByPersonIdBase(client, personId)
 }
+
+addTxListener(contactCache.handleTx)
 
 export const contactCacheStoreManager = ContactCacheStoreManager.instance
 

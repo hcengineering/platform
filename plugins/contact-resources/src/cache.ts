@@ -13,16 +13,14 @@
 // limitations under the License.
 //
 
-import { type Readable, type Writable, writable } from 'svelte/store'
+import { derived, get, type Readable, writable } from 'svelte/store'
 import { type PersonId, type Ref } from '@hcengineering/core'
 import { contactCache, type ContactCacheChange, type Person } from '@hcengineering/contact'
 
 import { getPersonRefsByPersonIds, getPersonsByPersonIds, getPersonsByPersonRefs } from './utils'
 
-enum PersonStoreType {
-  PersonRefByPersonId = 'prpi',
-  PersonByPersonId = 'pepi',
-  PersonByPersonRef = 'pepr',
+function notEmptyValue<K, V> (entry: [K, V | null | undefined]): entry is [K, V] {
+  return entry[1] != null
 }
 
 export default class ContactCacheStoreManager {
@@ -44,171 +42,116 @@ export default class ContactCacheStoreManager {
     return this._instance
   }
 
-  private readonly _idToStoresKeys = new Map<string, string[]>()
-  private readonly _personRefByPersonIdStores = new Map<string, Writable<Map<PersonId, Ref<Person>>>>()
-  private readonly _personByPersonIdStores = new Map<string, Writable<Map<PersonId, Readonly<Person>>>>()
-  private readonly _personByPersonRefStores = new Map<string, Writable<Map<Ref<Person>, Readonly<Person>>>>()
+  private readonly _personRefByPersonIdStoreBase = writable<Map<PersonId, Ref<Person> | null>>(new Map())
+  private readonly _personRefByPersonIdStore = derived(
+    [this._personRefByPersonIdStoreBase],
+    ([store]) => {
+      return new Map(Array.from(store.entries()).filter(notEmptyValue))
+    }
+  )
+
+  private readonly _personByPersonIdStoreBase = writable<Map<PersonId, Readonly<Person> | null>>(new Map())
+  private readonly _personByPersonIdStore = derived(
+    [this._personByPersonIdStoreBase],
+    ([store]) => {
+      return new Map(Array.from(store.entries()).filter(notEmptyValue))
+    }
+  )
+
+  private readonly _personByPersonRefStoreBase = writable<Map<Ref<Person>, Readonly<Person> | null>>(new Map(), () => {
+    console.log('PersonByPersonRefStoreBase 0->1')
+    return () => {
+      console.log('PersonByPersonRefStoreBase 1->0')
+    }
+  })
+
+  private readonly _personByPersonRefStore = derived(
+    [this._personByPersonRefStoreBase],
+    ([store]) => {
+      return new Map(Array.from(store.entries()).filter(notEmptyValue))
+    }
+  )
 
   public getPersonRefByPersonIdStore (personIds: PersonId[]): Readable<Map<PersonId, Ref<Person>>> {
-    const key = this.getStoreKey(personIds, PersonStoreType.PersonRefByPersonId)
-    if (!this._personRefByPersonIdStores.has(key)) {
-      const store = writable<Map<PersonId, Ref<Person>>>(new Map(), (set) => {
-        // Init
+    if (personIds.length > 0) {
+      const oldKeys = new Set(get(this._personRefByPersonIdStoreBase).keys())
+      if (personIds.some((id) => !oldKeys.has(id))) {
         void getPersonRefsByPersonIds(personIds).then((refsByIds) => {
-          set(refsByIds)
-        })
-
-        return () => {
-          // Cleanup
-          this._personRefByPersonIdStores.delete(key)
-          const ids = this.parseStoreKey(key)
-          for (const id of ids) {
-            const storesKeys = this._idToStoresKeys.get(id)
-            if (storesKeys === undefined) {
-              continue
+          this._personRefByPersonIdStoreBase.update((store) => {
+            for (const [id, ref] of refsByIds) {
+              store.set(id, ref)
             }
-            const reducedKeys = storesKeys.filter((k) => k !== key)
-            this._idToStoresKeys.set(id, reducedKeys)
-          }
-        }
-      })
 
-      this._personRefByPersonIdStores.set(key, store)
-
-      for (const pid of personIds) {
-        const storesKeys = this._idToStoresKeys.get(pid) ?? []
-        storesKeys.push(key)
-
-        this._idToStoresKeys.set(pid, storesKeys)
+            return store
+          })
+        })
       }
     }
 
-    return this._personRefByPersonIdStores.get(key) as Readable<Map<PersonId, Ref<Person>>>
+    return this._personRefByPersonIdStore
   }
 
   public getPersonByPersonIdStore (personIds: PersonId[]): Readable<Map<PersonId, Readonly<Person>>> {
-    const key = this.getStoreKey(personIds, PersonStoreType.PersonByPersonId)
-    if (!this._personByPersonIdStores.has(key)) {
-      const store = writable<Map<PersonId, Readonly<Person>>>(new Map(), (set) => {
-        // Init
+    if (personIds.length > 0) {
+      const oldKeys = new Set(get(this._personByPersonIdStoreBase).keys())
+      if (personIds.some((id) => !oldKeys.has(id))) {
         void getPersonsByPersonIds(personIds).then((personsByIds) => {
-          set(personsByIds)
-        })
-
-        return () => {
-          // Cleanup
-          this._personByPersonIdStores.delete(key)
-          const ids = this.parseStoreKey(key)
-          for (const id of ids) {
-            const storesKeys = this._idToStoresKeys.get(id)
-            if (storesKeys === undefined) {
-              continue
+          this._personByPersonIdStoreBase.update((store) => {
+            for (const [id, person] of personsByIds) {
+              store.set(id, person)
             }
-            const reducedKeys = storesKeys.filter((k) => k !== key)
-            this._idToStoresKeys.set(id, reducedKeys)
-          }
-        }
-      })
 
-      this._personByPersonIdStores.set(key, store)
-
-      for (const pid of personIds) {
-        const storesKeys = this._idToStoresKeys.get(pid) ?? []
-        storesKeys.push(key)
-
-        this._idToStoresKeys.set(pid, storesKeys)
+            return store
+          })
+        })
       }
     }
 
-    return this._personByPersonIdStores.get(key) as Readable<Map<PersonId, Readonly<Person>>>
+    return this._personByPersonIdStore
   }
 
   public getPersonByPersonRefStore (personRefs: Array<Ref<Person>>): Readable<Map<Ref<Person>, Readonly<Person>>> {
-    const key = this.getStoreKey(personRefs, PersonStoreType.PersonByPersonRef)
-    if (!this._personByPersonRefStores.has(key)) {
-      const store = writable<Map<Ref<Person>, Readonly<Person>>>(new Map(), (set) => {
-        // Init
+    if (personRefs.length > 0) {
+      const oldKeys = new Set(get(this._personByPersonRefStoreBase).keys())
+      if (personRefs.some((ref) => !oldKeys.has(ref))) {
         void getPersonsByPersonRefs(personRefs).then((personsByRefs) => {
-          set(personsByRefs)
-        })
-
-        return () => {
-          // Cleanup
-          this._personByPersonRefStores.delete(key)
-          const ids = this.parseStoreKey(key)
-          for (const id of ids) {
-            const storesKeys = this._idToStoresKeys.get(id)
-            if (storesKeys === undefined) {
-              continue
+          this._personByPersonRefStoreBase.update((store) => {
+            for (const [ref, person] of personsByRefs) {
+              store.set(ref, person)
             }
-            const reducedKeys = storesKeys.filter((k) => k !== key)
-            this._idToStoresKeys.set(id, reducedKeys)
-          }
-        }
-      })
 
-      this._personByPersonRefStores.set(key, store)
-
-      for (const pRef of personRefs) {
-        const storesKeys = this._idToStoresKeys.get(pRef) ?? []
-        storesKeys.push(key)
-
-        this._idToStoresKeys.set(pRef, storesKeys)
+            return store
+          })
+        })
       }
     }
 
-    return this._personByPersonRefStores.get(key) as Readable<Map<Ref<Person>, Readonly<Person>>>
-  }
-
-  private getStoreKey (ids: string[], type: PersonStoreType): string {
-    return `${type}:${ids.sort().join(',')}`
-  }
-
-  private parseStoreKey (key: string): string[] {
-    return key.split(':', 2)[1].split(',')
+    return this._personByPersonRefStore
   }
 
   private readonly handlePersonCacheChange = async (change: ContactCacheChange): Promise<void> => {
-    for (const id of change.personIds) {
-      const storesKeys = this._idToStoresKeys.get(id)
-      if (storesKeys === undefined) {
-        continue
-      }
+    const { personIds, personRef } = change
 
-      for (const key of storesKeys) {
-        const prpiStore = this._personRefByPersonIdStores.get(key)
-        if (prpiStore !== undefined) {
-          const ids = this.parseStoreKey(key) as PersonId[]
-          if (ids.length === 0) {
-            continue
-          }
-
-          const newValue = await getPersonRefsByPersonIds(ids)
-          prpiStore.set(newValue)
+    if (personIds.length > 0) {
+      this._personRefByPersonIdStoreBase.update((store) => {
+        for (const id of personIds) {
+          store.set(id, contactCache.personRefByPersonId.get(id) ?? null)
         }
-
-        const pepiStore = this._personByPersonIdStores.get(key)
-        if (pepiStore !== undefined) {
-          const ids = this.parseStoreKey(key) as PersonId[]
-          if (ids.length === 0) {
-            continue
-          }
-
-          const newValue = await getPersonsByPersonIds(ids)
-          pepiStore.set(newValue)
+        return store
+      })
+      this._personByPersonIdStoreBase.update((store) => {
+        for (const id of personIds) {
+          store.set(id, contactCache.personByPersonId.get(id) ?? null)
         }
+        return store
+      })
+    }
 
-        const peprStore = this._personByPersonRefStores.get(key)
-        if (peprStore !== undefined) {
-          const refs = this.parseStoreKey(key) as Array<Ref<Person>>
-          if (refs.length === 0) {
-            continue
-          }
-
-          const newValue = await getPersonsByPersonRefs(refs)
-          peprStore.set(newValue)
-        }
-      }
+    if (personRef != null) {
+      this._personByPersonRefStoreBase.update((store) => {
+        store.set(personRef, contactCache.personByRef.get(personRef) ?? null)
+        return store
+      })
     }
   }
 }

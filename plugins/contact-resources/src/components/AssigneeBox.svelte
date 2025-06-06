@@ -34,7 +34,7 @@
   import view from '@hcengineering/view'
   import { openDoc } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { PersonLabelTooltip, getPersonByPersonRef } from '..'
+  import { PersonLabelTooltip, getPersonByPersonRefStore } from '..'
   import { AssigneeCategory } from '../assignee'
   import AssigneePopup from './AssigneePopup.svelte'
   import EmployeePresenter from './EmployeePresenter.svelte'
@@ -77,13 +77,15 @@
 
   const client = getClient()
 
-  const updateSelected = reduceCalls(async function (value: Ref<Person> | null | undefined) {
+  $: personByRefStore = getPersonByPersonRefStore(value != null ? [value] : [])
+
+  const updateSelected = reduceCalls(async function (value: Ref<Person> | null | undefined, personByRefStore: Map<Ref<Person>, Readonly<Person>>) {
     selected = value
-      ? await getPersonByPersonRef(value) ?? undefined
+      ? personByRefStore.get(value) ?? undefined
       : undefined
   })
 
-  $: void updateSelected(value)
+  $: void updateSelected(value, $personByRefStore)
 
   const mgr = getFocusManager()
 
