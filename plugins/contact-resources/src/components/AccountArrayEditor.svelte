@@ -44,7 +44,7 @@
       const person = $employeeRefByAccountUuidStore.get(p)
 
       if (person === undefined) {
-        console.error('Person not found for social id', p)
+        console.error('Person not found by account id', p)
       }
 
       return [person, p] as const

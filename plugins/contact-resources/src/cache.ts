@@ -58,12 +58,7 @@ export default class ContactCacheStoreManager {
     }
   )
 
-  private readonly _personByPersonRefStoreBase = writable<Map<Ref<Person>, Readonly<Person> | null>>(new Map(), () => {
-    console.log('PersonByPersonRefStoreBase 0->1')
-    return () => {
-      console.log('PersonByPersonRefStoreBase 1->0')
-    }
-  })
+  private readonly _personByPersonRefStoreBase = writable<Map<Ref<Person>, Readonly<Person> | null>>(new Map())
 
   private readonly _personByPersonRefStore = derived(
     [this._personByPersonRefStoreBase],
