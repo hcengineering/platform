@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { combineName, getCurrentEmployee, getFirstName, getLastName } from '@hcengineering/contact'
-  import { ChannelsEditor, EditableAvatar, personByIdStore } from '@hcengineering/contact-resources'
+  import contact, { combineName, getFirstName, getLastName } from '@hcengineering/contact'
+  import { ChannelsEditor, EditableAvatar, myEmployeeStore } from '@hcengineering/contact-resources'
   import { getCurrentAccount, SocialIdType } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
@@ -35,22 +35,20 @@
 
   const client = getClient()
   const account = getCurrentAccount()
-  const me = getCurrentEmployee()
-  const employee = $personByIdStore.get(me)
   const email = account.fullSocialIds.find((si) => si.type === SocialIdType.EMAIL)?.value ?? ''
 
-  let firstName = employee !== undefined ? getFirstName(employee.name) : ''
-  let lastName = employee !== undefined ? getLastName(employee.name) : ''
+  let firstName = $myEmployeeStore !== undefined ? getFirstName($myEmployeeStore.name) : ''
+  let lastName = $myEmployeeStore !== undefined ? getLastName($myEmployeeStore.name) : ''
 
   let avatarEditor: EditableAvatar
   async function onAvatarDone (e: any): Promise<void> {
-    if (employee === undefined) return
+    if ($myEmployeeStore === undefined) return
 
-    if (employee.avatar != null) {
-      await avatarEditor.removeAvatar(employee.avatar)
+    if ($myEmployeeStore.avatar != null) {
+      await avatarEditor.removeAvatar($myEmployeeStore.avatar)
     }
     const avatar = await avatarEditor.createAvatar()
-    await client.diffUpdate(employee, avatar)
+    await client.diffUpdate($myEmployeeStore, avatar)
   }
 
   const manager = createFocusManager()
@@ -75,8 +73,8 @@
   }
 
   async function nameChange (): Promise<void> {
-    if (employee !== undefined) {
-      await client.diffUpdate(employee, {
+    if ($myEmployeeStore !== undefined) {
+      await client.diffUpdate($myEmployeeStore, {
         name: combineName(firstName, lastName)
       })
     }
@@ -90,14 +88,14 @@
     <Breadcrumb icon={setting.icon.AccountSettings} label={setting.string.AccountSettings} size={'large'} isCurrent />
   </Header>
   <div class="ac-body p-10">
-    {#if employee}
+    {#if $myEmployeeStore}
       <div class="flex flex-grow w-full">
         <div class="mr-8">
           <EditableAvatar
-            person={employee}
+            person={$myEmployeeStore}
             {email}
             size={'x-large'}
-            name={employee.name}
+            name={$myEmployeeStore.name}
             bind:this={avatarEditor}
             on:done={onAvatarDone}
           />
@@ -122,15 +120,15 @@
             <AttributeEditor
               maxWidth="20rem"
               _class={contact.class.Person}
-              object={employee}
+              object={$myEmployeeStore}
               focusIndex={3}
               key="city"
             />
           </div>
           <div class="separator" />
           <ChannelsEditor
-            attachedTo={employee._id}
-            attachedClass={employee._class}
+            attachedTo={$myEmployeeStore._id}
+            attachedClass={$myEmployeeStore._class}
             focusIndex={10}
             allowOpen={false}
             restricted={[contact.channelProvider.Email]}

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { PersonId, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import contact, { getPersonRefBySocialId, Person } from '@hcengineering/contact'
+  import contact, { getPersonRefByPersonId, Person } from '@hcengineering/contact'
   import { IconSize } from '@hcengineering/ui'
 
   import ObjectPresenter from './ObjectPresenter.svelte'
@@ -32,7 +32,7 @@
 
   async function getPerson (id: PersonId | undefined): Promise<void> {
     if (id !== undefined) {
-      person = await getPersonRefBySocialId(client, id)
+      person = await getPersonRefByPersonId(client, id)
     }
   }
 </script>

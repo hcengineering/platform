@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import { ActivityInfoMessage } from '@hcengineering/activity'
-  import { Avatar, SystemAvatar, personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, SystemAvatar, getPersonByPersonId } from '@hcengineering/contact-resources'
   import { translateCB } from '@hcengineering/platform'
   import { HTMLViewer } from '@hcengineering/presentation'
   import { Action, themeStore } from '@hcengineering/ui'
 
   import ActivityMessageHeader from '../activity-message/ActivityMessageHeader.svelte'
   import ActivityMessageTemplate from '../activity-message/ActivityMessageTemplate.svelte'
+  import { Person } from '@hcengineering/contact'
 
   export let value: ActivityInfoMessage
   export let showNotify: boolean = false
@@ -36,7 +37,10 @@
   export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
-  $: person = $personByPersonIdStore.get(value.createdBy ?? value.modifiedBy)
+  let person: Person | undefined
+  $: void getPersonByPersonId(value.createdBy ?? value.modifiedBy).then((p) => {
+    person = p ?? undefined
+  })
 
   let content = ''
 

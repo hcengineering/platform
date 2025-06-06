@@ -23,7 +23,7 @@
   import { type Product, ProductVersionState } from '@hcengineering/products'
   import { type Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { AccountArrayEditor, personRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import core, {
     AccountUuid,
     Data,
@@ -71,7 +71,7 @@
   let typeId: Ref<DocumentSpaceType> = products.spaceType.ProductType
   let spaceType: WithLookup<SpaceType> | undefined
 
-  $: membersPersons = object.members.map((m) => $personRefByAccountUuidStore.get(m)).filter(notEmpty)
+  $: membersPersons = object.members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
 
   let roles: Role[] = []
   const rolesQuery = createQuery()

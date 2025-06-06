@@ -14,24 +14,24 @@
 -->
 
 <script lang="ts">
-  import { type Doc } from '@hcengineering/core'
-  import { type Person, formatName } from '@hcengineering/contact'
-  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { notEmpty, type Doc } from '@hcengineering/core'
+  import { formatName } from '@hcengineering/contact'
+  import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { IconSize, tooltip, deviceOptionsStore as deviceInfo, checkAdaptiveMatching } from '@hcengineering/ui'
   import PresenceList from './PresenceList.svelte'
   import { presenceByObjectId, followee, toggleFollowee } from '../store'
 
   export let object: Doc
-
   export let size: IconSize = 'small'
   export let limit: number = 4
 
   $: presence = $presenceByObjectId?.get(object._id) ?? []
+  $: personByRefStore = getPersonByPersonRefStore(presence.map((p) => p.person))
   $: persons = presence
     .map((it) => it.person)
-    .map((p) => $personByIdStore.get(p))
-    .filter((p): p is Person => p !== undefined)
+    .map((p) => $personByRefStore.get(p))
+    .filter(notEmpty)
   $: overLimit = persons.length > limit
   $: adaptive = checkAdaptiveMatching($deviceInfo.size, 'md') || overLimit
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Avatar, personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, getPersonByPersonId } from '@hcengineering/contact-resources'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { BrowserNotification } from '@hcengineering/notification'
   import { Button, navigate, Notification as PlatformNotification, NotificationToast } from '@hcengineering/ui'
@@ -11,6 +11,7 @@
   import { pushAvailable, subscribePush } from '../utils'
   import plugin from '../plugin'
   import { onMount } from 'svelte'
+  import { Person } from '@hcengineering/contact'
 
   export let notification: PlatformNotification
   export let onRemove: () => void
@@ -19,7 +20,15 @@
   const hierarchy = client.getHierarchy()
 
   $: value = notification.params?.value as BrowserNotification
-  $: sender = value.senderId !== undefined ? $personByPersonIdStore.get(value.senderId) : undefined
+
+  let sender: Person | undefined
+  $: if (value.senderId !== undefined) {
+    void getPersonByPersonId(value.senderId).then((p) => {
+      sender = p ?? undefined
+    })
+  } else {
+    sender = undefined
+  }
 
   async function openChannelInSidebar (): Promise<void> {
     if (!value.onClickLocation) return

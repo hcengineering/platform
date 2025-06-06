@@ -34,7 +34,7 @@
   import view from '@hcengineering/view'
   import { openDoc } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { PersonLabelTooltip, personByIdStore } from '..'
+  import { PersonLabelTooltip, getPersonByPersonRef } from '..'
   import { AssigneeCategory } from '../assignee'
   import AssigneePopup from './AssigneePopup.svelte'
   import EmployeePresenter from './EmployeePresenter.svelte'
@@ -79,7 +79,7 @@
 
   const updateSelected = reduceCalls(async function (value: Ref<Person> | null | undefined) {
     selected = value
-      ? $personByIdStore.get(value) ?? (await client.findOne(contact.class.Person, { _id: value }))
+      ? await getPersonByPersonRef(value) ?? undefined
       : undefined
   })
 

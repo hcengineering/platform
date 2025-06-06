@@ -18,11 +18,9 @@
   import {
     AccountArrayEditor,
     AssigneeBox,
-    personRefByAccountUuidStore,
-    personRefByPersonIdStore
+    employeeRefByAccountUuidStore
   } from '@hcengineering/contact-resources'
   import core, {
-    PersonId,
     Data,
     DocumentUpdate,
     Ref,
@@ -86,7 +84,7 @@
 
   let typeId: Ref<ProjectType> | undefined = project?.type
   $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
-  $: membersPersons = members.map((m) => $personRefByAccountUuidStore.get(m)).filter(notEmpty)
+  $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
   let autoJoin = project?.autoJoin ?? typeType?.autoJoin ?? false
 
   const dispatch = createEventDispatcher()

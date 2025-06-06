@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { getPersonByPersonId } from '@hcengineering/contact-resources'
   import { getCurrentAccount, Markup } from '@hcengineering/core'
   import { MessageViewer } from '@hcengineering/presentation'
   import { Action, IconEdit, IconDelete, ShowMore } from '@hcengineering/ui'
@@ -22,6 +22,7 @@
   import { ActivityMessageTemplate } from '@hcengineering/activity-resources'
   import { EmptyMarkup } from '@hcengineering/text'
   import { ReferenceInput } from '@hcengineering/text-editor-resources'
+  import { Person } from '@hcengineering/contact'
 
   export let value: any
   export let showNotify: boolean = false
@@ -48,7 +49,14 @@
   const currentAccount = getCurrentAccount()
 
   $: creatorSocialString = value?.createdBy
-  $: person = creatorSocialString !== undefined ? $personByPersonIdStore.get(creatorSocialString) : undefined
+  let person: Person | undefined
+  $: if (creatorSocialString !== undefined) {
+    void getPersonByPersonId(creatorSocialString).then((p) => {
+      person = p ?? undefined
+    })
+  } else {
+    person = undefined
+  }
 
   let isEditing = false
   let additionalActions: Action[] = []

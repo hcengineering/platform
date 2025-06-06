@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
-  import { personByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { isOffice, Room, RoomAccess } from '@hcengineering/love'
   import { ActionIcon } from '@hcengineering/ui'
@@ -42,7 +41,7 @@
         label={love.string.KnockAction}
         icon={love.icon.Knock}
         action={() => {
-          tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
+          tryConnect($myInfo, room, info, $myRequests, $invites)
         }}
       />
     {/if}

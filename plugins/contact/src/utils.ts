@@ -37,9 +37,10 @@ import {
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
-import contact, { AvatarProvider, AvatarType, Channel, Contact, Employee, Person, SocialIdentityRef } from '.'
+import contact, { AvatarProvider, AvatarType, Channel, Contact, Employee, Person, SocialIdentity, SocialIdentityRef } from '.'
 
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
+import ContactCache from './cache'
 
 let currentEmployee: Ref<Employee>
 
@@ -294,29 +295,12 @@ export async function getPersonBySocialKey (client: Client, socialKey: string): 
   return await client.findOne(contact.class.Person, { _id: socialId?.attachedTo, _class: socialId?.attachedToClass })
 }
 
-export async function getPersonBySocialId (client: Client, socialIdString: PersonId): Promise<Person | undefined> {
-  const socialId = await client.findOne(contact.class.SocialIdentity, { _id: socialIdString as SocialIdentityRef })
-
-  if (socialId === undefined) return undefined
-
-  return await client.findOne(contact.class.Person, { _id: socialId?.attachedTo, _class: socialId?.attachedToClass })
-}
-
 export async function getEmployeeBySocialId (client: Client, socialIdString: PersonId): Promise<Employee | undefined> {
   const socialId = await client.findOne(contact.class.SocialIdentity, { _id: socialIdString as SocialIdentityRef })
 
   if (socialId === undefined) return undefined
 
   return await client.findOne(contact.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> })
-}
-
-export async function getPersonRefBySocialId (
-  client: Client,
-  socialIdString: PersonId
-): Promise<Ref<Person> | undefined> {
-  const socialId = await client.findOne(contact.class.SocialIdentity, { _id: socialIdString as SocialIdentityRef })
-
-  return socialId?.attachedTo
 }
 
 export async function getPersonRefsBySocialIds (
@@ -549,3 +533,144 @@ export async function ensureEmployeeForPerson (
   // TODO: check for merged persons with this one and do the merge
   return personRef as Ref<Employee>
 }
+
+export const contactCache = ContactCache.instance
+
+export async function loadCachesForPersonId (client: Client, personId: PersonId): Promise<void> {
+  const sidObj = await client.findOne(
+    contact.class.SocialIdentity,
+    {
+      _id: personId as SocialIdentityRef
+    },
+    {
+      lookup: {
+        attachedTo: contact.class.Person
+      }
+    }
+  )
+
+  contactCache.fillCachesForPersonId(personId, sidObj)
+}
+
+export async function loadCachesForPersonIds (client: Client, personIds: PersonId[]): Promise<void> {
+  const sidObjsMap = toIdMap(await client.findAll(
+    contact.class.SocialIdentity,
+    {
+      _id: { $in: personIds as SocialIdentityRef[] }
+    },
+    {
+      lookup: {
+        attachedTo: contact.class.Person
+      }
+    }
+  ))
+
+  for (const personId of personIds) {
+    const sidObj = sidObjsMap.get(personId as SocialIdentityRef)
+
+    contactCache.fillCachesForPersonId(personId, sidObj)
+  }
+}
+
+export async function loadCachesForPersonRef (client: Client, personRef: Ref<Person>): Promise<void> {
+  const person = await client.findOne(
+    contact.class.Person,
+    {
+      _id: personRef
+    },
+    {
+      lookup: {
+        _id: { socialIds: contact.class.SocialIdentity }
+      }
+    }
+  )
+
+  contactCache.fillCachesForPersonRef(personRef, person)
+}
+
+export async function loadCachesForPersonRefs (client: Client, personRefs: Array<Ref<Person>>): Promise<void> {
+  const persons = toIdMap(await client.findAll(
+    contact.class.Person,
+    {
+      _id: { $in: personRefs }
+    },
+    {
+      lookup: {
+        _id: { socialIds: contact.class.SocialIdentity }
+      }
+    }
+  ))
+
+  for (const personRef of personRefs) {
+    const person = persons.get(personRef)
+
+    contactCache.fillCachesForPersonRef(personRef, person)
+  }
+}
+
+export async function getPersonRefByPersonId (client: Client, personId: PersonId): Promise<Ref<Person> | null> {
+  if (!contactCache.personRefByPersonId.has(personId)) {
+    await loadCachesForPersonId(client, personId)
+  }
+
+  return contactCache.personRefByPersonId.get(personId) ?? null
+}
+
+export async function getPersonRefsByPersonIds (client: Client, personIds: PersonId[]): Promise<Map<PersonId, Ref<Person>>> {
+  if (personIds.some((personId) => !contactCache.personRefByPersonId.has(personId))) {
+    await loadCachesForPersonIds(client, personIds)
+  }
+
+  return new Map(personIds.map((pid) => {
+    const ref = contactCache.personRefByPersonId.get(pid)
+    return ref != null ? [pid, ref] as const : undefined
+  }).filter(notEmpty))
+}
+
+export async function getPersonByPersonId (client: Client, personId: PersonId): Promise<Readonly<Person> | null> {
+  if (!contactCache.personByPersonId.has(personId)) {
+    await loadCachesForPersonId(client, personId)
+  }
+
+  return contactCache.personByPersonId.get(personId) ?? null
+}
+
+export async function getPersonsByPersonIds (client: Client, personIds: PersonId[]): Promise<Map<PersonId, Readonly<Person>>> {
+  if (personIds.some((personId) => !contactCache.personByPersonId.has(personId))) {
+    await loadCachesForPersonIds(client, personIds)
+  }
+
+  return new Map(personIds.map((pid) => {
+    const person = contactCache.personByPersonId.get(pid)
+    return person != null ? [pid, person] as const : undefined
+  }).filter(notEmpty))
+}
+
+export async function getPersonByPersonRef (client: Client, personRef: Ref<Person>): Promise<Readonly<Person> | null> {
+  if (!contactCache.personByRef.has(personRef)) {
+    await loadCachesForPersonRef(client, personRef)
+  }
+
+  return contactCache.personByRef.get(personRef) ?? null
+}
+
+export async function getPersonsByPersonRefs (client: Client, personRefs: Array<Ref<Person>>): Promise<Map<Ref<Person>, Readonly<Person>>> {
+  if (personRefs.some((personRef) => !contactCache.personByRef.has(personRef))) {
+    await loadCachesForPersonRefs(client, personRefs)
+  }
+
+  return new Map(personRefs.map((personRef) => {
+    const person = contactCache.personByRef.get(personRef)
+    return person != null ? [personRef, person] as const : undefined
+  }).filter(notEmpty))
+}
+
+export async function getSocialIdByPersonId (client: Client, personId: PersonId): Promise<SocialIdentity | null> {
+  if (!contactCache.personRefByPersonId.has(personId)) {
+    await loadCachesForPersonId(client, personId)
+  }
+
+  return contactCache.socialIdByPersonId.get(personId) ?? null
+}
+
+export type { Change as ContactCacheChange } from './cache'

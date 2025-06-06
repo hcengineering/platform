@@ -13,19 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { formatName } from '@hcengineering/contact'
-  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { formatName, Person } from '@hcengineering/contact'
+  import { Avatar, getPersonByPersonRef } from '@hcengineering/contact-resources'
   import { getClient, playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { Invite, RequestStatus, getFreeRoomPlace } from '@hcengineering/love'
+  import { onDestroy, onMount } from 'svelte'
+
   import love from '../plugin'
   import { infos, myInfo, rooms } from '../stores'
   import { connectRoom } from '../utils'
-  import { onDestroy, onMount } from 'svelte'
 
   export let invite: Invite
 
-  $: person = $personByIdStore.get(invite.from)
+  let person: Person | undefined = undefined
+  $: void getPersonByPersonRef(invite.from).then((p) => {
+    person = p ?? undefined
+  })
 
   const client = getClient()
   let stopSound: (() => void) | null = null
@@ -33,8 +37,8 @@
   async function accept (): Promise<void> {
     const room = $rooms.find((p) => p._id === invite.room)
     if (room === undefined) return
-    const myPerson = $personByIdStore.get(invite.target)
-    if (myPerson === undefined) return
+    const myPerson = await getPersonByPersonRef(invite.target)
+    if (myPerson == null) return
     if ($myInfo === undefined) return
     await client.update(invite, { status: RequestStatus.Approved })
     const place = getFreeRoomPlace(

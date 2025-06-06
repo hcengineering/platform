@@ -14,7 +14,8 @@
 -->
 
 <script lang="ts">
-  import { getPersonBySocialId, Person } from '@hcengineering/contact'
+  import { Person } from '@hcengineering/contact'
+  import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
   import { getClient, getCommunicationClient } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
   import { getCurrentAccount } from '@hcengineering/core'
@@ -26,7 +27,6 @@
     IconEdit,
     Menu
   } from '@hcengineering/ui'
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
   import type { SocialID } from '@hcengineering/communication-types'
   import { Message, MessageType } from '@hcengineering/communication-types'
   import emojiPlugin from '@hcengineering/emoji'
@@ -77,10 +77,10 @@
   }
 
   async function updateAuthor (socialId: SocialID): Promise<void> {
-    author = $personByPersonIdStore.get(socialId)
+    author = $employeeByPersonIdStore.get(socialId)
 
     if (author === undefined) {
-      author = await getPersonBySocialId(client, socialId)
+      author = await getPersonByPersonId(socialId) ?? undefined
     }
   }
 

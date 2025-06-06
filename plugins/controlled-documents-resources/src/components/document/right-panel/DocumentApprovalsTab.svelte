@@ -1,17 +1,17 @@
 <script lang="ts">
   import documents, {
+    ControlledDocument,
     ControlledDocumentState,
     DocumentRequest,
     DocumentState,
-    emptyBundle,
-    extractValidationWorkflow
+    DocumentValidationState,
+    emptyBundle
   } from '@hcengineering/controlled-documents'
 
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label, Scroller } from '@hcengineering/ui'
 
   import chunter, { ChatMessage } from '@hcengineering/chunter'
-  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import documentsRes from '../../../plugin'
   import {
     $controlledDocument as controlledDocument,
@@ -21,6 +21,8 @@
   import DocumentApprovalGuideItem from './DocumentApprovalGuideItem.svelte'
   import DocumentApprovalItem from './DocumentApprovalItem.svelte'
   import RightPanelTabHeader from './RightPanelTabHeader.svelte'
+  import { extractValidationWorkflow } from '../../../utils'
+  import { Ref } from '@hcengineering/core'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -43,7 +45,8 @@
     })
   }
 
-  $: workflow = extractValidationWorkflow(
+  let workflow: Map<Ref<ControlledDocument>, DocumentValidationState[]>
+  $: void extractValidationWorkflow(
     hierarchy,
     {
       ...emptyBundle(),
@@ -51,9 +54,10 @@
       DocumentRequest: requests,
       DocumentSnapshot: $documentSnapshots,
       ChatMessage: messages
-    },
-    (ref) => $personRefByPersonIdStore.get(ref)
-  )
+    }
+  ).then((res) => {
+    workflow = res
+  })
 
   $: validationStates = ((doc ? workflow.get(doc._id) : []) ?? []).slice()
 

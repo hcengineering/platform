@@ -14,17 +14,16 @@
 -->
 
 <script lang="ts">
-  import contact, { type Contact, type Employee } from '@hcengineering/contact'
-  import { type Ref, type WithLookup } from '@hcengineering/core'
+  import contact, { Person, type Contact } from '@hcengineering/contact'
+  import { type Ref } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, IconSize } from '@hcengineering/ui'
 
-  import { employeeByIdStore, personByIdStore } from '../utils'
+  import { getPersonByPersonRef } from '../utils'
   import Avatar from './Avatar.svelte'
 
   export let _id: Ref<Contact>
-
   export let name: string | null | undefined = undefined
   export let size: IconSize
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -32,18 +31,20 @@
   export let borderColor: number | undefined = undefined
   export let showStatus: boolean = false
 
-  $: empValue = $employeeByIdStore.get(_id as Ref<Employee>) ?? $personByIdStore.get(_id)
+  let personVal: Person | undefined
+  $: void getPersonByPersonRef(_id).then((person) => {
+    personVal = person ?? undefined
+  })
 
-  let _contact: WithLookup<Contact> | undefined
-
-  $: if (empValue === undefined) {
+  let _contact: Contact | undefined
+  $: if (personVal === undefined) {
     void getClient()
       .findOne(contact.class.Contact, { _id })
       .then((c) => {
         _contact = c
       })
   } else {
-    _contact = $employeeByIdStore.get(_id as Ref<Employee>) ?? $personByIdStore.get(_id)
+    _contact = personVal
   }
 </script>
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeBox, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { EmployeeBox, getPersonRefByPersonId } from '@hcengineering/contact-resources'
   import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
 
@@ -29,6 +29,7 @@
   import PriorityEditor from '../PriorityEditor.svelte'
   import RelationEditor from '../RelationEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
+  import { Person } from '@hcengineering/contact'
 
   export let issue: Issue
   export let showAllMixins: boolean = false
@@ -93,7 +94,14 @@
   }
 
   $: updateKeys(issue._class, ignoreKeys)
-  $: creatorPerson = issue.createdBy !== undefined ? $personRefByPersonIdStore.get(issue.createdBy) : undefined
+  let creatorPersonRef: Ref<Person> | undefined
+  $: if (issue.createdBy !== undefined) {
+    void getPersonRefByPersonId(issue.createdBy).then((ref) => {
+      creatorPersonRef = ref ?? undefined
+    })
+  } else {
+    creatorPersonRef = undefined
+  }
 </script>
 
 <div class="popupPanel-body__aside-grid">
@@ -157,7 +165,7 @@
     <Label label={core.string.CreatedBy} />
   </span>
   <EmployeeBox
-    value={creatorPerson}
+    value={creatorPersonRef}
     label={core.string.CreatedBy}
     kind={'link'}
     size={'medium'}

@@ -1,7 +1,7 @@
 import { get } from 'svelte/store'
 import { getName as getContactName } from '@hcengineering/contact'
 import contact, { type Channel, type Contact } from '@hcengineering/contact'
-import { personByPersonIdStore, employeeBySocialKeyStore } from '@hcengineering/contact-resources'
+import { employeeBySocialKeyStore, getPersonByPersonId } from '@hcengineering/contact-resources'
 import { buildSocialIdString, type PersonId, SocialIdType, type Client, type Doc, type Ref } from '@hcengineering/core'
 import { type Message, type SharedMessage } from '@hcengineering/gmail'
 import { getClient } from '@hcengineering/presentation'
@@ -65,41 +65,43 @@ export async function checkHasEmail (doc: Doc | Doc[] | undefined): Promise<bool
 const EMAIL_REGEX =
   /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
 
-export function convertMessages (object: Contact, channel: Channel, messages: Message[]): SharedMessage[] {
-  return messages.map((m) => {
-    return {
+export async function convertMessages (object: Contact, channel: Channel, messages: Message[]): Promise<SharedMessage[]> {
+  const res: SharedMessage[] = []
+  for (const m of messages) {
+    res.push({
       ...m,
       _id: m._id as string as Ref<SharedMessage>,
-      sender: getName(object, channel, m, true),
-      receiver: getName(object, channel, m, false)
-    }
-  })
+      sender: await getName(object, channel, m, true),
+      receiver: await getName(object, channel, m, false)
+    })
+  }
+  return res
 }
 
 export async function convertMessage (object: Contact, channel: Channel, message: Message): Promise<SharedMessage> {
   return {
     ...message,
     _id: message._id as string as Ref<SharedMessage>,
-    sender: getName(object, channel, message, true),
-    receiver: getName(object, channel, message, false)
+    sender: await getName(object, channel, message, true),
+    receiver: await getName(object, channel, message, false)
   }
 }
 
-export function getName (object: Contact, channel: Channel, message: Message, sender: boolean): string {
+export async function getName (object: Contact, channel: Channel, message: Message, sender: boolean): Promise<string> {
   const h = getClient().getHierarchy()
   if (message._class === gmail.class.NewMessage) {
     if (!sender) return `${getContactName(h, object)} (${channel.value})`
-    return getPersonName(message.from ?? message.createdBy ?? message.modifiedBy)
+    return await getPersonName(message.from ?? message.createdBy ?? message.modifiedBy)
   }
   if (message.incoming === sender) {
     return `${getContactName(h, object)} (${channel.value})`
   } else {
-    return getPersonName(message.modifiedBy)
+    return await getPersonName(message.modifiedBy)
   }
 }
 
-export function getPersonName (emailOrId: string): string {
-  const personName = get(personByPersonIdStore).get(emailOrId as PersonId)?.name
+export async function getPersonName (emailOrId: string): Promise<string> {
+  const personName = (await getPersonByPersonId(emailOrId as PersonId))?.name
   if (personName != null) return personName
   const emailSearch = emailOrId.match(EMAIL_REGEX)
   const email = emailSearch?.[0]

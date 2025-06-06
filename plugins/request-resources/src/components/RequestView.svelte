@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getName } from '@hcengineering/contact'
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { getName, Person } from '@hcengineering/contact'
+  import { getPersonByPersonId } from '@hcengineering/contact-resources'
   import { Doc, TxCUD } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Request } from '@hcengineering/request'
@@ -27,7 +27,10 @@
   export let value: Request
 
   const client = getClient()
-  $: employee = $personByPersonIdStore.get(value.tx.modifiedBy)
+  let employee: Person | undefined
+  $: void getPersonByPersonId(value.tx.modifiedBy).then((p) => {
+    employee = p ?? undefined
+  })
   $: txCud = value.tx as TxCUD<Doc>
 </script>
 

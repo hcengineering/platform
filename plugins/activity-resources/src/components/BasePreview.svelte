@@ -16,8 +16,8 @@
 <script lang="ts">
   import { ComponentExtensions, getClient, LiteMessageViewer } from '@hcengineering/presentation'
   import { Person } from '@hcengineering/contact'
-  import { Avatar, personByPersonIdStore, SystemAvatar } from '@hcengineering/contact-resources'
-  import core, { PersonId, Doc, Ref, Timestamp, type WithLookup } from '@hcengineering/core'
+  import { Avatar, getPersonByPersonId, SystemAvatar } from '@hcengineering/contact-resources'
+  import core, { PersonId, Doc, Timestamp } from '@hcengineering/core'
   import { Icon, Label, resizeObserver, TimeSince, tooltip } from '@hcengineering/ui'
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import activity, { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
@@ -42,12 +42,18 @@
   const tooltipLimit = 512
 
   let isActionsOpened = false
-  let person: WithLookup<Person> | undefined = undefined
+  let person: Person | undefined = undefined
 
   let width: number
 
   $: isCompact = width < limit
-  $: person = account !== undefined ? $personByPersonIdStore.get(account) : undefined
+  $: if (account !== undefined) {
+    void getPersonByPersonId(account).then((p) => {
+      person = p ?? undefined
+    })
+  } else {
+    person = undefined
+  }
 
   export function onActionsOpened (): void {
     isActionsOpened = true

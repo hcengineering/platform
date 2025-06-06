@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Contact, Person } from '@hcengineering/contact'
-  import { AssigneeBox, personByIdStore } from '@hcengineering/contact-resources'
+  import { AssigneeBox } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { ActionIcon, EditBox, Icon, IconDelete, resizeObserver } from '@hcengineering/ui'
@@ -26,6 +26,7 @@
   import { infos, lockedRoom } from '../stores'
   import { RoomSide, shadowNormal } from '../types'
   import { getRoomLabel } from '../utils'
+  import { IntlString } from '@hcengineering/platform'
 
   export let room: Room
   export let cellSize: number
@@ -160,6 +161,11 @@
         : undefined
   }
 
+  let roomLabel: IntlString
+  $: void getRoomLabel(room).then((label) => {
+    roomLabel = label
+  })
+
   onMount(() => {
     if (container) roomRect = container.getBoundingClientRect()
   })
@@ -218,7 +224,7 @@
     <EditBox
       bind:value={room.name}
       on:change={updateName}
-      placeholder={getRoomLabel(room, $personByIdStore)}
+      placeholder={roomLabel}
       kind={'editbox'}
     />
     {#if showButtons}

@@ -21,7 +21,7 @@
     DocUpdateMessage,
     DocUpdateMessageViewlet
   } from '@hcengineering/activity'
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { getPersonByPersonId } from '@hcengineering/contact-resources'
   import { AttachedDoc, Class, Collection, Doc, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -36,6 +36,7 @@
 
   import { getAttributeModel, getCollectionAttribute } from '../../activityMessagesUtils'
   import { getIsTextType } from '../../utils'
+  import { Person } from '@hcengineering/contact'
 
   export let value: DisplayDocUpdateMessage
   export let doc: Doc | undefined = undefined
@@ -101,7 +102,14 @@
     parentMessage = res as DisplayActivityMessage
   })
 
-  $: person = value.createdBy !== undefined ? $personByPersonIdStore.get(value.createdBy) : undefined
+  let person: Person | undefined
+  $: if (value.createdBy !== undefined) {
+    void getPersonByPersonId(value.createdBy).then((p) => {
+      person = p ?? undefined
+    })
+  } else {
+    person = undefined
+  }
 
   $: void loadObject(value.objectId, value.objectClass, doc)
   $: void loadParentObject(value, parentMessage, doc)

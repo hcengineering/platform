@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
-  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { getPersonRefByPersonId } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { Scroller } from '@hcengineering/ui'
@@ -34,6 +34,7 @@
   import { infos } from '../stores'
   import { awaitConnect, isSharingEnabled, lk, screenSharing } from '../utils'
   import ParticipantView from './ParticipantView.svelte'
+  import { Person } from '@hcengineering/contact'
 
   export let isDock: boolean = false
   export let room: Ref<TypeRoom>
@@ -47,8 +48,16 @@
     isAgent: boolean
   }
 
-  $: aiPersonId =
-    $aiBotSocialIdentityStore != null ? $personRefByPersonIdStore.get($aiBotSocialIdentityStore._id) : undefined
+  let aiPersonRef: Ref<Person> | undefined
+  $: if ($aiBotSocialIdentityStore != null) {
+    void getPersonRefByPersonId($aiBotSocialIdentityStore?._id).then((ref) => {
+      if (ref != null) {
+        aiPersonRef = ref
+      }
+    })
+  } else {
+    aiPersonRef = undefined
+  }
 
   const dispatch = createEventDispatcher()
 
@@ -221,7 +230,7 @@
           muted: true,
           mirror: false,
           connecting: true,
-          isAgent: info.person === aiPersonId
+          isAgent: info.person === aiPersonRef
         }
         participants.push(value)
       }

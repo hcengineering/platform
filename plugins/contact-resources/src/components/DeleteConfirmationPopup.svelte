@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentEmployee } from '@hcengineering/contact'
-  import { AccountRole, Doc, getCurrentAccount } from '@hcengineering/core'
+  import { getCurrentEmployee, Person } from '@hcengineering/contact'
+  import { AccountRole, Doc, getCurrentAccount, notEmpty, Ref } from '@hcengineering/core'
   import { Card, isAdminUser } from '@hcengineering/presentation'
   import ui, { Button, Label } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
-  import { personRefByPersonIdStore } from '../utils'
-  import { PersonRefPresenter } from '..'
   import { IntlString } from '@hcengineering/platform'
+
+  import { getPersonRefsByPersonIds, PersonRefPresenter } from '..'
 
   export let object: Doc | Doc[]
   export let deleteAction: () => void | Promise<void>
@@ -33,9 +33,11 @@
   const me = getCurrentEmployee()
   const objectArray = Array.isArray(object) ? object : [object]
   const dispatch = createEventDispatcher()
-  $: creators = [...new Set(objectArray.map((obj) => obj.createdBy))]
-    .map((pid) => (pid !== undefined ? $personRefByPersonIdStore.get(pid) : undefined))
-    .filter((p) => p !== undefined)
+  let creators: Ref<Person>[]
+  $: void getPersonRefsByPersonIds(Array.from(new Set(objectArray.map((obj) => obj.createdBy).filter(notEmpty)))).then((refs) => {
+    creators = Array.from(refs.values())
+  })
+
   $: canDelete =
     (skipCheck ||
       (creators.length === 1 && creators[0] === me) ||
