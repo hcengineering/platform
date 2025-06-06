@@ -15,7 +15,13 @@
   import { Person, formatName } from '@hcengineering/contact'
   import { IntlString } from '@hcengineering/platform'
   import { resizeObserver, TimeSince, tooltip } from '@hcengineering/ui'
-  import { Avatar, PersonPreviewProvider, SystemAvatar, employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
+  import {
+    Avatar,
+    PersonPreviewProvider,
+    SystemAvatar,
+    employeeByPersonIdStore,
+    getPersonByPersonId
+  } from '@hcengineering/contact-resources'
   import { SocialID } from '@hcengineering/communication-types'
 
   export let tooltipLabel: IntlString | undefined = undefined
@@ -37,7 +43,7 @@
   async function updatePerson (socialId: SocialID, person: Person | undefined): Promise<void> {
     _person = person ?? $employeeByPersonIdStore.get(socialId)
     if (!_person) {
-      _person = await getPersonByPersonId(socialId) ?? undefined
+      _person = (await getPersonByPersonId(socialId)) ?? undefined
     }
   }
 </script>

@@ -32,7 +32,7 @@
 
   async function getPerson (id: PersonId | undefined): Promise<void> {
     if (id !== undefined) {
-      person = await getPersonRefByPersonId(client, id) ?? undefined
+      person = (await getPersonRefByPersonId(client, id)) ?? undefined
     }
   }
 </script>
