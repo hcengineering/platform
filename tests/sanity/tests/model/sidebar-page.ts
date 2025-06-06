@@ -12,7 +12,7 @@ export class SidebarPage extends CommonPage {
   }
 
   sidebar = (): Locator => this.page.locator('#sidebar')
-  content = (): Locator => this.sidebar().locator('.content')
+  content = (): Locator => this.sidebar().locator('.sidebar-content')
   contentHeaderByTitle = (title: string): Locator =>
     this.content().locator(`.hulyHeader-titleGroup:has-text("${title}")`)
 
@@ -36,11 +36,11 @@ export class SidebarPage extends CommonPage {
 
   // Actions
   async checkIfSidebarIsOpen (isOpen: boolean): Promise<void> {
-    await expect(this.content()).toBeVisible({ visible: isOpen })
+    await expect(this.content()).toBeVisible({ visible: isOpen, timeout: 1000 })
   }
 
   async checkIfSidebarHasVerticalTab (isExist: boolean, tabName: string): Promise<void> {
-    await expect(this.verticalTabByName(tabName)).toBeVisible({ visible: isExist })
+    await expect(this.verticalTabByName(tabName)).toBeVisible({ visible: isExist, timeout: 1000 })
   }
 
   async clickVerticalTab (tabName: string): Promise<void> {
@@ -83,7 +83,7 @@ export class SidebarPage extends CommonPage {
   }
 
   async checkIfChatSidebarTabIsOpen (isExist: boolean, channelName: string): Promise<void> {
-    await expect(this.contentHeaderByTitle(channelName)).toBeVisible({ visible: isExist })
+    await expect(this.contentHeaderByTitle(channelName)).toBeVisible({ visible: isExist, timeout: 1000 })
   }
 
   async checkIfOfficeSidebarTabIsOpen (isExist: boolean, channelName: string): Promise<void> {

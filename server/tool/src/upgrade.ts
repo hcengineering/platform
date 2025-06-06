@@ -1,35 +1,54 @@
 import {
-  Doc,
-  DocumentQuery,
-  Domain,
-  FindOptions,
-  Hierarchy,
-  LowLevelStorage,
+  type Doc,
+  type DocumentQuery,
+  type Domain,
+  type FindOptions,
+  type Hierarchy,
+  type LowLevelStorage,
+  type MeasureContext,
   MeasureMetricsContext,
-  ModelDb,
-  Ref,
-  WorkspaceId
+  type ModelDb,
+  type Ref,
+  type WorkspaceIds,
+  type Class
 } from '@hcengineering/core'
-import { MigrateUpdate, MigrationClient, MigrationIterator, ModelLogger } from '@hcengineering/model'
-import { Pipeline, StorageAdapter } from '@hcengineering/server-core'
+import {
+  type MigrateUpdate,
+  type MigrationClient,
+  type MigrationIterator,
+  type ModelLogger
+} from '@hcengineering/model'
+import {
+  type Pipeline,
+  type StorageAdapter,
+  workspaceEvents,
+  type PlatformQueueProducer,
+  type QueueWorkspaceMessage
+} from '@hcengineering/server-core'
+import { type AccountClient } from '@hcengineering/account-client'
 
 /**
  * Upgrade client implementation.
  */
 export class MigrateClientImpl implements MigrationClient {
   private readonly lowLevel: LowLevelStorage
+  readonly ctx: MeasureContext
   constructor (
     readonly pipeline: Pipeline,
     readonly hierarchy: Hierarchy,
     readonly model: ModelDb,
     readonly logger: ModelLogger,
     readonly storageAdapter: StorageAdapter,
-    readonly workspaceId: WorkspaceId
+    readonly accountClient: AccountClient,
+    readonly wsIds: WorkspaceIds,
+    readonly queue: PlatformQueueProducer<QueueWorkspaceMessage>,
+    ctx?: MeasureContext
   ) {
     if (this.pipeline.context.lowLevelStorage === undefined) {
       throw new Error('lowLevelStorage is not defined')
     }
     this.lowLevel = this.pipeline.context.lowLevelStorage
+    this.ctx = ctx ?? new MeasureMetricsContext('migrateClient', {})
   }
 
   migrateState = new Map<string, Set<string>>()
@@ -40,6 +59,10 @@ export class MigrateClientImpl implements MigrationClient {
     options?: FindOptions<T> | undefined
   ): Promise<T[]> {
     return await this.lowLevel.rawFindAll(domain, query, options)
+  }
+
+  async groupBy<T, P extends Doc>(domain: Domain, field: string, query?: DocumentQuery<P>): Promise<Map<T, number>> {
+    return await this.lowLevel.groupBy(this.ctx, domain, field, query)
   }
 
   async traverse<T extends Doc>(
@@ -70,11 +93,16 @@ export class MigrateClientImpl implements MigrationClient {
     }
   }
 
-  async move<T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain): Promise<void> {
+  async move<T extends Doc>(
+    sourceDomain: Domain,
+    query: DocumentQuery<T>,
+    targetDomain: Domain,
+    size = 500
+  ): Promise<void> {
     const ctx = new MeasureMetricsContext('move', {})
     this.logger.log('move', { sourceDomain, query })
     while (true) {
-      const source = await this.lowLevel.rawFindAll(sourceDomain, query, { limit: 500 })
+      const source = await this.lowLevel.rawFindAll(sourceDomain, query, { limit: size })
       if (source.length === 0) break
       await this.lowLevel.upload(ctx, targetDomain, source)
       await this.lowLevel.clean(
@@ -96,12 +124,10 @@ export class MigrateClientImpl implements MigrationClient {
   }
 
   async deleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
-    const ctx = new MeasureMetricsContext('deleteMany', {})
-    const docs = await this.lowLevel.rawFindAll(domain, query)
-    await this.lowLevel.clean(
-      ctx,
-      domain,
-      docs.map((d) => d._id)
-    )
+    await this.lowLevel.rawDeleteMany(domain, query)
+  }
+
+  async reindex (domain: Domain, classes: Ref<Class<Doc>>[]): Promise<void> {
+    await this.queue.send(this.wsIds.uuid, [workspaceEvents.reindex(domain, classes)])
   }
 }

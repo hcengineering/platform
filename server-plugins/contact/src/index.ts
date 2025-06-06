@@ -20,6 +20,8 @@ import type { TriggerFunc, SearchPresenterProvider } from '@hcengineering/server
 import { Presenter } from '@hcengineering/server-notification'
 import { TemplateFieldServerFunc } from '@hcengineering/server-templates'
 
+export * from './utils'
+
 /**
  * @public
  */
@@ -33,7 +35,8 @@ export default plugin(serverContactId, {
     OnContactDelete: '' as Resource<TriggerFunc>,
     OnChannelUpdate: '' as Resource<TriggerFunc>,
     OnEmployeeCreate: '' as Resource<TriggerFunc>,
-    OnPersonAccountCreate: '' as Resource<TriggerFunc>,
+    OnTypedSpaceCreate: '' as Resource<TriggerFunc>,
+    OnPersonCreate: '' as Resource<TriggerFunc>,
     OnSpaceTypeMembers: '' as Resource<TriggerFunc>
   },
   function: {

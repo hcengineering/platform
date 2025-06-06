@@ -13,128 +13,90 @@
 // limitations under the License.
 //
 
-import { Account, Ref } from '@hcengineering/core'
-import { type Db } from 'mongodb'
-import { type CalendarClient } from './calendar'
+import { AccountClient, Integration } from '@hcengineering/account-client'
+import { Event } from '@hcengineering/calendar'
+import {
+  MeasureContext,
+  RateLimiter,
+  WorkspaceInfoWithStatus,
+  WorkspaceUuid,
+  isActiveMode,
+  isDeletingMode
+} from '@hcengineering/core'
 import config from './config'
-import { type ProjectCredentials, type Token, type User } from './types'
+import { getIntegrations } from './integrations'
 import { WorkspaceClient } from './workspaceClient'
 
 export class CalendarController {
-  private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
-
-  private readonly credentials: ProjectCredentials
-  private readonly clients: Map<string, CalendarClient[]> = new Map<string, CalendarClient[]>()
-
   protected static _instance: CalendarController
 
-  private constructor (private readonly mongo: Db) {
-    this.credentials = JSON.parse(config.Credentials)
+  private constructor (
+    private readonly ctx: MeasureContext,
+    readonly accountClient: AccountClient
+  ) {
     CalendarController._instance = this
   }
 
-  static getCalendarController (mongo?: Db): CalendarController {
+  static getCalendarController (ctx: MeasureContext, accountClient: AccountClient): CalendarController {
     if (CalendarController._instance !== undefined) {
       return CalendarController._instance
     }
-    if (mongo === undefined) throw new Error('CalendarController not exist')
-    return new CalendarController(mongo)
+    return new CalendarController(ctx, accountClient)
   }
 
   async startAll (): Promise<void> {
-    const tokens = await this.mongo.collection<Token>('tokens').find().toArray()
-    for (const token of tokens) {
-      try {
-        await this.createClient(token)
-      } catch (err) {
-        console.error(`Couldn't create client for ${token.workspace} ${token.userId}`)
+    try {
+      const integrations = await getIntegrations(this.accountClient)
+      this.ctx.info('Start integrations', { count: integrations.length })
+
+      const groups = new Map<WorkspaceUuid, Integration[]>()
+      for (const int of integrations) {
+        if (int.workspaceUuid === null) continue
+        const group = groups.get(int.workspaceUuid)
+        if (group === undefined) {
+          groups.set(int.workspaceUuid, [int])
+        } else {
+          group.push(int)
+          groups.set(int.workspaceUuid, group)
+        }
       }
-    }
 
-    for (const client of this.workspaces.values()) {
-      void client.sync()
-    }
-  }
-
-  push (email: string, mode: 'events' | 'calendar', calendarId?: string): void {
-    const clients = this.clients.get(email)
-    for (const client of clients ?? []) {
-      if (mode === 'calendar') {
-        void client.syncCalendars(email)
+      const ids = [...groups.keys()]
+      if (ids.length === 0) return
+      const limiter = new RateLimiter(config.InitLimit)
+      const infos = await this.accountClient.getWorkspacesInfo(ids)
+      for (const info of infos) {
+        const integrations = groups.get(info.uuid) ?? []
+        if (await this.checkWorkspace(info, integrations)) {
+          await limiter.add(async () => {
+            this.ctx.info('start workspace', { workspace: info.uuid })
+            await WorkspaceClient.run(this.ctx, this.accountClient, info.uuid)
+          })
+        }
       }
-      if (mode === 'events' && calendarId !== undefined) {
-        void client.sync(calendarId, email)
+      await limiter.waitProcessing()
+    } catch (err: any) {
+      this.ctx.error('Failed to start existing integrations', err)
+    }
+  }
+
+  private async checkWorkspace (info: WorkspaceInfoWithStatus, integrations: Integration[]): Promise<boolean> {
+    if (isDeletingMode(info.mode)) {
+      if (integrations !== undefined) {
+        for (const int of integrations) {
+          await this.accountClient.deleteIntegration(int)
+        }
       }
+      return false
     }
-  }
-
-  addClient (email: string, client: CalendarClient): void {
-    const clients = this.clients.get(email)
-    if (clients === undefined) {
-      this.clients.set(email, [client])
-    } else {
-      clients.push(client)
-      this.clients.set(email, clients)
+    if (!isActiveMode(info.mode)) {
+      this.ctx.info('workspace is not active', { workspaceUuid: info.uuid })
+      return false
     }
+    return true
   }
 
-  removeClient (email: string): void {
-    const clients = this.clients.get(email)
-    if (clients !== undefined) {
-      this.clients.set(
-        email,
-        clients.filter((p) => !p.isClosed)
-      )
-    }
-  }
-
-  async getUserId (email: string, workspace: string): Promise<Ref<Account>> {
-    const workspaceClient = await this.getWorkspaceClient(workspace)
-    return await workspaceClient.getUserId(email)
-  }
-
-  async signout (workspace: string, value: string): Promise<void> {
-    const workspaceClient = await this.getWorkspaceClient(workspace)
-    const clients = await workspaceClient.signout(value)
-    if (clients === 0) {
-      this.workspaces.delete(workspace)
-    }
-  }
-
-  removeWorkspace (workspace: string): void {
-    this.workspaces.delete(workspace)
-  }
-
-  async close (): Promise<void> {
-    for (const workspace of this.workspaces.values()) {
-      await workspace.close()
-    }
-    this.workspaces.clear()
-  }
-
-  async createClient (user: Token): Promise<CalendarClient> {
-    const workspace = await this.getWorkspaceClient(user.workspace)
-    const newClient = await workspace.createCalendarClient(user)
-    return newClient
-  }
-
-  async newClient (user: User, code: string): Promise<CalendarClient> {
-    const workspace = await this.getWorkspaceClient(user.workspace)
-    const newClient = await workspace.newCalendarClient(user, code)
-    return newClient
-  }
-
-  private async getWorkspaceClient (workspace: string): Promise<WorkspaceClient> {
-    let res = this.workspaces.get(workspace)
-    if (res === undefined) {
-      try {
-        res = await WorkspaceClient.create(this.credentials, this.mongo, workspace, this)
-        this.workspaces.set(workspace, res)
-      } catch (err) {
-        console.error(`Couldn't create workspace worker for ${workspace}, reason: ${JSON.stringify(err)}`)
-        throw err
-      }
-    }
-    return res
+  async pushEvent (workspace: WorkspaceUuid, event: Event, type: 'create' | 'update' | 'delete'): Promise<void> {
+    await WorkspaceClient.push(this.ctx, this.accountClient, workspace, event, type)
   }
 }

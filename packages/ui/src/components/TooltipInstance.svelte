@@ -12,8 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+<script context="module" lang="ts">
+  let fullScreenMode: boolean = false
+
+  export function getFullScreenMode (): boolean {
+    return fullScreenMode
+  }
+  function setFullScreenMode (value: boolean): void {
+    fullScreenMode = value
+  }
+</script>
+
 <script lang="ts">
-  import { afterUpdate, onDestroy } from 'svelte'
+  import { afterUpdate, onDestroy, onMount } from 'svelte'
   import { resizeObserver } from '../resize'
   import { closeTooltip, tooltipstore as tooltip } from '../tooltips'
   import { modalStore as modals } from '../modals'
@@ -21,6 +32,9 @@
   import Component from './Component.svelte'
   import Label from './Label.svelte'
   import { capitalizeFirstLetter, formatKey } from '../utils'
+  import { testing } from '..'
+
+  export let fullScreen: boolean = false
 
   let tooltipHTML: HTMLElement
   let nubHTML: HTMLElement
@@ -45,6 +59,7 @@
     right: string
     width: string
     height: string
+    maxWidth: string
     transform: string
     visibility: string
     classList: string
@@ -57,10 +72,19 @@
     right: '',
     width: '',
     height: '',
+    maxWidth: '',
     transform: '',
     visibility: 'hidden',
     classList: ''
   }
+
+  onMount(() => {
+    if (fullScreen) setFullScreenMode(true)
+  })
+  onDestroy(() => {
+    if (fullScreen) setFullScreenMode(false)
+  })
+  const shouldHideTooltip = (): boolean => (fullScreen && !fullScreenMode) || (!fullScreen && fullScreenMode)
 
   const clearStyles = (): void => {
     shown = false
@@ -71,6 +95,7 @@
       right: '',
       width: '',
       height: '',
+      maxWidth: '',
       transform: '',
       visibility: 'hidden',
       classList: ''
@@ -86,6 +111,7 @@
       width: '',
       height: '',
       transform: '',
+      maxWidth: '',
       visibility: 'visible',
       classList: ''
     }
@@ -93,11 +119,18 @@
       if (clWidth === undefined) {
         clWidth = tooltipHTML.clientWidth
       }
+
+      let isElementInvalidTarget = false
+
       if ($tooltip.element) {
         rect = $tooltip.element.getBoundingClientRect()
         rectAnchor = $tooltip.anchor
           ? $tooltip.anchor.getBoundingClientRect()
           : $tooltip.element.getBoundingClientRect()
+
+        if (rect.x === 0 && rect.y === 0 && rect.width === 0 && rect.height === 0) {
+          isElementInvalidTarget = true
+        }
 
         if ($tooltip.component) {
           clearStyles()
@@ -141,20 +174,32 @@
           } else dir = $tooltip.direction
 
           if (dir === 'right') {
+            const maxWidth = Math.min(docWidth / 2, docWidth - rectAnchor.right)
             options.top = rectAnchor.y + rectAnchor.height / 2 + 'px'
             options.left = `calc(${rectAnchor.right}px + .75rem)`
+            options.maxWidth = `calc(${maxWidth}px - 1.5rem)`
             options.transform = 'translateY(-50%)'
           } else if (dir === 'left') {
+            const maxWidth = Math.min(docWidth / 2, rectAnchor.x)
             options.top = rectAnchor.y + rectAnchor.height / 2 + 'px'
             options.right = `calc(${docWidth - rectAnchor.x}px + .75rem)`
+            options.maxWidth = `calc(${maxWidth}px - 1.5rem)`
             options.transform = 'translateY(-50%)'
           } else if (dir === 'bottom') {
+            const left = rectAnchor.x + rectAnchor.width / 2
+            const maxWidth = Math.min(left, docWidth - left)
+
             options.top = `calc(${rectAnchor.bottom}px + .5rem)`
             options.left = rectAnchor.x + rectAnchor.width / 2 + 'px'
+            options.maxWidth = `calc(${maxWidth * 2}px - 1.5rem)`
             options.transform = 'translateX(-50%)'
           } else if (dir === 'top') {
+            const left = rectAnchor.x + rectAnchor.width / 2
+            const maxWidth = Math.min(left, docWidth - left)
+
             options.bottom = `calc(${docHeight - rectAnchor.y}px + .75rem)`
             options.left = rectAnchor.x + rectAnchor.width / 2 + 'px'
+            options.maxWidth = `calc(${maxWidth * 2}px - 1.5rem)`
             options.transform = 'translateX(-50%)'
           }
         }
@@ -166,8 +211,13 @@
         options.transform = 'translate(-50%, -50%)'
         options.classList = 'no-arrow'
       }
-      options.visibility = 'visible'
-      shown = true
+      if (isElementInvalidTarget) {
+        options.visibility = 'hidden'
+        shown = false
+      } else {
+        options.visibility = 'visible'
+        shown = true
+      }
     } else if (tooltipHTML) {
       shown = false
       options.visibility = 'hidden'
@@ -183,6 +233,7 @@
       right: '',
       width: '',
       height: '',
+      maxWidth: '',
       visibility: 'visible',
       transform: '',
       classList: ''
@@ -218,14 +269,16 @@
   }
 
   const hideTooltip = (): void => {
+    if (shouldHideTooltip()) return
     if (tooltipHTML) options.visibility = 'hidden'
+    shown = false
     closeTooltip()
   }
 
   $: shownTooltip = $tooltip.element && tooltipHTML
 
   const whileShow = (ev: MouseEvent): void => {
-    if (!$tooltip.element) return
+    if (!$tooltip.element || shouldHideTooltip()) return
     const rectP = tooltipHTML.getBoundingClientRect()
     rect = $tooltip.element.getBoundingClientRect()
     const dT: number = dir === 'bottom' && $tooltip.kind !== 'submenu' ? 12 : 0
@@ -239,12 +292,13 @@
     }
   }
 
-  $: if (kind === 'submenu') {
+  $: if (kind === 'submenu' && !shouldHideTooltip()) {
     options = fitSubmenu()
-  } else {
+  } else if (!shouldHideTooltip()) {
     options = fitTooltip(tooltipHTML, clWidth)
   }
   afterUpdate(() => {
+    if (shouldHideTooltip()) return
     if (kind === 'submenu') {
       options = fitSubmenu()
     } else {
@@ -255,18 +309,6 @@
     hideTooltip()
   })
 </script>
-
-{#if $tooltip.kind === 'popup'}
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    class="modal-overlay antiOverlay"
-    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-    on:click|stopPropagation|preventDefault={() => {
-      closeTooltip()
-    }}
-    on:keydown|stopPropagation|preventDefault={() => {}}
-  />
-{/if}
 
 <svelte:window
   bind:innerWidth={docWidth}
@@ -287,47 +329,8 @@
     }
   }}
 />
-{#if $tooltip.component && $tooltip.kind !== 'submenu'}
-  <div
-    class="popup-tooltip {options.classList}"
-    class:shown
-    class:doublePadding={$tooltip.label}
-    use:resizeObserver={(element) => {
-      clWidth = element.clientWidth
-      options = fitTooltip(tooltipHTML, clWidth)
-    }}
-    style:top={options.top}
-    style:bottom={options.bottom}
-    style:left={options.left}
-    style:right={options.right}
-    style:width={options.width}
-    style:height={options.height}
-    style:transform={options.transform}
-    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-    bind:this={tooltipHTML}
-  >
-    {#if $tooltip.label}
-      <div class="fs-title mb-4">
-        <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
-      </div>
-    {/if}
-    {#if typeof $tooltip.component === 'string'}
-      <Component
-        is={$tooltip.component}
-        props={$tooltip.props}
-        on:update={onUpdate !== undefined ? onUpdate : async () => {}}
-      />
-    {:else}
-      <svelte:component
-        this={$tooltip.component}
-        {...$tooltip.props}
-        on:tooltip={(evt) => {
-          $modals = [...$modals.filter((t) => t.type !== 'tooltip'), { ...$tooltip, ...evt.detail }]
-        }}
-        on:update={onUpdate !== undefined ? onUpdate : async () => {}}
-      />
-    {/if}
-  </div>
+
+{#if !fullScreen}
   <svg class="svg-mask">
     <clipPath id="nub-bg">
       <path
@@ -340,76 +343,142 @@
       />
     </clipPath>
   </svg>
-  <div
-    bind:this={nubHTML}
-    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-    class="nub {nubDirection ?? ''}"
-    class:shown
-  />
-{:else if $tooltip.label && $tooltip.kind !== 'submenu'}
-  <div
-    class="tooltip {dir ?? ''} {options.classList}"
-    bind:this={tooltipHTML}
-    style:top={options.top}
-    style:bottom={options.bottom}
-    style:left={options.left}
-    style:right={options.right}
-    style:width={options.width}
-    style:height={options.height}
-    style:transform={options.transform}
-    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-  >
-    <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
-    {#if $tooltip.keys !== undefined}
-      <div class="keys">
-        {#each $tooltip.keys as key, i}
-          {#if i !== 0}
-            <div class="mr-1 ml-1">/</div>
-          {/if}
-          {#each formatKey(key) as k, jj}
-            <div class="key">
-              {#each k as kk, j}
-                {#if j !== 0}
-                  +
-                {/if}
-                {capitalizeFirstLetter(kk.trim())}
-              {/each}
-            </div>
+{/if}
+
+{#if (fullScreen && document.fullscreenElement != null) || (!fullScreen && document.fullscreenElement == null)}
+  {#if $tooltip.kind === 'popup'}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div
+      class="modal-overlay antiOverlay"
+      style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+      on:click|stopPropagation|preventDefault={() => {
+        closeTooltip()
+      }}
+      on:keydown|stopPropagation|preventDefault={() => {}}
+    />
+  {/if}
+
+  {#if $tooltip.component && $tooltip.kind !== 'submenu'}
+    <div
+      class="popup-tooltip {options.classList} {$tooltip.style}"
+      class:testing
+      class:shown
+      class:doublePadding={$tooltip.label}
+      use:resizeObserver={(element) => {
+        clWidth = element.clientWidth
+        options = fitTooltip(tooltipHTML, clWidth)
+      }}
+      style:top={options.top}
+      style:bottom={options.bottom}
+      style:left={options.left}
+      style:right={options.right}
+      style:width={options.width}
+      style:height={options.height}
+      style:transform={options.transform}
+      style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+      bind:this={tooltipHTML}
+    >
+      {#if $tooltip.label}
+        <div class="fs-title mb-4">
+          <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
+        </div>
+      {/if}
+      {#if typeof $tooltip.component === 'string'}
+        <Component
+          is={$tooltip.component}
+          props={$tooltip.props}
+          on:update={onUpdate !== undefined ? onUpdate : async () => {}}
+        />
+      {:else}
+        <svelte:component
+          this={$tooltip.component}
+          {...$tooltip.props}
+          on:tooltip={(evt) => {
+            $modals = [...$modals.filter((t) => t.type !== 'tooltip'), { ...$tooltip, ...evt.detail }]
+          }}
+          on:update={onUpdate !== undefined ? onUpdate : async () => {}}
+        />
+      {/if}
+    </div>
+
+    {#if !$tooltip.noArrow}
+      <div
+        bind:this={nubHTML}
+        style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+        class="nub {nubDirection ?? ''}"
+        class:testing
+        class:shown
+      />
+    {/if}
+  {:else if $tooltip.label && $tooltip.kind !== 'submenu'}
+    <div
+      class="tooltip {dir ?? ''} {options.classList}"
+      bind:this={tooltipHTML}
+      style:top={options.top}
+      style:bottom={options.bottom}
+      style:left={options.left}
+      style:right={options.right}
+      style:width={options.width}
+      style:height={options.height}
+      style:max-width={options.maxWidth}
+      style:transform={options.transform}
+      style:visibility={options.visibility}
+      style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+    >
+      <span class="label">
+        <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
+      </span>
+      {#if $tooltip.keys !== undefined}
+        <div class="keys">
+          {#each $tooltip.keys as key, i}
+            {#if i !== 0}
+              <div class="mr-1 ml-1">/</div>
+            {/if}
+            {#each formatKey(key) as k, jj}
+              <div class="key">
+                {#each k as kk, j}
+                  {#if j !== 0}
+                    +
+                  {/if}
+                  {capitalizeFirstLetter(kk.trim())}
+                {/each}
+              </div>
+            {/each}
           {/each}
-        {/each}
-      </div>
-    {/if}
-  </div>
-{:else if $tooltip.kind === 'submenu'}
-  <div
-    class="submenu-container {dir ?? ''} {options.classList}"
-    use:resizeObserver={(element) => {
-      clWidth = element.clientWidth
-    }}
-    style:top={options.top}
-    style:bottom={options.bottom}
-    style:left={options.left}
-    style:right={options.right}
-    style:width={options.width}
-    style:height={options.height}
-    style:transform={options.transform}
-    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-    bind:this={tooltipHTML}
-  >
-    {#if typeof $tooltip.component === 'string'}
-      <Component
-        is={$tooltip.component}
-        props={$tooltip.props}
-        on:update={onUpdate !== undefined ? onUpdate : async () => {}}
-      />
-    {:else}
-      <svelte:component
-        this={$tooltip.component}
-        {...$tooltip.props}
-        on:update={onUpdate !== undefined ? onUpdate : async () => {}}
-      />
-    {/if}
-  </div>
+        </div>
+      {/if}
+    </div>
+  {:else if $tooltip.kind === 'submenu'}
+    <div
+      class="submenu-container {dir ?? ''} {options.classList}"
+      use:resizeObserver={(element) => {
+        clWidth = element.clientWidth
+      }}
+      style:top={options.top}
+      style:bottom={options.bottom}
+      style:left={options.left}
+      style:right={options.right}
+      style:width={options.width}
+      style:height={options.height}
+      style:transform={options.transform}
+      style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+      bind:this={tooltipHTML}
+    >
+      {#if typeof $tooltip.component === 'string'}
+        <Component
+          is={$tooltip.component}
+          props={$tooltip.props}
+          on:update={onUpdate !== undefined ? onUpdate : async () => {}}
+        />
+      {:else}
+        <svelte:component
+          this={$tooltip.component}
+          {...$tooltip.props}
+          on:update={onUpdate !== undefined ? onUpdate : async () => {}}
+        />
+      {/if}
+    </div>
+  {/if}
 {/if}
 
 <style lang="scss">
@@ -425,18 +494,46 @@
     display: flex;
     flex-direction: column;
     padding: 0.5rem;
-    max-width: 50vw;
+    max-width: 60vw;
     color: var(--theme-content-color);
     background-color: var(--theme-popup-color);
     border: 1px solid var(--theme-popup-divider);
     border-radius: 0.75rem;
     box-shadow: var(--theme-popup-shadow);
     user-select: none;
-    opacity: 0;
 
     &.doublePadding {
       padding: 1rem;
     }
+    &.modern {
+      padding: 0;
+      border: none;
+      outline: none;
+      border-radius: 1.5rem;
+      box-shadow:
+        0 6.25rem 5rem rgba(0, 0, 0, 0.15),
+        0 2.5rem 2rem rgba(0, 0, 0, 0.12),
+        0 1.5rem 1rem rgba(0, 0, 0, 0.1),
+        0 0.75rem 0.75rem rgba(0, 0, 0, 0.1),
+        0 0.375rem 0.375rem rgba(0, 0, 0, 0.08),
+        0 0.125rem 0.125rem rgba(0, 0, 0, 0.05);
+    }
+    &.disabled {
+      background-color: var(--popup-color-disabled);
+    }
+  }
+  .popup-tooltip,
+  .nub {
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+
+    &.testing {
+      transition-duration: 0 !important;
+    }
+  }
+  .shown {
+    opacity: 1;
+    transition: opacity 0.1s ease-in-out 0.05s;
   }
 
   .nub {
@@ -444,7 +541,6 @@
     // background-color: rgba(255, 255, 0, .5);
     user-select: none;
     pointer-events: none;
-    opacity: 0;
 
     &::after,
     &::before {
@@ -510,14 +606,11 @@
       transform: rotate(-90deg);
     }
   }
-  .shown {
-    transition: opacity 0.1s ease-in-out 0.15s;
-    opacity: 1;
-  }
 
   .keys {
     margin-left: 0.5rem;
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 0.125rem;
   }
@@ -553,6 +646,11 @@
       background-color: var(--theme-popup-divider);
       clip-path: url('#nub-border');
       z-index: 2;
+    }
+
+    &:not(:has(.key, .keys)) span.label {
+      width: 100%;
+      word-wrap: break-word;
     }
   }
   .no-arrow {

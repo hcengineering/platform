@@ -14,21 +14,11 @@
 //
 
 import { type Builder } from '@hcengineering/model'
-import core, { type Domain } from '@hcengineering/core'
-import chunter from '@hcengineering/chunter'
-import analyticsCollector from '@hcengineering/analytics-collector'
 
 import aiBot from './plugin'
 
 export { aiBotId } from '@hcengineering/ai-bot'
+export { aiBotOperation } from './migration'
 export default aiBot
 
-export const DOMAIN_AI_BOT = 'ai_bot' as Domain
-
-export function createModel (builder: Builder): void {
-  builder.createDoc(chunter.class.ChunterExtension, core.space.Model, {
-    point: 'aside',
-    ofClass: analyticsCollector.class.OnboardingChannel,
-    component: aiBot.component.OnboardingChannelPanelExtension
-  })
-}
+export function createModel (builder: Builder): void {}

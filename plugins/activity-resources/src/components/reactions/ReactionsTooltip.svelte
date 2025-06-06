@@ -1,24 +1,16 @@
 <script lang="ts">
-  import { Person, PersonAccount, getName } from '@hcengineering/contact'
-  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Account, IdMap, Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { PersonId } from '@hcengineering/core'
+  import { ObjectPresenter } from '@hcengineering/view-resources'
+  import contact from '@hcengineering/contact'
+  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
 
-  export let reactionAccounts: Ref<Account>[]
+  export let reactionAccounts: PersonId[]
 
-  const client = getClient()
-  function getAccName (acc: Ref<Account>, accounts: IdMap<PersonAccount>, employees: IdMap<Person>): string {
-    const account = accounts.get(acc as Ref<PersonAccount>)
-    if (account !== undefined) {
-      const emp = employees.get(account.person)
-      return emp ? getName(client.getHierarchy(), emp) : ''
-    }
-    return ''
-  }
+  $: persons = reactionAccounts.map((user) => $personRefByPersonIdStore.get(user))
 </script>
 
-{#each reactionAccounts as acc}
-  <div>
-    {getAccName(acc, $personAccountByIdStore, $personByIdStore)}
-  </div>
-{/each}
+<div class="m-2 flex-col flex-gap-2">
+  {#each persons as person}
+    <ObjectPresenter objectId={person} _class={contact.class.Person} disabled />
+  {/each}
+</div>

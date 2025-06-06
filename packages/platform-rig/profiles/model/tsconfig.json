@@ -12,7 +12,7 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "incremental": true,
-    "types" : [],
+    "types": ["node"],
     "isolatedModules": true
   }
 }

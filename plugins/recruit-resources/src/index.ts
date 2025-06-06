@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import {
+import contact from '@hcengineering/contact'
+import core, {
   toIdMap,
   type Client,
   type Doc,
@@ -24,14 +25,14 @@ import {
   type RelatedDocument
 } from '@hcengineering/core'
 import { OK, Severity, Status, type Resources } from '@hcengineering/platform'
-import { createQuery, getClient, type ObjectSearchResult } from '@hcengineering/presentation'
+import { getClient, type ObjectSearchResult } from '@hcengineering/presentation'
 import { type Applicant, type Candidate, type Vacancy } from '@hcengineering/recruit'
-import contact from '@hcengineering/contact'
 import task from '@hcengineering/task'
 import { showPopup } from '@hcengineering/ui'
 import { type Filter } from '@hcengineering/view'
 import { FilterQuery, statusStore } from '@hcengineering/view-resources'
 import ApplicantFilter from './components/ApplicantFilter.svelte'
+import ApplicantNamePresenter from './components/ApplicantNamePresenter.svelte'
 import ApplicationItem from './components/ApplicationItem.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Applications from './components/Applications.svelte'
@@ -42,7 +43,6 @@ import CreateVacancy from './components/CreateVacancy.svelte'
 import EditApplication from './components/EditApplication.svelte'
 import EditVacancy from './components/EditVacancy.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
-import MatchVacancy from './components/MatchVacancy.svelte'
 import NewCandidateHeader from './components/NewCandidateHeader.svelte'
 import NotificationApplicantPresenter from './components/NotificationApplicantPresenter.svelte'
 import Organizations from './components/Organizations.svelte'
@@ -117,7 +117,7 @@ export async function queryApplication (
 
   // Check number pattern
 
-  const sequence = (await client.findOne(task.class.Sequence, { attachedTo: _class }))?.sequence ?? 0
+  const sequence = (await client.findOne(core.class.Sequence, { attachedTo: _class }))?.sequence ?? 0
 
   const q: DocumentQuery<Applicant> = { $search: search }
   if (filter?.in !== undefined || filter?.nin !== undefined) {
@@ -293,33 +293,6 @@ export function hideDoneState (value: any, query: DocumentQuery<Doc>): DocumentQ
   return query
 }
 
-const activeVacancyQuery = createQuery(true)
-
-let activeVacancies: Promise<Array<Ref<Vacancy>>> | Array<Ref<Vacancy>> | undefined
-
-export async function hideArchivedVacancies (value: any, query: DocumentQuery<Doc>): Promise<DocumentQuery<Doc>> {
-  if (activeVacancies === undefined) {
-    activeVacancies = new Promise<Array<Ref<Vacancy>>>((resolve) => {
-      activeVacancyQuery.query(
-        recruit.class.Vacancy,
-        { archived: { $ne: true } },
-        (res) => {
-          activeVacancies = res.map((it) => it._id)
-          resolve(activeVacancies)
-        },
-        { projection: { _id: 1 } }
-      )
-    })
-  }
-  if (value as boolean) {
-    if (activeVacancies instanceof Promise) {
-      activeVacancies = await activeVacancies
-    }
-    return { ...query, space: { $in: activeVacancies } }
-  }
-  return query
-}
-
 export async function applicantHasEmail (doc: Doc | Doc[] | undefined): Promise<boolean> {
   if (doc === undefined) return false
   const client = getClient()
@@ -386,9 +359,9 @@ export default async (): Promise<Resources> => ({
     VacancyList,
     VacancyTemplateEditor,
 
-    MatchVacancy,
     NotificationApplicantPresenter,
-    VacancyEditor
+    VacancyEditor,
+    ApplicantNamePresenter
   },
   completion: {
     ApplicationQuery: async (
@@ -415,7 +388,6 @@ export default async (): Promise<Resources> => ({
     GetObjectLinkFragment: getSequenceLink,
     GetIdObjectLinkFragment: getObjectLink,
     HideDoneState: hideDoneState,
-    HideArchivedVacancies: hideArchivedVacancies,
     ApplicantHasEmail: applicantHasEmail,
     ParseLinkId: parseLinkId
   },

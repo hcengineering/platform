@@ -263,13 +263,14 @@
     "IssueNotificationChangedProperty": "{senderName} cambió {property} a \"{newValue}\"",
     "IssueNotificationMessage": "{senderName}: {message}",
     "PreviousAssigned": "Anteriormente asignado",
-    "IssueAssigneedToYou": "Asignado a ti",
+    "IssueAssignedToYou": "Asignado a ti",
     "RelatedIssueTargetDescription": "Proyecto de destino de problema relacionado para Clase o Espacio",
     "MapRelatedIssues": "Configurar proyectos predeterminados de problemas relacionados",
     "DefaultIssueStatus": "Estado de problema predeterminado",
     "IssueStatus": "Estado",
     "Extensions": "Extensions",
-    "RoleLabel": "Role: {role}"
+    "RoleLabel": "Role: {role}",
+    "UnsetParentIssue": "Unset parent issue"
   },
   "status": {}
 }

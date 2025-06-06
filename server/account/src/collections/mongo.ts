@@ -12,24 +12,48 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { ObjectId as MongoObjectId } from 'mongodb'
-import type { Collection, CreateIndexesOptions, Db, Filter, OptionalUnlessRequiredId, Sort } from 'mongodb'
-import type { Data, Version } from '@hcengineering/core'
+import {
+  type AccountRole,
+  type Data,
+  type Person,
+  type Version,
+  type WorkspaceMemberInfo,
+  type WorkspaceUuid,
+  type AccountUuid,
+  buildSocialIdString,
+  type SocialKey
+} from '@hcengineering/core'
+import type {
+  Collection,
+  CreateIndexesOptions,
+  Db,
+  Filter,
+  FindCursor,
+  OptionalUnlessRequiredId,
+  Sort as RawSort
+} from 'mongodb'
+import { UUID } from 'mongodb'
 
 import type {
-  DbCollection,
-  Query,
-  ObjectId,
-  Operations,
-  Workspace,
-  WorkspaceDbCollection,
-  WorkspaceInfo,
-  WorkspaceOperation,
-  AccountDB,
   Account,
-  Invite,
-  OtpRecord,
-  UpgradeStatistic
+  AccountDB,
+  AccountEvent,
+  DbCollection,
+  Integration,
+  IntegrationSecret,
+  Mailbox,
+  MailboxSecret,
+  Operations,
+  OTP,
+  Query,
+  SocialId,
+  Sort,
+  WorkspaceData,
+  WorkspaceInfoWithStatus,
+  WorkspaceInvite,
+  WorkspaceOperation,
+  WorkspaceStatus,
+  WorkspaceStatusData
 } from '../types'
 import { isShallowEqual } from '../utils'
 
@@ -38,18 +62,25 @@ interface MongoIndex {
   options: CreateIndexesOptions & { name: string }
 }
 
-export class MongoDbCollection<T extends Record<string, any>> implements DbCollection<T> {
+function getFilteredQuery<T> (query: Query<T>): Query<T> {
+  return Object.entries(query).reduce<Query<T>>((acc, [key, value]) => {
+    if (value !== undefined) {
+      acc[key as keyof Query<T>] = value
+    }
+    return acc
+  }, {})
+}
+
+export class MongoDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined>
+implements DbCollection<T> {
   constructor (
     readonly name: string,
-    readonly db: Db
+    readonly db: Db,
+    readonly idKey?: K
   ) {}
 
   get collection (): Collection<T> {
     return this.db.collection<T>(this.name)
-  }
-
-  async init (): Promise<void> {
-    // May be used to create indices in Mongo
   }
 
   /**
@@ -100,28 +131,65 @@ export class MongoDbCollection<T extends Record<string, any>> implements DbColle
     }
   }
 
-  async find (query: Query<T>, sort?: { [P in keyof T]?: 'ascending' | 'descending' }, limit?: number): Promise<T[]> {
-    const cursor = this.collection.find<T>(query as Filter<T>)
+  async exists (query: Query<T>): Promise<boolean> {
+    return (await this.findOne(query)) !== null
+  }
+
+  async find (query: Query<T>, sort?: Sort<T>, limit?: number): Promise<T[]> {
+    return await this.findCursor(getFilteredQuery(query), sort, limit).toArray()
+  }
+
+  findCursor (query: Query<T>, sort?: Sort<T>, limit?: number): FindCursor<T> {
+    const cursor = this.collection.find<T>(getFilteredQuery(query) as Filter<T>)
 
     if (sort !== undefined) {
-      cursor.sort(sort as Sort)
+      cursor.sort(sort as RawSort)
     }
 
     if (limit !== undefined) {
       cursor.limit(limit)
     }
 
-    return await this.collection.find<T>(query as Filter<T>).toArray()
+    return cursor.map((doc) => {
+      if (this.idKey !== '_id') {
+        delete doc._id
+      }
+
+      return doc
+    })
   }
 
   async findOne (query: Query<T>): Promise<T | null> {
-    return await this.collection.findOne<T>(query as Filter<T>)
+    const doc = await this.collection.findOne<T>(getFilteredQuery(query) as Filter<T>)
+    if (doc === null) {
+      return null
+    }
+
+    if (this.idKey !== '_id') {
+      delete doc._id
+    }
+    return doc
   }
 
-  async insertOne<K extends keyof T>(data: Partial<T>, idKey?: K): Promise<any> {
-    const res = await this.collection.insertOne(data as OptionalUnlessRequiredId<T>)
+  async insertOne (data: Partial<T>): Promise<K extends keyof T ? T[K] : undefined> {
+    const toInsert: Partial<T> & {
+      _id?: string
+    } = { ...data }
+    const idKey = this.idKey
 
-    return res.insertedId
+    if (idKey !== undefined) {
+      const key = new UUID().toJSON()
+      toInsert[idKey] = data[idKey] ?? (key as any)
+      toInsert._id = toInsert._id ?? toInsert[idKey]
+    }
+
+    await this.collection.insertOne(toInsert as OptionalUnlessRequiredId<T>)
+
+    return (idKey !== undefined ? toInsert[idKey] : undefined) as K extends keyof T ? T[K] : undefined
+  }
+
+  async insertMany (data: Array<Partial<T>>): Promise<K extends keyof T ? Array<T[K]> : undefined> {
+    throw new Error('Not implemented')
   }
 
   async updateOne (query: Query<T>, ops: Operations<T>): Promise<void> {
@@ -139,243 +207,587 @@ export class MongoDbCollection<T extends Record<string, any>> implements DbColle
       }
     }
 
-    await this.collection.updateOne(query as Filter<T>, resOps)
+    await this.collection.updateOne(getFilteredQuery(query) as Filter<T>, resOps)
   }
 
   async deleteMany (query: Query<T>): Promise<void> {
-    await this.collection.deleteMany(query as Filter<T>)
+    await this.collection.deleteMany(getFilteredQuery(query) as Filter<T>)
   }
 }
 
-export class AccountMongoDbCollection extends MongoDbCollection<Account> implements DbCollection<Account> {
+export class AccountMongoDbCollection extends MongoDbCollection<Account, 'uuid'> implements DbCollection<Account> {
   constructor (db: Db) {
-    super('account', db)
+    super('account', db, 'uuid')
   }
 
-  async init (): Promise<void> {
-    const indicesToEnsure: MongoIndex[] = [
-      {
-        key: { email: 1 },
-        options: { unique: true, name: 'hc_account_email_1' }
-      }
-    ]
-
-    await this.ensureIndices(indicesToEnsure)
-  }
-
-  convertToObj (acc: Account): Account {
+  private convertToObj (acc: Account): Account {
     return {
       ...acc,
       hash: acc.hash != null ? Buffer.from(acc.hash.buffer) : acc.hash,
-      salt: Buffer.from(acc.salt.buffer)
+      salt: acc.salt != null ? Buffer.from(acc.salt.buffer) : acc.salt
     }
   }
 
-  async find (
-    query: Query<Account>,
-    sort?: { [P in keyof Account]?: 'ascending' | 'descending' },
-    limit?: number
-  ): Promise<Account[]> {
+  async find (query: Query<Account>, sort?: Sort<Account>, limit?: number): Promise<Account[]> {
     const res = await super.find(query, sort, limit)
 
     return res.map((acc: Account) => this.convertToObj(acc))
   }
 
   async findOne (query: Query<Account>): Promise<Account | null> {
-    const res = await this.collection.findOne<Account>(query as Filter<Account>)
+    const res = await this.collection.findOne<Account>(getFilteredQuery(query) as Filter<Account>)
 
     return res !== null ? this.convertToObj(res) : null
   }
 }
 
-export class WorkspaceMongoDbCollection extends MongoDbCollection<Workspace> implements WorkspaceDbCollection {
+export class SocialIdMongoDbCollection extends MongoDbCollection<SocialId, '_id'> implements DbCollection<SocialId> {
   constructor (db: Db) {
-    super('workspace', db)
+    super('socialId', db, '_id')
+  }
+
+  async insertOne (data: Partial<SocialId>): Promise<any> {
+    if (data.type === undefined || data.value === undefined) {
+      throw new Error('Type and value are required')
+    }
+
+    return await super.insertOne({
+      ...data,
+      key: buildSocialIdString(data as SocialKey)
+    })
+  }
+}
+
+export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceStatus> {
+  constructor (private readonly wsCollection: MongoDbCollection<WorkspaceInfoWithStatus, 'uuid'>) {}
+
+  private toWsQuery (query: Query<WorkspaceStatus>): Query<WorkspaceInfoWithStatus> {
+    const res: Query<WorkspaceInfoWithStatus> = {}
+
+    for (const key of Object.keys(getFilteredQuery(query))) {
+      const qVal = (query as any)[key]
+      if (key === 'workspaceUuid') {
+        res.uuid = qVal
+      } else {
+        if (res.status === undefined) {
+          res.status = {}
+        }
+
+        ;(res.status as any)[key] = qVal
+      }
+    }
+
+    return res
+  }
+
+  private toWsSort (sort?: Sort<WorkspaceStatus>): Sort<WorkspaceInfoWithStatus> | undefined {
+    if (sort === undefined) {
+      return undefined
+    }
+
+    const res: Sort<WorkspaceInfoWithStatus> = {
+      status: {}
+    }
+
+    for (const key of Object.keys(sort)) {
+      ;(res.status as any)[key] = (sort as any)[key]
+    }
+
+    return res
+  }
+
+  private toWsOperations (ops: Operations<WorkspaceStatus>): Operations<WorkspaceInfoWithStatus> {
+    const res: any = {}
+
+    for (const key of Object.keys(ops)) {
+      const op = (ops as any)[key]
+
+      if (key === '$inc') {
+        res[key] = {}
+        for (const opKey of Object.keys(op)) {
+          res[key][`status.${opKey}`] = op[opKey]
+        }
+      } else if (key === '$set') {
+        for (const opKey of Object.keys(op)) {
+          res[`status.${opKey}`] = op[opKey]
+        }
+      } else {
+        res[`status.${key}`] = op
+      }
+    }
+
+    return res
+  }
+
+  async exists (query: Query<WorkspaceStatus>): Promise<boolean> {
+    return await this.wsCollection.exists(this.toWsQuery(query))
+  }
+
+  async find (query: Query<WorkspaceStatus>, sort?: Sort<WorkspaceStatus>, limit?: number): Promise<WorkspaceStatus[]> {
+    return (await this.wsCollection.find(this.toWsQuery(query), this.toWsSort(sort), limit)).map((ws) => ({
+      ...ws.status,
+      workspaceUuid: ws.uuid
+    }))
+  }
+
+  async findOne (query: Query<WorkspaceStatus>): Promise<WorkspaceStatus | null> {
+    return (await this.wsCollection.findOne(this.toWsQuery(query)))?.status ?? null
+  }
+
+  async insertOne (data: Partial<WorkspaceStatus>): Promise<any> {
+    if (data.workspaceUuid === undefined) {
+      throw new Error('workspaceUuid is required')
+    }
+
+    const wsData = await this.wsCollection.findOne({ uuid: data.workspaceUuid })
+
+    if (wsData === null) {
+      throw new Error(`Workspace with uuid ${data.workspaceUuid} not found`)
+    }
+
+    const statusData: any = {}
+
+    for (const key of Object.keys(data)) {
+      if (key !== 'workspaceUuid') {
+        statusData[`status.${key}`] = (data as any)[key]
+      }
+    }
+
+    await this.wsCollection.updateOne({ uuid: data.workspaceUuid }, statusData)
+
+    return data.workspaceUuid
+  }
+
+  async insertMany (data: Partial<WorkspaceStatus>[]): Promise<any> {
+    throw new Error('Not implemented')
+  }
+
+  async updateOne (query: Query<WorkspaceStatus>, ops: Operations<WorkspaceStatus>): Promise<void> {
+    await this.wsCollection.updateOne(this.toWsQuery(query), this.toWsOperations(ops))
+  }
+
+  async deleteMany (query: Query<WorkspaceStatus>): Promise<void> {
+    await this.wsCollection.deleteMany(this.toWsQuery(query))
+  }
+}
+
+interface WorkspaceMember {
+  workspaceUuid: WorkspaceUuid
+  accountUuid: AccountUuid
+  role: AccountRole
+}
+
+interface Migration {
+  key: string
+  op: () => Promise<void>
+}
+
+interface MigrationInfo {
+  key: string
+  completed: boolean
+  lastProcessedTime: number
+}
+
+export class MongoAccountDB implements AccountDB {
+  migration: MongoDbCollection<MigrationInfo, 'key'>
+  person: MongoDbCollection<Person, 'uuid'>
+  socialId: SocialIdMongoDbCollection
+  workspace: MongoDbCollection<WorkspaceInfoWithStatus, 'uuid'>
+  workspaceStatus: WorkspaceStatusMongoDbCollection
+  account: AccountMongoDbCollection
+  accountEvent: MongoDbCollection<AccountEvent>
+  otp: MongoDbCollection<OTP>
+  invite: MongoDbCollection<WorkspaceInvite, 'id'>
+  mailbox: MongoDbCollection<Mailbox, 'mailbox'>
+  mailboxSecret: MongoDbCollection<MailboxSecret>
+  integration: MongoDbCollection<Integration>
+  integrationSecret: MongoDbCollection<IntegrationSecret>
+
+  workspaceMembers: MongoDbCollection<WorkspaceMember>
+
+  constructor (readonly db: Db) {
+    this.migration = new MongoDbCollection<MigrationInfo, 'key'>('migration', db, 'key')
+    this.person = new MongoDbCollection<Person, 'uuid'>('person', db, 'uuid')
+    this.socialId = new SocialIdMongoDbCollection(db)
+    this.workspace = new MongoDbCollection<WorkspaceInfoWithStatus, 'uuid'>('workspace', db, 'uuid')
+    this.workspaceStatus = new WorkspaceStatusMongoDbCollection(this.workspace)
+    this.account = new AccountMongoDbCollection(db)
+    this.accountEvent = new MongoDbCollection<AccountEvent>('accountEvent', db)
+    this.otp = new MongoDbCollection<OTP>('otp', db)
+    this.invite = new MongoDbCollection<WorkspaceInvite, 'id'>('invite', db, 'id')
+    this.mailbox = new MongoDbCollection<Mailbox, 'mailbox'>('mailbox', db)
+    this.mailboxSecret = new MongoDbCollection<MailboxSecret>('mailboxSecrets', db)
+    this.integration = new MongoDbCollection<Integration>('integration', db)
+    this.integrationSecret = new MongoDbCollection<IntegrationSecret>('integrationSecret', db)
+
+    this.workspaceMembers = new MongoDbCollection<WorkspaceMember>('workspaceMembers', db)
   }
 
   async init (): Promise<void> {
-    // await this.collection.createIndex({ workspace: 1 }, { unique: true })
+    // Apply all the migrations
+    for (const migration of this.getMigrations()) {
+      await this.migrate(migration)
+    }
 
-    const indicesToEnsure: MongoIndex[] = [
+    await this.account.ensureIndices([
       {
-        key: { workspace: 1 },
+        key: { uuid: 1 },
+        options: { unique: true, name: 'hc_account_account_uuid_1' }
+      }
+    ])
+
+    await this.socialId.ensureIndices([
+      {
+        key: { type: 1, value: 1 },
+        options: { unique: true, name: 'hc_account_social_id_type_value_1' }
+      }
+    ])
+
+    await this.workspace.ensureIndices([
+      {
+        key: { uuid: 1 },
         options: {
           unique: true,
-          name: 'hc_account_workspace_1'
+          name: 'hc_account_workspace_uuid_1'
         }
       },
       {
-        key: { workspaceUrl: 1 },
+        key: { url: 1 },
         options: {
           unique: true,
-          name: 'hc_account_workspaceUrl_1'
+          name: 'hc_account_workspace_url_1'
         }
       }
-    ]
+    ])
 
-    await this.ensureIndices(indicesToEnsure)
+    await this.workspaceMembers.ensureIndices([
+      {
+        key: { workspaceUuid: 1 },
+        options: {
+          name: 'hc_account_workspace_members_workspace_uuid_1'
+        }
+      },
+      {
+        key: { accountUuid: 1 },
+        options: {
+          name: 'hc_account_workspace_members_account_uuid_1'
+        }
+      }
+    ])
   }
 
-  async countWorkspacesInRegion (region: string, upToVersion?: Data<Version>, visitedSince?: number): Promise<number> {
-    const regionQuery = region === '' ? { $or: [{ region: { $exists: false } }, { region: '' }] } : { region }
-    const query: Filter<Workspace>['$and'] = [
-      regionQuery,
-      { $or: [{ disabled: false }, { disabled: { $exists: false } }] }
-    ]
+  async migrate ({ key, op }: Migration): Promise<void> {
+    const { completed, exists } = await this.shouldMigrate(key)
+    if (completed) {
+      return
+    }
 
-    if (upToVersion !== undefined) {
-      query.push({
-        $or: [
-          { 'version.major': { $lt: upToVersion.major } },
-          { 'version.major': upToVersion.major, 'version.minor': { $lt: upToVersion.minor } },
-          {
-            'version.major': upToVersion.major,
-            'version.minor': upToVersion.minor,
-            'version.patch': { $lt: upToVersion.patch }
+    console.log(`Applying migration: ${key}`)
+    if (!exists) {
+      await this.migration.insertOne({ key, completed: false, lastProcessedTime: Date.now() })
+    } else {
+      await this.migration.updateOne({ key }, { lastProcessedTime: Date.now() })
+    }
+
+    const processingHandle = setInterval(() => {
+      void this.migration.updateOne({ key }, { lastProcessedTime: Date.now() })
+    }, 1000 * 5)
+    await op()
+    await this.migration.updateOne({ key }, { completed: true, lastProcessedTime: Date.now() })
+    clearInterval(processingHandle)
+    console.log(`Migration ${key} completed`)
+  }
+
+  async shouldMigrate (key: string): Promise<{ completed: boolean, exists: boolean }> {
+    while (true) {
+      const migrationInfo = await this.migration.findOne({ key })
+      if (migrationInfo?.completed === true) {
+        return { completed: true, exists: true }
+      }
+
+      if (migrationInfo == null) {
+        return { completed: false, exists: false }
+      }
+
+      if (migrationInfo.lastProcessedTime === undefined || Date.now() - migrationInfo.lastProcessedTime > 1000 * 15) {
+        return { completed: false, exists: true }
+      }
+
+      console.log(`Migration ${key} is in progress by other process, waiting...`)
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+    }
+  }
+
+  protected getMigrations (): Migration[] {
+    return [this.getV1Migration()]
+  }
+
+  // NOTE: NEVER MODIFY EXISTING MIGRATIONS. IF YOU NEED TO DO SOMETHING, ADD A NEW MIGRATION.
+  private getV1Migration (): Migration {
+    return {
+      key: 'account_db_v1_fill_social_id_ids',
+      op: async () => {
+        const sidCursor = this.socialId.findCursor({})
+
+        try {
+          let sidsCount = 0
+          while (await sidCursor.hasNext()) {
+            const socialIdObj = await sidCursor.next()
+            if (socialIdObj == null) break
+
+            if (socialIdObj._id != null && socialIdObj._id !== socialIdObj.key) continue
+
+            await this.socialId.deleteMany({ key: socialIdObj.key })
+            const newSocialId: any = { ...socialIdObj }
+            delete newSocialId._id
+            await this.socialId.insertOne(newSocialId)
+
+            sidsCount++
           }
-        ]
-      })
-    }
 
-    if (visitedSince !== undefined) {
-      query.push({ lastVisit: { $gt: visitedSince } })
+          console.log(`Migrated ${sidsCount} social ids`)
+        } finally {
+          await sidCursor.close()
+        }
+      }
     }
+  }
 
-    return await this.db.collection<Workspace>(this.name).countDocuments({
-      $and: query
+  async assignWorkspace (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole): Promise<void> {
+    await this.workspaceMembers.insertOne({
+      workspaceUuid: workspaceId,
+      accountUuid: accountId,
+      role
     })
+  }
+
+  async batchAssignWorkspace (data: [AccountUuid, WorkspaceUuid, AccountRole][]): Promise<void> {
+    await this.workspaceMembers.insertMany(
+      data.map(([accountId, workspaceId, role]) => ({
+        workspaceUuid: workspaceId,
+        accountUuid: accountId,
+        role
+      }))
+    )
+  }
+
+  async unassignWorkspace (accountId: AccountUuid, workspaceId: WorkspaceUuid): Promise<void> {
+    await this.workspaceMembers.deleteMany({
+      workspaceUuid: workspaceId,
+      accountUuid: accountId
+    })
+  }
+
+  async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<WorkspaceUuid> {
+    const res = await this.workspace.insertOne(data)
+
+    await this.workspaceStatus.insertOne({
+      workspaceUuid: res,
+      ...status
+    })
+
+    return res
+  }
+
+  async updateAllowReadOnlyGuests (workspaceId: WorkspaceUuid, readOnlyGuestsAllowed: boolean): Promise<void> {
+    await this.workspace.updateOne(
+      {
+        uuid: workspaceId
+      },
+      { allowReadOnlyGuest: readOnlyGuestsAllowed }
+    )
   }
 
   async getPendingWorkspace (
     region: string,
     version: Data<Version>,
     operation: WorkspaceOperation,
-    processingTimeoutMs: number
-  ): Promise<WorkspaceInfo | undefined> {
-    const pendingCreationQuery: Filter<Workspace>['$or'] = [{ mode: { $in: ['pending-creation', 'creating'] } }]
+    processingTimeoutMs: number,
+    wsLivenessMs?: number
+  ): Promise<WorkspaceInfoWithStatus | undefined> {
+    const pendingCreationQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
+      { 'status.mode': { $in: ['pending-creation', 'creating'] } }
+    ]
+
+    const migrationQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
+      {
+        'status.mode': {
+          $in: ['migration-backup', 'migration-pending-backup', 'migration-clean', 'migration-pending-clean']
+        }
+      }
+    ]
+
+    const archivingQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
+      {
+        'status.mode': {
+          $in: ['archiving-pending-backup', 'archiving-backup', 'archiving-pending-clean', 'archiving-clean']
+        }
+      }
+    ]
+
+    const deletingQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
+      { 'status.mode': { $in: ['pending-deletion', 'deleting'] } }
+    ]
+    const restoreQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
+      { 'status.mode': { $in: ['pending-restore', 'restoring'] } }
+    ]
 
     const versionQuery = {
       $or: [
-        { 'version.major': { $lt: version.major } },
-        { 'version.major': version.major, 'version.minor': { $lt: version.minor } },
-        { 'version.major': version.major, 'version.minor': version.minor, 'version.patch': { $lt: version.patch } }
+        { 'status.versionMajor': { $lt: version.major } },
+        { 'status.versionMajor': version.major, 'status.versionMinor': { $lt: version.minor } },
+        {
+          'status.versionMajor': version.major,
+          'status.versionMinor': version.minor,
+          'status.versionPatch': { $lt: version.patch }
+        }
       ]
     }
-    const pendingUpgradeQuery: Filter<Workspace>['$or'] = [
+    const pendingUpgradeQuery: Filter<WorkspaceInfoWithStatus>['$or'] = [
       {
         $and: [
           {
-            $or: [{ disabled: false }, { disabled: { $exists: false } }]
+            $or: [{ 'status.isDisabled': false }, { 'status.isDisabled': { $exists: false } }]
           },
           {
-            $or: [{ mode: 'active' }, { mode: { $exists: false } }]
+            $or: [{ 'status.mode': 'active' }, { 'status.mode': { $exists: false } }]
           },
           versionQuery,
-          {
-            lastVisit: { $gt: Date.now() - 24 * 60 * 60 * 1000 }
-          }
+          ...(wsLivenessMs !== undefined
+            ? [
+                {
+                  'status.lastVisit': { $gt: Date.now() - wsLivenessMs }
+                }
+              ]
+            : [])
         ]
       },
       {
-        $or: [{ disabled: false }, { disabled: { $exists: false } }],
-        mode: 'upgrading'
+        $or: [{ 'status.isDisabled': false }, { 'status.isDisabled': { $exists: false } }],
+        'status.mode': 'upgrading'
       }
     ]
     // TODO: support returning pending deletion workspaces when we will actually want
     // to clear them with the worker.
 
     const defaultRegionQuery = { $or: [{ region: { $exists: false } }, { region: '' }] }
-    const operationQuery = {
-      $or:
-        operation === 'create'
-          ? pendingCreationQuery
-          : operation === 'upgrade'
-            ? pendingUpgradeQuery
-            : [...pendingCreationQuery, ...pendingUpgradeQuery]
+    let operationQuery: Filter<WorkspaceInfoWithStatus> = {}
+
+    switch (operation) {
+      case 'create':
+        operationQuery = { $or: pendingCreationQuery }
+        break
+      case 'upgrade':
+        operationQuery = { $or: pendingUpgradeQuery }
+        break
+      case 'all':
+        operationQuery = { $or: [...pendingCreationQuery, ...pendingUpgradeQuery] }
+        break
+      case 'all+backup':
+        operationQuery = {
+          $or: [
+            ...pendingCreationQuery,
+            ...pendingUpgradeQuery,
+            ...migrationQuery,
+            ...archivingQuery,
+            ...restoreQuery,
+            ...deletingQuery
+          ]
+        }
+        break
     }
-    const attemptsQuery = { $or: [{ attempts: { $exists: false } }, { attempts: { $lte: 3 } }] }
+    const attemptsQuery = {
+      $or: [{ 'status.processingAttempts': { $exists: false } }, { 'status.processingAttempts': { $lte: 3 } }]
+    }
 
     // We must have all the conditions in the DB query and we cannot filter anything in the code
     // because of possible concurrency between account services. We have to update "lastProcessingTime"
     // at the time of retrieval and not after some additional processing.
-    const query: Filter<Workspace> = {
+    const query: Filter<WorkspaceInfoWithStatus> = {
       $and: [
+        { 'status.mode': { $ne: 'manual-creation' } },
         operationQuery,
         attemptsQuery,
         region !== '' ? { region } : defaultRegionQuery,
         {
           $or: [
-            { lastProcessingTime: { $exists: false } },
-            { lastProcessingTime: { $lt: Date.now() - processingTimeoutMs } }
+            { 'status.lastProcessingTime': { $exists: false } },
+            { 'status.lastProcessingTime': { $lt: Date.now() - processingTimeoutMs } }
           ]
         }
       ]
     }
 
     return (
-      (await this.collection.findOneAndUpdate(
+      (await this.workspace.collection.findOneAndUpdate(
         query,
         {
           $inc: {
-            attempts: 1
+            'status.processingAttempts': 1
           },
           $set: {
-            lastProcessingTime: Date.now()
+            'status.lastProcessingTime': Date.now()
           }
         },
         {
           returnDocument: 'after',
           sort: {
-            lastVisit: -1 // Use last visit as a priority
+            'status.lastVisit': -1 // Use last visit as a priority
           }
         }
       )) ?? undefined
     )
   }
-}
 
-export class MongoAccountDB implements AccountDB {
-  workspace: WorkspaceMongoDbCollection
-  account: MongoDbCollection<Account>
-  otp: MongoDbCollection<OtpRecord>
-  invite: MongoDbCollection<Invite>
-  upgrade: MongoDbCollection<UpgradeStatistic>
-
-  constructor (readonly db: Db) {
-    this.workspace = new WorkspaceMongoDbCollection(db)
-    this.account = new AccountMongoDbCollection(db)
-    this.otp = new MongoDbCollection<OtpRecord>('otp', db)
-    this.invite = new MongoDbCollection<Invite>('invite', db)
-    this.upgrade = new MongoDbCollection<UpgradeStatistic>('upgrade', db)
+  async updateWorkspaceRole (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole): Promise<void> {
+    await this.workspaceMembers.updateOne(
+      {
+        workspaceUuid: workspaceId,
+        accountUuid: accountId
+      },
+      { role }
+    )
   }
 
-  async init (): Promise<void> {
-    await Promise.all([
-      this.workspace.init(),
-      this.account.init(),
-      this.otp.init(),
-      this.invite.init(),
-      this.upgrade.init()
-    ])
+  async getWorkspaceRole (accountId: AccountUuid, workspaceId: WorkspaceUuid): Promise<AccountRole | null> {
+    const assignment = await this.workspaceMembers.findOne({
+      workspaceUuid: workspaceId,
+      accountUuid: accountId
+    })
+
+    return assignment?.role ?? null
   }
 
-  async assignWorkspace (accountId: ObjectId, workspaceId: ObjectId): Promise<void> {
-    await this.db
-      .collection<Workspace>('workspace')
-      .updateOne({ _id: workspaceId }, { $addToSet: { accounts: accountId } })
+  async getWorkspaceRoles (accountId: AccountUuid): Promise<Map<WorkspaceUuid, AccountRole>> {
+    const assignment = await this.workspaceMembers.find({
+      accountUuid: accountId
+    })
 
-    await this.db
-      .collection<Account>('account')
-      .updateOne({ _id: accountId }, { $addToSet: { workspaces: workspaceId } })
+    return assignment.reduce<Map<WorkspaceUuid, AccountRole>>((acc, it) => {
+      acc.set(it.workspaceUuid, it.role)
+      return acc
+    }, new Map())
   }
 
-  async unassignWorkspace (accountId: ObjectId, workspaceId: ObjectId): Promise<void> {
-    await this.db.collection<Workspace>('workspace').updateOne({ _id: workspaceId }, { $pull: { accounts: accountId } })
-
-    await this.db.collection<Account>('account').updateOne({ _id: accountId }, { $pull: { workspaces: workspaceId } })
+  async getWorkspaceMembers (workspaceId: WorkspaceUuid): Promise<WorkspaceMemberInfo[]> {
+    return (await this.workspaceMembers.find({ workspaceUuid: workspaceId })).map((wmi) => ({
+      person: wmi.accountUuid,
+      role: wmi.role
+    }))
   }
 
-  getObjectId (id: string): ObjectId {
-    return new MongoObjectId(id)
+  async getAccountWorkspaces (accountId: AccountUuid): Promise<WorkspaceInfoWithStatus[]> {
+    const members = await this.workspaceMembers.find({ accountUuid: accountId })
+    const wsIds = members.map((m) => m.workspaceUuid)
+
+    return await this.workspace.find({ uuid: { $in: wsIds } })
+  }
+
+  async setPassword (accountId: AccountUuid, passwordHash: Buffer, salt: Buffer): Promise<void> {
+    await this.account.updateOne({ uuid: accountId }, { hash: passwordHash, salt })
+  }
+
+  async resetPassword (accountId: AccountUuid): Promise<void> {
+    await this.account.updateOne({ uuid: accountId }, { hash: null, salt: null })
   }
 }

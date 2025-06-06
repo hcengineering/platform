@@ -14,47 +14,46 @@
 //
 
 import type { CollaborativeDoc, Doc, Tx, TxRemoveDoc } from '@hcengineering/core'
-import core, { TxProcessor } from '@hcengineering/core'
-import { removeCollaborativeDoc } from '@hcengineering/collaboration'
+import core, { makeCollabId, makeCollabYdocId } from '@hcengineering/core'
 import { type TriggerControl } from '@hcengineering/server-core'
 
 /**
  * @public
  */
 export async function OnDelete (
-  tx: Tx,
+  txes: Tx[],
   { hierarchy, storageAdapter, workspace, removedMap, ctx }: TriggerControl
 ): Promise<Tx[]> {
-  const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<Doc>
+  const ltxes = txes.filter((it) => it._class === core.class.TxRemoveDoc) as TxRemoveDoc<Doc>[]
+  for (const rmTx of ltxes) {
+    // Obtain document being deleted
+    const doc = removedMap.get(rmTx.objectId)
+    if (doc === undefined) {
+      continue
+    }
 
-  if (rmTx._class !== core.class.TxRemoveDoc) {
-    return []
-  }
+    // Ids of files to delete from storage
+    const toDelete: CollaborativeDoc[] = []
 
-  // Obtain document being deleted
-  const doc = removedMap.get(rmTx.objectId)
-  if (doc === undefined) {
-    return []
-  }
+    const attributes = hierarchy.getAllAttributes(rmTx.objectClass)
+    for (const attribute of attributes.values()) {
+      if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
+        toDelete.push(makeCollabId(doc._class, doc._id, attribute.name))
+      }
+    }
 
-  // Ids of files to delete from storage
-  const toDelete: CollaborativeDoc[] = []
-
-  const attributes = hierarchy.getAllAttributes(rmTx.objectClass)
-  for (const attribute of attributes.values()) {
-    if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
-      const value = (doc as any)[attribute.name] as CollaborativeDoc
-      if (value !== undefined) {
-        toDelete.push(value)
+    // TODO This is not accurate way to delete collaborative document
+    // Even though we are deleting it here, the document can be currently in use by someone else
+    // and when editing session ends, the collborator service will recreate the document again
+    if (toDelete.length > 0) {
+      const toRemove: string[] = toDelete.map(makeCollabYdocId)
+      if (toRemove.length > 0) {
+        await ctx.with('remove', {}, async () => {
+          await storageAdapter.remove(ctx, workspace, toRemove)
+        })
       }
     }
   }
-
-  // TODO This is not accurate way to delete collaborative document
-  // Even though we are deleting it here, the document can be currently in use by someone else
-  // and when editing session ends, the collborator service will recreate the document again
-  await removeCollaborativeDoc(storageAdapter, workspace, toDelete, ctx)
-
   return []
 }
 

@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
-
 import { Metadata, PluginLoader, PluginModule, Resources } from '.'
 
 /**
@@ -131,6 +130,7 @@ export default plugin(platformId, {
     BadError: '' as StatusCode,
     UnknownError: '' as StatusCode<{ message: string }>,
     InvalidId: '' as StatusCode<{ id: string }>,
+    ConnectionClosed: '' as StatusCode,
 
     LoadingPlugin: '' as StatusCode<{ plugin: string }>,
     NoLocationForPlugin: '' as StatusCode<{ plugin: Plugin }>,
@@ -145,15 +145,30 @@ export default plugin(platformId, {
     UnknownMethod: '' as StatusCode<{ method: string }>,
     InternalServerError: '' as StatusCode,
     MaintenanceWarning: '' as StatusCode<{ time: number }>,
-    AccountNotFound: '' as StatusCode<{ account: string }>,
-    AccountNotConfirmed: '' as StatusCode<{ account: string }>,
-    WorkspaceNotFound: '' as StatusCode<{ workspace: string }>,
+    AccountNotFound: '' as StatusCode<{ account?: string }>,
+    AccountMismatch: '' as StatusCode<{ account?: string, requiredAccount?: string }>,
+    AccountNotConfirmed: '' as StatusCode,
+    WorkspaceNotFound: '' as StatusCode<{ workspaceUuid?: string, workspaceName?: string, workspaceUrl?: string }>,
+    WorkspaceArchived: '' as StatusCode<{ workspaceUuid: string }>,
+    WorkspaceMigration: '' as StatusCode<{ workspaceUuid: string }>,
+    SocialIdNotFound: '' as StatusCode<{ value?: string, type?: string, _id?: string }>,
+    SocialIdNotConfirmed: '' as StatusCode<{ socialId: string, type: string }>,
+    SocialIdAlreadyConfirmed: '' as StatusCode<{ socialId: string, type: string }>,
+    IntegrationAlreadyExists: '' as StatusCode,
+    IntegrationNotFound: '' as StatusCode,
+    IntegrationSecretAlreadyExists: '' as StatusCode,
+    IntegrationSecretNotFound: '' as StatusCode,
+    PersonNotFound: '' as StatusCode<{ person: string }>,
     InvalidPassword: '' as StatusCode<{ account: string }>,
-    AccountAlreadyExists: '' as StatusCode<{ account: string }>,
-    AccountAlreadyConfirmed: '' as StatusCode<{ account: string }>,
+    AccountAlreadyExists: '' as StatusCode,
     WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
     WorkspaceRateLimit: '' as StatusCode<{ workspace: string }>,
-    InvalidOtp: '' as StatusCode
+    WorkspaceLimitReached: '' as StatusCode<{ workspace: string }>,
+    InvalidOtp: '' as StatusCode,
+    InviteNotFound: '' as StatusCode<{ email: string }>,
+    MailboxError: '' as StatusCode<{ reason: string }>,
+    SocialIdAlreadyExists: '' as StatusCode,
+    ReadOnlyAccount: '' as StatusCode
   },
   metadata: {
     locale: '' as Metadata<string>,

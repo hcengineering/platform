@@ -37,7 +37,7 @@ export class ContextNameMiddleware extends BaseMiddleware implements Middleware 
     return new ContextNameMiddleware(context, next)
   }
 
-  async tx (ctx: MeasureContext, txes: Tx[]): Promise<TxMiddlewareResult> {
+  async tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     let measureName: string | undefined
 
     const tx = txes.find((it) => it._class === core.class.TxApplyIf)
@@ -53,10 +53,10 @@ export class ContextNameMiddleware extends BaseMiddleware implements Middleware 
 
     const result = await ctx.with(
       measureName !== undefined ? `📶 ${measureName}` : 'client-tx',
-      { _class: tx?._class },
-      async (ctx) => {
+      { source: ctx.contextData.service },
+      (ctx) => {
         ;({ opLogMetrics, op } = registerOperationLog(ctx))
-        return await this.provideTx(ctx as MeasureContext<SessionData>, txes)
+        return this.provideTx(ctx, txes)
       }
     )
     updateOperationLog(opLogMetrics, op)

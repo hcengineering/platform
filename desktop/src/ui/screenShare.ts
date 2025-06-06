@@ -6,6 +6,57 @@ import { Track, LocalTrack, LocalAudioTrack, LocalVideoTrack, ParticipantEvent, 
 
 import { IPCMainExposed } from './types'
 
+export function defineGetDisplayMedia (): void {
+  if (navigator?.mediaDevices === undefined) {
+    console.warn('mediaDevices API not available')
+    return
+  }
+
+  if (navigator.mediaDevices.getDisplayMedia === undefined) {
+    throw new DeviceUnsupportedError('getDisplayMedia not supported')
+  }
+
+  navigator.mediaDevices.getDisplayMedia = async (opts?: DisplayMediaStreamOptions): Promise<MediaStream> => {
+    if (opts === undefined) {
+      throw new Error('opts must be provided')
+    }
+
+    const ipcMain = (window as any).electron as IPCMainExposed
+    const sources = await ipcMain.getScreenSources()
+
+    const hasAccess = await ipcMain.getScreenAccess()
+    if (!hasAccess) {
+      log.error('No screen access granted')
+      throw new Error('No screen access granted')
+    }
+
+    return await new Promise<MediaStream>((resolve, reject) => {
+      showPopup(
+        love.component.SelectScreenSourcePopup,
+        {
+          sources
+        },
+        'top',
+        () => {
+          reject(new Error('No source selected'))
+        },
+        (val) => {
+          if (val != null) {
+            opts.video = {
+              mandatory: {
+                ...(typeof opts.video === 'boolean' ? {} : opts.video),
+                chromeMediaSource: 'desktop',
+                chromeMediaSourceId: val
+              }
+            } as any
+            resolve(window.navigator.mediaDevices.getUserMedia(opts))
+          }
+        }
+      )
+    })
+  }
+}
+
 export function defineScreenShare (): void {
   setCustomCreateScreenTracks(async function electronCreateScreenTracks (options?: ScreenShareCaptureOptions) {
     const ipcMain = (window as any).electron as IPCMainExposed
@@ -21,7 +72,7 @@ export function defineScreenShare (): void {
       throw new DeviceUnsupportedError('getDisplayMedia not supported')
     }
 
-    return await new Promise((resolve, reject) => {
+    return await new Promise<Array<LocalTrack>>((resolve, reject) => {
       let wasSelected = false
 
       showPopup(

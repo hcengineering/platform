@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import type { Account } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Packr } from 'msgpackr'
 
@@ -46,9 +47,13 @@ export interface HelloResponse extends Response<any> {
   binary: boolean
   reconnect?: boolean
   serverVersion: string
+  lastTx?: string
+  lastHash?: string // Last model hash
+  account: Account
+  useCompression?: boolean
 }
 
-function replacer (key: string, value: any): any {
+export function rpcJSONReplacer (key: string, value: any): any {
   if (Array.isArray(value) && ((value as any).total !== undefined || (value as any).lookupMap !== undefined)) {
     return {
       dataType: 'TotalArray',
@@ -61,13 +66,22 @@ function replacer (key: string, value: any): any {
   }
 }
 
-function receiver (key: string, value: any): any {
+export function rpcJSONReceiver (key: string, value: any): any {
   if (typeof value === 'object' && value !== null) {
     if (value.dataType === 'TotalArray') {
       return Object.assign(value.value, { total: value.total, lookupMap: value.lookupMap })
     }
   }
   return value
+}
+
+export interface RateLimitInfo {
+  remaining: number
+  limit: number
+
+  current: number // in milliseconds
+  reset: number // in milliseconds
+  retryAfter?: number // in milliseconds
 }
 
 /**
@@ -81,6 +95,8 @@ export interface Response<R> {
   id?: ReqId
   error?: Status
   terminate?: boolean
+
+  rateLimit?: RateLimitInfo
   chunk?: {
     index: number
     final: boolean
@@ -94,7 +110,7 @@ export class RPCHandler {
   packr = new Packr({ structuredClone: true, bundleStrings: true, copyBuffers: false })
   protoSerialize (object: object, binary: boolean): any {
     if (!binary) {
-      return JSON.stringify(object, replacer)
+      return JSON.stringify(object, rpcJSONReplacer)
     }
     return new Uint8Array(this.packr.pack(object))
   }
@@ -106,7 +122,13 @@ export class RPCHandler {
         const decoder = new TextDecoder()
         _data = decoder.decode(_data)
       }
-      return JSON.parse(_data.toString(), receiver)
+      try {
+        return JSON.parse(_data.toString(), rpcJSONReceiver)
+      } catch (err: any) {
+        if (((err.message as string) ?? '').includes('Unexpected token')) {
+          return this.packr.unpack(new Uint8Array(data))
+        }
+      }
     }
     return this.packr.unpack(new Uint8Array(data))
   }
@@ -118,7 +140,7 @@ export class RPCHandler {
    */
   serialize (object: Request<any> | Response<any>, binary: boolean): any {
     if ((object as any).result !== undefined) {
-      ;(object as any).result = replacer('result', (object as any).result)
+      ;(object as any).result = rpcJSONReplacer('result', (object as any).result)
     }
     return this.protoSerialize(object, binary)
   }
@@ -131,7 +153,7 @@ export class RPCHandler {
   readResponse<D>(response: any, binary: boolean): Response<D> {
     const data = this.protoDeserialize(response, binary)
     if (data.result !== undefined) {
-      data.result = receiver('result', data.result)
+      data.result = rpcJSONReceiver('result', data.result)
     }
     return data
   }

@@ -13,50 +13,57 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
-import { setMetadata, translate } from '@hcengineering/platform'
-import serverToken from '@hcengineering/server-token'
-import serverClient from '@hcengineering/server-client'
-import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
 import { Analytics } from '@hcengineering/analytics'
+import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
+import { MeasureMetricsContext, WorkspaceUuid, newMetrics } from '@hcengineering/core'
+import { setMetadata, translate } from '@hcengineering/platform'
+import serverClient from '@hcengineering/server-client'
+import { initStatisticsContext, QueueTopic } from '@hcengineering/server-core'
+import serverToken from '@hcengineering/server-token'
 import { join } from 'path'
-import type { StorageConfiguration } from '@hcengineering/server-core'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { getPlatformQueue } from '@hcengineering/kafka'
+import { TelegramQueueMessage, TelegramQueueMessageType } from '@hcengineering/server-telegram'
 import telegram from '@hcengineering/telegram'
-import { Telegraf } from 'telegraf'
 
 import config from './config'
+import { registerLoaders } from './loaders'
 import { createServer, listen } from './server'
 import { setUpBot } from './telegraf/bot'
 import { PlatformWorker } from './worker'
-import { registerLoaders } from './loaders'
+import { Telegraf } from 'telegraf'
 import { TgContext } from './telegraf/types'
-import { Command } from './telegraf/commands'
 import { Limiter } from './limiter'
+import { MongoDb } from './mongoDb'
+import { Command } from './telegraf/commands'
 
-const ctx = new MeasureMetricsContext(
-  'telegram-bot-service',
-  {},
-  {},
-  newMetrics(),
-  new SplitLogger('telegram-bot-service', {
-    root: join(process.cwd(), 'logs'),
-    enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
-  })
-)
+const ctx = initStatisticsContext('telegram-bot', {
+  factory: () =>
+    new MeasureMetricsContext(
+      'telegram-bot-service',
+      {},
+      {},
+      newMetrics(),
+      new SplitLogger('telegram-bot-service', {
+        root: join(process.cwd(), 'logs'),
+        enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+      })
+    )
+})
 
 configureAnalytics(config.SentryDSN, config)
 Analytics.setTag('application', 'telegram-bot-service')
 
-export async function requestReconnect (
-  bot: Telegraf<TgContext>,
-  worker: PlatformWorker,
-  limiter: Limiter
-): Promise<void> {
-  const toReconnect = await worker.getUsersToDisconnect()
+export async function requestReconnect (bot: Telegraf<TgContext>, limiter: Limiter): Promise<void> {
+  if (config.MongoDB === '' || config.MongoURL === '') {
+    ctx.info('MongoDB is not configured, skipping reconnect')
+    return
+  }
+
+  const mongoDb = await MongoDb.create()
+  const toReconnect = await mongoDb.getAllUsers()
 
   if (toReconnect.length > 0) {
-    ctx.info('Disconnecting users', { users: toReconnect.map((it) => it.email) })
+    ctx.info('Disconnecting users', { users: toReconnect.map((it) => [it.telegramUsername, it.email]) })
     const message = await translate(telegram.string.DisconnectMessage, { app: config.App, command: Command.Connect })
     for (const userRecord of toReconnect) {
       try {
@@ -64,10 +71,11 @@ export async function requestReconnect (
           await bot.telegram.sendMessage(userRecord.telegramId, message)
         })
       } catch (e) {
-        ctx.error('Failed to send message', { user: userRecord.email, error: e })
+        ctx.error('Failed to send message', { email: userRecord.email, tg: userRecord.telegramUsername, error: e })
       }
     }
-    await worker.disconnectUsers()
+    await mongoDb.removeAllUsers()
+    await mongoDb.close()
   }
 }
 
@@ -77,13 +85,15 @@ export const start = async (): Promise<void> => {
   setMetadata(serverClient.metadata.UserAgent, config.ServiceId)
   registerLoaders()
 
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, config.MongoURL)
-
-  const worker = await PlatformWorker.create(ctx, storageAdapter)
+  ctx.info('Creating worker...')
+  const worker = await PlatformWorker.create(ctx)
+  ctx.info('Set up bot...')
   const bot = await setUpBot(worker)
-  const limiter = new Limiter()
-  const app = createServer(bot, worker, ctx, limiter)
+  ctx.info('Creating server...')
+  const app = createServer(bot, worker, ctx)
+  ctx.info('Creating queue...')
+  const queue = getPlatformQueue('telegramBotService', config.QueueRegion)
+  ctx.info('queue', { clientId: queue.getClientId() })
 
   if (config.Domain === '') {
     ctx.info('Starting bot with polling')
@@ -105,11 +115,37 @@ export const start = async (): Promise<void> => {
     res.status(200).send()
   })
 
-  await requestReconnect(bot, worker, limiter)
+  ctx.info('Requesting reconnect...')
+  await requestReconnect(bot, worker.limiter)
+  ctx.info('Starting server...')
   const server = listen(app, ctx, config.Port)
 
+  const consumer = queue.createConsumer<TelegramQueueMessage>(
+    ctx,
+    QueueTopic.TelegramBot,
+    queue.getClientId(),
+    async (messages) => {
+      for (const message of messages) {
+        const id = message.id as WorkspaceUuid
+        const records = message.value
+        for (const record of records) {
+          switch (record.type) {
+            case TelegramQueueMessageType.Notification:
+              await worker.processNotification(id, record, bot)
+              break
+            case TelegramQueueMessageType.WorkspaceSubscription:
+              await worker.processWorkspaceSubscription(id, record)
+              break
+          }
+        }
+      }
+    }
+  )
+
   const onClose = (): void => {
-    server.close(() => process.exit())
+    void Promise.all([consumer.close(), worker.close(), server.close()]).then(() => {
+      process.exit()
+    })
   }
 
   process.once('SIGINT', () => {

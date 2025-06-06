@@ -46,6 +46,7 @@
     "Options": "Opciones",
     "Projects": "Proyectos ({count})",
     "GithubIssue": "Problema de Github",
+    "GithubMilestone": "GitHub Milestone(Project)",
     "OnlyOrganizationError": "Solo se admiten cuentas de organizaciones",
     "Mergeable": "Listo para combinar",
     "IssueRepositoryTarget": "en",
@@ -72,6 +73,8 @@
     "AuthenticatedWithGithubRequired": "Por favor, autoriza la aplicación de Github para actuar en tu nombre y realizar acciones",
     "Processing": "Procesando autenticación/instalación",
     "AutoClose": "Procesamiento completo, la pestaña se cerrará automáticamente en {time} segundos.",
+    "RequestFailed": "Solicitud fallida. Por favor, cierre la pestaña e intente nuevamente.",
+    "CloseTab": "Cerrar pestaña",
     "PleaseRetry": "Por favor, vuelve a intentar la autenticación",
     "Updated": "Actualizado",
     "LinkToProject": "Conectar a {title}",
@@ -85,6 +88,7 @@
     "AuthenticationRevokedGithub": "Se requiere una nueva autorización para {login} para el correcto funcionamiento de la aplicación de GitHub",
     "UnlinkInstallationTitle": "Desinstalar aplicación de Github",
     "UnlinkInstallation": "¿Estás seguro de que deseas desinstalar la aplicación de GitHub? La sincronización se deshabilitará.",
-    "RemoveInstallation": "Desinstalar"
+    "RemoveInstallation": "Desinstalar",
+    "Suspended": "Suspended"
   }
 }

@@ -30,7 +30,6 @@ import {
   type DocumentSpaceTypeDescriptor,
   type DocumentState,
   type DocumentTemplate,
-  type Sequence,
   type DocumentMeta,
   type ExternalSpace,
   type OrgSpace,
@@ -48,17 +47,17 @@ import {
   DateRangeMode,
   IndexKind,
   type Class,
-  type Doc,
+  type MarkupBlobRef,
+  type Domain,
   type Ref,
   type Timestamp,
   type Type,
   type CollectionSize,
-  type CollaborativeDoc,
   type Role,
   type TypedSpace,
-  type Account,
   type RolesAssignment,
-  type Domain
+  type Rank,
+  type AccountUuid
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -90,6 +89,7 @@ import core, {
 } from '@hcengineering/model-core'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import tags, { type TagReference } from '@hcengineering/tags'
+import time, { type ToDo } from '@hcengineering/time'
 import training, { type Training, type TrainingRequest } from '@hcengineering/training'
 
 import documents from './plugin'
@@ -145,7 +145,7 @@ export class TProject extends TDoc implements Project {
 }
 
 @Model(documents.class.DocumentMeta, core.class.Doc, DOMAIN_DOCUMENTS)
-@UX(documents.string.Document)
+@UX(documents.string.ControlledDocument, documents.icon.Document)
 export class TDocumentMeta extends TDoc implements DocumentMeta {
   @Prop(Collection(documents.class.Document), documents.string.Documents)
     documents!: CollectionSize<Document>
@@ -180,6 +180,10 @@ export class TProjectMeta extends TDoc implements ProjectMeta {
 
   @Prop(Collection(documents.class.ProjectDocument), documents.string.Documents)
     documents!: CollectionSize<ProjectDocument>
+
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    rank!: Rank
 }
 
 @Model(documents.class.ProjectDocument, core.class.AttachedDoc, DOMAIN_DOCUMENTS)
@@ -259,7 +263,7 @@ export class TDocument extends TDoc implements Document {
     state!: DocumentState
 
   @Prop(TypeCollaborativeDoc(), documents.string.CollaborativeDocument)
-    content!: CollaborativeDoc
+    content!: MarkupBlobRef | null
 
   @Prop(Collection(tags.class.TagReference), documents.string.Labels)
     labels?: CollectionSize<TagReference>
@@ -397,6 +401,9 @@ export class TControlledDocument extends THierarchyDocument implements Controlle
   @Prop(TypeRef(documents.class.Document), documents.string.ChangeControl)
   @Hidden()
     changeControl!: Ref<ChangeControl>
+
+  @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
+    todos?: CollectionSize<ToDo>
 }
 
 @Model(documents.class.ChangeControl, core.class.Doc, DOMAIN_DOCUMENTS)
@@ -425,7 +432,7 @@ export class TDocumentSnapshot extends TAttachedDoc implements DocumentSnapshot 
 
   @Prop(TypeCollaborativeDoc(), documents.string.CollaborativeDocument)
   @Hidden()
-    content!: CollaborativeDoc
+    content!: MarkupBlobRef | null
 
   @Prop(TypeDocumentState(), documents.string.Status)
     state?: DocumentState
@@ -450,28 +457,22 @@ export class TDocumentComment extends TChatMessage implements DocumentComment {
     index?: number
 }
 
-@Model(documents.class.Sequence, core.class.Doc, DOMAIN_DOCUMENTS)
-export class TSequence extends TDoc implements Sequence {
-  attachedTo!: Ref<Class<Doc>>
-  sequence!: number
-}
-
 @Model(documents.class.DocumentRequest, request.class.Request)
 @UX(documents.string.DocumentRequest)
 export class TDocumentRequest extends TRequest implements DocumentRequest {}
 
 @Model(documents.class.DocumentReviewRequest, documents.class.DocumentRequest)
-@UX(documents.string.DocumentReviewRequest)
+@UX(documents.string.DocumentReviewRequest, documents.icon.Document)
 export class TDocumentReviewRequest extends TDocumentRequest implements DocumentReviewRequest {}
 
 @Model(documents.class.DocumentApprovalRequest, documents.class.DocumentRequest)
-@UX(documents.string.DocumentApprovalRequest)
+@UX(documents.string.DocumentApprovalRequest, documents.icon.Document)
 export class TDocumentApprovalRequest extends TDocumentRequest implements DocumentApprovalRequest {}
 
 @Mixin(documents.mixin.DocumentSpaceTypeData, documents.class.DocumentSpace)
 @UX(getEmbeddedLabel('Default Documents'), documents.icon.Document)
 export class TDocumentSpaceTypeData extends TDocumentSpace implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: AccountUuid[]
 }
 
 /**

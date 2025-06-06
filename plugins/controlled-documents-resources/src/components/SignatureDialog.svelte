@@ -17,8 +17,21 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import login from '@hcengineering/login'
-  import { ERROR, IntlString, OK, Severity, Status, getMetadata, translate } from '@hcengineering/platform'
-  import { EditBox, StylishEdit, ModernDialog, fetchMetadataLocalStorage } from '@hcengineering/ui'
+  import { getClient as getAccountClient } from '@hcengineering/account-client'
+  import {
+    ERROR,
+    IntlString,
+    OK,
+    PlatformError,
+    Severity,
+    Status,
+    getMetadata,
+    translate
+  } from '@hcengineering/platform'
+  import { EditBox, StylishEdit, ModernDialog } from '@hcengineering/ui'
+  import { getCurrentAccount, SocialIdType } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import contact, { SocialIdentityRef } from '@hcengineering/contact'
 
   import documents from '../plugin'
   import StatusControl from './requests/StatusControl.svelte'
@@ -29,19 +42,28 @@
   export let isRejection: boolean = false
 
   const dispatch = createEventDispatcher()
+  const account = getCurrentAccount()
+  const client = getClient()
 
   let rejectionNote = ''
-
-  const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
-  const email: string =
-    getMetadata(login.metadata.LoginEmail) ?? fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
-  const disableEmailField = email !== ''
-
   const object: LoginInfo = {
-    email,
+    email: '',
     password: ''
   }
 
+  void client
+    .findOne(contact.class.SocialIdentity, {
+      _id: { $in: account.socialIds as SocialIdentityRef[] },
+      type: SocialIdType.EMAIL
+    })
+    .then((si) => {
+      if (si != null) {
+        object.email = si.value
+      }
+    })
+
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
+  $: disableEmailField = object.email !== ''
   $: canSubmit = object.email !== '' && object.password !== '' && (!isRejection || rejectionNote.trim().length > 0)
 
   let status = OK
@@ -59,24 +81,18 @@
   }
 
   async function validateAccount (email: string, password: string): Promise<Status> {
-    const request = {
-      method: 'getAccountInfo',
-      params: [email, password]
-    }
+    const accountClient = getAccountClient(accountsUrl)
 
     try {
-      const response = await fetch(accountsUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(request)
-      })
-      const result = await response.json()
+      await accountClient.login(email, password)
 
-      return result.error ?? OK
+      return OK
     } catch (err: any) {
-      return ERROR
+      if (err instanceof PlatformError) {
+        return err.status
+      } else {
+        return ERROR
+      }
     }
   }
 
@@ -109,6 +125,7 @@
   on:close
   width="32rem"
   shadow={true}
+  className={'signature-dialog'}
 >
   <div class="flex-col flex-gap-2">
     <StylishEdit

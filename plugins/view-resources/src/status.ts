@@ -14,7 +14,7 @@
 //
 
 import core, { type IdMap, type Status, toIdMap } from '@hcengineering/core'
-import { createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery, onClient } from '@hcengineering/presentation'
 import { writable } from 'svelte/store'
 
 interface Store {
@@ -28,23 +28,13 @@ export const statusStore = writable<Store>({
   array: []
 })
 
-function fillStores (): void {
-  const client = getClient()
-
-  if (client !== undefined) {
-    const query = createQuery(true)
-    query.query(core.class.Status, {}, (res) => {
-      const obj = {
-        byId: toIdMap(res),
-        array: res
-      }
-      statusStore.set(obj)
-    })
-  } else {
-    setTimeout(() => {
-      fillStores()
-    }, 50)
-  }
-}
-
-fillStores()
+const query = createQuery(true)
+onClient(() => {
+  query.query(core.class.Status, {}, (res) => {
+    const obj = {
+      byId: toIdMap(res),
+      array: res
+    }
+    statusStore.set(obj)
+  })
+})

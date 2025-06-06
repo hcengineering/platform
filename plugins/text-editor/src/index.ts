@@ -20,4 +20,3 @@ export { default } from './plugin'
 export * from '@hcengineering/presentation/src/types'
 export * from './types'
 export { textEditorId }
-export { Doc as Ydoc } from 'yjs'

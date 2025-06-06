@@ -13,31 +13,33 @@
 // limitations under the License.
 //
 
-import { Collection } from 'mongodb'
 import otpGenerator from 'otp-generator'
 import { Message } from 'telegraf/typings/core/types/typegram'
-import { TelegramNotificationRequest } from '@hcengineering/telegram'
 import { Parser } from 'htmlparser2'
 import { MediaGroup } from 'telegraf/typings/telegram-types'
 import { InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo } from 'telegraf/src/core/types/typegram'
 import { Context, Input } from 'telegraf'
+import { TelegramNotificationQueueMessage } from '@hcengineering/server-telegram'
+import { systemAccountUuid } from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
 
-import { OtpRecord, PlatformFileInfo, TelegramFileInfo } from './types'
+import { PlatformFileInfo, TelegramFileInfo } from './types'
+import { PostgresDB } from './db'
 
-export async function getNewOtp (otpCollection: Collection<OtpRecord>): Promise<string> {
+export async function getNewOtp (db: PostgresDB): Promise<string> {
   let otp = otpGenerator.generate(6, {
     upperCaseAlphabets: false,
     lowerCaseAlphabets: false,
     specialChars: false
   })
 
-  let exist = await otpCollection.findOne({ otp })
+  let exist = await db.getOtpByCode(otp)
 
   while (exist != null) {
     otp = otpGenerator.generate(6, {
       lowerCaseAlphabets: false
     })
-    exist = await otpCollection.findOne({ otp })
+    exist = await db.getOtpByCode(otp)
   }
 
   return otp
@@ -48,7 +50,7 @@ const maxQuoteLength = 500
 const maxBodyLength = 2000
 const maxSenderLength = 100
 
-export function toTelegramHtml (record: TelegramNotificationRequest): {
+export function toTelegramHtml (record: TelegramNotificationQueueMessage): {
   full: string
   short: string
 } {
@@ -80,11 +82,13 @@ export function platformToTelegram (message: string, limit: number): string {
   string,
   {
     count: number
+    hasContent: boolean
+    defaultText: string
   }
   >()
 
   const parser = new Parser({
-    onopentag: (tag) => {
+    onopentag: (tag, attributes) => {
       if (tag === 'br' || tag === 'p') {
         return
       }
@@ -104,18 +108,37 @@ export function platformToTelegram (message: string, limit: number): string {
         return
       }
 
+      let defaultText = ''
+
+      if (tag === 'a' && 'href' in attributes) {
+        newMessage += `<a href="${attributes.href}">`
+        defaultText = attributes.href
+      } else {
+        newMessage += `<${tag}>`
+      }
+
       openedTags.set(tag, {
-        count: 1
+        count: 1,
+        hasContent: false,
+        defaultText
       })
-      newMessage += `<${tag}>`
     },
-    ontext: (text) => {
+    ontext: (rawText) => {
       if (textLength >= limit) {
         return
       }
 
-      textLength += unescape(text).length
-      newMessage += unescape(text)
+      const text = unescape(rawText)
+      textLength += text.length
+      newMessage += text
+
+      const lastOpenedTag = Array.from(openedTags.keys()).pop()
+      if (lastOpenedTag != null) {
+        const tagData = openedTags.get(lastOpenedTag)
+        if (tagData != null && text !== '') {
+          tagData.hasContent = true
+        }
+      }
 
       if (textLength > limit) {
         const extra = textLength - limit + 1
@@ -146,6 +169,10 @@ export function platformToTelegram (message: string, limit: number): string {
       // We have unknown tag
       if (existingTag === undefined) {
         return
+      }
+
+      if (!existingTag.hasContent && existingTag.defaultText !== '') {
+        newMessage += existingTag.defaultText
       }
 
       existingTag.count -= 1
@@ -278,4 +305,8 @@ export async function toTelegramFileInfo (
   }
 
   return undefined
+}
+
+export function serviceToken (): string {
+  return generateToken(systemAccountUuid, undefined, { service: 'telegram-bot' })
 }

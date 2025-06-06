@@ -14,9 +14,15 @@
 //
 
 import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { CellSelection } from '@tiptap/pm/tables'
 
 export interface TableNodeLocation {
   pos: number
   start: number
   node: ProseMirrorNode
 }
+
+// This subclass serves as a tag to distinguish between situations where
+// the table is selected as a node and when all cells in the table are selected,
+// the deletion behavior depends on this.
+export class TableSelection extends CellSelection {}

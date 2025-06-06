@@ -46,7 +46,6 @@
 
   let categories: ObjectSearchCategory[] = []
   let categoryStatus: Record<Ref<ObjectSearchCategory>, number> = {}
-  const client = getClient()
 
   let category: ObjectSearchCategory | undefined
   const categoryQuery: DocumentQuery<ObjectSearchCategory> = {
@@ -56,10 +55,12 @@
     categoryQuery._id = { $in: allowCategory }
   }
 
-  client.findAll(presentation.class.ObjectSearchCategory, categoryQuery).then((r) => {
-    categories = r.filter((it) => hasResource(it.query))
-    category = categories[0]
-  })
+  void getClient()
+    .findAll(presentation.class.ObjectSearchCategory, categoryQuery)
+    .then((r) => {
+      categories = r.filter((it) => hasResource(it.query))
+      category = categories[0]
+    })
 
   const dispatch = createEventDispatcher()
 
@@ -96,7 +97,7 @@
       key.preventDefault()
       key.stopPropagation()
       const item = items[selection]
-      if (item) {
+      if (item != null) {
         dispatchItem(item)
         return true
       } else {
@@ -106,7 +107,7 @@
     return false
   }
 
-  export function done () {}
+  export function done (): void {}
 
   const updateItems = reduceCalls(async function updateItems (
     cat: ObjectSearchCategory | undefined,
@@ -120,6 +121,7 @@
     const newCategoryStatus: Record<Ref<ObjectSearchCategory>, number> = {}
     const f = await getResource(cat.query)
 
+    const client = getClient()
     const result = await f(client, query, { in: relatedDocuments, nin: ignore })
     // We need to sure, results we return is for proper category.
     if (cat._id === category?._id) {

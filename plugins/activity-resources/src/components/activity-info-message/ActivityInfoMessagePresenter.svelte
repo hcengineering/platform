@@ -14,15 +14,7 @@
 -->
 <script lang="ts">
   import { ActivityInfoMessage } from '@hcengineering/activity'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
-  import {
-    Avatar,
-    SystemAvatar,
-    employeeByIdStore,
-    personAccountByIdStore,
-    personByIdStore
-  } from '@hcengineering/contact-resources'
-  import { Ref } from '@hcengineering/core'
+  import { Avatar, SystemAvatar, personByPersonIdStore } from '@hcengineering/contact-resources'
   import { translateCB } from '@hcengineering/platform'
   import { HTMLViewer } from '@hcengineering/presentation'
   import { Action, themeStore } from '@hcengineering/ui'
@@ -39,16 +31,12 @@
   export let withActions: boolean = true
   export let actions: Action[] = []
   export let hoverable = true
-  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hoverStyles: 'filledHover' = 'filledHover'
   export let hideLink = false
   export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
-  $: personAccount = $personAccountByIdStore.get((value.createdBy ?? value.modifiedBy) as Ref<PersonAccount>)
-  $: person =
-    personAccount?.person !== undefined
-      ? $employeeByIdStore.get(personAccount.person as Ref<Employee>) ?? $personByIdStore.get(personAccount.person)
-      : undefined
+  $: person = $personByPersonIdStore.get(value.createdBy ?? value.modifiedBy)
 
   let content = ''
 

@@ -14,38 +14,71 @@
 // limitations under the License.
 //
 
-import { type Branding, type BrandingMap, type Tx, type WorkspaceIdWithUrl } from '@hcengineering/core'
+import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { getMetricsContext } from './metrics'
 
-import { ClientSession, startSessionManager } from '@hcengineering/server'
-import { type Pipeline, type ServerFactory, type Session, type StorageConfiguration } from '@hcengineering/server-core'
-import { type Token } from '@hcengineering/server-token'
+import { startSessionManager } from '@hcengineering/server'
+import {
+  type CommunicationApiFactory,
+  type PlatformQueue,
+  type SessionManager,
+  type StorageConfiguration
+} from '@hcengineering/server-core'
 
-import { serverAiBotId } from '@hcengineering/server-ai-bot'
-import { createAIBotAdapter } from '@hcengineering/server-ai-bot-resources'
-import { createServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
+import { Api as CommunicationApi } from '@hcengineering/communication-server'
+import {
+  createServerPipeline,
+  isAdapterSecurity,
+  registerAdapterFactory,
+  registerDestroyFactory,
+  registerServerPlugins,
+  registerStringLoaders,
+  registerTxAdapterFactory,
+  setAdapterSecurity,
+  sharedPipelineContextVars
+} from '@hcengineering/server-pipeline'
 
+import {
+  createMongoAdapter,
+  createMongoDestroyAdapter,
+  createMongoTxAdapter,
+  shutdownMongo
+} from '@hcengineering/mongo'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  setDBExtraOptions,
+  shutdownPostgres
+} from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
+import { startHttpServer } from './server_http'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 registerStringLoaders()
 
+// Register close on process exit.
+process.on('exit', () => {
+  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+})
 /**
  * @public
  */
 export function start (
-  dbUrls: string,
+  metrics: MeasureContext,
+  dbUrl: string,
   opt: {
-    fullTextUrl: string
+    queue: PlatformQueue
+    fulltextUrl: string
     storageConfig: StorageConfiguration
-    rekoniUrl: string
     port: number
     brandingMap: BrandingMap
-    serverFactory: ServerFactory
-
-    indexProcessing: number // 1000
-    indexParallel: number // 2
+    communicationApiEnabled: boolean
 
     enableCompression?: boolean
 
@@ -55,53 +88,78 @@ export function start (
       start: () => void
       stop: () => Promise<string | undefined>
     }
+
+    mongoUrl?: string
   }
-): () => Promise<void> {
-  const metrics = getMetricsContext()
+): { shutdown: () => Promise<void>, sessionManager: SessionManager } {
+  registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+  registerAdapterFactory('mongodb', createMongoAdapter)
+  registerDestroyFactory('mongodb', createMongoDestroyAdapter)
+
+  registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactory('postgresql', createPostgresAdapter, true)
+  registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+  setAdapterSecurity('postgresql', true)
+
+  const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
+
+  setDBExtraOptions({
+    prepare: usePrepare // We override defaults
+  })
 
   registerServerPlugins()
 
-  const [mainDbUrl, rawDbUrl] = dbUrls.split(';')
-
-  const externalStorage = buildStorageFromConfig(opt.storageConfig, rawDbUrl ?? mainDbUrl)
+  const externalStorage = buildStorageFromConfig(opt.storageConfig)
 
   const pipelineFactory = createServerPipeline(
     metrics,
-    dbUrls,
+    dbUrl,
     model,
-    { ...opt, externalStorage, adapterSecurity: rawDbUrl !== undefined },
-    {
-      serviceAdapters: {
-        [serverAiBotId]: {
-          factory: createAIBotAdapter,
-          db: '%ai-bot',
-          url: rawDbUrl ?? mainDbUrl
-        }
+    { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl), queue: opt.queue },
+    {}
+  )
+  const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace, broadcastSessions) => {
+    if (dbUrl.startsWith('mongodb') || !opt.communicationApiEnabled) {
+      return {
+        findMessages: async () => [],
+        findMessagesGroups: async () => [],
+        findNotificationContexts: async () => [],
+        findCollaborators: async () => [],
+        findNotifications: async () => [],
+        findLabels: async () => [],
+        unsubscribeQuery: async () => {},
+        event: async () => {
+          return {}
+        },
+        closeSession: async () => {},
+        close: async () => {}
       }
     }
-  )
-  const sessionFactory = (
-    token: Token,
-    pipeline: Pipeline,
-    workspaceId: WorkspaceIdWithUrl,
-    branding: Branding | null
-  ): Session => {
-    return new ClientSession(token, pipeline, workspaceId, branding, token.extra?.mode === 'backup')
+
+    return await CommunicationApi.create(
+      ctx.newChild('💬 communication api', {}),
+      workspace.uuid,
+      dbUrl,
+      broadcastSessions as any // FIXME when communication will be inside the repo
+    )
   }
 
-  const onClose = startSessionManager(getMetricsContext(), {
+  const sessionManager = startSessionManager(metrics, {
     pipelineFactory,
-    sessionFactory,
-    port: opt.port,
+    communicationApiFactory,
     brandingMap: opt.brandingMap,
-    serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,
-    externalStorage,
-    profiling: opt.profiling
+    profiling: opt.profiling,
+    queue: opt.queue
   })
-  return async () => {
-    await externalStorage.close()
-    await onClose()
+  const shutdown = startHttpServer(metrics, sessionManager, opt.port, opt.accountsUrl, externalStorage)
+  return {
+    shutdown: async () => {
+      await externalStorage.close()
+      await sessionManager.closeWorkspaces(metrics)
+      await shutdown()
+    },
+    sessionManager
   }
 }

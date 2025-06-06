@@ -1,10 +1,10 @@
-import { type AccountDB, joinWithProvider, LoginInfo, loginWithProvider } from '@hcengineering/account'
-import { BrandingMap, concatLink, MeasureContext, getBranding } from '@hcengineering/core'
+import { type AccountDB } from '@hcengineering/account'
+import { type ProviderInfo } from '@hcengineering/account-client'
+import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } from '@hcengineering/core'
 import Router from 'koa-router'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
-import qs from 'querystringify'
 import { Passport } from '.'
-import { getHost, safeParseAuthState } from './utils'
+import { encodeState, handleProviderAuth, safeParseAuthState } from './utils'
 
 export function registerGoogle (
   measureCtx: MeasureContext,
@@ -13,10 +13,13 @@ export function registerGoogle (
   accountsUrl: string,
   dbPromise: Promise<AccountDB>,
   frontUrl: string,
-  brandings: BrandingMap
-): string | undefined {
+  brandings: BrandingMap,
+  signUpDisabled?: boolean
+): ProviderInfo | undefined {
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
   const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
+  const name = 'google'
+  const displayName = process.env.GOOGLE_DISPLAY_NAME
 
   const redirectURL = '/auth/google/callback'
   if (GOOGLE_CLIENT_ID === undefined || GOOGLE_CLIENT_SECRET === undefined) return
@@ -36,14 +39,7 @@ export function registerGoogle (
 
   router.get('/auth/google', async (ctx, next) => {
     measureCtx.info('try auth via', { provider: 'google' })
-    const host = getHost(ctx.request.headers)
-    const branding = host !== undefined ? brandings[host]?.key ?? undefined : undefined
-    const state = encodeURIComponent(
-      JSON.stringify({
-        inviteId: ctx.query?.inviteId,
-        branding
-      })
-    )
+    const state = encodeState(ctx, brandings)
 
     passport.authenticate('google', { scope: ['profile', 'email'], session: true, state })(ctx, next)
   })
@@ -67,32 +63,30 @@ export function registerGoogle (
       const email = ctx.state.user.emails?.[0]?.value
       const first = ctx.state.user.name.givenName
       const last = ctx.state.user.name.familyName
-      measureCtx.info('Provider auth handler', { email, type: 'google' })
-      if (email !== undefined) {
-        try {
-          let loginInfo: LoginInfo
-          const state = safeParseAuthState(ctx.query?.state)
-          const branding = getBranding(brandings, state?.branding)
-          const db = await dbPromise
-          if (state.inviteId != null && state.inviteId !== '') {
-            loginInfo = await joinWithProvider(measureCtx, db, null, email, first, last, state.inviteId as any)
-          } else {
-            loginInfo = await loginWithProvider(measureCtx, db, null, email, first, last)
-          }
+      const db = await dbPromise
 
-          const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
-          const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
+      const redirectUrl = await handleProviderAuth(
+        measureCtx,
+        db,
+        brandings,
+        frontUrl,
+        'google',
+        ctx.query?.state,
+        ctx.state?.user,
+        email,
+        first,
+        last,
+        { type: SocialIdType.GOOGLE, value: email },
+        signUpDisabled
+      )
 
-          // Successful authentication, redirect to your application
-          measureCtx.info('Success auth, redirect', { email, type: 'google', target: origin })
-          ctx.redirect(`${origin}?${query}`)
-        } catch (err: any) {
-          measureCtx.error('failed to auth', { err, type: 'google', user: ctx.state?.user })
-        }
+      if (redirectUrl !== '') {
+        ctx.redirect(redirectUrl)
       }
+
       await next()
     }
   )
 
-  return 'google'
+  return { name, displayName }
 }

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import core, { Account, Doc, generateId, Ref } from '@hcengineering/core'
+  import core, { Doc, generateId, type PersonId, Ref } from '@hcengineering/core'
   import presentation, { DraftController, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType } from '@hcengineering/task'
@@ -137,7 +137,7 @@
       collection: 'labels',
       space: core.space.Workspace,
       modifiedOn: 0,
-      modifiedBy: '' as Ref<Account>,
+      modifiedBy: '' as PersonId,
       title: tag.title,
       tag: tag._id,
       color: tag.color
@@ -249,7 +249,7 @@
           addTagRef(evt.detail)
         }}
         on:delete={(evt) => {
-          object.labels = object.labels.filter((it) => it._id !== evt.detail)
+          object.labels = object.labels.filter((it) => it.tag !== evt.detail._id)
         }}
       />
     </div>

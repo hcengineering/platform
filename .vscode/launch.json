@@ -5,30 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Notion import",
-      "type": "node",
-      "request": "launch",
-      // "args": ["src/__start.ts", "import-notion-to-teamspace", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-u", "user1", "-pw", "1234", "-ws", "ws1", "-ts", "notion", ],
-      "args": ["src/__start.ts", "import-notion-with-teamspaces", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-u", "user1", "-pw", "1234", "-ws", "ws1"],
-      "env": {
-        "FRONT_URL": "http://localhost:8087",
-      },
-      "runtimeVersion": "20",
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "sourceMaps": true,
-      "outputCapture": "std",
-      "cwd": "${workspaceRoot}/dev/import-tool"
-    },
-    {
       "address": "127.0.0.1",
       "localRoot": "${workspaceFolder}",
       "name": "Attach to Remote",
       "port": 9229,
       "request": "attach",
       "sourceMaps": true,
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "type": "node"
     },
     {
@@ -40,7 +23,7 @@
       "console": "integratedTerminal",
       "justMyCode": true,
       "env": {
-        "PYTORCH_ENABLE_MPS_FALLBACK":"1"
+        "PYTORCH_ENABLE_MPS_FALLBACK": "1"
       }
     },
     {
@@ -49,10 +32,14 @@
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
-        "ELASTIC_URL": "http://localhost:9200",
-        "MONGO_URL": "mongodb://localhost:27017",
+        // "FULLTEXT_URL": "http://localhost:4700",
+        "FULLTEXT_URL": "http://huly.local:4702",
+        // "MONGO_URL": "mongodb://localhost:27017",
         "DB_URL": "mongodb://localhost:27017",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
+        // "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
+        // "GREEN_URL": "http://huly.local:6767?token=secret",
+        "SERVER_PORT": "3333",
         "APM_SERVER_URL2": "http://localhost:8200",
         "METRICS_CONSOLE": "false",
         "METRICS_FILE": "${workspaceRoot}/metrics.txt", // Show metrics in console evert 30 seconds.,
@@ -65,11 +52,15 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
-        "SERVER_PROVIDER":"ws",
-        "MODEL_VERSION": "0.6.287",
+        "SERVER_PROVIDER": "ws",
+        "MODEL_VERSION": "0.7.48",
         // "VERSION": "0.6.289",
         "ELASTIC_INDEX_NAME": "local_storage_index",
-        "UPLOAD_URL": "/files",      
+        "UPLOAD_URL": "/files",
+        "AI_BOT_URL": "http://localhost:4010",
+        "STATS_URL": "http://huly.local:4900",
+        "STREAM_URL": "http://huly.local:1080/recording",
+        "QUEUE_CONFIG": "localhost:19092"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -80,26 +71,137 @@
       "protocol": "inspector"
     },
     {
+      "name": "Debug server (CR)",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts"],
+      "env": {
+        // "FULLTEXT_URL": "http://localhost:4700",
+        "FULLTEXT_URL": "http://huly.local:4702",
+        // "MONGO_URL": "mongodb://localhost:27017",
+        // "DB_URL": "mongodb://localhost:27017",
+        // "DB_URL": "postgresql://postgres:example@localhost:5432",
+        "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
+        // "GREEN_URL": "http://huly.local:6767?token=secret",
+        "SERVER_PORT": "3332",
+        "APM_SERVER_URL2": "http://localhost:8200",
+        "METRICS_CONSOLE": "false",
+        "METRICS_FILE": "${workspaceRoot}/metrics.txt", // Show metrics in console evert 30 seconds.,
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "SERVER_SECRET": "secret",
+        "ENABLE_CONSOLE": "true",
+        "COLLABORATOR_URL": "ws://localhost:3078",
+        "REKONI_URL": "http://localhost:4004",
+        "FRONT_URL": "http://localhost:8080",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
+        // "SERVER_PROVIDER":"uweb"
+        "SERVER_PROVIDER": "ws",
+        "MODEL_VERSION": "0.7.110",
+        // "VERSION": "0.6.289",
+        "ELASTIC_INDEX_NAME": "local_storage_index",
+        "UPLOAD_URL": "/files",
+        "AI_BOT_URL": "http://localhost:4010",
+        "STATS_URL": "http://huly.local:4900",
+        "QUEUE_CONFIG": "localhost:19092"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "showAsyncStacks": true,
+      "outputCapture": "std",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/server",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug server(Test)",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts"],
+      "env": {
+        "FULLTEXT_URL": "http://localhost:4710",
+        // "DB_URL": "mongodb://localhost:27018",
+        // "DB_URL": "postgresql://postgres:example@localhost:5432",
+        "DB_URL": "postgresql://root@huly.local:26258/defaultdb?sslmode=disable",
+        // "GREEN_URL": "http://huly.local:6767?token=secret",
+        "SERVER_PORT": "3335",
+        "METRICS_CONSOLE": "false",
+        "DEBUG_PRINT_SQL": "true",
+        "METRICS_FILE": "${workspaceRoot}/metrics.txt", // Show metrics in console evert 30 seconds.,
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "SERVER_SECRET": "secret",
+        "ENABLE_CONSOLE": "true",
+        "COLLABORATOR_URL": "ws://localhost:3079",
+        "FRONT_URL": "http://localhost:8083",
+        "ACCOUNTS_URL": "http://localhost:3003",
+        "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
+        "MODEL_VERSION": "0.7.110",
+        "STATS_URL": "http://huly.local:4901",
+        "QUEUE_CONFIG": "localhost:19093"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "showAsyncStacks": true,
+      "outputCapture": "std",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/server",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug Fulltext",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        // "PORT": "4700",// For mongo
+        "PORT": "4710", // for cockroach
+        "FULLTEXT_DB_URL": "http://localhost:9201",
+        "DB_URL": "mongodb://localhost:27018",
+        // "DB_URL": "postgresql://postgres:example@localhost:5432",
+        // "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "SERVER_SECRET": "secret",
+        "REKONI_URL": "http://localhost:4004",
+        "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
+        "ELASTIC_INDEX_NAME": "local_storage_index",
+        "REGION": "",
+        "STATS_URL": "http://huly.local:4901",
+        "ACCOUNTS_URL": "http://localhost:3003",
+        "QUEUE_CONFIG": "localhost:19093;-staging"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "showAsyncStacks": true,
+      "outputCapture": "std",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/fulltext",
+      "protocol": "inspector"
+    },
+    {
       "name": "Debug Account",
       "type": "node",
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
         "MONGO_URL": "mongodb://localhost:27017",
-        "DB_URL": "mongodb://localhost:27017",
-        // "DB_URL": "postgresql://postgres:example@localhost:5432",
+        // "DB_URL": "mongodb://localhost:27017",
+        "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
         "SERVER_SECRET": "secret",
-        "TRANSACTOR_URL": "ws://host.docker.internal:3333,ws://host.docker.internal:3331;;pg",
+        "REGION_INFO": "|Mongo;cockroach|CockroachDB",
+        "TRANSACTOR_URL": "ws://huly.local:3333,ws://huly.local:3332;;cockroach",
         "ACCOUNTS_URL": "http://localhost:3000",
-        "REGION_INFO": "|Mongo;pg|Postgree",
         "ACCOUNT_PORT": "3000",
-        "FRONT_URL": "http://localhost:8080",
-        "SES_URL": "",
+        // "FRONT_URL": "http://huly.local:8080",
+        "FRONT_URL": "http://huly.local:8087",
+        "STATS_URL": "http://huly.local:4900",
+        "MAIL_URL": "",
+        // "DB_NS": "account-2",
+        // "WS_LIVENESS_DAYS": "1",
+        // "WORKSPACE_LIMIT_PER_USER": "1",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost"
-        // "INIT_SCRIPT_URL": "https://raw.githubusercontent.com/hcengineering/init/main/script.yaml",
-        // "INIT_WORKSPACE": "onboarding",
+        // "DISABLE_SIGNUP": "true",
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -109,26 +211,114 @@
       "protocol": "inspector"
     },
     {
-      "name": "Debug Workspace",
+      "name": "Debug Account(Staging)",
       "type": "node",
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
-        "MONGO_URL": "mongodb://localhost:27017",
-        // "DB_URL": "mongodb://localhost:27017",
-        "REGION": "pg",
-        "DB_URL": "postgresql://postgres:example@localhost:5432",
+        // "MONGO_URL": "mongodb://localhost:27018",
+        // "DB_URL": "mongodb://localhost:27018",
+        // "DB_URL": "postgresql://postgres:example@localhost:5432",
+        "DB_URL": "postgresql://root@huly.local:26258/defaultdb?sslmode=disable",
+        "SERVER_SECRET": "secret",
+        "REGION_INFO": "|Mongo;pg|Postgres;cockroach|CockroachDB",
+        "TRANSACTOR_URL": "ws://transactor:3334;ws://localhost:3334",
+        "ACCOUNTS_URL": "http://localhost:3003",
+        "ACCOUNT_PORT": "3003",
+        "FRONT_URL": "http://localhost:8083",
+        "STATS_URL": "http://huly.local:4901",
+        "MAIL_URL": "",
+        // "DB_NS": "account-2",
+        // "WS_LIVENESS_DAYS": "1",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost"
+        // "DISABLE_SIGNUP": "true",
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/pods/account",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug Stats",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts"],
+      "env": {
+        "PORT": "4901",
+        "SERVER_SECRET": "secret"
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/pods/stats",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug Workspace(mongo)",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts"],
+      "env": {
+        "DB_URL": "mongodb://localhost:27017",
+        // "DB_URL": "postgresql://postgres:example@localhost:5432",
+        // "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
+
+        "REGION": "",
         "SERVER_SECRET": "secret",
         "TRANSACTOR_URL": "ws://localhost:3333",
         "ACCOUNTS_URL": "http://localhost:3000",
         "FRONT_URL": "http://localhost:8080",
-        "SES_URL": "",
+        "MAIL_URL": "",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "v0.6.287"
-        // "INIT_SCRIPT_URL": "https://raw.githubusercontent.com/hcengineering/init/main/script.yaml",
-        // "INIT_WORKSPACE": "onboarding",
+        "MODEL_VERSION": "v0.7.75",
+        "WS_OPERATION": "all+backup",
+        "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
+        "BACKUP_BUCKET": "dev-backups",
+        "INIT_REPO_DIR": "${workspaceRoot}/pods/workspace/init",
+        "INIT_WORKSPACE": "staging-dev",
+        "QUEUE_CONFIG": "huly.local:19092",
+        "QUEUE_REGION": ""
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/pods/workspace",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug Workspace(cockroach)",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts"],
+      "env": {
+        // "DB_URL": "mongodb://localhost:27017",
+        // "DB_URL": "postgresql://postgres:example@localhost:5432",
+        "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
+        "FULLTEXT_URL": "http://huly.local:4702",
+        "REGION": "cockroach",
+        "SERVER_SECRET": "secret",
+        "TRANSACTOR_URL": "ws://localhost:3332",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "FRONT_URL": "http://localhost:8080",
+        "MAIL_URL": "",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost",
+        "MODEL_VERSION": "0.7.110",
+        "WS_OPERATION": "all+backup",
+        "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
+        "BACKUP_BUCKET": "dev-backups",
+        "QUEUE_CONFIG": "huly.local:19092"
+        // "INIT_REPO_DIR": "${workspaceRoot}/pods/workspace/init",
+        // "INIT_WORKSPACE": "staging-dev"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -143,7 +333,6 @@
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
-        "ELASTIC_URL": "http://localhost:9200",
         "MONGO_URL": "mongodb://localhost:27017",
         "METRICS_CONSOLE": "false",
         "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
@@ -178,10 +367,9 @@
         "METRICS_CONSOLE": "true",
         "ACCOUNTS_URL": "http://localhost:3000",
         "MONGO_URL": "mongodb://localhost:27017",
-        "MINIO_ACCESS_KEY": "minioadmin",
-        "MINIO_SECRET_KEY": "minioadmin",
-        "MINIO_ENDPOINT": "localhost"
+        "STORAGE_CONFIG": "datalake|http://localhost:4030"
       },
+      "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/collaborator",
@@ -218,30 +406,30 @@
       "name": "Debug backup tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "backup", "../temp/backup-test", "platform", "--force"],
+      "args": ["src/__start.ts", "backup", "../../../hardware/dump/felix", "felix", "--full"],
       "env": {
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
         "SERVER_SECRET": "secret",
-        "MONGO_URL": "mongodb://localhost:27017",
-        "ACCOUNTS_URL": "http://localhost:3000",
-        "TELEGRAM_DATABASE": "telegram-service",
-        "ELASTIC_URL": "http://localhost:9200"
+        "MONGO_URL": "mongodb://localhost:27018",
+        "ACCOUNTS_URL": "http://localhost:3003"
       },
+      "smartStep": true,
+      "sourceMapRenames": true,
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/dev/tool",
       "protocol": "inspector",
       "outputCapture": "std",
-      "runtimeVersion": "20",
-      "showAsyncStacks": true,
+      "runtimeVersion": "22",
+      "showAsyncStacks": true
     },
     {
       "name": "Debug tool upgrade",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "upgrade", "--force"],
+      "args": ["src/__start.ts", "migrate-github-account", "--region", "cockroach", "--db", "%github"],
       "env": {
         "SERVER_SECRET": "secret",
         "MINIO_ACCESS_KEY": "minioadmin",
@@ -249,11 +437,39 @@
         "MINIO_ENDPOINT": "localhost:9000",
         "TRANSACTOR_URL": "ws://localhost:3333",
         "MONGO_URL": "mongodb://localhost:27017",
-        "ACCOUNTS_URL": "http://localhost:3000",
+        "DB_URL": "mongodb://localhost:27017",
+        "ACCOUNTS_URL": "http://127.0.0.1:3000",
+        "ACCOUNT_DB_URL": "mongodb://localhost:27017",
         "TELEGRAM_DATABASE": "telegram-service",
-        "ELASTIC_URL": "http://localhost:9200",
         "REKONI_URL": "http://localhost:4004",
-        "MODEL_VERSION": "0.6.287"
+        "MODEL_VERSION": "0.7.1"
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/tool"
+    },
+    {
+      "name": "Debug tool upgrade PG(Cockroach)",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts", "upgrade-workspace", "platform"],
+      "env": {
+        "SERVER_SECRET": "secret",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost:9000",
+        "TRANSACTOR_URL": "ws://localhost:3332",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "ACCOUNT_DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
+        // "ACCOUNT_DB_URL": "postgresql://postgres:example@localhost:5433",
+        // "DB_URL": "postgresql://postgres:example@localhost:5433",
+        "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "TELEGRAM_DATABASE": "telegram-service",
+        "REKONI_URL": "http://localhost:4004",
+        "MODEL_VERSION": "0.7.75"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -275,7 +491,6 @@
         "DB_URL": "postgresql://postgres:example@localhost:5432",
         "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service",
-        "ELASTIC_URL": "http://localhost:9200",
         "REKONI_URL": "http://localhost:4004"
       },
       "runtimeVersion": "20",
@@ -293,10 +508,12 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
         "WORKSPACE_STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
-        "MONGO_URL": "mongodb://localhost:27017",
+        "DB_URL": "mongodb://localhost:27017",
+        "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         "SECRET": "secret",
-        "BUCKET_NAME":"backups",
-        "INTERVAL":"30",
+        "REGION": "cockroach",
+        "BUCKET_NAME": "backups",
+        "INTERVAL": "0"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,
@@ -306,26 +523,67 @@
       "protocol": "inspector"
     },
     {
+      "name": "Debug archive tool",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts", "archive-workspaces-mongo", "--timeout", "7", "--remove"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "WORKSPACE_STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "DB_URL": "mongodb://localhost:27017",
+        "SERVER_SECRET": "secret",
+        "SECRET": "secret",
+        "BUCKET_NAME": "backups"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "showAsyncStacks": true,
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/tool",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug restore-all tool",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts", "restore-all"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        // "DB_URL": "mongodb://localhost:27017",
+        "DB_URL": "postgresql://root@host.docker.internal:26258/defaultdb?sslmode=disable",
+        "SERVER_SECRET": "secret",
+        "BUCKET_NAME": "dev-backups"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "showAsyncStacks": true,
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/tool",
+      "protocol": "inspector"
+    },
+    {
       "name": "Debug Github integration",
       "type": "node",
       "request": "launch",
       "args": ["src/index.ts"],
       "env": {
-        "MONGO_URL": "mongodb://localhost:27017",
         "SERVER_SECRET": "secret",
-        "ACCOUNTS_URL": "http://localhost:3000",
+        "ACCOUNTS_URL": "http://localhost:3003",
         "APP_ID": "${env:POD_GITHUB_APPID}",
         "CLIENT_ID": "${env:POD_GITHUB_CLIENTID}",
         "CLIENT_SECRET": "${env:POD_GITHUB_CLIENT_SECRET}",
         "PRIVATE_KEY": "${env:POD_GITHUB_PRIVATE_KEY}",
-        "COLLABORATOR_URL": "ws://localhost:3078",
-        "SYSTEM_EMAIL": "anticrm@hc.engineering",
-        "MINIO_ENDPOINT": "localhost",
+        "COLLABORATOR_URL": "ws://huly.local:3079",
+        "MINIO_ENDPOINT": "localhost:9002",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "PLATFORM_OPERATION_LOGGING": "true",
         "FRONT_URL": "http://localhost:8080",
-        "PORT": "3500"
+        "PORT": "3500",
+        "STATS_URL": "http://huly.local:4901"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -340,7 +598,6 @@
       "args": ["src/index.ts"],
       "env": {
         "ACCOUNTS_URL": "http://localhost:3000",
-        "SYSTEM_EMAIL": "anticrm@hc.engineering",
         "SECRET": "secret",
         "DOCS_RELEASE_INTERVAL": "10000",
         "DOCS_IN_REVIEW_CHECK_INTERVAL": "10000",
@@ -379,9 +636,7 @@
         "PORT": "4005",
         "SECRET": "secret",
         "MONGO_URL": "mongodb://localhost:27017",
-        "MINIO_ENDPOINT": "localhost",
-        "MINIO_ACCESS_KEY": "minioadmin",
-        "MINIO_SECRET_KEY": "minioadmin"
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -402,7 +657,6 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "SERVICE_ID": "sign-service",
-        "SYSTEM_EMAIL": "",
         "ACCOUNTS_URL": "http://localhost:3000",
         "BRANDING_PATH": "${workspaceRoot}/services/sign/pod-sign/debug/branding.json"
       },
@@ -440,7 +694,6 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "SERVER_SECRET": "secret",
         "SERVICE_ID": "analytics-collector",
-        "SUPPORT_WORKSPACE": "support",
         "ACCOUNTS_URL": "http://localhost:3000"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -460,16 +713,17 @@
         "MONGO_URL": "mongodb://localhost:27017",
         "PORT": "4010",
         "SERVER_SECRET": "secret",
-        "SUPPORT_WORKSPACE": "support",
         "FIRST_NAME": "Jolie",
         "LAST_NAME": "AI",
         "PASSWORD": "password",
         "AVATAR_PATH": "./assets/avatar.png",
         "AVATAR_CONTENT_TYPE": ".png",
-        "OPENAI_API_KEY": "token"
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "LOVE_ENDPOINT": "http://localhost:8096"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
+      "runtimeVersion": "20",
       "cwd": "${workspaceRoot}/services/ai-bot/pod-ai-bot",
       "protocol": "inspector",
       "outputCapture": "std"
@@ -485,16 +739,38 @@
         "MONGO_URL": "mongodb://localhost:27017",
         "MONGO_DB": "telegram-bot",
         "SECRET": "secret",
-        "ACCOUNTS_URL": "http://localhost:3000",
+        "ACCOUNTS_URL": "http://huly.local:3000",
         "SERVICE_ID": "telegram-bot-service",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
-        "MINIO_ENDPOINT": "localhost"
+        "MINIO_ENDPOINT": "localhost",
+        "QUEUE_CONFIG": "localhost:19092",
+        "QUEUE_REGION": "cockroach",
+        "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/services/telegram-bot/pod-telegram-bot"
+    },
+    {
+      "name": "Debug datalake",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4030",
+        "SECRET": "secret",
+        "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
+        "BUCKETS": "blobs,eu|http://localhost:9000?accessKey=minioadmin&secretKey=minioadmin",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "STATS_URL": "http://huly.local:4900",
+        "STREAM_URL": "http://huly.local:1080/recording"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/datalake/pod-datalake"
     },
     {
       "type": "chrome",
@@ -503,8 +779,121 @@
       "urlFilter": "http://localhost:8080/*",
       "port": 9222,
       "sourceMapPathOverrides": {
-        "webpack://*": "${workspaceFolder}/*",
+        "webpack://*": "${workspaceFolder}/*"
       }
     },
+    {
+      "name": "Debug Notion import",
+      "type": "node",
+      "request": "launch",
+      "args": [
+        "src/__start.ts",
+        "import-notion-to-teamspace",
+        "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743",
+        "-u",
+        "user1",
+        "-pw",
+        "1234",
+        "-ws",
+        "ws5",
+        "-ts",
+        "notion"
+      ],
+      // "args": ["src/__start.ts", "import-notion-with-teamspaces", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-u", "user1", "-pw", "1234", "-ws", "ws1"],
+      "env": {
+        "FRONT_URL": "http://localhost:8087"
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/import-tool"
+    },
+    {
+      "name": "Debug ClickUp import",
+      "type": "node",
+      "request": "launch",
+      "args": [
+        "src/__start.ts",
+        "import-clickup-tasks",
+        "/home/anna/work/clickup/aleksandr/debug/mentions.csv",
+        "-u",
+        "user1",
+        "-pw",
+        "1234",
+        "-ws",
+        "ws10"
+      ],
+      "env": {
+        "FRONT_URL": "http://localhost:8087"
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/import-tool"
+    },
+    {
+      "name": "Debug Huly import",
+      "type": "node",
+      "request": "launch",
+      "args": [
+        "src/__start.ts",
+        "import",
+        "/home/anna/huly/platform/dev/import-tool/docs/huly/example-workspace",
+        "-u",
+        "user1",
+        "-pw",
+        "1234",
+        "-ws",
+        "ws1"
+      ],
+      "env": {
+        "FRONT_URL": "http://localhost:8087"
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/import-tool"
+    },
+    {
+      "name": "Debug Export service",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4009",
+        "SECRET": "secret",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "MINIO_ENDPOINT": "localhost",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "TRANSACTOR_URL": "ws://localhost:3333",
+        "SERVICE_ID": "export-service"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/export/pod-export"
+    },
+    {
+      "name": "Msg2File",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
+        "PORT": "9087",
+        "SECRET": "secret",
+        "SERVICE_ID": "msg2file-service",
+        "STORAGE_CONFIG": "datalake|http://huly.local:4030"
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/services/msg2file"
+    }
   ]
 }

@@ -304,6 +304,7 @@ function defineApplication (
     componentsId: string
     milestonesId: string
     templatesId: string
+    labelsId: string
   }
 ): void {
   builder.createDoc(
@@ -365,6 +366,15 @@ function defineApplication (
               icon: view.icon.List,
               label: tracker.string.AllProjects
             }
+          },
+          {
+            id: opt.labelsId,
+            component: tracker.component.LabelsView,
+            accessLevel: AccountRole.User,
+            icon: tracker.icon.Labels,
+            label: tracker.string.Labels,
+            // createItemLabel: task.string.TaskCreateLabel,
+            position: 'bottom'
           }
         ],
         spaces: [
@@ -451,22 +461,22 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: tracker.class.Issue,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: tracker.class.Milestone,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: tracker.class.Component,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: tracker.class.IssueTemplate,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   defineViewlets(builder)
@@ -477,6 +487,7 @@ export function createModel (builder: Builder): void {
   const templatesId = 'templates'
   const myIssuesId = 'my-issues'
   const allIssuesId = 'all-issues'
+  const labelsId = 'labels'
   // const scrumsId = 'scrums'
 
   definePresenters(builder)
@@ -496,6 +507,14 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
+
+  builder.mixin(tracker.class.Milestone, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
+
+  builder.mixin(tracker.class.Component, core.class.Class, setting.mixin.Editable, {
     value: true
   })
 
@@ -587,7 +606,7 @@ export function createModel (builder: Builder): void {
     tracker.ids.IssueTemplateUpdatedActivityViewlet
   )
 
-  defineApplication(builder, { myIssuesId, allIssuesId, issuesId, componentsId, milestonesId, templatesId })
+  defineApplication(builder, { myIssuesId, allIssuesId, issuesId, componentsId, milestonesId, templatesId, labelsId })
 
   defineActions(builder, issuesId, componentsId, myIssuesId)
 
@@ -602,7 +621,8 @@ export function createModel (builder: Builder): void {
       title: tracker.string.Issues,
       query: tracker.completion.IssueQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: tracker.class.Issue
+      classToSearch: tracker.class.Issue,
+      priority: 300
     },
     tracker.completion.IssueCategory
   )
@@ -721,7 +741,8 @@ function defineSpaceType (builder: Builder): void {
       description: tracker.string.Issue,
       icon: tracker.icon.Issue,
       name: tracker.string.Issue,
-      statusCategoriesFunc: tracker.function.GetIssueStatusCategories
+      statusCategoriesFunc: tracker.function.GetIssueStatusCategories,
+      openTasks: tracker.function.OpenIssuesOfTaskType
     },
     tracker.descriptors.Issue
   )
@@ -760,7 +781,7 @@ function defineSpaceType (builder: Builder): void {
     task.class.TaskType,
     core.space.Model,
     {
-      parent: tracker.ids.ClassingProjectType,
+      parent: pluginState.ids.ClassingProjectType,
       statuses: classicStatuses,
       descriptor: tracker.descriptors.Issue,
       name: 'Issue',
@@ -788,6 +809,6 @@ function defineSpaceType (builder: Builder): void {
       statuses: classicStatuses.map((s) => ({ _id: s, taskType: tracker.taskTypes.Issue })),
       targetClass: tracker.mixin.ClassicProjectTypeData
     },
-    tracker.ids.ClassingProjectType
+    pluginState.ids.ClassingProjectType
   )
 }

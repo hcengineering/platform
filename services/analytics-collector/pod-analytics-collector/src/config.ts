@@ -33,7 +33,6 @@ const config: Config = (() => {
     MongoDb: process.env.MONGO_DB ?? '%analytics-collector',
     Secret: process.env.SECRET,
     ServiceID: process.env.SERVICE_ID ?? 'analytics-collector-service',
-    SupportWorkspace: process.env.SUPPORT_WORKSPACE,
     AccountsUrl: process.env.ACCOUNTS_URL,
     SentryDSN: process.env.SENTRY_DSN ?? ''
   }

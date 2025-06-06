@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { IntlString, Plugin, StatusCode } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { Mixin, Version, type Rank } from '.'
+import type { BenchmarkDoc } from './benchmark'
+import { AccountRole } from './classes'
 import type {
   Account,
   AnyAttribute,
   ArrOf,
+  Association,
   AttachedDoc,
   Blob,
-  Card,
   Class,
   Collection,
   Configuration,
   ConfigurationElement,
   Doc,
-  DocIndexState,
   DomainIndexConfiguration,
   Enum,
   EnumOf,
@@ -35,31 +35,38 @@ import type {
   Hyperlink,
   IndexingConfiguration,
   Interface,
+  MarkupBlobRef,
   MigrationState,
+  Mixin,
   Obj,
   Permission,
+  PersonId,
   PluginConfiguration,
+  Rank,
   Ref,
   RefTo,
   RelatedDocument,
+  Relation,
   Role,
+  Sequence,
   Space,
   SpaceType,
   SpaceTypeDescriptor,
   SystemSpace,
   Timestamp,
+  TransientConfiguration,
   Type,
   TypeAny,
   TypedSpace,
-  UserStatus
+  UserStatus,
+  Version,
+  AccountUuid
 } from './classes'
-import { CollaborativeDoc } from './collaboration'
-import { Status, StatusCategory } from './status'
+import { type Status, type StatusCategory } from './status'
 import type {
   Tx,
   TxApplyIf,
   TxCUD,
-  TxCollectionCUD,
   TxCreateDoc,
   TxMixin,
   TxModelUpgrade,
@@ -67,7 +74,6 @@ import type {
   TxUpdateDoc,
   TxWorkspaceEvent
 } from './tx'
-import type { BenchmarkDoc } from './benchmark'
 
 /**
  * @public
@@ -77,13 +83,23 @@ export const coreId = 'core' as Plugin
 /**
  * @public
  */
+// TODO: consider removing email?
 export const systemAccountEmail = 'anticrm@hc.engineering'
+export const systemAccountUuid = '1749089e-22e6-48de-af4e-165e18fbd2f9' as AccountUuid
+export const systemAccount: Account = {
+  uuid: systemAccountUuid,
+  role: AccountRole.Owner,
+  primarySocialId: '' as PersonId,
+  socialIds: [],
+  fullSocialIds: []
+}
+
+export const configUserAccountUuid = '0d94731c-0787-4bcd-aefe-304efc3706b1' as AccountUuid
 
 export default plugin(coreId, {
   class: {
     Obj: '' as Ref<Class<Obj>>,
     Doc: '' as Ref<Class<Doc>>,
-    Card: '' as Ref<Class<Card>>,
     Blob: '' as Ref<Class<Blob>>,
     AttachedDoc: '' as Ref<Class<AttachedDoc>>,
     Class: '' as Ref<Class<Class<Obj>>>,
@@ -96,7 +112,6 @@ export default plugin(coreId, {
     TxApplyIf: '' as Ref<Class<TxApplyIf>>,
     TxCUD: '' as Ref<Class<TxCUD<Doc>>>,
     TxCreateDoc: '' as Ref<Class<TxCreateDoc<Doc>>>,
-    TxCollectionCUD: '' as Ref<Class<TxCollectionCUD<Doc, AttachedDoc>>>,
     TxMixin: '' as Ref<Class<TxMixin<Doc, Doc>>>,
     TxUpdateDoc: '' as Ref<Class<TxUpdateDoc<Doc>>>,
     TxRemoveDoc: '' as Ref<Class<TxRemoveDoc<Doc>>>,
@@ -107,8 +122,8 @@ export default plugin(coreId, {
     SpaceType: '' as Ref<Class<SpaceType>>,
     Role: '' as Ref<Class<Role>>,
     Permission: '' as Ref<Class<Permission>>,
-    Account: '' as Ref<Class<Account>>,
     Type: '' as Ref<Class<Type<any>>>,
+    TypeRelation: '' as Ref<Class<Type<string>>>,
     TypeString: '' as Ref<Class<Type<string>>>,
     TypeBlob: '' as Ref<Class<Type<Ref<Blob>>>>,
     TypeIntlString: '' as Ref<Class<Type<IntlString>>>,
@@ -121,8 +136,9 @@ export default plugin(coreId, {
     TypeBoolean: '' as Ref<Class<Type<boolean>>>,
     TypeTimestamp: '' as Ref<Class<Type<Timestamp>>>,
     TypeDate: '' as Ref<Class<Type<Timestamp | Date>>>,
-    TypeCollaborativeDoc: '' as Ref<Class<Type<CollaborativeDoc>>>,
-    TypeCollaborativeDocVersion: '' as Ref<Class<Type<CollaborativeDoc>>>,
+    TypeCollaborativeDoc: '' as Ref<Class<Type<MarkupBlobRef>>>,
+    TypePersonId: '' as Ref<Class<Type<string>>>,
+    TypeAccountUuid: '' as Ref<Class<Type<string>>>,
     RefTo: '' as Ref<Class<RefTo<Doc>>>,
     ArrOf: '' as Ref<Class<ArrOf<Doc>>>,
     Enum: '' as Ref<Class<Enum>>,
@@ -133,7 +149,6 @@ export default plugin(coreId, {
     PluginConfiguration: '' as Ref<Class<PluginConfiguration>>,
     UserStatus: '' as Ref<Class<UserStatus>>,
     TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>,
-    DocIndexState: '' as Ref<Class<DocIndexState>>,
     DomainIndexConfiguration: '' as Ref<Class<DomainIndexConfiguration>>,
 
     Configuration: '' as Ref<Class<Configuration>>,
@@ -142,13 +157,32 @@ export default plugin(coreId, {
     StatusCategory: '' as Ref<Class<StatusCategory>>,
     MigrationState: '' as Ref<Class<MigrationState>>,
 
-    BenchmarkDoc: '' as Ref<Class<BenchmarkDoc>>
+    BenchmarkDoc: '' as Ref<Class<BenchmarkDoc>>,
+    FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
+    Association: '' as Ref<Class<Association>>,
+    Relation: '' as Ref<Class<Relation>>,
+    Sequence: '' as Ref<Class<Sequence>>
+  },
+  icon: {
+    TypeString: '' as Asset,
+    TypeBlob: '' as Asset,
+    TypeHyperlink: '' as Asset,
+    TypeNumber: '' as Asset,
+    TypeMarkup: '' as Asset,
+    TypeRank: '' as Asset,
+    TypeRecord: '' as Asset,
+    TypeBoolean: '' as Asset,
+    TypeDate: '' as Asset,
+    TypeRef: '' as Asset,
+    TypeArray: '' as Asset,
+    TypeEnumOf: '' as Asset,
+    TypeCollection: '' as Asset
   },
   mixin: {
-    FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
     ConfigurationElement: '' as Ref<Mixin<ConfigurationElement>>,
     IndexConfiguration: '' as Ref<Mixin<IndexingConfiguration<Doc>>>,
-    SpacesTypeData: '' as Ref<Mixin<Space>>
+    SpacesTypeData: '' as Ref<Mixin<Space>>,
+    TransientConfiguration: '' as Ref<Mixin<TransientConfiguration>>
   },
   space: {
     Tx: '' as Ref<Space>,
@@ -159,8 +193,8 @@ export default plugin(coreId, {
     Workspace: '' as Ref<Space>
   },
   account: {
-    System: '' as Ref<Account>,
-    ConfigUser: '' as Ref<Account>
+    System: '' as PersonId,
+    ConfigUser: '' as PersonId
   },
   status: {
     ObjectNotFound: '' as StatusCode<{ _id: Ref<Doc> }>,
@@ -185,9 +219,14 @@ export default plugin(coreId, {
     String: '' as IntlString,
     Record: '' as IntlString,
     Markup: '' as IntlString,
+    Relation: '' as IntlString,
+    Relations: '' as IntlString,
+    AddRelation: '' as IntlString,
     Collaborative: '' as IntlString,
     CollaborativeDoc: '' as IntlString,
-    CollaborativeDocVersion: '' as IntlString,
+    MarkupBlobRef: '' as IntlString,
+    PersonId: '' as IntlString,
+    AccountId: '' as IntlString,
     Number: '' as IntlString,
     Boolean: '' as IntlString,
     Timestamp: '' as IntlString,
@@ -249,5 +288,8 @@ export default plugin(coreId, {
   },
   role: {
     Admin: '' as Ref<Role>
+  },
+  metadata: {
+    DisablePermissions: '' as Metadata<boolean>
   }
 })

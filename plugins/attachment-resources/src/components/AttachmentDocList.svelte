@@ -14,23 +14,27 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import core, { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
+  import { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
+  import { onMount } from 'svelte'
 
   import attachment from '../plugin'
   import { AttachmentImageSize } from '../types'
-  import AttachmentList from './AttachmentList.svelte'
+  import AttachmentGroup from './AttachmentGroup.svelte'
+  import { loadSavedAttachments, savedAttachmentsStore } from '../stores'
 
   export let value: Doc & { attachments?: number }
   export let attachments: Attachment[] | undefined = undefined
-  export let imageSize: AttachmentImageSize = 'auto'
-  export let videoPreload = true
+  export let imageSize: AttachmentImageSize = 'x-large'
+  export let videoPreload = false
+  export let isOwn = false
 
   const query = createQuery()
-  const savedAttachmentsQuery = createQuery()
 
   let savedAttachmentsIds: Ref<Attachment>[] = []
   let resAttachments: WithLookup<Attachment>[] = []
+
+  $: savedAttachmentsIds = $savedAttachmentsStore.map((it) => it.attachedTo)
 
   $: updateQuery(value, attachments)
 
@@ -39,7 +43,6 @@
       resAttachments = attachments
       return
     }
-
     if (value && value.attachments && value.attachments > 0) {
       query.query(
         attachment.class.Attachment,
@@ -48,6 +51,9 @@
         },
         (res) => {
           resAttachments = res
+        },
+        {
+          showArchived: true
         }
       )
     } else {
@@ -55,9 +61,9 @@
     }
   }
 
-  savedAttachmentsQuery.query(attachment.class.SavedAttachments, {}, (res) => {
-    savedAttachmentsIds = res.map(({ attachedTo }) => attachedTo)
+  onMount(() => {
+    loadSavedAttachments()
   })
 </script>
 
-<AttachmentList attachments={resAttachments} {savedAttachmentsIds} {imageSize} {videoPreload} />
+<AttachmentGroup attachments={resAttachments} {savedAttachmentsIds} {imageSize} {videoPreload} {isOwn} />

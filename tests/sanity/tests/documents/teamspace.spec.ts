@@ -1,20 +1,21 @@
 import { test } from '@playwright/test'
-import {
-  generateId,
-  PlatformSetting,
-  PlatformURI,
-  generateUser,
-  createAccount,
-  getInviteLink,
-  createAccountAndWorkspace,
-  generateTestData
-} from '../utils'
+import { TestData } from '../chat/types'
+import { SignUpData } from '../model/common-types'
+import { DocumentsPage } from '../model/documents/documents-page'
 import { NewTeamspace } from '../model/documents/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
-import { DocumentsPage } from '../model/documents/documents-page'
-import { SignUpData } from '../model/common-types'
 import { SignInJoinPage } from '../model/signin-page'
-import { TestData } from '../chat/types'
+import {
+  createAccount,
+  createAccountAndWorkspace,
+  generateId,
+  generateTestData,
+  generateUser,
+  getInviteLink,
+  PlatformSetting,
+  PlatformURI,
+  setTestOptions
+} from '../utils'
 
 test.use({
   storageState: PlatformSetting
@@ -95,13 +96,17 @@ test.describe('Teamspace tests', () => {
     const linkText = await getInviteLink(page)
 
     const page2 = await browser.newPage()
-    await page2.goto(linkText ?? '')
-    const joinPage: SignInJoinPage = new SignInJoinPage(page2)
-    await joinPage.join(newUser2)
-    const documentsSecondPage: DocumentsPage = new DocumentsPage(page2)
-    await documentsSecondPage.clickDocumentsApp()
-    await documentsSecondPage.checkTeamspaceExist(autojoinTeamspace.title)
-    await page2.close()
+    try {
+      await page2.goto(linkText ?? '')
+      await setTestOptions(page2)
+      const joinPage: SignInJoinPage = new SignInJoinPage(page2)
+      await joinPage.join(newUser2)
+      const documentsSecondPage: DocumentsPage = new DocumentsPage(page2)
+      await documentsSecondPage.clickDocumentsApp()
+      await documentsSecondPage.checkTeamspaceExist(autojoinTeamspace.title)
+    } finally {
+      await page2.close()
+    }
   })
 
   test('Join teamspace', async ({ page, request, browser }) => {
@@ -120,15 +125,19 @@ test.describe('Teamspace tests', () => {
     const linkText = await getInviteLink(page)
 
     const page2 = await browser.newPage()
-    await page2.goto(linkText ?? '')
-    const joinPage: SignInJoinPage = new SignInJoinPage(page2)
-    await joinPage.join(newUser2)
-    const documentsSecondPage: DocumentsPage = new DocumentsPage(page2)
-    await documentsSecondPage.clickDocumentsApp()
-    await documentsSecondPage.checkTeamspaceNotExist(joinTeamspace.title)
-    await documentsSecondPage.clickTeamspaces()
-    await documentsSecondPage.joinTeamspace(joinTeamspace.title)
-    await documentsSecondPage.checkTeamspaceExist(joinTeamspace.title)
-    await page2.close()
+    try {
+      await page2.goto(linkText ?? '')
+      await setTestOptions(page2)
+      const joinPage: SignInJoinPage = new SignInJoinPage(page2)
+      await joinPage.join(newUser2)
+      const documentsSecondPage: DocumentsPage = new DocumentsPage(page2)
+      await documentsSecondPage.clickDocumentsApp()
+      await documentsSecondPage.checkTeamspaceNotExist(joinTeamspace.title)
+      await documentsSecondPage.clickTeamspaces()
+      await documentsSecondPage.joinTeamspace(joinTeamspace.title)
+      await documentsSecondPage.checkTeamspaceExist(joinTeamspace.title)
+    } finally {
+      await page2.close()
+    }
   })
 })

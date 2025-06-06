@@ -28,6 +28,7 @@
   export let clientRect: () => ClientRect
   export let command: (props: any) => void
   export let close: () => void
+  export let query: string = ''
 
   let popup: HTMLDivElement
   let dummyPopup: PopupResult
@@ -113,7 +114,7 @@
     updateStyle()
   }}
 >
-  <SelectPopup bind:this={menuPopup} value={items} onSelect={handleSelected} />
+  <SelectPopup bind:this={menuPopup} search={query} value={items} onSelect={handleSelected} />
 </div>
 
 <style lang="scss">

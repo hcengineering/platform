@@ -1,0 +1,12 @@
+{
+  "name": "@hcengineering/scripts",
+  "version": "0.1.0",
+  "scripts": {
+    "format": "echo \"No format specified\""
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2",
+    "sharp": "~0.32.0"
+  },
+  "private": true
+}

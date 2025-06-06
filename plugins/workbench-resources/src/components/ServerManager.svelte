@@ -1,8 +1,4 @@
 <script lang="ts">
-  import ServerManagerCollaboratorStatistics from './ServerManagerCollaboratorStatistics.svelte'
-
-  import ServerManagerFrontStatistics from './ServerManagerFrontStatistics.svelte'
-
   import ServerManagerServerStatistics from './ServerManagerServerStatistics.svelte'
 
   import ServerManagerUsers from './ServerManagerUsers.svelte'
@@ -10,10 +6,9 @@
   import ServerManagerGeneral from './ServerManagerGeneral.svelte'
 
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { createEventDispatcher } from 'svelte'
   import presentation from '@hcengineering/presentation'
-  import { Header, TabItem, Switcher, Breadcrumb, IconSettings, ButtonIcon, IconClose } from '@hcengineering/ui'
-  import ServerManagerAccountStatistics from './ServerManagerAccountStatistics.svelte'
+  import { Breadcrumb, ButtonIcon, Header, IconClose, IconSettings, Switcher, TabItem } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -23,20 +18,8 @@
       labelIntl: getEmbeddedLabel('General')
     },
     {
-      id: 'account',
-      labelIntl: getEmbeddedLabel('Account')
-    },
-    {
       id: 'statistics',
-      labelIntl: getEmbeddedLabel('Server')
-    },
-    {
-      id: 'statistics-front',
-      labelIntl: getEmbeddedLabel('Front')
-    },
-    {
-      id: 'statistics-collab',
-      labelIntl: getEmbeddedLabel('Collaborator')
+      labelIntl: getEmbeddedLabel('Servers')
     },
     {
       id: 'users',
@@ -80,12 +63,6 @@
       <ServerManagerUsers />
     {:else if selectedTab === 'statistics'}
       <ServerManagerServerStatistics />
-    {:else if selectedTab === 'statistics-front'}
-      <ServerManagerFrontStatistics />
-    {:else if selectedTab === 'statistics-collab'}
-      <ServerManagerCollaboratorStatistics />
-    {:else if selectedTab === 'account'}
-      <ServerManagerAccountStatistics />
     {/if}
   </div>
 </div>

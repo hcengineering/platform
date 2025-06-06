@@ -27,9 +27,8 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverAttachment.trigger.OnAttachmentDelete,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': attachment.class.Attachment,
-      'tx._class': core.class.TxRemoveDoc
+      _class: core.class.TxRemoveDoc,
+      objectClass: attachment.class.Attachment
     }
   })
 }

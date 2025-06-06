@@ -13,40 +13,98 @@
 // limitations under the License.
 //
 
-import { type EditorState } from '@tiptap/pm/state'
-import { Decoration } from '@tiptap/pm/view'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
+import { type Editor } from '@tiptap/core'
+import { findTable, haveTableRelatedChanges } from '../utils'
 import { handleSvg } from './icons'
-import { type TableNodeLocation } from '../types'
 
 export const dropMarkerId = 'table-drop-marker'
 export const colDragMarkerId = 'table-col-drag-marker'
 export const rowDragMarkerId = 'table-row-drag-marker'
 
-export const dropMarkerWidthPx = 2
+export const dropMarkerWidthPx = 1
 
-export const tableDragMarkerDecoration = (state: EditorState, table: TableNodeLocation): Decoration[] => {
-  const dropMarker = document.createElement('div')
-  dropMarker.id = dropMarkerId
-  dropMarker.classList.add('table-drop-marker')
+interface TableDragMarkerDecorationPluginState {
+  decorations?: DecorationSet
+}
 
-  const colDragMarker = document.createElement('div')
-  colDragMarker.id = colDragMarkerId
-  colDragMarker.classList.add('table-col-drag-marker')
-  colDragMarker.innerHTML = handleSvg
-  colDragMarker.style.display = 'none'
+export const TableDragMarkerDecorationPlugin = (editor: Editor): Plugin<TableDragMarkerDecorationPluginState> => {
+  const key = new PluginKey('table-cell-drag-marker-decoration-plugin')
+  return new Plugin<TableDragMarkerDecorationPluginState>({
+    key,
+    state: {
+      init: () => {
+        return {}
+      },
+      apply (tr, prev, oldState, newState) {
+        const table = findTable(newState.selection)
+        if (!haveTableRelatedChanges(editor, table, oldState, newState, tr)) {
+          return table !== undefined ? prev : {}
+        }
 
-  const rowDragMarker = document.createElement('div')
-  rowDragMarker.id = rowDragMarkerId
-  rowDragMarker.classList.add('table-row-drag-marker')
-  rowDragMarker.innerHTML = handleSvg
-  rowDragMarker.style.display = 'none'
+        if (prev.decorations !== undefined) {
+          const mapped = prev.decorations.map(tr.mapping, tr.doc)
+          const existing = mapped.find(table.start, table.start + 1)
+          if (existing.length > 0) {
+            return { decorations: mapped }
+          }
+        }
 
-  return [
-    Decoration.widget(table.start, dropMarker),
-    Decoration.widget(table.start, colDragMarker),
-    Decoration.widget(table.start, rowDragMarker)
-  ]
+        const decorations = DecorationSet.create(newState.doc, [
+          Decoration.widget(table.start, () => createMarkerContainer())
+        ])
+
+        return { decorations }
+      }
+    },
+    props: {
+      decorations (state) {
+        return key.getState(state).decorations
+      }
+    }
+  })
+}
+
+function createMarkerContainer (): HTMLElement {
+  const el = document.createElement('div')
+  el.classList.add('table-drag-marker-container')
+  el.appendChild(createDropMarker())
+  el.appendChild(createColDragMarker())
+  el.appendChild(createRowDragMarker())
+  return el
+}
+
+function createDropMarker (): DropMarkerHTMLElement {
+  const el = document.createElement('div')
+  el.id = dropMarkerId
+  el.classList.add('table-drop-marker')
+  return el
+}
+
+function createColDragMarker (): DragMarkerHTMLElement {
+  const el = document.createElement('div')
+  el.id = colDragMarkerId
+  el.classList.add('table-col-drag-marker')
+  el.style.display = 'none'
+
+  const btn = el.appendChild(document.createElement('button'))
+  btn.innerHTML = handleSvg
+
+  return el
+}
+
+function createRowDragMarker (): DragMarkerHTMLElement {
+  const el = document.createElement('div')
+  el.id = rowDragMarkerId
+  el.classList.add('table-row-drag-marker')
+  el.style.display = 'none'
+
+  const btn = el.appendChild(document.createElement('button'))
+  btn.innerHTML = handleSvg
+
+  return el
 }
 
 export type DropMarkerHTMLElement = HTMLElement

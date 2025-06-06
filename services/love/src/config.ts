@@ -16,34 +16,38 @@
 interface Config {
   AccountsURL: string
   Port: number
-  SystemEmail: string
   ServiceID: string
 
+  LiveKitProject: string
   LiveKitHost: string
   ApiKey: string
   ApiSecret: string
 
   StorageConfig: string
   StorageProviderName: string
+  S3StorageConfig: string
   Secret: string
 
   MongoUrl: string
+  BillingUrl: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
   AccountsURL: 'ACCOUNTS_URL',
   Port: 'PORT',
 
+  LiveKitProject: 'LIVEKIT_PROJECT',
   LiveKitHost: 'LIVEKIT_HOST',
   ApiKey: 'LIVEKIT_API_KEY',
   ApiSecret: 'LIVEKIT_API_SECRET',
 
   StorageConfig: 'STORAGE_CONFIG',
   StorageProviderName: 'STORAGE_PROVIDER_NAME',
+  S3StorageConfig: 'S3_STORAGE_CONFIG',
   Secret: 'SECRET',
   ServiceID: 'SERVICE_ID',
-  SystemEmail: 'SYSTEM_EMAIL',
-  MongoUrl: 'MONGO_URL'
+  MongoUrl: 'MONGO_URL',
+  BillingUrl: 'BILLING_URL'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -52,18 +56,20 @@ const config: Config = (() => {
   const params: Partial<Config> = {
     AccountsURL: process.env[envMap.AccountsURL],
     Port: parseNumber(process.env[envMap.Port]) ?? 8096,
+    LiveKitProject: process.env[envMap.LiveKitProject] ?? '',
     LiveKitHost: process.env[envMap.LiveKitHost],
     ApiKey: process.env[envMap.ApiKey],
     ApiSecret: process.env[envMap.ApiSecret],
     StorageConfig: process.env[envMap.StorageConfig],
     StorageProviderName: process.env[envMap.StorageProviderName] ?? 's3',
+    S3StorageConfig: process.env[envMap.S3StorageConfig],
     Secret: process.env[envMap.Secret],
     ServiceID: process.env[envMap.ServiceID] ?? 'love-service',
-    SystemEmail: process.env[envMap.SystemEmail] ?? 'anticrm@hc.engineering',
-    MongoUrl: process.env[envMap.MongoUrl]
+    MongoUrl: process.env[envMap.MongoUrl],
+    BillingUrl: process.env[envMap.BillingUrl] ?? ''
   }
 
-  const optional = ['StorageConfig']
+  const optional = ['StorageConfig', 'S3StorageConfig', 'LiveKitProject', 'BillingUrl']
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)
     .filter((key) => !optional.includes(key))

@@ -13,43 +13,69 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref, Blob } from '@hcengineering/core'
+  import core, {
+    type Account,
+    AccountRole,
+    AccountUuid,
+    Configuration,
+    getCurrentAccount,
+    pickPrimarySocialId
+  } from '@hcengineering/core'
   import {
     Breadcrumb,
-    Header,
-    Scroller,
-    EditBox,
-    Spinner,
     Button,
-    IconEdit,
-    IconClose,
+    deviceOptionsStore as deviceInfo,
+    DropdownLabels,
+    type DropdownTextItem,
+    EditBox,
+    getLocalWeekStart,
+    getWeekDayNames,
+    hasLocalWeekStart,
+    Header,
     IconCheckmark,
+    IconClose,
     IconDelete,
+    IconEdit,
     Label,
     navigate,
-    showPopup
+    Scroller,
+    showPopup,
+    Spinner,
+    themeStore,
+    Toggle
   } from '@hcengineering/ui'
   import { loginId } from '@hcengineering/login'
-  import { EditableAvatar } from '@hcengineering/contact-resources'
-
-  import setting from '../plugin'
-  import { rpcAccount } from '../utils'
-  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { EditableAvatar, getAccountClient } from '@hcengineering/contact-resources'
+  import { translateCB } from '@hcengineering/platform'
+  import { createQuery, getClient, MessageBox, uiContext } from '@hcengineering/presentation'
   import { WorkspaceSetting } from '@hcengineering/setting'
-  import { AvatarType } from '@hcengineering/contact'
+  import { AvatarType, ensureEmployeeForPerson } from '@hcengineering/contact'
+  import settingsRes from '../plugin'
 
   let loading = true
   let isEditingName = false
   let oldName: string
   let name: string = ''
+  let allowReadOnlyGuests: boolean
+
+  const accountClient = getAccountClient()
+  const disabledSet = ['\n', '<', '>', '/', '\\']
+
+  $: editNameDisabled =
+    isEditingName &&
+    (name.trim().length > 40 ||
+      name.trim() === oldName ||
+      name.trim() === '' ||
+      disabledSet.some((it) => name.includes(it)))
 
   void loadWorkspaceName()
 
-  async function loadWorkspaceName () {
-    const res = await rpcAccount('getWorkspaceInfo')
+  async function loadWorkspaceName (): Promise<void> {
+    const res = await accountClient.getWorkspaceInfo()
 
-    oldName = res.result.workspaceName
+    oldName = res.name
     name = oldName
+    allowReadOnlyGuests = res.allowReadOnlyGuest ?? false
     loading = false
   }
 
@@ -59,7 +85,7 @@
     }
 
     if (isEditingName) {
-      await rpcAccount('updateWorkspaceName', name.trim())
+      await accountClient.updateWorkspaceName(name.trim())
     }
 
     isEditingName = !isEditingName
@@ -70,15 +96,13 @@
     isEditingName = false
   }
 
-  $: editNameDisabled = isEditingName && (name.trim() === oldName || name.trim() === '')
-
   async function handleDelete (): Promise<void> {
     showPopup(MessageBox, {
-      label: setting.string.DeleteWorkspace,
-      message: setting.string.DeleteWorkspaceConfirm,
+      label: settingsRes.string.DeleteWorkspace,
+      message: settingsRes.string.DeleteWorkspaceConfirm,
       dangerous: true,
       action: async () => {
-        await rpcAccount('deleteWorkspace')
+        await accountClient.deleteWorkspace()
         navigate({ path: [loginId] })
       }
     })
@@ -89,7 +113,7 @@
   let workspaceSettings: WorkspaceSetting | undefined = undefined
 
   const client = getClient()
-  client.findOne(setting.class.WorkspaceSetting, {}).then((r) => {
+  void client.findOne(settingsRes.class.WorkspaceSetting, {}).then((r) => {
     workspaceSettings = r
   })
 
@@ -97,10 +121,10 @@
     if (workspaceSettings === undefined) {
       const avatar = await avatarEditor.createAvatar()
       await client.createDoc(
-        setting.class.WorkspaceSetting,
+        settingsRes.class.WorkspaceSetting,
         core.space.Workspace,
         { icon: avatar.avatar },
-        setting.ids.WorkspaceSetting
+        settingsRes.ids.WorkspaceSetting
       )
       return
     }
@@ -114,11 +138,95 @@
       icon: avatar.avatar
     })
   }
+
+  const permissionConfigurationQuery = createQuery()
+  let disablePermissionsConfiguration: Configuration | undefined = undefined
+  $: arePermissionsDisabled = disablePermissionsConfiguration?.enabled ?? false
+
+  $: permissionConfigurationQuery.query(
+    core.class.Configuration,
+    { _id: settingsRes.ids.DisablePermissionsConfiguration },
+    (result) => {
+      disablePermissionsConfiguration = result[0]
+    }
+  )
+
+  async function handleToggleReadonlyAccess (e: CustomEvent<boolean>): Promise<void> {
+    const enabled = e.detail
+    const guestUserInfo = await accountClient.updateAllowReadOnlyGuests(enabled)
+    if (guestUserInfo !== undefined) {
+      const guestAccount: Account = {
+        uuid: guestUserInfo.guestPerson.uuid as AccountUuid,
+        role: AccountRole.ReadOnlyGuest,
+        primarySocialId: pickPrimarySocialId(guestUserInfo.guestSocialIds)._id,
+        socialIds: guestUserInfo.guestSocialIds.map((si) => si._id),
+        fullSocialIds: guestUserInfo.guestSocialIds
+      }
+      const myAccount = getCurrentAccount()
+      const ctx = uiContext.newChild('connect', {})
+      await ensureEmployeeForPerson(
+        ctx,
+        myAccount,
+        guestAccount,
+        client,
+        guestUserInfo.guestSocialIds,
+        guestUserInfo.guestPerson
+      )
+    }
+  }
+
+  function handleTogglePermissions (): void {
+    const newState = !arePermissionsDisabled
+    showPopup(MessageBox, {
+      label: newState ? settingsRes.string.DisablePermissions : settingsRes.string.EnablePermissions,
+      message: newState
+        ? settingsRes.string.DisablePermissionsConfirmation
+        : settingsRes.string.EnablePermissionsConfirmation,
+      dangerous: true,
+      action: async () => {
+        if (disablePermissionsConfiguration === undefined) {
+          await client.createDoc(
+            core.class.Configuration,
+            core.space.Workspace,
+            { enabled: newState },
+            settingsRes.ids.DisablePermissionsConfiguration
+          )
+        } else {
+          await client.update(disablePermissionsConfiguration, { enabled: newState })
+        }
+      }
+    })
+  }
+
+  const weekInfoFirstDay: number = getLocalWeekStart()
+  const hasWeekInfo: boolean = hasLocalWeekStart()
+  const weekNames = getWeekDayNames()
+  let items: DropdownTextItem[] = []
+  let selected: string
+
+  $: translateCB(
+    hasWeekInfo ? settingsRes.string.SystemSetupString : settingsRes.string.DefaultString,
+    { day: weekNames?.get(weekInfoFirstDay)?.toLowerCase() ?? '' },
+    $themeStore.language,
+    (r) => {
+      items = [
+        { id: 'system', label: r },
+        ...Array.from(weekNames.entries()).map((it) => ({ id: it[0].toString(), label: it[1] }))
+      ]
+      const savedFirstDayOfWeek = localStorage.getItem('firstDayOfWeek') ?? 'system'
+      selected = items[savedFirstDayOfWeek === 'system' ? 0 : $deviceInfo.firstDayOfWeek + 1].id
+    }
+  )
+  const onSelected = (e: CustomEvent<string>): void => {
+    selected = e.detail
+    localStorage.setItem('firstDayOfWeek', `${e.detail}`)
+    $deviceInfo.firstDayOfWeek = e.detail === 'system' ? weekInfoFirstDay : parseInt(e.detail, 10) ?? 1
+  }
 </script>
 
 <div class="hulyComponent">
-  <Header>
-    <Breadcrumb icon={setting.icon.Setting} label={setting.string.General} size={'large'} isCurrent />
+  <Header adaptive={'disabled'}>
+    <Breadcrumb icon={settingsRes.icon.Setting} label={settingsRes.string.General} size={'large'} isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
     {#if loading}
@@ -126,7 +234,7 @@
     {:else}
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content flex-col flex-gap-4">
-          <div class="title"><Label label={setting.string.Workspace} /></div>
+          <div class="title"><Label label={settingsRes.string.Workspace} /></div>
           <div class="ws">
             <EditableAvatar
               person={{
@@ -142,7 +250,7 @@
             <div class="editBox">
               <EditBox
                 bind:value={name}
-                placeholder={setting.string.WorkspaceName}
+                placeholder={settingsRes.string.WorkspaceName}
                 kind="ghost-large"
                 disabled={!isEditingName}
               />
@@ -157,9 +265,45 @@
             {#if isEditingName}
               <Button icon={IconClose} kind="ghost" size="small" on:click={handleCancelEditName} />
             {/if}
+            <Button
+              icon={IconDelete}
+              kind="dangerous"
+              on:click={handleDelete}
+              showTooltip={{ label: settingsRes.string.DeleteWorkspace }}
+            />
           </div>
-          <div class="delete mt-6">
-            <Button icon={IconDelete} kind="dangerous" label={setting.string.DeleteWorkspace} on:click={handleDelete} />
+          <div class="flex-col flex-gap-4 mt-6">
+            <div class="title"><Label label={settingsRes.string.Calendar} /></div>
+            <div class="flex-row-center flex-gap-4">
+              <Label label={settingsRes.string.StartOfTheWeek} />
+              <DropdownLabels
+                {items}
+                kind={'regular'}
+                size={'medium'}
+                {selected}
+                enableSearch={false}
+                on:selected={onSelected}
+              />
+            </div>
+          </div>
+          <div class="title mt-6"><Label label={settingsRes.string.GuestAccess} /></div>
+          <div class="flex-row-center flex-gap-4">
+            <Label label={settingsRes.string.GuestAccessDescription} />
+            <Toggle
+              on={allowReadOnlyGuests}
+              on:change={(e) => {
+                void handleToggleReadonlyAccess(e)
+              }}
+            />
+          </div>
+          <div class="delete">
+            <Button
+              kind="regular"
+              label={arePermissionsDisabled
+                ? settingsRes.string.EnablePermissions
+                : settingsRes.string.DisablePermissions}
+              on:click={handleTogglePermissions}
+            />
           </div>
         </div>
       </Scroller>

@@ -45,8 +45,6 @@ test.describe('Dynamic issues chats', () => {
   })
 
   test('User can create issue for himself and see linked chat', async ({ page, browser, request }) => {
-    await leftSideMenuPage.clickTracker()
-
     const newIssue: NewIssue = {
       title: `Issue to test dynamic chat-${generateId()}`,
       description: 'Created issue with all parameters and attachments description',
@@ -56,7 +54,7 @@ test.describe('Dynamic issues chats', () => {
     }
 
     await test.step('User 1 creates Issue for himself', async () => {
-      await prepareNewIssueWithOpenStep(page, newIssue)
+      await prepareNewIssueWithOpenStep(page, newIssue, false)
     })
 
     await test.step('User 1 has issue and linked chat', async () => {
@@ -73,7 +71,6 @@ test.describe('Dynamic issues chats', () => {
 
     const channelPageSecond = new ChannelPage(page2)
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
-    await leftSideMenuPageSecond.clickChunter()
 
     const newIssue: NewIssue = {
       title: `Issue to test dynamic chat-${generateId()}`,
@@ -84,7 +81,7 @@ test.describe('Dynamic issues chats', () => {
     }
 
     await test.step('User 1 creates an issue and assign it to User 2', async () => {
-      await prepareNewIssueWithOpenStep(page, newIssue)
+      await prepareNewIssueWithOpenStep(page, newIssue, false)
     })
 
     await test.step('User 2 has issue and linked chat', async () => {

@@ -4,6 +4,7 @@
 -->
 
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { Doc, type Blob, type Ref } from '@hcengineering/core'
   import presentation, { PDFViewer, createQuery, getClient } from '@hcengineering/presentation'
   import guest, { PublicLink, createPublicLink } from '@hcengineering/guest'
@@ -55,6 +56,7 @@
               isLoading = false
             },
             (err) => {
+              Analytics.handleError(err)
               console.error(err)
               isLoading = false
             }
@@ -65,6 +67,7 @@
         }
       },
       (err) => {
+        Analytics.handleError(err)
         console.error(err)
         isLoading = false
       }

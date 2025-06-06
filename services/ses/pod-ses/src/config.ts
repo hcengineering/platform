@@ -19,14 +19,22 @@ interface Config {
   AccessKey: string
   SecretKey: string
   Region: string
+  AuthToken?: string
+  PushSubject?: string
+  PushPublicKey?: string
+  PushPrivateKey?: string
 }
 
-const envMap: { [key in keyof Config]: string } = {
+const envMap: { [key in keyof Required<Config>]: string } = {
   Port: 'PORT',
   Source: 'SOURCE',
   AccessKey: 'ACCESS_KEY',
   SecretKey: 'SECRET_KEY',
-  Region: 'REGION'
+  Region: 'REGION',
+  AuthToken: 'AUTH_TOKEN',
+  PushPublicKey: 'PUSH_PUBLIC_KEY',
+  PushPrivateKey: 'PUSH_PRIVATE_KEY',
+  PushSubject: 'PUSH_SUBJECT'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -37,7 +45,11 @@ const config: Config = (() => {
     Source: process.env[envMap.Source],
     AccessKey: process.env[envMap.AccessKey],
     SecretKey: process.env[envMap.SecretKey],
-    Region: process.env[envMap.Region] ?? 'us-east-1'
+    Region: process.env[envMap.Region] ?? 'us-east-1',
+    AuthToken: process.env[envMap.AuthToken],
+    PushPublicKey: process.env[envMap.PushPublicKey],
+    PushPrivateKey: process.env[envMap.PushPrivateKey],
+    PushSubject: process.env[envMap.PushSubject]
   }
 
   const required: Array<keyof Config> = ['Port', 'Source', 'AccessKey', 'SecretKey', 'Region']

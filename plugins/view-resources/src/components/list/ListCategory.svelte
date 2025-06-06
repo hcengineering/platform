@@ -30,14 +30,22 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { DocWithRank, makeRank } from '@hcengineering/task'
-  import { AnyComponent, AnySvelteComponent, ExpandCollapse, mouseAttractor } from '@hcengineering/ui'
+  import ui, {
+    AnyComponent,
+    AnySvelteComponent,
+    ExpandCollapse,
+    mouseAttractor,
+    Loading,
+    Label,
+    Scroller
+  } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { fade } from 'svelte/transition'
+  import { showMenu } from '../../actions'
   import { FocusSelection, SelectionFocusProvider, focusStore } from '../../selection'
   import ListHeader from './ListHeader.svelte'
   import ListItem from './ListItem.svelte'
-  import { showMenu } from '../../actions'
 
   export let category: PrimitiveType | AggregateValue
   export let headerComponent: AttributeModel | undefined
@@ -67,7 +75,7 @@
   export let configurationsVersion: number
   export let viewOptions: ViewOptions
   export let newObjectProps: (doc: Doc | undefined) => Record<string, any> | undefined
-  export let viewOptionsConfig: ViewOptionModel[] | undefined
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let dragItem: {
     doc?: Doc
     revert?: () => void
@@ -108,21 +116,42 @@
     }
   }
 
+  function noSearch (query: DocumentQuery<Doc>): DocumentQuery<Doc> {
+    const result = query
+    if ('$search' in result) {
+      delete result.$search
+    }
+    return result
+  }
+
+  $: finalResultQuery =
+    itemProj.length < 20 && resultQuery.$search !== null
+      ? noSearch({
+        ...resultQuery,
+        _id: { $in: itemProj.map((it) => it._id) }
+      })
+      : resultQuery
+
   $: if (lastLevel) {
     void limiter.add(async () => {
-      loading = docsQuery.query(
-        _class,
-        { ...resultQuery, ...docKeys },
-        (res) => {
-          items = res
-          loading = false
-          const focusDoc = items.find((it) => it._id === $focusStore.focus?._id)
-          if (focusDoc) {
-            handleRowFocused(focusDoc)
-          }
-        },
-        { ...resultOptions, limit: limit ?? 200 }
-      )
+      try {
+        loading = docsQuery.query(
+          _class,
+          { ...finalResultQuery, ...docKeys },
+          (res) => {
+            items = res
+            loading = false
+            const focusDoc = items.find((it) => it._id === $focusStore.focus?._id)
+            if (focusDoc) {
+              handleRowFocused(focusDoc)
+            }
+          },
+          { ...resultOptions, limit: limit ?? 200 }
+        )
+      } catch (e) {
+        console.error(e)
+        loading = false
+      }
     })
   } else {
     docsQuery.unsubscribe()
@@ -413,7 +442,11 @@
   in:fade|local={{ duration: 50 }}
   bind:this={div}
   class="category-container"
-  class:zero-container={level === 0}
+  class:listGrid-container={level === 0}
+  class:collapsed
+  class:category-one={oneCat}
+  class:category-last={lastCat}
+  class:disableHeader
   on:drop|preventDefault={drop}
   on:dragover={dragOverCat}
   on:dragenter={dragEnterCat}
@@ -442,9 +475,6 @@
       {lastCat}
       {viewOptions}
       {loading}
-      on:more={() => {
-        if (limit !== undefined) limit += 20
-      }}
       on:collapse={() => {
         collapsed = !collapsed
         if (collapsed) {
@@ -460,91 +490,106 @@
       }}
     />
   {/if}
-  <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined}>
-    {#if !lastLevel}
-      <slot
-        name="category"
-        docs={itemProj}
-        {_class}
-        {space}
-        {lookup}
-        {baseMenuClass}
-        {config}
-        {configurations}
-        {selectedObjectIds}
-        {createItemDialog}
-        {createItemLabel}
-        {viewOptions}
-        {docKeys}
-        newObjectProps={_newObjectProps}
-        {flatHeaders}
-        {props}
-        level={level + 1}
-        {groupPersistKey}
-        {viewOptionsConfig}
-        {listDiv}
-        dragItem
-        dragstart={dragStartHandler}
-      />
-    {:else if itemModels != null && itemModels.size > 0 && (!collapsed || wasLoaded || dragItemIndex !== undefined)}
-      {#if limited}
-        {#key configurationsVersion}
-          {#each limited as docObject, i (docObject._id)}
-            <ListItem
-              bind:this={listItems[i]}
-              {docObject}
-              model={getDocItemModel(Hierarchy.mixinOrClass(docObject))}
-              {groupByKey}
-              selected={isSelected(docObject, $focusStore)}
-              checked={selectedObjectIdsSet.has(docObject._id)}
-              last={i === limited.length - 1}
-              lastCat={i === limited.length - 1 && (oneCat || lastCat)}
-              on:dragstart={(e) => {
-                dragStart(e, docObject, i)
-              }}
-              on:dragenter={(e) => {
-                if (dragItemIndex !== undefined) {
-                  e.stopPropagation()
-                  e.preventDefault()
-                }
-              }}
-              on:dragleave={(e) => {
-                dragItemLeave(e, i)
-              }}
-              on:dragover={(e) => {
-                dragover(e, i)
-              }}
-              on:drop={dropItemHandle}
-              on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
-              on:contextmenu={async (event) => {
-                await handleMenuOpened(event, docObject)
-              }}
-              on:focus={() => {}}
-              on:mouseover={mouseAttractor(() => {
-                handleRowFocused(docObject)
-              })}
-              on:mouseenter={mouseAttractor(() => {
-                handleRowFocused(docObject)
-              })}
-              {props}
-              {compactMode}
-              on:on-mount={() => {
-                wasLoaded = true
-              }}
-            />
-          {/each}
-        {/key}
+  <Scroller horizontal shrink noFade={false}>
+    <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined}>
+      {#if !lastLevel}
+        <slot
+          name="category"
+          docs={itemProj}
+          {_class}
+          {space}
+          {lookup}
+          {baseMenuClass}
+          {config}
+          {configurations}
+          {selectedObjectIds}
+          {createItemDialog}
+          {createItemLabel}
+          {viewOptions}
+          {docKeys}
+          newObjectProps={_newObjectProps}
+          {flatHeaders}
+          {props}
+          level={level + 1}
+          {groupPersistKey}
+          {viewOptionsConfig}
+          {listDiv}
+          dragItem
+          dragstart={dragStartHandler}
+        />
+      {:else if itemModels != null && itemModels.size > 0 && (!collapsed || wasLoaded || dragItemIndex !== undefined)}
+        {@const HLimited = lastLevel ? limited.length : itemProj.length}
+        {#if limited}
+          {#key configurationsVersion}
+            {#each limited as docObject, i (docObject._id)}
+              <ListItem
+                bind:this={listItems[i]}
+                {docObject}
+                model={getDocItemModel(Hierarchy.mixinOrClass(docObject))}
+                {groupByKey}
+                selected={isSelected(docObject, $focusStore)}
+                checked={selectedObjectIdsSet.has(docObject._id)}
+                last={i === limited.length - 1 && HLimited >= itemProj.length}
+                lastCat={i === limited.length - 1 && (oneCat || lastCat) && HLimited >= itemProj.length}
+                on:dragstart={(e) => {
+                  dragStart(e, docObject, i)
+                }}
+                on:dragenter={(e) => {
+                  if (dragItemIndex !== undefined) {
+                    e.stopPropagation()
+                    e.preventDefault()
+                  }
+                }}
+                on:dragleave={(e) => {
+                  dragItemLeave(e, i)
+                }}
+                on:dragover={(e) => {
+                  dragover(e, i)
+                }}
+                on:drop={dropItemHandle}
+                on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
+                on:contextmenu={async (event) => {
+                  await handleMenuOpened(event, docObject)
+                }}
+                on:focus={() => {}}
+                on:mouseover={mouseAttractor(() => {
+                  handleRowFocused(docObject)
+                })}
+                on:mouseenter={mouseAttractor(() => {
+                  handleRowFocused(docObject)
+                })}
+                {props}
+                {compactMode}
+                on:on-mount={() => {
+                  wasLoaded = true
+                }}
+              />
+            {/each}
+            {#if HLimited < itemProj.length}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div
+                class="listGrid antiList__row row gap-2 flex-grow hoverable showMore last"
+                class:lastCat={oneCat || lastCat}
+                on:mouseenter={() => {
+                  $focusStore.focus = undefined
+                }}
+                on:click={() => {
+                  if (limit !== undefined) limit += 50
+                }}
+              >
+                <span class="caption-color"><Label label={ui.string.ShowMore} /></span>
+                {#if loading}
+                  <div class="p-1">
+                    <Loading shrink size={'small'} />
+                  </div>
+                {:else}
+                  <span class="content-halfcontent-color ml-0-5">({HLimited} / {itemProj.length})</span>
+                {/if}
+              </div>
+            {/if}
+          {/key}
+        {/if}
       {/if}
-    {/if}
-  </ExpandCollapse>
+    </ExpandCollapse>
+  </Scroller>
 </div>
-
-<style lang="scss">
-  .zero-container {
-    border-radius: 0.25rem;
-
-    &:not(:first-child) {
-      margin-top: 0.5rem;
-    }
-  }
-</style>

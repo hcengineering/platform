@@ -22,5 +22,7 @@ export enum TrackerEvents {
 
   ProjectCreated = 'tracker.project.Created',
   ProjectDeleted = 'tracker.project.Deleted',
-  ProjectArchived = 'tracker.project.Archived'
+  ProjectArchived = 'tracker.project.Archived',
+
+  IssueParentUnset = 'tracker.issue.ParentUnset'
 }

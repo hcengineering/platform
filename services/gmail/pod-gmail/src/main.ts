@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
@@ -14,19 +15,23 @@
 // limitations under the License.
 //
 
+import { SplitLogger } from '@hcengineering/analytics-service'
 import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
-import serverClient from '@hcengineering/server-client'
-import { type StorageConfiguration } from '@hcengineering/server-core'
+import serverClient, { getAccountClient } from '@hcengineering/server-client'
+import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
+import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
+import { initQueue, closeQueue } from '@hcengineering/mail-common'
 import { type IncomingHttpHeaders } from 'http'
+import { join } from 'path'
+
 import { decode64 } from './base64'
 import config from './config'
 import { GmailController } from './gmailController'
 import { createServer, listen } from './server'
-import { closeDB, getDB } from './storage'
-import { type Endpoint, type State } from './types'
+import { IntegrationVersion, type Endpoint, type State } from './types'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
   try {
@@ -37,17 +42,32 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 }
 
 export const main = async (): Promise<void> => {
-  const ctx = new MeasureMetricsContext('gmail', {}, {}, newMetrics())
+  const ctx = initStatisticsContext('gmail', {
+    factory: () =>
+      new MeasureMetricsContext(
+        'gmail',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('gmail', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
 
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, config.MongoURI)
+  const storageAdapter = buildStorageFromConfig(storageConfig)
 
-  const db = await getDB()
-  const gmailController = GmailController.create(ctx, db, storageAdapter)
+  if (config.Version === IntegrationVersion.V2) {
+    initQueue(ctx, 'gmail-service', config)
+  }
+
+  const gmailController = GmailController.create(ctx, storageAdapter)
   await gmailController.startAll()
   const endpoints: Endpoint[] = [
     {
@@ -55,6 +75,7 @@ export const main = async (): Promise<void> => {
       type: 'get',
       handler: async (req, res) => {
         try {
+          ctx.info('Signin request received')
           const token = extractToken(req.headers)
 
           if (token === undefined) {
@@ -63,12 +84,21 @@ export const main = async (): Promise<void> => {
           }
           const redirectURL = req.query.redirectURL as string
 
-          const { email, workspace } = decodeToken(token)
-          const gmail = await gmailController.getGmailClient(email, workspace.name, token)
-          const url = gmail.getAutUrl(redirectURL)
+          const accountClient = getAccountClient(token)
+          const wsLoginInfo = await accountClient.getLoginInfoByToken()
+          if (!isWorkspaceLoginInfo(wsLoginInfo)) {
+            res.status(400).send({ err: "Couldn't find workspace with the provided token" })
+            return
+          }
+
+          const authProvider = gmailController.getAuthProvider()
+          const url = authProvider.getAuthUrl(redirectURL, {
+            workspace: wsLoginInfo.workspace,
+            userId: wsLoginInfo.account
+          })
           res.send(url)
         } catch (err) {
-          console.log('signin error', (err as any).message)
+          ctx.error('signin error', { message: (err as any).message })
           res.status(500).send()
         }
       }
@@ -77,17 +107,31 @@ export const main = async (): Promise<void> => {
       endpoint: '/signin/code',
       type: 'get',
       handler: async (req, res) => {
-        const code = req.query.code as string
-        const state = JSON.parse(decode64(req.query.state as string)) as unknown as State
-        const gmail = await gmailController.createClient(state)
-        await gmail.authorize(code)
-        res.redirect(state.redirectURL)
+        let state: State | undefined
+        try {
+          ctx.info('Signin code request received')
+          const code = req.query.code as string
+          state = JSON.parse(decode64(req.query.state as string)) as unknown as State
+          await gmailController.createClient(state, code)
+          res.redirect(state.redirectURL)
+        } catch (err: any) {
+          ctx.error('Failed to process signin code', { message: err.message })
+          if (state !== undefined) {
+            const errorMessage = encodeURIComponent(err.message)
+            const url = new URL(state.redirectURL)
+            url.searchParams.append('integrationError', errorMessage)
+            res.redirect(url.toString())
+          } else {
+            res.status(500).send()
+          }
+        }
       }
     },
     {
       endpoint: '/signout',
       type: 'get',
       handler: async (req, res) => {
+        ctx.info('Signout request received')
         try {
           const token = extractToken(req.headers)
 
@@ -96,10 +140,11 @@ export const main = async (): Promise<void> => {
             return
           }
 
-          const { email, workspace } = decodeToken(token)
-          await gmailController.signout(workspace.name, email)
+          const { account, workspace } = decodeToken(token)
+
+          await gmailController.signout(workspace, account)
         } catch (err) {
-          console.log('signout error', JSON.stringify(err))
+          ctx.error('signout error', { message: JSON.stringify(err) })
         }
 
         res.send()
@@ -109,14 +154,19 @@ export const main = async (): Promise<void> => {
       endpoint: '/push',
       type: 'post',
       handler: async (req, res) => {
-        const data = req.body?.message?.data
-        if (data === undefined) {
-          res.status(400).send({ err: "'data' is missing" })
-          return
-        }
-        gmailController.push(data)
+        try {
+          const data = req.body?.message?.data
+          if (data === undefined) {
+            res.status(400).send({ err: "'data' is missing" })
+            return
+          }
+          gmailController.push(data)
 
-        res.send()
+          res.send()
+        } catch (err: any) {
+          ctx.error('Push request failed', { message: err.message })
+          res.status(500).send()
+        }
       }
     }
   ]
@@ -126,7 +176,7 @@ export const main = async (): Promise<void> => {
   const asyncClose = async (): Promise<void> => {
     await gmailController.close()
     await storageAdapter.close()
-    await closeDB()
+    await closeQueue()
   }
 
   const shutdown = (): void => {

@@ -1,0 +1,19 @@
+{
+  "status": {
+    "RequiredField": "必須のフィールド {field}",
+    "FieldsDoNotMatch": "{field} が {field2} と一致しません",
+    "ConnectingToServer": "サーバーに接続中...."
+  },
+  "string": {
+    "CreateWorkspace": "ワークスペースを作成",
+    "LastName": "姓",
+    "FirstName": "名",
+    "Workspace": "ワークスペース名",
+    "FillInProfile": "プロフィールを入力",
+    "SetUpPassword": "パスワードを設定",
+    "Next": "次へ",
+    "Skip": "スキップ",
+    "SignUpCompleted": "サインアップが完了しました",
+    "StartUsingHuly": "Hulyを使い始める"
+  }
+}

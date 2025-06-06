@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { NewDocument } from './model/documents/types'
 import { LeftSideMenuPage } from './model/left-side-menu-page'
 import { DocumentsPage } from './model/documents/documents-page'
@@ -13,6 +13,7 @@ import { LoginPage } from './model/login-page'
 import { SignUpPage } from './model/signup-page'
 import { SelectWorkspacePage } from './model/select-workspace-page'
 
+const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 test.use({
   storageState: PlatformSetting
 })
@@ -173,24 +174,23 @@ test.describe('Fulltext index', () => {
       await test.step('search by title', async () => {
         await spotlight.open()
         await spotlight.fillSearchInput(titleId)
-        await spotlight.checkSearchResult(newDocument.title, 0)
+        await expect(async () => {
+          await spotlight.checkSearchResult(newDocument.title, 0)
+        }).toPass(retryOptions)
         await spotlight.close()
       })
     })
   })
 
   test.describe('Issues', () => {
-    let leftSideMenuPage: LeftSideMenuPage
     let issuesPage: IssuesPage
     let spotlight: SpotlightPopup
     let issuesDetailsPage: IssuesDetailsPage
 
     test.beforeEach(async ({ page }) => {
-      leftSideMenuPage = new LeftSideMenuPage(page)
       issuesPage = new IssuesPage(page)
       spotlight = new SpotlightPopup(page)
       issuesDetailsPage = new IssuesDetailsPage(page)
-      await leftSideMenuPage.clickTracker()
     })
 
     test('Search created issue', async ({ page }) => {
@@ -333,12 +333,10 @@ test.describe('Fulltext index', () => {
       const loginPage = new LoginPage(page)
       const signUpPage = new SignUpPage(page)
       const selectWorkspacePage = new SelectWorkspacePage(page)
-      const leftSideMenuPage = new LeftSideMenuPage(page)
       const issuesPage = new IssuesPage(page)
       const spotlight = new SpotlightPopup(page)
 
       await test.step('create issue', async () => {
-        await leftSideMenuPage.clickTracker()
         await issuesPage.createNewIssue(newIssue)
       })
 
@@ -366,7 +364,6 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('search by title', async () => {
-        await leftSideMenuPage.clickTracker()
         await spotlight.open()
         await spotlight.fillSearchInput(titleId)
         await spotlight.checkSearchResult(newIssue.title, 0)

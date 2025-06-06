@@ -34,9 +34,11 @@
       products.class.ProductVersion,
       { space: objectId },
       (res) => {
-        versions = res.length
+        versions = res.total
       },
       {
+        total: true,
+        limit: 1,
         projection: { _id: 1 }
       }
     )

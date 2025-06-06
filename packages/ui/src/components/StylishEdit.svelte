@@ -84,6 +84,7 @@
       background-color: var(--theme-button-focused);
       border-color: var(--theme-list-divider-color);
     }
+
     input {
       height: 3.25rem;
       margin: 0;
@@ -91,7 +92,12 @@
       background-color: transparent;
       border: none;
       border-radius: 0.75rem;
+
+      &:disabled {
+        background-color: var(--theme-button-pressed);
+      }
     }
+
     .nolabel {
       padding-top: 0;
     }

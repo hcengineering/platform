@@ -55,4 +55,5 @@
   {size}
   {kind}
   shouldIgnoreOverdue={ignoreOverDue}
+  on:resize
 />

@@ -19,5 +19,7 @@
 </script>
 
 <svg class="svg-{size}" {fill} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-  <path d="M7 3V2H2V7H3V3.707L12.293 13H9V14H14V9H13V12.293L3.707 3H7Z" />
+  <g transform="translate(16 0) scale(-1 1)">
+    <path d="M7 3V2H2V7H3V3.707L12.293 13H9V14H14V9H13V12.293L3.707 3H7Z" />
+  </g>
 </svg>

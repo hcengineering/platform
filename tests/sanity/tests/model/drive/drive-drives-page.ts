@@ -10,6 +10,12 @@ export class DrivesPage extends CommonPage {
     this.page = page
   }
 
+  readonly buttonView = (): Locator =>
+    this.page.locator('div.hulyHeader-container > .hulyHeader-buttonsGroup.before button[data-id="btn-viewOptions"]')
+
+  readonly buttonHideArchived = (): Locator => this.page.locator('div.popup .toggle span.toggle-switch')
+  readonly inputHideArchived = (): Locator => this.page.locator('div.popup .toggle input[type="checkbox"]')
+
   readonly cellDriveName = (driveName: string): Locator => this.page.getByRole('cell', { name: driveName }).first()
 
   readonly buttonContextMenu = (buttonText: ButtonDrivesContextMenu): Locator =>
@@ -63,6 +69,16 @@ export class DrivesPage extends CommonPage {
     await this.clickButtonDriveContextMenu(drive, 'Unarchive')
     await this.popupSubmitButton().click()
     await this.popupArchive().waitFor({ state: 'detached' })
+  }
+
+  async disableHideArchived (): Promise<void> {
+    await this.buttonView().click()
+    await expect(this.buttonHideArchived()).toBeVisible()
+    if (await this.inputHideArchived().isChecked()) {
+      await this.buttonHideArchived().click()
+      await expect(this.inputHideArchived()).not.toBeChecked()
+    }
+    await this.page.keyboard.press('Escape')
   }
 
   async checkIsArchived (drive: Drive): Promise<void> {

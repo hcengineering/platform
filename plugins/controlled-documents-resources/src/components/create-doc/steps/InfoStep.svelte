@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { DropdownLabels, EditBox, Label, RadioGroup } from '@hcengineering/ui'
-  import { type AttachedData, type Data } from '@hcengineering/core'
+  import core, { type AttachedData, type Data } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -132,7 +132,7 @@
     let newCodeObj: Pick<Document, 'prefix' | 'seqNumber'> | undefined = undefined
 
     if (isTemplate) {
-      const seqObj = await client.findOne(documents.class.Sequence, { _id: documents.sequence.Templates })
+      const seqObj = await client.findOne(core.class.Sequence, { _id: documents.sequence.Templates })
 
       if (seqObj == null) {
         return

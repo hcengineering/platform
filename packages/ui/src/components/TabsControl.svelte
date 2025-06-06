@@ -21,9 +21,10 @@
   export let padding: string | undefined = undefined
   export let noMargin: boolean = false
   export let size: 'small' | 'medium' | 'large' = 'medium'
+  export let gap: 'small' | 'medium' | 'large' = 'large'
 </script>
 
-<div class="flex-stretch tabs-container no-print {size}" style:padding class:noMargin>
+<div class="flex-stretch tabs-container no-print {size} gap-{gap}" style:padding class:noMargin>
   {#each model as tab, i}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -54,11 +55,22 @@
   .tabs-container {
     flex-shrink: 0;
     flex-wrap: nowrap;
+    align-items: center;
     width: 100%;
     height: 4.5rem;
-    align-items: center;
+    min-width: 0;
+    min-height: 0;
     border-bottom: 1px solid var(--theme-divider-color);
 
+    &.gap-small {
+      gap: 0.5rem;
+    }
+    &.gap-medium {
+      gap: 1.5rem;
+    }
+    &.gap-large {
+      gap: 2.5rem;
+    }
     &:not(.noMargin) {
       margin-bottom: 0.5rem;
     }
@@ -92,9 +104,6 @@
       &:not(.selected):hover {
         color: var(--theme-content-color);
       }
-    }
-    .tab + .tab {
-      margin-left: 2.5rem;
     }
     .grow {
       min-width: 2.5rem;

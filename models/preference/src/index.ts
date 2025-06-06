@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref, type Space } from '@hcengineering/core'
-import { type Builder, Model, Prop, TypeRef } from '@hcengineering/model'
+import { type Ref, type Space } from '@hcengineering/core'
+import { type Builder, Model, Prop, TypeRef, TypeString } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import preference, { DOMAIN_PREFERENCE, type Preference, type SpacePreference } from '@hcengineering/preference'
 
@@ -24,8 +24,8 @@ export { preference as default }
 
 @Model(preference.class.Preference, core.class.Doc, DOMAIN_PREFERENCE)
 export class TPreference extends TDoc implements Preference {
-  @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
-    attachedTo!: Ref<Doc>
+  @Prop(TypeString(), core.string.AttachedTo)
+    attachedTo!: string
 }
 
 @Model(preference.class.SpacePreference, preference.class.Preference)

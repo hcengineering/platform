@@ -1,3 +1,4 @@
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
@@ -43,11 +44,13 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="flex-no-shrink{addClass ? ` ${addClass}` : ''}"
   style:text-align={justify !== '' ? justify : ''}
   style:min-width={`${$fixedWidthStore[key] ?? 0}px`}
   use:resizeObserver={resize}
+  on:click
 >
   <slot />
 </div>

@@ -10,15 +10,16 @@
 
   import { Analytics } from '@hcengineering/analytics'
   import { WithLookup, getCurrentAccount } from '@hcengineering/core'
+  import { GithubAuthentication, GithubIntegration } from '@hcengineering/github'
   import { getEmbeddedLabel, getMetadata, translate } from '@hcengineering/platform'
-  import presentation, { Card, HTMLViewer, NavLink, createQuery } from '@hcengineering/presentation'
+  import presentation, { Card, HTMLViewer, NavLink, createQuery, getClient } from '@hcengineering/presentation'
   import { Integration } from '@hcengineering/setting'
   import tracker, { Project } from '@hcengineering/tracker'
   import ui, { Button, Label, Loading, TabItem, TabList, location, ticker } from '@hcengineering/ui'
-  import { GithubAuthentication, GithubIntegration } from '@hcengineering/github'
   import { createEventDispatcher } from 'svelte'
   import github from '../plugin'
   import { onAuthorize } from './utils'
+  import { clientId } from '@hcengineering/client'
 
   export let integration: Integration
 
@@ -50,7 +51,7 @@
   )
 
   authQuery.query(github.class.GithubAuthentication, {}, (res) => {
-    ;[auth] = res
+    auth = res.find((it) => it.login !== '')
   })
 
   projectsQuery.query(tracker.class.Project, {}, (res) => {
@@ -58,12 +59,15 @@
   })
 
   function save (): void {
+    void getClient().diffUpdate(integration, {
+      value: auth?.login ?? ''
+    })
     dispatch('close', { value: auth?.login ?? '-' })
   }
   function onConnect (): void {
     const state = btoa(
       JSON.stringify({
-        accountId: getCurrentAccount()._id,
+        accountId: getCurrentAccount().primarySocialId,
         op: 'installation',
         workspace: $location.path[1],
         token: getMetadata(presentation.metadata.Token)

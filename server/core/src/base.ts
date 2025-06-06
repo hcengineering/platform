@@ -57,7 +57,7 @@ export abstract class BaseMiddleware implements Middleware {
     return this.provideFindAll(ctx, _class, query, options)
   }
 
-  loadModel (
+  provideLoadModel (
     ctx: MeasureContext<SessionData>,
     lastModelTx: Timestamp,
     hash?: string
@@ -65,17 +65,35 @@ export abstract class BaseMiddleware implements Middleware {
     return this.next?.loadModel(ctx, lastModelTx, hash) ?? emptyModelResult
   }
 
-  provideGroupBy<T>(ctx: MeasureContext<SessionData>, domain: Domain, field: string): Promise<Set<T>> {
+  loadModel (
+    ctx: MeasureContext<SessionData>,
+    lastModelTx: Timestamp,
+    hash?: string
+  ): Promise<Tx[] | LoadModelResponse> {
+    return this.provideLoadModel(ctx, lastModelTx, hash)
+  }
+
+  provideGroupBy<T, P extends Doc>(
+    ctx: MeasureContext<SessionData>,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ): Promise<Map<T, number>> {
     if (this.next !== undefined) {
-      return this.next.groupBy(ctx, domain, field)
+      return this.next.groupBy(ctx, domain, field, query)
     }
-    return Promise.resolve(new Set<T>())
+    return Promise.resolve(new Map<T, number>())
   }
 
   async close (): Promise<void> {}
 
-  groupBy<T>(ctx: MeasureContext<SessionData>, domain: Domain, field: string): Promise<Set<T>> {
-    return this.provideGroupBy(ctx, domain, field)
+  groupBy<T, P extends Doc>(
+    ctx: MeasureContext<SessionData>,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ): Promise<Map<T, number>> {
+    return this.provideGroupBy(ctx, domain, field, query)
   }
 
   searchFulltext (ctx: MeasureContext<SessionData>, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
@@ -83,6 +101,10 @@ export abstract class BaseMiddleware implements Middleware {
   }
 
   handleBroadcast (ctx: MeasureContext<SessionData>): Promise<void> {
+    return this.next?.handleBroadcast(ctx) ?? emptyBroadcastResult
+  }
+
+  provideBroadcast (ctx: MeasureContext<SessionData>): Promise<void> {
     return this.next?.handleBroadcast(ctx) ?? emptyBroadcastResult
   }
 

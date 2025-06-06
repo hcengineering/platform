@@ -24,8 +24,8 @@ import {
 import { DOMAIN_PREFERENCE, preferenceId } from '@hcengineering/preference'
 
 export const preferenceOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, preferenceId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, preferenceId, [
       {
         state: 'removeDeprecatedSpace',
         func: async (client: MigrationClient) => {

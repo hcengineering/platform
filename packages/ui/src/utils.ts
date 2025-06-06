@@ -64,7 +64,7 @@ export function checkMobile (): boolean {
  * @public
  */
 export function isSafari (): boolean {
-  return navigator.userAgent.toLowerCase().includes('safari/')
+  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent.toLowerCase())
 }
 
 /**
@@ -103,7 +103,8 @@ export function addNotification (
   subTitle: string,
   component: AnyComponent | AnySvelteComponent,
   params?: Record<string, any>,
-  severity: NotificationSeverity = NotificationSeverity.Success
+  severity: NotificationSeverity = NotificationSeverity.Success,
+  group?: string
 ): void {
   const closeTimeout = parseInt(localStorage.getItem('#platform.notification.timeout') ?? '10000')
   const notification: Notification = {
@@ -111,6 +112,7 @@ export function addNotification (
     title,
     subTitle,
     severity,
+    group,
     position: NotificationPosition.BottomLeft,
     component,
     closeTimeout,
@@ -212,8 +214,12 @@ export function replaceURLs (text: string): string {
  * @returns {string} string with parsed URL
  */
 export function parseURL (text: string): string {
-  const matches = autolinker.parse(text, { urls: true })
-  return matches.length > 0 ? matches[0].getAnchorHref() : ''
+  try {
+    const matches = autolinker.parse(text ?? '', { urls: true })
+    return matches.length > 0 ? matches[0].getAnchorHref() : ''
+  } catch (err: any) {
+    return ''
+  }
 }
 
 /**
@@ -293,6 +299,23 @@ export class ThrottledCaller {
         this.timeout = undefined
       }, this.delay)
     }
+  }
+}
+
+/**
+ * @public
+ */
+export class DebouncedCaller {
+  timeout?: any
+  constructor (readonly delay: number = 50) {}
+  call (op: () => void): void {
+    if (this.timeout !== undefined) {
+      clearTimeout(this.timeout)
+    }
+    this.timeout = setTimeout(() => {
+      op()
+      this.timeout = undefined
+    }, this.delay)
   }
 }
 

@@ -2,13 +2,10 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 
-import { systemAccountEmail } from '@hcengineering/core'
-
 interface Config {
   AccountsURL: string
   ServiceID: string
   ServerSecret: string
-  SystemEmail: string
   FrontURL: string
 
   // '*' means all workspaces
@@ -21,22 +18,23 @@ interface Config {
   EnterpriseHostname: string
   Port: number
 
-  MongoURL: string
-  ConfigurationDB: string
-
   CollaboratorURL: string
 
   BotName: string
 
   SentryDSN: string
   BrandingPath: string
+
+  WorkspaceInactivityInterval: number // Interval in days to stop workspace synchronization if not visited
+
+  // Limits
+  RateLimit: number
 }
 
 const envMap: { [key in keyof Config]: string } = {
   AccountsURL: 'ACCOUNTS_URL',
   ServiceID: 'SERVICE_ID',
   ServerSecret: 'SERVER_SECRET',
-  SystemEmail: 'SYSTEM_EMAIL',
   FrontURL: 'FRONT_URL',
 
   AppID: 'APP_ID',
@@ -49,28 +47,27 @@ const envMap: { [key in keyof Config]: string } = {
   AllowedWorkspaces: 'ALLOWED_WORKSPACES',
   BotName: 'BOT_NAME',
 
-  MongoURL: 'MONGO_URL',
-  ConfigurationDB: 'MONGO_DB',
-
   CollaboratorURL: 'COLLABORATOR_URL',
 
   SentryDSN: 'SENTRY_DSN',
-  BrandingPath: 'BRANDING_PATH'
+  BrandingPath: 'BRANDING_PATH',
+
+  WorkspaceInactivityInterval: 'WORKSPACE_INACTIVITY_INTERVAL',
+
+  // Limits
+
+  RateLimit: 'RATE_LIMIT' // Operations per second for one transactor
 }
 
 const required: Array<keyof Config> = [
   'AccountsURL',
   'ServerSecret',
   'ServiceID',
-  'SystemEmail',
   'FrontURL',
   'AppID',
   'ClientID',
   'ClientSecret',
   'PrivateKey',
-
-  'MongoURL',
-  'ConfigurationDB',
 
   'CollaboratorURL',
 
@@ -82,7 +79,6 @@ const config: Config = (() => {
     AccountsURL: process.env[envMap.AccountsURL],
     ServerSecret: process.env[envMap.ServerSecret],
     ServiceID: process.env[envMap.ServiceID] ?? 'github-service',
-    SystemEmail: process.env[envMap.SystemEmail] ?? systemAccountEmail,
     AllowedWorkspaces: process.env[envMap.AllowedWorkspaces]?.split(',') ?? ['*'],
     FrontURL: process.env[envMap.FrontURL] ?? '',
 
@@ -94,15 +90,14 @@ const config: Config = (() => {
     WebhookSecret: process.env[envMap.WebhookSecret] ?? 'secret',
     EnterpriseHostname: process.env[envMap.EnterpriseHostname],
     Port: parseInt(process.env[envMap.Port] ?? '3500'),
-    BotName: process.env[envMap.BotName] ?? 'dev[bot]',
-
-    MongoURL: process.env[envMap.MongoURL],
-    ConfigurationDB: process.env[envMap.ConfigurationDB] ?? '%github',
+    BotName: process.env[envMap.BotName] ?? 'ao-huly-dev[bot]',
 
     CollaboratorURL: process.env[envMap.CollaboratorURL],
 
     SentryDSN: process.env[envMap.SentryDSN],
-    BrandingPath: process.env[envMap.BrandingPath] ?? ''
+    BrandingPath: process.env[envMap.BrandingPath] ?? '',
+    WorkspaceInactivityInterval: parseInt(process.env[envMap.WorkspaceInactivityInterval] ?? '5'), // In days
+    RateLimit: parseInt(process.env[envMap.RateLimit] ?? '25')
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])

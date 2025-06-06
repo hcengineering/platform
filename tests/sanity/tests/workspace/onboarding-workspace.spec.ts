@@ -122,7 +122,7 @@ test.describe.skip('Workspace tests', () => {
     }
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
     await loginPage.goto()
-    await loginPage.linkSignUp().click()
+    await loginPage.clickSignUp()
     await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await leftSideMenuPage.buttonTracker().click()
@@ -144,7 +144,7 @@ test.describe.skip('Workspace tests', () => {
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
     const newWorkspaceName2 = `New Workspace Name - ${generateId(2)}`
     await loginPage.goto()
-    await loginPage.linkSignUp().click()
+    await loginPage.clickSignUp()
     await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await api.createWorkspaceWithLogin(newWorkspaceName2, newUser.email, '1234')
@@ -166,7 +166,7 @@ test.describe.skip('Workspace tests', () => {
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
     const newWorkspaceName2 = `New Workspace Name - ${generateId(2)}`
     await loginPage.goto()
-    await loginPage.linkSignUp().click()
+    await loginPage.clickSignUp()
     await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await userProfilePage.openProfileMenu()

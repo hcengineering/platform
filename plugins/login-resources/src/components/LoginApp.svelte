@@ -34,26 +34,30 @@
   import ConfirmationSend from './ConfirmationSend.svelte'
   import CreateWorkspaceForm from './CreateWorkspaceForm.svelte'
   import Join from './Join.svelte'
+  import AutoJoin from './AutoJoin.svelte'
   import LoginForm from './LoginForm.svelte'
+  import ProvidersOnlyForm from './ProvidersOnlyForm.svelte'
   import PasswordRequest from './PasswordRequest.svelte'
   import PasswordRestore from './PasswordRestore.svelte'
   import SelectWorkspace from './SelectWorkspace.svelte'
   import SignupForm from './SignupForm.svelte'
   import LoginIcon from './icons/LoginIcon.svelte'
+  import { Pages, getAccount, pages } from '..'
+  import login from '../plugin'
 
   import loginBack from '../../img/login_back.png'
   import loginBack2x from '../../img/login_back_2x.png'
-
   import loginBackAvif from '../../img/login_back.avif'
   import loginBack2xAvif from '../../img/login_back_2x.avif'
-
-  import { Pages, getAccount, pages } from '..'
   import loginBackWebp from '../../img/login_back.webp'
   import loginBack2xWebp from '../../img/login_back_2x.webp'
-  import login from '../plugin'
+  import AdminWorkspaces from './AdminWorkspaces.svelte'
 
   export let page: Pages = 'signup'
 
+  const signUpDisabled = getMetadata(login.metadata.DisableSignUp) ?? false
+  const localLoginHidden = getMetadata(login.metadata.HideLocalLogin) ?? false
+  const useOTP = getMetadata(presentation.metadata.MailUrl) != null && getMetadata(presentation.metadata.MailUrl) !== ''
   let navigateUrl: string | undefined
 
   onDestroy(location.subscribe(updatePageLoc))
@@ -61,19 +65,24 @@
   function updatePageLoc (loc: Location): void {
     const token = getMetadata(presentation.metadata.Token)
     page = (loc.path[1] as Pages) ?? (token != null ? 'selectWorkspace' : 'login')
+    if (page === 'join' && loc.query?.autoJoin !== undefined) {
+      page = 'autoJoin'
+    }
+
     const allowedUnauthPages: Pages[] = [
       'login',
       'signup',
       'password',
       'recovery',
       'join',
+      'autoJoin',
       'confirm',
       'confirmationSend',
       'auth'
     ]
     if (token === undefined ? !allowedUnauthPages.includes(page) : !pages.includes(page)) {
-      const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
-      page = tokens != null ? 'login' : 'signup'
+      const account = fetchMetadataLocalStorage(login.metadata.LastAccount)
+      page = account != null ? 'login' : 'signup'
     }
 
     navigateUrl = loc.query?.navigateUrl ?? undefined
@@ -83,21 +92,23 @@
     if (page === 'auth') {
       // token handled by auth page
       return
+    } else if (page === 'autoJoin') {
+      // there's a separate workflow for auto join
+      return
     }
+
     if (getMetadata(presentation.metadata.Token) == null) {
-      const lastToken = fetchMetadataLocalStorage(login.metadata.LastToken)
-      if (lastToken != null) {
+      const lastAccount = fetchMetadataLocalStorage(login.metadata.LastAccount)
+      if (lastAccount != null) {
         try {
-          const info = await getAccount(false)
-          if (info !== undefined) {
-            setMetadata(presentation.metadata.Token, info.token)
-            setMetadataLocalStorage(login.metadata.LastToken, info.token)
-            setMetadataLocalStorage(login.metadata.LoginEndpoint, info.endpoint)
-            setMetadataLocalStorage(login.metadata.LoginEmail, info.email)
+          const loginInfo = await getAccount(false)
+          if (loginInfo != null) {
+            setMetadata(presentation.metadata.Token, loginInfo.token)
+            setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
             updatePageLoc(getCurrentLocation())
           }
         } catch (err: any) {
-          setMetadataLocalStorage(login.metadata.LastToken, null)
+          // do nothing
         }
       }
     }
@@ -106,61 +117,75 @@
   onMount(chooseToken)
 </script>
 
-<div class="theme-dark w-full h-full backd" class:paneld={$deviceInfo.docWidth <= 768} class:white={!$themeStore.dark}>
-  <div class="bg-image clear-mins" class:back={$deviceInfo.docWidth > 768} class:p-4={$deviceInfo.docWidth > 768}>
-    <picture>
-      <source srcset={`${loginBackAvif}, ${loginBack2xAvif} 2x`} type="image/avif" />
-      <source srcset={`${loginBackWebp}, ${loginBack2xWebp} 2x`} type="image/webp" />
+{#if page === 'admin'}
+  <AdminWorkspaces />
+{:else}
+  <div
+    class="theme-dark w-full h-full backd"
+    class:paneld={$deviceInfo.docWidth <= 768}
+    class:white={!$themeStore.dark}
+  >
+    <div class="bg-image clear-mins" class:back={$deviceInfo.docWidth > 768} class:p-4={$deviceInfo.docWidth > 768}>
+      <picture>
+        <source srcset={`${loginBackAvif}, ${loginBack2xAvif} 2x`} type="image/avif" />
+        <source srcset={`${loginBackWebp}, ${loginBack2xWebp} 2x`} type="image/webp" />
 
-      <img
-        class="back-image"
-        src={loginBack}
-        style:display={$deviceInfo.docWidth <= 768 ? 'none' : 'block'}
-        srcset={`${loginBack} 1x, ${loginBack2x} 2x`}
-        alt=""
-      />
-    </picture>
+        <img
+          class="back-image"
+          src={loginBack}
+          style:display={$deviceInfo.docWidth <= 768 ? 'none' : 'block'}
+          srcset={`${loginBack} 1x, ${loginBack2x} 2x`}
+          alt=""
+        />
+      </picture>
 
-    <div
-      style:position="fixed"
-      style:left={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.75rem'}
-      style:top={'3rem'}
-      class="flex-row-center"
-    >
-      <LoginIcon /><span class="fs-title ml-2">{getMetadata(workbench.metadata.PlatformTitle)}</span>
+      <div
+        style:position="fixed"
+        style:left={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.75rem'}
+        style:top={'3rem'}
+        class="flex-row-center"
+      >
+        <LoginIcon /><span class="fs-title ml-2">{getMetadata(workbench.metadata.PlatformTitle)}</span>
+      </div>
+
+      <div class="panel-base" class:panel={$deviceInfo.docWidth > 768} class:white={!$themeStore.dark}>
+        <Scroller padding={'1rem 0'}>
+          <div class="form-content">
+            {#if page === 'login'}
+              {#if localLoginHidden}
+                <ProvidersOnlyForm />
+              {:else}
+                <LoginForm {navigateUrl} {signUpDisabled} {useOTP} />
+              {/if}
+            {:else if page === 'signup'}
+              <SignupForm {navigateUrl} {signUpDisabled} {localLoginHidden} {useOTP} />
+            {:else if page === 'createWorkspace'}
+              <CreateWorkspaceForm />
+            {:else if page === 'password'}
+              <PasswordRequest {signUpDisabled} />
+            {:else if page === 'recovery'}
+              <PasswordRestore />
+            {:else if page === 'selectWorkspace'}
+              <SelectWorkspace {navigateUrl} />
+            {:else if page === 'join'}
+              <Join />
+            {:else if page === 'autoJoin'}
+              <AutoJoin />
+            {:else if page === 'confirm'}
+              <Confirmation />
+            {:else if page === 'confirmationSend'}
+              <ConfirmationSend />
+            {:else if page === 'auth'}
+              <Auth />
+            {/if}
+          </div>
+        </Scroller>
+      </div>
+
+      <Popup />
     </div>
-
-    <div class="panel-base" class:panel={$deviceInfo.docWidth > 768} class:white={!$themeStore.dark}>
-      <Scroller padding={'1rem 0'}>
-        <div class="form-content">
-          {#if page === 'login'}
-            <LoginForm {navigateUrl} />
-          {:else if page === 'signup'}
-            <SignupForm />
-          {:else if page === 'createWorkspace'}
-            <CreateWorkspaceForm />
-          {:else if page === 'password'}
-            <PasswordRequest />
-          {:else if page === 'recovery'}
-            <PasswordRestore />
-          {:else if page === 'selectWorkspace'}
-            <SelectWorkspace {navigateUrl} />
-          {:else if page === 'join'}
-            <Join />
-          {:else if page === 'confirm'}
-            <Confirmation />
-          {:else if page === 'confirmationSend'}
-            <ConfirmationSend />
-          {:else if page === 'auth'}
-            <Auth />
-          {/if}
-        </div>
-      </Scroller>
-    </div>
-
-    <Popup />
   </div>
-</div>
+{/if}
 
 <style lang="scss">
   .back-image {

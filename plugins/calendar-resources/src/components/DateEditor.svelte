@@ -46,7 +46,10 @@
   $: currentDate = new Date(date)
   let tib: TimeInputBox
 
-  function timeClick (e: MouseEvent & { currentTarget: EventTarget & HTMLElement }) {
+  function timeClick (e: MouseEvent & { currentTarget: EventTarget & HTMLElement }): void {
+    if (disabled) {
+      return
+    }
     if (!showDate) {
       showPopup(
         DatePopup,
@@ -59,10 +62,13 @@
           }
         }
       )
-    } else if (!disabled) tib.focused(e.offsetX <= e.currentTarget.clientWidth / 2 ? 'hour' : 'min')
+    } else tib.focused(e.offsetX <= e.currentTarget.clientWidth / 2 ? 'hour' : 'min')
   }
 
-  function dateClick (e: MouseEvent) {
+  function dateClick (e: MouseEvent): void {
+    if (disabled) {
+      return
+    }
     showPopup(SimpleDatePopup, { currentDate, timeZone }, eventToHTMLElement(e), (res) => {
       if (res) {
         date = res.getTime()
@@ -158,11 +164,11 @@
 {#if !withoutTime && difference > 0}
   <div class="divider" />
   {#if fixed === undefined}
-    <div class="p-2 font-regular-14 sunshine-text-color">
+    <div class="p-2 font-regular-14">
       <TimeShiftPresenter value={date - difference} exact />
     </div>
   {:else}
-    <FixedColumn key={fixed + '-duration'} addClass={'p-2 font-regular-14 sunshine-text-color'}>
+    <FixedColumn key={fixed + '-duration'} addClass={'p-2 font-regular-14'}>
       <TimeShiftPresenter value={date - difference} exact />
     </FixedColumn>
   {/if}

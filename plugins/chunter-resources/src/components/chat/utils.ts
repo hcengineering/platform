@@ -12,23 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import attachment, { type SavedAttachments } from '@hcengineering/attachment'
+
 import { type DirectMessage } from '@hcengineering/chunter'
-import contact, { type PersonAccount } from '@hcengineering/contact'
-import core, {
-  type Account,
-  AccountRole,
-  getCurrentAccount,
-  hasAccountRole,
-  type IdMap,
-  type Ref,
-  SortingOrder,
-  type UserStatus,
-  type WithLookup
-} from '@hcengineering/core'
+import contact from '@hcengineering/contact'
+import { AccountRole, getCurrentAccount, hasAccountRole, type UserStatus, type AccountUuid } from '@hcengineering/core'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+import { getClient, MessageBox } from '@hcengineering/presentation'
 import { type Action, showPopup } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import workbench, { type SpecialNavModel } from '@hcengineering/workbench'
@@ -43,7 +33,6 @@ interface NavigatorState {
   collapsedSections: string[]
 }
 
-export const savedAttachmentsStore = writable<Array<WithLookup<SavedAttachments>>>([])
 export const navigatorStateStore = writable<NavigatorState>(restoreNavigatorState())
 
 function restoreNavigatorState (): NavigatorState {
@@ -171,70 +160,60 @@ function sortAlphabetically (items: ChatNavItemModel[]): ChatNavItemModel[] {
   return items.sort((i1, i2) => i1.title.localeCompare(i2.title))
 }
 
-function getDirectCompanion (
-  direct: DirectMessage,
-  me: PersonAccount,
-  personAccountById: IdMap<PersonAccount>
-): Ref<Account> | undefined {
-  return direct.members.find((member) => personAccountById.get(member as Ref<PersonAccount>)?.person !== me.person)
+function getDirectCompanion (direct: DirectMessage, myAcc: AccountUuid): AccountUuid | undefined {
+  return direct.members.find((member) => member !== myAcc)
 }
 
-function isOnline (account: Ref<Account> | undefined, userStatusByAccount: Map<Ref<Account>, UserStatus>): boolean {
-  if (account === undefined) {
+function isOnline (user: AccountUuid | undefined, userStatusByAccount: Map<AccountUuid, UserStatus>): boolean {
+  if (user === undefined) {
     return false
   }
 
-  return userStatusByAccount.get(account)?.online ?? false
+  return userStatusByAccount.get(user)?.online ?? false
 }
 
-function isGroupChat (direct: DirectMessage, personAccountById: IdMap<PersonAccount>): boolean {
-  const persons = new Set(
-    direct.members
-      .map((member) => personAccountById.get(member as Ref<PersonAccount>)?.person)
-      .filter((it) => it !== undefined)
-  )
-
-  return persons.size > 2
+function isGroupChat (direct: DirectMessage): boolean {
+  return direct.members.length > 2
 }
 
 function sortDirects (items: ChatNavItemModel[], option: SortFnOptions): ChatNavItemModel[] {
-  const { userStatusByAccount, personAccountById } = option
-  const me = getCurrentAccount() as PersonAccount
+  const { userStatusByAccount } = option
+  const account = getCurrentAccount().uuid
 
   return items.sort((i1, i2) => {
     const direct1 = i1.object as DirectMessage
     const direct2 = i2.object as DirectMessage
 
-    const isGroupChat1 = isGroupChat(direct1, personAccountById)
-    const isGroupChat2 = isGroupChat(direct2, personAccountById)
+    const isGroupChat1 = isGroupChat(direct1)
+    const isGroupChat2 = isGroupChat(direct2)
 
     if (isGroupChat1 && isGroupChat2) {
       return i1.title.localeCompare(i2.title)
     }
 
     if (isGroupChat1 && !isGroupChat2) {
-      const isOnline2 = isOnline(getDirectCompanion(direct2, me, personAccountById), userStatusByAccount)
+      const isOnline2 = isOnline(getDirectCompanion(direct2, account), userStatusByAccount)
       return isOnline2 ? 1 : -1
     }
 
     if (!isGroupChat1 && isGroupChat2) {
-      const isOnline1 = isOnline(getDirectCompanion(direct1, me, personAccountById), userStatusByAccount)
+      const isOnline1 = isOnline(getDirectCompanion(direct1, account), userStatusByAccount)
       return isOnline1 ? -1 : 1
     }
 
-    const account1 = getDirectCompanion(direct1, me, personAccountById)
-    const account2 = getDirectCompanion(direct2, me, personAccountById)
+    const user1 = getDirectCompanion(direct1, account)
+    const user2 = getDirectCompanion(direct2, account)
 
-    if (account1 === undefined) {
+    if (user1 === undefined) {
       return 1
     }
 
-    if (account2 === undefined) {
+    if (user2 === undefined) {
       return -1
     }
 
-    const isOnline1 = isOnline(account1, userStatusByAccount)
-    const isOnline2 = isOnline(account2, userStatusByAccount)
+    const isOnline1 = isOnline(user1, userStatusByAccount)
+    const isOnline2 = isOnline(user2, userStatusByAccount)
 
     if (isOnline1 === isOnline2) {
       return i1.title.localeCompare(i2.title)
@@ -364,27 +343,6 @@ function archiveActivityChannels (contexts: DocNotifyContext[]): void {
   )
 }
 
-export function loadSavedAttachments (): void {
-  const client = getClient()
-
-  if (client !== undefined) {
-    const savedAttachmentsQuery = createQuery(true)
-
-    savedAttachmentsQuery.query(
-      attachment.class.SavedAttachments,
-      { space: core.space.Workspace },
-      (res) => {
-        savedAttachmentsStore.set(res.filter(({ $lookup }) => $lookup?.attachedTo !== undefined))
-      },
-      { lookup: { attachedTo: attachment.class.Attachment }, sort: { modifiedOn: SortingOrder.Descending } }
-    )
-  } else {
-    setTimeout(() => {
-      loadSavedAttachments()
-    }, 50)
-  }
-}
-
 export async function hideActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
   const ops = getClient().apply(undefined, 'hideActivityChannels')
 
@@ -400,7 +358,7 @@ export async function hideActivityChannels (contexts: DocNotifyContext[]): Promi
 export async function readActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
   const client = InboxNotificationsClientImpl.getClient()
   const notificationsByContext = get(client.inboxNotificationsByContext)
-  const ops = getClient().apply(undefined, 'readActivityChannels')
+  const ops = getClient().apply(undefined, 'readActivityChannels', true)
 
   try {
     for (const context of contexts) {

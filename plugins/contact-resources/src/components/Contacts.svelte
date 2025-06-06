@@ -86,6 +86,7 @@
         bind:viewlet
         bind:preference
         bind:loading
+        ignoreFragment
         viewletQuery={{
           attachTo: contact.class.Contact,
           descriptor: view.viewlet.Table

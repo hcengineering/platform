@@ -14,20 +14,17 @@
 // limitations under the License.
 //
 
-import { Account, Class, Doc, getWorkspaceId, MeasureMetricsContext, Ref, Space } from '@hcengineering/core'
+import { Class, Doc, MeasureMetricsContext, PersonId, Ref, Space, WorkspaceUuid } from '@hcengineering/core'
 import type { FullTextAdapter, IndexedDoc } from '@hcengineering/server-core'
 
 import { createElasticAdapter } from '../adapter'
 
 describe('Elastic Adapter', () => {
   let adapter: FullTextAdapter
-
+  const ctx = new MeasureMetricsContext('-', {})
+  const ws1 = 'ws1' as WorkspaceUuid
   beforeEach(async () => {
-    adapter = await createElasticAdapter(
-      process.env.ELASTIC_URL ?? 'http://localhost:9200/',
-      getWorkspaceId('ws1'),
-      new MeasureMetricsContext('-', {})
-    )
+    adapter = await createElasticAdapter(process.env.ELASTIC_URL ?? 'http://localhost:9200/')
   })
 
   afterEach(async () => {
@@ -42,18 +39,20 @@ describe('Elastic Adapter', () => {
     const doc: IndexedDoc = {
       id: 'doc1' as Ref<Doc>,
       _class: ['class1' as Ref<Class<Doc>>],
-      modifiedBy: 'andrey' as Ref<Account>,
+      modifiedBy: 'andrey' as PersonId,
       modifiedOn: 0,
-      space: ['space1' as Ref<Space>],
+      space: 'space1' as Ref<Space>,
       content0: 'hey there!'
     }
-    await adapter.index(doc)
-    const hits = await adapter.search(['class1' as Ref<Class<Doc>>], {}, 1)
+    await adapter.index(ctx, ws1, doc)
+    const hits = await adapter.search(ctx, ws1, ['class1' as Ref<Class<Doc>>], {}, 1)
     console.log(hits)
   })
 
   it('should find document with raw search', async () => {
     const result = await adapter.searchString(
+      ctx,
+      ws1,
       {
         query: 'hey'
       },

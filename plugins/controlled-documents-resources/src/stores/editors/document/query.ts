@@ -18,7 +18,8 @@ import {
   type ControlledDocument,
   type DocumentComment,
   type DocumentTraining,
-  type Project
+  type Project,
+  type DocumentTemplate
 } from '@hcengineering/controlled-documents'
 import attachment from '@hcengineering/attachment'
 import { type Class, type DocumentQuery, type Ref, SortingOrder } from '@hcengineering/core'
@@ -39,7 +40,8 @@ import {
   documentSnapshotsUpdated,
   trainingUpdated,
   projectUpdated,
-  projectDocumentsUpdated
+  projectDocumentsUpdated,
+  reviewRequestHistoryUpdated
 } from './actions'
 import { $documentCommentsFilter } from './documentComments'
 import { $controlledDocument, $documentTraining } from './editor'
@@ -48,6 +50,7 @@ const controlledDocumentQuery = createQuery(true)
 const documentVersionsQuery = createQuery(true)
 const documentSnapshotsQuery = createQuery(true)
 const reviewRequestQuery = createQuery(true)
+const reviewRequestHistoryQuery = createQuery(true)
 const approvalRequestQuery = createQuery(true)
 const documentCommentsQuery = createQuery(true)
 const workingCopyMetadataQuery = createQuery(true)
@@ -92,7 +95,7 @@ const queryDocumentVersionsFx = createEffect((payload: ControlledDocument) => {
     documents.class.ControlledDocument,
     {
       seqNumber: payload.seqNumber,
-      template: payload.template
+      template: (payload.template ?? null) as Ref<DocumentTemplate>
     },
     (result) => {
       documentAllVersionsUpdated(result ?? [])
@@ -117,8 +120,25 @@ const queryReviewRequestFx = createEffect(
       documents.class.DocumentReviewRequest,
       { attachedTo: _id, attachedToClass: _class, status: RequestStatus.Active },
       (result) => {
+        reviewRequestUpdated(result[0] ?? null)
+      }
+    )
+  }
+)
+
+const queryReviewRequestHistoryFx = createEffect(
+  (payload: { _id: Ref<ControlledDocument>, _class: Ref<Class<ControlledDocument>> }) => {
+    const { _id, _class } = payload
+    if (_id == null || _class == null) {
+      reviewRequestHistoryQuery.unsubscribe()
+      return
+    }
+    reviewRequestHistoryQuery.query(
+      documents.class.DocumentReviewRequest,
+      { attachedTo: _id, attachedToClass: _class },
+      (result) => {
         if (result !== null && result !== undefined && result.length > 0) {
-          reviewRequestUpdated(result[0])
+          reviewRequestHistoryUpdated(result)
         }
       }
     )
@@ -136,9 +156,7 @@ const queryApprovalRequestFx = createEffect(
       documents.class.DocumentApprovalRequest,
       { attachedTo: _id, attachedToClass: _class, status: RequestStatus.Active },
       (result) => {
-        if (result !== null && result !== undefined && result.length > 0) {
-          approvalRequestUpdated(result[0])
-        }
+        approvalRequestUpdated(result[0] ?? null)
       }
     )
   }
@@ -259,6 +277,7 @@ forward({
   to: [
     queryControlledDocumentFx,
     queryReviewRequestFx,
+    queryReviewRequestHistoryFx,
     queryApprovalRequestFx,
     querySavedAttachmentsFx,
     queryProjectFx,

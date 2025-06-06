@@ -22,14 +22,15 @@ import {
   type NodeViewRendererOptions,
   type NodeViewRendererProps
 } from '@tiptap/core'
-import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import type { ComponentType, SvelteComponent } from 'svelte'
 
+import { type Node } from '@tiptap/pm/model'
+import { type Decoration, DecorationSet } from '@tiptap/pm/view'
 import { createNodeViewContext } from './context'
 import { SvelteRenderer } from './svelte-renderer'
 
 export interface SvelteNodeViewRendererOptions extends NodeViewRendererOptions {
-  update?: (node: ProseMirrorNode, decorations: DecorationWithType[]) => boolean
+  update?: (node: Node, decorations: readonly Decoration[]) => boolean
   contentAs?: string
   contentClass?: string
   componentProps?: Record<string, any>
@@ -59,7 +60,7 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
     const props: SvelteNodeViewProps = {
       editor: this.editor,
       node: this.node,
-      decorations: this.decorations,
+      decorations: this.decorations as readonly DecorationWithType[],
       selected: false,
       extension: this.extension,
       getPos: () => this.getPos(),
@@ -69,6 +70,9 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
       deleteNode: () => {
         this.deleteNode()
       },
+      innerDecorations: DecorationSet.empty,
+      HTMLAttributes: {},
+      view: this.editor.view,
       ...(this.options.componentProps ?? {})
     }
 
@@ -110,7 +114,14 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
     return this.contentDOMElement
   }
 
-  update (node: ProseMirrorNode, decorations: DecorationWithType[]): boolean {
+  override stopEvent (event: Event): boolean {
+    if (typeof this.options.stopEvent === 'function') {
+      return this.options.stopEvent({ event })
+    }
+    return super.stopEvent(event)
+  }
+
+  update (node: Node, decorations: readonly Decoration[]): boolean {
     if (typeof this.options.update === 'function') {
       return this.options.update(node, decorations)
     }
@@ -150,8 +161,13 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
 
   handleSelectionUpdate (): void {
     const { from, to } = this.editor.state.selection
+    const pos = this.getPos()
 
-    if (from <= this.getPos() && to >= this.getPos() + this.node.nodeSize) {
+    if (typeof pos !== 'number') {
+      return
+    }
+
+    if (from <= pos && to >= pos + this.node.nodeSize) {
       if (this.renderer.props.selected === true) {
         return
       }

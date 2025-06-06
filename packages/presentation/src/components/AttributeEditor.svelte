@@ -36,7 +36,7 @@
 
   $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
-  $: presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute) : undefined
+  $: presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute.type) : undefined
 
   let editor: Promise<AnySvelteComponent> | undefined
 
@@ -76,6 +76,7 @@
       {focus}
       {focusIndex}
       {editKind}
+      {attribute}
     />
   {/await}
 {/if}

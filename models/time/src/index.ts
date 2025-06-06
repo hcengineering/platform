@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import board from '@hcengineering/board'
 import calendarPlugin, { type Visibility } from '@hcengineering/calendar'
-import contactPlugin, { type Person } from '@hcengineering/contact'
+import contactPlugin, { type Employee } from '@hcengineering/contact'
 import {
   DOMAIN_MODEL,
   type Class,
@@ -27,7 +27,8 @@ import {
   type Timestamp,
   type Type,
   DateRangeMode,
-  IndexKind
+  IndexKind,
+  AccountRole
 } from '@hcengineering/core'
 import lead from '@hcengineering/lead'
 import {
@@ -53,7 +54,7 @@ import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import recruit from '@hcengineering/recruit'
 import tags from '@hcengineering/tags'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import {
   type TodoDoneTester,
   timeId,
@@ -96,7 +97,7 @@ export class TTypeToDoPriority extends TType {}
 
 @Model(time.class.ToDo, core.class.AttachedDoc, DOMAIN_TIME)
 @UX(time.string.ToDo, time.icon.Planned)
-export class TToDO extends TAttachedDoc implements ToDo {
+export class TToDo extends TAttachedDoc implements ToDo {
   @Prop(TypeDate(DateRangeMode.DATE), task.string.DueDate)
     dueDate?: number | null | undefined
 
@@ -116,8 +117,8 @@ export class TToDO extends TAttachedDoc implements ToDo {
 
   doneOn?: Timestamp | null
 
-  @Prop(TypeRef(contactPlugin.class.Person), contactPlugin.string.For)
-    user!: Ref<Person>
+  @Prop(TypeRef(contactPlugin.mixin.Employee), contactPlugin.string.Employee)
+    user!: Ref<Employee>
 
   @Prop(Collection(time.class.WorkSlot, time.string.WorkSlot), time.string.WorkSlot)
     workslots!: number
@@ -132,7 +133,7 @@ export class TToDO extends TAttachedDoc implements ToDo {
 
 @Model(time.class.ProjectToDo, time.class.ToDo)
 @UX(time.string.ToDo, time.icon.Planned)
-export class TProjectToDo extends TToDO implements ProjectToDo {
+export class TProjectToDo extends TToDo implements ProjectToDo {
   declare attachedSpace: Ref<Space>
 }
 
@@ -143,7 +144,7 @@ export class TTodoAutomationHelper extends TDoc implements TodoAutomationHelper 
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TWorkSlot, TItemPresenter, TToDO, TProjectToDo, TTypeToDoPriority, TTodoAutomationHelper)
+  builder.createModel(TWorkSlot, TItemPresenter, TToDo, TProjectToDo, TTypeToDoPriority, TTodoAutomationHelper)
 
   builder.mixin(time.class.ToDo, core.class.Class, activity.mixin.IgnoreActivity, {})
   builder.mixin(time.class.ProjectToDo, core.class.Class, activity.mixin.IgnoreActivity, {})
@@ -208,6 +209,7 @@ export function createModel (builder: Builder): void {
     {
       label: time.string.Team,
       icon: time.icon.Team,
+      accessLevel: AccountRole.User,
       alias: 'team',
       hidden: false,
       component: time.component.Team

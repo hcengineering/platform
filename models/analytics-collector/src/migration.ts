@@ -42,10 +42,11 @@ async function removeOnboardingChannels (client: MigrationClient): Promise<void>
 }
 
 export const analyticsCollectorOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, analyticsCollectorId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, analyticsCollectorId, [
       {
         state: 'remove-analytics-channels-v3',
+        mode: 'upgrade',
         func: removeOnboardingChannels
       }
     ])

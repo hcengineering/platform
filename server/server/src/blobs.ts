@@ -1,5 +1,5 @@
 import { Analytics } from '@hcengineering/analytics'
-import type { MeasureContext, WorkspaceId } from '@hcengineering/core'
+import type { MeasureContext, WorkspaceIds } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import type { Readable } from 'stream'
 
@@ -17,11 +17,11 @@ export interface BlobResponse {
 export async function getFile (
   ctx: MeasureContext,
   client: StorageAdapter,
-  workspace: WorkspaceId,
+  wsIds: WorkspaceIds,
   file: string,
   res: BlobResponse
 ): Promise<void> {
-  const stat = await ctx.with('stat', {}, () => client.stat(ctx, workspace, file))
+  const stat = await ctx.with('stat', {}, () => client.stat(ctx, wsIds, file))
   if (stat === undefined) {
     ctx.error('No such key', { file })
     res.cork(() => {
@@ -36,12 +36,14 @@ export async function getFile (
     { contentType: stat.contentType },
     async (ctx) => {
       try {
-        const dataStream = await ctx.with('readable', {}, () => client.get(ctx, workspace, file))
+        const dataStream = await ctx.with('readable', {}, () => client.get(ctx, wsIds, file))
         await new Promise<void>((resolve, reject) => {
           res.cork(() => {
             res.writeHead(200, {
               'Content-Type': stat.contentType,
               Etag: stat.etag,
+              connection: 'keep-alive',
+              'keep-alive': 'timeout=5, max=1000',
               'Last-Modified': new Date(stat.modifiedOn).toISOString(),
               'Cache-Control': cacheControlNoCache
             })
@@ -62,7 +64,7 @@ export async function getFile (
           })
         })
       } catch (err: any) {
-        ctx.error('get-file-error', { workspace: workspace.name, err })
+        ctx.error('get-file-error', { workspace: wsIds, err })
         Analytics.handleError(err)
         res.cork(() => {
           res.status(500)
@@ -95,11 +97,11 @@ export async function getFileRange (
   ctx: MeasureContext,
   range: string,
   client: StorageAdapter,
-  workspace: WorkspaceId,
+  wsIds: WorkspaceIds,
   uuid: string,
   res: BlobResponse
 ): Promise<void> {
-  const stat = await ctx.with('stats', {}, () => client.stat(ctx, workspace, uuid))
+  const stat = await ctx.with('stats', {}, () => client.stat(ctx, wsIds, uuid))
   if (stat === undefined) {
     ctx.error('No such key', { file: uuid })
     res.cork(() => {
@@ -118,7 +120,9 @@ export async function getFileRange (
   if (start >= size) {
     res.cork(() => {
       res.writeHead(416, {
-        'Content-Range': `bytes */${size}`
+        'Content-Range': `bytes */${size}`,
+        connection: 'keep-alive',
+        'keep-alive': 'timeout=5, max=1000'
       })
       res.end()
     })
@@ -133,15 +137,16 @@ export async function getFileRange (
         const dataStream = await ctx.with(
           'partial',
           {},
-          () => client.partial(ctx, workspace, uuid, start, end - start + 1),
+          () => client.partial(ctx, wsIds, uuid, start, end - start + 1),
           {}
         )
         await new Promise<void>((resolve, reject) => {
           res.cork(() => {
             res.writeHead(206, {
-              Connection: 'keep-alive',
               'Content-Range': `bytes ${start}-${end}/${size}`,
               'Accept-Ranges': 'bytes',
+              connection: 'keep-alive',
+              'keep-alive': 'timeout=5, max=1000',
               // 'Content-Length': end - start + 1,
               'Content-Type': stat.contentType,
               Etag: stat.etag,
@@ -173,7 +178,7 @@ export async function getFileRange (
           err?.message === 'No such key' ||
           err?.Code === 'NoSuchKey'
         ) {
-          ctx.info('No such key', { workspace: workspace.name, uuid })
+          ctx.info('No such key', { workspace: wsIds, uuid })
           res.cork(() => {
             res.status(404)
             res.end()

@@ -53,12 +53,7 @@
   <button class="hulyTableAttr-content__row-dragMenu" on:click|stopPropagation={clickMore}>
     <IconMoreV2 size={'small'} />
   </button>
-  {#if attribute.isCustom}
-    <div class="hulyChip-item font-medium-12">
-      <Label label={settings.string.Custom} />
-    </div>
-  {/if}
-  {#if attribute.icon !== undefined}
+  {#if attribute.icon !== undefined && attribute.icon !== null}
     <div class="hulyTableAttr-content__row-icon">
       <Icon icon={attribute.icon} size={'small'} />
     </div>

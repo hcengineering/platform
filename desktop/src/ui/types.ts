@@ -5,34 +5,47 @@ import { ScreenSource } from '@hcengineering/love'
  */
 export interface Config {
   ACCOUNTS_URL: string
+  AI_URL?: string
+  ANALYTICS_COLLECTOR_URL?: string
+  BRANDING_URL?: string
+  CALENDAR_URL: string
   COLLABORATOR?: string
   COLLABORATOR_URL: string
-  FRONT_URL: string
+  CONFIG_URL: string
+  DESKTOP_UPDATES_CHANNEL?: string
+  DESKTOP_UPDATES_URL?: string
+  DISABLE_SIGNUP?: string
+  HIDE_LOCAL_LOGIN?: string
   FILES_URL: string
-  UPLOAD_URL: string
-  MODEL_VERSION?: string
-  VERSION?: string
-  TELEGRAM_URL: string
-  GMAIL_URL: string
-  CALENDAR_URL: string
-  REKONI_URL: string
-  INITIAL_URL: string
+  FRONT_URL: string
   GITHUB_APP: string
   GITHUB_CLIENTID: string
   GITHUB_URL: string
-  CONFIG_URL: string
-  LOVE_ENDPOINT?: string
+  GMAIL_URL: string
+  INITIAL_URL: string
+  LINK_PREVIEW_URL?: string
   LIVEKIT_WS?: string
-  SIGN_URL?: string
+  LOVE_ENDPOINT?: string
+  MODEL_VERSION?: string
+  PRESENCE_URL?: string
+  PREVIEW_CONFIG: string
   PRINT_URL?: string
   PUSH_PUBLIC_KEY: string
-  ANALYTICS_COLLECTOR_URL?: string
-  AI_URL?:string
-  BRANDING_URL?: string
-  PREVIEW_CONFIG: string
-  DESKTOP_UPDATES_URL?: string
-  DESKTOP_UPDATES_CHANNEL?: string
+  REKONI_URL: string
+  SIGN_URL?: string
+  STATS_URL?: string
   TELEGRAM_BOT_URL?: string
+  TELEGRAM_URL: string
+  UPLOAD_CONFIG: string
+  UPLOAD_URL: string
+  VERSION?: string
+  STREAM_URL?: string
+  BACKUP_URL?: string
+  PUBLIC_SCHEDULE_URL?: string
+  CALDAV_SERVER_URL?: string
+  EXPORT_URL?: string
+  MAIL_URL?: string
+  COMMUNICATION_API_ENABLED?: string
 }
 
 export interface Branding {
@@ -80,6 +93,7 @@ export interface IPCMainExposed {
   sendNotification: (notififationParams: NotificationParams) => void
   getScreenAccess: () => Promise<boolean>
   getScreenSources: () => Promise<ScreenSource[]>
+  handleAuth: (callback: (token: string) => void) => void
 
   cancelBackup: () => void
   startBackup: (token: string, endpoint: string, workspace: string) => void

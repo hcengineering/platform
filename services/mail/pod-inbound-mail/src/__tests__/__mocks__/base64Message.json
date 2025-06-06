@@ -1,0 +1,81 @@
+{
+  "envelope": {
+    "from": {
+      "address": "example1@test.com"
+    },
+    "to": [
+      {
+        "address": "recipient2@example.com"
+      }
+    ]
+  },
+  "message": {
+    "contents": "VGVzdCBlbmNvZGVkIGVtYWlsIGNvbnRlbnQ=",
+    "headers": [
+      [
+        "Received",
+        " from mail-nwsmtp-mxback-production-main-38.iva.yp-c.yandex.net (mail-nwsmtp-mxback-production-main-38.iva.yp-c.yandex.net [IPv6:2a02:6b8:c0c:1724:0:640:dee6:0])\r\n\tby forward500b.mail.yandex.net (Yandex) with ESMTPS id 65A23611AA\r\n\tfor <artyom@huly.app>; Tue,  3 Jun 2025 06:35:44 +0300 (MSK)\r\n"
+      ],
+      [
+        "Received",
+        " from mail.yandex.ru (2a02:6b8:c0c:b187:0:640:6b88:0 [2a02:6b8:c0c:b187:0:640:6b88:0])\r\n\tby mail-nwsmtp-mxback-production-main-38.iva.yp-c.yandex.net (mxback/Yandex) with HTTPS id YZRhuVDL1eA0-m7PJdtq8;\r\n\tTue, 03 Jun 2025 06:35:44 +0300\r\n"
+      ],
+      [
+        "X-Yandex-Fwd",
+        " 1\r\n"
+      ],
+      [
+        "DKIM-Signature",
+        " v=1; a=rsa-sha256; c=relaxed/relaxed; d=yandex.ru; s=mail;\r\n\tt=1748921744; bh=DnseDjFgmtsB1kN2sgMKhzeGZ1TcOQm0aEN3ux6v8k0=;\r\n\th=Message-Id:Date:Subject:In-Reply-To:To:From;\r\n\tb=mOwsmrIzUHfrnHY6fjABtgU2IHkXKyHjoEmbKNGHPkFFdq9fqtNiw7rwX7HYJIFwN\r\n\t Jx9ZGkGNLpDGElAXs67xexAp6t/mAebaInU/5/C7nJd8YMlkauUGTKmQDD4rtOrBSG\r\n\t 2LAfXrsAyEVaeqnIjhNEir+sAWHyA1+kDPpA4jCc=\r\n"
+      ],
+      [
+        "Authentication-Results",
+        " mail-nwsmtp-mxback-production-main-38.iva.yp-c.yandex.net; dkim=pass header.i=@yandex.ru\r\n"
+      ],
+      [
+        "Received",
+        " by qvxj4z7i6zm4ub2j.iva.yp-c.yandex.net with HTTP;\r\n\tTue, 03 Jun 2025 06:35:43 +0300\r\n"
+      ],
+      [
+        "From",
+        " =?utf-8?B?RXhhbXBsZSBVc2VyMQ==?= <example1@test.com>\r\n"
+      ],
+      [
+        "To",
+        " \"Example Recipient2\" <recipient2@example.com>\r\n"
+      ],
+      [
+        "In-Reply-To",
+        " YUvuZoQ3ypgAAAAAAfVzrQAAAAAAAAQu\r\n"
+      ],
+      [
+        "Subject",
+        " =?utf-8?B?VGhpcyBpcyBlbmNvZGVkIGVtYWlsIHN1YmplY3Q=?=\r\n"
+      ],
+      [
+        "MIME-Version",
+        " 1.0\r\n"
+      ],
+      [
+        "X-Mailer",
+        " Yamail [ http://yandex.ru ] 5.0\r\n"
+      ],
+      [
+        "Date",
+        " Tue, 03 Jun 2025 06:35:43 +0300\r\n"
+      ],
+      [
+        "Message-Id",
+        " <1296141748921736@mail.yandex.ru>\r\n"
+      ],
+      [
+        "Content-Transfer-Encoding",
+        " base64\r\n"
+      ],
+      [
+        "Content-Type",
+        " text/html; charset=utf-8\r\n"
+      ]
+    ]
+  }
+}

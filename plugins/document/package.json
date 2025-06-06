@@ -30,7 +30,7 @@
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
-    "typescript": "^5.3.3",
+    "typescript": "^5.8.3",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5"
@@ -44,5 +44,9 @@
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/attachment": "^0.6.14",
     "@hcengineering/preference": "^0.6.13"
+  },
+  "repository": "https://github.com/hcengineering/platform",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

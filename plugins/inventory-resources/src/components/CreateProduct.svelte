@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Account, Doc, generateId, Ref } from '@hcengineering/core'
+  import core, { Doc, generateId, PersonId, Ref } from '@hcengineering/core'
   import { Category, Product } from '@hcengineering/inventory'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { Button, DropdownLabels, DropdownTextItem, EditBox } from '@hcengineering/ui'
@@ -30,7 +30,7 @@
     _id: generateId(),
     collection: 'products',
     modifiedOn: Date.now(),
-    modifiedBy: '' as Ref<Account>
+    modifiedBy: '' as PersonId
   }
 
   const dispatch = createEventDispatcher()

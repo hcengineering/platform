@@ -1,0 +1,15 @@
+{
+  "string": {
+    "Cancel": "Zrušit",
+    "Retry": "Zkusit znovu",
+    "UploadingTo": "Nahrávání {files, plural, =1 {# souboru} other {# souborů}} do",
+    "UploadFiles": "Nahrát Soubory",
+    "UploadFolders": "Nahrát Složky"
+  },
+  "status": {
+    "Error": "Chyba",
+    "Waiting": "Čekání",
+    "Uploading": "Nahrávání",
+    "Completed": "Dokončeno"
+  }
+}

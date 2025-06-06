@@ -1,10 +1,6 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  type Hierarchy,
-  type TxApplyIf,
-  type TxCUD,
-  TxProcessor,
-  generateId,
+  AccountRole,
   type AnyAttribute,
   type Attribute,
   type Class,
@@ -13,15 +9,24 @@ import core, {
   type DocumentQuery,
   type FindOptions,
   type FindResult,
+  generateId,
+  getCurrentAccount,
+  type Hierarchy,
   type Ref,
   type RefTo,
   type Tx,
+  type TxApplyIf,
+  type TxCUD,
+  TxProcessor,
   type TxResult
 } from '@hcengineering/core'
 import { getResource, translate } from '@hcengineering/platform'
 import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
 import view, { type IAggregationManager } from '@hcengineering/view'
 import notification from '@hcengineering/notification'
+import { addNotification, NotificationSeverity } from '@hcengineering/ui'
+import ReadOnlyNotification from './components/ReadOnlyNotification.svelte'
+import { getCurrentLanguage } from '@hcengineering/theme'
 
 /**
  * @public
@@ -124,9 +129,10 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
 
   // TODO: rework notifications to avoid using Account and remove it
   private shouldAggregate (attrClass: Ref<Class<Doc>>, _class: Ref<Class<Doc>>): boolean {
-    if (attrClass !== core.class.Account) {
-      return true
-    }
+    // TODO: FIXME
+    // if (attrClass !== core.class.Account) {
+    //   return true
+    // }
 
     const h = this.client.getHierarchy()
     const skipAccountAggregation = [
@@ -300,8 +306,7 @@ export class AnalyticsMiddleware extends BasePresentationMiddleware implements P
   }
 
   private async handleTx (...txes: Tx[]): Promise<void> {
-    for (const tx of txes) {
-      const etx = TxProcessor.extractTx(tx)
+    for (const etx of txes) {
       if (etx._class === core.class.TxApplyIf) {
         const applyIf = etx as TxApplyIf
         void this.handleTx(...applyIf.txes)
@@ -322,5 +327,40 @@ export class AnalyticsMiddleware extends BasePresentationMiddleware implements P
         }
       }
     }
+  }
+}
+
+/**
+ * @public
+ */
+export class ReadOnlyAccessMiddleware extends BasePresentationMiddleware implements PresentationMiddleware {
+  private constructor (client: Client, next?: PresentationMiddleware) {
+    super(client, next)
+  }
+
+  async notifyTx (...tx: Tx[]): Promise<void> {
+    await this.provideNotifyTx(...tx)
+  }
+
+  async close (): Promise<void> {
+    await this.provideClose()
+  }
+
+  static create (client: Client, next?: PresentationMiddleware): ReadOnlyAccessMiddleware {
+    return new ReadOnlyAccessMiddleware(client, next)
+  }
+
+  async tx (tx: Tx): Promise<TxResult> {
+    if (getCurrentAccount()?.role === AccountRole.ReadOnlyGuest) {
+      addNotification(
+        await translate(view.string.ReadOnlyWarningTitle, {}, getCurrentLanguage()),
+        await translate(view.string.ReadOnlyWarningMessage, {}, getCurrentLanguage()),
+        ReadOnlyNotification,
+        undefined,
+        NotificationSeverity.Info
+      )
+      return {}
+    }
+    return await this.provideTx(tx)
   }
 }

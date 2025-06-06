@@ -13,29 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
-  import { getFileUrl, getVideoMeta, type BlobMetadata } from '@hcengineering/presentation'
-  import HLS from 'hls.js'
+  import { type Blob, type BlobMetadata, type Ref } from '@hcengineering/core'
+  import { getFileUrl, getVideoMeta } from '@hcengineering/presentation'
+  import { HlsVideo } from '@hcengineering/hls'
+  import { Video } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
   export let name: string
+  export let contentType: string
   export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
-
-  let video: HTMLVideoElement
-
-  async function fetchVideoMeta (value: Ref<Blob>, name: string): Promise<void> {
-    const src = getFileUrl(value, name)
-    const meta = await getVideoMeta(value, name)
-    if (meta != null && meta.status === 'ready' && HLS.isSupported()) {
-      const hls = new HLS()
-      hls.loadSource(meta.hls)
-      hls.attachMedia(video)
-      video.poster = meta.thumbnail
-    } else {
-      video.src = src
-    }
-  }
 
   $: aspectRatio =
     metadata?.originalWidth && metadata?.originalHeight
@@ -43,17 +30,25 @@
       : '16 / 9'
   $: maxWidth = metadata?.originalWidth ? `min(${metadata.originalWidth}px, 100%)` : undefined
   $: maxHeight = metadata?.originalHeight ? `min(${metadata.originalHeight}px, 80vh)` : undefined
-  $: void fetchVideoMeta(value, name)
 </script>
 
-<video
-  bind:this={video}
-  width="100%"
+<div
   style:aspect-ratio={aspectRatio}
   style:max-width={fit ? '100%' : maxWidth}
   style:max-height={fit ? '100%' : maxHeight}
-  controls
-  preload={'auto'}
 >
-  <track kind="captions" label={name} />
-</video>
+  {#if contentType.toLowerCase().endsWith('x-mpegurl')}
+    {@const src = getFileUrl(value, '')}
+    <HlsVideo {src} hlsSrc={src} preload={true} />
+  {:else}
+    {#await getVideoMeta(value, name) then meta}
+      {#if meta?.hls?.source !== undefined}
+        {@const src = getFileUrl(value, '')}
+        <HlsVideo {src} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
+      {:else}
+        {@const src = getFileUrl(value, '')}
+        <Video {src} {name} />
+      {/if}
+    {/await}
+  {/if}
+</div>

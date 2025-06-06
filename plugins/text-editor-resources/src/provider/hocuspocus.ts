@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collaborator-client'
+import { type Blob, type Ref } from '@hcengineering/core'
 import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
 import { type Provider } from './types'
 
@@ -23,8 +23,7 @@ Omit<HocuspocusProviderConfiguration, 'parameters'> & {
 }
 
 export interface HocuspocusCollabProviderURLParameters {
-  initialContentId?: DocumentId
-  platformDocumentId?: PlatformDocumentId
+  content: Ref<Blob> | null
 }
 
 export class HocuspocusCollabProvider extends HocuspocusProvider implements Provider {
@@ -33,14 +32,9 @@ export class HocuspocusCollabProvider extends HocuspocusProvider implements Prov
   constructor (configuration: HocuspocusCollabProviderConfiguration) {
     const parameters: Record<string, any> = {}
 
-    const initialContentId = configuration.parameters?.initialContentId
-    if (initialContentId !== undefined && initialContentId !== '') {
-      parameters.initialContentId = initialContentId
-    }
-
-    const platformDocumentId = configuration.parameters?.platformDocumentId
-    if (platformDocumentId !== undefined && platformDocumentId !== '') {
-      parameters.platformDocumentId = platformDocumentId
+    const content = configuration.parameters?.content
+    if (content !== null && content !== undefined && content !== '') {
+      parameters.content = content
     }
 
     const hocuspocusConfig: HocuspocusProviderConfiguration = {

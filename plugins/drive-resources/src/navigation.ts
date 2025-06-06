@@ -27,7 +27,7 @@ export function getPanelFragment<T extends Doc> (object: Pick<T, '_class' | '_id
   return getPanelURI(component, object._id, object._class, 'content')
 }
 
-export function getFolderIdFromFragment (fragment: string): Ref<Folder> | undefined {
+export function getFolderIdFromFragment (fragment: string): Ref<Folder> {
   const [, _id, _class] = decodeURIComponent(fragment).split('|')
   return _class === drive.class.Folder ? (_id as Ref<Folder>) : drive.ids.Root
 }
@@ -93,7 +93,7 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
 export async function generateFolderLocation (loc: Location, id: Ref<Folder>): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
-  const doc = await client.findOne(drive.class.Folder, { _id: id })
+  const doc = await client.findOne(drive.class.Folder, { _id: id }, { showArchived: true })
   if (doc === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find folder ${id}.`)
@@ -105,7 +105,7 @@ export async function generateFolderLocation (loc: Location, id: Ref<Folder>): P
 
   return {
     loc: {
-      path: [appComponent, workspace, driveId],
+      path: [appComponent, workspace, driveId, doc.space],
       fragment: getPanelFragment(doc)
     },
     defaultLocation: {
@@ -118,7 +118,7 @@ export async function generateFolderLocation (loc: Location, id: Ref<Folder>): P
 export async function generateFileLocation (loc: Location, id: Ref<File>): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
-  const doc = await client.findOne(drive.class.File, { _id: id })
+  const doc = await client.findOne(drive.class.File, { _id: id }, { showArchived: true })
   if (doc === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find file ${id}.`)
@@ -130,7 +130,10 @@ export async function generateFileLocation (loc: Location, id: Ref<File>): Promi
 
   return {
     loc: {
-      path: [appComponent, workspace, driveId],
+      path:
+        doc.parent !== undefined && doc.parent !== drive.ids.Root
+          ? [appComponent, workspace, driveId, 'folder', doc.parent]
+          : [appComponent, workspace, driveId],
       fragment: getPanelFragment(doc)
     },
     defaultLocation: {
@@ -143,7 +146,7 @@ export async function generateFileLocation (loc: Location, id: Ref<File>): Promi
 export async function generateDriveLocation (loc: Location, id: Ref<Drive>): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
-  const doc = await client.findOne(drive.class.Drive, { _id: id })
+  const doc = await client.findOne(drive.class.Drive, { _id: id }, { showArchived: true })
   if (doc === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find drive ${id}.`)

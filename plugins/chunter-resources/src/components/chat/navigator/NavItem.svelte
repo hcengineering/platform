@@ -71,7 +71,6 @@
   {title}
   {description}
   selected={isSelected}
-  {isSecondary}
   count={elementsCount > 0 ? elementsCount : null}
   {type}
   withBackground={withIconBackground}
@@ -135,6 +134,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
     width: 1rem;
     height: 1rem;
   }

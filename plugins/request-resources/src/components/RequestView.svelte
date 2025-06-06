@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { PersonAccount, getName, Employee } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
-  import { Doc, Ref, TxCUD } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getName } from '@hcengineering/contact'
+  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Doc, TxCUD } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { Request } from '@hcengineering/request'
   import { Label, TimeSince } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
@@ -26,20 +26,8 @@
 
   export let value: Request
 
-  let account: PersonAccount | undefined
-  $: employee = account && $employeeByIdStore.get(account.person as Ref<Employee>)
-
   const client = getClient()
-  const query = createQuery()
-
-  $: query.query(
-    contact.class.PersonAccount,
-    { _id: value.tx.modifiedBy as Ref<PersonAccount> },
-    (res) => {
-      ;[account] = res
-    },
-    { limit: 1 }
-  )
+  $: employee = $personByPersonIdStore.get(value.tx.modifiedBy)
   $: txCud = value.tx as TxCUD<Doc>
 </script>
 

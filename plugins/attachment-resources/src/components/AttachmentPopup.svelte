@@ -18,8 +18,8 @@
   import { createQuery, getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
   import { ActionIcon, IconAdd, Label, Loading } from '@hcengineering/ui'
 
-  import type { Doc, WithLookup } from '@hcengineering/core'
-  import core from '@hcengineering/core'
+  import core, { Doc, Ref, Space, WithLookup } from '@hcengineering/core'
+
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { AttachmentPresenter } from '..'
   import attachment from '../plugin'
@@ -43,6 +43,9 @@
     },
     (res) => {
       docs = res
+    },
+    {
+      showArchived: true
     }
   )
 
@@ -56,8 +59,11 @@
     try {
       const uuid = await uploadFile(file)
       const metadata = await getFileMetadata(file, uuid)
+      const space = client.getHierarchy().isDerived(object._class, core.class.Space)
+        ? (object._id as Ref<Space>)
+        : object.space
 
-      await client.addCollection(attachment.class.Attachment, object.space, object._id, object._class, 'attachments', {
+      await client.addCollection(attachment.class.Attachment, space, object._id, object._class, 'attachments', {
         name: file.name,
         file: uuid,
         type: file.type,

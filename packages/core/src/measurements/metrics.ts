@@ -1,7 +1,8 @@
 // Basic performance metrics suite.
 
-import { MetricsData } from '.'
-import { FullParamsType, Metrics, ParamsType } from './types'
+import { type MetricsData } from '.'
+import { platformNow } from '../utils'
+import { type FullParamsType, type Metrics, type ParamsType } from './types'
 
 /**
  * @public
@@ -65,7 +66,7 @@ export function measure (
   fullParams: FullParamsType | (() => FullParamsType) = {},
   endOp?: (spend: number) => void
 ): () => void {
-  const st = Date.now()
+  const st = platformNow()
   return () => {
     updateMeasure(metrics, st, params, fullParams, endOp)
   }
@@ -79,11 +80,13 @@ export function updateMeasure (
   value?: number,
   override?: boolean
 ): void {
-  const ed = Date.now()
+  const ed = platformNow()
 
   const fParams = typeof fullParams === 'function' ? fullParams() : fullParams
   // Update params if required
-  for (const [k, v] of Object.entries(params)) {
+  const pparams = Object.entries(params)
+  if (pparams.length > 0) {
+    const [k, v] = pparams[0]
     let params = metrics.params[k]
     if (params === undefined) {
       params = {}
@@ -104,8 +107,23 @@ export function updateMeasure (
       param.value += value ?? ed - st
       param.operations++
     }
-
-    param.topResult = getUpdatedTopResult(param.topResult, ed - st, fParams)
+    // Do not update top results for params.
+    if (pparams.length > 1) {
+      // We need to update all other params as counters.
+      if (param.topResult === undefined) {
+        param.topResult = []
+      }
+      for (const [, v] of pparams.slice(1)) {
+        const r = (param.topResult ?? []).find((it) => it.params[`${v}`] === true)
+        if (r !== undefined) {
+          r.value += 1 // Counter of operations
+          r.time = (r.time ?? 0) + (value ?? ed - st)
+        } else {
+          param.topResult.push({ params: { [`${v}`]: true }, value: 1, time: value ?? ed - st })
+        }
+      }
+      param.topResult.sort((a, b) => b.value - a.value)
+    }
   }
   // Update leaf data
   if (override === true) {
@@ -136,7 +154,7 @@ export function childMetrics (root: Metrics, path: string[]): Metrics {
 /**
  * @public
  */
-export function metricsAggregate (m: Metrics, limit: number = -1): Metrics {
+export function metricsAggregate (m: Metrics, limit: number = -1, roundMath: boolean = false): Metrics {
   let ms = aggregateMetrics(m.measurements, limit)
 
   // Use child overage, if there is no top level value specified.
@@ -197,6 +215,7 @@ function printMetricsChildren (params: Record<string, Metrics>, offset: number, 
   if (Object.keys(params).length > 0) {
     r += '\n' + toLen('', ' ', offset)
     r += Object.entries(params)
+      .filter((it) => it[1].value > 0.1)
       .map(([k, vv]) => toString(k, vv, offset, length))
       .join('\n' + toLen('', ' ', offset))
   }
@@ -210,11 +229,13 @@ function printMetricsParams (
 ): string {
   let r = ''
   const joinP = (key: string, data: Record<string, MetricsData>): string[] => {
-    return Object.entries(data).map(([k, vv]) =>
-      `${toLen('', ' ', offset)}${toLen(key + '=' + k, '-', length - offset)}: avg ${
-        vv.value / (vv.operations > 0 ? vv.operations : 1)
-      } total: ${vv.value} ops: ${vv.operations}`.trim()
-    )
+    return Object.entries(data)
+      .filter((it) => it[1].value >= 0.1)
+      .map(([k, vv]) =>
+        `${toLen('', ' ', offset)}${toLen(key + '=' + k, '-', length - offset)}: avg ${
+          Math.round((vv.value / (vv.operations > 0 ? vv.operations : 1)) * 100) / 100
+        } total: ${Math.round(vv.value * 100) / 100} ops: ${vv.operations}`.trim()
+      )
   }
   const joinParams = Object.entries(params).reduce<string[]>((p, c) => [...p, ...joinP(c[0], c[1])], [])
   if (Object.keys(joinParams).length > 0) {
@@ -226,18 +247,44 @@ function printMetricsParams (
 
 function toString (name: string, m: Metrics, offset: number, length: number): string {
   let r = `${toLen('', ' ', offset)}${toLen(name, '-', length - offset)}: avg ${
-    m.value / (m.operations > 0 ? m.operations : 1)
-  } total: ${m.value} ops: ${m.operations}`.trim()
+    Math.round((m.value / (m.operations > 0 ? m.operations : 1)) * 100) / 100
+  } total: ${Math.round(m.value * 100) / 100} ops: ${m.operations}`.trim()
   r += printMetricsParams(m.params, offset + 4, length)
   r += printMetricsChildren(m.measurements, offset + 4, length)
   return r
+}
+
+function toJson (m: Metrics): any {
+  const obj: any = {
+    $total: m.value,
+    $ops: m.operations
+  }
+  if (m.operations > 1) {
+    obj.avg = Math.round((m.value / (m.operations > 0 ? m.operations : 1)) * 100) / 100
+  }
+  if (Object.keys(m.params).length > 0) {
+    obj.params = m.params
+  }
+  for (const [k, v] of Object.entries(m.measurements ?? {})) {
+    obj[
+      `${k} ${v.value} ${v.operations} ${
+        v.operations > 1 ? Math.round((v.value / (v.operations > 0 ? m.operations : 1)) * 100) / 100 : ''
+      }`
+    ] = toJson(v)
+  }
+
+  return obj
 }
 
 /**
  * @public
  */
 export function metricsToString (metrics: Metrics, name = 'System', length: number): string {
-  return toString(name, metricsAggregate(metrics, 50), 0, length)
+  return toString(name, metricsAggregate(metrics, 50, true), 0, length)
+}
+
+export function metricsToJson (metrics: Metrics): any {
+  return toJson(metricsAggregate(metrics))
 }
 
 function printMetricsParamsRows (
@@ -287,5 +334,5 @@ function toStringRows (name: string, m: Metrics, offset: number): (number | stri
  * @public
  */
 export function metricsToRows (metrics: Metrics, name = 'System'): (number | string)[][] {
-  return toStringRows(name, metricsAggregate(metrics, 50), 0)
+  return toStringRows(name, metricsAggregate(metrics, 50, true), 0)
 }

@@ -17,7 +17,7 @@
   import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Action, Menu } from '@hcengineering/ui'
-  import { ActionGroup, ViewContextType } from '@hcengineering/view'
+  import { ActionGroup, Action as ViewAction, ViewContextType } from '@hcengineering/view'
   import { getActions, invokeAction } from '../actions'
 
   export let object: Doc | Doc[]
@@ -26,9 +26,9 @@
   export let excludedActions: string[] = []
   export let includedActions: string[] = []
   export let mode: ViewContextType | undefined = undefined
-  let resActions = actions
+  export let overrides = new Map<Ref<ViewAction>, (object: Doc | Doc[], ev?: Event) => void>()
 
-  const client = getClient()
+  let resActions = actions
 
   let loaded = false
 
@@ -42,7 +42,7 @@
     remove: 7
   }
 
-  void getActions(client, object, baseMenuClass, mode).then((result) => {
+  void getActions(getClient(), object, baseMenuClass, mode).then((result) => {
     const filtered = result.filter((a) => {
       if (excludedActions.includes(a._id)) {
         return false
@@ -61,11 +61,16 @@
       inline: a.inline,
       group: a.context.group ?? 'other',
       action: async (_: any, evt: Event) => {
+        if (overrides?.has(a._id)) {
+          overrides.get(a._id)?.(object, evt)
+          return
+        }
         invokeAction(object, evt, a)
       },
       component: a.actionPopup,
       props: { ...a.actionProps, value: object }
     }))
+
     resActions = [...newActions, ...actions].sort(
       (a, b) => (order as any)[a.group ?? 'other'] - (order as any)[b.group ?? 'other']
     )

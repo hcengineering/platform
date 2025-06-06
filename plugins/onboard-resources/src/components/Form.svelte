@@ -141,7 +141,10 @@
       {subtitle}
     </div>
   {/if}
-  <div class="title"><Label label={caption} /></div>
+  <div class="flex-row-center">
+    <div class="title"><Label label={caption} /></div>
+    <slot name="region-selector" />
+  </div>
   <div class="form">
     {#each fields as field (field.name)}
       <div class={field.short && !($deviceInfo.docWidth <= 600) ? 'form-col' : 'form-row'}>

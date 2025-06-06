@@ -16,7 +16,47 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 679877:
+/***/ 16928:
+/*!***********************!*\
+  !*** external "path" ***!
+  \***********************/
+/***/ ((module) => {
+
+module.exports = require("path");
+
+/***/ }),
+
+/***/ 179896:
+/*!*********************!*\
+  !*** external "fs" ***!
+  \*********************/
+/***/ ((module) => {
+
+module.exports = require("fs");
+
+/***/ }),
+
+/***/ 370857:
+/*!*********************!*\
+  !*** external "os" ***!
+  \*********************/
+/***/ ((module) => {
+
+module.exports = require("os");
+
+/***/ }),
+
+/***/ 535317:
+/*!********************************!*\
+  !*** external "child_process" ***!
+  \********************************/
+/***/ ((module) => {
+
+module.exports = require("child_process");
+
+/***/ }),
+
+/***/ 832286:
 /*!************************************************!*\
   !*** ./lib-esnext/utilities/npmrcUtilities.js ***!
   \************************************************/
@@ -24,12 +64,13 @@
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "isVariableSetInNpmrcFile": () => (/* binding */ isVariableSetInNpmrcFile),
-/* harmony export */   "syncNpmrc": () => (/* binding */ syncNpmrc)
+/* harmony export */   isVariableSetInNpmrcFile: () => (/* binding */ isVariableSetInNpmrcFile),
+/* harmony export */   syncNpmrc: () => (/* binding */ syncNpmrc),
+/* harmony export */   trimNpmrcFileLines: () => (/* binding */ trimNpmrcFileLines)
 /* harmony export */ });
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! fs */ 657147);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! fs */ 179896);
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! path */ 371017);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! path */ 16928);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);
 // Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
 // See LICENSE in the project root for license information.
@@ -46,7 +87,7 @@ __webpack_require__.r(__webpack_exports__);
 // create a global _combinedNpmrc for cache purpose
 const _combinedNpmrcMap = new Map();
 function _trimNpmrcFile(options) {
-    const { sourceNpmrcPath, linesToPrepend, linesToAppend } = options;
+    const { sourceNpmrcPath, linesToPrepend, linesToAppend, supportEnvVarFallbackSyntax } = options;
     const combinedNpmrcFromCache = _combinedNpmrcMap.get(sourceNpmrcPath);
     if (combinedNpmrcFromCache !== undefined) {
         return combinedNpmrcFromCache;
@@ -62,6 +103,21 @@ function _trimNpmrcFile(options) {
         npmrcFileLines.push(...linesToAppend);
     }
     npmrcFileLines = npmrcFileLines.map((line) => (line || '').trim());
+    const resultLines = trimNpmrcFileLines(npmrcFileLines, process.env, supportEnvVarFallbackSyntax);
+    const combinedNpmrc = resultLines.join('\n');
+    //save the cache
+    _combinedNpmrcMap.set(sourceNpmrcPath, combinedNpmrc);
+    return combinedNpmrc;
+}
+/**
+ *
+ * @param npmrcFileLines The npmrc file's lines
+ * @param env The environment variables object
+ * @param supportEnvVarFallbackSyntax Whether to support fallback values in the form of `${VAR_NAME:-fallback}`
+ * @returns
+ */
+function trimNpmrcFileLines(npmrcFileLines, env, supportEnvVarFallbackSyntax) {
+    var _a;
     const resultLines = [];
     // This finds environment variable tokens that look like "${VAR_NAME}"
     const expansionRegExp = /\$\{([^\}]+)\}/g;
@@ -80,10 +136,35 @@ function _trimNpmrcFile(options) {
             const environmentVariables = line.match(expansionRegExp);
             if (environmentVariables) {
                 for (const token of environmentVariables) {
-                    // Remove the leading "${" and the trailing "}" from the token
-                    const environmentVariableName = token.substring(2, token.length - 1);
-                    // Is the environment variable defined?
-                    if (!process.env[environmentVariableName]) {
+                    /**
+                     * Remove the leading "${" and the trailing "}" from the token
+                     *
+                     * ${nameString}                  -> nameString
+                     * ${nameString-fallbackString}   -> name-fallbackString
+                     * ${nameString:-fallbackString}  -> name:-fallbackString
+                     */
+                    const nameWithFallback = token.substring(2, token.length - 1);
+                    let environmentVariableName;
+                    let fallback;
+                    if (supportEnvVarFallbackSyntax) {
+                        /**
+                         * Get the environment variable name and fallback value.
+                         *
+                         *                                name          fallback
+                         * nameString                 ->  nameString    undefined
+                         * nameString-fallbackString  ->  nameString    fallbackString
+                         * nameString:-fallbackString ->  nameString    fallbackString
+                         */
+                        const matched = nameWithFallback.match(/^([^:-]+)(?:\:?-(.+))?$/);
+                        // matched: [originStr, variableName, fallback]
+                        environmentVariableName = (_a = matched === null || matched === void 0 ? void 0 : matched[1]) !== null && _a !== void 0 ? _a : nameWithFallback;
+                        fallback = matched === null || matched === void 0 ? void 0 : matched[2];
+                    }
+                    else {
+                        environmentVariableName = nameWithFallback;
+                    }
+                    // Is the environment variable and fallback value defined.
+                    if (!env[environmentVariableName] && !fallback) {
                         // No, so trim this line
                         lineShouldBeTrimmed = true;
                         break;
@@ -100,20 +181,13 @@ function _trimNpmrcFile(options) {
             resultLines.push(line);
         }
     }
-    const combinedNpmrc = resultLines.join('\n');
-    //save the cache
-    _combinedNpmrcMap.set(sourceNpmrcPath, combinedNpmrc);
-    return combinedNpmrc;
+    return resultLines;
 }
 function _copyAndTrimNpmrcFile(options) {
-    const { logger, sourceNpmrcPath, targetNpmrcPath, linesToPrepend, linesToAppend } = options;
+    const { logger, sourceNpmrcPath, targetNpmrcPath } = options;
     logger.info(`Transforming ${sourceNpmrcPath}`); // Verbose
     logger.info(`  --> "${targetNpmrcPath}"`);
-    const combinedNpmrc = _trimNpmrcFile({
-        sourceNpmrcPath,
-        linesToPrepend,
-        linesToAppend
-    });
+    const combinedNpmrc = _trimNpmrcFile(options);
     fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(targetNpmrcPath, combinedNpmrc);
     return combinedNpmrc;
 }
@@ -123,7 +197,7 @@ function syncNpmrc(options) {
         info: console.log,
         // eslint-disable-next-line no-console
         error: console.error
-    }, createIfMissing = false, linesToAppend, linesToPrepend } = options;
+    }, createIfMissing = false } = options;
     const sourceNpmrcPath = path__WEBPACK_IMPORTED_MODULE_1__.join(sourceNpmrcFolder, !useNpmrcPublish ? '.npmrc' : '.npmrc-publish');
     const targetNpmrcPath = path__WEBPACK_IMPORTED_MODULE_1__.join(targetNpmrcFolder, '.npmrc');
     try {
@@ -136,8 +210,7 @@ function syncNpmrc(options) {
                 sourceNpmrcPath,
                 targetNpmrcPath,
                 logger,
-                linesToAppend,
-                linesToPrepend
+                ...options
             });
         }
         else if (fs__WEBPACK_IMPORTED_MODULE_0__.existsSync(targetNpmrcPath)) {
@@ -150,57 +223,17 @@ function syncNpmrc(options) {
         throw new Error(`Error syncing .npmrc file: ${e}`);
     }
 }
-function isVariableSetInNpmrcFile(sourceNpmrcFolder, variableKey) {
+function isVariableSetInNpmrcFile(sourceNpmrcFolder, variableKey, supportEnvVarFallbackSyntax) {
     const sourceNpmrcPath = `${sourceNpmrcFolder}/.npmrc`;
     //if .npmrc file does not exist, return false directly
     if (!fs__WEBPACK_IMPORTED_MODULE_0__.existsSync(sourceNpmrcPath)) {
         return false;
     }
-    const trimmedNpmrcFile = _trimNpmrcFile({ sourceNpmrcPath });
+    const trimmedNpmrcFile = _trimNpmrcFile({ sourceNpmrcPath, supportEnvVarFallbackSyntax });
     const variableKeyRegExp = new RegExp(`^${variableKey}=`, 'm');
     return trimmedNpmrcFile.match(variableKeyRegExp) !== null;
 }
 //# sourceMappingURL=npmrcUtilities.js.map
-
-/***/ }),
-
-/***/ 532081:
-/*!********************************!*\
-  !*** external "child_process" ***!
-  \********************************/
-/***/ ((module) => {
-
-module.exports = require("child_process");
-
-/***/ }),
-
-/***/ 657147:
-/*!*********************!*\
-  !*** external "fs" ***!
-  \*********************/
-/***/ ((module) => {
-
-module.exports = require("fs");
-
-/***/ }),
-
-/***/ 822037:
-/*!*********************!*\
-  !*** external "os" ***!
-  \*********************/
-/***/ ((module) => {
-
-module.exports = require("os");
-
-/***/ }),
-
-/***/ 371017:
-/*!***********************!*\
-  !*** external "path" ***!
-  \***********************/
-/***/ ((module) => {
-
-module.exports = require("path");
 
 /***/ })
 
@@ -273,28 +306,28 @@ module.exports = require("path");
 /******/
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+// This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
 (() => {
 /*!*******************************************!*\
   !*** ./lib-esnext/scripts/install-run.js ***!
   \*******************************************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "RUSH_JSON_FILENAME": () => (/* binding */ RUSH_JSON_FILENAME),
-/* harmony export */   "findRushJsonFolder": () => (/* binding */ findRushJsonFolder),
-/* harmony export */   "getNpmPath": () => (/* binding */ getNpmPath),
-/* harmony export */   "installAndRun": () => (/* binding */ installAndRun),
-/* harmony export */   "runWithErrorAndStatusCode": () => (/* binding */ runWithErrorAndStatusCode)
+/* harmony export */   RUSH_JSON_FILENAME: () => (/* binding */ RUSH_JSON_FILENAME),
+/* harmony export */   findRushJsonFolder: () => (/* binding */ findRushJsonFolder),
+/* harmony export */   getNpmPath: () => (/* binding */ getNpmPath),
+/* harmony export */   installAndRun: () => (/* binding */ installAndRun),
+/* harmony export */   runWithErrorAndStatusCode: () => (/* binding */ runWithErrorAndStatusCode)
 /* harmony export */ });
-/* harmony import */ var child_process__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! child_process */ 532081);
+/* harmony import */ var child_process__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! child_process */ 535317);
 /* harmony import */ var child_process__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(child_process__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! fs */ 657147);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! fs */ 179896);
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var os__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! os */ 822037);
+/* harmony import */ var os__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! os */ 370857);
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(os__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! path */ 371017);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! path */ 16928);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _utilities_npmrcUtilities__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utilities/npmrcUtilities */ 679877);
+/* harmony import */ var _utilities_npmrcUtilities__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utilities/npmrcUtilities */ 832286);
 // Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
 // See LICENSE in the project root for license information.
 /* eslint-disable no-console */
@@ -440,7 +473,8 @@ function _resolvePackageVersion(logger, rushCommonFolder, { name, version }) {
             (0,_utilities_npmrcUtilities__WEBPACK_IMPORTED_MODULE_4__.syncNpmrc)({
                 sourceNpmrcFolder,
                 targetNpmrcFolder: rushTempFolder,
-                logger
+                logger,
+                supportEnvVarFallbackSyntax: false
             });
             const npmPath = getNpmPath();
             // This returns something that looks like:
@@ -656,7 +690,8 @@ function installAndRun(logger, packageName, packageVersion, packageBinName, pack
         (0,_utilities_npmrcUtilities__WEBPACK_IMPORTED_MODULE_4__.syncNpmrc)({
             sourceNpmrcFolder,
             targetNpmrcFolder: packageInstallFolder,
-            logger
+            logger,
+            supportEnvVarFallbackSyntax: false
         });
         _createPackageJson(packageInstallFolder, packageName, packageVersion);
         const command = lockFilePath ? 'ci' : 'install';

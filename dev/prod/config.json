@@ -6,5 +6,6 @@
   "PRINT_URL": "http://localhost:4005",
   "SIGN_URL": "http://localhost:4006",
   "ANALYTICS_COLLECTOR_URL":"http://localhost:4007",
-  "AI_URL": "http://localhost:4010"
+  "AI_URL": "http://localhost:4010",
+  "STREAM_URL": "http://localhost:1080/recording"
 }

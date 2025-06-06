@@ -59,11 +59,11 @@
       margin: 0;
     }
 
-    &.default.highlighted:hover {
+    &.default.highlighted:hover:not(.highlighted) {
       background-color: var(--theme-popup-divider);
     }
 
-    &.lumia.highlighted:hover {
+    &.lumia.highlighted:hover:not(.highlighted) {
       background-color: var(--global-ui-highlight-BackgroundColor);
     }
 

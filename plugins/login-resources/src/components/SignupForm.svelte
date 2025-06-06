@@ -14,20 +14,45 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Severity, Status, setMetadata } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
-  import { setMetadataLocalStorage } from '@hcengineering/ui'
-  import login from '../plugin'
-  import { goTo, signUp } from '../utils'
-  import Form from './Form.svelte'
+  import { OK, Severity, Status } from '@hcengineering/platform'
+  import { logIn } from '@hcengineering/workbench'
 
-  const fields = [
-    { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
-    { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
-    { id: 'email', name: 'username', i18n: login.string.Email },
-    { id: 'new-password', name: 'password', i18n: login.string.Password, password: true },
-    { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
-  ]
+  import BottomActionComponent from './BottomAction.svelte'
+  import login from '../plugin'
+  import { getPasswordValidationRules } from '../validations'
+  import { goTo } from '../utils'
+  import Form from './Form.svelte'
+  import { OtpLoginSteps, signUp, signUpOtp } from '../index'
+  import type { Field } from '../types'
+  import OtpForm from './OtpForm.svelte'
+
+  export let signUpDisabled = false
+  export let localLoginHidden = false
+  export let navigateUrl: string | undefined = undefined
+  export let useOTP = true // False only for dev/tests
+
+  let fields: Array<Field>
+  let form: Form
+  let withPassword = !useOTP
+
+  $: {
+    fields = [
+      { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
+      { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
+      { id: 'email', name: 'username', i18n: login.string.Email }
+    ]
+
+    if (withPassword) {
+      fields.push({
+        id: 'new-password',
+        name: 'password',
+        i18n: login.string.Password,
+        password: true,
+        rules: getPasswordValidationRules()
+      })
+      fields.push({ id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true })
+    }
+  }
 
   const object = {
     first: '',
@@ -38,23 +63,90 @@
   }
 
   let status: Status<any> = OK
+  let step = OtpLoginSteps.Email
+  let otpRetryOn = 0
+
+  if (signUpDisabled || localLoginHidden) {
+    goTo('login')
+  }
 
   const action = {
     i18n: login.string.SignUp,
     func: async () => {
-      status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
+      if (useOTP) {
+        status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await signUp(object.username, object.password, object.first, object.last)
+        const [otpStatus, result] = await signUpOtp(object.username, object.first, object.last)
+        status = otpStatus
 
-      status = loginStatus
+        if (result?.sent === true && otpStatus === OK) {
+          step = OtpLoginSteps.Otp
+          otpRetryOn = result.retryOn
+        }
+      } else {
+        const [loginStatus, result] = await signUp(object.username, object.password, object.first, object.last)
 
-      if (result !== undefined) {
-        setMetadata(presentation.metadata.Token, result.token)
-        setMetadataLocalStorage(login.metadata.LastToken, result.token)
-        goTo('confirmationSend')
+        status = loginStatus
+
+        if (result != null) {
+          await logIn(result)
+          goTo('confirmationSend')
+        }
       }
     }
   }
+
+  let withPasswordAction: BottomAction
+  $: withPasswordAction = {
+    i18n: withPassword ? login.string.SetPasswordLater : login.string.SetPasswordNow,
+    func: () => {
+      withPassword = !withPassword
+      step = OtpLoginSteps.Email
+
+      setTimeout(() => {
+        if (form != null) {
+          form.invalidate()
+        }
+      }, 0)
+    }
+  }
+
+  function handleStep (event: CustomEvent<OtpLoginSteps>): void {
+    step = event.detail
+  }
 </script>
 
-<Form caption={login.string.SignUp} {status} {fields} {object} {action} withProviders />
+{#if step === OtpLoginSteps.Email}
+  <Form bind:this={form} caption={login.string.SignUp} {status} {fields} {object} {action} withProviders />
+{/if}
+
+{#if step === OtpLoginSteps.Otp && object.username !== ''}
+  <OtpForm
+    email={object.username}
+    {signUpDisabled}
+    {navigateUrl}
+    loginState="signup"
+    password={object.password}
+    retryOn={otpRetryOn}
+    on:step={handleStep}
+  />
+{/if}
+
+{#if useOTP}
+  <div class="action">
+    <BottomActionComponent action={withPasswordAction} />
+  </div>
+{:else}
+  <div class="placeholder" />
+{/if}
+
+<style lang="scss">
+  .action {
+    margin-left: 5rem;
+  }
+
+  // TODO: Refactor me please
+  .placeholder {
+    height: 1.125rem;
+  }
+</style>

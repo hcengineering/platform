@@ -18,7 +18,7 @@
 
   export let icon: Asset
   export let header: IntlString
-  export let label: IntlString
+  export let label: IntlString | undefined = undefined
 </script>
 
 <div class="root">
@@ -26,9 +26,11 @@
   <div class="an-element__label header">
     <Label label={header} />
   </div>
-  <span class="an-element__label">
-    <Label {label} />
-  </span>
+  {#if label}
+    <span class="an-element__label">
+      <Label {label} />
+    </span>
+  {/if}
 </div>
 
 <style lang="scss">

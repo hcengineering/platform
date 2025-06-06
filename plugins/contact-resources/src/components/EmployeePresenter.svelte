@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { Employee, Person } from '@hcengineering/contact'
+  import { Person } from '@hcengineering/contact'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import ui, { IconSize, LabelAndProps } from '@hcengineering/ui'
-  import { PersonLabelTooltip, employeeByIdStore, personByIdStore } from '..'
+  import { getClient } from '@hcengineering/presentation'
+  import ui, { IconSize } from '@hcengineering/ui'
+  import { personByIdStore, PersonLabelTooltip } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import contact from '../plugin'
-  import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
+  import { getPreviewPopup } from './person/utils'
 
   export let value: Ref<Person> | WithLookup<Person> | null | undefined
   export let showPopup: boolean = true
@@ -26,26 +27,21 @@
   export let compact: boolean = false
   export let showStatus: boolean = false
 
-  $: employeeValue = typeof value === 'string' ? ($personByIdStore.get(value) as Employee) : (value as Employee)
+  const client = getClient()
+  const h = client.getHierarchy()
 
-  $: active = employeeValue !== undefined ? $employeeByIdStore.get(employeeValue?._id)?.active ?? false : false
+  $: person = typeof value === 'string' ? ($personByIdStore.get(value) as Person) : (value as Person)
 
-  function getPreviewPopup (active: boolean, value: Employee | undefined): LabelAndProps | undefined {
-    if (!active || value === undefined || !showPopup) {
-      return undefined
-    }
-    return {
-      component: EmployeePreviewPopup,
-      props: { employeeId: value._id }
-    }
-  }
+  $: employeeValue = person != null ? h.as(person, contact.mixin.Employee) : undefined
+
+  $: active = employeeValue?.active ?? false
 </script>
 
 <PersonPresenter
   value={employeeValue}
   {tooltipLabels}
   onEdit={onEmployeeEdit}
-  customTooltip={getPreviewPopup(active, employeeValue)}
+  customTooltip={getPreviewPopup(employeeValue, showPopup)}
   {shouldShowAvatar}
   {shouldShowName}
   {avatarSize}

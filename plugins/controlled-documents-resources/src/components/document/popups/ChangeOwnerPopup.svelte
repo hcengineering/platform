@@ -15,9 +15,9 @@
 
 <script lang="ts">
   import documents, { Document } from '@hcengineering/controlled-documents'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
-  import { EmployeeBox, EmployeePresenter, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import core, { Ref, Space } from '@hcengineering/core'
+  import { Employee } from '@hcengineering/contact'
+  import { EmployeeBox, EmployeePresenter, personRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import core, { Ref, Space, notEmpty } from '@hcengineering/core'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, Icon, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -60,9 +60,7 @@
   $: isOwner = isDocOwner(object)
 
   $: members = space?.members ?? []
-  $: employees = members
-    .map((m) => $personAccountByIdStore.get(m as Ref<PersonAccount>)?.person as Ref<Employee>)
-    .filter((p) => p !== undefined)
+  $: employees = members.map((m) => $personRefByAccountUuidStore.get(m) as Ref<Employee>).filter(notEmpty)
 
   $: docQuery = space?.private ?? false ? { active: true, _id: { $in: employees } } : { active: true }
 </script>

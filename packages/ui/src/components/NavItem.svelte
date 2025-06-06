@@ -44,7 +44,6 @@
   export let disabled: boolean = false
   export let isFold: boolean = false
   export let isOpen: boolean = false
-  export let isSecondary: boolean = false
   export let withBackground: boolean = false
   export let showMenu: boolean = false
   export let shouldTooltip: boolean = false
@@ -78,7 +77,7 @@
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <button
-  class="hulyNavItem-container line-height-auto {type} {type === 'type-anchor-link' || isSecondary
+  class="hulyNavItem-container line-height-auto {type} {type === 'type-anchor-link'
     ? 'font-regular-12'
     : 'font-regular-14'}"
   class:selected

@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { Markup } from '@hcengineering/core'
+  import { type Blob, Markup, type Ref } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { EmptyMarkup, getMarkup, markupToJSON } from '@hcengineering/text'
   import { themeStore } from '@hcengineering/ui'
@@ -27,12 +27,12 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
   import { deleteAttachment } from '../command/deleteAttachment'
-  import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { getEditorKit } from '../../src/kits/editor-kit'
 
   export let content: Markup = EmptyMarkup
   export let placeholder: IntlString = textEditor.string.EditorPlaceholder
+  export let placeholderParams: Record<string, any> = {}
   export let extensions: AnyExtension[] = []
   export let supportSubmit = true
   export let editorAttributes: Record<string, string> = {}
@@ -40,6 +40,7 @@
   export let autofocus: FocusPosition = false
   export let canEmbedFiles = true
   export let canEmbedImages = true
+  export let dropcursor: false | undefined = undefined
   export let onPaste: ((view: EditorView, event: ClipboardEvent) => boolean) | undefined = undefined
 
   let element: HTMLElement
@@ -47,7 +48,7 @@
 
   let placeHolderStr: string = ''
 
-  $: ph = translate(placeholder, {}, $themeStore.language).then((r) => {
+  $: ph = translate(placeholder, placeholderParams, $themeStore.language).then((r) => {
     if (editor !== undefined && placeHolderStr !== r) {
       const placeholderIndex = editor.extensionManager.extensions.findIndex(
         (extension) => extension.name === 'placeholder'
@@ -89,6 +90,13 @@
 
       editor.commands.clearContent(true)
     }
+  }
+  export function getEditor (): Editor {
+    return editor
+  }
+
+  export function insertEmoji (text: string, image?: Ref<Blob>): void {
+    editor?.commands.insertEmoji(text, image === undefined ? 'unicode' : 'image', image)
   }
 
   export function insertText (text: string): void {
@@ -132,8 +140,6 @@
   let needFocus = false
   let focused = false
   let posFocus: FocusPosition | undefined = undefined
-  let textToolbarElement: HTMLElement
-  let imageToolbarElement: HTMLElement
 
   export function focus (position?: FocusPosition): void {
     posFocus = position
@@ -163,19 +169,11 @@
           (await getEditorKit()).configure({
             mode: 'compact',
             file: canEmbedFiles ? {} : false,
-            image: canEmbedImages
-              ? {
-                  toolbar: {
-                    element: imageToolbarElement,
-                    boundary
-                  }
-                }
-              : false,
-            submit: supportSubmit ? { submit } : false,
-            toolbar: {
-              element: textToolbarElement,
-              boundary
-            }
+            dropcursor,
+            image: canEmbedImages ? {} : false,
+            drawingBoard: false,
+            textAlign: false,
+            submit: supportSubmit ? { submit } : false
           }),
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions
@@ -222,11 +220,5 @@
     needFocus = true
   }
 </script>
-
-<TextEditorToolbar bind:toolbar={textToolbarElement} {editor} on:focus={handleFocus} />
-
-{#if canEmbedImages}
-  <TextEditorToolbar bind:toolbar={imageToolbarElement} kind="image" {editor} on:focus={handleFocus} />
-{/if}
 
 <div class="select-text" style="width: 100%;" bind:this={element} />

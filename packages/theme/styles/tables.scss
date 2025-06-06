@@ -282,4 +282,10 @@
       }
     }
   }
+  &.short .hulyTableAttr-content.withTitle {
+    flex-direction: column;
+    align-items: stretch;
+
+    .hulyTableAttr-content__wrapper:empty { display: none; }
+  }
 }

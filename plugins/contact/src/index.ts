@@ -15,24 +15,31 @@
 //
 
 import {
-  Account,
   AttachedDoc,
   Class,
-  CollaborativeDoc,
+  Collection,
   Doc,
+  PersonId,
   Ref,
+  SocialId,
   Space,
   Timestamp,
   UXObject,
+  type BasePerson,
   type Blob,
+  type MarkupBlobRef,
   type Data,
-  type WithLookup
+  type WithLookup,
+  AccountUuid
 } from '@hcengineering/core'
 import type { Asset, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
 import type { AnyComponent, ColorDefinition, ResolvedLocation, Location, ComponentExtensionId } from '@hcengineering/ui'
 import { Action, FilterMode, Viewlet } from '@hcengineering/view'
+import type { Readable } from 'svelte/store'
+import { Card, MasterTag, Role } from '@hcengineering/card'
+import { PermissionsStore } from './types'
 
 /**
  * @public
@@ -50,6 +57,14 @@ export interface ChannelProvider extends Doc, UXObject {
   // Integration type
   integrationType?: Ref<Doc>
 }
+
+export interface SocialIdentity extends SocialId, AttachedDoc {
+  _id: Ref<this> & PersonId
+  attachedTo: Ref<Person>
+  attachedToClass: Ref<Class<Person>>
+}
+
+export type SocialIdentityRef = SocialIdentity['_id']
 
 /**
  * @public
@@ -108,6 +123,7 @@ export interface AvatarInfo extends Doc {
     url?: string
   }
 }
+
 /**
  * @public
  */
@@ -116,14 +132,21 @@ export interface Contact extends Doc, AvatarInfo {
   attachments?: number
   comments?: number
   channels?: number
-  city: string
+  city?: string
 }
 
 /**
  * @public
  */
-export interface Person extends Contact {
+export interface Person extends Contact, BasePerson {
   birthday?: Timestamp | null
+  socialIds?: Collection<SocialIdentity>
+  profile?: Ref<Card>
+}
+
+export interface UserRole extends Doc {
+  user: Ref<Employee>
+  role: Ref<Role>
 }
 
 /**
@@ -137,7 +160,7 @@ export interface Member extends AttachedDoc {
  */
 export interface Organization extends Contact {
   members: number
-  description: CollaborativeDoc
+  description: MarkupBlobRef | null
 }
 
 /**
@@ -155,15 +178,10 @@ export interface Status extends AttachedDoc {
  */
 export interface Employee extends Person {
   active: boolean
+  role?: 'USER' | 'GUEST' // Informational only
   statuses?: number
   position?: string | null
-}
-
-/**
- * @public
- */
-export interface PersonAccount extends Account {
-  person: Ref<Person>
+  personUuid?: AccountUuid
 }
 
 /**
@@ -196,10 +214,12 @@ export const contactPlugin = plugin(contactId, {
     Person: '' as Ref<Class<Person>>,
     Member: '' as Ref<Class<Member>>,
     Organization: '' as Ref<Class<Organization>>,
-    PersonAccount: '' as Ref<Class<PersonAccount>>,
     Status: '' as Ref<Class<Status>>,
     ContactsTab: '' as Ref<Class<ContactsTab>>,
-    PersonSpace: '' as Ref<Class<PersonSpace>>
+    PersonSpace: '' as Ref<Class<PersonSpace>>,
+    SocialIdentity: '' as Ref<Class<SocialIdentity>>,
+    UserProfile: '' as Ref<MasterTag>,
+    UserRole: '' as Ref<Class<UserRole>>
   },
   mixin: {
     Employee: '' as Ref<Class<Employee>>
@@ -216,12 +236,16 @@ export const contactPlugin = plugin(contactId, {
     ChannelPresenter: '' as AnyComponent,
     SpaceMembers: '' as AnyComponent,
     DeleteConfirmationPopup: '' as AnyComponent,
+    PersonIdArrayEditor: '' as AnyComponent,
     AccountArrayEditor: '' as AnyComponent,
     PersonIcon: '' as AnyComponent,
     EditOrganizationPanel: '' as AnyComponent,
     CollaborationUserAvatar: '' as AnyComponent,
     CreateGuest: '' as AnyComponent,
-    SpaceMembersEditor: '' as AnyComponent
+    SpaceMembersEditor: '' as AnyComponent,
+    ContactNamePresenter: '' as AnyComponent,
+    PersonFilterValuePresenter: '' as AnyComponent,
+    PersonIdFilter: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,
@@ -234,7 +258,8 @@ export const contactPlugin = plugin(contactId, {
     Homepage: '' as Ref<ChannelProvider>,
     Whatsapp: '' as Ref<ChannelProvider>,
     Skype: '' as Ref<ChannelProvider>,
-    Profile: '' as Ref<ChannelProvider>
+    Profile: '' as Ref<ChannelProvider>,
+    Viber: '' as Ref<ChannelProvider>
   },
   avatarProvider: {
     Color: '' as Ref<AvatarProvider>,
@@ -272,7 +297,15 @@ export const contactPlugin = plugin(contactId, {
     ComponentMembers: '' as Asset,
     Profile: '' as Asset,
     KickUser: '' as Asset,
-    Contacts: '' as Asset
+    Contacts: '' as Asset,
+    Viber: '' as Asset,
+    Clock: '' as Asset,
+    Chat: '' as Asset,
+    User: '' as Asset
+  },
+  image: {
+    ProfileBackground: '' as Asset,
+    ProfileBackgroundLight: '' as Asset
   },
   space: {
     Contacts: '' as Ref<Space>
@@ -302,13 +335,26 @@ export const contactPlugin = plugin(contactId, {
     Contacts: '' as IntlString,
     Employees: '' as IntlString,
     Persons: '' as IntlString,
-    ViewProfile: '' as IntlString
+    ViewProfile: '' as IntlString,
+    SocialId: '' as IntlString,
+    SocialIds: '' as IntlString,
+    Type: '' as IntlString,
+    Confirmed: '' as IntlString,
+    UserProfile: '' as IntlString,
+    DeactivatedAccount: '' as IntlString,
+    LocalTime: '' as IntlString,
+    Everyone: '' as IntlString,
+    Here: '' as IntlString,
+    EveryoneDescription: '' as IntlString,
+    HereDescription: '' as IntlString,
+    Guest: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,
     TablePerson: '' as Ref<Viewlet>,
     TableEmployee: '' as Ref<Viewlet>,
-    TableOrganization: '' as Ref<Viewlet>
+    TableOrganization: '' as Ref<Viewlet>,
+    TableUserProfile: '' as Ref<Viewlet>
   },
   filter: {
     FilterChannelIn: '' as Ref<FilterMode>,
@@ -334,8 +380,16 @@ export const contactPlugin = plugin(contactId, {
   ids: {
     MentionCommonNotificationType: '' as Ref<Doc>
   },
+  mention: {
+    Everyone: '' as Ref<Employee>,
+    Here: '' as Ref<Employee>
+  },
   extension: {
-    EmployeePopupActions: '' as ComponentExtensionId
+    EmployeePopupActions: '' as ComponentExtensionId,
+    PersonAchievementsPresenter: '' as ComponentExtensionId
+  },
+  store: {
+    Permissions: '' as Resource<Readable<PermissionsStore>>
   }
 })
 
@@ -343,3 +397,4 @@ export default contactPlugin
 export * from './types'
 export * from './utils'
 export * from './analytics'
+export * from './avatar'

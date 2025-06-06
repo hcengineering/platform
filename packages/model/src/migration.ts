@@ -1,38 +1,37 @@
+import { type AccountClient } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  Class,
-  Client,
+  type Class,
+  type Client,
   DOMAIN_MIGRATION,
   DOMAIN_TX,
-  Data,
-  Doc,
-  DocumentQuery,
-  Domain,
-  FindOptions,
-  Hierarchy,
-  IncOptions,
-  MigrationState,
-  ModelDb,
-  ObjQueryType,
-  PushOptions,
-  Ref,
-  Space,
+  type Data,
+  type Doc,
+  type DocumentQuery,
+  type Domain,
+  type FindOptions,
+  type Hierarchy,
+  type MeasureContext,
+  type MigrationState,
+  type ModelDb,
+  type ObjQueryType,
+  type Rank,
+  type Ref,
+  SortingOrder,
+  type Space,
   TxOperations,
-  UnsetOptions,
-  WorkspaceId,
+  type UnsetOptions,
+  type WorkspaceIds,
   generateId
 } from '@hcengineering/core'
-import { StorageAdapter } from '@hcengineering/storage'
-import { ModelLogger } from './utils'
+import { makeRank } from '@hcengineering/rank'
+import { type StorageAdapter } from '@hcengineering/storage'
+import { type ModelLogger } from './utils'
 
 /**
  * @public
  */
-export type MigrateUpdate<T extends Doc> = Partial<T> &
-Omit<PushOptions<T>, '$move'> &
-IncOptions<T> &
-UnsetOptions &
-Record<string, any>
+export type MigrateUpdate<T extends Doc> = Partial<T> & UnsetOptions & Record<string, any>
 
 /**
  * @public
@@ -76,6 +75,9 @@ export interface MigrationClient {
     options?: Omit<FindOptions<T>, 'lookup'>
   ) => Promise<T[]>
 
+  // Raw group by, allow to group documents inside domain.
+  groupBy: <T, P extends Doc>(domain: Domain, field: string, query?: DocumentQuery<P>) => Promise<Map<T, number>>
+
   // Traverse documents
   traverse: <T extends Doc>(
     domain: Domain,
@@ -96,7 +98,12 @@ export interface MigrationClient {
   ) => Promise<void>
 
   // Move documents per domain
-  move: <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain) => Promise<void>
+  move: <T extends Doc>(
+    sourceDomain: Domain,
+    query: DocumentQuery<T>,
+    targetDomain: Domain,
+    size?: number
+  ) => Promise<void>
 
   create: <T extends Doc>(domain: Domain, doc: T | T[]) => Promise<void>
   delete: <T extends Doc>(domain: Domain, _id: Ref<T>) => Promise<void>
@@ -107,28 +114,34 @@ export interface MigrationClient {
 
   migrateState: Map<string, Set<string>>
   storageAdapter: StorageAdapter
+  accountClient: AccountClient
 
-  workspaceId: WorkspaceId
+  wsIds: WorkspaceIds
+
+  reindex: (domain: Domain, classes: Ref<Class<Doc>>[]) => Promise<void>
+  readonly logger: ModelLogger
+  readonly ctx: MeasureContext
 }
 
 /**
  * @public
  */
 export type MigrationUpgradeClient = Client
+export type MigrateMode = 'create' | 'upgrade'
 
 /**
  * @public
  */
 export interface MigrateOperation {
   // Perform low level migration prior to the model update
-  preMigrate?: (client: MigrationClient, logger: ModelLogger) => Promise<void>
+  preMigrate?: (client: MigrationClient, logger: ModelLogger, mode: MigrateMode) => Promise<void>
   // Perform low level migration
-  migrate: (client: MigrationClient, logger: ModelLogger) => Promise<void>
+  migrate: (client: MigrationClient, mode: MigrateMode) => Promise<void>
   // Perform high level upgrade operations.
   upgrade: (
     state: Map<string, Set<string>>,
     client: () => Promise<MigrationUpgradeClient>,
-    logger: ModelLogger
+    mode: MigrateMode
   ) => Promise<void>
 }
 
@@ -137,7 +150,8 @@ export interface MigrateOperation {
  */
 export interface Migrations {
   state: string
-  func: (client: MigrationClient) => Promise<void>
+  mode?: MigrateMode // If set only applied to specified mode
+  func: (client: MigrationClient, mode: MigrateMode) => Promise<void>
 }
 
 /**
@@ -145,22 +159,31 @@ export interface Migrations {
  */
 export interface UpgradeOperations {
   state: string
-  func: (client: MigrationUpgradeClient) => Promise<void>
+  mode?: MigrateMode // If set only applied to specified mode
+  func: (client: MigrationUpgradeClient, mode: MigrateMode) => Promise<void>
 }
 
 /**
  * @public
  */
-export async function tryMigrate (client: MigrationClient, plugin: string, migrations: Migrations[]): Promise<void> {
+export async function tryMigrate (
+  mode: MigrateMode,
+  client: MigrationClient,
+  plugin: string,
+  migrations: Migrations[]
+): Promise<void> {
   const states = client.migrateState.get(plugin) ?? new Set()
   for (const migration of migrations) {
     if (states.has(migration.state)) continue
-    try {
-      await migration.func(client)
-    } catch (err: any) {
-      console.error(err)
-      Analytics.handleError(err)
-      continue
+    if (migration.mode == null || migration.mode === mode) {
+      try {
+        client.logger.log('running migration', { plugin, state: migration.state })
+        await migration.func(client, mode)
+      } catch (err: any) {
+        client.logger.error('Failed to run migration', { plugin, state: migration.state, err })
+        Analytics.handleError(err)
+        continue
+      }
     }
     const st: MigrationState = {
       plugin,
@@ -179,25 +202,28 @@ export async function tryMigrate (client: MigrationClient, plugin: string, migra
  * @public
  */
 export async function tryUpgrade (
+  mode: MigrateMode,
   state: Map<string, Set<string>>,
   client: () => Promise<MigrationUpgradeClient>,
   plugin: string,
   migrations: UpgradeOperations[]
 ): Promise<void> {
   const states = state.get(plugin) ?? new Set()
-  for (const migration of migrations) {
-    if (states.has(migration.state)) continue
+  for (const upgrades of migrations) {
+    if (states.has(upgrades.state)) continue
     const _client = await client()
-    try {
-      await migration.func(_client)
-    } catch (err: any) {
-      console.error(err)
-      Analytics.handleError(err)
-      continue
+    if (upgrades.mode == null || upgrades.mode === mode) {
+      try {
+        await upgrades.func(_client, mode)
+      } catch (err: any) {
+        console.error(err)
+        Analytics.handleError(err)
+        continue
+      }
     }
     const st: Data<MigrationState> = {
       plugin,
-      state: migration.state
+      state: upgrades.state
     }
     const tx = new TxOperations(_client, core.account.System)
     await tx.createDoc(core.class.MigrationState, core.space.Configuration, st)
@@ -251,4 +277,35 @@ export async function migrateSpace (
     await client.update(domain, { space: from }, { space: to })
   }
   await client.update(DOMAIN_TX, { objectSpace: from }, { objectSpace: to })
+}
+
+export async function migrateSpaceRanks (client: MigrationClient, domain: Domain, space: Space): Promise<void> {
+  type WithRank = Doc & { rank: Rank }
+
+  const iterator = await client.traverse<WithRank>(
+    domain,
+    { space: space._id, rank: { $exists: true } },
+    { sort: { rank: SortingOrder.Ascending } }
+  )
+
+  try {
+    let rank = '0|100000:'
+
+    while (true) {
+      const docs = await iterator.next(1000)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const updates: { filter: MigrationDocumentQuery<Doc<Space>>, update: MigrateUpdate<Doc<Space>> }[] = []
+      for (const doc of docs) {
+        rank = makeRank(rank, undefined)
+        updates.push({ filter: { _id: doc._id }, update: { rank } })
+      }
+
+      await client.bulk(domain, updates)
+    }
+  } finally {
+    await iterator.close()
+  }
 }

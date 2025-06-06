@@ -57,7 +57,7 @@
     if (kind === undefined) {
       throw new Error('kind is not specified')
     }
-    const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
+    const sequence = await client.findOne(core.class.Sequence, { attachedTo: board.class.Card })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }

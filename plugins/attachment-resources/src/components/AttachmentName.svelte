@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
+  import { BlobType } from '@hcengineering/core'
 
-  export let value: Attachment | undefined
+  export let value: Attachment | BlobType | undefined
 </script>
 
 {#if value}

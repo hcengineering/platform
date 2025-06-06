@@ -2,9 +2,8 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 import chunter, { ChatMessage } from '@hcengineering/chunter'
-import { PersonAccount } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   AttachedData,
   Doc,
   DocumentUpdate,
@@ -29,7 +28,6 @@ import { collectUpdate, deleteObjects, errorToObj, getSince, isGHWriteAllowed } 
 import { Analytics } from '@hcengineering/analytics'
 import { IssueComment, IssueCommentCreatedEvent, IssueCommentEvent } from '@octokit/webhooks-types'
 import config from '../config'
-import { syncConfig } from './syncConfig'
 
 interface MessageData {
   message: string
@@ -61,7 +59,7 @@ export class CommentSyncManager implements DocSyncManager {
     this.ctx.info('comments:handleEvent', {
       action: event.action,
       login: event.sender.login,
-      workspace: this.provider.getWorkspaceId().name
+      workspace: this.provider.getWorkspaceId()
     })
 
     if (event.sender.type === 'Bot') {
@@ -89,14 +87,6 @@ export class CommentSyncManager implements DocSyncManager {
     if (container === undefined) {
       return false
     }
-    if (
-      container?.container === undefined ||
-      ((container.project.projectNodeId === undefined ||
-        !container.container.projectStructure.has(container.project._id)) &&
-        syncConfig.MainProject)
-    ) {
-      return false
-    }
 
     const commentExternal = info.external as CommentExternalData | undefined
 
@@ -105,7 +95,7 @@ export class CommentSyncManager implements DocSyncManager {
       return true
     }
     const account =
-      existing?.createdBy ?? (await this.provider.getAccountU(commentExternal.user))?._id ?? core.account.System
+      existing?.createdBy ?? (await this.provider.getAccountU(commentExternal.user)) ?? core.account.System
 
     if (commentExternal !== undefined) {
       try {
@@ -134,8 +124,8 @@ export class CommentSyncManager implements DocSyncManager {
     return true
   }
 
-  async deleteGithubDocument (container: ContainerFocus, account: Ref<Account>, id: string): Promise<void> {
-    const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
+  async deleteGithubDocument (container: ContainerFocus, account: PersonId, id: string): Promise<void> {
+    const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
 
     const q = `mutation deleteComment($commentID: ID!) {
       deleteIssueComment(
@@ -160,12 +150,12 @@ export class CommentSyncManager implements DocSyncManager {
     if (repo === undefined) {
       this.ctx.info('No project for repository', {
         repository: event.repository,
-        workspace: this.provider.getWorkspaceId().name
+        workspace: this.provider.getWorkspaceId()
       })
       return
     }
 
-    const account = (await this.provider.getAccountU(event.sender))?._id ?? core.account.System
+    const account = (await this.provider.getAccountU(event.sender)) ?? core.account.System
     switch (event.action) {
       case 'created': {
         await this.createSyncData(event, derivedClient, repo)
@@ -189,7 +179,7 @@ export class CommentSyncManager implements DocSyncManager {
         })
 
         const messageData: MessageData = {
-          message: await this.provider.getMarkup(integration, event.comment.body)
+          message: await this.provider.getMarkupSafe(integration, event.comment.body)
         }
 
         if (commentData !== undefined) {
@@ -278,10 +268,10 @@ export class CommentSyncManager implements DocSyncManager {
       return { needSync: githubSyncVersion }
     }
 
-    const account = existing?.modifiedBy ?? (await this.provider.getAccountU(comment.user))?._id ?? core.account.System
+    const account = existing?.modifiedBy ?? (await this.provider.getAccountU(comment.user)) ?? core.account.System
 
     const messageData: MessageData = {
-      message: await this.provider.getMarkup(container.container, comment.body)
+      message: await this.provider.getMarkupSafe(container.container, comment.body)
     }
     if (existing === undefined) {
       try {
@@ -305,7 +295,7 @@ export class CommentSyncManager implements DocSyncManager {
     container: ContainerFocus,
     parent: DocSyncInfo,
     comment: CommentExternalData,
-    account: Ref<Account>
+    account: PersonId
   ): Promise<void> {
     const repository = await this.provider.getRepositoryById(info.repository)
     if (repository === undefined) {
@@ -337,8 +327,7 @@ export class CommentSyncManager implements DocSyncManager {
 
     if (Object.keys(platformUpdate).length > 0) {
       // Check and update body with external
-      const okit =
-        (await this.provider.getOctokit(existing.modifiedBy as Ref<PersonAccount>)) ?? container.container.octokit
+      const okit = (await this.provider.getOctokit(existing.modifiedBy)) ?? container.container.octokit
       await okit?.rest.issues.updateComment({
         owner: repository.owner?.login as string,
         repo: repository.name,
@@ -355,17 +344,26 @@ export class CommentSyncManager implements DocSyncManager {
     }
   }
 
+  isHulyLinkComment (message: string): boolean {
+    return message.includes('<p>Connected to') && message.includes('Huly&reg;')
+  }
+
   private async createComment (
     info: DocSyncInfo,
     messageData: MessageData,
     parent: DocSyncInfo,
     comment: CommentExternalData,
-    account: Ref<Account>
+    account: PersonId
   ): Promise<void> {
     const _id: Ref<ChatMessage> = info._id as unknown as Ref<ChatMessage>
     const value: AttachedData<ChatMessage> = {
       ...messageData,
       attachments: 0
+    }
+    // Check if it is Connected message.
+    if ((comment as any).performed_via_github_app !== undefined && this.isHulyLinkComment(comment.body)) {
+      // No need to create comment on platform.
+      return
     }
     await this.client.addCollection(
       chunter.class.ChatMessage,
@@ -398,8 +396,7 @@ export class CommentSyncManager implements DocSyncManager {
       return {}
     }
     const chatMessage = existing as ChatMessage
-    const okit =
-      (await this.provider.getOctokit(chatMessage.modifiedBy as Ref<PersonAccount>)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(chatMessage.modifiedBy)) ?? container.container.octokit
 
     // No external version yet, create it.
     try {
@@ -457,6 +454,9 @@ export class CommentSyncManager implements DocSyncManager {
     repositories: GithubIntegrationRepository[]
   ): Promise<void> {
     for (const repo of repositories) {
+      if (this.provider.isClosing()) {
+        break
+      }
       const syncKey = `${repo._id}:comment`
       if (repo.githubProject === undefined || !repo.enabled || integration.synchronized.has(syncKey)) {
         if (!repo.enabled) {
@@ -487,13 +487,16 @@ export class CommentSyncManager implements DocSyncManager {
       })
       try {
         for await (const data of i) {
+          if (this.provider.isClosing()) {
+            break
+          }
           const comments: CommentExternalData[] = data.data as any
           this.ctx.info('retrieve comments for', {
             repo: repo.name,
             comments: comments.length,
             used: data.headers['x-ratelimit-used'],
             limit: data.headers['x-ratelimit-limit'],
-            workspace: this.provider.getWorkspaceId().name
+            workspace: this.provider.getWorkspaceId()
           })
           await this.syncComments(repo, comments, derivedClient)
           this.provider.sync()
@@ -516,7 +519,7 @@ export class CommentSyncManager implements DocSyncManager {
     }
     const syncInfo = await this.client.findAll<DocSyncInfo>(github.class.DocSyncInfo, {
       space: repo.githubProject,
-      repository: repo._id,
+      // repository: repo._id, // If we skip repository, we will find orphaned comments, so we could connect them on.
       objectClass: chunter.class.ChatMessage,
       url: { $in: comments.map((it) => (it.url ?? '').toLowerCase()) }
     })
@@ -538,14 +541,19 @@ export class CommentSyncManager implements DocSyncManager {
             lastModified
           })
         } else {
-          if (!deepEqual(existing.external, comment) || existing.externalVersion !== githubExternalSyncVersion) {
+          if (
+            !deepEqual(existing.external, comment) ||
+            existing.externalVersion !== githubExternalSyncVersion ||
+            existing.repository !== repo._id
+          ) {
             await derivedClient.diffUpdate(
               existing,
               {
                 needSync: '',
                 external: comment,
                 externalVersion: githubExternalSyncVersion,
-                lastModified
+                lastModified,
+                repository: repo._id
               },
               lastModified
             )

@@ -17,9 +17,6 @@ import {
   DOMAIN_MODEL,
   DOMAIN_SPACE,
   IndexKind,
-  type Account,
-  type AccountRole,
-  type Arr,
   type Class,
   type CollectionSize,
   type Permission,
@@ -29,7 +26,8 @@ import {
   type Space,
   type SpaceType,
   type SpaceTypeDescriptor,
-  type TypedSpace
+  type TypedSpace,
+  type AccountUuid
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -40,6 +38,7 @@ import {
   Model,
   Prop,
   TypeBoolean,
+  TypeAccountUuid,
   TypeRef,
   TypeString,
   UX
@@ -68,12 +67,12 @@ export class TSpace extends TDoc implements Space {
   @Index(IndexKind.Indexed)
     archived!: boolean
 
-  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
+  @Prop(ArrOf(TypeAccountUuid()), core.string.Members)
   @Index(IndexKind.Indexed)
-    members!: Arr<Ref<Account>>
+    members!: AccountUuid[]
 
-  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Owners)
-    owners?: Ref<Account>[]
+  @Prop(ArrOf(TypeAccountUuid()), core.string.Owners)
+    owners?: AccountUuid[]
 
   @Prop(TypeBoolean(), core.string.AutoJoin)
     autoJoin?: boolean
@@ -119,8 +118,8 @@ export class TSpaceType extends TDoc implements SpaceType {
   @Prop(Collection(core.class.Role), core.string.Roles)
     roles!: CollectionSize<Role>
 
-  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
-    members!: Arr<Ref<Account>>
+  @Prop(ArrOf(TypeAccountUuid()), core.string.Members)
+    members!: AccountUuid[]
 
   @Prop(TypeBoolean(), core.string.AutoJoin)
     autoJoin?: boolean
@@ -162,12 +161,5 @@ export class TPermission extends TDoc implements Permission {
 @Mixin(core.mixin.SpacesTypeData, core.class.Space)
 @UX(getEmbeddedLabel("All spaces' type")) // TODO: add icon?
 export class TSpacesTypeData extends TSpace implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
-}
-
-@Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)
-@UX(core.string.Account, undefined, undefined, 'name')
-export class TAccount extends TDoc implements Account {
-  email!: string
-  role!: AccountRole
+  [key: Ref<Role>]: AccountUuid[]
 }

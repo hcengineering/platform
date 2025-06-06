@@ -22,6 +22,7 @@
   export let disabled = false
   export let shrink: number | undefined = undefined
   export let restoreLastLocation = false
+  export let noUnderline = true
 
   $: loc = createLocation($location, app, space, special)
 
@@ -38,7 +39,7 @@
       if (last != null) {
         try {
           const newLocation: Location = JSON.parse(last)
-          if (newLocation.path[2] === app && newLocation.path[3] != null) {
+          if (newLocation.path[1] === loc.path[1] && newLocation.path[2] === app && newLocation.path[3] != null) {
             return newLocation
           }
         } catch (e) {
@@ -76,7 +77,7 @@
 {#if disabled}
   <slot />
 {:else}
-  <a class="noUnderline noBold" style:flex-shrink={shrink} {href} on:click={clickHandler}>
+  <a class:noUnderline class="noBold" style:flex-shrink={shrink} {href} on:click={clickHandler}>
     <slot />
   </a>
 {/if}

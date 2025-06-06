@@ -37,6 +37,7 @@ import { requestId, createModel as requestModel } from '@hcengineering/model-req
 import { aiBotId, createModel as aiBotModel } from '@hcengineering/model-ai-bot'
 import { serverActivityId, createModel as serverActivityModel } from '@hcengineering/model-server-activity'
 import { serverAttachmentId, createModel as serverAttachmentModel } from '@hcengineering/model-server-attachment'
+import { serverCardId, createModel as serverCardModel } from '@hcengineering/model-server-card'
 import { serverCalendarId, createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
 import { serverChunterId, createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
 import {
@@ -73,8 +74,11 @@ import { textEditorId, createModel as textEditorModel } from '@hcengineering/mod
 import { timeId, createModel as timeModel } from '@hcengineering/model-time'
 import tracker, { trackerId, createModel as trackerModel } from '@hcengineering/model-tracker'
 import { uploaderId, createModel as uploaderModel } from '@hcengineering/model-uploader'
+import { recorderId, createModel as recorderModel } from '@hcengineering/model-recorder'
+import { mediaId, createModel as mediaModel } from '@hcengineering/model-media'
 import view, { viewId, createModel as viewModel } from '@hcengineering/model-view'
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
+import card, { cardId, createModel as cardModel } from '@hcengineering/model-card'
 import { desktopPreferencesId, createModel as desktopPreferencesModel } from '@hcengineering/model-desktop-preferences'
 
 import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
@@ -86,8 +90,10 @@ import { serverGithubId, createModel as serverGithubModel } from '@hcengineering
 import { serverTimeId, createModel as serverTimeModel } from '@hcengineering/model-server-time'
 import love, { loveId, createModel as loveModel } from '@hcengineering/model-love'
 import { printId, createModel as printModel } from '@hcengineering/model-print'
+import { exportId, createModel as exportModel } from '@hcengineering/model-export'
 import { analyticsCollectorId, createModel as analyticsCollectorModel } from '@hcengineering/model-analytics-collector'
 import { serverLoveId, createModel as serverLoveModel } from '@hcengineering/model-server-love'
+import { serverProcessId, createModel as serverProcessModel } from '@hcengineering/model-server-process'
 
 import { questionsId, createModel as questionsModel } from '@hcengineering/model-questions'
 import trainings, { trainingId, createModel as trainingModel } from '@hcengineering/model-training'
@@ -95,11 +101,24 @@ import documents, { documentsId, createModel as documentsModel } from '@hcengine
 import products, { productsId, createModel as productsModel } from '@hcengineering/model-products'
 import { serverProductsId, createModel as serverProductsModel } from '@hcengineering/model-server-products'
 import { serverTrainingId, createModel as serverTrainingModel } from '@hcengineering/model-server-training'
+import testManagement, {
+  testManagementId,
+  createModel as testManagementModel
+} from '@hcengineering/model-test-management'
+import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
+
 import {
   serverDocumentsId,
   createModel as serverDocumentsModel
 } from '@hcengineering/model-server-controlled-documents'
-
+import { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
+import { presenceId, createModel as presenceModel } from '@hcengineering/model-presence'
+import chat, { chatId, createModel as chatModel } from '@hcengineering/model-chat'
+import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
+import inbox, { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
+import { achievementId, createModel as achievementModel } from '@hcengineering/model-achievement'
+import { emojiId, createModel as emojiModel } from '@hcengineering/model-emoji'
+import { communicationId, createModel as communicationModel } from '@hcengineering/model-communication'
 import { type Plugin } from '@hcengineering/platform'
 
 interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' | 'transactions'> {}
@@ -107,7 +126,7 @@ interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' 
 type BuilderConfig = [(b: Builder) => void, Plugin] | [(b: Builder) => void, Plugin, ConfigurablePlugin | undefined]
 
 export function getModelVersion (): Data<Version> {
-  const rawVersion = (process.env.MODEL_VERSION ?? '0.6.0').trim().replace('v', '').split('.')
+  const rawVersion = (process.env.MODEL_VERSION ?? '0.6.0').replace('"', '').trim().replace('v', '').split('.')
   if (rawVersion.length === 3) {
     return {
       major: parseInt(rawVersion[0]),
@@ -126,7 +145,7 @@ export type { MigrateOperation } from '@hcengineering/model'
  * @param disabled  - a set of disabled plugins
  * @returns
  */
-export default function buildModel (enabled: string[] = ['*'], disabled: string[] = []): Builder {
+export default function buildModel (): Builder {
   const builder = new Builder()
 
   const defaultFilter = [
@@ -136,7 +155,9 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     notification.class.NotificationGroup,
     view.class.Action,
     contact.class.ChannelProvider,
-    setting.class.IntegrationType
+    setting.class.IntegrationType,
+    setting.class.WorkspaceSettingCategory,
+    setting.class.SettingsCategory
   ]
 
   const builders: BuilderConfig[] = [
@@ -147,6 +168,18 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [tagsModel, tagsId],
     [viewModel, viewId],
     [workbenchModel, workbenchId],
+    [
+      cardModel,
+      cardId,
+      {
+        label: card.string.Cards,
+        description: card.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        icon: card.icon.Card,
+        classFilter: defaultFilter
+      }
+    ],
     [
       contactModel,
       contactId,
@@ -204,7 +237,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: telegram.string.ConfigLabel,
         description: telegram.string.ConfigDescription,
         enabled: true,
-        beta: false,
+        beta: true,
         classFilter: defaultFilter
       }
     ],
@@ -227,7 +260,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: gmail.string.ConfigLabel,
         description: gmail.string.ConfigDescription,
         enabled: true,
-        beta: false,
+        beta: true,
         classFilter: defaultFilter
       }
     ],
@@ -247,19 +280,11 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [templatesModel, templatesId],
     [textEditorModel, textEditorId],
     [uploaderModel, uploaderId],
+    [recorderModel, recorderId],
+    [mediaModel, mediaId],
     [notificationModel, notificationId],
     [preferenceModel, preferenceId],
-    [
-      analyticsCollectorModel,
-      analyticsCollectorId,
-      {
-        label: inventory.string.ConfigLabel,
-        description: inventory.string.ConfigDescription,
-        enabled: true,
-        beta: false,
-        classFilter: defaultFilter
-      }
-    ],
+    [analyticsCollectorModel, analyticsCollectorId],
     [
       hrModel,
       hrId,
@@ -267,7 +292,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: hr.string.ConfigLabel,
         description: hr.string.ConfigDescription,
         enabled: true,
-        beta: false,
+        beta: true,
         icon: hr.icon.Structure,
         classFilter: defaultFilter
       }
@@ -304,6 +329,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         description: board.string.ConfigDescription,
         enabled: false,
         beta: true,
+        hidden: true,
         icon: board.icon.Board,
         classFilter: defaultFilter
       }
@@ -316,6 +342,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         description: bitrix.string.ConfigDescription,
         enabled: false,
         beta: true,
+        hidden: true,
         icon: bitrix.icon.Bitrix,
         classFilter: defaultFilter
       }
@@ -343,7 +370,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         description: github.string.ConfigDescription,
         enabled: true,
         beta: false,
-        icon: github.icon.Github
+        icon: github.icon.Github,
+        classFilter: defaultFilter
       }
     ],
     [
@@ -353,13 +381,26 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: love.string.Office,
         description: love.string.LoveDescription,
         enabled: true,
-        beta: true,
+        beta: false,
         icon: love.icon.Love,
         classFilter: defaultFilter
       }
     ],
     [printModel, printId],
+    [exportModel, exportId],
     [aiBotModel, aiBotId],
+    [
+      processModel,
+      processId,
+      {
+        label: processes.string.ConfigLabel,
+        description: processes.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        icon: processes.icon.Process,
+        classFilter: defaultFilter
+      }
+    ],
     [driveModel, driveId],
     [
       documentsModel,
@@ -403,6 +444,33 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         classFilter: defaultFilter
       }
     ],
+    [
+      testManagementModel,
+      testManagementId,
+      {
+        label: testManagement.string.ConfigLabel,
+        description: testManagement.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        classFilter: defaultFilter
+      }
+    ],
+    [surveyModel, surveyId],
+    [presenceModel, presenceId],
+    [
+      chatModel,
+      chatId,
+      { label: chat.string.Chat, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
+    ],
+    [
+      inboxModel,
+      inboxId,
+      { label: inbox.string.Inbox, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
+    ],
+    [achievementModel, achievementId],
+    [emojiModel, emojiId],
+    [communicationModel, communicationId],
+    [mailModel, mailId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
@@ -415,6 +483,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverTagsModel, serverTagsId],
     [serverTaskModel, serverTaskId],
     [serverTrackerModel, serverTrackerId],
+    [serverCardModel, serverCardId],
     [serverCalendarModel, serverCalendarId],
     [serverRecruitModel, serverRecruitId],
     [serverGmailModel, serverGmailId],
@@ -434,7 +503,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverProductsModel, serverProductsId],
     [serverTrainingModel, serverTrainingId],
     [serverDocumentsModel, serverDocumentsId],
-    [serverAiBotModel, serverAiBotId]
+    [serverAiBotModel, serverAiBotId],
+    [serverProcessModel, serverProcessId]
   ]
 
   for (const [b, id, config] of builders) {
@@ -450,9 +520,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         pluginId: id,
         transactions: txes.map((it) => it._id),
         ...config,
-        enabled:
-          config?.label === undefined ||
-          ((config?.enabled ?? true) && (enabled.includes(id) || enabled.includes('*')) && !disabled.includes(id)),
+        enabled: config?.label === undefined || ((config?.enabled ?? true) && !(config.hidden ?? false)),
         beta: config?.beta ?? false
       },
       ('plugin-configuration-' + id) as Ref<PluginConfiguration>

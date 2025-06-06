@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -17,6 +17,9 @@
   import { themeStore } from '@hcengineering/theme'
   import { AnySvelteComponent, ColorDefinition, Icon, IconSize, resizeObserver } from '@hcengineering/ui'
   import AvatarIcon from './icons/Avatar.svelte'
+  import { createEventDispatcher } from 'svelte'
+
+  const dispatch = createEventDispatcher()
 
   export let url: string | undefined
   export let srcset: string | undefined
@@ -28,6 +31,13 @@
   export let bColor: string | undefined = undefined
   export let withStatus: boolean = false
   export let element: HTMLElement
+  export let adaptiveName: boolean = false
+  export let disabled: boolean = false
+  export let style: 'modern' | undefined = undefined
+
+  function handleClick (): void {
+    dispatch('click')
+  }
 
   export function pulse (): void {
     if (element === undefined) return
@@ -49,21 +59,30 @@
   }
 
   $: hasImg = url != null && !imgError
+  $: background =
+    !hasImg && disabled
+      ? 'var(--theme-popup-deactivated)'
+      : color && !hasImg
+        ? color.icon
+        : 'var(--theme-button-default)'
 </script>
 
-{#if size === 'full' && !url && displayName && displayName !== ''}
+{#if (size === 'full' || adaptiveName) && !url && displayName && displayName !== ''}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     bind:this={element}
-    class="hulyAvatar-container hulyAvatarSize-{size} {variant}"
+    class="hulyAvatar-container hulyAvatarSize-{size} {variant} {style}"
     class:no-img={!hasImg && color}
     class:bordered={!hasImg && color === undefined}
     class:border={bColor !== undefined}
     class:withStatus
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
-    style:background-color={color && !hasImg ? color.icon : 'var(--theme-button-default)'}
+    style:background-color={background}
     use:resizeObserver={(element) => {
       fontSize = element.clientWidth * 0.6
     }}
+    on:click={handleClick}
   >
     <div
       class="ava-text"
@@ -73,27 +92,40 @@
     />
   </div>
 {:else}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     bind:this={element}
-    class="hulyAvatar-container hulyAvatarSize-{size} stat {variant}"
+    class="hulyAvatar-container hulyAvatarSize-{size} {variant} {style}"
     class:no-img={!hasImg && color}
     class:bordered={!hasImg && color === undefined}
     class:border={bColor !== undefined}
     class:withStatus
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
-    style:background-color={color && !hasImg ? color.icon : 'var(--theme-button-default)'}
+    style:background-color={background}
+    on:click={handleClick}
   >
     {#if url && !imgError}
-      <img class="hulyAvatarSize-{size} ava-image" src={url} {srcset} alt={''} on:error={handleImgError} />
+      <img
+        class="hulyAvatarSize-{size} ava-image {disabled ? 'disabled' : ''} {style}"
+        src={url}
+        {srcset}
+        alt={''}
+        on:error={handleImgError}
+      />
     {:else if displayName && displayName !== ''}
       <div
         class="ava-text"
-        style:color={color ? color.iconText : 'var(--primary-button-color)'}
+        style:color={disabled ? 'white' : color ? color.iconText : 'var(--primary-button-color)'}
         data-name={displayName.toLocaleUpperCase()}
       />
     {:else}
       <div class="icon">
-        <Icon icon={icon ?? AvatarIcon} size={'full'} />
+        <Icon
+          icon={icon ?? AvatarIcon}
+          fill={color ? 'var(--primary-button-color)' : 'var(--theme-caption-color)'}
+          size={'full'}
+        />
       </div>
     {/if}
   </div>

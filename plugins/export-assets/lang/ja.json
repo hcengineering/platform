@@ -1,0 +1,26 @@
+{
+  "string": {
+    "WorkspaceNamePattern": "名前は40文字以内で、空にすることはできず、特殊文字(<, >, /)を含めることはできません",
+    "Export": "エクスポート",
+    "DataToExport": "エクスポートするデータ",
+    "ExportDocuments": "ドキュメント",
+    "ExportMilestones": "マイルストーン",
+    "ExportIssues": "イシュー",
+    "ExportTestCases": "テストケース",
+    "ExportTestRuns": "テスト実行",
+    "ExportTestPlans": "テスト計画",
+    "ExportFormat": "エクスポート形式",
+    "ExportJSON": "JSON",
+    "ExportCSV": "CSV",
+    "ExportUnifiedFormat": "Huly 統一形式",
+    "ExportIncludeContent": "コンテンツを含める",
+    "ExportEverything": "すべて",
+    "ExportAttributesOnly": "属性のみ",
+    "ExportRequestSuccess": "エクスポートを開始しました。",
+    "ExportRequestSuccessMessage": "エクスポートを開始しました。完了すると受信箱に通知が届きます。",
+    "ExportRequestFailed": "エクスポートの送信に失敗しました。",
+    "ExportRequestFailedMessage": "エクスポートの送信中にエラーが発生しました。後でもう一度お試しください。",
+    "ExportCompleted": "エクスポートが完了し、ファイルの準備ができました。ドライブからダウンロードできます。",
+    "ExportFailed": "データのエクスポートに失敗しました。後でもう一度お試しください。"
+  }
+}

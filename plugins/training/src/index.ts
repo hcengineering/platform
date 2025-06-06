@@ -20,8 +20,7 @@ import {
   type TrainingRequest,
   type TrainingAttempt,
   type TrainingAttemptState,
-  TrainingState,
-  type Sequence
+  TrainingState
 } from './types'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 
@@ -152,7 +151,6 @@ export default plugin(trainingId, {
     ViewTraineesResults: '' as Asset
   },
   class: {
-    Sequence: '' as Ref<Class<Sequence>>,
     Training: '' as Ref<Class<Training>>,
     TrainingRequest: '' as Ref<Class<TrainingRequest>>,
     TrainingAttempt: '' as Ref<Class<TrainingAttempt>>,

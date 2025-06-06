@@ -1,18 +1,16 @@
 export interface ServerEnv {
-  url: string
-  elasticUrl: string
+  dbUrl: string
+  mongoUrl?: string
+  fulltextUrl: string
   serverSecret: string
-  rekoniUrl: string
   frontUrl: string
   filesUrl: string | undefined
-  sesUrl: string | undefined
+  mailUrl: string | undefined
+  mailAuthToken: string | undefined
+  webPushUrl: string | undefined
   accountsUrl: string
   serverPort: number
   enableCompression: boolean
-  elasticIndexName: string
-  pushPublicKey: string | undefined
-  pushPrivateKey: string | undefined
-  pushSubject: string | undefined
   brandingPath: string | undefined
 }
 
@@ -27,33 +25,16 @@ export function serverConfigFromEnv (): ServerEnv {
   }
 
   const mongoUrl = process.env.MONGO_URL
-  if (mongoUrl === undefined) {
-    console.error('please provide mongodb url')
-    process.exit(1)
-  }
 
-  const url = dbUrl !== mongoUrl ? `${dbUrl};${mongoUrl}` : dbUrl
-
-  const elasticUrl = process.env.ELASTIC_URL
-  if (elasticUrl === undefined) {
-    console.error('please provide elastic url')
-    process.exit(1)
-  }
-  const elasticIndexName = process.env.ELASTIC_INDEX_NAME
-  if (elasticIndexName === undefined) {
-    console.log('Please provide ELASTIC_INDEX_NAME')
+  const fulltextUrl = process.env.FULLTEXT_URL
+  if (fulltextUrl === undefined) {
+    console.error('please provide Fulltext URL')
     process.exit(1)
   }
 
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
     console.log('Please provide server secret')
-    process.exit(1)
-  }
-
-  const rekoniUrl = process.env.REKONI_URL
-  if (rekoniUrl === undefined) {
-    console.log('Please provide REKONI_URL url')
     process.exit(1)
   }
 
@@ -64,7 +45,9 @@ export function serverConfigFromEnv (): ServerEnv {
   }
 
   const filesUrl = process.env.FILES_URL
-  const sesUrl = process.env.SES_URL
+  const mailUrl = process.env.MAIL_URL
+  const mailAuthToken = process.env.MAIL_AUTH_TOKEN
+  const webPushUrl = process.env.WEB_PUSH_URL
 
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
@@ -72,26 +55,21 @@ export function serverConfigFromEnv (): ServerEnv {
     process.exit(1)
   }
 
-  const pushPublicKey = process.env.PUSH_PUBLIC_KEY
-  const pushPrivateKey = process.env.PUSH_PRIVATE_KEY
-  const pushSubject = process.env.PUSH_SUBJECT
   const brandingPath = process.env.BRANDING_PATH
 
   return {
-    url,
-    elasticUrl,
-    elasticIndexName,
+    dbUrl,
+    mongoUrl,
+    fulltextUrl,
     serverSecret,
-    rekoniUrl,
     frontUrl,
     filesUrl,
-    sesUrl,
+    mailUrl,
+    mailAuthToken,
+    webPushUrl,
     accountsUrl,
     serverPort,
     enableCompression,
-    pushPublicKey,
-    pushPrivateKey,
-    pushSubject,
     brandingPath
   }
 }

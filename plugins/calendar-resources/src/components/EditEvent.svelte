@@ -197,12 +197,12 @@
       />
     </div>
     <div class="block rightCropPadding">
-      <LocationEditor bind:value={location} focusIndex={10005} />
+      <LocationEditor bind:value={location} focusIndex={10005} {readOnly} />
       <EventParticipants bind:participants bind:externalParticipants disabled={readOnly} focusIndex={10006} />
       <ComponentExtensions extension={calendar.extensions.EditEventExtensions} props={{ readOnly, value: object }} />
     </div>
-    <div class="block row gap-1-5">
-      <div class="top-icon">
+    <div class="block description">
+      <div class="top-icon" class:disabled={readOnly}>
         <Icon icon={calendar.icon.Description} size={'small'} />
       </div>
       <StyledTextBox
@@ -221,9 +221,9 @@
       <CalendarSelector bind:value={_calendar} focusIndex={10008} />
       <div class="flex-row-center flex-gap-1">
         <Icon icon={calendar.icon.Hidden} size={'small'} />
-        <VisibilityEditor bind:value={visibility} kind={'tertiary'} withoutIcon focusIndex={10009} />
+        <VisibilityEditor bind:value={visibility} kind="inline" disabled={readOnly} withoutIcon focusIndex={10009} />
       </div>
-      <EventReminders bind:reminders focusIndex={10010} />
+      <EventReminders bind:reminders focusIndex={10010} disabled={readOnly} />
     </div>
   </Scroller>
   <div class="antiDivider noMargin" />
@@ -265,7 +265,7 @@
       &:not(:last-child) {
         border-bottom: 1px solid var(--theme-divider-color);
       }
-      &:not(.row) {
+      &:not(.description) {
         flex-direction: column;
       }
       &.first {
@@ -277,13 +277,19 @@
       &.rightCropPadding {
         padding: 0.75rem 1rem 0.75rem 1.25rem;
       }
-      &.row {
-        padding: 0 1.25rem 0.5rem;
+      &.description {
+        padding: 0 1.25rem;
+        min-height: 2.625rem;
       }
     }
     .top-icon {
       flex-shrink: 0;
       margin-top: 1.375rem;
+      margin-right: 0.125rem;
+
+      &.disabled {
+        margin-top: 0.875rem;
+      }
     }
   }
 </style>

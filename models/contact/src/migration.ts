@@ -1,14 +1,34 @@
 //
 
 import {
+  AvatarType,
+  type Person,
+  type Contact,
+  type SocialIdentity,
+  type SocialIdentityRef,
+  type UserProfile,
+  getFirstName,
+  getLastName,
+  formatName
+} from '@hcengineering/contact'
+import {
+  AccountRole,
+  type AccountUuid,
+  buildSocialIdString,
   type Class,
   type Doc,
   type Domain,
+  DOMAIN_MODEL_TX,
   DOMAIN_TX,
   generateId,
+  type MarkupBlobRef,
+  type PersonId,
+  type PersonUuid,
   type Ref,
+  type SocialKey,
+  SortingOrder,
   type Space,
-  TxOperations
+  type TxCUD
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -21,44 +41,13 @@ import {
   tryMigrate,
   tryUpgrade
 } from '@hcengineering/model'
+import { makeRank } from '@hcengineering/rank'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+import core, { getAccountsFromTxes, getSocialIdBySocialKey, getSocialKeyByOldEmail } from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
-import { AvatarType, type Contact, type Person, type PersonSpace } from '@hcengineering/contact'
+import card, { type Card, DOMAIN_CARD } from '@hcengineering/card'
 
-import contact, { contactId, DOMAIN_CONTACT } from './index'
-
-async function createEmployeeEmail (client: TxOperations): Promise<void> {
-  const employees = await client.findAll(contact.mixin.Employee, {})
-  const channels = (
-    await client.findAll(contact.class.Channel, {
-      attachedTo: { $in: employees.map((p) => p._id) }
-    })
-  ).filter((it) => it.provider === contact.channelProvider.Email)
-  const channelsMap = new Map(channels.map((p) => [p.attachedTo, p]))
-  for (const employee of employees) {
-    const acc = client.getModel().getAccountByPersonId(employee._id)
-    if (acc.length === 0) continue
-    const current = channelsMap.get(employee._id)
-    if (current === undefined) {
-      await client.addCollection(
-        contact.class.Channel,
-        contact.space.Contacts,
-        employee._id,
-        contact.mixin.Employee,
-        'channels',
-        {
-          provider: contact.channelProvider.Email,
-          value: acc[0].email.trim()
-        },
-        undefined,
-        employee.modifiedOn
-      )
-    } else if (current.value !== acc[0].email.trim()) {
-      await client.update(current, { value: acc[0].email.trim() }, false, current.modifiedOn)
-    }
-  }
-}
+import contact, { contactId, DOMAIN_CHANNEL, DOMAIN_CONTACT } from './index'
 
 const colorPrefix = 'color://'
 const gravatarPrefix = 'gravatar://'
@@ -113,54 +102,411 @@ async function migrateAvatars (client: MigrationClient): Promise<void> {
   )
 }
 
-async function createPersonSpaces (client: MigrationClient): Promise<void> {
-  const spaces = await client.find<PersonSpace>(DOMAIN_SPACE, { _class: contact.class.PersonSpace })
+async function getOldPersonAccounts (
+  client: MigrationClient
+): Promise<Array<{ person: any, email: string, role: AccountRole }>> {
+  const accountsTxes: TxCUD<Doc>[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
+  })
 
-  if (spaces.length > 0) {
-    return
+  return getAccountsFromTxes(accountsTxes)
+}
+
+async function fillAccountUuids (client: MigrationClient): Promise<void> {
+  client.logger.log('filling account uuids...', {})
+  const iterator = await client.traverse<Person>(DOMAIN_CONTACT, { _class: contact.class.Person })
+
+  try {
+    let operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+    while (true) {
+      const persons = await iterator.next(200)
+      if (persons === null || persons.length === 0) {
+        break
+      }
+
+      for (const person of persons) {
+        const employee = client.hierarchy.as(person, contact.mixin.Employee)
+        if (employee === undefined || employee.personUuid !== undefined) {
+          continue
+        }
+
+        const socialIdentity = (
+          await client.find<SocialIdentity>(DOMAIN_CHANNEL, {
+            _class: contact.class.SocialIdentity,
+            attachedTo: person._id
+          })
+        )[0]
+        if (socialIdentity == null) continue
+
+        const accountUuid = await client.accountClient.findPersonBySocialKey(socialIdentity.key)
+        if (accountUuid == null) {
+          continue
+        }
+
+        operations.push({
+          filter: { _id: person._id },
+          update: {
+            personUuid: accountUuid
+          }
+        })
+      }
+
+      if (operations.length > 50) {
+        await client.bulk(DOMAIN_CONTACT, operations)
+        operations = []
+      }
+    }
+
+    if (operations.length > 0) {
+      await client.bulk(DOMAIN_CONTACT, operations)
+      operations = []
+    }
+  } finally {
+    await iterator.close()
   }
+}
 
-  const accounts = await client.model.findAll(contact.class.PersonAccount, {})
-  const employees = await client.find(DOMAIN_CONTACT, { [contact.mixin.Employee]: { $exists: true } })
-
-  const newSpaces = new Map<Ref<Person>, PersonSpace>()
-  const now = Date.now()
-
-  for (const account of accounts) {
-    const employee = employees.find(({ _id }) => _id === account.person)
-    if (employee === undefined) continue
-
-    const space = newSpaces.get(account.person)
-
-    if (space !== undefined) {
-      space.members.push(account._id)
-    } else {
-      newSpaces.set(account.person, {
-        _id: generateId(),
-        _class: contact.class.PersonSpace,
-        space: core.space.Space,
-        name: 'Personal space',
-        description: '',
-        private: true,
-        archived: false,
-        members: [account._id],
-        person: account.person,
-        modifiedBy: core.account.System,
-        createdBy: core.account.System,
-        modifiedOn: now,
-        createdOn: now
-      })
+async function assignWorkspaceRoles (client: MigrationClient): Promise<void> {
+  client.logger.log('assigning workspace roles...', {})
+  const oldPersonAccounts = await getOldPersonAccounts(client)
+  for (const { person, email, role } of oldPersonAccounts) {
+    // check it's an active employee
+    const personObj = (await client.find(DOMAIN_CONTACT, { _id: person, _class: contact.class.Person }))[0]
+    if (personObj === undefined) {
+      continue
+    }
+    const employee = client.hierarchy.as(personObj, contact.mixin.Employee)
+    if (employee === undefined || !employee.active) {
+      continue
+    }
+    const socialKey = getSocialKeyByOldEmail(email)
+    try {
+      await client.accountClient.updateWorkspaceRoleBySocialKey(buildSocialIdString(socialKey), role)
+    } catch (err: any) {
+      client.logger.error('Failed to update workspace role', { email, ...socialKey, role, err })
     }
   }
 
-  await client.create(DOMAIN_SPACE, Array.from(newSpaces.values()))
+  client.logger.log('finished assigning workspace roles', { users: oldPersonAccounts.length })
+}
+
+async function assignEmployeeRoles (client: MigrationClient): Promise<void> {
+  client.logger.log('assigning roles to employees...', {})
+
+  const wsMembers = await client.accountClient.getWorkspaceMembers()
+  const personsIterator = await client.traverse<Person>(DOMAIN_CONTACT, {
+    _class: contact.class.Person
+  })
+
+  try {
+    while (true) {
+      const docs = await personsIterator.next(50)
+      if (docs === null || docs?.length === 0) {
+        break
+      }
+
+      const updates: { filter: MigrationDocumentQuery<Contact>, update: MigrateUpdate<Contact> }[] = []
+      for (const d of docs) {
+        const employee = client.hierarchy.as(d, contact.mixin.Employee)
+        if (employee === undefined || !employee.active) {
+          continue
+        }
+        if (!employee.active) continue
+
+        const memberInfo = wsMembers.find((m) => m.person === employee.personUuid)
+        if (memberInfo === undefined) {
+          continue
+        }
+
+        const role = memberInfo.role === AccountRole.Guest ? 'GUEST' : 'USER'
+
+        updates.push({
+          filter: { _id: d._id },
+          update: {
+            [contact.mixin.Employee]: {
+              ...(d as any)[contact.mixin.Employee],
+              role
+            }
+          }
+        })
+      }
+      if (updates.length > 0) {
+        await client.bulk(DOMAIN_CONTACT, updates)
+      }
+    }
+  } finally {
+    await personsIterator.close()
+    client.logger.log('finished assigning roles to employees...', {})
+  }
+}
+
+async function createSocialIdentities (client: MigrationClient): Promise<void> {
+  client.logger.log('processing person accounts ', {})
+
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
+  const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
+  })
+  const personAccounts = getAccountsFromTxes(personAccountsTxes)
+
+  for (const pAcc of personAccounts) {
+    const email: string = pAcc.email ?? ''
+    if (email === '') continue
+
+    const socialIdKey = getSocialKeyByOldEmail(email)
+    const socialKey = buildSocialIdString(socialIdKey)
+    const socialId = await getSocialIdBySocialKey(client, socialKey, socialIdBySocialKey)
+
+    if (socialId == null) continue
+
+    const socialIdObj: SocialIdentity = {
+      _id: socialId as SocialIdentityRef,
+      _class: contact.class.SocialIdentity,
+      space: contact.space.Contacts,
+      ...socialIdKey,
+      key: socialKey,
+
+      attachedTo: pAcc.person,
+      attachedToClass: contact.class.Person,
+      collection: 'socialIds',
+
+      modifiedOn: Date.now(),
+      createdBy: core.account.ConfigUser,
+      createdOn: Date.now(),
+      modifiedBy: core.account.ConfigUser
+    }
+
+    await client.create(DOMAIN_CHANNEL, socialIdObj)
+  }
+}
+
+async function migrateMergedAccounts (client: MigrationClient): Promise<void> {
+  client.logger.log('migrating merged person accounts ', {})
+  const accountsByPerson = new Map<string, any[]>()
+  const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
+  })
+  const personAccounts = getAccountsFromTxes(personAccountsTxes)
+
+  for (const account of personAccounts) {
+    if (!accountsByPerson.has(account.person)) {
+      accountsByPerson.set(account.person, [])
+    }
+
+    // exclude empty emails
+    // also exclude Hulia account
+    if (account.email === '' || account.email === 'huly.ai.bot@hc.engineering') {
+      continue
+    }
+    accountsByPerson.get(account.person)?.push(account)
+  }
+
+  for (const [person, oldAccounts] of accountsByPerson.entries()) {
+    try {
+      if (oldAccounts.length < 2) continue
+
+      // Every social id in the old account might either be already in the new account or not in the accounts at all
+      // So we want to
+      // 1. Take the first social id with the existing account
+      // 2. Merge all other accounts into the first one
+      // 3. Create social ids for the first account which haven't had their own accounts
+      const toAdd: Array<SocialKey> = []
+      const toMergePersons = new Set<PersonUuid>()
+      const toMerge = new Set<AccountUuid>()
+      for (const oldAccount of oldAccounts) {
+        const socialIdKeyObj = getSocialKeyByOldEmail(oldAccount.email)
+        const socialIdKey = buildSocialIdString(socialIdKeyObj)
+
+        const socialId = await client.accountClient.findFullSocialIdBySocialKey(socialIdKey)
+        const personUuid = socialId?.personUuid
+        const accountUuid = (await client.accountClient.findPersonBySocialKey(socialIdKey, true)) as AccountUuid
+
+        if (personUuid == null) {
+          toAdd.push(socialIdKeyObj)
+          // Means not attached to any account yet, simply add the social id to the primary account
+        } else if (accountUuid == null) {
+          // Attached to a person without an account. Should not be the case if being run before the global accounts migration.
+          // Merge the person into the primary account.
+          toMergePersons.add(personUuid)
+        } else {
+          // This is the case when the social id is already attached to an account. Merge the accounts.
+          toMerge.add(accountUuid)
+        }
+      }
+
+      if (toMerge.size === 0) {
+        // No existing accounts for the person's social ids. Normally this should never be the case.
+        continue
+      }
+
+      const toMergeAccountsArray = Array.from(toMerge)
+      const primaryAccount = toMergeAccountsArray[0]
+
+      for (let i = 1; i < toMergeAccountsArray.length; i++) {
+        const accountToMerge = toMergeAccountsArray[i]
+        await client.accountClient.mergeSpecifiedAccounts(primaryAccount, accountToMerge)
+      }
+
+      const toMergePersonsArray = Array.from(toMergePersons)
+      for (const personToMerge of toMergePersonsArray) {
+        await client.accountClient.mergeSpecifiedPersons(primaryAccount, personToMerge)
+      }
+
+      for (const addTarget of toAdd) {
+        await client.accountClient.addSocialIdToPerson(primaryAccount, addTarget.type, addTarget.value, false)
+      }
+    } catch (err: any) {
+      client.logger.error('Failed to merge accounts for person', { person, oldAccounts, err })
+    }
+  }
+}
+
+async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient): Promise<void> {
+  client.logger.log('ensuring global persons for local accounts ', {})
+
+  const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
+  })
+  const personAccounts = getAccountsFromTxes(personAccountsTxes)
+
+  let count = 0
+  for (const pAcc of personAccounts) {
+    const email: string = pAcc.email ?? ''
+    if (email === '') continue
+
+    const socialIdKey = getSocialKeyByOldEmail(email)
+    const person = (await client.find<Person>(DOMAIN_CONTACT, { _id: pAcc.person }))[0]
+    const name = person?.name
+    const firstName = getFirstName(name)
+    const lastName = getLastName(name)
+    const effectiveFirstName = firstName === '' ? socialIdKey.value : firstName
+
+    try {
+      await client.accountClient.ensurePerson(socialIdKey.type, socialIdKey.value, effectiveFirstName, lastName)
+      count++
+    } catch (err: any) {
+      client.logger.error('Failed to ensure person', {
+        socialIdKey,
+        email: pAcc.email,
+        firstName,
+        lastName,
+        effectiveFirstName
+      })
+      console.error(err)
+    }
+  }
+  client.logger.log('finished ensuring global persons for local accounts. Total persons ensured: ', { count })
+}
+
+async function createUserProfiles (client: MigrationClient): Promise<void> {
+  client.logger.log('creating user profiles for persons...', {})
+
+  const personsIterator = await client.traverse<Person>(DOMAIN_CONTACT, {
+    _class: contact.class.Person,
+    profile: { $exists: false }
+  })
+
+  const lastCard = (
+    await client.find<Card>(
+      DOMAIN_CARD,
+      { _class: card.class.Card },
+      { sort: { rank: SortingOrder.Descending }, limit: 1 }
+    )
+  )[0]
+  let prevRank = lastCard?.rank
+
+  try {
+    while (true) {
+      const docs = await personsIterator.next(200)
+      if (docs === null || docs?.length === 0) {
+        break
+      }
+
+      for (const d of docs) {
+        if (d.profile != null) continue
+
+        const title = d.name != null && d.name !== '' ? formatName(d.name) : 'Profile'
+        const userProfile: UserProfile = {
+          _id: generateId(),
+          _class: contact.class.UserProfile,
+          space: contact.space.Contacts,
+
+          person: d._id,
+          title,
+          rank: makeRank(prevRank, undefined),
+          content: '' as MarkupBlobRef,
+          parentInfo: [],
+          blobs: {},
+
+          modifiedOn: Date.now(),
+          createdBy: core.account.ConfigUser,
+          createdOn: Date.now(),
+          modifiedBy: core.account.ConfigUser
+        }
+
+        prevRank = userProfile.rank
+
+        await client.create(DOMAIN_CARD, userProfile)
+        await client.update(DOMAIN_CONTACT, { _id: d._id }, { profile: userProfile._id })
+      }
+    }
+  } finally {
+    await personsIterator.close()
+    client.logger.log('finished creating user profiles for persons...', {})
+  }
+}
+
+async function fixSocialIdCase (client: MigrationClient): Promise<void> {
+  client.logger.log('Fixing social id case...', {})
+
+  const socialIdsIterator = await client.traverse<SocialIdentity>(DOMAIN_CHANNEL, {
+    _class: contact.class.SocialIdentity
+  })
+  let updated = 0
+
+  try {
+    while (true) {
+      const docs = await socialIdsIterator.next(200)
+      if (docs === null || docs?.length === 0) {
+        break
+      }
+
+      for (const d of docs) {
+        const newKey = d.key.toLowerCase()
+        const newVal = d.value.toLowerCase()
+        if (newKey !== d.key || newVal !== d.value) {
+          await client.update(DOMAIN_CHANNEL, { _id: d._id }, { key: newKey, value: newVal })
+          updated++
+        }
+      }
+    }
+  } finally {
+    await socialIdsIterator.close()
+    client.logger.log('Finished fixing social id case. Total updated:', { updated })
+  }
 }
 
 export const contactOperation: MigrateOperation = {
-  async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
-    await tryMigrate(client, contactId, [
+  async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
+    await tryMigrate(mode, client, contactId, [
+      {
+        state: 'migrate-merged-accounts',
+        mode: 'upgrade',
+        func: (client) => migrateMergedAccounts(client)
+      },
+      {
+        state: 'ensure-accounts-global-persons-v2',
+        mode: 'upgrade',
+        func: (client) => ensureGlobalPersonsForLocalAccounts(client)
+      }
+    ])
+  },
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, contactId, [
       {
         state: 'employees',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(
             DOMAIN_TX,
@@ -168,7 +514,7 @@ export const contactOperation: MigrateOperation = {
               objectClass: 'contact:class:Employee'
             },
             {
-              $set: { objectClass: contact.mixin.Employee }
+              objectClass: contact.mixin.Employee
             }
           )
 
@@ -178,7 +524,7 @@ export const contactOperation: MigrateOperation = {
               'tx.attributes.srcDocClass': 'contact:class:Employee'
             },
             {
-              $set: { 'tx.attributes.srcDocClass': contact.mixin.Employee }
+              'tx.attributes.srcDocClass': contact.mixin.Employee
             }
           )
 
@@ -188,7 +534,7 @@ export const contactOperation: MigrateOperation = {
               'tx.attributes.srcDocClass': 'contact:class:Employee'
             },
             {
-              $set: { 'tx.attributes.srcDocClass': contact.mixin.Employee }
+              'tx.attributes.srcDocClass': contact.mixin.Employee
             }
           )
 
@@ -199,7 +545,7 @@ export const contactOperation: MigrateOperation = {
               'attributes.type.to': 'contact:class:Employee'
             },
             {
-              $set: { 'attributes.type.to': contact.mixin.Employee }
+              'attributes.type.to': contact.mixin.Employee
             }
           )
           await client.update(
@@ -209,7 +555,7 @@ export const contactOperation: MigrateOperation = {
               'operations.type.to': 'contact:class:Employee'
             },
             {
-              $set: { 'operations.type.to': contact.mixin.Employee }
+              'operations.type.to': contact.mixin.Employee
             }
           )
 
@@ -219,7 +565,7 @@ export const contactOperation: MigrateOperation = {
               'attributes.extends': 'contact:class:Employee'
             },
             {
-              $set: { 'attributes.extends': contact.mixin.Employee }
+              'attributes.extends': contact.mixin.Employee
             }
           )
 
@@ -227,7 +573,7 @@ export const contactOperation: MigrateOperation = {
             await client.update(
               d,
               { attachedToClass: 'contact:class:Employee' },
-              { $set: { attachedToClass: contact.mixin.Employee } }
+              { attachedToClass: contact.mixin.Employee }
             )
           }
           await client.update(
@@ -236,17 +582,17 @@ export const contactOperation: MigrateOperation = {
               _class: activity.class.ActivityReference,
               srcDocClass: 'contact:class:Employee'
             },
-            { $set: { srcDocClass: contact.mixin.Employee } }
+            { srcDocClass: contact.mixin.Employee }
           )
           await client.update(
             'tags' as Domain,
             { targetClass: 'contact:class:Employee' },
-            { $set: { targetClass: contact.mixin.Employee } }
+            { targetClass: contact.mixin.Employee }
           )
           await client.update(
             DOMAIN_VIEW,
             { filterClass: 'contact:class:Employee' },
-            { $set: { filterClass: contact.mixin.Employee } }
+            { filterClass: contact.mixin.Employee }
           )
           await client.update(
             DOMAIN_CONTACT,
@@ -260,15 +606,14 @@ export const contactOperation: MigrateOperation = {
                 displayName: `${contact.mixin.Employee as string}.displayName`,
                 position: `${contact.mixin.Employee as string}.position`
               },
-              $set: {
-                _class: contact.class.Person
-              }
+              _class: contact.class.Person
             }
           )
         }
       },
       {
         state: 'removeEmployeeSpace',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(
             DOMAIN_CONTACT,
@@ -283,12 +628,14 @@ export const contactOperation: MigrateOperation = {
       },
       {
         state: 'avatars',
+        mode: 'upgrade',
         func: async (client) => {
           await migrateAvatars(client)
         }
       },
       {
         state: 'avatarsKind',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(
             DOMAIN_CONTACT,
@@ -298,24 +645,43 @@ export const contactOperation: MigrateOperation = {
         }
       },
       {
-        state: 'create-person-spaces-v1',
-        func: createPersonSpaces
+        state: 'create-social-identities',
+        mode: 'upgrade',
+        func: createSocialIdentities
+      },
+      {
+        state: 'assign-workspace-roles',
+        mode: 'upgrade',
+        func: assignWorkspaceRoles
+      },
+      {
+        state: 'fill-account-uuids',
+        mode: 'upgrade',
+        func: fillAccountUuids
+      },
+      {
+        state: 'assign-employee-roles-v1',
+        mode: 'upgrade',
+        func: assignEmployeeRoles
+      },
+      {
+        state: 'create-user-profiles',
+        mode: 'upgrade',
+        func: createUserProfiles
+      },
+      {
+        state: 'fix-social-id-case',
+        mode: 'upgrade',
+        func: fixSocialIdCase
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, contactId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, contactId, [
       {
         state: 'createSpace-v2',
         func: async (client) => {
           await createDefaultSpace(client, contact.space.Contacts, { name: 'Contacts', description: 'Contacts' })
-        }
-      },
-      {
-        state: 'createEmails',
-        func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await createEmployeeEmail(tx)
         }
       }
     ])

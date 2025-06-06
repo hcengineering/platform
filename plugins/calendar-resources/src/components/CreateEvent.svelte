@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Calendar, Event, ReccuringEvent, RecurringRule, Visibility, generateEventId } from '@hcengineering/calendar'
-  import { Person, PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee, Person } from '@hcengineering/contact'
   import core, { Class, Doc, Markup, Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
   import presentation, {
     createQuery,
@@ -30,7 +30,6 @@
     FocusHandler,
     Icon,
     IconClose,
-    IconMoreH,
     createFocusManager,
     getUserTimezone,
     showPopup,
@@ -48,14 +47,17 @@
   import ReccurancePopup from './ReccurancePopup.svelte'
   import VisibilityEditor from './VisibilityEditor.svelte'
 
-  const currentUser = getCurrentAccount() as PersonAccount
+  const acc = getCurrentAccount()
+  const currentUser = getCurrentEmployee()
+  const socialStrings = acc.socialIds
+  const myPrimaryId = acc.primarySocialId
 
   export let attachedTo: Ref<Doc> = calendar.ids.NoAttached
   export let attachedToClass: Ref<Class<Doc>> = calendar.class.Event
   export let title: string = ''
   export let date: Date | undefined = undefined
   export let withTime = false
-  export let participants: Ref<Person>[] = [currentUser.person]
+  export let participants: Ref<Person>[] = [currentUser]
 
   const now = new Date()
   const defaultDuration = 60 * 60 * 1000
@@ -75,15 +77,18 @@
 
   let description: Markup = EmptyMarkup
   let visibility: Visibility = 'private'
-  const me = getCurrentAccount()
-  let _calendar: Ref<Calendar> = `${me._id}_calendar` as Ref<Calendar>
+  let _calendar: Ref<Calendar> = `${acc.uuid}_calendar` as Ref<Calendar>
 
   const q = createQuery()
-  q.query(calendar.class.ExternalCalendar, { default: true, createdBy: me._id, hidden: false }, (res) => {
-    if (res.length > 0) {
-      _calendar = res[0]._id
+  q.query(
+    calendar.class.ExternalCalendar,
+    { default: true, createdBy: { $in: socialStrings }, hidden: false },
+    (res) => {
+      if (res.length > 0) {
+        _calendar = res[0]._id
+      }
     }
-  })
+  )
 
   const spaceQ = createQuery()
   let space: Space | undefined = undefined
@@ -107,6 +112,7 @@
     if (startDate != null) date = startDate
     if (date === undefined) return
     if (title === '') return
+    const user = myPrimaryId
     const _id = generateId<Event>()
     if (rules.length > 0) {
       await client.addCollection(
@@ -133,7 +139,8 @@
           allDay,
           access: 'owner',
           originalStartTime: allDay ? saveUTC(date) : date,
-          timeZone
+          timeZone,
+          user
         },
         _id as Ref<ReccuringEvent>
       )
@@ -158,7 +165,8 @@
           location,
           allDay,
           timeZone,
-          access: 'owner'
+          access: 'owner',
+          user
         },
         _id
       )
@@ -234,7 +242,7 @@
     <div class="block">
       <DocCreateExtComponent manager={docCreateManager} kind={'body'} />
     </div>
-    <div class="block row gap-1-5">
+    <div class="block description">
       <div class="top-icon">
         <Icon icon={calendar.icon.Description} size={'small'} />
       </div>
@@ -252,7 +260,7 @@
       <CalendarSelector bind:value={_calendar} focusIndex={10101} />
       <div class="flex-row-center flex-gap-1">
         <Icon icon={calendar.icon.Hidden} size={'small'} />
-        <VisibilityEditor bind:value={visibility} kind={'tertiary'} size={'small'} focusIndex={10102} withoutIcon />
+        <VisibilityEditor bind:value={visibility} kind="inline" size="medium" focusIndex={10102} withoutIcon />
       </div>
       <EventReminders bind:reminders focusIndex={10103} />
     </div>
@@ -295,25 +303,26 @@
       &:not(:last-child) {
         border-bottom: 1px solid var(--theme-divider-color);
       }
-      &:not(.row) {
+      &:not(.description) {
         flex-direction: column;
       }
       &.first {
         padding-top: 0;
       }
       &:not(.rightCropPadding) {
-        padding: 0.75rem 1.25rem;
+        padding: 0.75rem 1rem;
       }
       &.rightCropPadding {
         padding: 0.75rem 1rem 0.75rem 1.25rem;
       }
-      &.row {
-        padding: 0 1.25rem 0.5rem;
+      &.description {
+        padding: 0 1.25rem;
       }
     }
     .top-icon {
       flex-shrink: 0;
       margin-top: 1.375rem;
+      margin-right: 0.125rem;
     }
   }
 </style>

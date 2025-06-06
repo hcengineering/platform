@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type Timestamp } from '@hcengineering/core'
+import type { Blob, Ref, Timestamp } from '@hcengineering/core'
 import type {
   Asset,
   IntlString,
@@ -78,7 +78,10 @@ export interface AnySvelteComponentWithProps {
   props?: Record<string, any>
 }
 
+export type IconComponent = Asset | AnySvelteComponent | ComponentType
+
 export interface Action {
+  id?: string
   label: IntlString
   icon?: Asset | AnySvelteComponent
   action: (props: any, ev: Event) => Promise<void>
@@ -231,7 +234,8 @@ export const posAlignment = [
   'centered',
   'center',
   'status',
-  'movable'
+  'movable',
+  'full-centered'
 ] as const
 
 export type PopupPosAlignment = (typeof posAlignment)[number]
@@ -261,7 +265,7 @@ export type IconSize =
   | '2x-large'
   | 'full'
 export interface IconProps {
-  icon?: number
+  icon?: number | number[] | Ref<Blob>
   size?: IconSize
   fill?: string
   filled?: boolean
@@ -304,6 +308,9 @@ export interface LabelAndProps {
   onUpdate?: (result: any) => void
   kind?: 'tooltip' | 'submenu' | 'popup'
   keys?: string[]
+  timeout?: number
+  style?: 'default' | 'modern'
+  noArrow?: boolean
 }
 
 export interface ListItem {
@@ -326,6 +333,7 @@ export interface DropdownIntlItem {
   id: string | number
   label: IntlString
   icon?: Asset | AnySvelteComponent | ComponentType
+  iconProps?: Record<string, any>
   params?: Record<string, any>
   description?: IntlString
   paramsDescription?: Record<string, any>
@@ -383,6 +391,7 @@ export interface DeviceOptions {
   sizes: Record<WidthType, boolean>
   minWidth: boolean
   twoRows: boolean
+  firstDayOfWeek: number
   theme?: string
   language?: string
   replacedPanel?: HTMLElement

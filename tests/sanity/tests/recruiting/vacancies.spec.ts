@@ -30,15 +30,13 @@ test.describe('Vacancy tests', () => {
     const wsPage: WorkspaceSettingsPage = new WorkspaceSettingsPage(page)
     await wsPage.owners().click()
     await settingsPage.checkOpened('Owners')
-    await settingsPage.clickButtonRoleInComponent('Appleseed John')
-    await settingsPage.selectPopupMenu('Owner').click()
     const count = await page.locator('div[id="workbench:component:WorkbenchTabs"] div.container.main').count()
     for (let i = 1; i < count; i++) {
       await page.locator('div[id="workbench:component:WorkbenchTabs"] div.container.main:first-child button').click()
     }
 
     const vacancyId = 'My vacancy ' + generateId(4)
-    await vacanciesPage.createVacancy(vacancyId)
+    await vacanciesPage.createVacancy(vacancyId, true)
     await vacanciesPage.modifyVacancy(vacancyId)
     await vacanciesPage.createApplicationVacencies('Alex')
   })

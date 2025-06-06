@@ -14,22 +14,33 @@
 // limitations under the License.
 //
 
-import { type BlobMetadata, type Attachment } from '@hcengineering/attachment'
+import { type Attachment } from '@hcengineering/attachment'
 import {
+  type BlobMetadata,
   type Blob,
   type Class,
   type TxOperations as Client,
   type Data,
   type Doc,
   type Ref,
-  type Space
+  type Space,
+  type WithLookup,
+  type BlobType
 } from '@hcengineering/core'
 import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { type FileOrBlob, getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
+import {
+  type FileOrBlob,
+  getClient,
+  getFileMetadata,
+  getPreviewAlignment,
+  uploadFile
+} from '@hcengineering/presentation'
+import { closeTooltip, showPopup, type PopupResult } from '@hcengineering/ui'
 import workbench, { type WidgetTab } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
 
 import attachment from './plugin'
+import AttachmentPreviewPopup from './components/AttachmentPreviewPopup.svelte'
 
 export async function createAttachments (
   client: Client,
@@ -78,7 +89,9 @@ export async function createAttachment (
   }
 }
 
-export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'audio' | 'pdf' | 'other' {
+export function getType (
+  type: string
+): 'image' | 'text' | 'json' | 'video' | 'audio' | 'pdf' | 'link-preview' | 'other' {
   if (type.startsWith('image/')) {
     return 'image'
   }
@@ -91,17 +104,20 @@ export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'a
   if (type.includes('application/pdf')) {
     return 'pdf'
   }
-  if (type === 'application/json') {
+  if (type.includes('application/json')) {
     return 'json'
   }
   if (type.startsWith('text/')) {
     return 'text'
   }
-
+  if (type.includes('application/link-preview')) {
+    return 'link-preview'
+  }
   return 'other'
 }
 
-export async function openAttachmentInSidebar (value: Attachment): Promise<void> {
+export async function openAttachmentInSidebar (value: Attachment | BlobType): Promise<void> {
+  closeTooltip()
   await openFilePreviewInSidebar(value.file, value.name, value.type, value.metadata)
 }
 
@@ -130,8 +146,51 @@ export async function openFilePreviewInSidebar (
     id: file,
     icon,
     name,
-    widget: attachment.ids.PreviewWidget,
     data: { file, name, contentType, metadata }
   }
   await createFn(widget, tab, true)
+}
+
+export function isAttachment (value: Attachment | BlobType): value is WithLookup<Attachment> {
+  return (value as Attachment)._id !== undefined
+}
+
+export function showAttachmentPreviewPopup (value: WithLookup<Attachment> | BlobType): PopupResult {
+  closeTooltip()
+  return showPopup(AttachmentPreviewPopup, { value }, getPreviewAlignment(value.type ?? ''))
+}
+
+interface ImageDimensions {
+  width: number
+  height: number
+  fit: 'cover' | 'contain'
+}
+
+export function getImageDimensions (
+  size: { width: number, height: number },
+  maxRem: { maxWidth: number, minWidth: number, maxHeight: number, minHeight: number }
+): ImageDimensions {
+  const originalWidth = size.width
+  const originalHeight = size.height
+  const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+  const maxWidthPx = maxRem.maxWidth * fontSize
+  const minWidthPx = maxRem.minWidth * fontSize
+  const maxHeightPx = maxRem.maxHeight * fontSize
+  const minHeightPx = maxRem.minHeight * fontSize
+
+  const ratio = originalHeight / originalWidth
+
+  let width = Math.min(originalWidth, maxWidthPx)
+  let height = Math.ceil(width * ratio)
+
+  const fit = width < minWidthPx || height < minHeightPx ? 'cover' : 'contain'
+
+  if (height > maxHeightPx) {
+    width = maxHeightPx / ratio
+    height = maxHeightPx
+  } else if (height < minHeightPx) {
+    height = minHeightPx
+  }
+
+  return { width: Math.round(width), height: Math.round(height), fit }
 }

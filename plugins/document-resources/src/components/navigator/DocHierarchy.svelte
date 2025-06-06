@@ -17,8 +17,8 @@
   import { Ref, generateId } from '@hcengineering/core'
   import { Document } from '@hcengineering/document'
   import { getResource } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
-  import { Action, IconAdd, IconEdit, IconWithEmoji, getPlatformColorDef, themeStore } from '@hcengineering/ui'
+  import { IconWithEmoji, getClient } from '@hcengineering/presentation'
+  import { Action, IconAdd, IconEdit, getPlatformColorDef, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getActions as getContributedActions, openDoc } from '@hcengineering/view-resources'
 
@@ -88,7 +88,7 @@
     dispatch('selected', obj)
   }
 
-  $: _documents = documents.map((it) => documentById.get(it)).filter((it) => it !== undefined) as Document[]
+  $: _documents = documents.map((it) => documentById.get(it)).filter((it) => it !== undefined)
   $: _descendants = new Map(_documents.map((it) => [it._id, getDescendants(it._id)]))
 </script>
 
@@ -107,7 +107,10 @@
         iconProps={doc.icon === view.ids.IconWithEmoji
           ? { icon: doc.color }
           : {
-              fill: doc.color !== undefined ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
+              fill:
+                doc.color !== undefined && typeof doc.color !== 'string'
+                  ? getPlatformColorDef(doc.color, $themeStore.dark).icon
+                  : 'currentColor'
             }}
         title={doc.title}
         selected={selected === doc._id && draggedItem === undefined}

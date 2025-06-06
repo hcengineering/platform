@@ -16,7 +16,7 @@
   import { onDestroy } from 'svelte'
   import { Ref } from '@hcengineering/core'
   import type {
-    BaseNotificationType,
+    NotificationType,
     NotificationGroup,
     NotificationPreferencesGroup,
     NotificationTypeSetting
@@ -35,7 +35,7 @@
     resolvedLocationStore,
     Scroller,
     Separator,
-    settingsSeparators
+    twoPanelsSeparators
   } from '@hcengineering/ui'
 
   import notification from '../../plugin'
@@ -48,7 +48,7 @@
     .getModel()
     .findAllSync(notification.class.NotificationPreferencesGroup, {})
 
-  let settings = new Map<Ref<BaseNotificationType>, NotificationTypeSetting[]>()
+  let settings = new Map<Ref<NotificationType>, NotificationTypeSetting[]>()
 
   let isProviderSettingLoading = true
   let isTypeSettingLoading = true
@@ -93,11 +93,11 @@
     unsubscribeTypeSetting()
     unsubscribeProviderSetting()
   })
-  defineSeparators('notificationSettings', settingsSeparators)
+  defineSeparators('notificationSettings', twoPanelsSeparators)
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb
       icon={notification.icon.Notifications}
       label={notification.string.Notifications}

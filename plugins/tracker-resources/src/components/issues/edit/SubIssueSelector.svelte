@@ -161,7 +161,7 @@
       >
         {#if parentStatus}
           <div class="pr-2">
-            <IssueStatusIcon space={parentIssue.space} value={parentStatus} size="small" />
+            <IssueStatusIcon space={parentIssue.space} taskType={parentIssue.kind} value={parentStatus} size="small" />
           </div>
         {/if}
         <span class="overflow-label flex-no-shrink mr-2">{parentIssue.identifier}</span>

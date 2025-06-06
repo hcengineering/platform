@@ -1,8 +1,8 @@
-import { Document } from 'domhandler'
-import { Markup } from '@hcengineering/core'
+import { type Document } from 'domhandler'
+import { type Markup } from '@hcengineering/core'
 
-import { GenericNodeSpec, NodeType, SectionSpec, SectionType, TocSectionSpec } from './types'
-import { AnyContainer, createNodeExtractor } from './nodes'
+import { type GenericNodeSpec, NodeType, type SectionSpec, SectionType, type TocSectionSpec } from './types'
+import { type AnyContainer, createNodeExtractor } from './nodes'
 
 /**
  * @public

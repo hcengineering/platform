@@ -15,23 +15,35 @@
 <script lang="ts">
   import workbench, { Widget, WidgetTab } from '@hcengineering/workbench'
   import { FilePreview, DownloadFileButton, FilePreviewPopup, FileTypeIcon } from '@hcengineering/presentation'
-  import { Breadcrumbs, Button, closeTooltip, Header, IconOpen, showPopup } from '@hcengineering/ui'
+  import { Breadcrumbs, Button, closeTooltip, Header, showPopup } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
   import view from '@hcengineering/view'
 
   import attachment from '../plugin'
 
   export let widget: Widget
-  export let tab: WidgetTab
+  export let tab: WidgetTab | undefined
 
-  $: file = tab.data?.file
-  $: fileName = tab.data?.name ?? ''
-  $: contentType = tab.data?.contentType
-  $: metadata = tab.data?.metadata
+  $: file = tab?.data?.file
+  $: fileName = tab?.data?.name ?? ''
+  $: contentType = tab?.data?.contentType
+  $: metadata = tab?.data?.metadata
 
   async function closeTab (): Promise<void> {
+    if (tab === undefined) return
     const fn = await getResource(workbench.function.CloseWidgetTab)
     await fn(widget, tab.id)
+  }
+
+  async function close (): Promise<void> {
+    const fn = await getResource(workbench.function.CloseWidget)
+    await fn(attachment.ids.PreviewWidget)
+  }
+
+  $: if (tab === undefined) {
+    void close()
+  } else if (tab.data === undefined) {
+    void closeTab()
   }
 </script>
 

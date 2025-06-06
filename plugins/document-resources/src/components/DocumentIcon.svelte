@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent, Icon, IconSize, IconWithEmoji, getPlatformColorDef, themeStore } from '@hcengineering/ui'
+  import { AnySvelteComponent, Icon, IconSize, getPlatformColorDef, themeStore } from '@hcengineering/ui'
+  import { IconWithEmoji } from '@hcengineering/presentation'
   import view, { IconProps } from '@hcengineering/view'
   import document from '@hcengineering/document'
 
   import { ComponentType } from 'svelte'
 
-  export let value: IconProps
+  export let value: IconProps | undefined
   export let size: IconSize
   export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = view.ids.IconWithEmoji
   export let defaultIcon: AnySvelteComponent | Asset | ComponentType = document.icon.Document
@@ -28,10 +29,13 @@
 
 <Icon
   {size}
-  icon={value.icon === iconWithEmoji && iconWithEmoji ? IconWithEmoji : value.icon ?? defaultIcon}
-  iconProps={value.icon === iconWithEmoji && iconWithEmoji
-    ? { icon: value.color }
+  icon={value?.icon === iconWithEmoji && iconWithEmoji ? IconWithEmoji : value?.icon ?? defaultIcon}
+  iconProps={value?.icon === iconWithEmoji && iconWithEmoji
+    ? { icon: value?.color }
     : {
-        fill: value.color !== undefined ? getPlatformColorDef(value.color, $themeStore.dark).icon : 'currentColor'
+        fill:
+          value?.color !== undefined && typeof value?.color !== 'string'
+            ? getPlatformColorDef(value?.color, $themeStore.dark).icon
+            : 'currentColor'
       }}
 />

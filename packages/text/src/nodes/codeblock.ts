@@ -37,6 +37,8 @@ export const backtickInputRegex = /^```$/
 export const tildeInputRegex = /^~~~$/
 
 export const CodeBlockExtension = CodeBlock.extend({
+  marks: 'inline-comment',
+
   addAttributes () {
     return {
       language: {

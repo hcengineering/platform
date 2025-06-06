@@ -21,7 +21,8 @@ import {
   type Status,
   type StatusCategory,
   type Doc,
-  type Class
+  type Class,
+  type Rank
 } from '@hcengineering/core'
 import { Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
 import { type Asset, type IntlString } from '@hcengineering/platform'
@@ -54,7 +55,7 @@ export class TStatus extends TDoc implements Status {
   @Prop(TypeString(), core.string.Description)
     description!: string
 
-  rank!: string
+  rank!: Rank
 }
 
 @Model(core.class.StatusCategory, core.class.Doc, DOMAIN_MODEL)

@@ -15,17 +15,34 @@
 
 import love, { loveId } from '@hcengineering/love'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
-import { type DocCreateFunction } from '@hcengineering/presentation'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type DocCreateFunction } from '@hcengineering/presentation/src/types'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
+import { type ViewActionAvailabilityFunction } from '@hcengineering/view'
 
 export default mergeIds(loveId, love, {
   component: {
     ControlExt: '' as AnyComponent,
     MeetingData: '' as AnyComponent,
-    EditMeetingData: '' as AnyComponent
+    EditMeetingData: '' as AnyComponent,
+    MeetingMinutesPresenter: '' as AnyComponent,
+    RoomPresenter: '' as AnyComponent,
+    MeetingMinutesSection: '' as AnyComponent,
+    EditMeetingMinutes: '' as AnyComponent,
+    EditRoom: '' as AnyComponent,
+    FloorAttributePresenter: '' as AnyComponent,
+    MeetingMinutesTable: '' as AnyComponent,
+    FloorView: '' as AnyComponent,
+    PanelControlBar: '' as AnyComponent,
+    MeetingMinutesDocEditor: '' as AnyComponent,
+    MeetingMinutesStatusPresenter: '' as AnyComponent,
+    MeetingScheduleData: '' as AnyComponent,
+    EditMeetingScheduleData: '' as AnyComponent
   },
   function: {
-    CreateMeeting: '' as Resource<DocCreateFunction>
+    CreateMeeting: '' as Resource<DocCreateFunction>,
+    CreateMeetingSchedule: '' as Resource<DocCreateFunction>,
+    CanShowRoomSettings: '' as Resource<ViewActionAvailabilityFunction>,
+    CanCopyGuestLink: '' as Resource<ViewActionAvailabilityFunction>
   },
   string: {
     CreateMeeting: '' as IntlString,
@@ -39,7 +56,6 @@ export default mergeIds(loveId, love, {
     StopVideo: '' as IntlString,
     Floors: '' as IntlString,
     Floor: '' as IntlString,
-    MyOffice: '' as IntlString,
     EditOffice: '' as IntlString,
     FinalizeEditing: '' as IntlString,
     ChangeFloor: '' as IntlString,
@@ -79,6 +95,16 @@ export default mergeIds(loveId, love, {
     Invite: '' as IntlString,
     KnockAction: '' as IntlString,
     Select: '' as IntlString,
-    ChooseShare: '' as IntlString
+    ChooseShare: '' as IntlString,
+    MoreOptions: '' as IntlString,
+    Language: '' as IntlString,
+    WithAudio: '' as IntlString,
+    ShareWithAudioTooltip: '' as IntlString,
+    CamPermission: '' as IntlString,
+    MicPermission: '' as IntlString,
+    Sharing: '' as IntlString,
+    Browser: '' as IntlString,
+    Monitor: '' as IntlString,
+    Window: '' as IntlString
   }
 })

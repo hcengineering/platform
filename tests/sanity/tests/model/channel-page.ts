@@ -49,7 +49,7 @@ export class ChannelPage extends CommonPage {
     this.page.locator('.activityMessage-actionPopup > button[data-id$="PinMessageAction"]').last()
 
   readonly replyButton = (): Locator =>
-    this.page.locator('.activityMessage-actionPopup > button[data-id$="ReplyToThreadAction"]').last()
+    this.page.locator('.activityMessage-actionPopup > button[data-id="activity:action:Reply"]').last()
 
   readonly openMoreButton = (): Locator =>
     this.page.locator('.activityMessage-actionPopup > button[data-id="btnMoreActions"]').last()
@@ -79,7 +79,7 @@ export class ChannelPage extends CommonPage {
   private readonly addMemberPreview = (): Locator => this.page.getByRole('button', { name: 'Add members' })
   private readonly addButtonPreview = (): Locator => this.page.getByRole('button', { name: 'Add', exact: true })
 
-  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
+  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-wrapper')
   readonly inputSearchChannel = (): Locator => this.page.locator('.hulyHeader-container').getByPlaceholder('Search')
 
   readonly channelContainers = (): Locator => this.page.locator('.hulyNavItem-container')
@@ -101,9 +101,20 @@ export class ChannelPage extends CommonPage {
     await this.buttonSendMessage().click()
   }
 
-  async sendMention (message: string): Promise<void> {
-    await this.inputMessage().fill(`@${message}`)
-    await this.selectMention(message)
+  async sendMention (message: string, categoryName?: string): Promise<void> {
+    for (let i = 0; i < 3; i++) {
+      try {
+        await this.inputMessage().fill(`@${message}`)
+        await this.selectMention(message, categoryName)
+        break
+      } catch (error: any) {
+        if (i === 2) {
+          throw error
+        }
+        await this.page.waitForTimeout(1000)
+      }
+    }
+
     await this.buttonSendMessage().click()
   }
 
@@ -208,10 +219,12 @@ export class ChannelPage extends CommonPage {
     await expect(this.pinnedMessage(message)).toBeVisible()
   }
 
-  async replyToMessage (message: string, messageReply: string): Promise<void> {
+  async replyMessage (message: string): Promise<void> {
     await this.textMessage(message).hover()
     await this.replyButton().click()
-    await this.page.waitForTimeout(500)
+  }
+
+  async sendReply (messageReply: string): Promise<void> {
     await this.page.keyboard.type(messageReply)
     await this.page.keyboard.press('Enter')
   }
@@ -303,6 +316,7 @@ export class ChannelPage extends CommonPage {
   }
 
   async makeActionWithChannelInMenu (channelName: string, action: string): Promise<void> {
+    await this.openNavigator()
     await this.channelContainers().filter({ hasText: channelName }).hover()
     await this.channelContainers().filter({ hasText: channelName }).locator('.hulyNavItem-actions').click()
     await this.selectFromDropdown(this.page, action)

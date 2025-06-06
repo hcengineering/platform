@@ -15,18 +15,20 @@
 <script lang="ts">
   import { formatName } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { Invite, RequestStatus } from '@hcengineering/love'
+  import { Invite, RequestStatus, getFreeRoomPlace } from '@hcengineering/love'
   import love from '../plugin'
   import { infos, myInfo, rooms } from '../stores'
-  import { connectRoom, getFreePlace } from '../utils'
+  import { connectRoom } from '../utils'
+  import { onDestroy, onMount } from 'svelte'
 
   export let invite: Invite
 
   $: person = $personByIdStore.get(invite.from)
 
   const client = getClient()
+  let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
     const room = $rooms.find((p) => p._id === invite.room)
@@ -35,15 +37,24 @@
     if (myPerson === undefined) return
     if ($myInfo === undefined) return
     await client.update(invite, { status: RequestStatus.Approved })
-    const place = getFreePlace(
+    const place = getFreeRoomPlace(
       room,
-      $infos.filter((p) => p.room === room?._id)
+      $infos.filter((p) => p.room === room?._id),
+      myPerson._id
     )
     await connectRoom(place.x, place.y, $myInfo, myPerson, room)
   }
   async function decline (): Promise<void> {
     await client.update(invite, { status: RequestStatus.Rejected })
   }
+
+  onMount(async () => {
+    stopSound = await playNotificationSound(love.sound.Knock, love.class.Invite, true)
+  })
+
+  onDestroy(() => {
+    stopSound?.()
+  })
 </script>
 
 <div class="antiPopup flex-col-center">
@@ -78,12 +89,12 @@
 
   .title {
     color: var(--caption-color);
-    font-size: 700;
+    font-weight: 700;
   }
 
   .roomTitle {
     color: var(--caption-color);
-    font-size: 700;
+    font-weight: 700;
     font-size: 1rem;
   }
 </style>

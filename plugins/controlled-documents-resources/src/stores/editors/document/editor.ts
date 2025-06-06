@@ -26,8 +26,8 @@ import {
   type ProjectDocument
 } from '@hcengineering/controlled-documents'
 import chunter from '@hcengineering/chunter'
-import { type Ref, getCurrentAccount } from '@hcengineering/core'
-import { type PersonAccount } from '@hcengineering/contact'
+import { type Ref } from '@hcengineering/core'
+import { getCurrentEmployee } from '@hcengineering/contact'
 import { type Training } from '@hcengineering/training'
 import { type IntlString } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
@@ -43,13 +43,14 @@ import {
   documentAllVersionsUpdated,
   editorModeUpdated,
   reviewRequestUpdated,
+  reviewRequestHistoryUpdated,
   rightPanelTabChanged,
   documentSnapshotsUpdated,
   trainingUpdated,
   projectDocumentsUpdated,
   projectUpdated
 } from './actions'
-import { documentCompareFn, getCurrentEmployee } from '../../../utils'
+import { documentCompareFn } from '../../../utils'
 
 export const $controlledDocument = createStore<ControlledDocument | null>(null)
   .on(controlledDocumentUpdated, (_, payload) => payload)
@@ -122,6 +123,10 @@ export const $reviewRequest = createStore<DocumentReviewRequest | null>(null)
   .on(reviewRequestUpdated, (_, payload) => payload)
   .reset(controlledDocumentClosed)
 
+export const $reviewRequestHistory = createStore<DocumentReviewRequest[] | null>(null)
+  .on(reviewRequestHistoryUpdated, (_, payload) => payload)
+  .reset(controlledDocumentClosed)
+
 export const $approvalRequest = createStore<DocumentApprovalRequest | null>(null)
   .on(approvalRequestUpdated, (_, payload) => payload)
   .reset(controlledDocumentClosed)
@@ -185,7 +190,7 @@ export const $documentStateForCurrentUser = combine($controlledDocument, $review
       return ControlledDocumentState.InReview
     }
 
-    const currentPerson = (getCurrentAccount() as PersonAccount).person
+    const currentPerson = getCurrentEmployee()
     if (reviewRequest.approved?.includes(currentPerson)) {
       return ControlledDocumentState.Reviewed
     }
@@ -211,7 +216,7 @@ export const $documentState = $controlledDocument.map((doc) => {
 })
 
 export const $documentReviewIsActive = combine($reviewRequest, $documentStateForCurrentUser, (reviewReq, state) => {
-  const me = (getCurrentAccount() as PersonAccount).person
+  const me = getCurrentEmployee()
 
   if (reviewReq == null) {
     return false
@@ -227,7 +232,7 @@ export const $documentApprovalIsActive = combine(
   $approvalRequest,
   $documentStateForCurrentUser,
   (doc, approvalReq, state) => {
-    const me = (getCurrentAccount() as PersonAccount).person
+    const me = getCurrentEmployee()
 
     if (approvalReq == null) {
       return false
@@ -361,7 +366,7 @@ export const $availableRightPanelTabs = combine($canViewDocumentComments, (canVi
   tabs.push({
     id: RightPanelTab.APPROVALS,
     icon: plugin.icon.Approvals,
-    showTooltip: { label: plugin.string.DocumentApprovals }
+    showTooltip: { label: plugin.string.ValidationWorkflow }
   })
 
   return tabs

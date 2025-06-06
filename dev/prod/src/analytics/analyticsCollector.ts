@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { AnalyticProvider } from '@hcengineering/analytics'
+import { type AnalyticProvider } from '@hcengineering/analytics'
 import presentation  from '@hcengineering/presentation'
 import { getMetadata } from '@hcengineering/platform'
-import { AnalyticEvent, AnalyticEventType } from '@hcengineering/analytics-collector'
+import { type AnalyticEvent, AnalyticEventType } from '@hcengineering/analytics-collector'
 
-import { Config } from '../platform'
+import { type Config } from '../platform'
 
 export class AnalyticsCollectorProvider implements AnalyticProvider {
   private readonly collectIntervalMs =  5000

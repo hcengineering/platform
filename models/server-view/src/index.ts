@@ -15,10 +15,10 @@
 
 import core, { type Doc } from '@hcengineering/core'
 import { type Builder, Mixin } from '@hcengineering/model'
-import serverCore, { type TriggerControl } from '@hcengineering/server-core'
-import serverView, { type ServerLinkIdProvider } from '@hcengineering/server-view'
 import { TClass } from '@hcengineering/model-core'
 import { type Resource } from '@hcengineering/platform'
+import serverCore, { type TriggerControl } from '@hcengineering/server-core'
+import serverView, { type ServerLinkIdProvider } from '@hcengineering/server-view'
 
 export { serverViewId } from '@hcengineering/server-view'
 
@@ -31,6 +31,10 @@ export function createModel (builder: Builder): void {
   builder.createModel(TServerLinkIdProvider)
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverView.trigger.OnCustomAttributeRemove
+    trigger: serverView.trigger.OnCustomAttributeRemove,
+    txMatch: {
+      _class: core.class.TxRemoveDoc,
+      objectClass: core.class.Attribute
+    }
   })
 }

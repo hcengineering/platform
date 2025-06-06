@@ -41,7 +41,10 @@
   }
 
   function save () {
-    filter.value = search ? [search] : []
+    if (search == null || search === '') {
+      return
+    }
+    filter.value = [search]
 
     onChange(filter)
     dispatch('close')
@@ -61,5 +64,5 @@
       on:change
     />
   </div>
-  <Button shape="filter" label={view.string.Apply} on:click={save} />
+  <Button shape="filter" label={view.string.Apply} disabled={search === ''} on:click={save} />
 </div>

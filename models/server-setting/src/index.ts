@@ -68,11 +68,8 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverSetting.trigger.OnRoleNameUpdate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      objectSpace: core.space.Model,
-      collection: 'roles',
-      'tx._class': core.class.TxUpdateDoc,
-      'tx.objectClass': core.class.Role
+      _class: core.class.TxUpdateDoc,
+      objectClass: core.class.Role
     }
   })
 }

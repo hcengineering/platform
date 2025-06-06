@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import Play from '../icons/Play.svelte'
-  import { getPlatformColor, themeStore } from '@hcengineering/ui'
+  import { Html, getPlatformColor, themeStore } from '@hcengineering/ui'
 
   export let href: string
   const maxWidth = 400
@@ -75,7 +75,7 @@
         </div>
       {:else}
         <div bind:this={emb}>
-          {@html data.html}
+          <Html value={data.html} />
         </div>
       {/if}
     </div>

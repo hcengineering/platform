@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
+  import { upgradeDownloadProgress } from '@hcengineering/presentation'
   import {
     Button,
     Component,
@@ -25,7 +26,6 @@
     location,
     setMetadataLocalStorage
   } from '@hcengineering/ui'
-  import { upgradeDownloadProgress } from '@hcengineering/presentation'
   import { connect, disconnect, versionError } from '../connect'
 
   import workbench, { workbenchId } from '@hcengineering/workbench'

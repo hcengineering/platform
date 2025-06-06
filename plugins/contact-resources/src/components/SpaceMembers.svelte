@@ -13,28 +13,36 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
+  import contact, { Employee, Person } from '@hcengineering/contact'
   import {
-    Account,
     AccountRole,
     DocumentQuery,
     Ref,
     SortingOrder,
     Space,
     getCurrentAccount,
-    hasAccountRole
+    hasAccountRole,
+    notEmpty,
+    AccountUuid
   } from '@hcengineering/core'
   import { translateCB } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { ActionIcon, IconAdd, IconClose, Label, SearchEdit, showPopup, themeStore } from '@hcengineering/ui'
   import AddMembersPopup from './AddMembersPopup.svelte'
   import UserInfo from './UserInfo.svelte'
+  import { personRefByAccountUuidStore, primarySocialIdByPersonRefStore } from '../utils'
 
   export let space: Space
   export let withAddButton: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const initialMembers = space.members.reduce<Record<Ref<Person>, AccountUuid>>((acc, m) => {
+    const personRef = $personRefByAccountUuidStore.get(m)
+    if (personRef === undefined) return acc
+    acc[personRef] = m
+    return acc
+  }, {})
   $: label = hierarchy.getClass(space._class).label
   let spaceClass = ''
   $: translateCB(label, {}, $themeStore.language, (p) => (spaceClass = p.toLowerCase()))
@@ -42,49 +50,50 @@
   $: isSearch = search.trim().length
   let members: Set<Ref<Person>> = new Set<Ref<Person>>()
 
-  async function getUsers (accounts: Ref<Account>[], search: string): Promise<Person[]> {
-    const query: DocumentQuery<PersonAccount> =
-      isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: accounts as Ref<PersonAccount>[] } }
-    const employess = await client.findAll(contact.class.PersonAccount, query)
-    members = new Set(employess.filter((p) => accounts.includes(p._id)).map((p) => p.person))
-    return await client.findAll(
-      contact.mixin.Employee,
-      {
-        _id: { $in: employess.map((e) => e.person as Ref<Employee>) }
-      },
-      { sort: { name: SortingOrder.Descending } }
-    )
+  async function getUsers (accounts: AccountUuid[], search: string): Promise<Employee[]> {
+    const employeeRefs = accounts.map((acc) => $personRefByAccountUuidStore.get(acc)).filter(notEmpty)
+    const query: DocumentQuery<Employee> =
+      isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: employeeRefs } }
+    const employees = await client.findAll(contact.mixin.Employee, query, { sort: { name: SortingOrder.Descending } })
+    members = new Set(employees.filter((p) => employeeRefs.includes(p._id)).map((p) => p._id))
+
+    return employees
   }
 
   async function add (person: Ref<Person>): Promise<void> {
-    const account = await client.findOne(contact.class.PersonAccount, { person })
-    if (account === undefined) return
+    const pid = initialMembers[person] ?? $primarySocialIdByPersonRefStore.get(person)
+    if (pid === undefined) return
+
     await client.update(space, {
       $push: {
-        members: account._id
+        members: pid
       }
     })
   }
 
   async function removeMember (person: Ref<Person>): Promise<void> {
-    const account = await client.findOne(contact.class.PersonAccount, { person })
-    if (account === undefined) return
-    await client.update(space, { $pull: { members: account._id } })
+    const pid = initialMembers[person] ?? $primarySocialIdByPersonRefStore.get(person)
+    if (pid === undefined) return
+
+    await client.update(space, { $pull: { members: pid } })
   }
 
-  function openAddMembersPopup () {
-    showPopup(AddMembersPopup, { value: space }, undefined, async (membersIds: Ref<PersonAccount>[]) => {
-      if (membersIds) {
-        for (const member of membersIds) {
-          if (space.members.includes(member)) continue
-          await client.update(space, { $push: { members: member } })
+  function openAddMembersPopup (): void {
+    showPopup(AddMembersPopup, { value: space }, undefined, async (accounts: AccountUuid[]) => {
+      if (accounts != null) {
+        for (const account of accounts) {
+          if (space.members.includes(account)) continue
+
+          await client.update(space, { $push: { members: account } })
         }
       }
     })
   }
 
   const account = getCurrentAccount()
-  $: canRemove = hasAccountRole(account, AccountRole.Maintainer) || space.createdBy === account._id
+  $: canRemove =
+    hasAccountRole(account, AccountRole.Maintainer) ||
+    (space.createdBy !== undefined && account.socialIds.includes(space.createdBy))
 </script>
 
 <div class="flex-row-reverse mb-3 mt-3"><SearchEdit bind:value={search} /></div>

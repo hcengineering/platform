@@ -105,8 +105,8 @@
       <div class="timeline-resource-content">
         {#each persons as person}
           <div class="timeline-row" style={getRowStyle()}>
-            <div class="timeline-resource-cell">
-              <PersonPresenter value={person} />
+            <div class="timeline-resource-cell flex-row-center">
+              <div><PersonPresenter value={person} /></div>
             </div>
           </div>
         {/each}

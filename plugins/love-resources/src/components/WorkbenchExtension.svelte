@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { pushRootBarComponent, rootBarExtensions } from '@hcengineering/ui'
+  import { pushRootBarComponent } from '@hcengineering/ui'
   import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, Track } from 'livekit-client'
   import { onDestroy, onMount } from 'svelte'
   import love from '../plugin'
   import { disconnect, isCurrentInstanceConnected, lk } from '../utils'
-  import { generateId } from '@hcengineering/core'
 
   let parentElement: HTMLDivElement
 
@@ -48,4 +47,4 @@
   })
 </script>
 
-<div bind:this={parentElement}></div>
+<div bind:this={parentElement} class="hidden"></div>

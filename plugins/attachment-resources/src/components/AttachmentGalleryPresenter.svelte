@@ -15,10 +15,9 @@
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
   import type { WithLookup } from '@hcengineering/core'
-  import { FilePreviewPopup, getFileUrl } from '@hcengineering/presentation'
-  import { closeTooltip, showPopup } from '@hcengineering/ui'
+  import { getFileUrl } from '@hcengineering/presentation'
   import filesize from 'filesize'
-  import { getType } from '../utils'
+  import { getType, showAttachmentPreviewPopup } from '../utils'
 
   export let value: WithLookup<Attachment>
 
@@ -41,18 +40,9 @@
   }
 
   function openAttachment (): void {
-    closeTooltip()
-    showPopup(
-      FilePreviewPopup,
-      {
-        file: value.file,
-        contentType: value.type,
-        name: value.name,
-        metadata: value.metadata
-      },
-      isImage(value.type) ? 'centered' : 'float'
-    )
+    showAttachmentPreviewPopup(value)
   }
+
   $: src = getFileUrl(value.file, value.name)
 </script>
 

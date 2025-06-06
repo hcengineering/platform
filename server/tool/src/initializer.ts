@@ -1,23 +1,31 @@
-import { saveCollaborativeDoc } from '@hcengineering/collaboration'
+import { saveCollabJson } from '@hcengineering/collaboration'
 import core, {
-  AttachedDoc,
-  Class,
-  CollaborativeDoc,
-  Data,
-  Doc,
+  type AttachedDoc,
+  type Class,
+  type Data,
+  type Doc,
   generateId,
-  MeasureContext,
-  Mixin,
-  Ref,
-  Space,
-  TxOperations,
-  WorkspaceIdWithUrl
+  makeCollabId,
+  type MeasureContext,
+  type Mixin,
+  type Ref,
+  type SocialIdType,
+  type Space,
+  type TxOperations,
+  pickPrimarySocialId,
+  type PersonId,
+  type PersonInfo,
+  type WorkspaceIds,
+  buildSocialIdString
 } from '@hcengineering/core'
-import { ModelLogger } from '@hcengineering/model'
+import { type ModelLogger } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
+import { HulyFormatImporter, StorageFileUploader } from '@hcengineering/importer'
 import type { StorageAdapter } from '@hcengineering/server-core'
-import { jsonToYDocNoSchema, parseMessageMarkdown } from '@hcengineering/text'
+import { jsonToMarkup } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 import { v4 as uuid } from 'uuid'
+import path from 'path'
 
 const fieldRegexp = /\${\S+?}/
 
@@ -33,9 +41,10 @@ export type InitStep<T extends Doc> =
   | DefaultStep<T>
   | MixinStep<T, T>
   | UpdateStep<T>
+  | BulkUpdateStep<T>
   | FindStep<T>
   | UploadStep
-
+  | ImportStep
 export interface CreateStep<T extends Doc> {
   type: 'create'
   _class: Ref<Class<T>>
@@ -68,6 +77,15 @@ export interface UpdateStep<T extends Doc> {
   data: Props<T>
 }
 
+export interface BulkUpdateStep<T extends Doc> {
+  type: 'bulkUpdate'
+  _class: Ref<Class<T>>
+  query: Partial<T>
+  markdownFields?: string[]
+  collabFields?: string[]
+  data: Props<T>
+}
+
 export interface FindStep<T extends Doc> {
   type: 'find'
   _class: Ref<Class<T>>
@@ -82,26 +100,52 @@ export interface UploadStep {
   resultVariable?: string
 }
 
+export interface ImportStep {
+  type: 'import'
+  path: string
+}
+
 export type Props<T extends Doc> = Data<T> & Partial<Doc> & { space: Ref<Space> }
 
 export class WorkspaceInitializer {
   private readonly imageUrl = 'image://'
   private readonly nextRank = '#nextRank'
   private readonly now = '#now'
+  private readonly creatorPersonVar = 'creatorPerson'
+  private readonly socialId: PersonId
+  private readonly socialKey: string
+  private readonly socialType: SocialIdType
+  private readonly socialValue: string
 
   constructor (
     private readonly ctx: MeasureContext,
     private readonly storageAdapter: StorageAdapter,
-    private readonly wsUrl: WorkspaceIdWithUrl,
-    private readonly client: TxOperations
-  ) {}
+    private readonly wsIds: WorkspaceIds,
+    private readonly client: TxOperations,
+    private readonly initRepoDir: string,
+    private readonly creator: PersonInfo
+  ) {
+    const primarySocialId = pickPrimarySocialId(creator.socialIds)
+    this.socialId = primarySocialId._id
+    this.socialKey = buildSocialIdString(primarySocialId)
+    this.socialType = primarySocialId.type
+    this.socialValue = primarySocialId.value
+  }
 
   async processScript (
     script: InitScript,
     logger: ModelLogger,
     progress: (value: number) => Promise<void>
   ): Promise<void> {
-    const vars: Record<string, any> = {}
+    const vars: Record<string, any> = {
+      '${creatorName@global}': this.creator.name, // eslint-disable-line no-template-curly-in-string
+      '${creatorUuid@global}': this.creator.personUuid, // eslint-disable-line no-template-curly-in-string
+      '${creatorSocialId@global}': this.socialId, // eslint-disable-line no-template-curly-in-string
+      '${creatorSocialKey@global}': this.socialKey, // eslint-disable-line no-template-curly-in-string
+      '${creatorSocialType@global}': this.socialType, // eslint-disable-line no-template-curly-in-string
+      '${creatorSocialValue@global}': this.socialValue // eslint-disable-line no-template-curly-in-string
+    }
+
     const defaults = new Map<Ref<Class<Doc>>, Props<Doc>>()
     for (let index = 0; index < script.steps.length; index++) {
       try {
@@ -112,12 +156,16 @@ export class WorkspaceInitializer {
           await this.processCreate(step, vars, defaults)
         } else if (step.type === 'update') {
           await this.processUpdate(step, vars)
+        } else if (step.type === 'bulkUpdate') {
+          await this.processBulkUpdate(step, vars)
         } else if (step.type === 'mixin') {
           await this.processMixin(step, vars)
         } else if (step.type === 'find') {
           await this.processFind(step, vars)
         } else if (step.type === 'upload') {
           await this.processUpload(step, vars, logger)
+        } else if (step.type === 'import') {
+          await this.processImport(step, vars, logger)
         }
 
         await progress(Math.round(((index + 1) * 100) / script.steps.length))
@@ -141,13 +189,26 @@ export class WorkspaceInitializer {
       const id = uuid()
       const resp = await fetch(step.fromUrl)
       const buffer = Buffer.from(await resp.arrayBuffer())
-      await this.storageAdapter.put(this.ctx, this.wsUrl, id, buffer, step.contentType, buffer.length)
+
+      await this.storageAdapter.put(this.ctx, this.wsIds, id, buffer, step.contentType, buffer.length)
       if (step.resultVariable !== undefined) {
         vars[`\${${step.resultVariable}}`] = id
         vars[`\${${step.resultVariable}_size}`] = buffer.length
       }
     } catch (error) {
       logger.error('Upload failed', error)
+      throw error
+    }
+  }
+
+  private async processImport (step: ImportStep, vars: Record<string, any>, logger: ModelLogger): Promise<void> {
+    try {
+      const uploader = new StorageFileUploader(this.ctx, this.storageAdapter, this.wsIds)
+      const initPath = path.resolve(this.initRepoDir, step.path)
+      const importer = new HulyFormatImporter(this.client, uploader, logger, vars)
+      await importer.importFolder(initPath)
+    } catch (error) {
+      logger.error('Import failed', error)
       throw error
     }
   }
@@ -181,25 +242,37 @@ export class WorkspaceInitializer {
     await this.client.updateDoc(step._class, space, _id as Ref<Doc>, props)
   }
 
+  private async processBulkUpdate<T extends Doc>(step: BulkUpdateStep<T>, vars: Record<string, any>): Promise<void> {
+    const ops = this.client.apply()
+    const docs = await this.client.findAll(step._class, { ...(step.query as any) })
+    const data = await this.fillPropsWithMarkdown(step.data, vars, step.markdownFields)
+    for (const doc of docs) {
+      await ops.updateDoc(step._class, doc.space, doc._id, data)
+    }
+    await ops.commit()
+  }
+
   private async processCreate<T extends Doc>(
     step: CreateStep<T>,
     vars: Record<string, any>,
     defaults: Map<Ref<Class<T>>, Props<T>>
   ): Promise<void> {
-    const _id = generateId<T>()
-    if (step.resultVariable !== undefined) {
-      vars[`\${${step.resultVariable}}`] = _id
-    }
     const data = await this.fillPropsWithMarkdown(
       { ...(defaults.get(step._class) ?? {}), ...step.data },
       vars,
       step.markdownFields
     )
 
+    const _id = (data._id as Ref<T>) ?? generateId<T>()
+
+    if (step.resultVariable !== undefined) {
+      vars[`\${${step.resultVariable}}`] = _id
+    }
+
     if (step.collabFields !== undefined) {
       for (const field of step.collabFields) {
         if ((data as any)[field] !== undefined) {
-          const res = await this.createCollab((data as any)[field], field, _id)
+          const res = await this.createCollab((data as any)[field], step._class, _id, field)
           ;(data as any)[field] = res
         }
       }
@@ -209,7 +282,7 @@ export class WorkspaceInitializer {
   }
 
   private parseMarkdown (text: string): string {
-    const json = parseMessageMarkdown(text ?? '', this.imageUrl)
+    const json = markdownToMarkup(text ?? '', { imageUrl: this.imageUrl })
     return JSON.stringify(json)
   }
 
@@ -265,15 +338,18 @@ export class WorkspaceInitializer {
     return data
   }
 
-  private async createCollab (data: string, field: string, _id: Ref<Doc>): Promise<string> {
-    const id = `${_id}%${field}`
-    const collabId = `${id}:HEAD:0` as CollaborativeDoc
+  private async createCollab (
+    data: string,
+    objectClass: Ref<Class<Doc>>,
+    objectId: Ref<Doc>,
+    objectAttr: string
+  ): Promise<string> {
+    const doc = makeCollabId(objectClass, objectId, objectAttr)
 
-    const json = parseMessageMarkdown(data ?? '', this.imageUrl)
-    const yDoc = jsonToYDocNoSchema(json, field)
+    const json = markdownToMarkup(data ?? '', { imageUrl: this.imageUrl })
+    const markup = jsonToMarkup(json)
 
-    await saveCollaborativeDoc(this.storageAdapter, this.wsUrl, collabId, yDoc, this.ctx)
-    return collabId
+    return await saveCollabJson(this.ctx, this.storageAdapter, this.wsIds, doc, markup)
   }
 
   private async fillProps<T extends Doc, P extends Partial<T> | Props<T>>(

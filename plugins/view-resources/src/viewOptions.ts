@@ -1,14 +1,24 @@
-import { type Class, type Doc, type DocumentQuery, type Ref, SortingOrder, type Space } from '@hcengineering/core'
+import {
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type Hierarchy,
+  type Ref,
+  SortingOrder,
+  type Space
+} from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { type LiveQuery, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
 import { locationToUrl, getCurrentResolvedLocation } from '@hcengineering/ui'
 import {
+  type ViewOptionsOption,
+  type ViewQueryOption,
   type DropdownViewOption,
   type Groupping,
   type ToggleViewOption,
   type ViewOptionModel,
   type ViewOptions,
-  type ViewOptionsModel,
   type Viewlet,
   type ViewletDescriptor
 } from '@hcengineering/view'
@@ -18,7 +28,7 @@ import { groupByCategory } from './utils'
 
 export const noCategory = '#no_category'
 
-export const defaulOptions: ViewOptions = {
+export const defaultOptions: ViewOptions = {
   groupBy: [noCategory],
   orderBy: ['modifiedBy', SortingOrder.Descending]
 }
@@ -31,8 +41,11 @@ export function isDropdownType (viewOption: ViewOptionModel): viewOption is Drop
   return viewOption.type === 'dropdown'
 }
 
-export function makeViewOptionsKey (viewlet: Ref<Viewlet>, variant?: string): string {
-  const prefix = viewlet + (variant !== undefined ? `-${variant}` : '')
+function makeViewOptionsKey (viewlet: Viewlet, variant?: string, ignoreViewletKey = false): string {
+  const prefix =
+    viewlet.viewOptions?.storageKey !== undefined && !ignoreViewletKey
+      ? viewlet.viewOptions.storageKey
+      : viewlet._id + (variant !== undefined ? `-${variant}` : '')
   const loc = getCurrentResolvedLocation()
   loc.fragment = undefined
   loc.query = undefined
@@ -40,7 +53,7 @@ export function makeViewOptionsKey (viewlet: Ref<Viewlet>, variant?: string): st
 }
 
 export function setViewOptions (viewlet: Viewlet, options: ViewOptions): void {
-  const key = makeViewOptionsKey(viewlet._id, viewlet.variant)
+  const key = makeViewOptionsKey(viewlet, viewlet.variant)
   localStorage.setItem(key, JSON.stringify(options))
   setStore(key, options)
 }
@@ -52,40 +65,35 @@ function setStore (key: string, options: ViewOptions): void {
 }
 
 function _getViewOptions (viewlet: Viewlet, viewOptionStore: Map<string, ViewOptions>): ViewOptions | null {
-  const key = makeViewOptionsKey(viewlet._id, viewlet.variant)
+  const key = makeViewOptionsKey(viewlet, viewlet.variant)
   const store = viewOptionStore.get(key)
   if (store !== undefined) {
     return store
   }
-  const options = localStorage.getItem(key)
-  if (options === null) return null
+  let options = localStorage.getItem(key)
+  if (options === null) {
+    const key = makeViewOptionsKey(viewlet, viewlet.variant, true)
+    options = localStorage.getItem(key)
+    if (options === null) {
+      return null
+    }
+  }
   const res = JSON.parse(options)
   setStore(key, res)
-  return res
-}
-
-function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
-  const res: ViewOptions = {
-    groupBy: [viewOptions.groupBy[0] ?? defaulOptions.groupBy[0]],
-    orderBy: viewOptions.orderBy?.[0] ?? defaulOptions.orderBy
-  }
-  for (const opt of viewOptions.other) {
-    res[opt.key] = opt.defaultValue
-  }
   return res
 }
 
 export function getViewOptions (
   viewlet: Viewlet | undefined,
   viewOptionStore: Map<string, ViewOptions>,
-  defaults = defaulOptions
+  defaults = defaultOptions
 ): ViewOptions {
   if (viewlet === undefined) {
     return { ...defaults }
   }
   const res = _getViewOptions(viewlet, viewOptionStore)
   if (res !== null) return res
-  return viewlet.viewOptions != null ? getDefaults(viewlet.viewOptions) : defaults
+  return defaults
 }
 
 export function migrateViewOpttions (): void {
@@ -119,6 +127,10 @@ export function migrateViewOpttions (): void {
   }
 }
 
+export function hideArchived (value: any, options: FindOptions<Doc> | undefined): FindOptions<Doc> {
+  return typeof value === 'boolean' ? { ...options, showArchived: !value } : options ?? {}
+}
+
 export async function showEmptyGroups (
   _class: Ref<Class<Doc>>,
   query: DocumentQuery<Doc> | undefined,
@@ -133,7 +145,7 @@ export async function showEmptyGroups (
   if (key === noCategory) return
   const attr = hierarchy.getAttribute(_class, key)
   if (attr === undefined) return
-  const { attrClass } = getAttributePresenterClass(hierarchy, attr)
+  const { attrClass } = getAttributePresenterClass(hierarchy, attr.type)
   const attributeClass = hierarchy.getClass(attrClass)
 
   let groupMixin: Groupping | undefined
@@ -181,3 +193,45 @@ export const CategoryQuery = {
 }
 
 export const viewOptionStore = writable(new Map<string, ViewOptions>())
+
+export async function getResultOptions<T extends Doc> (
+  options: FindOptions<T> | undefined,
+  viewOptions: ViewOptionModel[] | undefined,
+  viewOptionsStore: ViewOptions | undefined
+): Promise<FindOptions<T> | undefined> {
+  if (viewOptions === undefined || viewOptionsStore === undefined) {
+    return options
+  }
+  let result: FindOptions<T> = options !== undefined ? { ...options } : {}
+  for (const viewOption of viewOptions) {
+    if (viewOption.actionTarget !== 'options') continue
+    const queryOption = viewOption as ViewOptionsOption
+    const f = await getResource(queryOption.action)
+    result = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, result) as FindOptions<T>
+  }
+  return Object.keys(result).length > 0 ? result : undefined
+}
+
+export async function getResultQuery (
+  hierarchy: Hierarchy,
+  query: DocumentQuery<Doc>,
+  viewOptions: ViewOptionModel[] | undefined,
+  viewOptionsStore: ViewOptions | undefined
+): Promise<DocumentQuery<Doc>> {
+  if (viewOptions === undefined || viewOptionsStore === undefined) {
+    return query
+  }
+  let result: DocumentQuery<Doc> = hierarchy.clone(query)
+  for (const viewOption of viewOptions) {
+    if (viewOption.actionTarget !== 'query') continue
+    const queryOption = viewOption as ViewQueryOption
+    const f = await getResource(queryOption.action)
+    const resultP = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, result)
+    if (resultP instanceof Promise) {
+      result = await resultP
+    } else {
+      result = resultP
+    }
+  }
+  return result
+}

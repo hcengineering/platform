@@ -50,7 +50,7 @@ export class IssuesPage extends CommonTrackerPage {
 
   textPopupCreateNewIssueFile = (): Locator => this.page.locator('div[class*="attachments"] > div[class*="attachment"]')
   buttonCreateIssue = (): Locator => this.page.locator('button > span', { hasText: 'Create issue' })
-  inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
+  inputSearchIcon = (): Locator => this.page.locator('.searchInput-wrapper')
   inputSearch = (): Locator => this.page.locator('input[placeholder="Search"]')
   linkSidebarAll = (): Locator => this.page.locator('a[href$="all-issues"]')
   linkSidebarMyIssue = (): Locator => this.page.locator('a[href$="my-issues"]')
@@ -121,6 +121,11 @@ export class IssuesPage extends CommonTrackerPage {
       .locator('button')
 
   selectPopup = (): Locator => this.page.locator('.selectPopup >> button:has-text("Appleseed John")')
+
+  closePopup = async (): Promise<void> => {
+    await this.page.locator('.selectPopup').press('Escape')
+  }
+
   notificationTimeoutSetting = (timeout: string): Promise<void> => {
     return this.page.evaluate((timeout) => {
       localStorage.setItem('#platform.notification.timeout', timeout)
@@ -162,7 +167,9 @@ export class IssuesPage extends CommonTrackerPage {
   appleseedJohnButton = (): Locator => this.page.locator('button.menu-item:has-text("Appleseed John")')
   estimationEditor = (): Locator => this.page.locator('#estimation-editor')
   dueDateButton = (): Locator => this.page.locator('button:has-text("Due date")')
-  specificDay = (day: string): Locator => this.page.locator(`.date-popup-container div.day >> text=${day}`).first()
+  specificDay = (day: string): Locator =>
+    this.page.locator(`.date-popup-container div.day:not(.wrongMonth) >> text=${day}`).first()
+
   inputTextPlaceholder = (): Locator => this.page.getByPlaceholder('Type text...')
   confirmInput = (): Locator => this.page.locator('.selectPopup button')
 

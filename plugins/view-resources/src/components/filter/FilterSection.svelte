@@ -48,7 +48,7 @@
     }
   }
   const targetClass = getTargetClass()
-  $: isState = targetClass === core.class.Status ?? false
+  $: isState = targetClass === core.class.Status
   const dispatch = createEventDispatcher()
 
   async function getCountStates (ids: Array<Ref<Doc>>): Promise<number> {
@@ -71,7 +71,7 @@
   $: getValueComponent(currentFilter)
 
   async function getValueComponent (filter: Filter): Promise<void> {
-    const presenterClass = getAttributePresenterClass(hierarchy, filter.key.attribute)
+    const presenterClass = getAttributePresenterClass(hierarchy, filter.key.attribute.type)
     const presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, view.mixin.AttributeFilterPresenter)
     valueComponent = presenterMixin?.presenter
   }

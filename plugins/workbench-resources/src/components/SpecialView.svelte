@@ -13,58 +13,125 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { IntlString, Asset } from '@hcengineering/platform'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup, mergeQueries } from '@hcengineering/core'
+  import { Asset, getResource, IntlString, Resource } from '@hcengineering/platform'
+  import { getClient, ComponentExtensions } from '@hcengineering/presentation'
   import {
     AnyComponent,
+    Breadcrumb,
     Button,
     Component,
+    Header,
     IconAdd,
     IModeSelector,
     Loading,
     ModeSelector,
     SearchInput,
-    showPopup,
-    Header,
-    Breadcrumb
+    showPopup
   } from '@hcengineering/ui'
-  import { ViewOptions, Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
-  import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { Viewlet, ViewletDescriptor, ViewletPreference, ViewOptions, BuildModelKey } from '@hcengineering/view'
+  import {
+    FilterBar,
+    FilterButton,
+    getResultOptions,
+    getResultQuery,
+    ViewletSelector,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
+  import workbench, { ParentsNavigationModel } from '@hcengineering/workbench'
+  import ComponentNavigator from './ComponentNavigator.svelte'
+  import { deepEqual } from 'fast-equals'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
   export let icon: Asset
   export let label: IntlString
-  export let createEvent: string | undefined
-  export let createLabel: IntlString | undefined
-  export let createComponent: AnyComponent | undefined
+  export let createEvent: string | undefined = undefined
+  export let createLabel: IntlString | undefined = undefined
+  export let createComponent: AnyComponent | undefined = undefined
   export let createComponentProps: Record<string, any> = {}
+  export let createButton: AnyComponent | undefined = undefined
   export let isCreationDisabled = false
   export let descriptors: Array<Ref<ViewletDescriptor>> | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
+  export let navigationModel: ParentsNavigationModel | undefined = undefined
+  export let queryBuilder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined = undefined
+  export let actionConfig: Record<string, any> = {}
+  export let actionVisible: boolean = false
+  export let defaultViewletDescriptor: Ref<ViewletDescriptor> | undefined = undefined
+  export let defaultViewOptions: ViewOptions | undefined = undefined
+  export let defaultConfig: (BuildModelKey | string)[] | undefined = undefined
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
   let filterVisible: boolean = false
-
   let preference: ViewletPreference | undefined
   let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
 
-  $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
+  let isQueryLoaded = queryBuilder === undefined
+
+  $: _baseQuery = mergeQueries(baseQuery ?? {}, viewlet?.baseQuery ?? {})
+  $: query = { ..._baseQuery }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
-  $: resultQuery = searchQuery
+  $: resultQuery = isQueryLoaded ? searchQuery : undefined
+
+  let options = viewlet?.options
+  let _options = viewlet?.options ?? {}
+
+  $: if (!deepEqual(viewlet?.options ?? {}, _options)) {
+    _options = viewlet?.options ?? {}
+    options = viewlet?.options
+  }
+
+  $: void updateQuery(_baseQuery, viewOptions, viewlet, queryBuilder)
+  $: void updateOptions(viewlet?.options, viewOptions, viewlet)
+
+  async function updateOptions (
+    _options: FindOptions<Doc> | undefined,
+    viewOptions: ViewOptions | undefined,
+    viewlet: Viewlet | undefined
+  ): Promise<void> {
+    options = await getResultOptions(_options, viewlet?.viewOptions?.other, viewOptions)
+  }
+
+  async function updateQuery (
+    initialQuery: DocumentQuery<Doc>,
+    viewOptions: ViewOptions | undefined,
+    viewlet: Viewlet | undefined,
+    builder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined
+  ): Promise<void> {
+    const updatedQuery = builder === undefined ? initialQuery : updateInitialQuery(initialQuery, builder)
+    query =
+      viewOptions !== undefined && viewlet !== undefined
+        ? await getResultQuery(hierarchy, updatedQuery, viewlet.viewOptions?.other, viewOptions)
+        : updatedQuery
+    isQueryLoaded = true
+  }
+
+  async function updateInitialQuery (
+    initialQuery: DocumentQuery<Doc>,
+    builder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined
+  ): Promise<DocumentQuery<Doc>> {
+    if (builder === undefined) return initialQuery
+    const fn = await getResource(builder)
+    const q = (await fn()) ?? {}
+    return mergeQueries(initialQuery ?? {}, q ?? {})
+  }
 
   function showCreateDialog (): void {
     if (createComponent === undefined) return
-    showPopup(createComponent, createComponentProps, 'top')
+    showPopup(createComponent, { ...createComponentProps, space }, 'top')
   }
 </script>
 
 <Header
   adaptive={modes !== undefined ? 'doubleRow' : filterVisible ? 'freezeActions' : 'disabled'}
-  hideActions={!(createLabel && createComponent)}
+  hideActions={!(createLabel && createComponent) && createButton === undefined}
   hideExtra={modes === undefined}
   freezeBefore
 >
@@ -73,13 +140,15 @@
       bind:viewlet
       bind:preference
       bind:viewlets
+      {defaultViewletDescriptor}
+      ignoreFragment
       viewletQuery={{
         attachTo: _class,
         variant: { $exists: false },
         ...(descriptors !== undefined ? { descriptor: { $in: descriptors } } : {})
       }}
     />
-    <ViewletSettingButton bind:viewOptions bind:viewlet />
+    <ViewletSettingButton bind:viewOptions bind:viewlet {defaultViewOptions} {defaultConfig} />
   </svelte:fragment>
 
   <Breadcrumb {icon} {label} size={'large'} isCurrent />
@@ -89,6 +158,10 @@
     <FilterButton {_class} bind:visible={filterVisible} />
   </svelte:fragment>
   <svelte:fragment slot="actions">
+    <ComponentExtensions
+      extension={workbench.extensions.SpecialViewAction}
+      props={{ _class, visible: actionVisible, query: resultQuery, config: actionConfig }}
+    />
     {#if createLabel && createComponent}
       <Button
         icon={IconAdd}
@@ -98,6 +171,14 @@
         event={createEvent}
         on:click={() => {
           showCreateDialog()
+        }}
+      />
+    {:else if createButton !== undefined}
+      <Component
+        is={createButton}
+        props={{
+          ...createComponentProps,
+          space
         }}
       />
     {/if}
@@ -121,21 +202,44 @@
       resultQuery = { ...query, ...e.detail }
     }}
   />
-  <Component
-    is={viewlet.$lookup.descriptor.component}
-    props={{
-      _class,
-      space,
-      options: viewlet.options,
-      config: preference?.config ?? viewlet.config,
-      viewlet,
-      viewOptions,
-      viewOptionsConfig: viewlet.viewOptions?.other,
-      createItemDialog: createComponent,
-      createItemLabel: createLabel,
-      query: resultQuery,
-      totalQuery: query,
-      ...viewlet.props
-    }}
-  />
+  {#if navigationModel?.navigationComponent === undefined}
+    <Component
+      is={viewlet.$lookup.descriptor.component}
+      props={{
+        _class,
+        space,
+        options,
+        config: preference?.config ?? defaultConfig ?? viewlet.config,
+        viewlet,
+        viewOptions,
+        viewOptionsConfig: viewlet.viewOptions?.other,
+        createItemDialog: createComponent,
+        createItemLabel: createLabel,
+        query: resultQuery,
+        totalQuery: query,
+        ...viewlet.props
+      }}
+    />
+  {:else}
+    <ComponentNavigator
+      query={resultQuery}
+      {space}
+      mainComponent={viewlet.$lookup.descriptor.component}
+      mainComponentProps={{
+        _class,
+        space,
+        options,
+        config: preference?.config ?? defaultConfig ?? viewlet.config,
+        viewlet,
+        viewOptions,
+        viewOptionsConfig: viewlet.viewOptions?.other,
+        createItemDialog: createComponent,
+        createItemLabel: createLabel,
+        query: resultQuery,
+        totalQuery: query,
+        ...viewlet.props
+      }}
+      {...navigationModel}
+    />
+  {/if}
 {/if}

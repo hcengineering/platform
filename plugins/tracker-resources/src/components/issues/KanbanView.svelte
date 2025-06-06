@@ -80,12 +80,13 @@
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
   import EstimationEditor from './timereport/EstimationEditor.svelte'
+  import MilestoneEditor from '../milestones/MilestoneEditor.svelte'
 
   const _class = tracker.class.Issue
   export let space: Ref<Project> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let query: DocumentQuery<Issue> = {}
-  export let viewOptionsConfig: ViewOptionModel[] | undefined
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let viewOptions: ViewOptions
   export let viewlet: Viewlet
   export let config: (string | BuildModelKey)[]
@@ -429,6 +430,16 @@
             {/if}
             {#if enabledConfig(config, 'component')}
               <ComponentEditor
+                value={issue}
+                {space}
+                isEditable={true}
+                kind={'link-bordered'}
+                size={'small'}
+                justify={'center'}
+              />
+            {/if}
+            {#if enabledConfig(config, 'milestone')}
+              <MilestoneEditor
                 value={issue}
                 {space}
                 isEditable={true}

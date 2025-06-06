@@ -36,7 +36,7 @@ export interface ToDoFactory extends Class<Task> {
  * @public
  */
 export interface OnToDo extends Class<Doc> {
-  onDone: Resource<(control: TriggerControl, workslots: WorkSlot[], todo: ToDo) => Promise<Tx[]>>
+  onDone: Resource<(control: TriggerControl, workslots: WorkSlot[], todo: ToDo, isDerived: boolean) => Promise<Tx[]>>
 }
 
 /**
@@ -49,13 +49,16 @@ export default plugin(serverTimeId, {
   },
   function: {
     IssueToDoFactory: '' as Resource<(tx: Tx, control: TriggerControl) => Promise<Tx[]>>,
-    IssueToDoDone: '' as Resource<(control: TriggerControl, workslots: WorkSlot[], todo: ToDo) => Promise<Tx[]>>
+    IssueToDoDone: '' as Resource<
+    (control: TriggerControl, workslots: WorkSlot[], todo: ToDo, isDerived: boolean) => Promise<Tx[]>
+    >
   },
   trigger: {
     OnTask: '' as Resource<TriggerFunc>,
     OnToDoUpdate: '' as Resource<TriggerFunc>,
     OnToDoRemove: '' as Resource<TriggerFunc>,
     OnToDoCreate: '' as Resource<TriggerFunc>,
-    OnWorkSlotCreate: '' as Resource<TriggerFunc>
+    OnWorkSlotCreate: '' as Resource<TriggerFunc>,
+    OnWorkSlotUpdate: '' as Resource<TriggerFunc>
   }
 })

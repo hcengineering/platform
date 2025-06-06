@@ -18,7 +18,8 @@
   import { ActionContext, createQuery } from '@hcengineering/presentation'
   import { Button, IconAdd, Loading, showPopup } from '@hcengineering/ui'
   import view, { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { TableBrowser, ViewletPanelHeader, checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
+  import { TableBrowser, ViewletPanelHeader } from '@hcengineering/view-resources'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
 
   import documents from '../plugin'
 

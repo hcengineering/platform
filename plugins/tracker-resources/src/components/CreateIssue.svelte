@@ -19,37 +19,40 @@
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { Employee } from '@hcengineering/contact'
   import core, {
-    Account,
+    AccountRole,
     Class,
     Doc,
     DocData,
-    Ref,
-    SortingOrder,
     fillDefaults,
     generateId,
-    makeCollaborativeDoc,
+    getCurrentAccount,
+    makeCollabId,
+    makeDocCollabId,
+    type PersonId,
+    Ref,
+    SortingOrder,
     toIdMap
   } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import {
     Card,
+    createMarkup,
+    createQuery,
     DocCreateExtComponent,
     DocCreateExtensionManager,
     DraftController,
+    getClient,
+    getMarkup,
     KeyedAttribute,
     MessageBox,
     MultipleDraftController,
-    SpaceSelector,
-    createQuery,
-    getClient,
-    getMarkup,
-    updateMarkup
+    SpaceSelector
   } from '@hcengineering/presentation'
-  import tags, { TagElement, TagReference } from '@hcengineering/tags'
-  import { TaskType, makeRank } from '@hcengineering/task'
+  import tags, { type TagElement, TagReference } from '@hcengineering/tags'
+  import { makeRank, TaskType } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
-  import { EmptyMarkup } from '@hcengineering/text'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import {
     Component as ComponentType,
     Issue,
@@ -64,15 +67,15 @@
     TrackerEvents
   } from '@hcengineering/tracker'
   import {
+    addNotification,
     Button,
     Component,
+    createFocusManager,
     DatePresenter,
     EditBox,
     FocusHandler,
     IconAttachment,
     Label,
-    addNotification,
-    createFocusManager,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
@@ -119,6 +122,7 @@
       draft = shouldSaveDraft ? val : undefined
     })
   )
+  const me = getCurrentAccount()
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const parentQuery = createQuery()
@@ -202,8 +206,8 @@
         parentIssue: originalIssue.parents[0]?.parentId,
         title: `${originalIssue.title} (copy)`
       }
-      void getMarkup(originalIssue.description).then((res) => {
-        object.description = res.description
+      void getMarkup(makeDocCollabId(originalIssue, 'description'), originalIssue.description).then((res) => {
+        object.description = res
       })
       void client.findAll(tags.class.TagReference, { attachedTo: originalIssue._id }).then((p) => {
         object.labels = p
@@ -275,7 +279,7 @@
       collection: 'labels',
       space: core.space.Workspace,
       modifiedOn: 0,
-      modifiedBy: '' as Ref<Account>,
+      modifiedBy: '' as PersonId,
       title: tag.title,
       tag: tag._id,
       color: tag.color
@@ -309,12 +313,12 @@
         dueDate: null,
         labels:
           p.labels !== undefined
-            ? (p.labels
-                .map((p) => {
-                  const val = tagElements.get(p)
-                  return val !== undefined ? tagAsRef(val) : undefined
-                })
-                .filter((p) => p !== undefined) as TagReference[])
+            ? p.labels
+              .map((p) => {
+                const val = tagElements.get(p)
+                return val !== undefined ? tagAsRef(val) : undefined
+              })
+              .filter((p) => p !== undefined)
             : [],
         status: currentProject?.defaultIssueStatus
       }
@@ -331,12 +335,12 @@
     appliedTemplateId = templateId
     object.labels =
       labels !== undefined
-        ? (labels
-            .map((p) => {
-              const val = tagElements.get(p)
-              return val !== undefined ? tagAsRef(val) : undefined
-            })
-            .filter((p) => p !== undefined) as TagReference[])
+        ? labels
+          .map((p) => {
+            const val = tagElements.get(p)
+            return val !== undefined ? tagAsRef(val) : undefined
+          })
+          .filter((p) => p !== undefined)
         : []
 
     if (object.kind !== undefined) {
@@ -418,6 +422,7 @@
   })
 
   async function updateCurrentProjectPref (currentProject: Ref<Project>): Promise<void> {
+    if (me?.role === AccountRole.ReadOnlyGuest) return
     const spacePreferences = await client.findOne(tracker.class.ProjectTargetPreference, { attachedTo: currentProject })
     if (spacePreferences === undefined) {
       await client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {
@@ -476,7 +481,7 @@
 
       const value: DocData<Issue> = {
         title: getTitle(object.title),
-        description: makeCollaborativeDoc(_id, 'description'),
+        description: null,
         assignee: object.assignee,
         component: object.component,
         milestone: object.milestone,
@@ -509,7 +514,10 @@
         identifier
       }
 
-      await updateMarkup(value.description, { description: object.description })
+      if (!isEmptyMarkup(object.description)) {
+        const collabId = makeCollabId(tracker.class.Issue, _id, 'description')
+        value.description = await createMarkup(collabId, object.description)
+      }
 
       await docCreateManager.commit(operations, _id, currentProject, value, 'pre')
 
@@ -953,7 +961,7 @@
         addTagRef(evt.detail)
       }}
       on:delete={(evt) => {
-        object.labels = object.labels.filter((it) => it._id !== evt.detail)
+        object.labels = object.labels.filter((it) => it.tag !== evt.detail._id)
       }}
     />
     <ComponentSelector

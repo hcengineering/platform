@@ -13,31 +13,30 @@
 // limitations under the License.
 //
 import core, {
-  Account,
-  AttachedDoc,
-  Class,
-  Doc,
-  Permission,
-  Ref,
-  Role,
-  RolesAssignment,
-  Space,
-  SpaceType,
-  Tx,
-  TxApplyIf,
-  TxCUD,
-  TxCollectionCUD,
-  TxCreateDoc,
-  TxMixin,
+  type Class,
+  type Doc,
+  type Permission,
+  type Ref,
+  type Role,
+  type RolesAssignment,
+  type Space,
+  type SpaceType,
+  type Tx,
+  type TxApplyIf,
+  type TxCUD,
+  type TxCreateDoc,
+  type TxMixin,
   TxProcessor,
-  TxRemoveDoc,
-  TxUpdateDoc,
-  TypedSpace,
+  type TxRemoveDoc,
+  type TxUpdateDoc,
+  type TypedSpace,
   type MeasureContext,
-  type SessionData
+  type SessionData,
+  type AccountUuid,
+  AccountRole
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import { type Middleware, type TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 
 import { BaseMiddleware } from '@hcengineering/server-core'
 
@@ -47,7 +46,7 @@ import { BaseMiddleware } from '@hcengineering/server-core'
 export class SpacePermissionsMiddleware extends BaseMiddleware implements Middleware {
   private whitelistSpaces = new Set<Ref<Space>>()
   private assignmentBySpace: Record<Ref<Space>, RolesAssignment> = {}
-  private permissionsBySpace: Record<Ref<Space>, Record<Ref<Account>, Set<Ref<Permission>>>> = {}
+  private permissionsBySpace: Record<Ref<Space>, Record<AccountUuid, Set<Ref<Permission>>>> = {}
   private typeBySpace: Record<Ref<Space>, Ref<SpaceType>> = {}
   wasInit: Promise<void> | boolean = false
 
@@ -88,7 +87,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
 
   private setPermissions (spaceId: Ref<Space>, roles: Role[], assignment: RolesAssignment): void {
     for (const role of roles) {
-      const roleMembers: Ref<Account>[] = assignment[role._id] ?? []
+      const roleMembers: AccountUuid[] = assignment[role._id] ?? []
 
       for (const member of roleMembers) {
         if (this.permissionsBySpace[spaceId][member] === undefined) {
@@ -149,9 +148,9 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
    */
   private checkPermission (ctx: MeasureContext<SessionData>, space: Ref<TypedSpace>, id: Ref<Permission>): boolean {
     const account = ctx.contextData.account
-    const permissions = this.permissionsBySpace[space]?.[account._id] ?? new Set()
+    const permissions = this.permissionsBySpace[space]?.[account.uuid] ?? null
 
-    return permissions.has(id)
+    return permissions !== null && permissions.has(id)
   }
 
   private throwForbidden (): void {
@@ -176,7 +175,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     if (!this.context.hierarchy.isDerived(createTx.objectClass, core.class.Space)) return
     if (this.isTypedSpaceClass(createTx.objectClass)) {
       const res = TxProcessor.buildDoc2Doc<TypedSpace>([createTx])
-      if (res !== undefined) {
+      if (res != null) {
         this.addRestrictedSpace(res)
       }
     } else {
@@ -245,46 +244,34 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     return this.context.hierarchy.isDerived(tx.objectClass, core.class.Space)
   }
 
-  private isTxCollectionCUD (tx: TxCUD<Doc>): tx is TxCollectionCUD<Doc, AttachedDoc> {
-    return this.context.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)
-  }
-
   private isRoleTxCUD (tx: TxCUD<Doc>): tx is TxCUD<Role> {
     return this.context.hierarchy.isDerived(tx.objectClass, core.class.Role)
   }
 
-  private handlePermissionsUpdatesFromRoleTx (ctx: MeasureContext, tx: TxCUD<Doc>): void {
-    if (!this.isTxCollectionCUD(tx)) {
+  private handlePermissionsUpdatesFromRoleTx (ctx: MeasureContext, actualTx: TxCUD<Doc>): void {
+    if (actualTx._class !== core.class.TxUpdateDoc) {
       return
     }
 
-    const actualTx = TxProcessor.extractTx(tx)
-    if (!TxProcessor.isExtendsCUD(actualTx._class)) {
+    const targetSpaceTypeId = actualTx.attachedTo
+    if (targetSpaceTypeId === undefined) {
       return
     }
 
-    const actualCudTx = actualTx as TxCUD<Doc>
-
-    if (!this.isRoleTxCUD(actualCudTx)) {
+    if (!this.isRoleTxCUD(actualTx)) {
       return
     }
 
     // We are only interested in updates of the existing roles because:
     // When role is created it always has empty set of permissions
     // And it's not currently possible to delete a role
-
-    if (actualCudTx._class !== core.class.TxUpdateDoc) {
-      return
-    }
-
-    const updateTx = actualCudTx as TxUpdateDoc<Role>
+    const updateTx = actualTx as TxUpdateDoc<Role>
 
     if (updateTx.operations.permissions === undefined) {
       return
     }
 
     // Find affected spaces
-    const targetSpaceTypeId = tx.objectId
     const affectedSpacesIds = Object.entries(this.typeBySpace)
       .filter(([, typeId]) => typeId === targetSpaceTypeId)
       .map(([spaceId]) => spaceId) as Ref<TypedSpace>[]
@@ -351,6 +338,11 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
   }
 
   protected checkPermissions (ctx: MeasureContext, tx: Tx): void {
+    const account = ctx.contextData.account
+    if (account.role === AccountRole.ReadOnlyGuest) {
+      this.throwForbidden()
+    }
+
     if (tx._class === core.class.TxApplyIf) {
       const applyTx = tx as TxApplyIf
 
@@ -358,12 +350,6 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
         this.checkPermissions(ctx, t)
       }
       return
-    }
-
-    if (tx._class === core.class.TxCollectionCUD) {
-      const actualTx = TxProcessor.extractTx(tx)
-
-      this.checkPermissions(ctx, actualTx)
     }
 
     const cudTx = tx as TxCUD<Doc>

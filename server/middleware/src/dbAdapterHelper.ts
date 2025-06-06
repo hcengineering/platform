@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext } from '@hcengineering/core'
+import { withContext, type MeasureContext } from '@hcengineering/core'
 import type { Middleware, PipelineContext } from '@hcengineering/server-core'
 import { BaseMiddleware, DomainIndexHelperImpl } from '@hcengineering/server-core'
 
@@ -21,14 +21,19 @@ import { BaseMiddleware, DomainIndexHelperImpl } from '@hcengineering/server-cor
  * @public
  */
 export class DBAdapterInitMiddleware extends BaseMiddleware implements Middleware {
+  @withContext('db-adapter-init')
   static async create (
     ctx: MeasureContext,
     context: PipelineContext,
     next?: Middleware
   ): Promise<Middleware | undefined> {
-    await context.adapterManager?.initAdapters?.(ctx)
-    const domainHelper = new DomainIndexHelperImpl(ctx, context.hierarchy, context.modelDb, context.workspace)
-    await context.adapterManager?.registerHelper?.(domainHelper)
+    await ctx.with('init-adapters', {}, async (ctx) => {
+      await context.adapterManager?.initAdapters?.(ctx)
+    })
+    const domainHelper = new DomainIndexHelperImpl(ctx, context.hierarchy, context.modelDb, context.workspace.uuid)
+    await ctx.with('register-helper', {}, async (ctx) => {
+      await context.adapterManager?.registerHelper?.(ctx, domainHelper)
+    })
     return undefined
   }
 }

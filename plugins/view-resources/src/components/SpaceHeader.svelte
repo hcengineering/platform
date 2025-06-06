@@ -28,7 +28,7 @@
   hideExtra={!$$slots.extra && modeSelectorProps === undefined}
 >
   <svelte:fragment slot="beforeTitle">
-    <ViewletSelector bind:viewlet bind:viewlets viewletQuery={viewletQuery ?? { attachTo: _class }} />
+    <ViewletSelector bind:viewlet bind:viewlets ignoreFragment viewletQuery={viewletQuery ?? { attachTo: _class }} />
     <slot name="header-tools" />
   </svelte:fragment>
 

@@ -167,11 +167,17 @@
       &:not(:has(.nested)) { margin-bottom: var(--spacing-1_5); }
     }
   }
-  &.nested .hulyNavGroup-header {
+  &.nested .hulyNavGroup-header,
+  &.selectableHeader .hulyNavGroup-header {
     .hulyNavGroup-header__icon { margin: 0 var(--spacing-0_25) 0 0; }
     .hulyNavGroup-header__label { padding: 0 var(--spacing-0_75) 0 0; }
     &.isOpen .hulyNavGroup-header__label { background-color: var(--global-ui-BackgroundColor); }
   }
+
+  &.selectableHeader.noIcon {
+    .hulyNavGroup-header__label {     padding: var(--spacing-0_25) var(--spacing-0_5); }
+  }
+
   .hulyNavGroup-header:hover,
   &.nested .hulyNavGroup-header:hover {
     .hulyNavGroup-header__chevron { background-color: var(--global-ui-BackgroundColor); }
@@ -179,7 +185,8 @@
     .hulyNavGroup-header__chevron { color: var(--button-subtle-IconColor); }
     .hulyNavGroup-header__label { color: var(--global-primary-TextColor); }
   }
-  &.nested.selectable .hulyNavGroup-header {
+  &.nested.selectable .hulyNavGroup-header,
+  &.selectableHeader .hulyNavGroup-header {
     margin: 0 var(--spacing-1_5) var(--spacing-1_5);
     padding: var(--spacing-0_5) var(--spacing-0_75) var(--spacing-0_5) var(--spacing-0_5);
     min-height: var(--global-small-Size);
@@ -189,7 +196,7 @@
     &.isOpen { margin-bottom: 0; }
   }
 
-  &:not(.nested, .noDivider),
+  &:not(.nested, .selectableHeader, .noDivider),
   &.noDivider + &.noDivider { border-top: 1px solid var(--theme-navpanel-divider); }
 
   .hulyNavGroup-content {
@@ -220,6 +227,7 @@
   height: 100%;
   min-width: 0;
   min-height: 0;
+  border-right: 1px solid var(--theme-divider-color);
   border-radius: 0 var(--small-focus-BorderRadius) var(--small-focus-BorderRadius) 0;
 }
 
@@ -292,13 +300,15 @@
   min-width: 0;
   min-height: 0;
   border-radius: var(--small-focus-BorderRadius);
-  border-top-right-radius: 0;
-  border-bottom-right-radius:0 ;
 
   &:not(.rowContent) { flex-direction: column; }
   .panel-instance & {
     background-color: var(--theme-panel-color);
     border: 1px solid var(--theme-divider-color);
+
+    @media print {
+      border: none;
+    }
   }
 
   .popupPanel-title {
@@ -397,6 +407,12 @@
         margin-right: auto;
         width: calc(100% - 7.5rem);
         max-width: 54rem;
+
+        &.side-content-space {
+          --side-content-space: 21rem;
+          max-width: calc(54rem + var(--side-content-space));
+          padding-right: var(--side-content-space);
+        }
 
         &.max {
           max-width: 100%;
@@ -589,5 +605,6 @@
   }
 }
 .popup.fullsize {
+  align-items: center;
   transition-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19) !important;
 }

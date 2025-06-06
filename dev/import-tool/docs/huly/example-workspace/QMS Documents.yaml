@@ -1,0 +1,11 @@
+class: documents:class:OrgSpace
+title: QMS Documents
+description: Quality Management System Documentation
+private: false
+owners:
+  - user1
+members:
+  - user1
+qualified: user1
+manager: user1
+qara: user1

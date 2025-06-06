@@ -1,14 +1,10 @@
-import contact, {
-  type Channel,
-  type Contact,
-  type Employee,
-  type PersonAccount,
-  getName as getContactName
-} from '@hcengineering/contact'
-import { type Client, type Doc, type IdMap, type Ref } from '@hcengineering/core'
+import { get } from 'svelte/store'
+import { getName as getContactName } from '@hcengineering/contact'
+import contact, { type Channel, type Contact } from '@hcengineering/contact'
+import { personByPersonIdStore, employeeBySocialKeyStore } from '@hcengineering/contact-resources'
+import { buildSocialIdString, type PersonId, SocialIdType, type Client, type Doc, type Ref } from '@hcengineering/core'
 import { type Message, type SharedMessage } from '@hcengineering/gmail'
 import { getClient } from '@hcengineering/presentation'
-import { type Integration } from '@hcengineering/setting'
 import gmail from './plugin'
 
 export function getTime (time: number): string {
@@ -69,69 +65,50 @@ export async function checkHasEmail (doc: Doc | Doc[] | undefined): Promise<bool
 const EMAIL_REGEX =
   /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
 
-export function convertMessages (
-  object: Contact,
-  channel: Channel,
-  messages: Message[],
-  integrations: Integration[],
-  accounts: IdMap<PersonAccount>,
-  employees: IdMap<Employee>
-): SharedMessage[] {
+export function convertMessages (object: Contact, channel: Channel, messages: Message[]): SharedMessage[] {
   return messages.map((m) => {
     return {
       ...m,
       _id: m._id as string as Ref<SharedMessage>,
-      sender: getName(object, channel, m, integrations, accounts, employees, true),
-      receiver: getName(object, channel, m, integrations, accounts, employees, false)
+      sender: getName(object, channel, m, true),
+      receiver: getName(object, channel, m, false)
     }
   })
 }
 
-export async function convertMessage (
-  object: Contact,
-  channel: Channel,
-  message: Message,
-  integrations: Integration[],
-  accounts: IdMap<PersonAccount>,
-  employees: IdMap<Employee>
-): Promise<SharedMessage> {
+export async function convertMessage (object: Contact, channel: Channel, message: Message): Promise<SharedMessage> {
   return {
     ...message,
     _id: message._id as string as Ref<SharedMessage>,
-    sender: getName(object, channel, message, integrations, accounts, employees, true),
-    receiver: getName(object, channel, message, integrations, accounts, employees, false)
+    sender: getName(object, channel, message, true),
+    receiver: getName(object, channel, message, false)
   }
 }
 
-export function getName (
-  object: Contact,
-  channel: Channel,
-  message: Message,
-  integrations: Integration[],
-  accounts: IdMap<PersonAccount>,
-  employees: IdMap<Employee>,
-  sender: boolean
-): string {
+export function getName (object: Contact, channel: Channel, message: Message, sender: boolean): string {
   const h = getClient().getHierarchy()
   if (message._class === gmail.class.NewMessage) {
     if (!sender) return `${getContactName(h, object)} (${channel.value})`
-    const from = (message.from ?? message.createdBy ?? message.modifiedBy) as Ref<PersonAccount>
-    const account = accounts.get(from)
-    const emp = account != null ? employees.get(account?.person as Ref<Employee>) : undefined
-    const integration = integrations.find((p) => p.createdBy === from)
-    const email = integration?.value ?? integrations[0]?.value
-    return emp != null ? `${getContactName(h, emp)} (${email})` : email
+    return getPersonName(message.from ?? message.createdBy ?? message.modifiedBy)
   }
   if (message.incoming === sender) {
     return `${getContactName(h, object)} (${channel.value})`
   } else {
-    const account = accounts.get(message.modifiedBy as Ref<PersonAccount>)
-    const emp = account != null ? employees.get(account?.person as Ref<Employee>) : undefined
-    const value = message.incoming ? message.to : message.from
-    const email = value.match(EMAIL_REGEX)
-    const emailVal = email?.[0] ?? value
-    return emp != null ? `${getContactName(h, emp)} (${emailVal})` : emailVal
+    return getPersonName(message.modifiedBy)
   }
+}
+
+export function getPersonName (emailOrId: string): string {
+  const personName = get(personByPersonIdStore).get(emailOrId as PersonId)?.name
+  if (personName != null) return personName
+  const emailSearch = emailOrId.match(EMAIL_REGEX)
+  const email = emailSearch?.[0]
+  if (email != null && email !== '') {
+    const socialId = buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
+    const name = get(employeeBySocialKeyStore).get(socialId)?.name
+    if (name != null) return name
+  }
+  return emailOrId
 }
 
 export async function MessageTitleProvider (client: Client, ref: Ref<Message>, doc?: Message): Promise<string> {

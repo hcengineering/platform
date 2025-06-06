@@ -23,8 +23,9 @@
   import { BottomAction } from '..'
   import { signUpAction } from '../actions'
 
-  const fields = [{ id: 'email', name: 'username', i18n: login.string.Email }]
+  export let signUpDisabled = false
 
+  const fields = [{ id: 'email', name: 'username', i18n: login.string.Email }]
   const object = {
     username: ''
   }
@@ -64,7 +65,7 @@
         goTo('login')
       }
     },
-    signUpAction
+    ...(signUpDisabled ? [] : [signUpAction])
   ]
 </script>
 

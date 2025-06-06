@@ -13,7 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import core, {
+    Class,
+    Doc,
+    FindResult,
+    getObjectValue,
+    Ref,
+    SortingOrder,
+    Space,
+    type WithLookup
+  } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, {
     deviceOptionsStore,
@@ -73,49 +82,27 @@
             [prefix + filter.key.key]: { $like: '%' + search + '%' }
           }
         : {}
-    const isDerivedFromSpace = hierarchy.isDerived(_class, core.class.Space)
 
-    const spaces =
-      space !== undefined || isDerivedFromSpace
-        ? []
-        : (
-            await client.findAll(
-              core.class.Space,
-              { archived: { $ne: true } },
-              {
-                projection: {
-                  _id: 1,
-                  archived: 1,
-                  _class: 1
-                }
-              }
-            )
-          ).map((it) => it._id)
-
-    async function doQuery (limit: number | undefined, first1000?: any[]): Promise<boolean> {
+    async function doQuery (limit: number | undefined, sortedValues: any[] | undefined): Promise<boolean> {
       const p = client.findAll(
         _class,
         {
           ...resultQuery,
-          ...(space
-            ? { space }
-            : isDerivedFromSpace
-              ? viewOptions === undefined || viewOptions?.hideArchived === true
-                ? { archived: false }
-                : {}
-              : { space: { $in: spaces } }),
-          ...(first1000 ? { [filter.key.key]: { $nin: first1000 } } : {})
+          ...(space !== undefined ? { space } : {}),
+          ...(sortedValues !== undefined ? { [prefix + filter.key.key]: { $nin: sortedValues } } : {})
         },
         {
           sort: { modifiedOn: SortingOrder.Descending },
           projection: { [prefix + filter.key.key]: 1 },
-          ...(limit !== undefined ? { limit } : {})
+          ...(limit !== undefined ? { limit } : {}),
+          showArchived: viewOptions?.hideArchived === false
         }
       )
       if (limit !== undefined) {
         objectsPromise = p
       }
-      const res = await p
+      const res: WithLookup<Doc>[] = await p
+      // We need to filter archived in case it is required
 
       for (const object of res) {
         let asDoc = object
@@ -132,7 +119,7 @@
       }
       return res.length >= (limit ?? 0)
     }
-    const hasMore = await doQuery(1000)
+    const hasMore = await doQuery(1000, undefined)
     values = values
     sortedValues = sortFilterValues([...values.keys()], (v) => isSelected(v, selectedValues))
     objectsPromise = undefined

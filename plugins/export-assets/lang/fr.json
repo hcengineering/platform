@@ -1,0 +1,26 @@
+{
+  "string": {
+    "WorkspaceNamePattern": "Le nom doit comporter 40 caractères ou moins, ne doit pas être vide et ne doit pas contenir de caractères spéciaux (<, >, /)" ,
+    "Export": "Exporter",
+    "DataToExport": "Données à exporter",
+    "ExportDocuments": "Documents",
+    "ExportMilestones": "Jalon",
+    "ExportIssues": "Problèmes",
+    "ExportTestCases": "Cas de test",
+    "ExportTestRuns": "Exécutions de test",
+    "ExportTestPlans": "Plans de test",
+    "ExportFormat": "Format d'exportation",
+    "ExportJSON": "JSON",
+    "ExportCSV": "CSV",
+    "ExportUnifiedFormat": "Format Unifié Huly",
+    "ExportIncludeContent": "Inclure le contenu",
+    "ExportEverything": "Tout",
+    "ExportAttributesOnly": "Attributs uniquement",
+    "ExportRequestSuccess": "Exportation démarrée.",
+    "ExportRequestSuccessMessage": "Exportation démarrée. Vous recevrez une notification dans votre boîte de réception une fois terminée.",
+    "ExportRequestFailed": "Échec de la soumission de l'exportation.",
+    "ExportRequestFailedMessage": "Une erreur s'est produite lors de la soumission de l'exportation. Veuillez réessayer plus tard.",
+    "ExportCompleted": "Exportation terminée. Vos fichiers sont prêts. Vous pouvez les télécharger depuis le lecteur.",
+    "ExportFailed": "Échec de l'exportation des données. Veuillez réessayer plus tard."
+  }
+}

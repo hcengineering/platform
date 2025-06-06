@@ -15,11 +15,14 @@
 -->
 <script lang="ts">
   import { showPopup, resizeObserver, deviceOptionsStore as deviceInfo, PopupResult } from '@hcengineering/ui'
+  import { Ref, Class, Doc } from '@hcengineering/core'
   import { onDestroy, onMount } from 'svelte'
   import MentionPopup from './MentionPopup.svelte'
   import DummyPopup from './DummyPopup.svelte'
 
+  export let docClass: Ref<Class<Doc>> | undefined = undefined
   export let query: string = ''
+  export let multipleMentions: boolean = false
   export let clientRect: () => ClientRect
   export let command: (props: any) => void
   export let close: () => void
@@ -115,7 +118,9 @@
 >
   <MentionPopup
     bind:this={searchPopup}
+    {docClass}
     {query}
+    {multipleMentions}
     on:close={(evt) => {
       dispatchItem(evt.detail)
     }}
@@ -139,5 +144,12 @@
     min-width: 0;
     min-height: 0;
     z-index: 10001;
+
+    @media screen and (max-width: 480px) {
+      position: fixed;
+      left: var(--spacing-1);
+      width: calc(100vw - var(--spacing-1) * 2);
+      max-height: calc(100svh - 2rem);
+    }
   }
 </style>

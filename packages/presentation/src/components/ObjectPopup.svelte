@@ -24,8 +24,8 @@
   import type { IntlString } from '@hcengineering/platform'
   import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation from '..'
-  import { ObjectCreate } from '../types'
+  import presentation, { searchFor, type SearchItem } from '..'
+  import { ObjectCreate, type ObjectSearchCategory } from '../types'
   import { createQuery } from '../utils'
   import DocPopup from './DocPopup.svelte'
 
@@ -43,10 +43,11 @@
   export let selectedObjects: Ref<Doc>[] = []
   export let ignoreObjects: Ref<Doc>[] = []
   export let shadows: boolean = true
-  export let width: 'medium' | 'large' | 'full' = 'medium'
+  export let width: 'medium' | 'large' | 'full' | 'auto' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'large'
 
-  export let searchMode: 'field' | 'fulltext' | 'disabled' = 'field'
+  export let searchMode: 'field' | 'fulltext' | 'disabled' | 'spotlight' = 'field'
+  export let category: Ref<ObjectSearchCategory> | undefined = undefined
   export let searchField: string = 'name'
   export let groupBy = '_class'
 
@@ -55,7 +56,7 @@
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
   export let embedded: boolean = false
   export let loading: boolean = false
-  export let type: 'text' | 'object' = 'text'
+  export let type: 'text' | 'object' | 'presenter' = 'text'
 
   export let filter: (it: Doc) => boolean = () => {
     return true
@@ -73,33 +74,88 @@
   let noSearchField: boolean = false
   let search: string = ''
   let objects: Doc[] = []
+  let selObjects: Doc[] = []
+  let resObjects: Doc[] = []
+
+  let extraItems: Ref<Doc>[] = []
 
   const query = createQuery()
+  const sQuery = createQuery() // Query for selected objects
 
   $: noSearchField = searchMode === 'disabled'
   $: _idExtra = typeof docQuery?._id === 'object' ? docQuery?._id : {}
+  $: if (searchMode === 'spotlight' && search !== '') {
+    void searchSpotlight(search).then((items) => {
+      extraItems = items.map((it) => it.item.id)
+    })
+  } else {
+    extraItems = []
+  }
+
+  $: fquery = {
+    ...(docQuery ?? {}),
+    ...(() => {
+      switch (searchMode) {
+        case 'disabled':
+          return { _id: { $nin: ignoreObjects, ..._idExtra } }
+        case 'fulltext':
+          return search !== ''
+            ? { $search: search, _id: { $nin: ignoreObjects, ..._idExtra } }
+            : { _id: { $nin: ignoreObjects, ..._idExtra } }
+        case 'spotlight':
+          return extraItems.length > 0
+            ? { _id: { $in: extraItems, $nin: ignoreObjects } }
+            : { _id: { $nin: ignoreObjects, ..._idExtra } }
+        default:
+          return search !== ''
+            ? { [searchField]: { $like: '%' + search + '%' }, _id: { $nin: ignoreObjects, ..._idExtra } }
+            : { _id: { $nin: ignoreObjects, ..._idExtra } }
+      }
+    })()
+  }
+
   $: query.query<Doc>(
     _class,
-    {
-      ...(docQuery ?? {}),
-      ...(searchMode !== 'disabled' && search !== ''
-        ? searchMode === 'fulltext'
-          ? { $search: search }
-          : { [searchField]: { $like: '%' + search + '%' } }
-        : {}),
-      _id: { $nin: ignoreObjects, ..._idExtra }
-    },
+    fquery,
     (result) => {
       result.sort(sort)
-      if (created.length > 0) {
-        const cmap = new Set(created.map((it) => it._id))
-        objects = [...created, ...result.filter((d) => !cmap.has(d._id))].filter(filter)
-      } else {
-        objects = result.filter(filter)
-      }
+      resObjects = result
     },
     { ...(options ?? {}), limit: 200 }
   )
+
+  $: if (selectedObjects.length > 0) {
+    sQuery.query<Doc>(
+      _class,
+      search !== ''
+        ? { [searchField]: { $like: '%' + search + '%' }, _id: { $in: selectedObjects } }
+        : { _id: { $in: selectedObjects } },
+      (result) => {
+        result.sort(sort)
+        selObjects = result
+      },
+      {}
+    )
+  } else {
+    sQuery.unsubscribe()
+  }
+
+  $: {
+    if (created.length > 0 || selObjects.length > 0) {
+      const cmap = new Set(created.map((it) => it._id))
+      const smap = new Set(selObjects.map((it) => it._id))
+
+      objects = [...created, ...selObjects, ...resObjects.filter((d) => !cmap.has(d._id) && !smap.has(d._id))].filter(
+        filter
+      )
+    } else {
+      objects = resObjects.filter(filter)
+    }
+  }
+
+  async function searchSpotlight (search: string): Promise<SearchItem[]> {
+    return (await searchFor('spotlight', search, category, 50)).items
+  }
 </script>
 
 <DocPopup
@@ -123,7 +179,10 @@
   {embedded}
   {loading}
   {type}
-  on:update
+  on:update={(e) => {
+    selectedObjects = e.detail
+    dispatch('update', e.detail)
+  }}
   on:close
   on:changeContent
   on:search={(e) => (search = e.detail)}
@@ -139,10 +198,16 @@
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="category" let:item>
-    {#if created.length > 0 && created.find((it) => it._id === item._id) !== undefined}
+    {#if created.length > 0 && created.includes(item._id)}
       <div class="menu-group__header">
         <span class="overflow-label">
           <Label label={presentation.string.Created} />
+        </span>
+      </div>
+    {:else if selectedObjects.length > 0 && selectedObjects.includes(item._id)}
+      <div class="menu-group__header">
+        <span class="overflow-label">
+          <Label label={presentation.string.Selected} />
         </span>
       </div>
     {:else if $$slots.category}

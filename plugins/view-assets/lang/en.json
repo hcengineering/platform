@@ -125,6 +125,17 @@
     "MoreActions": "More actions",
     "Leave": "Leave",
     "Join": "Join",
-    "Copied": "Copied"
+    "Copied": "Copied",
+    "Title": "Title",
+    "HideArchived": "Hide archived",
+    "RemoveRelation": "Remove relation",
+    "RemoveRelationConfirmation": "Do you want to remove relation?",
+    "MasterDetail": "Master-detail",
+    "Tree": "Tree",
+    "Document": "Document",
+    "Loading": "Loading...",
+    "NoRelations": "No relations",
+    "ReadOnlyWarningTitle": "Read only mode",
+    "ReadOnlyWarningMessage": "Contact the administrator to gain full access to this workspace."
   }
 }

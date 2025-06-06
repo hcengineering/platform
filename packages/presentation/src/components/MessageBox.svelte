@@ -20,6 +20,7 @@
 
   export let label: IntlString
   export let labelProps: Record<string, any> | undefined = undefined
+  export let labelStr: string | undefined = undefined
   export let message: IntlString
   export let richMessage: boolean = false
   export let params: Record<string, any> = {}
@@ -32,12 +33,28 @@
   let processing = false
 
   const manager = createFocusManager()
+
+  function onKeyDown (ev: KeyboardEvent): void {
+    if (ev.key === 'Escape') {
+      ev.preventDefault()
+      ev.stopPropagation()
+
+      dispatch('close', false)
+    }
+  }
 </script>
 
 <FocusHandler {manager} />
 
-<div class="msgbox-container">
-  <div class="overflow-label fs-title mb-4"><Label {label} params={labelProps ?? {}} /></div>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="msgbox-container" on:keydown={onKeyDown}>
+  <div class="overflow-label fs-title mb-4">
+    {#if labelStr !== undefined}
+      {labelStr}
+    {:else}
+      <Label {label} params={labelProps ?? {}} />
+    {/if}
+  </div>
   <div class="message">
     {#if richMessage}
       {#await translate(message, params) then msg}
@@ -92,6 +109,11 @@
     border-radius: 0.5rem;
     user-select: none;
     box-shadow: var(--theme-popup-shadow);
+
+    @media screen and (max-width: 480px) {
+      width: 100%;
+      max-width: 100%;
+    }
 
     .message {
       margin-bottom: 1.75rem;

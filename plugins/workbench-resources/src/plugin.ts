@@ -17,7 +17,7 @@ import { mergeIds } from '@hcengineering/platform'
 import type { IntlString, Metadata } from '@hcengineering/platform'
 
 import workbench, { workbenchId } from '@hcengineering/workbench'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 export default mergeIds(workbenchId, workbench, {
   string: {

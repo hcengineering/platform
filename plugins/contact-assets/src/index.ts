@@ -28,6 +28,7 @@ loadMetadata(contact.icon, {
   Telegram: `${icons}#telegram`,
   Twitter: `${icons}#twitter`,
   VK: `${icons}#vk`,
+  Viber: `${icons}#viber`,
   WhatsApp: `${icons}#whatsapp`,
   Skype: `${icons}#skype`,
   Youtube: `${icons}#youtube`,
@@ -42,6 +43,17 @@ loadMetadata(contact.icon, {
   Profile: `${icons}#profile`,
   KickUser: `${icons}#kickUser`,
   ComponentMembers: `${icons}#componentMembers`,
-  Contacts: `${icons}#contacts`
+  Contacts: `${icons}#contacts`,
+  Clock: `${icons}#clock`,
+  Chat: `${icons}#chat`,
+  User: `${icons}#user`
 })
 addStringsLoader(contactId, async (lang: string) => await import(`../lang/${lang}.json`))
+
+const ProfileBackground = require('../assets/profile-background.png') as string // eslint-disable-line
+const ProfileBackgroundLight = require('../assets/profile-background-light.png') as string // eslint-disable-line
+
+loadMetadata(contact.image, {
+  ProfileBackground,
+  ProfileBackgroundLight
+})

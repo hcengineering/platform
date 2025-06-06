@@ -69,7 +69,8 @@
       subIssues = res
     },
     {
-      sort: { rank: SortingOrder.Ascending }
+      sort: { rank: SortingOrder.Ascending },
+      showArchived: true
     }
   )
 

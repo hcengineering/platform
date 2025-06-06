@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Class, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { AttributesBar, KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
+  import { AttributesBar, KeyedAttribute, createQuery, getAttribute, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import { Button, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr, restrictionStore } from '../utils'
@@ -29,6 +29,7 @@
   export let showLabel: IntlString | undefined = undefined
   export let draft = false
   export let showHeader: boolean = true
+  export let isMainClass: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -42,6 +43,11 @@
 
   $: updateKeys(_class, ignoreKeys, to)
 
+  const query = createQuery()
+  $: query.query(core.class.Attribute, { attributeOf: _class }, () => {
+    updateKeys(_class, ignoreKeys, to)
+  })
+
   $: nonEmpty = keys.find((it) => getAttribute(client, object, it) != null)
 
   $: label = showLabel ?? hierarchy.getClass(_class).label
@@ -51,52 +57,55 @@
   }
 
   $: collapsed = getCollapsed(_class, nonEmpty)
+
+  $: clazz = hierarchy.getClass(_class)
+  $: isEditable = hierarchy.hasMixin(clazz, setting.mixin.Editable) && hierarchy.as(clazz, setting.mixin.Editable).value
 </script>
 
-{#if keys.length}
-  {#if showHeader}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div
-      class="attrbar-header"
-      class:collapsed
-      on:click={() => {
-        collapsed = !collapsed
-      }}
-    >
-      <div class="flex-row-center">
-        <span class="overflow-label">
-          <Label {label} />
-        </span>
-        <div class="icon-arrow">
-          <svg fill="var(--theme-dark-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0,0L6,3L0,6Z" />
-          </svg>
-        </div>
-      </div>
-      <div class="tool">
-        {#if !$restrictionStore.disableNavigation}
-          <Button
-            icon={setting.icon.Setting}
-            kind={'link'}
-            size={'medium'}
-            showTooltip={{ label: setting.string.ClassSetting }}
-            on:click={(ev) => {
-              ev.stopPropagation()
-              const loc = getCurrentResolvedLocation()
-              loc.path[2] = settingId
-              loc.path[3] = 'setting'
-              loc.path[4] = 'classes'
-              loc.path.length = 5
-              loc.query = { _class }
-              loc.fragment = undefined
-              navigate(loc)
-            }}
-          />
-        {/if}
+{#if showHeader && (keys.length > 0 || isMainClass)}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div
+    class="attrbar-header"
+    class:collapsed
+    on:click={() => {
+      collapsed = !collapsed
+    }}
+  >
+    <div class="flex-row-center">
+      <span class="overflow-label">
+        <Label {label} />
+      </span>
+      <div class="icon-arrow">
+        <svg fill="var(--theme-dark-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0,0L6,3L0,6Z" />
+        </svg>
       </div>
     </div>
-  {/if}
+    <div class="tool">
+      {#if !$restrictionStore.disableNavigation && isEditable}
+        <Button
+          icon={setting.icon.Setting}
+          kind={'link'}
+          size={'medium'}
+          showTooltip={{ label: setting.string.ClassSetting }}
+          on:click={(ev) => {
+            ev.stopPropagation()
+            const loc = getCurrentResolvedLocation()
+            loc.path[2] = settingId
+            loc.path[3] = 'setting'
+            loc.path[4] = 'classes'
+            loc.path.length = 5
+            loc.query = { _class }
+            loc.fragment = undefined
+            navigate(loc)
+          }}
+        />
+      {/if}
+    </div>
+  </div>
+{/if}
+{#if keys.length}
   <div class="collapsed-container" class:collapsed>
     <AttributesBar {_class} {object} {keys} {readonly} {draft} on:update />
   </div>

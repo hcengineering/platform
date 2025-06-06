@@ -29,7 +29,7 @@
   export let value: string | number | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
-  export let format: 'text' | 'password' | 'number' = 'text'
+  export let format: 'text' | 'password' | 'number' | 'text-multiline' = 'text'
   export let maxDigitsAfterPoint: number | undefined = undefined
   export let kind: EditStyle = 'editbox'
   export let autoFocus: boolean = false
@@ -43,7 +43,7 @@
 
   const dispatch = createEventDispatcher()
 
-  let input: HTMLInputElement
+  let input: HTMLInputElement | HTMLTextAreaElement
   let phTranslate: string = ''
 
   $: {
@@ -135,8 +135,28 @@
     class:w-full={fullSize}
     style:width={maxWidth}
   >
-    {#if format === 'password'}
+    {#if format === 'text-multiline'}
+      <div class="antiEditBoxGridWrapper" data-value={value}>
+        <textarea
+          rows="1"
+          class="antiEditBoxInput"
+          {disabled}
+          style:width={maxWidth}
+          bind:this={input}
+          bind:value
+          placeholder={phTranslate}
+          on:input={handleInput}
+          on:change
+          on:keydown
+          on:keypress
+          on:blur={() => {
+            dispatch('blur', value)
+          }}
+        />
+      </div>
+    {:else if format === 'password'}
       <input
+        class="antiEditBoxInput"
         {disabled}
         style:width={maxWidth}
         id="userPassword"
@@ -154,11 +174,11 @@
       />
     {:else if format === 'number'}
       <input
+        class="antiEditBoxInput number"
         {disabled}
         style:width={maxWidth}
         bind:this={input}
         type="number"
-        class="number"
         bind:value
         placeholder={phTranslate}
         on:input={handleInput}
@@ -171,6 +191,7 @@
       />
     {:else}
       <input
+        class="antiEditBoxInput"
         {disabled}
         style:width={maxWidth}
         bind:this={input}

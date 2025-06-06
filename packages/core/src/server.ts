@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import type { Account, Doc, Domain, Ref } from './classes'
-import { MeasureContext } from './measurements'
-import { DocumentQuery, FindOptions } from './storage'
+import type { Account, AccountUuid, Doc, Domain, PersonId, Ref } from './classes'
+import { type MeasureContext } from './measurements'
+import { type DocumentQuery, type FindOptions } from './storage'
 import type { DocumentUpdate, Tx } from './tx'
-import type { WorkspaceIdWithUrl } from './utils'
+import { type WorkspaceIds } from './utils'
 
 /**
  * @public
@@ -25,7 +25,8 @@ import type { WorkspaceIdWithUrl } from './utils'
 export interface DocInfo {
   id: string
   hash: string
-  size: number // Aprox size
+
+  size?: number
 }
 /**
  * @public
@@ -44,19 +45,15 @@ export interface SessionData {
   }
   contextCache: Map<string, any>
   removedMap: Map<Ref<Doc>, Doc>
-
-  userEmail: string
+  account: Account
+  service: string
   sessionId: string
   admin?: boolean
-
   isTriggerCtx?: boolean
+  workspace: WorkspaceIds
+  socialStringsToUsers: Map<PersonId, AccountUuid>
 
-  account: Account
-
-  getAccount: (account: Ref<Account>) => Account | undefined
-
-  workspace: WorkspaceIdWithUrl
-  branding: Branding | null
+  asyncRequests?: ((ctx: MeasureContext) => Promise<void>)[]
 }
 
 /**
@@ -64,8 +61,7 @@ export interface SessionData {
  */
 export interface LowLevelStorage {
   // Low level streaming API to retrieve information
-  // If recheck is passed, all %hash% for documents, will be re-calculated.
-  find: (ctx: MeasureContext, domain: Domain, recheck?: boolean) => StorageIterator
+  find: (ctx: MeasureContext, domain: Domain) => StorageIterator
 
   // Load passed documents from domain
   load: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
@@ -78,12 +74,19 @@ export interface LowLevelStorage {
   clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 
   // Low level direct group API
-  groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
+  groupBy: <T, P extends Doc>(
+    ctx: MeasureContext,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ) => Promise<Map<T, number>>
 
   // migrations
   rawFindAll: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<T[]>
 
   rawUpdate: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: DocumentUpdate<T>) => Promise<void>
+
+  rawDeleteMany: <T extends Doc>(domain: Domain, query: DocumentQuery<T>) => Promise<void>
 
   // Traverse documents
   traverse: <T extends Doc>(
@@ -91,6 +94,8 @@ export interface LowLevelStorage {
     query: DocumentQuery<T>,
     options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
   ) => Promise<Iterator<T>>
+
+  getDomainHash: (ctx: MeasureContext, domain: Domain) => Promise<string>
 }
 
 export interface Iterator<T extends Doc> {

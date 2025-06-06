@@ -16,7 +16,7 @@
 </script>
 
 {#if spaceObj !== undefined}
-  {#if auth === undefined || auth.login === '' || auth.error != null}
+  {#if auth === undefined || auth.login === ''}
     {#if !readonly}
       <ModernButton
         label={github.string.Authorize}

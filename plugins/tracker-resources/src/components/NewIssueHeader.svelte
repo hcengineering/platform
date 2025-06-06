@@ -13,17 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { MultipleDraftController, getClient } from '@hcengineering/presentation'
-  import { ButtonWithDropdown, IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import { Project, TrackerEvents } from '@hcengineering/tracker'
   import { Analytics } from '@hcengineering/analytics'
+  import { AccountRole, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { MultipleDraftController, createQuery, getClient } from '@hcengineering/presentation'
+  import { TrackerEvents } from '@hcengineering/tracker'
+  import { Button, ButtonWithDropdown, IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
-  import { importTasks } from '..'
 
   export let currentSpace: Ref<Space> | undefined
 
@@ -45,6 +44,14 @@
     })
   }
 
+  const query = createQuery()
+
+  let projectExists = false
+
+  query.query(tracker.class.Project, {}, (res) => {
+    projectExists = res.length > 0
+  })
+
   $: label = draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
   $: dropdownItems = hasAccountRole(getCurrentAccount(), AccountRole.User)
     ? [
@@ -55,10 +62,6 @@
         {
           id: tracker.string.NewIssue,
           label
-        },
-        {
-          id: tracker.string.Import,
-          label: tracker.string.Import
         }
       ]
     : [
@@ -70,7 +73,6 @@
   const client = getClient()
 
   let keys: string[] | undefined = undefined
-  let inputFile: HTMLInputElement
   async function dropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
     if (res == null) return
 
@@ -79,63 +81,54 @@
       showPopup(tracker.component.CreateProject, {}, 'top', () => {
         closed = true
       })
-    } else if (res === tracker.string.Import) {
-      inputFile.click()
     } else {
       await newIssue()
     }
   }
 
-  async function fileSelected (): Promise<void> {
-    const list = inputFile.files
-    if (list === null || list.length === 0) return
-    for (let index = 0; index < list.length; index++) {
-      const file = list.item(index)
-      if (file !== null && currentSpace != null) {
-        await importTasks(file, currentSpace as Ref<Project>)
-      }
-    }
-    inputFile.value = ''
-  }
-  client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then((p) => (keys = p?.keyBinding))
+  void client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then((p) => (keys = p?.keyBinding))
 </script>
 
 <div class="antiNav-subheader">
-  <input
-    bind:this={inputFile}
-    disabled={inputFile == null}
-    multiple
-    type="file"
-    name="file"
-    id="tasksInput"
-    accept="application/json"
-    style="display: none"
-    on:change={fileSelected}
-  />
-  <ButtonWithDropdown
-    icon={IconAdd}
-    justify={'left'}
-    kind={'primary'}
-    {label}
-    on:click={newIssue}
-    {dropdownItems}
-    dropdownIcon={IconDropdown}
-    on:dropdown-selected={(ev) => {
-      dropdownItemSelected(ev.detail)
-    }}
-    mainButtonId={'new-issue'}
-    showTooltipMain={{
-      direction: 'bottom',
-      label,
-      keys
-    }}
-  >
-    <div slot="content" class="draft-circle-container">
-      {#if draftExists}
-        <div class="draft-circle" />
-      {/if}
-    </div>
-  </ButtonWithDropdown>
+  {#if projectExists}
+    <ButtonWithDropdown
+      icon={IconAdd}
+      justify={'left'}
+      kind={'primary'}
+      {label}
+      on:click={newIssue}
+      {dropdownItems}
+      dropdownIcon={IconDropdown}
+      on:dropdown-selected={(ev) => {
+        dropdownItemSelected(ev.detail)
+      }}
+      mainButtonId={'new-issue'}
+      showTooltipMain={{
+        direction: 'bottom',
+        label,
+        keys
+      }}
+    >
+      <div slot="content" class="draft-circle-container">
+        {#if draftExists}
+          <div class="draft-circle" />
+        {/if}
+      </div>
+    </ButtonWithDropdown>
+  {:else}
+    <Button
+      icon={IconAdd}
+      justify="left"
+      kind="primary"
+      label={tracker.string.CreateProject}
+      width="100%"
+      on:click={() => {
+        showPopup(tracker.component.CreateProject, {}, 'top', () => {
+          closed = true
+        })
+      }}
+    />
+  {/if}
 </div>
 
 <style lang="scss">

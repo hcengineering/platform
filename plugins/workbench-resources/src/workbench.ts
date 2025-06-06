@@ -12,36 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { derived, get, writable } from 'svelte/store'
 import core, {
   type Class,
   concatLink,
   type Doc,
+  generateId,
   getCurrentAccount,
-  type Ref,
-  RateLimiter,
-  generateId
+  reduceCalls,
+  type Ref
 } from '@hcengineering/core'
-import { type Application, workbenchId, type WorkbenchTab } from '@hcengineering/workbench'
+import notification, { notificationId } from '@hcengineering/notification'
+import { type Asset, getMetadata, getResource, type IntlString, setMetadata, translate } from '@hcengineering/platform'
+import presentation, { configurationStore, getClient } from '@hcengineering/presentation'
 import {
-  location as locationStore,
-  locationToUrl,
-  parseLocation,
-  type Location,
-  navigate,
+  type AnyComponent,
   getCurrentLocation,
   languageStore,
-  type AnyComponent,
-  locationStorageKeyId
+  type Location,
+  locationStorageKeyId,
+  location as locationStore,
+  locationToUrl,
+  navigate,
+  parseLocation
 } from '@hcengineering/ui'
-import presentation, { getClient } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
-import { type Asset, type IntlString, getMetadata, getResource, translate } from '@hcengineering/platform'
 import { parseLinkId } from '@hcengineering/view-resources'
-import notification, { notificationId } from '@hcengineering/notification'
+import { type Application, workbenchId, type WorkbenchTab } from '@hcengineering/workbench'
+import { derived, get, writable } from 'svelte/store'
 
-import { workspaceStore } from './utils'
+import setting from '@hcengineering/setting'
 import workbench from './plugin'
+import { locationWorkspaceStore } from './utils'
 
 export const tabIdStore = writable<Ref<WorkbenchTab> | undefined>()
 export const prevTabIdStore = writable<Ref<WorkbenchTab> | undefined>()
@@ -54,24 +55,16 @@ let prevTabId: Ref<WorkbenchTab> | undefined
 tabIdStore.subscribe((value) => {
   prevTabIdStore.set(prevTabId)
   prevTabId = value
+  saveTabToLocalStorage(value)
 })
 
-// Use rate limiter to control tab creation, preventing multiple tabs during fast location changing
-const limiter = new RateLimiter(1)
-
-workspaceStore.subscribe((workspace) => {
+locationWorkspaceStore.subscribe((workspace) => {
   tabIdStore.set(getTabFromLocalStorage(workspace ?? ''))
 })
 
-locationStore.subscribe((l: Location) => {
-  void limiter.add(syncTabLoc)
-})
-
-tabIdStore.subscribe(saveTabToLocalStorage)
-
-async function syncTabLoc (): Promise<void> {
+const syncTabLoc = reduceCalls(async (): Promise<void> => {
   const loc = getCurrentLocation()
-  const workspace = get(workspaceStore)
+  const workspace = get(locationWorkspaceStore)
   if (workspace == null || workspace === '') return
   const tab = get(currentTabStore)
   if (tab == null) return
@@ -91,31 +84,35 @@ async function syncTabLoc (): Promise<void> {
     if (t.name !== name) return false
 
     const tabLoc = getTabLocation(t)
+    if (tabLoc.path[2] !== loc.path[2]) return false
+    if (tabLoc.path[2] === notificationId) return true
 
-    return tabLoc.path[2] === loc.path[2] && tabLoc.path[3] === loc.path[3]
+    return tabLoc.path[3] === loc.path[3]
   })
 
   if (tab.name !== undefined && name !== tab.name && tab.isPinned) {
+    if (get(tabIdStore) !== tab._id) return
     if (tabByName !== undefined) {
       selectTab(tabByName._id)
       return
     }
 
     const me = getCurrentAccount()
-    const tab: WorkbenchTab = {
+    const newTab: WorkbenchTab = {
       _id: generateId(),
       _class: workbench.class.WorkbenchTab,
       space: core.space.Workspace,
       location: url,
       name,
-      attachedTo: me._id,
+      attachedTo: me.uuid,
       isPinned: false,
       modifiedOn: Date.now(),
-      modifiedBy: me._id
+      modifiedBy: me.primarySocialId
     }
-    await getClient().createDoc(workbench.class.WorkbenchTab, core.space.Workspace, tab, tab._id)
-    tabsStore.update((tabs) => [...tabs, tab])
-    selectTab(tab._id)
+    console.log('Creating new tab when pinned location changed', { newLocation: url, pinnedLocation: tab.location })
+    await getClient().createDoc(workbench.class.WorkbenchTab, core.space.Workspace, newTab, newTab._id)
+    tabsStore.update((tabs) => [...tabs, newTab])
+    selectTab(newTab._id)
   } else {
     // TODO: Fix this
     // if (
@@ -127,18 +124,25 @@ async function syncTabLoc (): Promise<void> {
     //   return
     // }
 
-    await getClient().update(tab, { location: url, name })
+    const op = getClient().apply(undefined, undefined, true)
+    await op.diffUpdate(tab, { location: url, name })
+    await op.commit()
   }
-}
+})
+
+locationStore.subscribe(() => {
+  void syncTabLoc()
+})
+
 export function syncWorkbenchTab (): void {
-  const workspace = get(workspaceStore)
+  const workspace = get(locationWorkspaceStore)
   tabIdStore.set(getTabFromLocalStorage(workspace ?? ''))
 }
 
 function getTabIdLocalStorageKey (workspace: string): string | undefined {
   const me = getCurrentAccount()
   if (me == null || workspace === '') return undefined
-  return `workbench.${workspace}.${me.person}.tab`
+  return `workbench.${workspace}.${me.uuid}.tab`
 }
 
 function getTabFromLocalStorage (workspace: string): Ref<WorkbenchTab> | undefined {
@@ -152,7 +156,7 @@ function getTabFromLocalStorage (workspace: string): Ref<WorkbenchTab> | undefin
 }
 
 function saveTabToLocalStorage (_id: Ref<WorkbenchTab> | undefined): void {
-  const workspace = get(workspaceStore)
+  const workspace = get(locationWorkspaceStore)
   if (workspace == null || workspace === '') return
 
   const localStorageKey = getTabIdLocalStorageKey(workspace)
@@ -193,13 +197,12 @@ export async function closeTab (tab: WorkbenchTab): Promise<void> {
 export async function createTab (): Promise<void> {
   const loc = getCurrentLocation()
   const client = getClient()
-  const me = getCurrentAccount()
   let defaultUrl = `${workbenchId}/${loc.path[1]}/${notificationId}`
 
   try {
     const last = localStorage.getItem(`${locationStorageKeyId}_${notificationId}`)
     const lastLocation: Location | undefined = last != null ? JSON.parse(last) : undefined
-    if (lastLocation != null && lastLocation.path[2] === notificationId) {
+    if (lastLocation != null && lastLocation.path[1] === loc.path[1] && lastLocation.path[2] === notificationId) {
       defaultUrl = locationToUrl(lastLocation)
     }
   } catch (e) {
@@ -208,7 +211,7 @@ export async function createTab (): Promise<void> {
 
   const name = await translate(notification.string.Inbox, {}, get(languageStore))
   const tab = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
-    attachedTo: me._id,
+    attachedTo: getCurrentAccount().uuid,
     location: defaultUrl,
     isPinned: false,
     name
@@ -295,3 +298,8 @@ async function getDefaultTabName (loc: Location): Promise<string | undefined> {
     console.error(err)
   }
 }
+
+configurationStore.subscribe((config) => {
+  const arePermissionsDisabled = config.get(setting.ids.DisablePermissionsConfiguration)?.enabled ?? false
+  setMetadata(core.metadata.DisablePermissions, arePermissionsDisabled)
+})

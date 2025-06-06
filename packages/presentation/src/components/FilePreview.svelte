@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
+  import { BlobMetadata, type Blob, type Ref } from '@hcengineering/core'
   import {
     Button,
     Component,
@@ -28,7 +28,7 @@
   import { getFileUrl } from '../file'
   import { getPreviewType, previewTypes } from '../filetypes'
   import { imageSizeToRatio } from '../image'
-  import { BlobMetadata, FilePreviewExtension } from '../types'
+  import { FilePreviewExtension } from '../types'
 
   export let file: Ref<Blob>
   export let name: string
@@ -36,6 +36,8 @@
   export let metadata: BlobMetadata | undefined
   export let props: Record<string, any> = {}
   export let fit: boolean = false
+  export let embedded: boolean = false
+  export let setLoading: ((loading: boolean) => void) | undefined = undefined
 
   let download: HTMLAnchorElement
   let parentWidth: number
@@ -90,7 +92,8 @@
 
 <div
   use:resizeObserver={(element) => (parentWidth = element.clientWidth)}
-  class="content w-full h-full"
+  class:content-default={!embedded}
+  class:content-embedded={embedded}
   class:flex-center={fit && !audio}
   style:min-height={fit ? '0' : `${minHeight ?? 0}px`}
 >
@@ -100,7 +103,10 @@
         <Label label={presentation.string.FailedToPreview} />
       </div>
     {:else if previewType !== undefined}
-      <Component is={previewType.component} props={{ value: file, name, contentType, metadata, ...props, fit }} />
+      <Component
+        is={previewType.component}
+        props={{ value: file, name, contentType, metadata, ...props, fit, setLoading }}
+      />
     {:else if loading}
       <Loading />
     {:else}
@@ -122,9 +128,16 @@
 </div>
 
 <style lang="scss">
-  .content {
+  .content-default {
     flex-grow: 1;
     overflow: auto;
+    border: none;
+    width: 100%;
+    height: 100%;
+  }
+
+  .content-embedded {
+    width: 100%;
     border: none;
   }
 </style>

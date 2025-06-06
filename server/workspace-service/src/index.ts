@@ -25,18 +25,20 @@ import {
 import { type MigrateOperation } from '@hcengineering/model'
 import { setMetadata } from '@hcengineering/platform'
 import serverClientPlugin from '@hcengineering/server-client'
+import { QueueTopic, type PlatformQueue, type QueueWorkspaceMessage } from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
+import { createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
-import { WorkspaceWorker } from './service'
+import { WorkspaceWorker, type WorkspaceOperation } from './service'
 
 export * from './ws-operations'
-
 /**
  * @public
  */
 export function serveWorkspaceAccount (
   measureCtx: MeasureContext,
+  queue: PlatformQueue,
   version: Data<Version>,
   txes: Tx[],
   migrateOperations: [string, MigrateOperation][],
@@ -44,11 +46,36 @@ export function serveWorkspaceAccount (
   onClose?: () => void
 ): void {
   const region = process.env.REGION ?? ''
-  const wsOperation = process.env.WS_OPERATION ?? 'all'
-  if (wsOperation !== 'all' && wsOperation !== 'create' && wsOperation !== 'upgrade') {
-    console.log(`Invalid operation provided: ${wsOperation}. Must be one of 'all', 'create', 'upgrade'`)
+  const wsOperation: WorkspaceOperation = (process.env.WS_OPERATION as WorkspaceOperation) ?? 'all'
+  if (wsOperation !== 'all' && wsOperation !== 'create' && wsOperation !== 'upgrade' && wsOperation !== 'all+backup') {
+    console.log(
+      `Invalid operation provided: ${wsOperation as string}. 
+      Must be one of 'all', 'create', 'upgrade', 'all+backup'`
+    )
     process.exit(1)
   }
+
+  if (wsOperation === 'all+backup' && process.env.BACKUP_STORAGE === undefined) {
+    console.log('BACKUP_STORAGE is required for all operation')
+    process.exit(1)
+  }
+
+  if (wsOperation === 'all+backup' && process.env.BACKUP_BUCKET === undefined) {
+    console.log('BACKUP_BUCKET is required for all operation')
+    process.exit(1)
+  }
+
+  if (process.env.MIGRATION_CLEANUP !== 'true') {
+    console.log('Migration cleanup is not set, so move to regions will not clean old DB.')
+  }
+
+  const backup =
+    wsOperation === 'all+backup'
+      ? {
+          backupStorage: createStorageFromConfig(storageConfigFromEnv(process.env.BACKUP_STORAGE ?? '').storages[0]),
+          bucketName: process.env.BACKUP_BUCKET ?? 'backup'
+        }
+      : undefined
 
   console.log(
     'Starting workspace service in region:',
@@ -74,13 +101,6 @@ export function serveWorkspaceAccount (
     process.exit(1)
   }
 
-  // Required by the tool
-  const dbUri = process.env.MONGO_URL
-  if (dbUri === undefined) {
-    console.log('Please provide mongodb url')
-    process.exit(1)
-  }
-
   const waitTimeout = parseInt(process.env.WAIT_TIMEOUT ?? '5000')
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
@@ -89,35 +109,56 @@ export function serveWorkspaceAccount (
   if (initWS !== undefined) {
     setMetadata(toolPlugin.metadata.InitWorkspace, initWS)
   }
-  const initScriptUrl = process.env.INIT_SCRIPT_URL
-  if (initScriptUrl !== undefined) {
-    setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
-  }
-  setMetadata(serverClientPlugin.metadata.UserAgent, 'WorkspaceService')
 
+  const initRepoDir = process.env.INIT_REPO_DIR ?? './init-scripts'
+  setMetadata(toolPlugin.metadata.InitRepoDir, initRepoDir)
+
+  setMetadata(serverClientPlugin.metadata.UserAgent, 'WorkspaceService')
   setMetadata(serverNotification.metadata.InboxOnlyNotifications, true)
 
+  const fulltextUrl = process.env.FULLTEXT_URL
+  if (fulltextUrl === undefined) {
+    console.log('Please provide fulltext url to be able to clean fulltext index')
+  }
+
+  let canceled = false
+
+  const wsProducer = queue.getProducer<QueueWorkspaceMessage>(measureCtx, QueueTopic.Workspace)
   const worker = new WorkspaceWorker(
+    wsProducer,
     version,
     txes,
     migrateOperations,
     region,
     parseInt(process.env.PARALLEL ?? '1'),
     wsOperation,
-    brandings
+    brandings,
+    fulltextUrl,
+    accountUri
   )
 
-  void worker.start(measureCtx, {
-    errorHandler: async (ws, err) => {
-      Analytics.handleError(err)
-    },
-    force: false,
-    console: false,
-    logs: 'upgrade-logs',
-    waitTimeout
-  })
+  void worker
+    .start(
+      measureCtx,
+      {
+        errorHandler: async (ws, err) => {
+          Analytics.handleError(err)
+        },
+        force: false,
+        console: false,
+        logs: 'upgrade-logs',
+        waitTimeout,
+        backup
+      },
+      () => canceled
+    )
+    .catch((err) => {
+      measureCtx.error('failed to start', { err })
+    })
 
   const close = (): void => {
+    canceled = true
+    void queue.shutdown()
     onClose?.()
   }
 

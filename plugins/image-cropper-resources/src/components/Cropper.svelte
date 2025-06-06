@@ -37,7 +37,7 @@
 
     ctx.drawImage(bitmap, 0, 0)
 
-    imgRef.src = canvas.toDataURL('image/jpeg', 1.0)
+    imgRef.src = canvas.toDataURL('image/png', 1.0)
     imgRef.width = bitmap.width
     imgRef.height = bitmap.height
 
@@ -80,7 +80,7 @@
         (blob) => {
           resolve(blob)
         },
-        'image/jpeg',
+        'image/png',
         0.95
       )
     })

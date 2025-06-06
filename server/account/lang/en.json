@@ -11,6 +11,9 @@
     "InviteSubject": "Invitation to {ws}",
     "OtpText": "Confirm your email address to access {app}!\n\nYour confirmation code is below - enter it in the window where you've started signing in for {app}.\n\n{code}\n\nIf you didn’t request this email, there’s nothing to worry about — you can safely ignore it.",
     "OtpHTML": "<h3>Confirm your email address to access {app}!</h3><p>Your confirmation code is below - enter it in the window where you've started signing in for {app}.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>If you didn’t request this email, there’s nothing to worry about — you can safely ignore it.</p>",
-    "OtpSubject": "{app} confirmation code: {code}"
+    "OtpSubject": "{app} confirmation code: {code}",
+    "ResendInviteText": "You have been re-invited to {ws}. Please use the following link to join: {link}. The re-invitation link is valid for {expHours} hours.",
+    "ResendInviteHTML": "<p>You have been re-invited to {ws}. To join, click the link below: <a href={link}>Join</a></p><p>If the invite link above does not work, paste the following link into your browser's URL bar: {link}</p><p>The re-invitation link is valid for {expHours} hours.</p>",
+    "ResendInviteSubject": "Re-invitation to {ws}"
   }
 }

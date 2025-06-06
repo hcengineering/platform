@@ -25,7 +25,8 @@
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.8.3",
+    "@types/node": "^22.15.29"
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
@@ -43,13 +44,15 @@
     "@hcengineering/model-presentation": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
+    "@hcengineering/model-card": "^0.6.0",
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/templates": "^0.6.11",
+    "@hcengineering/card": "^0.6.0",
+    "@hcengineering/rank": "^0.6.4",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",
-    "@hcengineering/workbench": "^0.6.16",
-    "cross-fetch": "^3.1.5"
+    "@hcengineering/workbench": "^0.6.16"
   }
 }

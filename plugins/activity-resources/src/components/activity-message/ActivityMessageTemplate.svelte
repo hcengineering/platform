@@ -14,28 +14,29 @@
 -->
 <script lang="ts">
   import activity, {
+    ActivityMessage,
     ActivityMessageViewlet,
-    DisplayActivityMessage,
-    ActivityMessageViewType
+    ActivityMessageViewType,
+    DisplayActivityMessage
   } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
   import { Avatar, SystemAvatar } from '@hcengineering/contact-resources'
-  import core, { Ref } from '@hcengineering/core'
+  import core, { Ref, type SocialId } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import { Asset } from '@hcengineering/platform'
   import { ComponentExtensions, getClient } from '@hcengineering/presentation'
   import { Action, Icon, Label } from '@hcengineering/ui'
-  import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
-  import { Asset } from '@hcengineering/platform'
   import { Action as ViewAction } from '@hcengineering/view'
-  import notification from '@hcengineering/notification'
+  import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
 
-  import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
-  import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
-  import ActivityMessageActions from '../ActivityMessageActions.svelte'
-  import { isReactionMessage } from '../../activityMessagesUtils'
   import { savedMessagesStore } from '../../activity'
-  import MessageTimestamp from '../MessageTimestamp.svelte'
-  import Replies from '../Replies.svelte'
+  import { isReactionMessage } from '../../activityMessagesUtils'
   import { MessageInlineAction } from '../../types'
+  import ActivityMessageActions from '../ActivityMessageActions.svelte'
+  import MessageTimestamp from '../MessageTimestamp.svelte'
+  import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
+  import Replies from '../Replies.svelte'
+  import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
   import InlineAction from './InlineAction.svelte'
 
   export let message: DisplayActivityMessage
@@ -43,6 +44,7 @@
 
   export let viewlet: ActivityMessageViewlet | undefined = undefined
   export let person: Person | undefined = undefined
+  export let socialId: SocialId | undefined = undefined
   export let actions: Action[] = []
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
@@ -56,19 +58,21 @@
   export let hoverable = true
   export let pending = false
   export let stale = false
-  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hoverStyles: 'filledHover' | 'none' = 'filledHover'
   export let showDatePreposition = false
   export let type: ActivityMessageViewType = 'default'
   export let inlineActions: MessageInlineAction[] = []
   export let excludedActions: Ref<ViewAction>[] = []
   export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
+  export let embeddedActions: boolean = false
 
   export let socialIcon: Asset | undefined = undefined
 
   const client = getClient()
 
-  let menuActionIds: string[] = []
+  let menuActions: ViewAction[] = []
 
   let element: HTMLDivElement | undefined = undefined
   let isActionsOpened = false
@@ -81,7 +85,7 @@
 
   $: withActions &&
     getActions(client, message, activity.class.ActivityMessage).then((res) => {
-      menuActionIds = res.map(({ _id }) => _id)
+      menuActions = res
     })
 
   function scrollToMessage (): void {
@@ -106,7 +110,7 @@
   $: key = parentMessage != null ? `${message._id}_${parentMessage._id}` : message._id
 
   $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
-  $: withActionMenu = withActions && !embedded && (actions.length > 0 || menuActionIds.length > 0)
+  $: withActionMenu = withActions && !embedded && (actions.findIndex((a) => !a.inline) >= 0 || menuActions.length > 0)
 
   $: readonly = readonly || $restrictionStore.disableComments
 
@@ -131,7 +135,7 @@
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i]
 
-      if (node.nodeType !== Node.TEXT_NODE) continue
+      if (node.nodeType !== Node.TEXT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue
 
       range.selectNodeContents(node)
 
@@ -146,9 +150,14 @@
     if (readonly) return
     const showCustomPopup = !isTextClicked(event.target as HTMLElement, event.clientX, event.clientY)
     if (showCustomPopup) {
-      showMenu(event, { object: message, baseMenuClass: activity.class.ActivityMessage, excludedActions }, () => {
-        isActionsOpened = false
-      })
+      const overrides = onReply ? new Map([[activity.action.Reply, onReply]]) : new Map()
+      showMenu(
+        event,
+        { object: message, baseMenuClass: activity.class.ActivityMessage, excludedActions, overrides },
+        () => {
+          isActionsOpened = false
+        }
+      )
       isActionsOpened = true
     }
   }
@@ -168,7 +177,6 @@
       class:hoverable
       class:embedded
       class:actionsOpened={isActionsOpened}
-      class:borderedHover={hoverStyles === 'borderedHover'}
       class:filledHover={hoverStyles === 'filledHover'}
       class:stale
       on:click={onClick}
@@ -188,7 +196,7 @@
           {#if $$slots.icon}
             <slot name="icon" />
           {:else if person}
-            <Avatar size="medium" {person} name={person.name} />
+            <Avatar size="medium" {person} name={person.name} showPreview />
           {:else}
             <SystemAvatar size="medium" />
           {/if}
@@ -204,13 +212,16 @@
           {/if}
         </div>
       {/if}
-      <div class="flex-col ml-2 w-full clear-mins message-content">
+      <div class="flex-col w-full clear-mins message-content">
         {#if !isShort}
           <div class="header clear-mins">
             {#if person}
               <div class="username">
                 <ComponentExtensions extension={activity.extension.ActivityEmployeePresenter} props={{ person }} />
               </div>
+              {#if socialId !== undefined}
+                ({socialId.type})
+              {/if}
             {:else}
               <div class="strong">
                 <Label label={core.string.System} />
@@ -247,7 +258,7 @@
         <slot name="content" {readonly} />
 
         {#if !hideFooter}
-          <Replies {embedded} object={message} />
+          <Replies {embedded} object={message} {onReply} />
         {/if}
         <ReactionsPresenter object={message} {readonly} />
         {#if parentMessage && showEmbedded}
@@ -257,12 +268,19 @@
       </div>
 
       {#if withActions && !readonly}
-        <div class="actions" class:pending class:opened={isActionsOpened}>
+        <div
+          class="actions"
+          class:embedded={embeddedActions}
+          class:pending
+          class:opened={isActionsOpened}
+          class:isShort
+        >
           <ActivityMessageActions
             message={isReactionMessage(message) ? parentMessage : message}
             {actions}
             {withActionMenu}
             {excludedActions}
+            {onReply}
             onOpen={handleActionsOpened}
             onClose={handleActionsClosed}
           />
@@ -283,7 +301,7 @@
     position: relative;
     display: flex;
     flex-shrink: 0;
-    padding: 0.5rem 0.75rem 0.5rem 1rem;
+    padding: 0.5rem 1rem;
     gap: 1rem;
     //overflow: hidden;
     border: 1px solid transparent;
@@ -315,8 +333,16 @@
       top: -0.75rem;
       right: 0.75rem;
 
+      &.embedded {
+        top: 0.25rem;
+        right: 0.25rem;
+      }
+
       &.opened:not(.pending) {
         visibility: visible;
+      }
+      &.isShort {
+        top: -1.875rem;
       }
     }
 
@@ -340,10 +366,6 @@
     }
 
     &.actionsOpened {
-      &.borderedHover {
-        border: 1px solid var(--global-ui-BackgroundColor);
-      }
-
       &.filledHover {
         background-color: var(--global-ui-BackgroundColor);
       }
@@ -351,10 +373,6 @@
 
     &.hoverable {
       &:hover:not(.embedded) {
-        &.borderedHover {
-          border: 1px solid var(--global-ui-BackgroundColor);
-        }
-
         &.filledHover {
           background-color: var(--global-ui-BackgroundColor);
         }

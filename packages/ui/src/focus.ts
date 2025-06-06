@@ -63,7 +63,7 @@ class FocusManagerImpl implements FocusManager {
       return
     }
     this.current = this.elements.findIndex((it) => it.id === idx) ?? 0
-    this.elements[Math.abs(this.current) % this.elements.length].focus()
+    this.elements[Math.abs(this.current) % this.elements.length]?.focus()
   }
 
   setFocusPos (order: number): void {
@@ -73,7 +73,7 @@ class FocusManagerImpl implements FocusManager {
     const idx = this.elements.findIndex((it) => it.order === order)
     if (idx !== undefined) {
       this.current = idx
-      this.elements[Math.abs(this.current) % this.elements.length].focus()
+      this.elements[Math.abs(this.current) % this.elements.length]?.focus()
     }
   }
 

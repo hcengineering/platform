@@ -20,7 +20,6 @@ test.describe('review tests', () => {
 
   test('create-review', async ({ page }) => {
     const reviewId = 'review-' + generateId()
-    await recruitingPage.clickRecruitApplication()
     await recruitingPage.clickOnReviews()
     await recruitingPage.clickOnReviewButton()
     await commonRecruitingPage.clickOnTitle()

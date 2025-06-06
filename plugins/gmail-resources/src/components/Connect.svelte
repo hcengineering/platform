@@ -14,8 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { getMetadata, translate } from '@hcengineering/platform'
-  import { Button, IconClose, Label, themeStore } from '@hcengineering/ui'
+  import { Button, Html, IconClose, Label, themeStore, IconError } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import gmail from '../plugin'
   import { concatLink } from '@hcengineering/core'
@@ -25,25 +26,34 @@
 
   let connecting = false
   const gmailUrl = getMetadata(gmail.metadata.GmailURL) ?? ''
+  let error = false
 
   async function sendRequest (): Promise<void> {
-    connecting = true
-    const link = concatLink(gmailUrl, '/signin')
-    const url = new URL(link)
-    url.search = new URLSearchParams({
-      redirectURL: (getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin) + window.location.pathname
-    }).toString()
+    try {
+      connecting = true
+      const link = concatLink(gmailUrl, '/signin')
+      const url = new URL(link)
+      url.search = new URLSearchParams({
+        redirectURL: (getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin) + window.location.pathname
+      }).toString()
 
-    const res = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
-        'Content-Type': 'application/json'
-      }
-    })
-    const redirectTo = await res.text()
-    window.open(redirectTo)
-    dispatch('close')
+      const res = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
+          'Content-Type': 'application/json'
+        }
+      })
+      const redirectTo = await res.text()
+      window.open(redirectTo)
+      dispatch('close')
+    } catch (e: any) {
+      Analytics.handleError(e)
+      console.error(e)
+      error = true
+    } finally {
+      connecting = false
+    }
   }
 
   let label = ''
@@ -70,8 +80,15 @@
   <div class="content">
     <Label label={gmail.string.RedirectGoogle} />
     <div class="mt-2">
-      {@html label}
+      <Html value={label} />
     </div>
+
+    {#if error}
+      <div class="flex-row-center gap-2 pt-2">
+        <IconError size={'medium'} />
+        <Label label={gmail.string.FailedToConnect} />
+      </div>
+    {/if}
 
     <div class="footer">
       <Button label={gmail.string.Connect} kind={'primary'} disabled={connecting} on:click={sendRequest} />

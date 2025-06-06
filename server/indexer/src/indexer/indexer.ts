@@ -14,33 +14,58 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
+import attachmentPlugin, { type Attachment } from '@hcengineering/attachment'
+import contactPlugin from '@hcengineering/contact'
 import core, {
+  type AnyAttribute,
+  type AttachedDoc,
+  type Blob,
   type Class,
-  DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_MODEL,
   type Doc,
-  type DocIndexState,
-  type DocumentQuery,
-  type DocumentUpdate,
+  type Domain,
+  type FullTextSearchContext,
   type Hierarchy,
+  type IdMap,
   type MeasureContext,
   type ModelDb,
   type Ref,
-  TxFactory,
-  type WorkspaceIdWithUrl,
-  _getOperator,
+  type Space,
+  type TxCUD,
+  TxProcessor,
+  type WorkspaceIds,
+  type WorkspaceUuid,
   docKey,
+  getFullTextIndexableAttributes,
   groupByArray,
-  setObjectValue,
-  systemAccountEmail
+  isClassIndexable,
+  isFullTextAttribute,
+  isIndexedAttribute,
+  platformNow,
+  systemAccount,
+  toIdMap,
+  withContext
 } from '@hcengineering/core'
-import type { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
+import drivePlugin, { type FileVersion } from '@hcengineering/drive'
+import type {
+  ConsumerControl,
+  ContentTextAdapter,
+  DbAdapter,
+  FullTextAdapter,
+  FulltextListener,
+  IndexedDoc,
+  StorageAdapter
+} from '@hcengineering/server-core'
 import { RateLimiter, SessionDataImpl } from '@hcengineering/server-core'
-import { type FullTextPipeline, type FullTextPipelineStage } from './types'
+import { jsonToText, markupToJSON, markupToText } from '@hcengineering/text'
+import { findSearchPresenter, updateDocWithPresenter } from '../mapper'
+import { type FullTextPipeline } from './types'
+import { createIndexedDoc, getContent } from './utils'
 
-export * from './content'
-export * from './field'
 export * from './types'
 export * from './utils'
+
+const textLimit = 500 * 1024
 
 // Global Memory management configuration
 
@@ -48,580 +73,631 @@ export * from './utils'
  * @public
  */
 export const globalIndexer = {
-  allowParallel: 2,
-  processingSize: 25
+  allowParallel: 10,
+  processingSize: 100
 }
 
-const rateLimiter = new RateLimiter(globalIndexer.allowParallel)
-
 let indexCounter = 0
+
+function extractValues (obj: any): string {
+  let res = ''
+
+  const o = [obj]
+  while (o.length > 0) {
+    const oo = o.shift()
+    if (typeof oo === 'object') {
+      o.push(Object.values(oo))
+      continue
+    }
+    if (Array.isArray(oo)) {
+      o.push(...oo)
+      continue
+    }
+    res += `${oo} `
+  }
+  return res
+}
+
+class ElasticPushQueue {
+  pushQueue = new RateLimiter(5)
+  indexedDocs: IndexedDoc[] = []
+
+  constructor (
+    readonly fulltextAdapter: FullTextAdapter,
+    readonly workspace: WorkspaceIds,
+    readonly ctx: MeasureContext,
+    readonly control?: ConsumerControl
+  ) {}
+
+  async push (doc: IndexedDoc): Promise<void> {
+    this.indexedDocs.push(doc)
+    if (this.indexedDocs.length > 25) {
+      await this.pushToIndex()
+    }
+  }
+
+  async waitProcessing (): Promise<void> {
+    if (this.indexedDocs.length > 0) {
+      await this.pushToIndex()
+    }
+    await this.pushQueue.waitProcessing()
+  }
+
+  async pushToIndex (): Promise<void> {
+    const docs = [...this.indexedDocs]
+    this.indexedDocs = []
+    if (docs.length === 0) {
+      return
+    }
+    await this.pushQueue.add(async () => {
+      try {
+        try {
+          await this.ctx.with('push-elastic', {}, () =>
+            this.fulltextAdapter.updateMany(this.ctx, this.workspace.uuid, docs)
+          )
+
+          await this.control?.heartbeat()
+        } catch (err: any) {
+          Analytics.handleError(err)
+          // Try to push one by one
+          await this.ctx.with('push-elastic-by-one', {}, async () => {
+            for (const d of docs) {
+              try {
+                await this.fulltextAdapter.update(this.ctx, this.workspace.uuid, d.id, d)
+              } catch (err2: any) {
+                Analytics.handleError(err2)
+              }
+            }
+          })
+        }
+      } catch (err: any) {
+        Analytics.handleError(err)
+      }
+    })
+  }
+}
+
 /**
  * @public
  */
 export class FullTextIndexPipeline implements FullTextPipeline {
-  pending = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
-  toIndex = new Map<Ref<DocIndexState>, DocIndexState>()
-  extraIndex = new Map<Ref<DocIndexState>, DocIndexState>()
-  stageChanged = 0
-
   cancelling: boolean = false
-
-  currentStage: FullTextPipelineStage | undefined
-
-  readyStages: string[]
-
-  indexing: Promise<void> | undefined
 
   indexId = indexCounter++
 
-  updateTriggerTimer: any
-  updateOps = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
-
-  uploadOps: DocIndexState[] = []
+  contexts: Map<Ref<Class<Doc>>, FullTextSearchContext>
 
   constructor (
+    readonly fulltextAdapter: FullTextAdapter,
     private readonly storage: DbAdapter,
-    private readonly stages: FullTextPipelineStage[],
     readonly hierarchy: Hierarchy,
-    readonly workspace: WorkspaceIdWithUrl,
+    readonly workspace: WorkspaceIds,
     readonly metrics: MeasureContext,
     readonly model: ModelDb,
-    readonly broadcastUpdate: (ctx: MeasureContext, classes: Ref<Class<Doc>>[]) => void
+    readonly storageAdapter: StorageAdapter,
+    readonly contentAdapter: ContentTextAdapter,
+    readonly broadcastUpdate: (ctx: MeasureContext, classes: Ref<Class<Doc>>[]) => void,
+    readonly listener?: FulltextListener
   ) {
-    this.readyStages = stages.map((it) => it.stageId)
-    this.readyStages.sort()
+    this.contexts = new Map(model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it]))
   }
 
-  async cancel (): Promise<void> {
-    this.cancelling = true
-    clearTimeout(this.updateBroadcast)
-    clearInterval(this.updateTriggerTimer)
-    // We need to upload all bulk changes.
-    await this.processUpload(this.metrics)
-    this.triggerIndexing()
-    await this.indexing
-    await this.flush(true)
-    this.metrics.warn('Cancel indexing', { workspace: this.workspace.name, indexId: this.indexId })
-  }
+  async getIndexClassess (): Promise<{ domain: Domain, classes: Ref<Class<Doc>>[] }[]> {
+    const allClasses = this.hierarchy.getDescendants(core.class.Doc)
+    const contexts = new Map(this.model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it]))
+    const allIndexed = allClasses.filter((it) => isClassIndexable(this.hierarchy, it, contexts))
+    const domainPriorities: Record<string, number> = {
+      space: 1500,
+      contact: 1000,
+      task: 500,
+      recruit: 400,
+      document: 300,
+      attachment: -100
+    }
 
-  async markRemove (doc: DocIndexState): Promise<void> {
-    const ops = new TxFactory(core.account.System, true)
-    await this.storage.tx(
-      this.metrics,
-      ops.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-        removed: true,
-        needIndex: true
+    const byDomain = groupByArray(allIndexed, (it) => this.hierarchy.getDomain(it))
+    return Array.from(byDomain.entries())
+      .sort((a, b) => {
+        const ap = domainPriorities[a[0]] ?? 0
+        const bp = domainPriorities[b[0]] ?? 0
+        return bp - ap
       })
-    )
+      .map((it) => ({
+        domain: it[0],
+        classes: it[1]
+      }))
   }
 
-  async search (
-    _classes: Ref<Class<Doc>>[],
-    search: DocumentQuery<Doc>,
-    size: number | undefined,
-    from?: number
-  ): Promise<{ docs: IndexedDoc[], pass: boolean }> {
-    const result: IndexedDoc[] = []
-    for (const st of this.stages) {
-      await st.initialize(this.metrics, this.storage, this)
-      const docs = await st.search(_classes, search, size, from)
-      result.push(...docs.docs)
-      if (!docs.pass) {
-        return { docs: result, pass: false }
-      }
-    }
-    return { docs: result, pass: true }
-  }
-
-  async flush (force = false): Promise<void> {
-    if (this.pending.size > 0 && (this.pending.size >= 50 || force)) {
-      // Push all pending changes to storage.
-      try {
-        await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, this.pending)
-      } catch (err: any) {
-        Analytics.handleError(err)
-        // Go one by one.
-        for (const o of this.pending) {
-          await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, new Map([o]))
-        }
-      }
-      this.pending.clear()
-    }
-  }
-
-  updateDoc (doc: DocIndexState, tx: DocumentUpdate<DocIndexState>, finish: boolean): DocIndexState {
-    for (const key in tx) {
-      if (key.startsWith('$')) {
-        const operator = _getOperator(key)
-        operator(doc, (tx as any)[key])
-      } else {
-        setObjectValue(key, doc, (tx as any)[key])
-      }
-    }
-
-    const spaceKey = docKey('space', { _class: core.class.Doc })
-    if (doc.attributes !== undefined && doc.attributes[spaceKey] !== undefined) {
-      doc.space = doc.attributes[spaceKey]
-    }
-
-    if (finish) {
-      doc.modifiedBy = core.account.System
-      doc.modifiedOn = Date.now()
-    }
-    return doc
-  }
-
-  async processUpload (ctx: MeasureContext): Promise<void> {
-    const ops = this.updateOps
-    this.updateOps = new Map()
-    const toUpload = this.uploadOps
-    this.uploadOps = []
-    if (toUpload.length > 0) {
-      await ctx.with('upload', {}, async () => {
-        await this.storage.upload(this.metrics, DOMAIN_DOC_INDEX_STATE, toUpload)
-      })
-    }
-    if (ops.size > 0) {
-      await ctx.with('update', {}, async () => {
-        await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, ops)
-      })
-    }
-    if (toUpload.length > 0 || ops.size > 0) {
-      this.triggerIndexing()
-    }
-  }
-
-  async queue (
+  async reindex (
     ctx: MeasureContext,
-    updates: Map<Ref<DocIndexState>, { create?: DocIndexState, updated: boolean, removed: boolean }>
+    domain: Domain,
+    classes: Ref<Class<Doc>>[],
+    control?: ConsumerControl
   ): Promise<void> {
-    const entries = Array.from(updates.entries())
-    const uploads = entries.filter((it) => it[1].create !== undefined).map((it) => it[1].create) as DocIndexState[]
-    if (uploads.length > 0) {
-      this.uploadOps.push(...uploads)
-    }
+    ctx.warn('verify document structure', { workspace: this.workspace.uuid })
 
-    const onlyUpdates = entries.filter((it) => it[1].create === undefined)
+    let processed = 0
+    await ctx.with('reindex-domain', { domain }, async (ctx) => {
+      // Iterate over all domain documents and add appropriate entries
+      const allDocs = this.storage.rawFind(ctx, domain)
+      try {
+        let lastPrint = 0
+        const pushQueue = new ElasticPushQueue(this.fulltextAdapter, this.workspace, ctx, control)
+        while (true) {
+          if (control !== undefined) {
+            await control?.heartbeat()
+          }
+          const docs = await allDocs.find(ctx)
+          if (docs.length === 0) {
+            break
+          }
+          const byClass = groupByArray<Doc, Ref<Class<Doc>>>(docs, (it) => it._class)
 
-    if (onlyUpdates.length > 0) {
-      for (const u of onlyUpdates) {
-        const upd: DocumentUpdate<DocIndexState> = { removed: u[1].removed }
+          for (const [v, values] of byClass.entries()) {
+            if (!isClassIndexable(this.hierarchy, v, this.contexts)) {
+              // Skip non indexable classes
+              continue
+            }
 
-        // We need to clear only first state, to prevent multiple index operations to happen.
-        ;(upd as any)['stages.' + this.stages[0].stageId] = false
-        upd.needIndex = true
-        this.updateOps.set(u[0], upd)
-      }
-    }
-  }
+            await this.indexDocuments(ctx, v, values, pushQueue)
+            await control?.heartbeat()
+          }
 
-  add (doc: DocIndexState): void {
-    this.extraIndex.set(doc._id, doc)
-  }
+          processed += docs.length
 
-  // Update are commulative
-  async update (
-    docId: Ref<DocIndexState>,
-    mark: boolean,
-    update: DocumentUpdate<DocIndexState>,
-    flush?: boolean
-  ): Promise<void> {
-    let udoc = this.toIndex.get(docId)
-    if (udoc !== undefined) {
-      await this.stageUpdate(udoc, update)
+          // Define the thresholds for logging
 
-      udoc = this.updateDoc(udoc, update, mark)
-      this.toIndex.set(docId, udoc)
-    }
+          // Find the next threshold to print
 
-    if (udoc === undefined) {
-      udoc = this.extraIndex.get(docId)
-      if (udoc !== undefined) {
-        await this.stageUpdate(udoc, update)
-        udoc = this.updateDoc(udoc, update, mark)
-        this.extraIndex.set(docId, udoc)
-      }
-    }
-
-    if (udoc === undefined) {
-      // Some updated, document, let's load it.
-      udoc = (await this.storage.load(this.metrics, DOMAIN_DOC_INDEX_STATE, [docId])).shift() as DocIndexState
-    }
-
-    if (udoc !== undefined && this.currentStage !== undefined) {
-      const stageId = this.currentStage.stageId
-      // Update current stage, value
-      update.stages = this.filterCurrentStages(udoc)
-      update.stages[stageId] = mark
-
-      if (this.currentStage.clearExcept !== undefined) {
-        for (const [k] of Object.entries(update.stages)) {
-          if (k !== this.currentStage.stageId && !this.currentStage.clearExcept.includes(k)) {
-            update.stages[k] = false
+          const now = platformNow()
+          if (now - lastPrint > 2500) {
+            ctx.info('processed', { processed, elapsed: Math.round(now - lastPrint), domain })
+            lastPrint = now
           }
         }
+        await pushQueue.waitProcessing()
+      } catch (err: any) {
+        ctx.error('failed to restore index state', { err })
+      } finally {
+        await allDocs.close()
       }
-
-      // Filter unsupported stages
-      udoc.stages = update.stages
-
-      const stg = Object.values(udoc.stages)
-      if (!stg.includes(false) && stg.length === this.stages.length) {
-        // Check if all marks are true, we need to clear needIndex.
-        udoc.needIndex = false
-      }
-
-      if (Object.keys(update).length > 0) {
-        this.currentStages[stageId] = (this.currentStages[stageId] ?? 0) + 1
-        this.stageChanged++
-      }
-    }
-
-    const current = this.pending.get(docId)
-    if (current === undefined) {
-      this.pending.set(docId, update)
-    } else {
-      this.pending.set(docId, { ...current, ...update })
-    }
-
-    await this.flush(flush ?? false)
+    })
+    ctx.warn('reinex done', { domain, processed })
   }
 
-  // Update are commulative
-  async updateNeedIndex (docId: Ref<DocIndexState>, value: boolean, flush?: boolean): Promise<void> {
-    const update = { needIndex: value }
-    let udoc = this.toIndex.get(docId)
-    if (udoc !== undefined) {
-      await this.stageUpdate(udoc, update)
-
-      udoc = this.updateDoc(udoc, update, true)
-      this.toIndex.set(docId, udoc)
+  async dropWorkspace (control?: ConsumerControl): Promise<void> {
+    if (this.workspace.dataId != null) {
+      await this.fulltextAdapter.clean(this.metrics, this.workspace.dataId as unknown as WorkspaceUuid)
     }
-
-    if (udoc === undefined) {
-      udoc = this.extraIndex.get(docId)
-      if (udoc !== undefined) {
-        await this.stageUpdate(udoc, update)
-        udoc = this.updateDoc(udoc, update, true)
-        this.extraIndex.set(docId, udoc)
-      }
-    }
-
-    if (udoc === undefined) {
-      // Some updated, document, let's load it.
-      udoc = (await this.storage.load(this.metrics, DOMAIN_DOC_INDEX_STATE, [docId])).shift() as DocIndexState
-    }
-
-    const current = this.pending.get(docId)
-    if (current === undefined) {
-      this.pending.set(docId, update)
-    } else {
-      this.pending.set(docId, { ...current, ...update })
-    }
-
-    await this.flush(flush ?? false)
-  }
-
-  triggerCounts = 0
-
-  triggerIndexing = (): void => {}
-  currentStages: Record<string, number> = {}
-
-  private filterCurrentStages (udoc: DocIndexState): Record<string, boolean> {
-    const result: Record<string, boolean> = {}
-    for (const [k, v] of Object.entries(udoc.stages ?? {})) {
-      if (this.currentStages[k] !== undefined) {
-        result[k] = v
-      }
-    }
-    return result
-  }
-
-  private async stageUpdate (udoc: DocIndexState, update: DocumentUpdate<DocIndexState>): Promise<void> {
-    for (const u of this.currentStage?.updateFields ?? []) {
-      await u(udoc, update)
-    }
-  }
-
-  async startIndexing (): Promise<void> {
-    this.indexing = this.doIndexing()
-
-    clearTimeout(this.updateTriggerTimer)
-    this.updateTriggerTimer = setInterval(() => {
-      void this.processUpload(this.metrics)
-    }, 250)
-  }
-
-  async initializeStages (): Promise<void> {
-    for (const st of this.stages) {
-      if (this.cancelling) {
-        return
-      }
-      await st.initialize(this.metrics, this.storage, this)
-    }
+    await this.fulltextAdapter.clean(this.metrics, this.workspace.uuid)
   }
 
   broadcastClasses = new Set<Ref<Class<Doc>>>()
-  updateBroadcast: any = undefined
+  broadcasts: number = 0
 
-  async doIndexing (): Promise<void> {
-    // Check model is upgraded to support indexer.
+  cancel (): void {
+    this.cancelling = true
+    clearTimeout(this.broadCastTimeout)
+  }
 
-    await this.metrics.with('init-states', {}, async () => {
-      await this.initStates()
-    })
+  broadCastTimeout: any
 
-    while (!this.cancelling) {
-      // Clear triggers
-      this.triggerCounts = 0
-      this.stageChanged = 0
-      await this.metrics.with('initialize-stages', { workspace: this.workspace.name }, async () => {
-        await this.initializeStages()
-      })
-
-      const _classes = await this.metrics.with(
-        'processIndex',
-        { workspace: this.workspace.name },
-        async (ctx) => await this.processIndex(ctx)
-      )
-
-      // Also update doc index state queries.
-      _classes.push(core.class.DocIndexState)
-
-      _classes.forEach((it) => this.broadcastClasses.add(it))
-
-      if (this.triggerCounts > 0) {
-        this.metrics.info('No wait, trigger counts', { triggerCount: this.triggerCounts })
-      }
-
-      if (this.toIndex.size === 0 && this.stageChanged === 0 && this.triggerCounts === 0) {
-        if (this.toIndex.size === 0) {
-          this.metrics.warn('Indexing complete', { indexId: this.indexId, workspace: this.workspace.name })
-        }
-        if (!this.cancelling) {
-          // We need to send index update event
-          clearTimeout(this.updateBroadcast)
-          this.updateBroadcast = setTimeout(() => {
-            this.broadcastClasses.delete(core.class.DocIndexState)
-            if (this.broadcastClasses.size > 0) {
-              const toSend = Array.from(this.broadcastClasses.values())
-              this.broadcastClasses.clear()
-              this.broadcastUpdate(this.metrics, toSend)
-            }
-          }, 5000)
-
-          await new Promise((resolve) => {
-            this.triggerIndexing = () => {
-              this.triggerCounts++
-              resolve(null)
-            }
-          })
-        }
+  scheduleBroadcast (): void {
+    if (!this.cancelling) {
+      // We need to send index update event
+      if (this.broadcasts === 0) {
+        this.broadcasts++
+        this.broadCastTimeout = setTimeout(() => {
+          this.broadcasts = 0
+          if (this.broadcastClasses.size > 0 && !this.cancelling) {
+            const toSend = Array.from(this.broadcastClasses.values())
+            this.broadcastClasses.clear()
+            this.broadcastUpdate(this.metrics, toSend)
+          }
+        }, 5000)
       }
     }
-    this.metrics.warn('Exit indexer', { indexId: this.indexId, workspace: this.workspace.name })
   }
 
-  private async processIndex (ctx: MeasureContext): Promise<Ref<Class<Doc>>[]> {
-    const _classUpdate = new Set<Ref<Class<Doc>>>()
-    await rateLimiter.exec(async () => {
-      while (true) {
-        try {
-          if (this.cancelling) {
-            return Array.from(_classUpdate.values())
-          }
-          await ctx.with('flush', {}, async () => {
-            await this.flush(true)
-          })
-
-          let result: DocIndexState[] | undefined = await ctx.with('get-indexable', {}, async () => {
-            const q: DocumentQuery<DocIndexState> = {
-              needIndex: true
-            }
-            return await this.storage.findAll(ctx, core.class.DocIndexState, q, {
-              limit: globalIndexer.processingSize,
-              skipClass: true,
+  private async findParents (ctx: MeasureContext, docs: AttachedDoc[]): Promise<IdMap<Doc>> {
+    const result: Doc[] = []
+    const groups = groupByArray(docs, (doc) => doc.attachedToClass)
+    for (const [_class, _docs] of groups) {
+      const pids = Array.from(new Set(_docs.map((it) => it.attachedTo)))
+      try {
+        const gdocs = await ctx.with('find-spaces', {}, (ctx) =>
+          this.storage.findAll<Doc>(
+            ctx,
+            _class,
+            {
+              _id: {
+                $in: pids
+              }
+            },
+            {
               skipSpace: true
-            })
-          })
-          if (result === undefined) {
-            // No more results
-            break
-          }
-
-          await this.processRemove(result)
-          result = result.filter((it) => !it.removed)
-          const toRemove: DocIndexState[] = []
-          // Check and remove missing class documents.
-          result = result.filter((doc) => {
-            const _class = this.model.findObject(doc.objectClass)
-            if (_class === undefined) {
-              // no _class present, remove doc
-              toRemove.push(doc)
-              return false
             }
-            return true
-          })
-
-          if (toRemove.length > 0) {
-            try {
-              await this.storage.clean(
-                this.metrics,
-                DOMAIN_DOC_INDEX_STATE,
-                toRemove.map((it) => it._id)
-              )
-            } catch (err: any) {
-              Analytics.handleError(err)
-              // QuotaExceededError, ignore
-            }
-          }
-
-          if (result.length > 0) {
-            this.metrics.info('Full text: Indexing', {
-              indexId: this.indexId,
-              workspace: this.workspace.name,
-              ...this.currentStages
-            })
-          } else {
-            // Nothing to index, check on next cycle.
-            break
-          }
-          const retry: DocIndexState[] = []
-
-          await this.processStages(result, ctx, _classUpdate)
-
-          // Force clear needIndex, it will be re trigger if some propogate will happen next.
-          if (!this.cancelling) {
-            for (const u of result) {
-              const stg = Object.values(u.stages)
-              if (!stg.includes(false) && stg.length === this.stages.length) {
-                // Check if all marks are true, we need to clear needIndex.
-                u.needIndex = false
-                await this.updateNeedIndex(u._id, false)
-              } else {
-                // Mark as retry on
-                retry.push(u)
-              }
-            }
-          }
-          if (retry.length > 0) {
-            await this.processStages(retry, ctx, _classUpdate)
-            if (!this.cancelling) {
-              for (const u of retry) {
-                // Since retry is happen, it shoudl be marked already.
-                u.needIndex = false
-                await this.updateNeedIndex(u._id, false)
-              }
-            }
-          }
-        } catch (err: any) {
-          Analytics.handleError(err)
-          this.metrics.error('error during index', { error: err })
-        }
-      }
-    })
-    return Array.from(_classUpdate.values())
-  }
-
-  private async processStages (
-    result: DocIndexState[],
-    ctx: MeasureContext,
-    _classUpdate: Set<Ref<Class<Doc>>>
-  ): Promise<void> {
-    this.toIndex = new Map(result.map((it) => [it._id, it]))
-    const contextData = new SessionDataImpl(
-      systemAccountEmail,
-      '',
-      true,
-      { targets: {}, txes: [] },
-      this.workspace,
-      null,
-      false,
-      new Map(),
-      new Map(),
-      this.model
-    )
-    ctx.contextData = contextData
-    for (const st of this.stages) {
-      this.extraIndex.clear()
-      this.stageChanged = 0
-      // Find documents matching query
-      const toIndex = this.matchStates(st)
-
-      if (toIndex.length > 0) {
-        // Do Indexing
-        this.currentStage = st
-
-        await ctx.with('collect-' + st.stageId, {}, async (ctx) => {
-          await st.collect(toIndex, this, ctx)
+          )
+        )
+        result.push(...gdocs)
+      } catch (err: any) {
+        ctx.error('failed to find parents for', {
+          _class,
+          pids,
+          docCl: Array.from(new Set(_docs.map((it) => it._class)))
         })
-        if (this.cancelling) {
-          break
-        }
-
-        toIndex.forEach((it) => _classUpdate.add(it.objectClass))
-      } else {
         continue
       }
     }
+    return toIdMap(result)
   }
 
-  private async processRemove (docs: DocIndexState[]): Promise<void> {
-    let total = 0
-    this.toIndex = new Map(docs.map((it) => [it._id, it]))
-
-    this.extraIndex.clear()
-
-    const toIndex = Array.from(this.toIndex.values()).filter((it) => it.removed)
-    if (toIndex.length === 0) {
-      return
+  async indexDocuments (
+    ctx: MeasureContext,
+    _class: Ref<Class<Doc>>,
+    docs: Doc[],
+    pushQueue: ElasticPushQueue
+  ): Promise<void> {
+    let spaceDocs: IdMap<Space> | undefined
+    const updateSpaces = async (): Promise<void> => {
+      spaceDocs = toIdMap(
+        await ctx.with('find-spaces', {}, (ctx) =>
+          this.storage.findAll(
+            ctx,
+            core.class.Space,
+            {
+              _id: {
+                $in: Array.from(new Set(docs.map((doc) => doc.space)))
+              }
+            },
+            {
+              skipClass: true,
+              skipSpace: true
+            }
+          )
+        )
+      )
     }
-    const toRemoveIds = []
-    for (const st of this.stages) {
-      if (toIndex.length > 0) {
-        // Do Indexing
-        this.currentStage = st
-        await st.remove(toIndex, this)
-      } else {
-        break
+    const searchPresenter = findSearchPresenter(this.hierarchy, _class)
+
+    let parentDocs: IdMap<Doc> | undefined
+
+    const rateLimit = new RateLimiter(10)
+    // We need to add all to broadcast update
+    for (const doc of docs) {
+      if (typeof doc._id === 'object') {
+        doc._id = (doc._id as any).toString()
+      }
+      this.broadcastClasses.add(doc._class)
+      if (this.cancelling) {
+        return
+      }
+      const indexedDoc = createIndexedDoc(doc, this.hierarchy.findAllMixins(doc), doc.space)
+
+      await rateLimit.exec(async () => {
+        await ctx.with('process-document', { _class: doc._class }, async (ctx) => {
+          try {
+            // Collect all indexable values
+            const attributes = getFullTextIndexableAttributes(this.hierarchy, doc._class)
+            const content = getContent(this.hierarchy, attributes, doc)
+
+            indexedDoc.fulltextSummary = ''
+
+            for (const [, v] of Object.entries(content)) {
+              if (v.attr.type._class === core.class.TypeBlob) {
+                await this.processBlob(ctx, v, doc, indexedDoc)
+                continue
+              }
+
+              if (v.attr.type._class === core.class.TypeCollaborativeDoc) {
+                await this.processCollaborativeDoc(ctx, v, indexedDoc)
+                continue
+              }
+              if ((isFullTextAttribute(v.attr) || v.attr.isCustom === true) && v.value !== undefined) {
+                if (v.attr.type._class === core.class.TypeMarkup) {
+                  ctx.withSync('markup-to-json-text', {}, () => {
+                    indexedDoc.fulltextSummary += '\n' + jsonToText(markupToJSON(v.value))
+                  })
+                } else {
+                  indexedDoc.fulltextSummary += '\n' + v.value
+                }
+
+                continue
+              }
+
+              if (isIndexedAttribute(v.attr)) {
+                // We need to put indexed attr in place
+
+                // Check for content changes and collect update
+                const dKey = docKey(v.attr.name, v.attr.attributeOf)
+                if (dKey !== '_class') {
+                  if (typeof v.value !== 'object') {
+                    indexedDoc[dKey] = v.value
+                  } else {
+                    // We need to extract only values
+                    indexedDoc[dKey] = extractValues(v.value)
+                  }
+                }
+                continue
+              }
+            }
+
+            // trim to large content
+            if (indexedDoc.fulltextSummary.length > textLimit) {
+              indexedDoc.fulltextSummary = indexedDoc.fulltextSummary.slice(0, textLimit)
+            }
+
+            if (searchPresenter !== undefined) {
+              await ctx.with('update-search-presenter', { _class: doc._class }, async () => {
+                if (parentDocs === undefined) {
+                  parentDocs = this.hierarchy.isDerived(_class, core.class.AttachedDoc)
+                    ? await this.findParents(ctx, docs as unknown as AttachedDoc[])
+                    : undefined
+                }
+                const parentDoc = parentDocs?.get((doc as AttachedDoc).attachedTo)
+                if (spaceDocs === undefined) {
+                  await updateSpaces()
+                }
+                const spaceDoc = spaceDocs?.get(doc.space) // docState.$lookup?.space
+                await updateDocWithPresenter(this.hierarchy, doc, indexedDoc, parentDoc, spaceDoc, searchPresenter)
+              })
+            }
+
+            indexedDoc.id = doc._id
+            indexedDoc.space = doc.space
+
+            if (this.listener?.onIndexing !== undefined) {
+              await this.listener.onIndexing(indexedDoc)
+            }
+            await pushQueue.push(indexedDoc)
+          } catch (err: any) {
+            ctx.error('failed to process document', {
+              id: doc._id,
+              class: doc._class,
+              workspace: this.workspace.uuid
+            })
+            Analytics.handleError(err)
+          }
+        })
+      })
+    }
+    await rateLimit.waitProcessing()
+  }
+
+  public async processDocuments (ctx: MeasureContext, result: TxCUD<Doc>[], control: ConsumerControl): Promise<void> {
+    const contextData = this.createContextData()
+    ctx.contextData = contextData
+    // Find documents matching query
+
+    // We need to update hierarchy and local model if required.
+
+    for (const tx of result) {
+      this.hierarchy.tx(tx)
+      const domain = this.hierarchy.findDomain(tx.objectClass)
+      if (domain === DOMAIN_MODEL) {
+        await this.model.tx(tx)
       }
     }
-    // If all stages are complete, remove document
-    const allStageIds = this.stages.map((it) => it.stageId)
-    for (const doc of toIndex) {
-      if (allStageIds.every((it) => doc.stages[it])) {
-        toRemoveIds.push(doc._id)
+
+    const byClass = groupByArray<TxCUD<Doc>, Ref<Class<Doc>>>(result, (it) => it.objectClass)
+
+    const pushQueue = new ElasticPushQueue(this.fulltextAdapter, this.workspace, ctx, control)
+
+    const toRemove: { _id: Ref<Doc>, _class: Ref<Class<Doc>> }[] = []
+
+    for (const [v, values] of byClass.entries()) {
+      if (!isClassIndexable(this.hierarchy, v, this.contexts)) {
+        // Skip non indexable classes
+        continue
       }
+
+      // We need to load documents from storage
+      const docs: Doc[] = await this.loadDocsFromTx(values, toRemove, ctx, v)
+
+      await this.indexDocuments(ctx, v, docs, pushQueue)
     }
 
-    await this.flush(true)
-    if (toRemoveIds.length > 0) {
-      await this.storage.clean(this.metrics, DOMAIN_DOC_INDEX_STATE, toRemoveIds)
-      total += toRemoveIds.length
-      this.metrics.info('indexer', {
-        _classes: Array.from(groupByArray(toIndex, (it) => it.objectClass).keys()),
-        total,
-        count: toRemoveIds.length
+    try {
+      if (toRemove.length !== 0) {
+        // We need to add broadcast information
+        for (const _cl of new Set(toRemove.values().map((it) => it._class))) {
+          this.broadcastClasses.add(_cl)
+        }
+        const ids = toRemove.map((it) => it._id)
+        if (this.listener?.onClean !== undefined) {
+          await this.listener.onClean(ids)
+        }
+        await this.fulltextAdapter.remove(ctx, this.workspace.uuid, ids)
+      }
+    } catch (err: any) {
+      Analytics.handleError(err)
+    }
+
+    await pushQueue.waitProcessing()
+    this.scheduleBroadcast()
+  }
+
+  private async loadDocsFromTx (
+    values: TxCUD<Doc<Space>>[],
+    toRemove: { _id: Ref<Doc<Space>>, _class: Ref<Class<Doc>> }[],
+    ctx: MeasureContext<any>,
+    v: Ref<Class<Doc<Space>>>
+  ): Promise<Doc[]> {
+    const byDoc = groupByArray(values, (it) => it.objectId)
+
+    const docsToRetrieve = new Set<Ref<Doc>>()
+
+    const docs: Doc[] = []
+
+    // We need to find documents we need to retrieve
+    for (const [docId, txes] of byDoc.entries()) {
+      // Check if we have create tx, we do not need to retrieve a doc, just combine all updates
+      txes.sort((a, b) => a.modifiedOn - b.modifiedOn)
+      const doc = TxProcessor.buildDoc2Doc(txes)
+
+      switch (doc) {
+        case null:
+          toRemove.push({ _id: docId, _class: txes[0].objectClass })
+          break
+        case undefined:
+          docsToRetrieve.add(docId)
+          break
+        default:
+          docs.push(doc)
+      }
+    }
+    if (docsToRetrieve.size > 0) {
+      docs.push(...(await this.storage.findAll(ctx, v, { _id: { $in: Array.from(docsToRetrieve) } })))
+    }
+    return docs
+  }
+
+  private createContextData (): SessionDataImpl {
+    return new SessionDataImpl(
+      systemAccount,
+      '',
+      true,
+      undefined,
+      this.workspace,
+      false,
+      undefined,
+      undefined,
+      this.model,
+      new Map(),
+      'fulltext'
+    )
+  }
+
+  @withContext('process-collaborative-doc')
+  private async processCollaborativeDoc (
+    ctx: MeasureContext<any>,
+    v: { value: any, attr: AnyAttribute },
+    indexedDoc: IndexedDoc
+  ): Promise<void> {
+    const value = v.value as Ref<Blob>
+    if (value !== undefined && value !== '') {
+      try {
+        const readable = await this.storageAdapter?.read(ctx, this.workspace, value)
+        const markup = Buffer.concat(readable as any).toString()
+        let textContent = markupToText(markup)
+        textContent = textContent
+          .split(/ +|\t+|\f+/)
+          .filter((it) => it)
+          .join(' ')
+          .split(/\n\n+/)
+          .join('\n')
+
+        indexedDoc.fulltextSummary += '\n' + textContent
+      } catch (err: any) {
+        Analytics.handleError(err)
+        ctx.error('failed to handle blob', { _id: value, workspace: this.workspace.uuid })
+      }
+    }
+  }
+
+  @withContext('process-blob')
+  private async processBlob (
+    ctx: MeasureContext<any>,
+    v: { value: any, attr: AnyAttribute },
+    doc: Doc<Space>,
+    indexedDoc: IndexedDoc
+  ): Promise<void> {
+    // We need retrieve value of attached document content.
+    try {
+      const ref = v.value as Ref<Blob>
+      if (ref === '' || ref.startsWith('http://') || ref.startsWith('https://')) {
+        return
+      }
+      if (v.attr.name === 'avatar' || v.attr.attributeOf === contactPlugin.class.Contact) {
+        return
+      }
+      if (v.attr.attributeOf === attachmentPlugin.class.Attachment && v.attr.name === 'file') {
+        const file = doc as Attachment
+        if (!isBlobAllowed(file.type)) {
+          // Skip blob with invalid, or diallowed content type
+          return
+        }
+      }
+      if (v.attr.attributeOf === drivePlugin.class.FileVersion && v.attr.name === 'file') {
+        const file = doc as FileVersion
+        if (!isBlobAllowed(file.type)) {
+          // Skip blob with invalid, or diallowed content type
+          return
+        }
+      }
+      const docInfo: Blob | undefined = await this.storageAdapter.stat(ctx, this.workspace, ref)
+      if (docInfo !== undefined && docInfo.size < 30 * 1024 * 1024) {
+        // We have blob, we need to decode it to string.
+        const contentType = (docInfo.contentType ?? '').split(';')[0]
+
+        if (contentType.includes('text/') || contentType.includes('application/vnd.github.VERSION.diff')) {
+          await this.handleTextBlob(ctx, docInfo, indexedDoc)
+        } else if (isBlobAllowed(contentType)) {
+          await this.handleBlob(ctx, docInfo, indexedDoc)
+        }
+      }
+    } catch (err: any) {
+      ctx.warn('faild to process text content', {
+        id: doc._id,
+        _class: doc._class,
+        field: v.attr.name,
+        err: err.message,
+        workspace: this.workspace.uuid
       })
     }
   }
 
-  private async initStates (): Promise<void> {
-    this.currentStages = {}
-    for (const st of this.stages) {
-      this.currentStages[st.stageId] = 0
+  private async handleBlob (ctx: MeasureContext<any>, docInfo: Blob | undefined, indexedDoc: IndexedDoc): Promise<void> {
+    if (docInfo !== undefined) {
+      const contentType = (docInfo.contentType ?? '').split(';')[0]
+      const readable = await this.storageAdapter?.get(ctx, this.workspace, docInfo._id)
+
+      if (readable !== undefined) {
+        try {
+          let textContent = await ctx.with('fetch', {}, () =>
+            this.contentAdapter.content(ctx, this.workspace.uuid, docInfo._id, contentType, readable)
+          )
+          textContent = textContent
+            .split(/ +|\t+|\f+/)
+            .filter((it) => it)
+            .join(' ')
+            .split(/\n\n+/)
+            .join('\n')
+
+          indexedDoc.fulltextSummary += '\n' + textContent
+        } finally {
+          readable?.destroy()
+        }
+      }
     }
   }
 
-  private matchStates (st: FullTextPipelineStage): DocIndexState[] {
-    const toIndex: DocIndexState[] = []
-    const require = [...st.require].filter((it) => this.stages.find((q) => q.stageId === it && q.enabled))
-    for (const o of this.toIndex.values()) {
-      // We need to contain all state values
-      if (require.every((it) => o.stages?.[it]) && !(o.stages?.[st.stageId] ?? false)) {
-        toIndex.push(o)
-      }
+  private async handleTextBlob (
+    ctx: MeasureContext<any>,
+    docInfo: Blob | undefined,
+    indexedDoc: IndexedDoc
+  ): Promise<void> {
+    if (docInfo !== undefined) {
+      let textContent = Buffer.concat(
+        (await this.storageAdapter?.read(ctx, this.workspace, docInfo._id)) as any
+      ).toString()
+
+      textContent = textContent
+        .split(/ +|\t+|\f+/)
+        .filter((it) => it)
+        .join(' ')
+        .split(/\n\n+/)
+        .join('\n')
+
+      indexedDoc.fulltextSummary += '\n' + textContent
     }
-    return toIndex
   }
+}
+function isBlobAllowed (contentType: string): boolean {
+  return (
+    !contentType.includes('image/') &&
+    !contentType.includes('video/') &&
+    !contentType.includes('binary/octet-stream') &&
+    !contentType.includes('application/octet-stream')
+  )
 }

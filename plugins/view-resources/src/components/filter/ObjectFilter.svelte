@@ -13,8 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder, Space } from '@hcengineering/core'
-  import { getResource, translate } from '@hcengineering/platform'
+  import {
+    Doc,
+    FindResult,
+    getObjectValue,
+    Ref,
+    RefTo,
+    SortingOrder,
+    Space,
+    type WithLookup
+  } from '@hcengineering/core'
+  import { getResourceC, translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, {
     addNotification,
@@ -45,8 +54,8 @@
   const key = { key: tkey }
   const lookup = buildConfigLookup(hierarchy, filter.key._class, [tkey])
   const promise = getPresenter(client, filter.key._class, key, key, lookup)
-  filter.modes = filter.modes === undefined ? [view.filter.FilterObjectIn, view.filter.FilterObjectNin] : filter.modes
-  filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
+  filter.modes = filter.modes ?? [view.filter.FilterObjectIn, view.filter.FilterObjectNin]
+  filter.mode = filter.mode ?? filter.modes[0]
 
   let values: Array<Doc | undefined | null> = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
@@ -57,28 +66,49 @@
   $: clazz = hierarchy.getClass(targetClass)
   $: mixin = hierarchy.classHierarchyMixin(targetClass, view.mixin.Groupping)
   $: if (mixin?.grouppingManager !== undefined) {
-    getResource(mixin.grouppingManager).then((mgr) => (grouppingManager = mgr))
+    getResourceC(mixin.grouppingManager, (mgr) => (grouppingManager = mgr))
+  } else {
+    grouppingManager = undefined
   }
 
   let filterUpdateTimeout: any | undefined
 
   async function getValues (search: string): Promise<void> {
-    if (objectsPromise) {
+    if (objectsPromise !== undefined) {
       await objectsPromise
     }
     targets.clear()
 
-    const spaces = (
-      await client.findAll(
-        core.class.Space,
-        { archived: { $ne: true } },
-        { projection: { _id: 1, archived: 1, _class: 1 } }
+    const baseObjects: WithLookup<Doc>[] = await client.findAll(
+      filter.key._class,
+      space !== undefined
+        ? {
+            space
+          }
+        : {},
+      {
+        projection: { [filter.key.key]: 1 },
+        limit: 1000
+      }
+    )
+    if (baseObjects.length === 1000) {
+      // We have more so let's fetch all
+      const ninTarget = Array.from(new Set(baseObjects.map((it) => getObjectValue(filter.key.key, it) ?? undefined)))
+      const extraObjects = await client.findAll(
+        filter.key._class,
+        {
+          ...(space !== undefined ? { space } : {}),
+          [filter.key.key]: {
+            $nin: ninTarget
+          }
+        },
+        {
+          projection: { [filter.key.key]: 1 }
+        }
       )
-    ).map((it) => it._id)
+      baseObjects.push(...extraObjects)
+    }
 
-    const baseObjects = await client.findAll(filter.key._class, space ? { space } : { space: { $in: spaces } }, {
-      projection: { [filter.key.key]: 1, space: 1 }
-    })
     for (const object of baseObjects) {
       const value = getObjectValue(filter.key.key, object) ?? undefined
       targets.add(value)
@@ -88,7 +118,7 @@
     }
 
     const resultQuery =
-      search !== '' && clazz.filteringKey
+      search !== '' && clazz.filteringKey !== undefined
         ? {
             [clazz.filteringKey]: { $like: '%' + search + '%' },
             _id: { $in: Array.from(targets.keys()) }
@@ -146,7 +176,7 @@
     updateFilter()
   }
 
-  function updateFilter () {
+  function updateFilter (): void {
     clearTimeout(filterUpdateTimeout)
 
     filterUpdateTimeout = setTimeout(() => {
@@ -157,7 +187,7 @@
   let search: string = ''
 
   const dispatch = createEventDispatcher()
-  $: if (targetClass) getValues(search)
+  $: if (targetClass !== undefined) getValues(search)
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>

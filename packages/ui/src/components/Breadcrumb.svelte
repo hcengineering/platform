@@ -41,7 +41,11 @@
       <Icon {icon} size={'small'} {iconProps} />
     </div>
   {/if}
-  <span class="{size === 'large' ? 'heading-medium-16' : 'font-regular-14'} hulyBreadcrumb-label overflow-label">
+  <span
+    class="{size === 'large'
+      ? 'heading-medium-16'
+      : 'font-regular-14'} line-height-auto hulyBreadcrumb-label overflow-label"
+  >
     {#if label}<Label {label} />{/if}
     {#if title}{title}{/if}
   </span>

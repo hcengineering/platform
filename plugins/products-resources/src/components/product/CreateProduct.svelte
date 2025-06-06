@@ -23,10 +23,9 @@
   import { type Product, ProductVersionState } from '@hcengineering/products'
   import { type Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { PersonAccount } from '@hcengineering/contact'
-  import { AccountArrayEditor } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, personRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import core, {
-    Account,
+    AccountUuid,
     Data,
     Ref,
     Role,
@@ -35,17 +34,17 @@
     SpaceType,
     WithLookup,
     generateId,
-    getCurrentAccount
+    getCurrentAccount,
+    notEmpty
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Card, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+  import { Card, MessageBox, IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
   import {
     Button,
     DropdownLabelsIntl,
     EditBox,
     FocusHandler,
     IconAttachment,
-    IconWithEmoji,
     createFocusManager,
     getPlatformColorDef,
     showPopup,
@@ -61,7 +60,7 @@
   const manager = createFocusManager()
 
   const productId: Ref<Product> = generateId()
-  const currentUser = getCurrentAccount() as PersonAccount
+  const currentAccount = getCurrentAccount()
 
   let descriptionBox: AttachmentStyledBox
 
@@ -71,6 +70,8 @@
 
   let typeId: Ref<DocumentSpaceType> = products.spaceType.ProductType
   let spaceType: WithLookup<SpaceType> | undefined
+
+  $: membersPersons = object.members.map((m) => $personRefByAccountUuidStore.get(m)).filter(notEmpty)
 
   let roles: Role[] = []
   const rolesQuery = createQuery()
@@ -120,14 +121,14 @@
     })
   }
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: AccountUuid[]): void {
     object.owners = newOwners
 
     const newMembersSet = new Set([...object.owners, ...object.members])
     object.members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: AccountUuid[]): void {
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(object.members.filter((m) => !newMembersSet.has(m)))
@@ -141,7 +142,7 @@
     object.members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: AccountUuid[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -214,19 +215,20 @@
       name: '',
       description: '',
       private: true,
-      members: [currentUser._id],
+      members: [currentAccount.uuid],
       archived: false,
       // ExternalSpace
       type: products.spaceType.ProductType,
       // Product
       fullDescription: '',
-      owners: [currentUser._id]
+      owners: [currentAccount.uuid]
     }
   }
 
   $: canSave =
     object.name.trim().length > 0 &&
     (!object.private || object.members.length > 0) &&
+    object.owners !== undefined &&
     object.owners.length > 0 &&
     (!object.private || object.owners.some((p) => object.members.includes(p)))
 </script>
@@ -259,7 +261,10 @@
       iconProps={object.icon === view.ids.IconWithEmoji
         ? { icon: object.color }
         : {
-            fill: object.color !== undefined ? getPlatformColorDef(object.color, $themeStore.dark).icon : 'currentColor'
+            fill:
+              object.color !== undefined && typeof object.color !== 'string'
+                ? getPlatformColorDef(object.color, $themeStore.dark).icon
+                : 'currentColor'
           }}
       on:click={chooseIcon}
     />
@@ -320,7 +325,7 @@
     />
 
     <AccountArrayEditor
-      value={object.owners}
+      value={object.owners ?? []}
       label={core.string.Owners}
       emptyLabel={core.string.Owners}
       onChange={handleOwnersChanged}
@@ -342,8 +347,8 @@
       <AccountArrayEditor
         value={rolesAssignment?.[role._id] ?? []}
         label={getEmbeddedLabel(role.name)}
-        includeItems={object.members}
-        readonly={object.members.length === 0}
+        includeItems={membersPersons}
+        readonly={membersPersons.length === 0}
         emptyLabel={getEmbeddedLabel(role.name)}
         onChange={(refs) => {
           handleRoleAssignmentChanged(role._id, refs)

@@ -13,18 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Severity, Status } from '@hcengineering/platform'
+  import { type IntlString, OK, Severity, Status } from '@hcengineering/platform'
+  import { LoginInfo } from '@hcengineering/account-client'
 
   import OtpForm from './OtpForm.svelte'
   import login from '../plugin'
   import Form from './Form.svelte'
-  import { OtpLoginSteps, sendOtp } from '../index'
+  import { OtpLoginSteps, loginOtp } from '../index'
 
   export let navigateUrl: string | undefined = undefined
+  export let signUpDisabled = false
+  export let email: string | undefined = undefined
+  export let caption: IntlString = login.string.LogIn
+  export let subtitle: string | undefined = undefined
+  export let onLogin: ((loginInfo: LoginInfo | null, status: Status) => void | Promise<void>) | undefined = undefined
 
-  const fields = [{ id: 'email', name: 'username', i18n: login.string.Email }]
+  $: fields = [
+    { id: 'email', name: 'username', i18n: login.string.Email, disabled: email !== undefined && email !== '' }
+  ]
   const formData = {
     username: '' as string
+  }
+
+  $: if (email !== undefined && email !== '' && formData.username === '') {
+    formData.username = email
   }
 
   let status = OK
@@ -35,10 +47,10 @@
     i18n: login.string.LogIn,
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
-      const [otpStatus, result] = await sendOtp(formData.username)
+      const [otpStatus, result] = await loginOtp(formData.username)
       status = otpStatus
 
-      if (result !== undefined && result.sent && otpStatus === OK) {
+      if (result?.sent === true && otpStatus === OK) {
         step = OtpLoginSteps.Otp
         otpRetryOn = result.retryOn
       }
@@ -52,16 +64,26 @@
 
 {#if step === OtpLoginSteps.Email}
   <Form
-    caption={login.string.LogIn}
+    {caption}
+    {subtitle}
     {status}
     {fields}
     object={formData}
     {action}
+    {signUpDisabled}
     ignoreInitialValidation
     withProviders
   />
 {/if}
 
 {#if step === OtpLoginSteps.Otp && formData.username !== ''}
-  <OtpForm email={formData.username} {navigateUrl} retryOn={otpRetryOn} on:step={handleStep} />
+  <OtpForm
+    email={formData.username}
+    {signUpDisabled}
+    {navigateUrl}
+    retryOn={otpRetryOn}
+    {onLogin}
+    canChangeEmail={email === undefined || email === ''}
+    on:step={handleStep}
+  />
 {/if}

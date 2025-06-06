@@ -15,11 +15,11 @@
 -->
 <script lang="ts">
   import { TaskType } from '@hcengineering/task'
+  import { IconWithEmoji } from '@hcengineering/presentation'
   import {
     ColorDefinition,
     Icon,
     IconSize,
-    IconWithEmoji,
     getColorNumberByText,
     getPlatformColorDef,
     themeStore
@@ -37,7 +37,12 @@
     dispatch('accent-color', color)
   }
 
-  $: color = getPlatformColorDef(value?.color ?? getColorNumberByText(value?.name ?? ''), $themeStore.dark)
+  $: color = getPlatformColorDef(
+    value?.color !== undefined && typeof value?.color !== 'string'
+      ? value?.color
+      : getColorNumberByText(value?.name ?? ''),
+    $themeStore.dark
+  )
   $: dispatchAccentColor(color)
 
   onMount(() => {
@@ -49,14 +54,12 @@
   {@const icon = value?.icon === view.ids.IconWithEmoji ? IconWithEmoji : value?.icon}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="flex-presenter" on:click>
-    <div class="state-container" class:inline>
-      {#if icon != null}
-        <Icon {icon} {size} iconProps={{ icon: value?.color }} />
-      {:else}
-        <div class="border-divider-color svg-{size} border-radius-1" style:background={color?.color} />
-      {/if}
-    </div>
+  <div class="flex-center state-container clear-mins" class:inline on:click>
+    {#if icon != null}
+      <Icon {icon} {size} iconProps={{ icon: value?.color }} />
+    {:else}
+      <div class="border-divider-color svg-{size} border-radius-1" style:background={color?.color} />
+    {/if}
   </div>
 {/if}
 

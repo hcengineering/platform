@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,8 +14,12 @@
 //
 
 import { RecurringRule } from '@hcengineering/calendar'
-import { Timestamp } from '@hcengineering/core'
-import { ReccuringData, type Token, type User } from './types'
+import { systemAccountUuid, Timestamp, WorkspaceUuid } from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
+import { OAuth2Client } from 'google-auth-library'
+import { calendar_v3, google } from 'googleapis'
+import config from './config'
+import { CALENDAR_INTEGRATION, ReccuringData, State, type Token, type User } from './types'
 
 export class DeferredPromise<T = any> {
   public readonly promise: Promise<T>
@@ -38,7 +42,7 @@ export class DeferredPromise<T = any> {
   }
 }
 
-export function isToken (user: User | Token): user is Token {
+export function isToken (user: User | Token | State): user is Token {
   return (user as Token).access_token !== undefined
 }
 
@@ -74,7 +78,6 @@ export function parseRecurrenceStrings (recurrenceStrings: string[]): ReccuringD
       }
     }
   }
-  console.log('parseRecurrenceStrings', recurrenceStrings, JSON.stringify(res))
   return res
 }
 
@@ -248,4 +251,35 @@ export function encodeReccuring (rules: RecurringRule[], rdates: number[], exdat
   }
 
   return res
+}
+
+let serviceToken: string | undefined
+
+export function getServiceToken (): string {
+  if (serviceToken === undefined) {
+    serviceToken = generateServiceToken()
+  }
+  return serviceToken
+}
+
+export function getWorkspaceToken (workspace: WorkspaceUuid): string {
+  return generateToken(systemAccountUuid, workspace, { service: CALENDAR_INTEGRATION })
+}
+
+function generateServiceToken (): string {
+  return generateToken(systemAccountUuid, undefined, { service: CALENDAR_INTEGRATION })
+}
+
+export function getGoogleClient (): {
+  auth: OAuth2Client
+  google: calendar_v3.Calendar
+} {
+  const credentials = JSON.parse(config.Credentials)
+  const { client_secret, client_id, redirect_uris } = credentials.web // eslint-disable-line
+  const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]) // eslint-disable-line
+  const googleClient = google.calendar({ version: 'v3', auth: oAuth2Client })
+  return {
+    auth: oAuth2Client,
+    google: googleClient
+  }
 }

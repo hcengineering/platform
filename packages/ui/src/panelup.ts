@@ -8,9 +8,12 @@ export interface PanelProps {
   _class: string
   element?: PopupAlignment
   rightSection?: AnyComponent
+  refit?: () => void
 }
 
-export const panelstore = writable<{ panel?: PanelProps | undefined }>({ panel: undefined })
+export const panelstore = writable<{
+  panel?: PanelProps | undefined
+}>({ panel: undefined })
 let currentLocation: string | undefined
 
 export function getPanelURI (component: AnyComponent, _id: string, _class: string, element?: PopupAlignment): string {
@@ -26,17 +29,18 @@ export function showPanel (
   _id: string,
   _class: string,
   element?: PopupAlignment,
-  rightSection?: AnyComponent
+  rightSection?: AnyComponent,
+  doNavigate: boolean = true
 ): void {
   openPanel(component, _id, _class, element, rightSection)
   const loc = getLocation()
-  if (loc.fragment !== currentLocation) {
+  if (doNavigate && loc.fragment !== currentLocation) {
     loc.fragment = currentLocation
     navigate(loc)
   }
 }
 
-export function openPanel (
+function openPanel (
   component: AnyComponent,
   _id: string,
   _class: string,

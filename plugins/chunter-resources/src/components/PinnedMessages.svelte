@@ -13,13 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { eventToHTMLElement, Label, ModernButton, showPopup, Icon } from '@hcengineering/ui'
+  import { eventToHTMLElement, Label, ModernButton, showPopup, Icon, ButtonIcon } from '@hcengineering/ui'
   import PinnedMessagesPopup from './PinnedMessagesPopup.svelte'
   import { createQuery } from '@hcengineering/presentation'
-  import activity, { ActivityMessage } from '@hcengineering/activity'
+  import activity from '@hcengineering/activity'
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import view from '@hcengineering/view'
-  import { ThreadMessage } from '@hcengineering/chunter'
   import { createEventDispatcher } from 'svelte'
 
   import chunter from '../plugin'
@@ -28,7 +27,8 @@
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
   export let _id: Ref<Doc>
-  export let withRefs = false
+  export let withRefs: boolean = false
+  export let iconOnly: boolean = false
 
   const dispatch = createEventDispatcher()
   const pinnedQuery = createQuery()
@@ -85,8 +85,12 @@
 </script>
 
 {#if count > 0}
-  <ModernButton size={'small'} on:click={openMessagesPopup}>
-    <Icon icon={view.icon.Pin} size={'x-small'} />
-    <span class="text-sm"><Label label={chunter.string.PinnedCount} params={{ count }} /></span>
-  </ModernButton>
+  {#if iconOnly}
+    <ButtonIcon icon={view.icon.Pin} size={'small'} on:click={openMessagesPopup} />
+  {:else}
+    <ModernButton size={'small'} on:click={openMessagesPopup}>
+      <Icon icon={view.icon.Pin} size={'x-small'} />
+      <span class="text-sm"><Label label={chunter.string.PinnedCount} params={{ count }} /></span>
+    </ModernButton>
+  {/if}
 {/if}

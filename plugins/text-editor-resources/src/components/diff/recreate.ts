@@ -19,7 +19,9 @@
 import { type Change, diffWordsWithSpace } from 'diff'
 import { type Node, type Schema } from '@tiptap/pm/model'
 import { ReplaceStep, type Step, Transform } from '@tiptap/pm/transform'
+import { deepEqual } from 'fast-equals'
 import { applyPatch, createPatch, type Operation } from 'rfc6902'
+import { diffAny } from 'rfc6902/diff'
 import { type Pointer } from 'rfc6902/pointer'
 import { diffArraysPM } from './diff'
 
@@ -127,6 +129,13 @@ function clone (obj: any): any {
   return result
 }
 
+const quickDiff = (input: any, output: any, ptr: Pointer): Operation[] => {
+  if (ptr.tokens.length > 4) {
+    return deepEqual(input, output) ? [] : [{ op: 'replace', path: ptr.toString(), value: output }]
+  }
+  return diffAny(input, output, ptr, quickDiff)
+}
+
 export class StepTransform {
   schema: Schema
   tr: Transform
@@ -147,7 +156,7 @@ export class StepTransform {
     this.finalDoc = removeMarks(this.toDoc).toJSON()
     this.ops = createPatch(this.currentDoc, this.finalDoc, (input: any, output: any, ptr: Pointer) => {
       if (Array.isArray(input) && Array.isArray(output)) {
-        return diffArraysPM(input, output, ptr)
+        return diffArraysPM(input, output, ptr, quickDiff)
       }
     })
     this.recreateChangeContentSteps()

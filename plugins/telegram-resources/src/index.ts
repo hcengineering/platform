@@ -25,6 +25,7 @@ import IconTelegram from './components/icons/TelegramColor.svelte'
 import TelegramMessageCreated from './components/activity/TelegramMessageCreated.svelte'
 import MessagePresenter from './components/MessagePresenter.svelte'
 import NotificationProviderPresenter from './components/NotificationProviderPresenter.svelte'
+import TelegramIntegrationDescription from './components/TelegramIntegrationDescription.svelte'
 
 import telegram from './plugin'
 import { getCurrentEmployeeTG, getIntegrationOwnerTG, isTelegramNotificationsAvailable } from './utils'
@@ -38,7 +39,8 @@ export default async (): Promise<Resources> => ({
     IconTelegram,
     SharedMessages,
     MessagePresenter,
-    NotificationProviderPresenter
+    NotificationProviderPresenter,
+    TelegramIntegrationDescription
   },
   activity: {
     TelegramMessageCreated

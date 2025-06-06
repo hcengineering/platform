@@ -14,6 +14,5 @@
 // limitations under the License.
 //
 
-export * from './aggregator'
-export * from './blobStorage'
+export * from './fallback'
 export * from './starter'

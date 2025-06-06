@@ -1,20 +1,20 @@
-import { test } from '@playwright/test'
-import { PlatformURI, generateTestData, getTimeForPlanner, attachScreenshot } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
-import { ApiEndpoint } from '../API/Api'
-import { LoginPage } from '../model/login-page'
-import { createNewIssueData, prepareNewIssueWithOpenStep } from '../tracker/common-steps'
-import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
-import { InboxPage } from '../model/inbox.ts/inbox-page'
-import { SignUpData } from '../model/common-types'
 import { faker } from '@faker-js/faker'
-import { SignInJoinPage } from '../model/signin-page'
+import { test } from '@playwright/test'
+import { ApiEndpoint } from '../API/Api'
 import { ChannelPage } from '../model/channel-page'
-import { UserProfilePage } from '../model/profile/user-profile-page'
-import { MenuItems, NotificationsPage } from '../model/profile/notifications-page'
-import { SelectWorkspacePage } from '../model/select-workspace-page'
+import { SignUpData } from '../model/common-types'
+import { InboxPage } from '../model/inbox.ts/inbox-page'
+import { LeftSideMenuPage } from '../model/left-side-menu-page'
+import { LoginPage } from '../model/login-page'
 import { PlanningPage } from '../model/planning/planning-page'
+import { MenuItems, NotificationsPage } from '../model/profile/notifications-page'
+import { UserProfilePage } from '../model/profile/user-profile-page'
+import { SelectWorkspacePage } from '../model/select-workspace-page'
+import { SignInJoinPage } from '../model/signin-page'
 import { TeamPage } from '../model/team-page'
+import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
+import { createNewIssueData, prepareNewIssueWithOpenStep } from '../tracker/common-steps'
+import { attachScreenshot, generateTestData, getTimeForPlanner, PlatformURI, setTestOptions } from '../utils'
 
 test.describe('Inbox tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
@@ -42,6 +42,7 @@ test.describe('Inbox tests', () => {
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
     await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
     await (await page.goto(`${PlatformURI}`))?.finished()
+    await setTestOptions(page)
     await loginPage.login(data.userName, '1234')
     const swp = new SelectWorkspacePage(page)
     await swp.selectWorkspace(data.workspaceName)
@@ -50,19 +51,16 @@ test.describe('Inbox tests', () => {
 
   test('User is able to create a task, assign a himself and see it inside the inbox', async ({ page }) => {
     const newIssue = createNewIssueData(data.firstName, data.lastName)
-    await prepareNewIssueWithOpenStep(page, newIssue)
+    await prepareNewIssueWithOpenStep(page, newIssue, false)
     await issuesDetailsPage.checkIssue(newIssue)
-    await leftSideMenuPage.clickTracker()
-
     await leftSideMenuPage.clickNotification()
     await inboxPage.checkIfTaskIsPresentInInbox(newIssue.title)
   })
 
   test('User is able to create a task, assign a himself and open it from inbox', async ({ page }) => {
     const newIssue = createNewIssueData(data.firstName, data.lastName)
-    await prepareNewIssueWithOpenStep(page, newIssue)
+    await prepareNewIssueWithOpenStep(page, newIssue, false)
     await issuesDetailsPage.checkIssue(newIssue)
-    await leftSideMenuPage.clickTracker()
 
     await leftSideMenuPage.clickNotification()
     await inboxPage.checkIfTaskIsPresentInInbox(newIssue.title)
@@ -74,7 +72,7 @@ test.describe('Inbox tests', () => {
   test.skip('User is able to create a task, assign a himself and close it from inbox', async ({ page }) => {
     const newIssue = createNewIssueData(data.firstName, data.lastName)
 
-    await prepareNewIssueWithOpenStep(page, newIssue)
+    await prepareNewIssueWithOpenStep(page, newIssue, false)
     await issuesDetailsPage.checkIssue(newIssue)
     await leftSideMenuPage.clickTracker()
 
@@ -93,20 +91,23 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.getInviteLink()
     const linkText = await page.locator('.antiPopup .link').textContent()
     const page2 = await browser.newPage()
-    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
-    const inboxPageSecond = new InboxPage(page2)
-    await leftSideMenuPage.clickOnCloseInvite()
-    await page2.goto(linkText ?? '')
-    const joinPage = new SignInJoinPage(page2)
-    await joinPage.join(newUser2)
+    try {
+      const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+      const inboxPageSecond = new InboxPage(page2)
+      await leftSideMenuPage.clickOnCloseInvite()
+      await page2.goto(linkText ?? '')
+      await setTestOptions(page2)
+      const joinPage = new SignInJoinPage(page2)
+      await joinPage.join(newUser2)
 
-    const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
-    await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue(newIssue)
-    await leftSideMenuPageSecond.clickTracker()
-    await leftSideMenuPageSecond.clickNotification()
-    await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
-    await page2.close()
+      const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
+      await prepareNewIssueWithOpenStep(page, newIssue, false)
+      await issuesDetailsPage.checkIssue(newIssue)
+      await leftSideMenuPageSecond.clickNotification()
+      await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
+    } finally {
+      await page2.close()
+    }
   })
 
   test('User is able to assign someone else and he should be able to open the task', async ({ page, browser }) => {
@@ -115,24 +116,27 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.getInviteLink()
     const linkText = await page.locator('.antiPopup .link').textContent()
     const page2 = await browser.newPage()
-    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
-    const issuesDetailsPageSecond = new IssuesDetailsPage(page2)
-    const inboxPageSecond = new InboxPage(page2)
-    await leftSideMenuPage.clickOnCloseInvite()
-    await page2.goto(linkText ?? '')
-    const joinPage = new SignInJoinPage(page2)
-    await joinPage.join(newUser2)
+    try {
+      const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+      const issuesDetailsPageSecond = new IssuesDetailsPage(page2)
+      const inboxPageSecond = new InboxPage(page2)
+      await leftSideMenuPage.clickOnCloseInvite()
+      await page2.goto(linkText ?? '')
+      await setTestOptions(page2)
+      const joinPage = new SignInJoinPage(page2)
+      await joinPage.join(newUser2)
 
-    const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
-    await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue(newIssue)
-    await leftSideMenuPageSecond.clickTracker()
-    await leftSideMenuPageSecond.clickNotification()
-    await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
-    await inboxPageSecond.clickOnToDo(newIssue.title)
-    await inboxPageSecond.clickLeftSidePanelOpen()
-    await issuesDetailsPageSecond.checkIssue(newIssue)
-    await page2.close()
+      const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
+      await prepareNewIssueWithOpenStep(page, newIssue, false)
+      await issuesDetailsPage.checkIssue(newIssue)
+      await leftSideMenuPageSecond.clickNotification()
+      await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
+      await inboxPageSecond.clickOnToDo(newIssue.title)
+      await inboxPageSecond.clickLeftSidePanelOpen()
+      await issuesDetailsPageSecond.checkIssue(newIssue)
+    } finally {
+      await page2.close()
+    }
   })
   test.skip('User is able to create a task, assign a other user and close it from inbox', async ({ page, browser }) => {
     await leftSideMenuPage.openProfileMenu()
@@ -140,26 +144,30 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.getInviteLink()
     const linkText = await page.locator('.antiPopup .link').textContent()
     const page2 = await browser.newPage()
-    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
-    const issuesDetailsPageSecond = new IssuesDetailsPage(page2)
-    const inboxPageSecond = new InboxPage(page2)
-    await leftSideMenuPage.clickOnCloseInvite()
-    await page2.goto(linkText ?? '')
-    const joinPage = new SignInJoinPage(page2)
-    await joinPage.join(newUser2)
+    try {
+      const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+      const issuesDetailsPageSecond = new IssuesDetailsPage(page2)
+      const inboxPageSecond = new InboxPage(page2)
+      await leftSideMenuPage.clickOnCloseInvite()
+      await page2.goto(linkText ?? '')
+      await setTestOptions(page2)
+      const joinPage = new SignInJoinPage(page2)
+      await joinPage.join(newUser2)
 
-    const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
-    await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue(newIssue)
-    await leftSideMenuPageSecond.clickTracker()
-    await leftSideMenuPageSecond.clickNotification()
-    await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
-    await inboxPageSecond.clickOnToDo(newIssue.title)
-    await inboxPageSecond.clickLeftSidePanelOpen()
-    await issuesDetailsPageSecond.checkIssue(newIssue)
-    await inboxPage.clickCloseLeftSidePanel()
-    // ADD ASSERT ONCE THE ISSUE IS FIXED
-    await page2.close()
+      const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
+      await prepareNewIssueWithOpenStep(page, newIssue, false)
+      await issuesDetailsPage.checkIssue(newIssue)
+      await leftSideMenuPageSecond.clickTracker()
+      await leftSideMenuPageSecond.clickNotification()
+      await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
+      await inboxPageSecond.clickOnToDo(newIssue.title)
+      await inboxPageSecond.clickLeftSidePanelOpen()
+      await issuesDetailsPageSecond.checkIssue(newIssue)
+      await inboxPage.clickCloseLeftSidePanel()
+    } finally {
+      // ADD ASSERT ONCE THE ISSUE IS FIXED
+      await page2.close()
+    }
   })
 
   test('User is able to send message to other user and he should see it in inbox', async ({ page, browser }) => {
@@ -169,27 +177,30 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.getInviteLink()
     const linkText = await page.locator('.antiPopup .link').textContent()
     const page2 = await browser.newPage()
+    try {
+      const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+      const inboxPageSecond = new InboxPage(page2)
+      await leftSideMenuPage.clickOnCloseInvite()
+      await page2.goto(linkText ?? '')
+      await setTestOptions(page2)
+      const joinPage = new SignInJoinPage(page2)
+      await joinPage.join(newUser2)
+      await page.waitForTimeout(1000)
 
-    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
-    const inboxPageSecond = new InboxPage(page2)
-    await leftSideMenuPage.clickOnCloseInvite()
-    await page2.goto(linkText ?? '')
-    const joinPage = new SignInJoinPage(page2)
-    await joinPage.join(newUser2)
-    await page.waitForTimeout(1000)
+      await leftSideMenuPage.clickChunter()
+      await channelPage.clickChannel('general')
+      await channelPage.sendMessage('Test message')
 
-    await leftSideMenuPage.clickChunter()
-    await channelPage.clickChannel('general')
-    await channelPage.sendMessage('Test message')
-
-    await channelPage.checkMessageExist('Test message', true, 'Test message')
-    await leftSideMenuPage.clickNotification()
-    await inboxPage.checkIfInboxChatExists('Channel general', false)
-    await leftSideMenuPageSecond.clickNotification()
-    await inboxPageSecond.checkIfInboxChatExists('Channel general', true)
-    await inboxPageSecond.clickOnInboxChat('Channel general')
-    await inboxPageSecond.checkIfTextInChatIsPresent('Test message')
-    await page2.close()
+      await channelPage.checkMessageExist('Test message', true, 'Test message')
+      await leftSideMenuPage.clickNotification()
+      await inboxPage.checkIfInboxChatExists('Channel general', false)
+      await leftSideMenuPageSecond.clickNotification()
+      await inboxPageSecond.checkIfInboxChatExists('Channel general', true)
+      await inboxPageSecond.clickOnInboxChat('Channel general')
+      await inboxPageSecond.checkIfTextInChatIsPresent('Test message')
+    } finally {
+      await page2.close()
+    }
   })
 
   test('User is able to turn off notification and he should not receive messages to inbox', async ({
@@ -202,28 +213,31 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.getInviteLink()
     const linkText = await page.locator('.antiPopup .link').textContent()
     const page2 = await browser.newPage()
-
-    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
-    const inboxPageSecond = new InboxPage(page2)
-    const notificationPageSecond = new NotificationsPage(page2)
-    await leftSideMenuPage.clickOnCloseInvite()
-    await page2.goto(linkText ?? '')
-    const joinPage = new SignInJoinPage(page2)
-    await joinPage.join(newUser2)
-    const userProfilePageSecond = new UserProfilePage(page2)
-    await userProfilePageSecond.openProfileMenu()
-    await userProfilePageSecond.clickSettings()
-    await userProfilePageSecond.clickOnNotificationsButton()
-    await notificationPageSecond.clickMenuItem(MenuItems.CHAT)
-    await notificationPageSecond.toggleChatMessage()
-    await page.waitForTimeout(1000)
-    await leftSideMenuPage.clickChunter()
-    await channelPage.clickChannel('general')
-    await channelPage.sendMessage('Test message')
-    await channelPage.checkMessageExist('Test message', true, 'Test message')
-    await leftSideMenuPageSecond.clickNotification()
-    await inboxPageSecond.checkIfInboxChatExists('Channel general', false)
-    await page2.close()
+    try {
+      const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+      const inboxPageSecond = new InboxPage(page2)
+      const notificationPageSecond = new NotificationsPage(page2)
+      await leftSideMenuPage.clickOnCloseInvite()
+      await page2.goto(linkText ?? '')
+      await setTestOptions(page2)
+      const joinPage = new SignInJoinPage(page2)
+      await joinPage.join(newUser2)
+      const userProfilePageSecond = new UserProfilePage(page2)
+      await userProfilePageSecond.openProfileMenu()
+      await userProfilePageSecond.clickSettings()
+      await userProfilePageSecond.clickOnNotificationsButton()
+      await notificationPageSecond.clickMenuItem(MenuItems.CHAT)
+      await notificationPageSecond.toggleChatMessage()
+      await page.waitForTimeout(1000)
+      await leftSideMenuPage.clickChunter()
+      await channelPage.clickChannel('general')
+      await channelPage.sendMessage('Test message')
+      await channelPage.checkMessageExist('Test message', true, 'Test message')
+      await leftSideMenuPageSecond.clickNotification()
+      await inboxPageSecond.checkIfInboxChatExists('Channel general', false)
+    } finally {
+      await page2.close()
+    }
   })
 
   test('User is able to change filter in inbox', async ({ page, browser }) => {
@@ -233,30 +247,45 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.getInviteLink()
     const linkText = await page.locator('.antiPopup .link').textContent()
     const page2 = await browser.newPage()
-    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
-    const inboxPageSecond = new InboxPage(page2)
-    await leftSideMenuPage.clickOnCloseInvite()
-    await page2.goto(linkText ?? '')
-    const joinPage = new SignInJoinPage(page2)
-    await joinPage.join(newUser2)
+    try {
+      const channelPage2 = new ChannelPage(page2)
+      const leftSideMenuPage2 = new LeftSideMenuPage(page2)
+      const inboxPage2 = new InboxPage(page2)
+      await leftSideMenuPage.clickOnCloseInvite()
+      await page2.goto(linkText ?? '')
 
-    await leftSideMenuPage.clickChunter()
-    await channelPage.clickChannel('general')
-    await channelPage.sendMessage('Test message')
-    await leftSideMenuPage.clickTracker()
+      const joinPage2 = new SignInJoinPage(page2)
+      await joinPage2.join(newUser2)
 
-    const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
-    await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue(newIssue)
-    await leftSideMenuPageSecond.clickTracker()
-    await leftSideMenuPageSecond.clickNotification()
-    await inboxPageSecond.clickOnInboxFilter('Channels')
-    await inboxPageSecond.checkIfInboxChatExists(newIssue.title, false)
-    await inboxPageSecond.checkIfInboxChatExists('Test message', true)
-    await inboxPageSecond.clickOnInboxFilter('Issues')
-    await inboxPageSecond.checkIfIssueIsPresentInInbox(newIssue.title)
-    await inboxPageSecond.checkIfInboxChatExists('Channel general', false)
-    await page2.close()
+      await leftSideMenuPage2.clickChunter()
+      await channelPage2.clickChannel('general')
+
+      await leftSideMenuPage.clickChunter()
+      await channelPage.clickChannel('general')
+      await channelPage.sendMessage('Test message')
+
+      await leftSideMenuPage2.clickNotification()
+      await inboxPage2.clickOnInboxFilter('Channels')
+
+      await leftSideMenuPage.clickTracker()
+
+      const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
+      await prepareNewIssueWithOpenStep(page, newIssue, false)
+      await issuesDetailsPage.checkIssue(newIssue)
+
+      await leftSideMenuPage2.clickTracker()
+      await leftSideMenuPage2.closeNotification()
+      await leftSideMenuPage2.clickNotification()
+
+      await inboxPage2.clickOnInboxFilter('Channels')
+      await inboxPage2.checkIfInboxChatExists(newIssue.title, false)
+      await inboxPage2.checkIfInboxChatExists('Test message', true)
+      await inboxPage2.clickOnInboxFilter('Issues')
+      await inboxPage2.checkIfIssueIsPresentInInbox(newIssue.title)
+      await inboxPage2.checkIfInboxChatExists('Channel general', false)
+    } finally {
+      await page2.close()
+    }
   })
 
   test('Checking the ability to receive a task and schedule it', async ({ page, browser }) => {
@@ -267,42 +296,46 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.clickOnCloseInvite()
 
     const page2 = await browser.newPage()
-    await page2.goto(linkText ?? '')
-    const joinPage = new SignInJoinPage(page2)
-    await joinPage.join(newUser2)
+    try {
+      await page2.goto(linkText ?? '')
+      await setTestOptions(page2)
+      const joinPage = new SignInJoinPage(page2)
+      await joinPage.join(newUser2)
 
-    const newIssue = createNewIssueData(data.firstName, data.lastName, {
-      status: 'Todo',
-      assignee: `${newUser2.lastName} ${newUser2.firstName}`,
-      estimation: '0'
-    })
-    await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue(newIssue)
+      const newIssue = createNewIssueData(data.firstName, data.lastName, {
+        status: 'Todo',
+        assignee: `${newUser2.lastName} ${newUser2.firstName}`,
+        estimation: '0'
+      })
+      await prepareNewIssueWithOpenStep(page, newIssue, false)
+      await issuesDetailsPage.checkIssue(newIssue)
 
-    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
-    const inboxPageSecond = new InboxPage(page2)
-    const issuesDetailsPageSecond = new IssuesDetailsPage(page2)
-    const planningPageSecond = new PlanningPage(page2)
-    await leftSideMenuPageSecond.clickNotification()
-    await inboxPageSecond.checkIfIssueIsPresentInInbox(newIssue.title)
-    await inboxPageSecond.clickIssuePresentInInbox(newIssue.title)
-    await inboxPageSecond.clickLeftSidePanelOpen()
-    await issuesDetailsPageSecond.checkIssue(newIssue)
-    await leftSideMenuPageSecond.clickPlanner()
-    await planningPageSecond.closeNotification()
-    await planningPageSecond.dragToCalendar(newIssue.title, 2, getTimeForPlanner())
-    await planningPageSecond.eventInSchedule(newIssue.title).isVisible()
-    await attachScreenshot('Recive_task_and_scheduled.png', page2)
+      const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+      const inboxPageSecond = new InboxPage(page2)
+      const issuesDetailsPageSecond = new IssuesDetailsPage(page2)
+      const planningPageSecond = new PlanningPage(page2)
+      await leftSideMenuPageSecond.clickNotification()
+      await inboxPageSecond.checkIfIssueIsPresentInInbox(newIssue.title)
+      await inboxPageSecond.clickIssuePresentInInbox(newIssue.title)
+      await inboxPageSecond.clickLeftSidePanelOpen()
+      await issuesDetailsPageSecond.checkIssue(newIssue)
+      await leftSideMenuPageSecond.clickPlanner()
+      await planningPageSecond.closeNotification()
+      await planningPageSecond.dragToCalendar(newIssue.title, 2, getTimeForPlanner())
+      await planningPageSecond.eventInSchedule(newIssue.title).isVisible()
+      await attachScreenshot('Recive_task_and_scheduled.png', page2)
 
-    await attachScreenshot('Recive_task_and_scheduled-Detail.png', page)
-    await issuesDetailsPage.checkIssue({ ...newIssue, status: 'In Progress' })
-    await leftSideMenuPage.clickTeam()
-    const teamPage = new TeamPage(page)
-    await teamPage.checkTeamPageIsOpened()
-    await teamPage.selectTeam('Default')
-    await teamPage.buttonNextDay().click()
-    await attachScreenshot('Recive_task_and_scheduled-Tomorrow.png', page)
-    await teamPage.getItemByText('Tomorrow', newIssue.title).isVisible()
-    await page2.close()
+      await attachScreenshot('Recive_task_and_scheduled-Detail.png', page)
+      await issuesDetailsPage.checkIssue({ ...newIssue, status: 'In Progress' })
+      await leftSideMenuPage.clickTeam()
+      const teamPage = new TeamPage(page)
+      await teamPage.checkTeamPageIsOpened()
+      await teamPage.selectTeam('Default')
+      await teamPage.buttonNextDay().click()
+      await attachScreenshot('Recive_task_and_scheduled-Tomorrow.png', page)
+      await teamPage.getItemByText('Tomorrow', newIssue.title).isVisible()
+    } finally {
+      await page2.close()
+    }
   })
 })

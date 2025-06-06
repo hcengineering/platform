@@ -22,10 +22,10 @@
   .container {
     fill: #77818e;
     &.yes {
-      fill: #77c07b;
+      fill: var(--bg-positive-default);
     }
     &.no {
-      fill: #f96e50;
+      fill: var(--bg-negative-default);
     }
   }
 </style>

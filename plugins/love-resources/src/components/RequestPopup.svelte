@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount, formatName } from '@hcengineering/contact'
+  import { formatName, getCurrentEmployee } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount } from '@hcengineering/core'
-  import { getClient, playSound, stopSound } from '@hcengineering/presentation'
+  import { getClient, playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { JoinRequest, RequestStatus } from '@hcengineering/love'
   import love from '../plugin'
@@ -29,11 +28,12 @@
   $: person = $personByIdStore.get(request.person)
 
   const client = getClient()
+  let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
     await client.update(request, { status: RequestStatus.Approved })
     if (request.room === $myOffice?._id && !$isConnected) {
-      const me = (getCurrentAccount() as PersonAccount).person
+      const me = getCurrentEmployee()
       const person = $personByIdStore.get(me)
       if (person === undefined) return
       await connectRoom(0, 0, $myInfo, person, $myOffice)
@@ -43,11 +43,13 @@
   async function decline (): Promise<void> {
     await client.update(request, { status: RequestStatus.Rejected })
   }
-  onMount(() => {
-    playSound(love.sound.Knock, love.class.JoinRequest, true)
+
+  onMount(async () => {
+    stopSound = await playNotificationSound(love.sound.Knock, love.class.JoinRequest, true)
   })
+
   onDestroy(() => {
-    stopSound(love.sound.Knock)
+    stopSound?.()
   })
 </script>
 

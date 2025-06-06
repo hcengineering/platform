@@ -1,0 +1,25 @@
+{
+  "string": {
+    "Requests": "リクエスト",
+    "Request": "リクエスト",
+    "Approve": "承認",
+    "Approved": "承認済み",
+    "CreatedRequest": "次を作成：",
+    "For": "対象",
+    "Change": "変更",
+    "Add": "追加",
+    "Remove": "削除",
+    "Status": "ステータス",
+    "Requested": "リクエスト済み",
+    "Completed": "完了済み",
+    "Reject": "却下",
+    "Rejected": "却下済み",
+    "Comment": "コメント",
+    "PleaseTypeMessage": "コメントを入力して続行...",
+    "NoRequests": "リクエストはありません",
+    "Cancel": "キャンセル",
+    "Cancelled": "キャンセル済み",
+    "NewRequest": "新しいリクエスト",
+    "CancelRequest": "リクエストをキャンセル"
+  }
+}

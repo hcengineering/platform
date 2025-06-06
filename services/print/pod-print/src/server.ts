@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, generateId } from '@hcengineering/core'
-import { StorageConfiguration } from '@hcengineering/server-core'
+import { generateId, MeasureMetricsContext, newMetrics, type WorkspaceIds } from '@hcengineering/core'
+import { StorageConfiguration, initStatisticsContext } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { Token, decodeToken } from '@hcengineering/server-token'
+import { getClient as getAccountClientRaw, AccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { IncomingHttpHeaders, type Server } from 'http'
@@ -25,8 +25,15 @@ import { IncomingHttpHeaders, type Server } from 'http'
 import { convertToHtml } from './convert'
 import { ApiError } from './error'
 import { PrintOptions, print, validKinds } from './print'
+import config from './config'
+import { join } from 'path'
+import { SplitLogger } from '@hcengineering/analytics-service'
 
-const extractCookieToken = (cookie?: string): Token | null => {
+function getAccountClient (token: string): AccountClient {
+  return getAccountClientRaw(config.AccountsUrl, token)
+}
+
+const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
     return null
   }
@@ -42,10 +49,10 @@ const extractCookieToken = (cookie?: string): Token | null => {
     return null
   }
 
-  return decodeToken(encodedToken)
+  return encodedToken
 }
 
-const extractAuthorizationToken = (authorization?: string): Token | null => {
+const extractAuthorizationToken = (authorization?: string): string | null => {
   if (authorization === undefined || authorization === null) {
     return null
   }
@@ -55,10 +62,10 @@ const extractAuthorizationToken = (authorization?: string): Token | null => {
     return null
   }
 
-  return decodeToken(encodedToken)
+  return encodedToken
 }
 
-const extractQueryToken = (queryParams: any): Token | null => {
+const extractQueryToken = (queryParams: any): string | null => {
   if (queryParams == null) {
     return null
   }
@@ -69,15 +76,15 @@ const extractQueryToken = (queryParams: any): Token | null => {
     return null
   }
 
-  return decodeToken(encodedToken)
+  return encodedToken
 }
 
-const extractToken = (headers: IncomingHttpHeaders, queryParams: any): Token => {
+const extractToken = (headers: IncomingHttpHeaders, queryParams: any): string => {
   try {
     const token =
-      extractCookieToken(headers.cookie) ??
       extractAuthorizationToken(headers.authorization) ??
-      extractQueryToken(queryParams)
+      extractQueryToken(queryParams) ??
+      extractCookieToken(headers.cookie)
 
     if (token === null) {
       throw new ApiError(401)
@@ -89,7 +96,7 @@ const extractToken = (headers: IncomingHttpHeaders, queryParams: any): Token => 
   }
 }
 
-type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
+type AsyncRequestHandler = (req: Request, res: Response, wsIds: WorkspaceIds, next: NextFunction) => Promise<void>
 
 const handleRequest = async (
   fn: AsyncRequestHandler,
@@ -99,7 +106,16 @@ const handleRequest = async (
 ): Promise<void> => {
   try {
     const token = extractToken(req.headers, req.query)
-    await fn(req, res, token, next)
+    const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
+    if (!isWorkspaceLoginInfo(wsLoginInfo)) {
+      throw new ApiError(401, "Couldn't find workspace with the provided token")
+    }
+    const wsIds = {
+      uuid: wsLoginInfo.workspace,
+      dataId: wsLoginInfo.workspaceDataId,
+      url: wsLoginInfo.workspaceUrl
+    }
+    await fn(req, res, wsIds, next)
   } catch (err: unknown) {
     next(err)
   }
@@ -110,9 +126,25 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   handleRequest(fn, req, res, next)
 }
 
-export function createServer (dbUrl: string, storageConfig: StorageConfiguration): { app: Express, close: () => void } {
-  const storageAdapter = buildStorageFromConfig(storageConfig, dbUrl)
-  const measureCtx = new MeasureMetricsContext('print', {})
+export function createServer (
+  storageConfig: StorageConfiguration,
+  allowedHostnames: string[]
+): { app: Express, close: () => void } {
+  const storageAdapter = buildStorageFromConfig(storageConfig)
+  const measureCtx = initStatisticsContext('print', {
+    factory: () =>
+      new MeasureMetricsContext(
+        'print',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('print', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
+  const whitelistedHostnames = allowedHostnames.length > 0 ? new Set(allowedHostnames) : null
 
   const app = express()
   app.use(cors())
@@ -120,9 +152,19 @@ export function createServer (dbUrl: string, storageConfig: StorageConfiguration
 
   app.get(
     '/print',
-    wrapRequest(async (req, res, token) => {
+    wrapRequest(async (req, res, wsIds, token) => {
       const rawlink = req.query.link as string
       const link = decodeURIComponent(rawlink)
+
+      // Verify that link is from the same host and protocol is among the allowed
+      const url = new URL(link)
+      if (
+        !['http:', 'https:'].includes(url.protocol) ||
+        (whitelistedHostnames != null && !whitelistedHostnames.has(url.hostname))
+      ) {
+        console.error(`Rejected processing unexpected link: ${link}. Token: ${JSON.stringify(token)}`)
+        throw new ApiError(403, 'Cannot process provided link')
+      }
 
       const kind = req.query.kind as PrintOptions['kind']
 
@@ -155,7 +197,7 @@ export function createServer (dbUrl: string, storageConfig: StorageConfiguration
 
       const printId = `print-${generateId()}`
 
-      await storageAdapter.put(measureCtx, token.workspace, printId, printRes, `application/${kind}`, printRes.length)
+      await storageAdapter.put(measureCtx, wsIds, printId, printRes, `application/${kind}`, printRes.length)
 
       res.contentType('application/json')
       res.send({ id: printId })
@@ -164,10 +206,10 @@ export function createServer (dbUrl: string, storageConfig: StorageConfiguration
 
   app.get(
     '/convert/:file',
-    wrapRequest(async (req, res, token) => {
+    wrapRequest(async (req, res, wsUuid) => {
       const convertableFormats = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']
       const file = req.params.file
-      const stat = await storageAdapter.stat(measureCtx, token.workspace, file)
+      const stat = await storageAdapter.stat(measureCtx, wsUuid, file)
 
       if (stat === undefined) {
         throw new ApiError(404, `File ${file} not found`)
@@ -178,22 +220,24 @@ export function createServer (dbUrl: string, storageConfig: StorageConfiguration
       }
 
       const convertId = getConvertId(file, stat.etag)
-      const convertStats = await storageAdapter.stat(measureCtx, token.workspace, convertId)
+      const convertStats = await storageAdapter.stat(measureCtx, wsUuid, convertId)
 
       if (convertStats === undefined) {
-        const originalFile = await storageAdapter.read(measureCtx, token.workspace, file)
+        const originalFile = await storageAdapter.read(measureCtx, wsUuid, file)
 
         if (originalFile === undefined) {
           throw new ApiError(404, `File ${file} not found`)
         }
 
-        const htmlRes = await convertToHtml(Buffer.concat(originalFile))
+        const htmlRes = await convertToHtml(Buffer.concat(originalFile as any))
 
         if (htmlRes === undefined) {
           throw new ApiError(400, 'Failed to convert')
         }
 
-        await storageAdapter.put(measureCtx, token.workspace, convertId, htmlRes, 'text/html', htmlRes.length)
+        const htmlBuf = Buffer.from(htmlRes)
+
+        await storageAdapter.put(measureCtx, wsUuid, convertId, htmlBuf, 'text/html', htmlBuf.length)
       }
 
       res.contentType('application/json')
@@ -228,5 +272,5 @@ export function listen (e: Express, port: number, host?: string): Server {
 }
 
 function getConvertId (file: string, etag: string): string {
-  return `${file}@${etag}`
+  return `${file}@${etag.replaceAll('"', '')}`
 }

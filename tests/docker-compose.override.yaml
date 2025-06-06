@@ -1,11 +1,13 @@
 services:
   account:
     environment:
-      - DB_URL=postgresql://postgres:example@postgres:5432
+      - DB_URL=${DB_PG_URL}
   transactor:
     environment:
-      - MONGO_URL=mongodb://mongodb:27018
-      - DB_URL=postgresql://postgres:example@postgres:5432
+      - DB_URL=${DB_PG_URL}
   workspace:
     environment:
-      - DB_URL=postgresql://postgres:example@postgres:5432
+      - DB_URL=${DB_PG_URL}
+  fulltext:
+    environment:
+      - DB_URL=${DB_PG_URL}

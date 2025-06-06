@@ -15,4 +15,3 @@
 //
 
 export { createElasticAdapter } from './adapter'
-export { createElasticBackupDataAdapter } from './backup'

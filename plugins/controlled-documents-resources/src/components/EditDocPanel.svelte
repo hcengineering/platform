@@ -13,6 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import documents, {
+    ControlledDocument,
+    ControlledDocumentState,
+    DocumentRequest,
+    DocumentState,
+    Project
+  } from '@hcengineering/controlled-documents'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -23,45 +30,43 @@
     Button,
     Chevron,
     DropdownLabelsIntl,
-    IconMoreV,
-    Tab,
-    Tabs,
     eventToHTMLElement,
+    IconMoreV,
     navigate,
     resolvedLocationStore,
-    showPopup
+    showPopup,
+    Tab,
+    Tabs
   } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
-  import documents, {
-    ControlledDocument,
-    ControlledDocumentState,
-    DocumentRequest,
-    Project
-  } from '@hcengineering/controlled-documents'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
   import { createDocumentSnapshotAndEdit, createNewDraftForControlledDoc, getDocReference } from '../docutils'
+  import { getProjectDocumentLink } from '../navigation'
   import documentRes from '../plugin'
   import {
+    $approvalRequest as approvalRequest,
+    $reviewRequest as reviewRequest,
     $activeRightPanelTab as activeRightPanelTab,
     $availableEditorModes as availableEditorModes,
     $availableRightPanelTabs as availableRightPanelTabs,
     $canCreateNewDraft as canCreateNewDraft,
     $canCreateNewSnapshot as canCreateNewSnapshot,
+    $canRestoreDraft as canRestoreDraft,
     $canSendForApproval as canSendForApproval,
     $canSendForReview as canSendForReview,
     $controlledDocument as controlledDocument,
+    controlledDocumentClosed,
+    controlledDocumentOpened,
     $controlledDocumentTemplate as controlledDocumentTemplate,
-    $documentLatestVersion as documentLatestVersion,
     $documentApprovalIsActive as documentApprovalIsActive,
+    $documentLatestVersion as documentLatestVersion,
     $documentReviewIsActive as documentReviewIsActive,
     $documentState as documentState,
     $editorMode as editorMode,
+    editorModeUpdated,
     $isDocumentOwner as isDocumentOwner,
     $isProjectEditable as isProjectEditable,
-    controlledDocumentClosed,
-    controlledDocumentOpened,
-    editorModeUpdated,
     rightPanelTabChanged
   } from '../stores/editors/document'
   import { completeRequest, getDocumentVersionString, getLatestProjectId, rejectRequest, TeamPopupData } from '../utils'
@@ -76,12 +81,11 @@
   import DocumentRightPanel from './document/right-panel/DocumentRightPanel.svelte'
   import { scrollIntoSection } from './document/store'
   import DocumentVersionsPopup from './DocumentVersionsPopup.svelte'
+  import DocumentTemplateFooter from './print/DocumentTemplateFooter.svelte'
+  import DocumentTemplateHeader from './print/DocumentTemplateHeader.svelte'
+  import ProjectSelector from './project/ProjectSelector.svelte'
   import SignatureDialog from './SignatureDialog.svelte'
   import TeamPopup from './TeamPopup.svelte'
-  import ProjectSelector from './project/ProjectSelector.svelte'
-  import DocumentTemplateHeader from './print/DocumentTemplateHeader.svelte'
-  import DocumentTemplateFooter from './print/DocumentTemplateFooter.svelte'
-  import { getProjectDocumentLink } from '../navigation'
 
   export let _id: Ref<ControlledDocument>
   export let _class: Ref<Class<ControlledDocument>>
@@ -105,13 +109,13 @@
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void notificationClient.then((client) => client.readDoc(getClient(), prev))
+      void notificationClient.then((client) => client.readDoc(prev))
     }
   }
 
   onDestroy(async () => {
     controlledDocumentClosed()
-    void notificationClient.then((client) => client.readDoc(getClient(), _id))
+    void notificationClient.then((client) => client.readDoc(_id))
   })
 
   $: if (_id && _class && project) {
@@ -124,11 +128,15 @@
 
   let tabs: Tab[]
 
+  let content: HTMLElement
+
   $: tabs = [
     {
       label: documentRes.string.ContentTab,
       component: EditDocContent,
-      props: {}
+      props: {
+        boundary: content
+      }
     },
     {
       label: documentRes.string.ReasonAndImpact,
@@ -138,7 +146,12 @@
     {
       label: documentRes.string.TeamTab,
       component: EditDocTeam,
-      props: { controlledDoc: $controlledDocument, editable: $isDocumentOwner }
+      props: {
+        controlledDoc: $controlledDocument,
+        editable: $isDocumentOwner,
+        reviewRequest: $reviewRequest,
+        approvalRequest: $approvalRequest
+      }
     },
     {
       label: documentRes.string.ReleaseTab,
@@ -163,9 +176,15 @@
       return
     }
 
+    const hierarchy = client.getHierarchy()
+
+    const isReviewed = $controlledDocument.controlledState === ControlledDocumentState.Reviewed
+    const isApprovalRequest = hierarchy.isDerived(requestClass, documents.class.DocumentApprovalRequest)
+
     const teamPopupData: TeamPopupData = {
       controlledDoc: $controlledDocument,
-      requestClass
+      requestClass,
+      requireSignature: !(isReviewed && isApprovalRequest)
     }
 
     showPopup(TeamPopup, teamPopupData, 'center')
@@ -213,39 +232,43 @@
   }
 
   async function onCreateNewDraft (): Promise<void> {
-    if (creating) {
-      return
-    }
+    if (creating) return
 
     creating = true
     try {
-      if ($controlledDocument != null && $canCreateNewDraft && $documentLatestVersion != null) {
-        const latest = $documentLatestVersion
-        const version = { major: latest.major, minor: latest.minor + 1 }
-        const project = await getLatestProjectId($controlledDocument.space)
-
-        if (project !== undefined) {
-          try {
-            const { id, success } = await createNewDraftForControlledDoc(
-              client,
-              $controlledDocument,
-              $controlledDocument.space,
-              version,
-              project
-            )
-            if (success) {
-              const loc = getProjectDocumentLink(id, project)
-              navigate(loc)
-            }
-          } catch (err) {
-            await setPlatformStatus(unknownError(err))
-          }
-        } else {
-          console.warn('No document project found for space', $controlledDocument.space)
-        }
-      } else {
+      if (!$controlledDocument || !$canCreateNewDraft || !$documentLatestVersion) {
         console.warn('Unexpected document state', $documentState)
+        return
       }
+
+      const latest = $documentLatestVersion
+      const version = { major: latest.major, minor: latest.minor + 1 }
+      const project = await getLatestProjectId($controlledDocument.space)
+
+      if (project === undefined) {
+        console.warn('No document project found for space', $controlledDocument.space)
+        return
+      }
+
+      if ($canRestoreDraft) {
+        await client.update(latest, { state: DocumentState.Draft })
+        const loc = getProjectDocumentLink(latest, project)
+        navigate(loc)
+      } else {
+        const { id, success } = await createNewDraftForControlledDoc(
+          client,
+          $controlledDocument,
+          $controlledDocument.space,
+          version,
+          project
+        )
+        if (success) {
+          const loc = getProjectDocumentLink(id, project)
+          navigate(loc)
+        }
+      }
+    } catch (err) {
+      await setPlatformStatus(unknownError(err))
     } finally {
       creating = false
     }
@@ -274,18 +297,21 @@
   $: canShowSidebar = $editorMode !== 'comparing'
   $: sideBar = canShowSidebar ? $availableRightPanelTabs : []
 
-  $: collaborativeDoc = $controlledDocument?.content
-  $: initialCollaborativeDoc = $controlledDocumentTemplate?.content
-
   $: workspace = $resolvedLocationStore.path[1].toUpperCase()
 
   $: docReference = getDocReference($controlledDocument)
   $: templateReference = getDocReference($controlledDocumentTemplate)
+
+  $: attribute = {
+    key: 'content',
+    attr: client.getHierarchy().getAttribute(documents.class.ControlledDocument, 'content')
+  }
 </script>
 
-{#if $controlledDocument !== null && collaborativeDoc !== undefined}
+{#if $controlledDocument !== null && attribute !== undefined}
   <Panel
     bind:innerWidth
+    bind:content
     isHeader={false}
     object={$controlledDocument}
     customAside={sideBar}
@@ -362,7 +388,7 @@
 
             {#if $canCreateNewDraft}
               <Button
-                label={documentRes.string.CreateNewDraft}
+                label={$canRestoreDraft ? documentRes.string.RestoreDraft : documentRes.string.CreateNewDraft}
                 kind="regular"
                 loading={creating}
                 disabled={creating}
@@ -430,13 +456,7 @@
 
     <svelte:component this={DocumentTemplateFooter} slot="page-footer" {templateReference} />
 
-    <Collaboration
-      {collaborativeDoc}
-      {initialCollaborativeDoc}
-      objectClass={$controlledDocument._class}
-      objectId={$controlledDocument._id}
-      objectAttr="content"
-    >
+    <Collaboration object={$controlledDocument} {attribute}>
       {#if $editorMode === 'comparing'}
         <DocumentDiffViewer />
       {:else}

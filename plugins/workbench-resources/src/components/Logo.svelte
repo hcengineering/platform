@@ -54,8 +54,8 @@
       height: 2rem;
     }
     &.mini {
-      width: 1.5rem;
-      height: 1.5rem;
+      width: 1.75rem;
+      height: 1.75rem;
     }
     &.red {
       background-color: rgb(246, 105, 77);

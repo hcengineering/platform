@@ -21,6 +21,13 @@ import { Context, Telegraf } from 'telegraf'
 import config from '../config'
 import { PlatformWorker } from '../worker'
 import { TgContext } from './types'
+import {
+  listIntegrationsByTelegramId,
+  getAccountPerson,
+  removeIntegrationsByTg,
+  getAnyIntegrationByTelegramId
+} from '../account'
+import { WorkspaceUuid } from '@hcengineering/core'
 
 export enum Command {
   Start = 'start',
@@ -68,25 +75,29 @@ export async function getCommandsHelp (lang: string): Promise<string> {
 async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
   const id = ctx.from?.id
   const lang = ctx.from?.language_code ?? 'en'
-  const record = id !== undefined ? await worker.getUserRecord(id) : undefined
+  const integration = id !== undefined ? await getAnyIntegrationByTelegramId(id) : undefined
 
   const commandsHelp = await getCommandsHelp(lang)
   const welcomeMessage = await translate(telegram.string.WelcomeMessage, { app: config.App }, lang)
 
-  if (record !== undefined) {
+  if (integration !== undefined) {
+    const person = await getAccountPerson(integration.account)
+    if (person === undefined) return
     const connectedMessage = await translate(
       telegram.string.ConnectedDescriptionHtml,
-      { email: record.email, app: config.App },
+      { name: `${person.firstName} ${person.lastName}`, app: config.App },
       lang
     )
     const message = welcomeMessage + '\n\n' + commandsHelp + '\n\n' + connectedMessage
 
     await ctx.replyWithHTML(message)
-    if (record.telegramUsername !== ctx.from?.username) {
-      await worker.updateTelegramUsername(record, ctx.from?.username)
+    const username = ctx.from?.username
+    if (integration.username !== username && username !== undefined) {
+      await worker.updateTelegramUsername(integration.socialId, username)
     }
   } else {
-    const connectMessage = await translate(telegram.string.ConnectMessage, { app: config.App }, lang)
+    const minutes = Math.round(config.OtpTimeToLiveSec / 60)
+    const connectMessage = await translate(telegram.string.ConnectMessage, { app: config.App, minutes }, lang)
     const message = welcomeMessage + '\n\n' + commandsHelp + '\n\n' + connectMessage
 
     await ctx.reply(message)
@@ -99,9 +110,9 @@ async function onHelp (ctx: Context): Promise<void> {
   await ctx.reply(commandsHelp)
 }
 
-async function onStop (ctx: Context, worker: PlatformWorker): Promise<void> {
+async function onStop (ctx: Context): Promise<void> {
   if (ctx.from?.id !== undefined) {
-    await worker.removeUserByTelegramId(ctx.from?.id)
+    await removeIntegrationsByTg(ctx.from?.id)
   }
   const lang = ctx.from?.language_code ?? 'en'
   const message = await translate(telegram.string.StopMessage, { app: config.App }, lang)
@@ -116,14 +127,16 @@ async function onSyncChannels (ctx: Context, worker: PlatformWorker, onlyStarred
     return
   }
 
-  const record = await worker.getUserRecord(id)
+  const integrations = await listIntegrationsByTelegramId(id)
 
-  if (record === undefined) return
+  if (integrations.length === 0) return
 
-  const workspaces = record.workspaces
+  const workspaces: WorkspaceUuid[] = integrations
+    .filter((it) => it.data?.disabled !== true)
+    .map((it) => it.workspaceUuid)
 
   for (const workspace of workspaces) {
-    await worker.syncChannels(record.email, workspace, onlyStarred)
+    await worker.syncChannels(integrations[0].account, workspace, onlyStarred)
   }
 
   await ctx.reply('List of channels updated')
@@ -137,12 +150,14 @@ async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
     return
   }
 
-  const account = await worker.getUserRecord(id)
+  const integration = await getAnyIntegrationByTelegramId(id)
 
-  if (account !== undefined) {
+  if (integration !== undefined) {
+    const person = await getAccountPerson(integration.account)
+    if (person === undefined) return
     const reply = await translate(
       telegram.string.AccountAlreadyConnectedHtml,
-      { email: account.email, app: config.App },
+      { name: `${person.firstName} ${person.lastName}`, app: config.App },
       lang
     )
     await ctx.replyWithHTML(reply)
@@ -159,7 +174,7 @@ export async function defineCommands (bot: Telegraf<TgContext>, worker: Platform
   bot.start((ctx) => onStart(ctx, worker))
   bot.help(onHelp)
 
-  bot.command(Command.Stop, (ctx) => onStop(ctx, worker))
+  bot.command(Command.Stop, (ctx) => onStop(ctx))
   bot.command(Command.Connect, (ctx) => onConnect(ctx, worker))
   bot.command(Command.SyncAllChannels, (ctx) => onSyncChannels(ctx, worker, false))
   bot.command(Command.SyncStarredChannels, (ctx) => onSyncChannels(ctx, worker, true))

@@ -13,13 +13,14 @@
 // limitations under the License.
 //
 
-import { type Blob, type Ref } from '@hcengineering/core'
+import { Analytics } from '@hcengineering/analytics'
+import { type BlobMetadata, type Blob, type Ref } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { type PopupAlignment } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
 
 import plugin from './plugin'
-import type { BlobMetadata, FileOrBlob, FilePreviewExtension } from './types'
+import type { FileOrBlob, FilePreviewExtension } from './types'
 import { createQuery } from './utils'
 
 /**
@@ -36,7 +37,13 @@ export async function getFileMetadata (file: FileOrBlob, uuid: Ref<Blob>): Promi
     return undefined
   }
 
-  return await metadataProvider(file, uuid)
+  try {
+    return await metadataProvider(file, uuid)
+  } catch (err) {
+    console.error(err)
+    Analytics.handleError(err as Error)
+    return undefined
+  }
 }
 
 /**

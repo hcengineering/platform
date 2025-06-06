@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { AttachmentList } from '@hcengineering/attachment-resources'
+  import { AttachmentGroup } from '@hcengineering/attachment-resources'
   import { formatName } from '@hcengineering/contact'
   import { WithLookup } from '@hcengineering/core'
   import { HTMLViewer } from '@hcengineering/presentation'
@@ -54,7 +54,7 @@
           </div>
         {/if}
         {#if attachments}
-          <AttachmentList {attachments} />
+          <AttachmentGroup {attachments} />
         {/if}
         <div class="flex">
           <div class="caption-color mr-4"><HTMLViewer value={message.content} /></div>

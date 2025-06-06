@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2023, 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { Doc, Ref } from '@hcengineering/core'
   import { Loading, updatePopup, Scroller } from '@hcengineering/ui'
   import { ListSelectionProvider } from '@hcengineering/view-resources'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
@@ -23,7 +22,6 @@
   export let attachments: Attachment[] = []
   export let useAttachmentPreview = false
   export let progress = false
-  export let progressItems: Ref<Doc>[] = []
   export let readonly: boolean = false
 
   let element: HTMLElement
@@ -36,7 +34,7 @@
     const sel = listProvider.docs()[selected] as Attachment
     if (sel !== undefined && attachmentPopupId !== '') {
       listProvider.updateFocus(sel)
-      updatePopup(attachmentPopupId, { props: { file: sel.file, name: sel.name, contentType: sel.type } })
+      updatePopup(attachmentPopupId, { props: { value: sel } })
     }
   })
   $: listProvider.update(attachments.filter((p) => p.type.startsWith('image/')))
@@ -58,8 +56,8 @@
             value={attachment}
             removable={!readonly}
             showPreview
-            progress={progressItems.includes(attachment._id)}
             on:remove
+            on:open={(res) => (attachmentPopupId = res.detail)}
           />
         {/if}
       {/each}

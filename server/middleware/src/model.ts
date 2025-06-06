@@ -14,13 +14,22 @@
 //
 
 import core, {
+  type Class,
   type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
+  type Hierarchy,
   type LoadModelResponse,
   type MeasureContext,
+  type Ref,
+  type SessionData,
   type Timestamp,
   type Tx,
   type TxCUD,
-  DOMAIN_TX
+  DOMAIN_MODEL,
+  DOMAIN_TX,
+  withContext
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import type {
@@ -33,38 +42,66 @@ import type {
 import { BaseMiddleware } from '@hcengineering/server-core'
 import crypto from 'node:crypto'
 
+const isUserTx = (it: Tx): boolean =>
+  it.modifiedBy !== core.account.System ||
+  (it as TxCUD<Doc>).objectClass === 'contact:class:Person' ||
+  (it as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
+
+const isAccountTx = (it: TxCUD<Doc>): boolean =>
+  ['core:class:Account', 'contact:class:PersonAccount'].includes(it.objectClass)
+
 /**
  * @public
  */
 export class ModelMiddleware extends BaseMiddleware implements Middleware {
-  hashes!: Map<string, number> // Hash to position
   lastHash: string = ''
   lastHashResponse!: Promise<LoadModelResponse>
-  model!: Tx[]
 
   constructor (
     context: PipelineContext,
     next: Middleware | undefined,
-    readonly systemTx: Tx[]
+    readonly systemTx: Tx[],
+    readonly filter?: (h: Hierarchy, model: Tx[]) => Tx[]
   ) {
     super(context, next)
   }
 
+  @withContext('modelAdapter-middleware')
   static async doCreate (
     ctx: MeasureContext,
     context: PipelineContext,
     next: Middleware | undefined,
-    systemTx: Tx[]
+    systemTx: Tx[],
+    filter?: (h: Hierarchy, model: Tx[]) => Tx[]
   ): Promise<Middleware> {
-    const middleware = new ModelMiddleware(context, next, systemTx)
+    const middleware = new ModelMiddleware(context, next, systemTx, filter)
     await middleware.init(ctx)
     return middleware
   }
 
-  static create (tx: Tx[]): MiddlewareCreator {
+  static create (tx: Tx[], filter?: (h: Hierarchy, model: Tx[]) => Tx[]): MiddlewareCreator {
     return (ctx, context, next) => {
-      return this.doCreate(ctx, context, next, tx)
+      return this.doCreate(ctx, context, next, tx, filter)
     }
+  }
+
+  @withContext('get-model')
+  async getUserTx (ctx: MeasureContext, txAdapter: TxAdapter): Promise<Tx[]> {
+    const allUserTxes = await ctx.with('fetch-model', {}, (ctx) => txAdapter.getModel(ctx))
+    return allUserTxes.filter((it) => isUserTx(it) && !isAccountTx(it as TxCUD<Doc>))
+  }
+
+  findAll<T extends Doc>(
+    ctx: MeasureContext<SessionData>,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
+    const d = this.context.hierarchy.findDomain(_class)
+    if (d === DOMAIN_MODEL) {
+      return this.context.modelDb.findAll(_class, query, options)
+    }
+    return this.provideFindAll(ctx, _class, query, options)
   }
 
   async init (ctx: MeasureContext): Promise<void> {
@@ -73,82 +110,64 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
     }
     const txAdapter = this.context.adapterManager.getAdapter(DOMAIN_TX, true) as TxAdapter
 
-    const isUserTx = (it: Tx): boolean =>
-      it.modifiedBy !== core.account.System ||
-      (it as TxCUD<Doc>).objectClass === 'contact:class:Person' ||
-      (it as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
-
-    this.model = await ctx.with('get-model', {}, async (ctx) => {
-      const allUserTxes = await ctx.with('fetch-model', {}, (ctx) => txAdapter.getModel(ctx))
-      const userTxes = allUserTxes.filter((it) => isUserTx(it))
-      const model = this.systemTx.concat(userTxes)
-      for (const tx of model) {
-        try {
-          this.context.hierarchy.tx(tx)
-        } catch (err: any) {
-          ctx.warn('failed to apply model transaction, skipping', { tx: JSON.stringify(tx), err })
-        }
+    const userTx = await this.getUserTx(ctx, txAdapter)
+    const model = this.systemTx.concat(userTx)
+    for (const tx of model) {
+      try {
+        this.context.hierarchy.tx(tx)
+      } catch (err: any) {
+        ctx.warn('failed to apply model transaction, skipping', { tx: JSON.stringify(tx), err })
       }
-      this.context.modelDb.addTxes(ctx, model, true)
-      return model
-    })
+    }
+    const fmodel = this.filter !== undefined ? this.filter(this.context.hierarchy, model) : model
+    this.context.modelDb.addTxes(ctx, fmodel, true)
 
-    this.setModel(this.model)
+    this.setModel(fmodel)
   }
 
   private addModelTx (tx: Tx): void {
-    this.model.push(tx)
     const h = crypto.createHash('sha1')
     h.update(this.lastHash)
     h.update(JSON.stringify(tx))
     const hash = h.digest('hex')
-    this.hashes.set(hash, this.model.length - 1)
     this.setLastHash(hash)
   }
 
   private setLastHash (hash: string): void {
     this.lastHash = hash
-    this.lastHashResponse = Promise.resolve({
-      full: false,
-      hash,
-      transactions: []
-    })
+    this.context.lastHash = this.lastHash
   }
 
   private setModel (model: Tx[]): void {
     let last = ''
-    this.hashes = new Map(
-      model.map((it, index) => {
-        const h = crypto.createHash('sha1')
-        h.update(last)
-        h.update(JSON.stringify(it))
-        last = h.digest('hex')
-        return [last, index]
-      })
-    )
+    model.map((it, index) => {
+      const h = crypto.createHash('sha1')
+      h.update(last)
+      h.update(JSON.stringify(it))
+      last = h.digest('hex')
+      return [last, index]
+    })
     this.setLastHash(last)
   }
 
-  loadModel (ctx: MeasureContext, lastModelTx: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
+  async loadModel (ctx: MeasureContext, lastModelTx: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
     if (hash !== undefined) {
       if (hash === this.lastHash) {
-        return this.lastHashResponse
-      }
-      const pos = this.hashes.get(hash)
-      if (pos != null && pos >= 0) {
-        return Promise.resolve({
+        return {
           full: false,
-          hash: this.lastHash,
-          transactions: this.model.slice(pos + 1)
-        })
+          hash,
+          transactions: []
+        }
       }
-      return Promise.resolve({
+      const txAdapter = this.context.adapterManager?.getAdapter(DOMAIN_TX, true) as TxAdapter
+      return {
         full: true,
         hash: this.lastHash,
-        transactions: [...this.model]
-      })
+        transactions: this.systemTx.concat(await this.getUserTx(ctx, txAdapter))
+      }
     }
-    return Promise.resolve(this.model.filter((it) => it.modifiedOn > lastModelTx))
+    const txAdapter = this.context.adapterManager?.getAdapter(DOMAIN_TX, true) as TxAdapter
+    return this.systemTx.concat(await this.getUserTx(ctx, txAdapter)).filter((it) => it.modifiedOn > lastModelTx)
   }
 
   tx (ctx: MeasureContext, tx: Tx[]): Promise<TxMiddlewareResult> {

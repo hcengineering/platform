@@ -4,8 +4,8 @@
 //
 -->
 <script lang="ts">
-  import { Account, Ref } from '@hcengineering/core'
-  import ui, { Label, Location, Spinner, location } from '@hcengineering/ui'
+  import { PersonId } from '@hcengineering/core'
+  import ui, { Label, Location, Spinner, Button, location } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import github from '../plugin'
   import { sendGHServiceRequest } from './utils'
@@ -52,12 +52,8 @@
     }
 
     const rawState = JSON.parse(atob(state))
-    const {
-      accountId,
-      op,
-      workspace,
-      token
-    }: { accountId: Ref<Account>, workspace: string, op: string, token: string } = rawState
+    const { accountId, op, workspace, token }: { accountId: PersonId, workspace: string, op: string, token: string } =
+      rawState
 
     if (op === 'installation') {
       if (installationId == null || setupAction === null) {
@@ -111,6 +107,17 @@
       </div>
     {:then}
       <Label label={github.string.AutoClose} params={{ time: autoClose }} />
+    {:catch}
+      <div class="flex flex-col flex-center flex-gap-4">
+        <Label label={github.string.RequestFailed} />
+        <Button
+          label={github.string.CloseTab}
+          kind="primary"
+          on:click={() => {
+            window.close()
+          }}
+        />
+      </div>
     {/await}
   </div>
 {/if}

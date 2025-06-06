@@ -52,10 +52,20 @@ import { productsOperation } from '@hcengineering/model-products'
 import { requestOperation } from '@hcengineering/model-request'
 import { analyticsCollectorOperation } from '@hcengineering/model-analytics-collector'
 import { workbenchOperation } from '@hcengineering/model-workbench'
+import { testManagementOperation } from '@hcengineering/model-test-management'
+import { surveyOperation } from '@hcengineering/model-survey'
+import { cardOperation } from '@hcengineering/model-card'
+import { aiBotId, aiBotOperation } from '@hcengineering/model-ai-bot'
+import { chatId, chatOperation } from '@hcengineering/model-chat'
+import { inboxId, inboxOperation } from '@hcengineering/model-inbox'
+import { processId, processOperation } from '@hcengineering/model-process'
+import { communicationId, communicationOperation } from '@hcengineering/model-communication'
+import { recorderId, recorderOperation } from '@hcengineering/model-recorder'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
   ['activity', activityOperation],
+  ['card', cardOperation],
   ['chunter', chunterOperation],
   ['calendar', calendarOperation],
   ['gmail', gmailOperation],
@@ -92,5 +102,13 @@ export const migrateOperations: [string, MigrateOperation][] = [
   // We should call notification migration after activityServer and chunter
   ['notification', notificationOperation],
   ['analyticsCollector', analyticsCollectorOperation],
-  ['workbench', workbenchOperation]
+  ['workbench', workbenchOperation],
+  ['testManagement', testManagementOperation],
+  ['survey', surveyOperation],
+  [aiBotId, aiBotOperation],
+  [chatId, chatOperation],
+  [inboxId, inboxOperation],
+  [processId, processOperation],
+  [communicationId, communicationOperation],
+  [recorderId, recorderOperation]
 ]

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
   import { MarkupMark, MarkupMarkType } from '@hcengineering/text'
-  import { navigate, parseLocation } from '@hcengineering/ui'
+  import uiPlugin, { navigate, parseLocation } from '@hcengineering/ui'
 
   import presentation from '../../plugin'
 
@@ -23,14 +23,21 @@
 
   function handleLink (e: MouseEvent): void {
     try {
-      const href = mark.attrs.href
+      const href = mark.attrs?.href
       if (href != null && href !== '') {
         const url = new URL(href)
         const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
 
         if (url.origin === frontUrl) {
-          e.preventDefault()
-          navigate(parseLocation(url))
+          const loc = parseLocation(url)
+          const routes = getMetadata(uiPlugin.metadata.Routes)
+          const app = routes?.get(loc.path[0])
+
+          if (app !== undefined) {
+            e.preventDefault()
+            e.stopPropagation()
+            navigate(loc)
+          }
         }
       }
     } catch (err) {
@@ -49,7 +56,12 @@
   {:else if mark.type === MarkupMarkType.em}
     <em><slot /></em>
   {:else if mark.type === MarkupMarkType.link}
-    <a href={attrs.href} target={attrs.target} on:click|stopPropagation={handleLink} on:contextmenu|stopPropagation>
+    <a
+      href={attrs.href}
+      target={attrs.target ?? '_blank'}
+      on:click|stopPropagation={handleLink}
+      on:contextmenu|stopPropagation
+    >
       <slot />
     </a>
   {:else if mark.type === MarkupMarkType.strike}

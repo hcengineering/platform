@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Ref } from '@hcengineering/core'
-import { EmptyMarkup, MarkupNodeType, jsonToMarkup } from '@hcengineering/text'
+import { type Class, type Doc, type Ref } from '@hcengineering/core'
+import { EmptyMarkup, MarkupNodeType, jsonToMarkup } from '@hcengineering/text-core'
 
 import { getReferencesData } from '../references'
 
@@ -73,7 +73,7 @@ describe('extractBacklinks', () => {
         srcDocId: 'srcDocId',
         srcDocClass: 'srcDocClass',
         message:
-          '{"type":"paragraph","content":[{"type":"reference","attrs":{"id":"id","objectclass":"contact:class:Person","label":"Appleseed John","class":null}},{"type":"text","text":" hello"}]}',
+          '{"type":"paragraph","content":[{"type":"reference","attrs":{"id":"id","objectclass":"contact:class:Person","label":"Appleseed John"}},{"type":"text","text":" hello"}]}',
         attachedDocId: 'attachedDocId',
         attachedDocClass: 'attachedDocClass'
       }

@@ -25,8 +25,8 @@ import {
 import { DOMAIN_INVENTORY } from '.'
 
 export const inventoryOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, inventoryId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, inventoryId, [
       {
         state: 'removeDeprecatedSpace',
         func: async (client: MigrationClient) => {

@@ -33,10 +33,11 @@
   import view, { decodeObjectURI } from '@hcengineering/view'
   import { parseLinkId, getObjectLinkId } from '@hcengineering/view-resources'
   import { ActivityMessage } from '@hcengineering/activity'
+  import { loadSavedAttachments } from '@hcengineering/attachment-resources'
 
   import ChatNavigator from './navigator/ChatNavigator.svelte'
   import ChannelView from '../ChannelView.svelte'
-  import { chatSpecials, loadSavedAttachments } from './utils'
+  import { chatSpecials } from './utils'
   import { SelectChannelEvent } from './types'
   import { openChannel, openThreadInSidebar } from '../../navigation'
 
@@ -126,7 +127,7 @@
     const thread = loc.path[4] as Ref<ActivityMessage> | undefined
 
     if (thread !== undefined) {
-      void openThreadInSidebar(thread)
+      void openThreadInSidebar(thread, undefined, undefined, undefined, undefined, false)
     }
   }
 
@@ -148,7 +149,7 @@
       object = detail.object
     }
 
-    openChannel(selectedData.id, selectedData._class)
+    openChannel(selectedData.id, selectedData._class, undefined, true)
   }
 
   defineSeparators('chat', [
@@ -170,11 +171,14 @@
       class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
         ? 'portrait'
         : 'landscape'} border-left"
+      class:fly={$deviceInfo.navigator.float}
     >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
         <ChatNavigator {object} {currentSpecial} on:select={handleChannelSelected} />
       </div>
-      <Separator name="chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
+      {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+        <Separator name="chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
+      {/if}
     </div>
     <Separator
       name="chat"

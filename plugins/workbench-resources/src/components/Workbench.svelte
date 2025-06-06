@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import contact, { PersonAccount } from '@hcengineering/contact'
+  import contact, { getCurrentEmployee } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
   import core, {
     AccountRole,
@@ -26,7 +26,7 @@
     SortingOrder,
     Space
   } from '@hcengineering/core'
-  import login from '@hcengineering/login'
+  import login, { loginId } from '@hcengineering/login'
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { broadcastEvent, getMetadata, getResource, IntlString, translate } from '@hcengineering/platform'
@@ -55,6 +55,7 @@
     getCurrentLocation,
     getLocation,
     IconSettings,
+    isSameSegments,
     Label,
     languageStore,
     Location,
@@ -63,7 +64,6 @@
     locationToUrl,
     mainSeparators,
     navigate,
-    openPanel,
     PanelInstance,
     Popup,
     PopupAlignment,
@@ -71,10 +71,12 @@
     PopupResult,
     popupstore,
     pushRootBarComponent,
+    resizeObserver,
     ResolvedLocation,
     resolvedLocationStore,
     Separator,
     setResolvedLocation,
+    showPanel,
     showPopup,
     TooltipInstance,
     workbenchSeparators
@@ -99,7 +101,7 @@
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
-  import { buildNavModel, signOut, workspacesStore } from '../utils'
+  import { buildNavModel, isAllowedToRole, logOut, workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import AppSwitcher from './AppSwitcher.svelte'
@@ -124,6 +126,8 @@
   } from '../workbench'
   import { get } from 'svelte/store'
 
+  const HIDE_NAVIGATOR = 720
+  const FLOAT_ASIDE = 1024 // lg
   let contentPanel: HTMLElement
 
   const { setTheme } = getContext<{ setTheme: (theme: string) => void }>('theme')
@@ -133,7 +137,6 @@
   let currentSpecial: string | undefined
   let currentQuery: Record<string, string | null> | undefined
   let specialComponent: SpecialNavModel | undefined
-  let asideId: string | undefined
   let currentFragment: string | undefined = ''
 
   let currentApplication: Application | undefined
@@ -141,6 +144,10 @@
   let currentView: ViewConfiguration | undefined
   let createItemDialog: AnyComponent | undefined
   let createItemLabel: IntlString | undefined
+
+  const account = getCurrentAccount()
+  const me = getCurrentEmployee()
+  $: person = $personByIdStore.get(me)
 
   migrateViewOpttions()
 
@@ -151,18 +158,28 @@
   const apps: Application[] = client
     .getModel()
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
+    .filter((it) => isAllowedToRole(it.accessLevel, account))
 
   let panelInstance: PanelInstance
   let popupInstance: Popup
 
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
-  $deviceInfo.navigator.visible = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
+  const mobileAdaptive = $deviceInfo.isMobile && $deviceInfo.minWidth
+  const defaultNavigator = !(getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true)
+  const savedNavigator = localStorage.getItem('hiddenNavigator')
+  let hiddenNavigator: boolean = savedNavigator !== null ? savedNavigator === 'true' : defaultNavigator
+  let hiddenAside: boolean = true
+  $deviceInfo.navigator.visible = !hiddenNavigator
 
   async function toggleNav (): Promise<void> {
     $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
+    if (!$deviceInfo.navigator.float) {
+      hiddenNavigator = !$deviceInfo.navigator.visible
+      localStorage.setItem('hiddenNavigator', `${hiddenNavigator}`)
+    }
     closeTooltip()
-    if (currentApplication && navigatorModel && navigator) {
+    if (currentApplication && navigatorModel) {
       await tick()
       panelInstance.fitPopupInstance()
       popupInstance.fitPopupInstance()
@@ -175,10 +192,11 @@
   const query = createQuery()
   $: query.query(
     workbench.class.WorkbenchTab,
-    {},
+    { attachedTo: account.uuid },
     (res) => {
       tabs = res
       tabsStore.set(tabs)
+      if (account.role === AccountRole.ReadOnlyGuest) return
       if (!areTabsLoaded) {
         void initCurrentTab(tabs)
         areTabsLoaded = true
@@ -215,14 +233,17 @@
       } else {
         const tabToReplace = tabs.findLast((t) => !t.isPinned)
         if (tabToReplace !== undefined) {
-          await client.update(tabToReplace, {
+          const op = client.apply(undefined, undefined, true)
+          await op.update(tabToReplace, {
             location: url
           })
+          await op.commit()
           selectTab(tabToReplace._id)
           prevTabIdStore.set(tabToReplace._id)
         } else {
+          console.log('Creating new tab on init')
           const _id = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
-            attachedTo: account._id,
+            attachedTo: account.uuid,
             location: url,
             isPinned: false
           })
@@ -244,11 +265,8 @@
     syncWorkbenchTab()
   })
 
-  const account = getCurrentAccount() as PersonAccount
-
-  $: person = $personByIdStore.get(account.person)
-
   const workspaceId = $location.path[1]
+
   const inboxClient = InboxNotificationsClientImpl.createClient()
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
@@ -287,18 +305,18 @@
   let windowWorkspaceName = ''
 
   async function updateWindowTitle (loc: Location): Promise<void> {
-    let ws = loc.path[1]
-    const wsName = $workspacesStore.find((it) => it.workspace === ws)
-    if (wsName !== undefined) {
-      ws = wsName?.workspaceName ?? wsName.workspace
-      windowWorkspaceName = ws
+    let wsUrl = loc.path[1]
+    const ws = $workspacesStore.find((it) => it.url === wsUrl)
+    if (ws !== undefined) {
+      wsUrl = ws?.name ?? ws.url
+      windowWorkspaceName = wsUrl
     }
     const docTitle = await getWindowTitle(loc)
     if (docTitle !== undefined && docTitle !== '') {
-      document.title = ws == null ? docTitle : `${docTitle} - ${ws}`
+      document.title = wsUrl == null ? docTitle : `${docTitle} - ${wsUrl}`
     } else {
       const title = getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform'
-      document.title = ws == null ? title : `${ws} - ${title}`
+      document.title = wsUrl == null ? title : `${wsUrl} - ${title}`
     }
     void broadcastEvent(workbench.event.NotifyTitle, document.title)
   }
@@ -352,8 +370,6 @@
             loc.path[4] = currentSpecial
           } else if (loc.path[3] === resolved.defaultLocation.path[3]) {
             loc.path[4] = resolved.defaultLocation.path[4]
-          } else {
-            loc.path[4] = asideId as string
           }
         } else {
           loc.path.length = 4
@@ -383,7 +399,10 @@
       }
     }
     loc.query = resolved.loc.query ?? loc.query ?? currentQuery ?? resolved.defaultLocation.query
-    loc.fragment = resolved.loc.fragment ?? loc.fragment ?? resolved.defaultLocation.fragment
+    loc.fragment =
+      (loc.fragment ?? '') !== '' && resolved.loc.fragment === resolved.defaultLocation.fragment
+        ? loc.fragment
+        : resolved.loc.fragment ?? resolved.defaultLocation.fragment
     return loc
   }
 
@@ -396,7 +415,6 @@
         const prevTabLoc = prevTab ? getTabLocation(prevTab) : undefined
         if (prevTabLoc === undefined || prevTabLoc.path[2] !== loc.path[2]) {
           clear(1)
-          clear(2)
         }
       }
       prevTabIdStore.set($tabIdStore)
@@ -418,9 +436,12 @@
       const last = localStorage.getItem(`${locationStorageKeyId}_${loc.path[1]}`)
       if (last != null) {
         const lastValue = JSON.parse(last)
-        navigateDone = navigate(lastValue)
-        if (navigateDone) {
-          return
+
+        if (isSameSegments(lastValue, loc, 2)) {
+          navigateDone = navigate(lastValue)
+          if (navigateDone) {
+            return
+          }
         }
       }
       if (app === undefined && !navigateDone) {
@@ -451,9 +472,14 @@
 
     if (currentAppAlias !== app) {
       clear(1)
-      currentApplication = await client.findOne<Application>(workbench.class.Application, { alias: app })
-      currentAppAlias = currentApplication?.alias
-      navigatorModel = await buildNavModel(client, currentApplication)
+      const newApplication: Application | undefined = await client.findOne<Application>(workbench.class.Application, {
+        alias: app
+      })
+      if (newApplication?.accessLevel === undefined || hasAccountRole(account, newApplication.accessLevel)) {
+        currentApplication = newApplication
+        currentAppAlias = currentApplication?.alias
+        navigatorModel = await buildNavModel(client, currentApplication)
+      }
     }
 
     if (
@@ -491,10 +517,6 @@
       }
     }
 
-    if (special !== currentSpecial && (navigatorModel?.aside || currentApplication?.aside)) {
-      asideId = special
-    }
-
     if (app !== undefined) {
       localStorage.setItem(`${locationStorageKeyId}_${app}`, originalLoc)
     }
@@ -524,12 +546,13 @@
           provider,
           focus: doc
         })
-        openPanel(
+        showPanel(
           props[0] as AnyComponent,
           _id,
           _class,
           (props[3] ?? undefined) as PopupAlignment,
-          (props[4] ?? undefined) as AnyComponent
+          (props[4] ?? undefined) as AnyComponent,
+          false
         )
       } else {
         accessDeniedStore.set(true)
@@ -567,28 +590,19 @@
         specialComponent = undefined
       // eslint-disable-next-line no-fallthrough
       case 3:
-        asideId = undefined
         if (currentSpace !== undefined) {
           specialComponent = undefined
         }
     }
   }
 
-  function closeAside (): void {
-    const loc = getLocation()
-    loc.path.length = 4
-    asideId = undefined
-    checkOnHide()
-    navigate(loc)
-  }
-
   async function updateSpace (spaceId?: Ref<Space>): Promise<void> {
     if (spaceId === currentSpace) return
     clear(2)
+    currentSpace = spaceId
     if (spaceId === undefined) return
     const space = await client.findOne<Space>(core.class.Space, { _id: spaceId })
     if (space === undefined) return
-    currentSpace = spaceId
     const spaceClass = client.getHierarchy().getClass(space._class)
     const view = client.getHierarchy().as(spaceClass, workbench.mixin.SpaceView)
     currentView = view.view
@@ -598,14 +612,11 @@
 
   function setSpaceSpecial (spaceSpecial: string | undefined): void {
     if (currentSpecial !== undefined && spaceSpecial === currentSpecial) return
-    if (asideId !== undefined && spaceSpecial === asideId) return
     clear(3)
     if (spaceSpecial === undefined) return
     specialComponent = getSpecialComponent(spaceSpecial)
     if (specialComponent !== undefined) {
       currentSpecial = spaceSpecial
-    } else if (navigatorModel?.aside !== undefined || currentApplication?.aside !== undefined) {
-      asideId = spaceSpecial
     }
   }
 
@@ -625,22 +636,56 @@
     }
   }
 
-  let aside: HTMLElement
   let cover: HTMLElement
+  let workbenchWidth: number = $deviceInfo.docWidth
 
-  $deviceInfo.navigator.float = !($deviceInfo.docWidth < 1024)
-  $: if ($deviceInfo.docWidth <= 1024 && !$deviceInfo.navigator.float) {
-    $deviceInfo.navigator.visible = false
-    $deviceInfo.navigator.float = true
-  } else if ($deviceInfo.docWidth > 1024 && $deviceInfo.navigator.float) {
-    if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
+  $deviceInfo.navigator.float = workbenchWidth <= HIDE_NAVIGATOR
+  const checkWorkbenchWidth = (): void => {
+    if (workbenchWidth <= HIDE_NAVIGATOR && !$deviceInfo.navigator.float) {
+      $deviceInfo.navigator.visible = false
+      $deviceInfo.navigator.float = true
+    } else if (workbenchWidth > HIDE_NAVIGATOR && $deviceInfo.navigator.float) {
       $deviceInfo.navigator.float = false
-      $deviceInfo.navigator.visible = true
+      $deviceInfo.navigator.visible = !hiddenNavigator
     }
   }
-  const checkOnHide = (): void => {
-    if ($deviceInfo.navigator.visible && $deviceInfo.docWidth <= 1024) $deviceInfo.navigator.visible = false
+  checkWorkbenchWidth()
+  $: if ($deviceInfo.docWidth <= FLOAT_ASIDE && !$sidebarStore.float) {
+    hiddenAside = $sidebarStore.variant === SidebarVariant.MINI
+    $sidebarStore.float = true
+  } else if ($deviceInfo.docWidth > FLOAT_ASIDE && $sidebarStore.float) {
+    $sidebarStore.float = false
+    $sidebarStore.variant = hiddenAside ? SidebarVariant.MINI : SidebarVariant.EXPANDED
   }
+  const checkOnHide = (): void => {
+    if ($deviceInfo.navigator.visible && $deviceInfo.navigator.float) $deviceInfo.navigator.visible = false
+  }
+  let oldNavVisible: boolean = $deviceInfo.navigator.visible
+  let oldASideVisible: boolean = $sidebarStore.variant !== SidebarVariant.MINI
+  $: if (
+    oldNavVisible !== $deviceInfo.navigator.visible ||
+    oldASideVisible !== ($sidebarStore.variant !== SidebarVariant.MINI)
+  ) {
+    if (mobileAdaptive && $deviceInfo.navigator.float) {
+      if ($deviceInfo.navigator.visible && $sidebarStore.variant !== SidebarVariant.MINI) {
+        if (oldNavVisible) $deviceInfo.navigator.visible = false
+        else $sidebarStore.variant = SidebarVariant.MINI
+      }
+    }
+    oldNavVisible = $deviceInfo.navigator.visible
+    oldASideVisible = $sidebarStore.variant !== SidebarVariant.MINI
+  }
+  $: if (
+    $sidebarStore.float &&
+    $sidebarStore.variant !== SidebarVariant.MINI &&
+    $sidebarStore.widget === undefined &&
+    $sidebarStore.widgetsState.size > 0
+  ) {
+    $sidebarStore.widget = Array.from($sidebarStore.widgetsState.keys())[0]
+  }
+  location.subscribe(() => {
+    if (mobileAdaptive && $sidebarStore.variant !== SidebarVariant.MINI) $sidebarStore.variant = SidebarVariant.MINI
+  })
   $: $deviceInfo.navigator.direction = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'horizontal' : 'vertical'
   let appsMini: boolean
   $: appsMini =
@@ -712,21 +757,13 @@
   defineSeparators('workbench', workbenchSeparators)
   defineSeparators('main', mainSeparators)
 
-  $: mainNavigator = currentApplication && navigatorModel && navigator && $deviceInfo.navigator.visible
+  $: mainNavigator = currentApplication && navigatorModel && $deviceInfo.navigator.visible
   $: elementPanel = $deviceInfo.replacedPanel ?? contentPanel
 
   $: deactivated =
     person && client.getHierarchy().hasMixin(person, contact.mixin.Employee)
       ? !client.getHierarchy().as(person, contact.mixin.Employee).active
       : false
-
-  let asideComponent: AnyComponent | undefined
-
-  $: if (asideId !== undefined && navigatorModel !== undefined) {
-    asideComponent = navigatorModel?.aside ?? currentApplication?.aside
-  } else {
-    asideComponent = undefined
-  }
 </script>
 
 {#if person && deactivated && !isAdminUser()}
@@ -738,7 +775,9 @@
       kind={'link'}
       size={'small'}
       on:click={() => {
-        signOut()
+        void logOut().then(() => {
+          navigate({ path: [loginId] })
+        })
       }}
     />
   </div>
@@ -754,10 +793,7 @@
       <path d="M15.8,17.5h1.8v-0.4C17,17.4,16.4,17.5,15.8,17.5z" />
     </clipPath>
   </svg>
-  <div
-    class="workbench-container"
-    style:flex-direction={$deviceInfo.navigator.direction === 'horizontal' ? 'column-reverse' : 'row'}
-  >
+  <div class="workbench-container apps-{$deviceInfo.navigator.direction}">
     <div
       class="antiPanel-application {$deviceInfo.navigator.direction} no-print"
       class:lastDivider={!$deviceInfo.navigator.visible}
@@ -788,14 +824,22 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        <NavLink app={notificationId} shrink={0} restoreLastLocation>
+        <NavLink
+          app={notificationId}
+          shrink={0}
+          disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId}
+        >
           <AppItem
             icon={notification.icon.Notifications}
             label={notification.string.Inbox}
             selected={currentAppAlias === notificationId || inboxPopup !== undefined}
+            navigator={(currentAppAlias === notificationId || inboxPopup !== undefined) &&
+              $deviceInfo.navigator.visible}
             on:click={(e) => {
               if (e.metaKey || e.ctrlKey) return
-              if (currentAppAlias === notificationId && lastLoc !== undefined) {
+              if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId) {
+                toggleNav()
+              } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
                 e.preventDefault()
                 e.stopPropagation()
                 navigate(lastLoc)
@@ -807,7 +851,12 @@
             notify={hasInboxNotifications}
           />
         </NavLink>
-        <Applications {apps} active={currentApplication?._id} direction={$deviceInfo.navigator.direction} />
+        <Applications
+          {apps}
+          active={currentApplication?._id}
+          direction={$deviceInfo.navigator.direction}
+          on:toggleNav={toggleNav}
+        />
       </div>
       <div
         class="info-box {$deviceInfo.navigator.direction}"
@@ -816,7 +865,7 @@
       >
         <AppItem
           icon={IconSettings}
-          label={setting.string.Settings}
+          label={setting.string.Customize}
           size={appsMini ? 'small' : 'large'}
           on:click={() => showPopup(AppSwitcher, { apps }, popupPosition)}
         />
@@ -859,7 +908,7 @@
           >
             <Component
               is={contact.component.Avatar}
-              props={{ person, name: person?.name, size: 'small', account: account._id }}
+              props={{ person, name: person?.name, size: 'small', showStatus: true }}
             />
           </div>
         </div>
@@ -871,111 +920,130 @@
         application: currentApplication?._id
       }}
     />
-    <div class="workbench-container inner">
-      {#if mainNavigator}
+    <div class="flex-row-center w-full h-full">
+      <div
+        class="workbench-container inner"
+        class:rounded={$sidebarStore.variant === SidebarVariant.EXPANDED}
+        use:resizeObserver={(element) => {
+          workbenchWidth = element.clientWidth
+          checkWorkbenchWidth()
+        }}
+      >
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        {#if $deviceInfo.navigator.float}
+        {#if $deviceInfo.navigator.float && $deviceInfo.navigator.visible}
           <div class="cover shown" on:click={() => ($deviceInfo.navigator.visible = false)} />
         {/if}
-        <div
-          class="antiPanel-navigator no-print {$deviceInfo.navigator.direction === 'horizontal'
-            ? 'portrait'
-            : 'landscape'} border-left"
-        >
-          <div class="antiPanel-wrap__content hulyNavPanel-container">
-            {#if currentApplication}
-              <NavHeader label={currentApplication.label} />
-              {#if currentApplication.navHeaderComponent}
-                <Component
-                  is={currentApplication.navHeaderComponent}
-                  props={{
-                    currentSpace,
-                    currentSpecial,
-                    currentFragment
-                  }}
-                  shrink
-                />
+        {#if mainNavigator}
+          <div
+            class="antiPanel-navigator no-print {$deviceInfo.navigator.direction === 'horizontal'
+              ? 'portrait'
+              : 'landscape'} border-left"
+            class:fly={$deviceInfo.navigator.float}
+          >
+            <div class="antiPanel-wrap__content hulyNavPanel-container">
+              {#if currentApplication}
+                <NavHeader label={currentApplication.label} />
+                {#if currentApplication.navHeaderComponent}
+                  <Component
+                    is={currentApplication.navHeaderComponent}
+                    props={{
+                      currentSpace,
+                      currentSpecial,
+                      currentFragment
+                    }}
+                    shrink
+                  />
+                {/if}
               {/if}
+              <Navigator
+                {currentSpace}
+                {currentSpecial}
+                {currentFragment}
+                model={navigatorModel}
+                {currentApplication}
+                on:open={checkOnHide}
+              />
+              <NavFooter>
+                {#if currentApplication && currentApplication.navFooterComponent}
+                  <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
+                {/if}
+              </NavFooter>
+            </div>
+            {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+              <Separator
+                name={'workbench'}
+                float={$deviceInfo.navigator.float ? 'navigator' : true}
+                index={0}
+                color={'var(--theme-navpanel-border)'}
+              />
             {/if}
-            <Navigator
-              {currentSpace}
-              {currentSpecial}
-              {currentFragment}
-              model={navigatorModel}
-              {currentApplication}
-              on:open={checkOnHide}
-            />
-            <NavFooter>
-              {#if currentApplication && currentApplication.navFooterComponent}
-                <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
-              {/if}
-            </NavFooter>
           </div>
           <Separator
             name={'workbench'}
-            float={$deviceInfo.navigator.float ? 'navigator' : true}
+            float={$deviceInfo.navigator.float}
             index={0}
-            color={'var(--theme-navpanel-border)'}
+            color={'transparent'}
+            separatorSize={0}
+            short
           />
-        </div>
-        <Separator
-          name={'workbench'}
-          float={$deviceInfo.navigator.float}
-          index={0}
-          color={'transparent'}
-          separatorSize={0}
-          short
-        />
-      {/if}
-      <div
-        bind:this={contentPanel}
-        class={navigatorModel === undefined ? 'hulyPanels-container' : 'hulyComponent overflow-hidden'}
-      >
-        {#if currentApplication && currentApplication.component}
-          <Component
-            is={currentApplication.component}
-            props={{
-              currentSpace,
-              asideId,
-              asideComponent: currentApplication?.aside
-            }}
-            on:close={closeAside}
-          />
-        {:else if specialComponent}
-          <Component
-            is={specialComponent.component}
-            props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace }}
-            on:action={(e) => {
-              if (e?.detail) {
-                const loc = getCurrentLocation()
-                loc.query = { ...loc.query, ...e.detail }
-                navigate(loc)
-              }
-            }}
-          />
-        {:else if currentView?.component !== undefined}
-          <Component is={currentView.component} props={{ ...currentView.componentProps, currentView }} />
-        {:else if $accessDeniedStore}
-          <div class="flex-center h-full">
-            <h2><Label label={workbench.string.AccessDenied} /></h2>
-          </div>
-        {:else}
-          <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}
-      </div>
-      {#if asideComponent !== undefined}
-        <Separator name={'workbench'} index={1} color={'transparent'} separatorSize={0} short />
-        <div class="antiPanel-component antiComponent aside" bind:this={aside}>
-          <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
+        <div
+          bind:this={contentPanel}
+          class={navigatorModel === undefined ? 'hulyPanels-container' : 'hulyComponent overflow-hidden'}
+          class:straighteningCorners={$sidebarStore.float &&
+            $sidebarStore.variant === SidebarVariant.EXPANDED &&
+            !(mobileAdaptive && $deviceInfo.isPortrait)}
+          data-id={'contentPanel'}
+        >
+          {#if currentApplication && currentApplication.component}
+            <Component
+              is={currentApplication.component}
+              props={{
+                currentSpace,
+                workbenchWidth
+              }}
+            />
+          {:else if specialComponent}
+            <Component
+              is={specialComponent.component}
+              props={{
+                model: navigatorModel,
+                ...specialComponent.componentProps,
+                currentSpace,
+                space: currentSpace,
+                navigationModel: specialComponent?.navigationModel,
+                workbenchWidth,
+                queryBuilder: specialComponent?.queryBuilder
+              }}
+              on:action={(e) => {
+                if (e?.detail) {
+                  const loc = getCurrentLocation()
+                  loc.query = { ...loc.query, ...e.detail }
+                  navigate(loc)
+                }
+              }}
+            />
+          {:else if currentView?.component !== undefined}
+            <Component
+              is={currentView.component}
+              props={{ ...currentView.componentProps, currentSpace, currentView, workbenchWidth }}
+            />
+          {:else if $accessDeniedStore}
+            <div class="flex-center h-full">
+              <h2><Label label={workbench.string.AccessDenied} /></h2>
+            </div>
+          {:else}
+            <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
+          {/if}
         </div>
+      </div>
+      {#if $sidebarStore.variant === SidebarVariant.EXPANDED && !$sidebarStore.float}
+        <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
       {/if}
+      <WidgetsBar />
     </div>
   </div>
-  {#if $sidebarStore.variant === SidebarVariant.EXPANDED}
-    <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
-  {/if}
-  <WidgetsBar />
   <Dock />
   <div bind:this={cover} class="cover" />
   <TooltipInstance />
@@ -989,7 +1057,9 @@
       <ActionContext context={{ mode: 'popup' }} />
     </svelte:fragment>
   </Popup>
-  <ComponentExtensions extension={workbench.extensions.WorkbenchExtensions} />
+  <div class="hidden max-w-0 max-h-0">
+    <ComponentExtensions extension={workbench.extensions.WorkbenchExtensions} />
+  </div>
   <BrowserNotificatator />
 {/if}
 
@@ -1001,12 +1071,21 @@
     min-height: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--theme-statusbar-color);
+    background-color: var(--theme-panel-color);
     touch-action: none;
 
+    &.apps-horizontal {
+      flex-direction: column-reverse;
+    }
     &.inner {
       background-color: var(--theme-navpanel-color);
-      border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
+
+      .straighteningCorners {
+        border-radius: var(--medium-BorderRadius) 0 0 var(--medium-BorderRadius);
+      }
+      &.rounded {
+        border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
+      }
     }
     &:not(.inner)::after {
       position: absolute;
@@ -1014,11 +1093,13 @@
       inset: 0;
       border: 1px solid var(--theme-divider-color);
       border-radius: var(--medium-BorderRadius);
-      border-bottom-right-radius: 0;
-      border-top-right-radius: 0;
       pointer-events: none;
     }
-    .antiPanel-application {
+    .antiPanel-application.horizontal {
+      border-radius: 0 0 var(--medium-BorderRadius) var(--medium-BorderRadius);
+      border-top: none;
+    }
+    .antiPanel-application:not(.horizontal) {
       border-radius: var(--medium-BorderRadius) 0 0 var(--medium-BorderRadius);
       border-right: none;
     }
@@ -1066,11 +1147,11 @@
     }
     .logo-container.mini {
       left: 4px;
-      width: 1.5rem;
-      height: 1.5rem;
+      width: 1.75rem;
+      height: 1.75rem;
     }
     .topmenu-container.mini {
-      left: calc(1.5rem + 8px);
+      left: calc(1.75rem + 8px);
     }
   }
 
@@ -1090,6 +1171,31 @@
       &.mini > *:not(:last-child) {
         margin-bottom: 0.25rem;
       }
+    }
+    &.horizontal {
+      margin-right: 1rem;
+      padding-left: 1rem;
+      border-left: 1px solid var(--theme-navpanel-divider);
+
+      &:not(.mini) > *:not(:last-child) {
+        margin-right: 0.75rem;
+      }
+      &.mini > *:not(:last-child) {
+        margin-right: 0.25rem;
+      }
+    }
+  }
+
+  .new-world {
+    display: flex;
+    align-items: center;
+
+    &.vertical {
+      flex-direction: column;
+      margin-top: auto;
+      border-top: 1px solid var(--theme-navpanel-divider);
+      padding: 0.5rem 0;
+      gap: 0.25rem;
     }
     &.horizontal {
       margin-right: 1rem;

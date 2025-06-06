@@ -13,7 +13,11 @@
 // limitations under the License.
 //
 
+import { Permission, Ref, Space } from '@hcengineering/core'
 import { ColorDefinition } from '@hcengineering/ui'
+import { type Card } from '@hcengineering/card'
+
+import { Person } from './index'
 
 /**
  * @public
@@ -45,3 +49,15 @@ export const AVATAR_COLORS: ColorDefinition[] = [
   { name: 'teal', color: '#57b1be' }, // teal
   { name: 'gray', color: '#847a8c' } // gray
 ]
+
+export type PermissionsBySpace = Record<Ref<Space>, Set<Ref<Permission>>>
+export type PersonsByPermission = Record<Ref<Space>, Record<Ref<Permission>, Set<Ref<Person>>>>
+export type MembersBySpace = Record<Ref<Space>, Set<Ref<Person>>>
+export interface PermissionsStore {
+  ps: PermissionsBySpace
+  ap: PersonsByPermission
+  ms: MembersBySpace
+  whitelist: Set<Ref<Space>>
+}
+
+export type UserProfile = Card & { person: Ref<Person> }

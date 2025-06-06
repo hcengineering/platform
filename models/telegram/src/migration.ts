@@ -25,8 +25,8 @@ import { telegramId } from '@hcengineering/telegram'
 import { DOMAIN_TELEGRAM } from '.'
 
 export const telegramOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, telegramId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, telegramId, [
       {
         state: 'removeDeprecatedSpace',
         func: async (client: MigrationClient) => {

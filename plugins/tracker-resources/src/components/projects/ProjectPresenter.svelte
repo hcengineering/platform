@@ -13,23 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import presentation from '@hcengineering/presentation'
+  import presentation, { IconWithEmoji, isAdminUser } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/tracker'
-  import {
-    Icon,
-    IconWithEmoji,
-    Label,
-    getPlatformColorDef,
-    getPlatformColorForTextDef,
-    themeStore
-  } from '@hcengineering/ui'
+  import { Icon, Label, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { NavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
+  import { getCurrentAccount } from '@hcengineering/core'
 
   export let value: Project | undefined
   export let inline: boolean = false
   export let accent: boolean = false
   export let colorInherit: boolean = false
+  export let openIssues: boolean
 </script>
 
 {#if value}
@@ -41,7 +37,7 @@
           ? { icon: value.color }
           : {
               fill:
-                value.color !== undefined
+                value.color !== undefined && typeof value.color !== 'string'
                   ? getPlatformColorDef(value.color, $themeStore.dark).icon
                   : getPlatformColorForTextDef(value.name, $themeStore.dark).icon
             }}
@@ -49,7 +45,13 @@
       />
     </div>
     <span class="label no-underline nowrap" class:fs-bold={accent}>
-      {value.name}
+      {#if openIssues && (isAdminUser() || value.members.includes(getCurrentAccount().uuid))}
+        <NavLink space={value._id} special={'issues'} noUnderline={false}>
+          {value.name}
+        </NavLink>
+      {:else}
+        {value.name}
+      {/if}
       {#if value.archived}
         <Label label={presentation.string.Archived} />
       {/if}

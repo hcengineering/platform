@@ -2,7 +2,7 @@
 A clear and concise description of the issue.
 
 ### Your environment
-* Version of huly
+* Version of Huly
 * Browser (and version)
 * Your operating system (and version)
 

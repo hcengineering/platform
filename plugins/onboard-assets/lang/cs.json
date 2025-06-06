@@ -1,0 +1,19 @@
+{
+  "status": {
+    "RequiredField": "Povinné pole {field}",
+    "FieldsDoNotMatch": "{field} neodpovídá {field2}",
+    "ConnectingToServer": "Připojování k serveru..."
+  },
+  "string": {
+    "CreateWorkspace": "Vytvořit pracovní prostor",
+    "LastName": "Příjmení",
+    "FirstName": "Jméno",
+    "Workspace": "Název pracovního prostoru",
+    "FillInProfile": "Vyplňte svůj profil",
+    "SetUpPassword": "Nastavte si heslo",
+    "Next": "Další",
+    "Skip": "Přeskočit",
+    "SignUpCompleted": "Registrace dokončena",
+    "StartUsingHuly": "Začněte používat Huly"
+  }
+}

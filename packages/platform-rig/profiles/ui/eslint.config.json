@@ -58,5 +58,8 @@
         "@typescript-eslint/no-floating-promises": "warn"
       }
     }
-  ]
+  ],
+  "rules": {
+    "svelte/no-at-html-tags": "error"
+  }
 }

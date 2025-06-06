@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { DirectMessage } from '@hcengineering/chunter'
-  import contact, { Person, PersonAccount } from '@hcengineering/contact'
-  import { Avatar, CombineAvatars, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Account, IdMap, Ref } from '@hcengineering/core'
+  import contact, { Person } from '@hcengineering/contact'
+  import { Avatar, CombineAvatars } from '@hcengineering/contact-resources'
+  import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Icon, IconSize } from '@hcengineering/ui'
   import { classIcon } from '@hcengineering/view-resources'
@@ -44,7 +44,7 @@
   }
 
   $: if (value !== undefined) {
-    void getDmPersons(client, value, $personByIdStore).then((res) => {
+    void getDmPersons(client, value).then((res) => {
       persons = res
     })
   }
@@ -54,10 +54,6 @@
   $: if (size === 'small') {
     avatarSize = 'x-small'
   }
-
-  function getAccountByPerson (accountById: IdMap<PersonAccount>, person: Person): Account | undefined {
-    return Array.from(accountById.values()).find((account) => account.person === person._id)
-  }
 </script>
 
 {#if persons.length === 0}
@@ -65,13 +61,7 @@
 {/if}
 
 {#if persons.length === 1}
-  <Avatar
-    person={persons[0]}
-    size={avatarSize}
-    name={persons[0].name}
-    {showStatus}
-    account={getAccountByPerson($personAccountByIdStore, persons[0])?._id}
-  />
+  <Avatar person={persons[0]} size={avatarSize} name={persons[0].name} {showStatus} />
 {/if}
 
 {#if persons.length > 1 && size === 'medium'}

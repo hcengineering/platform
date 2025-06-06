@@ -16,7 +16,7 @@
   import { Analytics } from '@hcengineering/analytics'
   import core, { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getMetadata, getResource } from '@hcengineering/platform'
-  import { ActionContext, decodeTokenPayload, getClient } from '@hcengineering/presentation'
+  import presentation, { ActionContext, decodeTokenPayload, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
     Component,
@@ -26,25 +26,22 @@
     Popup,
     PopupAlignment,
     ResolvedLocation,
-    Separator,
     TooltipInstance,
     areLocationsEqual,
     closePanel,
-    getCurrentLocation,
-    getLocation,
-    navigate,
-    openPanel,
     defineSeparators,
+    deviceOptionsStore as deviceInfo,
+    getCurrentLocation,
     setResolvedLocation,
-    deviceOptionsStore as deviceInfo
+    showPanel
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ListSelectionProvider, parseLinkId, restrictionStore, updateFocus } from '@hcengineering/view-resources'
   import workbench, { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { SpaceView, buildNavModel } from '@hcengineering/workbench-resources'
+  import { workbenchGuestSeparators } from '..'
   import guest from '../plugin'
   import { checkAccess } from '../utils'
-  import { workbenchGuestSeparators } from '..'
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
   $deviceInfo.navigator.visible = false
@@ -52,14 +49,14 @@
   const client = getClient()
 
   async function load (): Promise<boolean> {
-    const loc = getCurrentLocation()
-    const token = loc.query?.token
+    const token = getMetadata(presentation.metadata.Token)
     if (token == null) return false
-    const decoded = decodeTokenPayload(token)
+    const { extra } = decodeTokenPayload(token)
 
-    const link = await client.findOne(guest.class.PublicLink, { _id: decoded.linkId })
+    const link = await client.findOne(guest.class.PublicLink, { _id: extra.linkId })
     if (link == null) return false
     restrictionStore.set(link.restrictions)
+    const loc = getCurrentLocation()
     const mergedLoc = link.location
     mergedLoc.path[0] = loc.path[0]
     mergedLoc.path[1] = loc.path[1]
@@ -115,7 +112,6 @@
   let currentSpace: Ref<Space> | undefined
   let currentSpecial: string | undefined
   let specialComponent: SpecialNavModel | undefined
-  let asideId: string | undefined
   let currentFragment: string | undefined = ''
 
   let currentApplication: Application | undefined
@@ -124,13 +120,10 @@
 
   function setSpaceSpecial (spaceSpecial: string | undefined): void {
     if (currentSpecial !== undefined && spaceSpecial === currentSpecial) return
-    if (asideId !== undefined && spaceSpecial === asideId) return
     if (spaceSpecial === undefined) return
     specialComponent = getSpecialComponent(spaceSpecial)
     if (specialComponent !== undefined) {
       currentSpecial = spaceSpecial
-    } else if (navigatorModel?.aside !== undefined || currentApplication?.aside !== undefined) {
-      asideId = spaceSpecial
     }
   }
 
@@ -175,10 +168,6 @@
       }
     }
 
-    if (special !== currentSpecial && (navigatorModel?.aside || currentApplication?.aside)) {
-      asideId = special
-    }
-
     if (fragment !== currentFragment) {
       currentFragment = fragment
       if (fragment != null && fragment.trim().length > 0) {
@@ -207,12 +196,13 @@
           provider,
           focus: doc
         })
-        openPanel(
+        showPanel(
           props[0] as AnyComponent,
           _id,
           _class,
           (props[3] ?? undefined) as PopupAlignment,
-          (props[4] ?? undefined) as AnyComponent
+          (props[4] ?? undefined) as AnyComponent,
+          false
         )
       } else {
         closePanel(false)
@@ -249,13 +239,6 @@
     }
   }
 
-  function closeAside (): void {
-    const loc = getLocation()
-    loc.path.length = 4
-    asideId = undefined
-    navigate(loc)
-  }
-
   async function getWindowTitle (loc: Location): Promise<string | undefined> {
     if (loc.fragment == null) return
     const hierarchy = client.getHierarchy()
@@ -276,7 +259,6 @@
 
   defineSeparators('workbenchGuest', workbenchGuestSeparators)
 
-  let aside: HTMLElement
   let cover: HTMLElement
 </script>
 
@@ -302,15 +284,6 @@
             <SpaceView {currentSpace} {currentView} />
           {/if}
         </div>
-        {#if asideId}
-          {@const asideComponent = navigatorModel?.aside ?? currentApplication?.aside}
-          {#if asideComponent !== undefined}
-            <Separator name={'workbenchGuest'} index={0} />
-            <div class="antiPanel-component antiComponent aside" bind:this={aside}>
-              <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
-            </div>
-          {/if}
-        {/if}
       </div>
     </div>
     <div bind:this={cover} class="cover" />

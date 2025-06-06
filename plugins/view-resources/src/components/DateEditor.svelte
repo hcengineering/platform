@@ -23,6 +23,7 @@
   export let onChange: (value: any) => void
   export let kind: 'no-border' | 'link' | 'regular' = 'no-border'
   export let size: 'small' | 'medium' | 'large' = 'small'
+  export let width: string | undefined = undefined
   export let editable = true
 </script>
 
@@ -31,6 +32,7 @@
   labelNull={label}
   mode={type?.mode}
   noShift={!type?.withShift}
+  {width}
   {editable}
   {kind}
   {size}

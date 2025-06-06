@@ -25,4 +25,13 @@
   }
 </script>
 
-<UserBoxList items={value} {label} on:update={onUpdate} {kind} {size} {justify} {width} {readonly} />
+<UserBoxList
+  items={value}
+  {label}
+  on:update={onUpdate}
+  {kind}
+  {size}
+  {justify}
+  width={kind === 'list' ? undefined : width}
+  {readonly}
+/>

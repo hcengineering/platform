@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import { DocumentId, parseDocumentId } from '@hcengineering/collaborator-client'
-import { isReadonlyDoc } from '@hcengineering/collaboration'
+import { decodeDocumentId } from '@hcengineering/collaborator-client'
 import { MeasureContext } from '@hcengineering/core'
 import { decodeToken } from '@hcengineering/server-token'
 import { Extension, onAuthenticatePayload } from '@hocuspocus/server'
+import { isReadOnlyOrGuest } from '@hcengineering/account'
 
-import { getWorkspaceInfo } from '../account'
 import { Context, buildContext } from '../context'
+import { getWorkspaceIds } from '../utils'
 
 export interface AuthenticationConfiguration {
   ctx: MeasureContext
@@ -35,24 +35,37 @@ export class AuthenticationExtension implements Extension {
 
   async onAuthenticate (data: onAuthenticatePayload): Promise<Context> {
     const ctx = this.configuration.ctx
-    const { workspaceId, collaborativeDoc } = parseDocumentId(data.documentName as DocumentId)
+    const { workspaceId } = decodeDocumentId(data.documentName)
 
-    return await ctx.with('authenticate', { workspaceId }, async () => {
-      const token = decodeToken(data.token)
+    return await ctx.with(
+      'authenticate',
+      {},
+      async () => {
+        const token = decodeToken(data.token)
+        const readonly = isReadOnlyOrGuest(token.account, token.extra)
 
-      ctx.info('authenticate', { workspaceId, mode: token.extra?.mode ?? '' })
+        ctx.info('authenticate', {
+          workspaceId,
+          account: token.account,
+          mode: token.extra?.mode ?? '',
+          readonly
+        })
 
-      // verify workspace can be accessed with the token
-      const workspaceInfo = await getWorkspaceInfo(data.token)
+        if (readonly) {
+          data.connection.readOnly = true
+        }
 
-      // verify workspace url in the document matches the token
-      if (workspaceInfo.workspaceId !== workspaceId) {
-        throw new Error('documentName must include workspace id')
-      }
+        // verify workspace can be accessed with the token
+        const ids = await getWorkspaceIds(data.token)
 
-      data.connection.readOnly = isReadonlyDoc(collaborativeDoc)
+        // verify workspace uuid in the document matches the token
+        if (ids.uuid !== workspaceId) {
+          throw new Error('documentName must include workspace id')
+        }
 
-      return buildContext(data)
-    })
+        return buildContext(data, ids)
+      },
+      { workspaceId }
+    )
   }
 }

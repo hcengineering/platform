@@ -13,61 +13,15 @@
 // limitations under the License.
 //
 
-import { Token, decodeToken } from '@hcengineering/server-token'
+import { Token } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
-import { IncomingHttpHeaders, type Server } from 'http'
+import { type Server } from 'http'
 import { AnalyticEvent } from '@hcengineering/analytics-collector'
+import { extractToken } from '@hcengineering/server-client'
 
 import { ApiError } from './error'
 import { Collector } from './collector'
-import { Action } from './types'
-
-const extractCookieToken = (cookie?: string): Token | null => {
-  if (cookie === undefined || cookie === null) {
-    return null
-  }
-
-  const cookies = cookie.split(';')
-  const tokenCookie = cookies.find((cookie) => cookie.toLocaleLowerCase().includes('token'))
-  if (tokenCookie === undefined) {
-    return null
-  }
-
-  const encodedToken = tokenCookie.split('=')[1]
-  if (encodedToken === undefined) {
-    return null
-  }
-
-  return decodeToken(encodedToken)
-}
-
-const extractAuthorizationToken = (authorization?: string): Token | null => {
-  if (authorization === undefined || authorization === null) {
-    return null
-  }
-  const encodedToken = authorization.split(' ')[1]
-
-  if (encodedToken === undefined) {
-    return null
-  }
-
-  return decodeToken(encodedToken)
-}
-
-const extractToken = (headers: IncomingHttpHeaders): Token => {
-  try {
-    const token = extractCookieToken(headers.cookie) ?? extractAuthorizationToken(headers.authorization)
-
-    if (token === null) {
-      throw new ApiError(401)
-    }
-
-    return token
-  } catch {
-    throw new ApiError(401)
-  }
-}
 
 type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
 
@@ -77,8 +31,11 @@ const handleRequest = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
+  const token = extractToken(req.headers)
+  if (token === undefined) {
+    throw new ApiError(401)
+  }
   try {
-    const token = extractToken(req.headers)
     await fn(req, res, token, next)
   } catch (err: unknown) {
     next(err)
@@ -126,35 +83,6 @@ export function createServer (collector: Collector): Express {
       const events: AnalyticEvent[] = req.body
 
       collector.collect(events, token)
-
-      res.status(200)
-      res.json({})
-    })
-  )
-
-  app.post(
-    '/action',
-    wrapRequest(async (req, res, token) => {
-      if (req.body == null || Array.isArray(req.body)) {
-        throw new ApiError(400)
-      }
-
-      const name = req.body.name
-      const messageId = req.body.messageId
-      const channelId = req.body.channelId
-      const _id = req.body._id
-
-      if (name == null || messageId == null || channelId == null || _id == null) {
-        throw new ApiError(400)
-      }
-
-      const action: Action = {
-        _id,
-        name,
-        messageId,
-        channelId
-      }
-      await collector.processAction(action, token)
 
       res.status(200)
       res.json({})

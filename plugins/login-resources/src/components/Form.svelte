@@ -21,25 +21,12 @@
 
   import { onMount } from 'svelte'
   import { BottomAction } from '..'
-  import login from '../plugin'
   import { makeSequential } from '../mutex'
+  import type { Field } from '../types'
+  import login from '../plugin'
+  import BottomActionComponent from './BottomAction.svelte'
   import Providers from './Providers.svelte'
   import Tabs from './Tabs.svelte'
-  import BottomActionComponent from './BottomAction.svelte'
-
-  interface Field {
-    id?: string
-    name: string
-    i18n: IntlString
-    password?: boolean
-    optional?: boolean
-    short?: boolean
-    rules?: {
-      rule: RegExp
-      notMatch: boolean
-      ruleDescr: IntlString
-    }[]
-  }
 
   interface Action {
     i18n: IntlString
@@ -57,8 +44,7 @@
   export let ignoreInitialValidation: boolean = false
   export let withProviders: boolean = false
   export let subtitle: string | undefined = undefined
-
-  $: $themeStore.language && validate($themeStore.language)
+  export let signUpDisabled = false
 
   const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
     if (ignoreInitialValidation) return true
@@ -86,8 +72,11 @@
       }
       if (f.rules !== undefined) {
         for (const rule of f.rules) {
-          if (rule.rule.test(v) === rule.notMatch) {
-            status = new Status(Severity.INFO, rule.ruleDescr, {})
+          const isValid =
+            typeof rule.rule === 'function' ? rule.rule(v) !== rule.notMatch : rule.rule.test(v) !== rule.notMatch
+
+          if (!isValid) {
+            status = new Status(Severity.INFO, rule.ruleDescr, rule.ruleDescrParams ?? {})
             return false
           }
         }
@@ -96,7 +85,14 @@
     status = OK
     return true
   })
-  validate($themeStore.language)
+
+  export function invalidate (): void {
+    void validate($themeStore.language)
+  }
+
+  $: if ($themeStore.language != null && $themeStore.language !== '') {
+    void validate($themeStore.language)
+  }
 
   let inAction = false
 
@@ -105,7 +101,7 @@
       trim(field.name)
     }
     inAction = true
-    action.func().finally(() => {
+    void action.func().finally(() => {
       inAction = false
     })
   }
@@ -119,6 +115,7 @@
   $: loginState = caption === login.string.LogIn ? 'login' : caption === login.string.SignUp ? 'signup' : 'none'
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <form
   class="container"
   style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}
@@ -128,8 +125,8 @@
       evt.preventDefault()
       evt.stopPropagation()
       if (!inAction) {
-        validate($themeStore.language).then((res) => {
-          if (res) {
+        void validate($themeStore.language).then((res) => {
+          if (res != null) {
             performAction(action)
           }
         })
@@ -138,22 +135,26 @@
   }}
 >
   {#if loginState !== 'none'}
-    <Tabs {loginState} />
+    <Tabs {loginState} {signUpDisabled} />
   {:else}
     {#if subtitle !== undefined}
       <div class="fs-title">
         {subtitle}
       </div>
     {/if}
-    <div class="title"><Label label={caption} /></div>
+    <div class="flex-row-center">
+      <div class="title"><Label label={caption} /></div>
+      <slot name="region-selector" />
+    </div>
   {/if}
   <div class="form">
     {#each fields as field (field.name)}
-      <div class={field.short && !($deviceInfo.docWidth <= 600) ? 'form-col' : 'form-row'}>
+      <div class={field.short !== undefined && !($deviceInfo.docWidth <= 600) ? 'form-col' : 'form-row'}>
         <StylishEdit
           label={field.i18n}
           name={field.id}
           password={field.password}
+          disabled={field.disabled}
           bind:value={object[field.name]}
           on:input={() => validate($themeStore.language)}
           on:blur={() => {
@@ -182,7 +183,7 @@
         }}
       />
     </div>
-    {#if secondaryButtonLabel && secondaryButtonAction}
+    {#if secondaryButtonLabel !== undefined && secondaryButtonAction}
       <div class="form-row">
         <Button
           label={secondaryButtonLabel}

@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2023 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,9 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment, BlobMetadata, AttachmentsEvents } from '@hcengineering/attachment'
+  import { Analytics } from '@hcengineering/analytics'
+  import attachment, { Attachment, AttachmentsEvents } from '@hcengineering/attachment'
   import contact from '@hcengineering/contact'
-  import { Account, Doc, Ref, generateId, type Blob } from '@hcengineering/core'
+  import core, { BlobMetadata, Doc, PersonId, Ref, generateId, type Blob, type Space } from '@hcengineering/core'
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     FileOrBlob,
@@ -34,11 +35,9 @@
     defaultRefActions,
     getModelRefActions
   } from '@hcengineering/text-editor-resources'
-  import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement, navigate } from '@hcengineering/ui'
-  import { uploadFiles } from '@hcengineering/uploader'
-  import view from '@hcengineering/view'
-  import { getCollaborationUser, getObjectId, getObjectLinkFragment } from '@hcengineering/view-resources'
-  import { Analytics } from '@hcengineering/analytics'
+  import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement } from '@hcengineering/ui'
+  import { uploadFiles, type FileUploadCallbackParams } from '@hcengineering/uploader'
+  import { getCollaborationUser, getObjectId, openDoc } from '@hcengineering/view-resources'
 
   import AttachmentsGrid from './AttachmentsGrid.svelte'
 
@@ -135,14 +134,7 @@
 
     progress = true
 
-    await uploadFiles(
-      list,
-      { objectId: object._id, objectClass: object._class },
-      {},
-      async (uuid, name, file, path, metadata) => {
-        await createAttachment(uuid, name, file, metadata)
-      }
-    )
+    await uploadFiles(list, { onFileUploaded })
 
     inputFile.value = ''
     progress = false
@@ -151,14 +143,7 @@
   async function attachFiles (files: File[] | FileList): Promise<void> {
     progress = true
     if (files.length > 0) {
-      await uploadFiles(
-        files,
-        { objectId: object._id, objectClass: object._class },
-        {},
-        async (uuid, name, file, path, metadata) => {
-          await createAttachment(uuid, name, file, metadata)
-        }
-      )
+      await uploadFiles(files, { onFileUploaded })
     }
     progress = false
   }
@@ -174,6 +159,10 @@
     }
   }
 
+  async function onFileUploaded ({ uuid, name, file, metadata }: FileUploadCallbackParams): Promise<void> {
+    await createAttachment(uuid, name, file, metadata)
+  }
+
   async function createAttachment (
     uuid: Ref<Blob>,
     name: string,
@@ -183,13 +172,17 @@
     try {
       const _id: Ref<Attachment> = generateId()
 
+      const space = client.getHierarchy().isDerived(object._class, core.class.Space)
+        ? (object._id as Ref<Space>)
+        : object.space
+
       const attachmentDoc: Attachment = {
         _id,
         _class: attachment.class.Attachment,
         collection: 'attachments',
         modifiedOn: 0,
-        modifiedBy: '' as Ref<Account>,
-        space: object.space,
+        modifiedBy: '' as PersonId,
+        space,
         attachedTo: object._id,
         attachedToClass: object._class,
         name,
@@ -202,7 +195,7 @@
 
       await client.addCollection(
         attachment.class.Attachment,
-        object.space,
+        space,
         object._id,
         object._class,
         'attachments',
@@ -330,8 +323,7 @@
       on:open-document={async (event) => {
         const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
         if (doc != null) {
-          const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
-          navigate(location)
+          await openDoc(client.getHierarchy(), doc)
         }
       }}
       on:focus
@@ -343,7 +335,6 @@
         {attachments}
         {readonly}
         {progress}
-        {progressItems}
         {useAttachmentPreview}
         on:remove={async (evt) => {
           if (evt.detail !== undefined) {

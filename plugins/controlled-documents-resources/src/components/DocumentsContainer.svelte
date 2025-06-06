@@ -57,9 +57,10 @@
   $: inProgress = { state: { $in: [DocumentState.Draft] }, space: { $in: spaces } }
   $: effective = { state: { $in: [DocumentState.Effective] }, space: { $in: spaces } }
   $: archived = { state: { $in: [DocumentState.Archived, DocumentState.Deleted] }, space: { $in: spaces } }
+  $: obsolete = { state: { $in: [DocumentState.Obsolete] }, space: { $in: spaces } }
   $: all = { space: { $in: spaces } }
 
-  $: queries = { inProgress, effective, archived, all }
+  $: queries = { inProgress, effective, archived, obsolete, all }
 
   $: mode = $resolvedLocationStore.query?.mode ?? undefined
   $: if (mode === undefined || (queries as any)[mode] === undefined) {

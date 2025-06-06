@@ -7,8 +7,8 @@
   let parentElement: HTMLDivElement
 
   onMount(() => {
-    pushRootBarComponent('right', uploader.component.FileUploadExt)
+    pushRootBarComponent('right', uploader.component.FileUploadExt, 10)
   })
 </script>
 
-<div bind:this={parentElement}></div>
+<div bind:this={parentElement} class="hidden"></div>

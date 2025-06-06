@@ -6,7 +6,6 @@ Front service is suited to deliver application bundles and resource assets, it a
 
 * SERVER_PORT: Specifies the port number on which the server will listen.
 * MONGO_URL: Specifies the URL of the MongoDB database.
-* ELASTIC_URL: Specifies the URL of the Elasticsearch service.
 * ACCOUNTS_URL: Specifies the URL of the accounts service.
 * UPLOAD_URL: Specifies the URL for uploading files.
 * GMAIL_URL: Specifies the URL of the Gmail service.
@@ -17,6 +16,7 @@ Front service is suited to deliver application bundles and resource assets, it a
 * MODEL_VERSION: Specifies the required model version.
 * SERVER_SECRET: Specifies the server secret.
 * PREVIEW_CONFIG: Specifies the preview configuration.
+* UPLOAD_CONFIG: Specifies the upload configuration.
 * BRANDING_URL: Specifies the URL of the branding service.
 
 ## Preview service configuration

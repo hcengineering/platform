@@ -25,8 +25,8 @@ import { bitrixId } from '@hcengineering/bitrix'
 
 export const bitrixOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, bitrixId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, bitrixId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

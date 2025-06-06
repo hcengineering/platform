@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Person, PersonAccount } from '@hcengineering/contact'
-  import { CreateGuest, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { IdMap, Ref } from '@hcengineering/core'
+  import contact, { Person } from '@hcengineering/contact'
+  import { CreateGuest, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Ref, type PersonId } from '@hcengineering/core'
   import { IntlString, translateCB } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
@@ -117,12 +117,12 @@
     }
   )
 
-  $: findCompletions(value, integrations, $personAccountByIdStore, excluded)
+  $: findCompletions(value, integrations, $personRefByPersonIdStore, excluded)
 
   async function findCompletions (
     val: string | undefined,
     integrations: Integration[],
-    accounts: IdMap<PersonAccount>,
+    personRefByPersonIdStore: Map<PersonId, Ref<Person>>,
     excluded: Ref<Person>[]
   ): Promise<void> {
     if (val === undefined || val.length < 3) {
@@ -133,9 +133,9 @@
     const res = new Set<Ref<Person>>()
     for (const integration of integrations) {
       if (integration.value.includes(val)) {
-        const acc = accounts.get((integration.createdBy ?? integration.modifiedBy) as Ref<PersonAccount>)
-        if (acc !== undefined && !excluded.includes(acc.person)) {
-          res.add(acc.person)
+        const authorPerson = personRefByPersonIdStore.get(integration.createdBy ?? integration.modifiedBy)
+        if (authorPerson !== undefined && !excluded.includes(authorPerson)) {
+          res.add(authorPerson)
         }
       }
     }
@@ -194,8 +194,8 @@
   }}
 >
   <div class="hidden-text" bind:this={text} />
-  <div class="flex-row-center w-full">
-    <div class="ghost flex-row-center clear-mins" class:focusable class:w-full={fullSize}>
+  <div class="flex-row-center w-full container">
+    <div class="antiEditBox ghost" class:focusable class:w-full={fullSize}>
       <input
         {disabled}
         bind:this={input}
@@ -203,6 +203,7 @@
         bind:value
         placeholder={phTranslate}
         {style}
+        class="antiEditBoxInput search"
         on:input={(ev) => {
           computeSize(ev.target)
         }}
@@ -212,8 +213,9 @@
         on:blur
       />
     </div>
-    <div class="ml-2">
+    <div class="tool">
       <Button
+        {disabled}
         focusIndex={2}
         kind={'ghost'}
         size={'small'}
@@ -226,3 +228,15 @@
     </div>
   </div>
 </div>
+
+<style lang="scss">
+  .tool {
+    visibility: hidden;
+  }
+
+  .container:hover {
+    .tool {
+      visibility: visible;
+    }
+  }
+</style>

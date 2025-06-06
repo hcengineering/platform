@@ -13,14 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Markup } from '@hcengineering/core'
+  import { type Blob, Markup, type Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { EmptyMarkup } from '@hcengineering/text'
   import { Button, type ButtonSize, Scroller } from '@hcengineering/ui'
-  import { AnyExtension, mergeAttributes } from '@tiptap/core'
+  import { AnyExtension, mergeAttributes, type Editor } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import textEditor, { RefAction, TextEditorHandler, TextFormatCategory } from '@hcengineering/text-editor'
-
   import { defaultRefActions, getModelRefActions } from './editor/actions'
   import TextEditor from './TextEditor.svelte'
 
@@ -63,6 +62,9 @@
   export function insertText (text: string): void {
     editor?.insertText(text)
   }
+  export function getEditor (): Editor | undefined {
+    return editor?.getEditor()
+  }
 
   $: varsStyle =
     maxHeight === 'card'
@@ -76,6 +78,9 @@
   export const editorHandler: TextEditorHandler = {
     insertText: (text) => {
       editor?.insertText(text)
+    },
+    insertEmoji: (text: string, image?: Ref<Blob>) => {
+      editor?.insertEmoji(text, image)
     },
     insertMarkup: (markup) => {
       editor?.insertMarkup(markup)

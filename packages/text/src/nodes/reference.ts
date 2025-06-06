@@ -13,45 +13,20 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Ref } from '@hcengineering/core'
 import { Node, mergeAttributes } from '@tiptap/core'
-import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { getDataAttribute } from './utils'
+import { Class, Doc, Ref } from '@hcengineering/core'
+import { Attrs } from '@tiptap/pm/model'
 
-/**
- * @public
- */
-export interface Reference {
-  objectId: Ref<Doc>
-  objectClass: Ref<Class<Doc>>
-  parentNode: ProseMirrorNode | null
-}
-
-/**
- * @public
- */
-export function extractReferences (content: ProseMirrorNode): Array<Reference> {
-  const result: Array<Reference> = []
-
-  content.descendants((node, _pos, parent): boolean => {
-    if (node.type.name === ReferenceNode.name) {
-      const objectId = node.attrs.id as Ref<Doc>
-      const objectClass = node.attrs.objectclass as Ref<Class<Doc>>
-      const e = result.find((e) => e.objectId === objectId && e.objectClass === objectClass)
-      if (e === undefined) {
-        result.push({ objectId, objectClass, parentNode: parent })
-      }
-    }
-
-    return true
-  })
-
-  return result
+export interface ReferenceNodeProps {
+  id: Ref<Doc>
+  objectclass: Ref<Class<Doc>>
+  label: string
 }
 
 export interface ReferenceOptions {
-  renderLabel: (props: { options: ReferenceOptions, node: any }) => string
-  suggestion: { char: string }
+  suggestion: { char?: string }
+  HTMLAttributes: Record<string, any>
 }
 
 /**
@@ -61,50 +36,69 @@ export const ReferenceNode = Node.create<ReferenceOptions>({
   name: 'reference',
   group: 'inline',
   inline: true,
+  selectable: true,
 
   addAttributes () {
     return {
       id: getDataAttribute('id'),
       objectclass: getDataAttribute('objectclass'),
-      label: getDataAttribute('label'),
-      class: { default: null }
+      label: getDataAttribute('label')
     }
   },
 
   addOptions () {
     return {
-      renderLabel ({ options, node }) {
-        // eslint-disable-next-line
-        return `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`
-      },
-      suggestion: { char: '@' }
+      suggestion: { char: '@' },
+      HTMLAttributes: {}
     }
   },
 
   parseHTML () {
     return [
       {
-        tag: `span[data-type="${this.name}"]`
+        priority: 60,
+        tag: 'span[data-type="reference"]',
+        getAttrs
+      },
+      {
+        priority: 60,
+        tag: 'a[data-type="reference"]',
+        getAttrs
       }
     ]
   },
 
   renderHTML ({ node, HTMLAttributes }) {
-    const options = this.options
     return [
       'span',
       mergeAttributes(
         {
-          'data-type': this.name
+          'data-type': this.name,
+          'data-id': node.attrs.id,
+          'data-objectclass': node.attrs.objectclass,
+          'data-label': node.attrs.label,
+          class: 'antiMention'
         },
+        this.options.HTMLAttributes,
         HTMLAttributes
       ),
-      this.options.renderLabel({ options, node })
+      `${this.options.suggestion.char}${node.attrs.label ?? node.attrs.id}`
     ]
-  },
-
-  renderText ({ node }) {
-    const options = this.options
-    return options.renderLabel({ options, node })
   }
 })
+
+function getAttrs (el: HTMLSpanElement): Attrs | false {
+  const id = el.dataset.id?.trim()
+  const label = el.dataset.label?.trim()
+  const objectclass = el.dataset.objectclass?.trim()
+
+  if (id == null || label == null || objectclass == null) {
+    return false
+  }
+
+  return {
+    id,
+    label,
+    objectclass
+  }
+}

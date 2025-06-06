@@ -1,23 +1,60 @@
 <script lang="ts">
   import platform, { OK, PlatformEvent, Severity, Status, addEventListener, getMetadata } from '@hcengineering/platform'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import type { AnyComponent, WidthType } from '../../types'
   import { deviceSizes, deviceWidths } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
-  import { Theme } from '@hcengineering/theme'
-  import { IconArrowLeft, IconArrowRight, checkMobile, deviceOptionsStore as deviceInfo } from '../../'
+  import { Theme, themeStore } from '@hcengineering/theme'
+  import {
+    IconArrowLeft,
+    IconArrowRight,
+    checkMobile,
+    deviceOptionsStore as deviceInfo,
+    checkAdaptiveMatching,
+    getLocalWeekStart
+  } from '../../'
   import { desktopPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
   import uiPlugin from '../../plugin'
   import Component from '../Component.svelte'
   import Label from '../Label.svelte'
   import StatusComponent from '../Status.svelte'
   import Clock from './Clock.svelte'
-  import FontSizeSelector from './FontSizeSelector.svelte'
-  import LangSelector from './LangSelector.svelte'
   import RootBarExtension from './RootBarExtension.svelte'
-  import ThemeSelector from './ThemeSelector.svelte'
+  import Settings from './Settings.svelte'
+  import { isAppFocusedStore } from '../../stores'
 
   let application: AnyComponent | undefined
+
+  function updateAppFocused (isFocused: boolean): void {
+    const isFocusedCurrent = $isAppFocusedStore
+    const isFocusedNew = isFocused && !document.hidden && document.hasFocus()
+    if (isFocusedCurrent !== isFocusedNew) {
+      isAppFocusedStore.set(isFocusedNew)
+    }
+  }
+  function visibilityChangeHandler (): void {
+    updateAppFocused(!document.hidden)
+  }
+  function handleWindowFocus (): void {
+    updateAppFocused(true)
+  }
+  function handleWindowBlur (): void {
+    updateAppFocused(false)
+  }
+
+  onMount(() => {
+    document.addEventListener('visibilitychange', visibilityChangeHandler)
+    window.addEventListener('wheel', handleWindowFocus)
+    window.addEventListener('focus', handleWindowFocus)
+    window.addEventListener('blur', handleWindowBlur)
+  })
+
+  onDestroy(() => {
+    document.removeEventListener('visibilitychange', visibilityChangeHandler)
+    window.removeEventListener('wheel', handleWindowFocus)
+    window.removeEventListener('focus', handleWindowFocus)
+    window.removeEventListener('blur', handleWindowBlur)
+  })
 
   onDestroy(
     location.subscribe((loc) => {
@@ -57,12 +94,17 @@
   )
 
   let status = OK
+  let readonlyAccount = false
   let maintenanceTime = -1
 
   addEventListener(PlatformEvent, async (_event, _status: Status) => {
     if (_status.code === platform.status.MaintenanceWarning) {
       maintenanceTime = _status.params.time
     } else {
+      if (readonlyAccount) return
+      if (_status.code === platform.status.ReadOnlyAccount) {
+        readonlyAccount = true
+      }
       status = _status
     }
   })
@@ -82,6 +124,8 @@
   $: $deviceInfo.isMobile = isMobile
   $: $deviceInfo.minWidth = docWidth <= 480
   $: $deviceInfo.twoRows = docWidth <= 680
+  $: $deviceInfo.language = $themeStore.language
+  $: $deviceInfo.fontSize = $themeStore.fontSize
 
   $: document.documentElement.style.setProperty('--app-height', `${docHeight}px`)
 
@@ -129,14 +173,31 @@
     }
   }
   updateDeviceSize()
+
+  $: secondRow = checkAdaptiveMatching($deviceInfo.size, 'xs')
+  $: appsMini =
+    $deviceInfo.isMobile &&
+    (($deviceInfo.isPortrait && $deviceInfo.docWidth <= 480) ||
+      (!$deviceInfo.isPortrait && $deviceInfo.docHeight <= 480))
+
+  const weekInfoFirstDay: number = getLocalWeekStart()
+  const savedFirstDayOfWeek = localStorage.getItem('firstDayOfWeek') ?? 'system'
+  $deviceInfo.firstDayOfWeek =
+    parseInt(savedFirstDayOfWeek === 'system' ? weekInfoFirstDay.toString() : savedFirstDayOfWeek, 10) ??
+    weekInfoFirstDay
 </script>
 
-<svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
+<svelte:window
+  bind:innerWidth={docWidth}
+  bind:innerHeight={docHeight}
+  on:dragover|preventDefault
+  on:drop|preventDefault
+/>
 
 <Theme>
-  <div id="ui-root">
+  <div id="ui-root" class:mobile-theme={isMobile}>
     <div class="antiStatusBar">
-      <div class="flex-row-center h-full content-color gap-3 pl-4">
+      <div class="flex-row-center h-full content-color gap-3 px-4">
         {#if desktopPlatform}
           <div class="history-box flex-row-center gap-3">
             <button
@@ -161,9 +222,15 @@
             </button>
           </div>
         {/if}
-        <div class="flex-row-center left-items flex-gap-0-5" style:-webkit-app-region={'no-drag'}>
-          <RootBarExtension position="left" />
-        </div>
+        {#if !secondRow}
+          <div
+            class="flex-row-center left-items flex-gap-1"
+            class:ml-14={appsMini}
+            style:-webkit-app-region={'no-drag'}
+          >
+            <RootBarExtension position="left" />
+          </div>
+        {/if}
         <div
           class="flex-row-center justify-center status-info"
           style:margin-left={(isPortrait && docWidth <= 480) || (!isPortrait && docHeight <= 480) ? '1.5rem' : '0'}
@@ -176,18 +243,26 @@
             <StatusComponent {status} />
           {/if}
         </div>
-        <div class="flex-row-reverse" style:-webkit-app-region={'no-drag'}>
-          <div class="clock">
-            <Clock />
-          </div>
-          <div class="flex-row-center gap-statusbar">
-            <RootBarExtension position="right" />
-            <FontSizeSelector />
-            <ThemeSelector />
-            <LangSelector />
+        <div class="flex-row-reverse flex-gap-0-5" style:-webkit-app-region={'no-drag'}>
+          <Settings />
+          <Clock />
+          <div class="flex-row-center flex-gap-0-5">
+            {#if !secondRow}
+              <RootBarExtension position="right" />
+            {/if}
           </div>
         </div>
       </div>
+      {#if secondRow}
+        <div class="flex-between h-full content-color gap-3 px-2 second-row" style:-webkit-app-region={'no-drag'}>
+          <div class="flex-row-center flex-gap-0-5">
+            <RootBarExtension position="left" />
+          </div>
+          <div class="flex-row-center flex-gap-0-5">
+            <RootBarExtension position="right" />
+          </div>
+        </div>
+      {/if}
     </div>
     <div class="app">
       {#if application}
@@ -213,6 +288,7 @@
 
     .antiStatusBar {
       -webkit-app-region: drag;
+      min-width: 0;
       min-height: var(--status-bar-height);
       height: var(--status-bar-height);
       // min-width: 600px;
@@ -244,10 +320,22 @@
         font-size: 14px;
         color: var(--theme-content-color);
       }
-      .clock {
-        margin: 0 12px 0 8px;
+
+      .second-row {
+        display: none;
       }
 
+      @media (max-width: 480px) {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 2px 0;
+        width: 100%;
+
+        .second-row {
+          display: flex;
+        }
+      }
       @media print {
         display: none;
       }

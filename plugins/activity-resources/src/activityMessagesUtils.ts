@@ -38,7 +38,7 @@ import contact, { type Person } from '@hcengineering/contact'
 import { type IntlString } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import { get } from 'svelte/store'
-import { personAccountByIdStore } from '@hcengineering/contact-resources'
+import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
 import activity, {
   type ActivityMessage,
   type DisplayActivityMessage,
@@ -366,17 +366,16 @@ function groupByTime<T extends ActivityMessage> (messages: T[]): T[][] {
 }
 
 function getDocUpdateMessageKey (message: DocUpdateMessage): string {
-  const personAccountById = get(personAccountByIdStore)
-  const person = personAccountById.get(message.createdBy as any)?.person ?? message.createdBy
+  const personRef = get(personRefByPersonIdStore).get(message.createdBy as any)
 
   if (message.action === 'update') {
-    return [message._class, message.attachedTo, message.action, person, getAttributeUpdatesKey(message)].join('_')
+    return [message._class, message.attachedTo, message.action, personRef, getAttributeUpdatesKey(message)].join('_')
   }
 
   return [
     message._class,
     message.attachedTo,
-    person,
+    personRef,
     message.updateCollection,
     message.objectId === message.attachedTo
   ].join('_')

@@ -13,26 +13,27 @@
 // limitations under the License.
 //
 
-import { CollaborativeDoc } from '@hcengineering/core'
-import { DocumentId } from '../types'
-import { formatDocumentId, parseDocumentId } from '../utils'
+import core, { CollaborativeDoc, Doc, Ref } from '@hcengineering/core'
+import { encodeDocumentId, decodeDocumentId } from '../utils'
 
 describe('utils', () => {
-  it('formatDocumentId', () => {
-    expect(formatDocumentId('ws1', 'doc1:HEAD:v1' as CollaborativeDoc)).toEqual('ws1://doc1:HEAD' as DocumentId)
-    expect(formatDocumentId('ws1', 'doc1:HEAD:v1#doc2:v2:v2' as CollaborativeDoc)).toEqual(
-      'ws1://doc1:HEAD/doc2:v2' as DocumentId
-    )
+  it('encodeDocumentId', () => {
+    const doc: CollaborativeDoc = {
+      objectClass: core.class.Doc,
+      objectId: 'doc1' as Ref<Doc>,
+      objectAttr: 'description'
+    }
+    expect(encodeDocumentId('ws1', doc)).toEqual('ws1|core:class:Doc|doc1|description')
   })
 
-  describe('parseDocumentId', () => {
-    expect(parseDocumentId('ws1://doc1:HEAD' as DocumentId)).toEqual({
+  describe('decodeDocumentId', () => {
+    expect(decodeDocumentId('ws1|core:class:Doc|doc1|description')).toEqual({
       workspaceId: 'ws1',
-      collaborativeDoc: 'doc1:HEAD:HEAD' as CollaborativeDoc
-    })
-    expect(parseDocumentId('ws1://doc1:HEAD/doc2:v2' as DocumentId)).toEqual({
-      workspaceId: 'ws1',
-      collaborativeDoc: 'doc1:HEAD:HEAD#doc2:v2:v2' as CollaborativeDoc
+      documentId: {
+        objectClass: core.class.Doc,
+        objectId: 'doc1' as Ref<Doc>,
+        objectAttr: 'description'
+      }
     })
   })
 })

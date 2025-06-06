@@ -8,6 +8,7 @@ import { registerOpenid } from './openid'
 import { registerToken } from './token'
 import { BrandingMap, MeasureContext } from '@hcengineering/core'
 import { type AccountDB } from '@hcengineering/account'
+import { type ProviderInfo } from '@hcengineering/account-client'
 
 export type Passport = typeof passport
 
@@ -18,8 +19,9 @@ export type AuthProvider = (
   accountsUrl: string,
   db: Promise<AccountDB>,
   frontUrl: string,
-  brandings: BrandingMap
-) => string | undefined
+  brandings: BrandingMap,
+  signUpDisabled?: boolean
+) => ProviderInfo | undefined
 
 export function registerProviders (
   ctx: MeasureContext,
@@ -28,7 +30,8 @@ export function registerProviders (
   db: Promise<AccountDB>,
   serverSecret: string,
   frontUrl: string | undefined,
-  brandings: BrandingMap
+  brandings: BrandingMap,
+  signUpDisabled: boolean = false
 ): void {
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
@@ -60,14 +63,20 @@ export function registerProviders (
 
   registerToken(ctx, passport, router, accountsUrl, db, frontUrl, brandings)
 
-  const res: string[] = []
+  const res: ProviderInfo[] = []
   const providers: AuthProvider[] = [registerGoogle, registerGithub, registerOpenid]
   for (const provider of providers) {
-    const value = provider(ctx, passport, router, accountsUrl, db, frontUrl, brandings)
+    const value = provider(ctx, passport, router, accountsUrl, db, frontUrl, brandings, signUpDisabled)
     if (value !== undefined) res.push(value)
   }
 
   router.get('providers', '/providers', (ctx) => {
-    ctx.body = JSON.stringify(res)
+    const json = JSON.stringify(res)
+    ctx.res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'keep-alive': 'timeout=5, max=1000',
+      connection: 'keep-alive'
+    })
+    ctx.res.end(json)
   })
 }

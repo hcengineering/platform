@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import type { Blob as PlatformBlob, Class, Doc, Ref } from '@hcengineering/core'
+import type { Asset, IntlString, Resource } from '@hcengineering/platform'
+import type { Blob as PlatformBlob, Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
 
 /** @public */
 export interface FileWithPath extends File {
@@ -21,20 +21,16 @@ export interface FileWithPath extends File {
 }
 
 /** @public */
-export type UploadFilesPopupFn = (
-  target: FileUploadTarget,
-  options: FileUploadOptions,
-  popupOptions: FileUploadPopupOptions,
-  onFileUploaded: FileUploadCallback
-) => Promise<void>
+export type UploadFilesPopupFn = (options: FileUploadOptions, popupOptions: FileUploadPopupOptions) => Promise<void>
 
 /** @public */
-export type UploadFilesFn = (
-  files: File[] | FileList,
-  target: FileUploadTarget,
-  options: FileUploadOptions,
-  onFileUploaded: FileUploadCallback
-) => Promise<void>
+export type UploadFilesFn = (files: File[] | FileList, options: FileUploadOptions) => Promise<void>
+
+/** @public */
+export type UploadHandler = (options: FileUploadOptions) => Promise<void>
+
+/** @public */
+export type GetUploadHandlers = (query?: DocumentQuery<UploadHandlerDefinition>) => Promise<UploadHandlerDefinition[]>
 
 /** @public */
 export interface FileUploadTarget {
@@ -43,11 +39,27 @@ export interface FileUploadTarget {
 }
 
 /** @public */
+export interface UploadHandlerDefinition extends Doc {
+  icon: Asset
+  label: IntlString
+  order?: number
+  category?: string
+  handler: Resource<UploadHandler>
+}
+
+/** @public */
+export interface FileUploadProgressOptions {
+  target: FileUploadTarget
+}
+
+/** @public */
 export interface FileUploadOptions {
   maxFileSize?: number
   maxNumberOfFiles?: number
   allowedFileTypes?: string[] | null
-  hideProgress?: boolean
+
+  onFileUploaded?: FileUploadCallback
+  showProgress?: FileUploadProgressOptions
 }
 
 /** @public */
@@ -56,10 +68,14 @@ export interface FileUploadPopupOptions {
 }
 
 /** @public */
-export type FileUploadCallback = (
-  uuid: Ref<PlatformBlob>,
-  name: string,
-  file: FileWithPath | Blob,
-  path: string | undefined,
-  metadata: Record<string, any> | undefined
-) => Promise<void>
+export interface FileUploadCallbackParams {
+  uuid: Ref<PlatformBlob>
+  name: string
+  file: File | Blob
+  path?: string
+  metadata?: Record<string, any>
+  navigateOnUpload?: boolean
+}
+
+/** @public */
+export type FileUploadCallback = (params: FileUploadCallbackParams) => Promise<void>

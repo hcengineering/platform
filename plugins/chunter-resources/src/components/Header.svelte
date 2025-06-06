@@ -24,7 +24,7 @@
     Header,
     HeaderAdaptive,
     IconSettings,
-    IconDetailsFilled
+    IconToDetails
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import view from '@hcengineering/view'
@@ -33,6 +33,7 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { ActivityMessagesFilter } from '@hcengineering/activity'
   import workbench from '@hcengineering/workbench'
+  import { PresenceAvatars } from '@hcengineering/presence-resources'
 
   import { userSearch } from '../index'
   import chunter from '../plugin'
@@ -53,11 +54,13 @@
   export let titleKind: 'default' | 'breadcrumbs' = 'default'
   export let withFilters: boolean = false
   export let withSearch: boolean = true
+  export let withPresence: boolean = true
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let adaptive: HeaderAdaptive = 'default'
   export let hideActions: boolean = false
   export let canOpenInSidebar: boolean = false
   export let closeOnEscape: boolean = true
+  export let realWidth: number | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -74,6 +77,7 @@
   hideDescription={!description}
   adaptive={adaptive !== 'default' ? adaptive : withFilters ? 'freezeActions' : 'disabled'}
   {closeOnEscape}
+  bind:realWidth
   on:click
   on:close
 >
@@ -101,7 +105,7 @@
         </div>
       {/if}
       {#if label}
-        <span class="secondary-textColor overflow-label heading-medium-16 mr-2">{label}</span>
+        <span class="secondary-textColor overflow-label heading-medium-16 line-height-auto mr-2">{label}</span>
       {:else if intlLabel}
         <div class="secondary-textColor overflow-label mr-2">
           <Label label={intlLabel} />
@@ -113,6 +117,12 @@
   <svelte:fragment slot="description">
     {#if description}
       <div class="overflow-label content-dark-color text-sm pl-2 mt--1" title={description}>{description}</div>
+    {/if}
+  </svelte:fragment>
+
+  <svelte:fragment slot="presence">
+    {#if withPresence && object}
+      <PresenceAvatars {object} size="x-small" limit={4} />
     {/if}
   </svelte:fragment>
 
@@ -139,7 +149,7 @@
     <slot name="actions" {doubleRow} />
     {#if canOpenInSidebar}
       <Button
-        icon={IconDetailsFilled}
+        icon={IconToDetails}
         iconProps={{ size: 'small' }}
         kind={'icon'}
         showTooltip={{ label: workbench.string.OpenInSidebar }}

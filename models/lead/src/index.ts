@@ -51,12 +51,12 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: lead.class.Lead,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: lead.class.Funnel,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.mixin(lead.class.Funnel, core.class.Class, workbench.mixin.SpaceView, {
@@ -152,6 +152,20 @@ export function createModel (builder: Builder): void {
         hiddenKeys: ['identifier', 'name', 'customerDescription'],
         sortable: true
       },
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [
+          {
+            key: 'hideArchived',
+            type: 'toggle',
+            defaultValue: true,
+            actionTarget: 'options',
+            action: view.function.HideArchived,
+            label: view.string.HideArchived
+          }
+        ]
+      },
       config: ['', 'members', 'private', 'archived']
     },
     lead.viewlet.TableFunnel
@@ -226,6 +240,20 @@ export function createModel (builder: Builder): void {
           sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels']
         }
       ],
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [
+          {
+            key: 'hideArchived',
+            type: 'toggle',
+            defaultValue: true,
+            actionTarget: 'options',
+            action: view.function.HideArchived,
+            label: view.string.HideArchived
+          }
+        ]
+      },
       configOptions: {
         sortable: true
       }
@@ -250,6 +278,14 @@ export function createModel (builder: Builder): void {
         actionTarget: 'category',
         action: view.function.ShowEmptyGroups,
         label: view.string.ShowEmptyGroups
+      },
+      {
+        key: 'hideArchived',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'options',
+        action: view.function.HideArchived,
+        label: view.string.HideArchived
       }
     ]
   }

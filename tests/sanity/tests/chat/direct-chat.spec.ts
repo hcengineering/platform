@@ -67,14 +67,12 @@ test.describe('Check direct messages channels', () => {
     })
 
     await test.step('Close conversation', async () => {
-      await leftSideMenuPage.clickChunter()
       await channelPage.makeActionWithChannelInMenu(`${newUser2.lastName} ${newUser2.firstName}`, 'Close conversation')
       await expect(chunterPage.directMessagesButtonInLeftMenu()).toBeHidden()
     })
 
     await test.step('Recreate a direct chat and see if messages are kept', async () => {
       await page.reload()
-      await leftSideMenuPage.clickChunter()
       await channelPage.clickChooseChannel('general')
 
       await chunterPage.createDirectChat(newUser2)

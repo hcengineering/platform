@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { PluginConfiguration } from '@hcengineering/core'
-  import { configurationStore, getClient } from '@hcengineering/presentation'
-  import { Button, Icon, IconInfo, Label, Header, Breadcrumb, Scroller } from '@hcengineering/ui'
+  import { pluginConfigurationStore, getClient } from '@hcengineering/presentation'
+  import { Breadcrumb, Button, Header, Icon, IconInfo, Label, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
 
   const client = getClient()
@@ -28,14 +28,17 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.Setting} label={setting.string.Configuration} size={'large'} isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
+    <div class="flex-row-center flex-wrap m-4 px-4">
+      <Label label={setting.string.BetaWarning} />
+    </div>
     <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
       <div class="flex-row-center flex-wrap gap-around-4">
-        {#each $configurationStore.list as config}
-          {#if config.label}
+        {#each $pluginConfigurationStore.list as config}
+          {#if config.label && !(config.hidden ?? false)}
             <div class="cardBox flex-col clear-mins" class:enabled={config.enabled ?? true}>
               <div class="flex-row-center">
                 <span class="mr-2">

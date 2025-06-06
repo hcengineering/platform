@@ -13,15 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AvatarType, Channel, combineName, ContactEvents, Person, PersonAccount } from '@hcengineering/contact'
-  import core, { AccountRole, AttachedData, Data, generateId, Ref } from '@hcengineering/core'
+  import { AvatarType, Channel, combineName, ContactEvents, Person, SocialIdentityRef } from '@hcengineering/contact'
+  import {
+    AccountRole,
+    AttachedData,
+    buildSocialIdString,
+    Data,
+    generateId,
+    Ref,
+    SocialIdType
+  } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
-  import { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import { Card, getClient } from '@hcengineering/presentation'
   import { createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { ChannelsDropdown } from '..'
+  import { ChannelsDropdown, employeeBySocialKeyStore } from '..'
   import contact from '../plugin'
+  import { getAccountClient } from '../utils'
   import { Analytics } from '@hcengineering/analytics'
 
   export let canSave: boolean = true
@@ -41,30 +50,65 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const accountClient = getAccountClient()
 
-  async function createPerson () {
+  async function createGuest (): Promise<void> {
     try {
       saving = true
       changeEmail()
+      const mail = email.trim()
+      const socialString = buildSocialIdString({
+        type: SocialIdType.EMAIL,
+        value: mail
+      })
+
+      const existingId = await client.findOne(contact.class.SocialIdentity, { key: socialString })
+      const existingPerson =
+        existingId !== undefined
+          ? await client.findOne(contact.class.Person, { _id: existingId.attachedTo })
+          : undefined
+      if (existingPerson !== undefined && client.getHierarchy().hasMixin(existingPerson, contact.mixin.Employee)) {
+        return
+      }
+
+      const { uuid, socialId } = await accountClient.ensurePerson(SocialIdType.EMAIL, mail, firstName, lastName)
+
       const name = combineName(firstName, lastName)
       const person: Data<Person> = {
         name,
         city: '',
-        avatarType: AvatarType.COLOR
+        avatarType: AvatarType.COLOR,
+        personUuid: uuid
       }
 
-      await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
+      if (existingPerson === undefined) {
+        await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
+      } else {
+        await client.update(existingPerson, person)
+      }
+      const personRef = existingPerson?._id ?? id
 
-      const mail = email.trim()
-
-      await client.createDoc(contact.class.PersonAccount, core.space.Model, {
-        email: mail,
-        person: id,
+      await client.createMixin(personRef, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
+        active: true,
         role: AccountRole.Guest
       })
 
+      await client.addCollection(
+        contact.class.SocialIdentity,
+        contact.space.Contacts,
+        personRef,
+        contact.class.Person,
+        'socialIds',
+        {
+          type: SocialIdType.EMAIL,
+          value: mail,
+          key: socialString
+        },
+        socialId as SocialIdentityRef
+      )
+
       const sendInvite = await getResource(login.function.SendInvite)
-      await sendInvite(email.trim(), id, AccountRole.Guest)
+      await sendInvite(mail, AccountRole.Guest)
 
       for (const channel of channels) {
         await client.addCollection(
@@ -79,8 +123,8 @@
           }
         )
       }
-      if (onCreate) {
-        await onCreate(id)
+      if (onCreate != null) {
+        await onCreate(personRef)
       }
       Analytics.handleEvent(ContactEvents.PersonCreated, { id, email: mail })
       dispatch('close', id)
@@ -91,21 +135,15 @@
 
   let channels: AttachedData<Channel>[] = []
 
-  let exists: PersonAccount | undefined
-  const query = createQuery()
-  $: query.query(
-    contact.class.PersonAccount,
-    {
-      email: email.trim()
-    },
-    (p) => {
-      exists = p[0]
-    }
-  )
+  $: emailSocialString = buildSocialIdString({
+    type: SocialIdType.EMAIL,
+    value: email.trim()
+  })
+  $: exists = $employeeBySocialKeyStore.get(emailSocialString) !== undefined
 
   const manager = createFocusManager()
 
-  function changeEmail () {
+  function changeEmail (): void {
     const index = channels.findIndex((p) => p.provider === contact.channelProvider.Email)
     if (index !== -1) {
       channels[index].value = email.trim()
@@ -123,19 +161,15 @@
 
 <Card
   label={contact.string.AddGuest}
-  okAction={createPerson}
-  canSave={firstName.trim().length > 0 &&
-    lastName.trim().length > 0 &&
-    email.trim().length > 0 &&
-    exists === undefined &&
-    canSave}
+  okAction={createGuest}
+  canSave={firstName.trim().length > 0 && lastName.trim().length > 0 && email.trim().length > 0 && !exists && canSave}
   on:close={() => {
     dispatch('close')
   }}
   on:changeContent
 >
   <svelte:fragment slot="error">
-    {#if exists !== undefined && !saving}
+    {#if exists && !saving}
       <div class="flex-row-center error-color">
         <IconInfo size={'small'} />
         <span class="text-sm overflow-label ml-2">

@@ -75,7 +75,7 @@
   const dispatch = createEventDispatcher()
 
   let container: HTMLDivElement
-  let cursor: string = 'default'
+  let cursor: string = ''
   let dragStyle: string | undefined = undefined
   const roomSide: RoomSide = { top: false, bottom: false, left: false, right: false }
   let roomRect: DOMRect
@@ -98,7 +98,7 @@
   }
   function checkLeave () {
     if ($lockedRoom !== '') return
-    cursor = 'default'
+    cursor = ''
     clearShadow()
   }
 

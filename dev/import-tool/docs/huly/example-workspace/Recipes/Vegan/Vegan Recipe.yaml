@@ -1,0 +1,9 @@
+class: card:class:MasterTag
+title: Vegan Recipe
+properties:
+  - label: proteinSource
+    type: TypeString
+  - label: isGlutenFree
+    type: TypeBoolean
+  - label: allergens
+    type: TypeString 

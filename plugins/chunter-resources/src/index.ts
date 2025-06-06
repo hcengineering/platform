@@ -55,6 +55,7 @@ import ChatWidgetTab from './components/ChatWidgetTab.svelte'
 import WorkbenchTabExtension from './components/WorkbenchTabExtension.svelte'
 import DirectMessageButton from './components/DirectMessageButton.svelte'
 import EmployeePresenter from './components/ChunterEmployeePresenter.svelte'
+import InlineCommentThread from './components/inline-comment/InlineCommentThread.svelte'
 
 import {
   chunterSpaceLinkFragmentProvider,
@@ -83,9 +84,12 @@ import {
   translateMessage,
   showOriginalMessage,
   canTranslateMessage,
-  startConversationAction
+  startConversationAction,
+  summarizeMessages,
+  canSummarizeMessages
 } from './utils'
 
+export { default as ChannelEmbeddedContent } from './components/ChannelEmbeddedContent.svelte'
 export { default as ChatMessageInput } from './components/chat-message/ChatMessageInput.svelte'
 export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'
 export { default as ChatMessagesPresenter } from './components/chat-message/ChatMessagesPresenter.svelte'
@@ -185,7 +189,8 @@ export default async (): Promise<Resources> => ({
     ChatWidgetTab,
     WorkbenchTabExtension,
     DirectMessageButton,
-    EmployeePresenter
+    EmployeePresenter,
+    InlineCommentThread
   },
   activity: {
     ChannelCreatedMessage,
@@ -210,6 +215,7 @@ export default async (): Promise<Resources> => ({
     CloseChatWidgetTab: closeChatWidgetTab,
     OpenChannelInSidebar: openChannelInSidebar,
     CanTranslateMessage: canTranslateMessage,
+    CanSummarizeMessages: canSummarizeMessages,
     OpenThreadInSidebar: openThreadInSidebar,
     LocationDataResolver: locationDataResolver
   },
@@ -223,6 +229,7 @@ export default async (): Promise<Resources> => ({
     ReplyToThread: replyToThread,
     OpenInSidebar: openChannelInSidebarAction,
     TranslateMessage: translateMessage,
+    SummarizeMessages: summarizeMessages,
     ShowOriginalMessage: showOriginalMessage,
     StartConversation: startConversationAction
   }

@@ -15,14 +15,14 @@
 //
 -->
 <script lang="ts">
-  import activity from '@hcengineering/activity'
+  import { Analytics } from '@hcengineering/analytics'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import core, { Doc, Ref, WithLookup, generateId, type Blob } from '@hcengineering/core'
   import { Document, DocumentEvents } from '@hcengineering/document'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
+  import { IconWithEmoji, copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Heading } from '@hcengineering/text-editor'
   import { TableOfContents } from '@hcengineering/text-editor-resources'
@@ -32,12 +32,10 @@
     Component,
     FocusHandler,
     IconMoreH,
-    IconWithEmoji,
     Label,
     TimeSince,
     createFocusManager,
     getPlatformColorDef,
-    navigate,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
@@ -46,20 +44,19 @@
     ClassAttributeBar,
     IconPicker,
     ParentsNavigator,
-    getObjectLinkFragment,
+    RelationsEditor,
+    openDoc,
     restrictionStore,
     showMenu
   } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { Analytics } from '@hcengineering/analytics'
 
-  import { starDocument, unstarDocument, unlockContent } from '..'
+  import { starDocument, unlockContent, unstarDocument } from '..'
   import document from '../plugin'
   import { getDocumentUrl } from '../utils'
   import DocumentEditor from './DocumentEditor.svelte'
   import DocumentPresenter from './DocumentPresenter.svelte'
   import DocumentTitle from './DocumentTitle.svelte'
-  import Activity from './sidebar/Activity.svelte'
   import History from './sidebar/History.svelte'
   import References from './sidebar/References.svelte'
 
@@ -69,6 +66,9 @@
 
   $: locked = doc?.lockedBy != null
   $: readonly = $restrictionStore.readonly || locked
+
+  let useMaxWidth = getUseMaxWidth()
+  $: saveUseMaxWidth(useMaxWidth)
 
   export function canClose (): boolean {
     return false
@@ -85,26 +85,34 @@
 
   let headings: Heading[] = []
 
+  let loadedDocumentContent = false
+
   const notificationClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   $: read(_id)
   function read (_id: Ref<Doc>): void {
     if (lastId !== _id) {
+      loadedDocumentContent = false
       const prev = lastId
       lastId = _id
-      void notificationClient.then((client) => client.readDoc(getClient(), prev))
+      void notificationClient.then((client) => client.readDoc(prev))
     }
   }
 
   onDestroy(async () => {
-    void notificationClient.then((client) => client.readDoc(getClient(), _id))
+    void notificationClient.then((client) => client.readDoc(_id))
   })
 
   const starredQuery = createQuery()
   let isStarred = false
-  $: starredQuery.query(document.class.SavedDocument, { attachedTo: _id }, (res) => {
-    isStarred = res.length !== 0
-  })
+  $: starredQuery.query(
+    document.class.SavedDocument,
+    { attachedTo: _id },
+    (res) => {
+      isStarred = res.length !== 0
+    },
+    { limit: 1 }
+  )
 
   async function createEmbedding (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
     if (doc === undefined) {
@@ -117,7 +125,7 @@
       const attachmentId: Ref<Attachment> = generateId()
 
       await client.addCollection(
-        document.class.DocumentEmbedding,
+        attachment.class.Embedding,
         doc.space,
         doc._id,
         document.class.Document,
@@ -179,6 +187,21 @@
     }
   }
 
+  function getUseMaxWidth (): boolean {
+    const useMaxWidth = localStorage.getItem('document.useMaxWidth')
+    return useMaxWidth === 'true'
+  }
+
+  function saveUseMaxWidth (useMaxWidth: boolean): void {
+    localStorage.setItem('document.useMaxWidth', useMaxWidth.toString())
+  }
+
+  let sideContentSpace = 0
+
+  function updateSizeContentSpace (width: number): void {
+    sideContentSpace = width
+  }
+
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name'] })
   })
@@ -188,11 +211,6 @@
       id: 'references',
       icon: document.icon.References,
       showTooltip: { label: document.string.Backlinks, direction: 'bottom' }
-    },
-    {
-      id: 'activity',
-      icon: activity.icon.Activity,
-      showTooltip: { label: activity.string.Activity, direction: 'bottom' }
     }
   ]
   let selectedAside: string | boolean = false
@@ -236,8 +254,8 @@
 
 {#if doc !== undefined}
   <Panel
+    withoutActivity={!loadedDocumentContent}
     object={doc}
-    withoutActivity
     allowClose={!embedded}
     isAside={true}
     customAside={aside}
@@ -245,7 +263,8 @@
     isHeader={false}
     isCustomAttr={false}
     isSub={false}
-    useMaxWidth={false}
+    bind:useMaxWidth
+    {sideContentSpace}
     printHeader={false}
     {embedded}
     adaptive={'default'}
@@ -311,7 +330,10 @@
               ? { icon: doc.color, size: 'large' }
               : {
                   size: 'large',
-                  fill: doc.color !== undefined ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
+                  fill:
+                    doc.color !== undefined && typeof doc.color !== 'string'
+                      ? getPlatformColorDef(doc.color, $themeStore.dark).icon
+                      : 'currentColor'
                 }}
             disabled={readonly}
             showTooltip={{ label: document.string.Icon, direction: 'bottom' }}
@@ -355,7 +377,8 @@
             {readonly}
             boundary={content}
             overflow={'none'}
-            editorAttributes={{ style: 'padding: 0 2em 30vh; margin: 0 -2em;' }}
+            editorAttributes={{ style: 'padding: 0 2em 2em; margin: 0 -2em; min-height: 30vh' }}
+            requestSideSpace={updateSizeContentSpace}
             attachFile={async (file) => {
               return await createEmbedding(file)
             }}
@@ -365,9 +388,11 @@
             on:open-document={async (event) => {
               const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
               if (doc != null) {
-                const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
-                navigate(location)
+                await openDoc(client.getHierarchy(), doc)
               }
+            }}
+            on:loaded={() => {
+              loadedDocumentContent = true
             }}
             bind:this={editor}
           />
@@ -375,11 +400,11 @@
       </div>
     </div>
 
+    <RelationsEditor object={doc} {readonly} />
+
     <svelte:fragment slot="aside">
       {#if selectedAside === 'references'}
         <References doc={doc._id} />
-      {:else if selectedAside === 'activity'}
-        <Activity value={doc} />
       {:else if selectedAside === 'history'}
         <History value={doc} {readonly} />
       {/if}

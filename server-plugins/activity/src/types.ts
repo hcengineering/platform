@@ -1,4 +1,4 @@
-import { Doc, Hierarchy, ModelDb, Ref, TxCUD, TxFactory, WorkspaceId, type MeasureContext } from '@hcengineering/core'
+import { Doc, Hierarchy, ModelDb, Ref, TxCUD, TxFactory, WorkspaceIds, type MeasureContext } from '@hcengineering/core'
 import { StorageAdapter, type SessionFindAll } from '@hcengineering/server-core'
 
 export interface DocObjectCache {
@@ -13,5 +13,5 @@ export interface ActivityControl {
   txFactory: TxFactory
   modelDb: ModelDb
   storageAdapter: StorageAdapter
-  workspace: WorkspaceId
+  workspace: WorkspaceIds
 }

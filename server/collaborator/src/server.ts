@@ -16,7 +16,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
-import { Token, decodeToken } from '@hcengineering/server-token'
+import { Token, TokenError, decodeToken } from '@hcengineering/server-token'
 import { Hocuspocus } from '@hocuspocus/server'
 import bp from 'body-parser'
 import cors from 'cors'
@@ -32,6 +32,7 @@ import { simpleClientFactory } from './platform'
 import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
 import { PlatformStorageAdapter } from './storage/platform'
 import { MarkupTransformer } from './transformers/markup'
+import { getWorkspaceIds } from './utils'
 
 /**
  * @public
@@ -43,12 +44,15 @@ export type Shutdown = () => Promise<void>
  */
 export async function start (ctx: MeasureContext, config: Config, storageAdapter: StorageAdapter): Promise<Shutdown> {
   const port = config.Port
+  const retryCount = config.StorageRetryCount
+  const retryInterval = config.StorageRetryInterval
 
-  ctx.info('Starting collaborator server', { port })
+  ctx.info('Starting collaborator server', { config })
 
   const app = express()
   app.use(cors())
-  app.use(bp.json())
+  app.use(express.json({ limit: '10mb' }))
+  app.use(bp.json({ limit: '10mb' }))
 
   const extensionsCtx = ctx.newChild('extensions', {})
   const transformer = new MarkupTransformer()
@@ -94,7 +98,7 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
-        adapter: new PlatformStorageAdapter(storageAdapter),
+        adapter: new PlatformStorageAdapter(storageAdapter, { retryCount, retryInterval }),
         transformer
       })
     ]
@@ -102,10 +106,12 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
 
   const rpcCtx = ctx.newChild('rpc', {})
 
-  const getContext = (token: Token): Context => {
+  const getContext = async (rawToken: string, token: Token): Promise<Context> => {
+    const wsIds = await getWorkspaceIds(rawToken)
+
     return {
       connectionId: generateId(),
-      workspaceId: token.workspace,
+      wsIds,
       clientFactory: simpleClientFactory(token)
     }
   }
@@ -128,6 +134,11 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
       })
       res.end(json)
     } catch (err: any) {
+      if (err instanceof TokenError) {
+        res.status(401).send({ error: 'Unauthorized' })
+        return
+      }
+
       ctx.error('statistics error', { err })
       Analytics.handleError(err)
       res.writeHead(404, {})
@@ -136,23 +147,32 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
   })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.post('/rpc', async (req, res) => {
+  app.post('/rpc/:id', async (req, res) => {
     const authHeader = req.headers.authorization
     if (authHeader === undefined) {
-      res.status(403).send({ error: 'Unauthorized' })
+      res.status(401).send({ error: 'Unauthorized' })
       return
     }
 
-    const request = req.body as RpcRequest
+    const rawToken = authHeader.split(' ')[1]
+    let token: Token
+    try {
+      token = decodeToken(rawToken)
+    } catch {
+      res.status(401).send({ error: 'Unauthorized' })
+      return
+    }
 
-    const documentId = request.documentId
+    const documentId = req.params.id
     if (documentId === undefined || documentId === '') {
       const response: RpcErrorResponse = {
-        error: 'Missing documentId'
+        error: 'Missing document id'
       }
       res.status(400).send(response)
       return
     }
+
+    const request = req.body as RpcRequest
 
     const method = methods[request.method]
     if (method === undefined) {
@@ -163,20 +183,27 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
       return
     }
 
-    const token = decodeToken(authHeader.split(' ')[1])
-    const context = getContext(token)
+    const context = await getContext(rawToken, token)
 
     rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
-    await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
-      try {
-        const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
-          return await method(ctx, context, documentId, request.payload, { hocuspocus, storageAdapter, transformer })
-        })
-        res.status(200).send(response)
-      } catch (err: any) {
-        res.status(500).send({ error: err.message })
+    await rpcCtx.with(
+      '/rpc',
+      {
+        source: token.extra?.service ?? '🤦‍♂️user',
+        method: request.method
+      },
+      async (ctx) => {
+        try {
+          const response: RpcResponse = await rpcCtx.with(request.method, {}, (ctx) => {
+            return method(ctx, context, documentId, request.payload, { hocuspocus, storageAdapter, transformer })
+          })
+          res.status(200).send(response)
+        } catch (err: any) {
+          Analytics.handleError(err)
+          res.status(500).send({ error: err.message })
+        }
       }
-    })
+    )
   })
 
   const wss = new WebSocketServer({

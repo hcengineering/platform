@@ -15,9 +15,14 @@
 
 <script lang="ts">
   import { DocAttributeUpdates, DocUpdateMessage } from '@hcengineering/activity'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
-  import { personAccountByIdStore, personByIdStore, PersonPresenter } from '@hcengineering/contact-resources'
+  import { Person } from '@hcengineering/contact'
+  import { AccountUuid, notEmpty, PersonId, Ref } from '@hcengineering/core'
+  import {
+    personRefByAccountUuidStore,
+    personRefByPersonIdStore,
+    personByIdStore,
+    PersonPresenter
+  } from '@hcengineering/contact-resources'
   import { ChunterSpace } from '@hcengineering/chunter'
   import { Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -32,38 +37,40 @@
   let addedPersons: Person[] = []
   let removedPersons: Person[] = []
 
-  $: removedPersons = getPersons(value.removed)
-  $: addedPersons = getPersons(value.added.length > 0 ? value.added : value.set)
+  $: addedPersons = getPersons(value.added.length > 0 ? value.added : value.set, $personRefByAccountUuidStore)
+  $: removedPersons = getPersons(value.removed, $personRefByAccountUuidStore)
 
-  function getPersons (accounts: DocAttributeUpdates['removed' | 'added' | 'set']): Person[] {
+  function getPersons (
+    accounts: DocAttributeUpdates['removed' | 'added' | 'set'],
+    personRefByAccountUuid: Map<AccountUuid, Ref<Person>>
+  ): Person[] {
     const persons = new Set<Ref<Person>>()
 
-    for (const accountRef of accounts) {
-      const account = $personAccountByIdStore.get(accountRef as Ref<PersonAccount>)
+    for (const acc of accounts) {
+      const person = personRefByAccountUuid.get(acc as AccountUuid)
 
-      if (account === undefined) continue
-      if (persons.has(account.person)) continue
+      if (person === undefined) continue
 
-      persons.add(account.person)
+      persons.add(person)
     }
 
     return Array.from(persons)
       .map((personRef) => $personByIdStore.get(personRef))
-      .filter((person): person is Person => person !== undefined)
+      .filter(notEmpty)
   }
 
-  $: account = $personAccountByIdStore.get(message.createdBy as Ref<PersonAccount>)
+  $: creatorPersonRef = $personRefByPersonIdStore.get(message.createdBy as PersonId)
 
   $: isJoined =
-    account !== undefined &&
+    creatorPersonRef !== undefined &&
     removedPersons.length === 0 &&
     addedPersons.length === 1 &&
-    addedPersons[0]._id === account.person
+    addedPersons[0]._id === creatorPersonRef
   $: isLeave =
-    account !== undefined &&
+    creatorPersonRef !== undefined &&
     removedPersons.length === 1 &&
     addedPersons.length === 0 &&
-    removedPersons[0]._id === account.person
+    removedPersons[0]._id === creatorPersonRef
   $: differentActions = addedPersons.length > 0 && removedPersons.length > 0
 </script>
 

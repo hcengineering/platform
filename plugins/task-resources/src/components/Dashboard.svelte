@@ -49,15 +49,14 @@
       return
     }
     txQuery.query(
-      core.class.TxCollectionCUD,
+      core.class.TxCreateDoc,
       {
         objectSpace: space,
-        'tx._class': core.class.TxCreateDoc,
-        'tx.objectClass': _class,
+        objectClass: _class,
         modifiedOn: { $gte: modified }
       },
       (result) => {
-        ids = result.map((p) => p.tx.objectId) as Ref<Task>[]
+        ids = result.map((p) => p.objectId) as Ref<Task>[]
       }
     )
   }

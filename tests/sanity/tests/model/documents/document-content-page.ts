@@ -23,6 +23,8 @@ export class DocumentContentPage extends CommonPage {
   readonly tooltipImageTools = (): Locator => this.page.locator('.tippy-box')
 
   readonly fullscreenImage = (): Locator => this.page.locator('.popup.fullsize img')
+  readonly fullscreenButton = (): Locator => this.page.locator('.popup #btnDialogFullScreen')
+  readonly imageInPopup = (): Locator => this.page.locator('.popup img')
 
   readonly proseTableColumnHandle = (col: number): Locator =>
     this.page.locator('table.proseTable').locator('tr').first().locator('td').nth(col).locator('div.table-col-handle')
@@ -30,8 +32,7 @@ export class DocumentContentPage extends CommonPage {
   readonly buttonInsertColumn = (col: number = 0): Locator =>
     this.page.locator('div.table-col-insert').nth(col).locator('button')
 
-  readonly buttonInsertLastRow = (): Locator =>
-    this.page.locator('table.proseTable + div.table-button-container__col + div.table-button-container__row')
+  readonly buttonInsertLastRow = (): Locator => this.page.locator('div.table-button-container__row')
 
   readonly buttonInsertInnerRow = (row: number = 0): Locator =>
     this.page.locator('table.proseTable').locator('tr').nth(row).locator('div.table-row-insert button')
@@ -228,14 +229,18 @@ export class DocumentContentPage extends CommonPage {
     await this.buttonOnToolbar(id).click()
   }
 
-  async selectLine (text: string): Promise<void> {
+  async selectLine (text: string, shallow: boolean = true): Promise<void> {
     const loc: Locator = this.page.locator('p', { hasText: text }).first()
     await expect(loc).toBeVisible()
-    await loc.click({ clickCount: 3 })
+    if (shallow) {
+      await loc.click({ clickCount: 3 })
+    } else {
+      await loc.selectText()
+    }
   }
 
   async applyToolbarCommand (text: string, btnId: string): Promise<void> {
-    await this.selectLine(text)
+    await this.selectLine(text, false)
     await this.clickButtonOnTooltip(btnId)
   }
 
@@ -283,6 +288,10 @@ export class DocumentContentPage extends CommonPage {
 
   async checkLinkInTheText (text: string, link: string): Promise<void> {
     await expect(this.page.locator('a', { hasText: text })).toHaveAttribute('href', link)
+  }
+
+  async checkReferenceInTheText (label: string): Promise<void> {
+    await expect(this.page.locator('span.antiMention', { hasText: label })).toHaveAttribute('data-type', 'reference')
   }
 
   async executeMoreAction (action: string): Promise<void> {

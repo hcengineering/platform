@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Event, getAllEvents } from '@hcengineering/calendar'
-  import { Person, PersonAccount } from '@hcengineering/contact'
   import { IdMap, Ref } from '@hcengineering/core'
   import { Project } from '@hcengineering/task'
   import { ToDo, WorkSlot } from '@hcengineering/time'
@@ -9,6 +8,7 @@
   import WithTeamData from '../WithTeamData.svelte'
   import { toSlots } from '../utils'
   import DayPlan from './DayPlan.svelte'
+  import { personRefByAccountUuidStore } from '@hcengineering/contact-resources'
 
   export let space: Ref<Project>
   export let currentDate: Date
@@ -22,11 +22,9 @@
   $: todayTo = new Date(tomorrow).setHours(0, 0, 0, 0)
 
   let project: Project | undefined
-  let personAccounts: PersonAccount[] = []
   let slots: WorkSlot[] = []
   let events: Event[] = []
   let todos: IdMap<ToDo> = new Map()
-  let persons: Ref<Person>[] = []
 
   $: yesterdaySlots = toSlots(getAllEvents(slots, yesterdayFrom, yesterdayTo))
   $: yesterdayEvents = getAllEvents(events, yesterdayFrom, yesterdayTo)
@@ -39,6 +37,10 @@
     todayFrom,
     todayTo
   )
+
+  $: persons = (project?.members ?? [])
+    .map((it) => $personRefByAccountUuidStore.get(it))
+    .filter((it) => it !== undefined)
 </script>
 
 <WithTeamData
@@ -46,42 +48,23 @@
   fromDate={yesterdayFrom}
   toDate={todayTo}
   bind:project
-  bind:personAccounts
   bind:todos
   bind:slots
   bind:events
-  bind:persons
+  {persons}
 />
 
 <Header bind:currentDate />
 {#if project}
   <div class="flex-row-top background-body-color h-full">
     <div class="item flex-col">
-      <DayPlan
-        day={yesterday}
-        slots={yesterdaySlots}
-        events={yesterdayEvents}
-        showAssignee
-        {persons}
-        {personAccounts}
-        {project}
-        {todos}
-      />
+      <DayPlan day={yesterday} slots={yesterdaySlots} events={yesterdayEvents} showAssignee {todos} />
     </div>
     <div class="flex-no-shrink">
       <Border />
     </div>
     <div class="item flex-col">
-      <DayPlan
-        day={today}
-        slots={todaySlots}
-        events={todayEvents}
-        showAssignee
-        {persons}
-        {personAccounts}
-        {project}
-        {todos}
-      />
+      <DayPlan day={today} slots={todaySlots} events={todayEvents} showAssignee {todos} />
     </div>
   </div>
 {/if}

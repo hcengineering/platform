@@ -18,11 +18,19 @@ export const addNotification = (notification: Notification, store: Writable<Noti
     id: generateId()
   }
 
-  update((notifications: Notification[]) =>
-    [NotificationPosition.TopRight, NotificationPosition.TopLeft].includes(newNotification.position)
+  update((notifications: Notification[]) => {
+    if (
+      notification.group != null &&
+      notification.group !== '' &&
+      notifications.some(({ group }) => group === notification.group)
+    ) {
+      return notifications.map((n) => (n.group === notification.group ? newNotification : n))
+    }
+
+    return [NotificationPosition.TopRight, NotificationPosition.TopLeft].includes(newNotification.position)
       ? [newNotification, ...notifications]
       : [...notifications, newNotification]
-  )
+  })
 }
 
 export const removeNotification = (notificationId: string, { update }: Writable<Notification[]>): void => {

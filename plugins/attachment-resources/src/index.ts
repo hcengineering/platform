@@ -25,6 +25,7 @@ import AttachmentDocList from './components/AttachmentDocList.svelte'
 import AttachmentDroppable from './components/AttachmentDroppable.svelte'
 import AttachmentGalleryPresenter from './components/AttachmentGalleryPresenter.svelte'
 import AttachmentList from './components/AttachmentList.svelte'
+import AttachmentGroup from './components/AttachmentGroup.svelte'
 import AttachmentPresenter from './components/AttachmentPresenter.svelte'
 import AttachmentPreview from './components/AttachmentPreview.svelte'
 import AttachmentRefInput from './components/AttachmentRefInput.svelte'
@@ -42,8 +43,12 @@ import FileDownload from './components/icons/FileDownload.svelte'
 import IconUploadDuo from './components/icons/UploadDuo.svelte'
 import PreviewWidget from './components/PreviewWidget.svelte'
 import PreviewPopupActions from './components/PreviewPopupActions.svelte'
+import DrawingPresenter from './components/DrawingPresenter.svelte'
+import LinkPreview from './components/LinkPreview.svelte'
+import LinkPreviewCard from './components/LinkPreviewCard.svelte'
 
 export * from './types'
+export * from './stores'
 
 export {
   AccordionEditor,
@@ -52,6 +57,7 @@ export {
   AttachmentDroppable,
   AttachmentGalleryPresenter,
   AttachmentList,
+  AttachmentGroup,
   AttachmentPresenter,
   AttachmentPreview,
   AttachmentRefInput,
@@ -64,7 +70,9 @@ export {
   FileBrowser,
   FileDownload,
   IconAttachment,
-  IconUploadDuo
+  IconUploadDuo,
+  LinkPreview,
+  LinkPreviewCard
 }
 
 export enum FileBrowserSortMode {
@@ -256,6 +264,7 @@ export default async (): Promise<Resources> => ({
     AttachmentPresenter,
     AttachmentGalleryPresenter,
     Attachments,
+    DrawingPresenter,
     FileBrowser,
     Photos,
     PDFViewer,

@@ -15,15 +15,15 @@
 
 import { type Builder } from '@hcengineering/model'
 
+import contact from '@hcengineering/contact'
 import core from '@hcengineering/core'
 import recruit from '@hcengineering/model-recruit'
 import notification from '@hcengineering/notification'
 import serverCore from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import serverRecruit from '@hcengineering/server-recruit'
-import serverContact from '@hcengineering/server-contact'
-import contact from '@hcengineering/contact'
 import serverView from '@hcengineering/server-view'
+import serverContact from '@hcengineering/server-contact'
 
 export { serverRecruitId } from '@hcengineering/server-recruit'
 
@@ -68,26 +68,32 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, serverCore.mixin.SearchPresenter, {
-    searchConfig: {
-      icon: recruit.icon.Vacancy,
-      title: 'name'
-    }
+    searchIcon: recruit.icon.Vacancy,
+    title: [['name']]
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, serverCore.mixin.SearchPresenter, {
-    searchConfig: {
-      iconConfig: {
-        component: contact.component.AvatarRef,
-        props: [{ _id: ['attachedTo'] }]
-      },
-      shortTitle: 'identifier',
-      title: {
-        tmpl: '{name} - {vacName}',
-        props: [{ _class: ['attachedTo', '_class'] }, { name: ['attachedTo', 'name'] }, { vacName: ['space', 'name'] }]
-      }
+    iconConfig: {
+      component: contact.component.AvatarRef,
+      fields: [['attachedTo']]
     },
-    getSearchTitle: {
-      name: serverContact.function.ContactNameProvider
+    shortTitle: [['identifier']],
+    title: {
+      component: recruit.component.ApplicantNamePresenter, // Will present on UI.
+      fields: [
+        ['parent', 'name'],
+        ['space', 'name']
+      ],
+      template: [
+        ['func', serverContact.function.ContactNameProvider, 'true'],
+        ['space', 'name']
+      ],
+      extraFields: [
+        [
+          ['func', serverContact.function.ContactNameProvider, 'false'],
+          ['space', 'name']
+        ]
+      ]
     }
   })
 

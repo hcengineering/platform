@@ -139,6 +139,30 @@ export function getResourceP<T> (resource: Resource<T>): T | Promise<T> {
 
 /**
  * @public
+ * @param resource -
+ * @returns
+ */
+export function getResourceC<T> (resource: Resource<T> | undefined, callback: (resource: T | undefined) => void): void {
+  if (resource === undefined) {
+    callback(undefined)
+    return
+  }
+  const cached = cachedResource.get(resource)
+  if (cached !== undefined) {
+    callback(cached)
+  } else {
+    void getResource(resource)
+      .then((r) => {
+        callback(r)
+      })
+      .catch(() => {
+        callback(undefined)
+      })
+  }
+}
+
+/**
+ * @public
  */
 export function getResourcePlugin<T> (resource: Resource<T>): Plugin {
   const info = _parseId(resource)

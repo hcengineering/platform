@@ -1,33 +1,31 @@
-import { Person, PersonAccount } from '@hcengineering/contact'
+import { Person } from '@hcengineering/contact'
 import {
-  Account,
   Branding,
   Class,
   Data,
   Doc,
   DocumentUpdate,
+  PersonId,
   Ref,
   Space,
   Status,
   TxOperations,
   WithLookup,
-  WorkspaceIdWithUrl,
+  WorkspaceUuid,
   type Blob
 } from '@hcengineering/core'
-import { LiveQuery } from '@hcengineering/query'
-import { ProjectType, TaskType } from '@hcengineering/task'
-import { MarkupNode } from '@hcengineering/text'
-import { User } from '@octokit/webhooks-types'
 import {
   DocSyncInfo,
   GithubIntegration,
   GithubIntegrationRepository,
-  GithubMilestone,
   GithubProject,
   GithubUserInfo
 } from '@hcengineering/github'
+import { LiveQuery } from '@hcengineering/query'
+import { ProjectType, TaskType } from '@hcengineering/task'
+import { MarkupNode } from '@hcengineering/text'
+import { User } from '@octokit/webhooks-types'
 import { Octokit } from 'octokit'
-import { GithubProjectV2 } from './sync/githubTypes'
 
 /**
  * @public
@@ -61,8 +59,6 @@ export interface IntegrationContainer {
   installationName: string
   octokit: Octokit
 
-  projectStructure: Map<Ref<GithubProject | GithubMilestone>, GithubProjectV2>
-
   enabled: boolean
   synchronized: Set<string>
 
@@ -83,9 +79,14 @@ export interface ContainerFocus {
 export interface IntegrationManager {
   liveQuery: LiveQuery
   getContainer: (space: Ref<Space>) => Promise<ContainerFocus | undefined>
-  getAccount: (user?: UserInfo | null) => Promise<PersonAccount | undefined>
-  getAccountU: (user: User) => Promise<PersonAccount | undefined>
-  getOctokit: (account: Ref<PersonAccount>) => Promise<Octokit | undefined>
+  getAccount: (user?: UserInfo | null) => Promise<PersonId | undefined>
+  getAccountU: (user: User) => Promise<PersonId | undefined>
+  getOctokit: (account: PersonId) => Promise<Octokit | undefined>
+  getMarkupSafe: (
+    container: IntegrationContainer,
+    text?: string | null,
+    preprocessor?: (nodes: MarkupNode) => Promise<void>
+  ) => Promise<string>
   getMarkup: (
     container: IntegrationContainer,
     text?: string | null,
@@ -112,7 +113,8 @@ export interface IntegrationManager {
   ) => Promise<void>
 
   doSyncFor: (docs: DocSyncInfo[], project: GithubProject) => Promise<void>
-  getWorkspaceId: () => WorkspaceIdWithUrl
+  getWorkspaceId: () => WorkspaceUuid
+  getWorkspaceUrl: () => string
   getBranding: () => Branding | null
 
   getProjectAndRepository: (
@@ -124,11 +126,11 @@ export interface IntegrationManager {
     body: string
   ) => Promise<{ markdownCompatible: boolean, markdown: string }>
 
-  isPlatformUser: (account: Ref<PersonAccount>) => Promise<boolean>
-
-  getProjectRepositories: (space: Ref<Space>) => Promise<GithubIntegrationRepository[]>
+  isPlatformUser: (account: PersonId) => Promise<boolean>
 
   getRepositoryById: (ref?: Ref<GithubIntegrationRepository> | null) => Promise<GithubIntegrationRepository | undefined>
+
+  isClosing: () => boolean
 }
 
 export type ExternalSyncField = 'externalVersion' | 'derivedVersion'
@@ -187,14 +189,15 @@ export interface DocSyncManager {
  */
 export interface GithubIntegrationRecord {
   installationId: number
-  workspace: string
-  accountId: Ref<Account>
+  workspace: WorkspaceUuid
+  accountId: PersonId
 }
 
 /**
  * @public
  */
 export interface GithubUserRecord {
+  account: PersonId
   _id: string // login
   code?: string | null
   token?: string
@@ -205,6 +208,5 @@ export interface GithubUserRecord {
   state?: string
   scope?: string
   error?: string | null
-
-  accounts: Record<string, Ref<Account>>
+  accounts: Record<WorkspaceUuid, PersonId>
 }

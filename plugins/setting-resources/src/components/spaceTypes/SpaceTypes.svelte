@@ -16,6 +16,7 @@
   import { Ref, SpaceType, WithLookup } from '@hcengineering/core'
   import { Icon, Label, IconOpenedArrow } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import setting from '../../plugin'
 
   export let selectedTypeId: Ref<SpaceType> | undefined
   export let types: WithLookup<SpaceType>[] = []
@@ -31,6 +32,7 @@
 
 {#each types as type}
   {@const descriptor = type.$lookup?.descriptor}
+  {@const dIcon = descriptor?.icon === '' || descriptor?.icon == null ? setting.icon.Setting : descriptor.icon}
   <button
     class="hulyTaskNavLink-container font-regular-14"
     class:selected={type._id === selectedTypeId}
@@ -39,11 +41,11 @@
     }}
   >
     <div class="hulyTaskNavLink-avatar">
-      {#if descriptor?.icon}
-        <div class="hulyTaskNavLink-icon">
-          <Icon icon={descriptor?.icon} size="small" fill="currentColor" />
-        </div>
-      {/if}
+      <div class="hulyTaskNavLink-icon">
+        {#if dIcon}
+          <Icon icon={dIcon} size="small" fill="currentColor" />
+        {/if}
+      </div>
     </div>
     {#if descriptor}
       <div class="hulyTaskNavLink-content">

@@ -17,7 +17,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { ActionContext } from '@hcengineering/presentation'
   import { AnyComponent, Scroller, resizeObserver } from '@hcengineering/ui'
-  import { BuildModelKey, ViewOptions, Viewlet } from '@hcengineering/view'
+  import { BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { ListSelectionProvider, SelectDirection, focusStore } from '../..'
 
@@ -37,7 +37,9 @@
   export let createItemLabel: IntlString | undefined
   export let createItemEvent: string | undefined
   export let viewOptions: ViewOptions
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let props: Record<string, any> = {}
+  export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
 
   let list: List
   let scroll: Scroller
@@ -88,13 +90,14 @@
       {options}
       {createItemDialog}
       {createItemDialogProps}
+      {baseMenuClass}
       {createItemLabel}
       {createItemEvent}
       {viewOptions}
       {props}
       {listProvider}
       compactMode={listWidth <= 800}
-      viewOptionsConfig={viewlet.viewOptions?.other}
+      viewOptionsConfig={viewOptionsConfig ?? viewlet.viewOptions?.other}
       selectedObjectIds={$selection ?? []}
       selection={listProvider.current($focusStore)}
       on:row-focus={(event) => {

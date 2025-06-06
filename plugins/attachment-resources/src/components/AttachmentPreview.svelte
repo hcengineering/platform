@@ -15,26 +15,23 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { FilePreviewPopup } from '@hcengineering/presentation'
-  import { closeTooltip, showPopup } from '@hcengineering/ui'
   import { ListSelectionProvider } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { WithLookup } from '@hcengineering/core'
-
+  import { BlobType, WithLookup } from '@hcengineering/core'
   import { AttachmentImageSize } from '../types'
-  import { getType } from '../utils'
+  import { getType, isAttachment, showAttachmentPreviewPopup } from '../utils'
   import AttachmentActions from './AttachmentActions.svelte'
   import AttachmentImagePreview from './AttachmentImagePreview.svelte'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AttachmentVideoPreview from './AttachmentVideoPreview.svelte'
   import AudioPlayer from './AudioPlayer.svelte'
 
-  export let value: WithLookup<Attachment>
+  export let value: WithLookup<Attachment> | BlobType
   export let isSaved: boolean = false
   export let listProvider: ListSelectionProvider | undefined = undefined
   export let imageSize: AttachmentImageSize = 'auto'
   export let removable: boolean = false
-  export let videoPreload = true
+  export let videoPreload = false
 
   const dispatch = createEventDispatcher()
 
@@ -47,13 +44,8 @@
   <div
     class="content flex-center buttonContainer cursor-pointer"
     on:click={() => {
-      closeTooltip()
-      if (listProvider !== undefined) listProvider.updateFocus(value)
-      const popupInfo = showPopup(
-        FilePreviewPopup,
-        { file: value.file, name: value.name, contentType: value.type, metadata: value.metadata },
-        value.type.startsWith('image/') ? 'centered' : 'float'
-      )
+      if (listProvider !== undefined && isAttachment(value)) listProvider.updateFocus(value)
+      const popupInfo = showAttachmentPreviewPopup(value)
       dispatch('open', popupInfo.id)
     }}
   >
@@ -114,7 +106,8 @@
   }
 
   .content {
-    max-width: 20rem;
-    max-height: 20rem;
+    max-width: 25rem;
+    max-height: 25rem;
+    scroll-snap-align: start;
   }
 </style>

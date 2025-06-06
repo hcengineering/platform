@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2020-2025 Anticrm Platform Contributors.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -42,9 +42,11 @@ import VisibilityEditor from './components/VisibilityEditor.svelte'
 import CalendarSelector from './components/CalendarSelector.svelte'
 import ConnectApp from './components/ConnectApp.svelte'
 import CalendarWidget from './components/CalendarWidget.svelte'
+import ScheduleNavSection from './components/ScheduleNavSection.svelte'
 import calendar from './plugin'
 import contact from '@hcengineering/contact'
 import { deleteObjects } from '@hcengineering/view-resources'
+import { eventTitleProvider, configureCalDavAccess } from './utils'
 
 export {
   EventElement,
@@ -56,7 +58,8 @@ export {
   EventReminders,
   VisibilityEditor,
   CalendarSelector,
-  EventPresenter
+  EventPresenter,
+  ScheduleNavSection
 }
 
 export type {
@@ -104,7 +107,8 @@ async function deleteRecHandler (res: any, object: ReccuringInstance): Promise<v
         exdate: object.exdate,
         visibility: object.visibility,
         access: object.access,
-        timeZone: object.timeZone
+        timeZone: object.timeZone,
+        user: object.user
       },
       object._id
     )
@@ -210,5 +214,9 @@ export default async (): Promise<Resources> => ({
         }
       })
     }
+  },
+  function: {
+    ConfigureCalDavAccess: configureCalDavAccess,
+    EventTitleProvider: eventTitleProvider
   }
 })

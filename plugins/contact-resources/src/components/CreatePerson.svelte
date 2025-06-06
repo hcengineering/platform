@@ -60,6 +60,8 @@
         provider: channel.provider
       })
     }
+
+    // Note: user profile card is created from the trigger
     Analytics.handleEvent(ContactEvents.PersonCreated, { id: personId })
     dispatch('close', personId)
   }

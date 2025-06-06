@@ -66,13 +66,15 @@ export async function print (url: string, options?: PrintOptions): Promise<Buffe
     // Read page header and footer if defined
     const pageHeader = await page.evaluate(() => {
       const header = document.querySelector('#page-header')
-      return header !== null ? header.innerHTML : undefined
+      return header?.innerHTML ?? ''
     })
 
     const pageFooter = await page.evaluate(() => {
       const footer = document.querySelector('#page-footer')
-      return footer !== null ? footer.innerHTML : undefined
+      return footer?.innerHTML ?? ''
     })
+
+    const displayHeaderFooter = pageHeader !== '' || pageFooter !== ''
 
     res = await page.pdf({
       format: 'A4',
@@ -80,7 +82,7 @@ export async function print (url: string, options?: PrintOptions): Promise<Buffe
       timeout: 0,
       headerTemplate: pageHeader,
       footerTemplate: pageFooter,
-      displayHeaderFooter: pageHeader !== undefined || pageFooter !== undefined,
+      displayHeaderFooter,
       margin: {
         top: '1.5cm',
         right: '1cm',

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { concatLink } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
+  import { type ProviderInfo } from '@hcengineering/account-client'
   import { AnySvelteComponent, Button, Grid, deviceOptionsStore, getCurrentLocation } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import login from '../plugin'
@@ -12,28 +13,26 @@
   interface Provider {
     name: string
     component: AnySvelteComponent
+    displayName?: string
   }
 
-  const providers: Provider[] = [
-    {
-      name: 'google',
-      component: Google
-    },
-    {
-      name: 'github',
-      component: Github
-    },
-    {
-      name: 'openid',
-      component: OpenId
-    }
-  ]
+  const providerMap: Record<string, AnySvelteComponent> = {
+    google: Google,
+    github: Github,
+    openid: OpenId
+  }
 
   let enabledProviders: Provider[] = []
 
   onMount(() => {
-    void getProviders().then((res) => {
-      enabledProviders = providers.filter((provider) => res.includes(provider.name))
+    void getProviders().then((res: ProviderInfo[]) => {
+      enabledProviders = res.map((provider) => {
+        const component = providerMap[provider.name]
+        return {
+          ...provider,
+          component
+        }
+      })
     })
   })
 
@@ -45,11 +44,20 @@
 
   function getLink (provider: Provider): string {
     const inviteId = location.query?.inviteId
+    const autoJoin = location.query?.autoJoin !== undefined
+    const navigateUrl = location.query?.navigateUrl
     const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
     let path = `/auth/${provider.name}`
     if (inviteId != null) {
       path += `?inviteId=${inviteId}`
+      if (autoJoin) {
+        path += '&autoJoin'
+      }
+      if (navigateUrl != null) {
+        path += `&navigateUrl=${navigateUrl}`
+      }
     }
+
     return concatLink(accountsUrl, path)
   }
 </script>
@@ -61,7 +69,7 @@
         <a href={getLink(provider)}>
           <Button kind={'contrast'} shape={'round2'} size={'x-large'} width="100%" stopPropagation={false}>
             <svelte:fragment slot="content">
-              <svelte:component this={provider.component} />
+              <svelte:component this={provider.component} displayName={provider.displayName} />
             </svelte:fragment>
           </Button>
         </a>

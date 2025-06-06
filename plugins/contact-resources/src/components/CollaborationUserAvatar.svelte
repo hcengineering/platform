@@ -16,12 +16,10 @@
 -->
 
 <script lang="ts">
-  import { Employee, PersonAccount } from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
   import { CollaborationUser } from '@hcengineering/text-editor'
   import { IconSize } from '@hcengineering/ui'
 
-  import { employeeByIdStore, personAccountByIdStore, personByIdStore } from '../utils'
+  import { personByPersonIdStore } from '../utils'
   import Avatar from './Avatar.svelte'
 
   export let user: CollaborationUser
@@ -31,11 +29,7 @@
   let avatar: Avatar | undefined
   $: lastUpdate !== 0 && avatar?.pulse()
 
-  $: personAccount = $personAccountByIdStore.get(user.id as Ref<PersonAccount>)
-  $: person =
-    personAccount?.person !== undefined
-      ? $employeeByIdStore.get(personAccount.person as Ref<Employee>) ?? $personByIdStore.get(personAccount.person)
-      : undefined
+  $: person = $personByPersonIdStore.get(user.id)
 </script>
 
 {#if person}

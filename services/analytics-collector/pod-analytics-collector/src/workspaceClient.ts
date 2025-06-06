@@ -13,9 +13,16 @@
 // limitations under the License.
 //
 
-import core, { Client, MeasureContext, systemAccountEmail, TxOperations, WorkspaceId } from '@hcengineering/core'
+import core, {
+  Client,
+  MeasureContext,
+  PersonUuid,
+  systemAccountUuid,
+  TxOperations,
+  WorkspaceUuid
+} from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
-import contact, { Person, PersonAccount } from '@hcengineering/contact'
+import contact, { Person } from '@hcengineering/contact'
 
 import { connectPlatform } from './platform'
 
@@ -25,7 +32,7 @@ export class WorkspaceClient {
 
   constructor (
     readonly ctx: MeasureContext,
-    readonly workspace: WorkspaceId
+    readonly workspace: WorkspaceUuid
   ) {
     this.opClient = this.initClient()
     void this.opClient.then((opClient) => {
@@ -34,20 +41,20 @@ export class WorkspaceClient {
   }
 
   protected async initClient (): Promise<TxOperations> {
-    const token = generateToken(systemAccountEmail, this.workspace)
+    const token = generateToken(systemAccountUuid, this.workspace, {
+      client: 'analytics',
+      service: 'analytics-collector'
+    })
     this.client = await connectPlatform(token)
 
     return new TxOperations(this.client, core.account.System)
   }
 
-  async getAccount (email: string): Promise<PersonAccount | undefined> {
+  async getPerson (personUuid: PersonUuid): Promise<Person | undefined> {
     const opClient = await this.opClient
-    return await opClient.getModel().findOne(contact.class.PersonAccount, { email })
-  }
-
-  async getPerson (account: PersonAccount): Promise<Person | undefined> {
-    const opClient = await this.opClient
-    return await opClient.findOne(contact.class.Person, { _id: account.person })
+    return await opClient.findOne(contact.class.Person, {
+      personUuid
+    })
   }
 
   async close (): Promise<void> {

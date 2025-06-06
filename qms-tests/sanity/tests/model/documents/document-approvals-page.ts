@@ -12,15 +12,16 @@ export class DocumentApprovalsPage extends DocumentCommonPage {
   async checkRejectApproval (approvalName: string, message: string): Promise<void> {
     await expect(
       this.page
-        .locator('div.reject-message', { hasText: message })
+        .locator('div.approval-status-message', { hasText: message })
         .locator('xpath=..')
         .locator('div.approver span.ap-label')
+        .last()
     ).toHaveText(approvalName)
   }
 
   async checkSuccessApproval (approvalName: string): Promise<void> {
-    await expect(this.page.locator('svg[fill*="accepted"]').locator('xpath=../..').locator('span.ap-label')).toHaveText(
-      approvalName
-    )
+    await expect(
+      this.page.locator('svg[fill*="accepted"]').locator('xpath=../..').locator('span.ap-label').last()
+    ).toHaveText(approvalName)
   }
 }

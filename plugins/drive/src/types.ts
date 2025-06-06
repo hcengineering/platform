@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AttachedDoc, Blob, Card, CollectionSize, Ref, Type, TypedSpace } from '@hcengineering/core'
+import { AttachedDoc, Blob, CollectionSize, Doc, Ref, Type, TypedSpace } from '@hcengineering/core'
 
 import drive from './plugin'
 
@@ -26,7 +26,7 @@ export function TypeFileVersion (): Type<number> {
 export interface Drive extends TypedSpace {}
 
 /** @public */
-export interface Resource extends Card {
+export interface Resource extends Doc {
   title: string
   parent: Ref<Resource>
   path: Ref<Resource>[]

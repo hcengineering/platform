@@ -17,12 +17,13 @@
 import contact, { contactId } from '@hcengineering/contact'
 import { type Client, type Doc } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
-import { type LabelAndProps, type Location } from '@hcengineering/ui'
+import { type LabelAndProps, type Location } from '@hcengineering/ui/src/types'
 import {
   type CreateAggregationManagerFunc,
   type GrouppingManagerResource,
   type FilterFunction,
-  type SortFunc
+  type SortFunc,
+  type ViewActionAvailabilityFunction
 } from '@hcengineering/view'
 
 export default mergeIds(contactId, contact, {
@@ -59,10 +60,13 @@ export default mergeIds(contactId, contact, {
     AddMember: '' as IntlString,
     KickEmployee: '' as IntlString,
     KickEmployeeDescr: '' as IntlString,
+    ResendInvite: '' as IntlString,
+    ResendInviteDescr: '' as IntlString,
     Email: '' as IntlString,
     CreateEmployee: '' as IntlString,
     Inactive: '' as IntlString,
     Active: '' as IntlString,
+    Role: '' as IntlString,
     NotSpecified: '' as IntlString,
     MergePersons: '' as IntlString,
     MergePersonsFrom: '' as IntlString,
@@ -90,7 +94,8 @@ export default mergeIds(contactId, contact, {
     FilterChannelNinResult: '' as FilterFunction,
     FilterChannelHasMessagesResult: '' as FilterFunction,
     FilterChannelHasNewMessagesResult: '' as FilterFunction,
-    PersonTooltipProvider: '' as Resource<(client: Client, doc?: Doc | null) => Promise<LabelAndProps | undefined>>
+    PersonTooltipProvider: '' as Resource<(client: Client, doc?: Doc | null) => Promise<LabelAndProps | undefined>>,
+    CanResendInvitation: '' as Resource<ViewActionAvailabilityFunction>
   },
   aggregation: {
     CreatePersonAggregationManager: '' as CreateAggregationManagerFunc,

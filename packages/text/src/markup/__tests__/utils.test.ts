@@ -17,28 +17,22 @@
 // limitations under the License.
 //
 
-import { Editor, getSchema } from '@tiptap/core'
-import { MarkupMarkType, MarkupNode, MarkupNodeType } from '../model'
 import {
   areEqualMarkups,
-  getMarkup,
-  htmlToJSON,
-  htmlToMarkup,
-  htmlToPmNode,
   isEmptyMarkup,
   isEmptyNode,
-  jsonToHTML,
   jsonToMarkup,
-  jsonToText,
-  markupToHTML,
+  MarkupMarkType,
+  MarkupNode,
+  MarkupNodeType,
   markupToJSON,
-  markupToPmNode,
-  pmNodeToHTML,
-  pmNodeToJSON,
-  pmNodeToMarkup
-} from '../utils'
+  nodeDoc,
+  nodeParagraph,
+  nodeText
+} from '@hcengineering/text-core'
+import { Editor, getSchema } from '@tiptap/core'
 import { ServerKit } from '../../kits/server-kit'
-import { nodeDoc, nodeParagraph, nodeText } from '../dsl'
+import { getMarkup, htmlToJSON, htmlToMarkup, jsonToHTML, jsonToPmNode, jsonToText, pmNodeToJSON } from '../utils'
 
 // mock tiptap functions
 jest.mock('@tiptap/html', () => ({
@@ -61,17 +55,19 @@ describe('EmptyMarkup', () => {
 describe('getMarkup', () => {
   it('with empty content', async () => {
     const editor = new Editor({ extensions })
-    expect(getMarkup(editor)).toEqual('{"type":"doc","content":[{"type":"paragraph"}]}')
+    expect(getMarkup(editor)).toEqual('{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null}}]}')
   })
   it('with some content', async () => {
     const editor = new Editor({ extensions, content: '<p>hello</p>' })
     expect(getMarkup(editor)).toEqual(
-      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+      '{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"hello"}]}]}'
     )
   })
   it('with empty paragraphs as content', async () => {
     const editor = new Editor({ extensions, content: '<p></p><p></p>' })
-    expect(getMarkup(editor)).toEqual('{"type":"doc","content":[{"type":"paragraph"},{"type":"paragraph"}]}')
+    expect(getMarkup(editor)).toEqual(
+      '{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null}},{"type":"paragraph","attrs":{"textAlign":null}}]}'
+    )
   })
 })
 
@@ -245,27 +241,6 @@ describe('isEmptyNode', () => {
   })
 })
 
-describe('pmNodeToMarkup', () => {
-  it('converts ProseMirrorNode to Markup', () => {
-    const schema = getSchema(extensions)
-    const node = schema.node('paragraph', {}, [schema.text('Hello, world!')])
-
-    expect(pmNodeToMarkup(node)).toEqual('{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}')
-  })
-})
-
-describe('markupToPmNode', () => {
-  it('converts markup to ProseMirrorNode', () => {
-    const markup = '{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}'
-    const node = markupToPmNode(markup)
-
-    expect(node.type.name).toEqual('paragraph')
-    expect(node.content.childCount).toEqual(1)
-    expect(node.content.child(0).type.name).toEqual('text')
-    expect(node.content.child(0).text).toEqual('Hello, world!')
-  })
-})
-
 describe('markupToJSON', () => {
   it('with empty content', async () => {
     expect(markupToJSON('')).toEqual({ type: 'doc', content: [{ type: 'paragraph', content: [] }] })
@@ -306,7 +281,11 @@ describe('pmNodeToJSON', () => {
     const schema = getSchema(extensions)
     const node = schema.node('paragraph', {}, [schema.text('Hello, world!')])
 
-    const json = nodeParagraph(nodeText('Hello, world!'))
+    const json: MarkupNode = {
+      type: MarkupNodeType.paragraph,
+      attrs: { textAlign: null as any },
+      content: [nodeText('Hello, world!')]
+    }
     expect(pmNodeToJSON(node)).toEqual(json)
   })
 })
@@ -314,7 +293,7 @@ describe('pmNodeToJSON', () => {
 describe('jsonToPmNode', () => {
   it('converts json to ProseMirrorNode', () => {
     const markup = '{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}'
-    const node = markupToPmNode(markup)
+    const node = jsonToPmNode(markupToJSON(markup))
 
     expect(node.type.name).toEqual('paragraph')
     expect(node.content.childCount).toEqual(1)
@@ -331,14 +310,6 @@ describe('htmlToMarkup', () => {
   })
 })
 
-describe('markupToHTML', () => {
-  it('converts markup to HTML', () => {
-    const markup = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-    const expectedHtml = '<p>hello</p>'
-    expect(markupToHTML(markup)).toEqual(expectedHtml)
-  })
-})
-
 describe('htmlToJSON', () => {
   it('converts HTML to JSON', () => {
     const html = '<p>hello</p>'
@@ -352,28 +323,6 @@ describe('jsonToHTML', () => {
     const json = nodeDoc(nodeParagraph(nodeText('hello')))
     const html = '<p>hello</p>'
     expect(jsonToHTML(json)).toEqual(html)
-  })
-})
-
-describe('pmNodeToHTML', () => {
-  it('converts ProseMirrorNode to HTML', () => {
-    const schema = getSchema(extensions)
-    const node = schema.node('paragraph', {}, [schema.text('hello')])
-
-    expect(pmNodeToHTML(node)).toEqual('<p>hello</p>')
-  })
-})
-
-describe('htmlToPmNode', () => {
-  it('converts html to ProseMirrorNode', () => {
-    const node = htmlToPmNode('<p>hello</p>')
-
-    expect(node.type.name).toEqual('doc')
-    expect(node.content.childCount).toEqual(1)
-    expect(node.content.child(0).type.name).toEqual('paragraph')
-    expect(node.content.child(0).childCount).toEqual(1)
-    expect(node.content.child(0).child(0).type.name).toEqual('text')
-    expect(node.content.child(0).child(0).text).toEqual('hello')
   })
 })
 

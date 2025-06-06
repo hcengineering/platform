@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Widget } from '@hcengineering/workbench'
-  import { Label } from '@hcengineering/ui'
+  import { Label, Component } from '@hcengineering/ui'
 
   import AppItem from '../../AppItem.svelte'
 
@@ -24,7 +24,11 @@
 </script>
 
 <div class="root">
-  <AppItem label={widget.label} icon={widget.icon} selected={highlighted} size="small" on:click />
+  <Component
+    is={widget.switcherComponent ?? AppItem}
+    props={{ label: widget.label, icon: widget.icon, selected: highlighted, size: 'small' }}
+    on:click
+  />
   {#if withLabel}
     <Label label={widget.label} />
   {/if}

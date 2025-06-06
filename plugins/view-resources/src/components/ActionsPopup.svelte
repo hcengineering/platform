@@ -262,12 +262,14 @@
 
   $: void updateItems(search, filteredActions)
 
-  function txListener (tx: Tx): void {
-    if (tx._class === core.class.TxWorkspaceEvent) {
-      const evt = tx as TxWorkspaceEvent
-      if (evt.event === WorkspaceEvent.IndexingUpdate) {
-        void updateItems(search, filteredActions)
-      }
+  function txListener (txes: Tx[]): void {
+    if (
+      txes.some(
+        (it) =>
+          it._class === core.class.TxWorkspaceEvent && (it as TxWorkspaceEvent).event === WorkspaceEvent.IndexingUpdate
+      )
+    ) {
+      void updateItems(search, filteredActions)
     }
   }
 

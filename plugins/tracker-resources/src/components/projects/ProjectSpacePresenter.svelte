@@ -16,13 +16,8 @@
   import { Ref, Space } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { Project } from '@hcengineering/tracker'
-  import {
-    IconWithEmoji,
-    getPlatformColorDef,
-    getPlatformColorForTextDef,
-    themeStore,
-    type Action
-  } from '@hcengineering/ui'
+  import { IconWithEmoji } from '@hcengineering/presentation'
+  import { getPlatformColorDef, getPlatformColorForTextDef, themeStore, type Action } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { NavLink, TreeNode } from '@hcengineering/view-resources'
   import { SpacesNavModel, SpecialNavModel } from '@hcengineering/workbench'
@@ -55,7 +50,9 @@
     specials = newSpecials
   }
 
-  $: updateSpecials(model, space)
+  $: if (model != null) {
+    void updateSpecials(model, space)
+  }
   $: visible =
     (!deselect && currentSpace !== undefined && currentSpecial !== undefined && space._id === currentSpace) ||
     forciblyСollapsed
@@ -64,12 +61,12 @@
 {#if specials}
   <TreeNode
     _id={space?._id}
-    icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
+    icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model?.icon}
     iconProps={space?.icon === view.ids.IconWithEmoji
       ? { icon: space.color }
       : {
           fill:
-            space.color !== undefined
+            space.color !== undefined && typeof space.color !== 'string'
               ? getPlatformColorDef(space.color, $themeStore.dark).icon
               : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
         }}

@@ -15,6 +15,7 @@
 //
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { MarkupNode } from '@hcengineering/text'
   import { onDestroy, onMount } from 'svelte'
   import { Doc as Ydoc } from 'yjs'
@@ -80,7 +81,11 @@
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, { class: 'flex-grow' }) },
       element,
       editable: false,
-      extensions: [await getEditorKit(), DecorationExtension, Collaboration.configure({ document: ydoc, field })]
+      extensions: [await getEditorKit(), DecorationExtension, Collaboration.configure({ document: ydoc, field })],
+      onContentError: ({ error, disableCollaboration }) => {
+        disableCollaboration()
+        Analytics.handleError(error)
+      }
     })
   })
 

@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Hierarchy } from '@hcengineering/core'
-  import { NavLink, getClient } from '@hcengineering/presentation'
+  import { concatLink, Doc, Hierarchy } from '@hcengineering/core'
+  import presentation, { NavLink, getClient } from '@hcengineering/presentation'
   import { AnyComponent, getPanelURI, locationToUrl } from '@hcengineering/ui'
   import view from '../plugin'
   import { getObjectLinkFragment, restrictionStore } from '../utils'
+  import { getMetadata } from '@hcengineering/platform'
 
   export let object: Doc | undefined
   export let disabled: boolean = false
@@ -30,6 +31,9 @@
   export let shrink: number = 1
   export let accent: boolean = false
   export let noOverflow: boolean = false
+  export let inlineReference: boolean = false
+  export let transparent: boolean = false
+  export let inlineBlock = false
 
   let _disabled = disabled || $restrictionStore.disableNavigation
   $: _disabled = disabled || $restrictionStore.disableNavigation
@@ -50,12 +54,26 @@
     const panelComponent = hierarchy.classHierarchyMixin(object._class, view.mixin.ObjectPanel)
     const comp = panelComponent?.component ?? component
     const loc = await getObjectLinkFragment(hierarchy, object, props, comp)
-    href = `${window.location.origin}${locationToUrl(loc)}`
+    const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+    href = concatLink(frontUrl, locationToUrl(loc))
   }
 
   $: if (object !== undefined) getHref(object)
 </script>
 
-<NavLink disabled={_disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent} {noOverflow}>
+<NavLink
+  disabled={_disabled}
+  {onClick}
+  {noUnderline}
+  {inline}
+  {shrink}
+  {href}
+  {colorInherit}
+  {accent}
+  {noOverflow}
+  {inlineReference}
+  {transparent}
+  {inlineBlock}
+>
   <slot />
 </NavLink>

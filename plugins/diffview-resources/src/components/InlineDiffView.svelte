@@ -29,7 +29,7 @@ index 3aa8590..6b64999 100644
 +++ b/${fileName}
 `
 
-  $: diffFiles = parseDiff(prefix + patch ?? '')
+  $: diffFiles = parseDiff(prefix + patch)
 </script>
 
 {#each diffFiles as diffFile}

@@ -78,8 +78,8 @@ export class VacanciesPage extends CommonRecruitingPage {
     await this.vacanciesCreateButton().click()
   }
 
-  async createVacancy (vacancyId: string): Promise<void> {
-    await this.recruitApplicationButton().click()
+  async createVacancy (vacancyId: string, jump: boolean = false): Promise<void> {
+    if (jump) await this.recruitApplicationButton().click()
     await this.vacanciesMenuLink().click()
     await this.createVacancyButton().click()
     await this.vacancyInputField().fill(vacancyId)
@@ -102,7 +102,6 @@ export class VacanciesPage extends CommonRecruitingPage {
   }
 
   async navigateToSoftwareEngineerVacancies (): Promise<void> {
-    await this.recruitApplicationButton().click()
     await this.vacanciesMenuLink().click()
     await this.softwareEngineerLink().click()
   }

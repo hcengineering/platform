@@ -16,7 +16,7 @@
 -->
 
 <script lang="ts">
-  import { checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import type { Training } from '@hcengineering/training'
   import { navigate } from '@hcengineering/ui'
   import training from '../plugin'

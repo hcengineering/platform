@@ -15,10 +15,10 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
-  import { SelectUsersPopup } from '@hcengineering/contact-resources'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import { Employee } from '@hcengineering/contact'
+  import { AccountUuid, Ref, notEmpty } from '@hcengineering/core'
+  import { employeeByIdStore, SelectUsersPopup } from '@hcengineering/contact-resources'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import { Modal, showPopup } from '@hcengineering/ui'
 
   import chunter from '../../../plugin'
@@ -28,22 +28,18 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const query = createQuery()
 
   let employeeIds: Ref<Employee>[] = []
   let dmName = ''
-  let accounts: PersonAccount[] = []
   let hidden = true
 
+  $: accounts = employeeIds.map((e) => $employeeByIdStore.get(e)?.personUuid).filter(notEmpty)
   $: void loadDmName(accounts).then((r) => {
     dmName = r
   })
-  $: query.query(contact.class.PersonAccount, { person: { $in: employeeIds } }, (res) => {
-    accounts = res
-  })
 
-  async function loadDmName (employeeAccounts: PersonAccount[]): Promise<string> {
-    return await buildDmName(client, employeeAccounts)
+  async function loadDmName (accs: AccountUuid[]): Promise<string> {
+    return await buildDmName(client, accs)
   }
 
   async function createDirectMessage (): Promise<void> {

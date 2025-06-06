@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
-import { chunterId, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
+import { chunterId, type ThreadMessage } from '@hcengineering/chunter'
 import core, {
-  type Account,
   TxOperations,
   type Class,
   type Doc,
   type Domain,
   type Ref,
   type Space,
-  DOMAIN_TX
+  DOMAIN_TX,
+  notEmpty
 } from '@hcengineering/core'
 import {
   tryMigrate,
@@ -33,13 +33,12 @@ import {
 } from '@hcengineering/model'
 import activity, { migrateMessagesSpace, DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import notification from '@hcengineering/notification'
-import contactPlugin, { type Person, type PersonAccount } from '@hcengineering/contact'
+import contact, { getAllAccounts } from '@hcengineering/contact'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
 import { type DocUpdateMessage } from '@hcengineering/activity'
-import { DOMAIN_SPACE } from '@hcengineering/model-core'
 
-import chunter from './plugin'
 import { DOMAIN_CHUNTER } from './index'
+import chunter from './plugin'
 
 export const DOMAIN_COMMENT = 'comment' as Domain
 
@@ -50,27 +49,24 @@ export async function createDocNotifyContexts (
   objectClass: Ref<Class<Doc>>,
   objectSpace: Ref<Space>
 ): Promise<void> {
-  const users = await client.findAll(core.class.Account, {})
+  const employees = await client.findAll(contact.mixin.Employee, { active: true })
+  const accounts = employees.map((it) => it.personUuid).filter(notEmpty)
+
   const docNotifyContexts = await client.findAll(notification.class.DocNotifyContext, {
-    user: { $in: users.map((it) => it._id) },
+    user: { $in: accounts },
     objectId
   })
-  for (const user of users) {
-    if (user._id === core.account.System) {
-      continue
-    }
-    const docNotifyContext = docNotifyContexts.find((it) => it.user === user._id)
+  const existingDNCUsers = new Set(docNotifyContexts.map((it) => it.user))
 
-    if (docNotifyContext === undefined) {
-      await tx.createDoc(notification.class.DocNotifyContext, core.space.Space, {
-        user: user._id,
-        objectId,
-        objectClass,
-        objectSpace,
-        hidden: false,
-        isPinned: false
-      })
-    }
+  for (const account of accounts.filter((it) => !existingDNCUsers.has(it))) {
+    await tx.createDoc(notification.class.DocNotifyContext, core.space.Space, {
+      user: account,
+      objectId,
+      objectClass,
+      objectSpace,
+      hidden: false,
+      isPinned: false
+    })
   }
 }
 
@@ -98,7 +94,7 @@ export async function createGeneral (client: MigrationUpgradeClient, tx: TxOpera
           topic: 'General Channel',
           private: false,
           archived: false,
-          members: await getAllPersonAccounts(tx),
+          members: await getAllAccounts(tx),
           autoJoin: true
         },
         chunter.space.General
@@ -109,22 +105,16 @@ export async function createGeneral (client: MigrationUpgradeClient, tx: TxOpera
   await createDocNotifyContexts(client, tx, chunter.space.General, chunter.class.Channel, core.space.Space)
 }
 
-async function getAllPersonAccounts (tx: TxOperations): Promise<Ref<PersonAccount>[]> {
-  const employees = await tx.findAll(contactPlugin.mixin.Employee, { active: true })
-  const accounts = await tx.findAll(contactPlugin.class.PersonAccount, {
-    person: { $in: employees.map((it) => it._id) }
-  })
-  return accounts.map((it) => it._id)
-}
-
 async function joinEmployees (current: Space, tx: TxOperations): Promise<void> {
-  const accs = await getAllPersonAccounts(tx)
-  const newMembers: Ref<Account>[] = [...current.members]
-  for (const acc of accs) {
-    if (!newMembers.includes(acc)) {
-      newMembers.push(acc)
+  const allAccounts = await getAllAccounts(tx)
+  const newMembers = [...current.members]
+
+  for (const account of allAccounts) {
+    if (!newMembers.includes(account)) {
+      newMembers.push(account)
     }
   }
+
   await tx.update(current, {
     members: newMembers
   })
@@ -154,7 +144,7 @@ export async function createRandom (client: MigrationUpgradeClient, tx: TxOperat
           topic: 'Random Talks',
           private: false,
           archived: false,
-          members: await getAllPersonAccounts(tx),
+          members: await getAllAccounts(tx),
           autoJoin: true
         },
         chunter.space.Random
@@ -241,66 +231,22 @@ async function removeWrongActivity (client: MigrationClient): Promise<void> {
   })
 }
 
-async function removeDuplicatedDirects (client: MigrationClient): Promise<void> {
-  const directs = await client.find<DirectMessage>(DOMAIN_SPACE, { _class: chunter.class.DirectMessage })
-  const personAccounts = await client.model.findAll<PersonAccount>(contactPlugin.class.PersonAccount, {})
-  const personByAccount = new Map(personAccounts.map((it) => [it._id, it.person]))
-
-  const accountsToPersons = (members: Ref<Account>[]): Ref<Person>[] => {
-    const personsSet = new Set(
-      members
-        .map((it) => personByAccount.get(it as Ref<PersonAccount>))
-        .filter((it): it is Ref<Person> => it !== undefined)
-    )
-    return Array.from(personsSet)
-  }
-
-  const map: Map<string, DirectMessage[]> = new Map<string, DirectMessage[]>()
-  const toRemove: Ref<DirectMessage>[] = []
-
-  for (const direct of directs) {
-    const persons = accountsToPersons(direct.members)
-
-    if (persons.length === 0) {
-      toRemove.push(direct._id)
-      continue
-    }
-
-    const key = persons.sort().join(',')
-
-    if (!map.has(key)) {
-      map.set(key, [direct])
-    } else {
-      map.get(key)?.push(direct)
-    }
-  }
-
-  for (const [, directs] of map) {
-    if (directs.length === 1) continue
-    const toSave = directs.reduce((acc, it) => ((it.messages ?? 0) > (acc.messages ?? 0) ? it : acc), directs[0])
-    const rest = directs.filter((it) => it._id !== toSave._id)
-    toRemove.push(...rest.map((it) => it._id))
-  }
-
-  await client.deleteMany(DOMAIN_SPACE, { _id: { $in: toRemove } })
-  await client.deleteMany(DOMAIN_ACTIVITY, { attachedTo: { $in: toRemove } })
-  await client.deleteMany(DOMAIN_ACTIVITY, { objectId: { $in: toRemove } })
-  await client.deleteMany(DOMAIN_DOC_NOTIFY, { objectId: { $in: toRemove } })
-}
-
 export const chunterOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, chunterId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, chunterId, [
       {
         state: 'create-chat-messages',
+        mode: 'upgrade',
         func: convertCommentsToChatMessages
       },
       {
         state: 'remove-backlinks',
+        mode: 'upgrade',
         func: removeBacklinks
       },
       {
         state: 'migrate-chat-messages-space',
+        mode: 'upgrade',
         func: async (client) => {
           await migrateMessagesSpace(
             client,
@@ -312,6 +258,7 @@ export const chunterOperation: MigrateOperation = {
       },
       {
         state: 'migrate-thread-messages-space',
+        mode: 'upgrade',
         func: async (client) => {
           await migrateMessagesSpace(
             client,
@@ -323,18 +270,21 @@ export const chunterOperation: MigrateOperation = {
       },
       {
         state: 'remove-old-classes-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await removeOldClasses(client)
         }
       },
       {
         state: 'remove-wrong-activity-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await removeWrongActivity(client)
         }
       },
       {
         state: 'remove-chat-info-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_CHUNTER, { _class: 'chunter:class:ChatInfo' as Ref<Class<Doc>> })
           await client.deleteMany(DOMAIN_TX, { objectClass: 'chunter:class:ChatInfo' })
@@ -347,26 +297,19 @@ export const chunterOperation: MigrateOperation = {
         }
       },
       {
-        state: 'remove-duplicated-directs-v1',
-        func: async (client) => {
-          await removeDuplicatedDirects(client)
-        }
-      },
-      {
-        state: 'remove-direct-members-messages',
+        state: 'remove-direct-doc-update-messages',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
             _class: activity.class.DocUpdateMessage,
-            attachedToClass: chunter.class.DirectMessage,
-            action: 'update',
-            'attributeUpdates.attrKey': 'members'
+            attachedToClass: chunter.class.DirectMessage
           })
         }
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, chunterId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, chunterId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

@@ -22,6 +22,7 @@
   export let object: Doc
   export let _class: Ref<Class<Doc>>
   export let key: KeyedAttribute
+  export let readonly: boolean = false
 
   const client = getClient()
 
@@ -56,6 +57,7 @@
 
 <TagsEditor
   {key}
+  {readonly}
   bind:items
   targetClass={_class}
   on:open={(evt) => addRef(evt.detail)}

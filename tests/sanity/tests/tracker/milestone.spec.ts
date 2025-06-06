@@ -1,6 +1,5 @@
 import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { MilestonesPage } from '../model/tracker/milestones-page'
 import { NewMilestone } from '../model/tracker/types'
@@ -11,13 +10,11 @@ test.use({
 })
 
 test.describe('Tracker milestone tests', () => {
-  let leftSideMenuPage: LeftSideMenuPage
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let milestonesPage: MilestonesPage
   let milestonesDetailsPage: MilestonesDetailsPage
 
   test.beforeEach(async ({ page }) => {
-    leftSideMenuPage = new LeftSideMenuPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     milestonesPage = new MilestonesPage(page)
     milestonesDetailsPage = new MilestonesDetailsPage(page)
@@ -31,7 +28,6 @@ test.describe('Tracker milestone tests', () => {
       status: 'In progress',
       targetDateInDays: 'in 3 days'
     }
-    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openMilestonesForProject('Default')
     await milestonesPage.createNewMilestone(newMilestone)
     await milestonesPage.openMilestoneByName(newMilestone.name)
@@ -46,7 +42,6 @@ test.describe('Tracker milestone tests', () => {
       status: 'Completed',
       targetDateInDays: 'in 30 days'
     }
-    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openMilestonesForProject('Default')
     await milestonesPage.openMilestoneByName(editMilestone.name)
     await milestonesDetailsPage.editIssue(editMilestone)
@@ -64,7 +59,6 @@ test.describe('Tracker milestone tests', () => {
       description: 'Delete Milestone Description',
       status: 'Canceled'
     }
-    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openMilestonesForProject('Default')
     await milestonesPage.openMilestoneByName(deleteMilestone.name)
     await milestonesDetailsPage.checkIssue(deleteMilestone)

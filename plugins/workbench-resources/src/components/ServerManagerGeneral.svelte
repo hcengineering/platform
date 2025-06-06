@@ -1,10 +1,9 @@
 <script lang="ts">
-  import core, { RateLimiter, concatLink, metricsAggregate, type Metrics } from '@hcengineering/core'
+  import core, { RateLimiter, concatLink, metricsAggregate, platformNow, type Metrics } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
   import presentation, { getClient, isAdminUser, uiContext } from '@hcengineering/presentation'
-  import { Button, IconArrowLeft, IconArrowRight, fetchMetadataLocalStorage, ticker } from '@hcengineering/ui'
-  import EditBox from '@hcengineering/ui/src/components/EditBox.svelte'
+  import { Button, EditBox, IconArrowLeft, IconArrowRight, fetchMetadataLocalStorage, ticker } from '@hcengineering/ui'
   import MetricsInfo from './statistics/MetricsInfo.svelte'
 
   const _endpoint: string = fetchMetadataLocalStorage(login.metadata.LoginEndpoint) ?? ''
@@ -25,8 +24,6 @@
 
   let avgTime = 0
 
-  let rps = 0
-
   let active = 0
 
   let opss = 0
@@ -38,13 +35,20 @@
   let profiling = false
 
   async function fetchStats (time: number): Promise<void> {
-    await fetch(endpoint + `/api/v1/profiling?token=${token}`, {})
+    await fetch(endpoint + '/api/v1/profiling', {
+      method: 'GET',
+      keepalive: true,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token
+      }
+    })
       .then(async (json) => {
         data = await json.json()
         profiling = data?.profiling ?? false
       })
       .catch((err) => {
-        console.error(err)
+        console.error(err, time)
       })
   }
   let data: any
@@ -65,18 +69,13 @@
     avgTime = 0
     maxTime = 0
     let count = commandsToSend
-    let ops = 0
     avgTime = 0
     opss = 0
-    const int = setInterval(() => {
-      rps = ops
-      ops = 0
-    }, 1000)
     const rate = new RateLimiter(commandsToSendParallel)
     const client = getClient()
 
-    const doOp = async () => {
-      const st = Date.now()
+    const doOp = async (): Promise<void> => {
+      const st = platformNow()
       active++
       await client.createDoc(core.class.BenchmarkDoc, core.space.Configuration, {
         source: genData(dataSize),
@@ -86,7 +85,7 @@
         }
       })
       active--
-      const ed = Date.now()
+      const ed = platformNow()
 
       if (ed - st > maxTime) {
         maxTime = ed - st
@@ -96,7 +95,6 @@
       } else {
         avgTime = ed - st
       }
-      ops++
       opss++
       count--
     }
@@ -112,7 +110,6 @@
     }
     await rate.waitProcessing()
     running = false
-    clearInterval(int)
   }
 
   async function downloadProfile (): Promise<void> {
@@ -132,12 +129,12 @@
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    fetchStats(0)
+    await fetchStats(0)
   }
 
   let metrics: Metrics | undefined
 
-  function update (tick: number) {
+  function update (tick: number): void {
     metrics = metricsAggregate(uiContext.metrics)
   }
 
@@ -183,8 +180,8 @@
     </div>
     <div class="flex-col p-1">
       <div class="flex-row-center p-1">
-        Command benchmark {avgTime / opss}
-        {maxTime} - {active}
+        Command benchmark {Math.round((avgTime / opss) * 100) / 100}
+        {Math.round(maxTime * 100) / 100} - {active}
       </div>
       <div class="flex-row-center p-1">
         <div class="flex-row-center p-1">
@@ -213,9 +210,9 @@
       <div class="p-3">2.</div>
       <Button
         icon={IconArrowRight}
-        label={getEmbeddedLabel('Reboot server')}
+        label={getEmbeddedLabel('Reboot workspace')}
         on:click={() => {
-          void fetch(endpoint + `/api/v1/manage?token=${token}&operation=reboot`, {
+          void fetch(endpoint + `/api/v1/manage?token=${token}&operation=force-close`, {
             method: 'PUT'
           })
         }}
@@ -230,7 +227,7 @@
             void fetch(endpoint + `/api/v1/manage?token=${token}&operation=profile-start`, {
               method: 'PUT'
             })
-            fetchStats(0)
+            void fetchStats(0)
           }}
         />
       {:else}
@@ -241,7 +238,7 @@
 {/if}
 
 {#if metrics}
-  <MetricsInfo {metrics} />
+  <MetricsInfo {metrics} sortOrder={'avg'} />
 {/if}
 
 <style lang="scss">

@@ -18,16 +18,13 @@ import core, {
   MeasureMetricsContext,
   SortingOrder,
   TxFactory,
-  TxProcessor,
   toFindResult,
   toIdMap,
-  type AttachedDoc,
   type Class,
   type Doc,
   type Ref,
   type Tx,
   type TxCUD,
-  type TxCollectionCUD,
   type TxCreateDoc
 } from '@hcengineering/core'
 import {
@@ -35,7 +32,8 @@ import {
   type MigrateOperation,
   type MigrationClient,
   type MigrationIterator,
-  type MigrationUpgradeClient
+  type MigrationUpgradeClient,
+  type MigrateMode
 } from '@hcengineering/model'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import {
@@ -57,7 +55,7 @@ function getActivityControl (client: MigrationClient): ActivityControl {
     findAll: async (ctx, _class, query, options) =>
       toFindResult(await client.find(client.hierarchy.getDomain(_class), query, options)),
     storageAdapter: client.storageAdapter,
-    workspace: client.workspaceId
+    workspace: client.wsIds
   }
 }
 
@@ -85,12 +83,11 @@ async function generateDocUpdateMessageByTx (
     tx,
     control,
     undefined,
-    undefined,
     objectCache
   )
 
   for (const collectionTx of createCollectionCUDTxes) {
-    const createTx = collectionTx.tx as TxCreateDoc<DocUpdateMessage>
+    const createTx = collectionTx as TxCreateDoc<DocUpdateMessage>
     const domain = client.hierarchy.getDomain(createTx.objectClass)
 
     await client.create<DocUpdateMessage>(domain, {
@@ -152,15 +149,14 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
             continue
           }
 
-          if (v._class === core.class.TxCollectionCUD) {
+          if (v.attachedToClass !== undefined && v.attachedTo !== undefined) {
             try {
-              const vcol = v as TxCollectionCUD<Doc, AttachedDoc>
-              const _cl = client.hierarchy.getBaseClass(vcol.tx.objectClass)
+              const _cl = client.hierarchy.getBaseClass(v.attachedToClass)
               const s = byClass.get(_cl) ?? new Set()
-              s.add(vcol.tx.objectId)
+              s.add(v.attachedTo)
               byClass.set(_cl, s)
             } catch {
-              const objClass = (v as TxCollectionCUD<Doc, AttachedDoc>).tx.objectClass
+              const objClass = v.attachedToClass
               const has = classNotFound.has(objClass)
               if (!has) {
                 classNotFound.add(objClass)
@@ -198,8 +194,7 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
         }
         const transactions = allTransactions.get(d._id) ?? []
         for (const tx of transactions) {
-          const innerTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-          txIds.add(innerTx._id)
+          txIds.add(tx._id)
         }
       }
 
@@ -220,10 +215,8 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
         }
         const transactions = allTransactions.get(d._id) ?? []
         for (const tx of transactions) {
-          const innerTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-
-          if (!client.hierarchy.hasClass(innerTx.objectClass)) {
-            const objClass = innerTx.objectClass
+          if (!client.hierarchy.hasClass(tx.objectClass)) {
+            const objClass = tx.objectClass
             const has = classNotFound.has(objClass)
             if (!has) {
               classNotFound.add(objClass)
@@ -271,10 +264,11 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
 }
 
 export const activityServerOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, serverActivityId, [
+  async migrate (client: MigrationClient, mode: MigrateMode): Promise<void> {
+    await tryMigrate(mode, client, serverActivityId, [
       {
         state: 'doc-update-messages',
+        mode: 'upgrade',
         func: async (client) => {
           // Recreate activity to avoid duplicates
           await client.deleteMany(DOMAIN_ACTIVITY, {

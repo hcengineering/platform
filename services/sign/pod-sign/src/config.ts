@@ -8,11 +8,9 @@ export interface Config {
   AccountsUrl: string
   Cert: Buffer
   CertPwd: string
-  DbURL: string
   Port: number
   Secret: string
   ServiceID: string
-  SystemEmail: string
   BrandingPath: string
 }
 
@@ -23,11 +21,9 @@ const config: Config = (() => {
     AccountsUrl: process.env.ACCOUNTS_URL,
     Cert: process.env.CERTIFICATE_PATH !== undefined ? fs.readFileSync(process.env.CERTIFICATE_PATH) : undefined,
     CertPwd: process.env.CERTIFICATE_PASSWORD ?? '',
-    DbURL: process.env.MONGO_URL,
     Port: parseNumber(process.env.PORT) ?? 4006,
     Secret: process.env.SECRET,
     ServiceID: process.env.SERVICE_ID,
-    SystemEmail: process.env.SYSTEM_EMAIL ?? 'anticrm@hc.engineering',
     BrandingPath: process.env.BRANDING_PATH ?? ''
   }
 

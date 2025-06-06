@@ -13,17 +13,15 @@
 // limitations under the License.
 //
 import { type Asset, type IntlString } from '@hcengineering/platform'
-import { type Account, type Class, type Doc, type IdMap, type Ref, type UserStatus } from '@hcengineering/core'
+import { type Class, type Doc, type Ref, type UserStatus, type AccountUuid } from '@hcengineering/core'
 import { type DocNotifyContext } from '@hcengineering/notification'
 import { type AnySvelteComponent, type IconSize, type Action } from '@hcengineering/ui'
-import { type PersonAccount } from '@hcengineering/contact'
 
 export type ChatGroup = 'activity' | 'direct' | 'channels' | 'starred'
 
 export interface SortFnOptions {
   contexts: DocNotifyContext[]
-  userStatusByAccount: Map<Ref<Account>, UserStatus>
-  personAccountById: IdMap<PersonAccount>
+  userStatusByAccount: Map<AccountUuid, UserStatus>
 }
 
 export interface ChatNavGroupModel {
@@ -46,7 +44,6 @@ export interface ChatNavItemModel {
   icon: Asset | AnySvelteComponent | undefined
   iconSize?: IconSize
   iconProps: Record<string, any>
-  isSecondary: boolean
   withIconBackground: boolean
 }
 

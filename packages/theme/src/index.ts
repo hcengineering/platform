@@ -18,6 +18,7 @@ import '@hcengineering/platform-rig/profiles/ui/svelte'
 import { derived, writable } from 'svelte/store'
 
 export { default as Theme } from './Theme.svelte'
+export { default as InvertedTheme } from './InvertedTheme.svelte'
 
 /**
  * @public
@@ -79,4 +80,4 @@ export function initThemeStore (): void {
   )
 }
 
-export const languageStore = derived(themeStore, ($theme) => $theme.language)
+export const languageStore = derived(themeStore, ($theme) => $theme?.language ?? '')

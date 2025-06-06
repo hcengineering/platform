@@ -4,7 +4,7 @@
 
 import { type Doc } from '@hcengineering/core'
 import { type IntlString, type Metadata, type Plugin, plugin, type Asset, type Resource } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 export const printId = 'print' as Plugin
 

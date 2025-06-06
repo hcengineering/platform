@@ -14,9 +14,17 @@
 //
 
 import contact from '@hcengineering/contact'
-import { type Space, TxOperations, type Ref } from '@hcengineering/core'
+import { TxOperations, type Ref, type Space } from '@hcengineering/core'
 import drive from '@hcengineering/drive'
-import { RoomAccess, RoomType, createDefaultRooms, isOffice, loveId, type Floor } from '@hcengineering/love'
+import {
+  MeetingStatus,
+  RoomAccess,
+  RoomType,
+  createDefaultRooms,
+  isOffice,
+  loveId,
+  type Floor
+} from '@hcengineering/love'
 import {
   createDefaultSpace,
   migrateSpace,
@@ -27,8 +35,8 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
+import { DOMAIN_LOVE, DOMAIN_MEETING_MINUTES } from '.'
 import love from './plugin'
-import { DOMAIN_LOVE } from '.'
 
 async function createDefaultFloor (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(love.class.Floor, {
@@ -56,7 +64,7 @@ async function createRooms (client: MigrationUpgradeClient): Promise<void> {
   const data = createDefaultRooms(employees.map((p) => p._id))
   for (const room of data) {
     const _class = isOffice(room) ? love.class.Office : love.class.Room
-    await tx.createDoc(_class, core.space.Workspace, room)
+    await tx.createDoc(_class, core.space.Workspace, room, room._id)
   }
 }
 
@@ -77,25 +85,100 @@ async function createReception (client: MigrationUpgradeClient): Promise<void> {
       width: 100,
       height: 0,
       x: 0,
-      y: 0
+      y: 0,
+      language: 'en',
+      startWithTranscription: false,
+      startWithRecording: false,
+      description: null
     },
     love.ids.Reception
   )
 }
 
 export const loveOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, loveId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, loveId, [
       {
         state: 'removeDeprecatedSpace',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'love:space:Rooms' as Ref<Space>, core.space.Workspace, [DOMAIN_LOVE])
+        }
+      },
+      {
+        state: 'setup-defaults-settings-v2',
+        mode: 'upgrade',
+        func: async (client: MigrationClient) => {
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Room, language: { $exists: false } },
+            { language: 'en' }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Office, language: { $exists: false } },
+            { language: 'en' }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Room, type: RoomType.Video, startWithTranscription: { $exists: false } },
+            { startWithTranscription: true }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Room, startWithTranscription: { $exists: false } },
+            { startWithTranscription: false }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Office, startWithTranscription: { $exists: false } },
+            { startWithTranscription: false }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Room, type: RoomType.Video, startWithRecording: { $exists: false } },
+            { startWithRecording: true }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Room, startWithRecording: { $exists: false } },
+            { startWithRecording: false }
+          )
+          await client.update(
+            DOMAIN_LOVE,
+            { _class: love.class.Office, startWithRecording: { $exists: false } },
+            { startWithRecording: false }
+          )
+        }
+      },
+      {
+        state: 'move-meeting-minutes',
+        mode: 'upgrade',
+        func: async (client) => {
+          await client.move(DOMAIN_LOVE, { _class: love.class.MeetingMinutes }, DOMAIN_MEETING_MINUTES)
+        }
+      },
+      {
+        state: 'default-meeting-minutes-status',
+        mode: 'upgrade',
+        func: async (client) => {
+          await client.update(
+            DOMAIN_MEETING_MINUTES,
+            { status: { $exists: false } },
+            { status: MeetingStatus.Finished }
+          )
+        }
+      },
+      {
+        state: 'meeting-minutes-reindex-v1',
+        func: async (client) => {
+          await client.reindex(DOMAIN_MEETING_MINUTES, [love.class.MeetingMinutes])
         }
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, loveId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, loveId, [
       {
         state: 'initial-defaults',
         func: async (client) => {

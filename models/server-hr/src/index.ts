@@ -44,27 +44,24 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverHr.trigger.OnRequestCreate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': hr.class.Request,
-      'tx._class': core.class.TxCreateDoc
+      _class: core.class.TxCreateDoc,
+      objectClass: hr.class.Request
     }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverHr.trigger.OnRequestUpdate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': hr.class.Request,
-      'tx._class': core.class.TxUpdateDoc
+      _class: core.class.TxUpdateDoc,
+      objectClass: hr.class.Request
     }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverHr.trigger.OnRequestRemove,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': hr.class.Request,
-      'tx._class': core.class.TxRemoveDoc
+      _class: core.class.TxRemoveDoc,
+      objectClass: hr.class.Request
     }
   })
 
@@ -77,11 +74,19 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverHr.trigger.OnEmployeeDeactivate,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxMixin,
+      mixin: contact.mixin.Employee
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverHr.trigger.OnPublicHolidayCreate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': hr.class.PublicHoliday,
-      'tx._class': core.class.TxCreateDoc
+      _class: core.class.TxCreateDoc,
+      objectClass: hr.class.PublicHoliday
     }
   })
 

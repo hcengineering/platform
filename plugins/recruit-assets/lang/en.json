@@ -98,7 +98,6 @@
     "HasNoActiveApplicant": "No Active",
     "NoneApplications": "None",
     "VacancyList": "Vacancies",
-    "MatchVacancy": "Match to vacancy",
     "VacancyMatching": "Match Talents to vacancy",
     "Score": "Score",
     "Match": "Match",
@@ -122,7 +121,8 @@
     "HideDoneState": "Hide complete applications",
     "HideArchivedVacancies": "Hide archived Vacancies",
     "HideApplicantsFromArchivedVacancies": "Hide from archived Vacancies",
-    "CreateNewSkills": "Create new skills if existing not found"
+    "CreateNewSkills": "Create new skills if existing not found",
+    "SwapFirstAndLastNames": "Swap first and last names"
   },
   "status": {
     "ApplicationExists": "Application already exists",

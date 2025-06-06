@@ -20,13 +20,13 @@
     AttachedData,
     fillDefaults,
     generateId,
-    makeCollaborativeDoc,
+    makeCollabId,
     Ref,
     TxOperations,
     WithLookup
   } from '@hcengineering/core'
-  import { Card, getClient, InlineAttributeBar, updateMarkup } from '@hcengineering/presentation'
-  import { EmptyMarkup } from '@hcengineering/text'
+  import { Card, createMarkup, getClient, InlineAttributeBar } from '@hcengineering/presentation'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -46,7 +46,6 @@
 
   const object: Organization = {
     name: '',
-    description: makeCollaborativeDoc(id, 'description'),
     attachments: 0
   } as unknown as Organization
 
@@ -59,8 +58,11 @@
   fillDefaults(hierarchy, object, contact.class.Organization)
 
   async function createOrganization (): Promise<void> {
+    if (!isEmptyMarkup(description)) {
+      const target = makeCollabId(contact.class.Organization, id, 'description')
+      object.description = await createMarkup(target, description)
+    }
     const op = client.apply()
-    await updateMarkup(object.description, { description })
     await op.createDoc(contact.class.Organization, contact.space.Contacts, object, id)
     await descriptionBox.createAttachments(id, op)
 

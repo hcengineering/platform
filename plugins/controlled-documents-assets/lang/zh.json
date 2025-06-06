@@ -21,12 +21,13 @@
     "Major": "主要",
     "Minor": "次要",
     "Patch": "补丁",
-    "DocumentApprovals": "审查和批准",
-    "ChangeOwner": "更改文档所有者",
-    "ChangeOwnerHintBeginning": "转移所有权",
+    "ValidationWorkflow": "验证工作流程",
+    "Creator": "创建者",
+    "ChangeOwner": "更改文档作者",
+    "ChangeOwnerHintBeginning": "转移文档的作者身份",
     "ChangeOwnerHintEnd": "给其他人。",
     "ChangeOwnerWarning": "此操作后您将无法编辑此文档。",
-    "SelectOwner": "选择新所有者",
+    "SelectOwner": "选择新的作者",
     "CreateDocument": "创建新文档",
     "CreateTemplate": "创建新模板",
     "Documents": "文档",
@@ -253,6 +254,7 @@
     "Name": "名称",
     "DraftRevision": "草稿修订",
     "CreateNewDraft": "创建新版本草稿",
+    "RestoreDraft": "恢复草稿",
     "ChangeSeverity": "更改严重性",
     "Reference": "参考",
     "History": "历史",
@@ -292,7 +294,28 @@
     "DeleteDocumentCategoryPermission": "删除文档类别",
     "DeleteDocumentCategoryDescription": "授予用户删除文档类别的权限",
     "ConfigLabel": "受控文档",
-    "ConfigDescription": "用于管理受控文档的扩展"
+    "ConfigDescription": "用于管理受控文档的扩展",
+
+    "Transfer": "转让",
+    "TransferWarning": "执行此操作后，某些团队成员可能会失去查看或编辑此文档的能力",
+    "TransferDocuments": "移交受控文件",
+    "TransferDocumentsHint": "要转移到所选空间的文件：",
+
+    "CreateFolder": "创建新文件夹",
+    "RenameFolder": "重命名文件夹",
+    "CreateChildFolder": "创建子文件夹",
+    
+    "Obsolete": "已过时",
+    "MakeDocumentObsolete": "标记为过时",
+    "MakeDocumentObsoleteDialog": "标记 {count, plural, one {文档为过时} other {文档为过时}}",
+    "MakeDocumentObsoleteConfirm": "您确定要将以下文档标记为过时吗：{titles}？",
+
+    "LatestVersionHint": "最新",
+
+    "CannotDeleteFolder": "无法删除文件夹",
+    "CannotDeleteFolderHint": "请在删除文件夹之前将所有子文档移动到其他位置。",
+
+    "AllDocumentSpaces": "所有文档空间"
   },
   "controlledDocStates": {
     "Empty": "",

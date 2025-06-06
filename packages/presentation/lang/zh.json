@@ -29,11 +29,21 @@
     "MakePrivate": "设为私有",
     "MakePrivateDescription": "只有成员可以查看",
     "Created": "已创建",
+    "Selected": "已选",
     "NoResults": "没有可显示结果",
     "Next": "下一步",
     "FailedToPreview": "预览失败",
     "ContentType": "内容类型",
-    "ContentTypeNotSupported": "此內容類型無法預覽"
+    "ContentTypeNotSupported": "此內容類型無法預覽",
+    "StartDrawing": "随意涂鸦",
+    "DrawingHistory": "涂鸦的历史",
+    "ColorAdd": "添加颜色预设",
+    "ColorRemove": "删除颜色预设",
+    "ColorReset": "重置颜色预设",
+    "Copy": "复制",
+    "CopyLink": "复制链接",
+    "AccessDenied": "对象不存在或您无权访问。",
+    "UnableToFollowMention": "无法打开提及的对象"
   },
   "status": {
     "FileTooLarge": "文件太大"

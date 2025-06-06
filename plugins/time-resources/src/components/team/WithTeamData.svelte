@@ -15,7 +15,7 @@
 <script lang="ts">
   import calendar, { Calendar, Event } from '@hcengineering/calendar'
   import { visibleCalendarStore, hidePrivateEvents, calendarByIdStore } from '@hcengineering/calendar-resources'
-  import contact, { Person, PersonAccount } from '@hcengineering/contact'
+  import { Person } from '@hcengineering/contact'
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import task, { Project } from '@hcengineering/task'
@@ -25,7 +25,6 @@
   export let fromDate: number
   export let toDate: number
   export let project: Project | undefined
-  export let personAccounts: PersonAccount[] = []
   export let slots: WorkSlot[] = []
   export let events: Event[] = []
   export let todos: IdMap<ToDo> = new Map()
@@ -45,15 +44,6 @@
   let rawReq: Event[] = []
 
   let calendarIds: Ref<Calendar>[] = []
-
-  const accountsQuery = createQuery()
-  $: accountsQuery.query(
-    contact.class.PersonAccount,
-    { _id: { $in: project?.members.map((it) => it as Ref<PersonAccount>) ?? [] } },
-    (res) => {
-      persons = res.flatMap((it) => it.person).filter((it, idx, arr) => arr.indexOf(it) === idx)
-    }
-  )
 
   $: query.query(
     calendar.class.Event,
@@ -97,9 +87,4 @@
   )
 
   $: calendarIds = $visibleCalendarStore.map((p) => p._id)
-
-  const personMapQuery = createQuery()
-  $: personMapQuery.query(contact.class.PersonAccount, { person: { $in: persons } }, (res) => {
-    personAccounts = res
-  })
 </script>

@@ -14,8 +14,10 @@
 -->
 <script lang="ts">
   import { generateId, Ref, WithLookup } from '@hcengineering/core'
-  import { AttributeBarEditor, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
+  import task, { Project } from '@hcengineering/task'
+  import { TaskKindSelector } from '@hcengineering/task-resources'
   import type { IssueTemplate } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources'
@@ -26,6 +28,7 @@
   import MilestoneEditor from '../milestones/MilestoneEditor.svelte'
 
   export let issue: WithLookup<IssueTemplate>
+  export let labelIds: TagElement[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -37,7 +40,7 @@
     keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
   }
 
-  $: updateKeys(['title', 'description', 'priority', 'number', 'assignee', 'component', 'milestone'])
+  $: updateKeys(['title', 'description', 'priority', 'number', 'assignee', 'component', 'milestone', 'kind'])
 
   const key: KeyedAttribute = {
     key: 'labels',
@@ -46,29 +49,51 @@
 
   let labelRefs: TagReference[] = []
 
-  $: labelIds = issue?.$lookup?.labels ?? []
-
   $: if (labelIds !== undefined) {
     labelRefs = (Array.isArray(labelIds) ? labelIds : [labelIds]).map(
       (it) => ({ ...(it as unknown as TagReference), _id: generateId(), tag: it._id }) as unknown as TagReference
     )
   }
 
-  const onTagDelete = async (evt: CustomEvent<Ref<TagReference>>): Promise<void> => {
-    const itm = labelRefs.find((it) => it._id === evt.detail)
+  const onTagDelete = async (evt: CustomEvent<TagElement>): Promise<void> => {
+    const itm = labelRefs.find((it) => it.tag === evt.detail._id)
     if (itm !== undefined) {
       await client.update(issue, {
         $pull: { labels: itm.tag as unknown as Ref<TagElement> }
       })
     }
   }
+
+  let currentProject: Project | undefined
+  const spaceQuery = createQuery()
+  spaceQuery.query(tracker.class.Project, { _id: issue.space }, (res) => {
+    currentProject = res[0]
+  })
 </script>
 
 <div class="popupPanel-body__aside-grid">
   <span class="labelOnPanel">
+    <Label label={task.string.TaskType} />
+  </span>
+  <TaskKindSelector
+    projectType={currentProject?.type}
+    value={issue.kind}
+    baseClass={tracker.class.Issue}
+    justify={'left'}
+    width={'100%'}
+    size={'medium'}
+    kind={'link'}
+    showAlways
+    on:change={async (evt) => {
+      if (evt.detail !== undefined) {
+        await client.update(issue, { kind: evt.detail })
+      }
+    }}
+  />
+  <span class="labelOnPanel">
     <Label label={tracker.string.Priority} />
   </span>
-  <PriorityEditor value={issue} size={'medium'} shouldShowLabel />
+  <PriorityEditor value={issue} size={'medium'} justify={'left'} width={'100%'} shouldShowLabel />
 
   <span class="labelOnPanel">
     <Label label={tracker.string.Assignee} />

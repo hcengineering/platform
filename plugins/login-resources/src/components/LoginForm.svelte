@@ -14,15 +14,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type BottomAction, LoginMethods } from '../index'
+  import { type IntlString, Severity, Status } from '@hcengineering/platform'
+
+  import { type BottomAction, doLoginAsGuest, doLoginNavigate, LoginMethods } from '../index'
   import LoginPasswordForm from './LoginPasswordForm.svelte'
   import LoginOtpForm from './LoginOtpForm.svelte'
   import BottomActionComponent from './BottomAction.svelte'
   import login from '../plugin'
+  import { LoginInfo } from '@hcengineering/account-client'
 
   export let navigateUrl: string | undefined = undefined
+  export let signUpDisabled = false
+  export let useOTP = true
+  export let email: string | undefined = undefined
+  export let caption: IntlString | undefined = undefined
+  export let subtitle: string | undefined = undefined
+  export let onLogin: ((loginInfo: LoginInfo | null, status: Status) => void | Promise<void>) | undefined = undefined
 
-  let method: LoginMethods = LoginMethods.Otp
+  let method: LoginMethods = useOTP ? LoginMethods.Otp : LoginMethods.Password
 
   function changeMethod (event: CustomEvent<LoginMethods>): void {
     method = event.detail
@@ -41,22 +50,50 @@
       method = LoginMethods.Otp
     }
   }
+
+  async function guestLogin () {
+    let status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
+    const [loginStatus, result] = await doLoginAsGuest()
+    status = loginStatus
+
+    if (onLogin !== undefined) {
+      void onLogin(result, status)
+    } else {
+      await doLoginNavigate(
+        result,
+        (st) => {
+          status = st
+        },
+        navigateUrl
+      )
+    }
+  }
+
+  const loginAsGuest: BottomAction = {
+    i18n: login.string.LoginAsGuest,
+    func: () => {
+      void guestLogin()
+    }
+  }
 </script>
 
 {#if method === LoginMethods.Otp}
-  <LoginOtpForm {navigateUrl} on:change={changeMethod} />
-  <div class="action">
-    <BottomActionComponent action={loginWithPasswordAction} />
-  </div>
+  <LoginOtpForm {navigateUrl} {signUpDisabled} {email} {caption} {subtitle} {onLogin} on:change={changeMethod} />
 {:else}
-  <LoginPasswordForm {navigateUrl} on:change={changeMethod} />
-  <div class="action">
-    <BottomActionComponent action={loginWithCodeAction} />
-  </div>
+  <LoginPasswordForm {navigateUrl} {signUpDisabled} {email} {caption} {subtitle} {onLogin} on:change={changeMethod} />
 {/if}
+<div class="actions">
+  <BottomActionComponent action={method === LoginMethods.Otp ? loginWithPasswordAction : loginWithCodeAction} />
+  <div class="login-as-guest">
+    <BottomActionComponent action={loginAsGuest} />
+  </div>
+</div>
 
 <style lang="scss">
-  .action {
+  .actions {
     margin-left: 5rem;
+  }
+  .login-as-guest {
+    margin-top: 1rem;
   }
 </style>

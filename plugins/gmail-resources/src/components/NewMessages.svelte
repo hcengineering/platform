@@ -24,7 +24,8 @@
   import setting, { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
   import { StyledTextEditor } from '@hcengineering/text-editor-resources'
-  import { EmptyMarkup, isEmptyMarkup, markupToHTML } from '@hcengineering/text'
+  import { EmptyMarkup, isEmptyMarkup, markupToJSON } from '@hcengineering/text'
+  import { markupToHtml } from '@hcengineering/text-html'
   import {
     Button,
     EditBox,
@@ -69,6 +70,8 @@
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
   const attachmentParentId = generateId()
+  const account = getCurrentAccount()
+  const mySocialIds = account.socialIds
 
   let subject: string = ''
   let content: Markup = EmptyMarkup
@@ -82,7 +85,7 @@
       const target = contacts.find((p) => p._id === channel.attachedTo)
       if (target === undefined) continue
       templateProvider.set(contact.class.Contact, target)
-      const htmlContent = markupToHTML(content)
+      const htmlContent = markupToHtml(markupToJSON(content))
       const message = await templateProvider.fillTemplate(htmlContent)
       const id = await client.createDoc(plugin.class.NewMessage, core.space.Workspace, {
         subject,
@@ -96,7 +99,7 @@
           .filter((m) => m.length)
       })
       Analytics.handleEvent(GmailEvents.SentEmail, { to: channel.value })
-      await inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
+      await inboxClient.forceReadDoc(channel._id, channel._class)
       for (const attachment of attachments) {
         await client.addCollection(
           attachmentP.class.Attachment,
@@ -160,7 +163,6 @@
         }
       )
     } catch (err: any) {
-      Analytics.handleError(err)
       setPlatformStatus(unknownError(err))
     }
   }
@@ -199,7 +201,6 @@
   }
 
   const settingsQuery = createQuery()
-  const me = getCurrentAccount()._id
 
   let templateProvider: TemplateDataProvider | undefined
   let integrations: Integration[] = []
@@ -217,8 +218,13 @@
   $: templateProvider && !Array.isArray(value) && templateProvider.set(contact.class.Contact, value)
 
   settingsQuery.query(setting.class.Integration, { type: plugin.integrationType.Gmail, disabled: false }, (res) => {
-    integrations = res.filter((p) => p.createdBy === me || (p.shared?.includes(me) && p.value !== ''))
-    selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
+    integrations = res.filter(
+      (p) =>
+        (p.createdBy !== undefined && mySocialIds.includes(p.createdBy)) ||
+        ((p.shared ?? []).includes(account.uuid) && p.value !== '')
+    )
+    selectedIntegration =
+      integrations.find((p) => p.createdBy !== undefined && mySocialIds.includes(p.createdBy)) ?? integrations[0]
   })
 
   function onTemplate (e: CustomEvent<string>): void {

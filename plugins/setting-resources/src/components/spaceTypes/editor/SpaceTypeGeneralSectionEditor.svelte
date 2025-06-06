@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import core, { Account, reduceCalls, Ref, type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
+  import core, { AccountUuid, reduceCalls, type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import {
     ButtonIcon,
@@ -47,10 +47,12 @@
       core.class.TypedSpace,
       { type: type._id },
       (res) => {
-        spacesCount = res.length
+        spacesCount = res.total
         loading = false
       },
       {
+        total: true,
+        limit: 1,
         projection: { _id: 1 }
       }
     )
@@ -68,13 +70,13 @@
     await client.update(type, { [field]: value })
   }
 
-  const changeMembers = reduceCalls(async function changeMembers (members: Ref<Account>[]): Promise<void> {
+  const changeMembers = reduceCalls(async function changeMembers (members: AccountUuid[]): Promise<void> {
     if (disabled || type === undefined) {
       return
     }
 
-    const push = new Set<Ref<Account>>(members)
-    const pull = new Set<Ref<Account>>()
+    const push = new Set<AccountUuid>(members)
+    const pull = new Set<AccountUuid>()
     for (const member of (type.members ?? []).filter((it, idx, arr) => arr.indexOf(it) === idx)) {
       if (!push.has(member)) {
         pull.add(member)
@@ -115,10 +117,11 @@
 </script>
 
 {#if descriptor !== undefined}
+  {@const dIcon = descriptor.icon === '' ? settingRes.icon.Setting : descriptor.icon}
   <div class="hulyComponent-content__column-group">
     <div class="hulyComponent-content__header">
       <div class="flex gap-1">
-        <ButtonIcon icon={descriptor.icon} size={'large'} kind={'secondary'} dataId={'btnSelectIcon'} />
+        <ButtonIcon icon={dIcon} size={'large'} kind={'secondary'} dataId={'btnSelectIcon'} />
         <ModernEditbox
           kind="ghost"
           size="large"

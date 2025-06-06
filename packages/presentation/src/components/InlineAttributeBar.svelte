@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Class, Data, Doc, Ref } from '@hcengineering/core'
+  import { Class, Data, Doc, Hierarchy, Ref } from '@hcengineering/core'
   import { InlineAttributeBarEditor } from '..'
   import { KeyedAttribute } from '../attributes'
-  import { getClient, getFiltredKeys, isCollectionAttr } from '../utils'
+  import { getClient, getFiltredKeys, isCollectionAttr, isCollabAttr, isMarkupAttr } from '../utils'
 
   export let object: Doc | Data<Doc>
   export let _class: Ref<Class<Doc>>
@@ -15,10 +15,15 @@
 
   const client = getClient()
 
+  function isInlineAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
+    return !isCollectionAttr(hierarchy, key) && !isCollabAttr(hierarchy, key) && !isMarkupAttr(hierarchy, key)
+  }
+
   function updateKeys (_class: Ref<Class<Doc>>, ignoreKeys: string[], to: Ref<Class<Doc>> | undefined): void {
-    const filtredKeys = getFiltredKeys(client.getHierarchy(), _class, ignoreKeys, to)
+    const hierarchy = client.getHierarchy()
+    const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys, to)
     keys = filtredKeys.filter(
-      (key) => (extraKeys.includes(key.key) || !isCollectionAttr(client.getHierarchy(), key)) && !key.attr.readonly
+      (key) => (extraKeys.includes(key.key) || isInlineAttr(hierarchy, key)) && key.attr.readonly !== true
     )
   }
 

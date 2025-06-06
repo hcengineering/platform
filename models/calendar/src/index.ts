@@ -22,9 +22,11 @@ import {
   type ReccuringEvent,
   type ReccuringInstance,
   type RecurringRule,
+  type Schedule,
+  type ScheduleAvailability,
   type Visibility
 } from '@hcengineering/calendar'
-import { type Contact } from '@hcengineering/contact'
+import { type Contact, type Employee } from '@hcengineering/contact'
 import {
   DateRangeMode,
   IndexKind,
@@ -32,7 +34,8 @@ import {
   type Domain,
   type Markup,
   type Ref,
-  type Timestamp
+  type Timestamp,
+  type PersonId
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -68,6 +71,7 @@ export { calendarId } from '@hcengineering/calendar'
 export { calendarOperation } from './migration'
 
 export const DOMAIN_CALENDAR = 'calendar' as Domain
+export const DOMAIN_EVENT = 'event' as Domain
 
 @Model(calendar.class.Calendar, core.class.Doc, DOMAIN_CALENDAR)
 @UX(calendar.string.Calendar, calendar.icon.Calendar)
@@ -85,7 +89,7 @@ export class TExternalCalendar extends TCalendar implements ExternalCalendar {
   externalUser!: string
 }
 
-@Model(calendar.class.Event, core.class.AttachedDoc, DOMAIN_CALENDAR)
+@Model(calendar.class.Event, core.class.AttachedDoc, DOMAIN_EVENT)
 @UX(calendar.string.Event, calendar.icon.Calendar)
 export class TEvent extends TAttachedDoc implements Event {
   declare space: Ref<SystemSpace>
@@ -134,6 +138,8 @@ export class TEvent extends TAttachedDoc implements Event {
   visibility?: Visibility
 
   timeZone?: string
+
+  user!: PersonId
 }
 
 @Model(calendar.class.ReccuringEvent, calendar.class.Event)
@@ -154,6 +160,18 @@ export class TReccuringInstance extends TReccuringEvent implements ReccuringInst
   virtual?: boolean
 }
 
+@Model(calendar.class.Schedule, core.class.Doc, DOMAIN_CALENDAR)
+@UX(calendar.string.Schedule, calendar.icon.Calendar)
+export class TSchedule extends TDoc implements Schedule {
+  owner!: Ref<Employee>
+  title!: string
+  description?: string
+  meetingDuration!: number
+  meetingInterval!: number
+  availability!: ScheduleAvailability
+  timeZone!: string
+}
+
 @Mixin(calendar.mixin.CalendarEventPresenter, core.class.Class)
 export class TCalendarEventPresenter extends TClass implements CalendarEventPresenter {
   presenter!: AnyComponent
@@ -166,6 +184,7 @@ export function createModel (builder: Builder): void {
     TReccuringEvent,
     TReccuringInstance,
     TEvent,
+    TSchedule,
     TCalendarEventPresenter
   )
 
@@ -338,6 +357,10 @@ export function createModel (builder: Builder): void {
       { createdOn: -1 },
       { state: 1 }
     ]
+  })
+
+  builder.mixin(calendar.class.Event, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: calendar.function.EventTitleProvider
   })
 }
 

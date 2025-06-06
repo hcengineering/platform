@@ -1,0 +1,18 @@
+{
+  "string": {
+    "BitrixTokenUrl": "Bitrix24 Token URL",
+    "Bitrix": "Bitrix",
+    "BitrixDesc": "Integrace s Bitrix 24",
+    "Settings": "Nastavit",
+    "NotAllowed": "Není povoleno bez administrátorských práv",
+    "BitrixEntityType": "Mapování entit",
+    "FieldMapping": "Mapování polí",
+    "AddField": "Přidat mapování",
+    "Attribute": "Atribut",
+    "MapField": "Namapovat...",
+    "BitrixImport": "Synchronizovat s Bitrix",
+    "AddMapping": "Přidat mapování entit",
+    "ConfigLabel": "Bitrix24",
+    "ConfigDescription": "Rozšíření pro integraci s Bitrix 24"
+  }
+}

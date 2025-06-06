@@ -12,26 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import core, {
-  AccountRole,
   MeasureMetricsContext,
   RateLimiter,
   TxOperations,
   concatLink,
   generateId,
-  getWorkspaceId,
-  makeCollaborativeDoc,
   metricsToString,
   newMetrics,
-  systemAccountEmail,
-  type Account,
+  systemAccountUuid,
+  buildSocialIdString,
+  type PersonId,
   type BackupClient,
   type BenchmarkDoc,
   type Client,
   type Metrics,
   type Ref,
-  type WorkspaceId
+  type WorkspaceUuid,
+  SocialIdType,
+  type PersonUuid,
+  platformNow,
+  platformNowDiff,
+  type AccountUuid
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
@@ -43,15 +46,15 @@ import os from 'os'
 import { Worker, isMainThread, parentPort } from 'worker_threads'
 import { CSVWriter } from './csv'
 
-import { AvatarType, type PersonAccount } from '@hcengineering/contact'
+import { AvatarType, getPersonBySocialKey } from '@hcengineering/contact'
 import contact from '@hcengineering/model-contact'
 import recruit from '@hcengineering/model-recruit'
 import { type Vacancy } from '@hcengineering/recruit'
 import { WebSocket } from 'ws'
 
 interface StartMessage {
-  email: string
-  workspaceId: WorkspaceId
+  account: PersonUuid
+  workspaceId: WorkspaceUuid
   transactorUrl: string
   id: number
   idd: number
@@ -88,8 +91,8 @@ interface PendingMsg extends Msg {
 }
 
 export async function benchmark (
-  workspaceId: WorkspaceId[],
-  users: Map<string, string[]>,
+  workspaceId: WorkspaceUuid[],
+  users: Map<WorkspaceUuid, PersonUuid[]>,
   accountsUrl: string,
   cmd: {
     from: number
@@ -136,6 +139,9 @@ export async function benchmark (
         }
       }
     })
+    worker.on('error', (err) => {
+      console.error('worker error', err)
+    })
   })
 
   const m = newMetrics()
@@ -148,6 +154,9 @@ export async function benchmark (
     moment: number
     mem: number
     memTotal: number
+    memRSS: number
+    memFree: number
+    memArrays: number
     cpu: number
     requestTime: number
     operations: number
@@ -159,6 +168,9 @@ export async function benchmark (
     moment: 'Moment Time',
     mem: 'Mem',
     memTotal: 'Mem total',
+    memRSS: 'Mem RSS',
+    memFree: 'Mem Free',
+    memArrays: 'Mem Arrays',
     cpu: 'CPU',
     requestTime: 'Request time',
     operations: 'OPS',
@@ -171,6 +183,9 @@ export async function benchmark (
   let cpu: number = 0
   let memUsed: number = 0
   let memTotal: number = 0
+  let memRSS: number = 0
+  const memFree: number = 0
+  let memArrays: number = 0
   let elapsed = 0
   let requestTime: number = 0
   let operations = 0
@@ -178,11 +193,11 @@ export async function benchmark (
   let transfer: number = 0
   let oldTransfer: number = 0
 
-  const token = generateToken(systemAccountEmail, workspaceId[0])
+  const token = generateToken(systemAccountUuid, workspaceId[0])
 
   setMetadata(serverClientPlugin.metadata.Endpoint, accountsUrl)
   const endpoint = await getTransactorEndpoint(token, 'external')
-  console.log('monitor endpoint', endpoint, 'workspace', workspaceId[0].name)
+  console.log('monitor endpoint', endpoint, 'workspace', workspaceId[0])
   const monitorConnection = isMainThread
     ? ((await ctx.with(
         'connect',
@@ -205,6 +220,7 @@ export async function benchmark (
         }
       }
       if (!found) {
+        console.log('no measurements found for path', path, p)
         return null
       }
     }
@@ -212,47 +228,53 @@ export async function benchmark (
   }
 
   let timer: any
+  let p: Promise<void> | undefined
   if (isMainThread && monitorConnection !== undefined) {
     timer = setInterval(() => {
-      const st = Date.now()
+      const st = platformNow()
 
       try {
-        const fetchUrl = endpoint.replace('ws:/', 'http:/') + '/api/v1/statistics?token=' + token
-        void fetch(fetchUrl)
-          .then((res) => {
-            void res
-              .json()
-              .then((json) => {
-                memUsed = json.statistics.memoryUsed
-                memTotal = json.statistics.memoryTotal
-                cpu = json.statistics.cpuUsage
-                // operations = 0
-                requestTime = 0
-                // transfer = 0
-                const r = extract(
-                  json.metrics as Metrics,
-                  '🧲 session',
-                  'client',
-                  'handleRequest',
-                  'process',
-                  'find-all'
-                )
-                operations = (r?.operations ?? 0) - oldOperations
-                oldOperations = r?.operations ?? 0
-
-                requestTime = (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
-
-                const tr = extract(json.metrics as Metrics, '🧲 session', '#send-data')
-                transfer = (tr?.value ?? 0) - oldTransfer
-                oldTransfer = tr?.value ?? 0
-              })
-              .catch((err) => {
-                console.log(err)
-              })
+        const fetchUrl = endpoint.replace('ws:/', 'http:/') + '/api/v1/statistics'
+        if (p === undefined) {
+          p = fetch(fetchUrl, {
+            headers: {
+              Authorization: 'Bearer ' + token
+            },
+            keepalive: true
           })
-          .catch((err) => {
-            console.log(err)
-          })
+            .then((res) => {
+              void res
+                .json()
+                .then((json) => {
+                  memUsed = json.statistics.memoryUsed
+                  memTotal = json.statistics.memoryTotal
+                  memRSS = json.statistics.memoryRSS
+                  memArrays = json.statistics.memoryArrayBuffers
+                  cpu = json.statistics.cpuUsage
+                  // operations = 0
+                  requestTime = 0
+                  // transfer = 0
+                  const r = extract(json.metrics as Metrics, '🧲 session', 'client', 'process', 'find-all')
+                  operations = (r?.operations ?? 0) - oldOperations
+                  oldOperations = r?.operations ?? 0
+
+                  requestTime = (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
+
+                  const tr = extract(json.metrics as Metrics, '🧲 session', 'client', '#send-data')
+                  transfer = (tr?.value ?? 0) - oldTransfer
+                  oldTransfer = tr?.value ?? 0
+                  p = undefined
+                })
+                .catch((err) => {
+                  console.log(err)
+                  p = undefined
+                })
+            })
+            .catch((err) => {
+              console.log(err)
+              p = undefined
+            })
+        }
       } catch (err) {
         console.log(err)
       }
@@ -269,7 +291,7 @@ export async function benchmark (
               }
             })
             .then((res) => {
-              const cur = Date.now() - st
+              const cur = platformNow() - st
               opTime += cur
               moment = cur
               ops++
@@ -286,7 +308,10 @@ export async function benchmark (
           moment,
           average: Math.round(opTime / (ops + 1)),
           mem: memUsed,
+          memRSS,
           memTotal,
+          memFree,
+          memArrays,
           cpu,
           requestTime,
           operations,
@@ -304,13 +329,13 @@ export async function benchmark (
             .map(async (it) => {
               const wsid = workspaceId[randNum(workspaceId.length)]
               const workId = 'w-' + i + '-' + it
-              const wsUsers = users.get(wsid.name) ?? []
+              const wsUsers = users.get(wsid) ?? []
 
-              const token = generateToken(systemAccountEmail, wsid)
+              const token = generateToken(systemAccountUuid, wsid)
               const endpoint = await getTransactorEndpoint(token, 'external')
-              console.log('endpoint', endpoint, 'workspace', wsid.name)
+              console.log('endpoint', endpoint, 'workspace', wsid)
               const msg: StartMessage = {
-                email: wsUsers[randNum(wsUsers.length)],
+                account: wsUsers[randNum(wsUsers.length)],
                 workspaceId: wsid,
                 transactorUrl: endpoint,
                 id: i,
@@ -361,7 +386,9 @@ export function benchmarkWorker (): void {
   if (!isMainThread) {
     parentPort?.on('message', (msg: StartMessage) => {
       console.log('starting worker', msg.workId)
-      void perform(msg)
+      void perform(msg).catch((err) => {
+        console.error('failed to perform', err)
+      })
     })
   }
 
@@ -372,10 +399,11 @@ export function benchmarkWorker (): void {
       setMetadata(client.metadata.UseProtocolCompression, msg.compression)
       console.log('connecting to', msg.workspaceId)
 
-      connection = await connect(msg.transactorUrl, msg.workspaceId, msg.email)
+      connection = await connect(msg.transactorUrl, msg.workspaceId, msg.account)
 
       if (msg.options.mode === 'find-all') {
-        const opt = new TxOperations(connection, (core.account.System + '_benchmark') as Ref<Account>)
+        const benchmarkPersonId = (core.account.System + '_benchmark') as PersonId
+        const opt = new TxOperations(connection, benchmarkPersonId)
         parentPort?.postMessage({
           type: 'operate',
           workId: msg.workId
@@ -480,42 +508,44 @@ export function benchmarkWorker (): void {
 
 export type StressBenchmarkMode = 'wrong' | 'connect-disconnect'
 export async function stressBenchmark (transactor: string, mode: StressBenchmarkMode): Promise<void> {
-  if (mode === 'wrong') {
-    console.log('Stress with wrong workspace/email')
-    let counter = 0
-    const rate = new RateLimiter(1)
-    while (true) {
-      try {
-        counter++
-        console.log('Attempt', counter)
-        const token = generateToken(generateId(), { name: generateId() })
-        await rate.add(async () => {
-          try {
-            const ws = new WebSocket(concatLink(transactor, token))
-            await new Promise<void>((resolve) => {
-              ws.onopen = () => {
-                resolve()
-              }
-            })
-            // ws.close()
-            // await createClient(transactor, token, undefined, 50)
-            console.log('out')
-          } catch (err: any) {
-            console.error(err)
-          }
-        })
-      } catch (err: any) {
-        // Ignore
-      }
-    }
-  }
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // if (mode === 'wrong') {
+  //   console.log('Stress with wrong workspace/email')
+  //   let counter = 0
+  //   const rate = new RateLimiter(1)
+  //   while (true) {
+  //     try {
+  //       counter++
+  //       console.log('Attempt', counter)
+  //       const token = generateToken(generateId(), generateId())
+  //       await rate.add(async () => {
+  //         try {
+  //           const ws = new WebSocket(concatLink(transactor, token))
+  //           await new Promise<void>((resolve) => {
+  //             ws.onopen = () => {
+  //               resolve()
+  //             }
+  //           })
+  //           // ws.close()
+  //           // await createClient(transactor, token, undefined, 50)
+  //           console.log('out')
+  //         } catch (err: any) {
+  //           console.error(err)
+  //         }
+  //       })
+  //     } catch (err: any) {
+  //       // Ignore
+  //     }
+  //   }
+  // }
 }
 
-export async function testFindAll (endpoint: string, workspace: string, email: string): Promise<void> {
-  const connection = await connect(endpoint, getWorkspaceId(workspace), email)
+export async function testFindAll (endpoint: string, workspace: WorkspaceUuid, account: PersonUuid): Promise<void> {
+  const connection = await connect(endpoint, workspace, account)
   try {
     const client = new TxOperations(connection, core.account.System)
-    const start = Date.now()
+    const start = platformNow()
     const res = await client.findAll(
       recruit.class.Applicant,
       {},
@@ -526,7 +556,7 @@ export async function testFindAll (endpoint: string, workspace: string, email: s
         }
       }
     )
-    console.log('Find all', res.length, 'time', Date.now() - start)
+    console.log('Find all', res.length, 'time', platformNow() - start)
   } finally {
     await connection.close()
   }
@@ -534,58 +564,75 @@ export async function testFindAll (endpoint: string, workspace: string, email: s
 
 export async function generateWorkspaceData (
   endpoint: string,
-  workspace: string,
+  workspace: WorkspaceUuid,
   parallel: boolean,
-  user: string
+  email: string
 ): Promise<void> {
-  const connection = await connect(endpoint, getWorkspaceId(workspace))
+  const connection = await connect(endpoint, workspace)
   const client = new TxOperations(connection, core.account.System)
   try {
-    const acc = await client.findOne(contact.class.PersonAccount, { email: user })
-    if (acc == null) {
+    const emailSocialString = buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
+    const person = await getPersonBySocialKey(client, emailSocialString)
+    const account = person?.personUuid as AccountUuid
+    if (account == null) {
       throw new Error('User not found')
     }
-    const employees: Ref<PersonAccount>[] = [acc._id]
-    const start = Date.now()
+    const accounts: AccountUuid[] = [account]
+    const start = platformNow()
     for (let i = 0; i < 100; i++) {
       const acc = await generateEmployee(client)
-      employees.push(acc)
+      accounts.push(acc)
     }
     if (parallel) {
       const promises: Promise<void>[] = []
       for (let i = 0; i < 10; i++) {
-        promises.push(generateVacancy(client, employees))
+        promises.push(generateVacancy(client, accounts))
       }
       await Promise.all(promises)
     } else {
       for (let i = 0; i < 10; i++) {
-        await generateVacancy(client, employees)
+        await generateVacancy(client, accounts)
       }
     }
-    console.log('Generate', Date.now() - start)
+    console.log('Generate', platformNowDiff(start))
   } finally {
     await connection.close()
   }
 }
 
-export async function generateEmployee (client: TxOperations): Promise<Ref<PersonAccount>> {
+export async function generateEmployee (client: TxOperations): Promise<AccountUuid> {
+  const personUuid = generateId() as unknown as AccountUuid // TODO: will it work or need to actually be a UUID?
   const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
     name: generateId().toString(),
     city: '',
-    avatarType: AvatarType.COLOR
+    avatarType: AvatarType.COLOR,
+    personUuid
   })
+
   await client.createMixin(personId, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
     active: true
   })
-  const acc = await client.createDoc(contact.class.PersonAccount, core.space.Model, {
-    person: personId,
-    role: AccountRole.User,
-    email: personId
-  })
-  return acc
+
+  const socialString = buildSocialIdString({ type: SocialIdType.HULY, value: personUuid })
+
+  await client.addCollection(
+    contact.class.SocialIdentity,
+    contact.space.Contacts,
+    personId,
+    contact.class.Person,
+    'socialIds',
+    {
+      type: SocialIdType.HULY,
+      value: personUuid,
+      key: socialString,
+      verifiedOn: Date.now()
+    }
+  )
+
+  return personUuid
 }
 
-async function generateVacancy (client: TxOperations, members: Ref<PersonAccount>[]): Promise<void> {
+async function generateVacancy (client: TxOperations, members: AccountUuid[]): Promise<void> {
   // generate vacancies
   const _id = generateId<Vacancy>()
   await client.createDoc(
@@ -594,7 +641,7 @@ async function generateVacancy (client: TxOperations, members: Ref<PersonAccount
     {
       name: generateId().toString(),
       number: 0,
-      fullDescription: makeCollaborativeDoc(_id, 'fullDescription'),
+      fullDescription: generateId(),
       type: recruit.template.DefaultVacancy,
       description: '',
       private: false,
@@ -603,13 +650,30 @@ async function generateVacancy (client: TxOperations, members: Ref<PersonAccount
     },
     _id
   )
+
   for (let i = 0; i < 100; i++) {
     // generate candidate
+    const personUuid = generateId() as unknown as PersonUuid // TODO: will it work or need to actually be a UUID?
     const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
       name: generateId().toString(),
       city: '',
-      avatarType: AvatarType.COLOR
+      avatarType: AvatarType.COLOR,
+      personUuid
     })
+    const socialString = buildSocialIdString({ type: SocialIdType.HULY, value: personUuid })
+    await client.addCollection(
+      contact.class.SocialIdentity,
+      contact.space.Contacts,
+      personId,
+      contact.class.Person,
+      'socialIds',
+      {
+        type: SocialIdType.HULY,
+        value: personUuid,
+        key: socialString,
+        verifiedOn: Date.now()
+      }
+    )
     await client.createMixin(personId, contact.class.Person, contact.space.Contacts, recruit.mixin.Candidate, {})
     // generate applicants
     await client.addCollection(recruit.class.Applicant, _id, personId, recruit.mixin.Candidate, 'applications', {

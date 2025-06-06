@@ -13,19 +13,190 @@
 // limitations under the License.
 //
 
-import { calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
-import { type Ref, type Space } from '@hcengineering/core'
+import { type Calendar, calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
+import core, { type AccountUuid, type Doc, type Ref, type Space, toIdMap } from '@hcengineering/core'
 import {
   createDefaultSpace,
-  tryMigrate,
-  tryUpgrade,
   type MigrateOperation,
+  type MigrateUpdate,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationDocumentQuery,
+  type MigrationUpgradeClient,
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
-import { DOMAIN_SPACE } from '@hcengineering/model-core'
-import { DOMAIN_CALENDAR } from '.'
+import { DOMAIN_SPACE, getAccountUuidBySocialKey, getSocialKeyByOldAccount } from '@hcengineering/model-core'
+import { DOMAIN_CALENDAR, DOMAIN_EVENT } from '.'
 import calendar from './plugin'
+
+function getCalendarId (val: string): Ref<Calendar> {
+  return `${val}_calendar` as Ref<Calendar>
+}
+
+async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
+  const hierarchy = client.hierarchy
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
+  const eventClasses = hierarchy.getDescendants(calendar.class.Event)
+
+  const calendars = await client.find<Calendar>(DOMAIN_CALENDAR, {
+    _class: calendar.class.Calendar
+  })
+
+  client.logger.log('processing internal calendars', {})
+
+  for (const calendar of calendars) {
+    const id = calendar._id
+    if (!id.endsWith('_calendar')) {
+      client.logger.error('Wrong calendar id format', { calendar: calendar._id })
+      continue
+    }
+
+    const account = id.substring(0, id.length - 9)
+    const socialId = socialKeyByAccount[account]
+    if (socialId === undefined) {
+      client.logger.error('no socialId for account', { account })
+      continue
+    }
+
+    await client.delete(DOMAIN_CALENDAR, calendar._id)
+    await client.create(DOMAIN_CALENDAR, {
+      ...calendar,
+      _id: getCalendarId(socialId)
+    })
+  }
+
+  let processedEvents = 0
+  const eventsIterator = await client.traverse<Event>(DOMAIN_EVENT, {
+    _class: { $in: eventClasses }
+  })
+
+  try {
+    while (true) {
+      const events = await eventsIterator.next(200)
+      if (events === null || events.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+      for (const event of events) {
+        const id = event.calendar
+        if (!id.endsWith('_calendar')) {
+          // Nothing to do, in external calendar
+          continue
+        }
+
+        const account = id.substring(0, id.length - 9)
+        const socialId = socialKeyByAccount[account]
+        if (socialId === undefined) {
+          client.logger.error('no socialId for account', { account })
+          continue
+        }
+
+        operations.push({
+          filter: { _id: event._id },
+          update: {
+            calendar: getCalendarId(socialId)
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_EVENT, operations)
+      }
+
+      processedEvents += events.length
+      client.logger.log('...processed events', { count: processedEvents })
+    }
+
+    client.logger.log('finished processing events', {})
+  } finally {
+    await eventsIterator.close()
+  }
+}
+
+async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise<void> {
+  const hierarchy = client.hierarchy
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
+
+  const eventClasses = hierarchy.getDescendants(calendar.class.Event)
+
+  const calendars = await client.find<Calendar>(DOMAIN_CALENDAR, {
+    _class: calendar.class.Calendar
+  })
+
+  client.logger.log('processing internal calendars', {})
+
+  for (const calendar of calendars) {
+    const id = calendar._id
+    if (!id.endsWith('_calendar')) {
+      client.logger.error('Wrong calendar id format', { calendar: calendar._id })
+      continue
+    }
+
+    const socialKey = id.substring(0, id.length - 9)
+    const accountUuid = await getAccountUuidBySocialKey(client, socialKey, accountUuidBySocialKey)
+    if (accountUuid == null) {
+      client.logger.error('no account uuid for social key', { socialKey })
+      continue
+    }
+
+    await client.delete(DOMAIN_CALENDAR, calendar._id)
+    await client.create(DOMAIN_CALENDAR, {
+      ...calendar,
+      _id: getCalendarId(accountUuid)
+    })
+  }
+
+  let processedEvents = 0
+  const eventsIterator = await client.traverse<Event>(DOMAIN_EVENT, {
+    _class: { $in: eventClasses }
+  })
+
+  try {
+    while (true) {
+      const events = await eventsIterator.next(200)
+      if (events === null || events.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+      for (const event of events) {
+        const id = event.calendar
+        if (!id.endsWith('_calendar')) {
+          // Nothing to do, in external calendar
+          continue
+        }
+
+        const socialKey = id.substring(0, id.length - 9)
+        const accountUuid = await getAccountUuidBySocialKey(client, socialKey, accountUuidBySocialKey)
+        if (accountUuid == null) {
+          client.logger.error('no account uuid for social key', { socialKey })
+          continue
+        }
+
+        operations.push({
+          filter: { _id: event._id },
+          update: {
+            calendar: getCalendarId(accountUuid)
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_EVENT, operations)
+      }
+
+      processedEvents += events.length
+      client.logger.log('...processed events', { count: processedEvents })
+    }
+
+    client.logger.log('finished processing events', {})
+  } finally {
+    await eventsIterator.close()
+  }
+}
 
 async function migrateCalendars (client: MigrationClient): Promise<void> {
   await client.move(
@@ -106,6 +277,24 @@ async function migrateSync (client: MigrationClient): Promise<void> {
   )
 }
 
+async function fillUser (client: MigrationClient): Promise<void> {
+  const calendars = await client.find<Calendar>(DOMAIN_CALENDAR, {})
+  const events = await client.find<Event>(DOMAIN_EVENT, {
+    user: { $exists: false }
+  })
+  const map = toIdMap(calendars)
+  for (const event of events) {
+    const calendar = map.get(event.calendar)
+    if (calendar !== undefined) {
+      await client.update(
+        DOMAIN_EVENT,
+        { _id: event._id },
+        { user: event.createdBy !== core.account.System ? event.createdBy : calendar.createdBy }
+      )
+    }
+  }
+}
+
 async function migrateTimezone (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_CALENDAR,
@@ -118,10 +307,11 @@ async function migrateTimezone (client: MigrationClient): Promise<void> {
 }
 
 export const calendarOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, calendarId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, calendarId, [
       {
         state: 'calendar001',
+        mode: 'upgrade',
         func: async (client) => {
           await fixEventDueDate(client)
           await migrateReminders(client)
@@ -131,16 +321,44 @@ export const calendarOperation: MigrateOperation = {
       },
       {
         state: 'timezone',
+        mode: 'upgrade',
         func: migrateTimezone
       },
       {
         state: 'migrate_calendars',
+        mode: 'upgrade',
         func: migrateCalendars
+      },
+      {
+        state: 'move-events',
+        mode: 'upgrade',
+        func: async (client) => {
+          await client.move(
+            DOMAIN_CALENDAR,
+            { _class: { $in: client.hierarchy.getDescendants(calendar.class.Event) } },
+            DOMAIN_EVENT
+          )
+        }
+      },
+      {
+        state: 'accounts-to-social-ids',
+        mode: 'upgrade',
+        func: migrateAccountsToSocialIds
+      },
+      {
+        state: 'migrate-social-ids-to-account-uuids',
+        mode: 'upgrade',
+        func: migrateSocialIdsToAccountUuids
+      },
+      {
+        state: 'fill-user-v2',
+        mode: 'upgrade',
+        func: fillUser
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, calendarId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, calendarId, [
       {
         state: 'default-space',
         func: (client) =>

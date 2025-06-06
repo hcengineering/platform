@@ -32,7 +32,6 @@ export default mergeIds(hrId, hr, {
     Overtime: '' as IntlString,
     Overtime2: '' as IntlString,
     Subscribers: '' as IntlString,
-    PublicHoliday: '' as IntlString,
     RequestCreated: '' as IntlString,
     RequestUpdated: '' as IntlString,
     RequestRemoved: '' as IntlString,

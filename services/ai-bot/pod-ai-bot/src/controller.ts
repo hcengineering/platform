@@ -13,97 +13,82 @@
 // limitations under the License.
 //
 
-import { isWorkspaceCreating, Markup, MeasureContext, systemAccountEmail } from '@hcengineering/core'
+import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import {
-  aiBotAccountEmail,
-  AIBotTransferEvent,
-  OnboardingEvent,
-  OnboardingEventRequest,
-  OpenChatInSidebarData,
+  AIEventRequest,
+  ConnectMeetingRequest,
+  DisconnectMeetingRequest,
+  IdentityResponse,
+  PersonMessage,
+  PostTranscriptRequest,
+  SummarizeMessagesRequest,
+  SummarizeMessagesResponse,
   TranslateRequest,
   TranslateResponse
 } from '@hcengineering/ai-bot'
+import core, {
+  AccountUuid,
+  MeasureContext,
+  PersonId,
+  Ref,
+  SocialId,
+  SortingOrder,
+  toIdMap,
+  type WorkspaceIds,
+  type WorkspaceUuid
+} from '@hcengineering/core'
+import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
-import { getTransactorEndpoint } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
-import { WorkspaceLoginInfo } from '@hcengineering/account'
-import OpenAI from 'openai'
+import { htmlToMarkup, jsonToHTML, jsonToMarkup, markupToJSON } from '@hcengineering/text'
 import { encodingForModel } from 'js-tiktoken'
-import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
+import OpenAI from 'openai'
 
-import { WorkspaceClient } from './workspaceClient'
-import { assignBotToWorkspace, getWorkspaceInfo } from './account'
+import chunter from '@hcengineering/chunter'
+import { StorageAdapter } from '@hcengineering/server-core'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
 import config from './config'
 import { DbStorage } from './storage'
-import { SupportWsClient } from './supportWsClient'
-import { AIReplyTransferData } from './types'
+import { tryAssignToWorkspace } from './utils/account'
+import { summarizeMessages, translateHtml } from './utils/openai'
+import { WorkspaceClient } from './workspace/workspaceClient'
+import contact, { Contact, getName, SocialIdentityRef } from '@hcengineering/contact'
 
-const POLLING_INTERVAL_MS = 5 * 1000 // 5 seconds
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
-const ASSIGN_WORKSPACE_DELAY_MS = 5 * 1000 // 5 secs
-const MAX_ASSIGN_ATTEMPTS = 5
 
-export class AIBotController {
-  private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
-  private readonly closeWorkspaceTimeouts: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>()
-  private readonly connectingWorkspaces: Set<string> = new Set<string>()
+export class AIControl {
+  private readonly workspaces: Map<WorkspaceUuid, WorkspaceClient> = new Map<WorkspaceUuid, WorkspaceClient>()
+  private readonly closeWorkspaceTimeouts: Map<WorkspaceUuid, NodeJS.Timeout> = new Map<WorkspaceUuid, NodeJS.Timeout>()
+  private readonly connectingWorkspaces = new Map<WorkspaceUuid, Promise<void>>()
 
-  private readonly intervalId: NodeJS.Timeout
+  readonly storageAdapter: StorageAdapter
 
-  readonly aiClient?: OpenAI
-  readonly encoding = encodingForModel(config.OpenAIModel)
-
-  supportClient: SupportWsClient | undefined = undefined
-
-  assignTimeout: NodeJS.Timeout | undefined
-  assignAttempts = 0
+  private readonly openai?: OpenAI
+  private readonly openaiEncoding = encodingForModel(config.OpenAIModel)
 
   constructor (
-    readonly storage: DbStorage,
+    readonly personUuid: AccountUuid,
+    readonly socialIds: SocialId[],
+    private readonly storage: DbStorage,
     private readonly ctx: MeasureContext
   ) {
-    this.aiClient =
+    this.openai =
       config.OpenAIKey !== ''
         ? new OpenAI({
           apiKey: config.OpenAIKey,
           baseURL: config.OpenAIBaseUrl === '' ? undefined : config.OpenAIBaseUrl
         })
         : undefined
-
-    this.intervalId = setInterval(() => {
-      void this.updateWorkspaceClients()
-    }, POLLING_INTERVAL_MS)
+    this.storageAdapter = buildStorageFromConfig(storageConfigFromEnv())
   }
 
-  async updateWorkspaceClients (): Promise<void> {
-    const activeRecords = await this.storage.getActiveWorkspaces()
-
-    if (this.supportClient === undefined && !this.connectingWorkspaces.has(config.SupportWorkspace)) {
-      this.connectingWorkspaces.add(config.SupportWorkspace)
-      const record = await this.storage.getWorkspace(config.SupportWorkspace)
-      this.supportClient = (await this.createWorkspaceClient(
-        config.SupportWorkspace,
-        record ?? { workspace: config.SupportWorkspace, active: true }
-      )) as SupportWsClient
-      this.connectingWorkspaces.delete(config.SupportWorkspace)
-    }
-
-    for (const record of activeRecords) {
-      const ws = record.workspace
-
-      if (this.workspaces.has(ws)) {
-        continue
-      }
-
-      if (this.connectingWorkspaces.has(ws)) {
-        continue
-      }
-
-      await this.initWorkspaceClient(ws, record)
-    }
+  async getWorkspaceRecord (workspace: string): Promise<WorkspaceInfoRecord | undefined> {
+    return await this.storage.getWorkspace(workspace)
   }
 
-  async closeWorkspaceClient (workspace: string): Promise<void> {
+  async closeWorkspaceClient (workspace: WorkspaceUuid): Promise<void> {
     const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
 
     if (timeoutId !== undefined) {
@@ -111,151 +96,102 @@ export class AIBotController {
       this.closeWorkspaceTimeouts.delete(workspace)
     }
 
-    await this.storage.inactiveWorkspace(workspace)
-
     const client = this.workspaces.get(workspace)
 
     if (client !== undefined) {
-      await client.close()
-      this.workspaces.delete(workspace)
+      if (client.canClose()) {
+        await client.close()
+        this.workspaces.delete(workspace)
+      } else {
+        this.updateClearInterval(workspace)
+      }
     }
     this.connectingWorkspaces.delete(workspace)
   }
 
-  private async getWorkspaceInfo (ws: string): Promise<WorkspaceLoginInfo | undefined> {
-    const systemToken = generateToken(systemAccountEmail, { name: ws })
-    for (let i = 0; i < 5; i++) {
-      try {
-        const info = await getWorkspaceInfo(systemToken)
-
-        if (info == null) {
-          this.ctx.warn('Cannot find workspace info', { workspace: ws })
-          await wait(ASSIGN_WORKSPACE_DELAY_MS)
-          continue
-        }
-
-        return info
-      } catch (e) {
-        this.ctx.error('Error during get workspace info:', { e })
-        await wait(ASSIGN_WORKSPACE_DELAY_MS)
-      }
-    }
-  }
-
-  private async assignToWorkspace (workspace: string): Promise<void> {
-    clearTimeout(this.assignTimeout)
-    try {
-      const info = await this.getWorkspaceInfo(workspace)
-
-      if (info === undefined) {
-        void this.closeWorkspaceClient(workspace)
-        return
-      }
-
-      if (isWorkspaceCreating(info?.mode)) {
-        this.ctx.info('Workspace is creating -> waiting...', { workspace })
-        this.assignTimeout = setTimeout(() => {
-          void this.assignToWorkspace(workspace)
-        }, ASSIGN_WORKSPACE_DELAY_MS)
-        return
-      }
-
-      const result = await assignBotToWorkspace(workspace)
-      this.ctx.info('Assign to workspace result: ', { result, workspace })
-    } catch (e) {
-      this.ctx.error('Error during assign workspace:', { e })
-      if (this.assignAttempts < MAX_ASSIGN_ATTEMPTS) {
-        this.assignAttempts++
-        this.assignTimeout = setTimeout(() => {
-          void this.assignToWorkspace(workspace)
-        }, ASSIGN_WORKSPACE_DELAY_MS)
-      } else {
-        void this.closeWorkspaceClient(workspace)
-      }
-    }
-  }
-
-  async createWorkspaceClient (workspace: string, info: WorkspaceInfoRecord): Promise<WorkspaceClient> {
-    this.ctx.info('Listen workspace: ', { workspace })
-    await this.assignToWorkspace(workspace)
-    const token = generateToken(aiBotAccountEmail, { name: workspace })
-    const endpoint = await getTransactorEndpoint(token)
-
-    if (workspace === config.SupportWorkspace) {
-      return new SupportWsClient(endpoint, token, workspace, this, this.ctx.newChild(workspace, {}), info)
-    }
-
-    return new WorkspaceClient(endpoint, token, workspace, this, this.ctx.newChild(workspace, {}), info)
-  }
-
-  async initWorkspaceClient (workspace: string, info: WorkspaceInfoRecord): Promise<void> {
-    if (workspace === config.SupportWorkspace) {
-      return
-    }
-    this.connectingWorkspaces.add(workspace)
-
-    if (!this.workspaces.has(workspace)) {
-      const client = await this.createWorkspaceClient(workspace, info)
-
-      this.workspaces.set(workspace, client)
-    }
-
-    const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
-
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId)
-    }
-
+  updateClearInterval (workspace: WorkspaceUuid): void {
     const newTimeoutId = setTimeout(() => {
       void this.closeWorkspaceClient(workspace)
     }, CLOSE_INTERVAL_MS)
 
     this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
-    this.connectingWorkspaces.delete(workspace)
   }
 
-  allowAiReplies (workspace: string, email: string): boolean {
-    if (this.supportClient === undefined) return true
+  async createWorkspaceClient (
+    workspace: WorkspaceUuid,
+    info: WorkspaceInfoRecord
+  ): Promise<WorkspaceClient | undefined> {
+    const isAssigned = await tryAssignToWorkspace(workspace, this.ctx)
 
-    return this.supportClient.allowAiReplies(workspace, email)
-  }
-
-  async transferAIReplyToSupport (response: Markup, data: AIReplyTransferData): Promise<void> {
-    if (this.supportClient === undefined) return
-
-    await this.supportClient.transferAIReply(response, data)
-  }
-
-  async transfer (event: AIBotTransferEvent): Promise<void> {
-    const workspace = event.toWorkspace
-    const info = await this.storage.getWorkspace(workspace)
-
-    if (workspace === config.SupportWorkspace) {
-      if (this.supportClient === undefined) return
-
-      await this.supportClient.transfer(event)
+    if (!isAssigned) {
+      this.ctx.error('Cannot assign to workspace', { workspace })
       return
     }
 
-    if (info === undefined) {
-      this.ctx.error('Workspace info not found -> cannot transfer event', { workspace })
+    const token = generateToken(this.personUuid, workspace, { service: 'aibot' })
+    const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
+
+    if (!isWorkspaceLoginInfo(wsLoginInfo)) {
+      this.ctx.error('Invalid workspace login info', { workspace, wsLoginInfo })
       return
     }
 
-    await this.initWorkspaceClient(workspace, info)
-
-    const wsClient = this.workspaces.get(workspace)
-
-    if (wsClient === undefined) {
-      return
+    const wsIds: WorkspaceIds = {
+      uuid: wsLoginInfo.workspace,
+      url: wsLoginInfo.workspaceUrl,
+      dataId: wsLoginInfo.workspaceDataId
     }
 
-    await wsClient.transfer(event)
+    this.ctx.info('Listen workspace: ', { workspace })
+
+    return new WorkspaceClient(
+      this.storageAdapter,
+      this.storage,
+      wsLoginInfo.endpoint,
+      token,
+      wsIds,
+      this.personUuid,
+      this.socialIds,
+      this.ctx.newChild('create-workspace', {}),
+      this.openai,
+      this.openaiEncoding,
+      info
+    )
+  }
+
+  async initWorkspaceClient (workspace: WorkspaceUuid): Promise<void> {
+    if (this.connectingWorkspaces.has(workspace)) {
+      return await this.connectingWorkspaces.get(workspace)
+    }
+
+    const initPromise = (async () => {
+      try {
+        if (!this.workspaces.has(workspace)) {
+          const record = (await this.getWorkspaceRecord(workspace)) ?? { workspace }
+          const client = await this.createWorkspaceClient(workspace, record)
+          if (client === undefined) {
+            return
+          }
+          this.workspaces.set(workspace, client)
+        }
+
+        const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
+        if (timeoutId !== undefined) {
+          clearTimeout(timeoutId)
+        }
+
+        this.updateClearInterval(workspace)
+      } finally {
+        this.connectingWorkspaces.delete(workspace)
+      }
+    })()
+
+    this.connectingWorkspaces.set(workspace, initPromise)
+
+    await initPromise
   }
 
   async close (): Promise<void> {
-    clearInterval(this.intervalId)
-
     for (const workspace of this.workspaces.values()) {
       await workspace.close()
     }
@@ -265,63 +201,183 @@ export class AIBotController {
     this.workspaces.clear()
   }
 
-  async updateAvatarInfo (workspace: string, path: string, lastModified: number): Promise<void> {
-    await this.storage.updateWorkspace(workspace, { $set: { avatarPath: path, avatarLastModified: lastModified } })
-  }
+  async getWorkspaceClient (workspace: WorkspaceUuid): Promise<WorkspaceClient | undefined> {
+    await this.initWorkspaceClient(workspace)
 
-  async openChatInSidebar (data: OpenChatInSidebarData): Promise<void> {
-    const record = await this.storage.getWorkspace(data.workspace)
-
-    await this.initWorkspaceClient(data.workspace, record ?? { workspace: data.workspace, active: true })
-
-    const wsClient = this.workspaces.get(data.workspace)
-
-    if (wsClient === undefined) return
-    await wsClient.openAIChatInSidebar(data.email)
-  }
-
-  async processOnboardingEvent (event: OnboardingEventRequest): Promise<void> {
-    switch (event.event) {
-      case OnboardingEvent.OpenChatInSidebar:
-        await this.openChatInSidebar(event.data as OpenChatInSidebarData)
-        break
-    }
+    return this.workspaces.get(workspace)
   }
 
   async translate (req: TranslateRequest): Promise<TranslateResponse | undefined> {
-    if (this.aiClient === undefined) {
+    if (this.openai === undefined) {
       return undefined
     }
-    const html = markupToHTML(req.text)
-    const start = Date.now()
-    const response = await this.aiClient.chat.completions.create({
-      model: config.OpenAITranslateModel,
-      messages: [
-        {
-          role: 'system',
-          content: `Your task is to translate the text into ${req.lang} while preserving the html structure and metadata`
-        },
-        {
-          role: 'user',
-          content: html
-        }
-      ]
-    })
-    const end = Date.now()
-    this.ctx.info('Translation time: ', { time: end - start })
-    const result = response.choices[0].message.content
-    const text = result !== null ? htmlToMarkup(result) : req.text
+    const html = jsonToHTML(markupToJSON(req.text))
+    const result = await translateHtml(this.openai, html, req.lang)
+    const text = result !== undefined ? htmlToMarkup(result) : req.text
     return {
       text,
       lang: req.lang
     }
   }
-}
 
-async function wait (delay: number): Promise<void> {
-  await new Promise<void>((resolve) => {
-    setTimeout(() => {
-      resolve()
-    }, delay)
-  })
+  async summarizeMessages (
+    workspace: WorkspaceUuid,
+    req: SummarizeMessagesRequest
+  ): Promise<SummarizeMessagesResponse | undefined> {
+    if (this.openai === undefined) return
+    if (req.target === undefined || req.targetClass === undefined) return
+
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) return
+
+    const opClient = await wsClient.opClient
+    if (opClient === undefined) return
+
+    const client = wsClient.client
+    if (client === undefined) return
+
+    const target = await client.findOne(req.targetClass, { _id: req.target })
+    if (target === undefined) return
+
+    const messages = await client.findAll(
+      chunter.class.ChatMessage,
+      {
+        attachedTo: target._id,
+        collection: { $in: ['messages', 'transcription'] }
+      },
+      {
+        sort: { createdOn: SortingOrder.Ascending },
+        limit: 5000
+      }
+    )
+
+    const personIds = new Set<PersonId>()
+    for (const m of messages) {
+      if (m.createdBy !== undefined) personIds.add(m.createdBy)
+    }
+    const identities = await client.findAll(contact.class.SocialIdentity, {
+      _id: { $in: Array.from(personIds) as SocialIdentityRef[] }
+    })
+    const contacts = await client.findAll(contact.class.Contact, { _id: { $in: identities.map((i) => i.attachedTo) } })
+    const contactById = toIdMap(contacts)
+    const contactByPersonId = new Map<PersonId, Contact>()
+    for (const identity of identities) {
+      const contact = contactById.get(identity.attachedTo)
+      if (contact !== undefined) contactByPersonId.set(identity._id, contact)
+    }
+
+    const messagesToSummarize: PersonMessage[] = []
+
+    for (const m of messages) {
+      const author = m.createdBy
+      if (author === undefined) continue
+
+      const contact = contactByPersonId.get(author)
+      if (contact === undefined) continue
+
+      const personName = getName(client.getHierarchy(), contact)
+      const text = markupToMarkdown(markupToJSON(m.message))
+
+      const lastPiece = messagesToSummarize[messagesToSummarize.length - 1]
+      if (lastPiece?.personRef === contact._id) {
+        lastPiece.text += (m.collection === 'transcription' ? ' ' : '\n') + text
+      } else {
+        messagesToSummarize.push({
+          personRef: contact._id,
+          personName,
+          time: m.createdOn ?? 0,
+          text
+        })
+      }
+    }
+
+    const summary = await summarizeMessages(this.openai, messagesToSummarize, req.lang)
+    if (summary === undefined) return
+
+    const summaryMarkup = jsonToMarkup(markdownToMarkup(summary))
+
+    const lastMessage = await client.findOne(
+      chunter.class.ChatMessage,
+      {
+        attachedTo: target._id,
+        collection: { $in: ['messages', 'transcription', 'summary'] }
+      },
+      {
+        sort: { createdOn: SortingOrder.Descending },
+        limit: 1
+      }
+    )
+
+    const op = opClient.apply(undefined, 'AISummarizeMessagesRequestEvent')
+
+    if (lastMessage?.collection === 'summary' && lastMessage.createdBy === opClient.user) {
+      await op.update(lastMessage, { message: summaryMarkup, editedOn: Date.now() })
+    } else {
+      await op.addCollection(chunter.class.ChatMessage, core.space.Workspace, target._id, target._class, 'summary', {
+        message: summaryMarkup
+      })
+    }
+    await op.commit()
+
+    return {
+      text: summaryMarkup,
+      lang: req.lang
+    }
+  }
+
+  async processEvent (workspace: WorkspaceUuid, events: AIEventRequest[]): Promise<void> {
+    if (this.openai === undefined) return
+
+    for (const event of events) {
+      const wsClient = await this.getWorkspaceClient(workspace)
+      if (wsClient === undefined) continue
+      await wsClient.processMessageEvent(event)
+    }
+  }
+
+  async connect (workspace: WorkspaceUuid): Promise<void> {
+    await this.initWorkspaceClient(workspace)
+  }
+
+  async loveConnect (workspace: WorkspaceUuid, request: ConnectMeetingRequest): Promise<void> {
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) return
+
+    await wsClient.loveConnect(request)
+  }
+
+  async loveDisconnect (workspace: WorkspaceUuid, request: DisconnectMeetingRequest): Promise<void> {
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) return
+
+    await wsClient.loveDisconnect(request)
+  }
+
+  async getLoveIdentity (roomName: string): Promise<IdentityResponse | undefined> {
+    const parsed = roomName.split('_')
+    const workspace = parsed[0] as WorkspaceUuid
+
+    if (workspace === null) return
+
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) {
+      this.ctx.error('Workspace not found', { workspace })
+      return
+    }
+
+    return await wsClient.getLoveIdentity()
+  }
+
+  async processLoveTranscript (request: PostTranscriptRequest): Promise<void> {
+    const parsed = request.roomName.split('_')
+    const workspace = parsed[0] as WorkspaceUuid | undefined
+    const roomId = parsed[parsed.length - 1] as Ref<Room> | undefined
+
+    if (workspace == null || roomId == null) return
+
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) return
+
+    await wsClient.processLoveTranscript(request.transcript, request.participant, roomId)
+  }
 }

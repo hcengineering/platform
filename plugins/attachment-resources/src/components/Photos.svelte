@@ -17,9 +17,10 @@
   import { Photo } from '@hcengineering/attachment'
   import { Class, Doc, Ref, Space, type WithLookup } from '@hcengineering/core'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { FilePreviewPopup, createQuery, getBlobRef, getClient, uploadFile } from '@hcengineering/presentation'
-  import { Button, IconAdd, Label, Spinner, showPopup } from '@hcengineering/ui'
+  import { createQuery, getBlobRef, getClient, uploadFile } from '@hcengineering/presentation'
+  import { Button, IconAdd, Label, Spinner } from '@hcengineering/ui'
   import attachment from '../plugin'
+  import { showAttachmentPreviewPopup } from '../utils'
   import UploadDuo from './icons/UploadDuo.svelte'
 
   export let objectId: Ref<Doc>
@@ -90,11 +91,7 @@
     const el: HTMLElement = ev.currentTarget as HTMLElement
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
     if (item !== undefined) {
-      showPopup(
-        FilePreviewPopup,
-        { file: item.file, name: item.name, contentType: item.type, metadata: item.metadata },
-        item.type.startsWith('image/') ? 'centered' : 'float'
-      )
+      showAttachmentPreviewPopup(item)
     } else {
       inputFile.click()
     }

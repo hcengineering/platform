@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AccountRole, DOMAIN_TX, makeCollaborativeDoc, TxOperations, type Ref, type Status } from '@hcengineering/core'
+import { DOMAIN_MODEL_TX, TxOperations, type Ref, type Status } from '@hcengineering/core'
 import { leadId, type Lead } from '@hcengineering/lead'
 import {
   tryMigrate,
@@ -25,8 +25,8 @@ import {
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 
-import contact, { DOMAIN_CONTACT } from '@hcengineering/model-contact'
-import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
+import { DOMAIN_CONTACT } from '@hcengineering/model-contact'
+import task, { createSequence, DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 
 import lead from './plugin'
 import { defaultLeadStatuses } from './spaceType'
@@ -110,15 +110,13 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
   const newTaskTypeMixin = lead.mixin.LeadTypeData
 
   await client.update(
-    DOMAIN_TX,
+    DOMAIN_MODEL_TX,
     {
       objectClass: core.class.Attribute,
       'attributes.attributeOf': oldSpaceTypeMixin
     },
     {
-      $set: {
-        'attributes.attributeOf': newSpaceTypeMixin
-      }
+      'attributes.attributeOf': newSpaceTypeMixin
     }
   )
 
@@ -149,37 +147,20 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
   )
 }
 
-async function migrateDefaultProjectOwners (client: MigrationClient): Promise<void> {
-  const workspaceOwners = await client.model.findAll(contact.class.PersonAccount, {
-    role: AccountRole.Owner
-  })
-
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _id: lead.space.DefaultFunnel
-    },
-    {
-      $set: {
-        owners: workspaceOwners.map((it) => it._id)
-      }
-    }
-  )
-}
-
 export const leadOperation: MigrateOperation = {
-  async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
-    await tryMigrate(client, leadId, [
+  async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
+    await tryMigrate(mode, client, leadId, [
       {
         state: 'migrate-default-statuses',
         func: (client) => migrateDefaultStatuses(client, logger)
       }
     ])
   },
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, leadId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, leadId, [
       {
         state: 'identifier',
+        mode: 'upgrade',
         func: migrateIdentifiers
       },
       {
@@ -189,11 +170,8 @@ export const leadOperation: MigrateOperation = {
         }
       },
       {
-        state: 'migrateDefaultProjectOwners',
-        func: migrateDefaultProjectOwners
-      },
-      {
         state: 'migrate-customer-description',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(
             DOMAIN_CONTACT,
@@ -206,50 +184,12 @@ export const leadOperation: MigrateOperation = {
               }
             }
           )
-          const it = await client.traverse(DOMAIN_CONTACT, {
-            _class: contact.class.Organization,
-            description: { $exists: false }
-          })
-          while (true) {
-            const docs = await it.next(50)
-            if (docs == null || docs.length === 0) {
-              break
-            }
-            await client.bulk(
-              DOMAIN_CONTACT,
-              docs.map((doc) => ({
-                filter: { _id: doc._id },
-                update: { $set: { description: makeCollaborativeDoc(doc._id, 'description') } }
-              }))
-            )
-          }
-          const it2 = await client.traverse(DOMAIN_CONTACT, { [lead.mixin.Customer + '.customerDescription']: null })
-          while (true) {
-            const docs = await it2.next(50)
-            if (docs == null || docs.length === 0) {
-              break
-            }
-            await client.bulk(
-              DOMAIN_CONTACT,
-              docs.map((doc) => ({
-                filter: { _id: doc._id },
-                update: {
-                  $set: {
-                    [lead.mixin.Customer + '.customerDescription']: makeCollaborativeDoc(
-                      docs[0]._id,
-                      'customerDescription'
-                    )
-                  }
-                }
-              }))
-            )
-          }
         }
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, leadId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, leadId, [
       {
         state: 'u-default-funnel',
         func: async (client) => {

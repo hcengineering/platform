@@ -1,5 +1,5 @@
 //
-// Copyright © 2023, 2024 Hardcore Engineering Inc.
+// Copyright © 2023, 2024, 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -26,6 +26,9 @@ import Typography from '@tiptap/extension-typography'
 import Underline from '@tiptap/extension-underline'
 import StarterKit from '@tiptap/starter-kit'
 
+import BulletList from '@tiptap/extension-bullet-list'
+import ListItem from '@tiptap/extension-list-item'
+import OrderedList from '@tiptap/extension-ordered-list'
 import LinkPopup from '../components/LinkPopup.svelte'
 import { CodeBlockHighlighExtension, codeBlockHighlightOptions } from '../components/extension/codeblock'
 
@@ -37,6 +40,7 @@ export interface DefaultKitOptions {
     levels?: Level[]
   }
   history?: false
+  dropcursor?: false
 }
 
 export const DefaultKit = Extension.create<DefaultKitOptions>({
@@ -54,15 +58,21 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
         codeBlock: false,
         hardBreak: this.options.hardBreak,
         heading: this.options.heading,
-        history: this.options.history
+        history: this.options.history,
+        bulletList: false,
+        orderedList: false,
+        dropcursor: this.options.dropcursor
       }),
+      ListItem.extend({ group: 'listItems' }),
+      BulletList.extend({ content: 'listItems+' }),
+      OrderedList.extend({ content: 'listItems+' }),
       Underline,
       Highlight.configure({
         multicolor: false
       }),
       Typography.configure({}),
-      Link.configure({
-        openOnClick: true,
+      Link.extend({ inclusive: false }).configure({
+        openOnClick: false,
         HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
       }),
       CodeBlockHighlighExtension.configure(codeBlockHighlightOptions)

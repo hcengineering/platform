@@ -52,12 +52,20 @@ export default mergeIds(hrId, hr, {
     AddMember: '' as IntlString,
     Title: '' as IntlString,
     Description: '' as IntlString,
+    PublicHoliday: '' as IntlString,
+    PublicHolidays: '' as IntlString,
     MarkAsPublicHoliday: '' as IntlString,
     EditPublicHoliday: '' as IntlString,
     Managers: '' as IntlString,
     Export: '' as IntlString,
     Separator: '' as IntlString,
     ChooseSeparator: '' as IntlString,
-    Positions: '' as IntlString
+    Positions: '' as IntlString,
+    WorkingDays: '' as IntlString,
+    ReportedDays: '' as IntlString,
+    Tasks: '' as IntlString,
+    PTOs: '' as IntlString,
+    TPD: '' as IntlString,
+    EXTRa: '' as IntlString
   }
 })

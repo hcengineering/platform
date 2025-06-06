@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString, Asset } from '@hcengineering/platform'
-  import { createEventDispatcher, ComponentType } from 'svelte'
+  import { createEventDispatcher, ComponentType, afterUpdate } from 'svelte'
 
   import { DateRangeMode } from '@hcengineering/core'
   import ui from '../../plugin'
@@ -30,7 +30,6 @@
 
   export let value: number | null | undefined
   export let mode: DateRangeMode = DateRangeMode.DATE
-  export let mondayStart: boolean = true
   export let editable: boolean = false
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconModifier: 'normal' | 'warning' | 'critical' | 'overdue' = 'normal'
@@ -86,6 +85,7 @@
       focusManager?.setFocus(idx)
     })
   }
+  afterUpdate(() => dispatch('resize', input?.clientWidth))
 </script>
 
 <button
@@ -104,7 +104,7 @@
       opened = true
       showPopup(
         DatePopup,
-        { currentDate, mondayStart, withTime, label, detail },
+        { currentDate, withTime, label, detail },
         'top',
         () => {
           opened = false
@@ -119,7 +119,7 @@
   {#if showIcon}
     <div class="btn-icon {iconModifier}" class:buttonIconNoLabel={!shouldShowLabel}>
       <Icon
-        icon={icon ?? (iconModifier === 'overdue' && !shouldIgnoreOverdue) ? DPCalendarOver : DPCalendar}
+        icon={icon ?? (iconModifier === 'overdue' && !shouldIgnoreOverdue ? DPCalendarOver : DPCalendar)}
         size={'full'}
       />
     </div>

@@ -23,7 +23,9 @@ export class TalentDetailsPage extends CommonRecruitingPage {
 
   readonly buttonFinalContact = (): Locator => this.formMergeContacts().locator('button', { hasText: 'Final contact' })
 
-  readonly buttonMergeRow = (): Locator => this.formMergeContacts().locator('div.box')
+  readonly buttonMergeRow = (hasText: string): Locator =>
+    this.formMergeContacts().locator('div.box.flex-row-center div.antiRadio', { hasText }).locator('label')
+
   readonly buttonPopupMergeContacts = (): Locator =>
     this.formMergeContacts().locator('button:has-text("Merge contacts")')
 
@@ -66,32 +68,17 @@ export class TalentDetailsPage extends CommonRecruitingPage {
     await this.buttonFinalContact().click()
     await this.selectMenuItem(this.page, talentName.finalContactName)
 
-    await expect(
-      this.buttonMergeRow().locator('div.flex-center', { hasText: talentName.name }).locator('label.checkbox-container')
-    ).toBeVisible()
+    await expect(this.buttonMergeRow(talentName.name)).toBeVisible()
 
-    await this.buttonMergeRow()
-      .locator('div.flex-center', { hasText: talentName.name })
-      .locator('label.checkbox-container')
-      .click()
-
+    await this.buttonMergeRow(talentName.name).click()
     if (talentName.mergeLocation) {
-      await this.buttonMergeRow()
-        .locator('div.flex-center', { hasText: talentName.location })
-        .locator('label.checkbox-container')
-        .click()
+      await this.buttonMergeRow(talentName.location).click()
     }
     if (talentName.mergeTitle) {
-      await this.buttonMergeRow()
-        .locator('div.flex-center', { hasText: talentName.title })
-        .locator('label.checkbox-container')
-        .click()
+      await this.buttonMergeRow(talentName.title).click()
     }
     if (talentName.mergeSource) {
-      await this.buttonMergeRow()
-        .locator('div.flex-center', { hasText: talentName.source })
-        .locator('label.checkbox-container')
-        .click()
+      await this.buttonMergeRow(talentName.source).click()
     }
 
     await this.buttonPopupMergeContacts().click()

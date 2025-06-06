@@ -13,12 +13,59 @@
 // limitations under the License.
 //
 
-import { AttachedData, Class, Client, Doc, FindResult, Hierarchy, Ref } from '@hcengineering/core'
+import {
+  Account,
+  AccountRole,
+  AccountUuid,
+  AttachedData,
+  buildSocialIdString,
+  Class,
+  Client,
+  Doc,
+  FindResult,
+  generateId,
+  Hierarchy,
+  MeasureContext,
+  notEmpty,
+  Person as GlobalPerson,
+  PersonId,
+  pickPrimarySocialId,
+  Ref,
+  SocialId,
+  toIdMap,
+  TxFactory
+} from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
-import { MD5 } from 'crypto-js'
-import { AvatarProvider, AvatarType, Channel, Contact, Person, contactPlugin } from '.'
+import contact, { AvatarProvider, AvatarType, Channel, Contact, Employee, Person, SocialIdentityRef } from '.'
+
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
+
+let currentEmployee: Ref<Employee>
+
+const employeeListeners: ((ref: Ref<Employee>) => void)[] = []
+/**
+ * @public
+ * @returns
+ */
+export function getCurrentEmployee (): Ref<Employee> {
+  return currentEmployee
+}
+
+export function addEmployeeListenrer (l: (ref: Ref<Employee>) => void): void {
+  employeeListeners.push(l)
+}
+
+/**
+ * @public
+ * @param employee -
+ */
+export function setCurrentEmployee (employee: Ref<Employee>): void {
+  currentEmployee = employee
+  for (const l of employeeListeners) {
+    l(employee)
+  }
+}
 
 /**
  * @public
@@ -51,21 +98,14 @@ export function getAvatarColorName (color: string): string {
 /**
  * @public
  */
-export function buildGravatarId (email: string): string {
-  return MD5(email.trim().toLowerCase()).toString()
-}
-
-/**
- * @public
- */
 export function getAvatarProviderId (kind: AvatarType): Ref<AvatarProvider> | undefined {
   switch (kind) {
     case AvatarType.GRAVATAR:
-      return contactPlugin.avatarProvider.Gravatar
+      return contact.avatarProvider.Gravatar
     case AvatarType.COLOR:
-      return contactPlugin.avatarProvider.Color
+      return contact.avatarProvider.Color
   }
-  return contactPlugin.avatarProvider.Image
+  return contact.avatarProvider.Image
 }
 
 /**
@@ -107,32 +147,24 @@ export async function findContacts (
 
   // Same name persons
 
-  const potentialChannels = await client.findAll(
-    contactPlugin.class.Channel,
-    { value: { $in: values } },
-    { limit: 1000 }
-  )
+  const potentialChannels = await client.findAll(contact.class.Channel, { value: { $in: values } }, { limit: 1000 })
   let potentialContactIds = Array.from(new Set(potentialChannels.map((it) => it.attachedTo as Ref<Contact>)).values())
 
   if (potentialContactIds.length === 0) {
-    if (client.getHierarchy().isDerived(_class, contactPlugin.class.Person)) {
+    if (client.getHierarchy().isDerived(_class, contact.class.Person)) {
       const firstName = getFirstName(name).split(' ').shift() ?? ''
       const lastName = getLastName(name)
       // try match using just first/last name
       potentialContactIds = (
-        await client.findAll(
-          contactPlugin.class.Contact,
-          { name: { $like: `${lastName}%${firstName}%` } },
-          { limit: 100 }
-        )
+        await client.findAll(contact.class.Contact, { name: { $like: `${lastName}%${firstName}%` } }, { limit: 100 })
       ).map((it) => it._id)
       if (potentialContactIds.length === 0) {
         return { contacts: [], channels: [] }
       }
-    } else if (client.getHierarchy().isDerived(_class, contactPlugin.class.Organization)) {
+    } else if (client.getHierarchy().isDerived(_class, contact.class.Organization)) {
       // try match using just first/last name
       potentialContactIds = (
-        await client.findAll(contactPlugin.class.Contact, { name: { $like: `${name}` } }, { limit: 100 })
+        await client.findAll(contact.class.Contact, { name: { $like: `${name}` } }, { limit: 100 })
       ).map((it) => it._id)
       if (potentialContactIds.length === 0) {
         return { contacts: [], channels: [] }
@@ -141,12 +173,12 @@ export async function findContacts (
   }
 
   const potentialPersons: FindResult<Contact> = await client.findAll(
-    contactPlugin.class.Contact,
+    contact.class.Contact,
     { _id: { $in: potentialContactIds } },
     {
       lookup: {
         _id: {
-          channels: contactPlugin.class.Channel
+          channels: contact.class.Channel
         }
       }
     }
@@ -181,7 +213,7 @@ export async function findContacts (
  * @public
  */
 export async function findPerson (client: Client, name: string, channels: AttachedData<Channel>[]): Promise<Person[]> {
-  const result = await findContacts(client, contactPlugin.class.Person, name, channels)
+  const result = await findContacts(client, contact.class.Person, name, channels)
   return result.contacts as Person[]
 }
 
@@ -213,7 +245,7 @@ export function getLastName (name: string): string {
  */
 export function formatName (name: string, lastNameFirst?: string): string {
   const lastNameFirstCombined =
-    lastNameFirst !== undefined ? lastNameFirst === 'true' : getMetadata(contactPlugin.metadata.LastNameFirst) === true
+    lastNameFirst !== undefined ? lastNameFirst === 'true' : getMetadata(contact.metadata.LastNameFirst) === true
   return lastNameFirstCombined
     ? getLastName(name) + ' ' + getFirstName(name)
     : getFirstName(name) + ' ' + getLastName(name)
@@ -234,7 +266,7 @@ function isPerson (hierarchy: Hierarchy, value: Contact): value is Person {
 }
 
 function isPersonClass (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): boolean {
-  return hierarchy.isDerived(_class, contactPlugin.class.Person)
+  return hierarchy.isDerived(_class, contact.class.Person)
 }
 
 /**
@@ -250,4 +282,270 @@ export function formatContactName (
     return formatName(name, lastNameFirst)
   }
   return name
+}
+
+export function includesAny (members: PersonId[], ids: PersonId[]): boolean {
+  return members.some((m) => ids.includes(m))
+}
+
+export async function getPersonBySocialKey (client: Client, socialKey: string): Promise<Person | undefined> {
+  const socialId = await client.findOne(contact.class.SocialIdentity, { key: socialKey })
+  if (socialId === undefined) return undefined
+  return await client.findOne(contact.class.Person, { _id: socialId?.attachedTo, _class: socialId?.attachedToClass })
+}
+
+export async function getPersonBySocialId (client: Client, socialIdString: PersonId): Promise<Person | undefined> {
+  const socialId = await client.findOne(contact.class.SocialIdentity, { _id: socialIdString as SocialIdentityRef })
+
+  if (socialId === undefined) return undefined
+
+  return await client.findOne(contact.class.Person, { _id: socialId?.attachedTo, _class: socialId?.attachedToClass })
+}
+
+export async function getEmployeeBySocialId (client: Client, socialIdString: PersonId): Promise<Employee | undefined> {
+  const socialId = await client.findOne(contact.class.SocialIdentity, { _id: socialIdString as SocialIdentityRef })
+
+  if (socialId === undefined) return undefined
+
+  return await client.findOne(contact.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> })
+}
+
+export async function getPersonRefBySocialId (
+  client: Client,
+  socialIdString: PersonId
+): Promise<Ref<Person> | undefined> {
+  const socialId = await client.findOne(contact.class.SocialIdentity, { _id: socialIdString as SocialIdentityRef })
+
+  return socialId?.attachedTo
+}
+
+export async function getPersonRefsBySocialIds (
+  client: Client,
+  ids: PersonId[] = []
+): Promise<Record<PersonId, Ref<Person>>> {
+  const socialIds = await client.findAll(
+    contact.class.SocialIdentity,
+    ids.length === 0 ? {} : { _id: { $in: ids as SocialIdentityRef[] } }
+  )
+  const result: Record<PersonId, Ref<Person>> = {}
+
+  for (const socialId of socialIds) {
+    result[socialId._id] = socialId.attachedTo
+  }
+
+  return result
+}
+
+export async function getPrimarySocialId (client: Client, person: Ref<Person>): Promise<PersonId | undefined> {
+  const socialIds = await client.findAll(contact.class.SocialIdentity, { attachedTo: person, verifiedOn: { $gt: 0 } })
+
+  if (socialIds.length === 0) {
+    return
+  }
+
+  return pickPrimarySocialId(socialIds)._id
+}
+
+export async function getAllSocialStringsByPersonId (client: Client, personId: PersonId): Promise<PersonId[]> {
+  const socialId = await client.findOne(contact.class.SocialIdentity, {
+    _id: personId as SocialIdentityRef,
+    attachedToClass: contact.class.Person
+  })
+
+  if (socialId === undefined) {
+    return []
+  }
+
+  const socialIds = await client.findAll(contact.class.SocialIdentity, { attachedTo: socialId.attachedTo })
+
+  return socialIds.map((it) => it._id)
+}
+
+export async function getAllSocialStringsByPersonRef (client: Client, person: Ref<Person>): Promise<PersonId[]> {
+  const socialIds = await client.findAll(contact.class.SocialIdentity, { attachedTo: person })
+
+  return socialIds.map((it) => it._id)
+}
+
+export async function getSocialStringsByEmployee (client: Client): Promise<Record<Ref<Person>, PersonId[]>> {
+  const employees = await client.findAll(contact.mixin.Employee, { active: true })
+  const socialIds = await client.findAll(contact.class.SocialIdentity, {
+    attachedTo: { $in: employees.map((it) => it._id) },
+    attachedToClass: contact.class.Person
+  })
+  const socialStringsByPerson: Record<Ref<Employee>, PersonId[]> = {}
+
+  for (const socialId of socialIds) {
+    const socialStrings = socialStringsByPerson[socialId.attachedTo as Ref<Employee>]
+
+    if (socialStrings === undefined) {
+      socialStringsByPerson[socialId.attachedTo as Ref<Employee>] = []
+    }
+    socialStrings.push(socialId._id)
+  }
+
+  return socialStringsByPerson
+}
+
+export async function getAllAccounts (client: Client): Promise<AccountUuid[]> {
+  const employees = await client.findAll(contact.mixin.Employee, { active: true })
+
+  return employees.map((it) => it.personUuid).filter(notEmpty)
+}
+
+export async function getAllUserAccounts (client: Client): Promise<AccountUuid[]> {
+  const employees = await client.findAll(contact.mixin.Employee, { active: true })
+
+  return employees.map((it) => it.personUuid).filter(notEmpty)
+}
+
+export async function ensureEmployee (
+  ctx: MeasureContext,
+  me: Account,
+  client: Pick<Client, 'findOne' | 'findAll' | 'tx'>,
+  socialIds: SocialId[],
+  getGlobalPerson: () => Promise<GlobalPerson | undefined>
+): Promise<Ref<Employee> | null> {
+  const globalPerson = await getGlobalPerson()
+  return await ensureEmployeeForPerson(ctx, me, me, client, socialIds, globalPerson)
+}
+
+export async function ensureEmployeeForPerson (
+  ctx: MeasureContext,
+  me: Account,
+  person: Account,
+  client: Pick<Client, 'findOne' | 'findAll' | 'tx'>,
+  socialIds: SocialId[],
+  globalPerson?: GlobalPerson
+): Promise<Ref<Employee> | null> {
+  const txFactory = new TxFactory(me.primarySocialId)
+  const personByUuid = await client.findOne(contact.class.Person, { personUuid: person.uuid })
+  let personRef: Ref<Person> | undefined = personByUuid?._id
+  if (personRef === undefined) {
+    const socialIdentity = await client.findOne(contact.class.SocialIdentity, {
+      _id: { $in: person.socialIds as SocialIdentityRef[] }
+    })
+
+    // This social id is confirmed globally as we only have ids of confirmed social identities in socialIds array
+    personRef = socialIdentity?.attachedTo
+  }
+
+  if (personRef === undefined) {
+    await ctx.with('create-person', {}, async () => {
+      if (globalPerson === undefined) {
+        console.error('Cannot get global person')
+        return null
+      }
+
+      const data = {
+        personUuid: person.uuid,
+        name: combineName(globalPerson.firstName, globalPerson.lastName),
+        city: globalPerson.city,
+        avatarType: AvatarType.COLOR
+      }
+      personRef = generateId()
+
+      const createPersonTx = txFactory.createTxCreateDoc(contact.class.Person, contact.space.Contacts, data, personRef)
+      await client.tx(createPersonTx)
+    })
+  } else if (personByUuid === undefined) {
+    const updatePersonTx = txFactory.createTxUpdateDoc(contact.class.Person, contact.space.Contacts, personRef, {
+      personUuid: person.uuid
+    })
+    await client.tx(updatePersonTx)
+  }
+
+  const existingIdentifiers = toIdMap(
+    await client.findAll(contact.class.SocialIdentity, { _id: { $in: person.socialIds as SocialIdentityRef[] } })
+  )
+
+  for (const socialId of socialIds) {
+    const existing = existingIdentifiers.get(socialId._id as SocialIdentityRef)
+
+    if (existing === undefined) {
+      await ctx.with('create-social-identity', {}, async () => {
+        if (personRef === undefined) {
+          // something went wrong
+          console.error('Person not found')
+          return null
+        }
+
+        const createSocialIdTx = txFactory.createTxCollectionCUD(
+          contact.class.Person,
+          personRef,
+          contact.space.Contacts,
+          'socialIds',
+          txFactory.createTxCreateDoc(
+            contact.class.SocialIdentity,
+            contact.space.Contacts,
+            {
+              attachedTo: personRef,
+              attachedToClass: contact.class.Person,
+              collection: 'socialIds',
+              type: socialId.type,
+              value: socialId.value,
+              key: buildSocialIdString(socialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
+              verifiedOn: socialId.verifiedOn
+            },
+            socialId._id as SocialIdentityRef
+          )
+        )
+        await client.tx(createSocialIdTx)
+      })
+    } else {
+      // This social identity must be attached to the correct person. If it's not the case, something is wrong.
+      // personRef must be readonly after creation and must NEVER be changed.
+      if (existing.attachedTo !== personRef) {
+        throw new Error('Social identity is attached to the wrong person')
+      }
+
+      // Check and update if needed
+      if (existing.verifiedOn == null) {
+        const updateSocialIdentityTx = txFactory.createTxUpdateDoc(
+          contact.class.SocialIdentity,
+          contact.space.Contacts,
+          existing._id,
+          {
+            verifiedOn: socialId.verifiedOn
+          }
+        )
+        await client.tx(updateSocialIdentityTx)
+      }
+    }
+  }
+
+  // NOTE: it is important to create Employee after Person and SocialIdentities are ensured so all the triggers applied
+  // on Employee creation will be able to properly map things
+  const employeeRole = person.role === AccountRole.Guest || person.role === AccountRole.ReadOnlyGuest ? 'GUEST' : 'USER'
+  const employee = await client.findOne(contact.mixin.Employee, { _id: personRef as Ref<Employee> })
+
+  if (
+    employee === undefined ||
+    !Hierarchy.hasMixin(employee, contact.mixin.Employee) ||
+    !employee.active ||
+    employee.role !== employeeRole
+  ) {
+    await ctx.with('create-employee', {}, async () => {
+      if (personRef === undefined) {
+        // something went wrong
+        console.error('Person not found')
+        return null
+      }
+
+      const createEmployeeTx = txFactory.createTxMixin(
+        personRef,
+        contact.class.Person,
+        contact.space.Contacts,
+        contact.mixin.Employee,
+        {
+          active: true,
+          role: employeeRole
+        }
+      )
+      await client.tx(createEmployeeTx)
+    })
+  }
+
+  // TODO: check for merged persons with this one and do the merge
+  return personRef as Ref<Employee>
 }

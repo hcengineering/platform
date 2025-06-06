@@ -1,9 +1,9 @@
-version: "3"
+version: '3'
 services:
   mongodb:
     image: 'mongo:7-jammy'
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'huly.local:host-gateway'
     command: mongod --port 27018
     environment:
       - PUID=1000
@@ -11,6 +11,55 @@ services:
     ports:
       - 27018:27018
     restart: unless-stopped
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9093,external://0.0.0.0:19093
+      - --advertise-kafka-addr internal://redpanda:9093,external://localhost:19093
+      - --pandaproxy-addr internal://0.0.0.0:8084,external://0.0.0.0:18084
+      - --advertise-pandaproxy-addr internal://redpanda:8084,external://localhost:18084
+      - --schema-registry-addr internal://0.0.0.0:8083,external://0.0.0.0:18083
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+    ports:
+      - 18083:18083
+      - 18084:18084
+      - 19093:19093
+      - 19645:9644
+    healthcheck:
+      test: ['CMD', 'rpk', 'cluster', 'info', '-X', 'user=superuser', '-X', 'pass=secretpassword']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  redpanda_console:
+    image: docker.redpanda.com/redpandadata/console:v2.8.3
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    entrypoint: /bin/sh
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9093"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://redpanda:8083"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda:9644"]
+    ports:
+      - 8001:8080
+    depends_on:
+      - redpanda
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000"
@@ -41,7 +90,7 @@ services:
   account:
     image: hardcoreeng/account
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'huly.local:host-gateway'
     pull_policy: never
     links:
       - mongodb
@@ -51,36 +100,37 @@ services:
     volumes:
       - ./branding-test.json:/var/cfg/branding-test.json
     environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - ACCOUNT_PORT=3003
       - SERVER_SECRET=secret
+      - WORKSPACE_LIMIT_PER_USER=100
       - DB_URL=mongodb://mongodb:27018
-      - TRANSACTOR_URL=ws://transactor:3334;ws://host.docker.internal:3334
+      - TRANSACTOR_URL=ws://transactor:3334;ws://huly.local:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - BRANDING_PATH=/var/cfg/branding-test.json
   workspace:
     image: hardcoreeng/workspace
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'huly.local:host-gateway'
     links:
       - mongodb
       - minio
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_SECRET=secret
       - DB_URL=mongodb://mongodb:27018
       - MONGO_URL=mongodb://mongodb:27018
-      - TRANSACTOR_URL=ws://transactor:3334;ws://host.docker.internal:3334
+      - TRANSACTOR_URL=ws://transactor:3334;ws://huly.local:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://account:3003
       - BRANDING_PATH=/var/cfg/branding.json
     restart: unless-stopped
   front:
     image: hardcoreeng/front
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'huly.local:host-gateway'
     pull_policy: never
     links:
       - account
@@ -96,27 +146,25 @@ services:
     environment:
       - SERVER_PORT=8083
       - SERVER_SECRET=secret
-      - ACCOUNTS_URL=http://host.docker.internal:3003
+      - ACCOUNTS_URL=http://huly.local:3003
       - MONGO_URL=mongodb://mongodb:27018
       - UPLOAD_URL=/files
-      - ELASTIC_URL=http://elastic:9200
-      - GMAIL_URL=http://host.docker.internal:8088
-      - CALENDAR_URL=http://host.docker.internal:8095
-      - REKONI_URL=http://rekoni:4005
-      - TELEGRAM_URL=http://host.docker.internal:8086
-      - COLLABORATOR_URL=ws://host.docker.internal:3079
+      - GMAIL_URL=http://huly.local:8088
+      - CALENDAR_URL=http://huly.local:8095
+      - REKONI_URL=http://rekoni:4007
+      - TELEGRAM_URL=http://huly.local:8086
+      - COLLABORATOR_URL=ws://huly.local:3079
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - BRANDING_URL=http://host.docker.internal:8083/branding-test.json
-      - PRINT_URL=http://host.docker.internal:4005
-      - SIGN_URL=http://host.docker.internal:4006
+      - BRANDING_URL=http://huly.local:8083/branding-test.json
+      - PRINT_URL=http://huly.local:4003
+      - SIGN_URL=http://huly.local:4008
   transactor:
     image: hardcoreeng/transactor
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'huly.local:host-gateway'
     pull_policy: never
     links:
       - mongodb
-      - elastic
       - minio
       - rekoni
       - account
@@ -125,26 +173,26 @@ services:
     volumes:
       - ./branding-test.json:/var/cfg/branding-test.json
     environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_PROVIDER=${SERVER_PROVIDER}
       - SERVER_PORT=3334
       - SERVER_SECRET=secret
-      - ELASTIC_URL=http://elastic:9200
       - DB_URL=mongodb://mongodb:27018
-      - MONGO_URL=mongodb://mongodb:27018
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - REKONI_URL=http://rekoni:4005
-      - FRONT_URL=http://host.docker.internal:8083
-      - UPLOAD_URL=http://host.docker.internal:8083/files
+      - FRONT_URL=http://huly.local:8083
+      - UPLOAD_URL=http://huly.local:8083/files
       - ACCOUNTS_URL=http://account:3003
       - LAST_NAME_FIRST=true
-      - ELASTIC_INDEX_NAME=local_storage_index
+      - FULLTEXT_URL=http://fulltext:4710
       - BRANDING_PATH=/var/cfg/branding-test.json
+      - RATE_LIMIT_MAX=25000
+      - RATE_LIMIT_WINDOW=1000
   collaborator:
     image: hardcoreeng/collaborator
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'huly.local:host-gateway'
     links:
       - mongodb
       - minio
@@ -158,22 +206,25 @@ services:
       - UPLOAD_URL=/files
       - MONGO_URL=mongodb://mongodb:27018
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-    restart: unless-stopped 
+    restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
     restart: on-failure
+    ports:
+      - 4007:4004
   print:
     image: hardcoreeng/print
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'huly.local:host-gateway'
     restart: unless-stopped
     ports:
-      - 4005:4005
+      - 4003:4005
     environment:
       - SECRET=secret
       - MONGO_URL=${MONGO_URL}
       - MONGO_OPTIONS={"appName":"print","maxPoolSize":1}
       - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - ACCOUNTS_URL=http://account:3003
     deploy:
       resources:
         limits:
@@ -181,10 +232,10 @@ services:
   sign:
     image: hardcoreeng/sign
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'huly.local:host-gateway'
     restart: unless-stopped
     ports:
-      - 4006:4006
+      - 4008:4006
     volumes:
       - ../services/sign/pod-sign/debug/certificate.p12:/var/cfg/certificate.p12
       - ../services/sign/pod-sign/debug/branding.json:/var/cfg/branding.json
@@ -197,11 +248,28 @@ services:
       - ACCOUNTS_URL=http://account:3003
       - MINIO_SECRET_KEY=minioadmin
       - CERTIFICATE_PATH=/var/cfg/certificate.p12
-      - SERVICE_ID=sign-service      
+      - SERVICE_ID=sign-service
       - BRANDING_PATH=/var/cfg/branding.json
     deploy:
       resources:
         limits:
           memory: 300M
-volumes:
-  files:
+  fulltext:
+    image: hardcoreeng/fulltext
+    restart: unless-stopped
+    links:
+      - elastic
+      - mongodb
+      - rekoni
+    ports:
+      - 4710:4710
+    environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - PORT=4710
+      - SERVER_SECRET=secret
+      - DB_URL=mongodb://mongodb:27018
+      - FULLTEXT_DB_URL=http://elastic:9200
+      - ELASTIC_INDEX_NAME=local_storage_index
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - REKONI_URL=http://rekoni:4007
+      - ACCOUNTS_URL=http://account:3003

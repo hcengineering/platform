@@ -10,10 +10,11 @@ import {
   type Ref,
   type RelatedDocument,
   type Space,
-  type TxOperations
+  type TxOperations,
+  type BlobMetadata
 } from '@hcengineering/core'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
-import { type AnyComponent, type AnySvelteComponent, type ComponentExtensionId } from '@hcengineering/ui'
+import { type AnyComponent, type AnySvelteComponent, type ComponentExtensionId } from '@hcengineering/ui/src/types'
 
 export * from './components/breadcrumbs/types'
 
@@ -72,6 +73,9 @@ export interface ObjectSearchCategory extends Doc {
   // Query for documents with pattern
   query: Resource<ObjectSearchFactory>
   classToSearch?: Ref<Class<Doc>>
+  includeChilds?: boolean
+
+  priority?: number
 }
 
 export interface ComponentExt {
@@ -180,11 +184,6 @@ export interface DocRules extends Doc {
  * @public
  */
 export type FileOrBlob = File | Blob
-
-/**
- * @public
- */
-export type BlobMetadata = Record<string, any>
 
 /**
  * @public

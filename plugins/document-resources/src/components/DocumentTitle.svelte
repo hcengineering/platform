@@ -18,6 +18,7 @@
   import { IntlString, translateCB } from '@hcengineering/platform'
   import { registerFocus, themeStore } from '@hcengineering/ui'
   import { onMount } from 'svelte'
+  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
 
   export let value: string | undefined = undefined
   export let placeholder: IntlString | undefined
@@ -25,6 +26,7 @@
   export let autoFocus = false
   export let fill = false
 
+  const me = getCurrentAccount()
   let input: HTMLInputElement
   let placeholderTranslation = ''
 
@@ -69,7 +71,7 @@
 <div class="root" class:fill>
   <input
     bind:this={input}
-    disabled={readonly}
+    disabled={readonly || me.role === AccountRole.ReadOnlyGuest}
     type="text"
     bind:value
     placeholder={placeholderTranslation}

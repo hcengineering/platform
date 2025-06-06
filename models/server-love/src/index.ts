@@ -19,10 +19,19 @@ import { type Builder } from '@hcengineering/model'
 import serverCore from '@hcengineering/server-core'
 import love from '@hcengineering/love'
 import serverLove from '@hcengineering/server-love'
+import serverNotification from '@hcengineering/server-notification'
 
 export { serverLoveId } from '@hcengineering/server-love'
 
 export function createModel (builder: Builder): void {
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, serverNotification.mixin.HTMLPresenter, {
+    presenter: serverLove.function.MeetingMinutesHTMLPresenter
+  })
+
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, serverNotification.mixin.TextPresenter, {
+    presenter: serverLove.function.MeetingMinutesTextPresenter
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverLove.trigger.OnEmployee,
     txMatch: {
@@ -49,6 +58,13 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverLove.trigger.OnRoomInfo,
+    txMatch: {
+      objectClass: love.class.RoomInfo
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverLove.trigger.OnKnock,
     txMatch: {
       objectClass: love.class.JoinRequest,
@@ -62,5 +78,10 @@ export function createModel (builder: Builder): void {
       objectClass: love.class.Invite,
       _class: core.class.TxCreateDoc
     }
+  })
+
+  builder.mixin(love.class.MeetingMinutes, core.class.Class, serverCore.mixin.SearchPresenter, {
+    searchIcon: love.icon.MeetingMinutes,
+    title: [['title']]
   })
 }

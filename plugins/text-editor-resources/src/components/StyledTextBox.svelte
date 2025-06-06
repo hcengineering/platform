@@ -21,7 +21,6 @@
   import type { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
 
-  import { Completion } from '../Completion'
   import StyledTextEditor from './StyledTextEditor.svelte'
 
   import { addTableHandler } from '../utils'
@@ -29,8 +28,9 @@
   import { FocusExtension } from './extension/focus'
   import { ImageUploadExtension } from './extension/imageUploadExt'
   import { InlineCommandsExtension } from './extension/inlineCommands'
+  import { ReferenceExtension, referenceConfig } from './extension/reference'
   import { type FileAttachFunction } from './extension/types'
-  import { completionConfig, inlineCommandsConfig } from './extensions'
+  import { InlineCommandId, inlineCommandsConfig } from './extensions'
 
   export let label: IntlString | undefined = undefined
   export let content: Markup
@@ -179,8 +179,8 @@
       getFileUrl
     })
 
-    const completionPlugin = Completion.configure({
-      ...completionConfig,
+    const completionPlugin = ReferenceExtension.configure({
+      ...referenceConfig,
       showDoc (event: MouseEvent, _id: string, _class: string) {
         dispatch('open-document', { event, _id, _class })
       }
@@ -199,10 +199,12 @@
     }
 
     if (enableInlineCommands) {
+      const excludedInlineCommands: InlineCommandId[] = ['drawing-board', 'todo-list']
+
+      if (attachFile === undefined) excludedInlineCommands.push('image')
+
       extensions.push(
-        InlineCommandsExtension.configure(
-          inlineCommandsConfig(handleCommandSelected, attachFile === undefined ? ['image'] : [])
-        )
+        InlineCommandsExtension.configure(inlineCommandsConfig(handleCommandSelected, excludedInlineCommands))
       )
     }
 
@@ -226,10 +228,12 @@
       }
       case 'code-block':
         editor.editorHandler.insertCodeBlock(pos)
-
         break
       case 'separator-line':
         editor.editorHandler.insertSeparatorLine()
+        break
+      case 'mermaid':
+        editor.getEditor()?.commands.insertContentAt(pos, { type: 'mermaid' })
         break
     }
   }

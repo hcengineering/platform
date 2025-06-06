@@ -1,0 +1,11 @@
+{
+  "string": {
+    "CreatePublicLink": "Vytvořit veřejný odkaz",
+    "PublicLink": "Veřejný odkaz",
+    "Revoke": "Zrušit",
+    "RevokeConfirmation": "Tímto krokem přestane dříve sdílený odkaz fungovat. Opravdu chcete tento veřejný odkaz zrušit?",
+    "LinkWasRevoked": "Veřejný odkaz byl zrušen",
+    "Copy": "Kopírovat"
+  }
+}
+

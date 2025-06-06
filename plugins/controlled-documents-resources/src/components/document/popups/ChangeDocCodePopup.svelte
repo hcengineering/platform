@@ -15,14 +15,15 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import documents, { Document } from '@hcengineering/controlled-documents'
+  import documents, { ControlledDocument } from '@hcengineering/controlled-documents'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, EditBox, Label } from '@hcengineering/ui'
 
   import IconWarning from '../../icons/IconWarning.svelte'
   import documentsRes from '../../../plugin'
+  import { syncDocumentMetaTitle } from '../../../utils'
 
-  export let object: Document
+  export let object: ControlledDocument
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -59,6 +60,7 @@
     }
 
     await client.update(object, { code })
+    await syncDocumentMetaTitle(client, object.attachedTo, code, object.title)
     dispatch('close')
   }
 </script>

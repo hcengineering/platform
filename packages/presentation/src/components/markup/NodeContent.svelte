@@ -13,15 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref, Blob } from '@hcengineering/core'
   import { AttrValue, MarkupNode, MarkupNodeType } from '@hcengineering/text'
 
   import CodeBlockNode from './CodeBlockNode.svelte'
   import ObjectNode from './ObjectNode.svelte'
+  import MarkdownNode from './MarkdownNode.svelte'
   import Node from './Node.svelte'
+  import { getBlobRef } from '../../preview'
 
   export let node: MarkupNode
+  export let single = true
   export let preview = false
+
+  function toRefBlob (blobId: AttrValue): Ref<Blob> {
+    return blobId as Ref<Blob>
+  }
 
   function toRef (objectId: string): Ref<Doc> {
     return objectId as Ref<Doc>
@@ -35,7 +42,7 @@
   }
 
   function toString (value: AttrValue | undefined): string | undefined {
-    return value !== undefined ? `${value}` : undefined
+    return value != null ? `${value}` : undefined
   }
 
   function toNumber (value: AttrValue | undefined): number | undefined {
@@ -43,7 +50,25 @@
       return value ? 1 : 0
     }
 
-    return value !== undefined ? (typeof value === 'string' ? parseInt(value) : value) : undefined
+    return value != null ? (typeof value === 'string' ? parseInt(value) : value) : undefined
+  }
+
+  const checkEmoji = (nodes: MarkupNode[]): boolean => {
+    const matches: boolean[] = []
+    if (nodes.some((node) => node.type !== 'text')) {
+      return false
+    }
+    nodes.forEach((node) => {
+      const reg = node.text?.match(/\P{Emoji}/gu)
+      const regInc = node.text?.match(
+        /\p{Emoji}\uFE0F|\p{Emoji_Presentation}|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?/gu
+      )
+      matches.push(
+        (reg != null && reg.length > 0 && [65039, 65038, 8205].every((code) => code !== reg[0].charCodeAt(0))) ||
+          regInc == null
+      )
+    })
+    return matches.every((m) => !m)
   }
 </script>
 
@@ -59,11 +84,23 @@
     {/if}
   {:else if node.type === MarkupNodeType.text}
     {node.text}
+  {:else if node.type === MarkupNodeType.emoji}
+    <span class="emoji" class:emojiOnly={single}>
+      {#if node.attrs?.kind === 'image'}
+        {@const blob = toRefBlob(attrs.image)}
+        {@const alt = toString(attrs.emoji)}
+        {#await getBlobRef(blob) then blobSrc}
+          <img src={blobSrc.src} {alt} />
+        {/await}
+      {:else}
+        {node.attrs?.emoji}
+      {/if}
+    </span>
   {:else if node.type === MarkupNodeType.paragraph}
-    <p class="p-inline contrast" class:overflow-label={preview}>
+    <p class="p-inline contrast" class:overflow-label={preview} class:emojiOnly={checkEmoji(nodes)}>
       {#if nodes.length > 0}
         {#each nodes as node}
-          <Node {node} {preview} />
+          <Node {node} {preview} single={nodes.length === 1} />
         {/each}
       {/if}
     </p>
@@ -112,7 +149,8 @@
   {:else if node.type === MarkupNodeType.hard_break}
     <br />
   {:else if node.type === MarkupNodeType.ordered_list}
-    <ol style:margin={preview ? '0' : null}>
+    {@const start = toNumber(attrs.start) ?? 1}
+    <ol style:margin={preview ? '0' : null} {start}>
       {#if nodes.length > 0}
         {#each nodes as node}
           <Node {node} {preview} />
@@ -185,6 +223,10 @@
         {/each}
       {/if}
     </th>
+  {:else if node.type === MarkupNodeType.markdown}
+    <MarkdownNode {node} {preview} />
+  {:else if node.type === MarkupNodeType.mermaid}
+    <!-- TODO -->
   {:else if node.type === MarkupNodeType.comment}
     <!-- Ignore -->
   {:else}
@@ -200,6 +242,10 @@
 <style lang="scss">
   .imgContainer {
     display: inline;
+  }
+  .emojiOnly {
+    font-size: 2rem;
+    line-height: 115%;
   }
 
   .img {

@@ -13,33 +13,19 @@
 // limitations under the License.
 //
 
-import {
-  generateId,
-  toWorkspaceString,
-  type Doc,
-  type Domain,
-  type FieldIndexConfig,
-  type WorkspaceId
-} from '@hcengineering/core'
+import { generateId, type Doc, type Domain, type FieldIndexConfig } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
 import { MongoClient, type Collection, type Db, type Document } from 'mongodb'
 
 const connections = new Map<string, MongoClientReferenceImpl>()
 
-// Register mongo close on process exit.
-process.on('exit', () => {
-  shutdown().catch((err) => {
-    console.error(err)
-  })
-})
-
 const clientRefs = new Map<string, ClientRef>()
 
 /**
  * @public
  */
-export async function shutdown (): Promise<void> {
+export async function shutdownMongo (contextVars: Record<string, any> = {}): Promise<void> {
   for (const it of Array.from(clientRefs.values())) {
     console.error((it as any).stack)
   }
@@ -155,8 +141,8 @@ export function getMongoClient (uri: string): MongoClientReference {
  *
  * Construct MongoDB table from workspace.
  */
-export function getWorkspaceMongoDB (client: MongoClient, workspaceId: WorkspaceId): Db {
-  return client.db(toWorkspaceString(workspaceId))
+export function getWorkspaceMongoDB (client: MongoClient, dbName: string): Db {
+  return client.db(dbName)
 }
 
 export class DBCollectionHelper implements DomainHelperOperations {

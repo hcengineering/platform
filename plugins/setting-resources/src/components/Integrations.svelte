@@ -13,14 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import type { Integration, IntegrationType } from '@hcengineering/setting'
+  import { type Integration, type IntegrationType, IntegrationError } from '@hcengineering/setting'
   import setting from '@hcengineering/setting'
-  import { Header, Breadcrumb } from '@hcengineering/ui'
-  import PluginCard from './PluginCard.svelte'
 
-  const accountId = getCurrentAccount()._id
+  import { Header, Breadcrumb, NotificationSeverity, addNotification, themeStore } from '@hcengineering/ui'
+  import { translate } from '@hcengineering/platform'
+  import PluginCard from './PluginCard.svelte'
+  import IntegrationErrorNotification from './IntegrationErrorNotification.svelte'
+
   const typeQuery = createQuery()
   const integrationQuery = createQuery()
 
@@ -30,17 +33,49 @@
   typeQuery.query(setting.class.IntegrationType, {}, (res) => {
     integrationTypes = res
   })
-  integrationQuery.query(setting.class.Integration, { createdBy: accountId }, (res) => {
+  integrationQuery.query(setting.class.Integration, { createdBy: { $in: getCurrentAccount().socialIds } }, (res) => {
     integrations = res.filter((p) => p.value !== '')
   })
 
   function getIntegrations (type: Ref<IntegrationType>, integrations: Integration[]): Integration[] {
     return integrations.filter((p) => p.type === type)
   }
+
+  onMount(async () => {
+    // Check URL parameters for error message
+    const urlParams = new URLSearchParams(window.location.search)
+    const error = urlParams.get('integrationError')
+
+    if (error != null) {
+      const decodedError = decodeURIComponent(error)
+      console.error('Integration error:', decodedError)
+      await showErrorNotification(decodedError)
+      // Clean up integrationError parameter from the URL
+      urlParams.delete('integrationError')
+      const newParams = urlParams.toString()
+      const newUrl =
+        window.location.pathname + (newParams != null && newParams !== '' ? `?${newParams}` : '') + window.location.hash
+      window.history.replaceState({}, document.title, newUrl)
+    }
+  })
+
+  async function showErrorNotification (error: string): Promise<void> {
+    const errorMessage =
+      error === IntegrationError.EMAIL_IS_ALREADY_USED
+        ? await translate(setting.string.EmailIsUsed, {}, $themeStore.language)
+        : await translate(setting.string.IntegrationError, {}, $themeStore.language)
+    addNotification(
+      await translate(setting.string.IntegrationFailed, {}, $themeStore.language),
+      errorMessage,
+      IntegrationErrorNotification,
+      undefined,
+      NotificationSeverity.Error
+    )
+  }
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.Integrations} label={setting.string.Integrations} size={'large'} isCurrent />
   </Header>
 

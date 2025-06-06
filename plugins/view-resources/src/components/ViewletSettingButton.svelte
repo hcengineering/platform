@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { ButtonIcon, showPopup, closeTooltip } from '@hcengineering/ui'
-  import { ViewOptions, Viewlet } from '@hcengineering/view'
+  import { ViewOptionModel, ViewOptions, Viewlet, type ViewOptionsModel, BuildModelKey } from '@hcengineering/view'
   import view from '../plugin'
-  import { getViewOptions, viewOptionStore } from '../viewOptions'
+  import { getViewOptions, viewOptionStore, defaultOptions } from '../viewOptions'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
   import { restrictionStore } from '../utils'
@@ -25,6 +25,9 @@
   export let viewOptions: ViewOptions | undefined = undefined
   export let viewlet: Viewlet | undefined = undefined
   export let disabled: boolean = false
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
+  export let defaultViewOptions: ViewOptions | undefined = undefined
+  export let defaultConfig: (BuildModelKey | string)[] | undefined = undefined
 
   let btn: HTMLButtonElement
   let pressed: boolean = false
@@ -32,19 +35,36 @@
   function clickHandler () {
     pressed = true
     closeTooltip()
-    showPopup(ViewletSetting, { viewlet }, btn, () => {
+    showPopup(ViewletSetting, { viewlet, defaultConfig }, btn, () => {
       pressed = false
     })
   }
 
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+  function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
+    const res: ViewOptions = {
+      groupBy: [viewOptions.groupBy[0] ?? defaultOptions.groupBy[0]],
+      orderBy: viewOptions.orderBy?.[0] ?? defaultOptions.orderBy
+    }
+    for (const opt of viewOptions.other) {
+      res[opt.key] = opt.defaultValue
+    }
+    return res
+  }
+
+  function getDefaultOptions (): ViewOptions {
+    if (defaultViewOptions != null) return defaultViewOptions
+
+    return viewlet?.viewOptions != null ? getDefaults(viewlet.viewOptions) : defaultOptions
+  }
+
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore, getDefaultOptions())
 
   $: disabled = $restrictionStore.readonly
 </script>
 
 {#if viewlet}
   {#if viewOptions}
-    <ViewOptionsButton {viewlet} {kind} {viewOptions} />
+    <ViewOptionsButton {viewlet} {kind} {viewOptions} {viewOptionsConfig} />
   {/if}
   <ButtonIcon
     icon={view.icon.Configure}

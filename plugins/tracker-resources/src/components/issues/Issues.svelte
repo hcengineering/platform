@@ -41,20 +41,7 @@
   let query: DocumentQuery<Issue> | undefined = undefined
   let modeSelectorProps: IModeSelector | undefined = undefined
 
-  const allProjectQuery = createQuery()
-  let allProjects: Pick<Project, '_id' | '_class' | 'archived'>[] = []
-
-  allProjectQuery.query(
-    tracker.class.Project,
-    {},
-    (res) => {
-      allProjects = res
-    },
-    { projection: { _id: 1, archived: 1 } }
-  )
-  $: spaceQuery = currentSpace
-    ? { space: currentSpace }
-    : { space: { $in: allProjects.filter((it) => !it.archived).map((it) => it._id) } }
+  $: spaceQuery = currentSpace !== undefined ? { space: currentSpace } : {}
 
   $: all = { ...baseQuery, ...spaceQuery }
 

@@ -108,6 +108,7 @@
     on:click
     on:dragstart
     on:dragover
+    on:dragend
     on:drop
     on:toggle={(ev) => {
       if (ev.detail !== undefined) collapsed = !ev.detail
@@ -176,6 +177,7 @@
     on:click
     on:dragstart
     on:dragover
+    on:dragend
     on:drop
   >
     <slot />

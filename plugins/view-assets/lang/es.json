@@ -120,6 +120,17 @@
     "MoreActions": "Más Acciones",
     "Leave": "Salir",
     "Join": "Unirse",
-    "Copied": "Copiado"
+    "Copied": "Copiado",
+    "Title": "Título",
+    "HideArchived": "Ocultar archivadas",
+    "RemoveRelation": "Eliminar relación",
+    "RemoveRelationConfirmation": "¿Quieres eliminar la relación?",
+    "MasterDetail": "Maestro-detalle",
+    "Tree": "Árbol",
+    "Document": "Documento",
+    "Loading": "Cargando...",
+    "NoRelations": "No hay relaciones",
+    "ReadOnlyWarningTitle": "Modo de solo lectura",
+    "ReadOnlyWarningMessage": "Contacte al administrador para obtener acceso completo a este espacio de trabajo."
   }
 }

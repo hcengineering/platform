@@ -60,7 +60,7 @@
       >
         {#if withIcons}
           <div class="hulyPopup-row__icon">
-            {#if item.icon}<Icon icon={item.icon} size={'small'} />{/if}
+            {#if item.icon}<Icon icon={item.icon} iconProps={item.iconProps} size={'small'} />{/if}
           </div>
         {/if}
         {#if item.description}

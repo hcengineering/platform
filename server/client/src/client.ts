@@ -14,7 +14,7 @@
 //
 
 import client, { clientId } from '@hcengineering/client'
-import { Client, LoadModelResponse, Tx } from '@hcengineering/core'
+import { type Client, type LoadModelResponse, type Tx } from '@hcengineering/core'
 import { addLocation, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import crypto from 'node:crypto'
 import plugin from './plugin'

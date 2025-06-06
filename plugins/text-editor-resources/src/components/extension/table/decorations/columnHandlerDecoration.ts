@@ -13,18 +13,17 @@
 // limitations under the License.
 //
 
-import { type Editor } from '@tiptap/core'
-import { type EditorState } from '@tiptap/pm/state'
-import { TableMap } from '@tiptap/pm/tables'
-import { Decoration } from '@tiptap/pm/view'
 import textEditor from '@hcengineering/text-editor'
+import { type Editor } from '@tiptap/core'
+import { CellSelection, TableMap } from '@tiptap/pm/tables'
+import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
 import { type TableNodeLocation } from '../types'
-import { findTable, getSelectedColumns, isColumnSelected, selectColumn } from '../utils'
+import { findTable, getSelectedColumns, haveTableRelatedChanges, isColumnSelected, selectColumn } from '../utils'
 
-import { duplicateColumns, moveColumn } from './actions'
 import DeleteCol from '../../../icons/table/DeleteCol.svelte'
 import Duplicate from '../../../icons/table/Duplicate.svelte'
+import { duplicateColumns, moveSelectedColumns } from './actions'
 import { createCellsHandle, type OptionItem } from './cellsHandle'
 import {
   dropMarkerWidthPx,
@@ -32,14 +31,176 @@ import {
   getDropMarker,
   hideDragMarker,
   hideDropMarker,
-  updateColDropMarker,
-  updateColDragMarker
+  updateColDragMarker,
+  updateColDropMarker
 } from './tableDragMarkerDecoration'
 import { getTableCellWidgetDecorationPos, getTableWidthPx } from './utils'
 
-interface TableColumn {
-  leftPx: number
-  widthPx: number
+import { Plugin, PluginKey } from '@tiptap/pm/state'
+
+interface TableColumnHandlerDecorationPluginState {
+  decorations?: DecorationSet
+}
+
+export const TableColumnHandlerDecorationPlugin = (editor: Editor): Plugin<TableColumnHandlerDecorationPluginState> => {
+  const key = new PluginKey('tableColumnHandlerDecorationPlugin')
+  return new Plugin<TableColumnHandlerDecorationPluginState>({
+    key,
+    state: {
+      init: () => {
+        return {}
+      },
+      apply (tr, prev, oldState, newState) {
+        const table = findTable(newState.selection)
+        if (!haveTableRelatedChanges(editor, table, oldState, newState, tr)) {
+          return table !== undefined ? prev : {}
+        }
+
+        const tableMap = TableMap.get(table.node)
+
+        let isStale = false
+        const mapped = prev.decorations?.map(tr.mapping, tr.doc)
+        for (let col = 0; col < tableMap.width; col++) {
+          const pos = getTableCellWidgetDecorationPos(table, tableMap, col)
+          if (mapped?.find(pos, pos + 1)?.length !== 1) {
+            isStale = true
+            break
+          }
+        }
+
+        if (!isStale) {
+          return { decorations: mapped }
+        }
+
+        const decorations: Decoration[] = []
+
+        for (let col = 0; col < tableMap.width; col++) {
+          const pos = getTableCellWidgetDecorationPos(table, tableMap, col)
+          const handler = new ColumnHandler(editor, { col })
+          decorations.push(Decoration.widget(pos, () => handler.build(), { destroy: () => handler.destroy?.() }))
+        }
+
+        return { decorations: DecorationSet.create(newState.doc, decorations) }
+      }
+    },
+    props: {
+      decorations (state) {
+        return key.getState(state).decorations
+      }
+    }
+  })
+}
+
+interface ColumnHandlerProps {
+  col: number
+}
+
+class ColumnHandler {
+  editor: Editor
+  props: ColumnHandlerProps
+  destroy?: () => void
+
+  constructor (editor: Editor, props: ColumnHandlerProps) {
+    this.editor = editor
+    this.props = props
+  }
+
+  build (): HTMLElement {
+    const editor = this.editor
+    const col = this.props.col
+
+    const handle = createCellsHandle(createOptionItems(editor))
+    handle.classList.add('table-col-handle')
+
+    const selectionUpdate = (): boolean => {
+      const isSelected = isColumnSelected(col, editor.state.selection)
+      if (isSelected) {
+        handle.classList.add('table-col-handle__selected')
+      } else {
+        handle.classList.remove('table-col-handle__selected')
+      }
+      return isSelected
+    }
+
+    editor.on('selectionUpdate', selectionUpdate)
+
+    if (this.destroy !== undefined) {
+      this.destroy()
+    }
+    this.destroy = (): void => {
+      editor.off('selectionUpdate', selectionUpdate)
+    }
+
+    handle.addEventListener('mousedown', (event) => {
+      event.stopPropagation()
+      event.preventDefault()
+
+      const table = findTable(editor.state.selection)
+      if (table === undefined) {
+        return
+      }
+
+      const isSelected = selectionUpdate()
+
+      event.stopPropagation()
+      event.preventDefault()
+
+      // select column
+      if (!isSelected) {
+        editor.view.dispatch(selectColumn(table, col, editor.state.tr))
+      }
+
+      // drag column
+      const tableWidthPx = getTableWidthPx(table, editor)
+      const columns = getTableColumns(table, editor)
+
+      let dropIndex = col
+      const startLeft = columns[col].leftPx ?? 0
+      const startX = event.clientX
+
+      const dropMarker = getDropMarker()
+      const dragMarker = getColDragMarker()
+
+      const handleFinish = (): void => {
+        if (dropMarker !== null) hideDropMarker(dropMarker)
+        if (dragMarker !== null) hideDragMarker(dragMarker)
+
+        if (col !== dropIndex) {
+          let tr = editor.state.tr
+          const selection = editor.state.selection
+          if (selection instanceof CellSelection) {
+            const table = findTable(selection)
+            if (table !== undefined) {
+              tr = moveSelectedColumns(editor, table, selection, dropIndex, tr)
+            }
+          }
+          editor.view.dispatch(tr)
+        }
+        window.removeEventListener('mouseup', handleFinish)
+        window.removeEventListener('mousemove', handleMove)
+      }
+
+      const handleMove = (event: MouseEvent): void => {
+        if (dropMarker !== null && dragMarker !== null) {
+          const currentLeft = startLeft + event.clientX - startX
+          dropIndex = calculateColumnDropIndex(col, columns, currentLeft)
+
+          const dragMarkerWidthPx = columns[col].widthPx
+          const dragMarkerLeftPx = Math.max(0, Math.min(currentLeft, tableWidthPx - dragMarkerWidthPx))
+          const dropMarkerLeftPx =
+            dropIndex <= col ? columns[dropIndex].leftPx : columns[dropIndex].leftPx + columns[dropIndex].widthPx
+
+          updateColDropMarker(dropMarker, dropMarkerLeftPx - Math.floor(dropMarkerWidthPx / 2) - 1, dropMarkerWidthPx)
+          updateColDragMarker(dragMarker, dragMarkerLeftPx, dragMarkerWidthPx)
+        }
+      }
+
+      window.addEventListener('mouseup', handleFinish)
+      window.addEventListener('mousemove', handleMove)
+    })
+
+    return handle
+  }
 }
 
 const createOptionItems = (editor: Editor): OptionItem[] => [
@@ -65,86 +226,9 @@ const createOptionItems = (editor: Editor): OptionItem[] => [
   }
 ]
 
-export const columnHandlerDecoration = (state: EditorState, table: TableNodeLocation, editor: Editor): Decoration[] => {
-  const decorations: Decoration[] = []
-
-  const tableMap = TableMap.get(table.node)
-  for (let col = 0; col < tableMap.width; col++) {
-    const pos = getTableCellWidgetDecorationPos(table, tableMap, col)
-    const isSelected = isColumnSelected(col, state.selection)
-
-    const handle = createCellsHandle(createOptionItems(editor))
-    handle.classList.add('table-col-handle')
-    if (isSelected) {
-      handle.classList.add('table-col-handle__selected')
-    }
-    handle.addEventListener('mousedown', (e) => {
-      handleMouseDown(col, table, e, editor, isSelected)
-    })
-
-    decorations.push(Decoration.widget(pos, handle))
-  }
-
-  return decorations
-}
-
-const handleMouseDown = (
-  col: number,
-  table: TableNodeLocation,
-  event: MouseEvent,
-  editor: Editor,
-  isSelected: boolean
-): void => {
-  event.stopPropagation()
-  event.preventDefault()
-
-  // select column
-  if (!isSelected) {
-    editor.view.dispatch(selectColumn(table, col, editor.state.tr))
-  }
-
-  // drag column
-  const tableWidthPx = getTableWidthPx(table, editor)
-  const columns = getTableColumns(table, editor)
-
-  let dropIndex = col
-  const startLeft = columns[col].leftPx ?? 0
-  const startX = event.clientX
-
-  const dropMarker = getDropMarker()
-  const dragMarker = getColDragMarker()
-
-  function handleFinish (): void {
-    if (dropMarker !== null) hideDropMarker(dropMarker)
-    if (dragMarker !== null) hideDragMarker(dragMarker)
-
-    if (col !== dropIndex) {
-      let tr = editor.state.tr
-      tr = selectColumn(table, dropIndex, tr)
-      tr = moveColumn(table, col, dropIndex, tr)
-      editor.view.dispatch(tr)
-    }
-    window.removeEventListener('mouseup', handleFinish)
-    window.removeEventListener('mousemove', handleMove)
-  }
-
-  function handleMove (event: MouseEvent): void {
-    if (dropMarker !== null && dragMarker !== null) {
-      const currentLeft = startLeft + event.clientX - startX
-      dropIndex = calculateColumnDropIndex(col, columns, currentLeft)
-
-      const dragMarkerWidthPx = columns[col].widthPx
-      const dragMarkerLeftPx = Math.max(0, Math.min(currentLeft, tableWidthPx - dragMarkerWidthPx))
-      const dropMarkerLeftPx =
-        dropIndex <= col ? columns[dropIndex].leftPx : columns[dropIndex].leftPx + columns[dropIndex].widthPx
-
-      updateColDropMarker(dropMarker, dropMarkerLeftPx - dropMarkerWidthPx / 2, dropMarkerWidthPx)
-      updateColDragMarker(dragMarker, dragMarkerLeftPx, dragMarkerWidthPx)
-    }
-  }
-
-  window.addEventListener('mouseup', handleFinish)
-  window.addEventListener('mousemove', handleMove)
+interface TableColumn {
+  leftPx: number
+  widthPx: number
 }
 
 function calculateColumnDropIndex (col: number, columns: TableColumn[], left: number): number {

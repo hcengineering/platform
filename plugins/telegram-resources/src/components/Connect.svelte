@@ -13,151 +13,198 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata } from '@hcengineering/platform'
-  import { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
+  import { IntlString } from '@hcengineering/platform'
+  import ui, { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation from '@hcengineering/presentation'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
-  import { concatLink } from '@hcengineering/core'
+  import { command, list, type Integration } from '../api'
 
-  const dispatch = createEventDispatcher()
-
-  let requested = false
-  let secondFactor = false
-  let connecting = false
   let phone: string = ''
   let code: string = ''
   let password: string = ''
-  let error: string | undefined = undefined
-  const url = getMetadata(telegram.metadata.TelegramURL) ?? ''
+  let error: string = ''
 
-  async function requestCode (): Promise<void> {
-    const res = await sendRequest('/signin', { phone })
-    if (res.next === 'code') {
-      requested = true
-    }
+  const dispatch = createEventDispatcher()
 
-    if (res.next === 'end') {
-      dispatch('close', { value: phone })
+  function close (): void {
+    dispatch('close')
+  }
+
+  interface UIState {
+    mode: 'Loading' | 'WantPhone' | 'WantCode' | 'WantPassword' | 'Authorized' | 'Unauthorized' | 'Error'
+    hint?: string
+
+    buttons?: {
+      primary?: { label: IntlString, handler?: () => any, disabled?: boolean }
+      secondary?: { label: IntlString, handler?: () => any }
     }
   }
 
-  async function sendPassword (): Promise<void> {
-    const res = await sendRequest('/signin/pass', { phone, pass: password })
-    if (res.next === 'end') {
-      dispatch('close', { value: phone })
+  let integration: Integration = 'Loading'
+  let state: UIState = { mode: 'Loading' }
+
+  function h (handler: () => Promise<Integration>) {
+    return () => {
+      handler()
+        .then((i) => {
+          integration = i
+        })
+        .catch((error) => {
+          state = {
+            mode: 'Error',
+            hint: error.message,
+            buttons: {
+              primary: { label: ui.string.Ok, handler: close }
+            }
+          }
+        })
     }
   }
 
-  async function sendCode (): Promise<void> {
-    const res = await sendRequest('/signin/code', { phone, code })
-    if (res.next === 'pass') {
-      secondFactor = true
-    } else if (res.next === 'end') {
-      dispatch('close', { value: phone })
-    }
-  }
-
-  async function sendRequest (path: string, data: any): Promise<any> {
-    connecting = true
-    const response = await fetch(concatLink(url, path), {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
-    const res = await response.json()
-    connecting = false
-
-    if (Math.trunc(response.status / 100) !== 2) {
-      if (res.code === 'PHONE_CODE_INVALID') {
-        error = 'Invalid code'
+  $: {
+    if (integration === 'Loading') {
+      state = { mode: 'Loading' }
+    } else if (integration === 'Missing') {
+      state = {
+        mode: 'WantPhone',
+        buttons: {
+          primary: {
+            label: ui.string.Next,
+            handler: h(() => command(phone, 'start')),
+            disabled: phone.match(/^\+\d{9,15}$/) == null
+          },
+          secondary: { label: telegram.string.Cancel, handler: close }
+        }
       }
+    } else {
+      switch (integration.status) {
+        case 'authorized': {
+          state = {
+            mode: 'Authorized',
+            hint: integration.number,
+            buttons: {
+              primary: { label: ui.string.Ok, handler: close }
+              // secondary: { label: telegram.string.Disconnect }
+            }
+          }
+          break
+        }
 
-      throw new Error(res.message)
+        case 'wantcode': {
+          const number = integration.number
+
+          state = {
+            mode: 'WantCode',
+            buttons: {
+              primary: {
+                label: ui.string.Next,
+                handler: h(() => command(number, 'next', code)),
+                disabled: code.match(/^\d{5}$/) == null
+              },
+              secondary: { label: telegram.string.Cancel, handler: close }
+            }
+          }
+
+          break
+        }
+
+        case 'wantpassword': {
+          const number = integration.number
+
+          state = {
+            mode: 'WantPassword',
+            buttons: {
+              primary: {
+                label: ui.string.Next,
+                handler: h(() => command(number, 'next', password)),
+                disabled: password.length === 0
+              },
+              secondary: { label: telegram.string.Cancel, handler: close }
+            }
+          }
+
+          break
+        }
+      }
     }
-
-    return res
   }
 
-  function back () {
-    password = ''
-    code = ''
-    phone = ''
-    requested = false
-    secondFactor = false
-  }
+  async function init (): Promise<void> {
+    try {
+      const integrations = await list()
 
-  $: label = connecting
-    ? telegram.string.Connecting
-    : requested || secondFactor
-      ? telegram.string.Connect
-      : telegram.string.Next
+      if (integrations.length === 0) {
+        integration = 'Missing'
+      } else {
+        integration = integrations[0]
+      }
+    } catch (ex: any) {
+      console.error(ex)
+      state = {
+        mode: 'Error',
+        hint: ex.message,
 
-  $: disabled = checkDisabled(connecting, secondFactor, password, requested, error, code, phone)
-
-  function checkDisabled (
-    connecting: boolean,
-    secondFactor: boolean,
-    password: string,
-    requested: boolean,
-    error: string | undefined,
-    code: string,
-    phone: string
-  ): boolean {
-    if (connecting) return true
-    if (secondFactor) return password.length === 0
-    if (requested) {
-      if (error !== undefined) return true
-      return !code.match(/^\d{5}$/)
+        buttons: {
+          primary: { label: ui.string.Ok, handler: close }
+        }
+      }
     }
-    return !phone.match(/^\+\d{9,15}$/)
   }
 
-  function click () {
-    if (secondFactor) return sendPassword()
-    if (requested) return sendCode()
-    return requestCode()
-  }
+  void init()
 </script>
 
 <div class="card">
   <div class="flex-between header">
     <div class="overflow-label fs-title"><Label label={telegram.string.ConnectFull} /></div>
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div
-      class="tool"
-      on:click={() => {
-        dispatch('close')
-      }}
-    >
+    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+    <div class="tool" on:click={close}>
       <IconClose size={'small'} />
     </div>
   </div>
+
   <div class="content">
-    {#if secondFactor}
-      <p><Label label={telegram.string.PasswordDescr} /></p>
+    {#if state.mode === 'Loading'}
+      <Label label={telegram.string.Loading} />
+    {:else if state.mode === 'WantPhone'}
+      <Label label={telegram.string.PhoneDescr} />
+
+      <EditBox label={telegram.string.Phone} placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
+    {:else if state.mode === 'WantCode'}
+      <Label label={telegram.string.CodeDescr} />
+
+      <PinPad length={5} bind:value={code} bind:error />
+    {:else if state.mode === 'WantPassword'}
+      <Label label={telegram.string.PasswordDescr} />
+
       <EditBox
         label={telegram.string.Password}
         format="password"
         placeholder={telegram.string.Password}
         bind:value={password}
       />
-    {:else if requested}
-      <p><Label label={telegram.string.CodeDescr} /></p>
-      <PinPad length={5} bind:value={code} bind:error />
-    {:else}
-      <p><Label label={telegram.string.PhoneDescr} /></p>
-      <EditBox label={telegram.string.Phone} placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
+    {:else if state.mode === 'Authorized'}
+      <Label label={telegram.string.IntegrationConnected} params={{ phone: state.hint }} />
+    {:else if state.mode === 'Error'}
+      <p>Error: {state.hint}</p>
     {/if}
+
     <div class="footer">
-      <Button {label} kind={'primary'} {disabled} on:click={click} />
-      {#if requested || secondFactor}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="link over-underline" on:click={back}><Label label={telegram.string.Back} /></div>
+      {#if state.buttons?.primary}
+        <Button
+          label={state.buttons.primary.label}
+          kind={'primary'}
+          disabled={state.buttons.primary.disabled}
+          on:click={state.buttons.primary.handler}
+        />
+      {/if}
+
+      {#if state.buttons?.secondary}
+        <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+        <div class="link over-underline" on:click={state.buttons.secondary.handler}>
+          <Label label={state.buttons.secondary.label} />
+        </div>
       {/if}
     </div>
   </div>

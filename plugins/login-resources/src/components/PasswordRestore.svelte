@@ -13,16 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
+  import { OK, Severity, Status } from '@hcengineering/platform'
 
-  import presentation from '@hcengineering/presentation'
-  import { getCurrentLocation, setMetadataLocalStorage } from '@hcengineering/ui'
+  import { getCurrentLocation } from '@hcengineering/ui'
+  import { logIn } from '@hcengineering/workbench'
   import login from '../plugin'
+  import type { Field } from '../types'
   import { goTo, restorePassword } from '../utils'
   import Form from './Form.svelte'
+  import { getPasswordValidationRules } from '../validations'
 
-  const fields = [
-    { id: 'new-password', name: 'password', i18n: login.string.Password, password: true },
+  const fields: Array<Field> = [
+    {
+      id: 'new-password',
+      name: 'password',
+      i18n: login.string.Password,
+      password: true,
+      rules: getPasswordValidationRules()
+    },
     { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
   ]
 
@@ -44,10 +52,8 @@
 
       status = loginStatus
 
-      if (result !== undefined) {
-        setMetadata(presentation.metadata.Token, result.token)
-        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-        setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+      if (result != null) {
+        await logIn(result)
         goTo('selectWorkspace')
       }
     }

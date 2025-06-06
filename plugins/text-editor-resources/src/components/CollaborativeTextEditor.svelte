@@ -16,20 +16,39 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
+  import {
+    AccountRole,
+    type Blob,
+    Class,
+    type CollaborativeDoc,
+    type Doc,
+    generateId,
+    getCurrentAccount,
+    makeDocCollabId,
+    type Ref
+  } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
+  import {
+    DrawingCmd,
+    getAttribute,
+    getClient,
+    getFileUrl,
+    getImageSize,
+    imageSizeToRatio,
+    KeyedAttribute
+  } from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
   import {
     AnySvelteComponent,
     Button,
+    getEventPositionElement,
+    getPopupPositionElement,
+    IconScribble,
     IconSize,
     Loading,
     PopupAlignment,
-    ThrottledCaller,
-    getEventPositionElement,
-    getPopupPositionElement,
-    themeStore
+    themeStore,
+    ThrottledCaller
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
@@ -39,12 +58,6 @@
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
   import { Doc as YDoc } from 'yjs'
 
-  import { Completion } from '../Completion'
-  import { deleteAttachment } from '../command/deleteAttachment'
-  import { textEditorCommandHandler } from '../commands'
-  import { EditorKitOptions, getEditorKit } from '../../src/kits/editor-kit'
-  import { Provider } from '../provider/types'
-  import { createLocalProvider, createRemoteProvider } from '../provider/utils'
   import textEditor, {
     CollaborationIds,
     CollaborationUser,
@@ -52,28 +65,29 @@
     TextEditorCommandHandler,
     TextEditorHandler
   } from '@hcengineering/text-editor'
+  import { EditorKitOptions, getEditorKit } from '../../src/kits/editor-kit'
+  import { deleteAttachment } from '../command/deleteAttachment'
+  import { textEditorCommandHandler } from '../commands'
+  import { Provider } from '../provider/types'
+  import { createLocalProvider, createRemoteProvider } from '../provider/utils'
   import { addTableHandler } from '../utils'
 
-  import CollaborationUsers from './CollaborationUsers.svelte'
-  import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
+  import { SavedBoard } from './extension/drawingBoard'
   import { EmojiExtension } from './extension/emoji'
   import { FileUploadExtension } from './extension/fileUploadExt'
   import { ImageUploadExtension } from './extension/imageUploadExt'
   import { InlineCommandsExtension } from './extension/inlineCommands'
+  import { InlineCommentCollaborationExtension } from './extension/inlineComment'
   import { LeftMenuExtension } from './extension/leftMenu'
+  import { mermaidOptions } from './extension/mermaid'
+  import { referenceConfig, ReferenceExtension } from './extension/reference'
   import { type FileAttachFunction } from './extension/types'
-  import { completionConfig, inlineCommandsConfig } from './extensions'
+  import { inlineCommandsConfig } from './extensions'
 
-  export let collaborativeDoc: CollaborativeDoc
-  export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
-  export let field: string
-
-  export let objectClass: Ref<Class<Doc>> | undefined = undefined
-  export let objectId: Ref<Doc> | undefined = undefined
-  export let objectSpace: Ref<Space> | undefined = undefined
-  export let objectAttr: string | undefined = undefined
+  export let object: Doc
+  export let attribute: KeyedAttribute
 
   export let user: CollaborationUser
   export let userComponent: AnySvelteComponent | undefined = undefined
@@ -99,38 +113,48 @@
   export let withSideMenu = true
   export let withInlineCommands = true
   export let kitOptions: Partial<EditorKitOptions> = {}
+  export let requestSideSpace: ((width: number) => void) | undefined = undefined
+  export let enableInlineComments: boolean = true
 
+  const client = getClient()
   const dispatch = createEventDispatcher()
 
-  const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc()
+  const account = getCurrentAccount()
+  $: isGuest = account.role === AccountRole.DocGuest || account.role === AccountRole.ReadOnlyGuest
+
+  const objectClass = object._class
+  const objectId = object._id
+  const objectSpace = object.space
+  const objectAttr = attribute.key
+  const field = attribute.key
+  const content = getAttribute(client, object, attribute)
+  const collaborativeDoc = makeDocCollabId(object, objectAttr)
+
+  const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc({ guid: generateId(), gc: false })
   const contextProvider = getContext<Provider>(CollaborationIds.Provider)
 
   const localProvider = createLocalProvider(ydoc, collaborativeDoc)
-
-  const remoteProvider =
-    contextProvider ??
-    createRemoteProvider(ydoc, {
-      document: collaborativeDoc,
-      initialDocument: initialCollaborativeDoc,
-      objectClass,
-      objectId,
-      objectAttr
-    })
+  const remoteProvider = contextProvider ?? createRemoteProvider(ydoc, collaborativeDoc, content)
 
   let contentError = false
   let localSynced = false
   let remoteSynced = false
 
   $: loading = !localSynced && !remoteSynced
-  $: editable = !readonly && !contentError && remoteSynced
+  $: editable = !readonly && !contentError && remoteSynced && account.role !== AccountRole.ReadOnlyGuest
 
   void localProvider.loaded.then(() => (localSynced = true))
   void remoteProvider.loaded.then(() => (remoteSynced = true))
+
+  void Promise.all([localProvider.loaded, remoteProvider.loaded]).then(() => {
+    dispatch('loaded')
+  })
 
   let editor: Editor
   let element: HTMLElement
   let textToolbarElement: HTMLElement
   let imageToolbarElement: HTMLElement
+  let editorPopupContainer: HTMLElement
 
   let placeHolderStr: string = ''
 
@@ -152,6 +176,9 @@
   const editorHandler: TextEditorHandler = {
     insertText: (text) => {
       editor?.commands.insertContent(text)
+    },
+    insertEmoji: (text: string, image?: Ref<Blob>) => {
+      editor?.commands.insertEmoji(text, image === undefined ? 'unicode' : 'image', image)
     },
     insertMarkup: (markup) => {
       editor?.commands.insertContent(markupToJSON(markup))
@@ -247,36 +274,40 @@
         })
       )
     }
-    if (withSideMenu) {
-      optionalExtensions.push(
-        LeftMenuExtension.configure({
-          width: 20,
-          height: 20,
-          marginX: 8,
-          className: 'tiptap-left-menu',
-          icon: view.icon.Add,
-          iconProps: {
-            className: 'svg-tiny',
-            fill: 'currentColor'
-          },
-          items: [
-            ...(canEmbedImages ? [{ id: 'image', label: textEditor.string.Image, icon: view.icon.Image }] : []),
-            { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
-            { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
-            { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
-            { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList }
-          ],
-          handleSelect: handleLeftMenuClick
-        })
+  }
+
+  if (withSideMenu) {
+    optionalExtensions.push(
+      LeftMenuExtension.configure({
+        width: 20,
+        height: 20,
+        marginX: 8,
+        className: 'tiptap-left-menu',
+        icon: view.icon.Add,
+        iconProps: {
+          className: 'svg-tiny',
+          fill: 'currentColor'
+        },
+        items: [
+          ...(canEmbedImages ? [{ id: 'image', label: textEditor.string.Image, icon: view.icon.Image }] : []),
+          { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
+          { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
+          { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
+          { id: 'todo-list', label: textEditor.string.TodoItem, icon: view.icon.TodoList },
+          { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any },
+          { id: 'mermaid', label: textEditor.string.MermaidDiargram, icon: view.icon.Model }
+        ],
+        handleSelect: handleLeftMenuClick
+      })
+    )
+  }
+
+  if (withInlineCommands) {
+    optionalExtensions.push(
+      InlineCommandsExtension.configure(
+        inlineCommandsConfig(handleLeftMenuClick, attachFile === undefined || !canEmbedImages ? ['image'] : [])
       )
-    }
-    if (withInlineCommands) {
-      optionalExtensions.push(
-        InlineCommandsExtension.configure(
-          inlineCommandsConfig(handleLeftMenuClick, attachFile === undefined || !canEmbedImages ? ['image'] : [])
-        )
-      )
-    }
+    )
   }
 
   let inputImage: HTMLInputElement
@@ -357,6 +388,12 @@
       case 'separator-line':
         editor.commands.setHorizontalRule()
         break
+      case 'drawing-board':
+        editor.commands.insertContentAt(pos, { type: 'drawingBoard', attrs: { id: generateId() } })
+        break
+      case 'mermaid':
+        editor.commands.insertContentAt(pos, { type: 'mermaid' })
+        break
     }
   }
 
@@ -365,16 +402,58 @@
     remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
   }
 
-  function parseField (collaborativeDoc: CollaborativeDoc): string | undefined {
-    if (collaborativeDoc === undefined) return undefined
-    const _id = collaborativeDoc.split(':')
-    if (_id === undefined) return undefined
-    return _id[0]?.split('%')?.[1]
+  interface SavedBoardRaw {
+    ydoc: YDoc
+    localProvider: Provider
+    remoteProvider: Provider
+    localSynced: boolean
+    remoteSynced: boolean
+  }
+  const savedBoards: Record<string, SavedBoardRaw> = {}
+
+  function getSavedBoard (id: string): SavedBoard {
+    let board = savedBoards[id]
+    if (board === undefined) {
+      const ydoc = new YDoc({ guid: id, gc: false })
+      // We don't have a real class for boards,
+      // but collaborator only needs a string id
+      // which is produced from such an id-object
+      const collabId: CollaborativeDoc = {
+        objectClass: 'DrawingBoard' as Ref<Class<Doc>>,
+        objectId: id as Ref<Doc>,
+        objectAttr: 'content'
+      }
+      const localProvider = createLocalProvider(ydoc, collabId)
+      const remoteProvider = createRemoteProvider(ydoc, collabId, id as Ref<Blob>)
+      savedBoards[id] = { ydoc, localProvider, remoteProvider, localSynced: false, remoteSynced: false }
+      void localProvider.loaded.then(() => (savedBoards[id].localSynced = true))
+      void remoteProvider.loaded.then(() => (savedBoards[id].remoteSynced = true))
+      board = savedBoards[id]
+    }
+    return {
+      props: board.ydoc.getMap('props'),
+      commands: board.ydoc.getArray<DrawingCmd>('commands'),
+      loading: !board.localSynced || !board.remoteSynced
+    }
   }
 
   onMount(async () => {
-    const _field = parseField(collaborativeDoc) ?? field
     await ph
+
+    if (enableInlineComments && !isGuest) {
+      optionalExtensions.push(
+        InlineCommentCollaborationExtension.configure({
+          ydoc,
+          boundary,
+          popupContainer: editorPopupContainer,
+          requestSideSpace
+        })
+      )
+    }
+
+    // it is recommended to wait for the local provider to be loaded
+    // https://discuss.yjs.dev/t/initial-offline-value-of-a-shared-document/465/4
+    await localProvider.loaded
 
     editor = new Editor({
       enableContentCheck: true,
@@ -388,17 +467,16 @@
           history: false,
           submit: false,
           toolbar: {
-            element: textToolbarElement,
             boundary,
-            isHidden: () => !showToolbar
+            popupContainer: editorPopupContainer
           },
-          image: {
-            toolbar: {
-              element: imageToolbarElement,
-              boundary,
-              appendTo: () => boundary ?? element,
-              isHidden: () => !showToolbar
-            }
+          mermaid: {
+            ...mermaidOptions,
+            ydoc,
+            ydocContentField: field
+          },
+          drawingBoard: {
+            getSavedBoard
           },
           ...kitOptions
         }),
@@ -406,7 +484,7 @@
         Placeholder.configure({ placeholder: placeHolderStr }),
         Collaboration.configure({
           document: ydoc,
-          field: _field
+          field
         }),
         CollaborationCursor.configure({
           provider: remoteProvider,
@@ -414,8 +492,8 @@
           render: renderCursor,
           selectionRender: noSelectionRender
         }),
-        Completion.configure({
-          ...completionConfig,
+        ReferenceExtension.configure({
+          ...referenceConfig,
           showDoc (event: MouseEvent, _id: string, _class: string) {
             dispatch('open-document', { event, _id, _class })
           }
@@ -478,6 +556,7 @@
   style="display: none"
   on:change={fileSelected}
 />
+<div class="editorPopupContainer" bind:this={editorPopupContainer}></div>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
@@ -492,30 +571,13 @@
     </div>
   {/if}
 
-  <TextEditorToolbar
-    bind:toolbar={textToolbarElement}
-    visible={showToolbar}
-    {editor}
-    formatButtonSize={buttonSize}
-    on:focus={handleFocus}
-  />
-
-  <TextEditorToolbar
-    bind:toolbar={imageToolbarElement}
-    kind="image"
-    visible={showToolbar}
-    {editor}
-    formatButtonSize={buttonSize}
-    on:focus={handleFocus}
-  />
-
   <div class="textInput">
     <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
-    <div class="collaborationUsers-container flex-col flex-gap-2 pt-2">
+    <!-- <div class="collaborationUsers-container flex-col flex-gap-2 pt-2">
       {#if remoteProvider && editor && userComponent}
         <CollaborationUsers provider={remoteProvider} {editor} component={userComponent} />
       {/if}
-    </div>
+    </div> -->
   </div>
 
   {#if refActions.length > 0}

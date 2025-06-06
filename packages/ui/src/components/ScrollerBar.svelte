@@ -14,10 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte'
+  import { onMount } from 'svelte'
+  import { resizeObserver } from '..'
 
   export let scroller: HTMLElement
   export let gap: 'none' | 'small' | 'big' = 'small'
+  export let padding: string | undefined = undefined
 
   let divBar: HTMLElement
   let isScrolling: boolean = false
@@ -31,7 +33,7 @@
   $: stepStyle = gap === 'small' ? 'gap-1' : gap === 'big' ? 'gap-2' : ''
 
   const checkBar = (): void => {
-    if (divBar && scroller) {
+    if (divBar !== undefined && scroller !== undefined) {
       const trackW = scroller.clientWidth
       const scrollW = scroller.scrollWidth
       const proc = scrollW / trackW
@@ -40,13 +42,13 @@
       if (mask === 'none') divBar.style.visibility = 'hidden'
       else {
         divBar.style.visibility = 'visible'
-        if (divBar) {
-          if (timer) {
+        if (divBar !== undefined) {
+          if (timer != null) {
             clearTimeout(timer)
             divBar.style.opacity = '1'
           }
           timer = setTimeout(() => {
-            if (divBar) divBar.style.opacity = '0'
+            if (divBar != null) divBar.style.opacity = '0'
           }, 2000)
         }
       }
@@ -54,8 +56,8 @@
     }
   }
 
-  const onScroll = (event: MouseEvent): void => {
-    if (isScrolling && divBar && scroller) {
+  const onScroll = (event: PointerEvent): void => {
+    if (isScrolling && divBar !== undefined && scroller !== undefined) {
       const rectScroll = scroller.getBoundingClientRect()
       let X = event.clientX - dX
       if (X < rectScroll.left) X = rectScroll.left
@@ -67,22 +69,22 @@
       scroller.scrollLeft = (scroller.scrollWidth - scroller.clientWidth) * procBar
     }
   }
-  const onScrollEnd = (event: MouseEvent): void => {
+  const onScrollEnd = (event: PointerEvent): void => {
     const el: HTMLElement = event.currentTarget as HTMLElement
-    if (el && isScrolling) {
-      document.removeEventListener('mousemove', onScroll)
+    if (el !== undefined && isScrolling) {
+      document.removeEventListener('pointermove', onScroll)
       document.body.style.userSelect = 'auto'
       document.body.style.webkitUserSelect = 'auto'
     }
-    document.removeEventListener('mouseup', onScrollEnd)
+    document.removeEventListener('pointerup', onScrollEnd)
     isScrolling = false
   }
-  const onScrollStart = (event: MouseEvent): void => {
+  const onScrollStart = (event: PointerEvent): void => {
     const el: HTMLElement = event.currentTarget as HTMLElement
-    if (el && scroller) {
+    if (el !== undefined && scroller !== undefined) {
       dX = event.clientX - el.getBoundingClientRect().x
-      document.addEventListener('mouseup', onScrollEnd)
-      document.addEventListener('mousemove', onScroll)
+      document.addEventListener('pointerup', onScrollEnd)
+      document.addEventListener('pointermove', onScroll)
       document.body.style.userSelect = 'none'
       document.body.style.webkitUserSelect = 'none'
       isScrolling = true
@@ -90,8 +92,8 @@
   }
 
   const checkMask = (): void => {
-    maskLeft = !!(scroller && scroller.scrollLeft > 1)
-    maskRight = !!(scroller && scroller.scrollWidth - scroller.scrollLeft - scroller.clientWidth > 1)
+    maskLeft = scroller !== undefined && scroller.scrollLeft > 1
+    maskRight = scroller !== undefined && scroller.scrollWidth - scroller.scrollLeft - scroller.clientWidth > 1
     if (maskLeft || maskRight) {
       if (maskLeft && maskRight) mask = 'both'
       else if (maskLeft) mask = 'left'
@@ -102,30 +104,12 @@
   }
 
   onMount(() => {
-    if (scroller) {
-      const observer = new IntersectionObserver(
-        () => {
-          checkMask()
-        },
-        { root: null, threshold: 0.1 }
-      )
-      const tempEl = scroller.querySelector('*') as HTMLElement
-      if (tempEl) observer.observe(tempEl)
-      checkMask()
-      scroller.addEventListener('scroll', checkMask)
-    }
+    if (scroller !== undefined) checkMask()
   })
-  onDestroy(() => {
-    if (scroller) scroller.removeEventListener('scroll', checkMask)
-  })
-  const _resize = (): void => {
-    checkMask()
-  }
 </script>
 
-<svelte:window on:resize={_resize} />
-<div class="scrollerbar-container">
-  <div bind:this={scroller} class="antiStatesBar mask-{mask} {stepStyle}">
+<div class="scrollerbar-container" use:resizeObserver={checkMask}>
+  <div bind:this={scroller} class="antiStatesBar mask-{mask} {stepStyle}" style:padding on:scroll={checkMask}>
     <slot />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -133,8 +117,8 @@
     class="bar"
     class:hovered={isScrolling}
     bind:this={divBar}
-    on:mousedown={onScrollStart}
-    on:mouseleave={checkMask}
+    on:pointerdown={onScrollStart}
+    on:pointerleave={checkMask}
   />
   <div class="track" class:hovered={isScrolling} />
 </div>

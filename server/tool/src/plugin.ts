@@ -1,4 +1,4 @@
-import { Metadata, plugin, Plugin } from '@hcengineering/platform'
+import { type Metadata, plugin, type Plugin } from '@hcengineering/platform'
 
 /**
  * @public
@@ -11,7 +11,7 @@ export const toolId = 'tool' as Plugin
 const toolPlugin = plugin(toolId, {
   metadata: {
     InitWorkspace: '' as Metadata<string>,
-    InitScriptURL: '' as Metadata<string>
+    InitRepoDir: '' as Metadata<string>
   }
 })
 

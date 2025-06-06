@@ -57,7 +57,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.Password} label={setting.string.ChangePassword} size={'large'} isCurrent />
   </Header>
   <div class="flex-row-stretch flex-grow p-10">

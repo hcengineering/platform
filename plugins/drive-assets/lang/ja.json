@@ -1,0 +1,32 @@
+{
+  "string": {
+    "Drive": "ドライブ",
+    "Drives": "ドライブ",
+    "Grid": "グリッド",
+    "File": "ファイル",
+    "Files": "ファイル",
+    "FileVersion": "ファイルバージョン",
+    "FileVersions": "ファイルバージョン",
+    "Folder": "フォルダ",
+    "Folders": "フォルダ",
+    "Resource": "リソース",
+    "Name": "名前",
+    "Description": "説明",
+    "Parent": "親",
+    "Path": "パス",
+    "Version": "バージョン",
+    "Size": "サイズ",
+    "ContentType": "コンテンツタイプ",
+    "LastModified": "最終更新",
+    "Download": "ダウンロード",
+    "Upload": "アップロード",
+    "CreateDrive": "ドライブを作成",
+    "CreateFolder": "フォルダを作成",
+    "UploadFile": "ファイルをアップロード",
+    "EditDrive": "ドライブを編集",
+    "Rename": "名前を変更",
+    "Restore": "復元",
+    "RoleLabel": "ロール",
+    "Root": "/"
+  }
+}

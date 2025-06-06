@@ -57,7 +57,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.InviteSettings} label={setting.string.InviteSettings} size={'large'} isCurrent />
   </Header>
   <div class="form">

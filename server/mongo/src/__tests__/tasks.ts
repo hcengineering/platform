@@ -1,11 +1,11 @@
 import {
-  type Account,
   type AttachedDoc,
   type Class,
   ClassifierKind,
   type Data,
   type Doc,
   type Domain,
+  type PersonId,
   type Ref,
   type Space,
   type Tx
@@ -84,7 +84,7 @@ export const doc1: Task = {
   name: 'my-space',
   description: 'some-value',
   rate: 20,
-  modifiedBy: 'user' as Ref<Account>,
+  modifiedBy: 'user' as PersonId,
   modifiedOn: 10,
   // createdOn: 10,
   space: '' as Ref<Space>

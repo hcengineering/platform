@@ -18,9 +18,11 @@ import {
   type Doc,
   type DocumentQuery,
   type Domain,
+  type FindOptions,
   type FindResult,
   type MeasureContext,
   type Ref,
+  type SessionData,
   DOMAIN_MODEL
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
@@ -44,8 +46,13 @@ export class DomainFindMiddleware extends BaseMiddleware implements Middleware {
     return middleware
   }
 
+  toPrintableOptions (options?: ServerFindOptions<Doc>): FindOptions<Doc> {
+    const { ctx, allowedSpaces, associations, ...opt } = options ?? {}
+    return opt
+  }
+
   findAll<T extends Doc>(
-    ctx: MeasureContext,
+    ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: ServerFindOptions<T>
@@ -61,15 +68,20 @@ export class DomainFindMiddleware extends BaseMiddleware implements Middleware {
     }
     return ctx.with(
       p + '-find-all',
-      { _class },
+      { source: ctx.contextData?.service ?? 'system', _class },
       (ctx) => {
         return this.adapterManager.getAdapter(domain, false).findAll(ctx, _class, query, options)
       },
-      { _class, query, options }
+      { _class, query, options: this.toPrintableOptions(options) }
     )
   }
 
-  groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-    return this.adapterManager.getAdapter(domain, false).groupBy(ctx, domain, field)
+  groupBy<T, P extends Doc>(
+    ctx: MeasureContext,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ): Promise<Map<T, number>> {
+    return this.adapterManager.getAdapter(domain, false).groupBy(ctx, domain, field, query)
   }
 }

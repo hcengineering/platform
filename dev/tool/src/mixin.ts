@@ -25,7 +25,7 @@ import core, {
   type Obj,
   type Ref,
   SortingOrder,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import { connect } from '@hcengineering/server-tool'
@@ -44,7 +44,7 @@ interface ObjectPropertyInfo {
 }
 
 export async function showMixinForeignAttributes (
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   transactorUrl: string,
   cmd: { detail: boolean, mixin: string, property: string }
 ): Promise<void> {
@@ -81,7 +81,8 @@ export async function showMixinForeignAttributes (
 
 export async function fixMixinForeignAttributes (
   mongoUrl: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
+  dataId: string | undefined,
   transactorUrl: string,
   cmd: { mixin: string, property: string }
 ): Promise<void> {
@@ -102,7 +103,7 @@ export async function fixMixinForeignAttributes (
       const client = getMongoClient(mongoUrl)
       try {
         const _client = await client.getClient()
-        const db = getWorkspaceMongoDB(_client, workspaceId)
+        const db = getWorkspaceMongoDB(_client, dataId ?? workspaceId)
 
         for (const [mixin, objects] of result) {
           console.log('fixing', mixin)
@@ -215,17 +216,7 @@ async function getMixinWithForeignProperties (
               { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
             )
 
-            const collectionTx = await connection.findAll(
-              core.class.TxCollectionCUD,
-              {
-                'tx._class': core.class.TxUpdateDoc,
-                'tx.objectId': doc._id,
-                [`tx.operations.${property}`]: { $exists: true }
-              },
-              { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
-            )
-
-            const cModifiedOn = Math.max(updateDocTx[0]?.modifiedOn ?? 0, collectionTx[0]?.modifiedOn ?? 0)
+            const cModifiedOn = updateDocTx[0]?.modifiedOn ?? 0
             const mModifiedOn = mixinTx[0]?.modifiedOn ?? 0
 
             properties.push({ name: property, cValue, mValue, cModifiedOn, mModifiedOn })

@@ -17,8 +17,10 @@
   import { uploads } from '../store'
 </script>
 
-<div class="flex-row-center flex-gap-2">
-  {#each $uploads as upload}
-    <FileUploadStatusBar {upload} />
-  {/each}
-</div>
+{#if $uploads.size > 0}
+  <div class="flex-row-center flex-gap-2">
+    {#each [...$uploads.values()] as value}
+      <FileUploadStatusBar upload={value} />
+    {/each}
+  </div>
+{/if}

@@ -88,7 +88,17 @@ export const NodeHighlightExtension: Extension<NodeHighlightExtensionOptions> =
               }
               const { schema, doc, tr } = view.state
 
-              const range = getMarkRange(doc.resolve(pos), schema.marks[NodeUuidExtension.name])
+              const $pos = doc.resolve(pos)
+              if ($pos.nodeAfter === null) {
+                return false
+              }
+
+              const nodeUuidMark = findNodeUuidMark($pos.nodeAfter)
+              if (nodeUuidMark === undefined) {
+                return false
+              }
+
+              const range = getMarkRange($pos, schema.marks[NodeUuidExtension.name], nodeUuidMark.attrs)
 
               if (!isRange(range)) {
                 return false
@@ -216,7 +226,7 @@ const createDecorations = (
       }
 
       // the first pos does not contain the mark, so we need to add 1 (pos + 1) to get the correct range
-      const range = getMarkRange(doc.resolve(pos + 1), markType)
+      const range = getMarkRange(doc.resolve(pos + 1), markType, nodeUuidMark.attrs)
       if (!isRange(range)) {
         return
       }

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DateRangeMode, TypeDate as DateType } from '@hcengineering/core'
+  import core, { DateRangeMode, TypeDate as DateType } from '@hcengineering/core'
   import { TypeDate } from '@hcengineering/model'
   import { IntlString } from '@hcengineering/platform'
   import { DropdownLabelsIntl, Label, DropdownIntlItem } from '@hcengineering/ui'
@@ -25,6 +25,7 @@
   export let editable: boolean = true
   export let kind: ButtonKind = 'regular'
   export let size: ButtonSize = 'medium'
+  export let width: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const items: DropdownIntlItem[] = [
@@ -46,29 +47,28 @@
   const label = items.find((item) => item.id === type?.mode)?.label ?? ('' as IntlString)
 
   onMount(() => {
-    if (type === undefined) {
+    if (type?._class !== core.class.TypeDate) {
       dispatch('change', { type: TypeDate() })
     }
   })
 </script>
 
-<div class="hulyModal-content__settingsSet-line">
-  <span class="label">
-    <Label label={setting.string.DateMode} />
-  </span>
-  {#if editable}
-    <DropdownLabelsIntl
-      {selected}
-      {items}
-      {kind}
-      {size}
-      label={setting.string.DateMode}
-      on:selected={(res) => {
-        selected = res.detail
-        dispatch('change', { type: TypeDate(res.detail) })
-      }}
-    />
-  {:else}
-    <Label {label} />
-  {/if}
-</div>
+<span class="label">
+  <Label label={setting.string.DateMode} />
+</span>
+{#if editable}
+  <DropdownLabelsIntl
+    {selected}
+    {items}
+    {kind}
+    {size}
+    {width}
+    label={setting.string.DateMode}
+    on:selected={(res) => {
+      selected = res.detail
+      dispatch('change', { type: TypeDate(res.detail) })
+    }}
+  />
+{:else}
+  <Label {label} />
+{/if}

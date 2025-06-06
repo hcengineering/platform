@@ -1,0 +1,14 @@
+{
+  "string": {
+    "ViewMode": "Režim zobrazení",
+    "Unified": "Sjednocený",
+    "Split": "Rozdělený",
+    "Viewed": "Zobrazeno",
+    "ShowDiff": "Zobrazit rozdíly",
+    "NoChanges": "Žádné změny v rozdílech souboru",
+    "LargeDiffsAreHidden": "Velké rozdíly nejsou ve výchozím nastavení zobrazeny.",
+    "FileIsTooLarge": "Soubor je příliš velký na zobrazení.",
+    "FileWasRenamed": "Soubor byl přejmenován bez změn.",
+    "FileWasDeleted": "Soubor byl smazán."
+  }
+}

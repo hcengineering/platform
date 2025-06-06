@@ -14,17 +14,25 @@
 -->
 
 <script lang="ts">
-  import documents, { getDocumentName, type Document, type Project } from '@hcengineering/controlled-documents'
+  import documents, {
+    DocumentBundle,
+    getDocumentName,
+    isFolder,
+    type Project
+  } from '@hcengineering/controlled-documents'
   import { type Ref } from '@hcengineering/core'
   import { Icon, navigate } from '@hcengineering/ui'
 
   import { getProjectDocumentLink } from '../../../../navigation'
 
-  export let doc: Document
+  export let bundle: DocumentBundle
   export let project: Ref<Project>
   export let highlighted: boolean = false
 
-  const icon = documents.icon.Document
+  $: meta = bundle?.DocumentMeta[0]
+  $: prjdoc = bundle?.ProjectDocument[0]
+  $: document = bundle?.ControlledDocument[0]
+  $: icon = isFolder(prjdoc) ? documents.icon.Folder : documents.icon.Document
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -32,7 +40,8 @@
 <div
   class="antiNav-element root"
   on:click={() => {
-    const loc = getProjectDocumentLink(doc, project)
+    if (!document) return
+    const loc = getProjectDocumentLink(document, project)
     navigate(loc)
   }}
 >
@@ -48,7 +57,7 @@
     </div>
   {/if}
   <span class="an-element__label" class:font-medium={highlighted}>
-    {getDocumentName(doc)}
+    {document ? getDocumentName(document) : meta.title}
   </span>
 </div>
 

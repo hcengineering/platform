@@ -16,7 +16,7 @@ import { activityId, type ActivityMessage, type DocUpdateMessageViewlet } from '
 import activity from '@hcengineering/activity-resources/src/plugin'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type Doc, type Ref } from '@hcengineering/core'
-import type { Location } from '@hcengineering/ui'
+import type { Location } from '@hcengineering/ui/src/types'
 import {
   type Action,
   type ActionCategory,

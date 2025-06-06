@@ -18,7 +18,7 @@ import { trainingId } from '@hcengineering/training'
 import training from '@hcengineering/training-resources/src/plugin'
 import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type Doc, type Ref } from '@hcengineering/core'
-import { type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { type Location, type ResolvedLocation } from '@hcengineering/ui/src/types'
 import { type Application } from '@hcengineering/workbench'
 import { type ActionCategory } from '@hcengineering/view'
 

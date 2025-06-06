@@ -34,17 +34,17 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverCalendar.trigger.OnPersonAccountCreate,
+    trigger: serverCalendar.trigger.OnEmployee,
     txMatch: {
-      _class: core.class.TxCreateDoc,
-      objectClass: contact.class.PersonAccount
+      _class: core.class.TxMixin,
+      mixin: contact.mixin.Employee
     }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverCalendar.trigger.OnEvent,
     txMatch: {
-      'tx.objectClass': calendar.class.Event
+      objectClass: calendar.class.Event
     }
   })
 

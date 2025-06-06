@@ -1,6 +1,7 @@
-import { Employee } from '@hcengineering/contact'
-import { Data, Ref } from '@hcengineering/core'
-import love, { Office, Room, RoomAccess, RoomType, GRID_WIDTH } from '.'
+import { Employee, Person } from '@hcengineering/contact'
+import { Data, generateId, Ref } from '@hcengineering/core'
+
+import love, { Office, Room, ParticipantInfo, RoomAccess, RoomType, GRID_WIDTH } from '.'
 
 interface Slot {
   _id?: Ref<Room>
@@ -14,11 +15,13 @@ export function isOffice (room: Data<Room>): room is Office {
   return (room as Office).person !== undefined
 }
 
-export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Office>[] {
-  const res: Data<Room | Office>[] = []
+export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Office> & { _id: Ref<Room> })[] {
+  const res: (Data<Room | Office> & { _id: Ref<Room> })[] = []
   // create 12 offices
   for (let index = 0; index < 12; index++) {
-    const office: Data<Office> = {
+    const _id = generateId<Office>()
+    const office: Data<Office> & { _id: Ref<Office> } = {
+      _id,
       name: '',
       type: RoomType.Audio,
       access: RoomAccess.Knock,
@@ -27,11 +30,18 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
       height: 1,
       x: (index % 2) * 3,
       y: index - (index % 2),
-      person: employees[index] ?? null
+      person: employees[index] ?? null,
+      language: 'en',
+      startWithTranscription: false,
+      startWithRecording: false,
+      description: null
     }
     res.push(office)
   }
+  const allHands = generateId<Room>()
+
   res.push({
+    _id: allHands,
     name: 'All hands',
     type: RoomType.Video,
     access: RoomAccess.Open,
@@ -39,9 +49,16 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     width: 9,
     height: 3,
     x: 6,
-    y: 0
+    y: 0,
+    language: 'en',
+    startWithTranscription: true,
+    startWithRecording: true,
+    description: null
   })
+
+  const meetingRoom1 = generateId<Room>()
   res.push({
+    _id: meetingRoom1,
     name: 'Meeting Room 1',
     type: RoomType.Video,
     access: RoomAccess.Open,
@@ -49,9 +66,15 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     width: 4,
     height: 3,
     x: 6,
-    y: 4
+    y: 4,
+    language: 'en',
+    startWithTranscription: true,
+    startWithRecording: true,
+    description: null
   })
+  const meetingRoom2 = generateId<Room>()
   res.push({
+    _id: meetingRoom2,
     name: 'Meeting Room 2',
     type: RoomType.Video,
     access: RoomAccess.Open,
@@ -59,9 +82,15 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     width: 4,
     height: 3,
     x: 11,
-    y: 4
+    y: 4,
+    language: 'en',
+    startWithTranscription: true,
+    startWithRecording: true,
+    description: null
   })
+  const voiceRoom1 = generateId<Room>()
   res.push({
+    _id: voiceRoom1,
     name: 'Voice Room 1',
     type: RoomType.Audio,
     access: RoomAccess.Open,
@@ -69,9 +98,15 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     width: 4,
     height: 3,
     x: 6,
-    y: 8
+    y: 8,
+    language: 'en',
+    startWithTranscription: false,
+    startWithRecording: false,
+    description: null
   })
+  const voiceRoom2 = generateId<Room>()
   res.push({
+    _id: voiceRoom2,
     name: 'Voice Room 2',
     type: RoomType.Audio,
     access: RoomAccess.Open,
@@ -79,7 +114,11 @@ export function createDefaultRooms (employees: Ref<Employee>[]): Data<Room | Off
     width: 4,
     height: 3,
     x: 11,
-    y: 8
+    y: 8,
+    language: 'en',
+    startWithTranscription: false,
+    startWithRecording: false,
+    description: null
   })
   return res
 }
@@ -179,4 +218,22 @@ export interface ScreenSource {
   name: string
   thumbnailURL: string
   appIconURL: string
+}
+
+export function getFreeRoomPlace (room: Room, info: ParticipantInfo[], person: Ref<Person>): { x: number, y: number } {
+  let y = 0
+  while (true) {
+    for (let x = 0; x < room.width; x++) {
+      if (info.find((p) => p.x === x && p.y === y) === undefined) {
+        if (x === 0 && y === 0 && isOffice(room)) {
+          if (room.person === person) {
+            return { x: 0, y: 0 }
+          }
+        } else {
+          return { x, y }
+        }
+      }
+    }
+    y++
+  }
 }

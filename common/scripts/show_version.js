@@ -17,38 +17,23 @@ const fs = require('fs')
 const path = require('path')
 const exec = require('child_process').exec
 
-function main (mode) {
+function main() {
   exec('git describe --tags --abbrev=0', (err, stdout) => {
     if (err !== null) {
-      console.log('"0.7.0"')
+      console.log('"0.6.0"')
       return
     }
-
-    const tag = stdout.trim()
-
-    if (mode === 'tagTime') {
-      // Take tagged git commit date as model version
-      exec(`git for-each-ref --shell --format="%(creatordate:format:%s)" "refs/tags/${tag}"`, (err, stdout) => {
-        console.log(`"0.7.${err === null ? stdout.trim().slice(1, -1) : 0}"`)
-      })
-    } else {
-      // Take version from file
-      let version
-      try {
-        const versionFilePath = path.resolve(__dirname, 'version.txt')
-        version = fs.readFileSync(versionFilePath, 'utf8').trim()
-      } catch (error) {
-        version = '"0.6.0"'
-      }
-
-      console.log(version)
+    // Take version from file
+    let version
+    try {
+      const versionFilePath = path.resolve(__dirname, 'version.txt')
+      version = fs.readFileSync(versionFilePath, 'utf8').trim()
+    } catch (error) {
+      version = '"0.6.0"'
     }
+
+    console.log(version)
   })
 }
 
-let mode = process.env.MODEL_VERSION_MODE
-if (mode !== 'tagTime') {
-  mode = 'file'
-}
-
-main(mode)
+main()

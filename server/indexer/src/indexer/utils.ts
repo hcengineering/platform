@@ -13,24 +13,20 @@
 // limitations under the License.
 //
 
-import core, {
+import {
   type AnyAttribute,
   type Class,
-  type Data,
   type Doc,
-  type DocIndexState,
   type FullTextSearchContext,
   getFullTextContext,
   type Hierarchy,
-  type Obj,
   type Ref,
   type Space
 } from '@hcengineering/core'
-import plugin from '@hcengineering/server-core'
+import { type IndexedDoc } from '@hcengineering/server-core'
 import { type FullTextPipeline } from './types'
 
-export { docKey, docUpdKey, extractDocKey, isFullTextAttribute } from '@hcengineering/core'
-export type { IndexKeyOptions } from '@hcengineering/core'
+export { docKey, isFullTextAttribute } from '@hcengineering/core'
 
 /**
  * @public
@@ -59,81 +55,23 @@ export function getContent (
 /**
  * @public
  */
-export function createStateDoc (
-  id: Ref<Doc>,
-  objectClass: Ref<Class<Obj>>,
-  data: Omit<Data<DocIndexState>, 'objectClass'> & { space?: Ref<Space> }
-): DocIndexState {
-  return {
-    _class: core.class.DocIndexState,
-    _id: id as Ref<DocIndexState>,
-    space: data.space ?? plugin.space.DocIndexState,
-    objectClass,
-    modifiedBy: core.account.System,
-    modifiedOn: Date.now(),
-    ...data
-  }
-}
-
-/**
- * @public
- */
 export function traverseFullTextContexts (
   pipeline: FullTextPipeline,
   objectClass: Ref<Class<Doc>>,
   op: (ftc: Omit<FullTextSearchContext, keyof Class<Doc>>) => void
-): Ref<Class<Doc>>[] {
-  const desc = new Set(pipeline.hierarchy.getDescendants(objectClass))
-  const propagate = new Set<Ref<Class<Doc>>>()
-
-  const ftContext = getFullTextContext(pipeline.hierarchy, objectClass)
+): void {
+  const cl = pipeline.hierarchy.getBaseClass(objectClass)
+  const ftContext = getFullTextContext(pipeline.hierarchy, cl, pipeline.contexts)
   if (ftContext !== undefined) {
     op(ftContext)
   }
-
-  // Add all parent mixins as well
-  for (const a of pipeline.hierarchy.getAncestors(objectClass)) {
-    const ftContext = getFullTextContext(pipeline.hierarchy, a)
-    if (ftContext !== undefined) {
-      op(ftContext)
-    }
-    const dsca = pipeline.hierarchy.getDescendants(a)
-    for (const dd of dsca) {
-      if (pipeline.hierarchy.isMixin(dd)) {
-        desc.add(dd)
-      }
+  const dsca = pipeline.hierarchy.getDescendants(cl)
+  for (const dd of dsca) {
+    const mContext = getFullTextContext(pipeline.hierarchy, dd, pipeline.contexts)
+    if (mContext !== undefined) {
+      op(mContext)
     }
   }
-
-  for (const d of desc) {
-    if (pipeline.hierarchy.isMixin(d)) {
-      const mContext = getFullTextContext(pipeline.hierarchy, d)
-      if (mContext !== undefined) {
-        op(mContext)
-      }
-    }
-  }
-  return Array.from(propagate.values())
-}
-
-/**
- * @public
- */
-export function collectPropagate (pipeline: FullTextPipeline, objectClass: Ref<Class<Doc>>): Ref<Class<Doc>>[] {
-  const propagate = new Set<Ref<Class<Doc>>>()
-  traverseFullTextContexts(pipeline, objectClass, (fts) => fts?.propagate?.forEach((it) => propagate.add(it)))
-
-  return Array.from(propagate.values())
-}
-
-/**
- * @public
- */
-export function collectPropagateClasses (pipeline: FullTextPipeline, objectClass: Ref<Class<Doc>>): Ref<Class<Doc>>[] {
-  const propagate = new Set<Ref<Class<Doc>>>()
-  traverseFullTextContexts(pipeline, objectClass, (fts) => fts?.propagateClasses?.forEach((it) => propagate.add(it)))
-
-  return Array.from(propagate.values())
 }
 
 const CUSTOM_ATTR_KEY = 'customAttributes'
@@ -151,4 +89,17 @@ export function getCustomAttrKeys (): { customAttrKey: string, customAttrUKey: s
  */
 export function isCustomAttr (attr: string): boolean {
   return attr === CUSTOM_ATTR_KEY
+}
+/**
+ * @public
+ */
+export function createIndexedDoc (doc: Doc, mixins: Ref<Class<Doc>>[] | undefined, space: Ref<Space>): IndexedDoc {
+  const indexedDoc = {
+    id: doc._id,
+    _class: [doc._class, ...(mixins ?? [])],
+    modifiedBy: doc.modifiedBy,
+    modifiedOn: doc.modifiedOn,
+    space
+  }
+  return indexedDoc
 }

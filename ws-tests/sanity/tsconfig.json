@@ -1,0 +1,10 @@
+{
+  "extends": "./node_modules/@hcengineering/platform-rig/profiles/default/tsconfig.json",
+
+  "compilerOptions": {
+    "rootDir": "./tests",
+    "outDir": "./lib",
+    "declarationDir": "./types",
+    "lib": ["esnext", "dom"],
+  }
+}

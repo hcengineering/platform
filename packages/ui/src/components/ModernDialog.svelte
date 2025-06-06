@@ -44,6 +44,7 @@
   export let withoutFooter = false
   export let closeIcon: AnySvelteComponent = Close
   export let shadow: boolean = false
+  export let className: string = ''
 
   const dispatch = createEventDispatcher()
 
@@ -66,7 +67,7 @@
 
 <svelte:element
   this={isForm ? 'form' : 'div'}
-  class="root"
+  class="root {className}"
   class:shadow
   class:embedded
   on:submit|preventDefault={isForm && shouldSubmitOnEnter ? submit : undefined}

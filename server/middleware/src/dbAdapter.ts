@@ -13,8 +13,7 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, type MeasureContext } from '@hcengineering/core'
-import { PlatformError, unknownStatus } from '@hcengineering/platform'
+import { DOMAIN_MODEL_TX, DOMAIN_TX, withContext, type MeasureContext } from '@hcengineering/core'
 import type {
   DbAdapter,
   DbConfiguration,
@@ -45,19 +44,18 @@ export class DBAdapterMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
+  @withContext('dbAdapter-middleware')
   async init (ctx: MeasureContext): Promise<void> {
     const adapters = new Map<string, DbAdapter>()
 
     await ctx.with('create-adapters', {}, async (ctx) => {
-      if (this.context.storageAdapter == null) {
-        throw new PlatformError(unknownStatus('StorageSdapter is not specified'))
-      }
       for (const key in this.conf.adapters) {
         const adapterConf = this.conf.adapters[key]
         adapters.set(
           key,
           await adapterConf.factory(
             ctx,
+            this.context.contextVars,
             this.context.hierarchy,
             adapterConf.url,
             this.context.workspace,
@@ -68,27 +66,18 @@ export class DBAdapterMiddleware extends BaseMiddleware implements Middleware {
       }
     })
 
+    const metrics = ctx.newChild('📔 adapters', {})
+
     const txAdapterName = this.conf.domains[DOMAIN_TX]
     const txAdapter = adapters.get(txAdapterName) as TxAdapter
-    const txAdapterDomains: string[] = []
-    for (const key in this.conf.domains) {
-      if (this.conf.domains[key] === txAdapterName) {
-        txAdapterDomains.push(key)
-      }
-    }
-    await txAdapter.init?.(txAdapterDomains)
-
-    const metrics = this.conf.metrics.newChild('📔 server-storage', {})
+    await txAdapter.init?.(metrics, this.context.contextVars, [DOMAIN_TX, DOMAIN_MODEL_TX])
 
     const defaultAdapter = adapters.get(this.conf.defaultAdapter)
     if (defaultAdapter === undefined) {
       throw new Error(`No default Adapter for ${this.conf.defaultAdapter}`)
     }
 
-    this.context.serviceAdapterManager = await createServiceAdaptersManager(
-      this.conf.serviceAdapters,
-      this.conf.metrics.newChild('🔌 service adapters', {})
-    )
+    this.context.serviceAdapterManager = await createServiceAdaptersManager(this.conf.serviceAdapters, metrics)
 
     // We need to init all next, since we will use model
 

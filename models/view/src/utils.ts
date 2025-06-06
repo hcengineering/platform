@@ -16,7 +16,7 @@
 import { type Class, type Data, type Doc, type Ref } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type AttributeCategory } from '@hcengineering/view'
 import view from '.'
 

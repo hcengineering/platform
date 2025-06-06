@@ -236,6 +236,7 @@
           isRegular: true,
           disableLink: true
         }}
+        searchField={'code'}
         excluded={excludedChangeControl}
         kind={'regular'}
         size={'small'}

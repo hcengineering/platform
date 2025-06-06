@@ -13,17 +13,23 @@
 // limitations under the License.
 //
 
+import { SplitLogger } from '@hcengineering/analytics-service'
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { setMetadata } from '@hcengineering/platform'
+import serverClient, { getAccountClient } from '@hcengineering/server-client'
+import { initStatisticsContext } from '@hcengineering/server-core'
+import serverToken, { decodeToken } from '@hcengineering/server-token'
 import { type IncomingHttpHeaders } from 'http'
+import { join } from 'path'
+import { AuthController } from './auth'
 import { decode64 } from './base64'
-import { CalendarClient } from './calendar'
 import { CalendarController } from './calendarController'
 import config from './config'
 import { createServer, listen } from './server'
-import { closeDB, getDB } from './storage'
-import { type Endpoint, type State } from './types'
-import { setMetadata } from '@hcengineering/platform'
-import serverClient from '@hcengineering/server-client'
-import serverToken, { decodeToken } from '@hcengineering/server-token'
+import { CALENDAR_INTEGRATION, GoogleEmail, type Endpoint, type State } from './types'
+import { getServiceToken } from './utils'
+import { WatchController } from './watch'
+import { PushHandler } from './pushHandler'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
   try {
@@ -34,13 +40,31 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 }
 
 export const main = async (): Promise<void> => {
+  const ctx = initStatisticsContext(CALENDAR_INTEGRATION, {
+    factory: () =>
+      new MeasureMetricsContext(
+        'calendar',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger(CALENDAR_INTEGRATION, {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
+
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
-  const db = await getDB()
-  const calendarController = CalendarController.getCalendarController(db)
+  const accountClient = getAccountClient(getServiceToken())
+
+  const pushHandler = new PushHandler(ctx, accountClient)
+  const calendarController = CalendarController.getCalendarController(ctx, accountClient)
   await calendarController.startAll()
+  const watchController = WatchController.get(accountClient)
+  watchController.startCheck()
   const endpoints: Endpoint[] = [
     {
       endpoint: '/signin',
@@ -55,12 +79,12 @@ export const main = async (): Promise<void> => {
           }
           const redirectURL = req.query.redirectURL as string
 
-          const { email, workspace } = decodeToken(token)
-          const userId = await calendarController.getUserId(email, workspace.name)
-          const url = CalendarClient.getAutUrl(redirectURL, workspace.name, userId, token)
+          const { account, workspace } = decodeToken(token)
+          const userId = await AuthController.getUserId(account, token)
+          const url = AuthController.getAuthUrl(redirectURL, workspace, userId, token)
           res.send(url)
         } catch (err) {
-          console.log('signin error', err)
+          ctx.error('signin error', { message: (err as any).message })
           res.status(500).send()
         }
       }
@@ -70,13 +94,16 @@ export const main = async (): Promise<void> => {
       type: 'get',
       handler: async (req, res) => {
         const code = req.query.code as string
-        const state = JSON.parse(decode64(req.query.state as string)) as unknown as State
         try {
-          await calendarController.newClient(state, code)
-          res.redirect(state.redirectURL)
+          const state = JSON.parse(decode64(req.query.state as string)) as unknown as State
+          try {
+            await AuthController.createAndSync(ctx, accountClient, state, code)
+            res.redirect(state.redirectURL)
+          } catch (err) {
+            ctx.error('signin code error', { message: (err as any).message })
+          }
         } catch (err) {
-          console.log(err)
-          res.redirect(state.redirectURL)
+          ctx.error('signin code state parse error', { message: (err as any).message })
         }
       }
     },
@@ -92,14 +119,13 @@ export const main = async (): Promise<void> => {
             return
           }
 
-          const value = req.query.value as string
-
-          const { workspace } = decodeToken(token)
-          await calendarController.signout(workspace.name, value)
+          const value = req.query.value as GoogleEmail
+          const { account, workspace } = decodeToken(token)
+          const userId = await AuthController.getUserId(account, token)
+          await AuthController.signout(ctx, accountClient, userId, workspace, value)
         } catch (err) {
-          console.log('signout error', err)
+          ctx.error('signout', { message: (err as any).message })
         }
-
         res.send()
       }
     },
@@ -122,9 +148,23 @@ export const main = async (): Promise<void> => {
             res.status(400).send({ err: "'data' is missing" })
             return
           }
-          calendarController.push(data.user, data.mode as 'events' | 'calendar', data.calendarId)
+          await pushHandler.push(data.user as GoogleEmail, data.mode as 'events' | 'calendar', data.calendarId)
         }
 
+        res.send()
+      }
+    },
+    {
+      endpoint: '/event',
+      type: 'post',
+      handler: async (req, res) => {
+        const { event, workspace, type } = req.body
+
+        if (event === undefined || workspace === undefined || type === undefined) {
+          res.status(400).send({ err: "'event' or 'workspace' or 'type' is missing" })
+          return
+        }
+        void calendarController.pushEvent(workspace, event, type)
         res.send()
       }
     }
@@ -134,12 +174,8 @@ export const main = async (): Promise<void> => {
 
   const shutdown = (): void => {
     server.close(() => {
-      void calendarController
-        .close()
-        .then(async () => {
-          await closeDB()
-        })
-        .then(() => process.exit())
+      watchController.stop()
+      process.exit()
     })
   }
 

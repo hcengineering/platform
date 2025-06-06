@@ -13,25 +13,25 @@
 // limitations under the License.
 //
 
-import core, {
+import {
   AccountRole,
-  Class,
-  Doc,
-  DocumentQuery,
+  type Doc,
   DOMAIN_CONFIGURATION,
-  FindOptions,
-  FindResult,
-  MeasureContext,
-  Ref,
-  Tx,
-  TxCUD,
+  type MeasureContext,
+  type Tx,
+  type TxCUD,
   TxProcessor,
   type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import {
+  BaseMiddleware,
+  type Middleware,
+  type TxMiddlewareResult,
+  type PipelineContext
+} from '@hcengineering/server-core'
 
-const configurationAccountEmail = '#configurator@hc.engineering'
+export const configurationAccountEmail = '#configurator@hc.engineering'
 /**
  * @public
  */
@@ -59,37 +59,13 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
         const txCUD = tx as TxCUD<Doc>
         const domain = this.context.hierarchy.getDomain(txCUD.objectClass)
         if (this.targetDomains.includes(domain)) {
-          if (ctx.contextData.userEmail !== configurationAccountEmail) {
-            const account = ctx.contextData.account
-            if (account.role !== AccountRole.Owner && ctx.contextData.admin !== true) {
-              throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-            }
+          const account = ctx.contextData.account
+          if (account.role !== AccountRole.Owner && ctx.contextData.admin !== true) {
+            throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
           }
         }
       }
     }
     return this.provideTx(ctx, txes)
-  }
-
-  findAll<T extends Doc>(
-    ctx: MeasureContext,
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ): Promise<FindResult<T>> {
-    const domain = this.context.hierarchy.getDomain(_class)
-    if (this.targetDomains.includes(domain)) {
-      if (ctx.contextData.userEmail !== configurationAccountEmail) {
-        const account = ctx.contextData.account
-        if (
-          account.role !== AccountRole.Owner &&
-          account._id !== core.account.System &&
-          ctx.contextData.admin !== true
-        ) {
-          throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-        }
-      }
-    }
-    return this.provideFindAll(ctx, _class, query, options)
   }
 }

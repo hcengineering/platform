@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,51 +12,53 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts" context="module">
-  import contact, { AvatarProvider, getAvatarColorForId, type AvatarInfo } from '@hcengineering/contact'
-  import { Ref, type Data, type WithLookup } from '@hcengineering/core'
-  import { getClient, sizeToWidth } from '@hcengineering/presentation'
-
-  const providers = new Map<string, AvatarProvider | null>()
-
-  async function getProvider (providerId: Ref<AvatarProvider>): Promise<AvatarProvider | undefined> {
-    const p = providers.get(providerId)
-    if (p !== undefined) {
-      return p ?? undefined
-    }
-    const res = await getClient().findOne(contact.class.AvatarProvider, { _id: providerId })
-    providers.set(providerId, res ?? null)
-    return res
-  }
-</script>
 
 <script lang="ts">
-  import { getAvatarProviderId, getFirstName, getLastName } from '@hcengineering/contact'
-  import { Account } from '@hcengineering/core'
-  import { Asset, getMetadata, getResource } from '@hcengineering/platform'
-  import { getBlobURL, reduceCalls } from '@hcengineering/presentation'
+  import {
+    type AvatarInfo,
+    AvatarProvider,
+    getAvatarColorForId,
+    getAvatarDisplayName,
+    getAvatarProvider,
+    getAvatarProviderId,
+    Person
+  } from '@hcengineering/contact'
+  import { Asset, getResource } from '@hcengineering/platform'
+  import { getBlobURL, getClient, reduceCalls, sizeToWidth } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     ColorDefinition,
-    IconSize,
     getPlatformAvatarColorByName,
     getPlatformAvatarColorForTextDef,
     getPlatformColor,
-    themeStore
+    IconSize,
+    themeStore,
+    tooltip
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
+  import { AccountUuid, type Data, PersonUuid, Ref, type WithLookup } from '@hcengineering/core'
+
   import { loadUsersStatus, statusByUserStore } from '../utils'
   import AvatarInstance from './AvatarInstance.svelte'
+  import { getPreviewPopup } from './person/utils'
 
-  export let person: Data<WithLookup<AvatarInfo>> | undefined = undefined
+  export let person:
+  | (Data<WithLookup<AvatarInfo>> & { _id?: Ref<Person>, personUuid?: PersonUuid })
+  | Person
+  | undefined = undefined
   export let name: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
   export let size: IconSize
+  export let statusSize: IconSize | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
-  export let showStatus: boolean = true
-  export let account: Ref<Account> | undefined = undefined
+  export let showStatus: boolean = false
+  export let adaptiveName: boolean = false
+  export let showPreview: boolean = false
+  export let disabled: boolean = false
+  export let style: 'modern' | undefined = undefined
+  export let clickable: boolean = false
 
   export function pulse (): void {
     avatarInst.pulse()
@@ -70,20 +72,8 @@
   let element: HTMLElement
   let avatarInst: AvatarInstance
 
-  $: displayName = getDisplayName(name)
+  $: displayName = getAvatarDisplayName(name)
   $: bColor = borderColor !== undefined ? getPlatformColor(borderColor, $themeStore.dark) : undefined
-
-  function getDisplayName (name: string | null | undefined): string {
-    if (name == null) {
-      return ''
-    }
-
-    const lastFirst = getMetadata(contact.metadata.LastNameFirst) === true
-    const fname = getFirstName(name ?? '').trim()[0] ?? ''
-    const lname = getLastName(name ?? '').trim()[0] ?? ''
-
-    return lastFirst ? lname + fname : fname + lname
-  }
 
   const update = reduceCalls(async function (
     size: IconSize,
@@ -98,8 +88,9 @@
       avatarProvider = undefined
       srcSet = undefined
     } else if (avatar != null) {
+      const client = getClient()
       const avatarProviderId = getAvatarProviderId(avatar.avatarType)
-      avatarProvider = avatarProviderId !== undefined ? await getProvider(avatarProviderId) : undefined
+      avatarProvider = avatarProviderId !== undefined ? await getAvatarProvider(client, avatarProviderId) : undefined
 
       if (avatarProvider === undefined) {
         url = undefined
@@ -126,11 +117,38 @@
     loadUsersStatus()
   })
 
-  $: userStatus = account !== undefined ? $statusByUserStore.get(account) : undefined
+  $: isOnline =
+    person?.personUuid !== undefined && $statusByUserStore.get(person.personUuid as AccountUuid)?.online === true
 </script>
 
-{#if showStatus && account}
-  <div class="relative">
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="flex-presenter" class:no-pointer={!clickable} use:tooltip={getPreviewPopup(person, showPreview)} on:click>
+  {#if showStatus && person}
+    <div class="relative">
+      <AvatarInstance
+        bind:this={avatarInst}
+        {url}
+        srcset={srcSet}
+        {displayName}
+        {size}
+        {icon}
+        {variant}
+        {color}
+        {bColor}
+        bind:element
+        {adaptiveName}
+        {disabled}
+        {style}
+        withStatus
+      />
+      <div
+        class="hulyAvatar-statusMarker {statusSize ?? size} {style}"
+        class:online={isOnline}
+        class:offline={!isOnline}
+      />
+    </div>
+  {:else}
     <AvatarInstance
       bind:this={avatarInst}
       {url}
@@ -142,21 +160,9 @@
       {color}
       {bColor}
       bind:element
-      withStatus
+      {adaptiveName}
+      {disabled}
+      {style}
     />
-    <div class="hulyAvatar-statusMarker {size}" class:online={userStatus?.online} class:offline={!userStatus?.online} />
-  </div>
-{:else}
-  <AvatarInstance
-    bind:this={avatarInst}
-    {url}
-    srcset={srcSet}
-    {displayName}
-    {size}
-    {icon}
-    {variant}
-    {color}
-    {bColor}
-    bind:element
-  />
-{/if}
+  {/if}
+</div>

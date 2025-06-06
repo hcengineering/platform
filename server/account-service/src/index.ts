@@ -3,12 +3,15 @@
 //
 
 import account, {
+  type AccountMethods,
+  type Meta,
+  type ClientNetworkPosition,
   EndpointKind,
   accountId,
-  cleanExpiredOtp,
   getAccountDB,
   getAllTransactors,
-  getMethods
+  getMethods,
+  cleanExpiredOtp
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
@@ -16,27 +19,38 @@ import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
 import { metricsAggregate, type BrandingMap, type MeasureContext } from '@hcengineering/core'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
-import serverToken, { decodeToken } from '@hcengineering/server-token'
-import toolPlugin from '@hcengineering/server-tool'
+import serverToken, { decodeToken, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 import cors from '@koa/cors'
+import type Cookies from 'cookies'
 import { type IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import os from 'os'
+import { migrateFromOldAccounts } from './migration/migration'
+
+const AUTH_TOKEN_COOKIE = 'account-metadata-Token'
+
+const KEEP_ALIVE_HEADERS = {
+  'Content-Type': 'application/json',
+  Connection: 'keep-alive',
+  'Keep-Alive': 'timeout=5, max=1000'
+}
 
 /**
  * @public
  */
 export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap, onClose?: () => void): void {
   console.log('Starting account service with brandings: ', brandings)
-  const methods = getMethods()
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUrl = process.env.DB_URL
   if (dbUrl === undefined) {
     console.log('Please provide DB_URL')
     process.exit(1)
   }
+
+  const oldAccsUrl = process.env.OLD_ACCOUNTS_URL ?? (dbUrl.startsWith('mongodb://') ? dbUrl : undefined)
+  const oldAccsNs = process.env.OLD_ACCOUNTS_NS
 
   const transactorUri = process.env.TRANSACTOR_URL
   if (transactorUri === undefined) {
@@ -61,27 +75,48 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }
   })
 
-  const ses = process.env.SES_URL
+  const mailUrl = process.env.MAIL_URL
+  const mailAuthToken = process.env.MAIL_AUTH_TOKEN
+
   const frontURL = process.env.FRONT_URL
   const productName = process.env.PRODUCT_NAME
   const lang = process.env.LANGUAGE ?? 'en'
+
+  const wsLivenessDaysRaw = process.env.WS_LIVENESS_DAYS
+  let wsLivenessDays: number | undefined
+
+  if (wsLivenessDaysRaw !== undefined) {
+    try {
+      wsLivenessDays = parseInt(wsLivenessDaysRaw)
+    } catch (err: any) {
+      // DO NOTHING
+    }
+  }
 
   setMetadata(account.metadata.Transactors, transactorUri)
   setMetadata(platform.metadata.locale, lang)
   setMetadata(account.metadata.ProductName, productName)
   setMetadata(account.metadata.OtpTimeToLiveSec, parseInt(process.env.OTP_TIME_TO_LIVE ?? '60'))
   setMetadata(account.metadata.OtpRetryDelaySec, parseInt(process.env.OTP_RETRY_DELAY ?? '60'))
-  setMetadata(account.metadata.SES_URL, ses)
+  setMetadata(account.metadata.MAIL_URL, mailUrl)
+  setMetadata(account.metadata.MAIL_AUTH_TOKEN, mailAuthToken)
+
   setMetadata(account.metadata.FrontURL, frontURL)
+  setMetadata(account.metadata.WsLivenessDays, wsLivenessDays)
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
-  const initScriptUrl = process.env.INIT_SCRIPT_URL
-  if (initScriptUrl !== undefined) {
-    setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
-  }
+  const hasSignUp = process.env.DISABLE_SIGNUP !== 'true'
+  const methods = getMethods(hasSignUp)
 
-  const accountsDb = getAccountDB(dbUrl)
+  const dbNs = process.env.DB_NS
+  const accountsDb = getAccountDB(dbUrl, dbNs)
+  const migrations = accountsDb.then(async ([db]) => {
+    if (oldAccsUrl !== undefined) {
+      await migrateFromOldAccounts(oldAccsUrl, db, oldAccsNs)
+      console.log('Migrations verified/done')
+    }
+  })
 
   const app = new Koa()
   const router = new Router()
@@ -105,7 +140,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }),
     serverSecret,
     frontURL,
-    brandings
+    brandings,
+    !hasSignUp
   )
 
   void accountsDb.then((res) => {
@@ -118,17 +154,79 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     )
   })
 
-  const extractToken = (header: IncomingHttpHeaders): string | undefined => {
+  const extractCookieToken = (headers: IncomingHttpHeaders): string | undefined => {
+    if (headers.cookie != null) {
+      const cookies = headers.cookie.split(';')
+      const tokenCookie = cookies.find((cookie) => cookie.includes(AUTH_TOKEN_COOKIE))
+      return tokenCookie?.split('=')[1]
+    }
+
+    return undefined
+  }
+
+  const extractAuthorizationToken = (headers: IncomingHttpHeaders): string | undefined => {
     try {
-      return header.authorization?.slice(7) ?? undefined
+      return headers.authorization?.slice(7) ?? undefined
     } catch {
       return undefined
     }
   }
 
+  const extractToken = (headers: IncomingHttpHeaders): string | undefined => {
+    return extractAuthorizationToken(headers) ?? extractCookieToken(headers)
+  }
+
+  const getRequestMeta = (headers: IncomingHttpHeaders): Meta => {
+    const meta: Meta = {}
+    if (headers?.['x-timezone'] !== undefined) {
+      meta.timezone = headers['x-timezone'] as string
+    }
+
+    if (headers?.['x-client-network-position'] !== undefined) {
+      const val = headers['x-client-network-position'] as string
+      if (['internal', 'external'].includes(val)) {
+        meta.clientNetworkPosition = val as ClientNetworkPosition
+      }
+    }
+
+    return meta
+  }
+
+  function getCookieOptions (ctx: Koa.Context): Cookies.SetOption {
+    const requestUrl = ctx.request.href
+    const url = new URL(requestUrl)
+    const domain = getCookieDomain(requestUrl)
+
+    return {
+      httpOnly: true,
+      domain,
+      secure: url?.protocol === 'https',
+      maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year
+    }
+  }
+
+  const getCookieDomain = (url: string): string => {
+    const hostname = new URL(url).hostname
+
+    if (hostname === 'localhost') {
+      return hostname
+    }
+
+    if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
+      return hostname
+    }
+
+    const parts = hostname.split('.')
+    if (parts.length > 2) {
+      return '.' + parts.slice(1).join('.')
+    }
+
+    return hostname
+  }
+
   router.get('/api/v1/statistics', (req, res) => {
     try {
-      const token = req.query.token as string
+      const token = (req.query.token as string) ?? extractToken(req.headers)
       const payload = decodeToken(token)
       const admin = payload.extra?.admin === 'true'
       const data: Record<string, any> = {
@@ -136,13 +234,16 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
         statistics: {}
       }
       data.statistics.totalClients = 0
-      data.statistics.memoryUsed = Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100
-      data.statistics.memoryTotal = Math.round((process.memoryUsage().heapTotal / 1024 / 1024) * 100) / 100
+      const mem = process.memoryUsage()
+      data.statistics.memoryUsed = Math.round((mem.heapUsed / 1024 / 1024) * 100) / 100
+      data.statistics.memoryTotal = Math.round((mem.heapTotal / 1024 / 1024) * 100) / 100
+      data.statistics.memoryRSS = Math.round((mem.rss / 1024 / 1024) * 100) / 100
+      data.statistics.memoryArrayBuffers = Math.round((mem.arrayBuffers / 1024 / 1024) * 100) / 100
       data.statistics.cpuUsage = Math.round(os.loadavg()[0] * 100) / 100
       data.statistics.freeMem = Math.round((os.freemem() / 1024 / 1024) * 100) / 100
       data.statistics.totalMem = Math.round((os.totalmem() / 1024 / 1024) * 100) / 100
       const json = JSON.stringify(data)
-      req.res.writeHead(200, { 'Content-Type': 'application/json' })
+      req.res.writeHead(200, KEEP_ALIVE_HEADERS)
       req.res.end(json)
     } catch (err: any) {
       Analytics.handleError(err)
@@ -152,9 +253,49 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }
   })
 
+  router.put('/cookie', async (ctx) => {
+    const token = extractToken(ctx.request.headers)
+    if (token === undefined) {
+      ctx.body = JSON.stringify({
+        error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
+      })
+      ctx.res.writeHead(401)
+      ctx.res.end()
+      return
+    }
+
+    // Ensure we don't set the token with workspace to the cookie
+    const { account, extra } = decodeTokenVerbose(measureCtx, token)
+    const tokenWithoutWorkspace = generateToken(account, undefined, extra)
+
+    const cookieOpts = getCookieOptions(ctx)
+
+    ctx.cookies.set(AUTH_TOKEN_COOKIE, tokenWithoutWorkspace, cookieOpts)
+    ctx.res.writeHead(204)
+    ctx.res.end()
+  })
+
+  router.delete('/cookie', async (ctx) => {
+    const token = extractToken(ctx.request.headers)
+    if (token === undefined) {
+      ctx.body = JSON.stringify({
+        error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
+      })
+      ctx.res.writeHead(401)
+      ctx.res.end()
+      return
+    }
+
+    const cookieOpts = { ...getCookieOptions(ctx), maxAge: 0 }
+
+    ctx.cookies.set(AUTH_TOKEN_COOKIE, '', cookieOpts)
+    ctx.res.writeHead(201)
+    ctx.res.end()
+  })
+
   router.put('/api/v1/manage', async (req, res) => {
     try {
-      const token = req.query.token as string
+      const token = (req.query.token as string) ?? extractToken(req.headers)
       const payload = decodeToken(token)
       if (payload.extra?.admin !== 'true') {
         req.res.writeHead(404, {})
@@ -192,19 +333,24 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   router.post('rpc', '/', async (ctx) => {
     const token = extractToken(ctx.request.headers)
+    const meta = getRequestMeta(ctx.request.headers)
 
     const request = ctx.request.body as any
-    const method = methods[request.method]
+    const method = methods[request.method as AccountMethods]
     if (method === undefined) {
       const response = {
         id: request.id,
         error: new Status(Severity.ERROR, platform.status.UnknownMethod, { method: request.method })
       }
 
-      ctx.body = JSON.stringify(response)
+      const body = JSON.stringify(response)
+      ctx.res.writeHead(404, KEEP_ALIVE_HEADERS)
+      ctx.res.end(body)
+      return
     }
 
     const [db] = await accountsDb
+    await migrations
 
     let host: string | undefined
     const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
@@ -212,13 +358,31 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       host = new URL(origin).host
     }
     const branding = host !== undefined ? brandings[host] : null
-    const result = await measureCtx.with(
-      request.method,
-      {},
-      async (ctx) => await method(ctx, db, branding, request, token)
-    )
 
-    ctx.body = result
+    let source = ''
+    try {
+      source = (token != null ? decodeToken(token).extra?.service : undefined) ?? '🤦‍♂️user'
+    } catch (err) {
+      // Ignore
+    }
+
+    const result = await measureCtx.with(request.method, { source }, (mctx) => {
+      if (method === undefined || typeof method !== 'function') {
+        const response = {
+          id: request.id,
+          error: new Status(Severity.ERROR, platform.status.UnknownMethod, { method: request.method })
+        }
+
+        ctx.body = JSON.stringify(response)
+        return
+      }
+
+      return method(mctx, db, branding, request, token, meta)
+    })
+
+    const body = JSON.stringify(result)
+    ctx.res.writeHead(200, KEEP_ALIVE_HEADERS)
+    ctx.res.end(body)
   })
 
   app.use(router.routes()).use(router.allowedMethods())

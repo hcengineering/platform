@@ -13,100 +13,44 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { Label } from '@hcengineering/ui'
-  import { Account, TypedSpace, type Data, type Ref, getCurrentAccount, type Permission } from '@hcengineering/core'
-  import contact, { PersonAccount, type Employee } from '@hcengineering/contact'
+  import { getCurrentEmployee, type Employee } from '@hcengineering/contact'
+  import { UserBoxItems, getPermittedPersons, permissionsStore } from '@hcengineering/contact-resources'
   import documents, { type ControlledDocument } from '@hcengineering/controlled-documents'
-  import { UserBoxItems } from '@hcengineering/contact-resources'
-  import { type PermissionsStore, permissionsStore } from '@hcengineering/view-resources'
-  import { createQuery } from '@hcengineering/presentation'
+  import { TypedSpace, type Data, type Ref } from '@hcengineering/core'
+  import { Label } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
   export let controlledDoc: Data<ControlledDocument>
   export let space: Ref<TypedSpace>
   export let canChangeReviewers: boolean = true
   export let canChangeApprovers: boolean = true
   export let canChangeCoAuthors: boolean = true
+  export let reviewers: Ref<Employee>[] = controlledDoc?.reviewers ?? []
+  export let approvers: Ref<Employee>[] = controlledDoc?.approvers ?? []
+  export let coAuthors: Ref<Employee>[] = controlledDoc?.coAuthors ?? []
 
   const dispatch = createEventDispatcher()
-  const currentAccount = getCurrentAccount()
-
-  $: reviewers = controlledDoc.reviewers
-  $: approvers = controlledDoc.approvers
-  $: coAuthors = controlledDoc.coAuthors
+  const currentEmployee = getCurrentEmployee()
 
   $: permissionsSpace = space === documents.space.UnsortedTemplates ? documents.space.QualityDocuments : space
 
-  function getPermittedAccounts (
-    permission: Ref<Permission>,
-    space: Ref<TypedSpace>,
-    permissionsStore: PermissionsStore
-  ): Array<Ref<Account>> {
-    return Array.from(permissionsStore.ap[space]?.[permission] ?? [])
-  }
-
-  let permittedReviewers: Array<Ref<Employee>> = []
-  $: permittedReviewerAccounts = getPermittedAccounts(
+  $: permittedReviewers = getPermittedPersons(
     documents.permission.ReviewDocument,
     permissionsSpace,
     $permissionsStore
-  )
-  const prQuery = createQuery()
-  $: if (permittedReviewerAccounts.length > 0) {
-    prQuery.query(
-      contact.class.PersonAccount,
-      {
-        _id: { $in: Array.from(permittedReviewerAccounts) as Array<Ref<PersonAccount>> }
-      },
-      (res) => {
-        permittedReviewers = res.map((pa) => pa.person) as Array<Ref<Employee>>
-      }
-    )
-  } else {
-    permittedReviewers = []
-  }
+  ) as Ref<Employee>[]
 
-  let permittedApprovers: Array<Ref<Employee>> = []
-  $: permittedApproverAccounts = getPermittedAccounts(
+  $: permittedApprovers = getPermittedPersons(
     documents.permission.ApproveDocument,
     permissionsSpace,
     $permissionsStore
-  )
-  const paQuery = createQuery()
-  $: if (permittedApproverAccounts.length > 0) {
-    paQuery.query(
-      contact.class.PersonAccount,
-      {
-        _id: { $in: Array.from(permittedApproverAccounts) as Array<Ref<PersonAccount>> }
-      },
-      (res) => {
-        permittedApprovers = res.map((pa) => pa.person) as Array<Ref<Employee>>
-      }
-    )
-  } else {
-    permittedApprovers = []
-  }
+  ) as Ref<Employee>[]
 
-  let permittedCoAuthors: Array<Ref<Employee>> = []
-  $: permittedCoAuthorAccounts = getPermittedAccounts(
+  $: permittedCoAuthors = getPermittedPersons(
     documents.permission.CoAuthorDocument,
     permissionsSpace,
     $permissionsStore
-  ).filter((acc) => acc !== currentAccount._id)
-  const pcaQuery = createQuery()
-  $: if (permittedCoAuthorAccounts.length > 0) {
-    pcaQuery.query(
-      contact.class.PersonAccount,
-      {
-        _id: { $in: Array.from(permittedCoAuthorAccounts) as Array<Ref<PersonAccount>> }
-      },
-      (res) => {
-        permittedCoAuthors = res.map((pa) => pa.person) as Array<Ref<Employee>>
-      }
-    )
-  } else {
-    permittedCoAuthors = []
-  }
+  ).filter((person) => person !== currentEmployee) as Ref<Employee>[]
 
   function handleUsersUpdated (type: 'reviewers' | 'approvers' | 'coAuthors', users: Ref<Employee>[]): void {
     dispatch('update', { type, users })

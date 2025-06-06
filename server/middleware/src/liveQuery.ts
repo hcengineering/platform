@@ -48,7 +48,7 @@ export class LiveQueryMiddleware extends BaseMiddleware implements Middleware {
       getModel (): ModelDb {
         return modelDb
       },
-      close: async () => {},
+      close: () => Promise.resolve(),
       findAll: async (_class, query, options) => {
         const _ctx: MeasureContext = (options as ServerFindOptions<Doc>)?.ctx ?? metrics
         delete (options as ServerFindOptions<Doc>)?.ctx
@@ -73,8 +73,8 @@ export class LiveQueryMiddleware extends BaseMiddleware implements Middleware {
           results.total
         )[0]
       },
-      tx: async (tx) => {
-        return {}
+      tx: (tx) => {
+        return Promise.resolve({})
       },
       searchFulltext: async (query: SearchQuery, options: SearchOptions) => {
         // Cast client doesn't support fulltext search
@@ -89,9 +89,7 @@ export class LiveQueryMiddleware extends BaseMiddleware implements Middleware {
   }
 
   async tx (ctx: MeasureContext, tx: Tx[]): Promise<TxMiddlewareResult> {
-    for (const _tx of tx) {
-      await this.liveQuery.tx(_tx)
-    }
+    await this.liveQuery.tx(...tx)
     return await this.provideTx(ctx, tx)
   }
 }

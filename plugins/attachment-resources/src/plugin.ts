@@ -22,7 +22,6 @@ import { type ViewAction } from '@hcengineering/view'
 export default mergeIds(attachmentId, attachment, {
   string: {
     NoAttachments: '' as IntlString,
-    UploadDropFilesHere: '' as IntlString,
     Photos: '' as IntlString,
     FileBrowserFileCounter: '' as IntlString,
     FileBrowserListView: '' as IntlString,

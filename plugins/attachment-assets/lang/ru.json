@@ -53,6 +53,7 @@
     "FilterAttachments": "Вложения",
     "RemovedAttachment": "Удалил(а) вложение",
     "ContentType": "Тип контента",
-    "OpenInWindow": "Открыть в окне"
+    "OpenInWindow": "Открыть в окне",
+    "Embeddings": "Вложения"
   }
 }

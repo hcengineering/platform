@@ -29,11 +29,21 @@
     "MakePrivate": "Tornar privado",
     "MakePrivateDescription": "Apenas os membros podem ver",
     "Created": "Criado",
+    "Selected": "Selecionado",
     "NoResults": "Sem resultados para mostrar",
     "Next": "Seguinte",
     "FailedToPreview": "Falha ao pré-visualizar",
     "ContentType": "Tipo de conteúdo",
-    "ContentTypeNotSupported": "A visualização não está disponível para este tipo de conteúdo"
+    "ContentTypeNotSupported": "A visualização não está disponível para este tipo de conteúdo",
+    "StartDrawing": "Scarabocchiare sopra",
+    "DrawingHistory": "História de rabiscos",
+    "ColorAdd": "Adicionar predefinição de cor",
+    "ColorRemove": "Remover predefinição de cor",
+    "ColorReset": "Repor predefinições de cores",
+    "Copiar": "Copiar",
+    "CopyLink": "Copiar link",
+    "AccessDenied": "O objeto não existe ou você não tem permissão para acessá-lo.",
+    "UnableToFollowMention": "Não foi possível abrir o objeto mencionado"
   },
   "status": {
     "FileTooLarge": "Ficheiro demasiado grande"

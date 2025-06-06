@@ -114,7 +114,7 @@
         '@wdCount',
         {
           key: '',
-          label: getEmbeddedLabel('Working days'),
+          label: hr.string.WorkingDays,
           presenter: StatPresenter,
           props: {
             month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
@@ -147,7 +147,7 @@
         '@wdCountReported',
         {
           key: '',
-          label: getEmbeddedLabel('Reported days'),
+          label: hr.string.ReportedDays,
           presenter: ReportPresenter,
           props: {
             month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
@@ -161,7 +161,7 @@
         '@wdCountPublicHolidays',
         {
           key: '',
-          label: getEmbeddedLabel('Public holidays'),
+          label: hr.string.PublicHolidays,
           presenter: ReportPresenter,
           props: {
             month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
@@ -177,7 +177,7 @@
         '@wdTaskCountReported',
         {
           key: '',
-          label: getEmbeddedLabel('Tasks'),
+          label: hr.string.Tasks,
           presenter: ReportPresenter,
           props: {
             month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
@@ -191,7 +191,7 @@
         '@wdTaskPerDayReported',
         {
           key: '',
-          label: getEmbeddedLabel('TPD'),
+          label: hr.string.TPD,
           presenter: ReportPresenter,
           props: {
             month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
@@ -205,7 +205,7 @@
         '@ptoCount',
         {
           key: '',
-          label: getEmbeddedLabel('PTOs'),
+          label: hr.string.PTOs,
           presenter: StatPresenter,
           props: {
             month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
@@ -244,7 +244,7 @@
         '@extraCount',
         {
           key: '',
-          label: getEmbeddedLabel('EXTRa'),
+          label: hr.string.EXTRa,
           presenter: StatPresenter,
           props: {
             month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
@@ -283,7 +283,7 @@
         '@publicHoliday',
         {
           key: '',
-          label: getEmbeddedLabel('Public holiday'),
+          label: hr.string.PublicHoliday,
           presenter: HolidayPresenter,
           props: {
             month: startDate ?? getMonth(currentDate, currentDate.getMonth()),

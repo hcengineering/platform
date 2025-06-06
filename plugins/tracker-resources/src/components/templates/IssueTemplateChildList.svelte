@@ -37,7 +37,7 @@
   let dragIndex: number | null = null
   let hoveringIndex: number | null = null
 
-  function openIssue (evt: MouseEvent, target: IssueTemplateChild) {
+  function openIssue (evt: MouseEvent, target: IssueTemplateChild): void {
     showPopup(
       IssueTemplateChildEditor,
       {
@@ -48,26 +48,32 @@
         childIssue: target
       },
       eventToHTMLElement(evt),
-      (evt: IssueTemplateChild | undefined | null) => {
+      (evt: ['update' | 'delete', IssueTemplateChild] | undefined | null) => {
         if (evt != null) {
-          const pos = issues.findIndex((it) => it.id === evt.id)
+          const pos = issues.findIndex((it) => it.id === target.id)
           if (pos !== -1) {
-            issues[pos] = evt
-            dispatch('update-issue', evt)
+            if (evt[0] === 'delete') {
+              issues.splice(pos, 1)
+              issues = issues
+              dispatch('update-issues', issues)
+            } else {
+              issues[pos] = evt[1]
+              dispatch('update-issue', evt[1])
+            }
           }
         }
       }
     )
   }
 
-  function resetDrag () {
+  function resetDrag (): void {
     dragId = null
     dragIndex = null
     hoveringIndex = null
   }
 
-  function handleDragStart (ev: DragEvent, index: number, item: IssueTemplateChild) {
-    if (ev.dataTransfer) {
+  function handleDragStart (ev: DragEvent, index: number, item: IssueTemplateChild): void {
+    if (ev.dataTransfer != null) {
       ev.dataTransfer.effectAllowed = 'move'
       ev.dataTransfer.dropEffect = 'move'
       dragIndex = index
@@ -75,8 +81,8 @@
     }
   }
 
-  function handleDrop (ev: DragEvent, toIndex: number) {
-    if (ev.dataTransfer && dragIndex !== null && toIndex !== dragIndex) {
+  function handleDrop (ev: DragEvent, toIndex: number): void {
+    if (ev.dataTransfer != null && dragIndex !== null && toIndex !== dragIndex) {
       ev.dataTransfer.dropEffect = 'move'
 
       dispatch('move', { id: dragId, toIndex })
@@ -98,7 +104,7 @@
   let currentProject: Project | undefined = undefined
 
   function getIssueTemplateId (currentProject: Project | undefined, issue: IssueTemplateChild): string {
-    return currentProject
+    return currentProject !== undefined
       ? `${currentProject.identifier}-${issues.findIndex((it) => it.id === issue.id)}`
       : `${issues.findIndex((it) => it.id === issue.id)}}`
   }
@@ -175,6 +181,10 @@
         kind={'link'}
         bind:value={issue.kind}
         baseClass={tracker.class.Issue}
+        on:change={(evt) => {
+          dispatch('update-issue', { id: issue.id, kind: evt.detail })
+          issue.kind = evt.detail
+        }}
       />
       <EstimationEditor
         kind={'link'}

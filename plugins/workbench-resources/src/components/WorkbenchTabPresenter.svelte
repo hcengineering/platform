@@ -13,24 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Asset, getResource, translate } from '@hcengineering/platform'
+  import { ComponentExtensions, getClient, reduceCalls } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     closePanel,
     getCurrentLocation,
     Icon,
-    ModernTab,
-    navigate,
     languageStore,
-    locationToUrl
+    locationToUrl,
+    ModernTab,
+    navigate
   } from '@hcengineering/ui'
-  import { ComponentExtensions, getClient } from '@hcengineering/presentation'
-  import { Asset, getResource, translate } from '@hcengineering/platform'
-  import { WorkbenchTab } from '@hcengineering/workbench'
   import view from '@hcengineering/view'
   import { showMenu } from '@hcengineering/view-resources'
+  import { WorkbenchTab } from '@hcengineering/workbench'
 
-  import { closeTab, getTabDataByLocation, getTabLocation, selectTab, tabIdStore, tabsStore } from '../workbench'
   import workbench from '../plugin'
+  import { closeTab, getTabDataByLocation, getTabLocation, selectTab, tabIdStore, tabsStore } from '../workbench'
 
   export let tab: WorkbenchTab
 
@@ -40,8 +40,18 @@
   let icon: Asset | AnySvelteComponent | undefined
   let iconProps: Record<string, any> | undefined
 
+  let lastLocUrl: string | undefined = undefined
+  let lastLang: string | undefined = undefined
+
   async function updateTabData (tab: WorkbenchTab, lang: string): Promise<void> {
     const tabLoc = $tabIdStore === tab._id ? getCurrentLocation() : getTabLocation(tab)
+    const url = locationToUrl(tabLoc)
+
+    if (lastLocUrl === url && lastLang === lang) return
+
+    lastLocUrl = url
+    lastLang = lang
+
     const data = await getTabDataByLocation(tabLoc)
 
     name = data.name ?? (await translate(data.label, {}, lang))
@@ -53,11 +63,17 @@
     iconProps = data.iconProps
 
     if (tab.name !== name && tab.location === locationToUrl(tabLoc)) {
-      await client.update(tab, { name })
+      const op = client.apply(undefined, undefined, true)
+      await client.diffUpdate(tab, { name })
+      await op.commit()
     }
   }
 
-  $: void updateTabData(tab, $languageStore)
+  const update = reduceCalls(async function (tab: WorkbenchTab, lang: string): Promise<void> {
+    await updateTabData(tab, lang)
+  })
+
+  $: void update(tab, $languageStore)
 
   function handleClickTab (): void {
     selectTab(tab._id)
@@ -75,11 +91,11 @@
     void closeTab(tab)
   }
 
-  function handleMenu (event: MouseEvent): void {
+  function handleMenu (event: CustomEvent<MouseEvent>): void {
     event.preventDefault()
     event.stopPropagation()
 
-    showMenu(event, { object: tab, baseMenuClass: workbench.class.WorkbenchTab })
+    showMenu(event.detail, { object: tab, baseMenuClass: workbench.class.WorkbenchTab })
   }
 </script>
 

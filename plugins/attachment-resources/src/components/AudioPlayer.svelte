@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import type { WithLookup } from '@hcengineering/core'
+  import type { BlobType, WithLookup } from '@hcengineering/core'
   import { getFileUrl } from '@hcengineering/presentation'
   import { CircleButton, Progress } from '@hcengineering/ui'
   import Pause from './icons/Pause.svelte'
   import Play from './icons/Play.svelte'
 
-  export let value: WithLookup<Attachment>
+  export let value: WithLookup<Attachment> | BlobType
   export let fullSize = false
 
   let time = 0

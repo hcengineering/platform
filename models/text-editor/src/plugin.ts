@@ -16,6 +16,7 @@
 
 import { mergeIds, type Resource } from '@hcengineering/platform'
 import textEditor, {
+  type TextActionActiveFunction,
   type TextActionFunction,
   type TextActionVisibleFunction,
   textEditorId
@@ -25,14 +26,36 @@ export default mergeIds(textEditorId, textEditor, {
   function: {
     FormatLink: '' as Resource<TextActionFunction>,
     OpenTableOptions: '' as Resource<TextActionFunction>,
+    SelectTable: '' as Resource<TextActionFunction>,
     OpenImage: '' as Resource<TextActionFunction>,
     ExpandImage: '' as Resource<TextActionFunction>,
     MoreImageActions: '' as Resource<TextActionFunction>,
     ConfigureNote: '' as Resource<TextActionFunction>,
+    DownloadImage: '' as Resource<TextActionFunction>,
 
     IsEditableTableActive: '' as Resource<TextActionVisibleFunction>,
+    IsTableToolbarContext: '' as Resource<TextActionVisibleFunction>,
     IsEditableNote: '' as Resource<TextActionVisibleFunction>,
     IsEditable: '' as Resource<TextActionVisibleFunction>,
-    IsHeadingVisible: '' as Resource<TextActionVisibleFunction>
+    IsTextStylingEnabled: '' as Resource<TextActionVisibleFunction>,
+    IsHeadingVisible: '' as Resource<TextActionVisibleFunction>,
+
+    CreateInlineComment: '' as Resource<TextActionFunction>,
+
+    ShouldShowCreateInlineCommentAction: '' as Resource<TextActionVisibleFunction>,
+
+    ShouldShowConvertToLinkPreviewAction: '' as Resource<TextActionVisibleFunction>,
+    ConvertToLinkPreviewActionIsActive: '' as Resource<TextActionActiveFunction>,
+    ConvertToLinkPreviewAction: '' as Resource<TextActionFunction>,
+
+    ShouldShowConvertToEmbedPreviewAction: '' as Resource<TextActionVisibleFunction>,
+    ConvertToEmbedPreviewActionIsActive: '' as Resource<TextActionActiveFunction>,
+    ConvertToEmbedPreviewAction: '' as Resource<TextActionFunction>,
+
+    ShouldShowCopyPreviewLinkAction: '' as Resource<TextActionVisibleFunction>,
+    CopyPreviewLinkAction: '' as Resource<TextActionFunction>,
+
+    SetBackgroundColor: '' as Resource<TextActionFunction>,
+    SetTextColor: '' as Resource<TextActionFunction>
   }
 })

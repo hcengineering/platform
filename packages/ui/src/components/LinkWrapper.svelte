@@ -30,5 +30,6 @@
 
 {#if text}
   <!-- "replaceURLs" produces sanitazed string -->
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
   {@html replaceURLs(text)}
 {/if}

@@ -35,13 +35,10 @@ export default mergeIds(contactId, contact, {
     ContactRefPresenter: '' as AnyComponent,
     ContactPresenter: '' as AnyComponent,
     EditPerson: '' as AnyComponent,
-    EditEmployee: '' as AnyComponent,
     EditOrganization: '' as AnyComponent,
     OrganizationPresenter: '' as AnyComponent,
     Contacts: '' as AnyComponent,
     ContactsTabs: '' as AnyComponent,
-    PersonAccountPresenter: '' as AnyComponent,
-    PersonAccountRefPresenter: '' as AnyComponent,
     OrganizationEditor: '' as AnyComponent,
     EmployeePresenter: '' as AnyComponent,
     EmployeeRefPresenter: '' as AnyComponent,
@@ -60,8 +57,8 @@ export default mergeIds(contactId, contact, {
     ActivityChannelPresenter: '' as AnyComponent,
     EmployeeFilter: '' as AnyComponent,
     EmployeeFilterValuePresenter: '' as AnyComponent,
-    PersonAccountFilterValuePresenter: '' as AnyComponent,
-    ChannelIcon: '' as AnyComponent
+    ChannelIcon: '' as AnyComponent,
+    PersonPreviewPresenter: '' as AnyComponent
   },
   string: {
     SearchEmployee: '' as IntlString,
@@ -92,6 +89,8 @@ export default mergeIds(contactId, contact, {
     SkypePlaceholder: '' as IntlString,
     Profile: '' as IntlString,
     ProfilePlaceholder: '' as IntlString,
+    Viber: '' as IntlString,
+    ViberPlaceholder: '' as IntlString,
 
     CurrentEmployee: '' as IntlString,
 
@@ -120,6 +119,7 @@ export default mergeIds(contactId, contact, {
   },
   action: {
     KickEmployee: '' as Ref<Action>,
+    ResendInvite: '' as Ref<Action>,
     DeleteEmployee: '' as Ref<Action>,
     MergePersons: '' as Ref<Action<Doc, any>>,
     OpenChannel: '' as Ref<Action>,
@@ -127,7 +127,8 @@ export default mergeIds(contactId, contact, {
   },
   actionImpl: {
     KickEmployee: '' as ViewAction,
-    OpenChannel: '' as ViewAction
+    OpenChannel: '' as ViewAction,
+    ResendInvite: '' as ViewAction
   },
   function: {
     GetCurrentEmployeeName: '' as Resource<TemplateFieldFunc>,

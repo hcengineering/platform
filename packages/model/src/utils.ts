@@ -1,4 +1,13 @@
-import { Class, Data, Doc, DocumentUpdate, Ref, Space, TxOperations } from '@hcengineering/core'
+import {
+  type Class,
+  type Data,
+  type Doc,
+  type DocumentUpdate,
+  type Ref,
+  type Space,
+  type TxOperations,
+  type IdMap
+} from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 
 function toUndef (value: any): any {
@@ -40,9 +49,10 @@ export async function createOrUpdate<T extends Doc> (
   _class: Ref<Class<T>>,
   space: Ref<Space>,
   data: Data<T>,
-  _id: Ref<T>
+  _id: Ref<T>,
+  cache?: IdMap<Doc>
 ): Promise<void> {
-  const existingDoc = await client.findOne<Doc>(_class, { _id })
+  const existingDoc = cache !== undefined ? cache.get(_id) : await client.findOne<Doc>(_class, { _id })
   if (existingDoc !== undefined) {
     const { _class: _oldClass, _id, space: _oldSpace, modifiedBy, modifiedOn, ...oldData } = existingDoc
     if (modifiedBy === client.txFactory.account) {

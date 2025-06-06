@@ -37,17 +37,11 @@ export function createModel (builder: Builder): void {
     }
   )
 
-  builder.createDoc(serverNotification.class.NotificationProviderResources, core.space.Model, {
-    provider: telegram.providers.TelegramNotificationProvider,
-    fn: serverTelegram.function.SendTelegramNotifications
-  })
-
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTelegram.trigger.OnMessageCreate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': telegram.class.Message,
-      'tx._class': core.class.TxCreateDoc
+      _class: core.class.TxCreateDoc,
+      objectClass: telegram.class.Message
     }
   })
 
@@ -77,4 +71,20 @@ export function createModel (builder: Builder): void {
       serverFunc: serverTelegram.function.GetIntegrationOwnerTG
     }
   )
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTelegram.trigger.NotificationsHandler,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: notification.class.InboxNotification
+    }
+  })
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTelegram.trigger.ProviderSettingsHandler,
+    isAsync: true,
+    txMatch: {
+      objectClass: notification.class.NotificationProviderSetting
+    }
+  })
 }

@@ -13,50 +13,68 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { BaseConfig } from '@hcengineering/mail-common'
+import { config as dotenvConfig } from 'dotenv'
+import { IntegrationVersion } from './types'
 
-interface Config {
+dotenvConfig()
+
+interface Config extends BaseConfig {
   Port: number
-
-  MongoURI: string
-  MongoDB: string
-  AccountsURL: string
   ServiceID: string
   Secret: string
   Credentials: string
   WATCH_TOPIC_NAME: string
-  SystemEmail: string
   FooterMessage: string
+  InitLimit: number
+  Version: IntegrationVersion
+  QueueConfig: string
+  QueueRegion: string
+  CommunicationTopic: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
   Port: 'PORT',
-
-  MongoURI: 'MONGO_URI',
-  MongoDB: 'MONGO_DB',
-
   AccountsURL: 'ACCOUNTS_URL',
   ServiceID: 'SERVICE_ID',
   Secret: 'SECRET',
   Credentials: 'Credentials',
-  SystemEmail: 'SYSTEM_EMAIL',
   WATCH_TOPIC_NAME: 'WATCH_TOPIC_NAME',
-  FooterMessage: 'FOOTER_MESSAGE'
+  FooterMessage: 'FOOTER_MESSAGE',
+  InitLimit: 'INIT_LIMIT',
+  KvsUrl: 'KVS_URL',
+  StorageConfig: 'STORAGE_CONFIG',
+  Version: 'VERSION',
+  QueueConfig: 'QUEUE_CONFIG',
+  QueueRegion: 'QUEUE_REGION',
+  CommunicationTopic: 'COMMUNICATION_TOPIC'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
 
 const config: Config = (() => {
+  const versionStr = process.env[envMap.Version] ?? 'v1'
+  let version: IntegrationVersion
+  if (versionStr === IntegrationVersion.V1 || versionStr === IntegrationVersion.V2) {
+    version = versionStr as IntegrationVersion
+  } else {
+    throw new Error(`Invalid version: ${versionStr}. Must be 'v1' or 'v2'.`)
+  }
   const params: Partial<Config> = {
     Port: parseNumber(process.env[envMap.Port]) ?? 8087,
-    MongoDB: process.env[envMap.MongoDB] ?? 'gmail-service',
-    MongoURI: process.env[envMap.MongoURI],
     AccountsURL: process.env[envMap.AccountsURL],
     ServiceID: process.env[envMap.ServiceID] ?? 'gmail-service',
     Secret: process.env[envMap.Secret],
-    SystemEmail: process.env[envMap.SystemEmail] ?? 'anticrm@hc.engineering',
     Credentials: process.env[envMap.Credentials],
     WATCH_TOPIC_NAME: process.env[envMap.WATCH_TOPIC_NAME],
-    FooterMessage: process.env[envMap.FooterMessage] ?? '<br><br><p>Sent via <a href="https://huly.io">Huly</a></p>'
+    InitLimit: parseNumber(process.env[envMap.InitLimit]) ?? 50,
+    FooterMessage: process.env[envMap.FooterMessage] ?? '<br><br><p>Sent via <a href="https://huly.io">Huly</a></p>',
+    KvsUrl: process.env[envMap.KvsUrl],
+    StorageConfig: process.env[envMap.StorageConfig],
+    Version: version,
+    QueueConfig: process.env[envMap.QueueConfig] ?? '',
+    QueueRegion: process.env[envMap.QueueRegion] ?? '',
+    CommunicationTopic: process.env[envMap.CommunicationTopic] ?? 'hulygun'
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)
@@ -65,6 +83,14 @@ const config: Config = (() => {
 
   if (missingEnv.length > 0) {
     throw Error(`Missing env variables: ${missingEnv.join(', ')}`)
+  }
+  if (version === IntegrationVersion.V2) {
+    if (params.QueueConfig === '') {
+      throw Error('Missing env variable: QUEUE_CONFIG')
+    }
+    if (params.CommunicationTopic === '') {
+      throw Error('Missing env variable: COMMUNICATION_TOPIC')
+    }
   }
 
   return params as Config

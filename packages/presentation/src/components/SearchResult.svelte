@@ -14,40 +14,80 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { SearchResultDoc } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
-  import { AnyComponent, Icon } from '@hcengineering/ui'
+  import { notEmpty, SearchResultDoc } from '@hcengineering/core'
+  import { getResourceC } from '@hcengineering/platform'
+  import { Icon, type AnySvelteComponent } from '@hcengineering/ui'
+  import IconWithEmoji from './IconWithEmoji.svelte'
 
   export let value: SearchResultDoc
 
-  $: iconComponent = value.iconComponent ? (value.iconComponent as AnyComponent) : undefined
-  $: icon = value.icon !== undefined ? value.icon : undefined
+  $: icon = value.icon
+
+  let iconComponent: AnySvelteComponent | undefined
+  let shortTitleComponent: AnySvelteComponent | undefined
+  let titleComponent: AnySvelteComponent | undefined
+
+  $: getResourceC(value.iconComponent?.component, (r) => {
+    iconComponent = r
+  })
+
+  $: getResourceC(value.shortTitleComponent?.component, (r) => {
+    shortTitleComponent = r
+  })
+
+  $: getResourceC(value.titleComponent?.component, (r) => {
+    titleComponent = r
+  })
 </script>
 
 <div class="flex-row-center">
   <div class="flex-center p-1 content-dark-color flex-no-shrink">
-    {#if icon !== undefined}
-      <Icon {icon} size={'medium'} />
-    {/if}
     {#if iconComponent}
       <div class="icon-place">
-        {#await getResource(iconComponent) then component}
-          <svelte:component this={component} size={'smaller'} {...value.iconProps} />
-        {/await}
+        <svelte:component this={iconComponent} size={'smaller'} {...value.iconComponent?.props} />
       </div>
+    {:else if value.emojiIcon}
+      <div class="emoji">
+        <IconWithEmoji
+          icon={Array.from(value.emojiIcon)
+            .map((c) => c.codePointAt(0))
+            .filter(notEmpty)}
+          size={'small'}
+        />
+      </div>
+    {:else if icon !== undefined}
+      <Icon {icon} size={'small'} />
     {/if}
   </div>
-  <span class="ml-1 max-w-120 overflow-label searchResult">
-    {#if value.shortTitle !== undefined}
+  <span class="ml-1 max-w-120 overflow-label searchResult flex-row-center">
+    {#if shortTitleComponent}
+      <svelte:component this={shortTitleComponent} {...value.shortTitleComponent?.props} />
+    {:else if value.shortTitle !== undefined}
       <span class="shortTitle">{value.shortTitle}</span>
     {/if}
-    <span class="name">{value.title}</span>
+    {#if titleComponent}
+      <svelte:component this={titleComponent} {...value.titleComponent?.props} />
+    {:else}
+      <span class="name">{value.title}</span>
+    {/if}
+
+    {#if value.description !== undefined}
+      <span class="description">{value.description}</span>
+    {/if}
   </span>
 </div>
 
 <style lang="scss">
   .icon-place {
     width: 1.75rem;
+  }
+
+  .emoji {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
   }
   .searchResult {
     display: flex;
@@ -61,6 +101,11 @@
     .name {
       display: flex;
       flex: 1;
+    }
+
+    .description {
+      padding-left: 0.5rem;
+      color: var(--global-secondary-TextColor);
     }
   }
 </style>

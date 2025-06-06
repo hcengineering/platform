@@ -5,6 +5,8 @@ const canBlur = (editor: Editor, options: FocusOptions): boolean => {
     options.canBlur?.(editor) ??
     (!editor.isActive('bulletList') &&
       !editor.isActive('orderedList') &&
+      !editor.isActive('taskList') &&
+      !editor.isActive('todoList') &&
       !editor.isActive('table') &&
       !editor.isActive('code') &&
       !editor.isActive('codeBlock'))

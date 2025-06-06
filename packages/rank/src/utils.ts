@@ -34,9 +34,29 @@ export function genRanks (count: number): Rank[] {
 
 /** @public */
 export function makeRank (prev: Rank | undefined, next: Rank | undefined): Rank {
-  const prevLexoRank = prev === undefined ? LexoRank.min() : LexoRank.parse(prev)
-  const nextLexoRank = next === undefined ? LexoRank.max() : LexoRank.parse(next)
-  return prevLexoRank.equals(nextLexoRank)
-    ? prevLexoRank.genNext().toString()
-    : prevLexoRank.between(nextLexoRank).toString()
+  try {
+    if (prev != null && prev.trim() === '') {
+      prev = undefined
+    }
+    if (next != null && next.trim() === '') {
+      next = undefined
+    }
+    if (prev !== undefined && next !== undefined) {
+      const prevLexoRank = LexoRank.parse(prev)
+      const nextLexoRank = LexoRank.parse(next)
+      return prevLexoRank.equals(nextLexoRank)
+        ? prevLexoRank.genNext().toString()
+        : prevLexoRank.between(nextLexoRank).toString()
+    } else if (prev !== undefined) {
+      const prevLexoRank = LexoRank.parse(prev)
+      return prevLexoRank.genNext().toString()
+    } else if (next !== undefined) {
+      const nextLexoRank = LexoRank.parse(next)
+      return nextLexoRank.genPrev().toString()
+    } else {
+      return LexoRank.middle().toString()
+    }
+  } catch (err: any) {
+    throw new Error(`Failed to make rank: ${prev} ${next} ${err.message}`)
+  }
 }

@@ -1,78 +1,81 @@
 import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
+import { setCurrentEmployee, type Employee } from '@hcengineering/contact'
 import core, {
   ClientConnectEvent,
   concatLink,
   setCurrentAccount,
   versionToString,
-  type AccountClient,
+  type Account,
   type Client,
+  type PersonId,
+  type Ref,
   type Version
 } from '@hcengineering/core'
-import login, { loginId } from '@hcengineering/login'
+import login from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, {
-  closeClient,
   loadServerConfig,
   refreshClient,
   setClient,
-  setPresentationCookie
+  setPresentationCookie,
+  upgradeDownloadProgress
 } from '@hcengineering/presentation'
-import {
-  desktopPlatform,
-  fetchMetadataLocalStorage,
-  getCurrentLocation,
-  navigate,
-  setMetadataLocalStorage
-} from '@hcengineering/ui'
-import { writable } from 'svelte/store'
+import { desktopPlatform, getCurrentLocation } from '@hcengineering/ui'
+import { logOut } from '@hcengineering/workbench'
+import { get, writable } from 'svelte/store'
+
 export const versionError = writable<string | undefined>(undefined)
+export const invalidError = writable<boolean>(false)
 const versionStorageKey = 'last_server_version'
 
 let _token: string | undefined
-let _client: AccountClient | undefined
+let _client: Client | undefined
 let _clientSet: boolean = false
 
 export async function connect (title: string): Promise<Client | undefined> {
   const loc = getCurrentLocation()
   const token = loc.query?.token
-  const ws = loc.path[1]
-  if (ws === undefined || token == null) {
-    navigate({
-      path: [loginId]
-    })
+  const wsUrl = loc.path[1]
+  if (wsUrl === undefined || token == null) {
+    invalidError.set(true)
     return
   }
-  setMetadata(presentation.metadata.Token, token)
+
+  const exchangeGuestToken = await getResource(login.function.ExchangeGuestToken)
+  const exchangedToken = await exchangeGuestToken(token)
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
-  const workspaceLoginInfo = (await selectWorkspace(ws, token))[1]
+  const workspaceLoginInfo = (await selectWorkspace(wsUrl, exchangedToken))[1]
   if (workspaceLoginInfo == null) {
-    navigate({
-      path: [loginId]
-    })
+    console.error(
+      `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
+    )
+    // something went wrong with selecting workspace with the selected token
+    await logOut()
+    invalidError.set(true)
     return
   }
 
-  setPresentationCookie(token, workspaceLoginInfo.workspaceId)
+  setPresentationCookie(exchangedToken, workspaceLoginInfo.workspace)
 
-  setMetadata(presentation.metadata.Token, token)
-  setMetadata(presentation.metadata.Workspace, workspaceLoginInfo.workspace)
-  setMetadata(presentation.metadata.WorkspaceId, workspaceLoginInfo.workspaceId)
+  setMetadata(presentation.metadata.Token, exchangedToken)
+  setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
+  setMetadata(presentation.metadata.WorkspaceDataId, workspaceLoginInfo.workspaceDataId)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
-  if (_token !== token && _client !== undefined) {
+  if (_token !== exchangedToken && _client !== undefined) {
     await _client.close()
     _client = undefined
   }
   if (_client !== undefined) {
     return _client
   }
-  _token = token
+  _token = exchangedToken
 
   let version: Version | undefined
   const clientFactory = await getResource(client.function.GetClient)
-  _client = await clientFactory(token, workspaceLoginInfo.endpoint, {
+  _client = await clientFactory(exchangedToken, workspaceLoginInfo.endpoint, {
     onHello: (serverVersion?: string) => {
       const frontVersion = getMetadata(presentation.metadata.FrontVersion)
       if (
@@ -82,20 +85,29 @@ export async function connect (title: string): Promise<Client | undefined> {
         frontVersion !== serverVersion
       ) {
         const reloaded = localStorage.getItem(`versionUpgrade:s${serverVersion}:f${frontVersion}`)
+        const isUpgrading = get(upgradeDownloadProgress) >= 0
 
         if (reloaded === null) {
           localStorage.setItem(`versionUpgrade:s${serverVersion}:f${frontVersion}`, 't')
-          location.reload()
+          // It might have been refreshed manually and download has started - do not reload
+          if (!isUpgrading) {
+            location.reload()
+          }
+
           return false
         } else {
           versionError.set(`Front version ${frontVersion} is not in sync with server version ${serverVersion}`)
 
-          if (!desktopPlatform) {
+          if (!desktopPlatform || !isUpgrading) {
             setTimeout(() => {
-              location.reload()
-            }, 5000)
+              // It might be possible that this callback will fire after the user has spent some time
+              // in the upgrade !modal! dialog and clicked upgrade - check again and do not reload
+              if (get(upgradeDownloadProgress) < 0) {
+                location.reload()
+              }
+            }, 10000)
           }
-          // For embedded it should download the upgrade and restart the app
+          // For embedded if the download has started it should download the upgrade and restart the app
 
           return false
         }
@@ -107,14 +119,12 @@ export async function connect (title: string): Promise<Client | undefined> {
       location.reload()
     },
     onUnauthorized: () => {
-      clearMetadata(ws)
-      navigate({
-        path: [loginId],
-        query: {}
+      void logOut().then(() => {
+        invalidError.set(true)
       })
     },
     // We need to refresh all active live queries and clear old queries.
-    onConnect: (event: ClientConnectEvent, data: any) => {
+    onConnect: async (event: ClientConnectEvent, data: any) => {
       console.log('WorkbenchClient: onConnect', event)
       try {
         if (event === ClientConnectEvent.Connected) {
@@ -169,13 +179,24 @@ export async function connect (title: string): Promise<Client | undefined> {
   })
   console.log('logging in as guest')
   Analytics.handleEvent('GUEST LOGIN')
-  Analytics.setWorkspace(ws)
-  const me = await _client?.getAccount()
+  Analytics.setWorkspace(wsUrl)
+
+  const account = workspaceLoginInfo.account
+
+  const me: Account = {
+    uuid: account,
+    role: workspaceLoginInfo.role,
+    primarySocialId: '' as PersonId,
+    socialIds: [],
+    fullSocialIds: []
+  }
+
   if (me !== undefined) {
-    Analytics.setUser(me.email)
-    Analytics.setWorkspace(ws)
+    Analytics.setUser(account)
+    Analytics.setWorkspace(wsUrl)
     console.log('login: employee account', me)
     setCurrentAccount(me)
+    setCurrentEmployee('' as Ref<Employee>)
   }
 
   try {
@@ -203,30 +224,12 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
   }
 
+  invalidError.set(false)
   versionError.set(undefined)
   // Update window title
-  document.title = [ws, title].filter((it) => it).join(' - ')
+  document.title = [wsUrl, title].filter((it) => it).join(' - ')
   _clientSet = true
   await setClient(_client)
 
   return _client
-}
-
-function clearMetadata (ws: string): void {
-  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
-  if (tokens !== null) {
-    const loc = getCurrentLocation()
-    // eslint-disable-next-line
-    delete tokens[loc.path[1]]
-    setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-  }
-  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceId)
-  if (currentWorkspace !== undefined) {
-    setPresentationCookie('', currentWorkspace)
-  }
-
-  setMetadata(presentation.metadata.Token, null)
-  setMetadataLocalStorage(login.metadata.LastToken, null)
-  setMetadataLocalStorage(login.metadata.LoginEmail, null)
-  void closeClient()
 }

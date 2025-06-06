@@ -32,6 +32,7 @@
     "AlignCenter": "居中对齐",
     "AlignLeft": "左对齐",
     "AlignRight": "右对齐",
+    "Download": "下载",
     "ViewImage": "查看图片",
     "ViewOriginal": "查看原图",
     "MoreActions": "更多操作",
@@ -58,6 +59,12 @@
     "Unset": "未设置",
     "Image": "图片",
     "SeparatorLine": "分隔线",
-    "TodoList": "待办"
+    "TodoItem": "待办事项",
+    "TodoList": "待办事项列表",
+    "DrawingBoard": "画板",
+
+    "ConvertToLinkPreview": "显示为链接",
+    "ConvertToEmbedPreview": "显示为内容预览",
+    "UnableToLoadEmbeddedContent": "由于权限设置或不支持的内容，无法加载链接预览"
   }
 }

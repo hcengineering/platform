@@ -15,17 +15,16 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import type { ButtonSize } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { EditBox, Label, showPopup, eventToHTMLElement, Button } from '@hcengineering/ui'
   import EditBoxPopup from './EditBoxPopup.svelte'
 
-  // export let label: IntlString
-  export let placeholder: IntlString
+  export let label: IntlString
   export let value: number | undefined
   export let autoFocus: boolean = false
   // export let maxWidth: string = '10rem'
   export let onChange: (value: number | undefined) => void
-  export let kind: 'no-border' | 'link' | 'button' = 'no-border'
+  export let kind: ButtonKind | undefined = undefined
   export let readonly = false
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
@@ -41,15 +40,15 @@
   }
 </script>
 
-{#if kind === 'button' || kind === 'link'}
+{#if kind}
   <Button
-    kind={kind === 'button' ? 'regular' : kind}
+    {kind}
     {size}
     {justify}
     {width}
     on:click={(ev) => {
       if (!shown && !readonly) {
-        showPopup(EditBoxPopup, { value, format: 'number' }, eventToHTMLElement(ev), (res) => {
+        showPopup(EditBoxPopup, { value, placeholder: label, format: 'number' }, eventToHTMLElement(ev), (res) => {
           if (Number.isFinite(res)) {
             value = res
             onChange(value)
@@ -63,7 +62,7 @@
       {#if value != null}
         <span class="caption-color overflow-label pointer-events-none">{value}</span>
       {:else}
-        <span class="content-dark-color pointer-events-none"><Label label={placeholder} /></span>
+        <span class="content-dark-color pointer-events-none"><Label {label} /></span>
       {/if}
     </svelte:fragment>
   </Button>
@@ -71,8 +70,8 @@
   {#if value != null}
     <span class="caption-color overflow-label">{value}</span>
   {:else}
-    <span class="content-dark-color"><Label label={placeholder} /></span>
+    <span class="content-dark-color"><Label {label} /></span>
   {/if}
 {:else}
-  <EditBox {placeholder} bind:value format={'number'} {autoFocus} on:change={_onchange} />
+  <EditBox placeholder={label} bind:value format={'number'} {autoFocus} on:change={_onchange} />
 {/if}

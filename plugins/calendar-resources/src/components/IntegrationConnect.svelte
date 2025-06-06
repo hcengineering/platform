@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getMetadata, translate } from '@hcengineering/platform'
-  import { Button, IconClose, Label, themeStore } from '@hcengineering/ui'
+  import { Button, Html, IconClose, Label, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import { concatLink } from '@hcengineering/core'
@@ -72,7 +72,7 @@
       <Label label={calendar.string.RedirectGoogle} />
     </div>
     <div class="mt-2">
-      {@html label}
+      <Html value={label} />
     </div>
 
     <img class="image" src={getMetadata(calendar.image.Permissions)} alt="" />

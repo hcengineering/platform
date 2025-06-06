@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.134.0",
+  "rushVersion": "5.151.0",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -26,7 +26,7 @@
    * Specify one of: "pnpmVersion", "npmVersion", or "yarnVersion".  See the Rush documentation
    * for details about these alternatives.
    */
-  "pnpmVersion": "8.15.9",
+  "pnpmVersion": "9.15.3",
 
   // "npmVersion": "4.5.0",
   // "yarnVersion": "1.9.4",
@@ -62,7 +62,7 @@
      * The default value is false to avoid legacy compatibility issues.
      * It is strongly recommended to set strictPeerDependencies=true.
      */
-    "strictPeerDependencies": false,
+    "strictPeerDependencies": false
 
     /**
      * Configures the strategy used to select versions during installation.
@@ -124,7 +124,7 @@
    * LTS schedule: https://nodejs.org/en/about/releases/
    * LTS versions: https://nodejs.org/en/download/releases/
    */
-  "nodeSupportedVersionRange": ">=12.13.0 <13.0.0 || >=14.15.0 <15.0.0 || >=16.0.0",
+  "nodeSupportedVersionRange": ">=20.0.0 <23.0.0",
 
   /**
    * Odd-numbered major versions of Node.js are experimental.  Even-numbered releases
@@ -247,14 +247,12 @@
     //   "[^@]+@users\\.noreply\\.github\\.com",
     //   "travis@example\\.org"
     // ],
-
     /**
      * When Rush reports that the address is malformed, the notice can include an example
      * of a recommended email.  Make sure it conforms to one of the allowedEmailRegExps
      * expressions.
      */
     // "sampleEmail": "mrexample@users.noreply.github.com",
-
     /**
      * The commit message to use when committing changes during 'rush publish'.
      *
@@ -263,7 +261,6 @@
      * in the commit message, and then customize Rush's message to contain that string.
      */
     // "versionBumpCommitMessage": "Applying package updates. [skip-ci]",
-
     /**
      * The commit message to use when committing changes during 'rush version'.
      *
@@ -446,14 +443,34 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/highlight",
+      "projectFolder": "packages/highlight",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/api-client",
+      "projectFolder": "packages/api-client",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/api-tests",
+      "projectFolder": "ws-tests/api-tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/importer",
+      "projectFolder": "packages/importer",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaboration",
       "projectFolder": "server/collaboration",
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/server-ws",
-      "projectFolder": "server/ws",
-      "shouldPublish": false
+      "packageName": "@hcengineering/hls",
+      "projectFolder": "packages/hls",
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/theme",
@@ -461,8 +478,28 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/text-core",
+      "projectFolder": "packages/text-core",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/text-markdown",
+      "projectFolder": "packages/text-markdown",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/text-html",
+      "projectFolder": "packages/text-html",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/text",
       "projectFolder": "packages/text",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/text-ydoc",
+      "projectFolder": "packages/text-ydoc",
       "shouldPublish": true
     },
     {
@@ -491,8 +528,68 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/media",
+      "projectFolder": "plugins/media",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/media-resources",
+      "projectFolder": "plugins/media-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/media-assets",
+      "projectFolder": "plugins/media-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-media",
+      "projectFolder": "models/media",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/recorder",
+      "projectFolder": "plugins/recorder",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/recorder-resources",
+      "projectFolder": "plugins/recorder-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/recorder-assets",
+      "projectFolder": "plugins/recorder-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-recorder",
+      "projectFolder": "models/recorder",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/presence",
+      "projectFolder": "plugins/presence",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/presence-resources",
+      "projectFolder": "plugins/presence-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-presence",
+      "projectFolder": "models/presence",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaborator-client",
       "projectFolder": "packages/collaborator-client",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/account-client",
+      "projectFolder": "packages/account-client",
       "shouldPublish": true
     },
     {
@@ -826,8 +923,18 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-stats",
+      "projectFolder": "pods/stats",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-server",
       "projectFolder": "pods/server",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-external",
+      "projectFolder": "pods/external",
       "shouldPublish": false
     },
     {
@@ -995,11 +1102,11 @@
       "projectFolder": "models/lead",
       "shouldPublish": false
     },
-    {
-      "packageName": "@hcengineering/storybook",
-      "projectFolder": "dev/storybook",
-      "shouldPublish": false
-    },
+    // {
+    //   "packageName": "@hcengineering/storybook",
+    //   "projectFolder": "dev/storybook",
+    //   "shouldPublish": false
+    // },
     {
       "packageName": "@hcengineering/model-gmail",
       "projectFolder": "models/gmail",
@@ -1091,6 +1198,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/tests-ws-sanity",
+      "projectFolder": "ws-tests/sanity",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/qms-tests-sanity",
       "projectFolder": "qms-tests/sanity",
       "shouldPublish": false
@@ -1136,7 +1248,7 @@
       "shouldPublish": false
     },
     {
-    "packageName": "@hcengineering/tags",
+      "packageName": "@hcengineering/tags",
       "projectFolder": "plugins/tags",
       "shouldPublish": true
     },
@@ -1427,6 +1539,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-fulltext",
+      "projectFolder": "pods/fulltext",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/hr",
       "projectFolder": "plugins/hr",
       "shouldPublish": true
@@ -1694,7 +1811,7 @@
     {
       "packageName": "@hcengineering/love",
       "projectFolder": "plugins/love",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/love-assets",
@@ -1817,6 +1934,26 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/model-export",
+      "projectFolder": "models/export",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/export",
+      "projectFolder": "plugins/export",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/export-assets",
+      "projectFolder": "plugins/export-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/export-resources",
+      "projectFolder": "plugins/export-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/sign",
       "projectFolder": "plugins/sign",
       "shouldPublish": false
@@ -1925,7 +2062,7 @@
       "packageName": "@hcengineering/diffview-resources",
       "projectFolder": "plugins/diffview-resources",
       "shouldPublish": false
-    },  
+    },
     {
       "packageName": "@hcengineering/github",
       "projectFolder": "services/github/github",
@@ -2007,8 +2144,18 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-calendar-mailer",
+      "projectFolder": "services/calendar/pod-calendar-mailer",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/qms-doc-import-tool",
       "projectFolder": "dev/doc-import-tool",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-datalake",
+      "projectFolder": "services/datalake/pod-datalake",
       "shouldPublish": false
     },
     {
@@ -2019,6 +2166,11 @@
     {
       "packageName": "@hcengineering/pod-print",
       "projectFolder": "services/print/pod-print",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-export",
+      "projectFolder": "services/export/pod-export",
       "shouldPublish": false
     },
     {
@@ -2109,6 +2261,316 @@
     {
       "packageName": "@hcengineering/openai",
       "projectFolder": "plugins/openai",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/scripts",
+      "projectFolder": "common/scripts",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-test-management",
+      "projectFolder": "models/test-management",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/test-management",
+      "projectFolder": "plugins/test-management",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/test-management-resources",
+      "projectFolder": "plugins/test-management-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/test-management-assets",
+      "projectFolder": "plugins/test-management-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey",
+      "projectFolder": "plugins/survey",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-survey",
+      "projectFolder": "models/survey",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey-assets",
+      "projectFolder": "plugins/survey-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey-resources",
+      "projectFolder": "plugins/survey-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/card",
+      "projectFolder": "plugins/card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-card",
+      "projectFolder": "models/card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/card-assets",
+      "projectFolder": "plugins/card-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/card-resources",
+      "projectFolder": "plugins/card-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-card",
+      "projectFolder": "server-plugins/card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-card-resources",
+      "projectFolder": "server-plugins/card-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-card",
+      "projectFolder": "models/server-card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/mail",
+      "projectFolder": "plugins/mail",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/model-mail",
+      "projectFolder": "models/mail",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/mail-assets",
+      "projectFolder": "plugins/mail-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-mail",
+      "projectFolder": "services/mail/pod-mail",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/chat",
+      "projectFolder": "plugins/chat",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/chat-assets",
+      "projectFolder": "plugins/chat-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/chat-resources",
+      "projectFolder": "plugins/chat-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-chat",
+      "projectFolder": "models/chat",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-msg2file",
+      "projectFolder": "services/msg2file",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/process",
+      "projectFolder": "plugins/process",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/process-assets",
+      "projectFolder": "plugins/process-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/process-resources",
+      "projectFolder": "plugins/process-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-process",
+      "projectFolder": "models/process",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-process",
+      "projectFolder": "server-plugins/process",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-process",
+      "projectFolder": "models/server-process",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-process-resources",
+      "projectFolder": "server-plugins/process-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/kafka",
+      "projectFolder": "server/kafka",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/inbox",
+      "projectFolder": "plugins/inbox",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/inbox-assets",
+      "projectFolder": "plugins/inbox-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/inbox-resources",
+      "projectFolder": "plugins/inbox-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-inbox",
+      "projectFolder": "models/inbox",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-inbound-mail",
+      "projectFolder": "services/mail/pod-inbound-mail",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/achievement",
+      "projectFolder": "plugins/achievement",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/achievement-assets",
+      "projectFolder": "plugins/achievement-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/achievement-resources",
+      "projectFolder": "plugins/achievement-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-achievement",
+      "projectFolder": "models/achievement",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/kvs-client",
+      "projectFolder": "packages/kvs-client",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication",
+      "projectFolder": "plugins/communication",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-assets",
+      "projectFolder": "plugins/communication-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-resources",
+      "projectFolder": "plugins/communication-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-communication",
+      "projectFolder": "models/communication",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/mail-common",
+      "projectFolder": "services/mail/mail-common",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/emoji",
+      "projectFolder": "plugins/emoji",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/emoji-assets",
+      "projectFolder": "plugins/emoji-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/emoji-resources",
+      "projectFolder": "plugins/emoji-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-emoji",
+      "projectFolder": "models/emoji",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/retry",
+      "projectFolder": "packages/retry",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-types",
+      "projectFolder": "communication/packages/types",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-sdk-types",
+      "projectFolder": "communication/packages/sdk-types",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-shared",
+      "projectFolder": "communication/packages/shared",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-yaml",
+      "projectFolder": "communication/packages/yaml",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-rest-client",
+      "projectFolder": "communication/packages/rest-client",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-cockroach",
+      "projectFolder": "communication/packages/cockroach",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-server",
+      "projectFolder": "communication/packages/server",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-query",
+      "projectFolder": "communication/packages/query",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-client-query",
+      "projectFolder": "communication/packages/client-query",
       "shouldPublish": false
     }
   ]

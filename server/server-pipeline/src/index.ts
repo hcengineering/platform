@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-export * from './indexing'
 export * from './internationalization'
 export * from './pipeline'
 export * from './serverPlugins'

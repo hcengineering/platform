@@ -4,24 +4,12 @@
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
 import { Attachment } from '@hcengineering/attachment'
 import { Person } from '@hcengineering/contact'
-import {
-  Account,
-  AnyAttribute,
-  AttachedDoc,
-  Class,
-  Data,
-  Doc,
-  Hyperlink,
-  Markup,
-  Mixin,
-  Ref,
-  Timestamp
-} from '@hcengineering/core'
+import { AttachedDoc, Class, Data, Doc, Hyperlink, Markup, Mixin, PersonId, Ref, Timestamp } from '@hcengineering/core'
 import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import task, { ProjectTypeDescriptor, TaskStatusFactory, TaskTypeDescriptor } from '@hcengineering/task'
 import { ToDo } from '@hcengineering/time'
-import { Component, Issue, Milestone, Project } from '@hcengineering/tracker'
+import { Component, Issue, Project } from '@hcengineering/tracker'
 import { AnyComponent } from '@hcengineering/ui'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 
@@ -35,7 +23,7 @@ export interface DocSyncInfo extends Doc {
   url: string
   objectClass: Ref<Class<Doc>>
 
-  lastGithubUser?: Ref<Account> | null
+  lastGithubUser?: PersonId | null
 
   // If repository is null, then document is not yet synced.
   repository: Ref<GithubIntegrationRepository> | null
@@ -158,7 +146,7 @@ export enum GithubReviewDecisionState {
 }
 
 export interface LastReviewState {
-  user: Ref<Account>
+  user: PersonId
   state: GithubPullRequestReviewState
 }
 /**
@@ -267,7 +255,7 @@ export interface GithubReviewThread extends ActivityMessage {
   originalStartLine: number | null
   path: string
   startDiffSide: 'LEFT' | 'RIGHT' | null
-  resolvedBy: Ref<Account> | null
+  resolvedBy: PersonId | null
 }
 
 export interface GithubReviewComment extends AttachedDoc {
@@ -458,57 +446,14 @@ export interface GithubUserInfo extends Doc {
 
 /**
  * @public
- */
-export interface GithubFieldMapping {
-  // Platform field
-  _id: Ref<AnyAttribute>
-  name: string
-  _class: Ref<Class<Doc>>
-
-  // Github information
-  githubId: string // It could be fieldName or fieldId
-}
-
-/**
- * @public
- */
-export interface GithubProjectSyncData {
-  // Project NodeId
-  projectNodeId?: string
-  projectNumber?: number
-
-  githubProjectName?: string
-
-  // Mapping of all fields in this project.
-  mappings: GithubFieldMapping[]
-
-  // Update mapping
-  githubUpdatedAt?: string
-}
-
-/**
- * @public
  *
  * Mixin to ordinary project, to allow github repository mapping into it.
  */
-export interface GithubProject extends Project, GithubProjectSyncData {
+export interface GithubProject extends Project {
   integration: Ref<GithubIntegration>
 
   // A list of mapped repositories we synchronized into this project.
   repositories: Ref<GithubIntegrationRepository>[]
-
-  // Mixin to store all github custom attributes in
-  mixinClass: Ref<Class<GithubIssue>>
-}
-
-/**
- * @public
- *
- * Mixin for milestone to represent a github project for it.
- */
-export interface GithubMilestone extends Milestone, GithubProjectSyncData {
-  // A link to github project.
-  url: Hyperlink
 }
 
 export interface GithubPullRequestReviewThread extends Doc {
@@ -566,7 +511,6 @@ export default plugin(githubId, {
   mixin: {
     GithubIssue: '' as Ref<Mixin<GithubIssue>>,
     GithubProject: '' as Ref<Mixin<GithubProject>>,
-    GithubMilestone: '' as Ref<Mixin<GithubMilestone>>,
     GithubComponent: '' as Ref<Mixin<GithubComponent>>,
     GithubUser: '' as Ref<Mixin<GithubUser>>,
     GithubTodo: '' as Ref<Mixin<GithubTodo>>
@@ -600,6 +544,7 @@ export default plugin(githubId, {
     AuthenticatedWithGithub: '' as IntlString,
     AuthenticationRevokedGithub: '' as IntlString,
     AuthenticatedWithGithubEmployee: '' as IntlString,
-    AuthenticatedWithGithubRequired: '' as IntlString
+    AuthenticatedWithGithubRequired: '' as IntlString,
+    Suspended: '' as IntlString
   }
 })

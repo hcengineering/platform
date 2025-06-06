@@ -18,7 +18,7 @@
   import { Panel } from '@hcengineering/panel'
   import { createQuery, getClient, getFileUrl } from '@hcengineering/presentation'
   import { Button, IconMoreH } from '@hcengineering/ui'
-  import { showFilesUploadPopup } from '@hcengineering/uploader'
+  import { FileUploadCallbackParams, showFilesUploadPopup } from '@hcengineering/uploader'
   import view from '@hcengineering/view'
   import { showMenu } from '@hcengineering/view-resources'
 
@@ -68,26 +68,29 @@
   function handleUploadFile (): void {
     if (object != null) {
       void showFilesUploadPopup(
-        { objectId: object._id, objectClass: object._class },
         {
-          maxNumberOfFiles: 1,
-          hideProgress: true
+          onFileUploaded,
+          showProgress: {
+            target: { objectId: object._id, objectClass: object._class }
+          },
+          maxNumberOfFiles: 1
         },
-        {},
-        async (uuid, name, file, path, metadata) => {
-          const data = {
-            file: uuid,
-            title: name,
-            size: file.size,
-            type: file.type,
-            lastModified: file instanceof File ? file.lastModified : Date.now(),
-            metadata
-          }
-
-          await createFileVersion(client, _id, data)
-        }
+        {}
       )
     }
+  }
+
+  async function onFileUploaded ({ uuid, name, file, metadata }: FileUploadCallbackParams): Promise<void> {
+    const data = {
+      file: uuid,
+      title: name,
+      size: file.size,
+      type: file.type,
+      lastModified: file instanceof File ? file.lastModified : Date.now(),
+      metadata
+    }
+
+    await createFileVersion(client, _id, data)
   }
 </script>
 

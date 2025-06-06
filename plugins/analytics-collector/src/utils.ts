@@ -13,6 +13,6 @@
 // limitations under the License.
 //
 
-export function getOnboardingChannelName (worksapce: string, email: string): string {
-  return `${email}; ${worksapce}`
+export function getOnboardingChannelName (worksapceUrl: string, name: string): string {
+  return `${name}; ${worksapceUrl}`
 }

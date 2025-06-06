@@ -1,13 +1,10 @@
 //
 // Copyright © 2024 Hardcore Engineering Inc.
 //
-import { Analytics } from '@hcengineering/analytics'
 import { MeasureLogger, ParamsType } from '@hcengineering/core'
 import { basename, dirname, join } from 'path'
 import winston from 'winston'
 import DailyRotateFile from 'winston-daily-rotate-file'
-
-const PLATFORM_OPERATION_LOGGING = process.env.PLATFORM_OPERATION_LOGGING === 'true'
 
 export class SplitLogger implements MeasureLogger {
   logger: winston.Logger
@@ -81,13 +78,6 @@ export class SplitLogger implements MeasureLogger {
   }
 
   error (message: string, obj?: Record<string, any>): void {
-    // Check if obj has error inside, so we could send it to Analytics
-    for (const v of Object.values(obj ?? {})) {
-      if (v instanceof Error) {
-        Analytics.handleError(v)
-      }
-    }
-
     if (this.opts.parent !== undefined) {
       this.opts.parent.error({ message, ...obj })
     }
@@ -110,9 +100,7 @@ export class SplitLogger implements MeasureLogger {
   }
 
   logOperation (operation: string, time: number, params: ParamsType): void {
-    if (PLATFORM_OPERATION_LOGGING) {
-      this.logger.info({ operation, time, ...params })
-    }
+    this.logger.info(operation, { time, ...params })
   }
 
   childLogger (name: string, params: Record<string, string>): MeasureLogger {

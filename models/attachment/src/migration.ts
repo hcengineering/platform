@@ -13,9 +13,31 @@
 // limitations under the License.
 //
 
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import {
+  tryMigrate,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient
+} from '@hcengineering/model'
+import attachment, { attachmentId, DOMAIN_ATTACHMENT } from '.'
 
 export const attachmentOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, attachmentId, [
+      {
+        state: 'fix-attachedTo',
+        mode: 'upgrade',
+        func: async (client: MigrationClient): Promise<void> => {
+          await client.update(
+            DOMAIN_ATTACHMENT,
+            { _class: attachment.class.Attachment, attachedToClass: 'chunter:class:Comment' },
+            {
+              attachedToClass: 'chunter:class:ChatMessage'
+            }
+          )
+        }
+      }
+    ])
+  },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

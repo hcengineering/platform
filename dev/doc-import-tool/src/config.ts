@@ -1,9 +1,9 @@
-import { Employee } from '@hcengineering/contact'
-import { Ref, WorkspaceId } from '@hcengineering/core'
-import { DocumentSpace } from '@hcengineering/controlled-documents'
-import { StorageAdapter } from '@hcengineering/server-core'
+import { type Employee } from '@hcengineering/contact'
+import { type Ref, type WorkspaceDataId, type WorkspaceUuid } from '@hcengineering/core'
+import { type DocumentSpace } from '@hcengineering/controlled-documents'
+import { type StorageAdapter } from '@hcengineering/server-core'
 
-import { HtmlConversionBackend } from './convert/convert'
+import { type HtmlConversionBackend } from './convert/convert'
 
 export interface Config {
   doc: string
@@ -11,7 +11,8 @@ export interface Config {
   collaborator?: string
   collaboratorURL: string
   uploadURL: string
-  workspaceId: WorkspaceId
+  workspaceId: WorkspaceUuid
+  workspaceDataId?: WorkspaceDataId
   owner: Ref<Employee>
   backend: HtmlConversionBackend
   space: Ref<DocumentSpace>

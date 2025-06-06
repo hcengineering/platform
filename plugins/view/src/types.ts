@@ -15,7 +15,7 @@
 //
 
 import {
-  Account,
+  PersonId,
   AggregateValue,
   AnyAttribute,
   CategoryType,
@@ -37,7 +37,9 @@ import {
   Tx,
   TxOperations,
   Type,
-  UXObject
+  UXObject,
+  AccountUuid,
+  Blob
 } from '@hcengineering/core'
 import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
@@ -112,8 +114,8 @@ export interface FilteredView extends Doc {
   filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
   sharable?: boolean
-  users: Ref<Account>[]
-  createdBy: Ref<Account>
+  users: AccountUuid[]
+  createdBy: PersonId
   attachedTo: string
 }
 
@@ -236,6 +238,11 @@ export interface ObjectEditorFooter extends Class<Doc> {
   props?: Record<string, any>
 }
 
+export interface ObjectPanelFooter extends Class<Doc> {
+  editor: AnyComponent
+  props?: Record<string, any>
+}
+
 /**
  * @public
  */
@@ -283,6 +290,13 @@ export interface ObjectIcon extends Class<Doc> {
  */
 export interface ObjectIdentifier extends Class<Doc> {
   provider: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>
+}
+
+/**
+ * @public
+ */
+export interface ReferenceObjectProvider extends Class<Doc> {
+  provider: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<Doc | undefined>>
 }
 
 /**
@@ -420,8 +434,10 @@ export interface Viewlet extends Doc {
   config: (BuildModelKey | string)[]
   configOptions?: ViewletConfigOptions
   viewOptions?: ViewOptionsModel
+  masterDetailOptions?: MasterDetailModel
   variant?: string
   props?: Record<string, any>
+  title?: string
 }
 
 /**
@@ -536,7 +552,7 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
 
   // Available only for workspace owners
   secured?: boolean
-  allowedForEditableContent?: boolean
+  allowedForEditableContent?: 'always' | 'noSelection'
 
   analyticsEvent?: string
 }
@@ -692,9 +708,25 @@ export interface ViewOption {
   defaultValue: any
   label: IntlString
   hidden?: (viewOptions: ViewOptions) => boolean
-  actionTarget?: 'query' | 'category' | 'display'
+  actionTarget?: 'query' | 'category' | 'display' | 'options'
   action?: Resource<(value: any, ...params: any) => any>
 }
+
+/**
+ * @public
+ */
+export type ViewOptionsAction<T extends Doc = Doc> = Resource<
+(value: any, query: FindOptions<T> | undefined) => FindOptions<T>
+>
+
+/**
+ * @public
+ */
+export interface ViewOptionsOption extends ViewOption {
+  actionTarget: 'options'
+  action: ViewOptionsAction<Doc>
+}
+
 /**
  * @public
  */
@@ -781,6 +813,12 @@ export interface ObjectPanel extends Class<Doc> {
   component: AnyComponent
 }
 
+// Temp workaround for cards-based apps navigation
+export interface CustomObjectLinkProvider extends Class<Doc> {
+  match: Resource<(doc: Doc) => boolean>
+  encode: Resource<(doc: Doc) => Location>
+}
+
 /**
  * @public
  */
@@ -789,6 +827,32 @@ export interface ViewOptionsModel {
   orderBy: OrderOption[]
   other: ViewOptionModel[]
   groupDepth?: number
+  storageKey?: string
+}
+
+/**
+ * @public
+ */
+export interface MasterDetailModel {
+  views: MasterDetailConfig[]
+}
+
+export interface MasterDetailConfig {
+  id?: string
+  class: Ref<Class<Doc>>
+  view: Ref<ViewletDescriptor>
+  associationId?: Ref<Class<Doc>>
+  props?: Record<string, any>
+  createComponent?: AnyComponent
+}
+
+/**
+ * @public
+ */
+export interface MasterDetailOption {
+  class: Ref<Class<Doc>>
+  viewlet?: Ref<Viewlet>
+  associationId?: Ref<Class<Doc>>
 }
 
 /**
@@ -796,7 +860,7 @@ export interface ViewOptionsModel {
  */
 export interface IconProps {
   icon?: Asset
-  color?: number
+  color?: number | number[] | Ref<Blob>
 }
 
 export type AttributeCategory = 'attribute' | 'inplace' | 'collection' | 'array' | 'object'

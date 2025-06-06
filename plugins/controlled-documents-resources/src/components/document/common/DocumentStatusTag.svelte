@@ -37,11 +37,11 @@
     }
 
     &.obsolete {
-      background: var(--theme-state-ghost-background-color);
-      border-color: var(--theme-state-ghost-border-color);
+      background: var(--theme-state-negative-background-color);
+      border-color: var(--theme-state-negative-border-color);
 
       .label {
-        color: var(--theme-state-ghost-color);
+        color: var(--theme-state-negative-color);
       }
     }
 

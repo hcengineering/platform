@@ -61,7 +61,6 @@
     "ReassignToDoConfirm": "您要更改待办事项被指派人吗？待办事项将从当前被指派人的计划中移除。",
     "Icon": "图标",
     "Color": "颜色",
-    "RoleLabel": "角色：{role}",
-    "Embeddings": "嵌入"
+    "RoleLabel": "角色：{role}"
   }
 }

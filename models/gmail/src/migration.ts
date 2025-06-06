@@ -43,8 +43,8 @@ async function migrateSettings (client: MigrationClient): Promise<void> {
 }
 
 export const gmailOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, gmailId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, gmailId, [
       {
         state: 'removeDeprecatedSpace',
         func: async (client: MigrationClient) => {

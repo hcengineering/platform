@@ -1,0 +1,62 @@
+{
+  "string": {
+    "Document": "Dokument",
+    "ParentDocument": "Nadřazený dokument",
+    "ChildDocument": "Podřízený dokument",
+    "CreateDocument": "Vytvořit dokument",
+    "Documents": "Dokumenty",
+    "CreateAnVersion": "Vytvořit novou verzi",
+    "DocumentNamePlaceholder": "Bez názvu",
+    "Name": "Název",
+    "Cancel": "Zrušit",
+    "Version": "Verze",
+    "SearchDocument": "Hledat dokument...",
+    "Snapshot": "Momentka",
+    "NoVersions": "Žádné verze nejsou definovány",
+    "DocumentApplication": "Dokumenty",
+    "MyDocuments": "Moje dokumenty",
+    "Teamspace": "Týmový prostor",
+    "Teamspaces": "Týmové prostory",
+    "Labels": "Štítky",
+    "AddLabel": "Přidat štítek",
+    "Authors": "Autoři",
+    "Backlinks": "Zpětné odkazy",
+    "History": "Historie",
+    "DescriptionPlaceholder": "napište podrobnosti...",
+    "CreateTeamspace": "Vytvořit týmový prostor",
+    "EditTeamspace": "Upravit týmový prostor",
+    "NewTeamspace": "Nový týmový prostor",
+    "TeamspaceTitle": "Název týmového prostoru",
+    "TeamspaceTitlePlaceholder": "Nový týmový prostor",
+    "TeamspaceDescriptionPlaceholder": "Přidat popis ...",
+    "ChooseIcon": "Vyberte ikonu",
+    "TeamspaceMembers": "Členové",
+    "NoParentDocument": "Žádný nadřazený dokument",
+    "NoBacklinks": "Žádné zpětné odkazy",
+    "NoHistory": "Žádná předchozí historie",
+    "Untitled": "Bez názvu",
+
+    "Description": "Popis",
+
+    "CopyDocumentUrl": "Kopírovat URL dokumentu do schránky",
+
+    "ViewMode": "Zobrazit",
+    "EditMode": "Upravit",
+    "SuggestMode": "Navrhnout",
+
+    "CompareTo": "Porovnat s...",
+    "Star": "Připnout",
+    "Unstar": "Odepnout",
+
+    "Lock": "Uzamknout",
+    "Unlock": "Odemknout",
+    "Locked": "Uzamčeno",
+
+    "ConfigLabel": "Dokumenty",
+    "ConfigDescription": "Rozšíření pro spolupráci na úpravách dokumentů",
+
+    "Icon": "Ikona",
+    "Color": "Barva",
+    "RoleLabel": "Role: {role}"
+  }
+}

@@ -1,32 +1,29 @@
-import login, { loginId } from '@hcengineering/login'
-import { getEmbeddedLabel, getMetadata, setMetadata } from '@hcengineering/platform'
-import presentation, { closeClient, MessageBox, setDownloadProgress } from '@hcengineering/presentation'
-import { settingId } from '@hcengineering/setting'
+import { loginId } from '@hcengineering/login'
+import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
+import presentation, { MessageBox, setDownloadProgress } from '@hcengineering/presentation'
+import settings, { settingId } from '@hcengineering/setting'
 import {
   closePanel,
   closePopup,
   createApp,
-  fetchMetadataLocalStorage,
-  getCurrentLocation,
   getCurrentResolvedLocation,
   navigate,
   parseLocation,
   pushRootBarProgressComponent,
   removeRootBarComponent,
-  setMetadataLocalStorage,
   showPopup
 } from '@hcengineering/ui'
 
 import { notificationId } from '@hcengineering/notification'
-import { workbenchId } from '@hcengineering/workbench'
+import { workbenchId, logOut } from '@hcengineering/workbench'
 
 import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
-import { defineScreenShare } from './screenShare'
+import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
 import { IPCMainExposed } from './types'
-import settings from '@hcengineering/setting'
 
 defineScreenShare()
+defineGetDisplayMedia()
 
 void configurePlatform().then(() => {
   createApp(document.body)
@@ -59,17 +56,7 @@ window.addEventListener('DOMContentLoaded', () => {
   })
 
   ipcMain.on('logout', () => {
-    const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
-    if (tokens !== null) {
-      const loc = getCurrentLocation()
-      loc.path.splice(1, 1)
-      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-    }
-    setMetadata(presentation.metadata.Token, null)
-    setMetadataLocalStorage(login.metadata.LastToken, null)
-    setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-    setMetadataLocalStorage(login.metadata.LoginEmail, null)
-    void closeClient().then(() => {
+    void logOut().then(() => {
       navigate({ path: [loginId] })
     })
   })
@@ -92,18 +79,44 @@ window.addEventListener('DOMContentLoaded', () => {
     setDownloadProgress(progress)
   })
 
+  ipcMain.handleAuth((token) => {
+    const authLoc = {
+      path: ['login', 'auth'],
+      query: { token }
+    }
+
+    navigate(authLoc)
+  })
+
   ipcMain.on('start-backup', () => {
     // We need to obtain current token and endpoint and trigger backup
     const token = getMetadata(presentation.metadata.Token)
     const endpoint = getMetadata(presentation.metadata.Endpoint)
-    const workspace = getMetadata(presentation.metadata.WorkspaceId)
+    const workspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid)
+    // const workspaceDataId = getMetadata(presentation.metadata.WorkspaceDataId)
+    // const workspaceUrl = getMetadata(presentation.metadata.WorkspaceUrl)
+    // const wsIds = {
+    //   uuid: workspaceUuid,
+    //   dataId: workspaceDataId,
+    //   url: workspaceUrl
+    // }
     if (isOwnerOrMaintainer()) {
-      if (token != null && endpoint != null && workspace != null) {
-        ipcMain.startBackup(token, endpoint, workspace)
+      if (token != null && endpoint != null && workspaceUuid != null) {
+        // ipcMain.startBackup(token, endpoint, wsIds)
+        closePopup()
+        closePanel()
+        const loc = getCurrentResolvedLocation()
+        loc.fragment = undefined
+        loc.query = undefined
+        loc.path[2] = settingId
+        loc.path[3] = 'setting'
+        loc.path[4] = 'backup'
+        loc.path.length = 5
+        navigate(loc)
       }
     } else {
       showPopup(MessageBox, {
-        label: settings.string.OwnerOrMainteinerRequired
+        label: settings.string.OwnerOrMaintainerRequired
       })
     }
   })

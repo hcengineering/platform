@@ -18,14 +18,13 @@
   import { Analytics } from '@hcengineering/analytics'
   import { Data, generateId, Ref } from '@hcengineering/core'
   import { Document, DocumentEvents, Teamspace } from '@hcengineering/document'
-  import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
+  import { IconWithEmoji, Card, getClient, SpaceSelector } from '@hcengineering/presentation'
   import {
     Button,
     createFocusManager,
     EditBox,
     FocusHandler,
     getPlatformColorDef,
-    IconWithEmoji,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
@@ -62,12 +61,13 @@
   function chooseIcon (): void {
     const { icon, color } = object
     const icons = [document.icon.Document, document.icon.Teamspace]
-    showPopup(IconPicker, { icon, color, icons }, 'top', (result) => {
+    const update = (result: any): void => {
       if (result !== undefined && result !== null) {
         object.icon = result.icon
         object.color = result.color
       }
-    })
+    }
+    showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
   }
 
   function getTitle (value: string): string {
@@ -130,10 +130,12 @@
         noFocus
         icon={object.icon === view.ids.IconWithEmoji ? IconWithEmoji : object.icon ?? document.icon.Document}
         iconProps={object.icon === view.ids.IconWithEmoji
-          ? { icon: object.color }
+          ? { icon: object.color, size: 'medium' }
           : {
               fill:
-                object.color !== undefined ? getPlatformColorDef(object.color, $themeStore.dark).icon : 'currentColor'
+                object.color !== undefined && typeof object.color !== 'string'
+                  ? getPlatformColorDef(object.color, $themeStore.dark).icon
+                  : 'currentColor'
             }}
         on:click={chooseIcon}
       />

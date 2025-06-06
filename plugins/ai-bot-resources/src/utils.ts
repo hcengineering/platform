@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,38 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { concatLink, type Markup } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
-import { type TranslateRequest, type TranslateResponse } from '@hcengineering/ai-bot'
+import { derived, writable } from 'svelte/store'
+import contact, { type SocialIdentity } from '@hcengineering/contact'
+import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
+import { createQuery, onClient } from '@hcengineering/presentation'
+import { aiBotEmailSocialKey } from '@hcengineering/ai-bot'
 
-import aiBot from './plugin'
+export const aiBotSocialIdentityStore = writable<SocialIdentity>()
+const identityQuery = createQuery(true)
 
-export async function translate (text: Markup, lang: string): Promise<TranslateResponse | undefined> {
-  const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
-  const token = getMetadata(presentation.metadata.Token) ?? ''
-
-  if (url === '' || token === '') {
-    return undefined
+export const aiBotPersonRefStore = derived(
+  [personRefByPersonIdStore, aiBotSocialIdentityStore],
+  ([personRefByPersonId, aiBotSocialIdentity]) => {
+    return personRefByPersonId.get(aiBotSocialIdentity?._id)
   }
+)
 
-  try {
-    const req: TranslateRequest = { text, lang }
-    const resp = await fetch(concatLink(url, '/translate'), {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(req)
-    })
-    if (!resp.ok) {
-      return undefined
-    }
-
-    return (await resp.json()) as TranslateResponse
-  } catch (error) {
-    console.error(error)
-    return undefined
-  }
-}
+onClient(() => {
+  identityQuery.query(contact.class.SocialIdentity, { key: aiBotEmailSocialKey }, (res) => {
+    aiBotSocialIdentityStore.set(res[0])
+  })
+})

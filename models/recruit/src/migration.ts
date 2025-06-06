@@ -14,7 +14,15 @@
 //
 
 import { getCategories } from '@anticrm/skillset'
-import core, { DOMAIN_TX, TxOperations, type Ref, type Space, type Status } from '@hcengineering/core'
+import core, {
+  DOMAIN_MODEL_TX,
+  toIdMap,
+  TxOperations,
+  type Doc,
+  type Ref,
+  type Space,
+  type Status
+} from '@hcengineering/core'
 import {
   createOrUpdate,
   migrateSpace,
@@ -26,7 +34,7 @@ import {
   type ModelLogger
 } from '@hcengineering/model'
 import tags, { type TagCategory } from '@hcengineering/model-tags'
-import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
+import task, { createSequence, DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import { recruitId, type Applicant } from '@hcengineering/recruit'
 
 import { DOMAIN_CALENDAR } from '@hcengineering/model-calendar'
@@ -35,18 +43,19 @@ import recruit from './plugin'
 import { defaultApplicantStatuses } from './spaceType'
 
 export const recruitOperation: MigrateOperation = {
-  async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
-    await tryMigrate(client, recruitId, [
+  async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
+    await tryMigrate(mode, client, recruitId, [
       {
         state: 'migrate-default-statuses',
         func: (client) => migrateDefaultStatuses(client, logger)
       }
     ])
   },
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, recruitId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, recruitId, [
       {
         state: 'identifier',
+        mode: 'upgrade',
         func: migrateIdentifiers
       },
       {
@@ -63,6 +72,7 @@ export const recruitOperation: MigrateOperation = {
       },
       {
         state: 'migrate-applicants',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           await client.update(
             DOMAIN_TASK,
@@ -73,8 +83,8 @@ export const recruitOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, recruitId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, recruitId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {
@@ -141,15 +151,13 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
   const newTaskTypeMixin = recruit.mixin.ApplicantTypeData
 
   await client.update(
-    DOMAIN_TX,
+    DOMAIN_MODEL_TX,
     {
       objectClass: core.class.Attribute,
       'attributes.attributeOf': oldSpaceTypeMixin
     },
     {
-      $set: {
-        'attributes.attributeOf': newSpaceTypeMixin
-      }
+      'attributes.attributeOf': newSpaceTypeMixin
     }
   )
 
@@ -194,10 +202,16 @@ async function createDefaults (client: MigrationUpgradeClient, tx: TxOperations)
     },
     recruit.category.Other
   )
+  const ops = tx.apply()
 
-  for (const c of getCategories()) {
+  const cats = getCategories().filter((it, idx, arr) => arr.findIndex((qt) => qt.id === it.id) === idx)
+
+  const existingCategories = toIdMap(
+    await client.findAll<Doc>(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
+  )
+  for (const c of cats) {
     await createOrUpdate(
-      tx,
+      ops,
       tags.class.TagCategory,
       core.space.Workspace,
       {
@@ -207,9 +221,11 @@ async function createDefaults (client: MigrationUpgradeClient, tx: TxOperations)
         tags: c.skills,
         default: false
       },
-      (recruit.category.Category + '.' + c.id) as Ref<TagCategory>
+      (recruit.category.Category + '.' + c.id) as Ref<TagCategory>,
+      existingCategories
     )
   }
+  await ops.commit()
 
   await createSequence(tx, recruit.class.Review)
   await createSequence(tx, recruit.class.Opinion)

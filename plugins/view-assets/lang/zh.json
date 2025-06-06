@@ -125,6 +125,17 @@
     "MoreActions": "更多操作",
     "Leave": "离开",
     "Join": "加入",
-    "Copied": "已复制"
+    "Copied": "已复制",
+    "Title": "标题",
+    "HideArchived": "隱藏已存檔",
+    "RemoveRelation": "移除关系",
+    "RemoveRelationConfirmation": "您要移除关系吗？",
+    "MasterDetail": "主要-详细",
+    "Tree": "树",
+    "Document": "文档",
+    "Loading": "加载中...",
+    "NoRelations": "无关系",
+    "ReadOnlyWarningTitle": "只读模式",
+    "ReadOnlyWarningMessage": "请联系管理员获取此工作区的完全访问权限。"
   }
 }

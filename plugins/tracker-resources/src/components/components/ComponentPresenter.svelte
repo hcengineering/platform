@@ -44,7 +44,7 @@
 
 <div class="flex-row-center">
   {#if inline}
-    <ObjectMention object={value} {disabled} {noUnderline} {accent} {onClick} />
+    <ObjectMention object={value} {disabled} {onClick} />
   {:else}
     <DocNavLink object={value} {onClick} {disabled} {noUnderline} {accent} component={view.component.EditDoc}>
       <span class="flex-presenter flex-row-center" class:list={kind === 'list'}>

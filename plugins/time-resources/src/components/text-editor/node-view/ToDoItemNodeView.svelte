@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Person } from '@hcengineering/contact'
+  import { Employee, Person } from '@hcengineering/contact'
   import { AssigneePopup, EmployeePresenter } from '@hcengineering/contact-resources'
   import { type Class, type Doc, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
@@ -41,10 +41,11 @@
     editor.off('selectionUpdate', handleSelectionUpdate)
   })
 
+  $: todoable = objectId !== undefined && objectClass !== undefined
   $: todoId = node.attrs.todoid as Ref<ToDo>
   $: userId = node.attrs.userid as Ref<Person>
   $: checked = node.attrs.checked ?? false
-  $: readonly = !editor.isEditable || objectId === undefined
+  $: readonly = !editor.isEditable || (!todoable && todoId != null)
 
   let todo: ToDo | undefined = undefined
   $: query.query(
@@ -59,7 +60,7 @@
   )
 
   async function syncTodo (todo: ToDo | undefined): Promise<void> {
-    if (todo !== undefined) {
+    if (todo !== undefined && todo.attachedTo === objectId && todo.attachedToClass === objectClass) {
       const todoChecked = todo.doneOn != null
       if (todo._id !== todoId || todo.user !== userId || todoChecked !== checked) {
         updateAttributes({
@@ -86,7 +87,7 @@
     }
   }
 
-  async function assignTodo (user: Ref<Person>): Promise<void> {
+  async function assignTodo (user: Ref<Employee>): Promise<void> {
     if (todo !== undefined && todo.user === user) return
     if (objectId === undefined || objectClass === undefined || objectSpace === undefined) return
 
@@ -143,7 +144,7 @@
     }
   }
 
-  async function assignTodoConfirm (user: Ref<Person>): Promise<void> {
+  async function assignTodoConfirm (user: Ref<Employee>): Promise<void> {
     showPopup(
       MessageBox,
       {
@@ -171,7 +172,7 @@
     )
   }
 
-  async function changeAssignee (user: Ref<Person> | undefined): Promise<void> {
+  async function changeAssignee (user: Ref<Employee> | undefined): Promise<void> {
     const shouldConfirm = todo !== undefined && todo?.workslots > 0
     if (user !== undefined) {
       shouldConfirm ? await assignTodoConfirm(user) : await assignTodo(user)
@@ -212,16 +213,18 @@
     class:hovered
     class:focused
   >
-    <div class="flex-center assignee" contenteditable="false">
-      <EmployeePresenter
-        value={userId}
-        disabled={readonly}
-        avatarSize={'card'}
-        shouldShowName={false}
-        shouldShowPlaceholder
-        onEmployeeEdit={handleAssigneeEdit}
-      />
-    </div>
+    {#if todoable}
+      <div class="flex-center assignee" contenteditable="false">
+        <EmployeePresenter
+          value={userId}
+          disabled={readonly}
+          avatarSize={'card'}
+          shouldShowName={false}
+          shouldShowPlaceholder
+          onEmployeeEdit={handleAssigneeEdit}
+        />
+      </div>
+    {/if}
 
     <div class="flex-center todo-check" contenteditable="false">
       <CheckBox {readonly} {checked} on:value={markDone} kind={'positive'} size={'medium'} />
@@ -234,12 +237,14 @@
 <style lang="scss">
   .todo-item {
     .assignee {
+      z-index: 50;
       width: 1.25rem;
       cursor: pointer;
     }
     .assignee,
     .todo-check {
       height: 1.5em;
+      padding-right: 0.125rem;
     }
 
     &.unassigned {

@@ -2,7 +2,7 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 
-import core, { toIdMap, type AnyAttribute, type Ref, type Status } from '@hcengineering/core'
+import core, { DOMAIN_TX, toIdMap, type AnyAttribute, type Ref, type Status } from '@hcengineering/core'
 import {
   tryMigrate,
   tryUpgrade,
@@ -32,7 +32,7 @@ import github from './plugin'
 import { DOMAIN_TIME } from '@hcengineering/model-time'
 import { DOMAIN_TRACKER } from '@hcengineering/model-tracker'
 import time from '@hcengineering/time'
-import { DOMAIN_GITHUB } from '.'
+import { DOMAIN_GITHUB, DOMAIN_GITHUB_SYNC, DOMAIN_GITHUB_USER } from '.'
 
 export async function guessStatus (status: Status, statuses: Status[]): Promise<Status> {
   const active = (): Status => statuses.find((it) => it.category === task.statusCategory.Active) as Status
@@ -127,20 +127,22 @@ async function migrateDocSyncInfo (client: MigrationClient): Promise<void> {
 }
 
 export const githubOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, githubId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, githubId, [
       {
         state: 'pull-requests',
+        mode: 'upgrade',
         func: migratePullRequests
       },
       {
         state: 'update-doc-sync-info',
+        mode: 'upgrade',
         func: migrateDocSyncInfo
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, githubId, [])
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, githubId, [])
   }
 }
 
@@ -158,7 +160,7 @@ async function migrateFixMissingDocSyncInfo (client: MigrationClient): Promise<v
     [github.mixin.GithubProject]: { $exists: true }
   })
   for (const p of projects) {
-    const issues = await client.traverse<Issue>(
+    const issuesIterator = await client.traverse<Issue>(
       DOMAIN_TASK,
       {
         _class: tracker.class.Issue,
@@ -176,52 +178,56 @@ async function migrateFixMissingDocSyncInfo (client: MigrationClient): Promise<v
       }
     )
     let counter = 0
-    while (true) {
-      const docs = await issues.next(1000)
-      if (docs === null || docs.length === 0) {
-        break
-      }
-      const infos = await client.find(
-        DOMAIN_GITHUB,
-        {
-          _class: github.class.DocSyncInfo,
-          _id: { $in: docs.map((it) => it._id as unknown as Ref<DocSyncInfo>) }
-        },
-        {
-          projection: {
-            _id: 1
-          }
+    try {
+      while (true) {
+        const docs = await issuesIterator.next(1000)
+        if (docs === null || docs.length === 0) {
+          break
         }
-      )
-      const infoIds = toIdMap(infos)
-      let repository: Ref<GithubIntegrationRepository> | null = null
-      for (const issue of docs) {
-        if (!infoIds.has(issue._id)) {
-          if (client.hierarchy.hasMixin(issue, github.mixin.GithubIssue)) {
-            repository = client.hierarchy.as(issue, github.mixin.GithubIssue).repository
-          }
-          counter++
-          // Missing
-          await client.create<DocSyncInfo>(DOMAIN_GITHUB, {
+        const infos = await client.find(
+          DOMAIN_GITHUB,
+          {
             _class: github.class.DocSyncInfo,
-            _id: issue._id as any,
-            url: '',
-            githubNumber: 0,
-            repository,
-            objectClass: issue._class,
-            externalVersion: '#', // We need to put this one to handle new documents.
-            needSync: '',
-            derivedVersion: '',
-            attachedTo: issue.attachedTo ?? tracker.ids.NoParent,
-            space: issue.space,
-            modifiedBy: issue.modifiedBy,
-            modifiedOn: issue.modifiedOn
-          })
+            _id: { $in: docs.map((it) => it._id as unknown as Ref<DocSyncInfo>) }
+          },
+          {
+            projection: {
+              _id: 1
+            }
+          }
+        )
+        const infoIds = toIdMap(infos)
+        let repository: Ref<GithubIntegrationRepository> | null = null
+        for (const issue of docs) {
+          if (!infoIds.has(issue._id)) {
+            if (client.hierarchy.hasMixin(issue, github.mixin.GithubIssue)) {
+              repository = client.hierarchy.as(issue, github.mixin.GithubIssue).repository
+            }
+            counter++
+            // Missing
+            await client.create<DocSyncInfo>(DOMAIN_GITHUB, {
+              _class: github.class.DocSyncInfo,
+              _id: issue._id as any,
+              url: '',
+              githubNumber: 0,
+              repository,
+              objectClass: issue._class,
+              externalVersion: '#', // We need to put this one to handle new documents.
+              needSync: '',
+              derivedVersion: '',
+              attachedTo: issue.attachedTo ?? tracker.ids.NoParent,
+              space: issue.space,
+              modifiedBy: issue.modifiedBy,
+              modifiedOn: issue.modifiedOn
+            })
+          }
         }
       }
-    }
-    if (counter > 0) {
-      console.log('Created', counter, 'DocSyncInfos')
+    } finally {
+      await issuesIterator.close()
+      if (counter > 0) {
+        console.log('Created', counter, 'DocSyncInfos')
+      }
     }
   }
 }
@@ -271,7 +277,6 @@ async function processMigrateMarkupFor (
   client: MigrationClient,
   iterator: MigrationIterator<DocSyncInfo>
 ): Promise<void> {
-  let processed = 0
   while (true) {
     const docs = await iterator.next(1000)
     if (docs === null || docs.length === 0) {
@@ -298,34 +303,51 @@ async function processMigrateMarkupFor (
     if (operations.length > 0) {
       await client.bulk(DOMAIN_GITHUB, operations)
     }
-
-    processed += docs.length
-    console.log('...processed', processed)
   }
 }
 
 export const githubOperationPreTime: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, githubId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, githubId, [
       {
         state: 'fix-todo-spaces',
+        mode: 'upgrade',
         func: migrateTodoSpaces
       },
       {
         state: 'fix-missing-doc-sync-info',
+        mode: 'upgrade',
         func: migrateFixMissingDocSyncInfo
       },
       {
         state: 'remove-github-components',
+        mode: 'upgrade',
         func: migrateRemoveGithubComponents
       },
       {
         state: 'markup',
+        mode: 'upgrade',
         func: migrateMarkup
       },
       {
         state: 'migrate-missing-states',
+        mode: 'upgrade',
         func: migrateMissingStates
+      },
+      {
+        state: 'remove-doc-sync-info-txes',
+        mode: 'upgrade',
+        func: async (client) => {
+          await client.deleteMany(DOMAIN_TX, { objectClass: github.class.DocSyncInfo })
+        }
+      },
+      {
+        state: 'migrate-github-sync-domain',
+        mode: 'upgrade',
+        func: async (client) => {
+          await client.move(DOMAIN_GITHUB, { _class: github.class.DocSyncInfo }, DOMAIN_GITHUB_SYNC, 100)
+          await client.move(DOMAIN_GITHUB, { _class: github.class.GithubUserInfo }, DOMAIN_GITHUB_USER)
+        }
       }
     ])
   },

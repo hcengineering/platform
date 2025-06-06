@@ -7,7 +7,7 @@ import { type IntlString, mergeIds } from '@hcengineering/platform'
 import github, { githubId } from '@hcengineering/github'
 import { type Ref } from '@hcengineering/core'
 import { type Handler, type IntegrationType } from '@hcengineering/setting'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 export default mergeIds(githubId, github, {
   string: {
@@ -66,6 +66,8 @@ export default mergeIds(githubId, github, {
 
     Processing: '' as IntlString,
     AutoClose: '' as IntlString,
+    RequestFailed: '' as IntlString,
+    CloseTab: '' as IntlString,
     PleaseRetry: '' as IntlString,
     Updated: '' as IntlString,
     LinkToProject: '' as IntlString,

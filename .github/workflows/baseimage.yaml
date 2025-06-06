@@ -1,0 +1,67 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Docker base image
+
+concurrency:
+  group: 'service-base'
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag for the images'
+        required: false
+        default: 'latest'
+        type: string
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Configure docker
+        uses: crazy-max/ghaction-setup-docker@v3
+        with:
+          daemon-config: |
+            {
+              "features": {
+                "containerd-snapshotter": true
+              }
+            }
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          filter: tree:0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - name: Docker build
+        run: |
+          cd ./dev/base-image
+          ./build.sh
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+          VERSION: ${{ inputs.version }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: hardcoreeng
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      - name: Publish base image
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+          VERSION: ${{ inputs.version }}
+        run: |
+          echo Pushing base image
+          cd ./dev/base-image
+          ./push.sh
+

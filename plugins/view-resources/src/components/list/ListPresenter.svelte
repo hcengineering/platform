@@ -13,9 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import core, { Doc } from '@hcengineering/core'
   import { AttributeModel } from '@hcengineering/view'
-  import { FixedColumn } from '../..'
+  import { FixedColumn, restrictionStore } from '../..'
   import DividerPresenter from './DividerPresenter.svelte'
 
   export let docObject: Doc
@@ -26,14 +27,29 @@
   export let hideDivider: boolean = false
   export let compactMode: boolean = false
 
+  const dispatch = createEventDispatcher()
+
   $: dp = attributeModel?.displayProps
 
-  function joinProps (attribute: AttributeModel, object: Doc, props: Record<string, any>) {
+  function joinProps (attribute: AttributeModel, object: Doc, props: Record<string, any>, readonly: boolean) {
+    const readonlyParams =
+      readonly || (attribute?.attribute?.readonly ?? false)
+        ? {
+            readonly: true,
+            disabled: true,
+            editable: false,
+            isEditable: false
+          }
+        : {}
     const clearAttributeProps = attribute.props
     if (attribute.attribute?.type._class === core.class.EnumOf) {
-      return { ...clearAttributeProps, type: attribute.attribute.type, ...props }
+      return { ...clearAttributeProps, type: attribute.attribute.type, ...props, ...readonlyParams }
     }
-    return { object, ...clearAttributeProps, space: object.space, ...props }
+    return { object, ...clearAttributeProps, space: object.space, ...props, ...readonlyParams }
+  }
+  const translateSize = (e: CustomEvent): void => {
+    if (e.detail === undefined) return
+    dispatch('resize', e.detail)
   }
 </script>
 
@@ -48,7 +64,10 @@
       {onChange}
       kind={'list'}
       {compactMode}
-      {...joinProps(attributeModel, docObject, props)}
+      label={attributeModel.label}
+      attribute={attributeModel.attribute}
+      {...joinProps(attributeModel, docObject, props, $restrictionStore.readonly)}
+      on:resize={translateSize}
     />
   </FixedColumn>
 {:else}
@@ -57,7 +76,10 @@
     {value}
     {onChange}
     kind={'list'}
+    label={attributeModel.label}
     {compactMode}
-    {...joinProps(attributeModel, docObject, props)}
+    attribute={attributeModel.attribute}
+    {...joinProps(attributeModel, docObject, props, $restrictionStore.readonly)}
+    on:resize={translateSize}
   />
 {/if}

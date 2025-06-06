@@ -43,6 +43,7 @@ export class UserProfilePage {
   }
 
   async openProfileMenu (): Promise<void> {
+    await expect(this.profileButton()).toBeVisible()
     await this.profileButton().click()
   }
 

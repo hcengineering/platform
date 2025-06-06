@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
   import presentation from '@hcengineering/presentation'
-  import { Button, Icon, IconAdd, Label, showPopup, Scroller } from '@hcengineering/ui'
+  import { Button, Icon, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
   import view, { BuildModelKey } from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
   import recruit from '../plugin'
@@ -61,22 +61,25 @@
     {/if}
   </div>
   {#if (vacancies ?? 0) > 0}
-    <Scroller horizontal>
+    <Scroller horizontal noFade={false}>
       <Table
         _class={recruit.class.Vacancy}
         {config}
         query={{ company: objectId }}
+        options={{ showArchived: true }}
         {readonly}
         loadingProps={{ length: vacancies ?? 0 }}
       />
     </Scroller>
   {:else}
     <SectionEmpty icon={FileDuo} label={recruit.string.NoVacancies}>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span class="over-underline content-color" on:click={createApp}>
-        <Label label={recruit.string.CreateVacancy} />
-      </span>
+      {#if !readonly}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <span class="over-underline content-color" on:click={createApp}>
+          <Label label={recruit.string.CreateVacancy} />
+        </span>
+      {/if}
     </SectionEmpty>
   {/if}
 </div>

@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
-  import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, personByPersonIdStore } from '@hcengineering/contact-resources'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { BrowserNotification } from '@hcengineering/notification'
   import { Button, navigate, Notification as PlatformNotification, NotificationToast } from '@hcengineering/ui'
@@ -8,10 +7,10 @@
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
   import { getResource } from '@hcengineering/platform'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { getClient } from '@hcengineering/presentation'
-
+  import { getClient, playSound } from '@hcengineering/presentation'
   import { pushAvailable, subscribePush } from '../utils'
   import plugin from '../plugin'
+  import { onMount } from 'svelte'
 
   export let notification: PlatformNotification
   export let onRemove: () => void
@@ -20,10 +19,7 @@
   const hierarchy = client.getHierarchy()
 
   $: value = notification.params?.value as BrowserNotification
-
-  $: senderAccount =
-    value.senderId !== undefined ? $personAccountByIdStore.get(value.senderId as Ref<PersonAccount>) : undefined
-  $: sender = senderAccount !== undefined ? $personByIdStore.get(senderAccount.person) : undefined
+  $: sender = value.senderId !== undefined ? $personByPersonIdStore.get(value.senderId) : undefined
 
   async function openChannelInSidebar (): Promise<void> {
     if (!value.onClickLocation) return
@@ -58,6 +54,11 @@
     const fn = await getResource(chunter.function.OpenChannelInSidebar)
     await fn(_id, _class, undefined, thread, true, selectedMessageId)
   }
+
+  onMount(async () => {
+    if (!value.soundAlert) return
+    await playSound(plugin.sound.InboxNotification)
+  })
 </script>
 
 <NotificationToast title={notification.title} severity={notification.severity} onClose={onRemove}>

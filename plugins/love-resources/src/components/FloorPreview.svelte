@@ -86,14 +86,7 @@
   let pressed: boolean = false
   const clickMore = (e: MouseEvent): void => {
     pressed = true
-    const value: SelectPopupValueType[] = [
-      {
-        id: 'configure',
-        icon: IconSettings,
-        label: configure ? plugin.string.FinalizeEditing : plugin.string.EditOffice
-      },
-      { id: 'rename', icon: IconEdit, label: plugin.string.RenameAFloor }
-    ]
+    const value: SelectPopupValueType[] = [{ id: 'rename', icon: IconEdit, label: plugin.string.RenameAFloor }]
     showPopup(SelectPopup, { value }, eventToHTMLElement(e), (result) => {
       if (result === 'configure') {
         dispatch('configure', floor)
@@ -114,6 +107,7 @@
   {disabled}
   {kind}
   categoryHeader
+  contentAlign={'center'}
   on:select
 >
   <svelte:fragment slot="actions">

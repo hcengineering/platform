@@ -17,7 +17,7 @@
     "WithoutProject": "Без проекта",
     "TotalGroupTime": "{days, plural, =0 {} other {#д}} {hours, plural, =0 {} other {#ч}} {minutes, plural, =0 {} other {#м}}",
     "Tasks": "Задачи",
-    "WorkSlot": "Work Slot",
+    "WorkSlot": "Рабочий слот",
     "WorkItem": "Задача",
     "Inbox": "Входящие",
     "All": "Все",

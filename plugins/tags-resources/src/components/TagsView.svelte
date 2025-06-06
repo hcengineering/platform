@@ -37,7 +37,7 @@
   export let title: IntlString = tags.string.Tags
   export let icon: Asset | AnySvelteComponent = tags.icon.Tags
   export let item: IntlString = tags.string.Tag
-  export let сreateItemLabel: IntlString = tags.string.TagCreateLabel
+  export let createItemLabel: IntlString = tags.string.TagCreateLabel
   export let targetClass: Ref<Class<Doc>>
   export let onTag: ((tag: TagElement) => void) | undefined = undefined
 
@@ -92,10 +92,9 @@
     }
   )
   const countSorting = (a: Doc, b: Doc) =>
-    (tagElements?.get(b._id as Ref<TagElement>)?.count ?? 0) -
-      (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0) ?? 0
+    (tagElements?.get(b._id as Ref<TagElement>)?.count ?? 0) - (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0)
 
-    // $: twoRows = $deviceInfo.twoRows
+  let visibleCategories: TagCategory[] = []
 </script>
 
 <Header adaptive={'disabled'}>
@@ -112,7 +111,7 @@
   </svelte:fragment>
   <svelte:fragment slot="actions">
     <slot />
-    <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
+    <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={showCreateDialog} />
   </svelte:fragment>
 </Header>
 <CategoryBar
@@ -122,6 +121,9 @@
   on:change={(evt) => {
     category = evt.detail.category ?? undefined
     updateResultQuery(search, category)
+  }}
+  on:categories={(evt) => {
+    visibleCategories = evt.detail
   }}
 />
 <TableBrowser
@@ -134,12 +136,16 @@
       props: { edit: true, keyTitle },
       sortingKey: 'title'
     },
-    {
-      key: '$lookup.category',
-      presenter: tags.component.CategoryPresenter,
-      sortingKey: 'category',
-      label: tags.string.CategoryLabel
-    },
+    ...(visibleCategories.length > 1
+      ? [
+          {
+            key: '$lookup.category',
+            presenter: tags.component.CategoryPresenter,
+            sortingKey: 'category',
+            label: tags.string.CategoryLabel
+          }
+        ]
+      : []),
     {
       key: '',
       presenter: tags.component.TagElementCountPresenter,

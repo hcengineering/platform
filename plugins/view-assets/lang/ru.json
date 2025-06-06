@@ -122,6 +122,17 @@
     "MoreActions": "Больше действий",
     "Leave": "Покинуть",
     "Join": "Присоединиться",
-    "Copied": "Скопировано"
+    "Copied": "Скопировано",
+    "Title": "Заголовок",
+    "HideArchived": "Скрыть архивные",
+    "RemoveRelation": "Удалить связь",
+    "RemoveRelationConfirmation": "Вы хотите удалить связь?",
+    "MasterDetail": "Мастер-деталь",
+    "Tree": "Дерево",
+    "Document": "Документ",
+    "Loading": "Загрузка...",
+    "NoRelations": "Нет связей",
+    "ReadOnlyWarningTitle": "Режим только для чтения",
+    "ReadOnlyWarningMessage": "Обратитесь к администратору для получения полного доступа к рабочему пространству."
   }
 }

@@ -29,11 +29,21 @@
     "MakePrivate": "Make private",
     "MakePrivateDescription": "Only members can see it",
     "Created": "Created",
+    "Selected": "Selected",
     "NoResults": "No results to show",
     "Next": "Next",
     "FailedToPreview": "Failed to preview",
     "ContentType": "Content type",
-    "ContentTypeNotSupported": "Preview is not available for this content type"
+    "ContentTypeNotSupported": "Preview is not available for this content type",
+    "StartDrawing": "Scribble over",
+    "DrawingHistory": "Scribble history",
+    "ColorAdd": "Add color preset",
+    "ColorRemove": "Remove color preset",
+    "ColorReset": "Reset color presets",
+    "Copy": "Copy",
+    "CopyLink": "Copy link",
+    "AccessDenied": "Object doesn't exist or you are not permitted to access it.",
+    "UnableToFollowMention": "Unable to open mentioned object"
   },
   "status": {
     "FileTooLarge": "File too large"

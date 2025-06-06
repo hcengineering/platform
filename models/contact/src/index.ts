@@ -15,8 +15,10 @@
 //
 
 import activity from '@hcengineering/activity'
+import { type Role, type Card } from '@hcengineering/card'
 import {
   AvatarType,
+  type UserRole,
   contactId,
   type AvatarProvider,
   type Channel,
@@ -28,24 +30,30 @@ import {
   type Member,
   type Organization,
   type Person,
-  type PersonAccount,
-  type Status,
-  type PersonSpace
+  type PersonSpace,
+  type SocialIdentity,
+  type Status
 } from '@hcengineering/contact'
 import {
   AccountRole,
   DOMAIN_MODEL,
   DateRangeMode,
   IndexKind,
+  type AccountUuid,
   type Blob,
   type Class,
-  type CollaborativeDoc,
+  type Collection,
   type Domain,
+  type MarkupBlobRef,
+  type PersonId,
+  type PersonUuid,
   type Ref,
+  type SocialIdType,
   type Timestamp
 } from '@hcengineering/core'
+import { createSystemType } from '@hcengineering/model-card'
 import {
-  Collection,
+  Collection as CollectionType,
   Hidden,
   Index,
   Mixin,
@@ -56,6 +64,7 @@ import {
   TypeBoolean,
   TypeCollaborativeDoc,
   TypeDate,
+  TypeNumber,
   TypeRecord,
   TypeRef,
   TypeString,
@@ -65,14 +74,14 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TDoc, TSpace } from '@hcengineering/model-core'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import view, { createAction, createAttributePresenter, type Viewlet } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
-import type { Asset, IntlString, Resource } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import templates from '@hcengineering/templates'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
@@ -84,6 +93,7 @@ export { contactOperation } from './migration'
 export { contact as default }
 
 export const DOMAIN_CONTACT = 'contact' as Domain
+export const DOMAIN_ROLE = 'role' as Domain
 export const DOMAIN_CHANNEL = 'channel' as Domain
 
 @Model(contact.class.AvatarProvider, core.class.Doc, DOMAIN_MODEL)
@@ -125,18 +135,20 @@ export class TContact extends TDoc implements Contact {
     url?: string
   }
 
-  @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
+  @Prop(CollectionType(contact.class.Channel), contact.string.ContactInfo)
     channels?: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+  @Prop(CollectionType(attachment.class.Attachment), attachment.string.Attachments, {
+    shortLabel: attachment.string.Files
+  })
     attachments?: number
 
-  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
+  @Prop(CollectionType(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
 
   @Prop(TypeString(), contact.string.Location)
   @Index(IndexKind.FullText)
-    city!: string
+    city?: string
 }
 
 @Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CHANNEL)
@@ -156,11 +168,45 @@ export class TChannel extends TAttachedDoc implements Channel {
     lastMessage?: Timestamp
 }
 
+@Model(contact.class.SocialIdentity, core.class.AttachedDoc, DOMAIN_CHANNEL)
+@UX(contact.string.SocialId)
+export class TSocialIdentity extends TAttachedDoc implements SocialIdentity {
+  declare _id: Ref<this> & PersonId
+  declare attachedTo: Ref<Person>
+  declare attachedToClass: Ref<Class<Person>>
+
+  @Prop(TypeString(), getEmbeddedLabel('Key'))
+  @Hidden()
+    key!: string
+
+  @Prop(TypeString(), contact.string.Type)
+    type!: SocialIdType
+
+  @Prop(TypeString(), contact.string.Value)
+  @Index(IndexKind.FullText)
+    value!: string
+
+  @Prop(TypeNumber(), contact.string.Confirmed)
+  @ReadOnly()
+    verifiedOn?: number
+}
+
 @Model(contact.class.Person, contact.class.Contact)
 @UX(contact.string.Person, contact.icon.Person, 'PRSN', 'name', undefined, contact.string.Persons)
 export class TPerson extends TContact implements Person {
+  @Prop(TypeString(), getEmbeddedLabel('UUID'))
+  @Hidden()
+    personUuid?: PersonUuid
+
   @Prop(TypeDate(DateRangeMode.DATE, false), contact.string.Birthday)
     birthday?: Timestamp
+
+  @Prop(CollectionType(contact.class.SocialIdentity), contact.string.SocialIds)
+    socialIds?: Collection<SocialIdentity>
+
+  @Prop(TypeRef(contact.class.UserProfile), contact.string.UserProfile)
+  @ReadOnly()
+    profile?: Ref<Card>
 }
 
 @Model(contact.class.Member, core.class.AttachedDoc, DOMAIN_CONTACT)
@@ -175,9 +221,9 @@ export class TMember extends TAttachedDoc implements Member {
 export class TOrganization extends TContact implements Organization {
   @Prop(TypeCollaborativeDoc(), core.string.Description)
   @Index(IndexKind.FullText)
-    description!: CollaborativeDoc
+    description!: MarkupBlobRef | null
 
-  @Prop(Collection(contact.class.Member), contact.string.Members)
+  @Prop(CollectionType(contact.class.Member), contact.string.Members)
     members!: number
 }
 
@@ -198,19 +244,20 @@ export class TEmployee extends TPerson implements Employee {
   @Hidden()
     active!: boolean
 
-  @Prop(Collection(contact.class.Status), contact.string.Status)
+  @Prop(TypeString(), contact.string.Role)
+  @ReadOnly()
+  @Hidden()
+    role?: 'USER' | 'GUEST'
+
+  @Prop(CollectionType(contact.class.Status), contact.string.Status)
   @Hidden()
     statuses?: number
 
   @Prop(TypeString(), contact.string.Position)
   @Hidden()
     position?: string | null
-}
 
-@Model(contact.class.PersonAccount, core.class.Account)
-export class TPersonAccount extends TAccount implements PersonAccount {
-  @Prop(TypeRef(contact.class.Person), contact.string.Person)
-    person!: Ref<Person>
+  declare personUuid?: AccountUuid
 }
 
 @Model(contact.class.ContactsTab, core.class.Doc, DOMAIN_MODEL)
@@ -227,20 +274,27 @@ export class TPersonSpace extends TSpace implements PersonSpace {
     person!: Ref<Person>
 }
 
+@Model(contact.class.UserRole, core.class.Doc, DOMAIN_ROLE)
+export class TUserRole extends TDoc implements UserRole {
+  user!: Ref<Employee>
+  role!: Ref<Role>
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TAvatarProvider,
     TChannelProvider,
     TContact,
     TPerson,
+    TSocialIdentity,
     TOrganization,
     TEmployee,
-    TPersonAccount,
     TChannel,
     TStatus,
     TMember,
     TContactsTab,
-    TPersonSpace
+    TPersonSpace,
+    TUserRole
   )
 
   builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -263,22 +317,22 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: contact.class.Contact,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: contact.class.Person,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: contact.class.Organization,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: contact.class.Member,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.ObjectFactory, {
@@ -333,12 +387,31 @@ export function createModel (builder: Builder): void {
             component: workbench.component.SpecialView,
             icon: contact.icon.Person,
             label: contact.string.Employee,
+            accessLevel: AccountRole.DocGuest,
             componentProps: {
               _class: contact.mixin.Employee,
               icon: contact.icon.Person,
               label: contact.string.Employee,
+              baseQuery: {
+                role: { $ne: 'GUEST' }
+              },
               createLabel: contact.string.CreateEmployee,
               createComponent: contact.component.CreateEmployee
+            }
+          },
+          {
+            id: 'guests',
+            component: workbench.component.SpecialView,
+            icon: contact.icon.Person,
+            label: contact.string.Guest,
+            accessLevel: AccountRole.DocGuest,
+            componentProps: {
+              _class: contact.mixin.Employee,
+              icon: contact.icon.Person,
+              label: contact.string.Guest,
+              baseQuery: {
+                role: 'GUEST'
+              }
             }
           },
           {
@@ -346,6 +419,7 @@ export function createModel (builder: Builder): void {
             component: workbench.component.SpecialView,
             icon: contact.icon.Person,
             label: contact.string.Person,
+            accessLevel: AccountRole.DocGuest,
             componentProps: {
               _class: contact.class.Person,
               baseQuery: {
@@ -362,6 +436,7 @@ export function createModel (builder: Builder): void {
             component: workbench.component.SpecialView,
             icon: contact.icon.Company,
             label: contact.string.Organization,
+            accessLevel: AccountRole.DocGuest,
             componentProps: {
               _class: contact.class.Organization,
               icon: contact.icon.Company,
@@ -508,20 +583,15 @@ export function createModel (builder: Builder): void {
     pinned: true
   })
 
-  builder.mixin(core.class.Account, core.class.Class, view.mixin.Aggregation, {
-    createAggregationManager: contact.aggregation.CreatePersonAggregationManager,
-    setStoreFunc: contact.function.SetPersonStore,
-    filterFunc: contact.function.PersonFilterFunction
-  })
+  // builder.mixin(core.class.Account, core.class.Class, view.mixin.Aggregation, {
+  //   createAggregationManager: contact.aggregation.CreatePersonAggregationManager,
+  //   setStoreFunc: contact.function.SetPersonStore,
+  //   filterFunc: contact.function.PersonFilterFunction
+  // })
 
-  builder.mixin(core.class.Account, core.class.Class, view.mixin.Groupping, {
-    grouppingManager: contact.aggregation.GrouppingPersonManager
-  })
-
-  builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.ObjectEditor, {
-    editor: contact.component.EditEmployee,
-    pinned: true
-  })
+  // builder.mixin(core.class.Account, core.class.Class, view.mixin.Groupping, {
+  //   grouppingManager: contact.aggregation.GrouppingPersonManager
+  // })
 
   builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ObjectEditor, {
     editor: contact.component.EditOrganization,
@@ -588,8 +658,8 @@ export function createModel (builder: Builder): void {
     presenter: contact.component.EmployeeFilterValuePresenter
   })
 
-  builder.mixin(core.class.Account, core.class.Class, view.mixin.AttributeFilterPresenter, {
-    presenter: contact.component.PersonAccountFilterValuePresenter
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: contact.component.PersonFilterValuePresenter
   })
 
   builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.AttributeFilter, {
@@ -702,6 +772,17 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: contact.string.Viber,
+      icon: contact.icon.Viber,
+      placeholder: contact.string.ViberPlaceholder
+    },
+    contact.channelProvider.Viber
+  )
+
+  builder.createDoc(
     contact.class.AvatarProvider,
     core.space.Model,
     {
@@ -745,19 +826,16 @@ export function createModel (builder: Builder): void {
     presenter: contact.component.PersonPresenter
   })
 
-  builder.mixin(core.class.Account, core.class.Class, view.mixin.ArrayEditor, {
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.ArrayEditor, {
+    inlineEditor: contact.component.PersonIdArrayEditor
+  })
+
+  builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.ArrayEditor, {
     inlineEditor: contact.component.AccountArrayEditor
   })
 
-  builder.mixin(contact.class.PersonAccount, core.class.Class, view.mixin.ArrayEditor, {
-    inlineEditor: contact.component.AccountArrayEditor
-  })
-
-  builder.mixin(core.class.Account, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: contact.component.PersonAccountPresenter
-  })
-  builder.mixin(core.class.Account, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: contact.component.PersonAccountRefPresenter,
+  builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.PersonIdPresenter,
     arrayPresenter: contact.component.AccountArrayEditor
   })
 
@@ -782,7 +860,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: contact.component.PersonRefPresenter
+    presenter: contact.component.PersonRefPresenter,
+    arrayPresenter: contact.component.ContactArrayEditor
   })
 
   builder.mixin(contact.class.Contact, core.class.Class, view.mixin.AttributePresenter, {
@@ -790,7 +869,12 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: contact.component.EmployeeRefPresenter
+    presenter: contact.component.EmployeeRefPresenter,
+    arrayPresenter: contact.component.EmployeeArrayEditor
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.PreviewPresenter, {
+    presenter: contact.component.PersonPreviewPresenter
   })
 
   builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.IgnoreActions, {
@@ -860,7 +944,8 @@ export function createModel (builder: Builder): void {
       title: contact.string.Employees,
       query: contact.completion.EmployeeQuery,
       context: ['search', 'mention'],
-      classToSearch: contact.mixin.Employee
+      classToSearch: contact.mixin.Employee,
+      priority: 1000
     },
     contact.completion.EmployeeCategory
   )
@@ -874,7 +959,8 @@ export function createModel (builder: Builder): void {
       title: contact.string.People,
       query: contact.completion.PersonQuery,
       context: ['search', 'spotlight'],
-      classToSearch: contact.class.Person
+      classToSearch: contact.class.Person,
+      priority: 900
     },
     contact.completion.PersonCategory
   )
@@ -888,7 +974,8 @@ export function createModel (builder: Builder): void {
       title: contact.string.Organizations,
       query: contact.completion.OrganizationQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: contact.class.Organization
+      classToSearch: contact.class.Organization,
+      priority: 800
     },
     contact.completion.OrganizationCategory
   )
@@ -912,6 +999,25 @@ export function createModel (builder: Builder): void {
       secured: true
     },
     contact.action.KickEmployee
+  )
+
+  createAction(
+    builder,
+    {
+      action: contact.actionImpl.ResendInvite,
+      label: contact.string.ResendInvite,
+      query: {},
+      category: contact.category.Contact,
+      target: contact.mixin.Employee,
+      input: 'focus',
+      context: {
+        mode: ['context'],
+        group: 'remove'
+      },
+      secured: true,
+      visibilityTester: contact.function.CanResendInvitation
+    },
+    contact.action.ResendInvite
   )
 
   createAction(
@@ -955,7 +1061,8 @@ export function createModel (builder: Builder): void {
   )
 
   // Allow to use fuzzy search for mixins
-  builder.mixin(contact.class.Contact, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: contact.class.Contact,
     fullTextSummary: true
   })
 
@@ -1184,4 +1291,14 @@ export function createModel (builder: Builder): void {
   })
 
   createAttributePresenter(builder, contact.component.SpaceMembersEditor, core.class.Space, 'members', 'array')
+  createSystemType(builder, contact.class.UserProfile, contact.icon.Person, contact.string.UserProfile)
+  builder.createDoc(core.class.Attribute, core.space.Model, {
+    attributeOf: contact.class.UserProfile,
+    name: 'person',
+    label: contact.string.Person,
+    icon: contact.icon.Person,
+    type: TypeRef(contact.class.Person),
+    isCustom: true,
+    readonly: true
+  })
 }

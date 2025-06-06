@@ -88,6 +88,8 @@
 
   $: visibleCategories = categories.filter((it) => categoryKeys.includes(it._id))
 
+  $: dispatch('categories', visibleCategories)
+
   const selectItem = (item: TagCategory): void => {
     if (category === item._id) {
       category = undefined
@@ -129,7 +131,7 @@
   }
 </script>
 
-{#if visibleCategories.length > 0}
+{#if visibleCategories.length > 1}
   <div class="hulyHeader-container clearPadding justify-between flex-gap-4">
     <ModernButton
       label={tags.string.AllCategories}

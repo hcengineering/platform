@@ -13,14 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, Person } from '@hcengineering/contact'
+  import { Employee, Person } from '@hcengineering/contact'
   import { IconSize, LabelAndProps, tooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import { ObjectPresenterType } from '@hcengineering/view'
 
   import Avatar from './Avatar.svelte'
-  import { personAccountByIdStore } from '../utils'
-  import { getClient } from '@hcengineering/presentation'
 
   export let value: Person | Employee | undefined | null
   export let name: string
@@ -39,19 +37,23 @@
   export let type: ObjectPresenterType = 'link'
   export let showStatus = true
   export let overflowLabel = true
-
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  $: showStatus = showStatus && !!value && hierarchy.hasMixin(value, contact.mixin.Employee)
-  $: account = value && Array.from($personAccountByIdStore.values()).find((account) => account.person === value?._id)
+  export let inlineBlock = false
 </script>
 
 {#if value}
   {#if inline}
-    <ObjectMention object={value} {disabled} {accent} {noUnderline} {colorInherit} onClick={onEdit} />
+    <ObjectMention object={value} {disabled} onClick={onEdit} />
   {:else if type === 'link'}
-    <DocNavLink object={value} onClick={onEdit} {disabled} {noUnderline} {colorInherit} {accent} noOverflow>
+    <DocNavLink
+      object={value}
+      onClick={onEdit}
+      {disabled}
+      {noUnderline}
+      {colorInherit}
+      {accent}
+      {inlineBlock}
+      noOverflow
+    >
       <span
         use:tooltip={disabled ? undefined : showTooltip}
         class="antiPresenter h-full"
@@ -64,7 +66,7 @@
             class:mr-2={shouldShowName && !enlargedText}
             class:mr-3={shouldShowName && enlargedText}
           >
-            <Avatar size={avatarSize} person={value} name={value.name} {showStatus} account={account?._id} />
+            <Avatar size={avatarSize} person={value} name={value.name} {showStatus} />
           </span>
         {/if}
         {#if shouldShowName}

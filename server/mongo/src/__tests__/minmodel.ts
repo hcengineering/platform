@@ -14,15 +14,15 @@
 //
 
 import core, {
-  type Account,
+  type PersonId,
   type Arr,
   type AttachedDoc,
   type Class,
   ClassifierKind,
   type Data,
   type Doc,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
+  DOMAIN_RELATION,
   DOMAIN_TX,
   type Mixin,
   type Obj,
@@ -30,10 +30,11 @@ import core, {
   type TxCreateDoc,
   type TxCUD,
   TxFactory,
-  AccountRole
+  type AccountUuid
 } from '@hcengineering/core'
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { taskPlugin } from './tasks'
 
 export const txFactory = new TxFactory(core.account.System)
 
@@ -48,7 +49,7 @@ export function createDoc<T extends Doc> (
   _class: Ref<Class<T>>,
   attributes: Data<T>,
   id?: Ref<T>,
-  modifiedBy?: Ref<Account>
+  modifiedBy?: PersonId
 ): TxCreateDoc<Doc> {
   const result = txFactory.createTxCreateDoc(_class, core.space.Model, attributes, id)
   if (modifiedBy !== undefined) {
@@ -96,6 +97,22 @@ export function genMinModel (): TxCUD<Doc>[] {
     createClass(core.class.Doc, { label: 'Doc' as IntlString, extends: core.class.Obj, kind: ClassifierKind.CLASS })
   )
   txes.push(
+    createClass(core.class.Relation, {
+      label: 'Relation' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_RELATION
+    })
+  )
+  txes.push(
+    createClass(core.class.Association, {
+      label: 'Association' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_MODEL
+    })
+  )
+  txes.push(
     createClass(core.class.AttachedDoc, {
       label: 'AttachedDoc' as IntlString,
       extends: core.class.Doc,
@@ -113,23 +130,6 @@ export function genMinModel (): TxCUD<Doc>[] {
   txes.push(
     createClass(core.class.Space, {
       label: 'Space' as IntlString,
-      extends: core.class.Doc,
-      kind: ClassifierKind.CLASS,
-      domain: DOMAIN_MODEL
-    })
-  )
-  txes.push(
-    createClass(core.class.DocIndexState, {
-      label: 'DocIndexState' as IntlString,
-      extends: core.class.Doc,
-      kind: ClassifierKind.CLASS,
-      domain: DOMAIN_DOC_INDEX_STATE
-    })
-  )
-
-  txes.push(
-    createClass(core.class.Account, {
-      label: 'Account' as IntlString,
       extends: core.class.Doc,
       kind: ClassifierKind.CLASS,
       domain: DOMAIN_MODEL
@@ -173,13 +173,6 @@ export function genMinModel (): TxCUD<Doc>[] {
       kind: ClassifierKind.CLASS
     })
   )
-  txes.push(
-    createClass(core.class.TxCollectionCUD, {
-      label: 'TxCollectionCUD' as IntlString,
-      extends: core.class.TxCUD,
-      kind: ClassifierKind.CLASS
-    })
-  )
 
   txes.push(
     createClass(test.mixin.TestMixin, {
@@ -197,11 +190,9 @@ export function genMinModel (): TxCUD<Doc>[] {
     })
   )
 
-  const u1 = 'User1' as Ref<Account>
-  const u2 = 'User2' as Ref<Account>
+  const u1 = 'User1' as AccountUuid
+  const u2 = 'User2' as AccountUuid
   txes.push(
-    createDoc(core.class.Account, { email: 'user1@site.com', role: AccountRole.User }, u1),
-    createDoc(core.class.Account, { email: 'user2@site.com', role: AccountRole.User }, u2),
     createDoc(core.class.Space, {
       name: 'Sp1',
       description: '',
@@ -227,6 +218,16 @@ export function genMinModel (): TxCUD<Doc>[] {
       extends: core.class.Doc,
       kind: ClassifierKind.CLASS,
       domain: DOMAIN_MODEL
+    })
+  )
+
+  txes.push(
+    createDoc(core.class.Association, {
+      nameA: 'my-assoc',
+      nameB: 'my-assoc',
+      classA: taskPlugin.class.Task,
+      classB: taskPlugin.class.Task,
+      type: '1:1'
     })
   )
   return txes

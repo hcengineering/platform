@@ -12,57 +12,55 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import core, {
-  Account,
+  AccountUuid,
   Blob,
   Class,
-  Client,
   Doc,
   generateId,
-  getWorkspaceId,
   Hierarchy,
   Markup,
   MeasureContext,
+  PersonId,
   Ref,
   Space,
-  systemAccountEmail,
-  TxFactory
+  TxFactory,
+  WorkspaceUuid
 } from '@hcengineering/core'
-import { generateToken } from '@hcengineering/server-token'
-import notification, { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
+import notification from '@hcengineering/notification'
 import chunter, { ChatMessage, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
-import contact, { Person, PersonAccount } from '@hcengineering/contact'
-import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import contact, { Person } from '@hcengineering/contact'
+import { getTransactorEndpoint } from '@hcengineering/server-client'
 import activity, { ActivityMessage } from '@hcengineering/activity'
 import attachment, { Attachment } from '@hcengineering/attachment'
 import { StorageAdapter } from '@hcengineering/server-core'
+import { createRestClient, RestClient } from '@hcengineering/api-client'
 import { isEmptyMarkup } from '@hcengineering/text'
+import { generateToken } from '@hcengineering/server-token'
 
 import { ChannelRecord, MessageRecord, PlatformFileInfo, TelegramFileInfo } from './types'
 
 export class WorkspaceClient {
-  hierarchy: Hierarchy
   private constructor (
     private readonly ctx: MeasureContext,
-    private readonly storageAdapter: StorageAdapter,
-    private readonly client: Client,
-    private readonly token: string,
-    private readonly workspace: string
-  ) {
-    this.hierarchy = client.getHierarchy()
-  }
+    private readonly storage: StorageAdapter,
+    private readonly client: RestClient,
+    readonly hierarchy: Hierarchy,
+    private readonly workspace: WorkspaceUuid
+  ) {}
 
   static async create (
-    workspace: string,
+    workspace: WorkspaceUuid,
+    account: AccountUuid,
     ctx: MeasureContext,
-    storageAdapter: StorageAdapter
+    storage: StorageAdapter
   ): Promise<WorkspaceClient> {
-    const workspaceId = getWorkspaceId(workspace)
-    const token = generateToken(systemAccountEmail, workspaceId)
-    const client = await connectPlatform(token)
+    const token = generateToken(account, workspace, { service: 'telegram-bot' })
+    const endpoint = await getTransactorEndpoint(token)
+    const client = createRestClient(endpoint, workspace, token)
+    const model = await client.getModel()
 
-    return new WorkspaceClient(ctx, storageAdapter, client, token, workspace)
+    return new WorkspaceClient(ctx, storage, client, model.hierarchy, workspace)
   }
 
   async createAttachments (
@@ -72,8 +70,6 @@ export class WorkspaceClient {
     space: Ref<Space>,
     files: TelegramFileInfo[]
   ): Promise<number> {
-    const wsId = getWorkspaceId(this.workspace)
-
     let attachments = 0
 
     for (const file of files) {
@@ -81,7 +77,7 @@ export class WorkspaceClient {
         const response = await fetch(file.url)
         const buffer = Buffer.from(await response.arrayBuffer())
         const uuid = generateId()
-        await this.storageAdapter.put(this.ctx, wsId, uuid, buffer, file.type, file.size)
+        await this.storage.put(this.ctx, this.workspace as any, uuid, buffer, file.type, file.size) // TODO: FIXME
         const tx = factory.createTxCollectionCUD<ChatMessage, Attachment>(
           _class,
           _id,
@@ -107,7 +103,7 @@ export class WorkspaceClient {
     return attachments
   }
 
-  async isReplyAvailable (account: Ref<Account>, message: ActivityMessage): Promise<boolean> {
+  async isReplyAvailable (account: AccountUuid, message: ActivityMessage): Promise<boolean> {
     const hierarchy = this.hierarchy
 
     let objectId: Ref<Doc>
@@ -148,14 +144,15 @@ export class WorkspaceClient {
 
   async createThreadMessage (
     message: ActivityMessage,
-    account: PersonAccount,
+    account: AccountUuid,
+    socialId: PersonId,
     text: string,
     files: TelegramFileInfo[]
   ): Promise<boolean> {
-    const txFactory = new TxFactory(account._id)
+    const txFactory = new TxFactory(socialId)
     const hierarchy = this.hierarchy
 
-    const isAvailable = await this.isReplyAvailable(account._id, message)
+    const isAvailable = await this.isReplyAvailable(account, message)
 
     if (!isAvailable) {
       return false
@@ -226,72 +223,9 @@ export class WorkspaceClient {
     return true
   }
 
-  async replyToActivityNotification (
-    it: ActivityInboxNotification,
-    account: PersonAccount,
-    text: string,
-    files: TelegramFileInfo[]
-  ): Promise<boolean> {
-    const message = await this.client.findOne(it.attachedToClass, { _id: it.attachedTo })
-
-    if (message !== undefined) {
-      return await this.createThreadMessage(message, account, text, files)
-    }
-
-    return false
-  }
-
-  async replyToMention (
-    it: MentionInboxNotification,
-    account: PersonAccount,
-    text: string,
-    files: TelegramFileInfo[]
-  ): Promise<boolean> {
-    const hierarchy = this.hierarchy
-
-    if (!hierarchy.isDerived(it.mentionedInClass, activity.class.ActivityMessage)) {
-      return false
-    }
-
-    const message = (await this.client.findOne(it.mentionedInClass, { _id: it.mentionedIn })) as ActivityMessage
-
-    if (message !== undefined) {
-      return await this.createThreadMessage(message, account, text, files)
-    }
-
-    return false
-  }
-
-  async replyToNotification (
-    account: PersonAccount,
-    record: MessageRecord,
-    text: string,
-    files: TelegramFileInfo[]
-  ): Promise<boolean> {
-    const inboxNotification = await this.client.findOne(notification.class.InboxNotification, {
-      _id: record.notificationId
-    })
-
-    if (inboxNotification === undefined) {
-      return false
-    }
-    const hierarchy = this.hierarchy
-    if (hierarchy.isDerived(inboxNotification._class, notification.class.ActivityInboxNotification)) {
-      return await this.replyToActivityNotification(
-        inboxNotification as ActivityInboxNotification,
-        account,
-        text,
-        files
-      )
-    } else if (hierarchy.isDerived(inboxNotification._class, notification.class.MentionInboxNotification)) {
-      return await this.replyToMention(inboxNotification as MentionInboxNotification, account, text, files)
-    }
-
-    return false
-  }
-
   async replyToMessage (
-    account: PersonAccount,
+    account: AccountUuid,
+    socialId: PersonId,
     record: MessageRecord,
     text: string,
     files: TelegramFileInfo[]
@@ -302,36 +236,17 @@ export class WorkspaceClient {
       return false
     }
 
-    return await this.createThreadMessage(message, account, text, files)
-  }
-
-  public async reply (record: MessageRecord, text: string, files: TelegramFileInfo[]): Promise<boolean> {
-    const account = await this.client.getModel().findOne(contact.class.PersonAccount, { email: record.email })
-    if (account === undefined) {
-      return false
-    }
-
-    if (record.notificationId !== undefined) {
-      return await this.replyToNotification(account, record, text, files)
-    }
-
-    if (record.messageId !== undefined) {
-      return await this.replyToMessage(account, record, text, files)
-    }
-
-    return false
-  }
-
-  async close (): Promise<void> {
-    await this.client.close()
+    return await this.createThreadMessage(message, account, socialId, text, files)
   }
 
   async getFiles (_id: Ref<ActivityMessage>): Promise<PlatformFileInfo[]> {
     const attachments = await this.client.findAll(attachment.class.Attachment, { attachedTo: _id })
     const res: PlatformFileInfo[] = []
     for (const attachment of attachments) {
-      const chunks = await this.storageAdapter.read(this.ctx, { name: this.workspace }, attachment.file)
-      const buffer = Buffer.concat(chunks)
+      if (attachment.type === 'application/link-preview') continue
+      const chunks: Buffer[] = await this.storage.read(this.ctx, this.workspace as any, attachment.file)
+      const uint8Chunks: Uint8Array[] = chunks.map((chunk) => new Uint8Array(chunk))
+      const buffer = Buffer.concat(uint8Chunks)
       if (buffer.length > 0) {
         res.push({
           buffer,
@@ -343,20 +258,17 @@ export class WorkspaceClient {
     return res
   }
 
-  async getChannels (email: string, onlyStarred: boolean): Promise<ChunterSpace[]> {
-    const account = await this.client.findOne(contact.class.PersonAccount, { email })
-    if (account === undefined) return []
-
+  async getChannels (account: AccountUuid, onlyStarred: boolean): Promise<ChunterSpace[]> {
     if (!onlyStarred) {
       return await this.client.findAll(chunter.class.ChunterSpace, {
-        members: account._id
+        members: account
       })
     }
 
     const contexts = await this.client.findAll(notification.class.DocNotifyContext, {
       objectClass: { $in: [chunter.class.Channel, chunter.class.DirectMessage] },
       isPinned: true,
-      user: account._id
+      user: account
     })
 
     if (contexts.length === 0) {
@@ -365,41 +277,34 @@ export class WorkspaceClient {
 
     return await this.client.findAll(chunter.class.ChunterSpace, {
       _id: { $in: contexts.map((context) => context.objectId as Ref<ChunterSpace>) },
-      members: account._id
+      members: account
     })
   }
 
-  async getPersons (_ids: Ref<PersonAccount>[], myEmail: string): Promise<Person[]> {
-    const me = await this.client.findOne(contact.class.PersonAccount, { email: myEmail })
-    const accounts = this.client.getModel().findAllSync(contact.class.PersonAccount, { _id: { $in: _ids } })
-    const persons = accounts.filter((account) => account.person !== me?.person).map(({ person }) => person)
-    return await this.client.findAll(contact.class.Person, { _id: { $in: persons } })
+  async getPersons (_ids: AccountUuid[]): Promise<Person[]> {
+    return (await this.client.findAll(contact.class.Person, { personUuid: { $in: _ids } })) as Person[]
   }
 
   async sendMessage (
     channel: ChannelRecord,
+    account: AccountUuid,
+    socialId: PersonId,
     text: Markup,
     file?: TelegramFileInfo
   ): Promise<Ref<ChatMessage> | undefined> {
-    const account = await this.client.getModel().findOne(contact.class.PersonAccount, { email: channel.email })
-
-    if (account === undefined) {
-      return undefined
-    }
-
-    const doc = await this.client.findOne(channel.channelClass, { _id: channel.channelId, members: account._id })
+    const doc = await this.client.findOne(channel._class, { _id: channel._id, members: account })
 
     if (doc === undefined) {
       return undefined
     }
 
-    const txFactory = new TxFactory(account._id)
+    const txFactory = new TxFactory(socialId)
     const messageId = generateId<ChatMessage>()
     const attachments = await this.createAttachments(
       txFactory,
       messageId,
       chunter.class.ChatMessage,
-      channel.channelId,
+      channel._id,
       file !== undefined ? [file] : []
     )
 
@@ -408,18 +313,18 @@ export class WorkspaceClient {
     }
 
     const collectionTx = txFactory.createTxCollectionCUD(
-      channel.channelClass,
-      channel.channelId,
-      channel.channelId,
+      channel._class,
+      channel._id,
+      channel._id,
       'messages',
       txFactory.createTxCreateDoc(
         chunter.class.ChatMessage,
-        channel.channelId,
+        channel._id,
         {
           message: text,
           attachments,
-          attachedTo: channel.channelId,
-          attachedToClass: channel.channelClass,
+          attachedTo: channel._id,
+          attachedToClass: channel._class,
           collection: 'messages',
           provider: contact.channelProvider.Telegram
         },
@@ -431,9 +336,4 @@ export class WorkspaceClient {
 
     return messageId
   }
-}
-
-async function connectPlatform (token: string): Promise<Client> {
-  const endpoint = await getTransactorEndpoint(token)
-  return await createClient(endpoint, token)
 }

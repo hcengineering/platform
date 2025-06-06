@@ -48,7 +48,8 @@
   const options: FindOptions<Review> = {
     lookup: {
       application: recruit.class.Applicant
-    }
+    },
+    showArchived: true
   }
 </script>
 
@@ -62,7 +63,7 @@
     {/if}
   </div>
   {#if reviews > 0}
-    <Scroller horizontal>
+    <Scroller horizontal noFade={false}>
       <Table
         _class={recruit.class.Review}
         config={[
