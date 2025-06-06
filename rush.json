@@ -2527,6 +2527,51 @@
       "packageName": "@hcengineering/retry",
       "projectFolder": "packages/retry",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-types",
+      "projectFolder": "communication/packages/types",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-sdk-types",
+      "projectFolder": "communication/packages/sdk-types",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-shared",
+      "projectFolder": "communication/packages/shared",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-yaml",
+      "projectFolder": "communication/packages/yaml",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-rest-client",
+      "projectFolder": "communication/packages/rest-client",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-cockroach",
+      "projectFolder": "communication/packages/cockroach",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-server",
+      "projectFolder": "communication/packages/server",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-query",
+      "projectFolder": "communication/packages/query",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/communication-client-query",
+      "projectFolder": "communication/packages/client-query",
+      "shouldPublish": false
     }
   ]
 }

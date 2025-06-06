@@ -14,8 +14,8 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext, metricsAggregate } from '@hcengineering/core'
-import { getCPUInfo, getMemoryInfo } from '@hcengineering/server-core'
+import { MeasureContext, Tx, metricsAggregate } from '@hcengineering/core'
+import { PlatformQueue, QueueTopic, getCPUInfo, getMemoryInfo } from '@hcengineering/server-core'
 import { decodeToken, TokenError } from '@hcengineering/server-token'
 
 import cors from 'cors'
@@ -97,7 +97,11 @@ const handleRequest = async (
   }
 }
 
-export async function createServer (ctx: MeasureContext, config: Config): Promise<{ app: Express, close: () => void }> {
+export async function createServer (
+  ctx: MeasureContext,
+  queue: PlatformQueue,
+  config: Config
+): Promise<{ app: Express, close: () => void }> {
   const buckets: Array<{ location: Location, bucket: S3Bucket }> = []
   for (const bucket of config.Buckets) {
     const location = bucket.location as Location
@@ -115,8 +119,10 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
     }
   }
 
+  const producer = queue.getProducer<Tx>(ctx.newChild('queue', {}), QueueTopic.Tx)
+
   const db = await createDb(ctx, config.DbUrl)
-  const datalake = new DatalakeImpl(db, buckets, { cacheControl })
+  const datalake = new DatalakeImpl(db, buckets, producer, { cacheControl })
   const tempDir = new TemporaryDir(ctx, 'datalake-', config.CleanupInterval)
 
   const app = express()
