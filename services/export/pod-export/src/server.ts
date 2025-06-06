@@ -181,8 +181,13 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
         throw new ApiError(400, 'Missing required parameters')
       }
 
+      const decodedToken = decodeToken(token)
+      if (decodedToken.extra?.readonly !== undefined) {
+        throw new ApiError(403, 'Forbidden')
+      }
+
       const platformClient = await createPlatformClient(token)
-      const { account } = decodeToken(token)
+      const account = decodedToken.account
 
       const txOperations = new TxOperations(platformClient, socialId)
 
