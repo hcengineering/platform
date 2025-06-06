@@ -52,7 +52,7 @@
       return
     }
 
-    return await getPersonByPersonRef(info.person) ?? undefined
+    return (await getPersonByPersonRef(info.person)) ?? undefined
   }
 
   function getPersonInfo (y: number, x: number, info: ParticipantInfo[]): ParticipantInfo | undefined {

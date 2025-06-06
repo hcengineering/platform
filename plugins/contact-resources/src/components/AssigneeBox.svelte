@@ -79,10 +79,11 @@
 
   $: personByRefStore = getPersonByPersonRefStore(value != null ? [value] : [])
 
-  const updateSelected = reduceCalls(async function (value: Ref<Person> | null | undefined, personByRefStore: Map<Ref<Person>, Readonly<Person>>) {
-    selected = value
-      ? personByRefStore.get(value) ?? undefined
-      : undefined
+  const updateSelected = reduceCalls(async function (
+    value: Ref<Person> | null | undefined,
+    personByRefStore: Map<Ref<Person>, Readonly<Person>>
+  ) {
+    selected = value ? personByRefStore.get(value) ?? undefined : undefined
   })
 
   $: void updateSelected(value, $personByRefStore)

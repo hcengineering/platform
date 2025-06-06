@@ -107,7 +107,7 @@
     const result: Array<InboxNotification[]> = []
     let group: InboxNotification[] = []
     let person: Ref<Person> | undefined = undefined
-    const personRefByPersonId = await getPersonRefsByPersonIds(notifications.map(it => it.createdBy ?? it.modifiedBy))
+    const personRefByPersonId = await getPersonRefsByPersonIds(notifications.map((it) => it.createdBy ?? it.modifiedBy))
 
     for (const it of notifications) {
       const pid = it.createdBy ?? it.modifiedBy

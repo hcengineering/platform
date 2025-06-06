@@ -88,10 +88,7 @@
   </div>
   <Button
     on:click={() => {
-      dispatch(
-        'close',
-        memberAccountsToAdd
-      )
+      dispatch('close', memberAccountsToAdd)
     }}
     label={presentation.string.Add}
   />

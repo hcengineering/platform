@@ -29,11 +29,13 @@
   $: query.query(request.mixin.RequestDecisionComment, { attachedTo: value._id }, (res) => {
     comments = res
   })
-  $: void getPersonRefsByPersonIds(comments.map(it => it.modifiedBy)).then((res) => {
-    commentsByPersonRefs = new Map(comments.map((c) => {
-      const personRef = res.get(c.modifiedBy)
-      return [personRef, c]
-    }))
+  $: void getPersonRefsByPersonIds(comments.map((it) => it.modifiedBy)).then((res) => {
+    commentsByPersonRefs = new Map(
+      comments.map((c) => {
+        const personRef = res.get(c.modifiedBy)
+        return [personRef, c]
+      })
+    )
   })
 
   interface RequestDecision {

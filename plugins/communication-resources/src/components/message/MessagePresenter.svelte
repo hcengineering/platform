@@ -80,7 +80,7 @@
     author = $employeeByPersonIdStore.get(socialId)
 
     if (author === undefined) {
-      author = await getPersonByPersonId(socialId) ?? undefined
+      author = (await getPersonByPersonId(socialId)) ?? undefined
     }
   }
 

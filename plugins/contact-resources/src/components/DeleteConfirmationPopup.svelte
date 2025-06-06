@@ -34,9 +34,11 @@
   const objectArray = Array.isArray(object) ? object : [object]
   const dispatch = createEventDispatcher()
   let creators: Ref<Person>[]
-  $: void getPersonRefsByPersonIds(Array.from(new Set(objectArray.map((obj) => obj.createdBy).filter(notEmpty)))).then((refs) => {
-    creators = Array.from(refs.values())
-  })
+  $: void getPersonRefsByPersonIds(Array.from(new Set(objectArray.map((obj) => obj.createdBy).filter(notEmpty)))).then(
+    (refs) => {
+      creators = Array.from(refs.values())
+    }
+  )
 
   $: canDelete =
     (skipCheck ||

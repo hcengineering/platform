@@ -40,17 +40,19 @@
   let update: (() => Promise<void>) | undefined
 
   $: valueByPersonRef = new Map<Ref<Employee>, PersonId>(
-    value.map((p) => {
-      const employee = $employeeByPersonIdStore.get(p)
-      const ref = employee?._id
+    value
+      .map((p) => {
+        const employee = $employeeByPersonIdStore.get(p)
+        const ref = employee?._id
 
-      if (ref == null) {
-        console.error('Employee not found for social id', p)
-        return null
-      }
+        if (ref == null) {
+          console.error('Employee not found for social id', p)
+          return null
+        }
 
-      return [ref, p] as const
-    }).filter(notEmpty)
+        return [ref, p] as const
+      })
+      .filter(notEmpty)
   )
 
   function onUpdate (evt: CustomEvent<Ref<Employee>[]>): void {

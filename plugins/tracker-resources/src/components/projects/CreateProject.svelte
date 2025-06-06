@@ -15,11 +15,7 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { Employee } from '@hcengineering/contact'
-  import {
-    AccountArrayEditor,
-    AssigneeBox,
-    employeeRefByAccountUuidStore
-  } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, AssigneeBox, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import core, {
     Data,
     DocumentUpdate,

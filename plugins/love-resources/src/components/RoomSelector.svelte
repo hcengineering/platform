@@ -42,7 +42,12 @@
     })
     .map((room) => makeRoomItem(room, false))
 
-  $: personByRefStore = getPersonByPersonRefStore($rooms.filter(isOffice).map((r) => r.person).filter(notEmpty))
+  $: personByRefStore = getPersonByPersonRefStore(
+    $rooms
+      .filter(isOffice)
+      .map((r) => r.person)
+      .filter(notEmpty)
+  )
   $: selectedRoom = $rooms.find((p) => p._id === value)
   $: selected = selectedRoom !== undefined ? makeRoomItem(selectedRoom, true) : undefined
 

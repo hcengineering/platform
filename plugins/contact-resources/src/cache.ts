@@ -43,29 +43,20 @@ export default class ContactCacheStoreManager {
   }
 
   private readonly _personRefByPersonIdStoreBase = writable<Map<PersonId, Ref<Person> | null>>(new Map())
-  private readonly _personRefByPersonIdStore = derived(
-    [this._personRefByPersonIdStoreBase],
-    ([store]) => {
-      return new Map(Array.from(store.entries()).filter(notEmptyValue))
-    }
-  )
+  private readonly _personRefByPersonIdStore = derived([this._personRefByPersonIdStoreBase], ([store]) => {
+    return new Map(Array.from(store.entries()).filter(notEmptyValue))
+  })
 
   private readonly _personByPersonIdStoreBase = writable<Map<PersonId, Readonly<Person> | null>>(new Map())
-  private readonly _personByPersonIdStore = derived(
-    [this._personByPersonIdStoreBase],
-    ([store]) => {
-      return new Map(Array.from(store.entries()).filter(notEmptyValue))
-    }
-  )
+  private readonly _personByPersonIdStore = derived([this._personByPersonIdStoreBase], ([store]) => {
+    return new Map(Array.from(store.entries()).filter(notEmptyValue))
+  })
 
   private readonly _personByPersonRefStoreBase = writable<Map<Ref<Person>, Readonly<Person> | null>>(new Map())
 
-  private readonly _personByPersonRefStore = derived(
-    [this._personByPersonRefStoreBase],
-    ([store]) => {
-      return new Map(Array.from(store.entries()).filter(notEmptyValue))
-    }
-  )
+  private readonly _personByPersonRefStore = derived([this._personByPersonRefStoreBase], ([store]) => {
+    return new Map(Array.from(store.entries()).filter(notEmptyValue))
+  })
 
   public getPersonRefByPersonIdStore (personIds: PersonId[]): Readable<Map<PersonId, Ref<Person>>> {
     if (personIds.length > 0) {

@@ -393,47 +393,58 @@ onClient(() => {
     channelProviders.set(res)
   })
 
-  employeesQuery.query(contact.mixin.Employee, { active: { $in: [true, false] } }, (res) => {
-    const personIdToEmployee = new Map<PersonId, Employee>()
-    const socialKeyToEmployee = new Map<string, Employee>()
-    for (const employee of res) {
-      // warmup persons cache with employees
-      contactCache.fillCachesForPersonRef(employee._id, employee)
+  employeesQuery.query(
+    contact.mixin.Employee,
+    { active: { $in: [true, false] } },
+    (res) => {
+      const personIdToEmployee = new Map<PersonId, Employee>()
+      const socialKeyToEmployee = new Map<string, Employee>()
+      for (const employee of res) {
+        // warmup persons cache with employees
+        contactCache.fillCachesForPersonRef(employee._id, employee)
 
-      for (const socialId of (employee.$lookup?.socialIds ?? []) as SocialIdentity[]) {
-        personIdToEmployee.set(socialId._id, employee)
-        socialKeyToEmployee.set(socialId.key, employee)
+        for (const socialId of (employee.$lookup?.socialIds ?? []) as SocialIdentity[]) {
+          personIdToEmployee.set(socialId._id, employee)
+          socialKeyToEmployee.set(socialId.key, employee)
+        }
       }
-    }
-    employeeByPersonIdStore.set(personIdToEmployee)
-    employeeBySocialKeyStore.set(socialKeyToEmployee)
-    primarySocialIdByEmployeeRefStore.set(new Map(res.map((e) => {
-      const socialIds = (e.$lookup?.socialIds ?? []) as SocialIdentity[]
-      const primaryId = socialIds.length !== 0 ? pickPrimarySocialId(socialIds) : undefined
-      if (primaryId === undefined) {
-        return null
-      }
+      employeeByPersonIdStore.set(personIdToEmployee)
+      employeeBySocialKeyStore.set(socialKeyToEmployee)
+      primarySocialIdByEmployeeRefStore.set(
+        new Map(
+          res
+            .map((e) => {
+              const socialIds = (e.$lookup?.socialIds ?? []) as SocialIdentity[]
+              const primaryId = socialIds.length !== 0 ? pickPrimarySocialId(socialIds) : undefined
+              if (primaryId === undefined) {
+                return null
+              }
 
-      return [e._id, primaryId._id] as const
-    }).filter(notEmpty)))
-
-    // Remove lookups before storing the map as the interface doesn't expose it anyways
-    for (const employee of res) {
-      delete employee.$lookup
-    }
-    employeeByIdStore.set(toIdMap(res))
-
-    // We may need to extend this later with guests and github users
-    employeeRefByAccountUuidStore.set(
-      new Map(
-        res.filter((p) => p.active && p.personUuid != null).map((p) => [p.personUuid as AccountUuid, p._id] as const)
+              return [e._id, primaryId._id] as const
+            })
+            .filter(notEmpty)
+        )
       )
-    )
-  }, {
-    lookup: {
-      _id: { socialIds: contact.class.SocialIdentity }
+
+      // Remove lookups before storing the map as the interface doesn't expose it anyways
+      for (const employee of res) {
+        delete employee.$lookup
+      }
+      employeeByIdStore.set(toIdMap(res))
+
+      // We may need to extend this later with guests and github users
+      employeeRefByAccountUuidStore.set(
+        new Map(
+          res.filter((p) => p.active && p.personUuid != null).map((p) => [p.personUuid as AccountUuid, p._id] as const)
+        )
+      )
+    },
+    {
+      lookup: {
+        _id: { socialIds: contact.class.SocialIdentity }
+      }
     }
-  })
+  )
 })
 
 const userStatusesQuery = createQuery(true)
@@ -666,65 +677,68 @@ export function getPermittedPersons (
 
 const spacesStore = writable<Space[]>([])
 
-export const permissionsStore = derived([spacesStore, employeeRefByAccountUuidStore], ([spaces, personRefByAccount]) => {
-  const whitelistedSpaces = new Set<Ref<Space>>()
-  const permissionsBySpace: PermissionsBySpace = {}
-  const employeesByPermission: PersonsByPermission = {}
-  const membersBySpace: MembersBySpace = {}
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
+export const permissionsStore = derived(
+  [spacesStore, employeeRefByAccountUuidStore],
+  ([spaces, personRefByAccount]) => {
+    const whitelistedSpaces = new Set<Ref<Space>>()
+    const permissionsBySpace: PermissionsBySpace = {}
+    const employeesByPermission: PersonsByPermission = {}
+    const membersBySpace: MembersBySpace = {}
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
 
-  for (const s of spaces) {
-    membersBySpace[s._id] = new Set(s.members.map((m) => personRefByAccount.get(m)).filter(notEmpty))
-    if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
-      const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
-      const mixin = type?.targetClass
+    for (const s of spaces) {
+      membersBySpace[s._id] = new Set(s.members.map((m) => personRefByAccount.get(m)).filter(notEmpty))
+      if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
+        const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
+        const mixin = type?.targetClass
 
-      if (mixin === undefined) {
-        permissionsBySpace[s._id] = new Set()
-        employeesByPermission[s._id] = {}
-        continue
-      }
-
-      const asMixin = hierarchy.as(s, mixin)
-      const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
-      const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(getCurrentAccount().uuid))
-      permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
-
-      employeesByPermission[s._id] = {}
-
-      for (const role of roles) {
-        const assignment: AccountUuid[] = (asMixin as any)[role._id] ?? []
-
-        if (assignment.length === 0) {
+        if (mixin === undefined) {
+          permissionsBySpace[s._id] = new Set()
+          employeesByPermission[s._id] = {}
           continue
         }
 
-        for (const permissionId of role.permissions) {
-          if (employeesByPermission[s._id][permissionId] === undefined) {
-            employeesByPermission[s._id][permissionId] = new Set()
+        const asMixin = hierarchy.as(s, mixin)
+        const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
+        const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(getCurrentAccount().uuid))
+        permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
+
+        employeesByPermission[s._id] = {}
+
+        for (const role of roles) {
+          const assignment: AccountUuid[] = (asMixin as any)[role._id] ?? []
+
+          if (assignment.length === 0) {
+            continue
           }
 
-          assignment.forEach((acc) => {
-            const personRef = personRefByAccount.get(acc)
-            if (personRef !== undefined) {
-              employeesByPermission[s._id][permissionId].add(personRef)
+          for (const permissionId of role.permissions) {
+            if (employeesByPermission[s._id][permissionId] === undefined) {
+              employeesByPermission[s._id][permissionId] = new Set()
             }
-          })
+
+            assignment.forEach((acc) => {
+              const personRef = personRefByAccount.get(acc)
+              if (personRef !== undefined) {
+                employeesByPermission[s._id][permissionId].add(personRef)
+              }
+            })
+          }
         }
+      } else {
+        whitelistedSpaces.add(s._id)
       }
-    } else {
-      whitelistedSpaces.add(s._id)
+    }
+
+    return {
+      ps: permissionsBySpace,
+      ap: employeesByPermission,
+      ms: membersBySpace,
+      whitelist: whitelistedSpaces
     }
   }
-
-  return {
-    ps: permissionsBySpace,
-    ap: employeesByPermission,
-    ms: membersBySpace,
-    whitelist: whitelistedSpaces
-  }
-})
+)
 
 const spaceTypesQuery = createQuery(true)
 const permissionsQuery = createQuery(true)
@@ -791,7 +805,9 @@ export async function getPersonByPersonRef (personRef: Ref<Person>): Promise<Per
   return await getPersonByPersonRefBase(client, personRef)
 }
 
-export async function getPersonsByPersonRefs (personRefs: Array<Ref<Person>>): Promise<Map<Ref<Person>, Readonly<Person>>> {
+export async function getPersonsByPersonRefs (
+  personRefs: Array<Ref<Person>>
+): Promise<Map<Ref<Person>, Readonly<Person>>> {
   const client = getClient()
 
   return await getPersonsByPersonRefsBase(client, personRefs)
@@ -815,6 +831,8 @@ export function getPersonByPersonIdStore (personIds: PersonId[]): Readable<Map<P
   return contactCacheStoreManager.getPersonByPersonIdStore(personIds)
 }
 
-export function getPersonByPersonRefStore (personRefs: Array<Ref<Person>>): Readable<Map<Ref<Person>, Readonly<Person>>> {
+export function getPersonByPersonRefStore (
+  personRefs: Array<Ref<Person>>
+): Readable<Map<Ref<Person>, Readonly<Person>>> {
   return contactCacheStoreManager.getPersonByPersonRefStore(personRefs)
 }

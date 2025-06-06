@@ -163,7 +163,7 @@ export async function getFollowee (): Promise<Person | undefined> {
     return undefined
   }
 
-  return await getPersonByPersonRef(followeeId) ?? undefined
+  return (await getPersonByPersonRef(followeeId)) ?? undefined
 }
 
 export function publishData (topic: string, data: any): void {

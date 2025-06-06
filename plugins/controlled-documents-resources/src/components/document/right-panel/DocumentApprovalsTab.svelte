@@ -46,16 +46,13 @@
   }
 
   let workflow: Map<Ref<ControlledDocument>, DocumentValidationState[]>
-  $: void extractValidationWorkflow(
-    hierarchy,
-    {
-      ...emptyBundle(),
-      ControlledDocument: doc ? [doc] : [],
-      DocumentRequest: requests,
-      DocumentSnapshot: $documentSnapshots,
-      ChatMessage: messages
-    }
-  ).then((res) => {
+  $: void extractValidationWorkflow(hierarchy, {
+    ...emptyBundle(),
+    ControlledDocument: doc ? [doc] : [],
+    DocumentRequest: requests,
+    DocumentSnapshot: $documentSnapshots,
+    ChatMessage: messages
+  }).then((res) => {
     workflow = res
   })
 

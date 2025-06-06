@@ -16,10 +16,7 @@
   import calendar, { Event, getAllEvents } from '@hcengineering/calendar'
   import { calendarByIdStore } from '@hcengineering/calendar-resources'
   import contact, { getCurrentEmployee, Person } from '@hcengineering/contact'
-  import {
-    employeeRefByAccountUuidStore,
-    getPersonRefsByPersonIds
-  } from '@hcengineering/contact-resources'
+  import { employeeRefByAccountUuidStore, getPersonRefsByPersonIds } from '@hcengineering/contact-resources'
   import core, { Doc, IdMap, PersonId, Ref, Timestamp, Tx, TxCreateDoc, TxCUD, TxUpdateDoc } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -59,13 +56,9 @@
 
   const socialIdsQuery = createQuery()
   $: if (personsRefs.length > 0) {
-    socialIdsQuery.query(
-      contact.class.SocialIdentity,
-      { attachedTo: { $in: personsRefs } },
-      (res) => {
-        personsSocialIds = res.map((si) => si._id).flat()
-      }
-    )
+    socialIdsQuery.query(contact.class.SocialIdentity, { attachedTo: { $in: personsRefs } }, (res) => {
+      personsSocialIds = res.map((si) => si._id).flat()
+    })
   } else {
     socialIdsQuery.unsubscribe()
   }
@@ -77,7 +70,7 @@
       txes = res
     }
   )
-  $: void getPersonRefsByPersonIds(Array.from(new Set(txes.map(it => it.createdBy ?? it.modifiedBy)))).then((res) => {
+  $: void getPersonRefsByPersonIds(Array.from(new Set(txes.map((it) => it.createdBy ?? it.modifiedBy)))).then((res) => {
     const map = new Map<Ref<Person>, Tx[]>()
     for (const t of txes) {
       const personId = t.createdBy ?? t.modifiedBy

@@ -37,9 +37,7 @@
       ? {}
       : {
           _id: {
-            $in: include
-              .map((personId) => $employeeByPersonIdStore.get(personId)?._id)
-              .filter(notEmpty)
+            $in: include.map((personId) => $employeeByPersonIdStore.get(personId)?._id).filter(notEmpty)
           }
         }
   $: selectedEmp = value != null ? $employeeByPersonIdStore.get(value)?._id : value

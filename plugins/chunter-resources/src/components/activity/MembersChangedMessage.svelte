@@ -17,11 +17,7 @@
   import { DocAttributeUpdates, DocUpdateMessage } from '@hcengineering/activity'
   import { Employee, Person } from '@hcengineering/contact'
   import { AccountUuid, notEmpty, PersonId } from '@hcengineering/core'
-  import {
-    PersonPresenter,
-    employeeByAccountStore,
-    employeeByPersonIdStore
-  } from '@hcengineering/contact-resources'
+  import { PersonPresenter, employeeByAccountStore, employeeByPersonIdStore } from '@hcengineering/contact-resources'
   import { ChunterSpace } from '@hcengineering/chunter'
   import { Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'

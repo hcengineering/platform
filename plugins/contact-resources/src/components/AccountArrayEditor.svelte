@@ -86,9 +86,7 @@
     void update?.()
   })
 
-  $: employees = (value ?? [])
-    .map((p) => $employeeRefByAccountUuidStore.get(p))
-    .filter(notEmpty)
+  $: employees = (value ?? []).map((p) => $employeeRefByAccountUuidStore.get(p)).filter(notEmpty)
   $: docQuery =
     excludeItems.length === 0 && includeItems.length === 0
       ? {}

@@ -14,7 +14,6 @@ import core, {
   generateId,
   getCurrentAccount,
   type Hierarchy,
-  type IdMap,
   type Ref,
   type RelatedDocument,
   type Space,

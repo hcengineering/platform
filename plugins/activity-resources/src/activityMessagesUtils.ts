@@ -256,7 +256,10 @@ export async function combineActivityMessages (
 
   const result: Array<DisplayActivityMessage | undefined> = [...uncombined]
 
-  const groupedByType: Map<string, DocUpdateMessage[]> = await groupByArrayAsync(docUpdateMessages, getDocUpdateMessageKey)
+  const groupedByType: Map<string, DocUpdateMessage[]> = await groupByArrayAsync(
+    docUpdateMessages,
+    getDocUpdateMessageKey
+  )
 
   for (const [, groupedMessages] of groupedByType) {
     const cantMerge = groupedMessages.filter(

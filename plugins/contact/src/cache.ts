@@ -212,7 +212,9 @@ export default class ContactCache {
     const person = this._personByRef.get(ref)
     if (person == null) return
 
-    const updatedPerson = isUpdateTx(tx) ? TxProcessor.updateDoc2Doc(person, tx) : TxProcessor.updateMixin4Doc(person, tx)
+    const updatedPerson = isUpdateTx(tx)
+      ? TxProcessor.updateDoc2Doc(person, tx)
+      : TxProcessor.updateMixin4Doc(person, tx)
     this._personByRef.set(ref, updatedPerson)
     const personIds = Array.from(this._personIdsByPersonRef.get(ref) ?? [])
     for (const personId of personIds) {

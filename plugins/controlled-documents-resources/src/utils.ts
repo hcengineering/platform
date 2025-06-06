@@ -1123,7 +1123,9 @@ export async function extractValidationWorkflow (
 
       const anchor = review ?? approval
       const author =
-        anchor?.createdBy !== undefined ? await getPersonRefByPersonId(anchor.createdBy) ?? document.author : document.author
+        anchor?.createdBy !== undefined
+          ? (await getPersonRefByPersonId(anchor.createdBy)) ?? document.author
+          : document.author
 
       state.approvals = [
         {
@@ -1132,8 +1134,8 @@ export async function extractValidationWorkflow (
           state: anchor !== undefined ? 'approved' : 'waiting',
           timestamp: anchor !== undefined ? anchor.createdOn ?? document.createdOn : undefined
         },
-        ...await getApprovalStates(review),
-        ...await getApprovalStates(approval)
+        ...(await getApprovalStates(review)),
+        ...(await getApprovalStates(approval))
       ]
 
       if (state.requests.length > 0) {

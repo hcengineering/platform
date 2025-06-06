@@ -65,7 +65,11 @@ export async function checkHasEmail (doc: Doc | Doc[] | undefined): Promise<bool
 const EMAIL_REGEX =
   /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
 
-export async function convertMessages (object: Contact, channel: Channel, messages: Message[]): Promise<SharedMessage[]> {
+export async function convertMessages (
+  object: Contact,
+  channel: Channel,
+  messages: Message[]
+): Promise<SharedMessage[]> {
   const res: SharedMessage[] = []
   for (const m of messages) {
     res.push({

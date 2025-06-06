@@ -19,10 +19,7 @@
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
   import contact, { getCurrentEmployee, Person, SocialIdentity } from '@hcengineering/contact'
-  import {
-    getPersonByPersonId,
-    getSocialIdByPersonId
-  } from '@hcengineering/contact-resources'
+  import { getPersonByPersonId, getSocialIdByPersonId } from '@hcengineering/contact-resources'
   import { Class, Doc, Markup, Ref, Space, WithLookup } from '@hcengineering/core'
   import { getClient, MessageViewer, pendingCreatedDocs } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
