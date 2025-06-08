@@ -788,7 +788,7 @@
     }
   }
   .scrollArrow[data-direct='up'] {
-    top: calc(var(--scroller-header-height, 0) + 0.25rem);
+    top: var(--scroller-header-height, 0);
     left: calc(
       (100% - var(--scroller-right-offset, 0) - var(--scroller-left-offset, 0)) / 2 + var(--scroller-left-offset, 0)
     );
@@ -803,7 +803,7 @@
     transform: translateY(-50%) rotate(180deg);
   }
   .scrollArrow[data-direct='down'] {
-    bottom: calc(var(--scroller-footer-height, 0) + 0.25rem);
+    bottom: var(--scroller-footer-height, 0);
     left: calc(
       (100% - var(--scroller-right-offset, 0) - var(--scroller-left-offset, 0)) / 2 + var(--scroller-left-offset, 0)
     );
