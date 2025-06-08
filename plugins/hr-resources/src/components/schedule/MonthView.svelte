@@ -258,7 +258,7 @@
 {#if rows.length}
   {@const dep = departmentById.get(department)}
 
-  <Scroller horizontal fade={{ multipler: { top: headerHeightRem, left: headerWidthRem } }} noFade>
+  <Scroller horizontal fade={{ multipler: { top: headerHeightRem, left: headerWidthRem } }} shrink showOverflowArrows>
     <div
       use:resizeObserver={(evt) => {
         containerWidth = evt.clientWidth
@@ -409,7 +409,8 @@
   $timeline-weekend-stroke-color: var(--theme-calendar-weekend-stroke-color);
 
   .timeline {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     display: grid;
     grid-auto-flow: column;
     grid-template-columns: auto 1fr;
