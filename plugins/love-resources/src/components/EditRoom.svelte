@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EditBox, ModernButton } from '@hcengineering/ui'
-  import { Room, isOffice, type ParticipantInfo } from '@hcengineering/love'
+  import { EditBox, Icon, ModernButton } from '@hcengineering/ui'
+  import { Room, isOffice, type ParticipantInfo, RoomType } from '@hcengineering/love'
   import { createEventDispatcher, onMount } from 'svelte'
   import { personByIdStore } from '@hcengineering/contact-resources'
   import { IntlString } from '@hcengineering/platform'
@@ -95,6 +95,7 @@
 
 <div class="flex-row-stretch">
   <div class="row flex-grow">
+    <Icon icon={object.type === RoomType.Video ? love.icon.CamEnabled : love.icon.CamDisabled} size={'small'} />
     <div class="name">
       <EditBox disabled={true} placeholder={love.string.Room} bind:value={roomName} focusIndex={1} />
     </div>
