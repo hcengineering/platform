@@ -153,8 +153,8 @@ export class TFavoriteCard extends TPreference implements FavoriteCard {
 export * from './migration'
 
 const listConfig: (BuildModelKey | string)[] = [
-  { key: '', props: { showParent: true }, displayProps: { fixed: 'left', key: 'card' } },
-  { key: '_class', displayProps: { fixed: 'left', key: 'type' } },
+  { key: '', props: { showParent: true } },
+  { key: '_class' },
   { key: '', displayProps: { grow: true } },
   {
     key: '',
@@ -172,7 +172,11 @@ const listConfig: (BuildModelKey | string)[] = [
   },
   {
     key: 'modifiedOn',
-    displayProps: { fixed: 'right', dividerBefore: true }
+    displayProps: { fixed: 'right', key: 'modifiedOn', dividerBefore: true }
+  },
+  {
+    key: 'modifiedBy',
+    props: { kind: 'list', shouldShowName: false, avatarSize: 'x-small' }
   }
 ]
 
@@ -260,7 +264,7 @@ export function createSystemType (
       hiddenKeys: ['content', 'title']
     },
     config: [
-      '',
+      { key: '', props: { shrink: true } },
       '_class',
       { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
       {

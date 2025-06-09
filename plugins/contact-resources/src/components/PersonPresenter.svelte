@@ -46,6 +46,7 @@
   export let showStatus: boolean = false
   export let overflowLabel = true
   export let inlineBlock = false
+  export let shrink: boolean = false
 
   const client = getClient()
   $: personValue = typeof value === 'string' ? $personByIdStore.get(value) : value
@@ -104,6 +105,7 @@
     {showStatus}
     {overflowLabel}
     {inlineBlock}
+    {shrink}
     on:accent-color
   />
 {/if}

@@ -23,6 +23,7 @@
   min-width: 0;
   border: 1px solid var(--theme-divider-color); // var(--global-surface-02-BorderColor);
   border-radius: var(--small-focus-BorderRadius);
+  container-type: inline-size;
 
   &:not(.modal) {
     background-color: var(--theme-panel-color); // var(--global-surface-02-BackgroundColor);
@@ -1777,10 +1778,14 @@
   }
 
   td {
+    max-width: 50cqw;
+
     &.align-left { text-align: left; }
     &.align-center { text-align: center; }
     &.align-right { text-align: right; }
   }
+  &:has(td:nth-child(4)) td { max-width: 40cqw; }
+  &:has(td:nth-child(6)) td { max-width: 30cqw; }
 
   &.editable {
     th, td, tr {
@@ -2244,11 +2249,12 @@
 
 /* ListView */
 .listGrid {
+  overflow: hidden;
   position: relative;
   display: flex;
   align-items: center;
-  padding: 0 2.5rem 0 0.25rem;
-  width: max-content;
+  padding: 0 2.5rem 0 0.75rem;
+  width: 100%;
   height: 2.75rem;
   min-width: 100%;
   min-height: 2.75rem;
@@ -2276,7 +2282,7 @@
   }
 
   &.compactMode {
-    padding: 0 1.125rem 0 0.25rem;
+    padding: 0 1.125rem 0 0.75rem;
   }
   &.hoverable:hover,
   &.mListGridSelected {
@@ -2403,6 +2409,7 @@
   height: fit-content;
   min-width: 0;
   border-radius: 0.25rem;
+  container: listGridContainer / inline-size;
 
   &:not(:first-child) {
     margin-top: 0.5rem;
@@ -2418,10 +2425,23 @@
     z-index: 1;
     pointer-events: none;
   }
-
+  
   .expandcollapse-content {
-    width: max-content !important;
     min-width: 100% !important;
+  }
+  
+  // Responsive style for ListView: horizontal scrolling mode for widths less than 480px
+  @container listGridContainer (max-width: 480px) {
+    .expandcollapse-content {
+      width: max-content !important;
+
+      .listGrid {
+        width: max-content;
+
+        .cropped-text-presenters > :is(span:not(.separator), a):not(:empty),
+        .cropped-text-presenter { max-width: 10rem; }
+      }
+    }
   }
 }
 

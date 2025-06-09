@@ -24,6 +24,7 @@
   export let shouldShowName = true
   export let shouldShowAvatar = true
   export let noUnderline = false
+  export let shrink: boolean = false
   export let avatarSize: IconSize = 'x-small'
 
   const client = getClient()
@@ -44,6 +45,7 @@
     {shouldShowName}
     {shouldShowAvatar}
     {noUnderline}
+    shrink={shrink ? 1 : 0}
     props={{ avatarSize }}
   />
 {/if}
