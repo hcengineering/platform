@@ -12,12 +12,12 @@ export class CategoriesPage extends CalendarPage {
   }
 
   async openCategory (categoryTitle: string): Promise<void> {
-    await this.page.locator(`//span[text()='${categoryTitle}']/../../..//div[contains(@class, "firstCell")]/a`).click()
+    await this.page.locator(`//span[text()='${categoryTitle}']/../..//div[contains(@class, "antiTable-cells__firstCell")]/a`).click()
   }
 
   async checkCategoryNotExist (categoryTitle: string): Promise<void> {
     await expect(
-      this.page.locator(`//span[text()='${categoryTitle}']/../../..//div[contains(@class, "firstCell")]/a`)
+      this.page.locator(`//span[text()='${categoryTitle}']/../..//div[contains(@class, "antiTable-cells__firstCell")]/a`)
     ).toBeVisible({ visible: false })
   }
 }
