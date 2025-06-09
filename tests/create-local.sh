@@ -3,7 +3,7 @@
 ./tool-local.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool-local.sh create-account user2 -f Kainin -l Dirak -p 1234
 
-./tool-local.sh create-workspace sanity-ws email:user1
+./tool-local.sh create-workspace sanity-ws email:user1 -r cockroach
 
 # Restore workspace contents in mongo/elastic
 ./tool-local.sh backup-restore ./sanity-ws sanity-ws

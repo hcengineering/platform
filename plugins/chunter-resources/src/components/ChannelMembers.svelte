@@ -27,14 +27,8 @@
 
   const dispatch = createEventDispatcher()
 
-  let persons: Person[] = []
-
   $: personByRefStore = getPersonByPersonRefStore(ids)
-  $: updatePersons(ids)
-
-  function updatePersons (ids: Ref<Person>[]): void {
-    persons = ids.map((_id) => $personByRefStore.get(_id)).filter(notEmpty)
-  }
+  $: persons = ids.map((_id) => $personByRefStore.get(_id)).filter(notEmpty)
 </script>
 
 <div class="root">
