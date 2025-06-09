@@ -53,10 +53,7 @@
       <Label label={selected !== undefined ? selected.label : label} />
     </span>
     <svelte:fragment slot="iconRight">
-      <DropdownIcon
-        size={'small'}
-        fill={!disabled ? 'var(--primary-button-content-color)' : 'var(--theme-dark-color)'}
-      />
+      <DropdownIcon size={'small'} fill={!disabled ? 'var(--theme-content-color)' : 'var(--theme-dark-color)'} />
     </svelte:fragment>
   </Button>
 </div>

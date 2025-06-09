@@ -17,12 +17,13 @@
   import { afterUpdate, beforeUpdate, createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { resizeObserver } from '../resize'
   import { closeTooltip, tooltipstore } from '../tooltips'
-  import type { FadeOptions, ScrollParams } from '../types'
+  import type { FadeOptions, ScrollParams, MouseTargetEvent } from '../types'
   import { defaultSP } from '../types'
   import { DelayedCaller } from '../utils'
   import IconDownOutline from './icons/DownOutline.svelte'
   import HalfUpDown from './icons/HalfUpDown.svelte'
   import IconUpOutline from './icons/UpOutline.svelte'
+  import IconNavPrev from './icons/NavPrev.svelte'
 
   export let padding: string | undefined = undefined
   export let bottomPadding: string | undefined = undefined
@@ -45,6 +46,7 @@
   export let checkForHeaders: boolean = false
   export let stickedScrollBars: boolean = false
   export let thinScrollBars: boolean = false
+  export let showOverflowArrows: boolean = false
   export let disableOverscroll = false
   export let disablePointerEventsOnScroll = false
   export let onScroll: ((params: ScrollParams) => void) | undefined = undefined
@@ -74,6 +76,7 @@
   let topCrop: 'top' | 'bottom' | 'full' | 'none' = 'none'
   let topCropValue: number = 0
   let maskH: 'left' | 'right' | 'both' | 'none' = 'none'
+  let scrollArrows: boolean[] = [false, false, false, false] // [up, right, down, left]
 
   let divHScroll: HTMLElement
   let divBar: HTMLElement
@@ -243,7 +246,15 @@
     isScrollingByBar = direction
   }
 
-  const renderFade = () => {
+  const renderFade = (): void => {
+    if (showOverflowArrows) {
+      scrollArrows = [
+        mask === 'top' || mask === 'both',
+        maskH === 'left' || maskH === 'both',
+        mask === 'bottom' || mask === 'both',
+        maskH === 'right' || maskH === 'both'
+      ]
+    }
     if (divScroll && !noFade) {
       const th = shiftTop + (topCrop === 'top' ? 2 * fz - topCropValue : 0)
       const tf =
@@ -537,6 +548,24 @@
     }
   }
 
+  const tapToScroll = (event: MouseTargetEvent): void => {
+    const target = event.currentTarget as HTMLButtonElement
+    if (!target.hasAttribute('data-direct') || divScroll == null) return
+
+    const direct = target.getAttribute('data-direct')
+    const dir =
+      direct === 'up'
+        ? { top: -stepScroll }
+        : direct === 'down'
+          ? { top: stepScroll }
+          : direct === 'left'
+            ? { left: -stepScroll }
+            : direct === 'right'
+              ? { left: stepScroll }
+              : { top: 0, left: 0 }
+    if (!(dir?.top === 0 && dir?.left === 0)) divScroll.scrollBy({ ...dir, behavior: 'smooth' })
+  }
+
   $: topButton =
     (orientir === 'vertical' && (mask === 'top' || mask === 'both')) ||
     (orientir === 'horizontal' && (maskH === 'right' || maskH === 'both'))
@@ -715,9 +744,79 @@
       on:pointerleave={checkFade}
     />
   {/if}
+  {#if showOverflowArrows}
+    {#each ['up', 'right', 'down', 'left'] as dir, i}
+      <button class="scrollArrow" data-direct={dir} class:shown={scrollArrows[i]} on:click={tapToScroll}>
+        <IconNavPrev size={'full'} />
+      </button>
+    {/each}
+  {/if}
 </div>
 
 <style lang="scss">
+  .scrollArrow {
+    position: absolute;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    width: 1rem;
+    height: 2rem;
+    color: var(--theme-halfcontent-color);
+    background-color: var(--theme-popup-color);
+    border: 1px solid var(--theme-button-border);
+    border-radius: 0.25rem;
+    outline: none;
+    box-shadow: 0 0 0.375rem rgba($color: #000000, $alpha: 0.1);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+
+    &.shown {
+      display: flex;
+    }
+    &:hover,
+    &:focus {
+      background-color: var(--theme-popup-hover);
+      color: var(--theme-content-color);
+    }
+    :global(> svg) {
+      width: 0.5rem;
+      height: 0.75rem;
+      pointer-events: none;
+    }
+  }
+  .scrollArrow[data-direct='up'] {
+    top: var(--scroller-header-height, 0);
+    left: calc(
+      (100% - var(--scroller-right-offset, 0) - var(--scroller-left-offset, 0)) / 2 + var(--scroller-left-offset, 0)
+    );
+    transform: translateX(-50%) rotate(90deg);
+  }
+  .scrollArrow[data-direct='right'] {
+    top: calc(
+      (100% - var(--scroller-header-height, 0) - var(--scroller-footer-height, 0)) / 2 +
+        var(--scroller-header-height, 0)
+    );
+    right: calc(var(--scroller-right-offset, 0) + 0.25rem);
+    transform: translateY(-50%) rotate(180deg);
+  }
+  .scrollArrow[data-direct='down'] {
+    bottom: var(--scroller-footer-height, 0);
+    left: calc(
+      (100% - var(--scroller-right-offset, 0) - var(--scroller-left-offset, 0)) / 2 + var(--scroller-left-offset, 0)
+    );
+    transform: translateX(-50%) rotate(-90deg);
+  }
+  .scrollArrow[data-direct='left'] {
+    top: calc(
+      (100% - var(--scroller-header-height, 0) - var(--scroller-footer-height, 0)) / 2 +
+        var(--scroller-header-height, 0)
+    );
+    left: calc(var(--scroller-left-offset, 0) + 0.25rem);
+    transform: translateY(-50%);
+  }
   .updown-container {
     position: absolute;
     display: flex;

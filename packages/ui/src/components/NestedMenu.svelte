@@ -55,7 +55,7 @@
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="menu-space" />
-  <Scroller>
+  <Scroller noFade={false} showOverflowArrows>
     {#if nestedFrom}
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
       <button
