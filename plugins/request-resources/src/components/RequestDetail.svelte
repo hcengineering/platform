@@ -29,14 +29,17 @@
   $: query.query(request.mixin.RequestDecisionComment, { attachedTo: value._id }, (res) => {
     comments = res
   })
-  $: getPersonRefsByPersonIdsCb(comments.map((it) => it.modifiedBy), (res) => {
-    commentsByPersonRefs = new Map(
-      comments.map((c) => {
-        const personRef = res.get(c.modifiedBy)
-        return [personRef, c]
-      })
-    )
-  })
+  $: getPersonRefsByPersonIdsCb(
+    comments.map((it) => it.modifiedBy),
+    (res) => {
+      commentsByPersonRefs = new Map(
+        comments.map((c) => {
+          const personRef = res.get(c.modifiedBy)
+          return [personRef, c]
+        })
+      )
+    }
+  )
 
   interface RequestDecision {
     employee: Ref<Person>

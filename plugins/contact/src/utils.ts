@@ -50,7 +50,6 @@ import contact, {
 
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
 import ContactCache from './cache'
-import { get } from 'svelte/store'
 
 let currentEmployee: Ref<Employee>
 
@@ -630,7 +629,11 @@ export async function getPersonRefByPersonId (client: Client, personId: PersonId
   return contactCache.personRefByPersonId.get(personId) ?? null
 }
 
-export function getPersonRefByPersonIdCb (client: Client, personId: PersonId, cb: (person: Ref<Person> | null) => void): void {
+export function getPersonRefByPersonIdCb (
+  client: Client,
+  personId: PersonId,
+  cb: (person: Ref<Person> | null) => void
+): void {
   let personRef: Ref<Person> | null | undefined = contactCache.personRefByPersonId.get(personId)
   if (personRef !== undefined) {
     cb(personRef)
@@ -688,7 +691,11 @@ export async function getPersonByPersonId (client: Client, personId: PersonId): 
   return contactCache.personByPersonId.get(personId) ?? null
 }
 
-export function getPersonByPersonIdCb (client: Client, personId: PersonId, cb: (person: Readonly<Person> | null) => void): void {
+export function getPersonByPersonIdCb (
+  client: Client,
+  personId: PersonId,
+  cb: (person: Readonly<Person> | null) => void
+): void {
   let person: Readonly<Person> | null | undefined = contactCache.personByPersonId.get(personId)
   if (person !== undefined) {
     cb(person)
@@ -746,7 +753,11 @@ export async function getPersonByPersonRef (client: Client, personRef: Ref<Perso
   return contactCache.personByRef.get(personRef) ?? null
 }
 
-export function getPersonByPersonRefCb (client: Client, personRef: Ref<Person>, cb: (person: Readonly<Person> | null) => void): void {
+export function getPersonByPersonRefCb (
+  client: Client,
+  personRef: Ref<Person>,
+  cb: (person: Readonly<Person> | null) => void
+): void {
   let person: Readonly<Person> | null | undefined = contactCache.personByRef.get(personRef)
   if (person !== undefined) {
     cb(person)
@@ -804,7 +815,11 @@ export async function getSocialIdByPersonId (client: Client, personId: PersonId)
   return contactCache.socialIdByPersonId.get(personId) ?? null
 }
 
-export function getSocialIdByPersonIdCb (client: Client, personId: PersonId, cb: (socialId: SocialIdentity | null) => void): void {
+export function getSocialIdByPersonIdCb (
+  client: Client,
+  personId: PersonId,
+  cb: (socialId: SocialIdentity | null) => void
+): void {
   let socialId: SocialIdentity | null | undefined = contactCache.socialIdByPersonId.get(personId)
   if (socialId !== undefined) {
     cb(socialId)

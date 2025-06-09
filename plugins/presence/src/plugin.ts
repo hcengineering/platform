@@ -31,7 +31,7 @@ export const presencePlugin = plugin(presenceId, {
   },
   function: {
     PublishData: '' as Resource<(topic: string, data: any) => void>,
-    GetFollowee: '' as Resource<() => Person | undefined>,
+    GetFollowee: '' as Resource<() => Promise<Person | undefined>>,
     FolloweeDataSubscribe: '' as Resource<(topic: string, handler: (data: any) => Promise<void>) => void>,
     FolloweeDataUnsubscribe: '' as Resource<(topic: string, handler: (data: any) => Promise<void>) => void>
   }

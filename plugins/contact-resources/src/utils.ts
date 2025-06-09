@@ -794,7 +794,10 @@ export async function getPersonRefsByPersonIds (personIds: PersonId[]): Promise<
   return await getPersonRefsByPersonIdsBase(getClient(), personIds)
 }
 
-export function getPersonRefsByPersonIdsCb (personIds: PersonId[], cb: (personRefs: Map<PersonId, Ref<Person>>) => void): void {
+export function getPersonRefsByPersonIdsCb (
+  personIds: PersonId[],
+  cb: (personRefs: Map<PersonId, Ref<Person>>) => void
+): void {
   getPersonRefsByPersonIdsCbBase(getClient(), personIds, cb)
 }
 
@@ -810,7 +813,10 @@ export async function getPersonsByPersonIds (personIds: PersonId[]): Promise<Map
   return await getPersonsByPersonIdsBase(getClient(), personIds)
 }
 
-export function getPersonsByPersonIdsCb (personIds: PersonId[], cb: (persons: Map<PersonId, Readonly<Person>>) => void): void {
+export function getPersonsByPersonIdsCb (
+  personIds: PersonId[],
+  cb: (persons: Map<PersonId, Readonly<Person>>) => void
+): void {
   getPersonsByPersonIdsCbBase(getClient(), personIds, cb)
 }
 
@@ -828,7 +834,10 @@ export async function getPersonsByPersonRefs (
   return await getPersonsByPersonRefsBase(getClient(), personRefs)
 }
 
-export function getPersonsByPersonRefsCb (personRefs: Array<Ref<Person>>, cb: (persons: Map<Ref<Person>, Readonly<Person>>) => void): void {
+export function getPersonsByPersonRefsCb (
+  personRefs: Array<Ref<Person>>,
+  cb: (persons: Map<Ref<Person>, Readonly<Person>>) => void
+): void {
   getPersonsByPersonRefsCbBase(getClient(), personRefs, cb)
 }
 

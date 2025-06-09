@@ -17,7 +17,18 @@
   import { calendarByIdStore } from '@hcengineering/calendar-resources'
   import contact, { getCurrentEmployee, Person } from '@hcengineering/contact'
   import { employeeRefByAccountUuidStore, getPersonRefsByPersonIdsCb } from '@hcengineering/contact-resources'
-  import core, { Doc, IdMap, PersonId, Ref, Timestamp, Tx, TxCreateDoc, TxCUD, TxUpdateDoc, unique } from '@hcengineering/core'
+  import core, {
+    Doc,
+    IdMap,
+    PersonId,
+    Ref,
+    Timestamp,
+    Tx,
+    TxCreateDoc,
+    TxCUD,
+    TxUpdateDoc,
+    unique
+  } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/task'
