@@ -45,7 +45,7 @@
     })
   }
 
-  let workflow: Map<Ref<ControlledDocument>, DocumentValidationState[]>
+  let workflow: Map<Ref<ControlledDocument>, DocumentValidationState[]> | undefined
   $: void extractValidationWorkflow(hierarchy, {
     ...emptyBundle(),
     ControlledDocument: doc ? [doc] : [],
@@ -56,7 +56,7 @@
     workflow = res
   })
 
-  $: validationStates = ((doc ? workflow.get(doc._id) : []) ?? []).slice()
+  $: validationStates = ((doc ? workflow?.get(doc._id) : []) ?? []).slice()
 
   const noGuideStates: (ControlledDocumentState | undefined)[] = [
     ControlledDocumentState.Approved,
