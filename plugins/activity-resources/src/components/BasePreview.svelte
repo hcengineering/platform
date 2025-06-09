@@ -16,7 +16,7 @@
 <script lang="ts">
   import { ComponentExtensions, getClient, LiteMessageViewer } from '@hcengineering/presentation'
   import { Person } from '@hcengineering/contact'
-  import { Avatar, getPersonByPersonId, SystemAvatar } from '@hcengineering/contact-resources'
+  import { Avatar, getPersonByPersonIdCb, SystemAvatar } from '@hcengineering/contact-resources'
   import core, { PersonId, Doc, Timestamp } from '@hcengineering/core'
   import { Icon, Label, resizeObserver, TimeSince, tooltip } from '@hcengineering/ui'
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
@@ -48,7 +48,7 @@
 
   $: isCompact = width < limit
   $: if (account !== undefined) {
-    void getPersonByPersonId(account).then((p) => {
+    getPersonByPersonIdCb(account, (p) => {
       person = p ?? undefined
     })
   } else {

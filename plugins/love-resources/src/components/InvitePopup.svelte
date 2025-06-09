@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { formatName, Person } from '@hcengineering/contact'
-  import { Avatar, getPersonByPersonRef } from '@hcengineering/contact-resources'
+  import { Avatar, getPersonByPersonRef, getPersonByPersonRefCb } from '@hcengineering/contact-resources'
   import { getClient, playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { Invite, RequestStatus, getFreeRoomPlace } from '@hcengineering/love'
@@ -27,7 +27,7 @@
   export let invite: Invite
 
   let person: Person | undefined = undefined
-  $: void getPersonByPersonRef(invite.from).then((p) => {
+  $: getPersonByPersonRefCb(invite.from, (p) => {
     person = p ?? undefined
   })
 

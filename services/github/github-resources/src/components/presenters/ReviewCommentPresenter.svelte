@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { EmployeePresenter, SystemAvatar, getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { EmployeePresenter, SystemAvatar, getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import Avatar from '@hcengineering/contact-resources/src/components/Avatar.svelte'
   import core, { getDisplayTime } from '@hcengineering/core'
   import { MessageViewer } from '@hcengineering/presentation'
@@ -12,7 +12,7 @@
   $: personId = comment?.createdBy ?? comment?.modifiedBy
   let person: Person | undefined
   $: if (personId !== undefined) {
-    void getPersonByPersonId(personId).then((p) => {
+    getPersonByPersonIdCb(personId, (p) => {
       person = p ?? undefined
     })
   } else {

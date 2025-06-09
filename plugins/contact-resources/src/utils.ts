@@ -35,7 +35,14 @@ import {
   getPersonsByPersonIds as getPersonsByPersonIdsBase,
   getPersonByPersonRef as getPersonByPersonRefBase,
   getPersonsByPersonRefs as getPersonsByPersonRefsBase,
+  getPersonRefByPersonIdCb as getPersonRefByPersonIdCbBase,
+  getPersonRefsByPersonIdsCb as getPersonRefsByPersonIdsCbBase,
+  getPersonByPersonIdCb as getPersonByPersonIdCbBase,
+  getPersonsByPersonIdsCb as getPersonsByPersonIdsCbBase,
+  getPersonByPersonRefCb as getPersonByPersonRefCbBase,
+  getPersonsByPersonRefsCb as getPersonsByPersonRefsCbBase,
   getSocialIdByPersonId as getSocialIdByPersonIdBase,
+  getSocialIdByPersonIdCb as getSocialIdByPersonIdCbBase,
   type PermissionsBySpace,
   type PermissionsStore,
   type Person,
@@ -776,47 +783,61 @@ export function getAccountClient (): AccountClient {
 }
 
 export async function getPersonRefByPersonId (personId: PersonId): Promise<Ref<Person> | null> {
-  const client = getClient()
+  return await getPersonRefByPersonIdBase(getClient(), personId)
+}
 
-  return await getPersonRefByPersonIdBase(client, personId)
+export function getPersonRefByPersonIdCb (personId: PersonId, cb: (person: Ref<Person> | null) => void): void {
+  getPersonRefByPersonIdCbBase(getClient(), personId, cb)
 }
 
 export async function getPersonRefsByPersonIds (personIds: PersonId[]): Promise<Map<PersonId, Ref<Person>>> {
-  const client = getClient()
+  return await getPersonRefsByPersonIdsBase(getClient(), personIds)
+}
 
-  return await getPersonRefsByPersonIdsBase(client, personIds)
+export function getPersonRefsByPersonIdsCb (personIds: PersonId[], cb: (personRefs: Map<PersonId, Ref<Person>>) => void): void {
+  getPersonRefsByPersonIdsCbBase(getClient(), personIds, cb)
 }
 
 export async function getPersonByPersonId (personId: PersonId): Promise<Person | null> {
-  const client = getClient()
+  return await getPersonByPersonIdBase(getClient(), personId)
+}
 
-  return await getPersonByPersonIdBase(client, personId)
+export function getPersonByPersonIdCb (personId: PersonId, cb: (person: Readonly<Person> | null) => void): void {
+  getPersonByPersonIdCbBase(getClient(), personId, cb)
 }
 
 export async function getPersonsByPersonIds (personIds: PersonId[]): Promise<Map<PersonId, Readonly<Person>>> {
-  const client = getClient()
+  return await getPersonsByPersonIdsBase(getClient(), personIds)
+}
 
-  return await getPersonsByPersonIdsBase(client, personIds)
+export function getPersonsByPersonIdsCb (personIds: PersonId[], cb: (persons: Map<PersonId, Readonly<Person>>) => void): void {
+  getPersonsByPersonIdsCbBase(getClient(), personIds, cb)
 }
 
 export async function getPersonByPersonRef (personRef: Ref<Person>): Promise<Person | null> {
-  const client = getClient()
+  return await getPersonByPersonRefBase(getClient(), personRef)
+}
 
-  return await getPersonByPersonRefBase(client, personRef)
+export function getPersonByPersonRefCb (personRef: Ref<Person>, cb: (person: Readonly<Person> | null) => void): void {
+  getPersonByPersonRefCbBase(getClient(), personRef, cb)
 }
 
 export async function getPersonsByPersonRefs (
   personRefs: Array<Ref<Person>>
 ): Promise<Map<Ref<Person>, Readonly<Person>>> {
-  const client = getClient()
+  return await getPersonsByPersonRefsBase(getClient(), personRefs)
+}
 
-  return await getPersonsByPersonRefsBase(client, personRefs)
+export function getPersonsByPersonRefsCb (personRefs: Array<Ref<Person>>, cb: (persons: Map<Ref<Person>, Readonly<Person>>) => void): void {
+  getPersonsByPersonRefsCbBase(getClient(), personRefs, cb)
 }
 
 export async function getSocialIdByPersonId (personId: PersonId): Promise<SocialIdentity | null> {
-  const client = getClient()
+  return await getSocialIdByPersonIdBase(getClient(), personId)
+}
 
-  return await getSocialIdByPersonIdBase(client, personId)
+export function getSocialIdByPersonIdCb (personId: PersonId, cb: (socialId: SocialIdentity | null) => void): void {
+  getSocialIdByPersonIdCbBase(getClient(), personId, cb)
 }
 
 addTxListener(contactCache.handleTx)

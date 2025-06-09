@@ -19,7 +19,7 @@
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
   import contact, { getCurrentEmployee, Person, SocialIdentity } from '@hcengineering/contact'
-  import { getPersonByPersonId, getSocialIdByPersonId } from '@hcengineering/contact-resources'
+  import { getPersonByPersonIdCb, getSocialIdByPersonIdCb } from '@hcengineering/contact-resources'
   import { Class, Doc, Markup, Ref, Space, WithLookup } from '@hcengineering/core'
   import { getClient, MessageViewer, pendingCreatedDocs } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
@@ -79,10 +79,10 @@
   let person: Person | undefined
   let socialId: SocialIdentity | undefined
   $: if (personId !== undefined) {
-    void getPersonByPersonId(personId).then((p) => {
+    getPersonByPersonIdCb(personId, (p) => {
       person = p ?? undefined
     })
-    void getSocialIdByPersonId(personId).then((s) => {
+    getSocialIdByPersonIdCb(personId, (s) => {
       socialId = s ?? undefined
     })
   } else {

@@ -7,7 +7,7 @@
   import { GithubPullRequestReviewState, GithubReview } from '@hcengineering/github'
 
   import { ActivityMessageHeader, ActivityMessageTemplate } from '@hcengineering/activity-resources'
-  import { getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { IntlString } from '@hcengineering/platform'
   import { MessageViewer } from '@hcengineering/presentation'
   import { isEmptyMarkup } from '@hcengineering/text'
@@ -26,7 +26,7 @@
   $: personId = value?.createdBy ?? value?.modifiedBy
   let person: Person | undefined
   $: if (personId !== undefined) {
-    void getPersonByPersonId(personId).then((p) => {
+    getPersonByPersonIdCb(personId, (p) => {
       person = p ?? undefined
     })
   } else {

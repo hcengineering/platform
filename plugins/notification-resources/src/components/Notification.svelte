@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Avatar, getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { Avatar, getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { BrowserNotification } from '@hcengineering/notification'
   import { Button, navigate, Notification as PlatformNotification, NotificationToast } from '@hcengineering/ui'
@@ -23,7 +23,7 @@
 
   let sender: Person | undefined
   $: if (value.senderId !== undefined) {
-    void getPersonByPersonId(value.senderId).then((p) => {
+    getPersonByPersonIdCb(value.senderId, (p) => {
       sender = p ?? undefined
     })
   } else {

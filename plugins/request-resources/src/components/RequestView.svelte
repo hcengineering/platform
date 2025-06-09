@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getName, Person } from '@hcengineering/contact'
-  import { getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { Doc, TxCUD } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Request } from '@hcengineering/request'
@@ -28,7 +28,7 @@
 
   const client = getClient()
   let employee: Person | undefined
-  $: void getPersonByPersonId(value.tx.modifiedBy).then((p) => {
+  $: getPersonByPersonIdCb(value.tx.modifiedBy, (p) => {
     employee = p ?? undefined
   })
   $: txCud = value.tx as TxCUD<Doc>

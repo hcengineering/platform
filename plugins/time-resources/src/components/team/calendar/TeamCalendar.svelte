@@ -16,8 +16,8 @@
   import calendar, { Event, getAllEvents } from '@hcengineering/calendar'
   import { calendarByIdStore } from '@hcengineering/calendar-resources'
   import contact, { getCurrentEmployee, Person } from '@hcengineering/contact'
-  import { employeeRefByAccountUuidStore, getPersonRefsByPersonIds } from '@hcengineering/contact-resources'
-  import core, { Doc, IdMap, PersonId, Ref, Timestamp, Tx, TxCreateDoc, TxCUD, TxUpdateDoc } from '@hcengineering/core'
+  import { employeeRefByAccountUuidStore, getPersonRefsByPersonIdsCb } from '@hcengineering/contact-resources'
+  import core, { Doc, IdMap, PersonId, Ref, Timestamp, Tx, TxCreateDoc, TxCUD, TxUpdateDoc, unique } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/task'
@@ -70,7 +70,7 @@
       txes = res
     }
   )
-  $: void getPersonRefsByPersonIds(Array.from(new Set(txes.map((it) => it.createdBy ?? it.modifiedBy)))).then((res) => {
+  $: getPersonRefsByPersonIdsCb(unique(txes.map((it) => it.createdBy ?? it.modifiedBy)), (res) => {
     const map = new Map<Ref<Person>, Tx[]>()
     for (const t of txes) {
       const personId = t.createdBy ?? t.modifiedBy

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getCurrentEmployee, Person } from '@hcengineering/contact'
-  import { AccountRole, Doc, getCurrentAccount, notEmpty, Ref } from '@hcengineering/core'
+  import { AccountRole, Doc, getCurrentAccount, PersonId, Ref, uniqueNotEmpty } from '@hcengineering/core'
   import { Card, isAdminUser } from '@hcengineering/presentation'
   import ui, { Button, Label } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
@@ -22,7 +22,7 @@
   import { createEventDispatcher } from 'svelte'
   import { IntlString } from '@hcengineering/platform'
 
-  import { getPersonRefsByPersonIds, PersonRefPresenter } from '..'
+  import { getPersonRefsByPersonIdsCb, PersonRefPresenter } from '..'
 
   export let object: Doc | Doc[]
   export let deleteAction: () => void | Promise<void>
@@ -34,11 +34,9 @@
   const objectArray = Array.isArray(object) ? object : [object]
   const dispatch = createEventDispatcher()
   let creators: Ref<Person>[]
-  $: void getPersonRefsByPersonIds(Array.from(new Set(objectArray.map((obj) => obj.createdBy).filter(notEmpty)))).then(
-    (refs) => {
-      creators = Array.from(refs.values())
-    }
-  )
+  $: getPersonRefsByPersonIdsCb(uniqueNotEmpty(objectArray.map((obj) => obj.createdBy)), (refs) => {
+    creators = Array.from(refs.values())
+  })
 
   $: canDelete =
     (skipCheck ||

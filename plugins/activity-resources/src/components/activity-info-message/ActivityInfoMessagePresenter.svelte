@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { ActivityInfoMessage } from '@hcengineering/activity'
-  import { Avatar, SystemAvatar, getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { Avatar, SystemAvatar, getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { translateCB } from '@hcengineering/platform'
   import { HTMLViewer } from '@hcengineering/presentation'
   import { Action, themeStore } from '@hcengineering/ui'
@@ -38,7 +38,7 @@
   export let onClick: (() => void) | undefined = undefined
 
   let person: Person | undefined
-  $: void getPersonByPersonId(value.createdBy ?? value.modifiedBy).then((p) => {
+  $: getPersonByPersonIdCb(value.createdBy ?? value.modifiedBy, (p) => {
     person = p ?? undefined
   })
 

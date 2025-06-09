@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
-  import { getPersonRefByPersonId } from '@hcengineering/contact-resources'
+  import { getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { Scroller } from '@hcengineering/ui'
@@ -50,7 +50,7 @@
 
   let aiPersonRef: Ref<Person> | undefined
   $: if ($aiBotSocialIdentityStore != null) {
-    void getPersonRefByPersonId($aiBotSocialIdentityStore?._id).then((ref) => {
+    getPersonRefByPersonIdCb($aiBotSocialIdentityStore?._id, (ref) => {
       if (ref != null) {
         aiPersonRef = ref
       }

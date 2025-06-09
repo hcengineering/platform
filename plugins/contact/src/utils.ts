@@ -50,6 +50,7 @@ import contact, {
 
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
 import ContactCache from './cache'
+import { get } from 'svelte/store'
 
 let currentEmployee: Ref<Employee>
 
@@ -629,14 +630,19 @@ export async function getPersonRefByPersonId (client: Client, personId: PersonId
   return contactCache.personRefByPersonId.get(personId) ?? null
 }
 
-export async function getPersonRefsByPersonIds (
-  client: Client,
-  personIds: PersonId[]
-): Promise<Map<PersonId, Ref<Person>>> {
-  if (personIds.some((personId) => !contactCache.personRefByPersonId.has(personId))) {
-    await loadCachesForPersonIds(client, personIds)
+export function getPersonRefByPersonIdCb (client: Client, personId: PersonId, cb: (person: Ref<Person> | null) => void): void {
+  let personRef: Ref<Person> | null | undefined = contactCache.personRefByPersonId.get(personId)
+  if (personRef !== undefined) {
+    cb(personRef)
+  } else {
+    void loadCachesForPersonId(client, personId).then(() => {
+      personRef = contactCache.personRefByPersonId.get(personId)
+      cb(personRef ?? null)
+    })
   }
+}
 
+function getPersonRefsByPersonIdsFromCache (personIds: PersonId[]): Map<PersonId, Ref<Person>> {
   return new Map(
     personIds
       .map((pid) => {
@@ -647,6 +653,33 @@ export async function getPersonRefsByPersonIds (
   )
 }
 
+export async function getPersonRefsByPersonIds (
+  client: Client,
+  personIds: PersonId[]
+): Promise<Map<PersonId, Ref<Person>>> {
+  if (personIds.some((personId) => !contactCache.personRefByPersonId.has(personId))) {
+    await loadCachesForPersonIds(client, personIds)
+  }
+
+  return getPersonRefsByPersonIdsFromCache(personIds)
+}
+
+export function getPersonRefsByPersonIdsCb (
+  client: Client,
+  personIds: PersonId[],
+  cb: (personRefs: Map<PersonId, Ref<Person>>) => void
+): void {
+  if (personIds.some((personId) => !contactCache.personRefByPersonId.has(personId))) {
+    void loadCachesForPersonIds(client, personIds).then(() => {
+      const personRefs = getPersonRefsByPersonIdsFromCache(personIds)
+      cb(personRefs)
+    })
+  } else {
+    const personRefs = getPersonRefsByPersonIdsFromCache(personIds)
+    cb(personRefs)
+  }
+}
+
 export async function getPersonByPersonId (client: Client, personId: PersonId): Promise<Readonly<Person> | null> {
   if (!contactCache.personByPersonId.has(personId)) {
     await loadCachesForPersonId(client, personId)
@@ -655,14 +688,19 @@ export async function getPersonByPersonId (client: Client, personId: PersonId): 
   return contactCache.personByPersonId.get(personId) ?? null
 }
 
-export async function getPersonsByPersonIds (
-  client: Client,
-  personIds: PersonId[]
-): Promise<Map<PersonId, Readonly<Person>>> {
-  if (personIds.some((personId) => !contactCache.personByPersonId.has(personId))) {
-    await loadCachesForPersonIds(client, personIds)
+export function getPersonByPersonIdCb (client: Client, personId: PersonId, cb: (person: Readonly<Person> | null) => void): void {
+  let person: Readonly<Person> | null | undefined = contactCache.personByPersonId.get(personId)
+  if (person !== undefined) {
+    cb(person)
+  } else {
+    void loadCachesForPersonId(client, personId).then(() => {
+      person = contactCache.personByPersonId.get(personId) ?? null
+      cb(person ?? null)
+    })
   }
+}
 
+function getPersonsByPersonIdsFromCache (personIds: PersonId[]): Map<PersonId, Readonly<Person>> {
   return new Map(
     personIds
       .map((pid) => {
@@ -673,6 +711,33 @@ export async function getPersonsByPersonIds (
   )
 }
 
+export async function getPersonsByPersonIds (
+  client: Client,
+  personIds: PersonId[]
+): Promise<Map<PersonId, Readonly<Person>>> {
+  if (personIds.some((personId) => !contactCache.personByPersonId.has(personId))) {
+    await loadCachesForPersonIds(client, personIds)
+  }
+
+  return getPersonsByPersonIdsFromCache(personIds)
+}
+
+export function getPersonsByPersonIdsCb (
+  client: Client,
+  personIds: PersonId[],
+  cb: (persons: Map<PersonId, Readonly<Person>>) => void
+): void {
+  if (personIds.some((personId) => !contactCache.personByPersonId.has(personId))) {
+    void loadCachesForPersonIds(client, personIds).then(() => {
+      const persons = getPersonsByPersonIdsFromCache(personIds)
+      cb(persons)
+    })
+  } else {
+    const persons = getPersonsByPersonIdsFromCache(personIds)
+    cb(persons)
+  }
+}
+
 export async function getPersonByPersonRef (client: Client, personRef: Ref<Person>): Promise<Readonly<Person> | null> {
   if (!contactCache.personByRef.has(personRef)) {
     await loadCachesForPersonRef(client, personRef)
@@ -681,14 +746,19 @@ export async function getPersonByPersonRef (client: Client, personRef: Ref<Perso
   return contactCache.personByRef.get(personRef) ?? null
 }
 
-export async function getPersonsByPersonRefs (
-  client: Client,
-  personRefs: Array<Ref<Person>>
-): Promise<Map<Ref<Person>, Readonly<Person>>> {
-  if (personRefs.some((personRef) => !contactCache.personByRef.has(personRef))) {
-    await loadCachesForPersonRefs(client, personRefs)
+export function getPersonByPersonRefCb (client: Client, personRef: Ref<Person>, cb: (person: Readonly<Person> | null) => void): void {
+  let person: Readonly<Person> | null | undefined = contactCache.personByRef.get(personRef)
+  if (person !== undefined) {
+    cb(person)
+  } else {
+    void loadCachesForPersonRef(client, personRef).then(() => {
+      person = contactCache.personByRef.get(personRef) ?? null
+      cb(person ?? null)
+    })
   }
+}
 
+function getPersonsByPersonRefsFromCache (personRefs: Array<Ref<Person>>): Map<Ref<Person>, Readonly<Person>> {
   return new Map(
     personRefs
       .map((personRef) => {
@@ -699,12 +769,51 @@ export async function getPersonsByPersonRefs (
   )
 }
 
+export async function getPersonsByPersonRefs (
+  client: Client,
+  personRefs: Array<Ref<Person>>
+): Promise<Map<Ref<Person>, Readonly<Person>>> {
+  if (personRefs.some((personRef) => !contactCache.personByRef.has(personRef))) {
+    await loadCachesForPersonRefs(client, personRefs)
+  }
+
+  return getPersonsByPersonRefsFromCache(personRefs)
+}
+
+export function getPersonsByPersonRefsCb (
+  client: Client,
+  personRefs: Array<Ref<Person>>,
+  cb: (persons: Map<Ref<Person>, Readonly<Person>>) => void
+): void {
+  if (personRefs.some((personRef) => !contactCache.personByRef.has(personRef))) {
+    void loadCachesForPersonRefs(client, personRefs).then(() => {
+      const persons = getPersonsByPersonRefsFromCache(personRefs)
+      cb(persons)
+    })
+  } else {
+    const persons = getPersonsByPersonRefsFromCache(personRefs)
+    cb(persons)
+  }
+}
+
 export async function getSocialIdByPersonId (client: Client, personId: PersonId): Promise<SocialIdentity | null> {
   if (!contactCache.personRefByPersonId.has(personId)) {
     await loadCachesForPersonId(client, personId)
   }
 
   return contactCache.socialIdByPersonId.get(personId) ?? null
+}
+
+export function getSocialIdByPersonIdCb (client: Client, personId: PersonId, cb: (socialId: SocialIdentity | null) => void): void {
+  let socialId: SocialIdentity | null | undefined = contactCache.socialIdByPersonId.get(personId)
+  if (socialId !== undefined) {
+    cb(socialId)
+  } else {
+    void loadCachesForPersonId(client, personId).then(() => {
+      socialId = contactCache.socialIdByPersonId.get(personId) ?? null
+      cb(socialId ?? null)
+    })
+  }
 }
 
 export type { Change as ContactCacheChange } from './cache'

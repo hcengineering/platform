@@ -21,7 +21,7 @@
     DocUpdateMessage,
     DocUpdateMessageViewlet
   } from '@hcengineering/activity'
-  import { getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { AttachedDoc, Class, Collection, Doc, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -104,7 +104,7 @@
 
   let person: Person | undefined
   $: if (value.createdBy !== undefined) {
-    void getPersonByPersonId(value.createdBy).then((p) => {
+    getPersonByPersonIdCb(value.createdBy, (p) => {
       person = p ?? undefined
     })
   } else {

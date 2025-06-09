@@ -24,7 +24,7 @@
     employeeRefByAccountUuidStore,
     SelectUsersPopup,
     employeeByIdStore,
-    getPersonRefByPersonId
+    getPersonRefByPersonIdCb
   } from '@hcengineering/contact-resources'
 
   import ChannelMembers from '../ChannelMembers.svelte'
@@ -40,7 +40,7 @@
 
   let creatorPersonRef: Ref<Person>
   $: if (object.createdBy !== undefined) {
-    void getPersonRefByPersonId(object.createdBy).then((personRef) => {
+    getPersonRefByPersonIdCb(object.createdBy, (personRef) => {
       if (personRef == null) return
       creatorPersonRef = personRef
     })

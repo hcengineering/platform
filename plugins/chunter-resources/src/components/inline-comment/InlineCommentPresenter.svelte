@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { getCurrentAccount, Markup } from '@hcengineering/core'
   import { MessageViewer } from '@hcengineering/presentation'
   import { Action, IconEdit, IconDelete, ShowMore } from '@hcengineering/ui'
@@ -51,7 +51,7 @@
   $: creatorSocialString = value?.createdBy
   let person: Person | undefined
   $: if (creatorSocialString !== undefined) {
-    void getPersonByPersonId(creatorSocialString).then((p) => {
+    getPersonByPersonIdCb(creatorSocialString, (p) => {
       person = p ?? undefined
     })
   } else {

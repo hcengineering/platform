@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
-  import { EmployeePresenter, getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { EmployeePresenter, getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { DocumentSnapshot } from '@hcengineering/document'
   import { TimeSince } from '@hcengineering/ui'
 
@@ -24,7 +24,7 @@
 
   let employee: Person | undefined
   $: if (value.createdBy !== undefined) {
-    void getPersonByPersonId(value.createdBy).then((p) => {
+    getPersonByPersonIdCb(value.createdBy, (p) => {
       employee = p ?? undefined
     })
   } else {

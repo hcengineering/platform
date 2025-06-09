@@ -19,7 +19,7 @@
   import { CollaborationUser } from '@hcengineering/text-editor'
   import { IconSize } from '@hcengineering/ui'
 
-  import { getPersonByPersonId } from '../utils'
+  import { getPersonByPersonIdCb } from '../utils'
   import Avatar from './Avatar.svelte'
   import { Person } from '@hcengineering/contact'
 
@@ -31,7 +31,7 @@
   $: lastUpdate !== 0 && avatar?.pulse()
 
   let person: Person | undefined
-  $: void getPersonByPersonId(user.id).then((p) => {
+  $: getPersonByPersonIdCb(user.id, (p) => {
     person = p ?? undefined
   })
 </script>

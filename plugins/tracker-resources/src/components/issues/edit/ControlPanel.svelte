@@ -13,14 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeBox, getPersonRefByPersonId } from '@hcengineering/contact-resources'
+  import { EmployeeBox, getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
   import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
-
+  import { Person } from '@hcengineering/contact'
   import tags from '@hcengineering/tags'
   import type { Issue } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr, ObjectBox, restrictionStore } from '@hcengineering/view-resources'
+
   import tracker from '../../../plugin'
   import ComponentEditor from '../../components/ComponentEditor.svelte'
   import MilestoneEditor from '../../milestones/MilestoneEditor.svelte'
@@ -29,7 +30,6 @@
   import PriorityEditor from '../PriorityEditor.svelte'
   import RelationEditor from '../RelationEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
-  import { Person } from '@hcengineering/contact'
 
   export let issue: Issue
   export let showAllMixins: boolean = false
@@ -96,7 +96,7 @@
   $: updateKeys(issue._class, ignoreKeys)
   let creatorPersonRef: Ref<Person> | undefined
   $: if (issue.createdBy !== undefined) {
-    void getPersonRefByPersonId(issue.createdBy).then((ref) => {
+    getPersonRefByPersonIdCb(issue.createdBy, (ref) => {
       creatorPersonRef = ref ?? undefined
     })
   } else {

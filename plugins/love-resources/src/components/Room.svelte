@@ -47,7 +47,7 @@
   import ParticipantView from './ParticipantView.svelte'
   import { Ref } from '@hcengineering/core'
   import { Person } from '@hcengineering/contact'
-  import { getPersonRefByPersonId } from '@hcengineering/contact-resources'
+  import { getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
 
   export let withVideo: boolean
   export let canMaximize: boolean = true
@@ -69,7 +69,7 @@
 
   let aiPersonRef: Ref<Person> | undefined
   $: if ($aiBotSocialIdentityStore != null) {
-    void getPersonRefByPersonId($aiBotSocialIdentityStore?._id).then((ref) => {
+    getPersonRefByPersonIdCb($aiBotSocialIdentityStore?._id, (ref) => {
       if (ref != null) {
         aiPersonRef = ref
       }

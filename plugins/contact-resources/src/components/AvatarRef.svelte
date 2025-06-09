@@ -20,7 +20,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, IconSize } from '@hcengineering/ui'
 
-  import { getPersonByPersonRef } from '../utils'
+  import { getPersonByPersonRefCb } from '../utils'
   import Avatar from './Avatar.svelte'
 
   export let _id: Ref<Contact>
@@ -32,7 +32,7 @@
   export let showStatus: boolean = false
 
   let personVal: Person | undefined
-  $: void getPersonByPersonRef(_id).then((person) => {
+  $: getPersonByPersonRefCb(_id, (person) => {
     personVal = person ?? undefined
   })
 

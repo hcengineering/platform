@@ -15,7 +15,7 @@
 <script lang="ts">
   import { PersonId, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import contact, { getPersonRefByPersonId, Person } from '@hcengineering/contact'
+  import contact, { getPersonRefByPersonIdCb, Person } from '@hcengineering/contact'
   import { IconSize } from '@hcengineering/ui'
 
   import ObjectPresenter from './ObjectPresenter.svelte'
@@ -28,12 +28,12 @@
 
   const client = getClient()
   let person: Ref<Person> | undefined
-  $: void getPerson(value)
-
-  async function getPerson (id: PersonId | undefined): Promise<void> {
-    if (id !== undefined) {
-      person = (await getPersonRefByPersonId(client, id)) ?? undefined
-    }
+  $: if (value !== undefined) {
+    getPersonRefByPersonIdCb(client, value, (p) => {
+      person = p ?? undefined
+    })
+  } else {
+    person = undefined
   }
 </script>
 

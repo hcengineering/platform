@@ -8,7 +8,7 @@
 
   import { ActivityMessageHeader, ActivityMessageTemplate } from '@hcengineering/activity-resources'
   import { Person } from '@hcengineering/contact'
-  import { EmployeePresenter, getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { EmployeePresenter, getPersonByPersonId, getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ReferenceInput } from '@hcengineering/text-editor-resources'
@@ -29,7 +29,7 @@
   $: personId = value?.createdBy ?? value?.modifiedBy
   let person: Person | undefined
   $: if (personId !== undefined) {
-    void getPersonByPersonId(personId).then((p) => {
+    getPersonByPersonIdCb(personId, (p) => {
       person = p ?? undefined
     })
   } else {

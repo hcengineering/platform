@@ -16,7 +16,7 @@
   import activity, { ActivityReference } from '@hcengineering/activity'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Action, Label, ShowMore } from '@hcengineering/ui'
-  import { getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { Doc } from '@hcengineering/core'
   import { getCurrentEmployee, Person } from '@hcengineering/contact'
   import view, { ObjectPanel } from '@hcengineering/view'
@@ -60,7 +60,7 @@
   let targetTitle: string | undefined = undefined
 
   let person: Person | undefined
-  $: void getPersonByPersonId(value.createdBy ?? value.modifiedBy).then((p) => {
+  $: getPersonByPersonIdCb(value.createdBy ?? value.modifiedBy, (p) => {
     person = p ?? undefined
   })
 
