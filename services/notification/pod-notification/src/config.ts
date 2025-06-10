@@ -16,9 +16,6 @@
 interface Config {
   Port: number
   Source: string
-  AccessKey: string
-  SecretKey: string
-  Region: string
   AuthToken?: string
   PushSubject?: string
   PushPublicKey?: string
@@ -28,9 +25,6 @@ interface Config {
 const envMap: { [key in keyof Required<Config>]: string } = {
   Port: 'PORT',
   Source: 'SOURCE',
-  AccessKey: 'ACCESS_KEY',
-  SecretKey: 'SECRET_KEY',
-  Region: 'REGION',
   AuthToken: 'AUTH_TOKEN',
   PushPublicKey: 'PUSH_PUBLIC_KEY',
   PushPrivateKey: 'PUSH_PRIVATE_KEY',
@@ -43,16 +37,13 @@ const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env[envMap.Port]) ?? 8091,
     Source: process.env[envMap.Source],
-    AccessKey: process.env[envMap.AccessKey],
-    SecretKey: process.env[envMap.SecretKey],
-    Region: process.env[envMap.Region] ?? 'us-east-1',
     AuthToken: process.env[envMap.AuthToken],
     PushPublicKey: process.env[envMap.PushPublicKey],
     PushPrivateKey: process.env[envMap.PushPrivateKey],
     PushSubject: process.env[envMap.PushSubject]
   }
 
-  const required: Array<keyof Config> = ['Port', 'Source', 'AccessKey', 'SecretKey', 'Region']
+  const required: Array<keyof Config> = ['Port', 'Source']
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])
 

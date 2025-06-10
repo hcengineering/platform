@@ -19,7 +19,6 @@ import type { Request, Response } from 'express'
 import webpush, { WebPushError } from 'web-push'
 import config from './config'
 import { createServer, listen } from './server'
-import { SES } from './ses'
 import { Endpoint } from './types'
 
 const errorMessages = ['expired', 'Unregistered', 'No such subscription']
@@ -43,8 +42,7 @@ async function sendPushToSubscription (
 }
 
 export const main = async (): Promise<void> => {
-  const ses = new SES()
-  console.log('SES service has been started')
+  console.log('Notification service has been started')
   let webpushInitDone = false
 
   if (config.PushPublicKey !== undefined && config.PushPrivateKey !== undefined) {
@@ -72,41 +70,6 @@ export const main = async (): Promise<void> => {
   }
 
   const endpoints: Endpoint[] = [
-    {
-      endpoint: '/send',
-      type: 'post',
-      handler: async (req, res) => {
-        if (!checkAuth(req, res)) {
-          return
-        }
-        const text = req.body?.text
-        if (text === undefined) {
-          res.status(400).send({ err: "'text' is missing" })
-          return
-        }
-        const subject = req.body?.subject
-        if (subject === undefined) {
-          res.status(400).send({ err: "'subject' is missing" })
-          return
-        }
-        const html = req.body?.html
-        const to = req.body?.to
-        if (to === undefined) {
-          res.status(400).send({ err: "'to' is missing" })
-          return
-        }
-        const receivers = {
-          to: Array.isArray(to) ? to : [to]
-        }
-        try {
-          await ses.sendMessage({ text, subject, html }, receivers)
-        } catch (err) {
-          console.log(err)
-        }
-
-        res.send()
-      }
-    },
     {
       endpoint: '/web-push',
       type: 'post',
