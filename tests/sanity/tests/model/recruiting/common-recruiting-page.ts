@@ -21,7 +21,9 @@ export class CommonRecruitingPage extends CalendarPage {
     this.page.locator('.popupPanel > .hulyHeader-container > .hulyHeader-buttonsGroup.actions > button').first()
 
   readonly buttonDelete = (): Locator => this.page.locator('button[class*="menuItem"] span', { hasText: 'Delete' })
-  readonly buttonAddSocialLinks = (): Locator => this.page.locator('button[id="presentation:string:AddSocialLinks"]').last()
+  readonly buttonAddSocialLinks = (): Locator =>
+    this.page.locator('button[id="presentation:string:AddSocialLinks"]').last()
+
   readonly buttonContactPhone = (): Locator =>
     this.page.locator('div[class^="popupPanel-body"] div.horizontal button[id="contact:string:Phone"]')
 
