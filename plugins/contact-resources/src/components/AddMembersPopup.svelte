@@ -1,21 +1,21 @@
 <script lang="ts">
-  import { Person, getName } from '@hcengineering/contact'
+  import { Employee, Person, getName } from '@hcengineering/contact'
   import { Ref, Space, notEmpty } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { ActionIcon, Button, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import UsersPopup from './UsersPopup.svelte'
-  import { personRefByAccountUuidStore, personByIdStore, primarySocialIdByPersonRefStore } from '../utils'
+  import { employeeByIdStore, employeeRefByAccountUuidStore } from '../utils'
 
   export let value: Space
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  let membersToAdd: Ref<Person>[] = []
+  let membersToAdd: Ref<Employee>[] = []
   const channelMembers: Ref<Person>[] = value.members
     .map((acc) => {
-      const personRef = $personRefByAccountUuidStore.get(acc)
+      const personRef = $employeeRefByAccountUuidStore.get(acc)
 
       if (personRef === undefined) {
         console.error(`Person with social id ${acc} not found`)
@@ -26,11 +26,13 @@
     })
     .filter(notEmpty)
 
-  async function changeMembersToAdd (employees: Ref<Person>[]): Promise<void> {
+  $: memberAccountsToAdd = membersToAdd.map((m) => $employeeByIdStore.get(m)?.personUuid).filter(notEmpty)
+
+  async function changeMembersToAdd (employees: Ref<Employee>[]): Promise<void> {
     membersToAdd = employees
   }
 
-  function removeMember (_id: Ref<Person>): void {
+  function removeMember (_id: Ref<Employee>): void {
     membersToAdd = membersToAdd.filter((m) => m !== _id)
   }
 </script>
@@ -53,7 +55,7 @@
   {#if membersToAdd.length}
     <div class="flex-row-top flex-wrap ml-6 mr-6 mt-4">
       {#each membersToAdd as m}
-        {@const employee = $personByIdStore.get(m)}
+        {@const employee = $employeeByIdStore.get(m)}
         <div class="mr-2 p-1 item">
           {employee !== undefined ? getName(client.getHierarchy(), employee) : ''}
           <div class="tool">
@@ -86,10 +88,7 @@
   </div>
   <Button
     on:click={() => {
-      dispatch(
-        'close',
-        membersToAdd.map((m) => $primarySocialIdByPersonRefStore.get(m))
-      )
+      dispatch('close', memberAccountsToAdd)
     }}
     label={presentation.string.Add}
   />

@@ -15,13 +15,21 @@
 //
 -->
 <script lang="ts">
-  import { EmployeePresenter, personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Person } from '@hcengineering/contact'
+  import { EmployeePresenter, getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { DocumentSnapshot } from '@hcengineering/document'
   import { TimeSince } from '@hcengineering/ui'
 
   export let value: DocumentSnapshot
 
-  $: employee = value.createdBy !== undefined ? $personByPersonIdStore.get(value.createdBy) : undefined
+  let employee: Person | undefined
+  $: if (value.createdBy !== undefined) {
+    getPersonByPersonIdCb(value.createdBy, (p) => {
+      employee = p ?? undefined
+    })
+  } else {
+    employee = undefined
+  }
 </script>
 
 <div class="container flex-col flex-gap-2 flex-no-shrink">

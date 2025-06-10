@@ -12,12 +12,17 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import { Person, formatName, getPersonBySocialId } from '@hcengineering/contact'
+  import { Person, formatName } from '@hcengineering/contact'
   import { IntlString } from '@hcengineering/platform'
   import { resizeObserver, TimeSince, tooltip } from '@hcengineering/ui'
-  import { Avatar, PersonPreviewProvider, SystemAvatar, personByPersonIdStore } from '@hcengineering/contact-resources'
+  import {
+    Avatar,
+    PersonPreviewProvider,
+    SystemAvatar,
+    employeeByPersonIdStore,
+    getPersonByPersonId
+  } from '@hcengineering/contact-resources'
   import { SocialID } from '@hcengineering/communication-types'
-  import { getClient } from '@hcengineering/presentation'
 
   export let tooltipLabel: IntlString | undefined = undefined
   export let person: Person | undefined = undefined
@@ -28,7 +33,6 @@
   export let padding: string | undefined = undefined
   export let fixHeight: boolean = false
 
-  const client = getClient()
   let clientWidth: number
 
   $: showPersonName = clientWidth > 300
@@ -37,9 +41,9 @@
   $: void updatePerson(socialId, person)
 
   async function updatePerson (socialId: SocialID, person: Person | undefined): Promise<void> {
-    _person = person ?? $personByPersonIdStore.get(socialId)
+    _person = person ?? $employeeByPersonIdStore.get(socialId)
     if (!_person) {
-      _person = await getPersonBySocialId(client, socialId)
+      _person = (await getPersonByPersonId(socialId)) ?? undefined
     }
   }
 </script>

@@ -21,7 +21,7 @@
   import { Button, Label, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
-  import { personByIdStore } from '../utils'
+  import { getPersonByPersonRefStore } from '../utils'
   import CombineAvatars from './CombineAvatars.svelte'
   import UserInfo from './UserInfo.svelte'
   import UsersPopup from './UsersPopup.svelte'
@@ -47,11 +47,10 @@
     return (items ?? []).filter((it, idx, arr) => arr.indexOf(it) === idx)
   }
 
-  let persons: Person[] = filter(items)
-    .map((p) => $personByIdStore.get(p))
-    .filter((p) => p !== undefined) as Person[]
+  $: personByRefStore = getPersonByPersonRefStore(items)
+  let persons: Person[] = []
   $: persons = filter(items)
-    .map((p) => $personByIdStore.get(p))
+    .map((p) => $personByRefStore.get(p))
     .filter((p) => p !== undefined) as Person[]
 
   const dispatch = createEventDispatcher()

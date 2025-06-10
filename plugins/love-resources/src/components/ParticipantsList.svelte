@@ -13,12 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
   import { ParticipantInfo } from '@hcengineering/love'
   import { Scroller } from '@hcengineering/ui'
   import { formatName } from '@hcengineering/contact'
 
   export let items: (ParticipantInfo & { onclick?: (e: MouseEvent) => void })[]
+
+  $: personByRefStore = getPersonByPersonRefStore(items.map((p) => p.person))
 </script>
 
 <Scroller padding={'.25rem'} gap={'flex-gap-2'}>
@@ -32,9 +34,9 @@
     >
       <div class="min-w-6">
         <Avatar
-          name={$personByIdStore.get(participant.person)?.name ?? participant.name}
+          name={$personByRefStore.get(participant.person)?.name ?? participant.name}
           size={items.length < 10 ? 'small' : 'card'}
-          person={$personByIdStore.get(participant.person)}
+          person={$personByRefStore.get(participant.person)}
         />
       </div>
       {formatName(participant.name)}

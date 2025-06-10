@@ -19,8 +19,9 @@
   import { CollaborationUser } from '@hcengineering/text-editor'
   import { IconSize } from '@hcengineering/ui'
 
-  import { personByPersonIdStore } from '../utils'
+  import { getPersonByPersonIdCb } from '../utils'
   import Avatar from './Avatar.svelte'
+  import { Person } from '@hcengineering/contact'
 
   export let user: CollaborationUser
   export let lastUpdate: number
@@ -29,7 +30,10 @@
   let avatar: Avatar | undefined
   $: lastUpdate !== 0 && avatar?.pulse()
 
-  $: person = $personByPersonIdStore.get(user.id)
+  let person: Person | undefined
+  $: getPersonByPersonIdCb(user.id, (p) => {
+    person = p ?? undefined
+  })
 </script>
 
 {#if person}

@@ -12,21 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { derived, writable } from 'svelte/store'
+import { writable } from 'svelte/store'
 import contact, { type SocialIdentity } from '@hcengineering/contact'
-import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
 import { createQuery, onClient } from '@hcengineering/presentation'
 import { aiBotEmailSocialKey } from '@hcengineering/ai-bot'
 
 export const aiBotSocialIdentityStore = writable<SocialIdentity>()
 const identityQuery = createQuery(true)
-
-export const aiBotPersonRefStore = derived(
-  [personRefByPersonIdStore, aiBotSocialIdentityStore],
-  ([personRefByPersonId, aiBotSocialIdentity]) => {
-    return personRefByPersonId.get(aiBotSocialIdentity?._id)
-  }
-)
 
 onClient(() => {
   identityQuery.query(contact.class.SocialIdentity, { key: aiBotEmailSocialKey }, (res) => {

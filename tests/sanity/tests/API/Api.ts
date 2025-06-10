@@ -1,6 +1,6 @@
 import type { WorkspaceInfoWithStatus, WorkspaceLoginInfo } from '@hcengineering/account'
 import { APIRequestContext } from '@playwright/test'
-import { DevUrl, LocalUrl, PlatformURI } from '../utils'
+import { DevUrl, LocalUrl, PlatformURI, PlatformWorkspaceRegion } from '../utils'
 
 export class ApiEndpoint {
   private readonly request: APIRequestContext
@@ -51,7 +51,7 @@ export class ApiEndpoint {
     const url = this.baseUrl
     const payload = {
       method: 'createWorkspace',
-      params: { workspaceName }
+      params: { workspaceName, region: PlatformWorkspaceRegion }
     }
     const headers = this.getDefaultHeaders(token)
     const response = await this.request.post(url, { data: payload, headers })

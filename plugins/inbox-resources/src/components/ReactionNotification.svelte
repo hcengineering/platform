@@ -13,14 +13,15 @@
 -->
 
 <script lang="ts">
-  import { Notification, ReactionNotificationContent } from '@hcengineering/communication-types'
+  import { Notification, ReactionNotificationContent, SocialID } from '@hcengineering/communication-types'
   import { EmojiPresenter } from '@hcengineering/emoji-resources'
   import { Card } from '@hcengineering/card'
+  import { Label } from '@hcengineering/ui'
+  import { Person } from '@hcengineering/contact'
+  import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
 
   import NotificationPreview from './preview/NotificationPreview.svelte'
   import PreviewTemplate from './preview/PreviewTemplate.svelte'
-  import { Label } from '@hcengineering/ui'
-
   import inbox from '../plugin'
 
   export let notification: Notification
@@ -28,6 +29,17 @@
 
   let content = notification.content as ReactionNotificationContent
   $: content = notification.content as ReactionNotificationContent
+
+  let author: Person | undefined
+  $: void updateAuthor(content.creator)
+
+  async function updateAuthor (socialId: SocialID): Promise<void> {
+    author = $employeeByPersonIdStore.get(socialId)
+
+    if (author === undefined) {
+      author = (await getPersonByPersonId(socialId)) ?? undefined
+    }
+  }
 </script>
 
 {#if notification.message}
