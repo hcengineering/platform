@@ -306,19 +306,7 @@ export class CalendarClient {
           hidden: false,
           externalId: val.id,
           externalUser: me,
-          default: false
-        }
-        if (val.primary === true) {
-          const primaryExists = await this.client.findOne(
-            calendar.class.ExternalCalendar,
-            {
-              createdBy: this.user.userId
-            },
-            { projection: { _id: 1 } }
-          )
-          if (primaryExists === undefined) {
-            data.default = true
-          }
+          default: val.primary ?? false
         }
         await this.client.createDoc<ExternalCalendar>(calendar.class.ExternalCalendar, calendar.space.Calendar, data)
       } else {

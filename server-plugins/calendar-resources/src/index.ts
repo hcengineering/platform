@@ -101,7 +101,7 @@ export async function OnPersonAccountCreate (txes: Tx[], control: TriggerControl
         {
           name: user.email,
           hidden: false,
-          visibility: 'public'
+          visibility: 'freeBusy'
         },
         `${user._id}_calendar` as Ref<Calendar>,
         undefined,
@@ -313,7 +313,7 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
   for (const part of event.participants) {
     const acc = accounts.find((a) => a.person === part)
     if (acc === undefined) continue
-    if (acc._id === (event.createdBy ?? event.modifiedBy)) continue
+    if (acc._id === event.user) continue
     const user = acc._id
     const calendar = getCalendar(calendars, acc._id, event.calendar)
     if (calendar === undefined) continue
