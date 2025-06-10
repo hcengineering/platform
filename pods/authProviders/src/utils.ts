@@ -32,6 +32,7 @@ export interface AuthState {
   branding?: string
   autoJoin?: boolean
   navigateUrl?: string
+  nonce?: string
 }
 
 export function safeParseAuthState (rawState: string | undefined): AuthState {
@@ -46,14 +47,15 @@ export function safeParseAuthState (rawState: string | undefined): AuthState {
   }
 }
 
-export function encodeState (ctx: any, brandings: BrandingMap): string {
+export function encodeState (ctx: any, brandings: BrandingMap, nonce: string): string {
   const host = getHost(ctx.request.headers)
   const branding = host !== undefined ? brandings[host]?.key ?? undefined : undefined
   const state: AuthState = {
     inviteId: ctx.query?.inviteId,
     branding,
     autoJoin: ctx.query?.autoJoin !== undefined,
-    navigateUrl: ctx.query?.navigateUrl
+    navigateUrl: ctx.query?.navigateUrl,
+    nonce
   }
 
   return encodeURIComponent(JSON.stringify(state))
@@ -130,4 +132,27 @@ export async function handleProviderAuth (
     measureCtx.error('failed to auth', { err, type: providerType, user })
     return ''
   }
+}
+
+const authStateTokenCookie = 'auth_state_token'
+
+export function setAuthStateTokenCookie (ctx: any, nonce: string): void {
+  ctx.cookies.set(authStateTokenCookie, nonce, {
+    httpOnly: true, // Prevents JavaScript access to cookie
+    secure: true, // Only sent over HTTPS connections
+    sameSite: 'lax', // Prevents CSRF by controlling when cookie is sent cross-site
+    signed: true, // Signs cookie with app.keys to prevent tampering
+    maxAge: 10 * 60 * 1000 // 10 minutes
+  })
+}
+
+export function validateAuthStateTokenCookie (ctx: any, expectedNonce: string | undefined): boolean {
+  const nonce = ctx.cookies.get(authStateTokenCookie)
+  ctx.cookies.set(authStateTokenCookie, null)
+
+  if (nonce === undefined || expectedNonce === undefined || nonce !== expectedNonce) {
+    return false
+  }
+
+  return true
 }
