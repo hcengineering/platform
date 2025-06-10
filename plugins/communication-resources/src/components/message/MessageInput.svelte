@@ -243,16 +243,16 @@
   function pasteAction (_: any, evt: ClipboardEvent): boolean {
     let target: HTMLElement | null = evt.target as HTMLElement
     let allowed = false
+    const hasFiles = Array.from(evt.clipboardData?.items ?? []).some((i) => i.kind === 'file')
     while (target != null) {
       target = target.parentElement
-      if (target === inputElement) {
+      if ((hasFiles && target === refContainer) || target === inputElement) {
         allowed = true
       }
     }
     if (!allowed) {
       return false
     }
-    const hasFiles = Array.from(evt.clipboardData?.items ?? []).some((i) => i.kind === 'file')
 
     if (hasFiles) {
       void loadFiles(evt)
