@@ -57,6 +57,11 @@ export async function getSecondPage (browser: Browser): Promise<Page> {
   return await userSecondContext.newPage()
 }
 
+export async function getThirdPage (browser: Browser): Promise<Page> {
+  const userSecondContext = await browser.newContext({ storageState: PlatformSettingThird })
+  return await userSecondContext.newPage()
+}
+
 export async function getNewPage (browser: Browser): Promise<Page> {
   const context = await browser.newContext({ storageState: undefined })
   return await context.newPage()
