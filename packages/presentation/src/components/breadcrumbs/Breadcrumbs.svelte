@@ -43,7 +43,7 @@
 {#each narrowModel as model, i}
   {#if hasComponent(model)}
     {@const { component, props } = model}
-    <div class="title">
+    <div class="title inline-flex min-w-6">
       {#if typeof component === 'string'}
         <Component is={component} {props} />
       {:else}

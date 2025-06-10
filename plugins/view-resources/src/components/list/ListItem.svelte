@@ -84,7 +84,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   bind:this={elem}
-  class="listGrid antiList__row row gap-2 flex-grow"
+  class="listGrid antiList__row row flex-gap-2 flex-grow"
   class:compactMode
   class:checking={checked}
   class:mListGridSelected={selected}

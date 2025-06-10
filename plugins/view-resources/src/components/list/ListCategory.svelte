@@ -490,7 +490,7 @@
       }}
     />
   {/if}
-  <Scroller horizontal shrink noFade={false}>
+  <Scroller horizontal shrink noFade={false} showOverflowArrows>
     <ExpandCollapse isExpanded={!collapsed || dragItemIndex !== undefined}>
       {#if !lastLevel}
         <slot
