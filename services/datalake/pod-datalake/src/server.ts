@@ -54,6 +54,9 @@ import { Config } from './config'
 import { createBucket, createClient, S3Bucket } from './s3'
 import { TemporaryDir } from './tempdir'
 
+const KEEP_ALIVE_TIMEOUT = 5 // seconds
+const KEEP_ALIVE_MAX = 1000
+
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
 type AsyncRequestHandler = (
@@ -129,7 +132,7 @@ export async function createServer (
   app.use(cors())
   app.use(express.json({ limit: '50mb' }))
   app.use(fileUpload({ useTempFiles: true, tempFileDir: tempDir.path }))
-  app.use(keepAlive({ timeout: 5, max: 1000 }))
+  app.use(keepAlive({ timeout: KEEP_ALIVE_TIMEOUT, max: KEEP_ALIVE_MAX }))
 
   const childLogger = ctx.logger.childLogger?.('requests', { enableConsole: 'true' })
   const requests = ctx.newChild('requests', {}, {}, childLogger)
@@ -318,5 +321,9 @@ export function listen (e: Express, port: number, host?: string): Server {
     console.log(`Service started at ${host ?? '*'}:${port}`)
   }
 
-  return host !== undefined ? e.listen(port, host, cb) : e.listen(port, cb)
+  const server = host !== undefined ? e.listen(port, host, cb) : e.listen(port, cb)
+  server.keepAliveTimeout = KEEP_ALIVE_TIMEOUT * 1000 + 1000
+  server.headersTimeout = KEEP_ALIVE_TIMEOUT * 1000 + 2000
+
+  return server
 }
