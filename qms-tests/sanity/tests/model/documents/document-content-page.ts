@@ -589,6 +589,17 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.createButton.click()
   }
 
+  async addThirdUserToMembers (spaceName: string): Promise<void> {
+    await this.page.getByRole('button', { name: spaceName }).hover()
+    await this.page.getByRole('button', { name: spaceName }).getByRole('button').click()
+    await this.editDocumentSpace.click()
+    await this.page.getByRole('button', { name: 'AJ DK 2 members' }).click()
+    await this.page.getByRole('button', { name: 'VC Velasquez Cain' }).click()
+    await this.page.keyboard.press('Escape')
+    await this.page.waitForTimeout(1000)
+    await this.saveButton.click()
+  }
+
   async checkIfTheSpaceIsVisible (spaceName: string, visible: boolean): Promise<void> {
     if (visible) {
       await expect(this.page.getByRole('button', { name: spaceName })).toBeVisible()
