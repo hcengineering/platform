@@ -91,13 +91,6 @@
     parseLinkId,
     updateFocus
   } from '@hcengineering/view-resources'
-  import type {
-    Application,
-    NavigatorModel,
-    SpecialNavModel,
-    ViewConfiguration,
-    WorkbenchTab
-  } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
@@ -115,6 +108,9 @@
   import TopMenu from './icons/TopMenu.svelte'
   import WidgetsBar from './sidebar/Sidebar.svelte'
   import { sidebarStore, SidebarVariant, syncSidebarState } from '../sidebar'
+  import { get } from 'svelte/store'
+  import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration, WorkbenchTab} from '@hcengineering/workbench';
+
   import {
     getTabDataByLocation,
     getTabLocation,
@@ -122,9 +118,9 @@
     selectTab,
     syncWorkbenchTab,
     tabIdStore,
-    tabsStore
-  } from '../workbench'
-  import { get } from 'svelte/store'
+    tabsStore,
+    updateTabUiState
+  } from '../workbench';
 
   const HIDE_NAVIGATOR = 720
   const FLOAT_ASIDE = 1024 // lg
@@ -253,6 +249,112 @@
       }
     }
   }
+
+let currentTabId: Ref<WorkbenchTab> | undefined = $tabIdStore;
+
+function saveScrollState() {
+  if (!currentTabId || !contentPanel) {
+    return;
+  }
+
+  const allScrollers = contentPanel.querySelectorAll<HTMLElement>('.scroll');
+  if (allScrollers.length === 0) {
+    return;
+  }
+  
+  console.log(`[SAVE] Tab ${currentTabId}. Found a total of ${allScrollers.length} elements with class .scroll.`);
+
+  const scrollableElements = Array.from(allScrollers).filter(
+    (el) => el.scrollHeight > el.clientHeight
+  );
+  
+  console.log(`[SAVE] Of these, ${scrollableElements.length} are actually scrollable.`);
+
+  if (scrollableElements.length > 0) {
+    const scrollPositions: Record<string, number> = {};
+    scrollableElements.forEach((scroller, index) => {
+      const id = `index-${index}`;
+      const scrollTop = scroller.scrollTop;
+      scrollPositions[id] = scrollTop;
+      console.log(`[SAVE] -> Saving for element #${id} ORIGINAL scrollTop value: ${scrollTop}`);
+    });
+
+    console.log('[SAVE] Final object to save:', scrollPositions);
+    updateTabUiState(currentTabId, { scrollPositions });
+  }
+}
+
+async function restoreScrollState() {
+  const tabId = $tabIdStore;
+  if (!tabId || !contentPanel) {
+    return;
+  }
+
+  console.log('[RESTORE] Waiting for two ticks for components to render...');
+  await tick();
+  await tick();
+
+  const tab = get(tabsStore).find((t) => t._id === tabId);
+  const savedScrollPositions = tab?.uiState?.scrollPositions;
+
+  console.log(`[RESTORE] Tab ${tabId}. Found saved positions:`, savedScrollPositions);
+
+  if (!savedScrollPositions) {
+    console.log('[RESTORE] Positions object is undefined, exiting.');
+    return;
+  }
+
+  if (Object.keys(savedScrollPositions).length === 0) {
+    console.log('[RESTORE] No saved positions (object is empty), exiting.');
+    return;
+  }
+  
+  const finalPositions = savedScrollPositions;
+  const expectedCount = Object.keys(finalPositions).length;
+  let attempts = 0;
+  const maxAttempts = 100;
+
+  function findAndApplyScroll() {
+    const allScrollers = contentPanel.querySelectorAll<HTMLElement>('.scroll');
+    const scrollableElements = Array.from(allScrollers).filter(
+      (el) => el.scrollHeight > el.clientHeight
+    );
+
+    if (scrollableElements.length === expectedCount) {
+      console.log(`[RESTORE] Success! Found ${scrollableElements.length} scrollable elements.`);
+      
+      scrollableElements.forEach((scroller, index) => {
+        const id = `index-${index}`;
+        const savedScrollTop = finalPositions[id];
+
+        if (savedScrollTop !== undefined) {
+          console.log(`[RESTORE] -> Direct assignment of scroller.scrollTop = ${savedScrollTop} for element #${id}`);
+          scroller.scrollTop = savedScrollTop;
+        }
+      });
+      return; 
+    }
+    
+    if (attempts < maxAttempts) {
+      attempts++;
+      requestAnimationFrame(findAndApplyScroll);
+    } else {
+      console.error(`[RESTORE] FAILED to wait for content to load in .scroll after ${maxAttempts} attempts.`);
+    }
+  }
+
+  findAndApplyScroll();
+}
+
+$: {
+  if (currentTabId !== $tabIdStore) {
+    console.log(`%c[SWITCH] Tab changed. Old: ${currentTabId}, New: ${$tabIdStore}`, 'color: blue; font-weight: bold;');
+
+    saveScrollState();
+    void restoreScrollState();
+    currentTabId = $tabIdStore;
+  }
+}
 
   onMount(() => {
     pushRootBarComponent('right', view.component.SearchSelector)
@@ -996,46 +1098,46 @@
             !(mobileAdaptive && $deviceInfo.isPortrait)}
           data-id={'contentPanel'}
         >
-          {#if currentApplication && currentApplication.component}
-            <Component
-              is={currentApplication.component}
-              props={{
-                currentSpace,
-                workbenchWidth
-              }}
-            />
-          {:else if specialComponent}
-            <Component
-              is={specialComponent.component}
-              props={{
-                model: navigatorModel,
-                ...specialComponent.componentProps,
-                currentSpace,
-                space: currentSpace,
-                navigationModel: specialComponent?.navigationModel,
-                workbenchWidth,
-                queryBuilder: specialComponent?.queryBuilder
-              }}
-              on:action={(e) => {
-                if (e?.detail) {
-                  const loc = getCurrentLocation()
-                  loc.query = { ...loc.query, ...e.detail }
-                  navigate(loc)
-                }
-              }}
-            />
-          {:else if currentView?.component !== undefined}
-            <Component
-              is={currentView.component}
+    {#if currentApplication && currentApplication.component}
+      <Component
+        is={currentApplication.component}
+        props={{
+          currentSpace,
+          workbenchWidth
+        }}
+      />
+    {:else if specialComponent}
+      <Component
+        is={specialComponent.component}
+        props={{
+          model: navigatorModel,
+          ...specialComponent.componentProps,
+          currentSpace,
+          space: currentSpace,
+          navigationModel: specialComponent?.navigationModel,
+          workbenchWidth,
+          queryBuilder: specialComponent?.queryBuilder
+        }}
+        on:action={(e) => {
+          if (e?.detail) {
+            const loc = getCurrentLocation()
+            loc.query = { ...loc.query, ...e.detail }
+            navigate(loc)
+          }
+        }}
+      />
+    {:else if currentView?.component !== undefined}
+      <Component
+        is={currentView.component}
               props={{ ...currentView.componentProps, currentSpace, currentView, workbenchWidth }}
-            />
-          {:else if $accessDeniedStore}
-            <div class="flex-center h-full">
-              <h2><Label label={workbench.string.AccessDenied} /></h2>
-            </div>
-          {:else}
-            <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
-          {/if}
+      />
+    {:else if $accessDeniedStore}
+      <div class="flex-center h-full">
+        <h2><Label label={workbench.string.AccessDenied} /></h2>
+      </div>
+    {:else}
+      <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
+    {/if}
         </div>
       </div>
       {#if $sidebarStore.variant === SidebarVariant.EXPANDED && !$sidebarStore.float}

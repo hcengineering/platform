@@ -37,7 +37,7 @@ import {
 } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { parseLinkId } from '@hcengineering/view-resources'
-import { type Application, workbenchId, type WorkbenchTab } from '@hcengineering/workbench'
+import { type Application, workbenchId, type WorkbenchTab, type TabUiState } from '@hcengineering/workbench'
 import { derived, get, writable } from 'svelte/store'
 
 import setting from '@hcengineering/setting'
@@ -61,6 +61,19 @@ tabIdStore.subscribe((value) => {
 locationWorkspaceStore.subscribe((workspace) => {
   tabIdStore.set(getTabFromLocalStorage(workspace ?? ''))
 })
+
+export function updateTabUiState(tabId: Ref<WorkbenchTab>, state: Partial<TabUiState>): void {
+  tabsStore.update(tabs => {
+    const tab = tabs.find(t => t._id === tabId);
+    if (tab) {
+      tab.uiState = {
+        ...(tab.uiState || {}),
+        ...state
+      };
+    }
+    return tabs;
+  });
+}
 
 const syncTabLoc = reduceCalls(async (): Promise<void> => {
   const loc = getCurrentLocation()

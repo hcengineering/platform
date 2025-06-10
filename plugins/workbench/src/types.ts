@@ -100,11 +100,17 @@ export interface WidgetTab {
 }
 
 /** @public */
+export interface TabUiState {
+  scrollPositions?: Record<string, number>;
+}
+
+/** @public */
 export interface WorkbenchTab extends Preference {
   attachedTo: AccountUuid
   location: string
   isPinned: boolean
   name?: string
+  uiState?: TabUiState;
 }
 
 /** @public */
