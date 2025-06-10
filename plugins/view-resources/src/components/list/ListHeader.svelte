@@ -149,6 +149,7 @@
           colorInherit={!$themeStore.dark && level === 0}
           accent={level === 0}
           disabled
+          shrink
           on:accent-color={(evt) => {
             accentColor = evt.detail
           }}

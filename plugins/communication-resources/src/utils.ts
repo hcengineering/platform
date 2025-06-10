@@ -188,8 +188,7 @@ function createThreadTitle (message: Message, parent: Card): string {
   const markup = jsonToMarkup(markdownToMarkup(message.content))
   const messageText = markupToText(markup).trim()
 
-  const titleFromMessage = `${messageText.slice(0, 100)}${messageText.length > 100 ? '...' : ''}`
-  return titleFromMessage.length > 0 ? titleFromMessage : `Thread from ${parent.title}`
+  return messageText.length > 0 ? messageText : `Thread from ${parent.title}`
 }
 
 export async function loadLinkPreviewData (url: string): Promise<LinkPreviewData | undefined> {

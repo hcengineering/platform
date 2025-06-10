@@ -3,14 +3,15 @@
   import { Ref, WithLookup } from '@hcengineering/core'
   import { tooltip } from '@hcengineering/ui'
 
-  import { personByIdStore } from '../..'
+  import { getPersonByPersonRefStore } from '../..'
   import { getPreviewPopup } from './utils'
 
   export let value: Ref<Person> | WithLookup<Person> | null | undefined
   export let showPopup: boolean = true
   export let inline: boolean = false
 
-  $: person = typeof value === 'string' ? ($personByIdStore.get(value) as Person) : (value as Person)
+  $: personByRefStore = typeof value === 'string' ? getPersonByPersonRefStore([value]) : undefined
+  $: person = typeof value === 'string' ? ($personByRefStore?.get(value) as Person) : (value as Person)
 </script>
 
 {#if inline}

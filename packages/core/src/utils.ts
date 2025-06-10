@@ -944,6 +944,14 @@ export function notEmpty<T> (id: T | undefined | null): id is T {
   return id !== undefined && id !== null && id !== ''
 }
 
+export function unique<T> (arr: T[]): T[] {
+  return Array.from(new Set(arr))
+}
+
+export function uniqueNotEmpty<T extends NonNullable<unknown>> (arr: Array<T | undefined | null>): T[] {
+  return unique(arr).filter(notEmpty)
+}
+
 /**
  * Return a current performance timestamp
  */

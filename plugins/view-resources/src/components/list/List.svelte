@@ -247,8 +247,8 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100%;
+    height: max-content;
     min-width: auto;
-    min-height: auto;
+    min-height: 0;
   }
 </style>

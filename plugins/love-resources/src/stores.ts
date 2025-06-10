@@ -13,8 +13,9 @@ import {
 } from '@hcengineering/love'
 import { createQuery, onClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
-import { aiBotPersonRefStore } from '@hcengineering/ai-bot-resources'
+import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
 import { type MediaSession } from '@hcengineering/media'
+import { getPersonRefByPersonId } from '@hcengineering/contact-resources'
 
 import love from './plugin'
 
@@ -61,9 +62,10 @@ export const currentMeetingMinutes = writable<MeetingMinutes | undefined>(undefi
 export const selectedRoomPlace = writable<{ _id: Ref<Room>, x: number, y: number } | undefined>(undefined)
 export const currentSession = writable<MediaSession | undefined>(undefined)
 
-function filterParticipantInfo (value: ParticipantInfo[]): ParticipantInfo[] {
+async function filterParticipantInfo (value: ParticipantInfo[]): Promise<ParticipantInfo[]> {
   const map = new Map<string, ParticipantInfo>()
-  const aiPerson = get(aiBotPersonRefStore)
+  const aiSid = get(aiBotSocialIdentityStore)
+  const aiPerson = aiSid !== undefined ? await getPersonRefByPersonId(aiSid._id) : undefined
   for (const val of value) {
     if (aiPerson !== undefined && val.person === aiPerson) {
       map.set(val._id, val)
@@ -91,8 +93,8 @@ onClient(() => {
     })
   )
   const infoPromise = new Promise<void>((resolve) =>
-    statusQuery.query(love.class.ParticipantInfo, {}, (res) => {
-      infos.set(filterParticipantInfo(res))
+    statusQuery.query(love.class.ParticipantInfo, {}, async (res) => {
+      infos.set(await filterParticipantInfo(res))
       resolve()
     })
   )

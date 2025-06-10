@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { Person, getCurrentEmployee } from '@hcengineering/contact'
-  import { UserInfo, personByIdStore } from '@hcengineering/contact-resources'
-  import { Class, Doc, IdMap, Ref } from '@hcengineering/core'
+  import { UserInfo, getPersonByPersonRef } from '@hcengineering/contact-resources'
+  import { Class, Doc, Ref } from '@hcengineering/core'
 
   import {
     IconArrowLeft,
@@ -73,10 +73,12 @@
   export let room: Room
 
   const client = getClient()
-  function getPerson (info: ParticipantInfo | undefined, employees: IdMap<Person>): Person | undefined {
-    if (info !== undefined) {
-      return employees.get(info.person)
+  async function getPerson (info: ParticipantInfo | undefined): Promise<Person | null> {
+    if (info === undefined) {
+      return null
     }
+
+    return await getPersonByPersonRef(info.person)
   }
 
   let joined: boolean = false
@@ -128,7 +130,7 @@
   }
 
   async function connect (): Promise<void> {
-    await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
+    await tryConnect($myInfo, room, info, $myRequests, $invites)
     dispatch('close')
   }
 
@@ -180,16 +182,19 @@
 <div class="antiPopup room-popup">
   <div class="room-label"><Label label={love.string.Room} /></div>
   <div class="title overflow-label">
-    {getRoomName(room, $personByIdStore)}
+    {#await getRoomName(room) then name}
+      {name}
+    {/await}
   </div>
   <div class="room-popup__content">
     <Scroller padding={'0.5rem'} stickedScrollBars>
       <div class="room-popup__content-grid">
         {#each info as inf}
-          {@const person = getPerson(inf, $personByIdStore)}
-          {#if person}
-            <div class="person"><UserInfo value={person} size={'medium'} showStatus={false} /></div>
-          {/if}
+          {#await getPerson(inf) then person}
+            {#if person}
+              <div class="person"><UserInfo value={person} size={'medium'} showStatus={false} /></div>
+            {/if}
+          {/await}
         {/each}
       </div>
     </Scroller>

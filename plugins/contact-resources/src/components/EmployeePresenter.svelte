@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Person } from '@hcengineering/contact'
+  import { Employee, Person } from '@hcengineering/contact'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import ui, { IconSize } from '@hcengineering/ui'
-  import { personByIdStore, PersonLabelTooltip } from '..'
+  import { employeeByIdStore, PersonLabelTooltip } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import contact from '../plugin'
   import { getPreviewPopup } from './person/utils'
@@ -30,10 +30,8 @@
   const client = getClient()
   const h = client.getHierarchy()
 
-  $: person = typeof value === 'string' ? ($personByIdStore.get(value) as Person) : (value as Person)
-
+  $: person = typeof value === 'string' ? $employeeByIdStore.get(value as Ref<Employee>) : (value as Person)
   $: employeeValue = person != null ? h.as(person, contact.mixin.Employee) : undefined
-
   $: active = employeeValue?.active ?? false
 </script>
 

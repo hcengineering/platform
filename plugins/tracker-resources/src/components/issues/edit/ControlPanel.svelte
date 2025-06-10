@@ -13,14 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeBox, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { EmployeeBox, getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
   import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
-
+  import { Person } from '@hcengineering/contact'
   import tags from '@hcengineering/tags'
   import type { Issue } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr, ObjectBox, restrictionStore } from '@hcengineering/view-resources'
+
   import tracker from '../../../plugin'
   import ComponentEditor from '../../components/ComponentEditor.svelte'
   import MilestoneEditor from '../../milestones/MilestoneEditor.svelte'
@@ -93,7 +94,14 @@
   }
 
   $: updateKeys(issue._class, ignoreKeys)
-  $: creatorPerson = issue.createdBy !== undefined ? $personRefByPersonIdStore.get(issue.createdBy) : undefined
+  let creatorPersonRef: Ref<Person> | undefined
+  $: if (issue.createdBy !== undefined) {
+    getPersonRefByPersonIdCb(issue.createdBy, (ref) => {
+      creatorPersonRef = ref ?? undefined
+    })
+  } else {
+    creatorPersonRef = undefined
+  }
 </script>
 
 <div class="popupPanel-body__aside-grid">
@@ -157,7 +165,7 @@
     <Label label={core.string.CreatedBy} />
   </span>
   <EmployeeBox
-    value={creatorPerson}
+    value={creatorPersonRef}
     label={core.string.CreatedBy}
     kind={'link'}
     size={'medium'}

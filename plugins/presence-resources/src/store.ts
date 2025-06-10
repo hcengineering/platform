@@ -16,7 +16,7 @@
 import { type Doc, type Ref } from '@hcengineering/core'
 import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { type PresenceData } from '@hcengineering/presence'
-import { personByIdStore } from '@hcengineering/contact-resources'
+import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { type Readable, derived, writable, get } from 'svelte/store'
 
 import type { PersonRoomPresence, Room, RoomPresence, MyDataItem } from './types'
@@ -29,7 +29,7 @@ export const otherPresence = writable<PersonPresenceMap>(new Map())
 export const followee = writable<Ref<Person> | undefined>(undefined)
 
 const personDataMap = new Map<Ref<Person>, Map<string, any>>()
-const followeeDataHandlers = new Map<string, Set<(data: any) => void>>()
+const followeeDataHandlers = new Map<string, Set<(data: any) => Promise<void>>>()
 
 export const presenceByObjectId = derived<Readable<PersonPresenceMap>, Map<Ref<Doc>, PersonRoomPresence[]>>(
   otherPresence,
@@ -100,13 +100,13 @@ export function onPersonData (person: Ref<Person>, topic: string, data: any): vo
     const handlers = followeeDataHandlers.get(topic)
     if (handlers !== undefined) {
       for (const handler of handlers) {
-        handler(data)
+        void handler(data)
       }
     }
   }
 }
 
-export function followeeDataSubscribe (topic: string, handler: (data: any) => void): void {
+export function followeeDataSubscribe (topic: string, handler: (data: any) => Promise<void>): void {
   const handlers = followeeDataHandlers.get(topic)
   if (handlers !== undefined) {
     handlers.add(handler)
@@ -119,13 +119,13 @@ export function followeeDataSubscribe (topic: string, handler: (data: any) => vo
     if (followeeData !== undefined) {
       const data = followeeData.get(topic)
       if (data !== undefined) {
-        handler(data)
+        void handler(data)
       }
     }
   }
 }
 
-export function followeeDataUnsubscribe (topic: string, handler: (data: any) => void): void {
+export function followeeDataUnsubscribe (topic: string, handler: (data: any) => Promise<void>): void {
   const handlers = followeeDataHandlers.get(topic)
   if (handlers !== undefined) {
     handlers.delete(handler)
@@ -143,7 +143,7 @@ export function toggleFollowee (person: Ref<Person> | undefined): void {
         const handlers = followeeDataHandlers.get(topic)
         if (handlers !== undefined) {
           for (const handler of handlers) {
-            handler(data)
+            void handler(data)
           }
         }
       }
@@ -151,19 +151,19 @@ export function toggleFollowee (person: Ref<Person> | undefined): void {
   } else {
     for (const handlers of followeeDataHandlers.values()) {
       for (const handler of handlers) {
-        handler(undefined)
+        void handler(undefined)
       }
     }
   }
 }
 
-export function getFollowee (): Person | undefined {
+export async function getFollowee (): Promise<Person | undefined> {
   const followeeId = get(followee)
   if (followeeId === undefined) {
     return undefined
   }
-  const personMap = get(personByIdStore)
-  return personMap.get(followeeId)
+
+  return (await getPersonByPersonRef(followeeId)) ?? undefined
 }
 
 export function publishData (topic: string, data: any): void {

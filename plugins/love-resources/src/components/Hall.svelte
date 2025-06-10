@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { Contact, Person } from '@hcengineering/contact'
-  import { personByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import love, { Floor as FloorType, Office, Room, RoomInfo, isOffice } from '@hcengineering/love'
   import { getClient } from '@hcengineering/presentation'
@@ -57,8 +56,7 @@
     if (info === undefined) return
     const room = $rooms.find((p) => p._id === info.room)
     if (room === undefined) return
-    tryConnect(
-      $personByIdStore,
+    await tryConnect(
       $myInfo,
       room,
       $infos.filter((p) => p.room === room._id),
@@ -77,7 +75,7 @@
       await connectToSession(sessionId)
     } else if (meetId) {
       await waitForOfficeLoaded()
-      await connectToMeeting($personByIdStore, $myInfo, $infos, $myRequests, $invites, meetId)
+      await connectToMeeting($myInfo, $infos, $myRequests, $invites, meetId)
     }
   })
 </script>

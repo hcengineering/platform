@@ -206,6 +206,7 @@
       margin-right: var(--spacing-1);
       width: var(--global-min-Size);
       height: var(--global-min-Size);
+      min-width: var(--global-min-Size);
       color: var(--global-primary-TextColor);
 
       &__tag {
@@ -275,6 +276,7 @@
 
       .hulyNavItem-icon {
         width: 0.75rem;
+        min-width: 0.75rem;
         margin-right: 0.625rem;
       }
     }
@@ -285,6 +287,7 @@
         margin-right: var(--spacing-0_75);
         width: var(--global-extra-small-Size);
         height: var(--global-extra-small-Size);
+        min-width: var(--global-extra-small-Size);
         background-color: var(--global-ui-BackgroundColor);
         border-radius: var(--extra-small-BorderRadius);
       }

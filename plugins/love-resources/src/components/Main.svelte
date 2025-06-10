@@ -16,7 +16,6 @@
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import presentation from '@hcengineering/presentation'
-  import { personByIdStore } from '@hcengineering/contact-resources'
   import { RoomType } from '@hcengineering/love'
 
   import Hall from './Hall.svelte'
@@ -54,7 +53,7 @@
       $myInfo.sessionId === getMetadata(presentation.metadata.SessionId)
     ) {
       const info = $infos.filter((p) => p.room === room._id)
-      await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
+      await tryConnect($myInfo, room, info, $myRequests, $invites)
     }
   })
 </script>

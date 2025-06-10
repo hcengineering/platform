@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Contact, Person } from '@hcengineering/contact'
-  import { PersonId, Ref } from '@hcengineering/core'
+  import { Employee } from '@hcengineering/contact'
+  import { notEmpty, PersonId, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { ButtonKind, ButtonSize, IconSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
-  import { personRefByPersonIdStore, primarySocialIdByPersonRefStore } from '../utils'
+  import { employeeByPersonIdStore, primarySocialIdByEmployeeRefStore } from '../utils'
   import UserBox from './UserBox.svelte'
 
   export let label: IntlString = contact.string.Employee
@@ -37,20 +37,18 @@
       ? {}
       : {
           _id: {
-            $in: include
-              .map((personId) => $personRefByPersonIdStore.get(personId))
-              .filter((p) => p !== undefined) as Ref<Contact>[]
+            $in: include.map((personId) => $employeeByPersonIdStore.get(personId)?._id).filter(notEmpty)
           }
         }
-  $: selectedEmp = value != null ? $personRefByPersonIdStore.get(value) : value
+  $: selectedEmp = value != null ? $employeeByPersonIdStore.get(value)?._id : value
 
   const dispatch = createEventDispatcher()
 
-  function change (e: CustomEvent<Ref<Person> | null>): void {
+  function change (e: CustomEvent<Ref<Employee> | null>): void {
     if (e.detail === null) {
       dispatch('change', null)
     } else {
-      const socialString = $primarySocialIdByPersonRefStore.get(e.detail)
+      const socialString = $primarySocialIdByEmployeeRefStore.get(e.detail)
       if (socialString === undefined) {
         console.error('Social id not found for person', e.detail)
         return

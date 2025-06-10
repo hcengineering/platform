@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Person } from '@hcengineering/contact'
-  import { personRefByPersonIdStore, PersonRefPresenter } from '@hcengineering/contact-resources'
+  import { getPersonRefsByPersonIdsCb, PersonRefPresenter } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { createQuery, MessageViewer } from '@hcengineering/presentation'
   import { Request, RequestDecisionComment } from '@hcengineering/request'
@@ -22,17 +22,24 @@
   import request from '../plugin'
 
   export let value: Request
-  let comments = new Map<Ref<Person> | undefined, RequestDecisionComment>()
+  let comments: RequestDecisionComment[] = []
+  let commentsByPersonRefs = new Map<Ref<Person> | undefined, RequestDecisionComment>()
 
   const query = createQuery()
   $: query.query(request.mixin.RequestDecisionComment, { attachedTo: value._id }, (res) => {
-    comments = new Map(
-      res.map((r) => {
-        const person = $personRefByPersonIdStore.get(r.modifiedBy)
-        return [person, r]
-      })
-    )
+    comments = res
   })
+  $: getPersonRefsByPersonIdsCb(
+    comments.map((it) => it.modifiedBy),
+    (res) => {
+      commentsByPersonRefs = new Map(
+        comments.map((c) => {
+          const personRef = res.get(c.modifiedBy)
+          return [personRef, c]
+        })
+      )
+    }
+  )
 
   interface RequestDecision {
     employee: Ref<Person>
@@ -66,7 +73,7 @@
     </tr>
   </thead>
   <tbody>
-    {#each convert(value, comments) as requested}
+    {#each convert(value, commentsByPersonRefs) as requested}
       <tr class="antiTable-body__row">
         <td><PersonRefPresenter value={requested.employee} /></td>
         <td><BooleanIcon value={requested.decision} /></td>

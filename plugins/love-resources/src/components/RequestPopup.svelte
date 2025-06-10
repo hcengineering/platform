@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { formatName, getCurrentEmployee } from '@hcengineering/contact'
-  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, getPersonByPersonRef, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
   import { getClient, playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { JoinRequest, RequestStatus } from '@hcengineering/love'
@@ -25,7 +25,8 @@
 
   export let request: JoinRequest
 
-  $: person = $personByIdStore.get(request.person)
+  $: personByRefStore = getPersonByPersonRefStore([request.person])
+  $: person = $personByRefStore.get(request.person)
 
   const client = getClient()
   let stopSound: (() => void) | null = null
@@ -33,9 +34,8 @@
   async function accept (): Promise<void> {
     await client.update(request, { status: RequestStatus.Approved })
     if (request.room === $myOffice?._id && !$isConnected) {
-      const me = getCurrentEmployee()
-      const person = $personByIdStore.get(me)
-      if (person === undefined) return
+      const person = await getPersonByPersonRef(getCurrentEmployee())
+      if (person == null) return
       await connectRoom(0, 0, $myInfo, person, $myOffice)
     }
   }

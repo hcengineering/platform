@@ -15,7 +15,7 @@
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
-  import { AccountArrayEditor, personRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import { Asset } from '@hcengineering/platform'
   import core, {
     Data,
@@ -63,7 +63,7 @@
 
   let members: AccountUuid[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount().uuid]
-  $: membersPersons = members.map((m) => $personRefByAccountUuidStore.get(m)).filter(notEmpty)
+  $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
   let owners: AccountUuid[] =
     project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount().uuid]
   let rolesAssignment: RolesAssignment = {}
