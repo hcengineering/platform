@@ -1781,10 +1781,10 @@
     &.align-left { text-align: left; }
     &.align-center { text-align: center; }
     &.align-right { text-align: right; }
-    &:has(:where(.cropped-text-presenters, .cropped-text-presenter)) { max-width: 50cqw; }
+    &:has(.cropped-text-presenters, .cropped-text-presenter) { max-width: 50cqw; }
   }
-  &:has(td:nth-child(4)) td:has(:where(.cropped-text-presenters, .cropped-text-presenter)) { max-width: 40cqw; }
-  &:has(td:nth-child(6)) td:has(:where(.cropped-text-presenters, .cropped-text-presenter)) { max-width: 30cqw; }
+  &:has(td:nth-child(4)) td:has(.cropped-text-presenters, .cropped-text-presenter) { max-width: 40cqw; }
+  &:has(td:nth-child(6)) td:has(.cropped-text-presenters, .cropped-text-presenter) { max-width: 30cqw; }
 
   &.editable {
     th, td, tr {
