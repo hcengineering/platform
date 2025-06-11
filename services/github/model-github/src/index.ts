@@ -37,7 +37,8 @@ import {
   type Hyperlink,
   type Markup,
   type Ref,
-  type Timestamp
+  type Timestamp,
+  AccountRole
 } from '@hcengineering/core'
 
 import { type Person } from '@hcengineering/contact'
@@ -849,12 +850,14 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: tracker.extensions.IssueListHeader,
-    component: github.component.AuthenticationCheck
+    component: github.component.AuthenticationCheck,
+    accessLevel: AccountRole.User
   })
 
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: tracker.extensions.EditIssueHeader,
     component: github.component.AuthenticationCheck,
+    accessLevel: AccountRole.User,
     props: {
       kind: 'ghost'
     }
