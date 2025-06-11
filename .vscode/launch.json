@@ -765,12 +765,26 @@
         "BUCKETS": "blobs,eu|http://localhost:9000?accessKey=minioadmin&secretKey=minioadmin",
         "ACCOUNTS_URL": "http://localhost:3000",
         "STATS_URL": "http://huly.local:4900",
-        "STREAM_URL": "http://huly.local:1080/recording"
+        "QUEUE_CONFIG": "localhost:19092"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/services/datalake/pod-datalake"
+    },
+    {
+      "name": "Debug media",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "SECRET": "secret",
+        "QUEUE_CONFIG": "localhost:19092"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/media"
     },
     {
       "type": "chrome",

@@ -820,6 +820,9 @@ importers:
       '@rush-temp/pod-mail':
         specifier: file:./projects/pod-mail.tgz
         version: file:projects/pod-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
+      '@rush-temp/pod-media':
+        specifier: file:./projects/pod-media.tgz
+        version: file:projects/pod-media.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
       '@rush-temp/pod-msg2file':
         specifier: file:./projects/pod-msg2file.tgz
         version: file:projects/pod-msg2file.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
@@ -4796,7 +4799,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-datalake@file:projects/pod-datalake.tgz':
-    resolution: {integrity: sha512-zoxH/Eynp5qJ5QBY1jrza84lArliEXgnAgSrJfFSiQG47xj71LEMFORQSdxndAsbwNhQ44JvJU4XpTilKSnpYg==, tarball: file:projects/pod-datalake.tgz}
+    resolution: {integrity: sha512-RGpObF2SDrv7PK27GOas+okVOVLiJ2BxR2l1pTDgwdJyPxKkQ8yqA/ZMlsvWINj+SAB7Nh7fNYUB488GmL0P0w==, tarball: file:projects/pod-datalake.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-export@file:projects/pod-export.tgz':
@@ -4833,6 +4836,10 @@ packages:
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
     resolution: {integrity: sha512-WhDC0I0bu1HeY3HN/yz6xQHsanXYf0ZAWEToJuKb3IAuLTsq1k/um2url73TyBYmWT+XbzKDRMh+AWM5xkav+w==, tarball: file:projects/pod-mail.tgz}
+    version: 0.0.0
+
+  '@rush-temp/pod-media@file:projects/pod-media.tgz':
+    resolution: {integrity: sha512-ofWL7P24lILBgkuwK6nIDCM73vkISUZyLm9qiJKXHcGSe8wZVK3jgfli8YbeyhShcwNx595FFkKfkEFfV9DBCw==, tarball: file:projects/pod-media.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-msg2file@file:projects/pod-msg2file.tgz':
@@ -22566,6 +22573,37 @@ snapshots:
       - '@swc/core'
       - '@swc/wasm'
       - aws-crt
+      - babel-jest
+      - babel-plugin-macros
+      - node-notifier
+      - supports-color
+
+  '@rush-temp/pod-media@file:projects/pod-media.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 22.15.29
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      cross-env: 7.0.3
+      dotenv: 16.0.3
+      esbuild: 0.24.2
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-node: 11.1.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      kafkajs: 2.2.4
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      ts-node: 10.9.2(@types/node@22.15.29)(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@swc/core'
+      - '@swc/wasm'
       - babel-jest
       - babel-plugin-macros
       - node-notifier
