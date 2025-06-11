@@ -24,14 +24,14 @@ func Test_ParseConfig(t *testing.T) {
 	tests := []struct {
 		name     string
 		config   string
-		clientId string
+		clientID string
 		region   string
 		want     queue.Config
 	}{
 		{
 			name:     "Basic broker configuration",
 			config:   "broker1:9092,broker2:9092",
-			clientId: "test-client",
+			clientID: "test-client",
 			region:   "us-west",
 			want: queue.Config{
 				Postfix:  "",
@@ -43,7 +43,7 @@ func Test_ParseConfig(t *testing.T) {
 		{
 			name:     "Broker configuration with postfix",
 			config:   "broker1:9092,broker2:9092;custom-postfix",
-			clientId: "test-client",
+			clientID: "test-client",
 			region:   "eu-central",
 			want: queue.Config{
 				Postfix:  "custom-postfix",
@@ -55,7 +55,7 @@ func Test_ParseConfig(t *testing.T) {
 		{
 			name:     "Single broker configuration",
 			config:   "broker1:9092",
-			clientId: "single-broker-client",
+			clientID: "single-broker-client",
 			region:   "asia-east",
 			want: queue.Config{
 				Postfix:  "",
@@ -67,7 +67,7 @@ func Test_ParseConfig(t *testing.T) {
 		{
 			name:     "Multiple semicolons in config",
 			config:   "broker1:9092,broker2:9092;postfix;extra",
-			clientId: "test-client",
+			clientID: "test-client",
 			region:   "us-east",
 			want: queue.Config{
 				Postfix:  "postfix",
@@ -80,7 +80,7 @@ func Test_ParseConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := queue.ParseConfig(tt.config, tt.clientId, tt.region)
+			got := queue.ParseConfig(tt.config, tt.clientID, tt.region)
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ParseConfig() = %v, want %v", got, tt.want)

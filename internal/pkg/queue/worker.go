@@ -16,9 +16,7 @@ package queue
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"time"
 
 	"github.com/hcengineering/stream/internal/pkg/config"
 	"github.com/hcengineering/stream/internal/pkg/log"
@@ -28,22 +26,27 @@ import (
 	"go.uber.org/zap"
 )
 
+// Worker is a queue processing worker
 type Worker struct {
 	logger   *zap.Logger
 	cfg      *config.Config
 	consumer Consumer
+	producer Producer
 }
 
-func NewWorker(ctx context.Context, consumer Consumer, cfg *config.Config) *Worker {
+// NewWorker creates new worker
+func NewWorker(ctx context.Context, consumer Consumer, producer Producer, cfg *config.Config) *Worker {
 	logger := log.FromContext(ctx).With(zap.String("queue", "worker"))
 
 	return &Worker{
 		logger:   logger,
 		cfg:      cfg,
 		consumer: consumer,
+		producer: producer,
 	}
 }
 
+// Start queue processing
 func (w *Worker) Start(ctx context.Context) error {
 	w.logger.Info("starting worker")
 	defer w.logger.Info("worker stopped")
@@ -67,8 +70,6 @@ func (w *Worker) Start(ctx context.Context) error {
 func (w *Worker) fetchAndProcessMessage(ctx context.Context) error {
 	// TODO We should use Fetch and Commit here but as long processing
 	// time is longer than the max poll interval, we have to use Read.
-	//	msg, err := w.consumer.Fetch(ctx)
-	commit := false
 	msg, err := w.consumer.Read(ctx)
 	if err != nil {
 		return fmt.Errorf("read message: %w", err)
@@ -81,48 +82,24 @@ func (w *Worker) fetchAndProcessMessage(ctx context.Context) error {
 	)
 	logger.Debug("message", zap.ByteString("message", msg.Value))
 
-	_, err = w.processMessage(ctx, msg, logger)
+	err = w.processMessage(ctx, msg, logger)
 	if err != nil {
 		w.logger.Error("failed to process message", zap.Error(err))
-	}
-
-	if commit {
-		if err := w.commitMessage(ctx, msg, logger); err != nil {
-			return errors.Wrapf(err, "failed to commit message")
-		}
-	}
-
-	return err
-}
-
-func (w *Worker) commitMessage(ctx context.Context, msg kafka.Message, logger *zap.Logger) error {
-	maxRetries := 3
-	for i := range maxRetries {
-		err := w.consumer.Commit(ctx, msg)
-		if err == nil {
-			return nil
-		}
-
-		if i < maxRetries-1 {
-			logger.Error("failed to commit message", zap.Error(err), zap.Int("attempt", i+1))
-			time.Sleep(time.Duration(100*(i+1)) * time.Millisecond)
-		} else {
-			return err
-		}
+		return err
 	}
 
 	return nil
 }
 
-func (w *Worker) processMessage(ctx context.Context, msg kafka.Message, logger *zap.Logger) (bool, error) {
+func (w *Worker) processMessage(ctx context.Context, msg kafka.Message, logger *zap.Logger) error {
 	var req TranscodeRequest
 	if err := json.Unmarshal(msg.Value, &req); err != nil {
-		return true, fmt.Errorf("parse failed: %w", err)
+		return fmt.Errorf("parse failed: %w", err)
 	}
 
-	if mediaconvert.IsSupportedMediaType(req.ContentType) == false {
+	if !mediaconvert.IsSupportedMediaType(req.ContentType) {
 		logger.Debug("unsupported content type", zap.String("contentType", req.ContentType))
-		return true, nil
+		return nil
 	}
 
 	task := mediaconvert.Task{
@@ -134,5 +111,5 @@ func (w *Worker) processMessage(ctx context.Context, msg kafka.Message, logger *
 	transcoder := mediaconvert.NewTranscoder(ctx, w.cfg)
 	transcoder.Transcode(ctx, &task)
 
-	return true, nil
+	return nil
 }

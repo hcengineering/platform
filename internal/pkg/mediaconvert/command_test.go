@@ -59,7 +59,6 @@ func Test_BuildVideoCommand_Raw_NoTranscode(t *testing.T) {
 		Threads:   4,
 		Level:     resconv.Level("651:490"),
 		Transcode: false,
-		WithAudio: true,
 	})
 
 	const expected = `"-threads 4 -i pipe:0 -c:a copy -c:v copy -f hls -hls_time 5 -hls_flags split_by_time -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
@@ -75,7 +74,6 @@ func Test_BuildVideoCommand_Raw_Transcode(t *testing.T) {
 		Threads:   4,
 		Level:     resconv.Level("651:490"),
 		Transcode: true,
-		WithAudio: true,
 	})
 
 	const expected = `-threads 4 -i pipe:0 -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`

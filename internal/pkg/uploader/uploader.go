@@ -16,7 +16,6 @@ package uploader
 
 import (
 	"context"
-	"errors"
 	"hash/fnv"
 	"os"
 	"path/filepath"
@@ -28,6 +27,7 @@ import (
 
 	"github.com/hcengineering/stream/internal/pkg/log"
 	"github.com/hcengineering/stream/internal/pkg/storage"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"k8s.io/utils/inotify"
 )

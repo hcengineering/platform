@@ -108,7 +108,7 @@ func main() {
 	config := queue.ParseConfig(cfg.QueueConfig, "stream", cfg.Region)
 	logger.Info("using queue config", zap.Any("config", config))
 	consumer := queue.NewConsumer(ctx, queue.TopicTranscodeRequest, "stream", config)
-	//	producer := queue.NewProducer(queue.TopicTranscodeResult, config)
+	producer := queue.NewProducer(ctx, queue.TopicTranscodeResult, config)
 
 	wg.Add(1)
 	go func() {
@@ -117,7 +117,7 @@ func main() {
 		logger.Info("queue worker started")
 		defer logger.Info("queue worker finished")
 
-		worker := queue.NewWorker(ctx, consumer, cfg)
+		worker := queue.NewWorker(ctx, consumer, producer, cfg)
 		if err := worker.Start(ctx); err != nil {
 			logger.Error("queue worker error", zap.Error(err))
 			cancel()

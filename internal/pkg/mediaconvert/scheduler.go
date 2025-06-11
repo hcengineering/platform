@@ -181,9 +181,9 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		logger.Error("no video stream found in the file", zap.String("filepath", sourceFilePath))
 		_ = os.RemoveAll(destinationFolder)
 		return
-	} else {
-		logger.Debug("video stream found", zap.String("codec", videoStream.CodecName), zap.Int("width", videoStream.Width), zap.Int("height", videoStream.Height))
 	}
+
+	logger.Debug("video stream found", zap.String("codec", videoStream.CodecName), zap.Int("width", videoStream.Width), zap.Int("height", videoStream.Height))
 
 	var res = fmt.Sprintf("%v:%v", videoStream.Width, videoStream.Height)
 	var codec = videoStream.CodecName
@@ -193,7 +193,6 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		OutputDir:     p.cfg.OutputDir,
 		Level:         level,
 		Transcode:     !IsHLSSupportedVideoCodec(codec),
-		WithAudio:     audioStream != nil,
 		ScalingLevels: append(resconv.SubLevels(res), level),
 		UploadID:      task.ID,
 		Threads:       p.cfg.MaxThreadCount,
@@ -280,6 +279,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	}
 }
 
+// IsHLSSupportedVideoCodec checks whether the codec is supported by HLS
 func IsHLSSupportedVideoCodec(codec string) bool {
 	switch codec {
 	case "h264", "h265":

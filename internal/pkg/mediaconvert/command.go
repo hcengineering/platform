@@ -39,7 +39,6 @@ type Options struct {
 	Transcode     bool
 	Threads       int
 	UploadID      string
-	WithAudio     bool
 }
 
 func newFfmpegCommand(ctx context.Context, in io.Reader, args []string) (*exec.Cmd, error) {
@@ -101,17 +100,17 @@ func BuildRawVideoCommand(opts *Options) []string {
 			"-hls_list_size", "0",
 			"-hls_segment_filename", filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", opts.Level)),
 			filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, opts.Level)))
-	} else {
-		return append(buildCommonCommand(opts),
-			"-c:a", "copy", // Copy audio stream
-			"-c:v", "copy", // Copy video stream
-			"-f", "hls",
-			"-hls_time", "5",
-			"-hls_flags", "split_by_time",
-			"-hls_list_size", "0",
-			"-hls_segment_filename", filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", opts.Level)),
-			filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, opts.Level)))
 	}
+
+	return append(buildCommonCommand(opts),
+		"-c:a", "copy", // Copy audio stream
+		"-c:v", "copy", // Copy video stream
+		"-f", "hls",
+		"-hls_time", "5",
+		"-hls_flags", "split_by_time",
+		"-hls_list_size", "0",
+		"-hls_segment_filename", filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", opts.Level)),
+		filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, opts.Level)))
 }
 
 // BuildThumbnailCommand creates a command that creates a thumbnail for the input video
@@ -131,14 +130,6 @@ func BuildScalingVideoCommand(opts *Options) []string {
 	for _, level := range opts.ScalingLevels {
 		if level == opts.Level {
 			continue
-		}
-
-		//		result = append(result, "-map", "0:v")
-		if opts.WithAudio {
-			//			result = append(result,
-			//				"-map", "0:a",
-			//				"-c:a", "aac",
-			//			)
 		}
 
 		result = append(result,

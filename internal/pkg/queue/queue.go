@@ -24,43 +24,52 @@ import (
 	"go.uber.org/zap"
 )
 
+// TopicTranscodeRequest is the name of the transcode requests topic.
 const TopicTranscodeRequest = "stream.transcode.request"
+
+// TopicTranscodeResult is the name of the transcode results topic.
 const TopicTranscodeResult = "stream.transcode.result"
 
+// TranscodeRequest represents transcode request.
 type TranscodeRequest struct {
 	BlobID        string
 	WorkspaceUUID string
 	ContentType   string
 }
 
+// TranscodeResult represents transcode result.
 type TranscodeResult struct {
 	BlobID        string
 	WorkspaceUUID string
 }
 
+// Consumer provides a consumer interface to a Kafka queue
 type Consumer interface {
-	//	Heartbeat(ctx context.Context) error
 	Read(ctx context.Context) (kafka.Message, error)
 	Fetch(ctx context.Context) (kafka.Message, error)
 	Commit(ctx context.Context, msg kafka.Message) error
 	Close() error
 }
 
+// Producer provides a producer interface to a Kafka queue
 type Producer interface {
 	Send(ctx context.Context, workspaceID string, data any) error
 	Close() error
 }
 
+// TConsumer implements Consumer interface
 type TConsumer struct {
 	topic  string
 	reader *kafka.Reader
 }
 
+// TProducer implements Producer interface
 type TProducer struct {
 	topic  string
 	writer *kafka.Writer
 }
 
+// Logger is kafka.Logger implementation
 type Logger struct {
 	logger *zap.Logger
 }
@@ -76,6 +85,7 @@ func NewLogger(ctx context.Context) kafka.Logger {
 	}
 }
 
+// Printf logs a message
 func (l *Logger) Printf(msg string, args ...any) {
 	l.logger.Sugar().Debugf(msg, args...)
 }
@@ -100,18 +110,22 @@ func NewConsumer(ctx context.Context, topic, group string, config Config) Consum
 	}
 }
 
+// Read reads (fetch and commit) a queue message.
 func (c *TConsumer) Read(ctx context.Context) (kafka.Message, error) {
 	return c.reader.ReadMessage(ctx)
 }
 
+// Fetch fetches a queue message.
 func (c *TConsumer) Fetch(ctx context.Context) (kafka.Message, error) {
 	return c.reader.FetchMessage(ctx)
 }
 
+// Commit commits the queue message.
 func (c *TConsumer) Commit(ctx context.Context, msg kafka.Message) error {
 	return c.reader.CommitMessages(ctx, msg)
 }
 
+// Close closes the consumer.
 func (c *TConsumer) Close() error {
 	return c.reader.Close()
 }
@@ -131,6 +145,7 @@ func NewProducer(ctx context.Context, topic string, config Config) Producer {
 	}
 }
 
+// Send sends a message to the queue topic
 func (p *TProducer) Send(ctx context.Context, workspaceID string, data any) error {
 	value, err := json.Marshal(data)
 	if err != nil {
@@ -146,6 +161,7 @@ func (p *TProducer) Send(ctx context.Context, workspaceID string, data any) erro
 	)
 }
 
+// Close closes the producer.
 func (p *TProducer) Close() error {
 	return p.writer.Close()
 }

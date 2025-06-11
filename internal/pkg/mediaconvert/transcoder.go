@@ -52,7 +52,7 @@ func NewTranscoder(ctx context.Context, cfg *config.Config) *Transcoder {
 	return p
 }
 
-// TODO: add a factory pattern to process tasks by different media type
+// Transcode handles one transcoding task
 func (p *Transcoder) Transcode(ctx context.Context, task *Task) {
 	var logger = p.logger.With(zap.String("task-id", task.ID))
 
@@ -128,9 +128,9 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) {
 		logger.Error("no video stream found in the file", zap.String("filepath", sourceFilePath))
 		_ = os.RemoveAll(destinationFolder)
 		return
-	} else {
-		logger.Debug("video stream found", zap.String("codec", videoStream.CodecName), zap.Int("width", videoStream.Width), zap.Int("height", videoStream.Height))
 	}
+
+	logger.Debug("video stream found", zap.String("codec", videoStream.CodecName), zap.Int("width", videoStream.Width), zap.Int("height", videoStream.Height))
 
 	audioStream := probe.FirstAudioStream()
 	if audioStream == nil {
@@ -146,7 +146,6 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) {
 		OutputDir:     p.cfg.OutputDir,
 		Level:         level,
 		Transcode:     !IsHLSSupportedVideoCodec(codec),
-		WithAudio:     audioStream != nil,
 		ScalingLevels: append(sublevels, level),
 		UploadID:      task.ID,
 		Threads:       p.cfg.MaxThreadCount,

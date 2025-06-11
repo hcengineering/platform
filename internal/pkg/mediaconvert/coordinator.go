@@ -101,7 +101,6 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 		Threads:       s.conf.MaxThreadCount,
 		UploadID:      info.ID,
 		Transcode:     true,
-		WithAudio:     true,
 		Level:         level,
 		ScalingLevels: scaling,
 	}

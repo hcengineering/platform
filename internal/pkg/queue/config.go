@@ -23,6 +23,7 @@ type Config struct {
 	Region   string
 }
 
+// ParseConfig parses the queue config string
 func ParseConfig(config, clientID, region string) Config {
 	var parts = strings.Split(config, ";")
 	var brokers = strings.Split(parts[0], ",")

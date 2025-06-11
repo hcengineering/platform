@@ -33,8 +33,8 @@ import (
 )
 
 type uploadResult struct {
-	key   string `json:"key"`
-	error string `json:"error"`
+	key   string
+	error string
 }
 
 // DatalakeStorage represents datalake storage
@@ -139,7 +139,7 @@ func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string) error {
 
 	for _, res := range result {
 		if res.error != "" {
-			return fmt.Errorf("upload error: %v", res.error)
+			return fmt.Errorf("upload error: %v %v", res.key, res.error)
 		}
 	}
 

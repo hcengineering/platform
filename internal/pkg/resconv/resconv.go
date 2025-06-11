@@ -103,6 +103,7 @@ func Level(resolution string) string {
 	return prefixes[idx].label
 }
 
+// Height returns height for the resolution
 func Height(resolution string) int {
 	var parts = strings.Split(resolution, ":")
 	var h = 240
