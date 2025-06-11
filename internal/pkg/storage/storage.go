@@ -41,7 +41,6 @@ type BlobInfo struct {
 type Storage interface {
 	PutFile(ctx context.Context, fileName string) error
 	DeleteFile(ctx context.Context, fileName string) error
-	GetFileURL(ctx context.Context, fileName string) string
 	GetFile(ctx context.Context, fileName, destination string) error
 	StatFile(ctx context.Context, fileName string) (*BlobInfo, error)
 	SetParent(ctx context.Context, fileName string, parentName string) error

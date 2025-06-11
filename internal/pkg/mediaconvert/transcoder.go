@@ -30,6 +30,7 @@ import (
 	"github.com/hcengineering/stream/internal/pkg/storage"
 	"github.com/hcengineering/stream/internal/pkg/token"
 	"github.com/hcengineering/stream/internal/pkg/uploader"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gopkg.in/vansante/go-ffprobe.v2"
 )
@@ -53,7 +54,7 @@ func NewTranscoder(ctx context.Context, cfg *config.Config) *Transcoder {
 }
 
 // Transcode handles one transcoding task
-func (p *Transcoder) Transcode(ctx context.Context, task *Task) {
+func (p *Transcoder) Transcode(ctx context.Context, task *Task) (TaskResult, error) {
 	var logger = p.logger.With(zap.String("task-id", task.ID))
 
 	logger.Debug("start")
@@ -63,7 +64,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) {
 	var tokenString, err = token.NewToken(p.cfg.ServerSecret, task.Workspace, "stream", "datalake")
 	if err != nil {
 		logger.Error("can not create token", zap.Error(err))
-		return
+		return TaskResult{}, errors.Wrapf(err, "can not create token")
 	}
 
 	logger.Debug("phase 2: preparing fs")
@@ -72,7 +73,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) {
 	err = os.MkdirAll(destinationFolder, os.ModePerm)
 	if err != nil {
 		logger.Error("can not create temporary folder", zap.Error(err))
-		return
+		return TaskResult{}, errors.Wrapf(err, "can not create temporary folder")
 	}
 
 	defer func() {
@@ -84,57 +85,47 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) {
 	logger.Debug("phase 3: get the remote file")
 
 	remoteStorage, err := storage.NewStorageByURL(ctx, p.cfg.Endpoint(), p.cfg.EndpointURL.Scheme, tokenString, task.Workspace)
-
 	if err != nil {
 		logger.Error("can not create storage by url", zap.Error(err), zap.String("url", p.cfg.EndpointURL.String()))
-		_ = os.RemoveAll(destinationFolder)
-		return
+		return TaskResult{}, errors.Wrapf(err, "can not create storage by url")
 	}
 
 	stat, err := remoteStorage.StatFile(ctx, task.Source)
 	if err != nil {
-		logger.Error("can not stat a file", zap.Error(err), zap.String("filepath", task.Source))
-		_ = os.RemoveAll(destinationFolder)
-		return
+		logger.Error("can not stat file", zap.Error(err), zap.String("filepath", task.Source))
+		return TaskResult{}, errors.Wrapf(err, "can not stat file")
 	}
 
 	if !IsSupportedMediaType(stat.Type) {
 		logger.Info("unsupported media type", zap.String("type", stat.Type))
-		_ = os.RemoveAll(destinationFolder)
-		return
+		return TaskResult{}, fmt.Errorf("unsupported media type: %s", stat.Type)
 	}
 
-	//	sourceFilePath := remoteStorage.GetFileURL(ctx, task.Source)
-	//	if sourceFilePath == "" {
 	sourceFilePath := filepath.Join(destinationFolder, filename)
 	if err = remoteStorage.GetFile(ctx, task.Source, sourceFilePath); err != nil {
-		logger.Error("can not download a file", zap.Error(err), zap.String("filepath", task.Source))
-		_ = os.RemoveAll(destinationFolder)
+		logger.Error("can not download source file", zap.Error(err), zap.String("filepath", task.Source))
 		// TODO: reschedule
-		return
+		return TaskResult{}, errors.Wrapf(err, "can not download source file")
 	}
-	//	}
 
 	logger.Debug("phase 4: prepare to transcode")
 	probe, err := ffprobe.ProbeURL(ctx, sourceFilePath)
 	if err != nil {
-		logger.Error("can not get probe for a file", zap.Error(err), zap.String("filepath", sourceFilePath))
-		_ = os.RemoveAll(destinationFolder)
-		return
+		logger.Error("can not get ffprobe", zap.Error(err), zap.String("filepath", sourceFilePath))
+		return TaskResult{}, errors.Wrapf(err, "can not get ffprobe")
 	}
 
 	videoStream := probe.FirstVideoStream()
 	if videoStream == nil {
-		logger.Error("no video stream found in the file", zap.String("filepath", sourceFilePath))
-		_ = os.RemoveAll(destinationFolder)
-		return
+		logger.Error("no video stream found", zap.String("filepath", sourceFilePath))
+		return TaskResult{}, errors.Wrapf(err, "no video stream found")
 	}
 
 	logger.Debug("video stream found", zap.String("codec", videoStream.CodecName), zap.Int("width", videoStream.Width), zap.Int("height", videoStream.Height))
 
 	audioStream := probe.FirstAudioStream()
 	if audioStream == nil {
-		logger.Info("no audio stream found in the file", zap.String("filepath", sourceFilePath))
+		logger.Info("no audio stream found", zap.String("filepath", sourceFilePath))
 	}
 
 	var res = fmt.Sprintf("%v:%v", videoStream.Width, videoStream.Height)
@@ -166,8 +157,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) {
 	err = manifest.GenerateHLSPlaylist(opts.ScalingLevels, p.cfg.OutputDir, opts.UploadID)
 	if err != nil {
 		logger.Error("can not generate hls playlist", zap.String("out", p.cfg.OutputDir), zap.String("uploadID", opts.UploadID))
-		_ = os.RemoveAll(destinationFolder)
-		return
+		return TaskResult{}, errors.Wrapf(err, "can not generate hls playlist")
 	}
 
 	go uploader.Start()
@@ -186,13 +176,13 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) {
 		if cmdErr != nil {
 			logger.Error("can not create a new command", zap.Error(cmdErr), zap.Strings("args", args))
 			go uploader.Cancel()
-			return
+			return TaskResult{}, errors.Wrapf(err, "can not create a new command")
 		}
 		cmds = append(cmds, cmd)
 		if err = cmd.Start(); err != nil {
 			logger.Error("can not start a command", zap.Error(err), zap.Strings("args", args))
 			go uploader.Cancel()
-			return
+			return TaskResult{}, errors.Wrapf(err, "can not start a command")
 		}
 	}
 
@@ -201,7 +191,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) {
 		if err = cmd.Wait(); err != nil {
 			logger.Error("can not wait for command end ", zap.Error(err))
 			go uploader.Cancel()
-			return
+			return TaskResult{}, errors.Wrapf(err, "can not wait for command end")
 		}
 	}
 
@@ -210,24 +200,31 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) {
 
 	logger.Debug("phase 9: try to set metadata")
 
-	if metaProvider, ok := remoteStorage.(storage.MetaProvider); ok {
-		var hls = HLS{
-			Width:     videoStream.Width,
-			Height:    videoStream.Height,
-			Source:    task.ID + "_master.m3u8",
-			Thumbnail: task.ID + ".jpg",
-		}
+	var result = TaskResult{
+		Width:     videoStream.Width,
+		Height:    videoStream.Height,
+		Source:    task.ID + "_master.m3u8",
+		Thumbnail: task.ID + ".jpg",
+	}
 
-		logger.Debug("applying metadata", zap.String("url", hls.Source), zap.String("thumbnail", hls.Thumbnail), zap.String("source", task.Source))
+	if metaProvider, ok := remoteStorage.(storage.MetaProvider); ok {
+		logger.Debug(
+			"applying metadata",
+			zap.String("url", result.Source),
+			zap.String("thumbnail", result.Thumbnail),
+			zap.String("source", task.Source),
+		)
 		err = metaProvider.PatchMeta(
 			ctx,
 			task.Source,
 			&storage.Metadata{
-				"hls": hls,
+				"hls": result,
 			},
 		)
 		if err != nil {
 			logger.Error("can not patch the source file", zap.Error(err))
 		}
 	}
+
+	return result, nil
 }

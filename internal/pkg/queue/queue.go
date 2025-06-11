@@ -41,6 +41,8 @@ type TranscodeRequest struct {
 type TranscodeResult struct {
 	BlobID        string
 	WorkspaceUUID string
+	Playlist      string
+	Thumbnail     string
 }
 
 // Consumer provides a consumer interface to a Kafka queue

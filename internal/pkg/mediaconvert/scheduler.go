@@ -35,14 +35,6 @@ import (
 	"gopkg.in/vansante/go-ffprobe.v2"
 )
 
-// HLS represents metadata for transcoding result
-type HLS struct {
-	Source    string `json:"source"`
-	Thumbnail string `json:"thumbnail"`
-	Width     int    `json:"width"`
-	Height    int    `json:"height"`
-}
-
 // Task represents transcoding task
 type Task struct {
 	ID        string
@@ -51,6 +43,14 @@ type Task struct {
 	Format    string
 	Workspace string
 	Metadata  map[string]string
+}
+
+// TaskResult represents transcoding task result
+type TaskResult struct {
+	Source    string `json:"source"`
+	Thumbnail string `json:"thumbnail"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
 }
 
 // Scheduler manages transcoding tasks by passed config
@@ -258,7 +258,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	logger.Debug("phase 9: try to set metadata")
 
 	if metaProvider, ok := remoteStorage.(storage.MetaProvider); ok {
-		var hls = HLS{
+		var hls = TaskResult{
 			Width:     videoStream.Width,
 			Height:    videoStream.Height,
 			Source:    task.ID + "_master.m3u8",

@@ -216,12 +216,6 @@ func (d *DatalakeStorage) PatchMeta(ctx context.Context, filename string, md *Me
 	return nil
 }
 
-// GetFileURL returns blob URL
-func (d *DatalakeStorage) GetFileURL(ctx context.Context, filename string) string {
-	objectKey := getObjectKeyFromPath(filename)
-	return d.baseURL + "/blob/" + d.workspace + "/" + objectKey
-}
-
 // GetMeta gets metadata related to the object
 func (d *DatalakeStorage) GetMeta(ctx context.Context, filename string) (*Metadata, error) {
 	var logger = d.logger.With(zap.String("get meta", d.workspace), zap.String("fileName", filename))
@@ -250,7 +244,6 @@ func (d *DatalakeStorage) GetMeta(ctx context.Context, filename string) (*Metada
 	}
 
 	var md Metadata
-	fmt.Println(string(resp.Body()))
 	var err = json.Unmarshal(resp.Body(), &md)
 
 	return &md, err

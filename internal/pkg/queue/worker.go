@@ -109,7 +109,13 @@ func (w *Worker) processMessage(ctx context.Context, msg kafka.Message, logger *
 	}
 
 	transcoder := mediaconvert.NewTranscoder(ctx, w.cfg)
-	transcoder.Transcode(ctx, &task)
+	res, err := transcoder.Transcode(ctx, &task)
 
-	return nil
+	if err == nil {
+		if err := w.producer.Send(ctx, req.WorkspaceUUID, res); err != nil {
+			logger.Error("failed to send transcode result", zap.Error(err))
+		}
+	}
+
+	return err
 }
