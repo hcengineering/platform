@@ -66,7 +66,8 @@ import {
   getPersonName,
   doReleaseSocialId,
   doMergeAccounts,
-  doMergePersons
+  doMergePersons,
+  READONLY_GUEST_ACCOUNT
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -598,6 +599,12 @@ export async function createIntegration (
   }
 
   const { socialId, kind, workspaceUuid, data } = params
+  const social = await db.socialId.findOne({ _id: socialId })
+
+  if (social?.personUuid === READONLY_GUEST_ACCOUNT) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
   await db.integration.insertOne({ socialId, kind, workspaceUuid, data })
 }
 
