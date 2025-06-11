@@ -85,8 +85,9 @@ func main() {
 	}
 
 	server := &http.Server{
-		Addr:    cfg.ServeURL,
-		Handler: handler,
+		Addr:              cfg.ServeURL,
+		Handler:           handler,
+		ReadHeaderTimeout: 15 * time.Second,
 	}
 
 	var wg sync.WaitGroup
@@ -107,8 +108,21 @@ func main() {
 
 	config := queue.ParseConfig(cfg.QueueConfig, "stream", cfg.Region)
 	logger.Info("using queue config", zap.Any("config", config))
-	consumer := queue.NewConsumer(ctx, queue.TopicTranscodeRequest, "stream", config)
-	producer := queue.NewProducer(ctx, queue.TopicTranscodeResult, config)
+
+	consumerOptions := queue.ConsumerOptions{
+		Topic:  queue.TopicTranscodeRequest,
+		Group:  "stream",
+		Config: config,
+	}
+	consumer := queue.NewConsumer(ctx, consumerOptions)
+
+	producerOptions := queue.ProducerOptions{
+		Topic:      queue.TopicTranscodeResult,
+		Group:      "stream",
+		Config:     config,
+		RetryCount: 3,
+	}
+	producer := queue.NewProducer(ctx, producerOptions)
 
 	wg.Add(1)
 	go func() {

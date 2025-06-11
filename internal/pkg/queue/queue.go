@@ -45,12 +45,27 @@ type TranscodeResult struct {
 	Thumbnail     string
 }
 
+// ConsumerOptions represents options for the consumer
+type ConsumerOptions struct {
+	Topic  string
+	Group  string
+	Config Config
+}
+
 // Consumer provides a consumer interface to a Kafka queue
 type Consumer interface {
 	Read(ctx context.Context) (kafka.Message, error)
 	Fetch(ctx context.Context) (kafka.Message, error)
 	Commit(ctx context.Context, msg kafka.Message) error
 	Close() error
+}
+
+// ProducerOptions represents options for the producer
+type ProducerOptions struct {
+	Topic      string
+	Group      string
+	Config     Config
+	RetryCount int
 }
 
 // Producer provides a producer interface to a Kafka queue
@@ -61,14 +76,16 @@ type Producer interface {
 
 // TConsumer implements Consumer interface
 type TConsumer struct {
-	topic  string
-	reader *kafka.Reader
+	topic   string
+	reader  *kafka.Reader
+	options ConsumerOptions
 }
 
 // TProducer implements Producer interface
 type TProducer struct {
-	topic  string
-	writer *kafka.Writer
+	topic   string
+	writer  *kafka.Writer
+	options ProducerOptions
 }
 
 // Logger is kafka.Logger implementation
@@ -93,12 +110,12 @@ func (l *Logger) Printf(msg string, args ...any) {
 }
 
 // NewConsumer creates a new transcoding request consumer
-func NewConsumer(ctx context.Context, topic, group string, config Config) Consumer {
-	platformTopic := makeTopicID(topic, config)
-	groupID := makeGroupID(group, topic, config)
+func NewConsumer(ctx context.Context, options ConsumerOptions) Consumer {
+	platformTopic := makeTopicID(options.Topic, options.Config)
+	groupID := makeGroupID(options.Group, options.Topic, options.Config)
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:           config.Brokers,
+		Brokers:           options.Config.Brokers,
 		GroupID:           groupID,
 		Topic:             platformTopic,
 		Logger:            NewLogger(ctx),
@@ -107,8 +124,9 @@ func NewConsumer(ctx context.Context, topic, group string, config Config) Consum
 	})
 
 	return &TConsumer{
-		topic:  platformTopic,
-		reader: reader,
+		options: options,
+		topic:   platformTopic,
+		reader:  reader,
 	}
 }
 
@@ -133,17 +151,18 @@ func (c *TConsumer) Close() error {
 }
 
 // NewProducer creates a new transcoding result producer
-func NewProducer(ctx context.Context, topic string, config Config) Producer {
-	platformTopic := makeTopicID(topic, config)
+func NewProducer(ctx context.Context, options ProducerOptions) Producer {
+	platformTopic := makeTopicID(options.Topic, options.Config)
 	writer := &kafka.Writer{
-		Addr:                   kafka.TCP(config.Brokers...),
+		Addr:                   kafka.TCP(options.Config.Brokers...),
 		Topic:                  platformTopic,
 		AllowAutoTopicCreation: true,
 		Logger:                 NewLogger(ctx),
 	}
 	return &TProducer{
-		topic:  platformTopic,
-		writer: writer,
+		options: options,
+		topic:   platformTopic,
+		writer:  writer,
 	}
 }
 
@@ -154,13 +173,20 @@ func (p *TProducer) Send(ctx context.Context, workspaceID string, data any) erro
 		return err
 	}
 
-	return p.writer.WriteMessages(
-		ctx,
-		kafka.Message{
-			Key:   []byte(workspaceID),
-			Value: value,
-		},
-	)
+	for range p.options.RetryCount {
+		err = p.writer.WriteMessages(
+			ctx,
+			kafka.Message{
+				Key:   []byte(workspaceID),
+				Value: value,
+			},
+		)
+		if err == nil {
+			break
+		}
+	}
+
+	return err
 }
 
 // Close closes the producer.
