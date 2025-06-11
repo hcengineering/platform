@@ -118,6 +118,7 @@ func (w *Stream) start(ctx context.Context, options *Options) error {
 	if err := manifest.GenerateHLSPlaylist(append(options.ScalingLevels, options.Level), options.OutputDir, options.UploadID); err != nil {
 		return err
 	}
+
 	w.commandGroup.Add(1)
 	go func() {
 		defer w.commandGroup.Done()

@@ -20,21 +20,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Resconv_ShouldReturnCorrectPrefix(t *testing.T) {
+func Test_Resconv_Level(t *testing.T) {
 	tests := []struct {
 		res      string
 		expected string
 	}{
 		{res: "320:240", expected: "360p"},
-		{res: "320:360", expected: "360p"},
+		{res: "320:360", expected: "480p"},
 		{res: "640:480", expected: "480p"},
 		{res: "1280:720", expected: "720p"},
 		{res: "1920:1080", expected: "1080p"},
+		{res: "1600:1080", expected: "1080p"},
+		{res: "2160:1080", expected: "1080p"},
 		{res: "2880:1800", expected: "1440p"},
 		{res: "2560:1440", expected: "1440p"},
 		{res: "3840:2160", expected: "2160p"},
 		{res: "5120:2880", expected: "2160p"},
-		{res: "9000:4000", expected: "4320p"},
+		{res: "480:720", expected: "720p"},
+		{res: "720:1080", expected: "1080p"},
+		{res: "1440:2560", expected: "2160p"},
+		{res: "9000:4000", expected: "2160p"},
 	}
 
 	for _, tt := range tests {
@@ -45,7 +50,7 @@ func Test_Resconv_ShouldReturnCorrectPrefix(t *testing.T) {
 	}
 }
 
-func Test_Resconv_ShouldReturnCorrectPrefixes(t *testing.T) {
+func Test_Resconv_SubLevels(t *testing.T) {
 	tests := []struct {
 		name     string
 		res      string
@@ -116,12 +121,50 @@ func Test_Resconv_ShouldReturnCorrectPrefixes(t *testing.T) {
 			res:      "7681:4320",
 			expected: []string{"1080p", "720p"},
 		},
+		{
+			name:     "vertical video",
+			res:      "1440:2560",
+			expected: []string{"1080p", "720p"},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := resconv.SubLevels(tt.res)
 			require.Equal(t, tt.expected, result, "SubResolutionsFromPixels(%d) returned unexpected result", tt.res)
+		})
+	}
+}
+
+func Test_Resconv_Height(t *testing.T) {
+	tests := []struct {
+		res      string
+		expected int
+	}{
+		// 3x2
+		{res: "320:240", expected: 240},
+		{res: "640:480", expected: 480},
+		{res: "1280:720", expected: 720},
+		// 16x9
+		{res: "1920:1080", expected: 1080},
+		{res: "2560:1440", expected: 1440},
+		{res: "3840:2160", expected: 2160},
+		// Vertical
+		{res: "480:720", expected: 720},
+		{res: "720:1080", expected: 1080},
+		{res: "1440:2560", expected: 2560},
+		// Custom
+		{res: "1600:1080", expected: 1080},
+		{res: "1930:1090", expected: 1090},
+		{res: "2160:1080", expected: 1080},
+		{res: "5120:2880", expected: 2880},
+		{res: "9000:4000", expected: 4000},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.res, func(t *testing.T) {
+			height := resconv.Height(tt.res)
+			require.Equal(t, tt.expected, height, "Height(%s)", tt.res)
 		})
 	}
 }

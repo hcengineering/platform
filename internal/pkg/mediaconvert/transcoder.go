@@ -23,7 +23,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hcengineering/stream/internal/pkg/config"
 	"github.com/hcengineering/stream/internal/pkg/log"
 	"github.com/hcengineering/stream/internal/pkg/manifest"
@@ -35,76 +34,26 @@ import (
 	"gopkg.in/vansante/go-ffprobe.v2"
 )
 
-// HLS represents metadata for transcoding result
-type HLS struct {
-	Source    string `json:"source"`
-	Thumbnail string `json:"thumbnail"`
-	Width     int    `json:"width"`
-	Height    int    `json:"height"`
-}
-
-// Task represents transcoding task
-type Task struct {
-	ID        string
-	Status    string
-	Source    string
-	Format    string
-	Workspace string
-	Metadata  map[string]string
-}
-
-// Scheduler manages transcoding tasks by passed config
-type Scheduler struct {
-	logger *zap.Logger
-	taskCh chan *Task
-	cfg    *config.Config
+// Transcoder process one transcoding task
+type Transcoder struct {
 	ctx    context.Context
+	cfg    *config.Config
+	logger *zap.Logger
 }
 
-// Schedule schedules a task to transcode
-func (p *Scheduler) Schedule(t *Task) error {
-	t.ID = uuid.NewString()
-	t.Status = "planned"
-
-	select {
-	case p.taskCh <- t:
-		return nil
-	default:
-		return fmt.Errorf("task queue is full")
-	}
-}
-
-// NewScheduler creates a new instance of transcoding task scheduler
-func NewScheduler(ctx context.Context, cfg *config.Config) *Scheduler {
-	var p = &Scheduler{
-		taskCh: make(chan *Task, 128),
+// NewTranscoder creates a new instance of task transcoder
+func NewTranscoder(ctx context.Context, cfg *config.Config) *Transcoder {
+	var p = &Transcoder{
 		cfg:    cfg,
 		ctx:    ctx,
-		logger: log.FromContext(ctx).With(zap.String("transcoding", "scheduler")),
+		logger: log.FromContext(ctx).With(zap.String("transcoding", "transcoder")),
 	}
-
-	go p.start()
 
 	return p
 }
 
-func (p *Scheduler) start() {
-	go func() {
-		<-p.ctx.Done()
-		close(p.taskCh)
-	}()
-
-	for range p.cfg.MaxParallelScalingCount {
-		go func() {
-			for task := range p.taskCh {
-				p.processTask(p.ctx, task)
-			}
-		}()
-	}
-}
-
 // TODO: add a factory pattern to process tasks by different media type
-func (p *Scheduler) processTask(ctx context.Context, task *Task) {
+func (p *Transcoder) Transcode(ctx context.Context, task *Task) {
 	var logger = p.logger.With(zap.String("task-id", task.ID))
 
 	logger.Debug("start")
@@ -120,7 +69,6 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	logger.Debug("phase 2: preparing fs")
 	var destinationFolder = filepath.Join(p.cfg.OutputDir, task.ID)
 	var _, filename = filepath.Split(task.Source)
-	var sourceFilePath = filepath.Join(destinationFolder, filename)
 	err = os.MkdirAll(destinationFolder, os.ModePerm)
 	if err != nil {
 		logger.Error("can not create temporary folder", zap.Error(err))
@@ -156,12 +104,16 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		return
 	}
 
+	//	sourceFilePath := remoteStorage.GetFileURL(ctx, task.Source)
+	//	if sourceFilePath == "" {
+	sourceFilePath := filepath.Join(destinationFolder, filename)
 	if err = remoteStorage.GetFile(ctx, task.Source, sourceFilePath); err != nil {
 		logger.Error("can not download a file", zap.Error(err), zap.String("filepath", task.Source))
 		_ = os.RemoveAll(destinationFolder)
 		// TODO: reschedule
 		return
 	}
+	//	}
 
 	logger.Debug("phase 4: prepare to transcode")
 	probe, err := ffprobe.ProbeURL(ctx, sourceFilePath)
@@ -169,11 +121,6 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		logger.Error("can not get probe for a file", zap.Error(err), zap.String("filepath", sourceFilePath))
 		_ = os.RemoveAll(destinationFolder)
 		return
-	}
-
-	audioStream := probe.FirstAudioStream()
-	if audioStream == nil {
-		logger.Info("no audio stream found in the file", zap.String("filepath", sourceFilePath))
 	}
 
 	videoStream := probe.FirstVideoStream()
@@ -185,16 +132,22 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		logger.Debug("video stream found", zap.String("codec", videoStream.CodecName), zap.Int("width", videoStream.Width), zap.Int("height", videoStream.Height))
 	}
 
+	audioStream := probe.FirstAudioStream()
+	if audioStream == nil {
+		logger.Info("no audio stream found in the file", zap.String("filepath", sourceFilePath))
+	}
+
 	var res = fmt.Sprintf("%v:%v", videoStream.Width, videoStream.Height)
 	var codec = videoStream.CodecName
 	var level = resconv.Level(res)
+	var sublevels = resconv.SubLevels(res)
 	var opts = Options{
 		Input:         sourceFilePath,
 		OutputDir:     p.cfg.OutputDir,
 		Level:         level,
 		Transcode:     !IsHLSSupportedVideoCodec(codec),
 		WithAudio:     audioStream != nil,
-		ScalingLevels: append(resconv.SubLevels(res), level),
+		ScalingLevels: append(sublevels, level),
 		UploadID:      task.ID,
 		Threads:       p.cfg.MaxThreadCount,
 	}
@@ -277,29 +230,5 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		if err != nil {
 			logger.Error("can not patch the source file", zap.Error(err))
 		}
-	}
-}
-
-func IsHLSSupportedVideoCodec(codec string) bool {
-	switch codec {
-	case "h264", "h265":
-		return true
-	default:
-		return false
-	}
-}
-
-// IsSupportedMediaType checks whether transcoding is supported for given media type
-func IsSupportedMediaType(mediaType string) bool {
-	// Explicitly disable conversion for video/mp2t and video/x-mpegurl
-	switch mediaType {
-	case "video/mp2t", "video/x-mpegurl":
-		return false
-	case "video/mp4":
-		return true
-	case "video/webm":
-		return true
-	default:
-		return false
 	}
 }

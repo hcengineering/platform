@@ -26,14 +26,16 @@ const defaultLevel = "360p"
 
 var prefixes = []struct {
 	pixels int
+	width  int
+	height int
 	label  string
 }{
-	{pixels: 640 * 360, label: "360p"},
-	{pixels: 1280 * 720, label: "480p"},
-	{pixels: 1920 * 1080, label: "720p"},
-	{pixels: 2560 * 1440, label: "1080p"},
-	{pixels: 3840 * 2160, label: "1440p"},
-	{pixels: 7680 * 4320, label: "2160p"},
+	{pixels: 640 * 360, width: 640, height: 360, label: "360p"},
+	{pixels: 1280 * 720, width: 720, height: 720, label: "480p"},
+	{pixels: 1920 * 1080, width: 1920, height: 1080, label: "720p"},
+	{pixels: 2560 * 1440, width: 2560, height: 1440, label: "1080p"},
+	{pixels: 3840 * 2160, width: 3840, height: 2160, label: "1440p"},
+	{pixels: 7680 * 4320, width: 7680, height: 4320, label: "2160p"},
 }
 
 var bandwidthMap = map[string]int{
@@ -41,7 +43,7 @@ var bandwidthMap = map[string]int{
 	"480p":  2000000,
 	"720p":  5000000,
 	"1080p": 8000000,
-	"1440p": 16000000,
+	"1440p": 12000000,
 	"2160p": 25000000,
 	"4320p": 50000000,
 }
@@ -58,9 +60,9 @@ var resolutions = map[string]string{
 
 // SubLevels returns sublevels for the resolution
 func SubLevels(resolution string) (res []string) {
-	var pixels = Pixels(resolution)
+	var height = Height(resolution)
 	var idx = sort.Search(len(prefixes), func(i int) bool {
-		return pixels < prefixes[i].pixels
+		return height < prefixes[i].height
 	})
 	if idx < 2 {
 		return res
@@ -90,9 +92,9 @@ func Resolution(level string) string {
 
 // Level converts the resolution to short prefix
 func Level(resolution string) string {
-	var pixels = Pixels(resolution)
+	var height = Height(resolution)
 	idx := sort.Search(len(prefixes), func(i int) bool {
-		return pixels < prefixes[i].pixels
+		return height < prefixes[i].height
 	})
 	if idx == len(prefixes) {
 		return "4320p"
@@ -101,10 +103,20 @@ func Level(resolution string) string {
 	return prefixes[idx].label
 }
 
+func Height(resolution string) int {
+	var parts = strings.Split(resolution, ":")
+	var h = 240
+	if len(parts) > 1 {
+		var _h, _ = strconv.Atoi(parts[1])
+		h = max(h, _h)
+	}
+	return h
+}
+
 // Pixels returns amount of pixels for the resolution
 func Pixels(resolution string) int {
 	var parts = strings.Split(resolution, ":")
-	var w, h = 420, 240
+	var w, h = 320, 240
 
 	if len(parts) > 1 {
 		var _w, _ = strconv.Atoi(parts[0])

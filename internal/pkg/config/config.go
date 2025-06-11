@@ -35,6 +35,9 @@ type Config struct {
 	MaxParallelScalingCount int      `split_words:"true" default:"2" desc:"how much parallel scaling can be processed"`
 	MaxThreadCount          int      `split_words:"true" default:"4" desc:"max number of threads for transcoder"`
 
+	QueueConfig string `split_words:"true" default:"" desc:"queue config"`
+	Region      string `split_words:"true" default:"" desc:"service region"`
+
 	OutputDir string        `split_words:"true" default:"/tmp/transcoing/" desc:"path to the directory with transcoding result."`
 	Timeout   time.Duration `default:"5m" desc:"timeout for the upload"`
 }
