@@ -331,6 +331,13 @@
       }
     }
   }
+
+  async function canEdit (object: Doc): Promise<boolean> {
+    if (client.getHierarchy().isDerived(object._class, core.class.Space)) {
+      return await canEditSpace(object)
+    }
+    return true
+  }
 </script>
 
 {#if !model || isBuildingModel}
@@ -444,7 +451,7 @@
                 {/if}
               </td>
             {/if}
-            {#await canEditSpace(object) then canEditObject}
+            {#await canEdit(object) then canEditObject}
               {#if row < rowLimit}
                 {#each model.filter((m) => !m.displayProps?.grow) as attribute, cell}
                   <td
