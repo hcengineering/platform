@@ -853,7 +853,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         for (const column in row) {
           if (column.startsWith('reverse_lookup_')) {
             if (row[column] != null) {
-              const join = reverseJoins.find((j) => j.toAlias === column)
+              const join = reverseJoins.find((j) => j.toAlias.toLowerCase() === column)
               if (join === undefined) {
                 continue
               }

@@ -34,6 +34,8 @@
   export let inlineReference: boolean = false
   export let transparent: boolean = false
   export let inlineBlock = false
+  export let noSelect: boolean = true
+  export let title: string | undefined = undefined
 
   let _disabled = disabled || $restrictionStore.disableNavigation
   $: _disabled = disabled || $restrictionStore.disableNavigation
@@ -74,6 +76,8 @@
   {inlineReference}
   {transparent}
   {inlineBlock}
+  {noSelect}
+  {title}
 >
   <slot />
 </NavLink>

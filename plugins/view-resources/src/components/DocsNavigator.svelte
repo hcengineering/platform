@@ -38,6 +38,7 @@
             shouldShowAvatar: false,
             noUnderline: true,
             noSelect: true,
+            shrink: true,
             ...(attributeModel.props ?? {}),
             value: element
           }

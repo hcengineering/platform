@@ -23,9 +23,9 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { Class, Doc, PersonId, Ref, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
   import chunter from '@hcengineering/chunter'
-  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { getPersonRefsByPersonIds } from '@hcengineering/contact-resources'
   import { Person } from '@hcengineering/contact'
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
@@ -85,7 +85,9 @@
 
   let groupedNotifications: Array<InboxNotification[]> = []
 
-  $: groupedNotifications = groupNotificationsByUser(notifications, $personRefByPersonIdStore)
+  $: void groupNotificationsByUser(notifications).then((res) => {
+    groupedNotifications = res
+  })
 
   function isTextMessage (_class: Ref<Class<Doc>>): boolean {
     return hierarchy.isDerived(_class, chunter.class.ChatMessage)
@@ -99,13 +101,13 @@
     return isMentionNotification(it) && isTextMessage(it.mentionedInClass)
   }
 
-  function groupNotificationsByUser (
-    notifications: WithLookup<InboxNotification>[],
-    personRefByPersonId: Map<PersonId, Ref<Person>>
-  ): Array<InboxNotification[]> {
+  async function groupNotificationsByUser (
+    notifications: WithLookup<InboxNotification>[]
+  ): Promise<Array<InboxNotification[]>> {
     const result: Array<InboxNotification[]> = []
     let group: InboxNotification[] = []
     let person: Ref<Person> | undefined = undefined
+    const personRefByPersonId = await getPersonRefsByPersonIds(notifications.map((it) => it.createdBy ?? it.modifiedBy))
 
     for (const it of notifications) {
       const pid = it.createdBy ?? it.modifiedBy

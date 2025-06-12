@@ -19,6 +19,7 @@
   import { Label } from '@hcengineering/communication-types'
   import tag, { type TagElement } from '@hcengineering/tags'
   import { TagElementPresenter } from '@hcengineering/tags-resources'
+  import { Ref } from '@hcengineering/core'
 
   export let value: Card | undefined = undefined
 
@@ -33,9 +34,11 @@
       labels = res
     })
 
-  $: client.findAll(tag.class.TagElement, { _id: { $in: labels.map((it) => it.label) } }).then((res) => {
-    tags = res
-  })
+  $: client
+    .findAll(tag.class.TagElement, { _id: { $in: labels.map((it) => it.label) as any as Ref<TagElement>[] } })
+    .then((res) => {
+      tags = res
+    })
 </script>
 
 {#if tags.length > 0}

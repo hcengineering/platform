@@ -23,6 +23,8 @@
 
   export let maxWidth = ''
 
+  const MIN_WIDTH = 2 // rem
+
   function getHref (parentInfo: ParentInfo) {
     const loc = getCurrentLocation()
     loc.path[2] = cardId
@@ -33,49 +35,57 @@
   }
 </script>
 
-{#if value && Array.isArray(value.parentInfo)}
-  <div class="root" style:max-width={maxWidth}>
-    <span class="names">
-      {#each value.parentInfo as parentInfo}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <NavLink href={getHref(parentInfo)}>
-          <span class="parent-label overflow-label cursor-pointer" title={parentInfo.title}>
-            {parentInfo.title}
-          </span>
-        </NavLink>
-      {/each}
-    </span>
+{#if value && Array.isArray(value.parentInfo) && (value.parentInfo.length > 0 || $$slots.default)}
+  <div
+    class="cards-container cropped-text-presenters"
+    style:max-width={maxWidth}
+    style:--cards-container-card-min-width={`${MIN_WIDTH}rem`}
+    style:--cards-container-parents={value.parentInfo.length}
+  >
+    {#each value.parentInfo as parentInfo}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <NavLink
+        href={getHref(parentInfo)}
+        title={parentInfo.title}
+        shrink={parentInfo.title.length > 100 ? 2 : 1}
+        colorInherit
+      >
+        {parentInfo.title}
+      </NavLink>
+      <span class="separator">›</span>
+    {/each}
+    <slot />
   </div>
 {/if}
 
 <style lang="scss">
-  .root {
+  .cards-container {
     display: inline-flex;
+    flex-shrink: 1;
     margin-left: 0;
     min-width: 0;
+    min-width: calc(
+      (var(--cards-container-card-min-width, 2rem) + 1.26rem) * var(--cards-container-parents, 1) +
+        var(--cards-container-card-min-width, 2rem)
+    );
+    color: var(--theme-darker-color);
 
-    .names {
-      display: inline-flex;
-      min-width: 0;
-      color: var(--theme-dark-color);
+    .separator {
+      flex-shrink: 0;
+      padding: 0 0.5rem;
+      color: var(--theme-content-color);
     }
-
-    .parent-label {
-      flex-shrink: 5;
-      color: var(--theme-dark-color);
-
-      &:hover {
-        color: var(--theme-caption-color);
-        text-decoration: underline;
-      }
-      &:active {
-        color: var(--theme-content-color);
-      }
-      &::after {
-        content: '›';
-        padding: 0 0.25rem;
-      }
+    :global(a:hover) {
+      color: var(--theme-caption-color);
+      // text-decoration: underline;
+    }
+    :global(a),
+    :global(span:not(.separator)) {
+      color: var(--theme-content-color);
+    }
+    :global(:is(span:not(.separator), a):not(:empty)) {
+      min-width: var(--cards-container-card-min-width, 2rem);
     }
   }
 </style>

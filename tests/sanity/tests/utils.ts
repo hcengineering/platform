@@ -18,6 +18,7 @@ export const PlatformAdmin = process.env.PLATFORM_ADMIN as string
 export const PlatformWs = process.env.PLATFORM_WS as string
 export const PlatformSetting = process.env.SETTING as string
 export const PlatformSettingSecond = process.env.SETTING_SECOND as string
+export const PlatformWorkspaceRegion = process.env.WORKSPACE_REGION as string
 
 export const DefaultWorkspace = 'sanity-ws'
 export const LocalUrl = process.env.LOCAL_URL as string

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { PersonId, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import contact, { getPersonRefBySocialId, Person } from '@hcengineering/contact'
+  import contact, { getPersonRefByPersonIdCb, Person } from '@hcengineering/contact'
   import { IconSize } from '@hcengineering/ui'
 
   import ObjectPresenter from './ObjectPresenter.svelte'
@@ -24,16 +24,17 @@
   export let shouldShowName = true
   export let shouldShowAvatar = true
   export let noUnderline = false
+  export let shrink: boolean = false
   export let avatarSize: IconSize = 'x-small'
 
   const client = getClient()
   let person: Ref<Person> | undefined
-  $: void getPerson(value)
-
-  async function getPerson (id: PersonId | undefined): Promise<void> {
-    if (id !== undefined) {
-      person = await getPersonRefBySocialId(client, id)
-    }
+  $: if (value !== undefined) {
+    getPersonRefByPersonIdCb(client, value, (p) => {
+      person = p ?? undefined
+    })
+  } else {
+    person = undefined
   }
 </script>
 
@@ -44,6 +45,7 @@
     {shouldShowName}
     {shouldShowAvatar}
     {noUnderline}
+    shrink={shrink ? 1 : 0}
     props={{ avatarSize }}
   />
 {/if}

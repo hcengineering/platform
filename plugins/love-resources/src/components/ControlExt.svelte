@@ -13,9 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
-  import { Person, getCurrentEmployee } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import {
     Invite,
     isOffice,
@@ -60,6 +59,7 @@
   import RequestingPopup from './RequestingPopup.svelte'
   import RoomPopup from './RoomPopup.svelte'
   import RoomButton from './RoomButton.svelte'
+  import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 
   const client = getClient()
 
@@ -174,7 +174,6 @@
     infos: ParticipantInfo[],
     myInfo: ParticipantInfo | undefined,
     myOffice: Office | undefined,
-    personByIdStore: IdMap<Person>,
     isConnected: boolean
   ): Promise<void> {
     if (myInfo !== undefined && myInfo.room === (myOffice?._id ?? love.ids.Reception)) {
@@ -188,14 +187,14 @@
           await disconnect()
         }
       } else if (!isConnected) {
-        const myPerson = personByIdStore.get(getCurrentEmployee())
-        if (myPerson === undefined) return
+        const myPerson = await getPersonByPersonRef(getCurrentEmployee())
+        if (myPerson == null) return
         await connectRoom(0, 0, myInfo, myPerson, myOffice)
       }
     }
   }
 
-  $: checkOwnRoomConnection($infos, $myInfo, $myOffice, $personByIdStore, $isCurrentInstanceConnected)
+  $: checkOwnRoomConnection($infos, $myInfo, $myOffice, $isCurrentInstanceConnected)
 
   const myInvitesCategory = 'myInvites'
 
@@ -300,22 +299,26 @@
   {#if activeRooms.length > 0}
     <!--    <div class="divider" />-->
     {#each activeRooms as active}
-      <RoomButton
-        label={getRoomName(active, $personByIdStore)}
-        participants={active.participants}
-        active={joined.find((r) => r._id === active._id) != null}
-        on:click={openRoom(active)}
-      />
+      {#await getRoomName(active) then name}
+        <RoomButton
+          label={name}
+          participants={active.participants}
+          active={joined.find((r) => r._id === active._id) != null}
+          on:click={openRoom(active)}
+        />
+      {/await}
     {/each}
   {/if}
   {#if reception !== undefined && receptionParticipants.length > 0}
     {#if activeRooms.length > 0}
       <div class="divider" />
     {/if}
-    <RoomButton
-      label={getRoomName(reception, $personByIdStore)}
-      participants={receptionParticipants.map((p) => ({ ...p, onclick: getParticipantClickHandler(p) }))}
-    />
+    {#await getRoomName(reception) then name}
+      <RoomButton
+        label={name}
+        participants={receptionParticipants.map((p) => ({ ...p, onclick: getParticipantClickHandler(p) }))}
+      />
+    {/await}
   {/if}
 </div>
 

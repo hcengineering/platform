@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { personByIdStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
   import { Label, Loading, resizeObserver, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
@@ -46,6 +45,9 @@
   } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import ParticipantView from './ParticipantView.svelte'
+  import { Ref } from '@hcengineering/core'
+  import { Person } from '@hcengineering/contact'
+  import { getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
 
   export let withVideo: boolean
   export let canMaximize: boolean = true
@@ -65,8 +67,16 @@
   let screen: HTMLVideoElement
   let roomEl: HTMLDivElement
 
-  $: aiPersonId =
-    $aiBotSocialIdentityStore != null ? $personRefByPersonIdStore.get($aiBotSocialIdentityStore._id) : undefined
+  let aiPersonRef: Ref<Person> | undefined
+  $: if ($aiBotSocialIdentityStore != null) {
+    getPersonRefByPersonIdCb($aiBotSocialIdentityStore?._id, (ref) => {
+      if (ref != null) {
+        aiPersonRef = ref
+      }
+    })
+  } else {
+    aiPersonRef = undefined
+  }
 
   function handleTrackSubscribed (
     track: RemoteTrack,
@@ -239,7 +249,7 @@
       $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)
     ) {
       const info = $infos.filter((p) => p.room === room._id)
-      await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
+      await tryConnect($myInfo, room, info, $myRequests, $invites)
     }
 
     await awaitConnect()
@@ -297,7 +307,7 @@
           muted: true,
           mirror: false,
           connecting: true,
-          isAgent: aiPersonId === info.person
+          isAgent: aiPersonRef === info.person
         }
         participants.push(value)
       }

@@ -1099,7 +1099,7 @@ export class TSessionManager implements SessionManager {
       source: service.token.extra?.service ?? '🤦‍♂️user',
       mode: '🧭 handleRequest'
     })
-    const rateLimit = this.limitter.checkRateLimit(service.getUser())
+    const rateLimit = this.limitter.checkRateLimit(service.getUser() + (service.token.extra?.service ?? ''))
     // If remaining is 0, rate limit is exceeded
     if (rateLimit?.remaining === 0) {
       void ws.send(
@@ -1213,7 +1213,7 @@ export class TSessionManager implements SessionManager {
     ws: ConnectionSocket,
     operation: (ctx: ClientSessionCtx, rateLimit: RateLimitInfo | undefined) => Promise<void>
   ): Promise<RateLimitInfo | undefined> {
-    const rateLimitStatus = this.limitter.checkRateLimit(service.getUser())
+    const rateLimitStatus = this.limitter.checkRateLimit(service.getUser() + (service.token.extra?.service ?? ''))
     // If remaining is 0, rate limit is exceeded
     if (rateLimitStatus?.remaining === 0) {
       return await Promise.resolve(rateLimitStatus)

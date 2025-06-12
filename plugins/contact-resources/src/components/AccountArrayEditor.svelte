@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { Contact, Employee, getCurrentEmployee, getName, Person } from '@hcengineering/contact'
-  import { AccountUuid, Ref } from '@hcengineering/core'
+  import { AccountUuid, notEmpty, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import contact from '../plugin'
-  import { employeeByIdStore, personRefByAccountUuidStore } from '../utils'
+  import { employeeByIdStore, employeeRefByAccountUuidStore } from '../utils'
   import UserBoxList from './UserBoxList.svelte'
 
   export let label: IntlString
@@ -41,10 +41,10 @@
 
   $: valueByPersonRef = new Map(
     (value ?? []).map((p) => {
-      const person = $personRefByAccountUuidStore.get(p)
+      const person = $employeeRefByAccountUuidStore.get(p)
 
       if (person === undefined) {
-        console.error('Person not found for social id', p)
+        console.error('Person not found by account id', p)
       }
 
       return [person, p] as const
@@ -86,7 +86,7 @@
     void update?.()
   })
 
-  $: employees = (value ?? []).map((p) => $personRefByAccountUuidStore.get(p)).filter((p) => p !== undefined)
+  $: employees = (value ?? []).map((p) => $employeeRefByAccountUuidStore.get(p)).filter(notEmpty)
   $: docQuery =
     excludeItems.length === 0 && includeItems.length === 0
       ? {}

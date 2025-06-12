@@ -78,7 +78,7 @@
 
 <span
   use:tooltip={{ label: ui.string.TimeTooltip, props: { value: tooltipValue } }}
-  class="overflow-label"
+  class="no-word-wrap"
   class:text-sm={kind === 'list'}
   class:content-dark-color={kind === 'list'}
 >
