@@ -1544,6 +1544,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-media",
+      "projectFolder": "pods/media",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/hr",
       "projectFolder": "plugins/hr",
       "shouldPublish": true
