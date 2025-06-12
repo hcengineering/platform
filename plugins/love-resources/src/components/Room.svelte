@@ -42,7 +42,11 @@
     isFullScreen,
     lk,
     screenSharing,
-    tryConnect
+    tryConnect,
+    setMic,
+    setCam,
+    isMicEnabled,
+    isCameraEnabled,
   } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import ParticipantView from './ParticipantView.svelte'
@@ -383,6 +387,31 @@
   }
 
   $: activeParticipants = getActiveParticipants(participants)
+
+  function handleKeyDown(event: KeyboardEvent) {
+    const target = event.target as HTMLElement;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+      return;
+    }
+
+    const isModifierPressed = event.metaKey || event.ctrlKey;
+
+    if (isModifierPressed && event.key.toLowerCase() === 'd') {
+      event.preventDefault();
+      void setMic(!$isMicEnabled);
+    } else if (isModifierPressed && event.key.toLowerCase() === 'e') {
+      event.preventDefault();
+      void setCam(!$isCameraEnabled);
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  });
 </script>
 
 <div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
