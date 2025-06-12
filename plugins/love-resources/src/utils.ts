@@ -767,7 +767,7 @@ async function connectLK (currentPerson: Person, room: Room): Promise<void> {
   await connect(currentPerson.name, room, currentPerson._id)
   await Promise.all([
     setMic($myPreferences?.micEnabled ?? lk.remoteParticipants.size < 16),
-    setCam(room.type === RoomType.Video && ($myPreferences?.camEnabled ?? true))
+    setCam(room.type === RoomType.Video && !isOffice(room) && ($myPreferences?.camEnabled ?? true))
   ])
 }
 

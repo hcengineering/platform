@@ -23,7 +23,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     const office: Data<Office> & { _id: Ref<Office> } = {
       _id,
       name: '',
-      type: RoomType.Audio,
+      type: RoomType.Video,
       access: RoomAccess.Knock,
       floor: love.ids.MainFloor,
       width: 2,
