@@ -36,7 +36,7 @@
     {
       key: '',
       props: {
-        showParent: true,
+        showParent: false,
         shrink: true
       }
     },
