@@ -292,7 +292,7 @@ async function migrateCollaborators (client: MigrationClient): Promise<void> {
             filter: { _id: doc._id },
             update: {
               $unset: {
-                'notification:mixin:Collaborator': true
+                'notification:mixin:Collaborators': true
               }
             }
           })
@@ -377,7 +377,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
             filter: { _id: doc._id },
             update: {
               $unset: {
-                'notification:mixin:Collaborator': true
+                'notification:mixin:Collaborators': true
               }
             }
           })
