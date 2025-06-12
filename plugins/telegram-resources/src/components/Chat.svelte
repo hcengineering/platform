@@ -89,7 +89,7 @@
       (res) => {
         messages = res.reverse()
         if (channel !== undefined) {
-          inboxClient.forceReadDoc(channel._id, channel._class)
+          inboxClient.forceReadDoc(channel)
         }
       },
       {

@@ -414,6 +414,11 @@ export const DOMAIN_RELATION = 'relation' as Domain
 /**
  * @public
  */
+export const DOMAIN_COLLABORATOR = 'collaborator' as Domain
+
+/**
+ * @public
+ */
 export interface TransientConfiguration extends Class<Doc> {
   // If set will not store transient objects into memdb
   broadcastOnly: boolean
@@ -870,3 +875,13 @@ export interface AccountInfo {
 }
 
 export type SocialKey = Pick<SocialId, 'type' | 'value'>
+
+export interface ClassCollaborators<T extends Doc> extends Doc {
+  attachedTo: Ref<Class<T>>
+  fields: (keyof T)[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
+  provideSecurity?: boolean // If true, will provide security for collaborators
+}
+
+export interface Collaborator extends AttachedDoc {
+  collaborator: AccountUuid
+}

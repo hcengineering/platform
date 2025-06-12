@@ -28,7 +28,8 @@ import {
   type Type,
   DateRangeMode,
   IndexKind,
-  AccountRole
+  AccountRole,
+  type ClassCollaborators
 } from '@hcengineering/core'
 import lead from '@hcengineering/lead'
 import {
@@ -386,7 +387,8 @@ export function createModel (builder: Builder): void {
     enabledTypes: [time.ids.ToDoCreated]
   })
 
-  builder.mixin(time.class.ToDo, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<ToDo>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: time.class.ToDo,
     fields: ['user']
   })
 

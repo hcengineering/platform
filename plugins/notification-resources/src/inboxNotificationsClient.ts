@@ -13,13 +13,12 @@
 // limitations under the License.
 //
 import activity from '@hcengineering/activity'
-import {
-  type Account,
-  type Client,
+import core, {
   SortingOrder,
   getCurrentAccount,
   toIdMap,
-  type Class,
+  type Account,
+  type Client,
   type Doc,
   type IdMap,
   type Ref,
@@ -28,7 +27,6 @@ import {
 } from '@hcengineering/core'
 import notification, {
   type ActivityInboxNotification,
-  type Collaborators,
   type DocNotifyContext,
   type InboxNotification,
   type InboxNotificationsClient
@@ -173,46 +171,25 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     await op.commit()
   }
 
-  async forceReadDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
-    const context = this._contextByDoc.get(_id)
+  async forceReadDoc (doc: Doc): Promise<void> {
+    const context = this._contextByDoc.get(doc._id)
 
     if (context !== undefined) {
-      await this.readDoc(_id)
+      await this.readDoc(doc._id)
       return
     }
 
     const client = getClient()
-    const doc = await client.findOne(_class, { _id })
 
-    if (doc === undefined) {
-      return
-    }
+    const current = await client.findOne(core.class.Collaborator, {
+      attachedTo: doc._id,
+      collaborator: getCurrentAccount().uuid
+    })
 
-    const hierarchy = client.getHierarchy()
-    const collaboratorsMixin = hierarchy.as<Doc, Collaborators>(doc, notification.mixin.Collaborators)
-
-    if (collaboratorsMixin.collaborators === undefined) {
-      await client.createMixin<Doc, Collaborators>(
-        collaboratorsMixin._id,
-        collaboratorsMixin._class,
-        collaboratorsMixin.space,
-        notification.mixin.Collaborators,
-        {
-          collaborators: [getCurrentAccount().uuid]
-        }
-      )
-    } else if (collaboratorsMixin.collaborators.includes(getCurrentAccount().uuid)) {
-      await client.updateMixin(
-        collaboratorsMixin._id,
-        collaboratorsMixin._class,
-        collaboratorsMixin.space,
-        notification.mixin.Collaborators,
-        {
-          $push: {
-            collaborators: getCurrentAccount().primarySocialId
-          }
-        }
-      )
+    if (current === undefined) {
+      await client.addCollection(core.class.Collaborator, doc.space, doc._id, doc._class, 'collaborators', {
+        collaborator: getCurrentAccount().uuid
+      })
     }
   }
 

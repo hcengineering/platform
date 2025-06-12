@@ -14,7 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import { AccountRole, SortingOrder, type Lookup, type Ref } from '@hcengineering/core'
+import { AccountRole, type ClassCollaborators, SortingOrder, type Lookup, type Ref } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import calendar from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
@@ -30,7 +30,7 @@ import view, { createAction, showColorsViewOption, actionTemplates as viewTempla
 import workbench, { createNavigateAction, type Application } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { type IntlString } from '@hcengineering/platform'
-import { recruitId, type Applicant, RecruitEvents } from '@hcengineering/recruit'
+import { recruitId, type Applicant, RecruitEvents, type Vacancy } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@hcengineering/view'
 
@@ -84,7 +84,8 @@ export function createModel (builder: Builder): void {
     editor: recruit.component.VacancyList
   })
 
-  builder.mixin(recruit.class.Vacancy, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Vacancy>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: recruit.class.Vacancy,
     fields: ['createdBy']
   })
 
@@ -96,7 +97,8 @@ export function createModel (builder: Builder): void {
     inlineEditor: view.component.ArrayEditor
   })
 
-  builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Applicant>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: recruit.class.Applicant,
     fields: ['createdBy', 'assignee']
   })
 

@@ -27,30 +27,22 @@ import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import github from './plugin'
 
 import {
+  AccountRole,
   DateRangeMode,
   IndexKind,
-  type PersonId,
   type Class,
+  type ClassCollaborators,
   type Data,
   type Doc,
   type Domain,
   type Hyperlink,
   type Markup,
+  type PersonId,
   type Ref,
-  type Timestamp,
-  AccountRole
+  type Timestamp
 } from '@hcengineering/core'
 
 import { type Person } from '@hcengineering/contact'
-import contact, { TPerson } from '@hcengineering/model-contact'
-import presentation from '@hcengineering/model-presentation'
-import tracker, { TComponent, TIssue, TProject, issuesOptions } from '@hcengineering/model-tracker'
-import view, { classPresenter } from '@hcengineering/model-view'
-import workbench from '@hcengineering/model-workbench'
-import { getEmbeddedLabel } from '@hcengineering/platform'
-import setting from '@hcengineering/setting'
-import tags from '@hcengineering/tags'
-import task from '@hcengineering/task'
 import {
   type DocSyncInfo,
   type GithubAuthentication,
@@ -77,6 +69,15 @@ import {
   type MinimizeReason,
   type PullRequestMergeable
 } from '@hcengineering/github'
+import contact, { TPerson } from '@hcengineering/model-contact'
+import presentation from '@hcengineering/model-presentation'
+import tracker, { TComponent, TIssue, TProject, issuesOptions } from '@hcengineering/model-tracker'
+import view, { classPresenter } from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
+import { getEmbeddedLabel } from '@hcengineering/platform'
+import setting from '@hcengineering/setting'
+import tags from '@hcengineering/tags'
+import task from '@hcengineering/task'
 
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 
@@ -617,7 +618,8 @@ export function createModel (builder: Builder): void {
     editor: github.component.EditPullRequest
   })
 
-  builder.mixin(github.class.GithubPullRequest, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<GithubPullRequest>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: github.class.GithubPullRequest,
     fields: ['createdBy', 'assignee', 'reviewers']
   })
 
