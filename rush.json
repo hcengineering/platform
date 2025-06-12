@@ -2124,8 +2124,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-ses",
-      "projectFolder": "services/ses/pod-ses",
+      "packageName": "@hcengineering/pod-notification",
+      "projectFolder": "services/notification/pod-notification",
       "shouldPublish": false
     },
     {
