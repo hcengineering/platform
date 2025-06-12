@@ -15,38 +15,69 @@
 
 <script lang="ts">
   import { ticker, DAY, HOUR, MINUTE, languageStore, Label } from '@hcengineering/ui'
-  import { getCommunicationClient, getClient } from '@hcengineering/presentation'
+  import { createQuery, createCollaboratorsQuery } from '@hcengineering/presentation'
   import { translateCB } from '@hcengineering/platform'
-  import { Collaborator, CardID } from '@hcengineering/communication-types'
+  import { Collaborator, Thread } from '@hcengineering/communication-types'
   import contact, { Person } from '@hcengineering/contact'
   import { Avatar } from '@hcengineering/contact-resources'
+  import cardPlugin, { Card } from '@hcengineering/card'
 
   import communication from '../../plugin'
+  import Tags from './Tags.svelte'
 
-  export let threadId: CardID
+  export let thread: Thread
   export let count: number
   export let lastReply: Date
 
   const displayPersonsNumber = 4
-  const communicationClient = getCommunicationClient()
-  const client = getClient()
+  const threadCardQuery = createQuery()
+  const personsQuery = createQuery()
+  const collaboratorsQuery = createCollaboratorsQuery()
 
   let displayDate: string = ''
   let collaborators: Collaborator[] = []
   let persons: Person[] = []
 
-  $: communicationClient.findCollaborators({ card: threadId }).then((res) => {
-    collaborators = res
-  })
-  $: client
-    .findAll(contact.class.Person, {
-      personUuid: {
-        $in: collaborators.map((it) => it.account).slice(0, displayPersonsNumber)
+  let threadCard: Card | undefined
+
+  $: thread.threadId &&
+    collaboratorsQuery.query({ card: thread.threadId }, (res) => {
+      collaborators = res
+    })
+  $: if (collaborators.length > 0) {
+    personsQuery.query(
+      contact.class.Person,
+      {
+        personUuid: {
+          $in: collaborators.map((it) => it.account).slice(0, displayPersonsNumber)
+        }
+      },
+      (res) => {
+        persons = res
       }
-    })
-    .then((res) => {
-      persons = res
-    })
+    )
+  } else {
+    personsQuery.unsubscribe()
+    persons = []
+  }
+
+  $: if (thread?.threadId !== undefined) {
+    threadCardQuery.query(
+      cardPlugin.class.Card,
+      { _id: thread.threadId },
+      (res) => {
+        threadCard = res[0]
+      },
+      { limit: 1 }
+    )
+  } else {
+    threadCard = undefined
+    threadCardQuery.unsubscribe()
+  }
+
+  $: if (thread?.threadId !== threadCard?._id) {
+    threadCard = undefined
+  }
 
   $: formatDate($ticker, lastReply, $languageStore)
 
@@ -145,22 +176,25 @@
       displayDate = res
     })
   }
+
+  let clientWidth = 0
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="replies" on:click>
-  <div class="avatars">
-    {#each persons as person}
-      <Avatar size="card" {person} name={person.name} />
-    {/each}
-  </div>
-
-  {#if collaborators.length > displayPersonsNumber}
-    <div class="plus">
-      +{collaborators.length - displayPersonsNumber}
+<div class="replies-container flex-grow" bind:clientWidth>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div class="replies" on:click style:max-width={`${clientWidth}px`}>
+    <div class="avatars">
+      {#each persons as person}
+        <Avatar size="x-small" {person} name={person.name} />
+      {/each}
     </div>
-  {/if}
+
+    {#if collaborators.length > displayPersonsNumber}
+      <div class="plus">
+        +{collaborators.length - displayPersonsNumber}
+      </div>
+    {/if}
 
   <span class="text overflow-label">
     <span class="replies__count">
@@ -178,6 +212,11 @@
 </div>
 
 <style lang="scss">
+  .replies-container {
+    display: flex;
+    flex-shrink: 1;
+    min-width: 0;
+  }
   .replies {
     display: flex;
     padding: 0.5rem 0.5rem;
@@ -187,6 +226,8 @@
     font-size: 0.75rem;
     cursor: pointer;
     min-width: 0;
+    border: 1px solid var(--global-ui-BorderColor);
+    min-height: 2.375rem;
 
     &:hover {
       background-color: var(--theme-bg-color);

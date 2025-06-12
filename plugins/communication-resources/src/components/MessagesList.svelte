@@ -354,7 +354,7 @@
       const reaction = reactionNotifications.find((it) => it.messageId === item.id)
       if (reaction != null) {
         void communicationClient.updateNotifications(
-          reaction.context,
+          reaction.contextId,
           {
             id: reaction.id
           },
@@ -465,7 +465,7 @@
       if (reactionsToRead.length > 0) {
         for (const reaction of reactionsToRead) {
           void communicationClient.updateNotifications(
-            reaction.context,
+            reaction.contextId,
             {
               id: reaction.id
             },

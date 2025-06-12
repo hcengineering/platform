@@ -41,7 +41,6 @@
   export let card: Card
   export let message: Message
   export let editable: boolean = true
-  export let replies: boolean = true
   export let padding: string | undefined = undefined
   export let compact: boolean = false
   export let hideAvatar: boolean = false
@@ -54,7 +53,7 @@
   let isDeleted = false
   let author: Person | undefined
 
-  $: isDeleted = message.removed || (message.type === MessageType.Thread && message.thread == null)
+  $: isDeleted = message.removed
   $: void updateAuthor(message.creator)
 
   function canEdit (): boolean {
@@ -73,7 +72,7 @@
   }
 
   function canReply (): boolean {
-    return message.type === MessageType.Message || message.type === MessageType.Thread
+    return message.type === MessageType.Message && message.extra?.threadRoot !== true
   }
 
   async function updateAuthor (socialId: SocialID): Promise<void> {
@@ -92,7 +91,7 @@
   async function handleRemove (): Promise<void> {
     if (!canRemove()) return
     message.removed = true
-    await communicationClient.removeMessage(message.card, message.id, message.created)
+    await communicationClient.removeMessage(message.cardId, message.id)
   }
 
   function isInside (x: number, y: number, rect: DOMRect): boolean {
@@ -182,7 +181,7 @@
 
   let isActionsOpened = false
 
-  $: isThread = message.thread != null || message.type === MessageType.Thread
+  $: isThread = message.thread != null
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -195,10 +194,10 @@
   class:noHover={!editable}
   style:padding
 >
-  {#if isThread || message.type === MessageType.Activity || message.removed}
-    <OneRowMessageBody {message} {card} {author} {replies} {hideAvatar} />
+  {#if message.type === MessageType.Activity || (message.removed && message.thread?.threadId === undefined)}
+    <OneRowMessageBody {message} {card} {author} {hideAvatar} />
   {:else}
-    <MessageBody {message} {card} {author} bind:isEditing {compact} {replies} {hideAvatar} />
+    <MessageBody {message} {card} {author} bind:isEditing compact={compact && !isThread} {hideAvatar} />
   {/if}
 
   {#if !isEditing && editable && !isDeleted}
