@@ -209,6 +209,10 @@
         </span>
       {/if}
     </span>
+
+    {#if threadCard && clientWidth > 300}
+      <Tags value={threadCard} />
+    {/if}
   </div>
 </div>
 

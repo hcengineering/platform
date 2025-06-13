@@ -13,45 +13,45 @@
 
 import activity from '@hcengineering/activity'
 import {
-  cardId,
-  type CardSpace,
-  DOMAIN_CARD,
   type Card,
+  cardId,
+  type CardNavigation,
+  type CardSection,
+  type CardSpace,
+  type CardViewDefaults,
+  DOMAIN_CARD,
+  type FavoriteCard,
   type MasterTag,
   type ParentInfo,
-  type Tag,
   type Role,
-  type CardSection,
-  type CardViewDefaults,
-  type CardNavigation,
-  type FavoriteCard
+  type Tag
 } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
 import core, {
   AccountRole,
+  type Blobs,
   ClassifierKind,
+  type CollectionSize,
   DOMAIN_MODEL,
   DOMAIN_SPACE,
   IndexKind,
-  SortingOrder,
-  type Blobs,
-  type CollectionSize,
   type MarkupBlobRef,
+  type MixinData,
   type Rank,
   type Ref,
-  type MixinData
+  SortingOrder
 } from '@hcengineering/core'
 import {
+  type Builder,
   Collection,
   Index,
+  Mixin,
   Model,
   Prop,
   TypeCollaborativeDoc,
   TypeRef,
   TypeString,
-  UX,
-  type Builder,
-  Mixin
+  UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import { TAttachedDoc, TClass, TDoc, TMixin, TSpace } from '@hcengineering/model-core'
@@ -65,18 +65,21 @@ import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type BuildModelKey } from '@hcengineering/view'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import card from './plugin'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 
 export { cardId } from '@hcengineering/card'
 
 @Model(card.class.MasterTag, core.class.Class)
 export class TMasterTag extends TClass implements MasterTag {
   color?: number
+  background?: number
   removed?: boolean
 }
 
 @Model(card.class.Tag, core.class.Mixin)
 export class TTag extends TMixin implements Tag {
   color?: number
+  background?: number
 }
 
 @Model(card.class.Card, core.class.Doc, DOMAIN_CARD)
@@ -234,7 +237,8 @@ export function createSystemType (
   icon: Asset = card.icon.MasterTag,
   label: IntlString,
   pluralLabel?: IntlString,
-  viewDefaults?: MixinData<MasterTag, CardViewDefaults>
+  viewDefaults?: MixinData<MasterTag, CardViewDefaults>,
+  background?: number
 ): void {
   builder.createDoc(
     card.class.MasterTag,
@@ -244,7 +248,8 @@ export function createSystemType (
       pluralLabel,
       extends: card.class.Card,
       icon,
-      kind: ClassifierKind.CLASS
+      kind: ClassifierKind.CLASS,
+      background
     },
     type
   )
@@ -310,10 +315,26 @@ export function createModel (builder: Builder): void {
 
   defineTabs(builder)
 
-  createSystemType(builder, card.types.File, card.icon.File, attachment.string.File, attachment.string.Files)
-  createSystemType(builder, card.types.Document, card.icon.Document, card.string.Document, card.string.Documents, {
-    defaultSection: card.section.Content
-  })
+  createSystemType(
+    builder,
+    card.types.File,
+    card.icon.File,
+    attachment.string.File,
+    attachment.string.Files,
+    undefined,
+    PaletteColorIndexes.Orchid
+  )
+  createSystemType(
+    builder,
+    card.types.Document,
+    card.icon.Document,
+    card.string.Document,
+    card.string.Documents,
+    {
+      defaultSection: card.section.Content
+    },
+    PaletteColorIndexes.Arctic
+  )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: card.class.CardSpace,
