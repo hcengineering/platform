@@ -145,8 +145,6 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
       case NotificationRequestEventType.UpdateNotificationContext:
         this.validate(event, UpdateNotificationContextEventSchema)
         break
-      default:
-        throw new Error('Unknown event type: ' + event.type)
     }
     return await this.provideEvent(session, deserializeEvent(event), derived)
   }
@@ -219,7 +217,8 @@ const FindNotificationsParamsSchema = FindParamsSchema.extend({
   read: z.boolean().optional(),
   created: dateOrRecordSchema.optional(),
   account: z.union([AccountIDSchema, z.array(AccountIDSchema)]).optional(),
-  message: z.boolean().optional()
+  message: z.boolean().optional(),
+  card: CardIDSchema.optional()
 }).strict()
 
 const FindLabelsParamsSchema = FindParamsSchema.extend({
