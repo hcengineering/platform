@@ -21,11 +21,13 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 	"unsafe"
 
 	"github.com/hcengineering/stream/internal/pkg/log"
 	"github.com/hcengineering/stream/internal/pkg/storage"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"k8s.io/utils/inotify"
 )
@@ -113,9 +115,12 @@ func (u *uploaderImpl) scanInitialFiles() {
 	go func() {
 		defer u.workerWaitGroup.Done()
 
+		logger := u.logger.With(zap.String("dir", u.options.Dir))
+
+		logger.Info("initial file scan")
 		initFiles, err := os.ReadDir(u.options.Dir)
 		if err != nil {
-			u.logger.Error("failed to read initial files", zap.Error(err), zap.String("dir", u.options.Dir))
+			logger.Error("failed to read initial files", zap.Error(err))
 			return
 		}
 
@@ -124,6 +129,7 @@ func (u *uploaderImpl) scanInitialFiles() {
 				continue
 			}
 
+			// Ignore source file
 			var filePath = filepath.Join(u.options.Dir, f.Name())
 			if filePath == u.options.SourceFile {
 				continue
@@ -131,7 +137,7 @@ func (u *uploaderImpl) scanInitialFiles() {
 			u.filesCh <- filePath
 		}
 
-		u.logger.Info("initial file scan complete", zap.String("dir", u.options.Dir), zap.Int("count", len(initFiles)))
+		logger.Info("initial file scan complete", zap.Int("count", len(initFiles)))
 	}()
 }
 
@@ -226,27 +232,39 @@ func (u *uploaderImpl) deleteRemoteFile(f string) {
 			logger.Error("attempt failed", zap.Error(err))
 		} else {
 			logger.Debug("file deleted in remote storage")
-			break
+			return
 		}
 
 		time.Sleep(u.options.RetryDelay)
 	}
 
-	u.logger.Error("can not delete remote file")
+	logger.Error("can not delete remote file")
 }
 
 func (u *uploaderImpl) uploadAndDelete(f string) {
 	var logger = u.logger.With(zap.String("upload and delete", f))
 	logger.Debug("uploading file")
 
-	var _, ok = u.sentFiles.Load(f)
+	if f == u.options.Dir {
+		return
+	}
 
+	// Check if the file exists
+	_, err := os.Stat(f)
+	if err != nil {
+		logger.Debug("file does not exist")
+		return
+	}
+
+	// Check if the file has already been uploaded
+	var _, ok = u.sentFiles.Load(f)
 	if ok && !u.shouldDeleteOnStop(f) {
 		logger.Debug("file already uploaded")
 		return
 	}
 
-	for range u.options.RetryCount {
+	for attempt := range u.options.RetryCount {
+		logger = logger.With(zap.Int("attempt", attempt))
 		var ctx, cancel = context.WithTimeout(u.uploadCtx, u.options.Timeout)
 		var err = u.storage.PutFile(ctx, f)
 		cancel()
@@ -259,16 +277,16 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 			logger.Debug("file uploaded")
 
 			// Update the file's parent if SourceFile is set
-			if u.options.SourceFile != "" {
-				err = u.storage.SetParent(ctx, f, u.options.SourceFile)
+			if u.options.Source != "" {
+				err = u.storage.SetParent(ctx, f, u.options.Source)
 				if err != nil {
-					logger.Error("can not set blob parent", zap.Error(err), zap.String("filename", f), zap.String("source", u.options.SourceFile))
+					logger.Error("can not set blob parent", zap.Error(err), zap.String("filename", f), zap.String("source", u.options.Source))
 				}
 			}
 
 			// Delete the file locally if it should be deleted
 			if !u.shouldDeleteOnStop(f) {
-				if err := os.Remove(f); err != nil {
+				if err := os.Remove(f); err != nil && !errors.Is(err, syscall.ENOENT) {
 					logger.Error("failed to remove file locally", zap.Error(err), zap.String("file", f))
 				} else {
 					logger.Debug("removed file locally")
@@ -321,10 +339,13 @@ func (u *uploaderImpl) startWatch(ready chan<- struct{}) {
 			if !strings.Contains(event.Name, u.options.Dir) {
 				continue
 			}
+			if event.Name == u.options.Dir {
+				continue
+			}
 			if event.Name == u.options.SourceFile {
 				continue
 			}
-			if strings.HasSuffix(event.Name, "tmp") {
+			if strings.HasSuffix(event.Name, ".tmp") {
 				continue
 			}
 			logger.Debug("received an event", zap.String("event", event.Name), zap.Uint32("mask", event.Mask))

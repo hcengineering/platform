@@ -17,6 +17,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"sync"
 
 	"os"
 	"os/signal"
@@ -31,6 +32,7 @@ import (
 	"github.com/hcengineering/stream/internal/pkg/api/v1/transcoding"
 	"github.com/hcengineering/stream/internal/pkg/config"
 	"github.com/hcengineering/stream/internal/pkg/log"
+	"github.com/hcengineering/stream/internal/pkg/queue"
 )
 
 func main() {
@@ -49,7 +51,7 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	logger.Sugar().Debugf("parsed config is %v", cfg)
+	logger.Sugar().Debug("using config", zap.Any("config", cfg))
 
 	if cfg.SentryDsn != "" {
 		if err := sentry.Init(sentry.ClientOptions{
@@ -82,17 +84,77 @@ func main() {
 		handler = sentryHandler.Handle(mux)
 	}
 
+	server := &http.Server{
+		Addr:              cfg.ServeURL,
+		Handler:           handler,
+		ReadHeaderTimeout: 15 * time.Second,
+	}
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
 	go func() {
-		logger.Info("server started serving", zap.String("ServeURL", cfg.ServeURL))
-		defer logger.Info("server finished")
+		defer wg.Done()
+
+		logger.Info("http server started", zap.String("ServeURL", cfg.ServeURL))
+		defer logger.Info("http server finished")
 
 		// #nosec
-		var err = http.ListenAndServe(cfg.ServeURL, handler)
-		if err != nil {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("http server error", zap.Error(err))
 			cancel()
-			logger.Debug("unable to listen", zap.Error(err))
+		}
+	}()
+
+	config := queue.ParseConfig(cfg.QueueConfig, "stream", cfg.Region)
+	logger.Info("using queue config", zap.Any("config", config))
+
+	consumerOptions := queue.ConsumerOptions{
+		Topic:  queue.TopicTranscodeRequest,
+		Group:  "stream",
+		Config: config,
+	}
+	consumer := queue.NewConsumer(ctx, consumerOptions)
+
+	producerOptions := queue.ProducerOptions{
+		Topic:      queue.TopicTranscodeResult,
+		Group:      "stream",
+		Config:     config,
+		RetryCount: 3,
+	}
+	producer := queue.NewProducer(ctx, producerOptions)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		logger.Info("queue worker started")
+		defer logger.Info("queue worker finished")
+
+		worker := queue.NewWorker(ctx, consumer, producer, cfg)
+		if err := worker.Start(ctx); err != nil {
+			logger.Error("queue worker error", zap.Error(err))
+			cancel()
 		}
 	}()
 
 	<-ctx.Done()
+
+	// Stop HTTP server to prevent accepting new connections
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer shutdownCancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		logger.Error("http server shutdown error", zap.Error(err))
+	}
+
+	// Wait for all workers to complete
+	wg.Wait()
+
+	// Close the consumer
+	if err := consumer.Close(); err != nil {
+		logger.Error("failed to close queue consumer", zap.Error(err))
+	}
+
+	logger.Info("shutdown complete")
 }

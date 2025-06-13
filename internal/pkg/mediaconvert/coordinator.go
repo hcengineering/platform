@@ -57,7 +57,7 @@ func NewStreamCoordinator(ctx context.Context, c *config.Config) *StreamCoordina
 			RetryDelay:  time.Millisecond * 100,
 			Timeout:     c.Timeout,
 			WorkerCount: uint32(c.MaxThreadCount),
-			RetryCount:  5,
+			RetryCount:  10,
 			BufferSize:  128,
 			Dir:         c.OutputDir,
 		},
@@ -100,6 +100,7 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 		OutputDir:     s.conf.OutputDir,
 		Threads:       s.conf.MaxThreadCount,
 		UploadID:      info.ID,
+		Transcode:     true,
 		Level:         level,
 		ScalingLevels: scaling,
 	}

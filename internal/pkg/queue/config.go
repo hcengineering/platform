@@ -11,18 +11,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package uploader
+package queue
 
-import "time"
+import "strings"
 
-// Options reprents options for uploading files
-type Options struct {
-	Dir         string
-	WorkerCount uint32
-	BufferSize  int
-	RetryCount  int
-	RetryDelay  time.Duration
-	Timeout     time.Duration
-	Source      string
-	SourceFile  string
+// Config reprents queue config
+type Config struct {
+	Postfix  string
+	Brokers  []string
+	ClientID string
+	Region   string
+}
+
+// ParseConfig parses the queue config string
+func ParseConfig(config, clientID, region string) Config {
+	var parts = strings.Split(config, ";")
+	var brokers = strings.Split(parts[0], ",")
+	var postfix = ""
+
+	if len(parts) > 1 {
+		postfix = parts[1]
+	}
+
+	var cfg = Config{
+		Postfix:  postfix,
+		Brokers:  brokers,
+		ClientID: clientID,
+		Region:   region,
+	}
+
+	return cfg
 }

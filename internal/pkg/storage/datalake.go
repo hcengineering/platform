@@ -24,12 +24,18 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/hcengineering/stream/internal/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
 )
+
+type uploadResult struct {
+	key   string
+	error string
+}
 
 // DatalakeStorage represents datalake storage
 type DatalakeStorage struct {
@@ -47,6 +53,10 @@ func NewDatalakeStorage(ctx context.Context, baseURL, workspace, token string) S
 		token:     token,
 		workspace: workspace,
 		logger:    log.FromContext(ctx).With(zap.String("storage", "datalake")),
+		client: fasthttp.Client{
+			MaxIdleConnDuration: 5 * time.Second,
+			MaxConnsPerHost:     100,
+		},
 	}
 }
 
@@ -66,7 +76,7 @@ func createFormFile(writer *multipart.Writer, fieldname, filename, contentType s
 	return writer.CreatePart(h)
 }
 
-func getObjectKey(s string) string {
+func getObjectKeyFromPath(s string) string {
 	var _, objectKey = filepath.Split(s)
 	return objectKey
 }
@@ -82,7 +92,7 @@ func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string) error {
 		_ = file.Close()
 	}()
 
-	var objectKey = getObjectKey(fileName)
+	var objectKey = getObjectKeyFromPath(fileName)
 	var logger = d.logger.With(zap.String("upload", d.workspace), zap.String("fileName", fileName))
 
 	logger.Debug("start")
@@ -118,8 +128,19 @@ func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string) error {
 	req.SetBody(body.Bytes())
 
 	if err := d.client.Do(req, res); err != nil {
-		logger.Error("upload failed", zap.Error(err))
+		logRequestError(logger, err, "upload failed", res)
 		return errors.Wrapf(err, "upload failed")
+	}
+
+	var result []uploadResult
+	if err := json.Unmarshal(res.Body(), &result); err != nil {
+		return errors.Wrapf(err, "parse error")
+	}
+
+	for _, res := range result {
+		if res.error != "" {
+			return fmt.Errorf("upload error: %v %v", res.key, res.error)
+		}
 	}
 
 	logger.Debug("uploaded")
@@ -132,7 +153,7 @@ func (d *DatalakeStorage) DeleteFile(ctx context.Context, fileName string) error
 	var logger = d.logger.With(zap.String("delete", d.workspace), zap.String("fileName", fileName))
 	logger.Debug("start")
 
-	var objectKey = getObjectKey(fileName)
+	var objectKey = getObjectKeyFromPath(fileName)
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -145,7 +166,7 @@ func (d *DatalakeStorage) DeleteFile(ctx context.Context, fileName string) error
 	req.Header.Add("Authorization", "Bearer "+d.token)
 
 	if err := d.client.Do(req, res); err != nil {
-		logger.Error("delete failed", zap.Error(err))
+		logRequestError(logger, err, "delete failed", res)
 		return errors.Wrapf(err, "delete failed")
 	}
 
@@ -160,7 +181,7 @@ func (d *DatalakeStorage) PatchMeta(ctx context.Context, filename string, md *Me
 	logger.Debug("start")
 	defer logger.Debug("finished")
 
-	var objectKey = getObjectKey(filename)
+	var objectKey = getObjectKeyFromPath(filename)
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -180,6 +201,7 @@ func (d *DatalakeStorage) PatchMeta(ctx context.Context, filename string, md *Me
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		logRequestError(logger, err, "request failed", resp)
 		return err
 	}
 
@@ -199,7 +221,7 @@ func (d *DatalakeStorage) GetMeta(ctx context.Context, filename string) (*Metada
 	var logger = d.logger.With(zap.String("get meta", d.workspace), zap.String("fileName", filename))
 	logger.Debug("start")
 
-	var objectKey = getObjectKey(filename)
+	var objectKey = getObjectKeyFromPath(filename)
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -211,6 +233,7 @@ func (d *DatalakeStorage) GetMeta(ctx context.Context, filename string) (*Metada
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		logRequestError(logger, err, "request failed", resp)
 		return nil, err
 	}
 
@@ -221,7 +244,6 @@ func (d *DatalakeStorage) GetMeta(ctx context.Context, filename string) (*Metada
 	}
 
 	var md Metadata
-	fmt.Println(string(resp.Body()))
 	var err = json.Unmarshal(resp.Body(), &md)
 
 	return &md, err
@@ -232,17 +254,19 @@ func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination str
 	var logger = d.logger.With(zap.String("get", d.workspace), zap.String("fileName", filename), zap.String("destination", destination))
 	logger.Debug("start")
 
-	var objectKey = getObjectKey(filename)
+	var objectKey = getObjectKeyFromPath(filename)
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 	req.SetRequestURI(d.baseURL + "/blob/" + d.workspace + "/" + objectKey)
 	req.Header.SetMethod(fasthttp.MethodGet)
+	req.Header.Add("Authorization", "Bearer "+d.token)
 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		logRequestError(logger, err, "request failed", resp)
 		return err
 	}
 
@@ -276,24 +300,26 @@ func (d *DatalakeStorage) StatFile(ctx context.Context, filename string) (*BlobI
 	var logger = d.logger.With(zap.String("head", d.workspace), zap.String("fileName", filename))
 	logger.Debug("start")
 
-	var objectKey = getObjectKey(filename)
+	var objectKey = getObjectKeyFromPath(filename)
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 	req.SetRequestURI(d.baseURL + "/blob/" + d.workspace + "/" + objectKey)
 	req.Header.SetMethod(fasthttp.MethodHead)
+	req.Header.Add("Authorization", "Bearer "+d.token)
 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		logRequestError(logger, err, "request failed", resp)
 		return nil, err
 	}
 
 	// Check the response status code
 	if resp.StatusCode() != fasthttp.StatusOK {
 		var err = fmt.Errorf("unexpected status code: %d", resp.StatusCode())
-		logger.Debug("bad status code", zap.Error(err))
+		logRequestError(logger, err, "bad status code", resp)
 		return nil, err
 	}
 
@@ -308,12 +334,12 @@ func (d *DatalakeStorage) StatFile(ctx context.Context, filename string) (*BlobI
 
 // SetParent updates blob parent reference
 func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string) error {
-	var logger = d.logger.With(zap.String("parent", d.workspace), zap.String("fileName", filename), zap.String("parent", parent))
+	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("fileName", filename), zap.String("parent", parent))
 
 	logger.Debug("start")
 
-	var objectKey = getObjectKey(filename)
-	var parentKey = getObjectKey(parent)
+	var objectKey = getObjectKeyFromPath(filename)
+	var parentKey = getObjectKeyFromPath(parent)
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -335,6 +361,7 @@ func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := d.client.Do(req, resp); err != nil {
+		logRequestError(logger, err, "request failed", resp)
 		return err
 	}
 
@@ -342,13 +369,23 @@ func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string
 	var statusOK = resp.StatusCode() >= 200 && resp.StatusCode() < 300
 	if !statusOK {
 		var err = fmt.Errorf("unexpected status code: %d", resp.StatusCode())
-		logger.Debug("bad status code", zap.Error(err))
+		logger.Debug("bad status code", zap.Error(err), zap.Int("status", resp.StatusCode()), zap.String("response", resp.String()))
 		return err
 	}
 
 	logger.Debug("finished")
 
 	return nil
+}
+
+func logRequestError(logger *zap.Logger, err error, msg string, res *fasthttp.Response) {
+	logger.Error(
+		msg,
+		zap.Error(err),
+		zap.Int("status", res.StatusCode()),
+		zap.String("headers", res.Header.String()),
+		zap.String("response", res.String()),
+	)
 }
 
 var _ Storage = (*DatalakeStorage)(nil)
