@@ -79,8 +79,8 @@
   $: _mixins = getDocMixins(issue, showAllMixins)
 
   $: mixins = _mixins.find((p) => p._id === notification.mixin.Collaborators)
-    ? mixins
-    : [...mixins, hierarchy.getClass(notification.mixin.Collaborators)]
+    ? _mixins
+    : [..._mixins, hierarchy.getClass(notification.mixin.Collaborators)]
 
   const allowedCollections = ['collaborators']
 

@@ -42,7 +42,11 @@ import notification, { DocNotifyContext, getClassCollaborators, NotificationCont
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
 import { getAccountBySocialId, getPerson } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import { createCollaboratorNotifications } from '@hcengineering/server-notification-resources'
+import {
+  createCollaboratorNotifications,
+  getAddCollaboratTxes,
+  getDocCollaborators
+} from '@hcengineering/server-notification-resources'
 import { jsonToHTML, markupToJSON } from '@hcengineering/text'
 import { extractReferences, markupToText, stripTags } from '@hcengineering/text-core'
 import { workbenchId } from '@hcengineering/workbench'
@@ -182,12 +186,23 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
       ? await control.findAll(ctx, contact.mixin.Employee, { _id: { $in: mentionedPersons as Ref<Employee>[] } })
       : []
   const collaboratorsFromMessage = [...employees.map((it) => it.personUuid), account].filter(notEmpty)
-  const currentCollaborators = await control.findAll(ctx, core.class.Collaborator, {
-    attachedTo: targetDoc._id
-  })
+  let currentCollaborators = (
+    await control.findAll(ctx, core.class.Collaborator, {
+      attachedTo: targetDoc._id
+    })
+  ).map((it) => it.collaborator)
+
+  if (currentCollaborators.length === 0) {
+    const mixin = getClassCollaborators(control.modelDb, control.hierarchy, targetDoc._class)
+    if (mixin !== undefined) {
+      const collaborators = await getDocCollaborators(ctx, targetDoc, mixin, control)
+      currentCollaborators = collaborators
+      res.push(...getAddCollaboratTxes(tx.objectId, tx.objectClass, tx.objectSpace, control, collaborators))
+    }
+  }
 
   for (const collab of collaboratorsFromMessage) {
-    if (currentCollaborators.some((it) => it.collaborator === collab)) {
+    if (currentCollaborators.includes(collab)) {
       continue
     }
 

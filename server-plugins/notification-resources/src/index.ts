@@ -1375,52 +1375,46 @@ async function updateCollaborators (
   tx: TxCUD<Doc>,
   cache: Map<Ref<Doc>, Collaborator[]>
 ): Promise<Tx[]> {
-  if (tx._class !== core.class.TxUpdateDoc && tx._class !== core.class.TxMixin) return []
+  if (tx._class !== core.class.TxCreateDoc && tx._class !== core.class.TxRemoveDoc) return []
+  if (tx.objectClass !== core.class.Collaborator) return []
 
   const hierarchy = control.hierarchy
 
   const mixin = getClassCollaborators(control.modelDb, hierarchy, tx.objectClass)
-  if (mixin === undefined) return []
+  if (mixin === undefined || tx.attachedToClass === undefined || tx.attachedTo === undefined) return []
 
-  const { objectClass, objectId, objectSpace } = tx
-  const ops = isMixinTx(tx) ? tx.attributes : (tx as TxUpdateDoc<Doc>).operations
-  const addedCollaborators = await getNewCollaborators(ops, mixin, objectClass, control)
-  const isSpace = control.hierarchy.isDerived(objectClass, core.class.Space)
-  const removedCollaborators = isSpace
-    ? await getRemovedMembers(ops, mixin, objectClass as Ref<Class<Space>>, control)
-    : []
+  if (hierarchy.classHierarchyMixin(tx.attachedToClass, activity.mixin.ActivityDoc) === undefined) return []
 
-  if (removedCollaborators.length === 0 && addedCollaborators.length === 0) return []
+  const contexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, { objectId: tx.attachedTo })
+  const res: Tx[] = []
+  if (tx._class === core.class.TxCreateDoc) {
+    const collab = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Collaborator>)
+    const addedInfo = await getReceiversInfo(ctx, [collab.collaborator], control)
 
-  const syncRes = await createSyncCollaboratorsTxes(
-    ctx,
-    control,
-    cache,
-    objectId,
-    objectClass,
-    objectSpace,
-    addedCollaborators,
-    removedCollaborators
-  )
-  const res = syncRes.txes
-  const toAdd = syncRes.toAdd
-
-  if (hierarchy.classHierarchyMixin(objectClass, activity.mixin.ActivityDoc) === undefined) return res
-
-  const contexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, { objectId })
-  const addedInfo = await getReceiversInfo(ctx, toAdd, control)
-
-  for (const info of addedInfo.values()) {
-    const context = getDocNotifyContext(control, contexts, objectId, info.account)
-    if (context !== undefined) {
-      if (context.hidden) {
-        res.push(control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, { hidden: false }))
+    for (const info of addedInfo.values()) {
+      const context = getDocNotifyContext(control, contexts, tx.attachedTo, info.account)
+      if (context !== undefined) {
+        if (context.hidden) {
+          res.push(control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, { hidden: false }))
+        }
       }
+      await createNotifyContext(
+        ctx,
+        control,
+        tx.attachedTo,
+        tx.attachedToClass,
+        tx.objectSpace,
+        info,
+        tx.modifiedBy,
+        undefined,
+        tx
+      )
     }
-    await createNotifyContext(ctx, control, objectId, objectClass, objectSpace, info, tx.modifiedBy, undefined, tx)
+  } else {
+    const removed = control.removedMap.get(tx.objectId) as Collaborator
+    if (removed === undefined) return []
+    await removeContexts(ctx, contexts, [removed.collaborator], control)
   }
-
-  await removeContexts(ctx, contexts, removedCollaborators, control)
 
   return res
 }
