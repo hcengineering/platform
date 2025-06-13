@@ -27,7 +27,8 @@ import {
   deleteMasterTag,
   editSpace,
   cardCustomLinkEncode,
-  cardCustomLinkMatch
+  cardCustomLinkMatch,
+  openCardInSidebar
 } from './utils'
 import ManageMasterTagsContent from './components/settings/ManageMasterTagsContent.svelte'
 import ManageMasterTagsTools from './components/settings/ManageMasterTagsTools.svelte'
@@ -61,6 +62,7 @@ import PropertiesCardSection from './components/sections/PropertiesSection.svelt
 import RelationsCardSection from './components/sections/RelationsSection.svelte'
 import FavoriteCardPresenter from './components/FavoriteCardPresenter.svelte'
 import CardTagColored from './components/CardTagColored.svelte'
+import CardWidgetTab from './components/CardWidgetTab.svelte'
 
 export { default as CardSelector } from './components/CardSelector.svelte'
 export { default as Navigator } from './components/navigator-next/Navigator.svelte'
@@ -98,6 +100,7 @@ export default async (): Promise<Resources> => ({
     RolesSection,
     EditRole,
     CardWidget,
+    CardWidgetTab,
     FavoriteCardPresenter,
     CardTagColored
   },
@@ -124,6 +127,7 @@ export default async (): Promise<Resources> => ({
     CardIdProvider: getCardId,
     GetCardLink: getCardLink,
     CardCustomLinkMatch: cardCustomLinkMatch,
-    CardCustomLinkEncode: cardCustomLinkEncode
+    CardCustomLinkEncode: cardCustomLinkEncode,
+    OpenCardInSidebar: openCardInSidebar
   }
 })

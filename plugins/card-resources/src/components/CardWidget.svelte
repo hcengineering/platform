@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { closeWidget, WidgetState } from '@hcengineering/workbench-resources'
-  import { Widget } from '@hcengineering/workbench'
+  import { closeWidget } from '@hcengineering/workbench-resources'
+  import { Widget, WidgetTab } from '@hcengineering/workbench'
   import { createQuery, createNotificationContextsQuery } from '@hcengineering/presentation'
   import { NotificationContext } from '@hcengineering/communication-types'
   import { createEventDispatcher } from 'svelte'
@@ -22,13 +22,12 @@
   import { Ref } from '@hcengineering/core'
   import { Button, Header, IconClose } from '@hcengineering/ui'
 
-  import EditCardTableOfContents from './EditCardTableOfContents.svelte'
   import card from '../plugin'
-  import { CardWidgetData } from '../utils'
   import CardPresenter from './CardPresenter.svelte'
+  import EditCardNewContent from './EditCardNewContent.svelte'
 
   export let widget: Widget | undefined
-  export let widgetState: WidgetState | undefined
+  export let tab: WidgetTab | undefined
   export let height: string
   export let width: string
 
@@ -36,22 +35,18 @@
   const contextsQuery = createNotificationContextsQuery()
   const dispatch = createEventDispatcher()
 
-  let data: CardWidgetData | undefined = undefined
-
   let doc: Card | undefined = undefined
   let context: NotificationContext | undefined = undefined
   let isContextLoaded = false
 
-  $: data = widgetState?.data as CardWidgetData
-
-  $: if (widget === undefined || data?._id === undefined) {
+  $: if (widget === undefined || tab === undefined) {
     closeWidget(card.ids.CardWidget as Ref<Widget>)
   }
 
-  $: data._id &&
+  $: tab?.id &&
     query.query(
       card.class.Card,
-      { _id: data._id },
+      { _id: tab.id as Ref<Card> },
       (res) => {
         if (res.length === 0) {
           closeWidget(card.ids.CardWidget as Ref<Widget>)
@@ -62,14 +57,14 @@
       { limit: 1 }
     )
 
-  $: data._id &&
-    contextsQuery.query({ card: data._id, limit: 1 }, (res) => {
+  $: tab?.id &&
+    contextsQuery.query({ card: tab.id as Ref<Card>, limit: 1 }, (res) => {
       context = res.getResult()[0]
       isContextLoaded = true
     })
 </script>
 
-{#if widget && data?._id}
+{#if widget && tab?.id}
   <div class="card-widget" style:width style:height>
     <Header type={'type-panel'} noPrint adaptive="disabled">
       <svelte:fragment slot="beforeTitle">
@@ -88,7 +83,7 @@
       <CardPresenter value={doc} noUnderline />
     </Header>
     {#if doc}
-      <EditCardTableOfContents {doc} {context} {isContextLoaded} readonly={false} />
+      <EditCardNewContent _id={doc._id} {doc} {context} {isContextLoaded} />
     {/if}
   </div>
 {/if}

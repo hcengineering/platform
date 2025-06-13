@@ -52,7 +52,7 @@
     isCollapsed = false
   }
 
-  $: color = getPlatformColorDef(getColorNumberByText(tag.label), $themeStore.dark).color
+  $: color = getPlatformColorDef(tag.background ?? 0, $themeStore.dark).color
 </script>
 
 <div class="header flex flex-gap-2">

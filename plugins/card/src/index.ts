@@ -24,7 +24,7 @@ import {
   Ref,
   Space
 } from '@hcengineering/core'
-import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
+import { Asset, IntlString, plugin, Plugin, Resource } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import { Preference } from '@hcengineering/preference'
 
@@ -165,6 +165,9 @@ const cardPlugin = plugin(cardId, {
   component: {
     LabelsPresenter: '' as AnyComponent,
     CardTagColored: '' as AnyComponent
+  },
+  function: {
+    OpenCardInSidebar: '' as Resource<(_id: Ref<Card>, card?: Card) => Promise<void>>
   }
 })
 
