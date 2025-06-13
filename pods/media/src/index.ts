@@ -55,6 +55,7 @@ async function main (): Promise<void> {
   })
 
   const queue = getPlatformQueue(application)
+  await queue.createTopic([topicTranscodeRequest, topicTranscodeResult], config.Partitions)
 
   const transcodeProducer = queue.getProducer<VideoTranscodeRequest>(ctx, topicTranscodeRequest)
 
