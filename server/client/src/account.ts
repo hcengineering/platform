@@ -54,7 +54,7 @@ export async function getTransactorEndpoint (
   const st = Date.now()
   while (true) {
     try {
-      const workspaceInfo = await accountClient.selectWorkspace('', kind, externalRegions)
+      const workspaceInfo = await accountClient.selectWorkspace('', true, kind, externalRegions)
       if (workspaceInfo === undefined) {
         throw new Error('Workspace not found')
       }

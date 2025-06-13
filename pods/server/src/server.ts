@@ -14,16 +14,11 @@
 // limitations under the License.
 //
 
-import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
+import { systemAccount, systemAccountUuid, type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
-import { startSessionManager } from '@hcengineering/server'
-import {
-  type CommunicationApiFactory,
-  type PlatformQueue,
-  type SessionManager,
-  type StorageConfiguration
-} from '@hcengineering/server-core'
+import { startSessionManager, type SessionManager } from '@hcengineering/server'
+import { type CommunicationApiFactory, type EndpointConnectionFactory, type PlatformQueue, type StorageConfiguration } from '@hcengineering/server-core'
 
 import { Api as CommunicationApi } from '@hcengineering/communication-server'
 import {
@@ -53,6 +48,7 @@ import {
 } from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
 import { startHttpServer } from './server_http'
+import { connect } from '@hcengineering/client-resources'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 registerStringLoaders()
@@ -90,6 +86,9 @@ export function start (
     }
 
     mongoUrl?: string
+
+    region: string
+    endpointName: string
   }
 ): { shutdown: () => Promise<void>, sessionManager: SessionManager } {
   registerTxAdapterFactory('mongodb', createMongoTxAdapter)
@@ -144,14 +143,21 @@ export function start (
     )
   }
 
+  const endpointFactory: EndpointConnectionFactory = (ctx, endpointUrl, handler, opt) => {
+    return connect(endpointUrl, handler, systemAccountUuid, opt)
+  }
+
   const sessionManager = startSessionManager(metrics, {
     pipelineFactory,
+    endpointFactory,
     communicationApiFactory,
     brandingMap: opt.brandingMap,
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,
     profiling: opt.profiling,
-    queue: opt.queue
+    queue: opt.queue,
+    region: opt.region,
+    endpointName: opt.endpointName
   })
   const shutdown = startHttpServer(metrics, sessionManager, opt.port, opt.accountsUrl, externalStorage)
   return {

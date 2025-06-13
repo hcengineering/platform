@@ -13,22 +13,14 @@
 // limitations under the License.
 //
 
-import {
-  type ServerApi as CommunicationApi,
-  type RequestEvent as CommunicationEvent,
-  type EventResult
-} from '@hcengineering/communication-sdk-types'
-import {
-  type FindMessagesGroupsParams,
-  type FindMessagesParams,
-  type Message,
-  type MessagesGroup
-} from '@hcengineering/communication-types'
+import { type ServerApi as CommunicationApi, type EventResult } from '@hcengineering/communication-sdk-types'
 import {
   type Account,
   type AccountUuid,
   type Branding,
   type Class,
+  type ClientConnection,
+  type ClientConnectOptions,
   type Doc,
   type DocumentQuery,
   type Domain,
@@ -51,6 +43,7 @@ import {
   type Timestamp,
   type Tx,
   type TxFactory,
+  type TxHandler,
   type TxResult,
   type UserStatus,
   type WorkspaceIds,
@@ -58,14 +51,14 @@ import {
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
 import type { LiveQuery } from '@hcengineering/query'
-import type { RateLimitInfo, ReqId, Request, Response } from '@hcengineering/rpc'
-import type { Token } from '@hcengineering/server-token'
+import type { ReqId, Request, Response } from '@hcengineering/rpc'
 import { type Readable } from 'stream'
 
 import type { DbAdapter, DomainHelper } from './adapter'
-import type { StatisticsElement, WorkspaceStatistics } from './stats'
+import { type PlatformQueue, type PlatformQueueProducer, type QueueTopic } from './queue'
 import { type StorageAdapter } from './storage'
-import { type PlatformQueueProducer, type QueueTopic, type PlatformQueue } from './queue'
+import type { Token } from '@hcengineering/server-token'
+import type { StatisticsElement } from './stats'
 
 export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
   domain?: Domain // Allow to find for Doc's in specified domain only.
@@ -134,8 +127,8 @@ export interface Middleware {
 export type BroadcastFunc = (
   ctx: MeasureContext<SessionData>,
   tx: Tx[],
-  targets?: string | string[],
-  exclude?: string[]
+  targets?: AccountUuid | AccountUuid[],
+  exclude?: AccountUuid[]
 ) => void
 
 export type BroadcastSessionsFunc = (ctx: MeasureContext, sessionIds: string[], result: any) => void
@@ -246,6 +239,16 @@ export type PipelineFactory = (
   branding: Branding | null,
   communicationApi: CommunicationApi | null
 ) => Promise<Pipeline>
+
+/**
+ * @public
+ */
+export type EndpointConnectionFactory = (
+  ctx: MeasureContext,
+  endpoint: string,
+  handler: TxHandler,
+  opt: ClientConnectOptions
+) => ClientConnection
 
 export type CommunicationApiFactory = (
   ctx: MeasureContext,
@@ -543,6 +546,7 @@ export interface SessionRequest {
   id: string
   params: any
   start: number
+  workspaceId?: WorkspaceUuid
 }
 
 export interface ClientSessionCtx {
@@ -669,77 +673,6 @@ export let LOGGING_ENABLED = true
  */
 export function disableLogging (): void {
   LOGGING_ENABLED = false
-}
-
-export interface AddSessionActive {
-  session: Session
-  context: MeasureContext
-  workspaceId: WorkspaceUuid
-}
-
-export type GetWorkspaceResponse =
-  | { upgrade: true, progress?: number }
-  | { error: any, terminate?: boolean, specialError?: 'archived' | 'migration' }
-
-export type AddSessionResponse = AddSessionActive | GetWorkspaceResponse
-
-/**
- * @public
- */
-export interface SessionManager {
-  // workspaces: Map<WorkspaceUuid, Workspace>
-  sessions: Map<string, { session: Session, socket: ConnectionSocket }>
-
-  addSession: (
-    ctx: MeasureContext,
-    ws: ConnectionSocket,
-    token: Token,
-    rawToken: string,
-    sessionId: string | undefined
-  ) => Promise<AddSessionResponse>
-
-  broadcastAll: (workspace: WorkspaceUuid, tx: Tx[], targets?: string[]) => void
-
-  close: (ctx: MeasureContext, ws: ConnectionSocket, workspaceId: WorkspaceUuid) => Promise<void>
-
-  forceClose: (wsId: WorkspaceUuid, ignoreSocket?: ConnectionSocket) => Promise<void>
-
-  closeWorkspaces: (ctx: MeasureContext) => Promise<void>
-
-  scheduleMaintenance: (timeMinutes: number) => void
-
-  profiling?: {
-    start: () => void
-    stop: () => Promise<string | undefined>
-  }
-
-  handleRequest: <S extends Session>(
-    requestCtx: MeasureContext,
-    service: S,
-    ws: ConnectionSocket,
-    request: Request<any>,
-    workspace: WorkspaceUuid
-  ) => Promise<void>
-
-  handleRPC: <S extends Session>(
-    requestCtx: MeasureContext,
-    service: S,
-    ws: ConnectionSocket,
-    operation: (ctx: ClientSessionCtx, rateLimit?: RateLimitInfo) => Promise<void>
-  ) => Promise<RateLimitInfo | undefined>
-
-  createOpContext: (
-    ctx: MeasureContext,
-    sendCtx: MeasureContext,
-    pipeline: Pipeline,
-    communicationApi: CommunicationApi,
-    requestId: Request<any>['id'],
-    service: Session,
-    ws: ConnectionSocket,
-    rateLimit?: RateLimitInfo
-  ) => ClientSessionCtx
-
-  getStatistics: () => WorkspaceStatistics[]
 }
 
 export const pingConst = 'ping'

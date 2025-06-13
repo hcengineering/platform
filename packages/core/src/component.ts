@@ -15,9 +15,9 @@
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { BenchmarkDoc } from './benchmark'
-import { AccountRole } from './classes'
 import type {
   Account,
+  AccountUuid,
   AnyAttribute,
   ArrOf,
   Association,
@@ -59,21 +59,12 @@ import type {
   TypeAny,
   TypedSpace,
   UserStatus,
-  Version,
-  AccountUuid
+  Version
 } from './classes'
+import { AccountRole } from './classes'
 import { type Status, type StatusCategory } from './status'
-import type {
-  Tx,
-  TxApplyIf,
-  TxCUD,
-  TxCreateDoc,
-  TxMixin,
-  TxModelUpgrade,
-  TxRemoveDoc,
-  TxUpdateDoc,
-  TxWorkspaceEvent
-} from './tx'
+import type { Tx, TxApplyIf, TxCUD, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc, TxWorkspaceEvent } from './tx'
+import type { WorkspaceUuid } from './utils'
 
 /**
  * @public
@@ -89,9 +80,13 @@ export const systemAccountUuid = '1749089e-22e6-48de-af4e-165e18fbd2f9' as Accou
 export const systemAccount: Account = {
   uuid: systemAccountUuid,
   role: AccountRole.Owner,
+  targetWorkspace: systemAccountUuid as any as WorkspaceUuid,
+  personalWorkspace: systemAccountUuid as any as WorkspaceUuid,
   primarySocialId: '' as PersonId,
   socialIds: [],
-  fullSocialIds: []
+  fullSocialIds: new Map(),
+  socialIdsByValue: new Map(),
+  workspaces: {}
 }
 
 export const configUserAccountUuid = '0d94731c-0787-4bcd-aefe-304efc3706b1' as AccountUuid
@@ -107,7 +102,6 @@ export default plugin(coreId, {
     Interface: '' as Ref<Class<Interface<Doc>>>,
     Attribute: '' as Ref<Class<AnyAttribute>>,
     Tx: '' as Ref<Class<Tx>>,
-    TxModelUpgrade: '' as Ref<Class<TxModelUpgrade>>,
     TxWorkspaceEvent: '' as Ref<Class<TxWorkspaceEvent>>,
     TxApplyIf: '' as Ref<Class<TxApplyIf>>,
     TxCUD: '' as Ref<Class<TxCUD<Doc>>>,
@@ -116,6 +110,7 @@ export default plugin(coreId, {
     TxUpdateDoc: '' as Ref<Class<TxUpdateDoc<Doc>>>,
     TxRemoveDoc: '' as Ref<Class<TxRemoveDoc<Doc>>>,
     Space: '' as Ref<Class<Space>>,
+    Workspace: '' as WorkspaceUuid,
     SystemSpace: '' as Ref<Class<SystemSpace>>,
     TypedSpace: '' as Ref<Class<TypedSpace>>,
     SpaceTypeDescriptor: '' as Ref<Class<SpaceTypeDescriptor>>,
@@ -191,6 +186,11 @@ export default plugin(coreId, {
     Space: '' as Ref<TypedSpace>,
     Configuration: '' as Ref<Space>,
     Workspace: '' as Ref<Space>
+  },
+  workspace: {
+    Personal: '#personal' as WorkspaceUuid, // Special identifier to map into users' personal workspace
+    Any: '#any' as WorkspaceUuid, // Special identifier to map into any workspace, mostly for tests
+    Model: '#model' as WorkspaceUuid // Special identifier for model system transactions.,
   },
   account: {
     System: '' as PersonId,

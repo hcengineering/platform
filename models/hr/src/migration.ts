@@ -15,7 +15,7 @@
 
 import {
   type Space,
-  TxOperations,
+  type TxOperations,
   type Ref,
   type Class,
   type Doc,
@@ -128,8 +128,7 @@ export const hrOperation: MigrateOperation = {
       {
         state: 'create-defaults-v2',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await createDepartment(tx)
+          await createDepartment(client)
         }
       }
     ])

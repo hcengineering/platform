@@ -191,7 +191,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     if (createTx.objectClass === core.class.SystemSpace) {
       this.systemSpaces.add(createTx.objectId)
     } else {
-      const res = TxProcessor.createDoc2Doc<Space>(createTx)
+      const res = TxProcessor.createDoc2Doc(createTx)
       this.addSpace(res)
     }
   }
@@ -253,9 +253,10 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  private brodcastEvent (ctx: MeasureContext<SessionData>, users: AccountUuid[], space?: Ref<Space>): void {
-    const targets = this.getTargets(users)
+  private brodcastEvent (ctx: MeasureContext<SessionData>, users: AccountUuid[] | undefined, space?: Ref<Space>): void {
+    const targets = users != null ? this.getTargets(users) : []
     const tx: TxWorkspaceEvent = {
+      _uuid: this.context.workspace.uuid,
       _class: core.class.TxWorkspaceEvent,
       _id: generateId(),
       event: WorkspaceEvent.SecurityChange,
@@ -266,10 +267,13 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       params: null
     }
     ctx.contextData.broadcast.txes.push(tx)
-    ctx.contextData.broadcast.targets['security' + tx._id] = (it) => {
-      // TODO: I'm not sure it is called
-      if (it._id === tx._id) {
-        return targets
+
+    if (targets !== null) {
+      ctx.contextData.broadcast.targets['security' + tx._id] = (it) => {
+        // TODO: I'm not sure it is called
+        if (it._id === tx._id) {
+          return targets
+        }
       }
     }
   }
@@ -281,10 +285,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   }
 
   private broadcastAll (ctx: MeasureContext<SessionData>, space: SpaceWithMembers): void {
-    const { socialStringsToUsers } = ctx.contextData
-    const accounts = Array.from(new Set(socialStringsToUsers.values()))
-
-    this.brodcastEvent(ctx, accounts, space._id)
+    this.brodcastEvent(ctx, undefined, space._id)
   }
 
   private async handleUpdate (ctx: MeasureContext, tx: TxCUD<Space>): Promise<void> {
@@ -343,7 +344,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  getTargets (accounts: AccountUuid[]): string[] {
+  getTargets (accounts: AccountUuid[]): AccountUuid[] {
     const res = Array.from(new Set(accounts))
     // We need to add system account for targets for integrations to work properly
     res.push(systemAccountUuid)

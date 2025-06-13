@@ -394,7 +394,7 @@ export class GithubWorker implements IntegrationManager {
     const token = generateToken(systemAccountUuid, this.workspace.uuid, { service: 'github', mode: 'github' })
     this.accountClient = getAccountClient(token, 30000)
 
-    this._client = new TxOperations(this.client, core.account.System)
+    this._client = new TxOperations(this.client, core.account.System, this.workspace.uuid)
     this.liveQuery = new LiveQuery(client)
 
     this.repositoryManager = new RepositorySyncMapper(this.ctx.newChild('repository', {}), this._client, this.app)
@@ -579,7 +579,7 @@ export class GithubWorker implements IntegrationManager {
       try {
         await this.platform.checkRefreshToken(record, true)
 
-        const ops = new TxOperations(this.client, account._id)
+        const ops = new TxOperations(this.client, account._id, this.workspace.uuid)
         await syncUser(ctx, record, userAuth, ops, account._id)
       } catch (err: any) {
         try {
@@ -876,7 +876,7 @@ export class GithubWorker implements IntegrationManager {
   }
 
   private registerNotifyHandler (): void {
-    this.client.notify = (...tx: Tx[]) => {
+    this.client.notify = (tx: Tx[]) => {
       void this.liveQuery
         .tx(...tx)
         .then(() => {
@@ -1007,7 +1007,7 @@ export class GithubWorker implements IntegrationManager {
     const byRepository = this.groupByRepository(docs)
 
     const ints = Array.from(this.integrations.values())
-    const derivedClient = new TxOperations(this.client, core.account.System, true)
+    const derivedClient = new TxOperations(this.client, core.account.System, this.workspace.uuid, true)
     for (const [repository, docs] of byRepository.entries()) {
       const integration = ints.find((it) => repositories.find((q) => q._id === repository))
       if (integration?.octokit === undefined) {
@@ -1073,7 +1073,7 @@ export class GithubWorker implements IntegrationManager {
     // We need to apply migrations if required.
     const migrations = await this.client.findAll<MigrationState>(core.class.MigrationState, {})
 
-    const derivedClient = new TxOperations(this.client, core.account.System, true)
+    const derivedClient = new TxOperations(this.client, core.account.System, this.workspace.uuid, true)
 
     if (migrations.find((it) => it.plugin === githubId && it.state === key) === undefined) {
       let modifiedOn = 0
@@ -1378,7 +1378,7 @@ export class GithubWorker implements IntegrationManager {
       _id: { $in: attachedTo }
     })
 
-    const derivedClient = new TxOperations(this.client, core.account.System, true)
+    const derivedClient = new TxOperations(this.client, core.account.System, this.workspace.uuid, true)
 
     const docsMap = new Map<Ref<Doc>, Doc>(externalDocs.map((it) => [it._id as Ref<Doc>, it]))
     const orderedSyncInfo = [...syncInfo]
@@ -1585,7 +1585,7 @@ export class GithubWorker implements IntegrationManager {
           if (!enabled) {
             return
           }
-          const derivedClient = new TxOperations(this.client, core.account.System, true)
+          const derivedClient = new TxOperations(this.client, core.account.System, this.workspace.uuid, true)
 
           const { projects, repositories } = await this.collectActiveProjects()
 
@@ -1673,7 +1673,7 @@ export class GithubWorker implements IntegrationManager {
     if (integration === undefined) {
       return
     }
-    const derivedClient = new TxOperations(this.client, core.account.System, true)
+    const derivedClient = new TxOperations(this.client, core.account.System, this.workspace.uuid, true)
     for (const { _class, mapper } of this.mappers) {
       if (_class.includes(requestClass)) {
         try {
@@ -1723,7 +1723,7 @@ export class GithubWorker implements IntegrationManager {
         return undefined
       }
 
-      await GithubWorker.checkIntegrations(client, installations)
+      await GithubWorker.checkIntegrations(client, installations, workspace.uuid)
 
       const worker = new GithubWorker(
         ctx,
@@ -1746,11 +1746,15 @@ export class GithubWorker implements IntegrationManager {
     }
   }
 
-  static async checkIntegrations (client: Client, installations: Map<number, InstallationRecord>): Promise<void> {
+  static async checkIntegrations (
+    client: Client,
+    installations: Map<number, InstallationRecord>,
+    workspace: WorkspaceUuid
+  ): Promise<void> {
     const wsIntegerations = await client.findAll(github.class.GithubIntegration, {})
     for (const intValue of wsIntegerations) {
       if (!installations.has(intValue.installationId)) {
-        const ops = new TxOperations(client, core.account.System)
+        const ops = new TxOperations(client, core.account.System, workspace)
         await ops.remove<GithubIntegration>(intValue)
       }
     }

@@ -13,19 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import presentation, { IconWithEmoji, isAdminUser } from '@hcengineering/presentation'
+  import { getCurrentAccount } from '@hcengineering/core'
+  import presentation, { IconWithEmoji, getClient, isAdminUser, singleWorkspace } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/tracker'
   import { Icon, Label, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { NavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
-  import { getCurrentAccount } from '@hcengineering/core'
 
   export let value: Project | undefined
   export let inline: boolean = false
   export let accent: boolean = false
   export let colorInherit: boolean = false
   export let openIssues: boolean
+
+  $: wsInfo = value != null ? getClient().getWorkspaces()[value._uuid] : undefined
 </script>
 
 {#if value}
@@ -56,5 +58,11 @@
         <Label label={presentation.string.Archived} />
       {/if}
     </span>
+
+    {#if !$singleWorkspace && wsInfo?.name != null}
+      <div class="ml-2">
+        ({wsInfo.name})
+      </div>
+    {/if}
   </div>
 {/if}

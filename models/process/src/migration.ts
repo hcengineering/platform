@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import core, { type Ref, TxOperations } from '@hcengineering/core'
+import { type Ref } from '@hcengineering/core'
 import {
-  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationUpgradeClient,
+  tryUpgrade
 } from '@hcengineering/model'
 import { type Func, parseContext, type ProcessFunction } from '@hcengineering/process'
 import { processId } from '.'
@@ -60,7 +60,6 @@ function getContext (value: string): string | undefined {
 }
 
 async function migrateStateFuncs (client: MigrationUpgradeClient): Promise<void> {
-  const txOp = new TxOperations(client, core.account.System)
   const states = await client.findAll(process.class.State, {})
   for (const state of states) {
     let changed = false
@@ -76,7 +75,7 @@ async function migrateStateFuncs (client: MigrationUpgradeClient): Promise<void>
       }
     }
     if (changed) {
-      await txOp.updateDoc(state._class, state.space, state._id, { actions })
+      await client.updateDoc(state._class, state.space, state._id, { actions })
     }
   }
 }

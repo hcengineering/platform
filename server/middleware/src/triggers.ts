@@ -270,7 +270,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     attachedTo: Pick<Doc, '_class' | 'space'>,
     update: DocumentUpdate<D>
   ): Tx {
-    const txFactory = new TxFactory(modifiedBy, true)
+    const txFactory = new TxFactory(modifiedBy, this.context.workspace.uuid, true)
     const baseClass = this.context.hierarchy.getBaseClass(_class)
     if (baseClass !== _class) {
       // Mixin operation is required.
@@ -462,7 +462,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
 
   private deleteObject (ctx: MeasureContext, object: Doc, removedMap: Map<Ref<Doc>, Doc>): Tx[] {
     const result: Tx[] = []
-    const factory = new TxFactory(object.modifiedBy, true)
+    const factory = new TxFactory(object.modifiedBy, this.context.workspace.uuid, true)
     if (this.context.hierarchy.isDerived(object._class, core.class.AttachedDoc)) {
       const adoc = object as AttachedDoc
       const nestedTx = factory.createTxRemoveDoc(adoc._class, adoc.space, adoc._id)
@@ -515,7 +515,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       if (rtx.operations.space === undefined || rtx.operations.space === rtx.objectSpace) {
         continue
       }
-      const factory = new TxFactory(tx.modifiedBy, true)
+      const factory = new TxFactory(tx.modifiedBy, this.context.workspace.uuid, true)
       for (const [, attribute] of this.context.hierarchy.getAllAttributes(rtx.objectClass)) {
         if (!this.context.hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
           continue

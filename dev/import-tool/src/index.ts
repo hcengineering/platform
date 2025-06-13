@@ -95,7 +95,7 @@ export function importTool (): void {
 
     console.log('Connecting to Transactor URL: ', selectedWs.endpoint)
     const connection = await createClient(selectedWs.endpoint, selectedWs.token)
-    const client = new TxOperations(connection, socialId)
+    const client = new TxOperations(connection, socialId, selectedWs.workspace)
     const fileUploader = new FrontFileUploader(
       getFrontUrl(),
       selectedWs.workspace,

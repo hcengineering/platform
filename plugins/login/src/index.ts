@@ -96,7 +96,11 @@ export default plugin(loginId, {
     LeaveWorkspace: '' as Resource<(account: string) => Promise<LoginInfo | null>>,
     ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,
     SelectWorkspace: '' as Resource<
-    (workspace: string, token: string | null | undefined) => Promise<[Status, WorkspaceLoginInfo | undefined]>
+    (
+      workspace: string,
+      token: string | null | undefined,
+      singleWorkspace?: boolean
+    ) => Promise<[Status, WorkspaceLoginInfo | undefined]>
     >,
     ExchangeGuestToken: '' as Resource<(token: string) => Promise<string>>,
     FetchWorkspace: '' as Resource<() => Promise<[Status, WorkspaceInfoWithStatus | undefined]>>,

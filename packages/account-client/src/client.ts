@@ -59,6 +59,7 @@ export interface AccountClient {
   getUserWorkspaces: () => Promise<WorkspaceInfoWithStatus[]>
   selectWorkspace: (
     workspaceUrl: string,
+    singleWorkspace?: boolean,
     kind?: 'external' | 'internal' | 'byregion',
     externalRegions?: string[]
   ) => Promise<WorkspaceLoginInfo>
@@ -283,12 +284,13 @@ class AccountClientImpl implements AccountClient {
 
   async selectWorkspace (
     workspaceUrl: string,
+    singleWorkspace?: boolean,
     kind: 'external' | 'internal' | 'byregion' = 'external',
     externalRegions: string[] = []
   ): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'selectWorkspace' as const,
-      params: { workspaceUrl, kind, externalRegions }
+      params: { workspaceUrl, kind, externalRegions, singleWorkspace: singleWorkspace ?? true }
     }
 
     return await this.rpc(request)

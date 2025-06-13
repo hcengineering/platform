@@ -34,7 +34,7 @@ import core, {
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 
-export const txFactory = new TxFactory(core.account.System)
+export const txFactory = new TxFactory(core.account.System, core.workspace.Model)
 
 export function createClass (_class: Ref<Class<Obj>>, attributes: Data<Class<Obj>>): TxCreateDoc<Doc> {
   return txFactory.createTxCreateDoc(core.class.Class, core.space.Model, attributes, _class)

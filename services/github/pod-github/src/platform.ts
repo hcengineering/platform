@@ -252,13 +252,13 @@ export class PlatformWorker {
 
         const oldWorker = this.clients.get(oldWorkspace) as GithubWorker
         if (oldWorker !== undefined) {
-          await this.removeInstallationFromWorkspace(oldWorker.client, installationId)
+          await this.removeInstallationFromWorkspace(oldWorker.client, installationId, oldWorkspace)
           await oldWorker.reloadRepositories(installationId)
         } else {
           let client: Client | undefined
           try {
             ;({ client } = await createPlatformClient(oldWorkspace, 30000))
-            await this.removeInstallationFromWorkspace(oldWorker, installationId)
+            await this.removeInstallationFromWorkspace(oldWorker, installationId, oldWorkspace)
             await client.close()
           } catch (err: any) {
             ctx.error('failed to remove old installation from workspace', { workspace: oldWorkspace, installationId })
@@ -307,10 +307,14 @@ export class PlatformWorker {
     this.triggerCheckWorkspaces()
   }
 
-  private async removeInstallationFromWorkspace (client: Client, installationId: number): Promise<void> {
+  private async removeInstallationFromWorkspace (
+    client: Client,
+    installationId: number,
+    workspace: WorkspaceUuid
+  ): Promise<void> {
     const wsIntegerations = await client.findAll(github.class.GithubIntegration, { installationId })
 
-    const ops = new TxOperations(client, core.account.System)
+    const ops = new TxOperations(client, core.account.System, workspace)
     for (const intValue of wsIntegerations) {
       await ops.remove<GithubIntegration>(intValue)
     }
@@ -427,7 +431,7 @@ export class PlatformWorker {
           shouldClose = true
           ;({ client: platformClient } = await createPlatformClient(payload.workspace, 30000))
         }
-        const client = new TxOperations(platformClient, payload.accountId)
+        const client = new TxOperations(platformClient, payload.accountId, payload.workspace)
 
         let personAuths = await client.findAll(github.class.GithubAuthentication, {
           attachedTo: payload.accountId
@@ -790,7 +794,7 @@ export class PlatformWorker {
         integeration.enabled = false
         integeration.synchronized = new Set()
 
-        await this.removeInstallationFromWorkspace(worker._client, installId)
+        await this.removeInstallationFromWorkspace(worker._client, installId, worker.workspace.uuid)
 
         await worker._client.remove(integeration.integration)
       }

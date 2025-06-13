@@ -48,7 +48,7 @@ export class WorkspaceClient {
 
   static async run (ctx: MeasureContext, accountClient: AccountClient, workspace: WorkspaceUuid): Promise<void> {
     const client = await getClient(getWorkspaceToken(workspace))
-    const txOp = new TxOperations(client, core.account.System)
+    const txOp = new TxOperations(client, core.account.System, workspace)
     const instance = new WorkspaceClient(ctx, accountClient, txOp, workspace)
 
     await instance.init()
@@ -142,7 +142,7 @@ export class WorkspaceClient {
     type: 'create' | 'update' | 'delete'
   ): Promise<void> {
     const client = await getClient(getWorkspaceToken(workspace))
-    const txOp = new TxOperations(client, core.account.System)
+    const txOp = new TxOperations(client, core.account.System, workspace)
     const token = await getTokenByEvent(accountClient, txOp, event, workspace)
     if (token != null) {
       const instance = new WorkspaceClient(ctx, accountClient, txOp, workspace)

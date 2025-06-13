@@ -47,9 +47,8 @@ export const trainingOperation: MigrateOperation = {
       {
         state: 'create-defaults',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await ensureTypedSpace(tx)
-          await ensureSequence(tx)
+          await ensureTypedSpace(client)
+          await ensureSequence(client)
         }
       }
     ])

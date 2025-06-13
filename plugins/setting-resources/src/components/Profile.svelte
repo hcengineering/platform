@@ -35,7 +35,7 @@
 
   const client = getClient()
   const account = getCurrentAccount()
-  const email = account.fullSocialIds.find((si) => si.type === SocialIdType.EMAIL)?.value ?? ''
+  const email = Array.from(account.fullSocialIds.values()).find((si) => si.type === SocialIdType.EMAIL)?.value ?? ''
 
   let firstName = $myEmployeeStore !== undefined ? getFirstName($myEmployeeStore.name) : ''
   let lastName = $myEmployeeStore !== undefined ? getLastName($myEmployeeStore.name) : ''

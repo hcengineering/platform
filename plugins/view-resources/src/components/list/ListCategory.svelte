@@ -40,7 +40,7 @@
     Scroller
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
   import { showMenu } from '../../actions'
   import { FocusSelection, SelectionFocusProvider, focusStore } from '../../selection'
@@ -96,6 +96,12 @@
 
   const docsQuery = createQuery()
 
+  let destroyed = false
+  onDestroy(() => {
+    destroyed = true
+    docsQuery.unsubscribe()
+  })
+
   const autoFoldLimit = 20
   const defaultLimit = 20
   const singleCategoryLimit = 50
@@ -134,15 +140,17 @@
 
   $: if (lastLevel) {
     void limiter.add(async () => {
+      if (destroyed) return
       try {
         loading = docsQuery.query(
           _class,
           { ...finalResultQuery, ...docKeys },
           (res) => {
+            if (destroyed) return
             items = res
             loading = false
             const focusDoc = items.find((it) => it._id === $focusStore.focus?._id)
-            if (focusDoc) {
+            if (focusDoc != null) {
               handleRowFocused(focusDoc)
             }
           },
@@ -150,7 +158,7 @@
         )
       } catch (e) {
         console.error(e)
-        loading = false
+        if (!destroyed) loading = false
       }
     })
   } else {
@@ -183,7 +191,7 @@
 
   $: initCollapsed(singleCat, lastLevel, level)
 
-  const handleRowFocused = (object: Doc) => {
+  const handleRowFocused = (object: Doc): void => {
     dispatch('row-focus', object)
   }
 
@@ -191,7 +199,7 @@
 
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
 
-  const handleMenuOpened = async (event: MouseEvent, object: Doc) => {
+  const handleMenuOpened = async (event: MouseEvent, object: Doc): Promise<void> => {
     handleRowFocused(object)
 
     if (!selectedObjectIdsSet.has(object._id)) {
@@ -208,7 +216,7 @@
 
     return {
       ...newObjectProps(doc),
-      ...(doc ? { space: doc.space } : {}),
+      ...(doc != null ? { space: doc.space } : {}),
       ...(groupValue !== undefined ? { [groupByKey]: groupValue } : {})
     }
   }
@@ -274,8 +282,7 @@
   function dragLeaveCat (ev: MouseEvent): void {
     ev.stopPropagation()
     if (dragItemIndex !== undefined) {
-      items.splice(dragItemIndex, 1)
-      items = items
+      items = items.filter((_, index) => index !== dragItemIndex)
       dragItemIndex = undefined
     }
   }
@@ -326,29 +333,36 @@
   }
 
   async function drop (update: DocumentUpdate<Doc> = {}): Promise<void> {
-    if (dragItem.doc !== undefined) {
-      const props = _newObjectProps(dragItem.doc)
-      if (props !== undefined) {
-        for (const key in props) {
-          const value = props[key]
-          if ((dragItem.doc as any)[key] !== value) {
-            ;(update as any)[key] = value
+    try {
+      if (dragItem.doc !== undefined) {
+        const props = _newObjectProps(dragItem.doc)
+        if (props !== undefined) {
+          for (const key in props) {
+            const value = props[key]
+            if ((dragItem.doc as any)[key] !== value) {
+              ;(update as any)[key] = value
+            }
           }
+          if (Object.keys(update).length > 0) {
+            await client.update(dragItem.doc, update)
+          }
+        } else {
+          dragItem.revert?.()
         }
-        if (Object.keys(update).length > 0) {
-          await client.update(dragItem.doc, update)
-        }
-      } else {
-        dragItem.revert?.()
       }
+    } catch (error) {
+      console.error('Failed to update document:', error)
+      dragItem.revert?.()
+    } finally {
+      dragItem.doc = undefined
+      dragItem.revert = undefined
+      dragItemIndex = undefined
     }
-    dragItem.doc = undefined
-    dragItem.revert = undefined
-    dragItemIndex = undefined
   }
 
   const dragEndListener: any = (ev: DragEvent, initIndex: number) => {
     ev.preventDefault()
+    if (!listDiv) return
     const rect = listDiv.getBoundingClientRect()
     const inRect = ev.clientY > rect.top && ev.clientY < rect.top + rect.height
     if (!inRect) {
@@ -360,12 +374,15 @@
         dragItem.revert = undefined
       }
     }
+    // Clean up the event listener
+    ;(ev.target as EventTarget)?.removeEventListener('dragend', dragEndListener)
   }
 
   function dragStartHandler (e: CustomEvent<any>): void {
     const { target, index } = e.detail
     dragItemIndex = index
-    ;(target as EventTarget).addEventListener('dragend', (e) => dragEndListener(e, index))
+    const listener = (e: DragEvent): void => dragEndListener(e, index)
+    ;(target as EventTarget).addEventListener('dragend', listener as any)
   }
 
   function dragStart (ev: DragEvent, docObject: Doc, i: number): void {
@@ -373,7 +390,8 @@
       ev.dataTransfer.effectAllowed = 'move'
       ev.dataTransfer.dropEffect = 'move'
     }
-    ev.target?.addEventListener('dragend', (e) => dragEndListener(e, i))
+    const listener = (e: DragEvent): void => dragEndListener(e, i)
+    ev.target?.addEventListener('dragend', listener as any)
     dragItem = {
       doc: docObject,
       revert: () => {
@@ -417,7 +435,7 @@
 
   function getDocItemModel (docClass: Ref<Class<Doc>>): AttributeModel[] {
     let res = itemModels.get(docClass)
-    if (res) {
+    if (res != null) {
       return res
     }
 

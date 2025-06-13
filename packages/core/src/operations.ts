@@ -8,10 +8,11 @@ import {
   type MixinUpdate,
   type ModelDb,
   platformNow,
-  toFindResult
+  toFindResult,
+  type WorkspaceUuid
 } from '.'
 import type {
-  PersonId,
+  AccountWorkspace,
   AnyAttribute,
   AttachedData,
   AttachedDoc,
@@ -19,6 +20,7 @@ import type {
   Data,
   Doc,
   Mixin,
+  PersonId,
   Ref,
   Space,
   Timestamp
@@ -50,9 +52,22 @@ export class TxOperations implements Omit<Client, 'notify' | 'getConnection'> {
   constructor (
     readonly client: Client,
     readonly user: PersonId,
+    private readonly _workspaceUuid: WorkspaceUuid | (() => WorkspaceUuid),
     readonly isDerived: boolean = false
   ) {
-    this.txFactory = new TxFactory(user, isDerived)
+    this.txFactory = new TxFactory(user, this._workspaceUuid, isDerived)
+  }
+
+  get workspaceUuid (): WorkspaceUuid {
+    return this.txFactory.workspaceUuid
+  }
+
+  getAvailableWorkspaces (): WorkspaceUuid[] {
+    return this.client.getAvailableWorkspaces()
+  }
+
+  getWorkspaces (): Record<WorkspaceUuid, AccountWorkspace> {
+    return this.client.getWorkspaces()
   }
 
   getHierarchy (): Hierarchy {
@@ -473,9 +488,11 @@ export class ApplyOperations extends TxOperations {
           this.txes.push(tx as TxCUD<Doc>)
         }
         return {}
-      }
+      },
+      getAvailableWorkspaces: () => ops.client.getAvailableWorkspaces(),
+      getWorkspaces: () => ops.client.getWorkspaces()
     }
-    super(txClient, ops.user, isDerived ?? false)
+    super(txClient, ops.user, ops.workspaceUuid, isDerived ?? false)
   }
 
   match<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>): ApplyOperations {
@@ -564,9 +581,11 @@ export class TxBuilder extends TxOperations {
           this.txes.push(tx as TxCUD<Doc>)
         }
         return {}
-      }
+      },
+      getAvailableWorkspaces: () => [],
+      getWorkspaces: () => ({})
     }
-    super(txClient, user)
+    super(txClient, user, core.workspace.Model)
   }
 }
 

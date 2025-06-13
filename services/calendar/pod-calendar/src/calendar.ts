@@ -39,7 +39,7 @@ export class CalendarClient {
     client: Client,
     private readonly workspace: WorkspaceClient
   ) {
-    this.client = new TxOperations(client, this.user.userId)
+    this.client = new TxOperations(client, this.user.userId, this.user.workspace)
     this.rateLimiter = getRateLimitter(this.user.email)
     const res = getGoogleClient()
     this.calendar = res.google

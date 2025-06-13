@@ -27,32 +27,31 @@ import core, {
   type MeasureContext,
   type MigrationState,
   ModelDb,
+  type PersonInfo,
   platformNow,
   platformNowDiff,
+  type Ref,
   systemAccountUuid,
   type Tx,
   type TxOperations,
+  type WithLookup,
   type WorkspaceIds,
-  type WorkspaceUuid,
-  type Client,
-  type PersonInfo,
-  type Ref,
-  type WithLookup
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import {
   consoleModelLogger,
+  type MigrateMode,
   type MigrateOperation,
   type ModelLogger,
-  tryMigrate,
-  type MigrateMode
+  tryMigrate
 } from '@hcengineering/model'
 import {
+  type DbAdapter,
   DomainIndexHelperImpl,
   type Pipeline,
-  type StorageAdapter,
-  type DbAdapter,
   type PlatformQueueProducer,
-  type QueueWorkspaceMessage
+  type QueueWorkspaceMessage,
+  type StorageAdapter
 } from '@hcengineering/server-core'
 import { type InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
@@ -128,6 +127,7 @@ export async function initModel (
   try {
     logger.log('creating database...', { workspaceId })
     const firstTx: Tx = {
+      _uuid: workspaceId,
       _class: core.class.Tx,
       _id: 'first-tx' as Ref<Tx>,
       modifiedBy: core.account.System,
@@ -255,7 +255,7 @@ export async function upgradeModel (
   wsIds: WorkspaceIds,
   txes: Tx[],
   pipeline: Pipeline,
-  connection: Client,
+  connection: TxOperations,
   storageAdapter: StorageAdapter,
   accountClient: AccountClient,
   queue: PlatformQueueProducer<QueueWorkspaceMessage>,

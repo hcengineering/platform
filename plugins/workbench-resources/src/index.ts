@@ -20,6 +20,7 @@ import Archive from './components/Archive.svelte'
 import SpacePanel from './components/navigator/SpacePanel.svelte'
 import SpecialView from './components/SpecialView.svelte'
 import WorkbenchApp from './components/WorkbenchApp.svelte'
+import WorkbenchApps from './components/WorkbenchApps.svelte'
 import { doNavigate, logIn, logOut } from './utils'
 import Workbench from './components/Workbench.svelte'
 import ServerManager from './components/ServerManager.svelte'
@@ -49,6 +50,7 @@ export * from './sidebar'
 export default async (): Promise<Resources> => ({
   component: {
     WorkbenchApp,
+    WorkbenchApps,
     ApplicationPresenter,
     Archive,
     SpacePanel,

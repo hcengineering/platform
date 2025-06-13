@@ -33,6 +33,8 @@
   import workbenchRes from '../plugin'
   import { workspaceCreating } from '../utils'
 
+  export let singleWorkspace = true
+
   const isNeedUpgrade = window.location.host === ''
 
   let mobileAllowed = fetchMetadataLocalStorage(workbenchRes.metadata.MobileAllowed)
@@ -45,7 +47,7 @@
   onDestroy(disconnect)
 </script>
 
-{#if $location.path[0] === workbenchId || $location.path[0] === workbenchRes.component.WorkbenchApp}
+{#if $location.path[0] === workbenchId || $location.path[0] === workbenchRes.component.WorkbenchApp || !singleWorkspace}
   {#if $deviceOptionsStore.isMobile && mobileAllowed !== true}
     <div class="version-wrapper">
       <div class="antiPopup version-popup">
@@ -54,8 +56,8 @@
       </div>
     </div>
   {:else}
-    {#key $location.path[1]}
-      {#await connect(getMetadata(workbenchRes.metadata.PlatformTitle) ?? 'Platform')}
+    {#key `${$location.path[1]}${singleWorkspace}`}
+      {#await connect(getMetadata(workbenchRes.metadata.PlatformTitle) ?? 'Platform', singleWorkspace)}
         <Loading>
           {#if ($workspaceCreating ?? -1) >= 0}
             <div class="ml-1">

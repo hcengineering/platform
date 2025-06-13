@@ -58,7 +58,7 @@ export async function getAttributeModel (
 
   const model = await getAttributePresenterSafe(
     client,
-    update.mixin ?? _class,
+    update.mixin ?? (_class as any),
     attrKey,
     view.mixin.ActivityAttributePresenter
   )
@@ -67,7 +67,7 @@ export async function getAttributeModel (
     return model
   }
 
-  return await getAttributePresenterSafe(client, update.mixin ?? _class, attrKey)
+  return await getAttributePresenterSafe(client, update.mixin ?? (_class as any), attrKey)
 }
 
 export async function getAttributeValues (

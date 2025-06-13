@@ -38,7 +38,7 @@ import { plugin } from '@hcengineering/platform'
 
 import buildModel from '@hcengineering/model-all'
 
-const txFactory = new TxFactory(core.account.System)
+const txFactory = new TxFactory(core.account.System, core.workspace.Model)
 
 function createClass (_class: Ref<Class<Obj>>, attributes: Data<Class<Obj>>): TxCreateDoc<Doc> {
   return txFactory.createTxCreateDoc(core.class.Class, core.space.Model, attributes, _class)

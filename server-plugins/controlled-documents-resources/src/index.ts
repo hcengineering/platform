@@ -331,7 +331,7 @@ export async function OnDocPlannedEffectiveDateChanged (
     // make doc effective immediately if required
     if (tx.operations.plannedEffectiveDate === 0 && doc.controlledState === ControlledDocumentState.Approved) {
       // Create with not derived tx factory in order for notifications to work
-      const factory = new TxFactory(control.txFactory.account)
+      const factory = new TxFactory(control.txFactory.account, control.workspace.uuid)
       await control.apply(control.ctx, makeDocEffective(doc, factory))
     }
   }
@@ -356,7 +356,7 @@ export async function OnDocApprovalRequestApproved (
     }
 
     // Create with not derived tx factory in order for notifications to work
-    const factory = new TxFactory(control.txFactory.account)
+    const factory = new TxFactory(control.txFactory.account, control.workspace.uuid)
     await control.apply(control.ctx, makeDocEffective(doc, factory))
     // make doc effective immediately
   }

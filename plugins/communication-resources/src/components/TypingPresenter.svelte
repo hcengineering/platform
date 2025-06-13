@@ -34,7 +34,7 @@
   let moreCount: number = 0
 
   let typing: PresenceTyping[] = []
-  $: presence = $presenceByObjectId.get(cardId) ?? []
+  $: presence = $presenceByObjectId.get(cardId as any) ?? []
   $: typing = presence.map((p) => p.presence.typing).filter(notEmpty)
 
   $: void updateTypingPersons(typing)

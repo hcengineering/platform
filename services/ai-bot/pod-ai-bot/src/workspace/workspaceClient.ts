@@ -31,6 +31,7 @@ import contact, {
 import core, {
   type Account,
   AccountRole,
+  AccountUuid,
   Blob,
   Class,
   Client,
@@ -38,6 +39,7 @@ import core, {
   MeasureContext,
   PersonId,
   PersonUuid,
+  pickPrimarySocialId,
   RateLimiter,
   Ref,
   SocialId,
@@ -45,30 +47,28 @@ import core, {
   Tx,
   TxCUD,
   TxOperations,
-  type WorkspaceUuid,
   type WorkspaceIds,
-  AccountUuid,
-  pickPrimarySocialId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import fs from 'fs'
+import { Tiktoken } from 'js-tiktoken'
 import { WithId } from 'mongodb'
 import OpenAI from 'openai'
-import { Tiktoken } from 'js-tiktoken'
 
+import { countTokens } from '@hcengineering/openai'
+import { getAccountClient } from '@hcengineering/server-client'
 import { StorageAdapter } from '@hcengineering/server-core'
+import { jsonToMarkup, markupToText } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 import config from '../config'
+import { DbStorage } from '../storage'
 import { HistoryRecord } from '../types'
+import { getGlobalPerson } from '../utils/account'
 import { createChatCompletionWithTools, requestSummary } from '../utils/openai'
 import { connectPlatform } from '../utils/platform'
 import { LoveController } from './love'
-import { DbStorage } from '../storage'
-import { jsonToMarkup, markupToText } from '@hcengineering/text'
-import { markdownToMarkup } from '@hcengineering/text-markdown'
-import { countTokens } from '@hcengineering/openai'
-import { getAccountClient } from '@hcengineering/server-client'
-import { getGlobalPerson } from '../utils/account'
 
 export class WorkspaceClient {
   client: Client | undefined
@@ -109,17 +109,28 @@ export class WorkspaceClient {
   private async ensureEmployee (client: Client): Promise<void> {
     const me: Account = {
       uuid: this.personUuid,
+      targetWorkspace: this.wsIds.uuid,
+      workspaces: {},
+      personalWorkspace: core.workspace.Personal, // TODO: Do we need a personal workspace here?
       role: AccountRole.User,
       primarySocialId: this.primarySocialId._id,
       socialIds: this.socialIds.map((it) => it._id),
-      fullSocialIds: this.socialIds
+      fullSocialIds: new Map(this.socialIds.map((it) => [it._id, it])),
+      socialIdsByValue: new Map(this.socialIds.map((it) => [it.value, it]))
     }
-    await ensureEmployee(this.ctx, me, client, this.socialIds, async () => await getGlobalPerson(this.token))
+    await ensureEmployee(
+      this.ctx,
+      me,
+      client,
+      this.wsIds.uuid,
+      this.socialIds,
+      async () => await getGlobalPerson(this.token)
+    )
   }
 
   private async initClient (): Promise<TxOperations> {
     this.client = await connectPlatform(this.token, this.transactorUrl)
-    const opClient = new TxOperations(this.client, this.primarySocialId._id)
+    const opClient = new TxOperations(this.client, this.primarySocialId._id, this.wsIds.uuid)
 
     await this.ensureEmployee(this.client)
     await this.checkEmployeeInfo(opClient)
@@ -134,7 +145,7 @@ export class WorkspaceClient {
       )
     }
 
-    this.client.notify = (...txes: Tx[]) => {
+    this.client.notify = (txes: Tx[]) => {
       void this.txHandler(opClient, txes as TxCUD<Doc>[])
     }
     this.ctx.info('Initialized workspace', { workspace: this.wsIds })

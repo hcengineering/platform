@@ -97,7 +97,7 @@ async function moveWorkspace (
     const token = generateToken(systemAccountUuid, wsId, { service: 'tool' })
     const endpoint = await getTransactorEndpoint(token, 'external')
     const connection = (await connect(endpoint, wsId, undefined, {
-      model: 'upgrade'
+      mode: 'backup'
     })) as unknown as Client & BackupClient
     for (const collection of collections) {
       const domain = translateDomain(collection.collectionName)
@@ -158,7 +158,7 @@ async function moveWorkspace (
     }
     // TODO: FIXME
     // await updateWorkspace(accountDb, ws, { region })
-    await connection.sendForceClose()
+    await connection.sendForceClose(wsId)
     await connection.close()
   } catch (err) {
     console.log('Error when move workspace', ws.name ?? ws.url, err)

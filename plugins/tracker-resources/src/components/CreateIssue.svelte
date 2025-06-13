@@ -272,6 +272,7 @@
 
   function tagAsRef (tag: TagElement): TagReference {
     return {
+      _uuid: tag._uuid,
       _class: tags.class.TagReference,
       _id: generateId(),
       attachedTo: '' as Ref<Doc>,

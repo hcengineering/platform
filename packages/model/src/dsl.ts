@@ -128,6 +128,7 @@ export function Prop (type: Type<PropertyType>, label: IntlString, extra: Partia
   return function (target: any, propertyKey: string): void {
     const txes = getTxes(target)
     const tx: TxCreateDoc<Attribute<PropertyType>> = {
+      _uuid: core.workspace.Model,
       _id: generateId(),
       _class: core.class.TxCreateDoc,
       space: core.space.Tx,
@@ -257,7 +258,7 @@ function generateIds (objectId: Ref<Doc>, txes: TxCreateDoc<Attribute<PropertyTy
   })
 }
 
-const txFactory = new TxFactory(core.account.System)
+const txFactory = new TxFactory(core.account.System, core.workspace.Model)
 
 function _generateTx (tx: ClassTxes): Tx[] {
   const objectId = tx._id

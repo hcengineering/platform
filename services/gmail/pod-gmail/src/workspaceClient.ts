@@ -44,7 +44,7 @@ export class WorkspaceClient {
   private messageSubscribed: boolean = false
   private channels: Map<string, Channel> = new Map<string, Channel>()
   private channelsById: Map<Ref<Channel>, Channel> = new Map<Ref<Channel>, Channel>()
-  private readonly txHandlers: ((...tx: Tx[]) => Promise<void>)[] = []
+  private readonly txHandlers: ((tx: Tx[]) => Promise<void>)[] = []
 
   private client!: Client
   private readonly clients: Map<PersonId, GmailClient> = new Map<PersonId, GmailClient>()
@@ -109,7 +109,7 @@ export class WorkspaceClient {
     }
     if (!deleted && socialIds.length > 0) {
       this.ctx.info('Clean up integrations without clients')
-      const tx = new TxOperations(this.client, socialIds[0]._id)
+      const tx = new TxOperations(this.client, socialIds[0]._id, this.workspace)
       await cleanIntegrations(this.ctx, tx, userId, this.workspace)
     }
 
@@ -133,8 +133,8 @@ export class WorkspaceClient {
     const token = generateToken(systemAccountUuid, workspace, { service: 'gmail' })
     this.ctx.info('Init client', { workspaceUuid: workspace })
     const client = await getClient(token)
-    client.notify = (...tx: Tx[]) => {
-      void this.txHandler(...tx)
+    client.notify = (tx: Tx[]) => {
+      void this.txHandler(tx)
     }
 
     this.client = client
@@ -142,10 +142,10 @@ export class WorkspaceClient {
     return this.client
   }
 
-  private async txHandler (...tx: Tx[]): Promise<void> {
+  private async txHandler (tx: Tx[]): Promise<void> {
     await Promise.all(
       this.txHandlers.map(async (handler) => {
-        await handler(...tx)
+        await handler(tx)
       })
     )
   }
@@ -154,7 +154,7 @@ export class WorkspaceClient {
 
   async subscribeMessages (): Promise<void> {
     if (this.messageSubscribed) return
-    this.txHandlers.push(async (...txes: Tx[]) => {
+    this.txHandlers.push(async (txes: Tx[]) => {
       for (const tx of txes) {
         await this.txMessageHandler(tx)
       }
@@ -243,7 +243,7 @@ export class WorkspaceClient {
       })
     )
 
-    this.txHandlers.push(async (...txes: Tx[]) => {
+    this.txHandlers.push(async (txes: Tx[]) => {
       for (const tx of txes) {
         await this.txChannelHandler(tx)
       }
@@ -342,7 +342,7 @@ export class WorkspaceClient {
     for (const person of removedEmployees) {
       await this.deactivateUser(person)
     }
-    this.txHandlers.push(async (...txes: Tx[]) => {
+    this.txHandlers.push(async (txes: Tx[]) => {
       for (const tx of txes) {
         await this.txEmployeeHandler(tx)
       }

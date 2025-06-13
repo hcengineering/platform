@@ -17,7 +17,7 @@ import { getCategories } from '@anticrm/skillset'
 import core, {
   DOMAIN_MODEL_TX,
   toIdMap,
-  TxOperations,
+  type TxOperations,
   type Doc,
   type Ref,
   type Space,
@@ -88,8 +88,7 @@ export const recruitOperation: MigrateOperation = {
       {
         state: 'create-defaults-v2',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await createDefaults(client, tx)
+          await createDefaults(client, client)
         }
       }
     ])

@@ -14,7 +14,7 @@
 //
 
 import { boardId, type Card } from '@hcengineering/board'
-import { TxOperations } from '@hcengineering/core'
+import { type TxOperations } from '@hcengineering/core'
 import {
   createOrUpdate,
   tryMigrate,
@@ -96,8 +96,7 @@ export const boardOperation: MigrateOperation = {
       {
         state: 'board0001',
         func: async (client) => {
-          const ops = new TxOperations(client, core.account.System)
-          await createDefaults(ops)
+          await createDefaults(client)
         }
       }
     ])

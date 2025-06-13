@@ -103,6 +103,7 @@ export class MemStorageAdapter implements StorageAdapter {
     const data = Buffer.concat(buffer as any)
     const dataId = getDataId(wsIds)
     const dta = {
+      _uuid: wsIds.uuid,
       _class: core.class.Blob,
       _id: objectName as any,
       contentType,

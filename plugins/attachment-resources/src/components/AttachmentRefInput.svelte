@@ -205,6 +205,7 @@
       const _id: Ref<Attachment> = generateId()
 
       attachments.set(_id, {
+        _uuid: client.workspaceUuid,
         _id,
         _class: attachment.class.Attachment,
         collection: 'attachments',

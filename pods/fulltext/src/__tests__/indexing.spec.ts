@@ -32,8 +32,6 @@ import { dbConfig, dbUrl, elasticIndexName, model, prepare, preparePipeline } fr
 
 prepare()
 
-jest.setTimeout(500000)
-
 class TestWorkspaceManager extends WorkspaceManager {
   public async getWorkspaceInfo (token?: string): Promise<WorkspaceInfoWithStatus | undefined> {
     const decodedToken = decodeToken(token ?? '')
@@ -51,6 +49,11 @@ class TestWorkspaceManager extends WorkspaceManager {
         backupSize: 0,
         lastBackup: 0,
         backups: 0
+      },
+      endpoint: {
+        internalUrl: 'http://localhost:3003',
+        externalUrl: 'http://localhost:3003',
+        region: 'test'
       },
       versionMajor: 0,
       versionMinor: 0,
@@ -159,7 +162,7 @@ describe('full-text-indexing', () => {
 
       const dataId = generateId()
 
-      const ops = new TxOperations(pipelineClient, core.account.System)
+      const ops = new TxOperations(pipelineClient, core.account.System, core.workspace.Model)
 
       let id: Ref<TestDocument>
       await queue.expectIndexingDoc(dataId, async () => {
@@ -190,7 +193,7 @@ describe('full-text-indexing', () => {
 
       const dataId = generateId()
 
-      const ops = new TxOperations(pipelineClient, core.account.System)
+      const ops = new TxOperations(pipelineClient, core.account.System, core.workspace.Model)
 
       for (let i = 0; i < 1000; i++) {
         await ops.createDoc(test.class.TestDocument, core.space.Workspace, {

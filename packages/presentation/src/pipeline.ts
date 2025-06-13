@@ -1,5 +1,6 @@
 import {
   toFindResult,
+  type AccountWorkspace,
   type Class,
   type Client,
   type Doc,
@@ -15,7 +16,8 @@ import {
   type SearchResult,
   type Tx,
   type TxResult,
-  type WithLookup
+  type WithLookup,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, setPlatformStatus, unknownError, type Resource } from '@hcengineering/platform'
 
@@ -85,6 +87,14 @@ export class PresentationPipelineImpl implements PresentationPipeline {
 
   async notifyTx (...tx: Tx[]): Promise<void> {
     await this.head?.notifyTx(...tx)
+  }
+
+  getAvailableWorkspaces (): WorkspaceUuid[] {
+    return this.client.getAvailableWorkspaces()
+  }
+
+  getWorkspaces (): Record<WorkspaceUuid, AccountWorkspace> {
+    return this.client.getWorkspaces()
   }
 
   static create (client: Client, constructors: PresentationMiddlewareCreator[]): PresentationPipeline {

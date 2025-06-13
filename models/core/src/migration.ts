@@ -86,6 +86,7 @@ async function migrateStatusesToModel (client: MigrationClient, mode: MigrateMod
         : status.modifiedBy
 
     const tx: TxCreateDoc<Status> = {
+      _uuid: client.wsIds.uuid,
       _id: generateId(),
       _class: core.class.TxCreateDoc,
       space: core.space.Tx,
@@ -581,6 +582,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
       accountUuidBySocialKey
     )
     const tx: TxUpdateDoc<SpaceType> = {
+      _uuid: client.wsIds.uuid,
       _id: generateId(),
       _class: core.class.TxUpdateDoc,
       space: core.space.Tx,

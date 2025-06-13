@@ -21,7 +21,7 @@ import core from '../component'
 import type { DocumentUpdate, TxCUD, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '../tx'
 import { DOMAIN_TX, TxFactory } from '../tx'
 
-const txFactory = new TxFactory(core.account.System)
+const txFactory = new TxFactory(core.account.System, core.workspace.Model)
 
 function createClass (_class: Ref<Class<Obj>>, attributes: Data<Class<Obj>>): TxCreateDoc<Doc> {
   return txFactory.createTxCreateDoc(core.class.Class, core.space.Model, attributes, _class)

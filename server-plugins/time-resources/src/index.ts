@@ -145,7 +145,7 @@ export async function OnWorkSlotCreate (txes: Tx[], control: TriggerControl): Pr
           }
           const nextStatus = typeStatuses.find((p) => p.category === task.statusCategory.Active)
           if (nextStatus !== undefined) {
-            const factory = new TxFactory(control.txFactory.account)
+            const factory = new TxFactory(control.txFactory.account, control.workspace.uuid)
             const innerTx = factory.createTxUpdateDoc(issue._class, issue.space, issue._id, {
               status: nextStatus._id
             })
@@ -194,7 +194,7 @@ export async function OnToDoRemove (txes: Tx[], control: TriggerControl): Promis
     if (project !== undefined) {
       const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
       if (type !== undefined && type.classic) {
-        const factory = new TxFactory(control.txFactory.account)
+        const factory = new TxFactory(control.txFactory.account, control.workspace.uuid)
         const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
         if (taskType !== undefined) {
           const statuses = await control.modelDb.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
@@ -553,7 +553,7 @@ export async function IssueToDoDone (
   for (const workslot of workslots) {
     total += (workslot.dueDate - workslot.date) / 1000 / 60
   }
-  const factory = new TxFactory(control.txFactory.account)
+  const factory = new TxFactory(control.txFactory.account, control.workspace.uuid)
   const issue = (
     await control.findAll<Issue>(control.ctx, todo.attachedToClass, { _id: todo.attachedTo as Ref<Issue> })
   )[0]

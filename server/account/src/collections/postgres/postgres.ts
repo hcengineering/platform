@@ -744,7 +744,7 @@ export class PostgresAccountDB implements AccountDB {
     )
   }
 
-  async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<WorkspaceUuid> {
+  async createWorkspace (data: WorkspaceData & { uuid?: WorkspaceUuid }, status: WorkspaceStatusData): Promise<WorkspaceUuid> {
     return await this.withRetry(async (rTx) => {
       const workspaceUuid = await this.workspace.insertOne(data, rTx)
       await this.workspaceStatus.insertOne({ ...status, workspaceUuid }, rTx)

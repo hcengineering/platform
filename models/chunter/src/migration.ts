@@ -13,16 +13,18 @@
 // limitations under the License.
 //
 
+import { type DocUpdateMessage } from '@hcengineering/activity'
 import { chunterId, type ThreadMessage } from '@hcengineering/chunter'
+import contact, { getAllAccounts } from '@hcengineering/contact'
 import core, {
-  TxOperations,
+  DOMAIN_TX,
+  notEmpty,
+  type TxOperations,
   type Class,
   type Doc,
   type Domain,
   type Ref,
-  type Space,
-  DOMAIN_TX,
-  notEmpty
+  type Space
 } from '@hcengineering/core'
 import {
   tryMigrate,
@@ -31,11 +33,9 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import activity, { migrateMessagesSpace, DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import notification from '@hcengineering/notification'
-import contact, { getAllAccounts } from '@hcengineering/contact'
+import activity, { DOMAIN_ACTIVITY, migrateMessagesSpace } from '@hcengineering/model-activity'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
-import { type DocUpdateMessage } from '@hcengineering/activity'
+import notification from '@hcengineering/notification'
 
 import { DOMAIN_CHUNTER } from './index'
 import chunter from './plugin'
@@ -43,8 +43,7 @@ import chunter from './plugin'
 export const DOMAIN_COMMENT = 'comment' as Domain
 
 export async function createDocNotifyContexts (
-  client: MigrationUpgradeClient,
-  tx: TxOperations,
+  client: TxOperations,
   objectId: Ref<Doc>,
   objectClass: Ref<Class<Doc>>,
   objectSpace: Ref<Space>
@@ -59,7 +58,7 @@ export async function createDocNotifyContexts (
   const existingDNCUsers = new Set(docNotifyContexts.map((it) => it.user))
 
   for (const account of accounts.filter((it) => !existingDNCUsers.has(it))) {
-    await tx.createDoc(notification.class.DocNotifyContext, core.space.Space, {
+    await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
       user: account,
       objectId,
       objectClass,
@@ -70,22 +69,22 @@ export async function createDocNotifyContexts (
   }
 }
 
-export async function createGeneral (client: MigrationUpgradeClient, tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(chunter.class.Channel, { _id: chunter.space.General })
+export async function createGeneral (client: MigrationUpgradeClient): Promise<void> {
+  const current = await client.findOne(chunter.class.Channel, { _id: chunter.space.General })
   if (current !== undefined) {
     if (current.autoJoin === undefined) {
-      await tx.update(current, {
+      await client.update(current, {
         autoJoin: true
       })
-      await joinEmployees(current, tx)
+      await joinEmployees(current, client)
     }
   } else {
-    const createTx = await tx.findOne(core.class.TxCreateDoc, {
+    const createTx = await client.findOne(core.class.TxCreateDoc, {
       objectId: chunter.space.General
     })
 
     if (createTx === undefined) {
-      await tx.createDoc(
+      await client.createDoc(
         chunter.class.Channel,
         core.space.Space,
         {
@@ -94,7 +93,7 @@ export async function createGeneral (client: MigrationUpgradeClient, tx: TxOpera
           topic: 'General Channel',
           private: false,
           archived: false,
-          members: await getAllAccounts(tx),
+          members: await getAllAccounts(client),
           autoJoin: true
         },
         chunter.space.General
@@ -102,7 +101,7 @@ export async function createGeneral (client: MigrationUpgradeClient, tx: TxOpera
     }
   }
 
-  await createDocNotifyContexts(client, tx, chunter.space.General, chunter.class.Channel, core.space.Space)
+  await createDocNotifyContexts(client, chunter.space.General, chunter.class.Channel, core.space.Space)
 }
 
 async function joinEmployees (current: Space, tx: TxOperations): Promise<void> {
@@ -120,22 +119,22 @@ async function joinEmployees (current: Space, tx: TxOperations): Promise<void> {
   })
 }
 
-export async function createRandom (client: MigrationUpgradeClient, tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(chunter.class.Channel, { _id: chunter.space.Random })
+export async function createRandom (client: MigrationUpgradeClient): Promise<void> {
+  const current = await client.findOne(chunter.class.Channel, { _id: chunter.space.Random })
   if (current !== undefined) {
     if (current.autoJoin === undefined) {
-      await tx.update(current, {
+      await client.update(current, {
         autoJoin: true
       })
-      await joinEmployees(current, tx)
+      await joinEmployees(current, client)
     }
   } else {
-    const createTx = await tx.findOne(core.class.TxCreateDoc, {
+    const createTx = await client.findOne(core.class.TxCreateDoc, {
       objectId: chunter.space.Random
     })
 
     if (createTx === undefined) {
-      await tx.createDoc(
+      await client.createDoc(
         chunter.class.Channel,
         core.space.Space,
         {
@@ -144,7 +143,7 @@ export async function createRandom (client: MigrationUpgradeClient, tx: TxOperat
           topic: 'Random Talks',
           private: false,
           archived: false,
-          members: await getAllAccounts(tx),
+          members: await getAllAccounts(client),
           autoJoin: true
         },
         chunter.space.Random
@@ -152,7 +151,7 @@ export async function createRandom (client: MigrationUpgradeClient, tx: TxOperat
     }
   }
 
-  await createDocNotifyContexts(client, tx, chunter.space.Random, chunter.class.Channel, core.space.Space)
+  await createDocNotifyContexts(client, chunter.space.Random, chunter.class.Channel, core.space.Space)
 }
 
 async function convertCommentsToChatMessages (client: MigrationClient): Promise<void> {
@@ -313,9 +312,8 @@ export const chunterOperation: MigrateOperation = {
       {
         state: 'create-defaults-v2',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await createGeneral(client, tx)
-          await createRandom(client, tx)
+          await createGeneral(client)
+          await createRandom(client)
         }
       }
     ])

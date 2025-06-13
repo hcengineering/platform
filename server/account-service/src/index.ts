@@ -111,10 +111,12 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   const dbNs = process.env.DB_NS
   const accountsDb = getAccountDB(dbUrl, dbNs)
+  let migrationsApplied = false
   const migrations = accountsDb.then(async ([db]) => {
     if (oldAccsUrl !== undefined) {
       await migrateFromOldAccounts(oldAccsUrl, db, oldAccsNs)
       console.log('Migrations verified/done')
+      migrationsApplied = true
     }
   })
 
@@ -336,6 +338,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     const meta = getRequestMeta(ctx.request.headers)
 
     const request = ctx.request.body as any
+
     const method = methods[request.method as AccountMethods]
     if (method === undefined) {
       const response = {
@@ -350,7 +353,9 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }
 
     const [db] = await accountsDb
-    await migrations
+    if (!migrationsApplied) {
+      await migrations
+    }
 
     let host: string | undefined
     const origin = ctx.request.headers.origin ?? ctx.request.headers.referer

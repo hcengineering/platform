@@ -592,7 +592,7 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl)
   if (control.hierarchy.isDerived(ctx.objectClass, notification.class.InboxNotification)) return []
   if (control.hierarchy.isDerived(ctx.objectClass, activity.class.ActivityReference)) return []
 
-  const txFactory = new TxFactory(control.txFactory.account)
+  const txFactory = new TxFactory(control.txFactory.account, control.workspace.uuid)
 
   const doc = TxProcessor.createDoc2Doc(ctx)
   const target = guessReferenceObj(control.hierarchy, tx)
@@ -641,7 +641,7 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, control: TriggerControl)
     return []
   }
 
-  const txFactory = new TxFactory(control.txFactory.account)
+  const txFactory = new TxFactory(control.txFactory.account, control.workspace.uuid)
   const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
   const target = guessReferenceObj(control.hierarchy, tx)
 
@@ -678,7 +678,7 @@ async function ActivityReferenceRemove (tx: TxCUD<Doc>, control: TriggerControl)
   }
 
   if (hasMarkdown) {
-    const txFactory = new TxFactory(control.txFactory.account)
+    const txFactory = new TxFactory(control.txFactory.account, control.workspace.uuid)
 
     const txes: Tx[] = await getRemoveActivityReferenceTxes(control, txFactory, ctx.objectId)
     if (txes.length !== 0) {

@@ -17,7 +17,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   type Account,
-  AccountRole,
+  type AccountWorkspace,
   type ArrOf,
   type AttachedDoc,
   type Class,
@@ -100,14 +100,23 @@ export const uiContext = new MeasureMetricsContext('client-ui', {})
 export const pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
 
 class UIClient extends TxOperations implements Client {
+  hook = getMetadata(plugin.metadata.ClientHook)
+  pendingTxes = new Set<Ref<Tx>>()
   constructor (
     client: Client,
-    private readonly liveQuery: Client
+    private readonly liveQuery: Client,
+    workspace: () => WorkspaceUuid
   ) {
-    super(client, getCurrentAccount().primarySocialId)
+    super(client, getCurrentAccount().primarySocialId, workspace)
   }
 
-  protected pendingTxes = new Set<Ref<Tx>>()
+  getWorkspaces (): Record<WorkspaceUuid, AccountWorkspace> {
+    return this.client.getWorkspaces()
+  }
+
+  getAvailableWorkspaces (): WorkspaceUuid[] {
+    return this.client.getAvailableWorkspaces()
+  }
 
   async doNotify (...tx: Tx[]): Promise<void> {
     const pending = get(pendingCreatedDocs)
@@ -245,8 +254,20 @@ const clientProxy = new Proxy(
 /**
  * @public
  */
-export function getClient (): TxOperations & Client {
+export function getClient (): TxOperations {
   return clientProxy
+}
+
+let targetWorkspace: WorkspaceUuid | undefined
+
+export function setTargetWorkspace (workspace: WorkspaceUuid): void {
+  targetWorkspace = workspace
+}
+export function getTargetWorkspace (): WorkspaceUuid {
+  if (targetWorkspace === undefined) {
+    throw new Error('Target workspace is not set')
+  }
+  return targetWorkspace
 }
 
 export type OnClientListener = (client: Client, account: Account) => void | Promise<void>
@@ -271,71 +292,10 @@ export function addRefreshListener (r: RefreshListener): void {
   refreshListeners.add(r)
 }
 
-class ClientHookImpl implements Client {
-  constructor (
-    private readonly client: Client,
-    private readonly hook: ClientHook
-  ) {}
+export const singleWorkspace = writable<boolean>(false)
 
-  set notify (op: (...tx: Tx[]) => void) {
-    this.client.notify = op
-  }
-
-  get notify (): ((...tx: Tx[]) => void) | undefined {
-    return this.client.notify
-  }
-
-  getHierarchy (): Hierarchy {
-    return this.client.getHierarchy()
-  }
-
-  getModel (): ModelDb {
-    return this.client.getModel()
-  }
-
-  async findOne<T extends Doc>(
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ): Promise<WithLookup<T> | undefined> {
-    if (this.hook !== undefined) {
-      return await this.hook.findOne(this.client, _class, query, options)
-    }
-    return await this.client.findOne(_class, query, options)
-  }
-
-  get getConnection (): (() => ClientConnection) | undefined {
-    return this.client.getConnection
-  }
-
-  async close (): Promise<void> {
-    await this.client.close()
-  }
-
-  async findAll<T extends Doc>(
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ): Promise<FindResult<T>> {
-    if (this.hook !== undefined) {
-      return await this.hook.findAll(this.client, _class, query, options)
-    }
-    return await this.client.findAll(_class, query, options)
-  }
-
-  async tx (tx: Tx): Promise<TxResult> {
-    if (this.hook !== undefined) {
-      return await this.hook.tx(this.client, tx)
-    }
-    return await this.client.tx(tx)
-  }
-
-  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    if (this.hook !== undefined) {
-      return await this.hook.searchFulltext(this.client, query, options)
-    }
-    return await this.client.searchFulltext(query, options)
-  }
+export function setSingleWorkspace (value: boolean): void {
+  singleWorkspace.set(value)
 }
 
 /**
@@ -370,7 +330,8 @@ export async function setClient (_client: Client): Promise<void> {
 
   liveQuery = new LQ(pipeline)
 
-  const uiClient = new UIClient(pipeline, liveQuery)
+  // Select first workspace if not set
+  const uiClient = new UIClient(pipeline, liveQuery, () => getTargetWorkspace())
 
   client = uiClient
 
@@ -380,7 +341,7 @@ export async function setClient (_client: Client): Promise<void> {
     await uiClient.doNotify(...t)
   })
 
-  _client.notify = (...tx: Tx[]) => {
+  _client.notify = (tx: Tx[]) => {
     txQueue.push(...tx)
     void notifyCaller()
   }
@@ -436,9 +397,12 @@ export class LiveQuery {
   unsubscribe: () => void = () => {}
   clientRecreated = false
 
+  destroyed = false
+
   constructor (noDestroy: boolean = false) {
     if (!noDestroy) {
       onDestroy(() => {
+        this.destroyed = true
         this.unsubscribe()
       })
     } else {
@@ -452,6 +416,9 @@ export class LiveQuery {
     callback: (result: FindResult<T>) => void | Promise<void>,
     options?: FindOptions<T>
   ): boolean {
+    if (this.destroyed) {
+      return false
+    }
     if (!this.needUpdate(_class, query, callback, options) && !this.clientRecreated) {
       return false
     }

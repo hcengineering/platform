@@ -47,7 +47,7 @@ export default async function importExtractedFile (
 
   try {
     console.log(`Connected to ${transactorUrl}`)
-    const txops = new TxOperations(connection, core.account.System)
+    const txops = new TxOperations(connection, core.account.System, workspaceId)
 
     try {
       const docId = await createDocument(txops, extractedFile, config)

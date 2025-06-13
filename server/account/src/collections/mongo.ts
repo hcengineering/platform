@@ -578,7 +578,10 @@ export class MongoAccountDB implements AccountDB {
     })
   }
 
-  async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<WorkspaceUuid> {
+  async createWorkspace (
+    data: WorkspaceData & { uuid?: WorkspaceUuid },
+    status: WorkspaceStatusData
+  ): Promise<WorkspaceUuid> {
     const res = await this.workspace.insertOne(data)
 
     await this.workspaceStatus.insertOne({

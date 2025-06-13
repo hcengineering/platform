@@ -1,4 +1,4 @@
-import {
+import core, {
   type AttachedDoc,
   type Class,
   ClassifierKind,
@@ -80,6 +80,7 @@ export function createTask (name: string, rate: number, description: string): Da
 }
 
 export const doc1: Task = {
+  _uuid: core.workspace.Any,
   _id: 'd1' as Ref<Task>,
   _class: taskPlugin.class.Task,
   name: 'my-space',

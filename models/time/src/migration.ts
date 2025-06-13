@@ -13,15 +13,14 @@
 // limitations under the License.
 //
 
-import { TxOperations } from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient,
+  createDefaultSpace,
   createOrUpdate,
   tryMigrate,
-  tryUpgrade,
-  createDefaultSpace
+  tryUpgrade
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import tags from '@hcengineering/tags'
@@ -66,9 +65,8 @@ export const timeOperation: MigrateOperation = {
       {
         state: 'u-time-0001',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
           await createOrUpdate(
-            tx,
+            client,
             tags.class.TagCategory,
             core.space.Workspace,
             {

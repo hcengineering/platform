@@ -62,7 +62,7 @@ export class AuthController {
         const mutex = await lock(`${state.workspace}:${state.userId}`)
         try {
           const client = await getClient(getWorkspaceToken(state.workspace))
-          const txOp = new TxOperations(client, core.account.System)
+          const txOp = new TxOperations(client, core.account.System, state.workspace)
           const controller = new AuthController(ctx, accountClient, txOp, state)
           await controller.process(code)
         } finally {
@@ -87,7 +87,7 @@ export class AuthController {
         const mutex = await lock(`${workspace}:${userId}`)
         try {
           const client = await getClient(getWorkspaceToken(workspace))
-          const txOp = new TxOperations(client, core.account.System)
+          const txOp = new TxOperations(client, core.account.System, workspace)
           const controller = new AuthController(ctx, accountClient, txOp, {
             userId,
             workspace

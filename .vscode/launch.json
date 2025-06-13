@@ -103,7 +103,8 @@
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
         "STATS_URL": "http://huly.local:4900",
-        "QUEUE_CONFIG": "localhost:19092"
+        "QUEUE_CONFIG": "localhost:19092",
+        "RATE_LIMIT_MAX": "25000"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -120,9 +121,9 @@
       "args": ["src/__start.ts"],
       "env": {
         "FULLTEXT_URL": "http://localhost:4710",
-        // "DB_URL": "mongodb://localhost:27018",
+        "DB_URL": "mongodb://localhost:27018",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
-        "DB_URL": "postgresql://root@huly.local:26258/defaultdb?sslmode=disable",
+        // "DB_URL": "postgresql://root@huly.local:26258/defaultdb?sslmode=disable",
         // "GREEN_URL": "http://huly.local:6767?token=secret",
         "SERVER_PORT": "3335",
         "METRICS_CONSOLE": "false",
@@ -183,7 +184,7 @@
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
-        "MONGO_URL": "mongodb://localhost:27017",
+        // "MONGO_URL": "mongodb://localhost:27017",
         // "DB_URL": "mongodb://localhost:27017",
         "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
         "SERVER_SECRET": "secret",
@@ -217,12 +218,13 @@
       "args": ["src/__start.ts"],
       "env": {
         // "MONGO_URL": "mongodb://localhost:27018",
-        // "DB_URL": "mongodb://localhost:27018",
+        "DB_URL": "mongodb://localhost:27018",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
-        "DB_URL": "postgresql://root@huly.local:26258/defaultdb?sslmode=disable",
+        // "DB_URL": "postgresql://root@huly.local:26258/defaultdb?sslmode=disable",
         "SERVER_SECRET": "secret",
-        "REGION_INFO": "|Mongo;pg|Postgres;cockroach|CockroachDB",
-        "TRANSACTOR_URL": "ws://transactor:3334;ws://localhost:3334",
+        "QUEUE_CONFIG": "huly.local:19092",
+        "REGION_INFO": "|America;europe|Europe",
+        "TRANSACTOR_URL": "ws://huly.local:3334;ws://huly.local:3334,ws://huly.local:3335;ws://huly.local:3335;europe",
         "ACCOUNTS_URL": "http://localhost:3003",
         "ACCOUNT_PORT": "3003",
         "FRONT_URL": "http://localhost:8083",

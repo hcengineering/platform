@@ -177,6 +177,7 @@
         : object.space
 
       const attachmentDoc: Attachment = {
+        _uuid: client.workspaceUuid,
         _id,
         _class: attachment.class.Attachment,
         collection: 'attachments',

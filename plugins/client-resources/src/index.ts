@@ -16,10 +16,18 @@
 import clientPlugin from '@hcengineering/client'
 import type { ClientFactoryOptions } from '@hcengineering/client/src'
 import core, {
-  Client,
+  type Class,
+  type Client,
+  type ClientConnection,
+  type ConnectionEvents,
+  type Doc,
   LoadModelResponse,
+  type ModelFilter,
   type PersonUuid,
+  type PluginConfiguration,
+  type Ref,
   Tx,
+  type TxCUD,
   TxHandler,
   TxPersistenceStore,
   TxWorkspaceEvent,
@@ -28,15 +36,8 @@ import core, {
   concatLink,
   createClient,
   fillConfiguration,
-  pluginFilterTx,
-  type Class,
-  type ClientConnection,
-  type Doc,
-  type ModelFilter,
-  type PluginConfiguration,
-  type Ref,
-  type TxCUD,
-  platformNow
+  platformNow,
+  pluginFilterTx
 } from '@hcengineering/core'
 import platform, { Severity, Status, getMetadata, getPlugins, setPlatformStatus } from '@hcengineering/platform'
 import { connect } from './connection'
@@ -98,15 +99,11 @@ export default async () => {
       GetClient: async (token: string, endpoint: string, opt?: ClientFactoryOptions): Promise<Client> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? 'none'
 
-        const handler = async (handler: TxHandler): Promise<ClientConnection> => {
+        const handler = async (handler: TxHandler, events?: ConnectionEvents): Promise<ClientConnection> => {
           const url = concatLink(endpoint, `/${token}`)
 
-          const upgradeHandler: TxHandler = (...txes: Tx[]) => {
+          const upgradeHandler: TxHandler = (txes: Tx[]) => {
             for (const tx of txes) {
-              if (tx?._class === core.class.TxModelUpgrade) {
-                opt?.onUpgrade?.()
-                return
-              }
               if (tx?._class === core.class.TxWorkspaceEvent) {
                 const event = tx as TxWorkspaceEvent
                 if (event.event === WorkspaceEvent.MaintenanceNotification) {
@@ -118,35 +115,35 @@ export default async () => {
                 }
               }
             }
-            handler(...txes)
+            handler(txes)
           }
           const tokenPayload = decodeTokenPayload(token)
           if (tokenPayload.workspace === undefined || tokenPayload.account === undefined) {
             throw new Error('Workspace or account not found in token')
           }
 
-          const newOpt = { ...opt }
+          const newOpt = { ...events }
           const connectTimeout = opt?.connectionTimeout ?? getMetadata(clientPlugin.metadata.ConnectionTimeout)
           let connectPromise: Promise<void> | undefined
+
           if ((connectTimeout ?? 0) > 0) {
             connectPromise = new Promise<void>((resolve, reject) => {
               const connectTO = setTimeout(() => {
                 if (!clientConnection.isConnected()) {
-                  newOpt.onConnect = undefined
+                  newOpt.onConnect = events?.onConnect
                   void clientConnection?.close()
-                  void opt?.onDialTimeout?.()
                   reject(new Error(`Connection timeout, and no connection established to ${endpoint}`))
                 }
               }, connectTimeout)
               newOpt.onConnect = async (event, lastTx, data) => {
                 // Any event is fine, it means server is alive.
                 clearTimeout(connectTO)
-                await opt?.onConnect?.(event, lastTx, data)
                 resolve()
               }
             })
           }
-          const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.account, newOpt)
+          const clientConnection = connect(url, upgradeHandler, tokenPayload.account, newOpt)
+
           if (connectPromise !== undefined) {
             await connectPromise
           }
@@ -163,8 +160,12 @@ export default async () => {
           return txes
         }
 
-        const client = createClient(handler, modelFilter, createModelPersistence(getWSFromToken(token)), opt?.ctx)
-        return await client
+        return await createClient(handler, {
+          ...opt,
+          modelFilter,
+          txPersistence: createModelPersistence(getWSFromToken(token)),
+          _ctx: opt?.ctx
+        })
       }
     }
   }

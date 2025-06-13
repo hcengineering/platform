@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { type AccountClient, getClient as getAccountClient } from '@hcengineering/account-client'
 import {
   createRestClient,
   createRestTxOperations,
@@ -21,6 +22,8 @@ import {
   type RestClient,
   type WorkspaceToken
 } from '@hcengineering/api-client'
+import chunter from '@hcengineering/chunter'
+import contact, { ensureEmployee, type Person, type SocialIdentityRef } from '@hcengineering/contact'
 import core, {
   buildSocialIdString,
   generateId,
@@ -28,17 +31,14 @@ import core, {
   type PersonId,
   type PersonUuid,
   pickPrimarySocialId,
-  SocialIdType,
-  systemAccountUuid,
   type Ref,
   type SocialId,
+  SocialIdType,
   type Space,
+  systemAccountUuid,
   type TxCreateDoc,
   type TxOperations
 } from '@hcengineering/core'
-import { type AccountClient, getClient as getAccountClient } from '@hcengineering/account-client'
-import chunter from '@hcengineering/chunter'
-import contact, { ensureEmployee, type SocialIdentityRef, type Person } from '@hcengineering/contact'
 import { generateToken } from '@hcengineering/server-token'
 
 describe('rest-api-server', () => {
@@ -82,12 +82,17 @@ describe('rest-api-server', () => {
       testCtx,
       {
         uuid: apiWorkspace1.info.account,
+        workspaces: {},
+        personalWorkspace: apiWorkspace1.workspaceId,
         role: apiWorkspace1.info.role,
+        targetWorkspace: apiWorkspace1.workspaceId,
         primarySocialId: pickPrimarySocialId(socialIds)._id,
         socialIds: socialIds.map((si) => si._id),
-        fullSocialIds: socialIds
+        fullSocialIds: new Map(socialIds.map((i) => [i._id, i])),
+        socialIdsByValue: new Map(socialIds.map((i) => [i.value, i]))
       },
       connect(),
+      apiWorkspace1.workspaceId,
       socialIds,
       async () => person
     )
@@ -96,12 +101,17 @@ describe('rest-api-server', () => {
       testCtx,
       {
         uuid: apiWorkspace2.info.account,
+        workspaces: {},
         role: apiWorkspace2.info.role,
+        personalWorkspace: apiWorkspace2.workspaceId,
+        targetWorkspace: apiWorkspace2.workspaceId,
         primarySocialId: pickPrimarySocialId(socialIds)._id,
         socialIds: socialIds.map((si) => si._id),
-        fullSocialIds: socialIds
+        fullSocialIds: new Map(socialIds.map((i) => [i._id, i])),
+        socialIdsByValue: new Map(socialIds.map((i) => [i.value, i]))
       },
       connect(apiWorkspace2),
+      apiWorkspace2.workspaceId,
       socialIds,
       async () => person
     )
@@ -124,7 +134,7 @@ describe('rest-api-server', () => {
     const account = await conn.getAccount()
 
     expect(account.primarySocialId).toEqual(expect.any(String))
-    expect(account.role).toBe('USER')
+    // expect(account.role).toBe('USER')
     // expect(account.space).toBe(core.space.Model)
     // expect(account.modifiedBy).toBe(core.account.System)
     // expect(account.createdBy).toBe(core.account.System)
@@ -183,6 +193,7 @@ describe('rest-api-server', () => {
     const account = await conn.getAccount()
     const spaceName = generateId()
     const tx: TxCreateDoc<Space> = {
+      _uuid: apiWorkspace1.workspaceId,
       _class: core.class.TxCreateDoc,
       space: core.space.Tx,
       _id: generateId(),

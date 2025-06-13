@@ -28,7 +28,7 @@ import {
   type WorkspaceIds,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import platform, { Severity, Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
+import { UNAUTHORIZED } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import {
   doSessionOp,
@@ -38,6 +38,7 @@ import {
   processRequest,
   wipeStatistics,
   type BlobResponse,
+  type SessionManager,
   type WebsocketData
 } from '@hcengineering/server'
 import {
@@ -45,7 +46,6 @@ import {
   pingConst,
   pongConst,
   type ConnectionSocket,
-  type SessionManager,
   type StorageAdapter
 } from '@hcengineering/server-core'
 import { decodeToken, type Token } from '@hcengineering/server-token'
@@ -261,7 +261,7 @@ export function startHttpServer (
         }
         case 'force-close': {
           const wsId = req.query.wsId as WorkspaceUuid
-          void sessions.forceClose(wsId ?? payload.workspace)
+          void sessions.forceCloseWorkspace(ctx, wsId ?? payload.workspace)
           res.writeHead(200)
           res.end()
           return
@@ -454,67 +454,18 @@ export function startHttpServer (
     }
     const cs: ConnectionSocket = createWebsocketClientSocket(ws, data)
 
+    const session = sessions.addSession(ctx, cs, token, rawToken, sessionId)
+
+    void session.catch(() => {
+      // Ignore err
+      ws.close()
+    })
     const webSocketData: WebsocketData = {
       connectionSocket: cs,
       payload: token,
       token: rawToken,
-      session: sessions.addSession(ctx, cs, token, rawToken, sessionId),
+      session,
       url: ''
-    }
-
-    if (webSocketData.session instanceof Promise) {
-      void webSocketData.session.then((s) => {
-        if ('error' in s) {
-          if (s.specialError === 'archived') {
-            void cs.send(
-              ctx,
-              {
-                id: -1,
-                error: new Status(Severity.ERROR, platform.status.WorkspaceArchived, {
-                  workspaceUuid: token.workspace
-                }),
-                terminate: s.terminate
-              },
-              false,
-              false
-            )
-          } else if (s.specialError === 'migration') {
-            void cs.send(
-              ctx,
-              {
-                id: -1,
-                error: new Status(Severity.ERROR, platform.status.WorkspaceMigration, {
-                  workspaceUuid: token.workspace
-                }),
-                terminate: s.terminate
-              },
-              false,
-              false
-            )
-          } else {
-            void cs.send(
-              ctx,
-              { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error'), terminate: s.terminate },
-              false,
-              false
-            )
-          }
-          // No connection to account service, retry from client.
-          setTimeout(() => {
-            cs.close()
-          }, 1000)
-        }
-        if ('upgrade' in s) {
-          void cs
-            .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
-            .then(() => {
-              cs.close()
-            })
-        }
-      })
-      void webSocketData.session.catch((err) => {
-        ctx.error('unexpected error in websocket', { err })
-      })
     }
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -530,8 +481,7 @@ export function startHttpServer (
           doSessionOp(
             webSocketData,
             (s, buff) => {
-              s.context.measure('receive-data', buff?.length ?? 0)
-              processRequest(s.session, cs, s.context, s.workspaceId, buff, sessions)
+              processRequest(ctx, s, cs, buff, sessions)
             },
             buff
           )
@@ -543,32 +493,30 @@ export function startHttpServer (
         }
       }
     })
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('close', (code: number, reason: Buffer) => {
+
+    const handleClose = (err: Error | null): void => {
       doSessionOp(
         webSocketData,
         (s) => {
-          if (!(s.session.workspaceClosed ?? false)) {
-            // remove session after 1seconds, give a time to reconnect.
-            void sessions.close(ctx, cs, token.workspace)
+          if (err !== null) {
+            ctx.error('error', { err, user: s.getUser() })
           }
+          // remove session after 1seconds, give a time to reconnect.
+          void sessions.close(ctx, s).catch((err) => {
+            ctx.error('failed to close session', { err })
+          })
         },
         Buffer.from('')
       )
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    ws.on('close', (code: number, reason: Buffer) => {
+      handleClose(null)
     })
 
     ws.on('error', (err) => {
-      doSessionOp(
-        webSocketData,
-        (s) => {
-          ctx.error('error', { err, user: s.session.getUser() })
-          if (!(s.session.workspaceClosed ?? false)) {
-            // remove session after 1seconds, give a time to reconnect.
-            void sessions.close(ctx, cs, token.workspace)
-          }
-        },
-        Buffer.from('')
-      )
+      handleClose(err)
     })
   }
   wss.on('connection', handleConnection as any)

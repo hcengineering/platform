@@ -34,7 +34,8 @@ import {
   SocialIdType,
   type Tx,
   type TxResult,
-  type WithLookup
+  type WithLookup,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { PlatformError, type Status, unknownError } from '@hcengineering/platform'
 
@@ -43,7 +44,7 @@ import { getWorkspaceToken } from '../utils'
 import type { RestClient } from './types'
 import { extractJson, withRetry } from './utils'
 
-export function createRestClient (endpoint: string, workspaceId: string, token: string): RestClient {
+export function createRestClient (endpoint: string, workspaceId: WorkspaceUuid, token: string): RestClient {
   return new RestClientImpl(endpoint, workspaceId, token)
 }
 
@@ -68,7 +69,7 @@ export class RestClientImpl implements RestClient {
   limit: number = 1000
   constructor (
     endpoint: string,
-    readonly workspace: string,
+    readonly workspace: WorkspaceUuid,
     readonly token: string
   ) {
     this.endpoint = endpoint.replace('ws', 'http')
@@ -118,7 +119,7 @@ export class RestClientImpl implements RestClient {
       throw new PlatformError(result.error)
     }
 
-    if (result.lookupMap !== undefined) {
+    if (result.lookupMap != null) {
       // We need to extract lookup map to document lookups
       for (const d of result) {
         if (d.$lookup !== undefined) {

@@ -49,6 +49,7 @@ async function migrateFileVersions (client: MigrationClient): Promise<void> {
     const fileVersionId: Ref<FileVersion> = generateId()
 
     await client.create<FileVersion>(DOMAIN_DRIVE, {
+      _uuid: client.wsIds.uuid,
       _id: fileVersionId,
       _class: drive.class.FileVersion,
       attachedTo: file._id,

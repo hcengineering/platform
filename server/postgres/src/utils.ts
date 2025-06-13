@@ -349,6 +349,7 @@ export function convertDoc<T extends Doc> (
   schemaAndFields?: SchemaAndFields
 ): DBDoc {
   const extractedFields: Doc & Record<string, any> = {
+    _uuid: workspaceId,
     _id: doc._id,
     space: doc.space,
     createdBy: doc.createdBy,
@@ -605,6 +606,7 @@ export function parseDocWithProjection<T extends Doc> (
     resultData = filterProjection(data, projection)
   }
   const res = {
+    _uuid: workspaceId,
     ...resultData,
     ...rest
   } as any as T
@@ -636,7 +638,7 @@ export function parseDoc<T extends Doc> (doc: DBDoc, schema: Schema): T {
   return res
 }
 
-export interface DBDoc extends Doc {
+export interface DBDoc extends Omit<Doc, '_uuid'> {
   workspaceId: WorkspaceUuid
   data: Record<string, any>
   [key: string]: any

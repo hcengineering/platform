@@ -28,9 +28,9 @@ import {
   type PersonUuid,
   type SocialId as SocialIdBase,
   type WorkspaceDataId,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type EndpointInfo
 } from '@hcengineering/core'
-import type { EndpointInfo } from './utils'
 
 /* ========= D A T A B A S E  E N T I T I E S ========= */
 export enum Location {
@@ -56,6 +56,7 @@ export interface SocialId extends SocialIdBase {
 
 export interface Account {
   uuid: AccountUuid
+  accountWorkspace?: WorkspaceUuid
   automatic?: boolean
   timezone?: string
   locale?: string
@@ -114,6 +115,7 @@ export interface Workspace {
   createdBy?: PersonUuid
   billingAccount?: PersonUuid
   createdOn?: Timestamp
+  personal?: boolean
 }
 
 export interface OTP {
@@ -173,6 +175,7 @@ export type IntegrationSecretKey = Omit<IntegrationSecret, 'secret'>
 
 export interface WorkspaceInfoWithStatus extends Workspace {
   status: WorkspaceStatus
+  endpoint: EndpointInfo
 }
 export type WorkspaceData = Omit<Workspace, 'uuid' | 'status' | 'members'>
 
@@ -200,7 +203,7 @@ export interface AccountDB {
   integrationSecret: DbCollection<IntegrationSecret>
 
   init: () => Promise<void>
-  createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
+  createWorkspace: (data: WorkspaceData & { uuid?: WorkspaceUuid }, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
   updateAllowReadOnlyGuests: (workspaceId: WorkspaceUuid, readOnlyGuestsAllowed: boolean) => Promise<void>
   assignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
   batchAssignWorkspace: (data: [AccountUuid, WorkspaceUuid, AccountRole][]) => Promise<void>
@@ -293,6 +296,7 @@ export interface LoginInfo {
 
 export interface LoginInfoWorkspace {
   url: string
+  name?: string
   dataId?: WorkspaceDataId
   mode: WorkspaceMode
   version: WorkspaceVersion
@@ -303,13 +307,14 @@ export interface LoginInfoWorkspace {
 }
 
 export interface LoginInfoWithWorkspaces extends LoginInfo {
+  personalWorkspace: WorkspaceUuid
   // Information necessary to handle user <--> transactor connectivity.
   workspaces: Record<WorkspaceUuid, LoginInfoWorkspace>
   socialIds: SocialId[]
 }
 
 export interface WorkspaceLoginInfo extends LoginInfo {
-  workspace: WorkspaceUuid
+  workspace: WorkspaceUuid // In case of multi workspace mode, it will be personal workspace
   workspaceUrl: string
   workspaceDataId?: WorkspaceDataId
   endpoint: string

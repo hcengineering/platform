@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { workbenchId, workbenchPlugin } from './plugin'
+import { workbenchId, workbenchPlugin, workbenchAppsId } from './plugin'
 
 export * from './analytics'
 export * from './types'
 export * from './utils'
 
-export { workbenchId }
+export { workbenchId, workbenchAppsId }
 
 export default workbenchPlugin

@@ -29,7 +29,8 @@ import core, {
   type TxCUD,
   TxProcessor,
   systemAccountUuid,
-  type SessionData
+  type SessionData,
+  type AccountUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import {
@@ -69,7 +70,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
 
   tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     for (const tx of txes) {
-      let target: PersonUuid[] | undefined
+      let target: AccountUuid[] | undefined
       if (this.isTargetDomain(tx)) {
         const account = ctx.contextData.account
         if (!account.socialIds.includes(tx.modifiedBy) && account.uuid !== systemAccountUuid) {

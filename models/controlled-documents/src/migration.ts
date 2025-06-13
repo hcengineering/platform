@@ -35,7 +35,7 @@ import {
   type Ref,
   SortingOrder,
   toIdMap,
-  TxOperations
+  type TxOperations
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -558,14 +558,13 @@ export const documentsOperation: MigrateOperation = {
       {
         state: 'init-documents',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
           await createDefaultSpace(client, documents.space.Documents, { name: 'Documents', description: 'Documents' })
-          await createQualityDocumentsSpace(tx)
-          await createTemplatesSpace(tx)
-          await createTemplateSequence(tx)
-          await createTagCategories(tx)
-          await createDocumentCategories(tx)
-          await createProductChangeControlTemplate(tx)
+          await createQualityDocumentsSpace(client)
+          await createTemplatesSpace(client)
+          await createTemplateSequence(client)
+          await createTagCategories(client)
+          await createDocumentCategories(client)
+          await createProductChangeControlTemplate(client)
         }
       }
     ])

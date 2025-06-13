@@ -79,7 +79,9 @@ export class LiveQueryMiddleware extends BaseMiddleware implements Middleware {
       searchFulltext: async (query: SearchQuery, options: SearchOptions) => {
         // Cast client doesn't support fulltext search
         return { docs: [] }
-      }
+      },
+      getAvailableWorkspaces: () => [],
+      getWorkspaces: () => ({})
     }
   }
 

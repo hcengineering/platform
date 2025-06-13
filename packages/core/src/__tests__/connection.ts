@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { ClientConnectEvent, type DocChunk, generateId } from '..'
-import type { Class, Doc, Domain, Ref, Timestamp } from '../classes'
-import { type ClientConnection } from '../client'
+import { ClientConnectEvent, type DocChunk, generateId, systemAccount, type WorkspaceUuid } from '..'
+import type { Account, Class, Doc, Domain, Ref, Timestamp } from '../classes'
+import { type ClientConnection, type SubscribedWorkspaceInfo } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
@@ -24,7 +24,7 @@ import type { Tx } from '../tx'
 import { DOMAIN_TX } from '../tx'
 import { genMinModel } from './minmodel'
 
-export async function connect (handler: (tx: Tx) => void): Promise<ClientConnection> {
+export async function connect (handler: (tx: Tx[]) => void): Promise<ClientConnection> {
   const txes = genMinModel()
 
   const hierarchy = new Hierarchy()
@@ -47,17 +47,43 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     isConnected = (): boolean => true
     findAll = findAll
 
-    handler?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+    handler?: (
+      event: ClientConnectEvent,
+      lastTx: Record<WorkspaceUuid, string | undefined> | undefined,
+      data: any
+    ) => Promise<void>
 
-    set onConnect (
-      handler: ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined
-    ) {
-      this.handler = handler
-      void this.handler?.(ClientConnectEvent.Connected, '', {})
+    async subscribe (): Promise<SubscribedWorkspaceInfo> {
+      return {}
     }
 
-    get onConnect (): ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined {
+    async unsubscribe (): Promise<void> {}
+
+    set onConnect (
+      handler:
+      | ((
+        event: ClientConnectEvent,
+        lastTx: Record<WorkspaceUuid, string | undefined> | undefined,
+        data: any
+      ) => Promise<void>)
+      | undefined
+    ) {
+      this.handler = handler
+      void this.handler?.(ClientConnectEvent.Connected, {}, {})
+    }
+
+    get onConnect ():
+    | ((
+      event: ClientConnectEvent,
+      lastTx: Record<WorkspaceUuid, string | undefined> | undefined,
+      data: any
+    ) => Promise<void>)
+    | undefined {
       return this.handler
+    }
+
+    async getAccount (): Promise<Account> {
+      return systemAccount
     }
 
     async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
@@ -76,7 +102,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
 
     async close (): Promise<void> {}
 
-    async loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
+    async loadChunk (workspaceId: WorkspaceUuid, domain: Domain, idx?: number): Promise<DocChunk> {
       return {
         idx: -1,
         docs: [],
@@ -84,17 +110,17 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
       }
     }
 
-    async getDomainHash (domain: Domain): Promise<string> {
+    async getDomainHash (workspaceId: WorkspaceUuid, domain: Domain): Promise<string> {
       return generateId()
     }
 
-    async closeChunk (idx: number): Promise<void> {}
-    async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    async closeChunk (workspaceId: WorkspaceUuid, idx: number): Promise<void> {}
+    async loadDocs (workspaceId: WorkspaceUuid, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
       return []
     }
 
-    async upload (domain: Domain, docs: Doc[]): Promise<void> {}
-    async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+    async upload (workspaceId: WorkspaceUuid, domain: Domain, docs: Doc[]): Promise<void> {}
+    async clean (workspaceId: WorkspaceUuid, domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
     async loadModel (last: Timestamp): Promise<Tx[]> {
       return txes
     }

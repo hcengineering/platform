@@ -19,7 +19,7 @@ import { RPCHandler, type Response } from '@hcengineering/rpc'
 import { generateToken } from '@hcengineering/server-token'
 import WebSocket from 'ws'
 
-import {
+import core, {
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
@@ -102,7 +102,10 @@ describe('server', () => {
     },
     brandingMap: {},
     accountsUrl: '',
-    queue: createDummyQueue()
+    queue: createDummyQueue(),
+    region: '',
+    endpointName: '',
+    endpointFactory: () => { return {} as any }
   }
   const sessionMgr = startSessionManager(toolCtx, opt)
 
@@ -182,6 +185,7 @@ describe('server', () => {
             options?: FindOptions<T>
           ): Promise<FindResult<T>> => {
             const d: Doc & { sessionId: string } = {
+              _uuid: core.workspace.Any,
               _class: 'result' as Ref<Class<Doc>>,
               _id: '1' as Ref<Doc & { sessionId: string }>,
               space: '' as Ref<Space>,
@@ -215,9 +219,14 @@ describe('server', () => {
       communicationApiFactory: async () => {
         return {} as any
       },
+      endpointFactory: () => {
+        throw new Error('Method not implemented.')
+      },
       brandingMap: {},
       accountsUrl: '',
-      queue: createDummyQueue()
+      queue: createDummyQueue(),
+      region: '',
+      endpointName: ''
     }
     const cancelOp = startSessionManager(new MeasureMetricsContext('test', {}), opt)
     const serverShutdown = startHttpServer(toolCtx, sessionMgr, port + 1, opt.accountsUrl, createDummyStorageAdapter())

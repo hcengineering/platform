@@ -36,7 +36,7 @@ export interface StorageIterator {
   close: (ctx: MeasureContext) => Promise<void>
 }
 
-export type BroadcastTargets = Record<string, (tx: Tx) => string[] | undefined>
+export type BroadcastTargets = Record<string, (tx: Tx) => AccountUuid[] | undefined>
 
 export interface SessionData {
   broadcast: {

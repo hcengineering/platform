@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Account } from '@hcengineering/core'
+import type { Account, WorkspaceUuid } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Packr } from 'msgpackr'
 
@@ -47,14 +47,14 @@ export interface HelloResponse extends Response<any> {
   binary: boolean
   reconnect?: boolean
   serverVersion: string
-  lastTx?: string
-  lastHash?: string // Last model hash
+  lastTx?: Record<WorkspaceUuid, string | undefined>
+  lastHash?: Record<WorkspaceUuid, string | undefined> // Last model hash
   account: Account
   useCompression?: boolean
 }
 
 export function rpcJSONReplacer (key: string, value: any): any {
-  if (Array.isArray(value) && ((value as any).total !== undefined || (value as any).lookupMap !== undefined)) {
+  if (Array.isArray(value) && ((value as any).total !== undefined || (value as any).lookupMap != null)) {
     return {
       dataType: 'TotalArray',
       total: (value as any).total,
@@ -104,6 +104,10 @@ export interface Response<R> {
   time?: number // Server time to perform operation
   bfst?: number // Server time to perform operation
   queue?: number
+
+  // Special for system account clients.
+  target?: string
+  exclude?: string[]
 }
 
 export class RPCHandler {

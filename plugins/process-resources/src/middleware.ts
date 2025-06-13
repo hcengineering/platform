@@ -123,7 +123,7 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
       const nextState = transition.to
       if (nextState == null) return
       const context = await getNextStateUserInput(execution, nextState, execution.context)
-      const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
+      const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId, etx._uuid)
       await txop.update(execution, {
         context
       })

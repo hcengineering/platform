@@ -1,26 +1,16 @@
 import { Organization } from '@hcengineering/contact'
-import core, {
-  PersonId,
-  Client,
-  Data,
-  Doc,
-  Ref,
-  SortingOrder,
-  Status,
-  TxOperations,
-  generateId
-} from '@hcengineering/core'
+import core, { Data, Doc, PersonId, Ref, SortingOrder, Status, TxOperations, generateId } from '@hcengineering/core'
 import recruit, { Applicant, Vacancy } from '@hcengineering/recruit'
 import task, { ProjectType, makeRank } from '@hcengineering/task'
 
 export async function createVacancy (
-  rawClient: Client,
+  rawClient: TxOperations,
   name: string,
   typeId: Ref<ProjectType>,
   account: PersonId,
   company?: Ref<Organization>
 ): Promise<Ref<Vacancy>> {
-  const client = new TxOperations(rawClient, account)
+  const client = new TxOperations(rawClient, account, rawClient.workspaceUuid)
   const type = await client.findOne(task.class.ProjectType, { _id: typeId })
   if (type === undefined) {
     throw Error(`Failed to find target project type: ${typeId}`)

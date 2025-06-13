@@ -1,3 +1,4 @@
+import type { WorkspaceUuid } from '.'
 import { type Doc, type Domain, type Ref } from './classes'
 import { type DocInfo } from './server'
 
@@ -19,14 +20,14 @@ export interface DocChunk {
  * @public
  */
 export interface BackupClient {
-  loadChunk: (domain: Domain, idx?: number) => Promise<DocChunk>
-  closeChunk: (idx: number) => Promise<void>
+  loadChunk: (workspaceId: WorkspaceUuid, domain: Domain, idx?: number) => Promise<DocChunk>
+  closeChunk: (workspaceId: WorkspaceUuid, idx: number) => Promise<void>
 
-  loadDocs: (domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
-  upload: (domain: Domain, docs: Doc[]) => Promise<void>
-  clean: (domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+  loadDocs: (workspaceId: WorkspaceUuid, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
+  upload: (workspaceId: WorkspaceUuid, domain: Domain, docs: Doc[]) => Promise<void>
+  clean: (workspaceId: WorkspaceUuid, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 
-  getDomainHash: (domain: Domain) => Promise<string>
+  getDomainHash: (workspaceId: WorkspaceUuid, domain: Domain) => Promise<string>
 
-  sendForceClose: () => Promise<void>
+  sendForceClose: (workspace: WorkspaceUuid) => Promise<void>
 }
