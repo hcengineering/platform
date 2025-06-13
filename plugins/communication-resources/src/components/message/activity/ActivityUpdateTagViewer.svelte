@@ -15,13 +15,13 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import { Icon, IconDelete, Label, tooltip, IconAdd } from '@hcengineering/ui'
-  import { ActivityTagUpdate, RichText } from '@hcengineering/communication-types'
+  import { ActivityTagUpdate, Markdown } from '@hcengineering/communication-types'
   import cardPlugin from '@hcengineering/card'
 
   import communication from '../../../plugin'
 
   export let update: ActivityTagUpdate
-  export let content: RichText
+  export let content: Markdown
 
   const client = getClient()
   const hierarchy = client.getHierarchy()

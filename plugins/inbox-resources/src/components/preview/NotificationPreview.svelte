@@ -21,7 +21,7 @@
   import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
   import { markdownToMarkup } from '@hcengineering/text-markdown'
   import { jsonToMarkup, markupToText } from '@hcengineering/text'
-  import { ActivityMessageViewer, ThreadMessageViewer, isActivityMessage } from '@hcengineering/communication-resources'
+  import { ActivityMessageViewer, isActivityMessage } from '@hcengineering/communication-resources'
 
   import FilesPreview from './FilesPreview.svelte'
   import PreviewTemplate from './PreviewTemplate.svelte'
@@ -59,12 +59,10 @@
   {padding}
   socialId={message.creator}
   {date}
-  fixHeight={message.type !== MessageType.Thread && message.type !== MessageType.Activity}
+  fixHeight={message.type !== MessageType.Activity}
   tooltipLabel={getTooltipLabel(message)}
 >
-  {#if message.type === MessageType.Thread || message.thread != null}
-    <ThreadMessageViewer {message} thread={message.thread} />
-  {:else if isActivityMessage(message)}
+  {#if isActivityMessage(message)}
     <ActivityMessageViewer {message} {card} author={person} />
   {:else}
     <LiteMessageViewer message={markdownToMarkup(message.content)} />

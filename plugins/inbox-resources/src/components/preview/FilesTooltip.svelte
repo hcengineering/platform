@@ -12,15 +12,15 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import { File } from '@hcengineering/communication-types'
+  import { AttachedBlob } from '@hcengineering/communication-types'
 
-  export let files: File[] = []
+  export let blobs: AttachedBlob[] = []
 </script>
 
 <div class="tooltip">
-  {#each files as file}
+  {#each blobs as blob}
     <div>
-      {file.filename}
+      {blob.fileName}
     </div>
   {/each}
 </div>

@@ -24,7 +24,7 @@
     getFileMetadata,
     isLinkPreviewEnabled
   } from '@hcengineering/presentation'
-  import { Message, MessageID, FileData, LinkPreviewData } from '@hcengineering/communication-types'
+  import { Message, MessageID, BlobData, LinkPreviewData } from '@hcengineering/communication-types'
   import { AttachmentPresenter, LinkPreviewCard } from '@hcengineering/attachment-resources'
   import { areEqualMarkups, isEmptyMarkup } from '@hcengineering/text'
   import { updateMyPresence } from '@hcengineering/presence-resources'
@@ -45,7 +45,7 @@
   export let message: Message | undefined = undefined
   export let title: string = ''
   export let onCancel: (() => void) | undefined = undefined
-  export let onSubmit: ((markdown: string, files: FileData[]) => Promise<void>) | undefined = undefined
+  export let onSubmit: ((markdown: string, blobs: BlobData[]) => Promise<void>) | undefined = undefined
 
   const throttle = new ThrottledCaller(500)
   const dispatch = createEventDispatcher()
@@ -97,7 +97,7 @@
     event.stopPropagation()
 
     const markup = event.detail
-    const filesToLoad = draft.files
+    const blobsToLoad = draft.blobs
     const linksToLoad = draft.links
     const urlsToLoad = Array.from(previewUrls.keys()).filter((it) => previewUrls.get(it) === true)
 
@@ -110,29 +110,29 @@
     const markdown = toMarkdown(markup)
 
     if (onSubmit !== undefined) {
-      await onSubmit(markdown, filesToLoad)
+      await onSubmit(markdown, blobsToLoad)
       return
     }
 
     if (message === undefined) {
-      await createMessage(markdown, filesToLoad, linksToLoad, urlsToLoad)
+      await createMessage(markdown, blobsToLoad, linksToLoad, urlsToLoad)
       dispatch('sent')
     } else {
-      await editMessage(message, markdown, filesToLoad, linksToLoad)
+      await editMessage(message, markdown, blobsToLoad, linksToLoad)
     }
   }
 
   async function createMessage (
     markdown: string,
-    files: FileData[],
+    blobs: BlobData[],
     links: LinkPreviewData[],
     urlsToLoad: string[]
   ): Promise<void> {
-    const { id, created } = await communicationClient.createMessage(card._id, card._class, markdown)
+    const { messageId } = await communicationClient.createMessage(card._id, card._class, markdown)
     void client.update(card, {}, false, Date.now())
-    void Promise.all(files.map((file) => communicationClient.createFile(card._id, id, created, file)))
+    void Promise.all(blobs.map((blob) => communicationClient.attachBlob(card._id, messageId, blob)))
     for (const link of links) {
-      void communicationClient.createLinkPreview(card._id, id, created, link)
+      void communicationClient.createLinkPreview(card._id, messageId, link)
     }
 
     for (const url of urlsToLoad) {
@@ -141,32 +141,32 @@
       if (fetchedData === null) continue
       const data = fetchedData ?? (await loadLinkPreviewData(url))
       if (data === undefined) continue
-      void communicationClient.createLinkPreview(card._id, id, created, data)
+      void communicationClient.createLinkPreview(card._id, messageId, data)
     }
   }
 
   async function editMessage (
     message: Message,
     markdown: string,
-    files: FileData[],
+    blobs: BlobData[],
     links: LinkPreviewData[]
   ): Promise<void> {
-    await communicationClient.updateMessage(card._id, message.id, message.created, markdown)
+    await communicationClient.updateMessage(card._id, message.id, markdown)
 
-    for (const file of files) {
-      if (message.files.some((it) => it.blobId === file.blobId)) continue
-      await communicationClient.createFile(card._id, message.id, message.created, file)
+    for (const blobToAttach of blobs) {
+      if (message.blobs.some((it) => it.blobId === blobToAttach.blobId)) continue
+      void communicationClient.attachBlob(card._id, message.id, blobToAttach)
     }
 
-    for (const file of message.files) {
-      if (files.some((it) => it.blobId === file.blobId)) continue
-      void deleteFile(file.blobId)
-      await communicationClient.removeFile(card._id, message.id, message.created, file.blobId)
+    for (const blob of message.blobs) {
+      if (blobs.some((it) => it.blobId === blob.blobId)) continue
+      void deleteFile(blob.blobId)
+      void communicationClient.detachBlob(card._id, message.id, blob.blobId)
     }
 
     for (const link of links) {
-      if (message.links.some((it) => it.url === link.url)) continue
-      await communicationClient.createLinkPreview(card._id, message.id, message.created, link)
+      if (message.linkPreviews.some((it) => it.url === link.url)) continue
+      await communicationClient.createLinkPreview(card._id, message.id, link)
     }
 
     dispatch('edited')
@@ -191,18 +191,18 @@
 
   async function addFile (file: File): Promise<void> {
     const uuid = await uploadFile(file)
-    const meta = await getFileMetadata(file, uuid)
+    const metadata = await getFileMetadata(file, uuid)
 
     draft = {
       ...draft,
-      files: [
-        ...draft.files,
+      blobs: [
+        ...draft.blobs,
         {
           blobId: uuid,
-          type: file.type,
-          filename: file.name,
+          contentType: file.type,
+          fileName: file.name,
           size: file.size,
-          meta
+          metadata
         }
       ]
     }
@@ -220,10 +220,10 @@
 
   async function handleCancel (): Promise<void> {
     onCancel?.()
-    for (const file of draft.files) {
-      const fromMessage = message?.files.some((it) => it.blobId === file.blobId)
+    for (const blob of draft.blobs) {
+      const fromMessage = message?.blobs.some((it) => it.blobId === blob.blobId)
       if (!fromMessage) {
-        void deleteFile(file.blobId)
+        void deleteFile(blob.blobId)
       }
     }
     draft = getEmptyDraft()
@@ -360,14 +360,14 @@
   }
 
   function isEmptyDraft (): boolean {
-    return isEmptyMarkup(draft.content) && draft.files.length === 0
+    return isEmptyMarkup(draft.content) && draft.blobs.length === 0
   }
 
-  function hasChanges (files: FileData[], message: Message | undefined): boolean {
+  function hasChanges (blobs: BlobData[], message: Message | undefined): boolean {
     if (isEmptyDraft()) return false
-    if (message === undefined) return files.length > 0
-    if (message.files.length !== files.length) return true
-    if (message.files.some((it) => !files.some((f) => f.blobId === it.blobId))) return true
+    if (message === undefined) return blobs.length > 0
+    if (message.blobs.length !== blobs.length) return true
+    if (message.blobs.some((it) => !blobs.some((f) => f.blobId === it.blobId))) return true
 
     return !areEqualMarkups(draft.content, toMarkup(message.content))
   }
@@ -397,7 +397,7 @@
     placeholder={title !== '' ? communication.string.MessageIn : undefined}
     placeholderParams={title !== '' ? { title } : undefined}
     loading={progress}
-    hasChanges={hasChanges(draft.files, message)}
+    hasChanges={hasChanges(draft.blobs, message)}
     actions={[...defaultMessageInputActions, attachAction]}
     on:submit={handleSubmit}
     on:update={onUpdate}
@@ -405,17 +405,17 @@
     onPaste={pasteAction}
   >
     <div slot="header" class="header">
-      {#if draft.files.length > 0 || draft.links.length > 0}
+      {#if draft.blobs.length > 0 || draft.links.length > 0}
         <div class="flex-row-center files-list scroll-divider-color flex-gap-2 mt-2">
-          {#each draft.files as file (file.blobId)}
+          {#each draft.blobs as attachedBlob (attachedBlob.blobId)}
             <div class="item flex">
               <AttachmentPresenter
                 value={{
-                  file: file.blobId,
-                  name: file.filename,
-                  type: file.type,
-                  size: file.size,
-                  metadata: file.meta
+                  file: attachedBlob.blobId,
+                  name: attachedBlob.fileName,
+                  type: attachedBlob.contentType,
+                  size: attachedBlob.size,
+                  metadata: attachedBlob.metadata
                 }}
                 showPreview
                 removable
@@ -423,18 +423,18 @@
                   if (result !== undefined) {
                     draft = {
                       ...draft,
-                      files: draft.files.filter((it) => it.blobId !== file.blobId)
+                      blobs: draft.blobs.filter((it) => it.blobId !== attachedBlob.blobId)
                     }
 
-                    if (!message?.files?.some((it) => it.blobId === file.blobId)) {
-                      void deleteFile(file.blobId)
+                    if (!message?.blobs?.some((it) => it.blobId === attachedBlob.blobId)) {
+                      void deleteFile(attachedBlob.blobId)
                     }
                   }
                 }}
               />
             </div>
           {/each}
-          {#if draft.links.length > 0 && draft.files.length > 0}
+          {#if draft.links.length > 0 && draft.blobs.length > 0}
             <div class="divider" />
           {/if}
 
@@ -446,11 +446,11 @@
                   host: link.host,
                   title: link.title,
                   description: link.description,
-                  hostname: link.hostname,
-                  image: link.image?.url,
-                  imageWidth: link.image?.width,
-                  imageHeight: link.image?.height,
-                  icon: link.favicon
+                  hostname: link.siteName,
+                  image: link.previewImage?.url,
+                  imageWidth: link.previewImage?.width,
+                  imageHeight: link.previewImage?.height,
+                  icon: link.iconUrl
                 }}
                 on:remove={(event) => {
                   const result = event.detail

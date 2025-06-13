@@ -14,10 +14,9 @@
 
 <script lang="ts">
   import { getClient, IconWithEmoji } from '@hcengineering/presentation'
-  import cardPlugin, { Card } from '@hcengineering/card'
-  import { Icon, IconSize } from '@hcengineering/ui'
+  import cardPlugin, { Card, MasterTag } from '@hcengineering/card'
+  import { getPlatformColorDef, Icon, IconSize, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { Class } from '@hcengineering/core'
 
   import NotifyMarker from './NotifyMarker.svelte'
 
@@ -27,14 +26,20 @@
 
   const client = getClient()
 
-  $: clazz = client.getHierarchy().getClass(card._class) as Class<Card> & { color?: number }
+  $: clazz = client.getHierarchy().getClass(card._class) as MasterTag
   $: iconId = clazz.icon ?? cardPlugin.icon.Card
   $: icon = iconId === view.ids.IconWithEmoji ? IconWithEmoji : iconId
+  $: background = clazz.background ?? 0
 </script>
 
 <div class="card-icon">
   {#if icon}
-    <Icon {icon} {size} iconProps={iconId === view.ids.IconWithEmoji ? { icon: clazz.color } : {}} />
+    <Icon
+      {icon}
+      {size}
+      iconProps={iconId === view.ids.IconWithEmoji ? { icon: clazz.color } : {}}
+      fill={getPlatformColorDef(background, $themeStore.dark).color}
+    />
   {/if}
 
   {#if count > 0}
