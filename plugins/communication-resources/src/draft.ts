@@ -65,7 +65,7 @@ export function getDraft (card: Ref<Card>): MessageDraft {
   }
 }
 
-let timer: any | undefined = undefined
+let timer: any | undefined
 
 export function removeDraft (card: Ref<Card>): void {
   if (timer !== undefined) clearTimeout(timer)

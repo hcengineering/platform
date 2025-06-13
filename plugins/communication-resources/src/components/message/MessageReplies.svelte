@@ -196,19 +196,20 @@
       </div>
     {/if}
 
-  <span class="text overflow-label">
-    <span class="replies__count">
-      <Label label={communication.string.RepliesCount} params={{ count }} />
-    </span>
-    {#if count > 0}
-      <span class="replies__last-reply">
-        <Label label={communication.string.LastReply} />
-        <span class="lower">
-          {displayDate}
-        </span>
+    <span class="text overflow-label">
+      <span class="replies__count">
+        <Label label={communication.string.RepliesCount} params={{ count }} />
       </span>
-    {/if}
-  </span>
+      {#if count > 0}
+        <span class="replies__last-reply">
+          <Label label={communication.string.LastReply} />
+          <span class="lower">
+            {displayDate}
+          </span>
+        </span>
+      {/if}
+    </span>
+  </div>
 </div>
 
 <style lang="scss">
