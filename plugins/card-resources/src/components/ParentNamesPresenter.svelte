@@ -57,6 +57,8 @@
     {/each}
     <slot />
   </div>
+{:else if $$slots.default}
+  <slot />
 {/if}
 
 <style lang="scss">

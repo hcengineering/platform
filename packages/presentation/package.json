@@ -56,6 +56,7 @@
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/uploader": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
+    "@hcengineering/emoji": "^0.6.0",
     "fast-equals": "^5.2.2",
     "png-chunks-extract": "^1.0.0",
     "svelte": "^4.2.19",

@@ -105,6 +105,8 @@ export const main = async (): Promise<void> => {
       const event = await receiver.receive(req.body, req.get('Authorization'))
       if (event.event === 'egress_ended' && event.egressInfo !== undefined) {
         for (const res of event.egressInfo.fileResults) {
+          ctx.info('webhook event', { event: event.event, egress: event.egressInfo })
+
           const data = dataByUUID.get(res.filename)
           if (data !== undefined && storageConfig !== undefined) {
             const storedBlob = await saveFile(ctx, data.wsIds, storageConfig, s3storageConfig, res.filename)
@@ -119,12 +121,25 @@ export const main = async (): Promise<void> => {
           }
         }
 
-        await saveLiveKitEgressBilling(ctx, event.egressInfo)
+        try {
+          await saveLiveKitEgressBilling(ctx, event.egressInfo)
+        } catch {
+          // Ensure we don't fail the webhook if billing fails
+        }
 
         res.send()
         return
+      } else if (event.event === 'room_started' && event.room !== undefined) {
+        const { sid, name } = event.room
+        ctx.info('webhook event', { event: event.event, room: { sid, name } })
       } else if (event.event === 'room_finished' && event.room !== undefined) {
-        await saveLiveKitSessionBilling(ctx, event.room.sid)
+        const { sid, name } = event.room
+        ctx.info('webhook event', { event: event.event, room: { sid, name } })
+        try {
+          await saveLiveKitSessionBilling(ctx, event.room.sid)
+        } catch {
+          // Ensure we don't fail the webhook if billing fails
+        }
         res.send()
         return
       }

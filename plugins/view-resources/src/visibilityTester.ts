@@ -17,6 +17,7 @@ import core, {
   checkPermission,
   getCurrentAccount,
   toIdMap,
+  AccountRole,
   type Doc,
   type Space,
   type TypedSpace
@@ -27,6 +28,11 @@ import { spaceSpace } from './utils'
 
 function isTypedSpace (space: Space): space is TypedSpace {
   return getClient().getHierarchy().isDerived(space._class, core.class.TypedSpace)
+}
+
+function isSpaceOwner (space: Space): boolean {
+  const currentAccount = getCurrentAccount()
+  return currentAccount.role === AccountRole.Owner || (space.owners ?? []).includes(currentAccount.uuid)
 }
 
 export async function canDeleteObject (doc?: Doc | Doc[]): Promise<boolean> {
@@ -57,7 +63,7 @@ export async function canEditSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  if ((space.owners ?? []).includes(getCurrentAccount().uuid)) {
+  if (isSpaceOwner(space)) {
     return true
   }
 
@@ -83,7 +89,7 @@ export async function canArchiveSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  if ((space.owners ?? []).includes(getCurrentAccount().uuid)) {
+  if (isSpaceOwner(space)) {
     return true
   }
 
@@ -109,7 +115,7 @@ export async function canDeleteSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const space = doc as Space
 
-  if ((space.owners ?? []).includes(getCurrentAccount().uuid)) {
+  if (isSpaceOwner(space)) {
     return true
   }
 
