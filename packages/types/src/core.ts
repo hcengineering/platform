@@ -23,7 +23,7 @@ export type CardID = Ref<Card>
 export type CardType = Ref<MasterTag>
 export type SocialID = PersonId
 export type WorkspaceID = WorkspaceUuid
-export type RichText = string
+export type Markdown = string
 export type AccountID = AccountUuid
 
 export type ID = string

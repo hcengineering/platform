@@ -13,27 +13,33 @@
 // limitations under the License.
 //
 
-import type { CardID, AccountID, LabelID, CardType } from '@hcengineering/communication-types'
+import type { CardID, AccountID, LabelID, CardType, SocialID } from '@hcengineering/communication-types'
 import type { BaseRequestEvent } from './common'
 
 export enum LabelRequestEventType {
+  // Internal
   CreateLabel = 'createLabel',
   RemoveLabel = 'removeLabel'
 }
 
 export type LabelRequestEvent = CreateLabelEvent | RemoveLabelEvent
 
+// Internal
 export interface CreateLabelEvent extends BaseRequestEvent {
   type: LabelRequestEventType.CreateLabel
-  label: LabelID
-  card: CardID
+  labelId: LabelID
+  cardId: CardID
   cardType: CardType
   account: AccountID
+  socialId: SocialID
+  date: Date
 }
 
 export interface RemoveLabelEvent extends BaseRequestEvent {
   type: LabelRequestEventType.RemoveLabel
-  label: LabelID
-  card: CardID
+  labelId: LabelID
+  cardId: CardID
   account: AccountID
+  socialId: SocialID
+  date: Date
 }

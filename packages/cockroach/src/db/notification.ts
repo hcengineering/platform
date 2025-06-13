@@ -38,9 +38,6 @@ import { toCollaborator, toNotification, toNotificationContext } from './mapping
 import type {
   NotificationContextUpdates,
   NotificationUpdates,
-  RemoveCollaboratorsQuery,
-  RemoveNotificationContextQuery,
-  RemoveNotificationsQuery,
   UpdateNotificationQuery
 } from '@hcengineering/communication-sdk-types'
 
@@ -68,9 +65,8 @@ export class NotificationsDb extends BaseDb {
     return result.map((it: any) => it.account)
   }
 
-  async removeCollaborators (card: CardID, query: RemoveCollaboratorsQuery): Promise<void> {
-    const { accounts } = query
-    if (accounts === undefined) {
+  async removeCollaborators (card: CardID, accounts: AccountID[], unsafe = false): Promise<void> {
+    if (accounts === undefined && unsafe) {
       const sql = `DELETE FROM ${TableName.Collaborators} WHERE workspace_id = $1::uuid AND card_id = $2::varchar`
       await this.execute(sql, [this.workspace, card], 'remove collaborators')
     } else if (accounts.length === 1) {
@@ -175,8 +171,11 @@ export class NotificationsDb extends BaseDb {
     await this.execute(sql, [...values, updates.read], 'update notification')
   }
 
-  async removeNotifications (query: RemoveNotificationsQuery): Promise<NotificationID[]> {
-    const { context, account, ids } = query
+  async removeNotifications (
+    contextId: ContextID,
+    account: AccountID,
+    ids: NotificationID[]
+  ): Promise<NotificationID[]> {
     if (ids.length === 0) return []
     const where: string[] = [
       'nc.workspace_id = $1::uuid',
@@ -184,7 +183,7 @@ export class NotificationsDb extends BaseDb {
       'nc.account = $3::uuid',
       'nc.id = n.context_id'
     ]
-    const values: any[] = [this.workspace, context, account]
+    const values: any[] = [this.workspace, contextId, account]
     let index = values.length + 1
 
     if (ids.length === 1) {
@@ -231,26 +230,14 @@ export class NotificationsDb extends BaseDb {
     return result[0].id as ContextID
   }
 
-  async removeContexts (query: RemoveNotificationContextQuery): Promise<void> {
-    const db: Partial<ContextDb> & { id?: ContextID } = {
-      id: query.id,
-      card_id: query.card,
-      account: query.account
-    }
-    const entries = Object.entries(db).filter(([_, value]) => value !== undefined)
-
-    if (entries.length === 0) return
-
-    entries.unshift(['workspace_id', this.workspace])
-
-    const whereClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
-    const whereValues = entries.map(([_, value]) => value)
-
+  async removeContext (contextId: ContextID, account: AccountID): Promise<void> {
     const sql = `DELETE
                  FROM ${TableName.NotificationContext}
-                 WHERE ${whereClauses.join(' AND ')}`
+                 WHERE workspace_id = $1::uuid
+                   AND id = $2::int8
+                   AND account = $3::uuid`
 
-    await this.execute(sql, whereValues, 'remove notification context')
+    await this.execute(sql, [this.workspace, contextId, account], 'remove notification context')
   }
 
   async updateContext (context: ContextID, account: AccountID, updates: NotificationContextUpdates): Promise<void> {
@@ -329,7 +316,6 @@ export class NotificationsDb extends BaseDb {
         'message_type', m.type,
         'message_content', m.content,
         'message_data', m.data,
-        'message_external_id', m.external_id,
         'message_creator', m.creator,
         'message_group_blob_id', mg.blob_id,
         'message_group_from_date', mg.from_date,
@@ -448,7 +434,6 @@ export class NotificationsDb extends BaseDb {
       m.content AS message_content,
       m.creator AS message_creator,
       m.data AS message_data,
-      m.external_id AS message_external_id,
       mg.blob_id AS message_group_blob_id,
       mg.from_date AS message_group_from_date,
       mg.to_date AS message_group_to_date,
@@ -516,7 +501,7 @@ export class NotificationsDb extends BaseDb {
   async updateCollaborators (params: FindCollaboratorsParams, data: Partial<Collaborator>): Promise<void> {
     const dbData: Partial<CollaboratorDb> = {
       account: data.account,
-      card_id: data.card,
+      card_id: data.cardId,
       card_type: data.cardType
     }
 

@@ -17,7 +17,7 @@ import { LiveQueries } from '@hcengineering/communication-query'
 import type { WorkspaceID } from '@hcengineering/communication-types'
 import type { FindClient } from '@hcengineering/communication-sdk-types'
 
-import { LabelsQuery, MessagesQuery, NotificationContextsQuery, NotificationsQuery } from './query'
+import { CollaboratorsQuery, LabelsQuery, MessagesQuery, NotificationContextsQuery, NotificationsQuery } from './query'
 
 export type { MessageQueryParams } from '@hcengineering/communication-query'
 
@@ -38,6 +38,10 @@ export function createNotificationContextsQuery (): NotificationContextsQuery {
 
 export function createLabelsQuery (): LabelsQuery {
   return new LabelsQuery(lq, onDestroy)
+}
+
+export function createCollaboratorsQuery (): CollaboratorsQuery {
+  return new CollaboratorsQuery(lq, onDestroy)
 }
 
 export function initLiveQueries (

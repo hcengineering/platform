@@ -31,7 +31,7 @@ export interface LabelCreatedEvent extends BaseResponseEvent {
 
 export interface LabelRemovedEvent extends BaseResponseEvent {
   type: LabelResponseEventType.LabelRemoved
-  label: LabelID
-  card: CardID
+  labelId: LabelID
+  cardId: CardID
   account: AccountID
 }

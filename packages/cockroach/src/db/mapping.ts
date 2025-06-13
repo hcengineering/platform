@@ -14,7 +14,7 @@
 //
 
 import {
-  type File,
+  type AttachedBlob,
   type BlobID,
   type CardID,
   type Collaborator,
@@ -29,16 +29,16 @@ import {
   type Patch,
   PatchType,
   type Reaction,
-  type RichText,
+  type Markdown,
   type SocialID,
   type Thread,
-  type MessageData,
   type Label,
   type CardType,
   type BlobMetadata,
   type AccountID,
   type LinkPreview,
-  type LinkPreviewID
+  type LinkPreviewID,
+  type MessageExtra
 } from '@hcengineering/communication-types'
 import { applyPatches } from '@hcengineering/communication-shared'
 
@@ -71,10 +71,9 @@ interface RawNotification extends NotificationDb {
   account: AccountID
   message_id: MessageID
   message_type?: MessageType
-  message_content?: RichText
+  message_content?: Markdown
   message_creator?: SocialID
-  message_data?: MessageData
-  message_external_id?: string
+  message_data?: MessageExtra
   message_group_blob_id?: BlobID
   message_group_from_date?: Date
   message_group_to_date?: Date
@@ -109,28 +108,26 @@ export function toMessage (raw: RawMessage): Message {
   const rawMessage: Message = {
     id: String(raw.id) as MessageID,
     type: raw.type,
-    card: raw.card_id,
+    cardId: raw.card_id,
     content: raw.content,
     creator: raw.creator,
     created: new Date(raw.created),
     removed: false,
-    data: raw.data,
-    externalId: raw.external_id,
+    extra: raw.data,
     thread:
       raw.thread_id != null && raw.thread_type != null
         ? {
-            card: raw.card_id,
-            message: String(raw.id) as MessageID,
-            messageCreated: new Date(raw.created),
-            thread: raw.thread_id,
+            cardId: raw.card_id,
+            messageId: String(raw.id) as MessageID,
+            threadId: raw.thread_id,
             threadType: raw.thread_type,
-            repliesCount: raw.replies_count != null ? parseInt(raw.replies_count as any) : 0,
+            repliesCount: raw.replies_count != null ? Number(raw.replies_count) : 0,
             lastReply: raw.last_reply ?? new Date()
           }
         : undefined,
     reactions: (raw.reactions ?? []).map(toReaction),
-    files: (raw.files ?? []).map(toFile),
-    links: (raw.link_previews ?? []).map(toLinkPreview)
+    blobs: (raw.files ?? []).map(toBlob),
+    linkPreviews: (raw.link_previews ?? []).map(toLinkPreview)
   }
 
   if (patches.length === 0) {
@@ -148,13 +145,13 @@ export function toReaction (raw: ReactionDb): Reaction {
   }
 }
 
-export function toFile (raw: Omit<FileDb, 'workspace_id'>): File {
+export function toBlob (raw: Omit<FileDb, 'workspace_id'>): AttachedBlob {
   return {
     blobId: raw.blob_id,
-    type: raw.type,
-    filename: raw.filename,
+    contentType: raw.type,
+    fileName: raw.filename,
     size: Number(raw.size),
-    meta: raw.meta,
+    metadata: raw.meta,
     creator: raw.creator,
     created: new Date(raw.created)
   }
@@ -167,9 +164,9 @@ export function toLinkPreview (raw: LinkPreviewDb): LinkPreview {
     host: raw.host,
     title: raw.title ?? undefined,
     description: raw.description ?? undefined,
-    favicon: raw.favicon ?? undefined,
-    hostname: raw.hostname ?? undefined,
-    image: raw.image ?? undefined,
+    iconUrl: raw.favicon ?? undefined,
+    siteName: raw.hostname ?? undefined,
+    previewImage: raw.image ?? undefined,
     created: new Date(raw.created),
     creator: raw.creator
   }
@@ -177,7 +174,7 @@ export function toLinkPreview (raw: LinkPreviewDb): LinkPreview {
 
 export function toMessagesGroup (raw: MessagesGroupDb): MessagesGroup {
   return {
-    card: raw.card_id,
+    cardId: raw.card_id,
     blobId: raw.blob_id,
     fromDate: raw.from_date,
     toDate: raw.to_date,
@@ -186,11 +183,10 @@ export function toMessagesGroup (raw: MessagesGroupDb): MessagesGroup {
   }
 }
 
-export function toPatch (raw: Omit<PatchDb, 'workspace_id'>): Patch {
+export function toPatch (raw: Omit<PatchDb, 'workspace_id' | 'message_created'>): Patch {
   return {
     type: raw.type,
-    messageCreated: new Date(raw.message_created),
-    message: String(raw.message_id) as MessageID,
+    messageId: String(raw.message_id) as MessageID,
     data: raw.data as any,
     creator: raw.creator,
     created: new Date(raw.created)
@@ -199,12 +195,11 @@ export function toPatch (raw: Omit<PatchDb, 'workspace_id'>): Patch {
 
 export function toThread (raw: ThreadDb): Thread {
   return {
-    card: raw.card_id,
-    message: String(raw.message_id) as MessageID,
-    messageCreated: new Date(raw.message_created),
-    thread: raw.thread_id,
+    cardId: raw.card_id,
+    messageId: String(raw.message_id) as MessageID,
+    threadId: raw.thread_id,
     threadType: raw.thread_type,
-    repliesCount: parseInt(raw.replies_count as any),
+    repliesCount: Number(raw.replies_count),
     lastReply: new Date(raw.last_reply)
   }
 }
@@ -213,7 +208,7 @@ export function toNotificationContext (raw: RawContext): NotificationContext {
   const lastView = new Date(raw.last_view)
   return {
     id: String(raw.id) as ContextID,
-    card: raw.card_id,
+    cardId: raw.card_id,
     account: raw.account,
     lastView,
     lastUpdate: new Date(raw.last_update),
@@ -235,8 +230,7 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
       type: it.type,
       data: it.data,
       creator: it.creator,
-      created: new Date(it.created),
-      message_created: raw.message_created ?? created
+      created: new Date(it.created)
     })
   )
 
@@ -246,18 +240,11 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
     raw.message_created != null &&
     raw.message_type != null
   ) {
-    const messageFiles = raw.message_files?.map((it) =>
-      toFile({
+    const messageBlobs = raw.message_files?.map((it) =>
+      toBlob({
         card_id: card,
         message_id: raw.message_id,
-        blob_id: it.blob_id,
-        type: it.type,
-        size: it.size,
-        filename: it.filename,
-        meta: it.meta,
-        creator: it.creator,
-        created: it.created,
-        message_created: raw.message_created ?? created
+        ...it
       })
     )
 
@@ -265,10 +252,9 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
 
     if (raw.message_thread_id != null && raw.message_thread_type != null) {
       thread = {
-        card,
-        message: String(raw.message_id) as MessageID,
-        messageCreated: raw.message_created != null ? new Date(raw.message_created) : created,
-        thread: raw.message_thread_id,
+        cardId: card,
+        messageId: String(raw.message_id) as MessageID,
+        threadId: raw.message_thread_id,
         threadType: raw.message_thread_type,
         repliesCount: Number(raw.message_replies ?? 0),
         lastReply: raw.message_last_reply != null ? new Date(raw.message_last_reply) : created
@@ -277,18 +263,17 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
     message = {
       id: String(raw.message_id) as MessageID,
       type: raw.message_type,
-      card,
+      cardId: card,
       removed: false,
       content: raw.message_content,
-      data: raw.message_data,
-      externalId: raw.message_external_id,
+      extra: raw.message_data,
       creator: raw.message_creator,
       created: new Date(raw.message_created),
       edited: undefined,
       reactions: [],
-      files: messageFiles ?? [],
+      blobs: messageBlobs ?? [],
       thread,
-      links: []
+      linkPreviews: []
     }
 
     if (patches.length > 0) {
@@ -305,7 +290,7 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
       messageId: String(raw.message_id) as MessageID,
       messageCreated: new Date(raw.message_created),
       created,
-      context: String(id) as ContextID,
+      contextId: String(id) as ContextID,
       message,
       content: raw.content
     }
@@ -315,7 +300,7 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
 
   if (raw.message_group_blob_id != null && raw.message_group_from_date != null && raw.message_group_to_date != null) {
     messageGroup = {
-      card,
+      cardId: card,
       blobId: raw.message_group_blob_id,
       fromDate: new Date(raw.message_group_from_date),
       toDate: new Date(raw.message_group_to_date),
@@ -332,7 +317,7 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
     messageId: String(raw.message_id) as MessageID,
     messageCreated: new Date(raw.message_created),
     created,
-    context: String(id) as ContextID,
+    contextId: String(id) as ContextID,
     messageGroup,
     content: raw.content
   }
@@ -346,14 +331,14 @@ export function toCollaborator (raw: CollaboratorDb): Collaborator {
   return {
     account: raw.account,
     cardType: raw.card_type,
-    card: raw.card_id
+    cardId: raw.card_id
   }
 }
 
 export function toLabel (raw: LabelDb): Label {
   return {
-    label: raw.label_id,
-    card: raw.card_id,
+    labelId: raw.label_id,
+    cardId: raw.card_id,
     cardType: raw.card_type,
     account: raw.account,
     created: new Date(raw.created)

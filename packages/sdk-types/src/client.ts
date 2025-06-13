@@ -14,6 +14,7 @@
 //
 
 import type {
+  Collaborator, FindCollaboratorsParams,
   FindLabelsParams,
   FindMessagesGroupsParams,
   FindMessagesParams,
@@ -40,6 +41,8 @@ export interface FindClient {
   findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<Notification[]>
 
   findLabels: (params: FindLabelsParams, queryId?: number) => Promise<Label[]>
+
+  findCollaborators: (params: FindCollaboratorsParams, queryId?: number) => Promise<Collaborator[]>
 
   onRequest: (event: RequestEvent, promise: Promise<EventResult>) => void
 

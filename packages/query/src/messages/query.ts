@@ -27,7 +27,7 @@ import {
   type Reaction,
   SortingOrder,
   type WorkspaceID,
-  type File
+  type AttachedBlob
 } from '@hcengineering/communication-types'
 import {
   type CardRemovedEvent,
@@ -35,8 +35,8 @@ import {
   type CreateMessageEvent,
   type CreateMessageResult,
   type EventResult,
-  type FileCreatedEvent,
-  type FileRemovedEvent,
+  type BlobAttachedEvent,
+  type BlobDetachedEvent,
   type FindClient,
   type LinkPreviewCreatedEvent,
   type LinkPreviewRemovedEvent,
@@ -44,12 +44,13 @@ import {
   MessageRequestEventType,
   MessageResponseEventType,
   type PagedQueryCallback,
-  type PatchCreatedEvent,
-  type ReactionCreatedEvent,
+  type ReactionSetEvent,
   type ReactionRemovedEvent,
   type RequestEvent,
   type ResponseEvent,
-  type ThreadCreatedEvent
+  type ThreadAttachedEvent,
+  PatchCreatedEvent,
+  ThreadUpdatedEvent
 } from '@hcengineering/communication-sdk-types'
 import { applyPatch, applyPatches } from '@hcengineering/communication-shared'
 import { loadGroupFile } from '@hcengineering/communication-yaml'
@@ -65,7 +66,7 @@ import {
   type QueryId
 } from '../types'
 import { WindowImpl } from '../window'
-import { addFile, addLinkPreview, addReaction, removeFile, removeLinkPreview, removeReaction } from '../utils'
+import { attachBlob, addLinkPreview, addReaction, detachBlob, removeLinkPreview, removeReaction } from '../utils'
 
 const GROUPS_LIMIT = 4
 
@@ -96,7 +97,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     buffer: [] as Message[]
   }
 
-  private readonly createdFiles = new Map<MessageID, File[]>()
+  private readonly attachedBlobs = new Map<MessageID, AttachedBlob[]>()
   private readonly createdReactions = new Map<MessageID, Reaction[]>()
   private readonly createdLinkPreviews = new Map<MessageID, LinkPreview[]>()
   private readonly createdPatches = new Map<MessageID, Patch[]>()
@@ -113,7 +114,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     private callback?: PagedQueryCallback<Message>,
     initialResult?: QueryResult<Message>
   ) {
-    const baseLimit = 'id' in params && params.id != null ? 1 : (this.params.limit ?? defaultQueryParams.limit)
+    const baseLimit = 'id' in params && params.id != null ? 1 : this.params.limit ?? defaultQueryParams.limit
     this.limit = baseLimit + 1
     this.params = {
       ...params,
@@ -163,20 +164,20 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
         await this.onPatchCreatedEvent(event)
         break
       }
-      case MessageResponseEventType.ReactionCreated: {
-        await this.onReactionCreatedEvent(event)
+      case MessageResponseEventType.ReactionSet: {
+        await this.onReactionSetEvent(event)
         break
       }
       case MessageResponseEventType.ReactionRemoved: {
         await this.onReactionRemovedEvent(event)
         break
       }
-      case MessageResponseEventType.FileCreated: {
-        await this.onFileCreatedEvent(event)
+      case MessageResponseEventType.BlobAttached: {
+        await this.onBlobAttachedEvent(event)
         break
       }
-      case MessageResponseEventType.FileRemoved: {
-        await this.onFileRemovedEvent(event)
+      case MessageResponseEventType.BlobDetached: {
+        await this.onBlobDetachedEvent(event)
         break
       }
       case MessageResponseEventType.LinkPreviewCreated: {
@@ -187,8 +188,11 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
         await this.onLinkPreviewRemovedEvent(event)
         break
       }
-      case MessageResponseEventType.ThreadCreated:
-        await this.onThreadCreatedEvent(event)
+      case MessageResponseEventType.ThreadAttached:
+        await this.onThreadAttachedEvent(event)
+        break
+      case MessageResponseEventType.ThreadUpdated:
+        await this.onThreadUpdatedEvent(event)
         break
       case CardResponseEventType.CardRemoved:
         await this.onCardRemoved(event)
@@ -198,7 +202,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   async onCardRemoved (event: CardRemovedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
-    if (this.params.card === event.card) {
+    if (this.params.card === event.cardId) {
       this.isCardRemoved = true
       this.result.deleteAll()
       this.result.setHead(true)
@@ -210,7 +214,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     if (this.params.replies === true) {
       const result = this.result.getResult()
       for (const message of result) {
-        if (message.thread != null && message.thread.thread === event.card) {
+        if (message.thread != null && message.thread.threadId === event.cardId) {
           this.result.update({
             ...message,
             thread: undefined
@@ -231,9 +235,9 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   async onCreateMessageRequest (event: CreateMessageEvent, promise: Promise<CreateMessageResult>): Promise<void> {
-    if (this.params.card !== event.card) return
+    if (this.params.card !== event.cardId) return
     const eventId = event._id
-    if (eventId == null) return
+    if (eventId == null || event.socialId == null) return
 
     const tmpId = uuid() as MessageID
     let resultId: MessageID | undefined
@@ -241,16 +245,16 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       id: tmpId,
       type: MessageType.Message,
       removed: false,
-      card: event.card,
+      cardId: event.cardId,
       content: event.content,
-      creator: event.creator,
+      creator: event.socialId,
       created: new Date(),
-      data: event.data,
+      extra: event.extra,
       edited: undefined,
       thread: undefined,
       reactions: [],
-      files: [],
-      links: []
+      blobs: [],
+      linkPreviews: []
     }
 
     if (!this.match(tmpMessage)) return
@@ -258,7 +262,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     promise
       .then(async (result) => {
         this.tmpMessages.delete(eventId)
-        resultId = result.id
+        resultId = result.messageId
         if (this.result instanceof Promise) this.result = await this.result
 
         if (this.result.get(resultId) != null) {
@@ -569,11 +573,9 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
         currentGroups.length > 0 ? currentGroups : await this.findGroups(direction, this.getLoadGroupsParams(direction))
 
       if (currentGroups.length === 0) {
-        this.firstGroup = direction === Direction.Forward ? (this.firstGroup ?? groups[0]) : groups[groups.length - 1]
+        this.firstGroup = direction === Direction.Forward ? this.firstGroup ?? groups[0] : groups[groups.length - 1]
         this.lastGroup =
-          direction === Direction.Forward
-            ? (groups[groups.length - 1] ?? this.lastGroup)
-            : (this.lastGroup ?? groups[0])
+          direction === Direction.Forward ? groups[groups.length - 1] ?? this.lastGroup : this.lastGroup ?? groups[0]
 
         if (direction === Direction.Forward) {
           this.next.hasGroups = groups.length >= GROUPS_LIMIT
@@ -596,11 +598,11 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       }
 
       this.firstLoadedGroup =
-        direction === Direction.Forward ? (this.firstLoadedGroup ?? toLoad[0]) : toLoad[toLoad.length - 1]
+        direction === Direction.Forward ? this.firstLoadedGroup ?? toLoad[0] : toLoad[toLoad.length - 1]
       this.lastLoadedGroup =
         direction === Direction.Forward
-          ? (toLoad[toLoad.length - 1] ?? this.lastLoadedGroup)
-          : (this.lastLoadedGroup ?? toLoad[0])
+          ? toLoad[toLoad.length - 1] ?? this.lastLoadedGroup
+          : this.lastLoadedGroup ?? toLoad[0]
 
       while (orderedGroups.length > 0) {
         const group = direction === Direction.Forward ? orderedGroups.shift() : orderedGroups.pop()
@@ -693,11 +695,11 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
     const patchesMap = new Map<MessageID, Patch[]>()
     for (const patch of patches) {
-      patchesMap.set(patch.message, [...(patchesMap.get(patch.message) ?? []), patch])
+      patchesMap.set(patch.messageId, [...(patchesMap.get(patch.messageId) ?? []), patch])
     }
 
     return {
-      metadata: parsedFile.metadata,
+      ...parsedFile,
       messages:
         patches.length > 0
           ? parsedFile.messages.map((message) =>
@@ -768,18 +770,18 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     if (this.isOneMessageQuery(this.params) && this.params.id !== message.id) {
       return false
     }
-    if (this.params.card !== message.card) {
+    if (this.params.card !== message.cardId) {
       return false
     }
     return true
   }
 
-  private async onThreadCreatedEvent (event: ThreadCreatedEvent): Promise<void> {
+  private async onThreadAttachedEvent (event: ThreadAttachedEvent): Promise<void> {
     if (this.params.replies !== true) return
-    if (this.params.card !== event.thread.card) return
+    if (this.params.card !== event.thread.cardId) return
     if (this.result instanceof Promise) this.result = await this.result
 
-    const message = this.result.get(event.thread.message)
+    const message = this.result.get(event.thread.messageId)
     if (message !== undefined) {
       const updated: Message = {
         ...message,
@@ -791,7 +793,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
 
     this.next.buffer = this.next.buffer.map((it) => {
-      if (it.id === event.thread.message) {
+      if (it.id === event.thread.messageId) {
         return {
           ...it,
           thread: event.thread
@@ -800,7 +802,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       return it
     })
     this.prev.buffer = this.next.buffer.map((it) => {
-      if (it.id === event.thread.message) {
+      if (it.id === event.thread.messageId) {
         return {
           ...it,
           thread: event.thread
@@ -810,16 +812,59 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     })
   }
 
+  private updateThread (message: Message, repliesCountOp?: 'increment' | 'decrement', lastReply?: Date): Message {
+    if (message.thread === undefined) return message
+    let count = message.thread.repliesCount
+
+    if (repliesCountOp === 'increment') {
+      count = count + 1
+    } else if (repliesCountOp === 'decrement') {
+      count = Math.max(count - 1, 0)
+    }
+
+    return {
+      ...message,
+      thread: { ...message.thread, repliesCount: count, lastReply: lastReply ?? message.thread.lastReply }
+    }
+  }
+
+  private async onThreadUpdatedEvent (event: ThreadUpdatedEvent): Promise<void> {
+    if (this.params.replies !== true) return
+    if (this.params.card !== event.cardId) return
+    if (this.result instanceof Promise) this.result = await this.result
+
+    const message = this.result.get(event.messageId)
+    if (message !== undefined) {
+      const updated: Message = this.updateThread(message, event.updates.repliesCountOp, event.updates.lastReply)
+
+      this.result.update(updated)
+      void this.notify()
+    }
+
+    this.next.buffer = this.next.buffer.map((it) => {
+      if (it.id === event.messageId) {
+        return this.updateThread(it, event.updates.repliesCountOp, event.updates.lastReply)
+      }
+      return it
+    })
+    this.prev.buffer = this.next.buffer.map((it) => {
+      if (it.id === event.messageId) {
+        return this.updateThread(it, event.updates.repliesCountOp, event.updates.lastReply)
+      }
+      return it
+    })
+  }
+
   private fillMessage (origin: Message): Message {
     let message = origin
     if (this.params.files === true) {
-      message.files = this.createdFiles.get(message.id) ?? []
+      message.blobs = this.attachedBlobs.get(message.id) ?? []
     }
     if (this.params.reactions === true) {
       message.reactions = this.createdReactions.get(message.id) ?? []
     }
     if (this.params.links === true) {
-      message.links = this.createdLinkPreviews.get(message.id) ?? []
+      message.linkPreviews = this.createdLinkPreviews.get(message.id) ?? []
     }
     const patches = this.createdPatches.get(message.id) ?? []
     message = applyPatches(message, patches)
@@ -828,7 +873,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   private async onMessageCreatedEvent (event: MessageCreatedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
-    if (this.params.card !== event.message.card) return
+    if (this.params.card !== event.message.cardId) return
     let message = event.message
     const exists = this.result.get(message.id)
 
@@ -858,9 +903,17 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
         return firstMessage.created > message.created
       }
       if (this.params.order === SortingOrder.Ascending) {
-        this.result.push(message)
+        if (message.created.getTime() > (firstMessage?.created?.getTime() ?? 0) || this.result.length < this.limit) {
+          this.result.push(message)
+        } else {
+          this.result.setHead(false)
+        }
       } else {
-        this.result.unshift(message)
+        if (message.created.getTime() >= (lastMessage?.created?.getTime() ?? 0) || this.result.length < this.limit) {
+          this.result.unshift(message)
+        } else {
+          this.result.setHead(false)
+        }
       }
 
       if (shouldResort(this.params.order ?? SortingOrder.Ascending)) {
@@ -870,28 +923,26 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
             : b.created.getTime() - a.created.getTime()
         )
       }
-      await this.notify()
+      void this.notify()
     }
     this.cleanCache(message.id)
   }
 
   private cleanCache (message: MessageID): void {
-    this.createdFiles.delete(message)
+    this.attachedBlobs.delete(message)
     this.createdReactions.delete(message)
     this.createdLinkPreviews.delete(message)
     this.createdPatches.delete(message)
   }
 
   private async onPatchCreatedEvent (event: PatchCreatedEvent): Promise<void> {
-    if (this.params.card !== event.card) return
-    if (!this.isAllowedPatch(event.patch.type)) return
-    const current = this.createdPatches.get(event.patch.message) ?? []
-    this.createdPatches.set(event.patch.message, [...current, event.patch])
+    if (this.params.card !== event.cardId) return
     if (this.result instanceof Promise) this.result = await this.result
 
-    const { patch } = event
-    const { messageCreated } = patch
-    const groups = this.groupsBuffer.filter((it) => it.fromDate <= messageCreated && it.toDate >= messageCreated)
+    const { patch, messageId, messageCreated } = event
+    const groups = this.groupsBuffer.filter(
+      (it) => it.fromDate.getTime() <= messageCreated.getTime() && it.toDate.getTime() >= messageCreated.getTime()
+    )
 
     for (const group of groups) {
       if (group.patches != null) {
@@ -899,19 +950,19 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       }
     }
 
-    const message = this.result.get(patch.message)
+    const message = this.result.get(messageId)
     if (message === undefined) return
 
     if (message.created < patch.created) {
-      this.result.update(applyPatch(message, patch, this.allowedPatches()))
+      this.result.update(applyPatch(message, patch, [PatchType.update, PatchType.remove]))
       await this.notify()
     }
   }
 
-  private async onReactionCreatedEvent (event: ReactionCreatedEvent): Promise<void> {
-    if (this.params.reactions !== true || this.params.card !== event.card) return
-    const current = this.createdReactions.get(event.message) ?? []
-    this.createdReactions.set(event.message, [...current, event.reaction])
+  private async onReactionSetEvent (event: ReactionSetEvent): Promise<void> {
+    if (this.params.reactions !== true || this.params.card !== event.cardId) return
+    const current = this.createdReactions.get(event.messageId) ?? []
+    this.createdReactions.set(event.messageId, [...current, event.reaction])
     if (this.result instanceof Promise) this.result = await this.result
 
     const reaction = {
@@ -919,116 +970,119 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       created: event.reaction.created
     }
 
-    const message = this.result.get(event.message)
+    const message = this.result.get(event.messageId)
     if (message !== undefined) {
       this.result.update(addReaction(message, reaction))
       void this.notify()
     }
 
-    const fromNextBuffer = this.next.buffer.find((it) => it.id === event.message)
+    const fromNextBuffer = this.next.buffer.find((it) => it.id === event.messageId)
     if (fromNextBuffer !== undefined) {
       addReaction(fromNextBuffer, reaction)
     }
-    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === event.message)
+    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === event.messageId)
     if (fromPrevBuffer !== undefined) {
       addReaction(fromPrevBuffer, reaction)
     }
   }
 
   private async onReactionRemovedEvent (event: ReactionRemovedEvent): Promise<void> {
-    if (this.params.reactions !== true || this.params.card !== event.card) return
-    const current = this.createdReactions.get(event.message) ?? []
-    const reactions = current.filter((it) => it.reaction !== event.reaction || it.creator !== event.creator)
-    this.createdReactions.set(event.message, reactions)
+    if (this.params.reactions !== true || this.params.card !== event.cardId) return
+    const current = this.createdReactions.get(event.messageId) ?? []
+
+    const reactions = current.filter((it) => it.reaction !== event.reaction || it.creator !== event.socialId)
+    this.createdReactions.set(event.messageId, reactions)
     if (this.result instanceof Promise) this.result = await this.result
 
-    const message = this.result.get(event.message)
+    const message = this.result.get(event.messageId)
     if (message !== undefined) {
-      const updated = removeReaction(message, event.reaction, event.creator)
+      const updated = removeReaction(message, event.reaction, event.socialId)
       if (updated.reactions.length !== message.reactions.length) {
         this.result.update(updated)
         void this.notify()
       }
     }
     this.next.buffer = this.next.buffer.map((it) =>
-      it.id === event.message ? removeReaction(it, event.reaction, event.creator) : it
+      it.id === event.messageId ? removeReaction(it, event.reaction, event.socialId) : it
     )
     this.prev.buffer = this.prev.buffer.map((it) =>
-      it.id === event.message ? removeReaction(it, event.reaction, event.creator) : it
+      it.id === event.messageId ? removeReaction(it, event.reaction, event.socialId) : it
     )
   }
 
-  private updateFilesCache (message: MessageID, files: File[]): void {
-    const filesCache = this.createdFiles.get(message) ?? []
-    this.createdFiles.set(message, filesCache)
-    for (const file of files) {
-      const current = filesCache.find((it) => it.blobId === file.blobId)
+  private updateFilesCache (message: MessageID, blobs: AttachedBlob[]): void {
+    const blobsCache = this.attachedBlobs.get(message) ?? []
+    this.attachedBlobs.set(message, blobsCache)
+    for (const blob of blobs) {
+      const current = blobsCache.find((it) => it.blobId === blob.blobId)
       if (current === undefined) {
-        filesCache.push(file)
+        blobsCache.push(blob)
       }
     }
   }
 
-  private async onFileCreatedEvent (event: FileCreatedEvent): Promise<void> {
-    if (this.params.files !== true || event.card !== this.params.card) return
-    this.updateFilesCache(event.message, [event.file])
+  private async onBlobAttachedEvent (event: BlobAttachedEvent): Promise<void> {
+    if (this.params.files !== true || event.cardId !== this.params.card) return
+    this.updateFilesCache(event.messageId, [event.blob])
     if (this.result instanceof Promise) this.result = await this.result
 
-    const { file } = event
-    const message = this.result.get(event.message)
+    const { blob } = event
+    const message = this.result.get(event.messageId)
     if (message !== undefined) {
-      if (!message.files.some((it) => it.blobId === file.blobId)) {
-        message.files.push(file)
+      if (!message.blobs.some((it) => it.blobId === blob.blobId)) {
+        message.blobs.push(blob)
         this.result.update(message)
         await this.notify()
       }
     }
 
-    const fromNextBuffer = this.next.buffer.find((it) => it.id === event.message)
+    const fromNextBuffer = this.next.buffer.find((it) => it.id === event.messageId)
     if (fromNextBuffer !== undefined) {
-      addFile(fromNextBuffer, file)
+      attachBlob(fromNextBuffer, blob)
     }
-    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === event.message)
+    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === event.messageId)
     if (fromPrevBuffer !== undefined) {
-      addFile(fromPrevBuffer, file)
+      attachBlob(fromPrevBuffer, blob)
     }
   }
 
   private async onLinkPreviewCreatedEvent (event: LinkPreviewCreatedEvent): Promise<void> {
-    if (this.params.links !== true || this.params.card !== event.card) return
-    const current = this.createdLinkPreviews.get(event.message) ?? []
-    this.createdLinkPreviews.set(event.message, [...current, event.linkPreview])
+    if (this.params.links !== true || this.params.card !== event.cardId) return
+    const current = this.createdLinkPreviews.get(event.messageId) ?? []
+    this.createdLinkPreviews.set(event.messageId, [...current, event.linkPreview])
+
     if (this.result instanceof Promise) this.result = await this.result
-    const message = this.result.get(event.message)
+    const message = this.result.get(event.messageId)
     const { linkPreview } = event
     if (message !== undefined) {
-      if (!message.links.some((it) => it.id === linkPreview.id)) {
-        message.links.push(linkPreview)
+      if (!message.linkPreviews.some((it) => it.id === linkPreview.id)) {
+        message.linkPreviews.push(linkPreview)
         this.result.update(message)
         await this.notify()
       }
     }
 
-    const fromNextBuffer = this.next.buffer.find((it) => it.id === event.message)
+    const fromNextBuffer = this.next.buffer.find((it) => it.id === event.messageId)
     if (fromNextBuffer !== undefined) {
       addLinkPreview(fromNextBuffer, linkPreview)
     }
-    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === event.message)
+    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === event.messageId)
     if (fromPrevBuffer !== undefined) {
       addLinkPreview(fromPrevBuffer, linkPreview)
     }
   }
 
   private async onLinkPreviewRemovedEvent (event: LinkPreviewRemovedEvent): Promise<void> {
-    if (this.params.links !== true || this.params.card !== event.card) return
-    const current = this.createdLinkPreviews.get(event.message) ?? []
-    const linkPreviews = current.filter((it) => it.id !== event.id)
-    this.createdLinkPreviews.set(event.message, linkPreviews)
+    if (this.params.links !== true || this.params.card !== event.cardId) return
+    const current = this.createdLinkPreviews.get(event.messageId) ?? []
+    const linkPreviews = current.filter((it) => it.id !== event.previewId)
+    this.createdLinkPreviews.set(event.messageId, linkPreviews)
+
     if (this.result instanceof Promise) this.result = await this.result
-    const message = this.result.get(event.message)
+    const message = this.result.get(event.messageId)
     if (message !== undefined) {
-      const links = message.links.filter((it) => it.id !== event.id)
-      if (links.length === message.links.length) return
+      const links = message.linkPreviews.filter((it) => it.id !== event.previewId)
+      if (links.length === message.linkPreviews.length) return
 
       const updated = {
         ...message,
@@ -1038,22 +1092,26 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       await this.notify()
     }
 
-    this.next.buffer = this.next.buffer.map((it) => (it.id === event.message ? removeLinkPreview(it, event.id) : it))
-    this.prev.buffer = this.prev.buffer.map((it) => (it.id === event.message ? removeLinkPreview(it, event.id) : it))
+    this.next.buffer = this.next.buffer.map((it) =>
+      it.id === event.messageId ? removeLinkPreview(it, event.previewId) : it
+    )
+    this.prev.buffer = this.prev.buffer.map((it) =>
+      it.id === event.messageId ? removeLinkPreview(it, event.previewId) : it
+    )
   }
 
-  private async onFileRemovedEvent (event: FileRemovedEvent): Promise<void> {
+  private async onBlobDetachedEvent (event: BlobDetachedEvent): Promise<void> {
     if (this.params.files !== true) return
-    if (this.params.card !== event.card) return
-    const current = this.createdFiles.get(event.message) ?? []
+    if (this.params.card !== event.cardId) return
+    const current = this.attachedBlobs.get(event.messageId) ?? []
     const files = current.filter((it) => it.blobId !== event.blobId)
-    this.createdFiles.set(event.message, files)
+    this.attachedBlobs.set(event.messageId, files)
     if (this.result instanceof Promise) this.result = await this.result
 
-    const message = this.result.get(event.message)
+    const message = this.result.get(event.messageId)
     if (message !== undefined) {
-      const files = message.files.filter((it) => it.blobId !== event.blobId)
-      if (files.length === message.files.length) return
+      const files = message.blobs.filter((it) => it.blobId !== event.blobId)
+      if (files.length === message.blobs.length) return
 
       const updated = {
         ...message,
@@ -1063,18 +1121,18 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       await this.notify()
     }
 
-    this.next.buffer = this.next.buffer.map((it) => (it.id === event.message ? removeFile(it, event.blobId) : it))
-    this.prev.buffer = this.prev.buffer.map((it) => (it.id === event.message ? removeFile(it, event.blobId) : it))
+    this.next.buffer = this.next.buffer.map((it) => (it.id === event.messageId ? detachBlob(it, event.blobId) : it))
+    this.prev.buffer = this.prev.buffer.map((it) => (it.id === event.messageId ? detachBlob(it, event.blobId) : it))
   }
 
   private allowedPatches (): PatchType[] {
     const result = [PatchType.update, PatchType.remove]
 
     if (this.params.reactions === true) {
-      result.push(PatchType.addReaction, PatchType.removeReaction)
+      result.push(PatchType.setReaction, PatchType.removeReaction)
     }
     if (this.params.files === true) {
-      result.push(PatchType.addFile, PatchType.removeFile)
+      result.push(PatchType.attachBlob, PatchType.detachBlob)
     }
     if (this.params.replies === true) {
       result.push(PatchType.updateThread)

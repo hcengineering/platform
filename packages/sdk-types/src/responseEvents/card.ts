@@ -26,13 +26,15 @@ export type CardResponseEvent = CardTypeUpdatedEvent | CardRemovedEvent
 
 export interface CardTypeUpdatedEvent extends BaseResponseEvent {
   type: CardResponseEventType.CardTypeUpdated
-  card: CardID
+  cardId: CardID
   cardType: CardType
-  creator: SocialID
-  created?: Date
+  socialId: SocialID
+  date: Date
 }
 
 export interface CardRemovedEvent extends BaseResponseEvent {
   type: CardResponseEventType.CardRemoved
-  card: CardID
+  cardId: CardID
+  socialId: SocialID
+  date: Date
 }

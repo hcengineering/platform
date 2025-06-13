@@ -24,19 +24,18 @@ export function deserializeMessage (message: Message): FileMessage {
     creator: message.creator,
     created: message.created,
     removed: message.removed,
-    data: message.data,
-    externalId: message.externalId,
+    extra: message.extra,
     thread:
       message.thread != null
         ? {
-            thread: message.thread.thread,
+            threadId: message.thread.threadId,
             threadType: message.thread.threadType,
             repliesCount: message.thread.repliesCount,
             lastReply: message.thread.lastReply
           }
         : undefined,
-    files: message.files,
+    blobs: message.blobs,
     reactions: message.reactions,
-    links: message.links
+    linkPreviews: message.linkPreviews
   }
 }

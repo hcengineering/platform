@@ -21,7 +21,7 @@ import {
   NotificationRequestEventType,
   type RequestEvent
 } from '@hcengineering/communication-sdk-types'
-import { type ActivityTypeUpdate, ActivityUpdateType, MessageType } from '@hcengineering/communication-types'
+import { type ActivityTypeUpdate, ActivityUpdateType, MessageType, SocialID } from '@hcengineering/communication-types'
 
 import type { TriggerCtx, TriggerFn, Triggers } from '../types'
 import { getNameBySocialID } from './utils'
@@ -32,18 +32,18 @@ async function createActivityOnCardTypeUpdate (ctx: TriggerCtx, event: CardTypeU
     newType: event.cardType
   }
 
-  const sender = await getNameBySocialID(ctx, event.creator)
+  const sender = await getNameBySocialID(ctx, event.socialId)
 
   return [
     {
       type: MessageRequestEventType.CreateMessage,
       messageType: MessageType.Activity,
-      card: event.card,
+      cardId: event.cardId,
       cardType: event.cardType,
       content: `${sender} changed type`,
-      creator: event.creator,
-      created: event.created,
-      data: {
+      socialId: event.socialId,
+      date: event.date,
+      extra: {
         action: 'update',
         update: updateDate
       }
@@ -52,36 +52,38 @@ async function createActivityOnCardTypeUpdate (ctx: TriggerCtx, event: CardTypeU
 }
 
 async function onCardTypeUpdates (ctx: TriggerCtx, event: CardTypeUpdatedEvent): Promise<RequestEvent[]> {
-  await ctx.db.updateCollaborators({ card: event.card }, { cardType: event.cardType })
-  await ctx.db.updateLabels(event.card, { cardType: event.cardType })
-  await ctx.db.updateThread(event.card, { threadType: event.cardType })
+  await ctx.db.updateCollaborators({ card: event.cardId }, { cardType: event.cardType })
+  await ctx.db.updateLabels(event.cardId, { cardType: event.cardType })
+  await ctx.db.updateThread(event.cardId, { threadType: event.cardType })
   return []
 }
 
-async function removeCollaborators (ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
-  await ctx.db.removeCollaborators(event.card, {})
+async function removeCardCollaborators (ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
+  await ctx.db.removeCollaborators(event.cardId, [], true)
   return []
 }
 
-async function removeLabels (ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
-  await ctx.db.removeLabels({ card: event.card })
+async function removeCardLabels (ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
+  await ctx.db.removeLabels({ cardId: event.cardId })
   return []
 }
 
-async function removeThreads (ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
-  await ctx.db.removeThreads({ card: event.card })
-  await ctx.db.removeThreads({ thread: event.card })
+async function removeCardThreads (ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
+  await ctx.db.removeThreads({ cardId: event.cardId })
+  await ctx.db.removeThreads({ threadId: event.cardId })
   return []
 }
 
 async function removeNotificationContexts (ctx: TriggerCtx, event: CardRemovedEvent): Promise<RequestEvent[]> {
   const result: RequestEvent[] = []
-  const contexts = await ctx.db.findNotificationContexts({ card: event.card })
+  const contexts = await ctx.db.findNotificationContexts({ card: event.cardId })
   for (const context of contexts) {
     result.push({
       type: NotificationRequestEventType.RemoveNotificationContext,
-      context: context.id,
-      account: context.account
+      contextId: context.id,
+      account: context.account,
+      socialId: 'core:account:System' as SocialID,
+      date: new Date()
     })
   }
   return result
@@ -94,9 +96,9 @@ const triggers: Triggers = [
     CardResponseEventType.CardTypeUpdated,
     createActivityOnCardTypeUpdate as TriggerFn
   ],
-  ['remove_collaborators_on_card_removed', CardResponseEventType.CardRemoved, removeCollaborators as TriggerFn],
-  ['remove_labels_on_card_removed', CardResponseEventType.CardRemoved, removeLabels as TriggerFn],
-  ['remove_threads_on_card_removed', CardResponseEventType.CardRemoved, removeThreads as TriggerFn],
+  ['remove_collaborators_on_card_removed', CardResponseEventType.CardRemoved, removeCardCollaborators as TriggerFn],
+  ['remove_labels_on_card_removed', CardResponseEventType.CardRemoved, removeCardLabels as TriggerFn],
+  ['remove_threads_on_card_removed', CardResponseEventType.CardRemoved, removeCardThreads as TriggerFn],
   [
     'remove_notification_contexts_on_card_removed',
     CardResponseEventType.CardRemoved,

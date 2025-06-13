@@ -1,51 +1,41 @@
-//
-// Copyright © 2025 Hardcore Engineering Inc.
-//
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-
 import type {
   CardID,
   MessageID,
-  RichText,
+  Markdown,
   SocialID,
-  MessagesGroup,
   BlobID,
-  PatchType,
   MessageType,
-  MessageData,
   CardType,
-  PatchData,
   LinkPreviewID,
-  FileData,
+  PatchType,
+  PatchData,
+  MessagesGroup,
+  MessageExtra,
+  BlobData,
   LinkPreviewData
 } from '@hcengineering/communication-types'
 
 import type { BaseRequestEvent } from './common'
 
 export enum MessageRequestEventType {
+  // Public events
   CreateMessage = 'createMessage',
   CreatePatch = 'createPatch',
+  // UpdateMessage = 'updateMessage',
+  // RemoveMessage = 'removeMessage',
 
-  CreateReaction = 'createReaction',
+  AttachThread = 'attachThread',
+
+  SetReaction = 'setReaction',
   RemoveReaction = 'removeReaction',
 
-  CreateFile = 'createFile',
-  RemoveFile = 'removeFile',
+  AttachBlob = 'attachBlob',
+  DetachBlob = 'removeBlob',
 
   CreateLinkPreview = 'createLinkPreview',
   RemoveLinkPreview = 'removeLinkPreview',
 
-  CreateThread = 'createThread',
+  // Internal events
   UpdateThread = 'updateThread',
 
   CreateMessagesGroup = 'createMessagesGroup',
@@ -53,132 +43,214 @@ export enum MessageRequestEventType {
 }
 
 export type MessageRequestEvent =
-  | CreateFileEvent
   | CreateMessageEvent
-  | CreateMessagesGroupEvent
-  | CreatePatchEvent
-  | CreateReactionEvent
-  | CreateThreadEvent
-  | RemoveFileEvent
-  | RemoveMessagesGroupEvent
+  | SetReactionEvent
   | RemoveReactionEvent
-  | UpdateThreadEvent
+  | AttachBlobEvent
+  | DetachBlobEvent
   | CreateLinkPreviewEvent
   | RemoveLinkPreviewEvent
+  | CreatePatchEvent
+  | UpdateThreadEvent
+  | CreateMessagesGroupEvent
+  | RemoveMessagesGroupEvent
+  | AttachThreadEvent
+
+export interface CreateMessageOptions {
+  // Available for regular users (Not implemented yet)
+  skipLinkPreviews?: boolean
+  // Available only for system
+  noNotify?: boolean
+}
+export interface PatchMessageOptions {
+  // Available for regular users (Not implemented yet)
+  skipLinkPreviewsUpdate?: boolean
+  // Available only for system (Not implemented yet)
+  markAsUpdated?: boolean
+}
 
 export interface CreateMessageEvent extends BaseRequestEvent {
   type: MessageRequestEventType.CreateMessage
-  messageType: MessageType
-  card: CardID
+
+  cardId: CardID
   cardType: CardType
-  content: RichText
-  creator: SocialID
-  data?: MessageData
-  externalId?: string
-  created?: Date
-  id?: MessageID
+
+  messageId?: MessageID
+  messageType: MessageType
+
+  content: Markdown
+  extra?: MessageExtra
+
+  socialId?: SocialID
+  date?: Date
+
+  options?: CreateMessageOptions
 }
 
 export interface CreatePatchEvent extends BaseRequestEvent {
   type: MessageRequestEventType.CreatePatch
+  cardId: CardID
+  messageId: MessageID
+
   patchType: PatchType
-  card: CardID
-  message: MessageID
-  messageCreated: Date
   data: PatchData
-  creator: SocialID
-  created?: Date
+
+  socialId?: SocialID
+  date?: Date
+
+  options?: PatchMessageOptions
 }
 
-export interface CreateReactionEvent extends BaseRequestEvent {
-  type: MessageRequestEventType.CreateReaction
-  card: CardID
-  message: MessageID
-  messageCreated: Date
+// export interface UpdateMessageEvent extends BaseRequestEvent {
+//   type: MessageRequestEventType.UpdateMessage
+//
+//   cardId: CardID
+//   messageId: MessageID
+//
+//   content?: Markdown
+//   extra?: MessageExtra
+//
+//   socialId?: SocialID
+//   date?: Date
+//
+//   options?: UpdateMessageOptions
+// }
+//
+// export interface RemoveMessageEvent extends BaseRequestEvent {
+//   type: MessageRequestEventType.RemoveMessage
+//
+//   cardId: CardID
+//   messageId: MessageID
+//
+//   socialId?: SocialID
+//   date?: Date
+//
+//   options?: RemoveMessageOptions
+// }
+
+export interface AttachThreadEvent extends BaseRequestEvent {
+  type: MessageRequestEventType.AttachThread
+
+  cardId: CardID
+  messageId: MessageID
+
+  threadId: CardID
+  threadType: CardType
+
+  socialId?: SocialID
+  date?: Date
+}
+
+export interface SetReactionEvent extends BaseRequestEvent {
+  type: MessageRequestEventType.SetReaction
+
+  cardId: CardID
+  messageId: MessageID
+
   reaction: string
-  creator: SocialID
+
+  socialId?: SocialID
+  date?: Date
 }
 
 export interface RemoveReactionEvent extends BaseRequestEvent {
   type: MessageRequestEventType.RemoveReaction
-  card: CardID
-  message: MessageID
-  messageCreated: Date
+
+  cardId: CardID
+  messageId: MessageID
+
   reaction: string
-  creator: SocialID
+
+  socialId?: SocialID
+  date?: Date
 }
 
-export interface CreateFileEvent extends BaseRequestEvent {
-  type: MessageRequestEventType.CreateFile
-  card: CardID
-  message: MessageID
-  messageCreated: Date
-  data: FileData
-  creator: SocialID
-  created?: Date
+export interface AttachBlobEvent extends BaseRequestEvent {
+  type: MessageRequestEventType.AttachBlob
+
+  cardId: CardID
+  messageId: MessageID
+
+  blobData: BlobData
+
+  socialId?: SocialID
+  date?: Date
 }
 
-export interface RemoveFileEvent extends BaseRequestEvent {
-  type: MessageRequestEventType.RemoveFile
-  card: CardID
-  message: MessageID
-  messageCreated: Date
+export interface DetachBlobEvent extends BaseRequestEvent {
+  type: MessageRequestEventType.DetachBlob
+
+  cardId: CardID
+  messageId: MessageID
+
   blobId: BlobID
-  creator: SocialID
+
+  socialId?: SocialID
+  date?: Date
 }
 
 export interface CreateLinkPreviewEvent extends BaseRequestEvent {
+  previewId?: string
   type: MessageRequestEventType.CreateLinkPreview
-  card: CardID
-  message: MessageID
-  messageCreated: Date
-  data: LinkPreviewData
-  creator: SocialID
+
+  cardId: CardID
+  messageId: MessageID
+
+  previewData: LinkPreviewData
+
+  socialId?: SocialID
+  date?: Date
 }
 
 export interface RemoveLinkPreviewEvent extends BaseRequestEvent {
   type: MessageRequestEventType.RemoveLinkPreview
-  card: CardID
-  message: MessageID
-  messageCreated: Date
-  id: LinkPreviewID
-  creator: SocialID
+
+  cardId: CardID
+  messageId: MessageID
+
+  previewId: LinkPreviewID
+
+  socialId?: SocialID
+  date?: Date
 }
 
-export interface CreateThreadEvent extends BaseRequestEvent {
-  type: MessageRequestEventType.CreateThread
-  card: CardID
-  message: MessageID
-  messageCreated: Date
-  thread: CardID
-  threadType: CardType
+export interface CreateMessageResult {
+  messageId: MessageID
+  created: Date
 }
 
+export interface CreateLinkPreviewResult {
+  previewId: MessageID
+  created: Date
+}
+
+export type MessageEventResult = CreateMessageResult | CreateLinkPreviewResult
+
+// Internal
 export interface UpdateThreadEvent extends BaseRequestEvent {
   type: MessageRequestEventType.UpdateThread
-  card: CardID
-  message: MessageID
-  thread: CardID
+  cardId: CardID
+  messageId: MessageID
+  threadId: CardID
   updates: {
-    replies: 'increment' | 'decrement'
+    repliesCountOp: 'increment' | 'decrement'
     lastReply?: Date
   }
+  socialId: SocialID
+  date: Date
 }
 
 export interface CreateMessagesGroupEvent extends BaseRequestEvent {
   type: MessageRequestEventType.CreateMessagesGroup
   group: MessagesGroup
+  socialId: SocialID
+  date?: Date
 }
 
 export interface RemoveMessagesGroupEvent extends BaseRequestEvent {
   type: MessageRequestEventType.RemoveMessagesGroup
-  card: CardID
+  cardId: CardID
   blobId: BlobID
-}
-
-export type MessageEventResult = CreateMessageResult
-
-export interface CreateMessageResult {
-  id: MessageID
-  created: Date
+  socialId: SocialID
+  date?: Date
 }

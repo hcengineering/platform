@@ -18,7 +18,7 @@ import {
   type BlobID,
   type CardID,
   type CardType,
-  type File,
+  type AttachedBlob,
   type FindNotificationsParams,
   type LinkPreview,
   type LinkPreviewID,
@@ -87,7 +87,7 @@ export async function findMessageInFiles (
       return undefined
     }
 
-    const patches = (group.patches ?? []).filter((it) => it.message === id)
+    const patches = (group.patches ?? []).filter((it) => it.messageId === id)
 
     return patches.length > 0 ? applyPatches(messageFromFile, patches) : messageFromFile
   } catch (e) {
@@ -113,37 +113,37 @@ export async function loadMessageFromGroup (
   return applyPatches(message, patches)
 }
 
-export function addFile (message: Message, file: File): Message {
-  if (!message.files.some((it) => it.blobId === file.blobId)) {
-    message.files.push(file)
+export function attachBlob (message: Message, blob: AttachedBlob): Message {
+  if (!message.blobs.some((it) => it.blobId === blob.blobId)) {
+    message.blobs.push(blob)
   }
   return message
 }
 
-export function removeFile (message: Message, blobId: BlobID): Message {
-  const files = message.files.filter((it) => it.blobId !== blobId)
-  if (files.length === message.files.length) return message
+export function detachBlob (message: Message, blobId: BlobID): Message {
+  const blobs = message.blobs.filter((it) => it.blobId !== blobId)
+  if (blobs.length === message.blobs.length) return message
 
   return {
     ...message,
-    files
+    blobs
   }
 }
 
 export function addLinkPreview (message: Message, linkPreview: LinkPreview): Message {
-  const current = message.links.find((it) => it.id === linkPreview.id)
+  const current = message.linkPreviews.find((it) => it.id === linkPreview.id)
   if (current === undefined) {
-    message.links.push(linkPreview)
+    message.linkPreviews.push(linkPreview)
   }
   return message
 }
 
 export function removeLinkPreview (message: Message, id: LinkPreviewID): Message {
-  const links = message.links.filter((it) => it.id !== id)
-  if (links.length === message.links.length) return message
+  const linkPreviews = message.linkPreviews.filter((it) => it.id !== id)
+  if (linkPreviews.length === message.linkPreviews.length) return message
   return {
     ...message,
-    links
+    linkPreviews
   }
 }
 
@@ -165,7 +165,7 @@ export function removeReaction (message: Message, emoji: string, creator: Social
   }
 }
 
-export function createThread (
+export function attachThread (
   message: Message,
   threadId: CardID,
   threadType: CardType,
@@ -177,10 +177,9 @@ export function createThread (
   }
 
   message.thread = {
-    card: message.card,
-    message: message.id,
-    messageCreated: message.created,
-    thread: threadId,
+    cardId: message.cardId,
+    messageId: message.id,
+    threadId,
     threadType,
     repliesCount,
     lastReply
@@ -190,16 +189,16 @@ export function createThread (
 
 export function updateThread (
   message: Message,
-  thread: CardID,
-  replies: 'increment' | 'decrement',
+  threadId: CardID,
+  repliesCountOp: 'increment' | 'decrement',
   lastReply?: Date
 ): Message {
-  if (message.thread === undefined || message.thread.thread !== thread) {
+  if (message.thread === undefined || message.thread.threadId !== threadId) {
     return message
   }
 
   message.thread.repliesCount =
-    replies === 'increment' ? message.thread.repliesCount + 1 : Math.max(message.thread.repliesCount - 1, 0)
+    repliesCountOp === 'increment' ? message.thread.repliesCount + 1 : Math.max(message.thread.repliesCount - 1, 0)
   message.thread.lastReply = lastReply ?? message.thread.lastReply
   return message
 }
@@ -208,7 +207,7 @@ export function matchNotification (notification: Notification, params: FindNotif
   if (params.type !== undefined && params.type !== notification.type) return false
   if (params.read !== undefined && params.read !== notification.read) return false
   if (params.id !== undefined && params.id !== notification.id) return false
-  if (params.context !== undefined && params.context !== notification.context) return false
+  if (params.context !== undefined && params.context !== notification.contextId) return false
 
   const created = notification.created.getTime()
 

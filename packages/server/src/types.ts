@@ -72,7 +72,7 @@ export interface Middleware {
   findLabels: (session: SessionData, params: FindLabelsParams, queryId?: QueryId) => Promise<Label[]>
   findCollaborators: (session: SessionData, params: FindCollaboratorsParams) => Promise<Collaborator[]>
 
-  event: (session: SessionData, event: RequestEvent, derived: boolean) => Promise<EventResult>
+  event: (session: SessionData, event: Enriched<RequestEvent>, derived: boolean) => Promise<EventResult>
 
   unsubscribeQuery: (session: SessionData, queryId: number) => void
 
@@ -111,3 +111,8 @@ export interface TriggerCtx {
 
 export type TriggerFn = (ctx: TriggerCtx, event: ResponseEvent) => Promise<RequestEvent[]>
 export type Triggers = [string, ResponseEventType, TriggerFn][]
+
+export type Enriched<T> = T & {
+  socialId: SocialID
+  date: Date
+}

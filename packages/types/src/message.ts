@@ -14,44 +14,43 @@
 //
 
 import type { Attribute, BlobMetadata, Class, Mixin, Ref } from '@hcengineering/core'
-import type { AccountID, BlobID, CardID, CardType, ID, RichText, SocialID } from './core'
+import type { AccountID, BlobID, CardID, CardType, ID, Markdown, SocialID } from './core'
 import type { Card, Tag } from '@hcengineering/card'
 
 export type MessageID = ID & { message: true }
-
-export interface Message {
-  id: MessageID
-  card: CardID
-  type: MessageType
-  content: RichText
-  creator: SocialID
-  created: Date
-  removed: boolean
-  data?: MessageData
-  externalId?: string
-
-  edited?: Date
-  thread?: Thread
-  reactions: Reaction[]
-  files: File[]
-  links: LinkPreview[]
-}
+export type LinkPreviewID = string & { __linkPreviewId: true }
 
 export enum MessageType {
   Message = 'message',
-  Activity = 'activity',
-  Thread = 'thread',
-  ThreadRoot = 'threadRoot'
+  Activity = 'activity'
 }
 
-export type MessageData = ActivityMessageData | Record<string, any>
+export type MessageExtra = Record<string, any>
+
+export interface Message {
+  id: MessageID
+  cardId: CardID
+  type: MessageType
+  content: Markdown
+  extra?: MessageExtra
+  creator: SocialID
+  created: Date
+
+  removed: boolean
+  edited?: Date
+
+  reactions: Reaction[]
+  blobs: AttachedBlob[]
+  linkPreviews: LinkPreview[]
+  thread?: Thread
+}
 
 export interface ActivityMessage extends Message {
   type: MessageType.Activity
-  data: ActivityMessageData
+  extra: ActivityMessageExtra
 }
 
-export interface ActivityMessageData {
+export interface ActivityMessageExtra {
   action: 'create' | 'remove' | 'update'
   update?: ActivityUpdate
 }
@@ -61,6 +60,7 @@ export type ActivityUpdate =
   | ActivityTagUpdate
   | ActivityTypeUpdate
   | ActivityCollaboratorsUpdate
+
 export enum ActivityUpdateType {
   Attribute = 'attribute',
   Tag = 'tag',
@@ -98,7 +98,7 @@ export interface ActivityAttributeUpdate {
 }
 
 export interface MessagesGroup {
-  card: CardID
+  cardId: CardID
   blobId: BlobID
   fromDate: Date
   toDate: Date
@@ -107,13 +107,12 @@ export interface MessagesGroup {
 }
 
 interface BasePatch {
-  message: MessageID
-  messageCreated: Date
+  messageId: MessageID
   type: PatchType
   creator: SocialID
   created: Date
 
-  data: Record<string, any>
+  data: PatchData
 }
 
 export interface UpdatePatch extends BasePatch {
@@ -121,65 +120,68 @@ export interface UpdatePatch extends BasePatch {
   data: UpdatePatchData
 }
 
-export interface AddReactionPatch extends BasePatch {
-  type: PatchType.addReaction
-  data: AddReactionPatchData
+export interface RemovePatch extends BasePatch {
+  type: PatchType.remove
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  data: {}
+}
+
+export interface SetReactionPatch extends BasePatch {
+  type: PatchType.setReaction
+  data: SetReactionPatchData
 }
 
 export interface RemoveReactionPatch extends BasePatch {
   type: PatchType.removeReaction
   data: RemoveReactionPatchData
 }
+
+export interface AttachBlobPatch extends BasePatch {
+  type: PatchType.attachBlob
+  data: AttachBlobPatchData
+}
+
+export interface DetachBlobPatch extends BasePatch {
+  type: PatchType.detachBlob
+  data: DetachBlobPatchData
+}
+
 export interface UpdateThreadPatch extends BasePatch {
   type: PatchType.updateThread
   data: UpdateThreadPatchData
 }
 
-export interface AddFilePatch extends BasePatch {
-  type: PatchType.addFile
-  data: AddFilePatchData
-}
-
-export interface RemoveFilePatch extends BasePatch {
-  type: PatchType.removeFile
-  data: RemoveFilePatchData
-}
-export interface RemovePatch extends BasePatch {
-  type: PatchType.remove
-  data: RemovePatchData
-}
-
 export type Patch =
   | UpdatePatch
   | RemovePatch
-  | AddReactionPatch
+  | SetReactionPatch
   | RemoveReactionPatch
-  | AddFilePatch
-  | RemoveFilePatch
+  | AttachBlobPatch
+  | DetachBlobPatch
   | UpdateThreadPatch
 
 export type PatchData =
   | RemovePatchData
   | UpdatePatchData
-  | AddReactionPatchData
+  | SetReactionPatchData
   | RemoveReactionPatchData
-  | AddFilePatchData
-  | RemoveFilePatchData
+  | AttachBlobPatchData
+  | DetachBlobPatchData
   | UpdateThreadPatchData
 
 export interface UpdateThreadPatchData {
-  thread: CardID
+  threadId: CardID
   threadType: CardType
-  replies?: 'increment' | 'decrement'
+  repliesCountOp?: 'increment' | 'decrement'
 }
 
 export interface UpdatePatchData {
   type?: MessageType
-  content?: RichText
-  data?: MessageData
+  content?: Markdown
+  extra?: MessageExtra
 }
 
-export interface AddReactionPatchData {
+export interface SetReactionPatchData {
   reaction: string
 }
 
@@ -187,14 +189,9 @@ export interface RemoveReactionPatchData {
   reaction: string
 }
 
-export interface AddFilePatchData {
-  blobId: BlobID
-  type: string
-  filename: string
-  size: number
-}
+export type AttachBlobPatchData = BlobData
 
-export interface RemoveFilePatchData {
+export interface DetachBlobPatchData {
   blobId: BlobID
 }
 
@@ -204,10 +201,10 @@ export interface RemovePatchData {}
 export enum PatchType {
   update = 'update',
   remove = 'remove',
-  addReaction = 'addReaction',
+  setReaction = 'setReaction',
   removeReaction = 'removeReaction',
-  addFile = 'addFile',
-  removeFile = 'removeFile',
+  attachBlob = 'attachBlob',
+  detachBlob = 'detachBlob',
   updateThread = 'updateThread'
 }
 
@@ -217,33 +214,15 @@ export interface Reaction {
   created: Date
 }
 
-export interface FileData {
+export interface BlobData {
   blobId: BlobID
-  type: string
-  filename: string
+  contentType: string
+  fileName: string
   size: number
-  meta?: BlobMetadata
+  metadata?: BlobMetadata
 }
 
-export interface File extends FileData {
-  creator: SocialID
-  created: Date
-}
-
-export type LinkPreviewID = string & { __linkPreviewId: true }
-
-export interface LinkPreviewData {
-  url: string
-  host: string
-  title?: string
-  description?: string
-  favicon?: string
-  hostname?: string
-  image?: LinkPreviewImage
-}
-
-export interface LinkPreview extends LinkPreviewData {
-  id: LinkPreviewID
+export interface AttachedBlob extends BlobData {
   creator: SocialID
   created: Date
 }
@@ -254,11 +233,28 @@ export interface LinkPreviewImage {
   height?: number
 }
 
+export interface LinkPreviewData {
+  url: string
+  host: string
+
+  title?: string
+  description?: string
+  siteName?: string
+
+  iconUrl?: string
+  previewImage?: LinkPreviewImage
+}
+
+export interface LinkPreview extends LinkPreviewData {
+  id: LinkPreviewID
+  creator: SocialID
+  created: Date
+}
+
 export interface Thread {
-  card: CardID
-  message: MessageID
-  messageCreated: Date
-  thread: CardID
+  cardId: CardID
+  messageId: MessageID
+  threadId: CardID
   threadType: CardType
   repliesCount: number
   lastReply: Date

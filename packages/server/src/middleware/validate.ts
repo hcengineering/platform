@@ -14,9 +14,7 @@
 //
 
 import {
-  CardRequestEventType,
   type EventResult,
-  LabelRequestEventType,
   MessageRequestEventType,
   NotificationRequestEventType,
   type RequestEvent,
@@ -35,11 +33,12 @@ import {
   type MessagesGroup,
   type Notification,
   type NotificationContext,
-  PatchType
+  PatchType,
+  SortingOrder
 } from '@hcengineering/communication-types'
 import { z } from 'zod'
 
-import type { Middleware, QueryId } from '../types'
+import type { Enriched, Middleware, QueryId } from '../types'
 import { BaseMiddleware } from './base'
 import { ApiError } from '../error'
 
@@ -95,7 +94,7 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
     return await this.provideFindCollaborators(session, params)
   }
 
-  async event (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: Enriched<RequestEvent>, derived: boolean): Promise<EventResult> {
     if (derived) return await this.provideEvent(session, event, derived)
     switch (event.type) {
       case MessageRequestEventType.CreateMessage:
@@ -104,59 +103,20 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
       case MessageRequestEventType.CreatePatch:
         this.validate(event, CreatePatchEventSchema)
         break
-      case MessageRequestEventType.CreateReaction:
-        this.validate(event, CreateReactionEventSchema)
+      case MessageRequestEventType.SetReaction:
+        this.validate(event, SetReactionEventSchema)
         break
       case MessageRequestEventType.RemoveReaction:
         this.validate(event, RemoveReactionEventSchema)
         break
-      case MessageRequestEventType.CreateFile:
-        this.validate(event, CreateFileEventSchema)
+      case MessageRequestEventType.AttachBlob:
+        this.validate(event, AttachBlobEventSchema)
         break
-      case MessageRequestEventType.RemoveFile:
-        this.validate(event, RemoveFileEventSchema)
+      case MessageRequestEventType.DetachBlob:
+        this.validate(event, DetachBlobEventSchema)
         break
-      case MessageRequestEventType.CreateThread:
-        this.validate(event, CreateThreadEventSchema)
-        break
-      case MessageRequestEventType.UpdateThread:
-        this.validate(event, UpdateThreadEventSchema)
-        break
-      case MessageRequestEventType.CreateMessagesGroup:
-        this.validate(event, CreateMessagesGroupEventSchema)
-        break
-      case MessageRequestEventType.RemoveMessagesGroup:
-        this.validate(event, RemoveMessagesGroupEventSchema)
-        break
-      case LabelRequestEventType.CreateLabel:
-        this.validate(event, CreateLabelEventSchema)
-        break
-      case LabelRequestEventType.RemoveLabel:
-        this.validate(event, RemoveLabelEventSchema)
-        break
-      case NotificationRequestEventType.AddCollaborators:
-        this.validate(event, AddCollaboratorsEventSchema)
-        break
-      case NotificationRequestEventType.RemoveCollaborators:
-        this.validate(event, RemoveCollaboratorsEventSchema)
-        break
-      case NotificationRequestEventType.CreateNotification:
-        this.validate(event, CreateNotificationEventSchema)
-        break
-      case NotificationRequestEventType.RemoveNotifications:
-        this.validate(event, RemoveNotificationsEventSchema)
-        break
-      case NotificationRequestEventType.UpdateNotification:
-        this.validate(event, UpdateNotificationsEventSchema)
-        break
-      case NotificationRequestEventType.CreateNotificationContext:
-        this.validate(event, CreateNotificationContextEventSchema)
-        break
-      case NotificationRequestEventType.RemoveNotificationContext:
-        this.validate(event, RemoveNotificationContextEventSchema)
-        break
-      case NotificationRequestEventType.UpdateNotificationContext:
-        this.validate(event, UpdateNotificationContextEventSchema)
+      case MessageRequestEventType.AttachThread:
+        this.validate(event, AttachThreadEventSchema)
         break
       case MessageRequestEventType.CreateLinkPreview:
         this.validate(event, CreateLinkPreviewEventSchema)
@@ -164,43 +124,63 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
       case MessageRequestEventType.RemoveLinkPreview:
         this.validate(event, RemoveLinkPreviewEventSchema)
         break
+      case MessageRequestEventType.CreateMessagesGroup:
+        this.validate(event, CreateMessagesGroupEventSchema)
+        break
+      case MessageRequestEventType.RemoveMessagesGroup:
+        this.validate(event, RemoveMessagesGroupEventSchema)
+        break
+      case NotificationRequestEventType.AddCollaborators:
+        this.validate(event, AddCollaboratorsEventSchema)
+        break
+      case NotificationRequestEventType.RemoveCollaborators:
+        this.validate(event, RemoveCollaboratorsEventSchema)
+        break
+      case NotificationRequestEventType.UpdateNotification:
+        this.validate(event, UpdateNotificationsEventSchema)
+        break
+      case NotificationRequestEventType.RemoveNotificationContext:
+        this.validate(event, RemoveNotificationContextEventSchema)
+        break
+      case NotificationRequestEventType.UpdateNotificationContext:
+        this.validate(event, UpdateNotificationContextEventSchema)
+        break
+      default:
+        throw new Error('Unknown event type: ' + event.type)
     }
     return await this.provideEvent(session, deserializeEvent(event), derived)
   }
 }
 
-const AccountID = z.string()
-const BlobID = z.string()
-const CardID = z.string()
-const CardType = z.string()
-const ContextID = z.string()
-const LabelID = z.string()
-const MessageData = z.any()
-const PatchData = z.any()
-const MessageID = z.string()
-const NotificationID = z.string()
-const MessageType = z.string()
-const MessagesGroupSchema = z.any()
-const PatchTypeSchema = z.enum([PatchType.update, PatchType.remove])
-const RichText = z.string()
-const SocialID = z.string()
-const SortingOrder = z.number()
+const AccountIDSchema = z.string()
+const BlobIDSchema = z.string()
+const CardIDSchema = z.string()
+const CardTypeSchema = z.string()
+const ContextIDSchema = z.string()
 const DateSchema = z.union([z.date(), z.string()])
+const LabelIDSchema = z.string()
+const LinkPreviewIDSchema = z.string()
+const MarkdownSchema = z.string()
+const MessageExtraSchema = z.any()
+const MessageIDSchema = z.string()
+const MessageTypeSchema = z.string()
+const MessagesGroupSchema = z.any()
+const SocialIDSchema = z.string()
+const SortingOrderSchema = z.union([z.literal(SortingOrder.Ascending), z.literal(SortingOrder.Descending)])
 
 // Find params
 const dateOrRecordSchema = z.union([DateSchema, z.record(DateSchema)])
 
 const FindParamsSchema = z
   .object({
-    order: SortingOrder.optional(),
+    order: SortingOrderSchema.optional(),
     limit: z.number().optional()
   })
   .strict()
 
 const FindMessagesParamsSchema = FindParamsSchema.extend({
-  id: MessageID.optional(),
-  externalId: z.string().optional(),
-  card: CardID,
+  id: MessageIDSchema.optional(),
+  card: CardIDSchema,
   files: z.boolean().optional(),
   reactions: z.boolean().optional(),
   replies: z.boolean().optional(),
@@ -209,8 +189,8 @@ const FindMessagesParamsSchema = FindParamsSchema.extend({
 }).strict()
 
 const FindMessagesGroupsParamsSchema = FindParamsSchema.extend({
-  card: CardID,
-  blobId: BlobID.optional(),
+  card: CardIDSchema,
+  blobId: BlobIDSchema.optional(),
   patches: z.boolean().optional(),
   fromDate: dateOrRecordSchema.optional(),
   toDate: dateOrRecordSchema.optional(),
@@ -218,41 +198,42 @@ const FindMessagesGroupsParamsSchema = FindParamsSchema.extend({
 }).strict()
 
 const FindNotificationContextParamsSchema = FindParamsSchema.extend({
-  id: ContextID.optional(),
-  card: z.union([CardID, z.array(CardID)]).optional(),
+  id: ContextIDSchema.optional(),
+  card: z.union([CardIDSchema, z.array(CardIDSchema)]).optional(),
   lastUpdate: dateOrRecordSchema.optional(),
-  account: z.union([AccountID, z.array(AccountID)]).optional(),
+  account: z.union([AccountIDSchema, z.array(AccountIDSchema)]).optional(),
   notifications: z
     .object({
       type: z.string().optional(),
       message: z.boolean().optional(),
       limit: z.number(),
-      order: SortingOrder,
+      order: SortingOrderSchema,
       read: z.boolean().optional()
     })
     .optional()
 }).strict()
 
 const FindNotificationsParamsSchema = FindParamsSchema.extend({
-  context: ContextID.optional(),
+  context: ContextIDSchema.optional(),
   type: z.string().optional(),
   read: z.boolean().optional(),
   created: dateOrRecordSchema.optional(),
-  account: z.union([AccountID, z.array(AccountID)]).optional(),
+  account: z.union([AccountIDSchema, z.array(AccountIDSchema)]).optional(),
   message: z.boolean().optional()
 }).strict()
 
 const FindLabelsParamsSchema = FindParamsSchema.extend({
-  label: z.union([LabelID, z.array(LabelID)]).optional(),
-  card: CardID.optional(),
-  cardType: z.union([CardType, z.array(CardType)]).optional(),
-  account: AccountID.optional()
+  label: z.union([LabelIDSchema, z.array(LabelIDSchema)]).optional(),
+  card: CardIDSchema.optional(),
+  cardType: z.union([CardTypeSchema, z.array(CardTypeSchema)]).optional(),
+  account: AccountIDSchema.optional()
 }).strict()
 
 const FindCollaboratorsParamsSchema = FindParamsSchema.extend({
-  card: CardID.optional(),
-  account: z.union([AccountID, z.array(AccountID)]).optional()
+  card: CardIDSchema.optional(),
+  account: z.union([AccountIDSchema, z.array(AccountIDSchema)]).optional()
 }).strict()
+
 // Events
 
 const BaseRequestEventSchema = z
@@ -261,170 +242,166 @@ const BaseRequestEventSchema = z
   })
   .strict()
 
-// Label events
-const CreateLabelEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(LabelRequestEventType.CreateLabel),
-  label: LabelID,
-  card: CardID,
-  cardType: CardType,
-  account: AccountID
-}).strict()
-
-const RemoveLabelEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(LabelRequestEventType.RemoveLabel),
-  label: LabelID,
-  card: CardID,
-  account: AccountID
-}).strict()
-
 // Message events
 const CreateMessageEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.CreateMessage),
-  messageType: MessageType,
-  card: CardID,
-  cardType: CardType,
-  content: RichText,
-  creator: SocialID,
-  data: MessageData.optional(),
-  externalId: z.string().optional(),
-  created: DateSchema.optional(),
-  id: MessageID.optional()
+
+  cardId: CardIDSchema,
+  cardType: CardTypeSchema,
+
+  messageId: MessageIDSchema.optional(),
+  messageType: MessageTypeSchema,
+
+  content: MarkdownSchema,
+  extra: MessageExtraSchema.optional(),
+
+  socialId: SocialIDSchema,
+  date: DateSchema,
+
+  options: z
+    .object({
+      skipLinkPreviews: z.boolean().optional(),
+      ignoreDuplicateIds: z.boolean().optional(),
+      noNotify: z.boolean().optional()
+    })
+    .optional()
 }).strict()
 
 const CreatePatchEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.CreatePatch),
-  patchType: PatchTypeSchema,
-  card: CardID,
-  message: MessageID,
-  messageCreated: DateSchema,
-  data: PatchData,
-  creator: SocialID,
-  created: DateSchema.optional()
+
+  cardId: CardIDSchema,
+  messageId: MessageIDSchema,
+
+  patchType: z.enum([PatchType.update, PatchType.remove]),
+  data: z.any(),
+
+  socialId: SocialIDSchema,
+  date: DateSchema,
+
+  options: z
+    .object({
+      skipLinkPreviewsUpdate: z.boolean().optional(),
+      markAsUpdated: z.boolean().optional()
+    })
+    .optional()
 }).strict()
 
-const CreateReactionEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.CreateReaction),
-  card: CardID,
-  message: MessageID,
-  messageCreated: DateSchema,
+const SetReactionEventSchema = BaseRequestEventSchema.extend({
+  type: z.literal(MessageRequestEventType.SetReaction),
+  cardId: CardIDSchema,
+  messageId: MessageIDSchema,
   reaction: z.string(),
-  creator: SocialID
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
 const RemoveReactionEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.RemoveReaction),
-  card: CardID,
-  message: MessageID,
-  messageCreated: DateSchema,
+  cardId: CardIDSchema,
+  messageId: MessageIDSchema,
   reaction: z.string(),
-  creator: SocialID
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
-const CreateFileEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.CreateFile),
-  card: CardID,
-  message: MessageID,
-  messageCreated: DateSchema,
-  data: z.object({
-    blobId: BlobID,
+const AttachThreadEventSchema = BaseRequestEventSchema.extend({
+  type: z.literal(MessageRequestEventType.AttachThread),
+
+  cardId: CardIDSchema,
+  messageId: MessageIDSchema,
+
+  threadId: CardIDSchema,
+  threadType: CardTypeSchema,
+
+  socialId: SocialIDSchema,
+  date: DateSchema
+})
+
+const AttachBlobEventSchema = BaseRequestEventSchema.extend({
+  type: z.literal(MessageRequestEventType.AttachBlob),
+
+  cardId: CardIDSchema,
+  messageId: MessageIDSchema,
+
+  blobData: z.object({
+    blobId: BlobIDSchema,
+    contentType: z.string(),
+    fileName: z.string(),
     size: z.number(),
-    type: z.string(),
-    filename: z.string(),
-    meta: z.record(z.string(), z.any()).optional()
+    metadata: z.record(z.string(), z.any()).optional()
   }),
-  creator: SocialID,
-  created: DateSchema.optional()
+
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
-const RemoveFileEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.RemoveFile),
-  card: CardID,
-  message: MessageID,
-  messageCreated: DateSchema,
-  creator: SocialID,
-  blobId: BlobID
+const DetachBlobEventSchema = BaseRequestEventSchema.extend({
+  type: z.literal(MessageRequestEventType.DetachBlob),
+
+  cardId: CardIDSchema,
+  messageId: MessageIDSchema,
+
+  blobId: BlobIDSchema,
+
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
 const CreateLinkPreviewEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.CreateLinkPreview),
-  card: CardID,
-  message: MessageID,
-  messageCreated: DateSchema,
-  data: z.object({
+  cardId: CardIDSchema,
+  messageId: MessageIDSchema,
+
+  preview: z.object({
     url: z.string(),
     host: z.string(),
     title: z.string().optional(),
     description: z.string().optional(),
-    favicon: z.string().optional(),
-    hostname: z.string().optional(),
-    image: z
-      .object({
-        url: z.string(),
-        width: z.number().optional(),
-        height: z.number().optional()
-      })
-      .optional()
+    iconUrl: z.string().optional(),
+    previewImage: z.object({
+      url: z.string(),
+      width: z.number().optional(),
+      height: z.number().optional()
+    })
   }),
-  creator: SocialID
+
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
 const RemoveLinkPreviewEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.RemoveLinkPreview),
-  card: CardID,
-  message: MessageID,
-  messageCreated: DateSchema,
-  id: z.string(),
-  creator: SocialID
-}).strict()
+  cardId: CardIDSchema,
+  messageId: MessageIDSchema,
 
-const CreateThreadEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.CreateThread),
-  card: CardID,
-  message: MessageID,
-  messageCreated: DateSchema,
-  thread: CardID,
-  threadType: CardType
-}).strict()
+  previewId: LinkPreviewIDSchema,
 
-const UpdateThreadEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.UpdateThread),
-  thread: CardID,
-  updates: z.object({
-    replies: z.enum(['increment', 'decrement']),
-    lastReply: DateSchema.optional()
-  })
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
 const CreateMessagesGroupEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.CreateMessagesGroup),
-  group: MessagesGroupSchema
+  group: MessagesGroupSchema,
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
 const RemoveMessagesGroupEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.RemoveMessagesGroup),
-  card: CardID,
-  blobId: BlobID
+  cardId: CardIDSchema,
+  blobId: BlobIDSchema,
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
 // Notification events
-
-const CreateNotificationEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(NotificationRequestEventType.CreateNotification),
-  notificationType: z.string(),
-  content: z.record(z.any()).optional(),
-  read: z.boolean().optional(),
-  context: ContextID,
-  message: MessageID,
-  messageCreated: DateSchema,
-  created: DateSchema,
-  account: AccountID
-}).strict()
-
 const UpdateNotificationsEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.UpdateNotification),
   query: z.object({
-    context: ContextID,
-    account: AccountID,
+    context: ContextIDSchema,
+    account: AccountIDSchema,
     id: z.string().optional(),
     type: z.string().optional(),
     read: z.boolean().optional(),
@@ -432,100 +409,55 @@ const UpdateNotificationsEventSchema = BaseRequestEventSchema.extend({
   }),
   updates: z.object({
     read: z.boolean()
-  })
-}).strict()
-
-const RemoveNotificationsEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(NotificationRequestEventType.RemoveNotifications),
-  context: ContextID,
-  account: AccountID,
-  ids: z.array(NotificationID).nonempty()
-}).strict()
-
-const CreateNotificationContextEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(NotificationRequestEventType.CreateNotificationContext),
-  card: CardID,
-  account: AccountID,
-  lastView: DateSchema,
-  lastUpdate: DateSchema,
-  lastNotify: DateSchema.optional()
+  }),
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
 const RemoveNotificationContextEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.RemoveNotificationContext),
-  context: ContextID,
-  account: AccountID
+  contextId: ContextIDSchema,
+  account: AccountIDSchema,
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
 const UpdateNotificationContextEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.UpdateNotificationContext),
-  context: ContextID,
-  account: AccountID,
+  contextId: ContextIDSchema,
+  account: AccountIDSchema,
   updates: z.object({
-    lastView: DateSchema.optional(),
-    lastUpdate: DateSchema.optional(),
-    lastNotify: DateSchema.optional()
-  })
+    lastView: DateSchema.optional()
+  }),
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
 const AddCollaboratorsEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.AddCollaborators),
-  card: CardID,
-  cardType: CardType,
-  collaborators: z.array(AccountID).nonempty(),
-  created: DateSchema.optional(),
-  creator: SocialID
+  cardId: CardIDSchema,
+  cardType: CardTypeSchema,
+  collaborators: z.array(AccountIDSchema).nonempty(),
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
 const RemoveCollaboratorsEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.RemoveCollaborators),
-  card: CardID,
-  cardType: CardType,
-  collaborators: z.array(AccountID).nonempty(),
-  creator: SocialID,
-  created: DateSchema.optional()
+  cardId: CardIDSchema,
+  cardType: CardTypeSchema,
+  collaborators: z.array(AccountIDSchema).nonempty(),
+  socialId: SocialIDSchema,
+  date: DateSchema
 }).strict()
 
-function deserializeEvent (event: RequestEvent): RequestEvent {
+function deserializeEvent (event: Enriched<RequestEvent>): Enriched<RequestEvent> {
   switch (event.type) {
-    case MessageRequestEventType.CreateMessage:
-    case CardRequestEventType.UpdateCardType:
-    case NotificationRequestEventType.AddCollaborators:
-    case NotificationRequestEventType.RemoveCollaborators:
-      return {
-        ...event,
-        created: deserializeDate(event.created)
-      }
-    case MessageRequestEventType.CreateThread:
-    case MessageRequestEventType.RemoveFile:
-    case MessageRequestEventType.RemoveReaction:
-    case MessageRequestEventType.CreateReaction:
-    case MessageRequestEventType.CreateLinkPreview:
-    case MessageRequestEventType.RemoveLinkPreview:
-      return {
-        ...event,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        messageCreated: deserializeDate(event.messageCreated)!
-      }
-    case MessageRequestEventType.CreatePatch:
-    case MessageRequestEventType.CreateFile:
-      return {
-        ...event,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        messageCreated: deserializeDate(event.messageCreated)!,
-        created: deserializeDate(event.created)
-      }
-    case MessageRequestEventType.UpdateThread:
-      return {
-        ...event,
-        updates: {
-          ...event.updates,
-          lastReply: deserializeDate(event.updates.lastReply)
-        }
-      }
     case MessageRequestEventType.CreateMessagesGroup:
       return {
         ...event,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        date: deserializeDate(event.date)!,
         group: {
           ...event.group,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -534,23 +466,11 @@ function deserializeEvent (event: RequestEvent): RequestEvent {
           toDate: deserializeDate(event.group.toDate)!
         }
       }
-    case NotificationRequestEventType.CreateNotification:
-      return {
-        ...event,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        created: deserializeDate(event.created)!
-      }
-    case NotificationRequestEventType.CreateNotificationContext:
-      return {
-        ...event,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        lastView: deserializeDate(event.lastView)!,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        lastUpdate: deserializeDate(event.lastUpdate)!
-      }
     case NotificationRequestEventType.UpdateNotificationContext:
       return {
         ...event,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        date: deserializeDate(event.date)!,
         updates: {
           ...event.updates,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -560,8 +480,8 @@ function deserializeEvent (event: RequestEvent): RequestEvent {
         }
       }
   }
-
-  return event
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  return { ...event, date: deserializeDate(event.date)! }
 }
 
 function deserializeDate (date?: Date | string | undefined | null): Date | undefined {

@@ -113,7 +113,9 @@ function getMigrations (): [string, string][] {
     migrationV2_6(),
     migrationV2_7(),
     migrationV3_1(),
-    migrationV4_1()
+    migrationV4_1(),
+    migrationV5_1(),
+    migrationV5_2()
   ]
 }
 
@@ -144,15 +146,11 @@ function migrationV1_2 (): [string, string] {
           created      TIMESTAMPTZ  NOT NULL,
           type         VARCHAR(255) NOT NULL,
           data         JSONB        NOT NULL DEFAULT '{}',
-          external_id  VARCHAR(255),
           PRIMARY KEY (workspace_id, card_id, id)
       );
 
       CREATE INDEX IF NOT EXISTS idx_messages_workspace_card ON communication.messages (workspace_id, card_id);
       CREATE INDEX IF NOT EXISTS idx_messages_workspace_card_id ON communication.messages (workspace_id, card_id, id);
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_messages_unique_workspace_card_external_id
-          ON communication.messages (workspace_id, card_id, external_id)
-          WHERE external_id IS NOT NULL;
 
       CREATE TABLE IF NOT EXISTS communication.messages_groups
       (
@@ -368,6 +366,36 @@ function migrationV3_1 (): [string, string] {
 function migrationV4_1 (): [string, string] {
   const sql = `
       CREATE INDEX IF NOT EXISTS notifications_context_id_read_created_desc_idx ON communication.notifications (context_id, read, created DESC);
-    `
+  `
   return ['add_index_notifications_context_id_read_created_desc-v4_1', sql]
+}
+
+function migrationV5_1 (): [string, string] {
+  const sql = `
+      DROP INDEX IF EXISTS communication.idx_messages_unique_workspace_card_external_id;
+      ALTER TABLE communication.messages
+          DROP COLUMN IF EXISTS external_id;
+      ALTER TABLE communication.files
+          DROP COLUMN IF EXISTS message_created;
+      ALTER TABLE communication.threads
+          DROP COLUMN IF EXISTS message_created;
+      ALTER TABLE communication.link_previews
+          DROP COLUMN IF EXISTS message_created;
+  `
+  return ['remove_unused-columns-v5_1', sql]
+}
+
+function migrationV5_2 (): [string, string] {
+  const sql = `
+      CREATE TABLE IF NOT EXISTS communication.message_created
+      (
+          workspace_id UUID         NOT NULL,
+          card_id      VARCHAR(255) NOT NULL,
+          message_id   INT8         NOT NULL,
+
+          created      TIMESTAMPTZ  NOT NULL,
+          PRIMARY KEY (workspace_id, card_id, message_id)
+      );
+  `
+  return ['init_message_created_table-v5_2', sql]
 }

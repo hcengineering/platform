@@ -14,7 +14,6 @@
 //
 
 import type {
-  File,
   CardID,
   Message,
   MessageID,
@@ -26,107 +25,163 @@ import type {
   BlobID,
   CardType,
   LinkPreview,
-  LinkPreviewID
+  LinkPreviewID,
+  AttachedBlob
 } from '@hcengineering/communication-types'
 import type { BaseResponseEvent } from './common'
 
 export enum MessageResponseEventType {
+  // Public events
   MessageCreated = 'messageCreated',
-
   PatchCreated = 'patchCreated',
+  // MessageUpdated = 'messageUpdated',
+  // MessageRemoved = 'messageRemoved',
 
-  ReactionCreated = 'reactionCreated',
+  ThreadAttached = 'threadAttached',
+  ThreadUpdated = 'threadUpdated',
+
+  ReactionSet = 'reactionSet',
   ReactionRemoved = 'reactionRemoved',
 
-  FileCreated = 'fileCreated',
-  FileRemoved = 'fileRemoved',
+  BlobAttached = 'blobAttached',
+  BlobDetached = 'blobDetached',
 
   LinkPreviewCreated = 'linkPreviewCreated',
   LinkPreviewRemoved = 'linkPreviewRemoved',
 
-  ThreadCreated = 'threadCreated',
-  ThreadUpdated = 'threadUpdated',
-
+  // Internal events
   MessagesGroupCreated = 'messagesGroupCreated',
   MessagesGroupRemoved = 'messagesGroupRemoved'
 }
 
 export type MessageResponseEvent =
-  | FileCreatedEvent
-  | FileRemovedEvent
   | MessageCreatedEvent
-  | MessagesGroupCreatedEvent
-  | MessagesGroupRemovedEvent
-  | PatchCreatedEvent
-  | ReactionCreatedEvent
+  | ReactionSetEvent
   | ReactionRemovedEvent
-  | ThreadCreatedEvent
-  | ThreadUpdatedEvent
+  | BlobAttachedEvent
+  | BlobDetachedEvent
   | LinkPreviewCreatedEvent
   | LinkPreviewRemovedEvent
+  | ThreadAttachedEvent
+  | ThreadUpdatedEvent
+  | PatchCreatedEvent
+  | MessagesGroupCreatedEvent
+  | MessagesGroupRemovedEvent
 
+interface CreateMessageOptions {
+  // Available for regular users (Not implemented yet)
+  skipLinkPreviews?: boolean
+  // Available only for system
+  noNotify?: boolean
+}
+interface PatchMessageOptions {
+  // Available for regular users (Not implemented yet)
+  skipLinkPreviewsUpdate?: boolean
+  // Available only for system (Not implemented yet)
+  markAsUpdated?: boolean
+}
+
+// Public
 export interface MessageCreatedEvent extends BaseResponseEvent {
   type: MessageResponseEventType.MessageCreated
+  cardId: CardID
   cardType: CardType
   message: Message
+  options?: CreateMessageOptions
 }
 
 export interface PatchCreatedEvent extends BaseResponseEvent {
   type: MessageResponseEventType.PatchCreated
-  card: CardID
+  cardId: CardID
+  messageId: MessageID
+  messageCreated: Date
   patch: Patch
+  options?: PatchMessageOptions
 }
 
-export interface ReactionCreatedEvent extends BaseResponseEvent {
-  type: MessageResponseEventType.ReactionCreated
-  card: CardID
-  message: MessageID
-  messageCreated: Date
+// export interface MessageUpdatedEvent extends BaseResponseEvent {
+//   type: MessageResponseEventType.MessageUpdated
+//   cardId: CardID
+//   messageId: MessageID
+//   content?: Markdown
+//   extra?: MessageExtra
+//   date: Date
+//   socialId: SocialID
+// }
+//
+// export interface MessageRemovedEvent extends BaseResponseEvent {
+//   type: MessageResponseEventType.MessageRemoved
+//   cardId: CardID
+//   messageId: MessageID
+//   date: Date
+//   socialId: SocialID
+// }
+
+export interface ReactionSetEvent extends BaseResponseEvent {
+  type: MessageResponseEventType.ReactionSet
+  cardId: CardID
+  messageId: MessageID
   reaction: Reaction
 }
 
 export interface ReactionRemovedEvent extends BaseResponseEvent {
   type: MessageResponseEventType.ReactionRemoved
-  card: CardID
-  message: MessageID
-  messageCreated: Date
+  cardId: CardID
+  messageId: MessageID
   reaction: string
-  creator: SocialID
+  socialId: SocialID
+  date: Date
 }
 
-export interface FileCreatedEvent extends BaseResponseEvent {
-  type: MessageResponseEventType.FileCreated
-  card: CardID
-  message: MessageID
-  messageCreated: Date
-  file: File
+export interface BlobAttachedEvent extends BaseResponseEvent {
+  type: MessageResponseEventType.BlobAttached
+  cardId: CardID
+  messageId: MessageID
+  blob: AttachedBlob
+}
+
+export interface BlobDetachedEvent extends BaseResponseEvent {
+  type: MessageResponseEventType.BlobDetached
+  cardId: CardID
+  messageId: MessageID
+  blobId: BlobID
+  socialId: SocialID
+  date: Date
 }
 
 export interface LinkPreviewCreatedEvent extends BaseResponseEvent {
   type: MessageResponseEventType.LinkPreviewCreated
-  card: CardID
-  message: MessageID
-  messageCreated: Date
+  cardId: CardID
+  messageId: MessageID
   linkPreview: LinkPreview
 }
 
 export interface LinkPreviewRemovedEvent extends BaseResponseEvent {
   type: MessageResponseEventType.LinkPreviewRemoved
-  card: CardID
-  message: MessageID
-  messageCreated: Date
-  id: LinkPreviewID
+  cardId: CardID
+  messageId: MessageID
+  previewId: LinkPreviewID
 }
 
-export interface FileRemovedEvent extends BaseResponseEvent {
-  type: MessageResponseEventType.FileRemoved
-  card: CardID
-  message: MessageID
-  messageCreated: Date
-  blobId: BlobID
-  creator: SocialID
+export interface ThreadAttachedEvent extends BaseResponseEvent {
+  type: MessageResponseEventType.ThreadAttached
+  cardId: CardID
+  messageId: MessageID
+  thread: Thread
 }
 
+export interface ThreadUpdatedEvent extends BaseResponseEvent {
+  type: MessageResponseEventType.ThreadUpdated
+  cardId: CardID
+  messageId: MessageID
+  threadId: CardID
+  updates: {
+    repliesCountOp: 'increment' | 'decrement'
+    lastReply?: Date
+  }
+}
+
+// Internal
 export interface MessagesGroupCreatedEvent extends BaseResponseEvent {
   type: MessageResponseEventType.MessagesGroupCreated
   group: MessagesGroup
@@ -134,21 +189,6 @@ export interface MessagesGroupCreatedEvent extends BaseResponseEvent {
 
 export interface MessagesGroupRemovedEvent extends BaseResponseEvent {
   type: MessageResponseEventType.MessagesGroupRemoved
-  card: CardID
+  cardId: CardID
   blobId: BlobID
-}
-export interface ThreadCreatedEvent extends BaseResponseEvent {
-  type: MessageResponseEventType.ThreadCreated
-  thread: Thread
-}
-
-export interface ThreadUpdatedEvent extends BaseResponseEvent {
-  type: MessageResponseEventType.ThreadUpdated
-  card: CardID
-  message: MessageID
-  thread: CardID
-  updates: {
-    replies: 'increment' | 'decrement'
-    lastReply?: Date
-  }
 }

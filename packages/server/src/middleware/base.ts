@@ -34,7 +34,7 @@ import type {
   Collaborator
 } from '@hcengineering/communication-types'
 
-import type { Middleware, MiddlewareContext, QueryId } from '../types'
+import type { Enriched, Middleware, MiddlewareContext, QueryId } from '../types'
 
 export class BaseMiddleware implements Middleware {
   constructor (
@@ -78,7 +78,7 @@ export class BaseMiddleware implements Middleware {
     return await this.provideFindCollaborators(session, params)
   }
 
-  async event (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: Enriched<RequestEvent>, derived: boolean): Promise<EventResult> {
     return await this.provideEvent(session, event, derived)
   }
 
@@ -95,7 +95,11 @@ export class BaseMiddleware implements Middleware {
   close (): void {}
   closeSession (sessionId: string): void {}
 
-  protected async provideEvent (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
+  protected async provideEvent (
+    session: SessionData,
+    event: Enriched<RequestEvent>,
+    derived: boolean
+  ): Promise<EventResult> {
     if (this.next !== undefined) {
       return await this.next.event(session, event, derived)
     }

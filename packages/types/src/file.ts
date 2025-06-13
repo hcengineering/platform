@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import type { BlobID, CardID, CardType, RichText, SocialID } from './core'
-import type { Message, MessageID, MessageType, MessageData, LinkPreview, Reaction, File } from './message'
+import type { CardID, CardType, Markdown, SocialID } from './core'
+import type { Message, MessageID, MessageType, MessageExtra, LinkPreview, Reaction, AttachedBlob } from './message'
 
 export interface FileMetadata {
-  card: CardID
+  cardId: CardID
   title: string
   fromDate: Date
   toDate: Date
@@ -26,37 +26,32 @@ export interface FileMetadata {
 export interface FileMessage {
   id: MessageID
   type: MessageType
-  content: RichText
+  content: Markdown
+  extra?: MessageExtra
+
   creator: SocialID
-  removed: boolean
-  data?: MessageData
-  externalId?: string
   created: Date
+
+  removed: boolean
   edited?: Date
+
   reactions: Reaction[]
-  files: File[]
-  links: LinkPreview[]
+  blobs: AttachedBlob[]
+  linkPreviews: LinkPreview[]
   thread?: FileThread
 }
 
-export interface FileBlob {
-  blobId: BlobID
-  type: string
-  filename: string
-  size: number
-  creator: SocialID
-  created: Date
-  meta: Record<string, any>
-}
-
 export interface FileThread {
-  thread: CardID
+  threadId: CardID
   threadType: CardType
   repliesCount: number
   lastReply: Date
 }
 
 export interface ParsedFile {
-  metadata: FileMetadata
+  cardId: CardID
+  title: string
+  fromDate: Date
+  toDate: Date
   messages: Message[]
 }

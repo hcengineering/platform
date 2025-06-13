@@ -18,7 +18,9 @@ import {
   MessageRequestEventType,
   type EventResult,
   type RequestEvent,
-  type CreateMessageResult
+  type CreateMessageResult,
+  type CreateMessageOptions,
+  PatchMessageOptions
 } from '@hcengineering/communication-sdk-types'
 import {
   type FindMessagesGroupsParams,
@@ -31,14 +33,14 @@ import {
   type Notification,
   type MessageID,
   type CardID,
-  type RichText,
+  type Markdown,
   type SocialID,
-  type MessageData,
   type CardType,
   type MessageType,
-  PatchType,
   type BlobID,
-  type FileData
+  type MessageExtra,
+  type BlobData,
+  PatchType
 } from '@hcengineering/communication-types'
 import { retry } from '@hcengineering/communication-shared'
 
@@ -95,92 +97,94 @@ class RestClientImpl implements RestClient {
   }
 
   async createMessage (
-    card: CardID,
+    cardId: CardID,
     cardType: CardType,
-    content: RichText,
-    creator: SocialID,
+    content: Markdown,
     type: MessageType,
-    data?: MessageData,
-    created?: Date,
-    externalId?: string,
-    id?: MessageID
+    extra?: MessageExtra,
+    socialId?: SocialID,
+    date?: Date,
+    messageId?: MessageID,
+    options?: CreateMessageOptions
   ): Promise<CreateMessageResult> {
     const result = await this.event({
       type: MessageRequestEventType.CreateMessage,
       messageType: type,
-      card,
+      cardId,
       cardType,
       content,
-      creator,
-      data,
-      created,
-      externalId,
-      id
+      extra,
+      socialId,
+      date,
+      messageId,
+      options
     })
     return result as CreateMessageResult
   }
 
   async updateMessage (
-    card: CardID,
-    message: MessageID,
-    messageCreated: Date,
-    content: RichText,
-    creator: SocialID
+    cardId: CardID,
+    messageId: MessageID,
+    content?: Markdown,
+    extra?: MessageExtra,
+    socialId?: SocialID,
+    date?: Date,
+    options?: PatchMessageOptions
   ): Promise<void> {
     await this.event({
       type: MessageRequestEventType.CreatePatch,
       patchType: PatchType.update,
-      messageCreated,
-      card,
-      message,
-      creator,
-      data: { content }
+      cardId,
+      messageId,
+      data: { content, extra },
+      socialId,
+      date,
+      options
     })
   }
 
-  async removeMessage (card: CardID, message: MessageID, messageCreated: Date, creator: SocialID): Promise<void> {
+  async removeMessage (cardId: CardID, messageId: MessageID, socialId?: SocialID): Promise<void> {
     await this.event({
       type: MessageRequestEventType.CreatePatch,
       patchType: PatchType.remove,
-      messageCreated,
-      card,
-      message,
-      creator,
-      data: {}
+      cardId,
+      messageId,
+      data: {},
+      socialId
     })
   }
 
-  async createFile (
-    card: CardID,
-    message: MessageID,
-    messageCreated: Date,
-    data: FileData,
-    creator: SocialID
+  async attachBlob (
+    cardId: CardID,
+    messageId: MessageID,
+    blobData: BlobData,
+    socialId?: SocialID,
+    date?: Date
   ): Promise<void> {
     await this.event({
-      type: MessageRequestEventType.CreateFile,
-      card,
-      message,
-      messageCreated,
-      data,
-      creator
+      type: MessageRequestEventType.AttachBlob,
+      cardId,
+      messageId,
+      blobData,
+      socialId,
+      date
     })
   }
 
-  async removeFile (
-    card: CardID,
-    message: MessageID,
-    messageCreated: Date,
+  async detachBlob (
+    cardId: CardID,
+    messageId: MessageID,
     blobId: BlobID,
-    creator: SocialID
+    socialId?: SocialID,
+    date?: Date
   ): Promise<void> {
     await this.event({
-      type: MessageRequestEventType.RemoveFile,
-      card,
-      message,
-      messageCreated,
+      type: MessageRequestEventType.DetachBlob,
+      cardId,
+      messageId,
       blobId,
-      creator
+      socialId,
+      date
     })
   }
 

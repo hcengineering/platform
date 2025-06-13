@@ -56,8 +56,8 @@ export class LabelsDb extends BaseDb {
 
   async removeLabels (query: RemoveLabelQuery): Promise<void> {
     const db: Partial<LabelDb> = {
-      label_id: query.label,
-      card_id: query.card,
+      label_id: query.labelId,
+      card_id: query.cardId,
       account: query.account
     }
 

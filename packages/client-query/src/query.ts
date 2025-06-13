@@ -22,7 +22,9 @@ import {
   type Label,
   type Message,
   type NotificationContext,
-  type Notification
+  type Notification,
+  FindCollaboratorsParams,
+  Collaborator
 } from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
 
@@ -116,5 +118,16 @@ export class LabelsQuery extends BaseQuery<FindLabelsParams, QueryCallback<Label
       unsubscribe: () => void
     } {
     return this.lq.queryLabels(params, callback)
+  }
+}
+
+export class CollaboratorsQuery extends BaseQuery<FindCollaboratorsParams, QueryCallback<Collaborator>> {
+  override createQuery (
+    params: FindCollaboratorsParams,
+    callback: QueryCallback<Collaborator>
+  ): {
+      unsubscribe: () => void
+    } {
+    return this.lq.queryCollaborators(params, callback)
   }
 }

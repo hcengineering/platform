@@ -10,380 +10,14 @@ importers:
 
   .: {}
 
-  ../../packages/client-query:
-    dependencies:
-      '@hcengineering/communication-query':
-        specifier: workspace:*
-        version: link:../query
-      '@hcengineering/communication-sdk-types':
-        specifier: workspace:*
-        version: link:../sdk-types
-      '@hcengineering/communication-types':
-        specifier: workspace:*
-        version: link:../types
-      fast-equals:
-        specifier: ^5.2.2
-        version: 5.2.2
-    devDependencies:
-      '@hcengineering/platform-rig':
-        specifier: ^0.6.490
-        version: 0.6.490(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
-      '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.8.3)
-      esbuild:
-        specifier: ^0.24.2
-        version: 0.24.2
-      esbuild-plugin-copy:
-        specifier: ~2.1.1
-        version: 2.1.1(esbuild@0.24.2)
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.1
-      eslint-config-standard-with-typescript:
-        specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.8.3)
-      eslint-plugin-import:
-        specifier: ^2.26.0
-        version: 2.31.0(eslint@8.57.1)
-      eslint-plugin-n:
-        specifier: ^15.4.0
-        version: 15.7.0(eslint@8.57.1)
-      eslint-plugin-promise:
-        specifier: ^6.1.1
-        version: 6.6.0(eslint@8.57.1)
-      jest:
-        specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.15.29)
-      prettier:
-        specifier: ^3.1.0
-        version: 3.5.3
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
-
-  ../../packages/cockroach:
-    dependencies:
-      '@hcengineering/communication-sdk-types':
-        specifier: workspace:*
-        version: link:../sdk-types
-      '@hcengineering/communication-shared':
-        specifier: workspace:*
-        version: link:../shared
-      '@hcengineering/communication-types':
-        specifier: workspace:*
-        version: link:../types
-      postgres:
-        specifier: ^3.4.7
-        version: 3.4.7
-      uuid:
-        specifier: ^8.3.2
-        version: 8.3.2
-    devDependencies:
-      '@hcengineering/platform-rig':
-        specifier: ^0.6.490
-        version: 0.6.490(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)
-      '@types/uuid':
-        specifier: ^8.3.1
-        version: 8.3.4
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
-      '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.8.3)
-      esbuild:
-        specifier: ^0.24.2
-        version: 0.24.2
-      esbuild-plugin-copy:
-        specifier: ~2.1.1
-        version: 2.1.1(esbuild@0.24.2)
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.1
-      eslint-config-standard-with-typescript:
-        specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.8.3)
-      eslint-plugin-import:
-        specifier: ^2.26.0
-        version: 2.31.0(eslint@8.57.1)
-      eslint-plugin-n:
-        specifier: ^15.4.0
-        version: 15.7.0(eslint@8.57.1)
-      eslint-plugin-promise:
-        specifier: ^6.1.1
-        version: 6.6.0(eslint@8.57.1)
-      jest:
-        specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.15.29)
-      prettier:
-        specifier: ^3.1.0
-        version: 3.5.3
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
-
-  ../../packages/query:
-    dependencies:
-      '@hcengineering/communication-sdk-types':
-        specifier: workspace:*
-        version: link:../sdk-types
-      '@hcengineering/communication-shared':
-        specifier: workspace:*
-        version: link:../shared
-      '@hcengineering/communication-types':
-        specifier: workspace:*
-        version: link:../types
-      '@hcengineering/communication-yaml':
-        specifier: workspace:*
-        version: link:../yaml
-      fast-equals:
-        specifier: ^5.2.2
-        version: 5.2.2
-      uuid:
-        specifier: ^8.3.2
-        version: 8.3.2
-    devDependencies:
-      '@hcengineering/platform-rig':
-        specifier: ^0.6.490
-        version: 0.6.490(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)
-      '@types/uuid':
-        specifier: ^8.3.1
-        version: 8.3.4
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
-      '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.8.3)
-      esbuild:
-        specifier: ^0.24.2
-        version: 0.24.2
-      esbuild-plugin-copy:
-        specifier: ~2.1.1
-        version: 2.1.1(esbuild@0.24.2)
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.1
-      eslint-config-standard-with-typescript:
-        specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.8.3)
-      eslint-plugin-import:
-        specifier: ^2.26.0
-        version: 2.31.0(eslint@8.57.1)
-      eslint-plugin-n:
-        specifier: ^15.4.0
-        version: 15.7.0(eslint@8.57.1)
-      eslint-plugin-promise:
-        specifier: ^6.1.1
-        version: 6.6.0(eslint@8.57.1)
-      jest:
-        specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.15.29)
-      prettier:
-        specifier: ^3.1.0
-        version: 3.5.3
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
-
-  ../../packages/rest-client:
-    dependencies:
-      '@hcengineering/communication-sdk-types':
-        specifier: workspace:*
-        version: link:../sdk-types
-      '@hcengineering/communication-shared':
-        specifier: workspace:*
-        version: link:../shared
-      '@hcengineering/communication-types':
-        specifier: workspace:*
-        version: link:../types
-      '@hcengineering/core':
-        specifier: ^0.7.88
-        version: 0.7.88
-      snappyjs:
-        specifier: ^0.7.0
-        version: 0.7.0
-    devDependencies:
-      '@hcengineering/platform-rig':
-        specifier: ^0.6.490
-        version: 0.6.490(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)
-      '@types/snappyjs':
-        specifier: ^0.7.1
-        version: 0.7.1
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
-      '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.8.3)
-      esbuild:
-        specifier: ^0.24.2
-        version: 0.24.2
-      esbuild-plugin-copy:
-        specifier: ~2.1.1
-        version: 2.1.1(esbuild@0.24.2)
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.1
-      eslint-config-standard-with-typescript:
-        specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.8.3)
-      eslint-plugin-import:
-        specifier: ^2.26.0
-        version: 2.31.0(eslint@8.57.1)
-      eslint-plugin-n:
-        specifier: ^15.4.0
-        version: 15.7.0(eslint@8.57.1)
-      eslint-plugin-promise:
-        specifier: ^6.1.1
-        version: 6.6.0(eslint@8.57.1)
-      jest:
-        specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.15.29)
-      prettier:
-        specifier: ^3.1.0
-        version: 3.5.3
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
-
   ../../packages/sdk-types:
     dependencies:
       '@hcengineering/communication-types':
-        specifier: workspace:*
-        version: link:../types
+        specifier: ^0.1.0
+        version: 0.1.195(typescript@5.8.3)
       '@hcengineering/core':
         specifier: ^0.7.88
         version: 0.7.88
-    devDependencies:
-      '@hcengineering/platform-rig':
-        specifier: ^0.6.490
-        version: 0.6.490(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
-      '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.8.3)
-      esbuild:
-        specifier: ^0.24.2
-        version: 0.24.2
-      esbuild-plugin-copy:
-        specifier: ~2.1.1
-        version: 2.1.1(esbuild@0.24.2)
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.1
-      eslint-config-standard-with-typescript:
-        specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.8.3)
-      eslint-plugin-import:
-        specifier: ^2.26.0
-        version: 2.31.0(eslint@8.57.1)
-      eslint-plugin-n:
-        specifier: ^15.4.0
-        version: 15.7.0(eslint@8.57.1)
-      eslint-plugin-promise:
-        specifier: ^6.1.1
-        version: 6.6.0(eslint@8.57.1)
-      jest:
-        specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.15.29)
-      prettier:
-        specifier: ^3.1.0
-        version: 3.5.3
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
-
-  ../../packages/server:
-    dependencies:
-      '@hcengineering/account-client':
-        specifier: ^0.7.88
-        version: 0.7.88
-      '@hcengineering/communication-cockroach':
-        specifier: workspace:*
-        version: link:../cockroach
-      '@hcengineering/communication-sdk-types':
-        specifier: workspace:*
-        version: link:../sdk-types
-      '@hcengineering/communication-shared':
-        specifier: workspace:*
-        version: link:../shared
-      '@hcengineering/communication-types':
-        specifier: workspace:*
-        version: link:../types
-      '@hcengineering/communication-yaml':
-        specifier: workspace:*
-        version: link:../yaml
-      '@hcengineering/core':
-        specifier: ^0.7.88
-        version: 0.7.88
-      '@hcengineering/server-token':
-        specifier: ^0.7.88
-        version: 0.7.88
-      '@hcengineering/text-core':
-        specifier: ^0.7.88
-        version: 0.7.88
-      '@hcengineering/text-markdown':
-        specifier: ^0.7.88
-        version: 0.7.88
-      zod:
-        specifier: ^3.22.4
-        version: 3.25.51
-    devDependencies:
-      '@hcengineering/platform-rig':
-        specifier: ^0.6.490
-        version: 0.6.490(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
-      '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.8.3)
-      esbuild:
-        specifier: ^0.24.2
-        version: 0.24.2
-      esbuild-plugin-copy:
-        specifier: ~2.1.1
-        version: 2.1.1(esbuild@0.24.2)
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.1
-      eslint-config-standard-with-typescript:
-        specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.8.3)
-      eslint-plugin-import:
-        specifier: ^2.26.0
-        version: 2.31.0(eslint@8.57.1)
-      eslint-plugin-n:
-        specifier: ^15.4.0
-        version: 15.7.0(eslint@8.57.1)
-      eslint-plugin-promise:
-        specifier: ^6.1.1
-        version: 6.6.0(eslint@8.57.1)
-      jest:
-        specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.15.29)
-      prettier:
-        specifier: ^3.1.0
-        version: 3.5.3
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
-
-  ../../packages/shared:
-    dependencies:
-      '@hcengineering/communication-sdk-types':
-        specifier: workspace:*
-        version: link:../sdk-types
-      '@hcengineering/communication-types':
-        specifier: workspace:*
-        version: link:../types
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: ^0.6.490
@@ -437,64 +71,6 @@ importers:
       '@hcengineering/platform-rig':
         specifier: ^0.6.490
         version: 0.6.490(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^6.11.0
-        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
-      '@typescript-eslint/parser':
-        specifier: ^6.11.0
-        version: 6.21.0(eslint@8.57.1)(typescript@5.8.3)
-      esbuild:
-        specifier: ^0.24.2
-        version: 0.24.2
-      esbuild-plugin-copy:
-        specifier: ~2.1.1
-        version: 2.1.1(esbuild@0.24.2)
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.1
-      eslint-config-standard-with-typescript:
-        specifier: ^40.0.0
-        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3))(eslint-plugin-import@2.31.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.8.3)
-      eslint-plugin-import:
-        specifier: ^2.26.0
-        version: 2.31.0(eslint@8.57.1)
-      eslint-plugin-n:
-        specifier: ^15.4.0
-        version: 15.7.0(eslint@8.57.1)
-      eslint-plugin-promise:
-        specifier: ^6.1.1
-        version: 6.6.0(eslint@8.57.1)
-      jest:
-        specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.15.29)
-      prettier:
-        specifier: ^3.1.0
-        version: 3.5.3
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
-
-  ../../packages/yaml:
-    dependencies:
-      '@hcengineering/communication-sdk-types':
-        specifier: workspace:*
-        version: link:../sdk-types
-      '@hcengineering/communication-shared':
-        specifier: workspace:*
-        version: link:../shared
-      '@hcengineering/communication-types':
-        specifier: workspace:*
-        version: link:../types
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.0
-    devDependencies:
-      '@hcengineering/platform-rig':
-        specifier: ^0.6.490
-        version: 0.6.490(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.11.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1)(typescript@5.8.3)
@@ -886,14 +462,16 @@ packages:
   '@formatjs/intl-localematcher@0.6.1':
     resolution: {integrity: sha512-ePEgLgVCqi2BBFnTMWPfIghu6FkbZnnBVhO2sSxvLfrdFw7wCHAHiDoM2h4NRgjbaY7+B7HgOLZGkK187pZTZg==}
 
-  '@hcengineering/account-client@0.7.88':
-    resolution: {integrity: sha512-CZWOJT/JZAUy+FuYuX0QcJQYDnVDNAB0QHU4RxKc7gSlYAYleibL7qJC0vRGL4rNkvDVZfJMKDPUQW4AauGqtA==, tarball: https://npm.pkg.github.com/download/@hcengineering/account-client/0.7.88/57caa95e62fecc4ca22a32c76bcdc900b0384f04}
-
   '@hcengineering/analytics@0.7.88':
     resolution: {integrity: sha512-3jT3h2Y85awrgG0JWZSrpWOXaX1J3dpq8zouo3QMw8OVO1RgHCwPEqrBPOALnB+gc9cZL02p6Aq4J+fnTZ2fww==, tarball: https://npm.pkg.github.com/download/@hcengineering/analytics/0.7.88/385c2ae512bbcae39189d63e53ea527aa21a662f}
 
   '@hcengineering/card@0.7.88':
     resolution: {integrity: sha512-3JDgocHFSGmQuKsrtQ5CTTm4rpd/PHahIx6oNX8sshDGpS2hnvNtrHNkJf39seIKiq0NNKmJ//Etl4I21h4c6w==, tarball: https://npm.pkg.github.com/download/@hcengineering/card/0.7.88/e39b9e182325945494f162f2dd6f16ef9bea0f3e}
+
+  '@hcengineering/communication-types@0.1.195':
+    resolution: {integrity: sha512-a22nIhEZEGKVeY4pALG4OHROW3E6SKMDslyo1TNI9QR+upca/aX/gZxorc+HzLe3fkhj2BWkrDj3didGBBmJZQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/communication-types/0.1.195/4bace160ae375c32f9c3e0b1814ce73944ec9829}
+    peerDependencies:
+      typescript: ^5.6.3
 
   '@hcengineering/core@0.7.88':
     resolution: {integrity: sha512-c3GRTGAZYARu1kMt4TqkugmnuprYesZ4XZUeakReRtZdYei9tAF+i9xPpDKb4J3hvMC3u82LlEiV8iK26iXpTA==, tarball: https://npm.pkg.github.com/download/@hcengineering/core/0.7.88/ca01c3ccd43c85ea44b189d995b0693c5465956c}
@@ -908,23 +486,20 @@ packages:
   '@hcengineering/platform@0.7.88':
     resolution: {integrity: sha512-iFAwYQZjGox1NqEgUh8hiT1mRHdSJqYmYux0lkeIFyt8Nn/BAZOVXe0br0Dx7wXiueFPWhSZSeWVhxvBb78zoA==, tarball: https://npm.pkg.github.com/download/@hcengineering/platform/0.7.88/b3fbe09d6b849f7eb3641792682bf133103037f0}
 
-  '@hcengineering/server-token@0.7.88':
-    resolution: {integrity: sha512-UQfW0E+v+PTwR7ICR+kSTQqAokpiV008ukqsxRSQJkCM4vmNYciUgd/7Y/ifDMFhKDvNyODb+wgAQs3QxkSbkA==, tarball: https://npm.pkg.github.com/download/@hcengineering/server-token/0.7.88/11b3a8247869a50037fcbb13572e16545116ff93}
+  '@hcengineering/preference@0.7.88':
+    resolution: {integrity: sha512-idzAlphM/HyNJfFMFwbpyKg6KvFTJ6rTaqgduNNJqkO4DsUCEF5/1WLNQMmiAeoFDY9y5+/mHJrx+1Ztq1XIuw==, tarball: https://npm.pkg.github.com/download/@hcengineering/preference/0.7.88/e1181dae3cb2eaf53fed66ddd3d5c4854717ccf0}
 
-  '@hcengineering/text-core@0.7.88':
-    resolution: {integrity: sha512-mFri9SMzD99uR3/H0gZ4KEekYf3lEmJ2bqEQrjIVmi9z7+CzDTxmKnXeHKzcFpvQaLt5kmbPIoXM4MyxpK7ZXA==, tarball: https://npm.pkg.github.com/download/@hcengineering/text-core/0.7.88/7e53b0da9622709b2d1071049ead3843e0c45764}
-
-  '@hcengineering/text-html@0.7.88':
-    resolution: {integrity: sha512-Wj0gYv0JEUIKpuaDFmRn7/60/SXGg0CZVmzbux0XlUzayly+C4Pkfj5U3G/ZEUyDBtAtyeBdWtnkzgQgN6qOuQ==, tarball: https://npm.pkg.github.com/download/@hcengineering/text-html/0.7.88/e48beced20921d9e1e9c84548c3caf5c9770bac1}
-
-  '@hcengineering/text-markdown@0.7.88':
-    resolution: {integrity: sha512-066WeD/6EI5VmFQZ/Cv6eEOFXBd+fA+YPxX5fb0ytlZr5bLpQs6/AifpyqJoZ5gqQzfAf/HmtDVxDl5QU95FGw==, tarball: https://npm.pkg.github.com/download/@hcengineering/text-markdown/0.7.88/86938b13b0bdd81941a22378e3b2e92998f71d80}
+  '@hcengineering/tags@0.7.88':
+    resolution: {integrity: sha512-wpnVX/1Y8E4YPYnUcw+ZyVOpZvXYpboZC9D1btMqFs34CoMGc4tW1XT3YfsS8KxlkH6tsQjsAUvtWOPy2J46dg==, tarball: https://npm.pkg.github.com/download/@hcengineering/tags/0.7.88/f3f0de35b1be71d1f3f6711b8e4f161e0cf857eb}
 
   '@hcengineering/theme@0.7.88':
     resolution: {integrity: sha512-PCt9bFuGPYOf1kQgjzxPSZgGXU4G14Z1XZJfgGu71u/zHxG6fu6nls35aSrEjy2Ks6oR+OCqqvpDh6RTf6utrg==, tarball: https://npm.pkg.github.com/download/@hcengineering/theme/0.7.88/d939d1e2a9047def2795dc5124653e49ca522cfc}
 
   '@hcengineering/ui@0.7.88':
     resolution: {integrity: sha512-mzHXcX3aBC/OXUaV9F2hnB6+irwMfEYM5J1CnfqiHqgv3Hza20BZR6BrYe/nQCLb44DuHkXojbwL94AKK3QW6w==, tarball: https://npm.pkg.github.com/download/@hcengineering/ui/0.7.88/fce3392a59f706c248ba4b17714163e5725d5f01}
+
+  '@hcengineering/view@0.7.88':
+    resolution: {integrity: sha512-W3/OgCu9W+OGZ8v8hoT0bjoCNflvIcWFwFafk40FtWFxvqzObm41e5ZWNj3yGWFdlVsyN/Nqdjkyz0txWUXQAA==, tarball: https://npm.pkg.github.com/download/@hcengineering/view/0.7.88/8a13ddff0178ac3b705ebed683d0c1cc328c8e1c}
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -1082,9 +657,6 @@ packages:
   '@types/istanbul-reports@3.0.4':
     resolution: {integrity: sha512-pk2B1NWalF9toCRu6gjBzR69syFjP4Od8WRAX+0mmf9lAjCRicLOWc+ZrxZHx/0XRjotgkF9t6iaMJ+aXcOdZQ==}
 
-  '@types/js-yaml@4.0.9':
-    resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
-
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
@@ -1097,17 +669,11 @@ packages:
   '@types/semver@7.7.0':
     resolution: {integrity: sha512-k107IF4+Xr7UHjwDc7Cfd6PRQfbdkiRabXGRjo07b4WyPahFBZCZ1sE+BNxYIJPPg73UkfOsVOLwqVc/6ETrIA==}
 
-  '@types/snappyjs@0.7.1':
-    resolution: {integrity: sha512-OxjzJ6cQZstysMh6PEwZWmK9qlKZyezHJKOkcUkZDooSFuog2votUEKkxMaTq51UQF3cJkXKQ+XGlj4FSl8JQQ==}
-
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
-
-  '@types/uuid@8.3.4':
-    resolution: {integrity: sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==}
 
   '@types/yargs-parser@21.0.3':
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
@@ -1489,21 +1055,8 @@ packages:
     resolution: {integrity: sha512-yS+Q5i3hBf7GBkd4KG8a7eBNNWNGLTaEwwYWUijIYM7zrlYDM0BFXHjjPWlWZ1Rg7UaddZeIDmi9jF3HmqiQ2w==}
     engines: {node: '>=6.0.0'}
 
-  dom-serializer@2.0.0:
-    resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
-
-  domelementtype@2.3.0:
-    resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
-
-  domhandler@5.0.3:
-    resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
-    engines: {node: '>= 4'}
-
   dompurify@3.2.6:
     resolution: {integrity: sha512-/2GogDQlohXPZe6D6NOgQvXLPSYBqIWMnZ8zzOhn09REE4eyAzb+Hed3jhoM9OkuaJ8P6ZGTTVWQKAi8ieIzfQ==}
-
-  domutils@3.2.2:
-    resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -1522,10 +1075,6 @@ packages:
   emojibase@16.0.0:
     resolution: {integrity: sha512-Nw2m7JLIO4Ou2X/yZPRNscHQXVbbr6SErjkJ7EooG7MbR3yDZszCv9KTizsXFc7yZl0n3WF+qUKIC/Lw6H9xaQ==}
     engines: {node: '>=18.12.0'}
-
-  entities@4.5.0:
-    resolution: {integrity: sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==}
-    engines: {node: '>=0.12'}
 
   error-ex@1.3.2:
     resolution: {integrity: sha512-7dFHNmqeFSEt2ZBsCriorKnn3Z2pj+fd9kmI6QoWw4//DL+icEBfc0U7qJCisqrTsKTjw4fNFy2pW9OqStD84g==}
@@ -1878,9 +1427,6 @@ packages:
 
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
-
-  htmlparser2@9.1.0:
-    resolution: {integrity: sha512-5zfg6mHUoaer/97TxnGpxmbR7zJtPwIYFMZ/H5ucTlPZhKvtum05yiPK3Mgai3a0DyVxv7qYqoweaEd2nrYQzQ==}
 
   human-signals@2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
@@ -2242,10 +1788,6 @@ packages:
   jsonfile@6.1.0:
     resolution: {integrity: sha512-5dgndWOriYSm5cnYaJNhalLNDKOqFwyDB/rr1E9ZsGciGvKPs8R2xYGCacuf3z6K1YKDz182fd+fY3cn3pMqXQ==}
 
-  jwt-simple@0.5.6:
-    resolution: {integrity: sha512-40aUybvhH9t2h71ncA1/1SbtTNCVZHgsTsTgqPUxGWDmUDrXyDf2wMNQKEbdBjbf4AI+fQhbECNTV6lWxQKUzg==}
-    engines: {node: '>= 0.4.0'}
-
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
@@ -2263,9 +1805,6 @@ packages:
 
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
-
-  linkify-it@5.0.0:
-    resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
 
   loadjs@4.3.0:
     resolution: {integrity: sha512-vNX4ZZLJBeDEOBvdr2v/F+0aN5oMuPu7JTqrMwp+DtgK+AryOlpy6Xtm2/HpNr+azEa828oQjOtWsB6iDtSfSQ==}
@@ -2297,19 +1836,12 @@ packages:
   makeerror@1.0.12:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
 
-  markdown-it@14.1.0:
-    resolution: {integrity: sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==}
-    hasBin: true
-
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
 
   mdn-data@2.0.30:
     resolution: {integrity: sha512-GaqWWShW4kv/G9IEucWScBx9G1/vsFZZJUO+tD26M8J8z3Kw5RDQjaoZe03YAClgeS/SWPOcb4nkFBTEi5DUEA==}
-
-  mdurl@2.0.0:
-    resolution: {integrity: sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==}
 
   merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
@@ -2467,10 +1999,6 @@ packages:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
 
-  postgres@3.4.7:
-    resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
-    engines: {node: '>=12'}
-
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -2487,10 +2015,6 @@ packages:
   prompts@2.4.2:
     resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}
     engines: {node: '>= 6'}
-
-  punycode.js@2.3.1:
-    resolution: {integrity: sha512-uxFIHU0YlHYhDQtV4R9J6a52SLx28BCjT+4ieh7IGbgwVJWO+km431c4yRlREUAsAmt/uMjQUyQHNEPf0M39CA==}
-    engines: {node: '>=6'}
 
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
@@ -2627,9 +2151,6 @@ packages:
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
-
-  snappyjs@0.7.0:
-    resolution: {integrity: sha512-u5iEEXkMe2EInQio6Wv9LWHOQYRDbD2O9hzS27GpT/lwfIQhTCnHCTqedqHIHe9ZcvQo+9au6vngQayipz1NYw==}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -2772,9 +2293,6 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  uc.micro@2.1.0:
-    resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
-
   unbox-primitive@1.1.0:
     resolution: {integrity: sha512-nWJ91DjeOkej/TA8pXQ3myruKpKEYgqvpw9lz4OPHj/NWFNluYrjbz9j01CJ8yKQd2g4jFoOkINCTW2I5LEEyw==}
     engines: {node: '>= 0.4'}
@@ -2797,10 +2315,6 @@ packages:
 
   url-polyfill@1.1.13:
     resolution: {integrity: sha512-tXzkojrv2SujumYthZ/WjF7jaSfNhSXlYMpE5AYdL2I3D7DCeo+mch8KtW2rUuKjDg+3VXODXHVgipt8yGY/eQ==}
-
-  uuid@8.3.2:
-    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
-    hasBin: true
 
   v8-to-istanbul@9.3.0:
     resolution: {integrity: sha512-kiGUalWN+rgBJ/1OHZsBtU4rXZOfj/7rKQxULKlIzwzQSvMJUUNgPwJEEh7gU6xEVxC0ahoOBvN2YI8GH6FNgA==}
@@ -2863,9 +2377,6 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
-
-  zod@3.25.51:
-    resolution: {integrity: sha512-TQSnBldh+XSGL+opiSIq0575wvDPqu09AqWe1F7JhUMKY+M91/aGlK4MhpVNO7MgYfHcVCB1ffwAUTJzllKJqg==}
 
 snapshots:
 
@@ -3187,11 +2698,6 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@hcengineering/account-client@0.7.88':
-    dependencies:
-      '@hcengineering/core': 0.7.88
-      '@hcengineering/platform': 0.7.88
-
   '@hcengineering/analytics@0.7.88':
     dependencies:
       '@hcengineering/platform': 0.7.88
@@ -3201,6 +2707,13 @@ snapshots:
       '@hcengineering/core': 0.7.88
       '@hcengineering/platform': 0.7.88
       '@hcengineering/ui': 0.7.88
+
+  '@hcengineering/communication-types@0.1.195(typescript@5.8.3)':
+    dependencies:
+      '@hcengineering/card': 0.7.88
+      '@hcengineering/core': 0.7.88
+      '@hcengineering/tags': 0.7.88
+      typescript: 5.8.3
 
   '@hcengineering/core@0.7.88':
     dependencies:
@@ -3218,28 +2731,18 @@ snapshots:
     dependencies:
       intl-messageformat: 10.7.16
 
-  '@hcengineering/server-token@0.7.88':
+  '@hcengineering/preference@0.7.88':
     dependencies:
       '@hcengineering/core': 0.7.88
       '@hcengineering/platform': 0.7.88
-      jwt-simple: 0.5.6
+      '@hcengineering/ui': 0.7.88
 
-  '@hcengineering/text-core@0.7.88':
+  '@hcengineering/tags@0.7.88':
     dependencies:
       '@hcengineering/core': 0.7.88
-      fast-equals: 5.2.2
-
-  '@hcengineering/text-html@0.7.88':
-    dependencies:
-      '@hcengineering/text-core': 0.7.88
-      htmlparser2: 9.1.0
-
-  '@hcengineering/text-markdown@0.7.88':
-    dependencies:
-      '@hcengineering/text-core': 0.7.88
-      '@hcengineering/text-html': 0.7.88
-      fast-equals: 5.2.2
-      markdown-it: 14.1.0
+      '@hcengineering/platform': 0.7.88
+      '@hcengineering/ui': 0.7.88
+      '@hcengineering/view': 0.7.88
 
   '@hcengineering/theme@0.7.88':
     dependencies:
@@ -3262,6 +2765,13 @@ snapshots:
       hls.js: 1.6.5
       plyr: 3.7.8
       svelte: 4.2.20
+
+  '@hcengineering/view@0.7.88':
+    dependencies:
+      '@hcengineering/core': 0.7.88
+      '@hcengineering/platform': 0.7.88
+      '@hcengineering/preference': 0.7.88
+      '@hcengineering/ui': 0.7.88
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
@@ -3525,8 +3035,6 @@ snapshots:
     dependencies:
       '@types/istanbul-lib-report': 3.0.3
 
-  '@types/js-yaml@4.0.9': {}
-
   '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29': {}
@@ -3537,14 +3045,10 @@ snapshots:
 
   '@types/semver@7.7.0': {}
 
-  '@types/snappyjs@0.7.1': {}
-
   '@types/stack-utils@2.0.3': {}
 
   '@types/trusted-types@2.0.7':
     optional: true
-
-  '@types/uuid@8.3.4': {}
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -4007,27 +3511,9 @@ snapshots:
     dependencies:
       esutils: 2.0.3
 
-  dom-serializer@2.0.0:
-    dependencies:
-      domelementtype: 2.3.0
-      domhandler: 5.0.3
-      entities: 4.5.0
-
-  domelementtype@2.3.0: {}
-
-  domhandler@5.0.3:
-    dependencies:
-      domelementtype: 2.3.0
-
   dompurify@3.2.6:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
-
-  domutils@3.2.2:
-    dependencies:
-      dom-serializer: 2.0.0
-      domelementtype: 2.3.0
-      domhandler: 5.0.3
 
   dunder-proto@1.0.1:
     dependencies:
@@ -4042,8 +3528,6 @@ snapshots:
   emoji-regex@8.0.0: {}
 
   emojibase@16.0.0: {}
-
-  entities@4.5.0: {}
 
   error-ex@1.3.2:
     dependencies:
@@ -4537,13 +4021,6 @@ snapshots:
   hls.js@1.6.5: {}
 
   html-escaper@2.0.2: {}
-
-  htmlparser2@9.1.0:
-    dependencies:
-      domelementtype: 2.3.0
-      domhandler: 5.0.3
-      domutils: 3.2.2
-      entities: 4.5.0
 
   human-signals@2.1.0: {}
 
@@ -5092,8 +4569,6 @@ snapshots:
     optionalDependencies:
       graceful-fs: 4.2.11
 
-  jwt-simple@0.5.6: {}
-
   keyv@4.5.4:
     dependencies:
       json-buffer: 3.0.1
@@ -5108,10 +4583,6 @@ snapshots:
       type-check: 0.4.0
 
   lines-and-columns@1.2.4: {}
-
-  linkify-it@5.0.0:
-    dependencies:
-      uc.micro: 2.1.0
 
   loadjs@4.3.0: {}
 
@@ -5143,20 +4614,9 @@ snapshots:
     dependencies:
       tmpl: 1.0.5
 
-  markdown-it@14.1.0:
-    dependencies:
-      argparse: 2.0.1
-      entities: 4.5.0
-      linkify-it: 5.0.0
-      mdurl: 2.0.0
-      punycode.js: 2.3.1
-      uc.micro: 2.1.0
-
   math-intrinsics@1.1.0: {}
 
   mdn-data@2.0.30: {}
-
-  mdurl@2.0.0: {}
 
   merge-stream@2.0.0: {}
 
@@ -5314,8 +4774,6 @@ snapshots:
 
   possible-typed-array-names@1.1.0: {}
 
-  postgres@3.4.7: {}
-
   prelude-ls@1.2.1: {}
 
   prettier@3.5.3: {}
@@ -5330,8 +4788,6 @@ snapshots:
     dependencies:
       kleur: 3.0.3
       sisteransi: 1.0.5
-
-  punycode.js@2.3.1: {}
 
   punycode@2.3.1: {}
 
@@ -5481,8 +4937,6 @@ snapshots:
   sisteransi@1.0.5: {}
 
   slash@3.0.0: {}
-
-  snappyjs@0.7.0: {}
 
   source-map-js@1.2.1: {}
 
@@ -5649,8 +5103,6 @@ snapshots:
 
   typescript@5.8.3: {}
 
-  uc.micro@2.1.0: {}
-
   unbox-primitive@1.1.0:
     dependencies:
       call-bound: 1.0.4
@@ -5673,8 +5125,6 @@ snapshots:
       punycode: 2.3.1
 
   url-polyfill@1.1.13: {}
-
-  uuid@8.3.2: {}
 
   v8-to-istanbul@9.3.0:
     dependencies:
@@ -5763,5 +5213,3 @@ snapshots:
       yargs-parser: 21.1.1
 
   yocto-queue@0.1.0: {}
-
-  zod@3.25.51: {}

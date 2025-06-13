@@ -20,7 +20,7 @@ import {
   type Patch,
   type Reaction,
   type SocialID,
-  type AddFilePatchData,
+  type AttachBlobPatchData,
   type UpdateThreadPatchData
 } from '@hcengineering/communication-types'
 
@@ -36,35 +36,38 @@ export function applyPatches (message: Message, patches: Patch[], allowedPatchTy
 export function applyPatch (message: Message, patch: Patch, allowedPatchTypes: PatchType[] = []): Message {
   if ((allowedPatchTypes.length > 0 && !allowedPatchTypes.includes(patch.type)) || message.removed) return message
   switch (patch.type) {
-    case PatchType.update:
+    case PatchType.update: {
+      if (patch.created.getTime() < (message.edited?.getTime() ?? 0)) {
+        return message
+      }
       return {
         ...message,
-        type: patch.data.type ?? message.type,
         edited: patch.created,
         content: patch.data.content ?? message.content,
-        data: patch.data.data ?? message.data
+        extra: patch.data.extra ?? message.extra
       }
+    }
     case PatchType.remove:
       return {
         ...message,
         content: '',
-        files: [],
+        blobs: [],
+        linkPreviews: [],
         reactions: [],
-        thread: undefined,
         removed: true
       }
-    case PatchType.addReaction:
-      return addReaction(message, {
+    case PatchType.setReaction:
+      return setReaction(message, {
         reaction: patch.data.reaction,
         creator: patch.creator,
         created: patch.created
       })
     case PatchType.removeReaction:
       return removeReaction(message, patch.data.reaction, patch.creator)
-    case PatchType.addFile:
-      return addFile(message, patch.data, patch.created, patch.creator)
-    case PatchType.removeFile:
-      return removeFile(message, patch.data.blobId)
+    case PatchType.attachBlob:
+      return attachBlob(message, patch.data, patch.created, patch.creator)
+    case PatchType.detachBlob:
+      return detachBlob(message, patch.data.blobId)
     case PatchType.updateThread:
       return updateThread(message, patch.data, patch.created)
   }
@@ -72,7 +75,7 @@ export function applyPatch (message: Message, patch: Patch, allowedPatchTypes: P
   return message
 }
 
-function addReaction (message: Message, reaction: Reaction): Message {
+function setReaction (message: Message, reaction: Reaction): Message {
   const isExist = message.reactions.some((it) => it.reaction === reaction.reaction && it.creator === reaction.creator)
   if (isExist) return message
   message.reactions.push(reaction)
@@ -91,24 +94,23 @@ function removeReaction (message: Message, emoji: string, creator: SocialID): Me
 
 function updateThread (message: Message, data: UpdateThreadPatchData, created: Date): Message {
   const thread = message.thread ?? {
-    card: message.card,
-    message: message.id,
-    messageCreated: message.created,
-    thread: data.thread,
+    cardId: message.cardId,
+    messageId: message.id,
+    threadId: data.threadId,
     threadType: data.threadType,
     repliesCount: 0,
     lastReply: created
   }
 
-  thread.thread = data.thread
+  thread.threadId = data.threadId
   thread.threadType = data.threadType
 
-  if (data.replies === 'increment') {
+  if (data.repliesCountOp === 'increment') {
     thread.repliesCount = thread.repliesCount + 1
     thread.lastReply = created
   }
 
-  if (data.replies === 'decrement') {
+  if (data.repliesCountOp === 'decrement') {
     thread.repliesCount = Math.max(thread.repliesCount - 1, 0)
   }
 
@@ -118,10 +120,10 @@ function updateThread (message: Message, data: UpdateThreadPatchData, created: D
   }
 }
 
-function addFile (message: Message, data: AddFilePatchData, created: Date, creator: SocialID): Message {
-  const isExists = message.files.some((it) => it.blobId === data.blobId)
-  if (isExists) return message
-  message.files.push({
+function attachBlob (message: Message, data: AttachBlobPatchData, created: Date, creator: SocialID): Message {
+  const isExists = message.blobs.some((it) => it.blobId === data.blobId)
+  if (isExists !== undefined) return message
+  message.blobs.push({
     ...data,
     created,
     creator
@@ -129,12 +131,12 @@ function addFile (message: Message, data: AddFilePatchData, created: Date, creat
   return message
 }
 
-function removeFile (message: Message, blobId: BlobID): Message {
-  const files = message.files.filter((it) => it.blobId !== blobId)
-  if (files.length === message.files.length) return message
+function detachBlob (message: Message, blobId: BlobID): Message {
+  const blobs = message.blobs.filter((it) => it.blobId !== blobId)
+  if (blobs.length === message.blobs.length) return message
 
   return {
     ...message,
-    files
+    blobs
   }
 }

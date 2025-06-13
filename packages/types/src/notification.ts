@@ -20,14 +20,14 @@ export type ContextID = ID & { context: true }
 export type NotificationID = ID & { notification: true }
 
 export interface Collaborator {
-  card: CardID
+  cardId: CardID
   cardType: CardType
   account: AccountID
 }
 
 export interface Notification {
   id: NotificationID
-  context: ContextID
+  contextId: ContextID
   account: AccountID
   type: NotificationType
   read: boolean
@@ -35,6 +35,7 @@ export interface Notification {
   content: NotificationContent
   messageId: MessageID
   messageCreated: Date
+
   message?: Message
   messageGroup?: MessagesGroup
   patches?: Patch[]
@@ -54,10 +55,11 @@ export type NotificationContent = Record<string, any>
 
 export interface NotificationContext {
   id: ContextID
-  card: CardID
+  cardId: CardID
   account: AccountID
   lastUpdate: Date
   lastView: Date
   lastNotify?: Date
+
   notifications?: Notification[]
 }

@@ -14,32 +14,19 @@
 //
 
 import {
-  CardRequestEventType,
-  type CreatePatchEvent,
   type DbAdapter,
   type EventResult,
-  LabelRequestEventType,
   MessageRequestEventType,
   NotificationRequestEventType,
   type RequestEvent,
   type SessionData
 } from '@hcengineering/communication-sdk-types'
 import { systemAccountUuid } from '@hcengineering/core'
-import type {
-  AccountID,
-  FindLabelsParams,
-  FindNotificationContextParams,
-  FindNotificationsParams,
-  Label,
-  Notification,
-  NotificationContext,
-  SocialID
-} from '@hcengineering/communication-types'
+import type { AccountID, SocialID } from '@hcengineering/communication-types'
 
 import { ApiError } from '../error'
-import type { Middleware, MiddlewareContext, QueryId } from '../types'
+import type { Enriched, Middleware, MiddlewareContext } from '../types'
 import { BaseMiddleware } from './base'
-import { findMessage } from '../triggers/utils'
 
 export class PermissionsMiddleware extends BaseMiddleware implements Middleware {
   constructor (
@@ -50,31 +37,13 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
     super(context, next)
   }
 
-  async event (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: Enriched<RequestEvent>, derived: boolean): Promise<EventResult> {
     if (derived) return await this.provideEvent(session, event, derived)
+
+    this.checkSocialId(session, event.socialId)
+
     switch (event.type) {
-      case MessageRequestEventType.CreatePatch: {
-        this.checkSocialId(session, event.creator)
-        await this.checkPatch(session, event)
-        break
-      }
-      case CardRequestEventType.UpdateCardType:
-      case NotificationRequestEventType.AddCollaborators:
-      case NotificationRequestEventType.RemoveCollaborators:
-      case MessageRequestEventType.CreateMessage:
-      case MessageRequestEventType.CreateReaction:
-      case MessageRequestEventType.RemoveReaction:
-      case MessageRequestEventType.RemoveFile:
-      case MessageRequestEventType.CreateLinkPreview:
-      case MessageRequestEventType.RemoveLinkPreview:
-      case MessageRequestEventType.CreateFile: {
-        this.checkSocialId(session, event.creator)
-        break
-      }
-      case LabelRequestEventType.CreateLabel:
-      case LabelRequestEventType.RemoveLabel:
       case NotificationRequestEventType.RemoveNotifications:
-      case NotificationRequestEventType.CreateNotificationContext:
       case NotificationRequestEventType.UpdateNotificationContext:
       case NotificationRequestEventType.RemoveNotificationContext: {
         this.checkAccount(session, event.account)
@@ -95,51 +64,6 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
     return await this.provideEvent(session, event, derived)
   }
 
-  async checkPatch (session: SessionData, event: CreatePatchEvent): Promise<void> {
-    const account = session.account
-    if (systemAccountUuid === account.uuid) return
-    const socialIds = account.socialIds
-
-    const message = await findMessage(
-      this.db,
-      this.context.metadata.filesUrl,
-      this.context.workspace,
-      event.card,
-      event.message,
-      event.messageCreated
-    )
-    if (message === undefined) {
-      throw ApiError.notFound('Message of patch not found.')
-    }
-
-    if (!socialIds.includes(message.creator)) {
-      throw ApiError.forbidden('Patch creator is not author of the message')
-    }
-  }
-
-  async findNotificationContexts (
-    session: SessionData,
-    params: FindNotificationContextParams,
-    queryId?: QueryId
-  ): Promise<NotificationContext[]> {
-    const paramsWithAccount = this.expandParamsWithAccount(session, params)
-    return await this.provideFindNotificationContexts(session, paramsWithAccount, queryId)
-  }
-
-  async findNotifications (
-    session: SessionData,
-    params: FindNotificationsParams,
-    queryId?: QueryId
-  ): Promise<Notification[]> {
-    const paramsWithAccount = this.expandParamsWithAccount(session, params)
-    return await this.provideFindNotifications(session, paramsWithAccount, queryId)
-  }
-
-  async findLabels (session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
-    const paramsWithAccount = this.expandParamsWithAccount(session, params)
-    return await this.provideFindLabels(session, paramsWithAccount, queryId)
-  }
-
   private checkSocialId (session: SessionData, creator: SocialID): void {
     const account = session.account
     if (!account.socialIds.includes(creator) && systemAccountUuid !== account.uuid) {
@@ -158,20 +82,6 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
     const account = session.account
     if (systemAccountUuid !== account.uuid) {
       throw ApiError.forbidden('only system account is allowed')
-    }
-  }
-
-  private expandParamsWithAccount<T extends { account?: AccountID | AccountID[] }>(session: SessionData, params: T): T {
-    const account = session.account
-    const isSystem = account.uuid === systemAccountUuid
-
-    if (isSystem) {
-      return params
-    }
-
-    return {
-      ...params,
-      account: account.uuid
     }
   }
 }

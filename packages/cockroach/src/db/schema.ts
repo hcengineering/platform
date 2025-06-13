@@ -21,7 +21,7 @@ import {
   type MessageID,
   type MessageType,
   type PatchType,
-  type RichText,
+  type Markdown,
   type SocialID,
   type WorkspaceID,
   type NotificationID,
@@ -37,6 +37,7 @@ import {
 export enum TableName {
   File = 'communication.files',
   Message = 'communication.messages',
+  MessageCreated = 'communication.message_created',
   MessagesGroup = 'communication.messages_groups',
   Notification = 'communication.notifications',
   NotificationContext = 'communication.notification_context',
@@ -53,23 +54,21 @@ export interface MessageDb {
   type: MessageType
   workspace_id: WorkspaceID
   card_id: CardID
-  content: RichText
+  content: Markdown
   creator: SocialID
   created: Date
   data?: Record<string, any>
-  external_id?: string
 }
 
 export const messageSchema: Record<keyof MessageDb, string> = {
-  id: 'int8',
   workspace_id: 'uuid',
   card_id: 'varchar',
+  id: 'int8',
+  created: 'timestamptz',
   content: 'text',
   creator: 'varchar',
-  created: 'timestamptz',
   type: 'varchar',
-  data: 'jsonb',
-  external_id: 'varchar'
+  data: 'jsonb'
 }
 
 export interface MessagesGroupDb {
@@ -113,7 +112,6 @@ export interface FileDb {
   meta?: BlobMetadata
   creator: SocialID
   created: Date
-  message_created: Date
 }
 
 export interface LinkPreviewDb {
@@ -121,7 +119,6 @@ export interface LinkPreviewDb {
   id: LinkPreviewID
   card_id: CardID
   message_id: MessageID
-  message_created: Date
   url: string
   host: string
   title: string | null
@@ -136,7 +133,6 @@ export interface ThreadDb {
   workspace_id: WorkspaceID
   card_id: CardID
   message_id: MessageID
-  message_created: Date
   thread_id: CardID
   thread_type: CardType
   replies_count: number

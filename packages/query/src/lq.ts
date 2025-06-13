@@ -22,7 +22,9 @@ import {
   type Notification,
   type NotificationContext,
   type Label,
-  type FindLabelsParams
+  type FindLabelsParams,
+  FindCollaboratorsParams,
+  Collaborator
 } from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
 import type {
@@ -39,12 +41,13 @@ import { MessagesQuery } from './messages/query'
 import { NotificationQuery } from './notifications/query'
 import { NotificationContextsQuery } from './notification-contexts/query'
 import { LabelsQuery } from './label/query'
+import { CollaboratorsQuery } from './collaborators/query'
 
 interface CreateQueryResult {
   unsubscribe: () => void
 }
 
-const maxQueriesCache = 40
+const maxQueriesCache = 50
 
 export class LiveQueries {
   private readonly queries = new Map<QueryId, AnyQuery>()
@@ -109,6 +112,12 @@ export class LiveQueries {
     )
   }
 
+  queryCollaborators (params: FindCollaboratorsParams, callback: any): CreateQueryResult {
+    return this.createAndStoreQuery<Collaborator, FindCollaboratorsParams, CollaboratorsQuery>(params, callback, CollaboratorsQuery, (params) =>
+      this.findCollaboratorsQuery(params)
+    )
+  }
+
   private createAndStoreQuery<T, P extends FindParams, Q extends AnyQuery>(
     params: P,
     callback: QueryCallback<T> | PagedQueryCallback<T>,
@@ -170,6 +179,10 @@ export class LiveQueries {
 
   private findLabelsQuery (params: FindLabelsParams): LabelsQuery | undefined {
     return this.findQuery(params, LabelsQuery)
+  }
+
+  private findCollaboratorsQuery (params: FindCollaboratorsParams): CollaboratorsQuery | undefined {
+    return this.findQuery(params, CollaboratorsQuery)
   }
 
   private queryCompare (q1: FindParams, q2: FindParams): boolean {

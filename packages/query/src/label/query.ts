@@ -32,7 +32,7 @@ import { QueryResult } from '../result'
 import { type Query, type QueryId } from '../types'
 
 function getId (label: Label): string {
-  return `${label.label}:${label.card}:${label.account}`
+  return `${label.labelId}:${label.cardId}:${label.account}`
 }
 
 export class LabelsQuery implements Query<Label, FindLabelsParams> {
@@ -92,7 +92,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
 
     const existing = this.result
       .getResult()
-      .find((it) => it.account === event.account && it.card === event.card && it.label === event.label)
+      .find((it) => it.account === event.account && it.cardId === event.cardId && it.labelId === event.labelId)
     if (existing === undefined) return
     const prevLength = this.result.length
     this.result.delete(getId(existing))
@@ -123,7 +123,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
 
     for (const label of result) {
-      if (label.card === event.card) {
+      if (label.cardId === event.cardId) {
         const updatedLabel: Label = { ...label, cardType: event.cardType }
         const matched = this.match(updatedLabel)
         if (matched) {
@@ -149,7 +149,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
   async onCardRemoved (event: CardRemovedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
 
-    if (this.params.card === event.card) {
+    if (this.params.card === event.cardId) {
       this.isCardRemoved = true
       this.result.deleteAll()
       void this.notify()
@@ -160,8 +160,8 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     const prevLength = this.result.length
     let deleted = false
     for (const label of result) {
-      if (label.card === event.card) {
-        this.result.delete(label.label)
+      if (label.cardId === event.cardId) {
+        this.result.delete(label.labelId)
         deleted = true
       }
     }
@@ -227,13 +227,13 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     if (this.params.account != null && this.params.account !== label.account) {
       return false
     }
-    if (this.params.card != null && this.params.card !== label.card) {
+    if (this.params.card != null && this.params.card !== label.cardId) {
       return false
     }
 
     if (this.params.label != null) {
       const labels = Array.isArray(this.params.label) ? this.params.label : [this.params.label]
-      if (!labels.includes(label.label)) {
+      if (!labels.includes(label.labelId)) {
         return false
       }
     }

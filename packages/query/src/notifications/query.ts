@@ -27,8 +27,8 @@ import {
 import {
   type CardRemovedEvent,
   CardResponseEventType,
-  type FileCreatedEvent,
-  type FileRemovedEvent,
+  type BlobAttachedEvent,
+  type BlobDetachedEvent,
   type FindClient,
   MessageResponseEventType,
   type NotificationContextRemovedEvent,
@@ -41,7 +41,7 @@ import {
   type PatchCreatedEvent,
   type RequestEvent,
   type ResponseEvent,
-  type ThreadCreatedEvent,
+  type ThreadAttachedEvent,
   type ThreadUpdatedEvent
 } from '@hcengineering/communication-sdk-types'
 import { applyPatch } from '@hcengineering/communication-shared'
@@ -49,13 +49,13 @@ import { applyPatch } from '@hcengineering/communication-shared'
 import { defaultQueryParams, type PagedQuery, type QueryId } from '../types'
 import { QueryResult } from '../result'
 import { WindowImpl } from '../window'
-import { addFile, createThread, loadMessageFromGroup, matchNotification, removeFile, updateThread } from '../utils'
+import { attachBlob, attachThread, loadMessageFromGroup, matchNotification, detachBlob, updateThread } from '../utils'
 
 const allowedPatchTypes = [
   PatchType.update,
   PatchType.remove,
-  PatchType.addFile,
-  PatchType.removeFile,
+  PatchType.attachBlob,
+  PatchType.detachBlob,
   PatchType.updateThread
 ]
 
@@ -128,14 +128,14 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
       case MessageResponseEventType.PatchCreated:
         await this.onCreatePatchEvent(event)
         break
-      case MessageResponseEventType.FileCreated:
-        await this.onFileCreated(event)
+      case MessageResponseEventType.BlobAttached:
+        await this.onBlobAttached(event)
         break
-      case MessageResponseEventType.FileRemoved:
-        await this.onFileRemoved(event)
+      case MessageResponseEventType.BlobDetached:
+        await this.onBlobDetached(event)
         break
-      case MessageResponseEventType.ThreadCreated:
-        await this.onThreadCreated(event)
+      case MessageResponseEventType.ThreadAttached:
+        await this.onThreadAttached(event)
         break
       case MessageResponseEventType.ThreadUpdated:
         await this.onThreadUpdated(event)
@@ -245,12 +245,12 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
 
   private async onUpdateNotificationContextEvent (event: NotificationContextUpdatedEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
-    if (this.params.context != null && this.params.context !== event.context) return
+    if (this.params.context != null && this.params.context !== event.contextId) return
 
     const lastView = event.lastView
     if (lastView === undefined) return
 
-    const toUpdate = this.result.getResult().filter((it) => it.context === event.context)
+    const toUpdate = this.result.getResult().filter((it) => it.contextId === event.contextId)
     if (toUpdate.length === 0) return
 
     const updated: Notification[] = toUpdate.map((it) => ({
@@ -298,7 +298,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   }
 
   private async onRemoveNotificationsEvent (event: NotificationsRemovedEvent): Promise<void> {
-    if (this.params.context !== undefined && this.params.context !== event.context) return
+    if (this.params.context !== undefined && this.params.context !== event.contextId) return
     if (this.result instanceof Promise) this.result = await this.result
 
     const currentLength = this.result.length
@@ -330,7 +330,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
       this.result.setTail(true)
       void this.notify()
     } else {
-      const toRemove = this.result.getResult().filter((it) => it.context === event.context.id)
+      const toRemove = this.result.getResult().filter((it) => it.contextId === event.context.id)
       if (toRemove.length === 0) return
       const length = this.result.length
 
@@ -349,7 +349,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   private async onCreatePatchEvent (event: PatchCreatedEvent): Promise<void> {
     if (this.params.message !== true) return
     const isUpdated = await this.updateMessage(
-      (it) => this.matchNotificationByMessage(it, event.card, event.patch.message),
+      (it) => this.matchNotificationByMessage(it, event.cardId, event.patch.messageId),
       (message) => applyPatch(message, event.patch, allowedPatchTypes)
     )
     if (isUpdated) {
@@ -357,36 +357,36 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async onFileCreated (event: FileCreatedEvent): Promise<void> {
+  private async onBlobAttached (event: BlobAttachedEvent): Promise<void> {
     if (this.params.message !== true) return
     const isUpdated = await this.updateMessage(
-      (it) => this.matchNotificationByMessage(it, event.card, event.message),
-      (message) => addFile(message, event.file)
+      (it) => this.matchNotificationByMessage(it, event.cardId, event.messageId),
+      (message) => attachBlob(message, event.blob)
     )
     if (isUpdated) {
       void this.notify()
     }
   }
 
-  private async onFileRemoved (event: FileRemovedEvent): Promise<void> {
+  private async onBlobDetached (event: BlobDetachedEvent): Promise<void> {
     if (this.params.message !== true) return
     const isUpdated = await this.updateMessage(
-      (it) => this.matchNotificationByMessage(it, event.card, event.message),
-      (message) => removeFile(message, event.blobId)
+      (it) => this.matchNotificationByMessage(it, event.cardId, event.messageId),
+      (message) => detachBlob(message, event.blobId)
     )
     if (isUpdated) {
       void this.notify()
     }
   }
 
-  private async onThreadCreated (event: ThreadCreatedEvent): Promise<void> {
+  private async onThreadAttached (event: ThreadAttachedEvent): Promise<void> {
     if (this.params.message !== true) return
     const isUpdated = await this.updateMessage(
-      (it) => this.matchNotificationByMessage(it, event.thread.card, event.thread.message),
+      (it) => this.matchNotificationByMessage(it, event.thread.cardId, event.thread.messageId),
       (message) =>
-        createThread(
+        attachThread(
           message,
-          event.thread.thread,
+          event.thread.threadId,
           event.thread.threadType,
           event.thread.repliesCount,
           event.thread.lastReply
@@ -400,8 +400,8 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   private async onThreadUpdated (event: ThreadUpdatedEvent): Promise<void> {
     if (this.params.message !== true) return
     const isUpdated = await this.updateMessage(
-      (it) => this.matchNotificationByMessage(it, event.card, event.message),
-      (message) => updateThread(message, event.thread, event.updates.replies, event.updates.lastReply)
+      (it) => this.matchNotificationByMessage(it, event.cardId, event.messageId),
+      (message) => updateThread(message, event.threadId, event.updates.repliesCountOp, event.updates.lastReply)
     )
     if (isUpdated) {
       void this.notify()
@@ -412,7 +412,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     if (this.params.message !== true) return
     if (this.result instanceof Promise) this.result = await this.result
     const isUpdated = await this.updateMessage(
-      (it) => it.message != null && it.message.thread?.thread === event.card,
+      (it) => it.message != null && it.message.thread?.threadId === event.cardId,
       (message) => ({ ...message, thread: undefined })
     )
     if (isUpdated) {
@@ -453,7 +453,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   }
 
   private matchNotificationByMessage (notification: Notification, card: CardID, messageId: MessageID): boolean {
-    return notification.messageId === messageId && notification.message != null && notification.message.card === card
+    return notification.messageId === messageId && notification.message != null && notification.message.cardId === card
   }
 
   private async updateMessage (

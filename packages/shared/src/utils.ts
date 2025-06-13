@@ -15,23 +15,24 @@
 
 import type { MessageID } from '@hcengineering/communication-types'
 
-const COUNTER_BITS = 12n
+const COUNTER_BITS = 8n
 const RANDOM_BITS = 10n
+
 const MAX_SEQUENCE = (1n << COUNTER_BITS) - 1n
 const MAX_RANDOM = (1n << RANDOM_BITS) - 1n
+const EXTERNAL_FLAG = 1n << 62n // sets bit 62
 
 let counter = 0n
 
 /**
- * Generate 64-bit MessageID and return it as string.
+ * Generate 64-bit external MessageID and return it as string.
  */
 export function generateMessageId (): MessageID {
   const ts = BigInt(Date.now())
   counter = counter < MAX_SEQUENCE ? counter + 1n : 0n
-
   const random = BigInt(Math.floor(Math.random() * Number(MAX_RANDOM + 1n)))
 
-  const id = (ts << (COUNTER_BITS + RANDOM_BITS)) | (counter << RANDOM_BITS) | random
+  const idBigInt = EXTERNAL_FLAG | (ts << (COUNTER_BITS + RANDOM_BITS)) | (counter << RANDOM_BITS) | random
 
-  return id.toString() as MessageID
+  return idBigInt.toString() as MessageID
 }

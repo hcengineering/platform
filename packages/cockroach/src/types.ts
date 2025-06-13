@@ -27,9 +27,3 @@ export interface Logger {
 export interface Options {
   withLogs?: boolean
 }
-
-export interface SqlClient {
-  execute: <T = SqlRow>(query: string, params?: SqlParams) => Promise<T[]>
-  cursor: <T = SqlRow>(query: string, params?: SqlParams, size?: number) => AsyncIterable<NonNullable<T[][number]>[]>
-  close: () => void
-}

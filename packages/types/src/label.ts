@@ -21,8 +21,8 @@ export const SubscriptionLabelID = 'card:label:Subscribed' as LabelID
 export const NewMessageLabelID = 'card:label:NewMessages' as LabelID
 
 export interface Label {
-  label: LabelID
-  card: CardID
+  labelId: LabelID
+  cardId: CardID
   cardType: CardType
   account: AccountID
   created: Date

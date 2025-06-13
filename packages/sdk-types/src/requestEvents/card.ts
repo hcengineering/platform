@@ -18,21 +18,25 @@ import type { CardID, CardType, SocialID } from '@hcengineering/communication-ty
 import type { BaseRequestEvent } from './common'
 
 export enum CardRequestEventType {
+  // Internal
   UpdateCardType = 'updateCardType',
   RemoveCard = 'removeCard'
 }
 
 export type CardRequestEvent = UpdateCardTypeEvent | RemoveCardEvent
 
+// Internal
 export interface UpdateCardTypeEvent extends BaseRequestEvent {
   type: CardRequestEventType.UpdateCardType
-  card: CardID
+  cardId: CardID
   cardType: CardType
-  creator: SocialID
-  created?: Date
+  socialId: SocialID
+  date: Date
 }
 
 export interface RemoveCardEvent extends BaseRequestEvent {
   type: CardRequestEventType.RemoveCard
-  card: CardID
+  cardId: CardID
+  socialId: SocialID
+  date: Date
 }

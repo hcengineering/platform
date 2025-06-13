@@ -17,7 +17,7 @@ import type { DbAdapter, RequestEvent, ResponseEvent, SessionData } from '@hceng
 import type { MeasureContext } from '@hcengineering/core'
 
 import triggers from '../triggers/all'
-import type { Middleware, MiddlewareContext, TriggerCtx } from '../types'
+import type { Enriched, Middleware, MiddlewareContext, TriggerCtx } from '../types'
 import { BaseMiddleware } from './base'
 import { notify } from '../notification/notification'
 
@@ -49,7 +49,8 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       accountBySocialID: this.context.accountBySocialID,
       derived,
       execute: async (event: RequestEvent) => {
-        return (await this.context.head?.event(session, event, true)) ?? {}
+        // Will be enriched in head
+        return (await this.context.head?.event(session, event as Enriched<RequestEvent>, true)) ?? {}
       }
     }
     await this.applyTriggers(session, event, ctx)
@@ -86,6 +87,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   private async propagate (session: SessionData, derived: RequestEvent[]): Promise<void> {
     if (derived.length === 0) return
     if (this.context.head === undefined) return
-    await Promise.all(derived.map((d) => this.context.head?.event(session, d, true)))
+    // Will be enriched in head
+    await Promise.all(derived.map((d) => this.context.head?.event(session, d as Enriched<RequestEvent>, true)))
   }
 }

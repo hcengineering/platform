@@ -33,6 +33,7 @@ import type {
 
 import type {
   BroadcastSessionsFunc,
+  Enriched,
   Metadata,
   Middleware,
   MiddlewareContext,
@@ -45,6 +46,7 @@ import { BroadcastMiddleware } from './middleware/broadcast'
 import { TriggersMiddleware } from './middleware/triggers'
 import { ValidateMiddleware } from './middleware/validate'
 import { DateMiddleware } from './middleware/date'
+import { IdentityMiddleware } from './middleware/indentity'
 
 export async function buildMiddlewares (
   ctx: MeasureContext,
@@ -54,9 +56,10 @@ export async function buildMiddlewares (
   broadcast: BroadcastSessionsFunc
 ): Promise<Middlewares> {
   const createFns: MiddlewareCreateFn[] = [
+    async (context, next) => new DateMiddleware(context, next),
+    async (context, next) => new IdentityMiddleware(context, next),
     async (context, next) => new ValidateMiddleware(context, next),
     async (context, next) => new PermissionsMiddleware(db, context, next),
-    async (context, next) => new DateMiddleware(context, next),
     async (context, next) => new BroadcastMiddleware(broadcast, context, next),
     async (context, next) => new DatabaseMiddleware(db, context, next),
     async (context, next) => new TriggersMiddleware(db, context, next)
@@ -164,7 +167,7 @@ export class Middlewares {
 
   async event (session: SessionData, event: RequestEvent): Promise<EventResult> {
     if (this.head === undefined) return {}
-    return (await this.head?.event(session, event, false)) ?? {}
+    return (await this.head?.event(session, event as Enriched<RequestEvent>, false)) ?? {}
   }
 
   async closeSession (sessionId: string): Promise<void> {

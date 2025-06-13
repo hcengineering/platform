@@ -62,7 +62,7 @@ export interface NotificationUpdatedEvent extends BaseResponseEvent {
 
 export interface NotificationsRemovedEvent extends BaseResponseEvent {
   type: NotificationResponseEventType.NotificationsRemoved
-  context: ContextID
+  contextId: ContextID
   account: AccountID
   ids: NotificationID[]
 }
@@ -79,7 +79,7 @@ export interface NotificationContextRemovedEvent extends BaseResponseEvent {
 
 export interface NotificationContextUpdatedEvent extends BaseResponseEvent {
   type: NotificationResponseEventType.NotificationContextUpdated
-  context: ContextID
+  contextId: ContextID
   account: AccountID
   lastView?: Date
   lastUpdate?: Date
@@ -88,18 +88,18 @@ export interface NotificationContextUpdatedEvent extends BaseResponseEvent {
 
 export interface AddedCollaboratorsEvent extends BaseResponseEvent {
   type: NotificationResponseEventType.AddedCollaborators
-  card: CardID
+  cardId: CardID
   cardType: CardType
   collaborators: AccountID[]
-  created: Date
-  creator: SocialID
+  socialId: SocialID
+  date: Date
 }
 
 export interface RemovedCollaboratorsEvent extends BaseResponseEvent {
   type: NotificationResponseEventType.RemovedCollaborators
-  card: CardID
+  cardId: CardID
   cardType: CardType
   collaborators: AccountID[]
-  created: Date
-  creator: SocialID
+  socialId: SocialID
+  date: Date
 }

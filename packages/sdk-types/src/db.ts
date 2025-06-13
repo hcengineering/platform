@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type {
+import {
   CardID,
   ContextID,
   FindMessagesParams,
@@ -22,7 +22,7 @@ import type {
   Message,
   MessageID,
   NotificationContext,
-  RichText,
+  Markdown,
   SocialID,
   Notification,
   BlobID,
@@ -35,7 +35,7 @@ import type {
   MessageType,
   FindCollaboratorsParams,
   NotificationID,
-  MessageData,
+  MessageExtra,
   Label,
   FindLabelsParams,
   LabelID,
@@ -44,26 +44,25 @@ import type {
   NotificationContent,
   NotificationType,
   ComparisonOperator,
-  FileData,
+  BlobData,
   LinkPreviewData,
   LinkPreviewID
 } from '@hcengineering/communication-types'
 
 export interface DbAdapter {
   createMessage: (
-    card: CardID,
+    id: MessageID,
+    cardId: CardID,
     type: MessageType,
-    content: RichText,
+    content: Markdown,
+    extra: MessageExtra | undefined,
     creator: SocialID,
-    created: Date,
-    data?: MessageData,
-    externalId?: string,
-    id?: MessageID
-  ) => Promise<{ id: MessageID, created: Date }>
+    created: Date
+  ) => Promise<boolean>
 
   createPatch: (
-    card: CardID,
-    message: MessageID,
+    cardId: CardID,
+    messageId: MessageID,
     messageCreated: Date,
     type: PatchType,
     data: PatchData,
@@ -71,72 +70,41 @@ export interface DbAdapter {
     created: Date
   ) => Promise<void>
 
-  removePatches: (card: CardID) => Promise<void>
+  createMessagesGroup: (cardId: CardID, blobId: BlobID, fromDate: Date, toDate: Date, count: number) => Promise<void>
+  removeMessagesGroup: (cardId: CardID, blobId: BlobID) => Promise<void>
 
-  createMessagesGroup: (card: CardID, blobId: BlobID, fromDate: Date, toDate: Date, count: number) => Promise<void>
-  removeMessagesGroup: (card: CardID, blobId: BlobID) => Promise<void>
+  setReaction: (cardId: CardID, messageId: MessageID, reaction: string, socialId: SocialID, date: Date) => Promise<void>
+  removeReaction: (cardId: CardID, message: MessageID, reaction: string, socialId: SocialID, date: Date) => Promise<void>
 
-  createReaction: (
-    card: CardID,
-    message: MessageID,
-    messageCreated: Date,
-    reaction: string,
-    creator: SocialID,
-    created: Date
-  ) => Promise<void>
-  removeReaction: (
-    card: CardID,
-    message: MessageID,
-    messageCreated: Date,
-    reaction: string,
-    creator: SocialID
-  ) => Promise<void>
-
-  createFile: (
-    card: CardID,
-    message: MessageID,
-    messageCreated: Date,
-    data: FileData,
-    creator: SocialID,
-    created: Date
-  ) => Promise<void>
-  removeFiles: (card: CardID, query: RemoveFileQuery) => Promise<void>
+  attachBlob: (cardId: CardID, messageId: MessageID, data: BlobData, socialId: SocialID, date: Date) => Promise<void>
+  detachBlob: (card: CardID, messageId: MessageID, blobId: BlobID, socialId: SocialID, date: Date) => Promise<void>
 
   createLinkPreview: (
-    card: CardID,
-    message: MessageID,
-    messageCreated: Date,
+    cardId: CardID,
+    messageId: MessageID,
     data: LinkPreviewData,
-    creator: SocialID,
-    created: Date
+    socialId: SocialID,
+    date: Date
   ) => Promise<LinkPreviewID>
+  removeLinkPreview: (cardId: CardID, messageId: MessageID, id: LinkPreviewID) => Promise<void>
 
-  removeLinkPreview: (card: CardID, message: MessageID, id: LinkPreviewID) => Promise<void>
-
-  createThread: (
-    card: CardID,
-    message: MessageID,
-    messageCreated: Date,
-    thread: CardID,
-    threadType: CardType,
-    created: Date
-  ) => Promise<void>
+  attachThread: (cardId: CardID, messageId: MessageID, threadId: CardID, threadType: CardType, date: Date) => Promise<void>
   removeThreads: (query: RemoveThreadQuery) => Promise<void>
   updateThread: (thread: CardID, update: ThreadUpdates) => Promise<void>
 
   findMessages: (params: FindMessagesParams) => Promise<Message[]>
   findMessagesGroups: (params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
-  findThread: (thread: CardID) => Promise<Thread | undefined>
+  findThread: (threadId: CardID) => Promise<Thread | undefined>
 
-  addCollaborators: (card: CardID, cardType: CardType, collaborators: AccountID[], date?: Date) => Promise<AccountID[]>
-  removeCollaborators: (card: CardID, query: RemoveCollaboratorsQuery) => Promise<void>
-  getCollaboratorsCursor: (card: CardID, date: Date, size?: number) => AsyncIterable<Collaborator[]>
+  addCollaborators: (cardId: CardID, cardType: CardType, collaborators: AccountID[], date: Date) => Promise<AccountID[]>
+  removeCollaborators: (cardId: CardID, accounts: AccountID[], unsafe?: boolean) => Promise<void>
+  getCollaboratorsCursor: (cardId: CardID, date: Date, size?: number) => AsyncIterable<Collaborator[]>
 
   findCollaborators: (params: FindCollaboratorsParams) => Promise<Collaborator[]>
   updateCollaborators: (query: FindCollaboratorsParams, update: CollaboratorUpdates) => Promise<void>
 
   createNotification: (
-    context: ContextID,
+    contextId: ContextID,
     message: MessageID,
     messageCreated: Date,
     type: NotificationType,
@@ -145,49 +113,37 @@ export interface DbAdapter {
     created: Date
   ) => Promise<NotificationID>
   updateNotification: (query: UpdateNotificationQuery, updates: NotificationUpdates) => Promise<void>
-  removeNotifications: (query: RemoveNotificationsQuery) => Promise<NotificationID[]>
+  removeNotifications: (contextId: ContextID, account: AccountID, ids: NotificationID[]) => Promise<NotificationID[]>
 
   createContext: (
     account: AccountID,
-    card: CardID,
+    cardId: CardID,
     lastUpdate: Date,
     lastView: Date,
     lastNotify?: Date
   ) => Promise<ContextID>
-  updateContext: (context: ContextID, account: AccountID, updates: NotificationContextUpdates) => Promise<void>
-  removeContexts: (query: RemoveNotificationContextQuery) => Promise<void>
+  updateContext: (contextId: ContextID, account: AccountID, updates: NotificationContextUpdates) => Promise<void>
+  removeContext: (id: ContextID, account: AccountID) => Promise<void>
 
   findNotificationContexts: (params: FindNotificationContextParams) => Promise<NotificationContext[]>
   findNotifications: (params: FindNotificationsParams) => Promise<Notification[]>
 
-  createLabel: (label: LabelID, card: CardID, cardType: CardType, account: AccountID, created: Date) => Promise<void>
+  createLabel: (labelId: LabelID, cardId: CardID, cardType: CardType, account: AccountID, created: Date) => Promise<void>
   removeLabels: (query: RemoveLabelQuery) => Promise<void>
   findLabels: (params: FindLabelsParams) => Promise<Label[]>
-  updateLabels: (card: CardID, update: LabelUpdates) => Promise<void>
+  updateLabels: (cardId: CardID, update: LabelUpdates) => Promise<void>
 
   getAccountsByPersonIds: (ids: string[]) => Promise<AccountID[]>
   getNameByAccount: (id: AccountID) => Promise<string | undefined>
+  getMessageCreated: (cardId: CardID, messageId: MessageID) => Promise<Date | undefined>
+  isMessageInDb: (cardId: CardID, messageId: MessageID) => Promise<boolean>
 
   close: () => void
 }
 
-export interface RemoveFileQuery {
-  message: MessageID
-  blobId: BlobID
-}
-export type RemoveThreadQuery = Partial<Pick<Thread, 'card' | 'thread' | 'message'>>
-export interface RemoveCollaboratorsQuery {
-  accounts?: AccountID[]
-}
-export type RemoveNotificationContextQuery = Partial<Pick<NotificationContext, 'id' | 'account' | 'card'>>
-export interface RemoveNotificationsQuery {
-  context: ContextID
-  account: AccountID
-  ids: NotificationID[]
-}
-export type RemoveLabelQuery = Partial<Pick<Label, 'card' | 'label' | 'account'>>
+export type RemoveThreadQuery = Partial<Pick<Thread, 'cardId' | 'threadId' | 'messageId'>>
+export type RemoveLabelQuery = Partial<Pick<Label, 'cardId' | 'labelId' | 'account'>>
 
-export type NotificationUpdates = Partial<Pick<Notification, 'read'>>
 export interface UpdateNotificationQuery {
   context: ContextID
   account: AccountID
@@ -195,13 +151,14 @@ export interface UpdateNotificationQuery {
   id?: NotificationID
   created?: Partial<Record<ComparisonOperator, Date>> | Date
 }
+export type NotificationUpdates = Partial<Pick<Notification, 'read'>>
 
 export type NotificationContextUpdates = Partial<Pick<NotificationContext, 'lastView' | 'lastUpdate' | 'lastNotify'>>
 
 export interface ThreadUpdates {
   threadType?: CardType
   lastReply?: Date
-  replies?: 'increment' | 'decrement'
+  repliesCountOp?: 'increment' | 'decrement'
 }
 
 export type CollaboratorUpdates = Partial<Collaborator>

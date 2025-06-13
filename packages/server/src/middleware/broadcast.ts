@@ -39,7 +39,7 @@ import type {
   NotificationContext
 } from '@hcengineering/communication-types'
 
-import type { BroadcastSessionsFunc, Middleware, MiddlewareContext, QueryId } from '../types'
+import type { BroadcastSessionsFunc, Enriched, Middleware, MiddlewareContext, QueryId } from '../types'
 import { BaseMiddleware } from './base'
 
 interface SessionInfo {
@@ -106,7 +106,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     return await this.provideFindLabels(session, params, queryId)
   }
 
-  async event (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: Enriched<RequestEvent>, derived: boolean): Promise<EventResult> {
     this.createSession(session)
     return await this.provideEvent(session, event, derived)
   }
@@ -157,7 +157,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     const data = this.createSession(session)
     if (data == null) return
 
-    const cards = new Set(result.map((it) => it.card))
+    const cards = new Set(result.map((it) => it.cardId))
     const current = data.contextQueries.get(queryId) ?? new Set()
 
     data.contextQueries.set(queryId, new Set([...current, ...cards]))
@@ -181,30 +181,25 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     switch (event.type) {
       case MessageResponseEventType.MessageCreated:
         return this.matchMessagesQuery(
-          { ids: [event.message.id], card: event.message.card },
+          { ids: [event.message.id], card: event.cardId },
           Array.from(info.messageQueries.values()),
           new Set(Array.from(info.contextQueries.values()).flatMap((it) => Array.from(it)))
         )
       case MessageResponseEventType.PatchCreated:
         return this.matchMessagesQuery(
-          { card: event.card, ids: [event.patch.message] },
+          { card: event.cardId, ids: [event.messageId] },
           Array.from(info.messageQueries.values()),
           new Set(Array.from(info.contextQueries.values()).flatMap((it) => Array.from(it)))
         )
-      case MessageResponseEventType.ReactionCreated:
+      case MessageResponseEventType.ReactionSet:
       case MessageResponseEventType.ReactionRemoved:
       case MessageResponseEventType.LinkPreviewCreated:
       case MessageResponseEventType.LinkPreviewRemoved:
-      case MessageResponseEventType.FileCreated:
-      case MessageResponseEventType.FileRemoved:
+      case MessageResponseEventType.BlobAttached:
+      case MessageResponseEventType.BlobDetached:
+      case MessageResponseEventType.ThreadAttached:
         return this.matchMessagesQuery(
-          { card: event.card, ids: [event.message] },
-          Array.from(info.messageQueries.values()),
-          new Set()
-        )
-      case MessageResponseEventType.ThreadCreated:
-        return this.matchMessagesQuery(
-          { card: event.thread.card, ids: [event.thread.message] },
+          { card: event.cardId, ids: [event.messageId] },
           Array.from(info.messageQueries.values()),
           new Set()
         )
@@ -227,13 +222,12 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
       case NotificationResponseEventType.AddedCollaborators:
         return true
       case MessageResponseEventType.ThreadUpdated:
-        return false
+        return true
       case LabelResponseEventType.LabelCreated:
         return info.account === event.label.account
       case LabelResponseEventType.LabelRemoved:
         return info.account === event.account
       case CardResponseEventType.CardTypeUpdated:
-        return true
       case CardResponseEventType.CardRemoved:
         return true
     }

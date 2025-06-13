@@ -14,17 +14,17 @@
 //
 
 import {
-  CardRequestEventType,
   type EventResult,
   MessageRequestEventType,
-  NotificationRequestEventType,
   type RequestEvent,
   type SessionData
 } from '@hcengineering/communication-sdk-types'
 import { systemAccountUuid } from '@hcengineering/core'
+import { generateMessageId, isExternalMessageId, messageIdToDate } from '@hcengineering/communication-cockroach'
 
-import type { Middleware, MiddlewareContext } from '../types'
+import type { Middleware, MiddlewareContext, Enriched } from '../types'
 import { BaseMiddleware } from './base'
+import { ApiError } from '../error'
 
 export class DateMiddleware extends BaseMiddleware implements Middleware {
   constructor (
@@ -34,22 +34,25 @@ export class DateMiddleware extends BaseMiddleware implements Middleware {
     super(context, next)
   }
 
-  async event (session: SessionData, event: RequestEvent, derived: boolean): Promise<EventResult> {
-    if (derived) return await this.provideEvent(session, event, derived)
-    switch (event.type) {
-      case MessageRequestEventType.CreateFile:
-      case MessageRequestEventType.CreatePatch:
-      case NotificationRequestEventType.RemoveCollaborators:
-      case NotificationRequestEventType.AddCollaborators:
-      case CardRequestEventType.UpdateCardType:
-      case MessageRequestEventType.CreateMessage: {
-        if (!this.isSystem(session) || event.created == null) {
-          event.created = new Date()
-        }
-        break
+  async event (session: SessionData, event: Enriched<RequestEvent>, derived: boolean): Promise<EventResult> {
+    const canSetDate = derived || this.isSystem(session)
+
+    if (event.type === MessageRequestEventType.CreateMessage) {
+      if (event.messageId != null && !derived && !isExternalMessageId(event.messageId)) {
+        throw ApiError.badRequest('External message id must be 64 bit signed integer. And has 01 first bit set')
       }
-      default:
-        break
+      if (event.messageId == null && (event.date == null || !canSetDate)) {
+        event.messageId = generateMessageId()
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        event.date = messageIdToDate(event.messageId)!
+      } else if (event.messageId != null && event.date == null) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        event.date = isExternalMessageId(event.messageId) ? new Date() : messageIdToDate(event.messageId)!
+      } else if (event.messageId == null && event.date != null) {
+        event.messageId = generateMessageId(true)
+      }
+    } else if (!canSetDate || event.date == null) {
+      event.date = new Date()
     }
 
     return await this.provideEvent(session, event, derived)
