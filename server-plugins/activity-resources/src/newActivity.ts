@@ -15,7 +15,7 @@ import { type ActivityControl } from '@hcengineering/server-activity'
 import { type ServerApi as CommunicationApi, MessageRequestEventType } from '@hcengineering/communication-sdk-types'
 import {
   type ActivityAttributeUpdate,
-  type ActivityMessageData,
+  type ActivityMessageExtra,
   type ActivityUpdate,
   ActivityUpdateType,
   MessageType
@@ -70,7 +70,7 @@ async function createMessages (
 
   const action = getActivityAction(control, tx)
 
-  const result: ActivityMessageData[] = []
+  const result: ActivityMessageExtra[] = []
   const attributesUpdates = await getNewActivityUpdates(control, tx, card)
 
   for (const attributeUpdates of attributesUpdates) {
@@ -84,18 +84,17 @@ async function createMessages (
   for (const data of result) {
     void api.event(
       {
-        // TODO: We should decide what to do with communications package and remove this workaround
-        account: systemAccount as any
+        account: systemAccount
       },
       {
         type: MessageRequestEventType.CreateMessage,
         messageType: MessageType.Activity,
-        card: card._id,
+        cardId: card._id,
         cardType: card._class,
         content: await getActivityContent(control, data, card),
-        creator: tx.modifiedBy,
-        data,
-        created: new Date(tx.modifiedOn)
+        socialId: tx.modifiedBy,
+        extra: data,
+        date: new Date(tx.modifiedOn)
       }
     )
   }
@@ -110,8 +109,8 @@ function getActivityAction (control: ActivityControl, tx: TxCUD<Doc>): 'create' 
   return 'update'
 }
 
-async function getActivityContent (control: TriggerControl, data: ActivityMessageData, card: Card): Promise<string> {
-  const { action, update } = data
+async function getActivityContent (control: TriggerControl, extra: ActivityMessageExtra, card: Card): Promise<string> {
+  const { action, update } = extra
   const { hierarchy } = control
   const clazz = hierarchy.getClass(card._class)
   const objectType = await translate(clazz.label, {})

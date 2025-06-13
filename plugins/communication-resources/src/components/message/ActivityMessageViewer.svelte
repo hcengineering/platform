@@ -17,12 +17,12 @@
   import { getClient } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
   import { AttributeModel } from '@hcengineering/view'
-  import { ActivityMessage, ActivityMessageData } from '@hcengineering/communication-types'
+  import { ActivityMessage, ActivityMessageExtra } from '@hcengineering/communication-types'
+  import { Person } from '@hcengineering/contact'
 
   import ActivityObjectValue from './activity/ActivityObjectValue.svelte'
   import ActivityUpdateViewer from './activity/ActivityUpdateViewer.svelte'
   import { getAttributeModel } from '../../activity'
-  import { Person } from '@hcengineering/contact'
 
   export let card: Card
   export let message: ActivityMessage
@@ -30,18 +30,18 @@
 
   const client = getClient()
 
-  let data: ActivityMessageData = message.data
+  let extra: ActivityMessageExtra = message.extra ?? {}
   let attributeModel: AttributeModel | undefined = undefined
 
-  $: data = message.data
+  $: extra = message.extra ?? {}
 
-  $: void getAttributeModel(client, message.data?.update, card._class).then((model) => {
+  $: void getAttributeModel(client, message.extra?.update, card._class).then((model) => {
     attributeModel = model
   })
 </script>
 
-{#if data.action === 'create'}
+{#if extra.action === 'create'}
   <ActivityObjectValue {message} {card} />
-{:else if data.update && data.action === 'update'}
-  <ActivityUpdateViewer update={data.update} model={attributeModel} content={message.content} {author} {card} />
+{:else if extra.update && extra.action === 'update'}
+  <ActivityUpdateViewer update={extra.update} model={attributeModel} content={message.content} {author} {card} />
 {/if}

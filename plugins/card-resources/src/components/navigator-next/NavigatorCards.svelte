@@ -110,7 +110,7 @@
     {#each favorites as favorite (favorite.attachedTo)}
       {@const card = getCard(favorite)}
       {#if card}
-        {@const context = contexts.find((it) => it.card === card._id)}
+        {@const context = contexts.find((it) => it.cardId === card._id)}
         <NavigatorCard {card} {context} {favorite} {applicationId} {selectedCard} {config} on:selectCard />
       {/if}
     {/each}
@@ -120,7 +120,7 @@
       {#if visibleItem !== undefined && !isOpen}
         {@const card = getCard(visibleItem)}
         {#if card}
-          {@const context = contexts.find((it) => it.card === card._id)}
+          {@const context = contexts.find((it) => it.cardId === card._id)}
           <NavigatorCard
             {card}
             {context}

@@ -16,7 +16,7 @@
 <script lang="ts">
   import { PersonPreviewProvider, Avatar } from '@hcengineering/contact-resources'
   import { formatName, Person } from '@hcengineering/contact'
-  import { Message, MessageType } from '@hcengineering/communication-types'
+  import { Message } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
   import { IconDelete } from '@hcengineering/ui'
 
@@ -26,7 +26,6 @@
   export let card: Card
   export let author: Person | undefined
   export let message: Message
-  export let replies = true
   export let hideAvatar: boolean = false
 
   function formatDate (date: Date): string {
@@ -37,7 +36,7 @@
   }
 
   let isDeleted = false
-  $: isDeleted = (message.type === MessageType.Thread && message.thread == null) || message.removed
+  $: isDeleted = message.removed
 </script>
 
 <div class="message__body">
@@ -71,7 +70,7 @@
 </div>
 {#if !isDeleted}
   <div class="message__footer">
-    <MessageFooter {message} {replies} />
+    <MessageFooter {message} />
   </div>
 {/if}
 
