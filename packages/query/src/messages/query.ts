@@ -1023,6 +1023,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   private async onBlobAttachedEvent (event: BlobAttachedEvent): Promise<void> {
     if (this.params.files !== true || event.cardId !== this.params.card) return
+    console.log('onFileCreatedEvent', event)
     this.updateFilesCache(event.messageId, [event.blob])
     if (this.result instanceof Promise) this.result = await this.result
 
@@ -1034,6 +1035,8 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
         this.result.update(message)
         await this.notify()
       }
+    } else {
+      console.log('no message for file', event)
     }
 
     const fromNextBuffer = this.next.buffer.find((it) => it.id === event.messageId)
