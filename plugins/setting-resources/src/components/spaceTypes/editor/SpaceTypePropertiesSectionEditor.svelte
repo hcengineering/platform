@@ -23,5 +23,5 @@
 </script>
 
 {#if type !== undefined && descriptor !== undefined}
-  <ClassAttributes ofClass={descriptor.baseClass} _class={type.targetClass} {disabled} showHierarchy />
+  <ClassAttributes _class={type.targetClass} {disabled} showHierarchy />
 {/if}
