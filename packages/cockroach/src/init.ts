@@ -377,9 +377,9 @@ function migrationV5_1 (): [string, string] {
           DROP COLUMN IF EXISTS external_id;
       ALTER TABLE communication.files
           DROP COLUMN IF EXISTS message_created;
-      ALTER TABLE communication.threads
+      ALTER TABLE communication.thread
           DROP COLUMN IF EXISTS message_created;
-      ALTER TABLE communication.link_previews
+      ALTER TABLE communication.link_preview
           DROP COLUMN IF EXISTS message_created;
   `
   return ['remove_unused-columns-v5_1', sql]
