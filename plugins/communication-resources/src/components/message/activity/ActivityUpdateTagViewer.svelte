@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { Icon, IconDelete, Label, tooltip, IconAdd } from '@hcengineering/ui'
+  import { Icon, IconDelete, Label, tooltip, IconAdd, Component } from '@hcengineering/ui'
   import { ActivityTagUpdate, Markdown } from '@hcengineering/communication-types'
-  import cardPlugin from '@hcengineering/card'
+  import cardPlugin, { Tag } from '@hcengineering/card'
 
   import communication from '../../../plugin'
 
@@ -26,35 +26,27 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: mixin = hierarchy.hasClass(update.tag) ? hierarchy.getClass(update.tag) : undefined
+  $: mixin = hierarchy.hasClass(update.tag) ? (hierarchy.getClass(update.tag) as Tag) : undefined
 </script>
 
 {#if mixin !== undefined}
   {#if update.action === 'add'}
-    <div class="flex-presenter overflow-label flex-gap-2">
+    <div class="tag overflow-label flex-gap-2">
       <Icon icon={IconAdd} size="small" />
       <Label label={communication.string.Added} />
       <span class="lower"><Label label={cardPlugin.string.Tag} /></span>
-      <div class="tag no-word-wrap" use:tooltip={{ label: mixin.label }}>
-        <span class="overflow-label">
-          <Label label={mixin.label} />
-        </span>
-      </div>
+      <Component is={cardPlugin.component.CardTagColored} props={{ labelIntl: mixin.label, color: mixin.background }} />
     </div>
   {:else if update.action === 'remove'}
-    <div class="flex-presenter overflow-label flex-gap-2">
+    <div class="tag overflow-label flex-gap-2">
       <Icon icon={IconDelete} size="small" />
       <Label label={communication.string.Removed} />
       <span class="lower"><Label label={cardPlugin.string.Tag} /></span>
-      <div class="tag no-word-wrap" use:tooltip={{ label: mixin.label }}>
-        <span class="overflow-label">
-          <Label label={mixin.label} />
-        </span>
-      </div>
+      <Component is={cardPlugin.component.CardTagColored} props={{ labelIntl: mixin.label, color: mixin.background }} />
     </div>
   {/if}
 {:else}
-  <div class="flex-presenter overflow-label flex-gap-2">
+  <div class="tag overflow-label flex-gap-2">
     {#if update.action === 'add'}
       <Icon icon={IconAdd} size="small" />
     {:else if update.action === 'remove'}
@@ -66,15 +58,6 @@
 
 <style lang="scss">
   .tag {
-    padding: 0.25rem 0.5rem;
-    border: 1px solid var(--theme-content-color);
-    max-width: 12.5rem;
-    overflow: hidden;
-
-    border-radius: 6rem;
-
-    color: var(--theme-caption-color);
-
     display: flex;
     align-items: center;
   }

@@ -24,6 +24,7 @@
     EditBox,
     FocusHandler,
     getCurrentLocation,
+    IconDetailsFilled,
     IconMoreH,
     navigate,
     Panel
@@ -37,6 +38,7 @@
   import card from '../plugin'
   import TagsEditor from './TagsEditor.svelte'
   import EditCardNewContent from './EditCardNewContent.svelte'
+  import { openCardInSidebar } from '../utils'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
@@ -121,16 +123,16 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      <!--      <Button-->
-      <!--        icon={IconDetailsFilled}-->
-      <!--        iconProps={{ size: 'medium' }}-->
-      <!--        kind="icon"-->
-      <!--        on:click={() => {-->
-      <!--          if (doc != null) {-->
-      <!--            void openCardInSidebar(doc._id, doc)-->
-      <!--          }-->
-      <!--        }}-->
-      <!--      />-->
+      <Button
+        icon={IconDetailsFilled}
+        iconProps={{ size: 'medium' }}
+        kind="icon"
+        on:click={() => {
+          if (doc != null) {
+            void openCardInSidebar(doc._id, doc)
+          }
+        }}
+      />
 
       {#if !readonly}
         <Button

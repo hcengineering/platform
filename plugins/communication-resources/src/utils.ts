@@ -27,7 +27,7 @@ import {
   type Ref,
   SortingOrder
 } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
+import { getMetadata, getResource } from '@hcengineering/platform'
 import { showPopup } from '@hcengineering/ui'
 import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
 import { getEmployeeBySocialId } from '@hcengineering/contact'
@@ -37,7 +37,6 @@ import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown
 import { jsonToMarkup, markupToJSON, markupToText } from '@hcengineering/text'
 import { get } from 'svelte/store'
 import chat from '@hcengineering/chat'
-import { openDoc } from '@hcengineering/view-resources'
 import { makeRank } from '@hcengineering/rank'
 
 import IconAt from './components/icons/At.svelte'
@@ -138,7 +137,8 @@ export async function replyToThread (message: Message, parentCard: Card): Promis
     const _id = thread.threadId
     const card = await client.findOne(cardPlugin.class.Card, { _id: _id as Ref<Card> })
     if (card === undefined) return
-    await openDoc(client.getHierarchy(), card)
+    const r = await getResource(cardPlugin.function.OpenCardInSidebar)
+    await r(_id, card)
     return
   }
 
@@ -175,7 +175,8 @@ export async function replyToThread (message: Message, parentCard: Card): Promis
   }
   const threadCard = await client.findOne(cardPlugin.class.Card, { _id: threadCardID })
   if (threadCard === undefined) return
-  await openDoc(client.getHierarchy(), threadCard)
+  const r = await getResource(cardPlugin.function.OpenCardInSidebar)
+  await r(threadCard._id, threadCard)
 }
 
 function createThreadTitle (message: Message, parent: Card): string {

@@ -406,6 +406,8 @@
   }
 
   async function onUpdate (res: Message[]): Promise<void> {
+    // need for dubug now, will be removed later
+    console.log('last', res[res.length - 1])
     if (messagesCount === res.length) return
     const prevCount = messagesCount
     messagesCount = res.length
