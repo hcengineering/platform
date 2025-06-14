@@ -24,8 +24,11 @@
     eventToHTMLElement,
     IconAdd,
     IconClose,
+    IconDownOutline,
+    themeStore,
+    getColorNumberByText,
+    getPlatformColorDef,
     Label,
-    ScrollerBar,
     SelectPopup,
     showPopup,
     tooltip
@@ -33,6 +36,9 @@
   import MasterTagSelector from './MasterTagSelector.svelte'
 
   export let doc: Card
+  export let dropdownTags: boolean = false
+  export let colored: boolean = false
+  export let id: string | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -83,20 +89,52 @@
     )
   }
 
-  let divScroll: HTMLElement
-
   function isRemoveable (mixinId: Ref<Mixin<Doc>>, activeTags: Tag[]): boolean {
     const desc = hierarchy.getDescendants(mixinId)
     return !desc.some((p) => hierarchy.hasMixin(doc, p) && p !== mixinId)
   }
+
+  const handleDrop = (e: MouseEvent): void => {
+    e.stopPropagation()
+    e.preventDefault()
+    if (activeTags.length === 0) return
+    const value = activeTags.map((mixin) => ({ id: mixin._id, label: mixin.label, isSelected: true }))
+    if (possibleMixins.length > 0) {
+      value.push(...possibleMixins.map((mixin) => ({ id: mixin._id, label: mixin.label, isSelected: false })))
+    }
+    showPopup(SelectPopup, { value }, eventToHTMLElement(e), async (result) => {
+      if (result === undefined) return
+      const selected = value.find((v) => v.id === result)
+      if (selected === undefined) return
+      if (selected.isSelected) {
+        await removeTag(selected.id as Ref<Mixin<Card>>)
+      } else {
+        await client.createMixin(doc._id, doc._class, doc.space, selected.id as Ref<Mixin<Card>>, {})
+      }
+    })
+  }
+
+  const getColors = (activeTags: Tag[], dark: boolean): string[] => {
+    return activeTags.map((tag) => {
+      return `${getPlatformColorDef(getColorNumberByText(tag.label), dark).color}`
+    })
+  }
 </script>
 
-<div class="container py-4 gap-2">
+<div class="container gap-1">
   <MasterTagSelector value={doc} />
   {#if activeTags.length > 0 || dropdownItems.length > 0}
     <div class="divider" />
-    <ScrollerBar gap={'none'} bind:scroller={divScroll}>
-      <div class="tags gap-2">
+    <div class="tags p-1 gap-1">
+      {#if dropdownTags && activeTags.length > 0}
+        <CircleButton
+          id={id ? `${id}-dropdown` : undefined}
+          icon={IconDownOutline}
+          size={'small'}
+          backgroundColors={colored ? getColors(activeTags, $themeStore.dark) : undefined}
+          on:click={handleDrop}
+        />
+      {:else}
         {#each activeTags as mixin}
           {@const removable = isRemoveable(mixin._id, activeTags)}
           <div class="tag no-word-wrap" class:removable use:tooltip={{ label: mixin.label }}>
@@ -109,10 +147,10 @@
           </div>
         {/each}
         {#if dropdownItems.length > 0}
-          <CircleButton icon={IconAdd} size="small" ghost on:click={add} />
+          <CircleButton id={id ? `${id}-add` : undefined} icon={IconAdd} size={'small'} ghost on:click={add} />
         {/if}
-      </div>
-    </ScrollerBar>
+      {/if}
+    </div>
   {/if}
 </div>
 
@@ -121,12 +159,15 @@
   .tags {
     display: flex;
     align-items: center;
+    flex-shrink: 1;
+    min-width: 0;
 
     .tag {
       padding: 0.25rem 0.5rem;
       height: 1.5rem;
       border: 1px solid var(--theme-content-color);
       max-width: 12.5rem;
+      min-width: 2rem;
       overflow: hidden;
       border-radius: 6rem;
 
@@ -134,10 +175,12 @@
 
       display: flex;
       align-items: center;
+      flex-shrink: 2;
       gap: 0.25rem;
 
       &.removable {
         padding-right: 0.25rem;
+        min-width: 3.75rem;
       }
     }
   }
@@ -146,6 +189,6 @@
     border: 1px solid var(--theme-content-color);
     width: 1px;
     height: 100%;
-    margin-left: 0.5rem;
+    margin-left: 0.25rem;
   }
 </style>

@@ -19,6 +19,7 @@
   import DocsNavigator from './DocsNavigator.svelte'
 
   export let element: Doc | AttachedDoc
+  export let maxWidth: string | undefined = undefined
 
   const client = getClient()
 
@@ -73,4 +74,4 @@
   })
 </script>
 
-<DocsNavigator elements={parents} />
+<DocsNavigator elements={parents} {maxWidth} />
