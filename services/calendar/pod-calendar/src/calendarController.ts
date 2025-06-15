@@ -97,6 +97,8 @@ export class CalendarController {
   }
 
   async pushEvent (workspace: WorkspaceUuid, event: Event, type: 'create' | 'update' | 'delete'): Promise<void> {
-    await WorkspaceClient.push(this.ctx, this.accountClient, workspace, event, type)
+    if (event.access === 'owner' || event.access === 'writer') {
+      await WorkspaceClient.push(this.ctx, this.accountClient, workspace, event, type)
+    }
   }
 }
