@@ -19,13 +19,7 @@ import Router from 'koa-router'
 import { Issuer, Strategy } from 'openid-client'
 
 import { Passport } from '.'
-import {
-  encodeState,
-  handleProviderAuth,
-  safeParseAuthState,
-  setAuthStateTokenCookie,
-  validateAuthStateTokenCookie
-} from './utils'
+import { encodeState, handleProviderAuth, safeParseAuthState } from './utils'
 
 export function registerOpenid (
   measureCtx: MeasureContext,
@@ -72,11 +66,7 @@ export function registerOpenid (
 
   router.get('/auth/openid', async (ctx, next) => {
     measureCtx.info('try auth via', { provider: 'openid' })
-
-    const nonce = crypto.randomUUID()
-    setAuthStateTokenCookie(ctx, nonce)
-
-    const state = encodeState(ctx, brandings, nonce)
+    const state = encodeState(ctx, brandings)
 
     await passport.authenticate('oidc', {
       scope: 'openid profile email',
@@ -89,15 +79,9 @@ export function registerOpenid (
     async (ctx, next) => {
       const state = safeParseAuthState(ctx.query?.state)
       const branding = getBranding(brandings, state?.branding)
-      const loginUrl = concatLink(branding?.front ?? frontUrl, '/login')
-      const isValidState = validateAuthStateTokenCookie(ctx, state?.nonce)
-      if (!isValidState) {
-        ctx.redirect(loginUrl)
-        return
-      }
 
       await passport.authenticate('oidc', {
-        failureRedirect: loginUrl
+        failureRedirect: concatLink(branding?.front ?? frontUrl, '/login')
       })(ctx, next)
     },
     async (ctx, next) => {
