@@ -475,8 +475,8 @@ class AccountClientImpl implements AccountClient {
       method: 'getWorkspacesInfo' as const,
       params: { ids }
     }
-
-    return await this.rpc(request)
+    const infos: any[] = await this.rpc(request)
+    return Array.from(infos).map((it) => this.flattenStatus(it))
   }
 
   async getWorkspaceInfo (updateLastVisit: boolean = false): Promise<WorkspaceInfoWithStatus> {
