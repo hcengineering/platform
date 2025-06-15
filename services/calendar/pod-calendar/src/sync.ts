@@ -620,7 +620,7 @@ export class IncomingSyncManager {
           default: false
         }
         if (val.primary === true) {
-          const primaryExists = this.calendars.find((p) => p.default === true)
+          const primaryExists = this.calendars.find((p) => p.default)
           if (primaryExists === undefined) {
             data.default = true
           }
