@@ -347,7 +347,6 @@ class Connection implements ClientConnection {
         if (resp.rateLimit !== undefined) {
           const { remaining, retryAfter } = resp.rateLimit
           if (remaining === 0) {
-            console.log('Rate limit exceed:', resp.rateLimit)
             void new Promise((resolve) => setTimeout(resolve, retryAfter ?? 1)).then(() => {
               // Retry after a while, so rate limits allow to call more.
               promise?.sendData()

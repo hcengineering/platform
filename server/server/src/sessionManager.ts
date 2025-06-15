@@ -279,7 +279,10 @@ export class TSessionManager implements SessionManager {
           timeout = timeout * 10
         }
         if (lastRequestDiff > timeout) {
-          this.ctx.warn('session hang, closing...', { wsId, user: s.session.getUser() })
+          this.ctx.warn('session hang, closing...', {
+            wsId,
+            user: s.session.getUser()
+          })
 
           // Force close workspace if only one client and it hang.
           void this.close(this.ticksContext, s.socket, wsId).catch((err) => {
@@ -842,7 +845,7 @@ export class TSessionManager implements SessionManager {
     const sessionRef = this.sessions.get(ws.id)
     if (sessionRef !== undefined) {
       ctx.info('bye happen', {
-        workspace: workspace?.wsId.url,
+        workspaceId: workspace?.wsId.uuid,
         userId: sessionRef.session.getUser(),
         user: sessionRef.session.getSocialIds().find((it) => it.type !== SocialIdType.HULY)?.value,
         binary: sessionRef.session.binaryMode,
@@ -1098,9 +1101,10 @@ export class TSessionManager implements SessionManager {
   )
 
   checkRate (service: Session): RateLimitInfo {
-    return (service.getUser() === systemAccountUuid ? this.sysLimitter : this.limitter).checkRateLimit(
-      service.getUser() + (service.token.extra?.service ?? '')
-    )
+    if (service.getUser() === systemAccountUuid) {
+      return this.sysLimitter.checkRateLimit('#sys#' + (service.token.extra?.service ?? '') + service.workspace.uuid)
+    }
+    return this.limitter.checkRateLimit(service.getUser() + (service.token.extra?.service ?? ''))
   }
 
   async handleRequest<S extends Session>(
@@ -1114,21 +1118,6 @@ export class TSessionManager implements SessionManager {
       source: service.token.extra?.service ?? '🤦‍♂️user',
       mode: '🧭 handleRequest'
     })
-    const rateLimit = this.checkRate(service)
-    // If remaining is 0, rate limit is exceeded
-    if (rateLimit?.remaining === 0) {
-      void ws.send(
-        userCtx,
-        {
-          id: request.id,
-          rateLimit,
-          error: unknownError('Rate limit')
-        },
-        service.binaryMode,
-        service.useCompression
-      )
-      return
-    }
 
     // Calculate total number of clients
     const reqId = generateId()
@@ -1173,16 +1162,35 @@ export class TSessionManager implements SessionManager {
         await ws.send(userCtx, forceCloseResponse, service.binaryMode, service.useCompression)
         return
       }
+      let rateLimit: RateLimitInfo | undefined
+      if (request.method !== 'ping') {
+        rateLimit = this.checkRate(service)
+        // If remaining is 0, rate limit is exceeded
+        if (rateLimit?.remaining === 0) {
+          service.updateLast()
+          void ws.send(
+            userCtx,
+            {
+              id: request.id,
+              rateLimit,
+              error: unknownError('Rate limit')
+            },
+            service.binaryMode,
+            service.useCompression
+          )
+          return
+        }
+      }
 
+      if (request.id === -1 && request.method === '#upgrade') {
+        ws.close()
+        return
+      }
       service.requests.set(reqId, {
         id: reqId,
         params: request,
         start: st
       })
-      if (request.id === -1 && request.method === '#upgrade') {
-        ws.close()
-        return
-      }
 
       const f = (service as any)[request.method]
       try {
