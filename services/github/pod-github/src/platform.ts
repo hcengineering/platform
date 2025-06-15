@@ -20,6 +20,7 @@ import core, {
   systemAccountUuid,
   TimeRateLimiter,
   TxOperations,
+  versionToString,
   WorkspaceInfoWithStatus,
   WorkspaceUuid,
   type PersonUuid,
@@ -866,17 +867,24 @@ export class PlatformWorker {
     const rateLimiter = new RateLimiter(5)
     const rechecks: string[] = []
     let idx = 0
-    const connecting = new Map<string, number>()
+    const connecting = new Map<
+    string,
+    {
+      time: number
+      version: string
+    }
+    >()
     const st = Date.now()
     const connectingInfo = setInterval(() => {
       this.ctx.info('****** connecting to workspaces ******', {
         connecting: connecting.size,
         time: Date.now() - st,
         workspaces: workspaces.length,
+        connected: this.clients.size,
         queue: rateLimiter.processingQueue.size
       })
       for (const [c, d] of connecting.entries()) {
-        this.ctx.info('connecting to workspace', { workspace: c, time: Date.now() - d })
+        this.ctx.info('connecting to workspace', { workspace: c, time: Date.now() - d.time, version: d.version })
       }
     }, 5000)
     for (const workspace of workspaces) {
@@ -898,10 +906,21 @@ export class PlatformWorker {
           const branding = Object.values(this.brandingMap).find((b) => b.key === workspaceInfo?.branding) ?? null
           const workerCtx = this.ctx.newChild('worker', { workspace: workspaceInfo.uuid }, {})
 
-          connecting.set(workspaceInfo.uuid, Date.now())
+          connecting.set(workspaceInfo.uuid, {
+            time: Date.now(),
+            version: versionToString({
+              major: workspaceInfo.versionMajor,
+              minor: workspaceInfo.versionMinor,
+              patch: workspaceInfo.versionPatch
+            })
+          })
           workerCtx.info('************************* Register worker ************************* ', {
             workspaceId: workspaceInfo.uuid,
             workspaceUrl: workspaceInfo.url,
+            versionMajor: workspaceInfo.versionMajor,
+            versionMinor: workspaceInfo.versionMinor,
+            versionPatch: workspaceInfo.versionPatch,
+            mode: workspaceInfo.mode,
             index: widx,
             total: workspaces.length
           })
@@ -962,6 +981,10 @@ export class PlatformWorker {
               {
                 workspaceId: workspaceInfo.uuid,
                 workspaceUrl: workspaceInfo.url,
+                versionMajor: workspaceInfo.versionMajor,
+                versionMinor: workspaceInfo.versionMinor,
+                versionPatch: workspaceInfo.versionPatch,
+                lastVisit: (Date.now() - (workspaceInfo.lastVisit ?? 0)) / (24 * 60 * 60 * 1000),
                 index: widx,
                 total: workspaces.length
               }

@@ -1717,6 +1717,7 @@ export class GithubWorker implements IntegrationManager {
       ;({ client, endpoint } = await createPlatformClient(workspace.uuid, 30000, async (event: ClientConnectEvent) => {
         reconnect(workspace.uuid, event)
       }))
+      ctx.info('connected to github', { workspace: workspace.uuid, endpoint })
 
       const githubEnabled = (await client.findOne(core.class.PluginConfiguration, { pluginId: githubId }))?.enabled
       if (githubEnabled === false) {
