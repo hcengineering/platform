@@ -1083,10 +1083,22 @@ export class TSessionManager implements SessionManager {
   }
 
   limitter = new SlidingWindowRateLimitter(
-    parseInt(process.env.RATE_LIMIT_MAX ?? '250'),
+    parseInt(process.env.RATE_LIMIT_MAX ?? '1500'),
     parseInt(process.env.RATE_LIMIT_WINDOW ?? '30000'),
     () => Date.now()
   )
+
+  sysLimitter = new SlidingWindowRateLimitter(
+    parseInt(process.env.RATE_LIMIT_MAX ?? '5000'),
+    parseInt(process.env.RATE_LIMIT_WINDOW ?? '30000'),
+    () => Date.now()
+  )
+
+  checkRate (service: Session): RateLimitInfo {
+    return (service.getUser() === systemAccountUuid ? this.sysLimitter : this.limitter).checkRateLimit(
+      service.getUser() + (service.token.extra?.service ?? '')
+    )
+  }
 
   async handleRequest<S extends Session>(
     requestCtx: MeasureContext,
@@ -1099,7 +1111,7 @@ export class TSessionManager implements SessionManager {
       source: service.token.extra?.service ?? '🤦‍♂️user',
       mode: '🧭 handleRequest'
     })
-    const rateLimit = this.limitter.checkRateLimit(service.getUser() + (service.token.extra?.service ?? ''))
+    const rateLimit = this.checkRate(service)
     // If remaining is 0, rate limit is exceeded
     if (rateLimit?.remaining === 0) {
       void ws.send(
@@ -1213,7 +1225,7 @@ export class TSessionManager implements SessionManager {
     ws: ConnectionSocket,
     operation: (ctx: ClientSessionCtx, rateLimit: RateLimitInfo | undefined) => Promise<void>
   ): Promise<RateLimitInfo | undefined> {
-    const rateLimitStatus = this.limitter.checkRateLimit(service.getUser() + (service.token.extra?.service ?? ''))
+    const rateLimitStatus = this.checkRate(service)
     // If remaining is 0, rate limit is exceeded
     if (rateLimitStatus?.remaining === 0) {
       return await Promise.resolve(rateLimitStatus)
