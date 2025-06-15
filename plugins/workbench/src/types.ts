@@ -101,7 +101,7 @@ export interface WidgetTab {
 
 /** @public */
 export interface TabUiState {
-  scrollPositions?: Record<string, number>;
+  scrollPositions?: Record<string, number>
 }
 
 /** @public */
@@ -110,7 +110,7 @@ export interface WorkbenchTab extends Preference {
   location: string
   isPinned: boolean
   name?: string
-  uiState?: TabUiState;
+  uiState?: TabUiState
 }
 
 /** @public */

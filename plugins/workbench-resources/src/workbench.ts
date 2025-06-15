@@ -62,17 +62,17 @@ locationWorkspaceStore.subscribe((workspace) => {
   tabIdStore.set(getTabFromLocalStorage(workspace ?? ''))
 })
 
-export function updateTabUiState(tabId: Ref<WorkbenchTab>, state: Partial<TabUiState>): void {
-  tabsStore.update(tabs => {
-    const tab = tabs.find(t => t._id === tabId);
-    if (tab) {
+export function updateTabUiState (tabId: Ref<WorkbenchTab>, state: Partial<TabUiState>): void {
+  tabsStore.update((tabs) => {
+    const tab = tabs.find((t) => t._id === tabId)
+    if (tab != null) {
       tab.uiState = {
-        ...(tab.uiState || {}),
+        ...(tab.uiState ?? {}),
         ...state
-      };
+      }
     }
-    return tabs;
-  });
+    return tabs
+  })
 }
 
 const syncTabLoc = reduceCalls(async (): Promise<void> => {
