@@ -51,7 +51,7 @@ import core, {
   type WorkspaceInfoWithStatus,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import { type Status, unknownError } from '@hcengineering/platform'
+import { type Status, UNAUTHORIZED, unknownError } from '@hcengineering/platform'
 import {
   type HelloRequest,
   type HelloResponse,
@@ -500,6 +500,9 @@ export class TSessionManager implements SessionManager {
       let account: LoginInfoWithWorkspaces | undefined
 
       try {
+        if (token.account === undefined) {
+          return { error: UNAUTHORIZED, terminate: true }
+        }
         account = await this.getLoginWithWorkspaceInfo(ctx, rawToken)
       } catch (err: any) {
         return { error: err }
