@@ -108,7 +108,7 @@ class PlatformQueueImpl implements PlatformQueue {
     return result
   }
 
-  async checkCreateTopic (topic: QueueTopic, topics: Set<string>, numPartitions?: number): Promise<void> {
+  async checkCreateTopic (topic: QueueTopic | string, topics: Set<string>, numPartitions?: number): Promise<void> {
     const kTopic = getKafkaTopicId(topic, this.config)
     if (!topics.has(kTopic)) {
       try {
@@ -116,6 +116,14 @@ class PlatformQueueImpl implements PlatformQueue {
       } catch (err: any) {
         console.error('Failed to create topic', kTopic, err)
       }
+    }
+  }
+
+  async createTopic (topics: string | string[], partitions: number): Promise<void> {
+    const existing = new Set(await this.kafka.admin({}).listTopics())
+    topics = Array.isArray(topics) ? topics : [topics]
+    for (const topic of topics) {
+      await this.checkCreateTopic(topic, existing, partitions)
     }
   }
 

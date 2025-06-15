@@ -18,11 +18,13 @@ dotenvConfig()
 
 export interface Config {
   Secret: string
+  Partitions: number
 }
 
 const config: Config = (() => {
   const params: Partial<Config> = {
-    Secret: process.env.SECRET
+    Secret: process.env.SECRET,
+    Partitions: parseNumber(process.env.PARTITIONS) ?? 1
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)
@@ -33,5 +35,14 @@ const config: Config = (() => {
 
   return params as Config
 })()
+
+function parseNumber (str: string | undefined): number | undefined {
+  if (str !== undefined) {
+    const intValue = Number.parseInt(str)
+    if (Number.isInteger(intValue)) {
+      return intValue
+    }
+  }
+}
 
 export default config
