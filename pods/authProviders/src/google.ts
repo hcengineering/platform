@@ -4,13 +4,7 @@ import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } fr
 import Router from 'koa-router'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { Passport } from '.'
-import {
-  encodeState,
-  handleProviderAuth,
-  safeParseAuthState,
-  setAuthStateTokenCookie,
-  validateAuthStateTokenCookie
-} from './utils'
+import { encodeState, handleProviderAuth, safeParseAuthState } from './utils'
 
 export function registerGoogle (
   measureCtx: MeasureContext,
@@ -45,11 +39,7 @@ export function registerGoogle (
 
   router.get('/auth/google', async (ctx, next) => {
     measureCtx.info('try auth via', { provider: 'google' })
-
-    const nonce = crypto.randomUUID()
-    setAuthStateTokenCookie(ctx, nonce)
-
-    const state = encodeState(ctx, brandings, nonce)
+    const state = encodeState(ctx, brandings)
 
     passport.authenticate('google', { scope: ['profile', 'email'], session: true, state })(ctx, next)
   })
@@ -58,17 +48,13 @@ export function registerGoogle (
     redirectURL,
     async (ctx, next) => {
       const state = safeParseAuthState(ctx.query?.state)
+      measureCtx.info('Auth state', { state })
       const branding = getBranding(brandings, state?.branding)
-
-      const loginUrl = concatLink(branding?.front ?? frontUrl, '/login')
-      const isValidState = validateAuthStateTokenCookie(ctx, state?.nonce)
-      if (!isValidState) {
-        ctx.redirect(loginUrl)
-        return
-      }
-
+      measureCtx.info('With branding', { branding })
+      const failureRedirect = concatLink(branding?.front ?? frontUrl, '/login')
+      measureCtx.info('With failure redirect', { failureRedirect })
       await passport.authenticate('google', {
-        failureRedirect: loginUrl,
+        failureRedirect,
         session: true
       })(ctx, next)
     },

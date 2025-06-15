@@ -835,7 +835,8 @@ export function createModel (builder: Builder): void {
       label: card.string.Cards,
       type: WidgetType.Flexible,
       icon: card.icon.Card,
-      component: card.component.CardWidget
+      component: card.component.CardWidget,
+      tabComponent: card.component.CardWidgetTab
     },
     card.ids.CardWidget
   )

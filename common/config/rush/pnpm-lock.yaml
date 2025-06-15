@@ -4960,7 +4960,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-iKdFwGx+ciUZVYBDuytjG/Ort+6bkuKoIDtTUGA7X+z5YQD+neMusa4Skd9TsmsvsqMcjdxhhI0+TQpEnAjf1A==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-bMSkIMVw78JU9foCyHxngjWO5uPLhczp/XgPsqn+rVsQ+g4fm5WiLwEYQt504vk0DspkFc7xPjDFnMyOpwfR6w==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -5352,7 +5352,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-token@file:projects/server-token.tgz':
-    resolution: {integrity: sha512-4cC2GIyVh+Wrl5bVS3x7/x+ZbYwECOSyuVVUuHjcpSsEELsA0fLflSobf6SIiyVVoIJ5aZfJSDS1orukYRYiiA==, tarball: file:projects/server-token.tgz}
+    resolution: {integrity: sha512-KWi8JET7wqjy0yZvPBx6LhInIBN7iXI9Af0sfQMAdKHAyxkFBAZJVY/Moun8gM22JMirucC4l0SQJklsLOZwxw==, tarball: file:projects/server-token.tgz}
     version: 0.0.0
 
   '@rush-temp/server-tool@file:projects/server-tool.tgz':
@@ -25974,6 +25974,7 @@ snapshots:
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 22.15.29
+      '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
       eslint: 8.56.0
@@ -25986,6 +25987,7 @@ snapshots:
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
+      uuid: 8.3.2
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'

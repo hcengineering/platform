@@ -14,68 +14,68 @@
 //
 import {
   type AccountID,
+  type BlobData,
   type BlobID,
   type CardID,
+  type CardType,
+  type Collaborator,
   type ContextID,
+  type FindCollaboratorsParams,
+  type FindLabelsParams,
   type FindMessagesGroupsParams,
   type FindMessagesParams,
   type FindNotificationContextParams,
   type FindNotificationsParams,
+  type Label,
+  type LinkPreviewData,
+  type LinkPreviewID,
+  type Markdown,
   type Message,
   type MessageID,
   type MessagesGroup,
   MessageType,
   type Notification,
   type NotificationContext,
-  type Markdown,
-  type SocialID,
-  type CardType,
-  type Label,
-  type FindLabelsParams,
-  type FindCollaboratorsParams,
-  type Collaborator,
-  type BlobData,
-  type LinkPreviewData,
-  type LinkPreviewID,
-  PatchType
+  PatchType,
+  type SocialID
 } from '@hcengineering/communication-types'
 import {
+  type AddCollaboratorsEvent,
+  type AttachBlobEvent,
+  type AttachThreadEvent,
+  type CreateLinkPreviewEvent,
   type CreateMessageEvent,
   type CreateMessageResult,
+  type CreatePatchEvent,
+  type DetachBlobEvent,
   type EventResult,
+  MessageRequestEventType,
+  NotificationRequestEventType,
+  type RemoveCollaboratorsEvent,
+  type RemoveLinkPreviewEvent,
+  type RemoveNotificationContextEvent,
   type RemoveReactionEvent,
   type RequestEvent,
   type ResponseEvent,
-  type UpdateNotificationContextEvent,
-  type AddCollaboratorsEvent,
-  type RemoveCollaboratorsEvent,
-  MessageRequestEventType,
-  NotificationRequestEventType,
-  type RemoveNotificationContextEvent,
-  type UpdateNotificationEvent,
-  type UpdateNotificationQuery,
-  type CreateLinkPreviewEvent,
-  type RemoveLinkPreviewEvent,
-  type AttachThreadEvent,
   type SetReactionEvent,
-  type AttachBlobEvent,
-  type DetachBlobEvent,
-  type CreatePatchEvent
+  type UpdateNotificationContextEvent,
+  type UpdateNotificationEvent,
+  type UpdateNotificationQuery
 } from '@hcengineering/communication-sdk-types'
 import {
   type Client as PlatformClient,
   type ClientConnection as PlatformConnection,
+  generateId,
   getCurrentAccount,
-  SocialIdType,
-  generateId
+  SocialIdType
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
 import {
+  createCollaboratorsQuery,
+  createLabelsQuery,
   createMessagesQuery,
   createNotificationContextsQuery,
   createNotificationsQuery,
-  createLabelsQuery,
-  createCollaboratorsQuery,
   initLiveQueries,
   type MessageQueryParams
 } from '@hcengineering/communication-client-query'
@@ -322,9 +322,7 @@ class Client {
   }
 
   async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    const result = await this.connection.findMessagesGroups(params)
-    console.log('findMessagesGroups result', [...result])
-    return result
+    return await this.connection.findMessagesGroups(params)
   }
 
   async findNotificationContexts (

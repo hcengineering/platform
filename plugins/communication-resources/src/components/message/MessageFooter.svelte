@@ -19,7 +19,7 @@
   import { getCurrentAccount } from '@hcengineering/core'
   import { AttachmentPreview, LinkPreview } from '@hcengineering/attachment-resources'
   import { LinkPreviewID, Message, MessageType } from '@hcengineering/communication-types'
-  import { openDoc } from '@hcengineering/view-resources'
+  import { getResource } from '@hcengineering/platform'
 
   import ReactionsList from '../ReactionsList.svelte'
   import MessageReplies from './MessageReplies.svelte'
@@ -49,7 +49,8 @@
     const client = getClient()
     const c = await client.findOne(cardPlugin.class.Card, { _id })
     if (c === undefined) return
-    await openDoc(client.getHierarchy(), c)
+    const r = await getResource(cardPlugin.function.OpenCardInSidebar)
+    await r(_id, c)
   }
 
   async function removeLinkPreview (id: LinkPreviewID): Promise<void> {

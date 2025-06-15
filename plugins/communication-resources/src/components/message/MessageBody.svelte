@@ -172,6 +172,7 @@
     color: var(--global-tertiary-TextColor);
     font-size: 0.75rem;
     font-weight: 400;
+    white-space: nowrap;
   }
 
   .message__edited-marker {

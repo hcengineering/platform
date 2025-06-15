@@ -45,7 +45,6 @@
   export let compact: boolean = false
   export let hideAvatar: boolean = false
 
-  const client = getClient()
   const communicationClient = getCommunicationClient()
   const me = getCurrentAccount()
 
