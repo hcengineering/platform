@@ -1178,9 +1178,13 @@ export async function loginOrSignUpWithProvider (
 ): Promise<LoginInfo | null> {
   try {
     const normalizedEmail = email != null ? cleanEmail(email) : ''
+    const normalizedSocialId: SocialKey = {
+      type: socialId.type,
+      value: normalizeValue(socialId.value)
+    }
 
     // Find if any of the target/email social ids exist
-    const targetSocialId = await db.socialId.findOne(socialId)
+    const targetSocialId = await db.socialId.findOne(normalizedSocialId)
     const emailSocialId =
       normalizedEmail !== ''
         ? await db.socialId.findOne({ type: SocialIdType.EMAIL, value: normalizedEmail })
@@ -1227,7 +1231,7 @@ export async function loginOrSignUpWithProvider (
     let socialIdId: PersonId | undefined
     // Create and/or confirm missing social ids
     if (targetSocialId == null) {
-      socialIdId = await db.socialId.insertOne({ ...socialId, personUuid, verifiedOn: Date.now() })
+      socialIdId = await db.socialId.insertOne({ ...normalizedSocialId, personUuid, verifiedOn: Date.now() })
     } else if (targetSocialId.verifiedOn == null) {
       await db.socialId.updateOne({ key: targetSocialId.key }, { verifiedOn: Date.now() })
       socialIdId = targetSocialId._id
