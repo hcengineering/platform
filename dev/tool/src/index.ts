@@ -2545,7 +2545,9 @@ export function devTool (
       const client = getMongoClient(mongodbUri)
       const _client = await client.getClient()
 
-      await performGithubAccountMigrations(_client.db(cmd.db), cmd.region ?? null)
+      const { dbUrl, txes } = prepareTools()
+
+      await performGithubAccountMigrations(_client.db(cmd.db), dbUrl, txes, cmd.region ?? null)
       await _client.close()
       client.close()
     })

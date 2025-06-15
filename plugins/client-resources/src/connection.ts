@@ -301,13 +301,6 @@ class Connection implements ClientConnection {
     }
 
     if (resp.rateLimit !== undefined && resp.rateLimit.remaining < 50) {
-      console.log(
-        'Rate limits:',
-        resp.rateLimit.remaining,
-        resp.rateLimit.limit,
-        resp.rateLimit.reset,
-        resp.rateLimit.retryAfter
-      )
       this.currentRateLimit = resp.rateLimit
       if (this.currentRateLimit.remaining < this.currentRateLimit.limit / 3) {
         if (this.slowDownTimer < 50) {
