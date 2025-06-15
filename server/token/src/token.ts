@@ -1,6 +1,7 @@
 import { AccountUuid, MeasureContext, PersonUuid, WorkspaceUuid } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { decode, encode } from 'jwt-simple'
+import { validate } from 'uuid'
 import serverPlugin from './plugin'
 
 /**
@@ -35,6 +36,13 @@ export function generateToken (
   extra?: Record<string, string>,
   secret?: string
 ): string {
+  if (!validate(accountUuid)) {
+    throw new TokenError('Invalid account uuid')
+  }
+  if (workspaceUuid !== undefined && !validate(workspaceUuid)) {
+    throw new TokenError('Invalid workspace uuid')
+  }
+
   return encode(
     { ...(extra !== undefined ? { extra } : {}), account: accountUuid, workspace: workspaceUuid },
     secret ?? getSecret()
