@@ -67,7 +67,7 @@ export async function handleProviderAuth (
   providerType: string,
   rawState: string | undefined,
   user: any,
-  email: string,
+  email: string | undefined,
   first: string,
   last: string,
   socialKey: SocialKey,

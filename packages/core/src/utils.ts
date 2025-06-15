@@ -324,12 +324,22 @@ export class RateLimiter {
     }
   }
 
-  async add<T, B extends Record<string, any> = any>(op: (args?: B) => Promise<T>, args?: B): Promise<void> {
-    if (this.processingQueue.size < this.rate) {
-      void this.exec(op, args)
-    } else {
-      await this.exec(op, args)
+  async add<T, B extends Record<string, any> = any>(
+    op: (args?: B) => Promise<T>,
+    args?: B,
+    errHandler?: (err: any) => void
+  ): Promise<void> {
+    while (this.processingQueue.size >= this.rate) {
+      await new Promise<void>((resolve) => {
+        this.notify.push(resolve)
+      })
     }
+    void this.exec(op, args).catch((err) => {
+      if (errHandler !== undefined) {
+        errHandler(err)
+      }
+      console.error('Failed to execute in rate limitter', err)
+    })
   }
 
   async waitProcessing (): Promise<void> {

@@ -1170,14 +1170,14 @@ export async function loginOrSignUpWithProvider (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  email: string,
+  email: string | undefined,
   first: string,
   last: string,
   socialId: SocialKey,
   signUpDisabled = false
 ): Promise<LoginInfo | null> {
   try {
-    const normalizedEmail = cleanEmail(email)
+    const normalizedEmail = email != null ? cleanEmail(email) : ''
 
     // Find if any of the target/email social ids exist
     const targetSocialId = await db.socialId.findOne(socialId)
@@ -1248,7 +1248,7 @@ export async function loginOrSignUpWithProvider (
 
     await confirmHulyIds(ctx, db, personUuid as AccountUuid)
     const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
-    ctx.info('Provider login succeeded', { email, normalizedEmail, emailSocialId, ...extraToken })
+    ctx.info('Provider login succeeded', { email, normalizedEmail, emailSocialId, socialId, ...extraToken })
 
     return {
       account: personUuid as AccountUuid,
@@ -1267,14 +1267,14 @@ export async function joinWithProvider (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  email: string,
+  email: string | undefined,
   first: string,
   last: string,
   inviteId: string,
   socialId: SocialKey,
   signUpDisabled = false
 ): Promise<WorkspaceLoginInfo | LoginInfo | null> {
-  const normalizedEmail = cleanEmail(email)
+  const normalizedEmail = email != null ? cleanEmail(email) : ''
   const invite = await getWorkspaceInvite(db, inviteId)
   if (invite == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
