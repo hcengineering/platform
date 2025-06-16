@@ -72,6 +72,7 @@
     "SetTextColor": "Изменить цвет текста",
     "ConvertToLinkPreview": "Показать как ссылку",
     "ConvertToEmbedPreview": "Показать как превью контента",
-    "UnableToLoadEmbeddedContent": "Не удалось загрузить превью ссылки из-за настроек доступа или неподдерживаемого содержимого"
+    "UnableToLoadEmbeddedContent": "Не удалось загрузить превью ссылки из-за настроек доступа или неподдерживаемого содержимого",
+    "CannotConnectToCollaborationService": "Не удалось подключиться к сервису совместной работы"
   }
 }

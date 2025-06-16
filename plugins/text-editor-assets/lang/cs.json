@@ -72,6 +72,7 @@
     "SetTextColor": "Nastavit barvu textu",
     "ConvertToLinkPreview": "Zobrazit jako odkaz",
     "ConvertToEmbedPreview": "Zobrazit jako náhled obsahu",
-    "UnableToLoadEmbeddedContent": "Náhled odkazu nelze načíst kvůli nastavení oprávnění nebo nepodporovanému obsahu"
+    "UnableToLoadEmbeddedContent": "Náhled odkazu nelze načíst kvůli nastavení oprávnění nebo nepodporovanému obsahu",
+    "CannotConnectToCollaborationService": "Nelze se připojit k službě spolupráce"
   }
 }
