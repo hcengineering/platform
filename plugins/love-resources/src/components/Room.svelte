@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
+  import { ActionContext } from '@hcengineering/presentation';
   import { personByIdStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
@@ -42,11 +43,7 @@
     isFullScreen,
     lk,
     screenSharing,
-    tryConnect,
-    setMic,
-    setCam,
-    isMicEnabled,
-    isCameraEnabled,
+    tryConnect
   } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import ParticipantView from './ParticipantView.svelte'
@@ -387,34 +384,10 @@
   }
 
   $: activeParticipants = getActiveParticipants(participants)
-
-  function handleKeyDown(event: KeyboardEvent) {
-    const target = event.target as HTMLElement;
-    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
-      return;
-    }
-
-    const isModifierPressed = event.metaKey || event.ctrlKey;
-
-    if (isModifierPressed && event.key.toLowerCase() === 'd') {
-      event.preventDefault();
-      void setMic(!$isMicEnabled);
-    } else if (isModifierPressed && event.key.toLowerCase() === 'e') {
-      event.preventDefault();
-      void setCam(!$isCameraEnabled);
-    }
-  }
-
-  onMount(() => {
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  });
 </script>
 
 <div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
+  <ActionContext context={{ mode: 'workbench' }} />
   {#if $isConnected && !$isCurrentInstanceConnected}
     <div class="flex justify-center error h-full w-full clear-mins">
       <Label label={love.string.AnotherWindowError} />
