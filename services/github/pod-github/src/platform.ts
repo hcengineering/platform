@@ -112,7 +112,7 @@ export class PlatformWorker {
   }
 
   async init (ctx: MeasureContext): Promise<void> {
-    const sysToken = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'github' })
+    const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
     const accountsClient = getAccountClient(config.AccountsURL, sysToken)
 
     const allIntegrations = await accountsClient.listIntegrations({ kind: 'github' })
@@ -224,7 +224,7 @@ export class PlatformWorker {
     installationId: number,
     accountId: PersonId
   ): Promise<void> {
-    const sysToken = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'github' })
+    const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
     const accountsClient = getAccountClient(config.AccountsURL, sysToken)
 
     const oldInstallation = this.integrations.find((it) => it.installationId === installationId)
@@ -803,7 +803,7 @@ export class PlatformWorker {
     }
     this.integrations = this.integrations.filter((it) => it.installationId !== installId)
     if (interg !== undefined) {
-      const sysToken = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'github' })
+      const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
       const sysAccountClient = getAccountClient(config.AccountsURL, sysToken)
       await sysAccountClient.deleteIntegration({
         kind: 'github',
