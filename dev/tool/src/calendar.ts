@@ -61,7 +61,7 @@ const CALENDAR_INTEGRATION = 'google-calendar'
 
 export async function performCalendarAccountMigrations (db: Db, region: string | null, kvsUrl: string): Promise<void> {
   console.log('Start calendar migrations')
-  const token = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'tool', admin: 'true' })
+  const token = generateToken(systemAccountUuid, undefined, { service: 'tool', admin: 'true' })
   const accountClient = getAccountClient(token)
 
   const allWorkpaces = await accountClient.listWorkspaces(region)

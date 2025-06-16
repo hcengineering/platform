@@ -58,8 +58,6 @@
     if (nodes.length !== 1) return false
     const match = nodes[0].text?.match(emojiRegex)
     if (match == null) return false
-    console.log(match[0])
-    console.log(nodes[0].text)
     return match[0] === nodes[0].text
   }
 </script>

@@ -37,10 +37,10 @@ export function generateToken (
   secret?: string
 ): string {
   if (!validate(accountUuid)) {
-    throw new TokenError('Invalid account uuid')
+    throw new TokenError(`Invalid account uuid: "${accountUuid}"`)
   }
   if (workspaceUuid !== undefined && !validate(workspaceUuid)) {
-    throw new TokenError('Invalid workspace uuid')
+    throw new TokenError(`Invalid workspace uuid: "${workspaceUuid}"`)
   }
 
   return encode(

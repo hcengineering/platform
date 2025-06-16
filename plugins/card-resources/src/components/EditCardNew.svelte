@@ -27,7 +27,9 @@
     IconDetailsFilled,
     IconMoreH,
     navigate,
-    Panel
+    Panel,
+    IPanelState,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import presence from '@hcengineering/presence'
   import { createQuery, createNotificationContextsQuery, getClient } from '@hcengineering/presentation'
@@ -39,11 +41,15 @@
   import TagsEditor from './TagsEditor.svelte'
   import EditCardNewContent from './EditCardNewContent.svelte'
   import { openCardInSidebar } from '../utils'
+  import { afterUpdate } from 'svelte'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
   export let embedded: boolean = false
   export let allowClose: boolean = true
+
+  const DROPDOWN_POINT = 1024
+  const NO_PARENTS_POINT = 800
 
   const manager = createFocusManager()
   const query = createQuery()
@@ -93,21 +99,73 @@
       await client.update(doc, { title: nameTrimmed })
     }
   }
+
+  let element: HTMLElement
+  let titleEl: HTMLElement | null = null
+  let extraEl: HTMLElement | null = null
+  let showParents: boolean = !$deviceInfo.isMobile
+  let dropdownTags: boolean = false
+
+  const shrinkElement = (el: 'title' | 'extra'): void => {
+    if (element === undefined || titleEl === null || extraEl === null) return
+    if (el === 'title') {
+      titleEl.classList.add('flex-shrink-15')
+      extraEl.classList.remove('flex-shrink-15')
+    } else {
+      titleEl.classList.remove('flex-shrink-15')
+      extraEl.classList.add('flex-shrink-15')
+    }
+  }
+
+  const updateTitleGroup = (event: CustomEvent<IPanelState>): void => {
+    const { headerWidth, titleOverflow, extraOverflow } = event.detail
+    if (element === undefined || extraEl === null) return
+    if (!dropdownTags && headerWidth < DROPDOWN_POINT && (titleOverflow || extraOverflow)) {
+      dropdownTags = true
+      shrinkElement('title')
+    } else if (dropdownTags && headerWidth >= DROPDOWN_POINT) {
+      dropdownTags = false
+      shrinkElement('extra')
+    } else if (headerWidth >= DROPDOWN_POINT && !extraEl.classList.contains('flex-shrink-15')) {
+      shrinkElement('extra')
+    }
+    if (headerWidth < NO_PARENTS_POINT && showParents) showParents = false
+    else if (headerWidth >= NO_PARENTS_POINT && !showParents) showParents = !$deviceInfo.isMobile
+  }
+
+  afterUpdate(() => {
+    if (element !== undefined) {
+      titleEl = element.querySelector('.hulyHeader-titleGroup')
+      extraEl = element.querySelector('.hulyHeader-buttonsGroup.extra')
+    }
+  })
 </script>
 
 <FocusHandler {manager} />
 {#if doc !== undefined}
-  <Panel isAside={false} isHeader={false} {embedded} {allowClose} adaptive="disabled" on:open on:close>
+  <Panel
+    bind:element
+    isAside={false}
+    isHeader={false}
+    {embedded}
+    {allowClose}
+    adaptive={'disabled'}
+    overflowExtra
+    on:resize={updateTitleGroup}
+    on:open
+    on:close
+  >
     <div class="main-content clear-mins">
       <EditCardNewContent {_id} {doc} {readonly} {context} {isContextLoaded} />
     </div>
 
     <svelte:fragment slot="title">
-      <ParentsNavigator element={doc} />
+      {#if showParents}
+        <ParentsNavigator element={doc} maxWidth={'10rem'} />
+      {/if}
       <div class="title flex-row-center">
         <EditBox focusIndex={1} bind:value={title} placeholder={card.string.Card} on:blur={saveTitle} />
       </div>
-      <TagsEditor {doc} />
     </svelte:fragment>
 
     <svelte:fragment slot="presence">
@@ -165,6 +223,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="extra">
+      <TagsEditor {doc} {dropdownTags} id={'cardHeader-tags'} />
       <slot name="extra" />
     </svelte:fragment>
 
@@ -188,6 +247,6 @@
   .title {
     font-size: 1rem;
     flex: 1;
-    min-width: 10rem;
+    min-width: 2rem;
   }
 </style>

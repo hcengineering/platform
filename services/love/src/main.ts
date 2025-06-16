@@ -37,7 +37,7 @@ import {
   WebhookReceiver
 } from 'livekit-server-sdk'
 import config from './config'
-import { saveLiveKitEgressBilling, saveLiveKitSessionBilling } from './billing'
+import { saveLiveKitEgressBilling, updateLiveKitSessions } from './billing'
 import { getS3UploadParams, saveFile } from './storage'
 import { WorkspaceClient } from './workspaceClient'
 import { join } from 'path'
@@ -135,11 +135,6 @@ export const main = async (): Promise<void> => {
       } else if (event.event === 'room_finished' && event.room !== undefined) {
         const { sid, name } = event.room
         ctx.info('webhook event', { event: event.event, room: { sid, name } })
-        try {
-          await saveLiveKitSessionBilling(ctx, event.room.sid)
-        } catch {
-          // Ensure we don't fail the webhook if billing fails
-        }
         res.send()
         return
       }
@@ -283,6 +278,20 @@ export const main = async (): Promise<void> => {
   process.on('unhandledRejection', (e) => {
     console.error(e)
   })
+
+  if (config.BillingUrl !== '') {
+    setInterval(
+      () => {
+        try {
+          void updateLiveKitSessions(ctx)
+        } catch {}
+      },
+      config.BillingPollInterval * 60 * 1000
+    )
+    try {
+      void updateLiveKitSessions(ctx)
+    } catch {}
+  }
 }
 
 const stopEgress = async (egressClient: EgressClient, roomName: string): Promise<void> => {
