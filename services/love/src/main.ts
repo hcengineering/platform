@@ -284,15 +284,13 @@ export const main = async (): Promise<void> => {
       () => {
         try {
           void updateLiveKitSessions(ctx)
-        } catch {
-        }
+        } catch {}
       },
       config.BillingPollInterval * 60 * 1000
     )
     try {
       void updateLiveKitSessions(ctx)
-    } catch {
-    }
+    } catch {}
   }
 }
 
