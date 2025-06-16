@@ -31,6 +31,7 @@
   export let transparent: boolean = false
   export let inlineBlock = false
   export let noSelect: boolean = true
+  export let maxWidth: string | undefined = undefined
 
   function clickHandler (e: MouseEvent): void {
     if (disabled) return
@@ -83,6 +84,7 @@
     class:fs-bold={accent}
     class:select-text={!noSelect}
     style:flex-shrink={shrink}
+    style:max-width={maxWidth}
     {title}
     on:click={clickHandler}
   >
@@ -100,6 +102,7 @@
     class:transparent
     class:fs-bold={accent}
     style:flex-shrink={shrink}
+    style:max-width={maxWidth}
     class:select-text={!noSelect}
     {title}
     on:click={clickHandler}

@@ -19,6 +19,7 @@
   import { getObjectPresenter, restrictionStore } from '../utils'
 
   export let elements: readonly Doc[]
+  export let maxWidth: string | undefined = undefined
 
   const client = getClient()
 
@@ -54,6 +55,6 @@
 
 {#await getBreadcrumbsModels(elements) then models}
   {#if models.length > 0}
-    <Breadcrumbs {models} disabled={$restrictionStore.disableNavigation} />
+    <Breadcrumbs {models} disabled={$restrictionStore.disableNavigation} {maxWidth} />
   {/if}
 {/await}
