@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Person, formatName } from '@hcengineering/contact'
-  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { Loading } from '@hcengineering/ui'
 
@@ -54,7 +54,8 @@
     activeTrack = !value
   }
 
-  $: user = $personByIdStore.get(_id as Ref<Person>)
+  $: personByRefStore = getPersonByPersonRefStore([_id as Ref<Person>])
+  $: user = $personByRefStore.get(_id as Ref<Person>)
 
   $: speach = $currentRoomAudioLevels.get(_id as Ref<Person>) ?? 0
 </script>

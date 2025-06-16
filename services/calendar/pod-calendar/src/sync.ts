@@ -201,6 +201,7 @@ export class IncomingSyncManager {
       const res = await this.googleClient.events.list({
         calendarId,
         syncToken,
+        eventTypes: ['default'],
         pageToken,
         showDeleted: syncToken != null
       })
@@ -553,8 +554,7 @@ export class IncomingSyncManager {
 
   private async getMyCalendars (): Promise<void> {
     this.calendars = await this.client.findAll(calendar.class.ExternalCalendar, {
-      createdBy: this.user.userId,
-      hidden: false
+      createdBy: this.user.userId
     })
   }
 
@@ -620,7 +620,7 @@ export class IncomingSyncManager {
           default: false
         }
         if (val.primary === true) {
-          const primaryExists = this.calendars.length > 0
+          const primaryExists = this.calendars.find((p) => p.default)
           if (primaryExists === undefined) {
             data.default = true
           }

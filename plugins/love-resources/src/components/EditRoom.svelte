@@ -16,7 +16,6 @@
   import { EditBox, ModernButton } from '@hcengineering/ui'
   import { Room, isOffice, type ParticipantInfo } from '@hcengineering/love'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { personByIdStore } from '@hcengineering/contact-resources'
   import { IntlString } from '@hcengineering/platform'
 
   import love from '../plugin'
@@ -27,7 +26,11 @@
 
   const dispatch = createEventDispatcher()
 
-  $: roomName = getRoomName(object, $personByIdStore)
+  let roomName: string
+  $: void getRoomName(object).then((name) => {
+    roomName = name
+  })
+
   let connecting = false
 
   onMount(() => {
@@ -40,7 +43,6 @@
     tryConnecting = true
     const place = $selectedRoomPlace
     await tryConnect(
-      $personByIdStore,
       $myInfo,
       object,
       $infos,

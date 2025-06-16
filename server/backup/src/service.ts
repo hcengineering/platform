@@ -468,13 +468,14 @@ export async function doRestoreWorkspace (
   notify?: (progress: number) => Promise<void>
 ): Promise<boolean> {
   rootCtx.warn('\nRESTORE WORKSPACE ', {
-    workspace: wsIds.uuid
+    workspace: wsIds.uuid,
+    dataId: wsIds.dataId
   })
   const ctx = rootCtx.newChild('doRestore', {})
   let pipeline: Pipeline | undefined
   try {
     const restoreIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
-    const storage = await createStorageBackupStorage(ctx, backupAdapter, restoreIds, wsIds.uuid)
+    const storage = await createStorageBackupStorage(ctx, backupAdapter, restoreIds, wsIds.dataId ?? wsIds.uuid)
     const result: boolean = await ctx.with(
       'restore',
       {},

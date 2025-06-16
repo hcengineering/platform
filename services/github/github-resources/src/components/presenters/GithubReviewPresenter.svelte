@@ -7,12 +7,13 @@
   import { GithubPullRequestReviewState, GithubReview } from '@hcengineering/github'
 
   import { ActivityMessageHeader, ActivityMessageTemplate } from '@hcengineering/activity-resources'
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { IntlString } from '@hcengineering/platform'
   import { MessageViewer } from '@hcengineering/presentation'
   import { isEmptyMarkup } from '@hcengineering/text'
   import { PaletteColorIndexes, getPlatformColor, themeStore } from '@hcengineering/ui'
   import github from '../../plugin'
+  import { Person } from '@hcengineering/contact'
 
   export let value: WithLookup<GithubReview>
   export let showNotify: boolean = false
@@ -22,7 +23,15 @@
   export let embedded: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
-  $: person = $personByPersonIdStore.get(value?.createdBy ?? value?.modifiedBy)
+  $: personId = value?.createdBy ?? value?.modifiedBy
+  let person: Person | undefined
+  $: if (personId !== undefined) {
+    getPersonByPersonIdCb(personId, (p) => {
+      person = p ?? undefined
+    })
+  } else {
+    person = undefined
+  }
 
   function getCommentFromState (value?: GithubPullRequestReviewState): {
     label: IntlString

@@ -8,7 +8,7 @@
   import WithTeamData from '../WithTeamData.svelte'
   import { toSlots } from '../utils'
   import DayPlan from './DayPlan.svelte'
-  import { personRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
 
   export let space: Ref<Project>
   export let currentDate: Date
@@ -39,7 +39,7 @@
   )
 
   $: persons = (project?.members ?? [])
-    .map((it) => $personRefByAccountUuidStore.get(it))
+    .map((it) => $employeeRefByAccountUuidStore.get(it))
     .filter((it) => it !== undefined)
 </script>
 

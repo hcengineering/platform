@@ -638,6 +638,8 @@ export interface Session {
   eventRaw: (ctx: ClientSessionCtx, event: CommunicationEvent) => Promise<EventResult>
   findMessagesRaw: (ctx: ClientSessionCtx, params: FindMessagesParams) => Promise<Message[]>
   findMessagesGroupsRaw: (ctx: ClientSessionCtx, params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
+
+  updateLast: () => void
 }
 
 /**

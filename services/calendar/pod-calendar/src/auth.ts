@@ -62,7 +62,7 @@ export class AuthController {
         const mutex = await lock(`${state.workspace}:${state.userId}`)
         try {
           const client = await getClient(getWorkspaceToken(state.workspace))
-          const txOp = new TxOperations(client, core.account.System)
+          const txOp = new TxOperations(client, state.userId)
           const controller = new AuthController(ctx, accountClient, txOp, state)
           await controller.process(code)
         } finally {
@@ -106,6 +106,7 @@ export class AuthController {
   private async signout (value: GoogleEmail): Promise<void> {
     const integration = await this.client.findOne(setting.class.Integration, {
       type: calendar.integrationType.Calendar,
+      createdBy: this.user.userId,
       value
     })
     if (integration !== undefined) {

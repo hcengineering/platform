@@ -1,14 +1,23 @@
 <script lang="ts">
-  import { EmployeePresenter, SystemAvatar, personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { EmployeePresenter, SystemAvatar, getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import Avatar from '@hcengineering/contact-resources/src/components/Avatar.svelte'
   import core, { getDisplayTime } from '@hcengineering/core'
   import { MessageViewer } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import { GithubReviewComment } from '@hcengineering/github'
+  import { Person } from '@hcengineering/contact'
 
   export let comment: GithubReviewComment
 
-  $: person = $personByPersonIdStore.get(comment?.createdBy ?? comment?.modifiedBy)
+  $: personId = comment?.createdBy ?? comment?.modifiedBy
+  let person: Person | undefined
+  $: if (personId !== undefined) {
+    getPersonByPersonIdCb(personId, (p) => {
+      person = p ?? undefined
+    })
+  } else {
+    person = undefined
+  }
 </script>
 
 {#if comment}

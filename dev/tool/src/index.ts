@@ -22,7 +22,8 @@ import accountPlugin, {
   getWorkspaceInfoWithStatusById,
   signUpByEmail,
   updateWorkspaceInfo,
-  type AccountDB
+  type AccountDB,
+  type Workspace
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
 import {
@@ -1062,7 +1063,7 @@ export function devTool (
 
       const skipWorkspaces = new Set(cmd.skip.split(',').map((it) => it.trim()))
 
-      const token = generateToken(systemAccountUuid, '' as WorkspaceUuid, {
+      const token = generateToken(systemAccountUuid, undefined, {
         service: 'tool'
       })
       const workspaces = (await getAccountClient(token).listWorkspaces(cmd.region))
@@ -1690,7 +1691,7 @@ export function devTool (
     .description('Enable or disable profiling')
     .option('-o, --output <output>', 'Output file', 'profile.cpuprofile')
     .action(async (endpoint: string, mode: string, opt: { output: string }) => {
-      const token = generateToken(systemAccountUuid, '' as WorkspaceUuid, { admin: 'true' })
+      const token = generateToken(systemAccountUuid, undefined, { admin: 'true' })
       if (mode === 'start') {
         await fetch(`${endpoint}/api/v1/manage?token=${token}&operation=profile-start`, {
           method: 'PUT'
@@ -2193,29 +2194,41 @@ export function devTool (
       })
     })
 
-  // program
-  //   .command('fulltext-reindex-all')
-  //   .description('reindex workspaces')
-  //   .action(async () => {
-  //     const fulltextUrl = process.env.FULLTEXT_URL
-  //     if (fulltextUrl === undefined) {
-  //       console.error('please provide FULLTEXT_URL')
-  //       process.exit(1)
-  //     }
+  program
+    .command('fulltext-reindex-all')
+    .description('reindex workspaces')
+    .action(async () => {
+      const fulltextUrl = process.env.FULLTEXT_URL
+      if (fulltextUrl === undefined) {
+        console.error('please provide FULLTEXT_URL')
+        process.exit(1)
+      }
 
-  //     await withAccountDatabase(async (db) => {
-  //       const workspaces = await listWorkspacesRaw(db)
-  //       workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
-  //       for (const workspace of workspaces) {
-  //         const wsid = getWorkspaceId(workspace.workspace)
-  //         const token = generateToken(systemAccountEmail, wsid)
+      let workspaces: Workspace[] = []
 
-  //         console.log('reindex workspace', workspace)
-  //         await reindexWorkspace(toolCtx, fulltextUrl, token)
-  //         console.log('done', workspace)
-  //       }
-  //     })
-  //   })
+      await withAccountDatabase(async (db) => {
+        const statuses = await db.workspaceStatus.find({ mode: 'active', isDisabled: false })
+        const statusByWs = new Map(statuses.map((it) => [it.workspaceUuid, it]))
+
+        workspaces = await db.workspace.find({})
+        workspaces = workspaces.filter((p) => statusByWs.has(p.uuid))
+        workspaces.sort((a, b) => {
+          const sa = statusByWs.get(a.uuid)
+          const sb = statusByWs.get(b.uuid)
+          return (sb?.lastVisit ?? 0) - (sa?.lastVisit ?? 0)
+        })
+      })
+
+      console.log('found workspaces', workspaces.length)
+      for (const ws of workspaces) {
+        console.log('reindex workspace', ws)
+        const queue = getPlatformQueue('tool', ws.region)
+        const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
+        await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
+        await queue.shutdown()
+      }
+      console.log('done')
+    })
 
   // program
   //   .command('remove-duplicates-ids-mongo <workspaces>')
@@ -2545,7 +2558,9 @@ export function devTool (
       const client = getMongoClient(mongodbUri)
       const _client = await client.getClient()
 
-      await performGithubAccountMigrations(_client.db(cmd.db), cmd.region ?? null)
+      const { dbUrl, txes } = prepareTools()
+
+      await performGithubAccountMigrations(_client.db(cmd.db), dbUrl, txes, cmd.region ?? null)
       await _client.close()
       client.close()
     })

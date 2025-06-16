@@ -16,9 +16,9 @@
   import activity, { ActivityReference } from '@hcengineering/activity'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Action, Label, ShowMore } from '@hcengineering/ui'
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { getPersonByPersonIdCb } from '@hcengineering/contact-resources'
   import { Doc } from '@hcengineering/core'
-  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { getCurrentEmployee, Person } from '@hcengineering/contact'
   import view, { ObjectPanel } from '@hcengineering/view'
   import { DocNavLink, getDocLinkTitle } from '@hcengineering/view-resources'
 
@@ -59,7 +59,10 @@
 
   let targetTitle: string | undefined = undefined
 
-  $: person = $personByPersonIdStore.get(value.createdBy ?? value.modifiedBy)
+  let person: Person | undefined
+  $: getPersonByPersonIdCb(value.createdBy ?? value.modifiedBy, (p) => {
+    person = p ?? undefined
+  })
 
   $: srcDocQuery.query(value.srcDocClass, { _id: value.srcDocId }, (result) => {
     srcDoc = result.shift()

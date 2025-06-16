@@ -19,13 +19,12 @@
   import love from '../plugin'
   import { rooms } from '../stores'
   import { getRoomLabel } from '../utils'
-  import { personByIdStore } from '@hcengineering/contact-resources'
 
   export let request: JoinRequest
 
   $: room = $rooms.find((p) => p._id === request.room)
 
-  async function cancel () {
+  async function cancel (): Promise<void> {
     if (request.status === RequestStatus.Pending) {
       const client = getClient()
       await client.remove(request)
@@ -38,7 +37,9 @@
     <Label label={love.string.KnockingTo} params={{ name: room?.name }} />
     <span class="title">
       {#if room}
-        <Label label={getRoomLabel(room, $personByIdStore)} />
+        {#await getRoomLabel(room) then label}
+          <Label {label} />
+        {/await}
       {/if}
     </span>
   </div>

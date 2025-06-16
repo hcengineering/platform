@@ -12,16 +12,16 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import { getClient, LiteMessageViewer } from '@hcengineering/presentation'
+  import { LiteMessageViewer } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
   import { type WithLookup } from '@hcengineering/core'
   import { Message, MessageType, SocialID } from '@hcengineering/communication-types'
-  import { getPersonBySocialId, Person } from '@hcengineering/contact'
+  import { Person } from '@hcengineering/contact'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
   import { markdownToMarkup } from '@hcengineering/text-markdown'
   import { jsonToMarkup, markupToText } from '@hcengineering/text'
-  import { ActivityMessageViewer, ThreadMessageViewer, isActivityMessage } from '@hcengineering/communication-resources'
+  import { ActivityMessageViewer, isActivityMessage } from '@hcengineering/communication-resources'
 
   import FilesPreview from './FilesPreview.svelte'
   import PreviewTemplate from './PreviewTemplate.svelte'
@@ -32,8 +32,6 @@
   export let color: 'primary' | 'secondary' = 'primary'
   export let kind: 'default' | 'column' = 'default'
   export let padding: string | undefined = undefined
-
-  const client = getClient()
 
   const tooltipLimit = 512
 
@@ -50,7 +48,7 @@
   }
 
   async function updatePerson (socialId: SocialID): Promise<void> {
-    person = $personByPersonIdStore.get(socialId) ?? (await getPersonBySocialId(client, socialId))
+    person = $employeeByPersonIdStore.get(socialId) ?? (await getPersonByPersonId(socialId)) ?? undefined
   }
 </script>
 
@@ -61,12 +59,10 @@
   {padding}
   socialId={message.creator}
   {date}
-  fixHeight={message.type !== MessageType.Thread && message.type !== MessageType.Activity}
+  fixHeight={message.type !== MessageType.Activity}
   tooltipLabel={getTooltipLabel(message)}
 >
-  {#if message.type === MessageType.Thread || message.thread != null}
-    <ThreadMessageViewer {message} thread={message.thread} />
-  {:else if isActivityMessage(message)}
+  {#if isActivityMessage(message)}
     <ActivityMessageViewer {message} {card} author={person} />
   {:else}
     <LiteMessageViewer message={markdownToMarkup(message.content)} />

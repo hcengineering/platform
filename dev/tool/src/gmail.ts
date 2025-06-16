@@ -68,7 +68,7 @@ const TOKEN_TYPE = 'token'
 
 export async function performGmailAccountMigrations (db: Db, region: string | null, kvsUrl: string): Promise<void> {
   console.log('Start Gmail migrations')
-  const token = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'admin', admin: 'true' })
+  const token = generateToken(systemAccountUuid, undefined, { service: 'admin', admin: 'true' })
   const accountClient = getAccountClient(token)
 
   const allWorkpaces = await accountClient.listWorkspaces(region)
@@ -98,7 +98,7 @@ async function migrateGmailIntegrations (
 ): Promise<void> {
   try {
     console.log('Start Gmail account migrations')
-    const gmailToken = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'gmail' })
+    const gmailToken = generateToken(systemAccountUuid, undefined, { service: 'gmail' })
     const accountClient = getAccountClient(token)
 
     const gmailAccountClient = getAccountClient(gmailToken)
@@ -247,6 +247,7 @@ async function getSocialKeyByOldAccount (ws: WorkspaceInfoWithStatus, userId: st
 }
 
 async function getSociaKeysMap (ws: WorkspaceInfoWithStatus): Promise<Record<string, string>> {
+  console.info('Loading accounts from workspace', ws.uuid, ws.name, ws.url)
   const systemAccounts = [core.account.System, core.account.ConfigUser]
   const accounts = await loadAccounts(ws)
 
@@ -280,7 +281,11 @@ export async function loadAccounts (ws: WorkspaceInfoWithStatus): Promise<(Doc &
     const docs = (await client.loadDocs(DOMAIN_MODEL_TX, ids)).filter((it) =>
       TxProcessor.isExtendsCUD(it._class)
     ) as TxCUD<Doc>[]
-    accountsTxes.push(...docs)
+    for (const tx of docs) {
+      if (tx.objectClass === 'core:class:Account' || tx.objectClass === 'contact:class:PersonAccount') {
+        accountsTxes.push(tx)
+      }
+    }
     if (info.finished && idx !== undefined) {
       await client.closeChunk(info.idx)
       break

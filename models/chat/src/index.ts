@@ -20,6 +20,7 @@ import workbench from '@hcengineering/model-workbench'
 import { chatId } from '@hcengineering/chat'
 import { createSystemType } from '@hcengineering/model-card'
 import communication, { MessagesNavigationAnchors } from '@hcengineering/communication'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 
 import chat from './plugin'
 
@@ -47,12 +48,28 @@ export function createModel (builder: Builder): void {
   )
 
   // TODO: move types to communication-plugin
-  createSystemType(builder, chat.masterTag.Thread, chat.icon.Thread, chat.string.Thread, chat.string.Threads, {
-    defaultSection: communication.ids.CardMessagesSection,
-    defaultNavigation: MessagesNavigationAnchors.LatestMessages
-  })
-  createSystemType(builder, chat.masterTag.Channel, chat.icon.Channel, chat.string.Channel, chat.string.Channels, {
-    defaultSection: communication.ids.CardMessagesSection,
-    defaultNavigation: MessagesNavigationAnchors.LatestMessages
-  })
+  createSystemType(
+    builder,
+    chat.masterTag.Thread,
+    chat.icon.Thread,
+    chat.string.Thread,
+    chat.string.Threads,
+    {
+      defaultSection: communication.ids.CardMessagesSection,
+      defaultNavigation: MessagesNavigationAnchors.LatestMessages
+    },
+    PaletteColorIndexes.Houseplant
+  )
+  createSystemType(
+    builder,
+    chat.masterTag.Channel,
+    chat.icon.Channel,
+    chat.string.Channel,
+    chat.string.Channels,
+    {
+      defaultSection: communication.ids.CardMessagesSection,
+      defaultNavigation: MessagesNavigationAnchors.LatestMessages
+    },
+    PaletteColorIndexes.Blueberry
+  )
 }

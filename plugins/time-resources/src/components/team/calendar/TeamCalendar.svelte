@@ -15,13 +15,20 @@
 <script lang="ts">
   import calendar, { Event, getAllEvents } from '@hcengineering/calendar'
   import { calendarByIdStore } from '@hcengineering/calendar-resources'
-  import { getCurrentEmployee, Person } from '@hcengineering/contact'
-  import {
-    personRefByAccountUuidStore,
-    personRefByPersonIdStore,
-    socialIdsByPersonRefStore
-  } from '@hcengineering/contact-resources'
-  import core, { Doc, IdMap, Ref, Timestamp, Tx, TxCreateDoc, TxCUD, TxUpdateDoc } from '@hcengineering/core'
+  import contact, { getCurrentEmployee, Person } from '@hcengineering/contact'
+  import { employeeRefByAccountUuidStore, getPersonRefsByPersonIdsCb } from '@hcengineering/contact-resources'
+  import core, {
+    Doc,
+    IdMap,
+    PersonId,
+    Ref,
+    Timestamp,
+    Tx,
+    TxCreateDoc,
+    TxCUD,
+    TxUpdateDoc,
+    unique
+  } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/task'
@@ -48,29 +55,42 @@
   let events: Event[] = []
   let todos: IdMap<ToDo> = new Map()
 
-  $: persons = (project?.members ?? [])
-    .map((it) => $personRefByAccountUuidStore.get(it))
+  $: personsRefs = (project?.members ?? [])
+    .map((it) => $employeeRefByAccountUuidStore.get(it))
     .filter((it) => it !== undefined)
 
   const txCreateQuery = createQuery()
 
-  let txes = new Map<Ref<Person>, Tx[]>()
+  let personsSocialIds: PersonId[] = []
+  let txes: Tx[]
+  let txesMap = new Map<Ref<Person>, Tx[]>()
 
-  $: personsSocialStrings = persons.map((p) => ($socialIdsByPersonRefStore.get(p) ?? []).map((si) => si._id)).flat()
+  const socialIdsQuery = createQuery()
+  $: if (personsRefs.length > 0) {
+    socialIdsQuery.query(contact.class.SocialIdentity, { attachedTo: { $in: personsRefs } }, (res) => {
+      personsSocialIds = res.map((si) => si._id).flat()
+    })
+  } else {
+    socialIdsQuery.unsubscribe()
+  }
+
   $: txCreateQuery.query(
     core.class.Tx,
-    { modifiedBy: { $in: personsSocialStrings }, modifiedOn: { $gt: fromDate, $lt: toDate } },
+    { modifiedBy: { $in: personsSocialIds }, modifiedOn: { $gt: fromDate, $lt: toDate } },
     (res) => {
-      const map = new Map<Ref<Person>, Tx[]>()
-      for (const t of res) {
-        const personId = t.createdBy ?? t.modifiedBy
-        const personRef = $personRefByPersonIdStore.get(personId)
-        if (personRef === undefined) continue
-        map.set(personRef, [...(map.get(personRef) ?? []), t])
-      }
-      txes = map
+      txes = res
     }
   )
+  $: getPersonRefsByPersonIdsCb(unique(txes.map((it) => it.createdBy ?? it.modifiedBy)), (res) => {
+    const map = new Map<Ref<Person>, Tx[]>()
+    for (const t of txes) {
+      const personId = t.createdBy ?? t.modifiedBy
+      const personRef = res.get(personId)
+      if (personRef === undefined) continue
+      map.set(personRef, [...(map.get(personRef) ?? []), t])
+    }
+    txesMap = map
+  })
 
   const client = getClient()
 
@@ -134,9 +154,9 @@
   $: allEvents = getAllEvents(events, fromDate, toDate)
 </script>
 
-<WithTeamData {space} {fromDate} {toDate} bind:project bind:todos bind:slots bind:events bind:persons />
+<WithTeamData {space} {fromDate} {toDate} bind:project bind:todos bind:slots bind:events bind:persons={personsRefs} />
 
-<PersonCalendar {persons} startDate={currentDate} {maxDays}>
+<PersonCalendar persons={personsRefs} startDate={currentDate} {maxDays}>
   <svelte:fragment slot="day" let:day let:today let:weekend let:person let:height>
     {@const dayFrom = new Date(day).setHours(0, 0, 0, 0)}
     {@const dayTo = new Date(day).setHours(23, 59, 59, 999)}
@@ -151,7 +171,7 @@
     {@const planned = gitem?.mappings.reduce((it, val) => it + val.total, 0) ?? 0}
     {@const pevents = gitem?.events.reduce((it, val) => it + (val.dueDate - val.date), 0) ?? 0}
     {@const busy = gitem?.busy.slots.reduce((it, val) => it + (val.dueDate - val.date), 0) ?? 0}
-    {@const txInfo = group(txes.get(person) ?? [], dayFrom, dayTo)}
+    {@const txInfo = group(txesMap.get(person) ?? [], dayFrom, dayTo)}
     <div style:overflow="auto" style:height="{height}rem" class="p-1">
       <div class="flex-row-center p-1">
         <Icon icon={time.icon.Team} size={'small'} />

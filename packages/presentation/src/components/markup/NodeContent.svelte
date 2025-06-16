@@ -21,6 +21,7 @@
   import MarkdownNode from './MarkdownNode.svelte'
   import Node from './Node.svelte'
   import { getBlobRef } from '../../preview'
+  import { emojiRegex } from '@hcengineering/emoji'
 
   export let node: MarkupNode
   export let single = true
@@ -54,21 +55,10 @@
   }
 
   const checkEmoji = (nodes: MarkupNode[]): boolean => {
-    const matches: boolean[] = []
-    if (nodes.some((node) => node.type !== 'text')) {
-      return false
-    }
-    nodes.forEach((node) => {
-      const reg = node.text?.match(/\P{Emoji}/gu)
-      const regInc = node.text?.match(
-        /\p{Emoji}\uFE0F|\p{Emoji_Presentation}|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?/gu
-      )
-      matches.push(
-        (reg != null && reg.length > 0 && [65039, 65038, 8205].every((code) => code !== reg[0].charCodeAt(0))) ||
-          regInc == null
-      )
-    })
-    return matches.every((m) => !m)
+    if (nodes.length !== 1) return false
+    const match = nodes[0].text?.match(emojiRegex)
+    if (match == null) return false
+    return match[0] === nodes[0].text
   }
 </script>
 

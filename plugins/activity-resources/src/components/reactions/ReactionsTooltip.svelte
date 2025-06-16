@@ -2,11 +2,12 @@
   import { PersonId } from '@hcengineering/core'
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import contact from '@hcengineering/contact'
-  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { getPersonRefByPersonIdStore } from '@hcengineering/contact-resources'
 
-  export let reactionAccounts: PersonId[]
+  export let socialIds: PersonId[] = []
 
-  $: persons = reactionAccounts.map((user) => $personRefByPersonIdStore.get(user))
+  $: personRefByPersonIdStore = getPersonRefByPersonIdStore(socialIds)
+  $: persons = socialIds.map((si) => $personRefByPersonIdStore.get(si))
 </script>
 
 <div class="m-2 flex-col flex-gap-2">

@@ -58,10 +58,10 @@ export function isMarkdownsEquals (source1: string, source2: string): boolean {
       .filter((it) => it.length > 0)
       .join('\n')
 
-  const norm1 = normalizeLineEndings(source1)
+  const norm1 = normalizeLineEndings(source1 ?? '')
   const lines1 = excludeBlankLines(norm1)
 
-  const norm2 = normalizeLineEndings(source2)
+  const norm2 = normalizeLineEndings(source2 ?? '')
   const lines2 = excludeBlankLines(norm2)
 
   return lines1 === lines2

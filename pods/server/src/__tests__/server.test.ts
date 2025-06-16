@@ -109,7 +109,10 @@ describe('server', () => {
   const serverShutdown = startHttpServer(toolCtx, sessionMgr, port, opt.accountsUrl, createDummyStorageAdapter())
 
   function connect (): WebSocket {
-    const token: string = generateToken('' as PersonUuid, 'latest' as WorkspaceUuid)
+    const token: string = generateToken(
+      '123e4567-e89b-12d3-a456-426614174000' as PersonUuid,
+      '123e4567-e89b-12d3-a456-426614174001' as WorkspaceUuid
+    )
     return new WebSocket(`ws://localhost:${port}/${token}`)
   }
 
@@ -271,7 +274,10 @@ describe('server', () => {
 
     try {
       //
-      const token: string = generateToken('my-account-uuid' as PersonUuid, 'latest' as WorkspaceUuid)
+      const token: string = generateToken(
+        '123e4567-e89b-12d3-a456-426614174000' as PersonUuid,
+        '123e4567-e89b-12d3-a456-426614174001' as WorkspaceUuid
+      )
       let clearTo: any
       const timeoutPromise = new Promise<void>((resolve) => {
         clearTo = setTimeout(resolve, 4000)

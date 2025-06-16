@@ -1476,7 +1476,12 @@ export class GithubWorker implements IntegrationManager {
             'sync doc',
             {},
             (ctx) => mapper.sync(existing, info, parent, derivedClient),
-            { url: info.url.toLowerCase(), workspace: this.workspace.uuid, existing: existing !== undefined }
+            {
+              url: info.url.toLowerCase(),
+              workspace: this.workspace.uuid,
+              existing: existing !== undefined,
+              objectClass: info.objectClass
+            }
           )
           if (docUpdate !== undefined) {
             await derivedClient.update(info, docUpdate)
@@ -1717,6 +1722,7 @@ export class GithubWorker implements IntegrationManager {
       ;({ client, endpoint } = await createPlatformClient(workspace.uuid, 30000, async (event: ClientConnectEvent) => {
         reconnect(workspace.uuid, event)
       }))
+      ctx.info('connected to github', { workspace: workspace.uuid, endpoint })
 
       const githubEnabled = (await client.findOne(core.class.PluginConfiguration, { pluginId: githubId }))?.enabled
       if (githubEnabled === false) {

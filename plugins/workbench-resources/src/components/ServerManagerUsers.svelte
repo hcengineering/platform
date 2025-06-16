@@ -6,11 +6,10 @@
   import { Button, CheckBox, ticker } from '@hcengineering/ui'
   import Expandable from '@hcengineering/ui/src/components/Expandable.svelte'
   import { FixedColumn, ObjectPresenter } from '@hcengineering/view-resources'
-  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
   import { workspacesStore } from '../utils'
 
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
-
   const endpoint = getMetadata(presentation.metadata.StatsUrl)
 
   async function fetchStats (time: number): Promise<void> {
@@ -118,7 +117,7 @@
                 </svelte:fragment>
                 <div class="flex-col">
                   {#each employeeGroups as employeeId}
-                    {@const personRef = $personRefByPersonIdStore.get(employeeId)}
+                    {@const personRef = $employeeByPersonIdStore.get(employeeId)?._id}
                     {@const connections = act.sessions.filter((it) => it.userId === employeeId)}
 
                     {@const find = connections.reduce((it, itm) => itm.current.find + it, 0)}

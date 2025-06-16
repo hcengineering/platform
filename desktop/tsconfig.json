@@ -11,7 +11,7 @@
     "skipLibCheck": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "lib": ["es2016", "dom", "ES2021.String", "ESNext.Array"]
+    "lib": ["es2023", "dom", "ES2021.String", "ESNext.Array"]
   },
   "include": ["src/**/*", "declarations.d.ts"],
   "exclude": ["node_modules", "lib", "dist", "types", "bundle"]

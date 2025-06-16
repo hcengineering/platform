@@ -99,11 +99,13 @@
         "SERVER_PROVIDER": "ws",
         "MODEL_VERSION": "0.7.110",
         // "VERSION": "0.6.289",
+        "COMMUNICATION_API_ENABLED": "true",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
         "STATS_URL": "http://huly.local:4900",
-        "QUEUE_CONFIG": "localhost:19092"
+        "QUEUE_CONFIG": "localhost:19092",
+        "FILES_URL": "http://huly.local:4030/blob/:workspace/:blobId/:filename"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -571,19 +573,19 @@
       "args": ["src/index.ts"],
       "env": {
         "SERVER_SECRET": "secret",
-        "ACCOUNTS_URL": "http://localhost:3003",
+        "ACCOUNTS_URL": "http://localhost:3000",
         "APP_ID": "${env:POD_GITHUB_APPID}",
         "CLIENT_ID": "${env:POD_GITHUB_CLIENTID}",
         "CLIENT_SECRET": "${env:POD_GITHUB_CLIENT_SECRET}",
         "PRIVATE_KEY": "${env:POD_GITHUB_PRIVATE_KEY}",
-        "COLLABORATOR_URL": "ws://huly.local:3079",
+        "COLLABORATOR_URL": "ws://huly.local:3078",
         "MINIO_ENDPOINT": "localhost:9002",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "PLATFORM_OPERATION_LOGGING": "true",
         "FRONT_URL": "http://localhost:8080",
         "PORT": "3500",
-        "STATS_URL": "http://huly.local:4901"
+        "STATS_URL": "http://huly.local:4900"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -765,12 +767,26 @@
         "BUCKETS": "blobs,eu|http://localhost:9000?accessKey=minioadmin&secretKey=minioadmin",
         "ACCOUNTS_URL": "http://localhost:3000",
         "STATS_URL": "http://huly.local:4900",
-        "STREAM_URL": "http://huly.local:1080/recording"
+        "QUEUE_CONFIG": "localhost:19092"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/services/datalake/pod-datalake"
+    },
+    {
+      "name": "Debug media",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "SECRET": "secret",
+        "QUEUE_CONFIG": "localhost:19092"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/media"
     },
     {
       "type": "chrome",

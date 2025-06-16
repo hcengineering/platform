@@ -149,7 +149,10 @@ export class DatalakeImpl implements Datalake {
       await this.db.createBlob(ctx, { workspace, name, hash, location })
 
       try {
-        const event = blobEvents.created(name, { contentType, lastModified, size, etag: hash })
+        const event =
+          blob != null
+            ? blobEvents.updated(name, { contentType, lastModified, size, etag: hash })
+            : blobEvents.created(name, { contentType, lastModified, size, etag: hash })
         await this.producer.send(workspace, [event])
       } catch (err) {
         ctx.error('failed to send blob created event', { err })
@@ -167,7 +170,10 @@ export class DatalakeImpl implements Datalake {
       await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
 
       try {
-        const event = blobEvents.created(name, { contentType, lastModified, size, etag: hash })
+        const event =
+          blob != null
+            ? blobEvents.updated(name, { contentType, lastModified, size, etag: hash })
+            : blobEvents.created(name, { contentType, lastModified, size, etag: hash })
         await this.producer.send(workspace, [event])
       } catch (err) {
         ctx.error('failed to send blob created event', { err })

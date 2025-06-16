@@ -33,11 +33,12 @@
   export let enlargedText: boolean = false
   export let colorInherit: boolean = false
   export let accent: boolean = false
-  export let maxWidth: string = ''
+  export let maxWidth: string | undefined = undefined
   export let type: ObjectPresenterType = 'link'
   export let showStatus = true
   export let overflowLabel = true
   export let inlineBlock = false
+  export let shrink: boolean = false
 </script>
 
 {#if value}
@@ -52,6 +53,7 @@
       {colorInherit}
       {accent}
       {inlineBlock}
+      shrink={shrink ? 1 : 0}
       noOverflow
     >
       <span
@@ -77,7 +79,12 @@
       </span>
     </DocNavLink>
   {:else if type === 'text'}
-    <span class:overflow-label={overflowLabel} use:tooltip={disabled ? undefined : showTooltip}>
+    <span
+      class:overflow-label={overflowLabel}
+      class:flex-no-shrink={!shrink}
+      style:max-width={maxWidth}
+      use:tooltip={disabled ? undefined : showTooltip}
+    >
       {name}
     </span>
   {/if}

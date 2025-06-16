@@ -1,17 +1,22 @@
 import core, {
   buildSocialIdString,
   DOMAIN_MODEL_TX,
+  isArchivingMode,
+  isDeletingMode,
+  MeasureMetricsContext,
   systemAccountUuid,
   TxProcessor,
-  type BackupClient,
-  type Client,
   type Doc,
+  type PersonId,
   type Ref,
+  type Tx,
   type TxCUD,
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { getAccountsFromTxes, getSocialKeyByOldEmail } from '@hcengineering/model-core'
-import { createClient, getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
+import { createDummyStorageAdapter, wrapPipeline, type PipelineFactory } from '@hcengineering/server-core'
+import { createBackupPipeline } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
 import type { Db } from 'mongodb'
 
@@ -42,9 +47,14 @@ export interface GithubUserRecord {
   accounts: Record<string, string /* Ref<Account> */>
 }
 
-export async function performGithubAccountMigrations (db: Db, region: string | null): Promise<void> {
-  const token = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'admin', admin: 'true' })
-  const githubToken = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'github' })
+export async function performGithubAccountMigrations (
+  db: Db,
+  dbUrl: string,
+  txes: Tx[],
+  region: string | null
+): Promise<void> {
+  const token = generateToken(systemAccountUuid, undefined, { service: 'admin', admin: 'true' })
+  const githubToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
   const accountClient = getAccountClient(token)
 
   const githubAccountClient = getAccountClient(githubToken)
@@ -74,19 +84,30 @@ export async function performGithubAccountMigrations (db: Db, region: string | n
     }
   }
   const processed = new Set<string>()
+  const metricsContext = new MeasureMetricsContext('github-migrate', {})
+
+  const factory: PipelineFactory = createBackupPipeline(metricsContext, dbUrl, txes, {
+    externalStorage: createDummyStorageAdapter(),
+    usePassedCtx: true
+  })
 
   const replaces = new Map<string, WorkspaceUuid>()
+
+  const failedPersonIds = new Set<PersonId>()
   for (const it of integrations) {
     const ws = oldNewIds.get(it.workspace as any) ?? byId.get(it.workspace as any)
     if (ws != null) {
-      // Need to connect to workspace to get account mapping
+      if (isArchivingMode(ws.mode) || isDeletingMode(ws.mode)) {
+        continue
+      }
+
+      console.info('processing workspace', ws.uuid, ws.name, ws.url)
 
       it.workspace = ws.uuid
       replaces.set(it.workspace, ws.uuid)
 
-      const wsToken = generateToken(systemAccountUuid, ws.uuid, { service: 'github', mode: 'backup' })
-      const endpoint = await getTransactorEndpoint(wsToken, 'external')
-      const client = (await createClient(endpoint, wsToken)) as BackupClient & Client
+      const pipeline = await factory(metricsContext, ws, (): void => {}, null, null)
+      const client = wrapPipeline(metricsContext, pipeline, ws, false)
 
       const systemAccounts = [core.account.System, core.account.ConfigUser]
       const accountsTxes: TxCUD<Doc>[] = []
@@ -100,7 +121,11 @@ export async function performGithubAccountMigrations (db: Db, region: string | n
         const docs = (await client.loadDocs(DOMAIN_MODEL_TX, ids)).filter((it) =>
           TxProcessor.isExtendsCUD(it._class)
         ) as TxCUD<Doc>[]
-        accountsTxes.push(...docs)
+        for (const tx of docs) {
+          if (tx.objectClass === 'core:class:Account' || tx.objectClass === 'contact:class:PersonAccount') {
+            accountsTxes.push(tx)
+          }
+        }
         if (info.finished && idx !== undefined) {
           await client.closeChunk(info.idx)
           break
@@ -108,9 +133,6 @@ export async function performGithubAccountMigrations (db: Db, region: string | n
       }
       await client.close()
 
-      // await client.loadChunk(DOMAIN_MODEL_TX,  {
-      //   objectClass: { $in: ['core:class:Account', 'contact:class:PersonAccount'] as Ref<Class<Doc>>[] }
-      // })
       const accounts: (Doc & { email?: string })[] = getAccountsFromTxes(accountsTxes)
 
       const socialKeyByAccount: Record<string, string> = {}
@@ -139,14 +161,19 @@ export async function performGithubAccountMigrations (db: Db, region: string | n
         })
 
         if (existing == null) {
-          await githubAccountClient.createIntegration({
-            kind: 'github',
-            workspaceUuid: ws?.uuid,
-            socialId: person,
-            data: {
-              installationId: it.installationId
-            }
-          })
+          try {
+            await githubAccountClient.createIntegration({
+              kind: 'github',
+              workspaceUuid: ws?.uuid,
+              socialId: person,
+              data: {
+                installationId: it.installationId
+              }
+            })
+          } catch (err: any) {
+            failedPersonIds.add(person)
+            console.log(err)
+          }
         }
       }
 
@@ -170,26 +197,38 @@ export async function performGithubAccountMigrations (db: Db, region: string | n
             })
 
             if (existing == null) {
-              await githubAccountClient.createIntegration({
-                kind: 'github-user',
-                workspaceUuid: null,
-                socialId: person,
-                data: {
-                  login: u._id
-                }
-              })
-              // Check/create integeration in account
-              await githubAccountClient.addIntegrationSecret({
-                kind: 'github-user',
-                workspaceUuid: null,
-                socialId: person,
-                key: u._id, // github login
-                secret: JSON.stringify(data)
-              })
+              try {
+                await githubAccountClient.createIntegration({
+                  kind: 'github-user',
+                  workspaceUuid: null,
+                  socialId: person,
+                  data: {
+                    login: u._id
+                  }
+                })
+                // Check/create integeration in account
+                await githubAccountClient.addIntegrationSecret({
+                  kind: 'github-user',
+                  workspaceUuid: null,
+                  socialId: person,
+                  key: u._id, // github login
+                  secret: JSON.stringify(data)
+                })
+              } catch (err: any) {
+                failedPersonIds.add(person)
+                console.error(err)
+              }
             }
           }
         }
       }
+    }
+  }
+  console.log('Failed to create integrations for', failedPersonIds.size, 'people')
+  if (failedPersonIds.size > 0) {
+    // We need to remove all integrations for failed persons
+    for (const person of failedPersonIds) {
+      console.log('Fialed person id', person)
     }
   }
 }

@@ -50,6 +50,9 @@ export interface PlatformQueue {
       fromBegining?: boolean
     }
   ) => ConsumerHandle
+
+  createTopic: (topics: string | string[], partitions: number) => Promise<void>
+
   createTopics: (tx: number) => Promise<void>
 
   // If not passed will delete all topica from QueueTopic enum

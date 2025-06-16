@@ -91,8 +91,8 @@
       type = undefined
     } else {
       type = null
-      update()
     }
+    update()
   }
 </script>
 
