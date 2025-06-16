@@ -262,7 +262,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         await allDocs.close()
       }
     })
-    ctx.warn('reinex done', { domain, processed })
+    ctx.warn('reindex done', { domain, processed })
   }
 
   async dropWorkspace (control?: ConsumerControl): Promise<void> {

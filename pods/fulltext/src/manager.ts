@@ -24,11 +24,14 @@ import { generateToken } from '@hcengineering/server-token'
 
 import { WorkspaceIndexer } from './workspace'
 
+const defaultIndexerPoolSize = 100
 const closeTimeout = 5 * 60 * 1000
 
 export class WorkspaceManager {
-  indexers = new Map<string, WorkspaceIndexer | Promise<WorkspaceIndexer>>()
+  indexers = new Map<WorkspaceUuid, WorkspaceIndexer | Promise<WorkspaceIndexer>>()
+  indexerUsage = new Map<WorkspaceUuid, number>()
   sysHierarchy = new Hierarchy()
+  indexerPoolSize: number
 
   workspaceConsumer?: ConsumerHandle
   txConsumer?: ConsumerHandle
@@ -45,8 +48,10 @@ export class WorkspaceManager {
       serverSecret: string
       accountsUrl: string
       listener?: FulltextListener
+      indexerPoolSize?: number
     }
   ) {
+    this.indexerPoolSize = opt.indexerPoolSize ?? defaultIndexerPoolSize
     for (const tx of model) {
       this.sysHierarchy.tx(tx)
     }
@@ -229,6 +234,17 @@ export class WorkspaceManager {
       idx = await idx
       this.indexers.set(workspace, idx)
     }
+
+    if (this.indexers.size > this.indexerPoolSize) {
+      const toRemove = this.indexerUsage.keys().next().value
+      if (toRemove !== undefined) {
+        await this.closeWorkspace(ctx, toRemove)
+      }
+    }
+
+    this.indexerUsage.delete(workspace)
+    this.indexerUsage.set(workspace, Date.now())
+
     return idx
   }
 
@@ -253,12 +269,14 @@ export class WorkspaceManager {
     await this.fulltextAdapter.close()
   }
 
-  async closeWorkspace (workspace: WorkspaceUuid): Promise<void> {
+  async closeWorkspace (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<void> {
     let idx = this.indexers.get(workspace)
     this.indexers.delete(workspace)
+    this.indexerUsage.delete(workspace)
     if (idx !== undefined && idx instanceof Promise) {
       idx = await idx
     }
     await idx?.close()
+    ctx.warn('indexer closed', { workspace })
   }
 }

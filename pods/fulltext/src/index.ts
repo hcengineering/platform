@@ -101,6 +101,12 @@ if (accountsUrl === undefined) {
   process.exit(1)
 }
 
+const indexerPoolSize = parseInt(process.env.INDEXER_POOL_SIZE ?? '100')
+if (!Number.isInteger(indexerPoolSize) || indexerPoolSize < 1) {
+  console.error('please provide indexer pool size')
+  process.exit(1)
+}
+
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
 const externalStorage = buildStorageFromConfig(storageConfig)
 
@@ -115,7 +121,8 @@ const onClose = startIndexer(metricsContext, {
   dbURL,
   port: servicePort,
   serverSecret,
-  accountsUrl
+  accountsUrl,
+  indexerPoolSize
 })
 
 process.on('uncaughtException', (e) => {

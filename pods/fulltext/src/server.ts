@@ -91,6 +91,7 @@ export async function startIndexer (
     port: number
     serverSecret: string
     accountsUrl: string
+    indexerPoolSize: number
   }
 ): Promise<() => void> {
   const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
@@ -183,7 +184,7 @@ export async function startIndexer (
       req.body = {}
 
       ctx.info('close', { workspace: decoded.workspace })
-      await manager.closeWorkspace(decoded.workspace)
+      await manager.closeWorkspace(ctx, decoded.workspace)
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)
