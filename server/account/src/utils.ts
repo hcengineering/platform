@@ -30,7 +30,8 @@ import {
   systemAccountUuid,
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   type WorkspaceMode,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -158,9 +159,14 @@ export function wrap (
 
         if (status.code === platform.status.InternalServerError) {
           Analytics.handleError(err)
-          ctx.error('Error while processing account method', { method: accountMethod.name, status, origErr: err })
+          ctx.error('Error while processing account method', {
+            method: accountMethod.name,
+            status,
+            origErr: err,
+            request
+          })
         } else {
-          ctx.error('Error while processing account method', { method: accountMethod.name, status })
+          ctx.error('Error while processing account method', { method: accountMethod.name, status, request })
         }
 
         return {
@@ -1074,6 +1080,17 @@ export async function getWorkspacesInfoWithStatusByIds (
 
 export async function getWorkspaceByUrl (db: AccountDB, url: string): Promise<Workspace | null> {
   return await db.workspace.findOne({ url })
+}
+
+export async function getWorkspaceByDataId (
+  db: AccountDB,
+  dataId: string | null | undefined
+): Promise<Workspace | null> {
+  if (dataId == null || dataId === '') {
+    return null
+  }
+
+  return await db.workspace.findOne({ dataId: dataId as WorkspaceDataId })
 }
 
 export async function getWorkspaceInvite (db: AccountDB, id: string): Promise<WorkspaceInvite | null> {
