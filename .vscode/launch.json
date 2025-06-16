@@ -510,12 +510,12 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
         "WORKSPACE_STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
-        "DB_URL": "mongodb://localhost:27017",
+        "DB_URL": "postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable",
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         "SECRET": "secret",
         "REGION": "cockroach",
         "BUCKET_NAME": "backups",
-        "INTERVAL": "0"
+        "INTERVAL": "300"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,

@@ -58,7 +58,8 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
         return docInfos.map((it) => ({
           hash: it.etag,
           id: it._id,
-          size: it.size
+          size: it.size,
+          contentType: it.contentType
         }))
       },
       close: async (ctx) => {

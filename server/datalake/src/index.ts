@@ -122,7 +122,7 @@ export class DatalakeService implements StorageAdapter {
       next: async () => {
         try {
           while (hasMore && buffer.length < 50) {
-            const res = await this.retry(ctx, () => this.client.listObjects(ctx, wsIds.uuid, cursor))
+            const res = await this.retry(ctx, () => this.client.listObjects(ctx, wsIds.uuid, cursor, 10000))
             hasMore = res.cursor !== undefined
             cursor = res.cursor
 
@@ -135,7 +135,8 @@ export class DatalakeService implements StorageAdapter {
                 provider: this.cfg.name,
                 space: core.space.Configuration,
                 modifiedBy: core.account.System,
-                modifiedOn: 0
+                modifiedOn: 0,
+                contentType: blob.contentType
               })
             }
           }
