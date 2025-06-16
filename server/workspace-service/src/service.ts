@@ -695,7 +695,8 @@ export class WorkspaceWorker {
         ctx,
         {
           uuid: workspace.uuid,
-          url: workspace.url
+          url: workspace.url,
+          dataId: workspace.dataId
         },
         opt.backup.backupStorage,
         opt.backup.bucketName,
