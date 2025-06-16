@@ -574,8 +574,7 @@ describe('account utils', () => {
       expect(result).toEqual({ error: errorStatus })
       expect(mockCtx.error).toHaveBeenCalledWith('Error while processing account method', {
         status: errorStatus,
-        method: 'mockAccMethod',
-        request
+        method: 'mockAccMethod'
       })
     })
 
@@ -604,8 +603,7 @@ describe('account utils', () => {
       expect(mockCtx.error).toHaveBeenCalledWith('Error while processing account method', {
         status: expect.any(Status),
         origErr: error,
-        method: 'mockAccMethod',
-        request
+        method: 'mockAccMethod'
       })
     })
 

@@ -162,11 +162,10 @@ export function wrap (
           ctx.error('Error while processing account method', {
             method: accountMethod.name,
             status,
-            origErr: err,
-            request
+            origErr: err
           })
         } else {
-          ctx.error('Error while processing account method', { method: accountMethod.name, status, request })
+          ctx.error('Error while processing account method', { method: accountMethod.name, status })
         }
 
         return {
