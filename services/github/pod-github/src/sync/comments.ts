@@ -420,13 +420,14 @@ export class CommentSyncManager implements DocSyncManager {
           url: (result?.data.url ?? '').toLowerCase(),
           external: result?.data as CommentExternalData,
           current: result?.data,
-          repository: repo._id
+          repository: repo._id,
+          needSync: githubSyncVersion
         }
 
         // We need to update in current promise, to prevent event changes.
         await derivedClient.update(info, upd)
       }
-      return {}
+      return { needSync: githubSyncVersion }
     } catch (err: any) {
       Analytics.handleError(err)
       this.ctx.error(err)
