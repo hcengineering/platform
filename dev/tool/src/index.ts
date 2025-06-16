@@ -1063,7 +1063,7 @@ export function devTool (
 
       const skipWorkspaces = new Set(cmd.skip.split(',').map((it) => it.trim()))
 
-      const token = generateToken(systemAccountUuid, '' as WorkspaceUuid, {
+      const token = generateToken(systemAccountUuid, undefined, {
         service: 'tool'
       })
       const workspaces = (await getAccountClient(token).listWorkspaces(cmd.region))
@@ -1691,7 +1691,7 @@ export function devTool (
     .description('Enable or disable profiling')
     .option('-o, --output <output>', 'Output file', 'profile.cpuprofile')
     .action(async (endpoint: string, mode: string, opt: { output: string }) => {
-      const token = generateToken(systemAccountUuid, '' as WorkspaceUuid, { admin: 'true' })
+      const token = generateToken(systemAccountUuid, undefined, { admin: 'true' })
       if (mode === 'start') {
         await fetch(`${endpoint}/api/v1/manage?token=${token}&operation=profile-start`, {
           method: 'PUT'

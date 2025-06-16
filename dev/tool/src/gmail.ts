@@ -68,7 +68,7 @@ const TOKEN_TYPE = 'token'
 
 export async function performGmailAccountMigrations (db: Db, region: string | null, kvsUrl: string): Promise<void> {
   console.log('Start Gmail migrations')
-  const token = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'admin', admin: 'true' })
+  const token = generateToken(systemAccountUuid, undefined, { service: 'admin', admin: 'true' })
   const accountClient = getAccountClient(token)
 
   const allWorkpaces = await accountClient.listWorkspaces(region)
@@ -98,7 +98,7 @@ async function migrateGmailIntegrations (
 ): Promise<void> {
   try {
     console.log('Start Gmail account migrations')
-    const gmailToken = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'gmail' })
+    const gmailToken = generateToken(systemAccountUuid, undefined, { service: 'gmail' })
     const accountClient = getAccountClient(token)
 
     const gmailAccountClient = getAccountClient(gmailToken)
