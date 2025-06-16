@@ -29,13 +29,13 @@ describe('generateToken', () => {
   it('throws TokenError for invalid account uuid', () => {
     expect(() => {
       generateToken('invalid-uuid' as PersonUuid, '' as WorkspaceUuid, {}, 'secret')
-    }).toThrow('Invalid account uuid')
+    }).toThrow('Invalid account uuid: "invalid-uuid"')
   })
 
   it('throws TokenError for invalid workspace uuid', () => {
     expect(() => {
       generateToken('123e4567-e89b-12d3-a456-426614174000' as PersonUuid, 'invalid-uuid' as WorkspaceUuid, {}, 'secret')
-    }).toThrow('Invalid workspace uuid')
+    }).toThrow('Invalid workspace uuid: "invalid-uuid"')
   })
 
   it('generates token without extra and workspace', () => {
