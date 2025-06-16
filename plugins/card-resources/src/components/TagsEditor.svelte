@@ -25,9 +25,6 @@
     IconAdd,
     IconClose,
     IconDownOutline,
-    themeStore,
-    getColorNumberByText,
-    getPlatformColorDef,
     Label,
     SelectPopup,
     showPopup,
@@ -37,7 +34,6 @@
 
   export let doc: Card
   export let dropdownTags: boolean = false
-  export let colored: boolean = false
   export let id: string | undefined = undefined
 
   const client = getClient()
@@ -113,12 +109,6 @@
       }
     })
   }
-
-  const getColors = (activeTags: Tag[], dark: boolean): string[] => {
-    return activeTags.map((tag) => {
-      return `${getPlatformColorDef(getColorNumberByText(tag.label), dark).color}`
-    })
-  }
 </script>
 
 <div class="container gap-1">
@@ -131,7 +121,6 @@
           id={id ? `${id}-dropdown` : undefined}
           icon={IconDownOutline}
           size={'small'}
-          backgroundColors={colored ? getColors(activeTags, $themeStore.dark) : undefined}
           on:click={handleDrop}
         />
       {:else}

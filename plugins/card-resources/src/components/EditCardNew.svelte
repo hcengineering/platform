@@ -223,7 +223,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="extra">
-      <TagsEditor {doc} {dropdownTags} id={'cardHeader-tags'} colored />
+      <TagsEditor {doc} {dropdownTags} id={'cardHeader-tags'} />
       <slot name="extra" />
     </svelte:fragment>
 

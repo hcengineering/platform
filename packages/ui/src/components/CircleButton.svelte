@@ -25,7 +25,6 @@
   export let primary: boolean = false
   export let disabled: boolean = false
   export let id: string | undefined = undefined
-  export let backgroundColors: string[] | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -35,22 +34,6 @@
       key.stopPropagation()
       dispatch('selected')
     }
-  }
-
-  const getBackgroundColors = (bgColors: string[] | undefined): string | undefined => {
-    if (bgColors === undefined || bgColors.length === 0) {
-      return undefined
-    }
-    const proc = bgColors.length > 1 ? 100 / bgColors.length : 100
-    return proc === 100
-      ? `background: ${bgColors[0]} !important;`
-      : `background: conic-gradient(${bgColors
-          .map((bgc, i) => {
-            const start = i * proc
-            const end = i < bgColors.length - 1 ? (i + 1) * proc : 100
-            return `${bgc} ${start}%, ${bgc} ${end}%`
-          })
-          .join(', ')}) !important;`
   }
 </script>
 
@@ -63,8 +46,6 @@
   class:ghost
   class:primary
   class:disabled
-  class:backgrounds={backgroundColors !== undefined}
-  style={getBackgroundColors(backgroundColors)}
   tabindex="0"
   on:keydown={onKeydown}
   on:click|stopPropagation
@@ -143,10 +124,6 @@
       &.disabled {
         background-color: var(--primary-button-disabled);
       }
-    }
-    &.backgrounds {
-      color: var(--white-color);
-      border: none;
     }
   }
   .icon-inline {
