@@ -201,7 +201,7 @@ class RestClientImpl implements RestClient {
         if (!response.ok) {
           throw new Error(response.statusText)
         }
-        return await extractJson<MessagesGroup[]>(response)
+        return await extractJson<Message[]>(response)
       },
       { retries }
     )

@@ -27,7 +27,7 @@ function reviver (key: string, value: any): Date {
   return value
 }
 
-export async function extractJson<T> (response: Response): Promise<any> {
+export async function extractJson<T> (response: Response): Promise<T> {
   const encoding = response.headers.get('content-encoding')
   if (encoding === 'snappy') {
     const buffer = await response.arrayBuffer()
