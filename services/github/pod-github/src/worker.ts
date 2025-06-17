@@ -1476,7 +1476,12 @@ export class GithubWorker implements IntegrationManager {
             'sync doc',
             {},
             (ctx) => mapper.sync(existing, info, parent, derivedClient),
-            { url: info.url.toLowerCase(), workspace: this.workspace.uuid, existing: existing !== undefined }
+            {
+              url: info.url.toLowerCase(),
+              workspace: this.workspace.uuid,
+              existing: existing !== undefined,
+              objectClass: info.objectClass
+            }
           )
           if (docUpdate !== undefined) {
             await derivedClient.update(info, docUpdate)
