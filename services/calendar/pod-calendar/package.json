@@ -22,7 +22,7 @@
     "docker:tbuild": "docker build -t hardcoreeng/calendar . --platform=linux/amd64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/calendar",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/calendar staging",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/calendar",
-    "run-local": "cross-env ts-node src/index.ts",
+    "run-local": "ts-node src/index.ts",
     "format": "format src",
     "_phase:build": "compile transpile src",
     "_phase:test": "jest --passWithNoTests --silent",
@@ -49,7 +49,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "prettier": "^3.1.0",
-    "ts-node-dev": "^2.0.0",
+    "ts-node": "^10.8.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {
@@ -61,7 +61,6 @@
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/server-client": "^0.6.0",
@@ -77,7 +76,6 @@
     "googleapis": "^122.0.0",
     "google-auth-library": "^8.0.2",
     "jwt-simple": "^0.5.6",
-    "mongodb": "^6.16.0",
     "ws": "^8.18.2"
   }
 }

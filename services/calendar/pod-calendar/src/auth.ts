@@ -25,7 +25,7 @@ import { getClient } from './client'
 import { addUserByEmail, removeUserByEmail } from './kvsUtils'
 import { IncomingSyncManager, lock } from './sync'
 import { CALENDAR_INTEGRATION, GoogleEmail, SCOPES, State, Token, User } from './types'
-import { getGoogleClient, getWorkspaceToken } from './utils'
+import { getGoogleClient, getWorkspaceToken, removeIntegrationSecret } from './utils'
 import { WatchController } from './watch'
 
 interface AuthResult {
@@ -124,11 +124,7 @@ export class AuthController {
     const token = JSON.parse(secret.secret)
     const watchController = WatchController.get(this.accountClient)
     await watchController.unsubscribe(token)
-    await this.accountClient.deleteIntegrationSecret(data)
-    const left = await this.accountClient.listIntegrationsSecrets(data)
-    if (left.length === 0) {
-      await this.accountClient.deleteIntegration(data)
-    }
+    await removeIntegrationSecret(this.ctx, this.accountClient, data)
   }
 
   private async process (code: string): Promise<void> {
