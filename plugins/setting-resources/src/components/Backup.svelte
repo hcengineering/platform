@@ -146,6 +146,8 @@
   let copied2 = false
 
   $: snapshots = backupInfo?.info?.snapshots ?? []
+
+  $: snapshorsr = [...(backupInfo?.info?.snapshots ?? [])].reverse()
 </script>
 
 <div class="hulyComponent flex-no-shrink">
@@ -209,10 +211,11 @@
         </div>
 
         {#if backupInfo?.info?.snapshots}
-          {@const snLen = backupInfo.info.snapshots.length}
-          {#each backupInfo.info.snapshots.reverse() as snapshot, i}
+          {@const snLen = snapshorsr.length}
+          {#each snapshorsr as snapshot, i}
+            {@const hasSnapshots = Object.keys(snapshot.domains).length > 0}
             <div class="flex-no-shrink">
-              <Expandable expandable bordered>
+              <Expandable expandable={hasSnapshots} bordered showChevron={hasSnapshots}>
                 <svelte:fragment slot="title">
                   <div class="flex-row-center ml-1">
                     #{snLen - i}
@@ -221,8 +224,8 @@
                     {getSnapshotSummary(snapshot)}
                   </div>
                 </svelte:fragment>
-                <div class="p-2">
-                  {#if snapshot.domains}
+                {#if hasSnapshots}
+                  <div class="p-2">
                     {#each Object.entries(snapshot.domains) as [domain, data]}
                       {#if data.storage?.length}
                         <div class="domain-files">
@@ -264,8 +267,8 @@
                         </div>
                       {/if}
                     {/each}
-                  {/if}
-                </div>
+                  </div>
+                {/if}
               </Expandable>
             </div>
           {/each}
