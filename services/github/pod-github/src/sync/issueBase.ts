@@ -393,6 +393,7 @@ export abstract class IssueSyncManagerBase {
         Analytics.handleError(err)
         this.ctx.error('error during description update', err)
       }
+      delete update.description
     }
 
     if (Object.keys(update).length > 0) {
