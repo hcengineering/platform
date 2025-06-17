@@ -2585,7 +2585,9 @@ export function devTool (
       const _client = await client.getClient()
 
       const kvsUrl = getKvsUrl()
-      await performGmailAccountMigrations(_client.db(cmd.db), cmd.region ?? null, kvsUrl)
+      const { dbUrl, txes } = prepareTools()
+
+      await performGmailAccountMigrations(_client.db(cmd.db), dbUrl, cmd.region ?? null, kvsUrl, txes)
       await _client.close()
       client.close()
     })
