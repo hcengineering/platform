@@ -376,7 +376,16 @@ export class Hierarchy {
   }
 
   private updateDescendant (_class: Ref<Classifier>, add = true): void {
-    const hierarchy = this.getAncestors(_class)
+    let hierarchy: Ref<Classifier>[] = []
+
+    try {
+      hierarchy = this.getAncestors(_class)
+    } catch (err) {
+      if (add) {
+        throw err
+      }
+    }
+
     for (const cls of hierarchy) {
       const list = this.descendants.get(cls)
       if (list === undefined) {
