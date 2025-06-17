@@ -24,9 +24,6 @@ import { start } from '.'
 export function startFront (ctx: MeasureContext, extraConfig?: Record<string, string | undefined>): void {
   const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
 
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig)
-
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
     console.error('please provide accounts url')
@@ -115,13 +112,16 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   const streamUrl = process.env.STREAM_URL
 
-  setMetadata(serverToken.metadata.Secret, serverSecret)
-
   const disableSignUp = process.env.DISABLE_SIGNUP
 
   const hideLocalLogin = process.env.HIDE_LOCAL_LOGIN
 
   const mailUrl = process.env.MAIL_URL
+
+  setMetadata(serverToken.metadata.Secret, serverSecret)
+
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig)
 
   const config = {
     storageAdapter,

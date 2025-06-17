@@ -21,6 +21,7 @@ import core, {
   systemAccountUuid,
   withContext
 } from '@hcengineering/core'
+import { getMetadata } from '@hcengineering/platform'
 import {
   type BlobStorageIterator,
   type BucketInfo,
@@ -30,7 +31,7 @@ import {
   type StorageConfiguration,
   type UploadedObjectInfo
 } from '@hcengineering/server-core'
-import { generateToken } from '@hcengineering/server-token'
+import serverToken, { generateToken } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
 import { type UploadObjectParams, DatalakeClient } from './client'
 import { NotFoundError } from './error'
@@ -74,6 +75,10 @@ export class DatalakeService implements StorageAdapter {
     readonly cfg: DatalakeConfig,
     readonly options: DatalakeClientOptions = {}
   ) {
+    const secret = getMetadata(serverToken.metadata.Secret)
+    if (secret === undefined) {
+      console.warn('Server secret not set, datalake storage adapter initialized with default secret')
+    }
     const token = generateToken(systemAccountUuid, undefined, { service: 'datalake' })
     this.client = createDatalakeClient(cfg, token)
     this.retryCount = options.retryCount ?? 5
