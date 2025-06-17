@@ -236,8 +236,7 @@ export class IncomingSyncManager {
   private getEventCalendar (calendarId: string, event: calendar_v3.Schema$Event): ExternalCalendar | undefined {
     const _calendar =
       this.calendars.find((p) => p.externalId === event.organizer?.email) ??
-      this.calendars.find((p) => p.externalId === calendarId) ??
-      this.calendars[0]
+      this.calendars.find((p) => p.externalId === calendarId)
     return _calendar
   }
 
@@ -602,6 +601,8 @@ export class IncomingSyncManager {
         if (err?.response?.status === 410) {
           syncToken = undefined
           pageToken = undefined
+        } else {
+          throw err
         }
       }
     }
