@@ -79,7 +79,7 @@
   </div>
   <div slot="content">
     {#if !disabled}
-      <div class="flex-presenter cursor-default flex-gap-2 p-4">
+      <div class="flex-presenter cursor-default flex-gap-2 p-3">
         <Avatar
           size="large"
           person={employee}
