@@ -33,14 +33,14 @@
   const me = getCurrentEmployee()
   const objectArray = Array.isArray(object) ? object : [object]
   const dispatch = createEventDispatcher()
-  let creators: Ref<Person>[]
+  let creators: Ref<Person>[] | undefined
   $: getPersonRefsByPersonIdsCb(uniqueNotEmpty(objectArray.map((obj) => obj.createdBy)), (refs) => {
     creators = Array.from(refs.values())
   })
 
   $: canDelete =
     (skipCheck ||
-      (creators.length === 1 && creators[0] === me) ||
+      (creators !== undefined && creators.length === 1 && creators[0] === me) ||
       getCurrentAccount().role === AccountRole.Owner ||
       isAdminUser()) &&
     canDeleteExtra
