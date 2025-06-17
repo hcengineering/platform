@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { ActionContext } from '@hcengineering/presentation';
+  import presentation, { ActionContext } from '@hcengineering/presentation'
   import { personByIdStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
@@ -31,8 +31,7 @@
     TrackPublication
   } from 'livekit-client'
   import { onDestroy, onMount, tick } from 'svelte'
-  import presentation from '@hcengineering/presentation'
-  import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
+    import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
 
   import love from '../plugin'
   import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
