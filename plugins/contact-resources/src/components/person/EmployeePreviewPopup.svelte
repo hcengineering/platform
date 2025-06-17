@@ -79,7 +79,7 @@
   </div>
   <div slot="content">
     {#if !disabled}
-      <div class="flex-presenter cursor-default flex-gap-2 p-3">
+      <div class="flex-presenter cursor-default flex-gap-2 p-4">
         <Avatar
           size="large"
           person={employee}
@@ -99,6 +99,7 @@
           </span>
         </div>
       </div>
+      <!-- Hide achievements for now, as achievmment service is not yet implemented
       {#if isEmployee}
         <div class="py-1">
           <ComponentExtensions
@@ -109,6 +110,7 @@
           />
         </div>
       {/if}
+      -->
     {:else}
       <div class="flex-presenter flex-gap-2 p-2">
         <div class="flex-presenter">
