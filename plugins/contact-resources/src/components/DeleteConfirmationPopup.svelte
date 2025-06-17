@@ -75,7 +75,7 @@
       </div>
       <div class="mb-2">
         <Label label={view.string.DeletePopupCreatorLabel} />
-        {#each creators as person}
+        {#each creators ?? [] as person}
           <div class="my-2">
             <PersonRefPresenter value={person} />
           </div>
