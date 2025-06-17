@@ -1,26 +1,30 @@
 import core, {
   type AccountUuid,
-  type BackupClient,
-  type Client,
   DOMAIN_MODEL_TX,
   type Doc,
+  MeasureMetricsContext,
   type PersonId,
   type Ref,
   type SocialId,
   SocialIdType,
+  type Tx,
   type TxCUD,
   TxProcessor,
   type WorkspaceInfoWithStatus,
   type WorkspaceUuid,
   buildSocialIdString,
+  isArchivingMode,
+  isDeletingMode,
   systemAccountUuid
 } from '@hcengineering/core'
-import { createClient, getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
 import { getClient as getKvsClient } from '@hcengineering/kvs-client'
 import { generateToken } from '@hcengineering/server-token'
 import { getAccountsFromTxes, getSocialKeyByOldEmail } from '@hcengineering/model-core'
 
 import type { Db } from 'mongodb'
+import { type PipelineFactory, createDummyStorageAdapter, wrapPipeline } from '@hcengineering/server-core'
+import { createBackupPipeline } from '@hcengineering/server-pipeline'
 
 // Old token and history types
 interface Credentials {
@@ -66,7 +70,13 @@ interface WorkspaceInfoProvider {
 const GMAIL_INTEGRATION = 'gmail'
 const TOKEN_TYPE = 'token'
 
-export async function performGmailAccountMigrations (db: Db, region: string | null, kvsUrl: string): Promise<void> {
+export async function performGmailAccountMigrations (
+  db: Db,
+  dbUrl: string,
+  region: string | null,
+  kvsUrl: string,
+  txes: Tx[]
+): Promise<void> {
   console.log('Start Gmail migrations')
   const token = generateToken(systemAccountUuid, undefined, { service: 'admin', admin: 'true' })
   const accountClient = getAccountClient(token)
@@ -84,17 +94,25 @@ export async function performGmailAccountMigrations (db: Db, region: string | nu
       return ws
     }
   }
+  const metricsContext = new MeasureMetricsContext('github-migrate', {})
 
-  await migrateGmailIntegrations(db, token, workspaceProvider)
+  const factory: PipelineFactory = createBackupPipeline(metricsContext, dbUrl, txes, {
+    externalStorage: createDummyStorageAdapter(),
+    usePassedCtx: true
+  })
 
-  await migrateGmailHistory(db, token, kvsUrl, workspaceProvider)
+  await migrateGmailIntegrations(db, token, workspaceProvider, factory, metricsContext)
+
+  await migrateGmailHistory(db, token, kvsUrl, workspaceProvider, factory, metricsContext)
   console.log('Finished Gmail migrations')
 }
 
 async function migrateGmailIntegrations (
   db: Db,
   token: string,
-  workspaceProvider: WorkspaceInfoProvider
+  workspaceProvider: WorkspaceInfoProvider,
+  factory: PipelineFactory,
+  metricsContext: MeasureMetricsContext
 ): Promise<void> {
   try {
     console.log('Start Gmail account migrations')
@@ -115,8 +133,7 @@ async function migrateGmailIntegrations (
         }
         token.workspace = ws.uuid
 
-        const socialKey = await getSocialKeyByOldAccount(ws, token.userId)
-        console.log('socialKey', socialKey)
+        const socialKey = await getSocialKeyByOldAccount(ws, token.userId, factory, metricsContext)
         const socialId =
           socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
         if (socialId == null) {
@@ -187,7 +204,9 @@ async function migrateGmailHistory (
   db: Db,
   token: string,
   kvsUrl: string,
-  workspaceProvider: WorkspaceInfoProvider
+  workspaceProvider: WorkspaceInfoProvider,
+  factory: PipelineFactory,
+  metricsContext: MeasureMetricsContext
 ): Promise<void> {
   try {
     console.log('Start Gmail history migrations')
@@ -203,7 +222,10 @@ async function migrateGmailHistory (
         if (ws == null) {
           continue
         }
-        const socialKey = await getSocialKeyByOldAccount(ws, history.userId)
+        if (isArchivingMode(ws.mode) || isDeletingMode(ws.mode)) {
+          continue
+        }
+        const socialKey = await getSocialKeyByOldAccount(ws, history.userId, factory, metricsContext)
         const socialId =
           socialKey !== undefined ? await accountClient.findFullSocialIdBySocialKey(socialKey) : undefined
         if (socialId == null) {
@@ -237,19 +259,28 @@ function getHistoryKey (workspace: WorkspaceUuid, userId: PersonId): string {
 }
 
 const accountsMap = new Map<WorkspaceUuid, Record<string, string>>()
-async function getSocialKeyByOldAccount (ws: WorkspaceInfoWithStatus, userId: string): Promise<string | undefined> {
+async function getSocialKeyByOldAccount (
+  ws: WorkspaceInfoWithStatus,
+  userId: string,
+  factory: PipelineFactory,
+  metricsContext: MeasureMetricsContext
+): Promise<string | undefined> {
   if (!accountsMap.has(ws.uuid)) {
-    const socialKeyByAccount = await getSociaKeysMap(ws)
+    const socialKeyByAccount = await getSociaKeysMap(ws, factory, metricsContext)
     accountsMap.set(ws.uuid, socialKeyByAccount)
   }
   const socialKeyByAccount = accountsMap.get(ws.uuid) ?? {}
   return socialKeyByAccount[userId]
 }
 
-async function getSociaKeysMap (ws: WorkspaceInfoWithStatus): Promise<Record<string, string>> {
+async function getSociaKeysMap (
+  ws: WorkspaceInfoWithStatus,
+  factory: PipelineFactory,
+  metricsContext: MeasureMetricsContext
+): Promise<Record<string, string>> {
   console.info('Loading accounts from workspace', ws.uuid, ws.name, ws.url)
   const systemAccounts = [core.account.System, core.account.ConfigUser]
-  const accounts = await loadAccounts(ws)
+  const accounts = await loadAccounts(ws, factory, metricsContext)
 
   const socialKeyByAccount: Record<string, string> = {}
   for (const account of accounts) {
@@ -266,10 +297,13 @@ async function getSociaKeysMap (ws: WorkspaceInfoWithStatus): Promise<Record<str
   return socialKeyByAccount
 }
 
-export async function loadAccounts (ws: WorkspaceInfoWithStatus): Promise<(Doc & { email?: string })[]> {
-  const wsToken = generateToken(systemAccountUuid, ws.uuid, { service: 'gmail', mode: 'backup' })
-  const endpoint = await getTransactorEndpoint(wsToken, 'external')
-  const client = (await createClient(endpoint, wsToken)) as BackupClient & Client
+export async function loadAccounts (
+  ws: WorkspaceInfoWithStatus,
+  factory: PipelineFactory,
+  metricsContext: MeasureMetricsContext
+): Promise<(Doc & { email?: string })[]> {
+  const pipeline = await factory(metricsContext, ws, (): void => {}, null, null)
+  const client = wrapPipeline(metricsContext, pipeline, ws, false)
 
   const accountsTxes: TxCUD<Doc>[] = []
   let idx: number | undefined
