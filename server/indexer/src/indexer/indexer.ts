@@ -472,10 +472,15 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     // We need to update hierarchy and local model if required.
 
     for (const tx of result) {
-      this.hierarchy.tx(tx)
-      const domain = this.hierarchy.findDomain(tx.objectClass)
-      if (domain === DOMAIN_MODEL) {
-        await this.model.tx(tx)
+      try {
+        this.hierarchy.tx(tx)
+        const domain = this.hierarchy.findDomain(tx.objectClass)
+        if (domain === DOMAIN_MODEL) {
+          await this.model.tx(tx)
+        }
+      } catch (err: any) {
+        ctx.error('failed to process tx', { err, tx })
+        Analytics.handleError(err)
       }
     }
 
@@ -491,10 +496,15 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         continue
       }
 
-      // We need to load documents from storage
-      const docs: Doc[] = await this.loadDocsFromTx(values, toRemove, ctx, v)
+      try {
+        // We need to load documents from storage
+        const docs: Doc[] = await this.loadDocsFromTx(values, toRemove, ctx, v)
 
-      await this.indexDocuments(ctx, v, docs, pushQueue)
+        await this.indexDocuments(ctx, v, docs, pushQueue)
+      } catch (err: any) {
+        ctx.error('failed to index documents', { err, tx: v })
+        Analytics.handleError(err)
+      }
     }
 
     try {

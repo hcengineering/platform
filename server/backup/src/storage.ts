@@ -5,6 +5,13 @@ import { mkdir, readdir, readFile, rm, writeFile } from 'fs/promises'
 import { dirname, join } from 'path'
 import { PassThrough, Readable, Writable } from 'stream'
 
+export interface FileInfo {
+  size: number
+  etag: string
+  contentType?: string
+  lastModified: number
+}
+
 /**
  * @public
  */
@@ -17,6 +24,8 @@ export interface BackupStorage {
   exists: (name: string) => Promise<boolean>
 
   stat: (name: string) => Promise<number>
+
+  statInfo: (name: string) => Promise<FileInfo>
   delete: (name: string) => Promise<void>
 
   deleteRecursive: (name: string) => Promise<void>
@@ -48,6 +57,11 @@ class FileStorage implements BackupStorage {
 
   async stat (name: string): Promise<number> {
     return statSync(join(this.root, name)).size
+  }
+
+  async statInfo (name: string): Promise<FileInfo> {
+    const stat = statSync(join(this.root, name))
+    return { size: stat.size, etag: stat.mtime.toUTCString(), lastModified: stat.mtime.getTime() }
   }
 
   async delete (name: string): Promise<void> {
@@ -115,6 +129,20 @@ class AdapterStorage implements BackupStorage {
     }
   }
 
+  async statInfo (name: string): Promise<FileInfo> {
+    try {
+      const st = await this.client.stat(this.ctx, this.wsIds, join(this.root, name))
+      return {
+        size: st?.size ?? 0,
+        etag: st?.etag ?? '',
+        contentType: st?.contentType,
+        lastModified: st?.modifiedOn ?? 0
+      }
+    } catch (err: any) {
+      return { size: 0, etag: '', lastModified: 0 }
+    }
+  }
+
   async delete (name: string): Promise<void> {
     await this.client.remove(this.ctx, this.wsIds, [join(this.root, name)])
   }
@@ -147,9 +175,10 @@ export async function createStorageBackupStorage (
   ctx: MeasureContext,
   client: StorageAdapter,
   wsIds: WorkspaceIds,
-  root: string
+  root: string,
+  check: boolean = true
 ): Promise<BackupStorage> {
-  if (!(await client.exists(ctx, wsIds))) {
+  if (check && !(await client.exists(ctx, wsIds))) {
     await client.make(ctx, wsIds)
   }
   return new AdapterStorage(client, wsIds, root, ctx)

@@ -99,6 +99,7 @@
           </span>
         </div>
       </div>
+      <!-- Hide achievements for now, as achievmment service is not yet implemented
       {#if isEmployee}
         <div class="py-1">
           <ComponentExtensions
@@ -109,6 +110,7 @@
           />
         </div>
       {/if}
+      -->
     {:else}
       <div class="flex-presenter flex-gap-2 p-2">
         <div class="flex-presenter">

@@ -236,8 +236,7 @@ export class IncomingSyncManager {
   private getEventCalendar (calendarId: string, event: calendar_v3.Schema$Event): ExternalCalendar | undefined {
     const _calendar =
       this.calendars.find((p) => p.externalId === event.organizer?.email) ??
-      this.calendars.find((p) => p.externalId === calendarId) ??
-      this.calendars[0]
+      this.calendars.find((p) => p.externalId === calendarId)
     return _calendar
   }
 
@@ -365,7 +364,8 @@ export class IncomingSyncManager {
       calendar: _calendar,
       access: this.getAccess(event, accessRole),
       timeZone: event.start?.timeZone ?? event.end?.timeZone ?? 'Etc/GMT',
-      user: this.user.userId
+      user: this.user.userId,
+      blockTime: event.transparency !== 'transparent'
     }
     if (participants[1].length > 0) {
       res.externalParticipants = participants[1]
@@ -463,6 +463,9 @@ export class IncomingSyncManager {
         event.visibility === 'public'
           ? 'public'
           : (event.extendedProperties?.private?.visibility as Visibility) ?? 'private'
+    }
+    if (event.transparency != null) {
+      res.blockTime = event.transparency !== 'transparent'
     }
 
     return res
@@ -602,6 +605,8 @@ export class IncomingSyncManager {
         if (err?.response?.status === 410) {
           syncToken = undefined
           pageToken = undefined
+        } else {
+          throw err
         }
       }
     }

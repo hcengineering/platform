@@ -822,15 +822,13 @@ export class PlatformWorker {
   checkedWorkspaces = new Set<string>()
 
   async checkWorkspaceIsActive (
-    token: string,
-    workspace: WorkspaceUuid
+    workspace: WorkspaceUuid,
+    workspaceInfo?: WorkspaceInfoWithStatus,
+    needRecheck = false
   ): Promise<{ workspaceInfo: WorkspaceInfoWithStatus | undefined, needRecheck: boolean }> {
-    let workspaceInfo: WorkspaceInfoWithStatus | undefined
-    try {
-      workspaceInfo = await getAccountClient(config.AccountsURL, token).getWorkspaceInfo(false)
-    } catch (err: any) {
-      this.ctx.error('Workspace not found:', { workspace })
-      return { workspaceInfo: undefined, needRecheck: false }
+    if (workspaceInfo === undefined && needRecheck) {
+      const token = generateToken(systemAccountUuid, workspace, { service: 'github', mode: 'github' })
+      workspaceInfo = await getAccountClient(config.AccountsURL, token).getWorkspaceInfo()
     }
     if (workspaceInfo?.uuid === undefined) {
       this.ctx.error('No workspace exists for workspaceId', { workspace })
@@ -887,6 +885,14 @@ export class PlatformWorker {
         this.ctx.info('connecting to workspace', { workspace: c, time: Date.now() - d.time, version: d.version })
       }
     }, 5000)
+
+    const token = generateToken(systemAccountUuid, undefined, { service: 'github', mode: 'github' })
+    const infos = new Map(
+      Array.from(await getAccountClient(config.AccountsURL, token).getWorkspacesInfo(workspaces)).map((it) => [
+        it.uuid,
+        it
+      ])
+    )
     for (const workspace of workspaces) {
       const widx = ++idx
       if (this.clients.has(workspace)) {
@@ -894,8 +900,7 @@ export class PlatformWorker {
         continue
       }
       await rateLimiter.add(async () => {
-        const token = generateToken(systemAccountUuid, workspace, { service: 'github', mode: 'github' })
-        const { workspaceInfo, needRecheck } = await this.checkWorkspaceIsActive(token, workspace)
+        const { workspaceInfo, needRecheck } = await this.checkWorkspaceIsActive(workspace, infos.get(workspace))
         if (workspaceInfo === undefined) {
           if (needRecheck) {
             rechecks.push(workspace)
@@ -949,7 +954,7 @@ export class PlatformWorker {
               }
               if (initialized) {
                 // We need to check if workspace is inactive
-                void this.checkWorkspaceIsActive(token, workspace)
+                void this.checkWorkspaceIsActive(workspace, undefined, true)
                   .then((res) => {
                     if (res === undefined) {
                       this.ctx.warn('Workspace is inactive, removing from clients list.', { workspace })
