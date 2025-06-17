@@ -132,7 +132,12 @@ class AdapterStorage implements BackupStorage {
   async statInfo (name: string): Promise<FileInfo> {
     try {
       const st = await this.client.stat(this.ctx, this.wsIds, join(this.root, name))
-      return { size: st?.size ?? 0, etag: st?.etag ?? '', contentType: st?.contentType, lastModified: st?.modifiedOn ?? 0 }
+      return {
+        size: st?.size ?? 0,
+        etag: st?.etag ?? '',
+        contentType: st?.contentType,
+        lastModified: st?.modifiedOn ?? 0
+      }
     } catch (err: any) {
       return { size: 0, etag: '', lastModified: 0 }
     }

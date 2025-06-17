@@ -328,7 +328,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
   }
 
   app.get('/api/backup/:workspace/:file(*)', (req, res) => {
-    void handleBackup(req, res).catch(err => {
+    void handleBackup(req, res).catch((err) => {
       console.error('request error', err)
       res.status(500).end('Internal Server Error')
     })

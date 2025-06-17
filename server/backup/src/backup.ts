@@ -1341,7 +1341,11 @@ export async function backup (
 
             let blobFiled = false
 
-            printDownloaded('', descrJson.length, needRetrieveChunks.reduce((v, docs) => v + docs.length, 0) + docs.length)
+            printDownloaded(
+              '',
+              descrJson.length,
+              needRetrieveChunks.reduce((v, docs) => v + docs.length, 0) + docs.length
+            )
             try {
               const buffers: Buffer[] = []
               await blobClient.writeTo(ctx, blob._id, blob.size, {
