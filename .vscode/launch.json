@@ -525,6 +525,24 @@
       "protocol": "inspector"
     },
     {
+      "name": "Debug backup API",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "SECRET": "secret",
+        "BUCKET_NAME": "backups"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "showAsyncStacks": true,
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/services/backup/backup-api-pod",
+      "protocol": "inspector"
+    },
+    {
       "name": "Debug archive tool",
       "type": "node",
       "request": "launch",
