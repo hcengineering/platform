@@ -295,6 +295,11 @@ async function fillUser (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fillBlockTime (client: MigrationClient): Promise<void> {
+  await client.update(DOMAIN_EVENT, { blockTime: { $exists: false }, allDay: true }, { blockTime: false })
+  await client.update(DOMAIN_EVENT, { blockTime: { $exists: false } }, { blockTime: true })
+}
+
 async function migrateTimezone (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_CALENDAR,
@@ -354,6 +359,11 @@ export const calendarOperation: MigrateOperation = {
         state: 'fill-user-v2',
         mode: 'upgrade',
         func: fillUser
+      },
+      {
+        state: 'fill-block-time',
+        mode: 'upgrade',
+        func: fillBlockTime
       }
     ])
   },

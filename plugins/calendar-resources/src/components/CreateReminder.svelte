@@ -54,6 +54,7 @@
       participants,
       title: _title,
       allDay: false,
+      blockTime: false,
       reminders: [0],
       access: 'owner',
       user: getCurrentAccount().primarySocialId

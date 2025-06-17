@@ -65,6 +65,7 @@
       participants: [getCurrentEmployee()],
       title: doc.title,
       allDay: false,
+      blockTime: true,
       access: 'owner',
       visibility: doc.visibility === 'public' ? 'public' : 'freeBusy',
       reminders: [],

@@ -127,6 +127,7 @@
           _class: time.class.WorkSlot,
           collection: 'events',
           visibility: 'public',
+          blockTime: true,
           calendar: _calendar,
           space: calendar.space.Calendar,
           modifiedBy: myAcc.primarySocialId,

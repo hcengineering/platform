@@ -364,7 +364,8 @@ export class IncomingSyncManager {
       calendar: _calendar,
       access: this.getAccess(event, accessRole),
       timeZone: event.start?.timeZone ?? event.end?.timeZone ?? 'Etc/GMT',
-      user: this.user.userId
+      user: this.user.userId,
+      blockTime: event.transparency !== 'transparent'
     }
     if (participants[1].length > 0) {
       res.externalParticipants = participants[1]
@@ -462,6 +463,9 @@ export class IncomingSyncManager {
         event.visibility === 'public'
           ? 'public'
           : (event.extendedProperties?.private?.visibility as Visibility) ?? 'private'
+    }
+    if (event.transparency != null) {
+      res.blockTime = event.transparency !== 'transparent'
     }
 
     return res
