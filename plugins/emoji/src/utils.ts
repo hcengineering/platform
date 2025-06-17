@@ -18,7 +18,7 @@ import SHORTCODE_REGEX from 'emojibase-regex/shortcode'
 
 export { fetchEmojis, fetchMessages, type Locale } from 'emojibase'
 
-export const emojiRegex = EMOJI_REGEX
+export const emojiRegex = new RegExp(`(?:^|\\s)(${EMOJI_REGEX.source})$`)
 export const emojiGlobalRegex = new RegExp(EMOJI_REGEX.source, EMOJI_REGEX.flags + 'g')
 
 export const emoticonRegex = new RegExp(`(?:^|\\s)(${EMOTICON_REGEX.source})$`)
