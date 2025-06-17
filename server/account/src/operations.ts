@@ -74,7 +74,6 @@ import {
   getRegions,
   getRolePower,
   getWorkspaceById,
-  getWorkspaceByUrl,
   getWorkspaceEndpoint,
   getWorkspaceInfoWithStatusById,
   getWorkspaceInvite,
@@ -98,7 +97,8 @@ import {
   verifyPassword,
   wrap,
   updateAllowReadOnlyGuests,
-  READONLY_GUEST_ACCOUNT
+  READONLY_GUEST_ACCOUNT,
+  getWorkspaceByDataId
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -1806,16 +1806,18 @@ async function exchangeGuestToken (
   if (tokenObj.account == null) {
     // Check if it's old guest token
     const oldGuestEmail = '#guest@hc.engineering'
-    const { linkId, guest, email, workspace: workspaceUrl } = tokenObj as any
+    const { linkId, guest, email, workspace: workspaceDataId } = tokenObj as any
 
-    if (linkId == null || guest == null || email !== oldGuestEmail || workspaceUrl == null) {
+    if (linkId == null || guest == null || email !== oldGuestEmail || workspaceDataId == null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
     }
 
-    const workspace = await getWorkspaceByUrl(db, workspaceUrl)
+    const workspace = await getWorkspaceByDataId(db, workspaceDataId)
 
     if (workspace == null) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl: workspaceDataId })
+      )
     }
 
     return generateToken(GUEST_ACCOUNT as PersonUuid, workspace.uuid, { linkId, guest: 'true' })

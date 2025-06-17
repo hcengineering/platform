@@ -16,8 +16,6 @@
 interface Config {
   Port: number
 
-  MongoURI: string
-  MongoDB: string
   AccountsURL: string
   ServiceID: string
   Secret: string
@@ -29,9 +27,6 @@ interface Config {
 
 const envMap: { [key in keyof Config]: string } = {
   Port: 'PORT',
-
-  MongoURI: 'MONGO_URI',
-  MongoDB: 'MONGO_DB',
 
   AccountsURL: 'ACCOUNTS_URL',
   ServiceID: 'SERVICE_ID',
@@ -47,8 +42,6 @@ const parseNumber = (str: string | undefined): number | undefined => (str !== un
 const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env[envMap.Port]) ?? 8095,
-    MongoDB: process.env[envMap.MongoDB] ?? 'calendar-service',
-    MongoURI: process.env[envMap.MongoURI],
     AccountsURL: process.env[envMap.AccountsURL],
     ServiceID: process.env[envMap.ServiceID] ?? 'calendar-service',
     Secret: process.env[envMap.Secret],

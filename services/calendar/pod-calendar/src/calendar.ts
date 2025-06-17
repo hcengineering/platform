@@ -22,9 +22,10 @@ import { OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
 import { IncomingSyncManager } from './sync'
-import type { Token } from './types'
-import { encodeReccuring, getGoogleClient } from './utils'
+import { CALENDAR_INTEGRATION, type Token } from './types'
+import { encodeReccuring, getGoogleClient, removeIntegrationSecret, setCredentials } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
+import { removeUserByEmail } from './kvsUtils'
 
 export class CalendarClient {
   private readonly calendar: calendar_v3.Calendar
@@ -52,9 +53,19 @@ export class CalendarClient {
     user: Token,
     client: Client,
     workspace: WorkspaceClient
-  ): Promise<CalendarClient> {
+  ): Promise<CalendarClient | undefined> {
     const calendarClient = new CalendarClient(ctx, accountClient, user, client, workspace)
-    calendarClient.oAuth2Client.setCredentials(user)
+    const authSucces = await setCredentials(calendarClient.oAuth2Client, user)
+    if (!authSucces) {
+      await removeUserByEmail(user, user.email)
+      await removeIntegrationSecret(ctx, calendarClient.accountClient, {
+        socialId: user.userId,
+        kind: CALENDAR_INTEGRATION,
+        workspaceUuid: user.workspace,
+        key: user.email
+      })
+      return
+    }
     return calendarClient
   }
 
@@ -215,7 +226,7 @@ export class CalendarClient {
       try {
         await this.rateLimiter.take(1)
         const current = await this.calendar.events.get({ calendarId, eventId: event.eventId })
-        if (current !== undefined) {
+        if (current !== undefined && current.data.status !== 'cancelled') {
           const ev = this.applyUpdate(current.data, event)
           await this.rateLimiter.take(1)
           await this.calendar.events.update({

@@ -1358,7 +1358,8 @@ export function devTool (
       const backupIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
       try {
         const storage = await createStorageBackupStorage(toolCtx, storageAdapter, backupIds, dirName)
-        await backupDownload(storage, storeIn)
+        console.log('downloading backup...', cmd.skip)
+        await backupDownload(storage, storeIn, new Set(cmd.skip.split(';')))
       } catch (err: any) {
         toolCtx.error('failed to size backup', { err })
       }
@@ -2584,7 +2585,9 @@ export function devTool (
       const _client = await client.getClient()
 
       const kvsUrl = getKvsUrl()
-      await performGmailAccountMigrations(_client.db(cmd.db), cmd.region ?? null, kvsUrl)
+      const { dbUrl, txes } = prepareTools()
+
+      await performGmailAccountMigrations(_client.db(cmd.db), dbUrl, cmd.region ?? null, kvsUrl, txes)
       await _client.close()
       client.close()
     })

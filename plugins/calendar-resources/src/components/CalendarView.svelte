@@ -262,6 +262,7 @@
           collection: 'events',
           calendar: `${acc.uuid}_calendar` as Ref<Calendar>,
           modifiedBy: myPrimaryId,
+          blockTime: true,
           participants: [me],
           modifiedOn: Date.now(),
           date: e.detail.date.getTime(),
