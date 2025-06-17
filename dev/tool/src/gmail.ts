@@ -131,6 +131,9 @@ async function migrateGmailIntegrations (
         if (ws == null) {
           continue
         }
+        if (isArchivingMode(ws.mode) || isDeletingMode(ws.mode)) {
+          continue
+        }
         token.workspace = ws.uuid
 
         const socialKey = await getSocialKeyByOldAccount(ws, token.userId, factory, metricsContext)
