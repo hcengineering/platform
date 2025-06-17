@@ -119,6 +119,8 @@ export async function getAccountDB (
   }
 }
 
+export const assignableRoles = [AccountRole.Guest, AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]
+
 export function getRolePower (role: AccountRole): number {
   return roleOrder[role]
 }
@@ -1612,7 +1614,8 @@ export async function findExistingIntegration (
   extra: any
 ): Promise<Integration | null> {
   const { socialId, kind, workspaceUuid } = params
-  if (kind == null || socialId == null || workspaceUuid === undefined) {
+  // Note: workspaceUuid === null is a decent use case for account-wise integration not related to a particular workspace
+  if (kind == null || kind === '' || socialId == null || socialId === '' || workspaceUuid === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
