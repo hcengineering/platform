@@ -67,7 +67,8 @@ import {
   doReleaseSocialId,
   doMergeAccounts,
   doMergePersons,
-  READONLY_GUEST_ACCOUNT
+  READONLY_GUEST_ACCOUNT,
+  assignableRoles
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -210,6 +211,11 @@ export async function updateWorkspaceRoleBySocialKey (
   }
 ): Promise<void> {
   const { socialKey, targetRole } = params
+
+  if (socialKey == null || socialKey === '' || targetRole == null || !assignableRoles.includes(targetRole)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const { extra } = decodeTokenVerbose(ctx, token)
   verifyAllowedServices(['workspace', 'tool'], extra)
 
@@ -282,12 +288,17 @@ export async function updateWorkspaceInfo (
   }
 ): Promise<void> {
   const { workspaceUuid, event, version, message } = params
-  let progress = params.progress
 
   const { extra } = decodeTokenVerbose(ctx, token)
   if (!['workspace', 'tool'].includes(extra?.service)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
+
+  if (workspaceUuid == null || workspaceUuid === '' || event == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  let progress = params.progress
 
   const wsExists = await db.workspace.exists({ uuid: workspaceUuid })
   if (!wsExists) {
@@ -476,6 +487,17 @@ export async function assignWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
+  if (
+    email == null ||
+    email === '' ||
+    workspaceUuid == null ||
+    workspaceUuid === '' ||
+    role == null ||
+    !assignableRoles.includes(role)
+  ) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const normalizedEmail = cleanEmail(email)
   const emailSocialId = await getEmailSocialId(db, normalizedEmail)
 
@@ -515,6 +537,10 @@ export async function getPersonInfo (
   const { extra } = decodeTokenVerbose(ctx, token)
   verifyAllowedServices(['workspace', 'tool'], extra)
 
+  if (account == null || account === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const person = await db.person.findOne({ uuid: account })
 
   if (person == null) {
@@ -543,7 +569,7 @@ export async function releaseSocialId (
 
   const { personUuid, type, value } = params
 
-  if (personUuid == null || !Object.values(SocialIdType).includes(type) || value == null) {
+  if (personUuid == null || !Object.values(SocialIdType).includes(type) || value == null || value === '') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
@@ -562,6 +588,10 @@ export async function addSocialIdToPerson (
 
   verifyAllowedServices(['github', 'telegram-bot', 'gmail', 'tool', 'workspace', 'hulygram'], extra)
 
+  if (person == null || person === '' || !Object.values(SocialIdType).includes(type) || value == null || value === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   return await addSocialId(db, person, type, value, confirmed, displayValue)
 }
 
@@ -576,6 +606,10 @@ export async function updateSocialId (
   const { extra } = decodeTokenVerbose(ctx, token)
 
   verifyAllowedServices(['telegram-bot', 'gmail'], extra)
+
+  if (personId == null || personId === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
 
   const socialId = await db.socialId.findOne({ _id: personId })
   if (socialId != null) {
@@ -593,6 +627,7 @@ export async function createIntegration (
   params: Integration
 ): Promise<void> {
   const { extra, account } = decodeTokenVerbose(ctx, token)
+  // it checks params and throws BadRequest if params are invalid
   const existing = await findExistingIntegration(account, db, params, extra)
   if (existing != null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationAlreadyExists, {}))
@@ -616,6 +651,7 @@ export async function updateIntegration (
   params: Integration
 ): Promise<void> {
   const { extra, account } = decodeTokenVerbose(ctx, token)
+  // it checks params and throws BadRequest if params are invalid
   const existing = await findExistingIntegration(account, db, params, extra)
   if (existing == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationNotFound, {}))
@@ -633,6 +669,7 @@ export async function deleteIntegration (
   params: IntegrationKey
 ): Promise<void> {
   const { extra, account } = decodeTokenVerbose(ctx, token)
+  // it checks params and throws BadRequest if params are invalid
   const existing = await findExistingIntegration(account, db, params, extra)
   if (existing == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationNotFound, {}))
@@ -695,7 +732,7 @@ export async function getIntegration (
   const isAllowedService = verifyAllowedServices(integrationServices, extra, false)
   const { socialId, kind, workspaceUuid } = params
 
-  if (kind == null || socialId == null || workspaceUuid === undefined) {
+  if (kind == null || kind === '' || socialId == null || socialId === '' || workspaceUuid === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
@@ -719,7 +756,14 @@ export async function addIntegrationSecret (
 ): Promise<void> {
   const { extra, account } = decodeTokenVerbose(ctx, token)
   const { socialId, kind, workspaceUuid, key, secret } = params
-  if (kind == null || socialId == null || workspaceUuid === undefined || key == null) {
+  if (
+    kind == null ||
+    kind === '' ||
+    socialId == null ||
+    socialId === '' ||
+    workspaceUuid === undefined ||
+    key == null
+  ) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
@@ -746,7 +790,14 @@ export async function updateIntegrationSecret (
 ): Promise<void> {
   const { extra, account } = decodeTokenVerbose(ctx, token)
   const { socialId, kind, workspaceUuid, key, secret } = params
-  if (kind == null || socialId == null || workspaceUuid === undefined || key == null) {
+  if (
+    kind == null ||
+    kind === '' ||
+    socialId == null ||
+    socialId === '' ||
+    workspaceUuid === undefined ||
+    key == null
+  ) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
@@ -773,7 +824,14 @@ export async function deleteIntegrationSecret (
 ): Promise<void> {
   const { extra, account } = decodeTokenVerbose(ctx, token)
   const { socialId, kind, workspaceUuid, key } = params
-  if (kind == null || socialId == null || workspaceUuid === undefined || key == null) {
+  if (
+    kind == null ||
+    kind === '' ||
+    socialId == null ||
+    socialId === '' ||
+    workspaceUuid === undefined ||
+    key == null
+  ) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
@@ -802,7 +860,14 @@ export async function getIntegrationSecret (
   verifyAllowedServices(integrationServices, extra)
   const { socialId, kind, workspaceUuid, key } = params
 
-  if (kind == null || socialId == null || workspaceUuid === undefined || key == null) {
+  if (
+    kind == null ||
+    kind === '' ||
+    socialId == null ||
+    socialId === '' ||
+    workspaceUuid === undefined ||
+    key == null
+  ) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
   const existing = await db.integrationSecret.findOne({ socialId, kind, workspaceUuid, key })
@@ -836,6 +901,10 @@ export async function findFullSocialIdBySocialKey (
 
   const { socialKey } = params
 
+  if (socialKey == null || socialKey === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   return await db.socialId.findOne({ key: socialKey })
 }
 
@@ -853,6 +922,10 @@ export async function mergeSpecifiedPersons (
   verifyAllowedServices(['tool', 'workspace'], extra)
 
   const { primaryPerson, secondaryPerson } = params
+  if (primaryPerson == null || primaryPerson === '' || secondaryPerson == null || secondaryPerson === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   await doMergePersons(db, primaryPerson, secondaryPerson)
 }
 
@@ -870,6 +943,10 @@ export async function mergeSpecifiedAccounts (
   verifyAllowedServices(['tool', 'workspace'], extra)
 
   const { primaryAccount, secondaryAccount } = params
+  if (primaryAccount == null || primaryAccount === '' || secondaryAccount == null || secondaryAccount === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   await doMergeAccounts(db, primaryAccount, secondaryAccount)
 }
 
