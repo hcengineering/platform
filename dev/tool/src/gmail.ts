@@ -94,7 +94,7 @@ export async function performGmailAccountMigrations (
       return ws
     }
   }
-  const metricsContext = new MeasureMetricsContext('github-migrate', {})
+  const metricsContext = new MeasureMetricsContext('gmail-migrate', {})
 
   const factory: PipelineFactory = createBackupPipeline(metricsContext, dbUrl, txes, {
     externalStorage: createDummyStorageAdapter(),
