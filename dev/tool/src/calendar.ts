@@ -92,6 +92,7 @@ async function getPersonIdByEmail (accountClient: AccountClient, email: string):
   } else {
     const res = await accountClient.findSocialIdBySocialKey(`email:${email}`)
     personsMap.set(email, res)
+    return res
   }
 }
 
