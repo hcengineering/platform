@@ -1358,7 +1358,8 @@ export function devTool (
       const backupIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
       try {
         const storage = await createStorageBackupStorage(toolCtx, storageAdapter, backupIds, dirName)
-        await backupDownload(storage, storeIn)
+        console.log('downloading backup...', cmd.skip)
+        await backupDownload(storage, storeIn, new Set(cmd.skip.split(';')))
       } catch (err: any) {
         toolCtx.error('failed to size backup', { err })
       }
