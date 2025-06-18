@@ -18,7 +18,7 @@ export function getBucketId (workspace: WorkspaceUuid): string {
   return workspace
 }
 
-const chunkSize = 200
+const chunkSize = 5000
 
 /**
  * @public

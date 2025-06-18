@@ -369,7 +369,7 @@ class AccountClientImpl implements AccountClient {
   async resendInvite (email: string, role: AccountRole): Promise<void> {
     const request = {
       method: 'resendInvite' as const,
-      params: [email, role]
+      params: { email, role }
     }
 
     await this.rpc(request)

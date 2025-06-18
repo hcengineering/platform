@@ -105,7 +105,6 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   setMetadata(presentation.metadata.Token, workspaceLoginInfo.token)
   setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
-  setMetadata(presentation.metadata.WorkspaceDataId, workspaceLoginInfo.workspaceDataId)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
   const fetchWorkspace = await getResource(login.function.FetchWorkspace)
@@ -121,6 +120,8 @@ export async function connect (title: string): Promise<Client | undefined> {
     })
     return
   }
+
+  setMetadata(presentation.metadata.WorkspaceDataId, workspace.dataId)
 
   if (isWorkspaceCreating(workspace.mode)) {
     while (true) {
