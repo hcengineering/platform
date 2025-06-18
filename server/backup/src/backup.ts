@@ -140,7 +140,7 @@ export interface BackupInfo {
   // A hash of current domain transactions, so we could skip all other checks if same.
   domainHashes: Record<Domain, string>
 
-  migrations: Record<string, boolean>
+  migrations: Record<string, boolean | string>
 }
 
 async function loadDigest (
@@ -750,7 +750,8 @@ export async function backup (
       snapshots: [],
       domainHashes: {},
       migrations: {
-        zeroCheckSize: true // Assume already checked for new backups
+        zeroCheckSize: true, // Assume already checked for new backups
+        forcedFullCheck: '1' // A force to full recheck.
       }
     }
 
@@ -766,6 +767,8 @@ export async function backup (
     if (backupInfo.migrations == null) {
       backupInfo.migrations = {}
     }
+
+    const forcedFullCheck = '2'
 
     // Apply verification to backup, since we know it should have broken blobs
     if (backupInfo.migrations.zeroCheckSize == null) {
@@ -793,6 +796,11 @@ export async function backup (
     }
 
     let fullCheck = options.fullVerify === true
+
+    if (backupInfo.migrations.forcedFullCheck !== forcedFullCheck) {
+      // We have forced full check to be performed.
+      fullCheck = true
+    }
     if (backupInfo.snapshots.length > options.keepSnapshots) {
       // We need to perform compaction
       ctx.warn('Compacting backup')
@@ -1473,6 +1481,7 @@ export async function backup (
 
     if (!canceled()) {
       backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
+      backupInfo.migrations.forcedFullCheck = forcedFullCheck
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
     }
 
@@ -3018,7 +3027,7 @@ export async function checkBackupIntegrity (ctx: MeasureContext, storage: Backup
     if (backupInfo.migrations == null) {
       backupInfo.migrations = {}
     }
-    if (!backupInfo.migrations.zeroCheckSize) {
+    if (backupInfo.migrations.zeroCheckSize !== true) {
       backupInfo.migrations.zeroCheckSize = true
       modified = true
     }
