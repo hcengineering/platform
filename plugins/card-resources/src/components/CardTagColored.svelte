@@ -13,11 +13,23 @@
 
 <script lang="ts">
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
-  import { getPlatformColorDef, themeStore, tooltip, ColorDefinition, Label } from '@hcengineering/ui'
+  import {
+    getPlatformColorDef,
+    themeStore,
+    tooltip,
+    ColorDefinition,
+    Label,
+    IconClose,
+    ButtonIcon
+  } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
   export let labelIntl: IntlString | undefined = undefined
   export let label: string | undefined = undefined
   export let color: number | undefined = undefined
+  export let removable: boolean = false
+
+  const dispatch = createEventDispatcher()
 
   function getColorDefinition (color: number | undefined): ColorDefinition {
     return getPlatformColorDef(color ?? 0, $themeStore.dark)
@@ -35,6 +47,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="tag"
+  class:removable
   style={`${getTagStyle(getColorDefinition(color))}`}
   on:click
   on:keydown
@@ -49,6 +62,10 @@
       {label}
     {/if}
   </span>
+
+  {#if removable}
+    <ButtonIcon icon={IconClose} size="min" iconSize="x-small" kind="tertiary" on:click={() => dispatch('remove')} />
+  {/if}
 </div>
 
 <style lang="scss">
@@ -60,9 +77,15 @@
     min-width: 2rem;
     max-width: 10rem;
     min-height: 1.5rem;
-    font-size: 0.75rem;
-    //overflow: hidden;
+    font-size: 0.688rem;
+    font-weight: 500;
     border-radius: 1rem;
     white-space: nowrap;
+    gap: 0.25rem;
+
+    &.removable {
+      min-width: 3.25rem;
+      padding-right: 0.25rem;
+    }
   }
 </style>

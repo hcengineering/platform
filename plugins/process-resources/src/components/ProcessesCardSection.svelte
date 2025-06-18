@@ -28,7 +28,7 @@
   .processes__section {
     display: flex;
     flex-direction: column;
-    padding: 0 4rem;
+    padding: 0 2rem;
     width: 100%;
   }
 </style>
