@@ -22,6 +22,7 @@ import {
   DBAdapterMiddleware,
   DomainFindMiddleware,
   DomainTxMiddleware,
+  FindSecurityMiddleware,
   FullTextMiddleware,
   IdentityMiddleware,
   LiveQueryMiddleware,
@@ -52,9 +53,9 @@ import {
   type Pipeline,
   type PipelineContext,
   type PipelineFactory,
+  type PlatformQueue,
   type StorageAdapter,
-  type WorkspaceDestroyAdapter,
-  type PlatformQueue
+  type WorkspaceDestroyAdapter
 } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { createStorageDataAdapter } from './blobStorage'
@@ -120,6 +121,7 @@ export function createServerPipeline (
       LookupMiddleware.create,
       IdentityMiddleware.create,
       ModifiedMiddleware.create,
+      FindSecurityMiddleware.create,
       PluginConfigurationMiddleware.create,
       PrivateMiddleware.create,
       (ctx: MeasureContext, context: PipelineContext, next?: Middleware) =>
