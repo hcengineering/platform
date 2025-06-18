@@ -488,7 +488,7 @@ async function restoreMarkupRefsForClass (
       }
 
       for (const doc of docs) {
-        rateLimiter.add(async () => {
+        await rateLimiter.add(async () => {
           try {
             await withRetry(() =>
               restoreMarkupRefsForDoc(
