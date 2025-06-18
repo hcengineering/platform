@@ -81,6 +81,7 @@ import {
   initLiveQueries,
   type MessageQueryParams
 } from '@hcengineering/communication-client-query'
+import { generateLinkPreviewId } from '@hcengineering/communication-shared'
 
 import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
 
@@ -278,14 +279,12 @@ class Client {
   ): Promise<void> {
     const operations: Array<AttachLinkPreviewsOperation | DetachLinkPreviewsOperation | SetLinkPreviewsOperation> = []
 
-    let count = 0
     if (ops.attach != null && ops.attach.length > 0) {
       operations.push({
         opcode: 'attach',
         previews: ops.attach.map((it) => ({
           ...it,
-          // TODO: fix
-          previewId: (Date.now() + count++).toString() as any as LinkPreviewID
+          previewId: generateLinkPreviewId()
         }))
       })
     }
@@ -302,8 +301,7 @@ class Client {
         opcode: 'set',
         previews: ops.set.map((it) => ({
           ...it,
-          // TODO: fix
-          previewId: (Date.now() + count++).toString() as any as LinkPreviewID
+          previewId: generateLinkPreviewId()
         }))
       })
     }

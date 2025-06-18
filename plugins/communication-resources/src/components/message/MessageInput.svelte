@@ -131,12 +131,17 @@
     const { messageId } = await communicationClient.createMessage(card._id, card._class, markdown)
     void client.update(card, {}, false, Date.now())
 
-    void communicationClient.blobPatch(card._id, messageId, {
-      attach: blobs
-    })
-    void communicationClient.linkPreviewPatch(card._id, messageId, {
-      attach: links
-    })
+    if (blobs.length > 0) {
+      void communicationClient.blobPatch(card._id, messageId, {
+        attach: blobs
+      })
+    }
+
+    if (links.length > 0) {
+      void communicationClient.linkPreviewPatch(card._id, messageId, {
+        attach: links
+      })
+    }
 
     for (const url of urlsToLoad) {
       if (links.some((it) => it.url === url)) continue
