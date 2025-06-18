@@ -10,7 +10,6 @@
     "tsconfig.json"
   ],
   "author": "Anticrm Platform Contributors",
-  "template": "@hcengineering/node-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile",
