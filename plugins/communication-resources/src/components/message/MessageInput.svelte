@@ -130,10 +130,13 @@
   ): Promise<void> {
     const { messageId } = await communicationClient.createMessage(card._id, card._class, markdown)
     void client.update(card, {}, false, Date.now())
-    void Promise.all(blobs.map((blob) => communicationClient.attachBlob(card._id, messageId, blob)))
-    for (const link of links) {
-      void communicationClient.createLinkPreview(card._id, messageId, link)
-    }
+
+    void communicationClient.blobPatch(card._id, messageId, {
+      attach: blobs
+    })
+    void communicationClient.linkPreviewPatch(card._id, messageId, {
+      attach: links
+    })
 
     for (const url of urlsToLoad) {
       if (links.some((it) => it.url === url)) continue
@@ -141,7 +144,9 @@
       if (fetchedData === null) continue
       const data = fetchedData ?? (await loadLinkPreviewData(url))
       if (data === undefined) continue
-      void communicationClient.createLinkPreview(card._id, messageId, data)
+      void communicationClient.linkPreviewPatch(card._id, messageId, {
+        attach: [data]
+      })
     }
   }
 
@@ -153,21 +158,27 @@
   ): Promise<void> {
     await communicationClient.updateMessage(card._id, message.id, markdown)
 
-    for (const blobToAttach of blobs) {
-      if (message.blobs.some((it) => it.blobId === blobToAttach.blobId)) continue
-      void communicationClient.attachBlob(card._id, message.id, blobToAttach)
-    }
+    const attachBlobs = blobs.filter((it) => !message.blobs.some((b) => b.blobId === it.blobId))
 
-    for (const blob of message.blobs) {
-      if (blobs.some((it) => it.blobId === blob.blobId)) continue
-      void deleteFile(blob.blobId)
-      void communicationClient.detachBlob(card._id, message.id, blob.blobId)
+    if (attachBlobs.length > 0) {
+      void communicationClient.blobPatch(card._id, message.id, {
+        attach: attachBlobs
+      })
     }
+    const detachBlobs = message.blobs.filter((it) => !blobs.some((b) => b.blobId === it.blobId))
+    if (detachBlobs.length > 0) {
+      detachBlobs.forEach((it) => {
+        void deleteFile(it.blobId)
+      })
+      void communicationClient.blobPatch(card._id, message.id, {
+        detach: detachBlobs.map((it) => it.blobId)
+      })
+    }
+    const attachLinks = links.filter((it) => !message.linkPreviews.some((b) => b.url === it.url))
 
-    for (const link of links) {
-      if (message.linkPreviews.some((it) => it.url === link.url)) continue
-      await communicationClient.createLinkPreview(card._id, message.id, link)
-    }
+    void communicationClient.linkPreviewPatch(card._id, message.id, {
+      attach: attachLinks
+    })
 
     dispatch('edited')
   }
@@ -199,7 +210,7 @@
         ...draft.blobs,
         {
           blobId: uuid,
-          contentType: file.type,
+          mimeType: file.type,
           fileName: file.name,
           size: file.size,
           metadata
@@ -413,7 +424,7 @@
                 value={{
                   file: attachedBlob.blobId,
                   name: attachedBlob.fileName,
-                  type: attachedBlob.contentType,
+                  type: attachedBlob.mimeType,
                   size: attachedBlob.size,
                   metadata: attachedBlob.metadata
                 }}

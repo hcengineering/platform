@@ -15,7 +15,7 @@
 
 import {
   type ServerApi as CommunicationApi,
-  type RequestEvent as CommunicationEvent,
+  type Event as CommunicationEvent,
   type EventResult
 } from '@hcengineering/communication-sdk-types'
 import {
