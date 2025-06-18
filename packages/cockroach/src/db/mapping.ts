@@ -69,6 +69,7 @@ interface RawMessage extends MessageDb {
 
 interface RawNotification extends NotificationDb {
   account: AccountID
+  card_id: CardID
   message_id: MessageID
   message_type?: MessageType
   message_content?: Markdown
@@ -284,6 +285,7 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
   if (message != null) {
     return {
       id: String(raw.id) as NotificationID,
+      cardId: card,
       account: raw.account,
       read: Boolean(raw.read),
       type: raw.type,
@@ -311,6 +313,7 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
 
   return {
     id: String(raw.id) as NotificationID,
+    cardId: raw.card_id,
     account: raw.account,
     type: raw.type,
     read: Boolean(raw.read),

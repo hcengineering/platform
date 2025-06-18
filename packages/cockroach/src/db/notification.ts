@@ -424,7 +424,7 @@ export class NotificationsDb extends BaseDb {
     const withMessage = params.message === true
 
     let select =
-      'SELECT  n.id, n.created, n.read, n.message_id, n.message_created, n.type, n.content, n.context_id, nc.card_id, nc.account, nc.last_view '
+      'SELECT  n.id, n.created, n.read, n.message_id, n.message_created, n.type, n.content, n.context_id, nc.card_id, nc.account, nc.card_id, nc.last_view '
 
     let joinMessages = ''
 

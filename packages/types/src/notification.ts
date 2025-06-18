@@ -27,6 +27,7 @@ export interface Collaborator {
 
 export interface Notification {
   id: NotificationID
+  cardId: CardID
   contextId: ContextID
   account: AccountID
   type: NotificationType

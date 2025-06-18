@@ -494,6 +494,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         type: NotificationResponseEventType.NotificationCreated,
         notification: {
           id,
+          cardId: event.cardId,
           account: event.account,
           type: event.notificationType,
           content: event.content ?? {},

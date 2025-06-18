@@ -208,6 +208,7 @@ export function matchNotification (notification: Notification, params: FindNotif
   if (params.read !== undefined && params.read !== notification.read) return false
   if (params.id !== undefined && params.id !== notification.id) return false
   if (params.context !== undefined && params.context !== notification.contextId) return false
+  if (params.card !== undefined && params.card !== notification.cardId) return false
 
   const created = notification.created.getTime()
 

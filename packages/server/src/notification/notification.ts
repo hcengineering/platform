@@ -158,7 +158,7 @@ async function notifyReaction (
     type: NotificationRequestEventType.CreateNotification,
     notificationType: NotificationType.Reaction,
     account: messageAccount,
-
+    cardId,
     contextId,
     messageId,
     messageCreated: message.created,
@@ -243,6 +243,7 @@ async function processCollaborator (
     notificationType: NotificationType.Message,
     account: collaborator,
     contextId,
+    cardId: message.cardId,
     messageId: message.id,
     messageCreated: message.created,
     date: message.created,
