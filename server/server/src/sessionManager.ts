@@ -83,9 +83,9 @@ import {
   type WorkspaceStatistics
 } from '@hcengineering/server-core'
 import { generateToken, type Token } from '@hcengineering/server-token'
-import { type PipelinePair, Workspace } from './workspace'
 import { ClientSession } from './client'
 import { sendResponse } from './utils'
+import { type PipelinePair, Workspace } from './workspace'
 
 const ticksPerSecond = 20
 const workspaceSoftShutdownTicks = 15 * ticksPerSecond
@@ -209,25 +209,25 @@ export class TSessionManager implements SessionManager {
   }
 
   private handleWorkspaceTick (): void {
-    for (const [wsId, workspace] of this.workspaces.entries()) {
-      if (this.ticks % (60 * ticksPerSecond) === workspace.tickHash) {
-        try {
-          // update account lastVisit every minute per every workspace.∏
-          let connected: boolean = false
-          for (const val of workspace.sessions.values()) {
-            if (val.session.getUser() !== systemAccountUuid) {
-              connected = true
-              break
-            }
+    if (this.ticks % (60 * ticksPerSecond) === 0) {
+      const workspacesToUpdate: WorkspaceUuid[] = []
+
+      for (const [wsId, workspace] of this.workspaces.entries()) {
+        // update account lastVisit every minute per every workspace.∏
+        for (const val of workspace.sessions.values()) {
+          if (val.session.getUser() !== systemAccountUuid) {
+            workspacesToUpdate.push(wsId)
+            break
           }
-          void this.getWorkspaceInfo(this.ticksContext, workspace.token, connected).catch(() => {
-            // Ignore
-          })
-        } catch (err: any) {
-          // Ignore
         }
       }
-
+      if (workspacesToUpdate.length > 0) {
+        void this.updateLastVisit(this.ctx, workspacesToUpdate).catch(() => {
+          // Ignore
+        })
+      }
+    }
+    for (const [wsId, workspace] of this.workspaces.entries()) {
       for (const [k, v] of Array.from(workspace.tickHandlers.entries())) {
         v.ticks--
         if (v.ticks === 0) {
@@ -364,6 +364,19 @@ export class TSessionManager implements SessionManager {
     }
   }
 
+  @withContext('🧭 update-last-visit')
+  async updateLastVisit (ctx: MeasureContext, workspaces: WorkspaceUuid[]): Promise<void> {
+    try {
+      const sysToken = generateToken(systemAccountUuid, undefined, { service: 'transactor' })
+      await getAccountClient(this.accountsUrl, sysToken).updateLastVisit(workspaces)
+    } catch (err: any) {
+      if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
+        return undefined
+      }
+      throw err
+    }
+  }
+
   @withContext('🧭 get-login-with-workspace-info')
   async getLoginWithWorkspaceInfo (ctx: MeasureContext, token: string): Promise<LoginInfoWithWorkspaces | undefined> {
     try {
@@ -492,6 +505,13 @@ export class TSessionManager implements SessionManager {
     return { workspace }
   }
 
+  sysAccount = {
+    account: systemAccountUuid,
+    name: 'System',
+    workspaces: {},
+    socialIds: []
+  }
+
   async addSession (
     ctx: MeasureContext,
     ws: ConnectionSocket,
@@ -506,7 +526,8 @@ export class TSessionManager implements SessionManager {
         if (token.account === undefined) {
           return { error: UNAUTHORIZED, terminate: true }
         }
-        account = await this.getLoginWithWorkspaceInfo(ctx, rawToken)
+        account =
+          token.account === systemAccountUuid ? this.sysAccount : await this.getLoginWithWorkspaceInfo(ctx, rawToken)
       } catch (err: any) {
         return { error: err }
       }

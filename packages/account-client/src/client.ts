@@ -42,11 +42,11 @@ import type {
   MailboxInfo,
   MailboxOptions,
   OtpInfo,
+  ProviderInfo,
   RegionInfo,
   SocialId,
   WorkspaceLoginInfo,
-  WorkspaceOperation,
-  ProviderInfo
+  WorkspaceOperation
 } from './types'
 import { getClientTimezone } from './utils'
 
@@ -96,6 +96,7 @@ export interface AccountClient {
   checkAutoJoin: (inviteId: string, firstName?: string, lastName?: string) => Promise<WorkspaceLoginInfo>
   getWorkspaceInfo: (updateLastVisit?: boolean) => Promise<WorkspaceInfoWithStatus>
   getWorkspacesInfo: (workspaces: WorkspaceUuid[]) => Promise<WorkspaceInfoWithStatus[]>
+  updateLastVisit: (workspaces: WorkspaceUuid[]) => Promise<void>
   getRegionInfo: () => Promise<RegionInfo[]>
   createWorkspace: (name: string, region?: string) => Promise<WorkspaceLoginInfo>
   signUpOtp: (email: string, first: string, last: string) => Promise<OtpInfo>
@@ -477,6 +478,14 @@ class AccountClientImpl implements AccountClient {
     }
     const infos: any[] = await this.rpc(request)
     return Array.from(infos).map((it) => this.flattenStatus(it))
+  }
+
+  async updateLastVisit (ids: WorkspaceUuid[]): Promise<void> {
+    const request = {
+      method: 'updateLastVisit' as const,
+      params: { ids }
+    }
+    await this.rpc(request)
   }
 
   async getWorkspaceInfo (updateLastVisit: boolean = false): Promise<WorkspaceInfoWithStatus> {

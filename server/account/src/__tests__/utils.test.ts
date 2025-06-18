@@ -947,7 +947,7 @@ describe('account utils', () => {
 
           await confirmEmail(mockCtx, mockDb, account, email)
 
-          expect(mockDb.socialId.updateOne).toHaveBeenCalledWith(
+          expect(mockDb.socialId.update).toHaveBeenCalledWith(
             { _id: mockSocialId._id },
             { verifiedOn: expect.any(Number) }
           )
@@ -1297,7 +1297,7 @@ describe('account utils', () => {
       },
       person: {
         insertOne: jest.fn() as jest.MockedFunction<AccountDB['person']['insertOne']>,
-        updateOne: jest.fn() as jest.MockedFunction<AccountDB['person']['updateOne']>
+        updateOne: jest.fn() as jest.MockedFunction<AccountDB['person']['update']>
       },
       accountEvent: {
         insertOne: jest.fn() as jest.MockedFunction<AccountDB['accountEvent']['insertOne']>
@@ -1354,7 +1354,7 @@ describe('account utils', () => {
       const result = await signUpByEmail(mockCtx, mockDb, mockBranding, email, password, firstName, lastName)
 
       expect(result.account).toBe(personUuid)
-      expect(mockDb.person.updateOne).toHaveBeenCalledWith({ uuid: personUuid }, { firstName, lastName })
+      expect(mockDb.person.update).toHaveBeenCalledWith({ uuid: personUuid }, { firstName, lastName })
       expect(mockDb.account.insertOne).toHaveBeenCalledWith({ uuid: personUuid, automatic: false })
       expect(mockDb.setPassword).toHaveBeenCalledWith(personUuid, expect.any(Buffer), expect.any(Buffer))
     })
@@ -1572,10 +1572,7 @@ describe('account utils', () => {
 
         await updateArchiveInfo(mockCtx, mockDb, 'test-uuid' as WorkspaceUuid, true)
 
-        expect(mockDb.workspaceStatus.updateOne).toHaveBeenCalledWith(
-          { workspaceUuid: 'test-uuid' },
-          { mode: 'archived' }
-        )
+        expect(mockDb.workspaceStatus.update).toHaveBeenCalledWith({ workspaceUuid: 'test-uuid' }, { mode: 'archived' })
       })
 
       test('should throw error if workspace not found', async () => {
@@ -2115,7 +2112,7 @@ describe('account utils', () => {
 
         await doReleaseSocialId(mockDb, personUuid, type, value, releasedBy)
 
-        expect(mockDb.socialId.updateOne).toHaveBeenCalledWith(
+        expect(mockDb.socialId.update).toHaveBeenCalledWith(
           { _id: socialIdId },
           { value: `${value}#${socialIdId}`, isDeleted: true }
         )
@@ -2141,7 +2138,7 @@ describe('account utils', () => {
 
         await doReleaseSocialId(mockDb, personUuid, type, value, '')
 
-        expect(mockDb.socialId.updateOne).toHaveBeenCalled()
+        expect(mockDb.socialId.update).toHaveBeenCalled()
         expect(mockDb.accountEvent.insertOne).not.toHaveBeenCalled()
       })
 
@@ -2156,7 +2153,7 @@ describe('account utils', () => {
           new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdNotFound, {}))
         )
 
-        expect(mockDb.socialId.updateOne).not.toHaveBeenCalled()
+        expect(mockDb.socialId.update).not.toHaveBeenCalled()
         expect(mockDb.accountEvent.insertOne).not.toHaveBeenCalled()
       })
     })

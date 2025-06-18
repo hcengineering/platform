@@ -426,7 +426,7 @@ describe('invite operations', () => {
 
       await resendInvite(mockCtx, mockDb, mockBranding, mockToken, { email: mockEmail, role: AccountRole.User })
 
-      expect(mockDb.invite.updateOne).toHaveBeenCalledWith(
+      expect(mockDb.invite.update).toHaveBeenCalledWith(
         { id: existingInvite.id },
         expect.objectContaining({
           expiresOn: expect.any(Number),
