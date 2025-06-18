@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { MeasureContext, PersonId, WorkspaceUuid } from '@hcengineering/core'
 import type { AccountClient } from '@hcengineering/account-client'
+import { groupByArray, MeasureContext, PersonId, WorkspaceUuid } from '@hcengineering/core'
 import { getAccountClient } from '@hcengineering/server-client'
 import { GMAIL_INTEGRATION, SecretType, Token } from './types'
 
@@ -77,10 +77,24 @@ export class TokenStorage {
   }
 }
 
-export async function getWorkspaceTokens (accountClient: AccountClient, workspace: WorkspaceUuid): Promise<Token[]> {
-  const secrets = await accountClient.listIntegrationsSecrets({
-    kind: GMAIL_INTEGRATION,
-    workspaceUuid: workspace
-  })
-  return secrets.map((secret: { secret: string }) => JSON.parse(secret.secret))
+export async function getWorkspaceTokens (
+  accountClient: AccountClient,
+  workspace?: WorkspaceUuid
+): Promise<Map<WorkspaceUuid, Token[]>> {
+  const secrets = (
+    await accountClient.listIntegrationsSecrets(
+      workspace !== undefined
+        ? {
+            kind: GMAIL_INTEGRATION,
+            workspaceUuid: workspace
+          }
+        : { kind: GMAIL_INTEGRATION }
+    )
+  ).filter((it) => it.workspaceUuid != null)
+
+  const byWorkspaces = groupByArray(secrets, (it) => it.workspaceUuid as WorkspaceUuid)
+
+  return new Map(
+    byWorkspaces.entries().map((it) => [it[0], it[1].map((secret: { secret: string }) => JSON.parse(secret.secret))])
+  )
 }

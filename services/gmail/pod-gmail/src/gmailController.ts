@@ -21,18 +21,18 @@ import {
   WorkspaceUuid,
   type PersonId
 } from '@hcengineering/core'
-import type { StorageAdapter } from '@hcengineering/server-core'
 import { normalizeEmail } from '@hcengineering/mail-common'
+import type { StorageAdapter } from '@hcengineering/server-core'
 
+import { getAccountClient } from '@hcengineering/server-client'
 import { decode64 } from './base64'
 import config from './config'
 import { type GmailClient } from './gmail'
-import { type ProjectCredentials, type Token, type User } from './types'
-import { WorkspaceClient } from './workspaceClient'
-import { getAccountClient } from '@hcengineering/server-client'
 import { getIntegrations } from './integrations'
-import { serviceToken } from './utils'
 import { getWorkspaceTokens } from './tokens'
+import { type ProjectCredentials, type Token, type User } from './types'
+import { serviceToken } from './utils'
+import { WorkspaceClient } from './workspaceClient'
 
 import { AuthProvider } from './gmail/auth'
 
@@ -78,10 +78,10 @@ export class GmailController {
   async startAll (): Promise<void> {
     try {
       const token = serviceToken()
-      const integrations = await getIntegrations(token)
+      const sysClient = getAccountClient(token)
+      const integrations = await getIntegrations(sysClient, token)
       this.ctx.info('Start integrations', { count: integrations.length })
 
-      const limiter = new RateLimiter(config.InitLimit)
       const workspaceIds = new Set<WorkspaceUuid>(
         integrations
           .map((integration) => {
@@ -93,40 +93,56 @@ export class GmailController {
           })
           .filter((id): id is WorkspaceUuid => id != null)
       )
-      this.ctx.info('Workspaces with integrations', { count: workspaceIds.size })
+      while (true) {
+        const limiter = new RateLimiter(config.InitLimit)
+        this.ctx.info('Workspaces with integrations', { count: workspaceIds.size })
 
-      for (const workspace of workspaceIds) {
-        try {
-          const wsToken = serviceToken(workspace)
-          const accountClient = getAccountClient(wsToken)
+        const workspaceWithInfo = await sysClient.getWorkspacesInfo(Array.from(workspaceIds))
 
-          const tokens = await getWorkspaceTokens(accountClient, workspace)
-          await limiter.add(async () => {
-            const info = await accountClient.getWorkspaceInfo()
+        const allTokens = await getWorkspaceTokens(sysClient)
 
-            if (info === undefined) {
-              this.ctx.info('workspace not found', { workspaceUuid: workspace })
-              return
-            }
+        for (const info of workspaceWithInfo) {
+          const workspace = info.uuid
+          try {
             if (!isActiveMode(info.mode)) {
               this.ctx.info('workspace is not active', { workspaceUuid: workspace })
               return
             }
-            this.ctx.info('Use stored tokens', { count: tokens.length })
-            const startPromise = this.startWorkspace(workspace, tokens)
-            const timeoutPromise = new Promise<void>((resolve) => {
-              setTimeout(() => {
-                resolve()
-              }, 60000)
-            })
-            await Promise.race([startPromise, timeoutPromise])
-          })
-        } catch (err: any) {
-          this.ctx.error('Failed to create workspace client', { workspaceUuid: workspace, error: err.message })
-        }
-      }
+            const lastVisit = (Date.now() - (info.lastVisit ?? 0)) / (3600 * 24 * 1000) // In days
 
-      await limiter.waitProcessing()
+            if (lastVisit > config.WorkspaceInactivityInterval) {
+              this.ctx.warn('workspace is inactive for too long, skipping for now.', { workspaceUuid: workspace })
+              return
+            }
+
+            // So we will not start it one more time.
+            workspaceIds.delete(workspace)
+
+            const tokens = allTokens.get(workspace) ?? []
+            await limiter.add(async () => {
+              this.ctx.info('Use stored tokens', { count: tokens.length })
+              const startPromise = this.startWorkspace(workspace, tokens)
+              const timeoutPromise = new Promise<void>((resolve) => {
+                setTimeout(() => {
+                  // Not connected, recheck again.
+                  workspaceIds.add(workspace)
+                  resolve()
+                }, 60000)
+              })
+              await Promise.race([startPromise, timeoutPromise])
+            })
+          } catch (err: any) {
+            this.ctx.error('Failed to create workspace client', { workspaceUuid: workspace, error: err.message })
+          }
+        }
+
+        await limiter.waitProcessing()
+        await new Promise<void>((resolve) => {
+          setTimeout(() => {
+            resolve()
+          }, 60 * 1000) // Wait 1 minute
+        })
+      }
     } catch (err: any) {
       this.ctx.error('Failed to start existing integrations', { error: err.message })
     }
