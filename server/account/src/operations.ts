@@ -266,6 +266,7 @@ export async function signUp (
   } else {
     ctx.warn('Please provide MAIL_URL to enable sign up email confirmations.')
     await confirmEmail(ctx, db, account, email)
+    await confirmHulyIds(ctx, db, account)
   }
 
   void setTimezoneIfNotDefined(ctx, db, account, null, meta)
