@@ -30,7 +30,8 @@ import {
   systemAccountUuid,
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   type WorkspaceMode,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -118,6 +119,8 @@ export async function getAccountDB (
   }
 }
 
+export const assignableRoles = [AccountRole.Guest, AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]
+
 export function getRolePower (role: AccountRole): number {
   return roleOrder[role]
 }
@@ -158,7 +161,11 @@ export function wrap (
 
         if (status.code === platform.status.InternalServerError) {
           Analytics.handleError(err)
-          ctx.error('Error while processing account method', { method: accountMethod.name, status, origErr: err })
+          ctx.error('Error while processing account method', {
+            method: accountMethod.name,
+            status,
+            origErr: err
+          })
         } else {
           ctx.error('Error while processing account method', { method: accountMethod.name, status })
         }
@@ -1076,6 +1083,17 @@ export async function getWorkspaceByUrl (db: AccountDB, url: string): Promise<Wo
   return await db.workspace.findOne({ url })
 }
 
+export async function getWorkspaceByDataId (
+  db: AccountDB,
+  dataId: string | null | undefined
+): Promise<Workspace | null> {
+  if (dataId == null || dataId === '') {
+    return null
+  }
+
+  return await db.workspace.findOne({ dataId: dataId as WorkspaceDataId })
+}
+
 export async function getWorkspaceInvite (db: AccountDB, id: string): Promise<WorkspaceInvite | null> {
   const invite = await db.invite.findOne({ id })
 
@@ -1596,7 +1614,8 @@ export async function findExistingIntegration (
   extra: any
 ): Promise<Integration | null> {
   const { socialId, kind, workspaceUuid } = params
-  if (kind == null || socialId == null || workspaceUuid === undefined) {
+  // Note: workspaceUuid === null is a decent use case for account-wise integration not related to a particular workspace
+  if (kind == null || kind === '' || socialId == null || socialId === '' || workspaceUuid === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 

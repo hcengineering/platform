@@ -15,24 +15,25 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  WorkspaceInfo,
   DOMAIN_TX,
   groupByArray,
   Hierarchy,
   isActiveMode,
   ModelDb,
   RateLimiter,
+  reduceCalls,
   SortingOrder,
   systemAccountUuid,
+  WorkspaceDataId,
+  WorkspaceUuid,
   type BackupStatus,
   type Branding,
   type MeasureContext,
   type Tx,
   type WorkspaceIds,
-  type WorkspaceInfoWithStatus,
-  WorkspaceDataId,
-  WorkspaceUuid
+  type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
+import { getAccountClient } from '@hcengineering/server-client'
 import {
   wrapPipeline,
   type DbConfiguration,
@@ -40,11 +41,11 @@ import {
   type PipelineFactory,
   type StorageAdapter
 } from '@hcengineering/server-core'
-import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { clearInterval } from 'node:timers'
 import { backup, restore } from '.'
 import { createStorageBackupStorage } from './storage'
+
 export interface BackupConfig {
   AccountsURL: string
   Token: string
@@ -63,6 +64,9 @@ export interface BackupConfig {
 
 class BackupWorker {
   downloadLimit: number = 100
+  workspacesToBackup: WorkspaceInfoWithStatus[] = []
+  rateLimiter: RateLimiter
+
   constructor (
     readonly storageAdapter: StorageAdapter,
     readonly config: BackupConfig,
@@ -78,57 +82,27 @@ class BackupWorker {
     readonly contextVars: Record<string, any>,
     readonly skipDomains: string[] = [],
     readonly fullCheck: boolean = false
-  ) {}
+  ) {
+    this.rateLimiter = new RateLimiter(this.config.Parallel)
+  }
 
   canceled = false
   async close (): Promise<void> {
     this.canceled = true
   }
 
-  printStats (
-    ctx: MeasureContext,
-    stats: { failedWorkspaces: WorkspaceInfo[], processed: number, skipped: number }
-  ): void {
-    ctx.warn(
-      `****************************************
-      backup statistics:`,
-      {
-        processed: stats.processed,
-        notChanges: stats.skipped,
-        failed: stats.failedWorkspaces.length
-      }
-    )
-  }
-
-  async schedule (ctx: MeasureContext): Promise<void> {
-    console.log('schedule backup with interval', this.config.Interval, 'seconds')
-    while (!this.canceled) {
-      try {
-        const res = await this.backup(ctx, (this.config.Interval / 4) * 1000)
-        this.printStats(ctx, res)
-        if (res.skipped === 0) {
-          console.log('cool down', this.config.CoolDown, 'seconds')
-          await new Promise<void>((resolve) => setTimeout(resolve, this.config.CoolDown * 1000))
-        }
-      } catch (err: any) {
-        Analytics.handleError(err)
-        ctx.error('error retry in cool down/5', { cooldown: this.config.CoolDown, error: err })
-        await new Promise<void>((resolve) => setTimeout(resolve, (this.config.CoolDown / 5) * 1000))
-        continue
-      }
-    }
-  }
-
-  async backup (
-    ctx: MeasureContext,
-    recheckTimeout: number
-  ): Promise<{ failedWorkspaces: WorkspaceInfoWithStatus[], processed: number, skipped: number }> {
+  recheckWorkspaces = reduceCalls(async (ctx: MeasureContext) => {
     const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
-    ctx.info('skipped workspaces', { workspacesIgnore })
-    let skipped = 0
     const now = Date.now()
-    const allWorkspaces = await getAccountClient(this.config.Token).listWorkspaces(this.region, 'active')
-    let workspaces = allWorkspaces.filter((it) => {
+    const allWorkspaces = await this.getWorkspacesList()
+
+    let skipped = 0
+    const currentSet = new Set(this.workspacesToBackup.map((it) => it.uuid))
+    const workspaces = allWorkspaces.filter((it) => {
+      if (currentSet.has(it.uuid)) {
+        // We already had ws in set
+        return false
+      }
       if (!isActiveMode(it.mode)) {
         // We should backup only active workspaces
         skipped++
@@ -184,86 +158,122 @@ class BackupWorker {
       }
     }
 
-    workspaces = mixedBackupSorting
+    this.workspacesToBackup = this.workspacesToBackup.concat(mixedBackupSorting)
+    ctx.info('skipped workspaces', { skipped, workspaces: this.workspacesToBackup.length, workspacesIgnore })
+  })
 
-    ctx.warn('Preparing for BACKUP', {
-      total: workspaces.length,
-      skipped,
-      workspaces: workspaces.map((it) => it.url)
-    })
-
-    const part = workspaces.slice(0, 500)
-    let idx = 0
-    for (const ws of part) {
-      ctx.warn('prepare workspace', {
-        idx: ++idx,
-        workspace: ws.url ?? ws.uuid,
-        backupSize: ws.backupInfo?.backupSize ?? 0,
-        lastBackupSec: (now - (ws.backupInfo?.lastBackup ?? 0)) / 1000
-      })
-    }
-
-    let index = 0
-
-    const failedWorkspaces: WorkspaceInfoWithStatus[] = []
-    let processed = 0
-    const startTime = Date.now()
-
-    const rateLimiter = new RateLimiter(this.config.Parallel)
-
-    const times: number[] = []
-    const activeWorkspaces = new Set<string>()
+  async schedule (ctx: MeasureContext): Promise<void> {
+    console.log('schedule backup with interval', this.config.Interval, 'seconds')
 
     const infoTo = setInterval(() => {
-      const avgTime = times.length > 0 ? Math.round(times.reduce((p, c) => p + c, 0) / times.length) / 1000 : 0
+      const avgTime = this.allBackupTime / (this.processed + 1)
       ctx.warn('********** backup info **********', {
-        processed,
-        toGo: workspaces.length - processed,
+        processed: this.processed,
+        toGo: this.workspacesToBackup.length,
         avgTime,
-        index,
-        Elapsed: (Date.now() - startTime) / 1000,
-        ETA: Math.round((workspaces.length - processed) * avgTime),
-        activeLen: activeWorkspaces.size,
-        active: Array.from(activeWorkspaces).join(',')
+        ETA: Math.round((this.workspacesToBackup.length + this.activeWorkspaces.size) * avgTime),
+        activeLen: this.activeWorkspaces.size,
+        active: Array.from(this.activeWorkspaces).join(',')
       })
     }, 10000)
 
+    const recheckTo = setInterval(
+      () => {
+        void this.recheckWorkspaces(ctx).catch((err) => {
+          Analytics.handleError(err)
+          ctx.error('error retry in recheck', { error: err })
+        })
+      },
+      (this.config.CoolDown / 5) * 1000
+    )
+
     try {
-      for (const ws of workspaces) {
-        await rateLimiter.add(async () => {
+      await this.recheckWorkspaces(ctx)
+    } catch (err: any) {
+      ctx.error('error retry in recheck', { error: err })
+    }
+
+    while (!this.canceled) {
+      try {
+        await this.backup(ctx)
+      } catch (err: any) {
+        Analytics.handleError(err)
+        ctx.error('error retry in cool down/5', { cooldown: this.config.CoolDown, error: err })
+        await new Promise<void>((resolve) => setTimeout(resolve, (this.config.CoolDown / 5) * 1000))
+        continue
+      }
+    }
+    clearInterval(infoTo)
+    clearInterval(recheckTo)
+  }
+
+  failedWorkspaces = new Map<
+  WorkspaceUuid,
+  {
+    info: WorkspaceInfoWithStatus
+    counter: number
+  }
+  >()
+
+  processed = 0
+
+  activeWorkspaces = new Set<string>()
+
+  allBackupTime: number = 0
+
+  async backup (ctx: MeasureContext): Promise<void> {
+    while (true) {
+      const ws = this.workspacesToBackup.shift()
+      if (ws === undefined) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 1000))
+        continue
+      }
+      await this.rateLimiter.add(
+        async () => {
           try {
-            activeWorkspaces.add(ws.uuid)
-            index++
-            if (this.canceled || Date.now() - startTime > recheckTimeout) {
+            this.activeWorkspaces.add(ws.uuid)
+            if (this.canceled) {
               return // If canceled, we should stop
             }
             const st = Date.now()
             const result = await this.doBackup(ctx, ws)
-            const totalTime = Date.now() - st
-            times.push(totalTime)
-            if (!result) {
-              failedWorkspaces.push(ws)
-              return
+            if (result) {
+              const totalTime = Date.now() - st
+              this.allBackupTime += totalTime
+              this.processed++
             }
-            processed++
           } catch (err: any) {
             ctx.error('Backup failed', { err })
-            failedWorkspaces.push(ws)
+            const f = this.failedWorkspaces.get(ws.uuid)
+            if (f === undefined) {
+              this.failedWorkspaces.set(ws.uuid, {
+                info: ws,
+                counter: 1
+              })
+            } else {
+              f.counter++
+            }
+            if ((f?.counter ?? 1) < 5) {
+              this.workspacesToBackup.push(ws)
+            }
           } finally {
-            activeWorkspaces.delete(ws.uuid)
+            this.activeWorkspaces.delete(ws.uuid)
           }
-        })
-      }
-
-      ctx.info('waiting for rate limiter to finish processing', { active: rateLimiter.processingQueue.size })
-      await rateLimiter.waitProcessing()
-    } catch (err: any) {
-      ctx.error('Backup failed', { err })
-      throw err
-    } finally {
-      clearInterval(infoTo)
+        },
+        (err: any) => {
+          ctx.error('Backup failed', { err })
+        }
+      )
     }
-    return { failedWorkspaces, processed, skipped: workspaces.length - processed }
+  }
+
+  private async getWorkspacesList (): Promise<WorkspaceInfoWithStatus[]> {
+    const client = getAccountClient(this.config.Token)
+    if (process.env.WORKSPACES_OVERRIDE !== undefined) {
+      const wsIds = process.env.WORKSPACES_OVERRIDE.split(',')
+      return await client.getWorkspacesInfo(wsIds as WorkspaceUuid[])
+    }
+    return await client.listWorkspaces(this.region, 'active')
   }
 
   async doBackup (

@@ -68,6 +68,10 @@ export async function addUserByEmail (user: Token, email: GoogleEmail): Promise<
   const client = getKvsClient()
   const key = `${CALENDAR_INTEGRATION}:users:${email}`
   const curr = (await client.getValue<Token[]>(key)) ?? []
+  const exists = curr.find((p) => p.userId === user.userId && p.workspace === user.workspace)
+  if (exists !== undefined) {
+    return
+  }
   curr.push(user)
   await client.setValue<Token[]>(key, curr)
 }
