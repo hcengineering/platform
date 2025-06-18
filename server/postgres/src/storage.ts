@@ -766,6 +766,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
           if (attr !== undefined && this.hierarchy.isMixin(attr.attributeOf)) {
             const newKey = `${attr.attributeOf}.${attr.name}` as keyof Projection<T>
             res[newKey] = escape(projection[key])
+          } else {
+            ;(res as any)[escape(key)] = escape(projection[key])
           }
         } catch (err: any) {
           // ignore, if
