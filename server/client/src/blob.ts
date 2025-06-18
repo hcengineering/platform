@@ -79,7 +79,6 @@ export class BlobClient {
   ): Promise<void> {
     let written = 0
     const chunkSize = 50 * 1024 * 1024
-    let writtenMb = 0
 
     // Use ranges to iterave through file with retry if required.
     while (written < size || size === -1) {
@@ -162,16 +161,6 @@ export class BlobClient {
           })
 
           written += chunk.length
-          const newWrittenMb = Math.round(written / (1024 * 1024))
-          const newWrittenId = Math.round(newWrittenMb / 5)
-          if (writtenMb !== newWrittenId) {
-            writtenMb = newWrittenId
-            ctx.info('  >>>>Chunk', {
-              name,
-              written: newWrittenMb,
-              of: Math.round(size / (1024 * 1024))
-            })
-          }
           break
         } catch (err: any) {
           if (
