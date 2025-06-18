@@ -61,6 +61,7 @@ import ContentCardSection from './components/sections/ContentSection.svelte'
 import PropertiesCardSection from './components/sections/PropertiesSection.svelte'
 import RelationsCardSection from './components/sections/RelationsSection.svelte'
 import FavoriteCardPresenter from './components/FavoriteCardPresenter.svelte'
+import CardTagsColored from './components/CardTagsColored.svelte'
 import CardTagColored from './components/CardTagColored.svelte'
 import CardWidgetTab from './components/CardWidgetTab.svelte'
 
@@ -102,7 +103,8 @@ export default async (): Promise<Resources> => ({
     CardWidget,
     CardWidgetTab,
     FavoriteCardPresenter,
-    CardTagColored
+    CardTagColored,
+    CardTagsColored
   },
   sectionComponent: {
     AttachmentsSection: AttachmentsCardSection,

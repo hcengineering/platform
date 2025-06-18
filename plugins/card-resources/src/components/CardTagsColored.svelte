@@ -14,8 +14,8 @@
 <script lang="ts">
   import { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Component, Icon, Label, themeStore, tooltip } from '@hcengineering/ui'
-  import cardPlugin, { Card, MasterTag, Tag } from '@hcengineering/card'
+  import { Card, MasterTag, Tag } from '@hcengineering/card'
+  import CardTagColored from './CardTagColored.svelte'
 
   export let value: Card
 
@@ -37,11 +37,11 @@
 </script>
 
 <div class="tags-container">
-  <Component is={cardPlugin.component.CardTagColored} props={{ labelIntl: type.label, color: type.background }} />
+  <CardTagColored labelIntl={type.label} color={type.background} />
   {#if tags.length > 0}
     <div class="divider" />
     {#each tags as tag}
-      <Component is={cardPlugin.component.CardTagColored} props={{ labelIntl: tag.label, color: tag.background }} />
+      <CardTagColored labelIntl={tag.label} color={tag.background} />
     {/each}
   {/if}
 </div>
