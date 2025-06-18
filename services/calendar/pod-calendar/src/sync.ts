@@ -170,7 +170,7 @@ export class IncomingSyncManager {
 
   private async sync (calendarId: string): Promise<void> {
     await this.syncEvents(calendarId)
-    const watchController = WatchController.get(this.accountClient)
+    const watchController = WatchController.get(this.ctx, this.accountClient)
     await this.rateLimiter.take(1)
     await watchController.addWatch(this.user, this.email, calendarId, this.googleClient)
   }
@@ -564,7 +564,7 @@ export class IncomingSyncManager {
   async syncCalendars (): Promise<void> {
     const history = await getCalendarsSyncHistory(this.user, this.email)
     await this.calendarSync(history)
-    const watchController = WatchController.get(this.accountClient)
+    const watchController = WatchController.get(this.ctx, this.accountClient)
     await this.rateLimiter.take(1)
     await watchController.addWatch(this.user, this.email, null, this.googleClient)
   }
