@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import presentation, { ActionContext } from '@hcengineering/presentation'
-  import { personByIdStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { personByIdStore, personRefByPersonIdStore, getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
   import { Label, Loading, resizeObserver, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
@@ -31,7 +31,7 @@
     TrackPublication
   } from 'livekit-client'
   import { onDestroy, onMount, tick } from 'svelte'
-    import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
+  import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
 
   import love from '../plugin'
   import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
@@ -48,7 +48,6 @@
   import ParticipantView from './ParticipantView.svelte'
   import { Ref } from '@hcengineering/core'
   import { Person } from '@hcengineering/contact'
-  import { getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
 
   export let withVideo: boolean
   export let canMaximize: boolean = true
