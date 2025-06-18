@@ -60,6 +60,7 @@ import { updateField } from './workspace'
 import {
   AccountRole,
   isArchivingMode,
+  isDeletingMode,
   MeasureMetricsContext,
   metricsToString,
   SocialIdType,
@@ -2450,7 +2451,7 @@ export function devTool (
               ? await getWorkspacesInfoWithStatusByIds(accDb, wsUuids)
               : await getWorkspaces(accDb, null, null, null)
           const workspaces = rawWorkspaces
-            .filter((it) => !isArchivingMode(it.status.mode))
+            .filter((it) => !isArchivingMode(it.status.mode) && !isDeletingMode(it.status.mode))
             .sort((a, b) => (b.status.lastVisit ?? 0) - (a.status.lastVisit ?? 0))
 
           toolCtx.info('Workspaces found', { count: workspaces.length })
