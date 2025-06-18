@@ -100,11 +100,19 @@ export interface WidgetTab {
 }
 
 /** @public */
+export interface TabUiState {
+  viewletId?: string;
+  filterBarState?: Record<string, any>;
+}
+
+
+/** @public */
 export interface WorkbenchTab extends Preference {
   attachedTo: AccountUuid
   location: string
   isPinned: boolean
   name?: string
+  uiState?: TabUiState;
 }
 
 /** @public */

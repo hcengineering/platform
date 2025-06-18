@@ -37,7 +37,7 @@ import {
 } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { parseLinkId } from '@hcengineering/view-resources'
-import { type Application, workbenchId, type WorkbenchTab } from '@hcengineering/workbench'
+import { type Application, workbenchId, type WorkbenchTab, type TabUiState } from '@hcengineering/workbench'
 import { derived, get, writable } from 'svelte/store'
 
 import setting from '@hcengineering/setting'
@@ -50,6 +50,19 @@ export const tabsStore = writable<WorkbenchTab[]>([])
 export const currentTabStore = derived([tabIdStore, tabsStore], ([tabId, tabs]) => {
   return tabs.find((tab) => tab._id === tabId)
 })
+
+export function updateTabUiState (tabId: Ref<WorkbenchTab>, state: Partial<TabUiState>): void {
+  tabsStore.update((tabs) => {
+    const tab = tabs.find((t) => t._id === tabId)
+    if (tab != null) {
+      tab.uiState = {
+        ...(tab.uiState ?? {}),
+        ...state
+      }
+    }
+    return tabs
+  })
+}
 
 let prevTabId: Ref<WorkbenchTab> | undefined
 tabIdStore.subscribe((value) => {

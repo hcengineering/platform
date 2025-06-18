@@ -5,6 +5,7 @@
   import { Viewlet } from '@hcengineering/view'
   import ViewletSelector from './ViewletSelector.svelte'
   import FilterButton from './filter/FilterButton.svelte'
+  import { WorkbenchTab } from '../../../workbench/types'
 
   export let space: Ref<Space> | undefined = undefined
   export let _class: Ref<Class<Doc>>
@@ -17,6 +18,7 @@
   export let showLabelSelector = false
   export let modeSelectorProps: IModeSelector | undefined = undefined
   export let adaptive: HeaderAdaptive = 'doubleRow'
+  export let currentTabId: Ref<WorkbenchTab> | undefined = undefined;
 
   let scroller: HTMLElement
 </script>
@@ -45,7 +47,7 @@
 
   <svelte:fragment slot="search">
     <SearchInput bind:value={search} collapsed />
-    <FilterButton {_class} {space} />
+    <FilterButton {_class} {space} currentTabId={currentTabId}/>
   </svelte:fragment>
   <svelte:fragment slot="actions">
     <slot name="actions" />

@@ -21,12 +21,14 @@
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
   import IconClose from '../icons/Close.svelte'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
+  import { WorkbenchTab } from '../../../../workbench/types'
 
   export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined = undefined
   export let viewOptions: ViewOptions | undefined = undefined
   export let adaptive: boolean = false
+  export let currentTabId: Ref<WorkbenchTab> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -37,18 +39,18 @@
     }
   })
 
-  function load (_class: Ref<Class<Doc>> | undefined): void {
-    const key = getFilterKey(_class)
-    const items = localStorage.getItem(key)
-    if (items !== null) {
-      filterStore.set(JSON.parse(items))
-    }
+function load (_class: Ref<Class<Doc>> | undefined): void {
+  const key = getFilterKey(_class, currentTabId);
+  const items = localStorage.getItem(key);
+  if (items !== null) {
+    filterStore.set(JSON.parse(items));
   }
+}
 
-  function save (_class: Ref<Class<Doc>> | undefined, p: Filter[]): void {
-    const key = getFilterKey(_class)
-    localStorage.setItem(key, JSON.stringify(p))
-  }
+function save (_class: Ref<Class<Doc>> | undefined, p: Filter[]): void {
+  const key = getFilterKey(_class, currentTabId);
+  localStorage.setItem(key, JSON.stringify(p));
+}
 
   filterStore.subscribe((p) => {
     save(_class, p)
@@ -83,6 +85,13 @@
     if (_class) {
       visible = hierarchy.classHierarchyMixin(_class, view.mixin.ClassFilters) !== undefined
     } else visible = false
+  }
+
+  onMount(() => {
+    load(_class);
+  });
+ $: if (currentTabId) {
+    load(_class);
   }
 </script>
 

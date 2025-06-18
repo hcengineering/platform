@@ -16,6 +16,7 @@ import { getCurrentResolvedLocation, locationToUrl, type AnyComponent } from '@h
 import { type Filter, type FilterMode, type FilteredView, type KeyFilter } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 import view from './plugin'
+import { WorkbenchTab } from '../../workbench/types'
 
 /**
  * @public
@@ -319,16 +320,25 @@ export function createFilter (_class: Ref<Class<Doc>>, key: string, value: any[]
   }
 }
 
-export function getFilterKey (_class: Ref<Class<Doc>> | undefined): string {
-  const loc = getCurrentResolvedLocation()
-  loc.path.length = 3
-  loc.fragment = undefined
-  loc.query = undefined
-  let res = 'filter' + locationToUrl(loc)
+export function getFilterKey (
+  _class: Ref<Class<Doc>> | undefined,
+  tabId?: Ref<WorkbenchTab>
+): string {
+  const loc = getCurrentResolvedLocation();
+
+  const urlLoc = {
+    path: loc.path.slice(0, 3),
+    query: loc.query,
+    fragment: loc.fragment
+  };
+
+  const classIdString = _class ? (_class as any).id || _class.toString() : 'unknown_class';
+
+  let res = `filter_${tabId || 'global'}_${locationToUrl(urlLoc)}`;
   if (_class !== undefined) {
-    res = res + _class
+    res = res + classIdString;
   }
-  return res
+  return res;
 }
 
 /**
