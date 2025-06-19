@@ -2164,6 +2164,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-billing",
+      "projectFolder": "services/billing/pod-billing",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-love",
       "projectFolder": "services/love",
       "shouldPublish": false

@@ -781,6 +781,9 @@ importers:
       '@rush-temp/pod-backup':
         specifier: file:./projects/pod-backup.tgz
         version: file:projects/pod-backup.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
+      '@rush-temp/pod-billing':
+        specifier: file:./projects/pod-billing.tgz
+        version: file:projects/pod-billing.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
       '@rush-temp/pod-calendar':
         specifier: file:./projects/pod-calendar.tgz
         version: file:projects/pod-calendar.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@6.0.4)
@@ -4784,6 +4787,10 @@ packages:
 
   '@rush-temp/pod-backup@file:projects/pod-backup.tgz':
     resolution: {integrity: sha512-5zwc6BJ0qwdOv/STKbVT0zOTinP4/1tsyjcXi+JK75YOvgjLyAKJpLlCFDl109EmlMKio3QvtcVtIuvSAOsg6g==, tarball: file:projects/pod-backup.tgz}
+    version: 0.0.0
+
+  '@rush-temp/pod-billing@file:projects/pod-billing.tgz':
+    resolution: {integrity: sha512-2GkA3rkZdES4T1RXjcYstLmZVT0p2kiS6QfOLgNzeZ334GcuQEzjMzcXakMbAIQzwdQcq5B4sXZ1dA+JU2BH7g==, tarball: file:projects/pod-billing.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-calendar-mailer@file:projects/pod-calendar-mailer.tgz':
@@ -22021,6 +22028,46 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      ts-node: 10.9.2(@types/node@22.15.29)(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@swc/core'
+      - '@swc/wasm'
+      - babel-jest
+      - babel-plugin-macros
+      - node-notifier
+      - supports-color
+
+  '@rush-temp/pod-billing@file:projects/pod-billing.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
+    dependencies:
+      '@tsconfig/node16': 1.0.4
+      '@types/cors': 2.8.17
+      '@types/express': 4.17.21
+      '@types/jest': 29.5.12
+      '@types/morgan': 1.9.9
+      '@types/node': 22.15.29
+      '@types/on-headers': 1.0.3
+      '@types/ws': 8.5.11
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      cors: 2.8.5
+      dotenv: 16.0.3
+      esbuild: 0.24.2
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-node: 11.1.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      express: 4.21.2
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      morgan: 1.10.0
+      on-headers: 1.0.2
+      postgres: 3.4.7
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       ts-node: 10.9.2(@types/node@22.15.29)(typescript@5.8.3)
