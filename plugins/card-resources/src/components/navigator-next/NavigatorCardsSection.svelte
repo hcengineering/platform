@@ -16,12 +16,7 @@
 <script lang="ts">
   import { Card, CardSpace, FavoriteCard, MasterTag } from '@hcengineering/card'
   import { Ref, SortingOrder } from '@hcengineering/core'
-  import {
-    createLabelsQuery,
-    createNotificationContextsQuery,
-    createQuery,
-    getClient
-  } from '@hcengineering/presentation'
+  import { createNotificationContextsQuery, createQuery } from '@hcengineering/presentation'
   import { Label, NotificationContext, NotificationType } from '@hcengineering/communication-types'
   import ui, { ModernButton } from '@hcengineering/ui'
 
@@ -33,21 +28,16 @@
   export let config: CardsNavigatorConfig
   export let applicationId: string
   export let favorites: FavoriteCard[]
+  export let labels: Label[] = []
   export let space: CardSpace | undefined = undefined
   export let selectedType: Ref<MasterTag> | undefined = undefined
   export let selectedCard: Ref<Card> | undefined = undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   const cardsQuery = createQuery()
-  const labelsQuery = createLabelsQuery()
   const notificationContextsQuery = createNotificationContextsQuery()
 
   let cards: Card[] = []
   let contextByCard = new Map<Ref<Card>, NotificationContext>()
-  let labels: Label[] = []
-  let isLabelsLoaded = false
   let isLoading: boolean = true
   let hasMore = false
 
@@ -56,31 +46,14 @@
 
   let limit = config.limit
 
-  $: if ((config.labelFilter?.length ?? 0) > 0) {
-    labelsQuery.query(
-      {
-        label: config.labelFilter,
-        cardType: hierarchy.getDescendants(type._id)
-      },
-      (res) => {
-        labels = res
-        isLabelsLoaded = true
-      }
-    )
-  } else {
-    labelsQuery.unsubscribe()
-    labels = []
-    isLabelsLoaded = true
-  }
-
   $: ids = (config.labelFilter?.length ?? 0) > 0 ? labels.map((it) => it.cardId) : undefined
 
-  $: if (isLabelsLoaded) {
+  $: if ((ids && ids.length > 0) || (config.labelFilter?.length ?? 0) === 0) {
     cardsQuery.query<Card>(
       type._id,
       {
         // TODO: Should be join instead of $in. But for now labels and cards in different api.
-        ...(ids === undefined ? {} : { _id: { $in: ids as Ref<Card>[] } }),
+        ...(ids === undefined ? {} : { _id: { $in: ids } }),
         ...(space !== undefined ? { space: space._id } : {})
       },
       (res) => {
@@ -97,12 +70,14 @@
         sort: sort === 'alphabetical' ? { title: SortingOrder.Ascending } : { modifiedOn: SortingOrder.Descending }
       }
     )
+  } else if ((!ids || ids.length === 0) && (config.labelFilter?.length ?? 0) > 0) {
+    isLoading = false
   }
 
-  $: if ((ids?.length ?? 0) > 0 || cards.length > 0) {
+  $: if (cards.length > 0) {
     notificationContextsQuery.query(
       {
-        card: ids ?? cards.map((it) => it._id),
+        card: cards.map((it) => it._id),
         notifications: {
           type: NotificationType.Message,
           order: SortingOrder.Descending,
