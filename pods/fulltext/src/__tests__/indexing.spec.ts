@@ -35,7 +35,7 @@ prepare()
 jest.setTimeout(500000)
 
 class TestWorkspaceManager extends WorkspaceManager {
-  public async getWorkspaceInfo (token?: string): Promise<WorkspaceInfoWithStatus | undefined> {
+  public async getWorkspaceInfo (ctx: MeasureContext, token?: string): Promise<WorkspaceInfoWithStatus | undefined> {
     const decodedToken = decodeToken(token ?? '')
     return {
       uuid: decodedToken.workspace,

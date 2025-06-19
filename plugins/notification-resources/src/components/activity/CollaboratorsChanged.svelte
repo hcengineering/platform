@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
-  import { personRefByAccountUuidStore, PersonRefPresenter } from '@hcengineering/contact-resources'
+  import { employeeRefByAccountUuidStore, PersonRefPresenter } from '@hcengineering/contact-resources'
   import { Person } from '@hcengineering/contact'
   import { type Ref, type AccountUuid, notEmpty } from '@hcengineering/core'
   import activity, { DocAttributeUpdates } from '@hcengineering/activity'
@@ -23,8 +23,8 @@
 
   export let value: DocAttributeUpdates
 
-  $: removed = getPersonRefs(value.removed, $personRefByAccountUuidStore)
-  $: added = getPersonRefs(value.added.length > 0 ? value.added : value.set, $personRefByAccountUuidStore)
+  $: removed = getPersonRefs(value.removed, $employeeRefByAccountUuidStore)
+  $: added = getPersonRefs(value.added.length > 0 ? value.added : value.set, $employeeRefByAccountUuidStore)
 
   function getPersonRefs (
     values: DocAttributeUpdates['removed' | 'added' | 'set'],

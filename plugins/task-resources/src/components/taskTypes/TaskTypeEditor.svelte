@@ -317,7 +317,7 @@
             />
           </div>
 
-          <ClassAttributes ofClass={taskType.ofClass} _class={taskType.targetClass} showHierarchy disabled={readonly} />
+          <ClassAttributes _class={taskType.targetClass} showHierarchy disabled={readonly} />
         </div>
       </Scroller>
     </div>

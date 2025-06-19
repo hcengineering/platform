@@ -14,17 +14,17 @@
 -->
 <script lang="ts">
   import { Contact, Employee, getCurrentEmployee, getName, Person } from '@hcengineering/contact'
-  import { AccountUuid, Ref } from '@hcengineering/core'
+  import { AccountUuid, notEmpty, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import contact from '../plugin'
-  import { employeeByIdStore, personRefByAccountUuidStore } from '../utils'
+  import { employeeByIdStore, employeeRefByAccountUuidStore } from '../utils'
   import UserBoxList from './UserBoxList.svelte'
 
   export let label: IntlString
-  export let value: AccountUuid[] | undefined
+  export let value: AccountUuid | AccountUuid[] | undefined
   export let onChange: ((refs: AccountUuid[]) => void | Promise<void>) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
@@ -34,17 +34,20 @@
   export let excludeItems: Ref<Person>[] = []
   export let emptyLabel: IntlString | undefined = undefined
   export let allowGuests: boolean = false
+  export let attributeKey: string | undefined = undefined
+
+  $: accounts = typeof value === 'string' ? [value] : value ?? []
 
   let timer: any = null
   const client = getClient()
   let update: (() => Promise<void>) | undefined
 
-  $: valueByPersonRef = new Map(
-    (value ?? []).map((p) => {
-      const person = $personRefByAccountUuidStore.get(p)
+  $: accountsByPersonRef = new Map(
+    accounts.map((p) => {
+      const person = $employeeRefByAccountUuidStore.get(p)
 
       if (person === undefined) {
-        console.error('Person not found for social id', p)
+        console.error('Person not found by account id', p)
       }
 
       return [person, p] as const
@@ -60,7 +63,7 @@
       const newAccounts: AccountUuid[] = []
 
       for (const person of newPersons) {
-        const acc = valueByPersonRef.get(person)
+        const acc = accountsByPersonRef.get(person)
         if (acc !== undefined) {
           newAccounts.push(acc)
         } else {
@@ -86,7 +89,7 @@
     void update?.()
   })
 
-  $: employees = (value ?? []).map((p) => $personRefByAccountUuidStore.get(p)).filter((p) => p !== undefined)
+  $: employees = accounts.map((p) => $employeeRefByAccountUuidStore.get(p)).filter(notEmpty)
   $: docQuery =
     excludeItems.length === 0 && includeItems.length === 0
       ? {}

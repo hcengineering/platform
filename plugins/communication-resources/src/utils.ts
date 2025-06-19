@@ -27,7 +27,7 @@ import {
   type Ref,
   SortingOrder
 } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
+import { getMetadata, getResource } from '@hcengineering/platform'
 import { showPopup } from '@hcengineering/ui'
 import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
 import { getEmployeeBySocialId } from '@hcengineering/contact'
@@ -37,7 +37,6 @@ import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown
 import { jsonToMarkup, markupToJSON, markupToText } from '@hcengineering/text'
 import { get } from 'svelte/store'
 import chat from '@hcengineering/chat'
-import { openDoc } from '@hcengineering/view-resources'
 import { makeRank } from '@hcengineering/rank'
 
 import IconAt from './components/icons/At.svelte'
@@ -122,9 +121,9 @@ export async function toggleReaction (message: Message, emoji: string): Promise<
   const { socialIds } = me
   const reaction = message.reactions.find((it) => it.reaction === emoji && socialIds.includes(it.creator))
   if (reaction !== undefined) {
-    await communicationClient.removeReaction(message.card, message.id, message.created, emoji)
+    await communicationClient.removeReaction(message.cardId, message.id, emoji)
   } else {
-    await communicationClient.createReaction(message.card, message.id, message.created, emoji)
+    await communicationClient.setReaction(message.cardId, message.id, emoji)
   }
 }
 
@@ -135,10 +134,11 @@ export async function replyToThread (message: Message, parentCard: Card): Promis
 
   const thread = message.thread
   if (thread != null) {
-    const _id = thread.thread
+    const _id = thread.threadId
     const card = await client.findOne(cardPlugin.class.Card, { _id: _id as Ref<Card> })
     if (card === undefined) return
-    await openDoc(client.getHierarchy(), card)
+    const r = await getResource(cardPlugin.function.OpenCardInSidebar)
+    await r(_id, card)
     return
   }
 
@@ -169,27 +169,21 @@ export async function replyToThread (message: Message, parentCard: Card): Promis
   const threadCardID = generateId<Card>()
   await apply.createDoc(chat.masterTag.Thread, cardPlugin.space.Default, data, threadCardID)
   await apply.commit()
-  await communicationClient.createThread(
-    parentCard._id,
-    message.id,
-    message.created,
-    threadCardID,
-    chat.masterTag.Thread
-  )
+  await communicationClient.attachThread(parentCard._id, message.id, threadCardID, chat.masterTag.Thread)
   if (author?.active === true && author?.personUuid !== undefined) {
     await communicationClient.addCollaborators(threadCardID, chat.masterTag.Thread, [author.personUuid])
   }
   const threadCard = await client.findOne(cardPlugin.class.Card, { _id: threadCardID })
   if (threadCard === undefined) return
-  await openDoc(client.getHierarchy(), threadCard)
+  const r = await getResource(cardPlugin.function.OpenCardInSidebar)
+  await r(threadCard._id, threadCard)
 }
 
 function createThreadTitle (message: Message, parent: Card): string {
   const markup = jsonToMarkup(markdownToMarkup(message.content))
   const messageText = markupToText(markup).trim()
 
-  const titleFromMessage = `${messageText.slice(0, 100)}${messageText.length > 100 ? '...' : ''}`
-  return titleFromMessage.length > 0 ? titleFromMessage : `Thread from ${parent.title}`
+  return messageText.length > 0 ? messageText : `Thread from ${parent.title}`
 }
 
 export async function loadLinkPreviewData (url: string): Promise<LinkPreviewData | undefined> {
@@ -199,11 +193,11 @@ export async function loadLinkPreviewData (url: string): Promise<LinkPreviewData
       return {
         url: meta.url,
         host: meta.host,
-        hostname: meta.hostname,
+        siteName: meta.hostname,
         title: meta.title,
         description: meta.description,
-        favicon: meta.icon,
-        image:
+        iconUrl: meta.icon,
+        previewImage:
           meta.image != null
             ? {
                 url: meta.image,

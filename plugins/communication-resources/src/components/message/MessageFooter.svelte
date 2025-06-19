@@ -15,25 +15,23 @@
 
 <script lang="ts">
   import { getClient, getCommunicationClient } from '@hcengineering/presentation'
-  import cardPlugin, { Card } from '@hcengineering/card'
-  import { Ref, getCurrentAccount } from '@hcengineering/core'
+  import cardPlugin from '@hcengineering/card'
+  import { getCurrentAccount } from '@hcengineering/core'
   import { AttachmentPreview, LinkPreview } from '@hcengineering/attachment-resources'
-  import { Message, MessageType, LinkPreviewID } from '@hcengineering/communication-types'
-  import { openDoc } from '@hcengineering/view-resources'
+  import { LinkPreviewID, Message, MessageType } from '@hcengineering/communication-types'
+  import { getResource } from '@hcengineering/platform'
 
   import ReactionsList from '../ReactionsList.svelte'
   import MessageReplies from './MessageReplies.svelte'
   import { toggleReaction } from '../../utils'
 
   export let message: Message
-  export let replies: boolean = true
-  export let files: boolean = true
 
   const me = getCurrentAccount()
   const communicationClient = getCommunicationClient()
 
   function canReply (): boolean {
-    return message.type === MessageType.Message || message.type === MessageType.Thread
+    return message.type !== MessageType.Activity && message.extra?.threadRoot !== true
   }
 
   async function handleReaction (event: CustomEvent<string>): Promise<void> {
@@ -47,35 +45,40 @@
     if (!canReply()) return
     const t = message.thread
     if (t === undefined) return
-    const _id = t.thread
+    const _id = t.threadId
     const client = getClient()
-    const c = await client.findOne(cardPlugin.class.Card, { _id: _id as Ref<Card> })
+    const c = await client.findOne(cardPlugin.class.Card, { _id })
     if (c === undefined) return
-    await openDoc(client.getHierarchy(), c)
+    const r = await getResource(cardPlugin.function.OpenCardInSidebar)
+    await r(_id, c)
   }
 
-  $: isThread = message.thread != null || message.type === MessageType.Thread
-
   async function removeLinkPreview (id: LinkPreviewID): Promise<void> {
-    await communicationClient.removeLinkPreview(message.card, message.id, message.created, id)
+    await communicationClient.removeLinkPreview(message.cardId, message.id, id)
   }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-{#if !isThread && message.files.length > 0 && files}
+{#if message.blobs.length > 0}
   <div class="message__files">
-    {#each message.files as file (file.blobId)}
+    {#each message.blobs as blob (blob.blobId)}
       <AttachmentPreview
-        value={{ file: file.blobId, type: file.type, name: file.filename, size: file.size, metadata: file.meta }}
+        value={{
+          file: blob.blobId,
+          type: blob.contentType,
+          name: blob.fileName,
+          size: blob.size,
+          metadata: blob.metadata
+        }}
         imageSize="x-large"
       />
     {/each}
   </div>
 {/if}
-{#if !isThread && (message.links ?? []).length > 0}
+{#if (message.linkPreviews ?? []).length > 0}
   <div class="message__links">
-    {#each message.links as link (link.id)}
+    {#each message.linkPreviews as link (link.id)}
       <LinkPreview
         isOwn={me.socialIds.includes(message.creator)}
         on:delete={() => {
@@ -86,11 +89,11 @@
           host: link.host,
           title: link.title,
           description: link.description,
-          hostname: link.hostname,
-          image: link.image?.url,
-          imageWidth: link.image?.width,
-          imageHeight: link.image?.height,
-          icon: link.favicon
+          hostname: link.siteName,
+          image: link.previewImage?.url,
+          imageWidth: link.previewImage?.width,
+          imageHeight: link.previewImage?.height,
+          icon: link.iconUrl
         }}
       />
     {/each}
@@ -101,10 +104,10 @@
     <ReactionsList reactions={message.reactions} on:click={handleReaction} />
   </div>
 {/if}
-{#if replies && message.thread && message.thread.repliesCount > 0}
+{#if message.thread && message.thread.threadId}
   <div class="message__replies overflow-label">
     <MessageReplies
-      threadId={message.thread.thread}
+      thread={message.thread}
       count={message.thread.repliesCount}
       lastReply={message.thread.lastReply}
       on:click={handleReply}

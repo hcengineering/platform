@@ -49,7 +49,8 @@ export default mergeIds(cardId, card, {
     SpacePresenter: '' as AnyComponent,
     RolesSection: '' as AnyComponent,
     EditRole: '' as AnyComponent,
-    CardWidget: '' as AnyComponent
+    CardWidget: '' as AnyComponent,
+    CardWidgetTab: '' as AnyComponent
   },
   sectionComponent: {
     AttachmentsSection: '' as AnyComponent,

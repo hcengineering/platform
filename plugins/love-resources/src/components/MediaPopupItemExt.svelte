@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
   import { isOffice } from '@hcengineering/love'
   import { Button } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -46,6 +46,9 @@
 
   let now = Date.now()
 
+  $: participants = $infos.filter((p) => p.room === $currentRoom?._id)
+  $: personByRefStore = getPersonByPersonRefStore(participants.map((p) => p.person))
+
   onMount(() => {
     const interval = setInterval(() => {
       now = Date.now()
@@ -58,7 +61,6 @@
 </script>
 
 {#if $isCurrentInstanceConnected && $currentRoom != null}
-  {@const participants = $infos.filter((p) => p.room === $currentRoom._id)}
   {@const overLimit = participants.length > limit}
 
   <div class="m-1 p-2">
@@ -101,9 +103,9 @@
                 data-over={i === limit - 1 && overLimit ? `+${participants.length - limit + 1}` : undefined}
               >
                 <Avatar
-                  name={$personByIdStore.get(participant.person)?.name ?? participant.name}
+                  name={$personByRefStore.get(participant.person)?.name ?? participant.name}
                   size={'x-small'}
-                  person={$personByIdStore.get(participant.person)}
+                  person={$personByRefStore.get(participant.person)}
                 />
               </div>
             {/each}
@@ -112,9 +114,9 @@
           <div class="flex-row-center flex-gap-0-5">
             {#each participants as participant (participant._id)}
               <Avatar
-                name={$personByIdStore.get(participant.person)?.name ?? participant.name}
+                name={$personByRefStore.get(participant.person)?.name ?? participant.name}
                 size={'x-small'}
-                person={$personByIdStore.get(participant.person)}
+                person={$personByRefStore.get(participant.person)}
               />
             {/each}
           </div>

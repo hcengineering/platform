@@ -51,7 +51,7 @@ import core, {
   type WorkspaceInfoWithStatus,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import { type Status, unknownError } from '@hcengineering/platform'
+import { type Status, UNAUTHORIZED, unknownError } from '@hcengineering/platform'
 import {
   type HelloRequest,
   type HelloResponse,
@@ -83,9 +83,9 @@ import {
   type WorkspaceStatistics
 } from '@hcengineering/server-core'
 import { generateToken, type Token } from '@hcengineering/server-token'
-import { type PipelinePair, Workspace } from './workspace'
 import { ClientSession } from './client'
 import { sendResponse } from './utils'
+import { type PipelinePair, Workspace } from './workspace'
 
 const ticksPerSecond = 20
 const workspaceSoftShutdownTicks = 15 * ticksPerSecond
@@ -209,25 +209,25 @@ export class TSessionManager implements SessionManager {
   }
 
   private handleWorkspaceTick (): void {
-    for (const [wsId, workspace] of this.workspaces.entries()) {
-      if (this.ticks % (60 * ticksPerSecond) === workspace.tickHash) {
-        try {
-          // update account lastVisit every minute per every workspace.∏
-          let connected: boolean = false
-          for (const val of workspace.sessions.values()) {
-            if (val.session.getUser() !== systemAccountUuid) {
-              connected = true
-              break
-            }
+    if (this.ticks % (60 * ticksPerSecond) === 0) {
+      const workspacesToUpdate: WorkspaceUuid[] = []
+
+      for (const [wsId, workspace] of this.workspaces.entries()) {
+        // update account lastVisit every minute per every workspace.∏
+        for (const val of workspace.sessions.values()) {
+          if (val.session.getUser() !== systemAccountUuid) {
+            workspacesToUpdate.push(wsId)
+            break
           }
-          void this.getWorkspaceInfo(this.ticksContext, workspace.token, connected).catch(() => {
-            // Ignore
-          })
-        } catch (err: any) {
-          // Ignore
         }
       }
-
+      if (workspacesToUpdate.length > 0) {
+        void this.updateLastVisit(this.ctx, workspacesToUpdate).catch(() => {
+          // Ignore
+        })
+      }
+    }
+    for (const [wsId, workspace] of this.workspaces.entries()) {
       for (const [k, v] of Array.from(workspace.tickHandlers.entries())) {
         v.ticks--
         if (v.ticks === 0) {
@@ -279,7 +279,10 @@ export class TSessionManager implements SessionManager {
           timeout = timeout * 10
         }
         if (lastRequestDiff > timeout) {
-          this.ctx.warn('session hang, closing...', { wsId, user: s.session.getUser() })
+          this.ctx.warn('session hang, closing...', {
+            wsId,
+            user: s.session.getUser()
+          })
 
           // Force close workspace if only one client and it hang.
           void this.close(this.ticksContext, s.socket, wsId).catch((err) => {
@@ -353,6 +356,19 @@ export class TSessionManager implements SessionManager {
   ): Promise<WorkspaceInfoWithStatus | undefined> {
     try {
       return await getAccountClient(this.accountsUrl, token).getWorkspaceInfo(updateLastVisit)
+    } catch (err: any) {
+      if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
+        return undefined
+      }
+      throw err
+    }
+  }
+
+  @withContext('🧭 update-last-visit')
+  async updateLastVisit (ctx: MeasureContext, workspaces: WorkspaceUuid[]): Promise<void> {
+    try {
+      const sysToken = generateToken(systemAccountUuid, undefined, { service: 'transactor' })
+      await getAccountClient(this.accountsUrl, sysToken).updateLastVisit(workspaces)
     } catch (err: any) {
       if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
         return undefined
@@ -489,6 +505,13 @@ export class TSessionManager implements SessionManager {
     return { workspace }
   }
 
+  sysAccount = {
+    account: systemAccountUuid,
+    name: 'System',
+    workspaces: {},
+    socialIds: []
+  }
+
   async addSession (
     ctx: MeasureContext,
     ws: ConnectionSocket,
@@ -500,7 +523,11 @@ export class TSessionManager implements SessionManager {
       let account: LoginInfoWithWorkspaces | undefined
 
       try {
-        account = await this.getLoginWithWorkspaceInfo(ctx, rawToken)
+        if (token.account === undefined) {
+          return { error: UNAUTHORIZED, terminate: true }
+        }
+        account =
+          token.account === systemAccountUuid ? this.sysAccount : await this.getLoginWithWorkspaceInfo(ctx, rawToken)
       } catch (err: any) {
         return { error: err }
       }
@@ -839,7 +866,7 @@ export class TSessionManager implements SessionManager {
     const sessionRef = this.sessions.get(ws.id)
     if (sessionRef !== undefined) {
       ctx.info('bye happen', {
-        workspace: workspace?.wsId.url,
+        workspaceId: workspace?.wsId.uuid,
         userId: sessionRef.session.getUser(),
         user: sessionRef.session.getSocialIds().find((it) => it.type !== SocialIdType.HULY)?.value,
         binary: sessionRef.session.binaryMode,
@@ -1083,10 +1110,23 @@ export class TSessionManager implements SessionManager {
   }
 
   limitter = new SlidingWindowRateLimitter(
-    parseInt(process.env.RATE_LIMIT_MAX ?? '250'),
+    parseInt(process.env.RATE_LIMIT_MAX ?? '1500'),
     parseInt(process.env.RATE_LIMIT_WINDOW ?? '30000'),
     () => Date.now()
   )
+
+  sysLimitter = new SlidingWindowRateLimitter(
+    parseInt(process.env.RATE_LIMIT_MAX ?? '5000'),
+    parseInt(process.env.RATE_LIMIT_WINDOW ?? '30000'),
+    () => Date.now()
+  )
+
+  checkRate (service: Session): RateLimitInfo {
+    if (service.getUser() === systemAccountUuid) {
+      return this.sysLimitter.checkRateLimit('#sys#' + (service.token.extra?.service ?? '') + service.workspace.uuid)
+    }
+    return this.limitter.checkRateLimit(service.getUser() + (service.token.extra?.service ?? ''))
+  }
 
   async handleRequest<S extends Session>(
     requestCtx: MeasureContext,
@@ -1099,21 +1139,6 @@ export class TSessionManager implements SessionManager {
       source: service.token.extra?.service ?? '🤦‍♂️user',
       mode: '🧭 handleRequest'
     })
-    const rateLimit = this.limitter.checkRateLimit(service.getUser())
-    // If remaining is 0, rate limit is exceeded
-    if (rateLimit?.remaining === 0) {
-      void ws.send(
-        userCtx,
-        {
-          id: request.id,
-          rateLimit,
-          error: unknownError('Rate limit')
-        },
-        service.binaryMode,
-        service.useCompression
-      )
-      return
-    }
 
     // Calculate total number of clients
     const reqId = generateId()
@@ -1158,16 +1183,35 @@ export class TSessionManager implements SessionManager {
         await ws.send(userCtx, forceCloseResponse, service.binaryMode, service.useCompression)
         return
       }
+      let rateLimit: RateLimitInfo | undefined
+      if (request.method !== 'ping') {
+        rateLimit = this.checkRate(service)
+        // If remaining is 0, rate limit is exceeded
+        if (rateLimit?.remaining === 0) {
+          service.updateLast()
+          void ws.send(
+            userCtx,
+            {
+              id: request.id,
+              rateLimit,
+              error: unknownError('Rate limit')
+            },
+            service.binaryMode,
+            service.useCompression
+          )
+          return
+        }
+      }
 
+      if (request.id === -1 && request.method === '#upgrade') {
+        ws.close()
+        return
+      }
       service.requests.set(reqId, {
         id: reqId,
         params: request,
         start: st
       })
-      if (request.id === -1 && request.method === '#upgrade') {
-        ws.close()
-        return
-      }
 
       const f = (service as any)[request.method]
       try {
@@ -1213,7 +1257,7 @@ export class TSessionManager implements SessionManager {
     ws: ConnectionSocket,
     operation: (ctx: ClientSessionCtx, rateLimit: RateLimitInfo | undefined) => Promise<void>
   ): Promise<RateLimitInfo | undefined> {
-    const rateLimitStatus = this.limitter.checkRateLimit(service.getUser())
+    const rateLimitStatus = this.checkRate(service)
     // If remaining is 0, rate limit is exceeded
     if (rateLimitStatus?.remaining === 0) {
       return await Promise.resolve(rateLimitStatus)

@@ -12,14 +12,17 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import { PersonId } from '@hcengineering/core'
+  import { notEmpty, PersonId, Ref } from '@hcengineering/core'
   import { ObjectPresenter } from '@hcengineering/view-resources'
-  import contact from '@hcengineering/contact'
-  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import contact, { Person } from '@hcengineering/contact'
+  import { getPersonRefsByPersonIdsCb } from '@hcengineering/contact-resources'
 
   export let socialIds: PersonId[] = []
 
-  $: persons = new Set(socialIds.map((user) => $personRefByPersonIdStore.get(user)))
+  let persons: Set<Ref<Person>>
+  $: getPersonRefsByPersonIdsCb(socialIds, (personsMap) => {
+    persons = new Set(personsMap.values().filter(notEmpty))
+  })
 </script>
 
 <div class="m-2 flex-col flex-gap-2">

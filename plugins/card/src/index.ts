@@ -24,19 +24,22 @@ import {
   Ref,
   Space
 } from '@hcengineering/core'
-import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
+import { Asset, IntlString, plugin, Plugin, Resource } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import { Preference } from '@hcengineering/preference'
 
 export * from './analytics'
 
 export interface MasterTag extends Class<Card> {
-  color?: number
+  color?: number // used for emoji icon
+  background?: number
   removed?: boolean
   roles?: CollectionSize<Role>
 }
 
-export interface Tag extends MasterTag, Mixin<Card> {}
+export interface Tag extends MasterTag, Mixin<Card> {
+  background?: number
+}
 
 export interface Role extends AttachedDoc<MasterTag | Tag, 'roles'> {
   name: string
@@ -160,7 +163,12 @@ const cardPlugin = plugin(cardId, {
     CardWidget: '' as Ref<Doc>
   },
   component: {
-    LabelsPresenter: '' as AnyComponent
+    LabelsPresenter: '' as AnyComponent,
+    CardTagColored: '' as AnyComponent,
+    CardTagsColored: '' as AnyComponent
+  },
+  function: {
+    OpenCardInSidebar: '' as Resource<(_id: Ref<Card>, card?: Card) => Promise<void>>
   }
 })
 

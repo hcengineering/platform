@@ -466,7 +466,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       ...this.systemSpaces,
       ...this.mainSpaces
     ]
-    const unfilteredRes = isData ? res : [...res, ...this.publicSpaces]
+    const ignorePublicSpaces = isData || account.role === AccountRole.ReadOnlyGuest
+    const unfilteredRes = ignorePublicSpaces ? res : [...res, ...this.publicSpaces]
     if (showArchived) {
       return unfilteredRes
     }

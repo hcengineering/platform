@@ -170,7 +170,7 @@ export class IncomingSyncManager {
 
   private async sync (calendarId: string): Promise<void> {
     await this.syncEvents(calendarId)
-    const watchController = WatchController.get(this.accountClient)
+    const watchController = WatchController.get(this.ctx, this.accountClient)
     await this.rateLimiter.take(1)
     await watchController.addWatch(this.user, this.email, calendarId, this.googleClient)
   }
@@ -201,6 +201,7 @@ export class IncomingSyncManager {
       const res = await this.googleClient.events.list({
         calendarId,
         syncToken,
+        eventTypes: ['default'],
         pageToken,
         showDeleted: syncToken != null
       })
@@ -235,8 +236,7 @@ export class IncomingSyncManager {
   private getEventCalendar (calendarId: string, event: calendar_v3.Schema$Event): ExternalCalendar | undefined {
     const _calendar =
       this.calendars.find((p) => p.externalId === event.organizer?.email) ??
-      this.calendars.find((p) => p.externalId === calendarId) ??
-      this.calendars[0]
+      this.calendars.find((p) => p.externalId === calendarId)
     return _calendar
   }
 
@@ -364,7 +364,8 @@ export class IncomingSyncManager {
       calendar: _calendar,
       access: this.getAccess(event, accessRole),
       timeZone: event.start?.timeZone ?? event.end?.timeZone ?? 'Etc/GMT',
-      user: this.user.userId
+      user: this.user.userId,
+      blockTime: event.transparency !== 'transparent'
     }
     if (participants[1].length > 0) {
       res.externalParticipants = participants[1]
@@ -463,6 +464,9 @@ export class IncomingSyncManager {
           ? 'public'
           : (event.extendedProperties?.private?.visibility as Visibility) ?? 'private'
     }
+    if (event.transparency != null) {
+      res.blockTime = event.transparency !== 'transparent'
+    }
 
     return res
   }
@@ -553,15 +557,14 @@ export class IncomingSyncManager {
 
   private async getMyCalendars (): Promise<void> {
     this.calendars = await this.client.findAll(calendar.class.ExternalCalendar, {
-      createdBy: this.user.userId,
-      hidden: false
+      createdBy: this.user.userId
     })
   }
 
   async syncCalendars (): Promise<void> {
     const history = await getCalendarsSyncHistory(this.user, this.email)
     await this.calendarSync(history)
-    const watchController = WatchController.get(this.accountClient)
+    const watchController = WatchController.get(this.ctx, this.accountClient)
     await this.rateLimiter.take(1)
     await watchController.addWatch(this.user, this.email, null, this.googleClient)
   }
@@ -602,6 +605,8 @@ export class IncomingSyncManager {
         if (err?.response?.status === 410) {
           syncToken = undefined
           pageToken = undefined
+        } else {
+          throw err
         }
       }
     }
@@ -620,7 +625,7 @@ export class IncomingSyncManager {
           default: false
         }
         if (val.primary === true) {
-          const primaryExists = this.calendars.length > 0
+          const primaryExists = this.calendars.find((p) => p.default)
           if (primaryExists === undefined) {
             data.default = true
           }

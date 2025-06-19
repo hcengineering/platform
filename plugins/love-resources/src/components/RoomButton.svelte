@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
   import { tooltip, deviceOptionsStore as deviceInfo, checkAdaptiveMatching } from '@hcengineering/ui'
   import { ParticipantInfo } from '@hcengineering/love'
   import { formatName } from '@hcengineering/contact'
@@ -27,6 +27,7 @@
 
   $: overLimit = participants.length > limit
   $: adaptive = checkAdaptiveMatching($deviceInfo.size, 'md') || overLimit
+  $: personByRefStore = getPersonByPersonRefStore(participants.map((p) => p.person))
 </script>
 
 {#if adaptive}
@@ -46,9 +47,9 @@
           data-over={i === limit - 1 && overLimit ? `+${participants.length - limit + 1}` : undefined}
         >
           <Avatar
-            name={$personByIdStore.get(participant.person)?.name ?? participant.name}
+            name={$personByRefStore.get(participant.person)?.name ?? participant.name}
             size={'card'}
-            person={$personByIdStore.get(participant.person)}
+            person={$personByRefStore.get(participant.person)}
           />
         </div>
       {/each}
@@ -66,9 +67,9 @@
           on:click={participant.onclick}
         >
           <Avatar
-            name={$personByIdStore.get(participant.person)?.name ?? participant.name}
+            name={$personByRefStore.get(participant.person)?.name ?? participant.name}
             size={'card'}
-            person={$personByIdStore.get(participant.person)}
+            person={$personByRefStore.get(participant.person)}
           />
         </div>
       {/each}

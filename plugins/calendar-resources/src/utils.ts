@@ -169,6 +169,7 @@ export async function updateReccuringInstance (
                   rdate: object.rdate,
                   timeZone: object.timeZone,
                   user: object.user,
+                  blockTime: object.blockTime,
                   ...ops
                 },
                 object._id

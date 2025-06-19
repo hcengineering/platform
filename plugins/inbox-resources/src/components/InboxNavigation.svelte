@@ -16,7 +16,7 @@
 <script lang="ts">
   import cardPlugin, { Card } from '@hcengineering/card'
   import { Label, ListView, Loading, Scroller } from '@hcengineering/ui'
-  import { SortingOrder, Ref } from '@hcengineering/core'
+  import { SortingOrder } from '@hcengineering/core'
   import { createNotificationContextsQuery, createQuery, getCommunicationClient } from '@hcengineering/presentation'
   import { NotificationContext, Window } from '@hcengineering/communication-types'
   import { createEventDispatcher } from 'svelte'
@@ -66,7 +66,7 @@
     }
   )
 
-  $: cardsQuery.query(cardPlugin.class.Card, { _id: { $in: contexts.map((c) => c.card) as Ref<Card>[] } }, (res) => {
+  $: cardsQuery.query(cardPlugin.class.Card, { _id: { $in: contexts.map((c) => c.cardId) } }, (res) => {
     cards = res
   })
 
@@ -102,7 +102,7 @@
       key.preventDefault()
       key.stopPropagation()
       const context = contexts[listSelection]
-      const card = cards.find((c) => c._id === context.card)
+      const card = cards.find((c) => c._id === context.cardId)
       if (card && context) {
         dispatch('select', { context, card })
       }
@@ -129,7 +129,7 @@
         bind:selection={listSelection}
         count={contexts.length}
         items={contexts}
-        highlightIndex={contexts.findIndex((it) => it.card === card?._id)}
+        highlightIndex={contexts.findIndex((it) => it.cardId === card?._id)}
         noScroll
         kind="full-size"
         colorsSchema="lumia"
@@ -138,7 +138,7 @@
       >
         <svelte:fragment slot="item" let:item={itemIndex}>
           {@const context = contexts[itemIndex]}
-          {@const contextCard = cards.find((c) => c._id === context.card)}
+          {@const contextCard = cards.find((c) => c._id === context.cardId)}
           {#if context && contextCard}
             <InboxCard
               {context}

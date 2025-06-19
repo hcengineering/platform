@@ -34,7 +34,7 @@ export function getEmptyDraft (): MessageDraft {
   return {
     _id: generateId(),
     content: EmptyMarkup,
-    files: [],
+    blobs: [],
     links: []
   }
 }
@@ -56,7 +56,7 @@ export function getDraft (card: Ref<Card>): MessageDraft {
     return {
       _id: data._id ?? generateId(),
       content: data.content ?? EmptyMarkup,
-      files: data.files ?? [],
+      blobs: data.blobs ?? [],
       links: data.links ?? []
     }
   } catch (e) {
@@ -65,38 +65,35 @@ export function getDraft (card: Ref<Card>): MessageDraft {
   }
 }
 
+let timer: any | undefined
+
 export function removeDraft (card: Ref<Card>): void {
+  if (timer !== undefined) clearTimeout(timer)
   const key = geLocalStorageKey(card)
   if (key === undefined) return
   localStorage.removeItem(key)
 }
 
 export function saveDraft (card: Ref<Card>, draft: MessageDraft): void {
+  if (timer !== undefined) clearTimeout(timer)
   const key = geLocalStorageKey(card)
   if (key === undefined) return
-  localStorage.setItem(key, JSON.stringify(draft))
+  timer = setTimeout(() => {
+    localStorage.setItem(key, JSON.stringify(draft))
+  }, 1000)
 }
 
 export function messageToDraft (message: Message): MessageDraft {
   return {
     _id: message.id,
     content: toMarkup(message.content),
-    links: message.links.map((it) => ({
-      id: it.id,
-      url: it.url,
-      host: it.host,
-      hostname: it.hostname,
-      title: it.title,
-      description: it.description,
-      favicon: it.favicon,
-      image: it.image
-    })),
-    files: message.files.map((it) => ({
+    links: [...message.linkPreviews],
+    blobs: message.blobs.map((it) => ({
       blobId: it.blobId,
-      type: it.type,
-      filename: it.filename,
+      contentType: it.contentType,
+      fileName: it.fileName,
       size: it.size,
-      metadata: it.meta
+      metadata: it.metadata
     }))
   }
 }

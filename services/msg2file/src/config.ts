@@ -32,7 +32,7 @@ const config: Config = (() => {
     DbUrl: process.env.DB_URL,
     MaxSyncAttempts: parseNumber(process.env.MAX_SYNC_ATTEMPTS) ?? 3,
     MessagesPerFile: parseNumber(process.env.MESSAGES_PER_FILE) ?? 500,
-    MinSyncMessagesCount: parseNumber(process.env.MIN_SYNC_MESSAGES_COUNT) ?? 30,
+    MinSyncMessagesCount: parseNumber(process.env.MIN_SYNC_MESSAGES_COUNT) ?? 1,
     Port: parseNumber(process.env.PORT),
     Secret: process.env.SECRET ?? 'secret',
     ServiceID: process.env.SERVICE_ID ?? 'msg2file-service'

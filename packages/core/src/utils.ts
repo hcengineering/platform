@@ -324,12 +324,22 @@ export class RateLimiter {
     }
   }
 
-  async add<T, B extends Record<string, any> = any>(op: (args?: B) => Promise<T>, args?: B): Promise<void> {
-    if (this.processingQueue.size < this.rate) {
-      void this.exec(op, args)
-    } else {
-      await this.exec(op, args)
+  async add<T, B extends Record<string, any> = any>(
+    op: (args?: B) => Promise<T>,
+    args?: B,
+    errHandler?: (err: any) => void
+  ): Promise<void> {
+    while (this.processingQueue.size >= this.rate) {
+      await new Promise<void>((resolve) => {
+        this.notify.push(resolve)
+      })
     }
+    void this.exec(op, args).catch((err) => {
+      if (errHandler !== undefined) {
+        errHandler(err)
+      }
+      console.error('Failed to execute in rate limitter', err)
+    })
   }
 
   async waitProcessing (): Promise<void> {
@@ -942,6 +952,14 @@ export function pickPrimarySocialId (socialIds: SocialId[]): SocialId {
 
 export function notEmpty<T> (id: T | undefined | null): id is T {
   return id !== undefined && id !== null && id !== ''
+}
+
+export function unique<T> (arr: T[]): T[] {
+  return Array.from(new Set(arr))
+}
+
+export function uniqueNotEmpty<T extends NonNullable<unknown>> (arr: Array<T | undefined | null>): T[] {
+  return unique(arr).filter(notEmpty)
 }
 
 /**

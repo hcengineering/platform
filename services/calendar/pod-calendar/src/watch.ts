@@ -1,5 +1,5 @@
 import { AccountClient } from '@hcengineering/account-client'
-import { generateId, isActiveMode, PersonId, WorkspaceUuid } from '@hcengineering/core'
+import { generateId, isActiveMode, MeasureContext, PersonId, WorkspaceUuid } from '@hcengineering/core'
 import { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
 import { calendarIntegrationKind } from '@hcengineering/calendar'
@@ -152,15 +152,18 @@ export class WatchController {
   private timer: NodeJS.Timeout | undefined = undefined
   protected static _instance: WatchController
 
-  private constructor (private readonly accountClient: AccountClient) {
-    console.log('watch started')
+  private constructor (
+    private readonly ctx: MeasureContext,
+    private readonly accountClient: AccountClient
+  ) {
+    this.ctx.info('watch started')
   }
 
-  static get (accountClient: AccountClient): WatchController {
+  static get (ctx: MeasureContext, accountClient: AccountClient): WatchController {
     if (WatchController._instance !== undefined) {
       return WatchController._instance
     }
-    return new WatchController(accountClient)
+    return new WatchController(ctx, accountClient)
   }
 
   private async getUserWatches (userId: PersonId, workspace: WorkspaceUuid): Promise<Record<string, Watch>> {
@@ -214,7 +217,7 @@ export class WatchController {
         toRefresh.push(watch)
       }
     }
-    console.log('watch, found for update', toRefresh.length)
+    this.ctx.info('watch, found for update', { count: toRefresh.length })
     if (toRefresh.length === 0) return
     const groups = new Map<string, WatchBase[]>()
     const workspaces = new Set<WorkspaceUuid>()
@@ -256,7 +259,7 @@ export class WatchController {
         await watchClient.subscribe(group)
       } catch {}
     }
-    console.log('watch check done')
+    this.ctx.info('watch check done')
   }
 
   async addWatch (
@@ -281,7 +284,12 @@ export class WatchController {
         await watchCalendars(user, email, googleClient)
       }
     } catch (err: any) {
-      console.error('Watch add error', user.workspace, user.userId, calendarId, err)
+      this.ctx.error('Watch add error', {
+        workspace: user.workspace,
+        user: user.userId,
+        calendar: calendarId,
+        err: err.message
+      })
     }
   }
 }

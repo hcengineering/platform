@@ -56,7 +56,7 @@ describe('invite operations', () => {
     invite: {
       insertOne: jest.fn(),
       findOne: jest.fn(),
-      updateOne: jest.fn()
+      update: jest.fn()
     },
     getWorkspaceRole: jest.fn(),
     person: {
@@ -424,9 +424,9 @@ describe('invite operations', () => {
       ;(mockDb.invite.findOne as jest.Mock).mockResolvedValue(existingInvite)
       global.fetch = jest.fn().mockResolvedValue({ ok: true })
 
-      await resendInvite(mockCtx, mockDb, mockBranding, mockToken, mockEmail, AccountRole.User)
+      await resendInvite(mockCtx, mockDb, mockBranding, mockToken, { email: mockEmail, role: AccountRole.User })
 
-      expect(mockDb.invite.updateOne).toHaveBeenCalledWith(
+      expect(mockDb.invite.update).toHaveBeenCalledWith(
         { id: existingInvite.id },
         expect.objectContaining({
           expiresOn: expect.any(Number),
@@ -446,7 +446,7 @@ describe('invite operations', () => {
       ;(mockDb.invite.insertOne as jest.Mock).mockResolvedValue(newInviteId)
       global.fetch = jest.fn().mockResolvedValue({ ok: true })
 
-      await resendInvite(mockCtx, mockDb, mockBranding, mockToken, mockEmail, AccountRole.User)
+      await resendInvite(mockCtx, mockDb, mockBranding, mockToken, { email: mockEmail, role: AccountRole.User })
 
       expect(mockDb.invite.insertOne).toHaveBeenCalled()
       expect(global.fetch).toHaveBeenCalled()

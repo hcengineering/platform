@@ -128,6 +128,10 @@ export class ClientSession implements Session {
     return this.token.extra?.mode ?? 'normal'
   }
 
+  updateLast (): void {
+    this.lastRequest = Date.now()
+  }
+
   async ping (ctx: ClientSessionCtx): Promise<void> {
     this.lastRequest = Date.now()
     ctx.sendPong()

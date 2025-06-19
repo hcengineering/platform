@@ -91,8 +91,8 @@ setAdapterSecurity('postgresql', true)
 
 startBackup(
   metricsContext,
-  (mongoUrl, storageAdapter) => {
-    const factory: PipelineFactory = createBackupPipeline(metricsContext, mongoUrl, model, {
+  (url, storageAdapter) => {
+    const factory: PipelineFactory = createBackupPipeline(metricsContext, url, model, {
       externalStorage: storageAdapter,
       usePassedCtx: true
     })

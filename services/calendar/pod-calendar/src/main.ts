@@ -62,9 +62,10 @@ export const main = async (): Promise<void> => {
   const accountClient = getAccountClient(getServiceToken())
 
   const pushHandler = new PushHandler(ctx, accountClient)
+  const watchController = WatchController.get(ctx, accountClient)
+
   const calendarController = CalendarController.getCalendarController(ctx, accountClient)
   await calendarController.startAll()
-  const watchController = WatchController.get(accountClient)
   watchController.startCheck()
   const endpoints: Endpoint[] = [
     {

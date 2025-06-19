@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import contact, { getCurrentEmployee } from '@hcengineering/contact'
-  import { personByIdStore } from '@hcengineering/contact-resources'
+  import contact from '@hcengineering/contact'
+  import { myEmployeeStore } from '@hcengineering/contact-resources'
   import core, {
     AccountRole,
     Class,
@@ -146,8 +146,6 @@
   let createItemLabel: IntlString | undefined
 
   const account = getCurrentAccount()
-  const me = getCurrentEmployee()
-  $: person = $personByIdStore.get(me)
 
   migrateViewOpttions()
 
@@ -761,12 +759,12 @@
   $: elementPanel = $deviceInfo.replacedPanel ?? contentPanel
 
   $: deactivated =
-    person && client.getHierarchy().hasMixin(person, contact.mixin.Employee)
-      ? !client.getHierarchy().as(person, contact.mixin.Employee).active
+    $myEmployeeStore && client.getHierarchy().hasMixin($myEmployeeStore, contact.mixin.Employee)
+      ? !client.getHierarchy().as($myEmployeeStore, contact.mixin.Employee).active
       : false
 </script>
 
-{#if person && deactivated && !isAdminUser()}
+{#if $myEmployeeStore && deactivated && !isAdminUser()}
   <div class="flex-col-center justify-center h-full flex-grow">
     <h1><Label label={workbench.string.AccountDisabled} /></h1>
     <Label label={workbench.string.AccountDisabledDescr} />
@@ -781,7 +779,7 @@
       }}
     />
   </div>
-{:else if person || account.role === AccountRole.Owner || isAdminUser()}
+{:else if $myEmployeeStore || account.role === AccountRole.Owner || isAdminUser()}
   <ActionHandler {currentSpace} />
   <svg class="svg-mask">
     <clipPath id="notify-normal">
@@ -908,7 +906,7 @@
           >
             <Component
               is={contact.component.Avatar}
-              props={{ person, name: person?.name, size: 'small', showStatus: true }}
+              props={{ person: $myEmployeeStore, name: $myEmployeeStore?.name, size: 'small', showStatus: true }}
             />
           </div>
         </div>

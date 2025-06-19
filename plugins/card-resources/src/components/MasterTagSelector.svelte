@@ -13,9 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
+  import { Card, MasterTag } from '@hcengineering/card'
   import { getClient } from '@hcengineering/presentation'
-  import { Label } from '@hcengineering/ui'
+
+  import CardTagColored from './CardTagColored.svelte'
 
   export let value: Card
 
@@ -24,28 +25,8 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: label = hierarchy.getClass(selected).label
+  $: clazz = hierarchy.getClass(selected) as MasterTag
+  $: label = clazz.label
 </script>
 
-<div class="flex flex-gap-2 items-center item caption-color">
-  <div class="tag">
-    <Label {label} />
-  </div>
-</div>
-
-<style lang="scss">
-  .tag {
-    padding: 0.25rem 0.5rem 0.25rem 0.5rem;
-    height: 1.5rem;
-    border: 1px solid var(--theme-content-color);
-
-    border-radius: 6rem;
-
-    color: var(--theme-caption-color);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.25rem;
-  }
-</style>
+<CardTagColored labelIntl={label} color={clazz.background ?? 0} />

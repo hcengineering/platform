@@ -44,7 +44,9 @@ export type {
   DefSeparators,
   SeparatedElement,
   TimeZone,
-  MouseTargetEvent
+  MouseTargetEvent,
+  IHeaderState,
+  IPanelState
 } from './types'
 
 export { themeStore, languageStore } from '@hcengineering/theme'

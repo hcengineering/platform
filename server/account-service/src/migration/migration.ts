@@ -239,7 +239,7 @@ async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promi
     await createAccount(accountDB, personUuid, account.confirmed, false, account.createdOn)
     if (account.hash != null && account.salt != null) {
       // NOTE: for Mongo->CR migration use db method to update password instead
-      await accountDB.account.updateOne({ uuid: personUuid as AccountUuid }, { hash: account.hash, salt: account.salt })
+      await accountDB.account.update({ uuid: personUuid as AccountUuid }, { hash: account.hash, salt: account.salt })
     }
   } else {
     personUuid = existing.personUuid

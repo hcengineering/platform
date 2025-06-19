@@ -18,6 +18,7 @@
   import presentation from '../plugin'
 
   export let href: string | undefined
+  export let title: string | undefined = undefined
   export let disabled = false
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
   export let noUnderline = disabled
@@ -29,6 +30,8 @@
   export let inlineReference: boolean = false
   export let transparent: boolean = false
   export let inlineBlock = false
+  export let noSelect: boolean = true
+  export let maxWidth: string | undefined = undefined
 
   function clickHandler (e: MouseEvent): void {
     if (disabled) return
@@ -79,7 +82,10 @@
     class:antiMention={inlineReference}
     class:transparent
     class:fs-bold={accent}
+    class:select-text={!noSelect}
     style:flex-shrink={shrink}
+    style:max-width={maxWidth}
+    {title}
     on:click={clickHandler}
   >
     <slot />
@@ -96,6 +102,9 @@
     class:transparent
     class:fs-bold={accent}
     style:flex-shrink={shrink}
+    style:max-width={maxWidth}
+    class:select-text={!noSelect}
+    {title}
     on:click={clickHandler}
   >
     <slot />

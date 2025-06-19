@@ -15,7 +15,7 @@
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
-  import { AccountArrayEditor, personRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import core, {
     Data,
     DocumentUpdate,
@@ -55,7 +55,7 @@
   let typeId: Ref<SpaceType> | undefined = drive?.type ?? driveRes.spaceType.DefaultDrive
   let spaceType: WithLookup<SpaceType> | undefined
 
-  $: membersPersons = members.map((m) => $personRefByAccountUuidStore.get(m)).filter(notEmpty)
+  $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
   $: void loadSpaceType(typeId)
   const loadSpaceType = reduceCalls(async (id: typeof typeId): Promise<void> => {
     spaceType =

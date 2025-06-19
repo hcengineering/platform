@@ -14,9 +14,9 @@
 //
 
 import { RecurringRule, calendarIntegrationKind } from '@hcengineering/calendar'
-import { systemAccountUuid, Timestamp, WorkspaceUuid } from '@hcengineering/core'
+import { MeasureContext, systemAccountUuid, Timestamp, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
-import { OAuth2Client } from 'google-auth-library'
+import { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3, google } from 'googleapis'
 import config from './config'
 import { ReccuringData, State, type Token, type User } from './types'
@@ -281,5 +281,34 @@ export function getGoogleClient (): {
   return {
     auth: oAuth2Client,
     google: googleClient
+  }
+}
+
+export async function setCredentials (oAuth2Client: OAuth2Client, credentials: Credentials): Promise<boolean> {
+  try {
+    oAuth2Client.setCredentials(credentials)
+    await google.oauth2({ version: 'v2', auth: oAuth2Client }).userinfo.get()
+    return true
+  } catch (err: any) {
+    if (err?.response?.data?.error === 'invalid_grant') {
+      return false
+    }
+    throw err
+  }
+}
+
+export async function removeIntegrationSecret (
+  ctx: MeasureContext,
+  accountClient: AccountClient,
+  data: IntegrationSecretKey
+): Promise<void> {
+  try {
+    await accountClient.deleteIntegrationSecret(data)
+    const left = await accountClient.listIntegrationsSecrets(data)
+    if (left.length === 0) {
+      await accountClient.deleteIntegration(data)
+    }
+  } catch (err: any) {
+    ctx.error('Failed to remove integration secret', { message: err.message, ...data })
   }
 }

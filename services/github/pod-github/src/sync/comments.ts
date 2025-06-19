@@ -328,16 +328,19 @@ export class CommentSyncManager implements DocSyncManager {
     if (Object.keys(platformUpdate).length > 0) {
       // Check and update body with external
       const okit = (await this.provider.getOctokit(existing.modifiedBy)) ?? container.container.octokit
-      await okit?.rest.issues.updateComment({
-        owner: repository.owner?.login as string,
-        repo: repository.name,
-        issue_number: parent.githubNumber,
-        comment_id: comment.id,
-        body: await this.provider.getMarkdown(existingComment.message),
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28'
-        }
-      })
+      const mdown = await this.provider.getMarkdown(existingComment.message)
+      if (mdown.trim().length > 0) {
+        await okit?.rest.issues.updateComment({
+          owner: repository.owner?.login as string,
+          repo: repository.name,
+          issue_number: parent.githubNumber,
+          comment_id: comment.id,
+          body: mdown,
+          headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+          }
+        })
+      }
     }
     if (Object.keys(update).length > 0) {
       await this.client.update(existing, update, false, new Date(comment.updated_at).getTime(), account)
@@ -400,25 +403,31 @@ export class CommentSyncManager implements DocSyncManager {
 
     // No external version yet, create it.
     try {
-      const result = await okit?.rest.issues.createComment({
-        owner: repo.owner?.login as string,
-        repo: repo.name,
-        issue_number: parent.githubNumber,
-        body: await this.provider.getMarkdown(chatMessage.message),
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28'
+      const mdown = await this.provider.getMarkdown(chatMessage.message)
+      if (mdown.trim().length > 0) {
+        const result = await okit?.rest.issues.createComment({
+          owner: repo.owner?.login as string,
+          repo: repo.name,
+          issue_number: parent.githubNumber,
+          body: mdown,
+          headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+          }
+        })
+
+        const upd: DocumentUpdate<DocSyncInfo> = {
+          parent: (result?.data.html_url?.split('#')?.[0] ?? '').toLowerCase(),
+          url: (result?.data.url ?? '').toLowerCase(),
+          external: result?.data as CommentExternalData,
+          current: result?.data,
+          repository: repo._id,
+          needSync: githubSyncVersion
         }
-      })
-      const upd: DocumentUpdate<DocSyncInfo> = {
-        parent: (result?.data.html_url?.split('#')?.[0] ?? '').toLowerCase(),
-        url: (result?.data.url ?? '').toLowerCase(),
-        external: result?.data as CommentExternalData,
-        current: result?.data,
-        repository: repo._id
+
+        // We need to update in current promise, to prevent event changes.
+        await derivedClient.update(info, upd)
       }
-      // We need to update in current promise, to prevent event changes.
-      await derivedClient.update(info, upd)
-      return {}
+      return { needSync: githubSyncVersion }
     } catch (err: any) {
       Analytics.handleError(err)
       this.ctx.error(err)

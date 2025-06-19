@@ -18,13 +18,14 @@
   import { Label } from '@hcengineering/ui'
 
   export let value: Ref<Class<Doc>>
+  export let shrink: boolean = false
 
   const client = getClient()
   const _class = value !== undefined ? client.getModel().getObject(value) : undefined
 </script>
 
 {#if _class}
-  <div class="whitespace-nowrap">
+  <div class="whitespace-nowrap" class:flex-no-shrink={!shrink}>
     <Label label={_class.label} />
   </div>
 {/if}

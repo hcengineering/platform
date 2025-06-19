@@ -9,7 +9,11 @@ import { SocialIdType } from '@hcengineering/core'
 // Mock dependencies
 jest.mock('@hcengineering/server-client', () => ({
   getAccountClient: jest.fn(),
-  createClient: jest.fn().mockReturnValue({
+  getTransactorEndpoint: jest.fn()
+}))
+jest.mock('@hcengineering/server-core', () => ({
+  ...jest.requireActual('@hcengineering/server-core'),
+  wrapPipeline: jest.fn().mockReturnValue({
     loadChunk: jest.fn().mockReturnValue({
       idx: 'chunk-idx',
       finished: true,
@@ -75,11 +79,23 @@ jest.mock('@hcengineering/server-client', () => ({
     ]),
     closeChunk: jest.fn(),
     close: jest.fn()
-  }),
-  getTransactorEndpoint: jest.fn()
+  })
 }))
 jest.mock('@hcengineering/server-token')
 jest.mock('@hcengineering/kvs-client')
+jest.mock('@hcengineering/server-pipeline', () => ({
+  PipelineFactory: {
+    create: jest.fn(() => ({
+      process: jest.fn().mockResolvedValue(undefined),
+      close: jest.fn().mockResolvedValue(undefined)
+    }))
+  },
+  createBackupPipeline: jest.fn(() => () => ({
+    backup: jest.fn().mockResolvedValue(undefined),
+    restore: jest.fn().mockResolvedValue(undefined),
+    close: jest.fn().mockResolvedValue(undefined)
+  }))
+}))
 
 describe('Gmail Migrations', () => {
   // Setup MongoDB in-memory server
@@ -185,7 +201,7 @@ describe('Gmail Migrations', () => {
     mockAccountClient.getIntegrationSecret.mockResolvedValue(null)
 
     // Run migration
-    await gmail.performGmailAccountMigrations(db, 'test-region', 'http://kvs-url')
+    await gmail.performGmailAccountMigrations(db, 'db-url', 'test-region', 'http://kvs-url', [])
 
     // Verify tokens were migrated
     expect(mockAccountClient.createIntegration).toHaveBeenCalledTimes(2)
@@ -243,7 +259,7 @@ describe('Gmail Migrations', () => {
     mockKvsClient.getValue.mockResolvedValue(null)
 
     // Run migration
-    await gmail.performGmailAccountMigrations(db, 'test-region', 'http://kvs-url')
+    await gmail.performGmailAccountMigrations(db, 'db-url', 'test-region', 'http://kvs-url', [])
 
     // Verify KVS calls
     expect(mockKvsClient.setValue).toHaveBeenCalledWith(
@@ -274,7 +290,7 @@ describe('Gmail Migrations', () => {
     })
 
     // Run migration
-    await gmail.performGmailAccountMigrations(db, 'test-region', 'http://kvs-url')
+    await gmail.performGmailAccountMigrations(db, 'db-url', 'test-region', 'http://kvs-url', [])
 
     // Should not throw but log errors
     expect(console.error).toHaveBeenCalled()
@@ -313,7 +329,7 @@ describe('Gmail Migrations', () => {
     })
 
     // Run migration
-    await gmail.performGmailAccountMigrations(db, 'test-region', 'http://kvs-url')
+    await gmail.performGmailAccountMigrations(db, 'db-url', 'test-region', 'http://kvs-url', [])
 
     // Verify update was called instead of add
     expect(mockAccountClient.createIntegration).not.toHaveBeenCalled()

@@ -81,7 +81,7 @@
       object._class,
       'gmailSharedMessages',
       {
-        messages: convertMessages(object, channel, selectedMessages)
+        messages: await convertMessages(object, channel, selectedMessages)
       }
     )
     await inboxClient.readDoc(channel._id)
@@ -126,12 +126,14 @@
 </div>
 
 {#if messages && messages.length > 0}
-  <div class="antiVSpacer x2" />
-  <Scroller padding={'.5rem 1rem'}>
-    <Messages messages={convertMessages(object, channel, messages)} {selectable} bind:selected on:select />
+  {#await convertMessages(object, channel, messages) then convertedMessages}
     <div class="antiVSpacer x2" />
-  </Scroller>
-  <div class="antiVSpacer x2" />
+    <Scroller padding={'.5rem 1rem'}>
+      <Messages messages={convertedMessages} {selectable} bind:selected on:select />
+      <div class="antiVSpacer x2" />
+    </Scroller>
+    <div class="antiVSpacer x2" />
+  {/await}
 {:else}
   <div class="flex-col-center justify-center h-full">
     <Icon icon={IconInbox} size={'full'} />
