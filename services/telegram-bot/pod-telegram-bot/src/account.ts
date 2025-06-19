@@ -49,7 +49,7 @@ export async function getAccountSocialIds (account: AccountUuid): Promise<Social
 }
 
 export async function listIntegrationsByAccount (account: AccountUuid): Promise<IntegrationInfo[]> {
-  const client = getAccountClient(generateToken(account, undefined, { serviece: 'telegram-bot' }))
+  const client = getAccountClient(generateToken(account, undefined, { service: 'telegram-bot' }))
   const integrations = await client.listIntegrations({ kind: 'telegram-bot' })
   if (integrations.length === 0) return []
   const socialIds = await getAccountSocialIds(account)
