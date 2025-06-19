@@ -27,6 +27,7 @@ import config from '../config'
 export class SyncManager {
   private readonly syncMutex = new SyncMutex()
   private readonly stateManager: SyncStateManager
+  private isClosing = false
 
   constructor (
     private readonly ctx: MeasureContext,
@@ -66,6 +67,7 @@ export class SyncManager {
       try {
         for (const history of array) {
           for (const message of history.messagesAdded ?? []) {
+            if (this.isClosing) return
             if (message.message?.id == null || (message.message.labelIds?.includes('DRAFT') ?? false)) {
               continue
             }
@@ -133,6 +135,7 @@ export class SyncManager {
         })
 
         for (const id of ids) {
+          if (this.isClosing) return
           if (id == null) continue
           try {
             const message = await this.getMessage(id)
@@ -145,6 +148,7 @@ export class SyncManager {
               }
             }
           } catch (err: any) {
+            if (this.isClosing) return
             this.ctx.error('Full sync message error', { workspace: this.workspace, userId, messageId: id, err })
           }
         }
@@ -167,6 +171,7 @@ export class SyncManager {
       }
       this.ctx.info('Full sync finished', { workspaceUuid: this.workspace, userId, userEmail })
     } catch (err) {
+      if (this.isClosing) return
       this.ctx.error('Full sync error', { workspace: this.workspace, userId, err })
     }
   }
@@ -196,9 +201,14 @@ export class SyncManager {
         await this.fullSync(userId, userEmail)
       }
     } catch (err) {
+      if (this.isClosing) return
       this.ctx.error('Sync error', { workspace: this.workspace, userId, err })
     } finally {
       releaseLock()
     }
+  }
+
+  close (): void {
+    this.isClosing = true
   }
 }
