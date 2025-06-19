@@ -56,7 +56,7 @@ describe('invite operations', () => {
     invite: {
       insertOne: jest.fn(),
       findOne: jest.fn(),
-      updateOne: jest.fn()
+      update: jest.fn()
     },
     getWorkspaceRole: jest.fn(),
     person: {
