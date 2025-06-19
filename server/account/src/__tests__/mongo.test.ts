@@ -52,7 +52,7 @@ describe('MongoDbCollection', () => {
       find: jest.fn(),
       findOne: jest.fn(),
       insertOne: jest.fn(),
-      updateOne: jest.fn(),
+      updateMany: jest.fn(),
       deleteMany: jest.fn(),
       createIndex: jest.fn(),
       dropIndex: jest.fn(),
@@ -185,11 +185,11 @@ describe('MongoDbCollection', () => {
     })
   })
 
-  describe('updateOne', () => {
+  describe('updateMany', () => {
     it('should handle simple field updates', async () => {
       await collection.update({ uuid: 'ws1' as WorkspaceUuid }, { mode: 'creating' as const })
 
-      expect(mockCollection.updateOne).toHaveBeenCalledWith({ uuid: 'ws1' }, { $set: { mode: 'creating' } })
+      expect(mockCollection.updateMany).toHaveBeenCalledWith({ uuid: 'ws1' }, { $set: { mode: 'creating' } })
     })
 
     it('should handle increment operations', async () => {
@@ -201,7 +201,7 @@ describe('MongoDbCollection', () => {
         }
       )
 
-      expect(mockCollection.updateOne).toHaveBeenCalledWith(
+      expect(mockCollection.updateMany).toHaveBeenCalledWith(
         { uuid: 'ws1' },
         {
           $inc: { processingAttempts: 1 },
@@ -276,7 +276,7 @@ describe('AccountMongoDbCollection', () => {
       find: jest.fn(),
       findOne: jest.fn(),
       insertOne: jest.fn(),
-      updateOne: jest.fn()
+      updateMany: jest.fn()
     }
 
     mockDb = {
@@ -472,7 +472,7 @@ describe('WorkspaceStatusMongoDbCollection', () => {
       find: jest.fn(),
       findOne: jest.fn(),
       insertOne: jest.fn(),
-      updateOne: jest.fn(),
+      update: jest.fn(),
       deleteMany: jest.fn()
     } as any
 
@@ -527,7 +527,7 @@ describe('WorkspaceStatusMongoDbCollection', () => {
     })
   })
 
-  describe('updateOne', () => {
+  describe('updateMany', () => {
     it('should transform operations correctly', async () => {
       const query = { workspaceUuid: 'ws1' as WorkspaceUuid }
       const ops = {
@@ -635,7 +635,7 @@ describe('WorkspaceStatusMongoDbCollection', () => {
     })
   })
 
-  describe('updateOne', () => {
+  describe('updateMany', () => {
     it('should transform operations correctly', async () => {
       const query = { workspaceUuid: 'ws1' as WorkspaceUuid }
       const ops = {
@@ -686,7 +686,7 @@ describe('MongoAccountDB', () => {
 
     // Create mock collections with jest.fn()
     mockAccount = {
-      updateOne: jest.fn(),
+      update: jest.fn(),
       ensureIndices: jest.fn()
     }
 
@@ -696,12 +696,12 @@ describe('MongoAccountDB', () => {
         hasNext: jest.fn().mockReturnValue(false),
         close: jest.fn()
       })),
-      updateOne: jest.fn(),
+      update: jest.fn(),
       ensureIndices: jest.fn()
     }
 
     mockWorkspace = {
-      updateOne: jest.fn(),
+      update: jest.fn(),
       insertOne: jest.fn(),
       find: jest.fn(),
       ensureIndices: jest.fn(),
@@ -713,7 +713,7 @@ describe('MongoAccountDB', () => {
     mockWorkspaceMembers = {
       insertOne: jest.fn(),
       deleteMany: jest.fn(),
-      updateOne: jest.fn(),
+      update: jest.fn(),
       findOne: jest.fn(),
       find: jest.fn(),
       ensureIndices: jest.fn()
@@ -725,7 +725,7 @@ describe('MongoAccountDB', () => {
 
     mockMigration = {
       insertOne: jest.fn(),
-      updateOne: jest.fn(),
+      update: jest.fn(),
       findOne: jest.fn()
     }
 
