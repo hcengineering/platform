@@ -593,6 +593,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/billing-client",
+      "projectFolder": "packages/billing-client",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/prod",
       "projectFolder": "dev/prod",
       "shouldPublish": false
