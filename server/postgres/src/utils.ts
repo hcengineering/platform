@@ -662,6 +662,7 @@ export function escape<T> (str: T): T {
   if (typeof str === 'string') {
     // Remove all characters except a-z, A-Z, 0-9 and _ .
     // Add cyrillic for support old custom attributes
+    // eslint-disable-next-line no-useless-escape
     return str.replace(/[^a-zA-ZА-Яа-яЁё0-9_.:\-]/g, '') as T
   }
   return str

@@ -18,19 +18,10 @@
   import card, { Card, Tag } from '@hcengineering/card'
   import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    ButtonIcon,
-    CircleButton,
-    eventToHTMLElement,
-    IconAdd,
-    IconClose,
-    IconDownOutline,
-    Label,
-    SelectPopup,
-    showPopup,
-    tooltip
-  } from '@hcengineering/ui'
+  import { CircleButton, eventToHTMLElement, IconAdd, IconDownOutline, SelectPopup, showPopup } from '@hcengineering/ui'
+
   import MasterTagSelector from './MasterTagSelector.svelte'
+  import CardTagColored from './CardTagColored.svelte'
 
   export let doc: Card
   export let dropdownTags: boolean = false
@@ -126,14 +117,12 @@
       {:else}
         {#each activeTags as mixin}
           {@const removable = isRemoveable(mixin._id, activeTags)}
-          <div class="tag no-word-wrap" class:removable use:tooltip={{ label: mixin.label }}>
-            <span class="overflow-label">
-              <Label label={mixin.label} />
-            </span>
-            {#if removable}
-              <ButtonIcon icon={IconClose} size="extra-small" kind="tertiary" on:click={() => removeTag(mixin._id)} />
-            {/if}
-          </div>
+          <CardTagColored
+            labelIntl={mixin.label}
+            color={mixin.background ?? 0}
+            {removable}
+            on:remove={() => removeTag(mixin._id)}
+          />
         {/each}
         {#if dropdownItems.length > 0}
           <CircleButton id={id ? `${id}-add` : undefined} icon={IconAdd} size={'small'} ghost on:click={add} />
@@ -150,28 +139,6 @@
     align-items: center;
     flex-shrink: 1;
     min-width: 0;
-
-    .tag {
-      padding: 0.25rem 0.5rem;
-      height: 1.5rem;
-      border: 1px solid var(--theme-content-color);
-      max-width: 12.5rem;
-      min-width: 2rem;
-      overflow: hidden;
-      border-radius: 6rem;
-
-      color: var(--theme-caption-color);
-
-      display: flex;
-      align-items: center;
-      flex-shrink: 2;
-      gap: 0.25rem;
-
-      &.removable {
-        padding-right: 0.25rem;
-        min-width: 3.75rem;
-      }
-    }
   }
 
   .divider {

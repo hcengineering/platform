@@ -60,6 +60,7 @@ import { updateField } from './workspace'
 import {
   AccountRole,
   isArchivingMode,
+  isDeletingMode,
   MeasureMetricsContext,
   metricsToString,
   SocialIdType,
@@ -119,6 +120,7 @@ import { createRestClient } from '@hcengineering/api-client'
 import { mkdir, writeFile } from 'fs/promises'
 import { basename, dirname } from 'path'
 import { existsSync } from 'fs'
+import { restoreMarkupRefs } from './markup'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -2450,7 +2452,7 @@ export function devTool (
               ? await getWorkspacesInfoWithStatusByIds(accDb, wsUuids)
               : await getWorkspaces(accDb, null, null, null)
           const workspaces = rawWorkspaces
-            .filter((it) => !isArchivingMode(it.status.mode))
+            .filter((it) => !isArchivingMode(it.status.mode) && !isDeletingMode(it.status.mode))
             .sort((a, b) => (b.status.lastVisit ?? 0) - (a.status.lastVisit ?? 0))
 
           toolCtx.info('Workspaces found', { count: workspaces.length })
@@ -2669,6 +2671,18 @@ export function devTool (
       await performCalendarAccountMigrations(_client.db(cmd.db), cmd.region ?? null, kvsUrl)
       await _client.close()
       client.close()
+    })
+
+  program
+    .command('restore-markup-refs')
+    .option('--region <region>', 'DB region')
+    .action(async (cmd: { region?: string }) => {
+      const { dbUrl, txes } = prepareTools()
+      const region = cmd.region ?? null
+
+      await withStorage(async (adapter) => {
+        await restoreMarkupRefs(dbUrl, txes, adapter, region)
+      })
     })
 
   extendProgram?.(program)
