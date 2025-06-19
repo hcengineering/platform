@@ -18,15 +18,6 @@ import path from 'path'
 import { MeasureContext } from '@hcengineering/core'
 import { type MtaMessage } from '../types'
 
-// Mock config to ensure storage is available for tests
-jest.mock('../config', () => ({
-  storageConfig: {
-    // Mock minimal storage config to ensure attachments are processed
-    type: 'fs',
-    url: '/tmp'
-  }
-}))
-
 // Create a mock logger context
 const mockContext = {
   info: jest.fn(),
