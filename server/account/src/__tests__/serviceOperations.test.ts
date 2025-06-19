@@ -197,14 +197,14 @@ describe('integration methods', () => {
     integration: {
       findOne: jest.fn(),
       insertOne: jest.fn(),
-      updateOne: jest.fn(),
+      update: jest.fn(),
       deleteMany: jest.fn(),
       find: jest.fn()
     },
     integrationSecret: {
       findOne: jest.fn(),
       insertOne: jest.fn(),
-      updateOne: jest.fn(),
+      update: jest.fn(),
       deleteMany: jest.fn(),
       find: jest.fn()
     }

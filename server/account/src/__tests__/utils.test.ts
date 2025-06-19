@@ -857,7 +857,7 @@ describe('account utils', () => {
       const mockDb = {
         socialId: {
           findOne: jest.fn(),
-          updateOne: jest.fn()
+          update: jest.fn()
         }
       } as unknown as AccountDB
 
@@ -1297,7 +1297,7 @@ describe('account utils', () => {
       },
       person: {
         insertOne: jest.fn() as jest.MockedFunction<AccountDB['person']['insertOne']>,
-        updateOne: jest.fn() as jest.MockedFunction<AccountDB['person']['update']>
+        update: jest.fn() as jest.MockedFunction<AccountDB['person']['update']>
       },
       accountEvent: {
         insertOne: jest.fn() as jest.MockedFunction<AccountDB['accountEvent']['insertOne']>
@@ -1504,7 +1504,7 @@ describe('account utils', () => {
       workspaceStatus: {
         findOne: jest.fn(),
         find: jest.fn(),
-        updateOne: jest.fn()
+        update: jest.fn()
       }
     } as unknown as AccountDB
 
@@ -1728,7 +1728,7 @@ describe('account utils', () => {
         find: jest.fn(() => []),
         findOne: jest.fn(),
         insertOne: jest.fn(),
-        updateOne: jest.fn()
+        update: jest.fn()
       },
       account: {
         findOne: jest.fn(),
@@ -1741,7 +1741,7 @@ describe('account utils', () => {
       person: {
         findOne: jest.fn(),
         insertOne: jest.fn(),
-        updateOne: jest.fn()
+        update: jest.fn()
       },
       resetPassword: jest.fn()
     } as unknown as AccountDB
@@ -2078,7 +2078,7 @@ describe('account utils', () => {
       const mockDb = {
         socialId: {
           find: jest.fn(),
-          updateOne: jest.fn()
+          update: jest.fn()
         },
         account: {
           findOne: jest.fn()
