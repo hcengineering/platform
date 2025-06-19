@@ -15,55 +15,55 @@
 
 import type { NextFunction, Request, Response } from 'express'
 import { extractToken } from '@hcengineering/server-client'
-import { systemAccountUuid } from '@hcengineering/core'
-import { ApiError } from './error'
+import { AccountRole, systemAccountUuid } from '@hcengineering/core'
 import { Token } from '@hcengineering/server-token'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 
 interface RequestWithAuth extends Request {
   token?: Token
 }
 
-export const withAdminAuthorization = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
-  try {
-    const token = extractToken(req.headers)
-    if (token == null || !(token.account === systemAccountUuid || token.extra?.admin === 'true')) {
-      throw new ApiError(401, 'Unauthorized')
-    }
-    req.token = token
-
-    next()
-  } catch (err: any) {
-    next(err)
-  }
-}
-
-export const withAuthorization = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
-  try {
-    const token = extractToken(req.headers)
-    if (token == null || token.extra?.guest === 'true') {
-      throw new ApiError(401, 'Unauthorized')
-    }
-    req.token = token
-
-    next()
-  } catch (err: any) {
-    next(err)
-  }
-}
-
 export const withWorkspace = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
-  if (req.params.workspace === undefined || req.params.workspace === '') {
-    next(new ApiError(400, 'Missing workspace'))
+  const token = extractToken(req.headers)
+  if (token === undefined || token == null) {
+    res.status(401).end()
     return
   }
-  // If authorization is not enforced allow any workspace
-  if (req.token != null) {
-    const hasWorkspaceAccess =
-      (req.token.workspace as string) === req.params.workspace ||
-      req.token.account === systemAccountUuid ||
-      req.token.extra?.admin === 'true'
-    if (!hasWorkspaceAccess) {
-      throw new ApiError(401, 'Unauthorized')
+  if ((token.workspace as string) !== req.params.workspace) {
+    res.status(401).end()
+    return
+  }
+  req.token = token
+  next()
+}
+
+export const withAdmin = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
+  if (req.token === undefined || req.token == null) {
+    res.status(401).end()
+    return
+  }
+  if (req.token.account !== systemAccountUuid && req.token.extra?.admin !== 'true') {
+    res.status(401).end()
+    return
+  }
+  next()
+}
+
+export const withOwner = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
+  void withOwnerAsync(req, res, next)
+}
+
+const withOwnerAsync = async (req: RequestWithAuth, res: Response, next: NextFunction): Promise<void> => {
+  if (req.token === undefined || req.token == null) {
+    res.status(401).end()
+    return
+  }
+  if (req.token.account !== systemAccountUuid && req.token.extra?.admin !== 'true') {
+    const accountClient = getAccountClient('http://huly.local:3000', req.headers.authorization?.split(' ')[1])
+    const loginInfo = await accountClient.getLoginInfoByToken()
+    if (!('role' in loginInfo) || loginInfo.role !== AccountRole.Owner) {
+      res.status(401).end()
+      return
     }
   }
 

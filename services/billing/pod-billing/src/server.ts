@@ -20,7 +20,7 @@ import { Config } from './config'
 import { MeasureContext } from '@hcengineering/core'
 import morgan from 'morgan'
 import onHeaders from 'on-headers'
-import { withAdminAuthorization } from './middleware'
+import { withWorkspace, withAdmin, withOwner } from './middleware'
 import {
   handleListLiveKitSessions,
   handleSetLiveKitEgress,
@@ -105,17 +105,17 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
 
   app.use(morgan('short', { stream: new LogStream() }))
 
-  app.post('/api/v1/:workspace/livekit/sessions', withAdminAuthorization, wrapRequest(ctx, 'setLiveKitSessions', handleSetLiveKitSessions))
-  app.get('/api/v1/:workspace/livekit/sessions', wrapRequest(ctx, 'listLiveKitSessions', handleListLiveKitSessions))
+  app.post('/api/v1/:workspace/livekit/sessions', withWorkspace, withAdmin, wrapRequest(ctx, 'setLiveKitSessions', handleSetLiveKitSessions))
+  app.get('/api/v1/:workspace/livekit/sessions', withWorkspace, withOwner, wrapRequest(ctx, 'listLiveKitSessions', handleListLiveKitSessions))
 
-  app.post('/api/v1/:workspace/livekit/egress', withAdminAuthorization, wrapRequest(ctx, 'setLiveKitEgress', handleSetLiveKitEgress))
-  app.get('/api/v1/:workspace/livekit/egress', wrapRequest(ctx, 'listLiveKitEgress', handleListLiveKitEgress))
+  app.post('/api/v1/:workspace/livekit/egress', withWorkspace, withAdmin, wrapRequest(ctx, 'setLiveKitEgress', handleSetLiveKitEgress))
+  app.get('/api/v1/:workspace/livekit/egress', withWorkspace, withOwner, wrapRequest(ctx, 'listLiveKitEgress', handleListLiveKitEgress))
 
-  app.get('/api/v1/:workspace/livekit/stats', wrapRequest(ctx, 'getLiveKitStats', handleGetLiveKitStats))
+  app.get('/api/v1/:workspace/livekit/stats', withWorkspace, withOwner, wrapRequest(ctx, 'getLiveKitStats', handleGetLiveKitStats))
 
-  app.get('/api/v1/:workspace/datalake/stats', wrapRequest(ctx, 'getDatalakeStats', handleGetDatalakeStats))
+  app.get('/api/v1/:workspace/datalake/stats', withWorkspace, withOwner, wrapRequest(ctx, 'getDatalakeStats', handleGetDatalakeStats))
 
-  app.get('/api/v1/:workspace/stats', wrapRequest(ctx, 'getStats', handleGetStats))
+  app.get('/api/v1/:workspace/stats', withWorkspace, withOwner, wrapRequest(ctx, 'getStats', handleGetStats))
 
   app.use((_req, res) => {
     res.status(404).json({ message: 'Not Found' })
