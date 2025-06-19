@@ -15,6 +15,7 @@
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import client, { clientId } from '@hcengineering/client'
 import {
+  type Account,
   type Class,
   type Client,
   type Data,
@@ -34,7 +35,6 @@ import {
   Mixin,
   MixinData,
   MixinUpdate,
-  PersonId,
   TxOperations,
   WorkspaceUuid,
   generateId,
@@ -61,14 +61,22 @@ export async function connect (url: string, options: ConnectOptions): Promise<Pl
 
   const { endpoint, token } = await getWorkspaceToken(url, options, config)
   const accountClient = getAccountClient(config.ACCOUNTS_URL, token)
-  const socialId = pickPrimarySocialId(await accountClient.getSocialIds())
+  const socialIds = await accountClient.getSocialIds()
   const wsLoginInfo = await accountClient.selectWorkspace(options.workspace)
 
   if (wsLoginInfo === undefined) {
     throw new Error(`Workspace ${options.workspace} not found`)
   }
 
-  return await createClient(url, endpoint, token, wsLoginInfo.workspace, socialId._id, config, options)
+  const account: Account = {
+    uuid: wsLoginInfo.account,
+    role: wsLoginInfo.role,
+    primarySocialId: pickPrimarySocialId(socialIds)._id,
+    socialIds: socialIds.map((si) => si._id),
+    fullSocialIds: socialIds
+  }
+
+  return await createClient(url, endpoint, token, wsLoginInfo.workspace, account, config, options)
 }
 
 async function createClient (
@@ -76,7 +84,7 @@ async function createClient (
   endpoint: string,
   token: string,
   workspaceUuid: WorkspaceUuid,
-  user: PersonId,
+  account: Account,
   config: ServerConfig,
   options: ConnectOptions
 ): Promise<PlatformClient> {
@@ -90,7 +98,7 @@ async function createClient (
     connectionTimeout
   })
 
-  return new PlatformClientImpl(url, workspaceUuid, token, config, connection, user)
+  return new PlatformClientImpl(url, workspaceUuid, token, config, connection, account)
 }
 
 class PlatformClientImpl implements PlatformClient {
@@ -103,9 +111,9 @@ class PlatformClientImpl implements PlatformClient {
     private readonly token: string,
     private readonly config: ServerConfig,
     private readonly connection: Client,
-    private readonly user: PersonId
+    private readonly account: Account
   ) {
-    this.client = new TxOperations(connection, user)
+    this.client = new TxOperations(connection, account.primarySocialId)
     this.markup = createMarkupOperations(url, workspace, token, config)
   }
 
@@ -117,6 +125,10 @@ class PlatformClientImpl implements PlatformClient {
 
   getModel (): ModelDb {
     return this.client.getModel()
+  }
+
+  async getAccount (): Promise<Account> {
+    return this.account
   }
 
   async findOne<T extends Doc>(
