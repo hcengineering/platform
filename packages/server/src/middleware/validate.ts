@@ -383,13 +383,12 @@ const RemoveMessagesGroupEventSchema = BaseEventSchema.extend({
 // Notification events
 const UpdateNotificationsEventSchema = BaseEventSchema.extend({
   type: z.literal(NotificationEventType.UpdateNotification),
+  context: ContextIDSchema,
+  account: AccountIDSchema,
   query: z.object({
-    context: ContextIDSchema,
-    account: AccountIDSchema,
     id: z.string().optional(),
     type: z.string().optional(),
-    read: z.boolean().optional(),
-    created: dateOrRecordSchema.optional()
+    untilDate: DateSchema.optional()
   }),
   updates: z.object({
     read: z.boolean()
