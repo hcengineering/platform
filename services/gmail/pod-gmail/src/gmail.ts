@@ -513,6 +513,9 @@ export class GmailClient {
     if (this.watchTimer !== undefined) clearInterval(this.watchTimer)
     if (this.refreshTimer !== undefined) clearTimeout(this.refreshTimer)
     try {
+      if (this.syncManager !== undefined) {
+        this.syncManager.close()
+      }
       await this.rateLimiter.take(50)
       await this.gmail.stop({
         userId: 'me'
