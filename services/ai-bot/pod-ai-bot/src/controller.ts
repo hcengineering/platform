@@ -42,7 +42,7 @@ import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { htmlToMarkup, jsonToHTML, jsonToMarkup, markupToJSON } from '@hcengineering/text'
-import { encodingForModel } from 'js-tiktoken'
+import { encodingForModel, getEncoding } from 'js-tiktoken'
 import OpenAI from 'openai'
 
 import chunter from '@hcengineering/chunter'
@@ -66,7 +66,18 @@ export class AIControl {
   readonly storageAdapter: StorageAdapter
 
   private readonly openai?: OpenAI
-  private readonly openaiEncoding = encodingForModel(config.OpenAIModel)
+
+  // Try to obtain the encoding for the configured model. If the model is not recognised by js-tiktoken
+  // (e.g. non-OpenAI models such as Together AI Llama derivatives) we gracefully fall back to the
+  // universal `cl100k_base` encoding. This prevents a runtime "Unknown model" error while still
+  // giving us a reasonable token count estimate for summaries.
+  private readonly openaiEncoding = (() => {
+    try {
+      return encodingForModel(config.OpenAIModel)
+    } catch (err) {
+      return getEncoding('cl100k_base')
+    }
+  })()
 
   constructor (
     readonly personUuid: AccountUuid,
