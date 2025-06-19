@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { ticker, DAY, HOUR, MINUTE, languageStore, Label } from '@hcengineering/ui'
+  import { ticker, DAY, HOUR, MINUTE, languageStore, Label, Component } from '@hcengineering/ui'
   import { createQuery, createCollaboratorsQuery } from '@hcengineering/presentation'
   import { translateCB } from '@hcengineering/platform'
   import { Collaborator, Thread } from '@hcengineering/communication-types'
@@ -23,7 +23,6 @@
   import cardPlugin, { Card } from '@hcengineering/card'
 
   import communication from '../../plugin'
-  import Tags from './Tags.svelte'
 
   export let thread: Thread
   export let count: number
@@ -211,7 +210,7 @@
     </span>
 
     {#if threadCard && clientWidth > 300}
-      <Tags value={threadCard} />
+      <Component is={cardPlugin.component.CardTagsColored} props={{ value: threadCard }} />
     {/if}
   </div>
 </div>

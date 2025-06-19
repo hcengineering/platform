@@ -15,16 +15,17 @@
 <script lang="ts">
   import { closeWidget } from '@hcengineering/workbench-resources'
   import { Widget, WidgetTab } from '@hcengineering/workbench'
-  import { createQuery, createNotificationContextsQuery } from '@hcengineering/presentation'
+  import { createQuery, createNotificationContextsQuery, getClient } from '@hcengineering/presentation'
   import { NotificationContext } from '@hcengineering/communication-types'
   import { createEventDispatcher } from 'svelte'
   import { Card } from '@hcengineering/card'
   import { Ref } from '@hcengineering/core'
-  import { Button, Header, IconClose } from '@hcengineering/ui'
+  import { Button, EditBox, Header, IconClose, IconMoreH } from '@hcengineering/ui'
 
   import card from '../plugin'
-  import CardPresenter from './CardPresenter.svelte'
   import EditCardNewContent from './EditCardNewContent.svelte'
+  import { showMenu } from '@hcengineering/view-resources'
+  import TagsEditor from './TagsEditor.svelte'
 
   export let widget: Widget | undefined
   export let tab: WidgetTab | undefined
@@ -39,6 +40,9 @@
   let context: NotificationContext | undefined = undefined
   let isContextLoaded = false
 
+  let title: string = ''
+  let isTitleEditing = false
+
   $: if (widget === undefined || tab === undefined) {
     closeWidget(card.ids.CardWidget as Ref<Widget>)
   }
@@ -52,6 +56,9 @@
           closeWidget(card.ids.CardWidget as Ref<Widget>)
         } else {
           doc = res[0]
+          if (!isTitleEditing) {
+            title = doc.title
+          }
         }
       },
       { limit: 1 }
@@ -62,10 +69,31 @@
       context = res.getResult()[0]
       isContextLoaded = true
     })
+
+  async function saveTitle (ev: Event): Promise<void> {
+    ev.preventDefault()
+    isTitleEditing = false
+    const client = getClient()
+    const trimmedTitle = title.trim()
+    const canSave = trimmedTitle.length > 0
+
+    if (doc === undefined || !canSave) {
+      title = doc?.title ?? title
+      return
+    }
+
+    if (trimmedTitle !== doc.title) {
+      await client.update(doc, { title: trimmedTitle })
+    } else {
+      title = doc.title
+    }
+  }
+
+  let clientWidth = 0
 </script>
 
 {#if widget && tab?.id}
-  <div class="card-widget" style:width style:height>
+  <div class="card-widget" style:height bind:clientWidth>
     <Header type={'type-panel'} noPrint adaptive="disabled">
       <svelte:fragment slot="beforeTitle">
         <Button
@@ -80,7 +108,34 @@
           }}
         />
       </svelte:fragment>
-      <CardPresenter value={doc} noUnderline />
+
+      <svelte:fragment slot="actions">
+        <Button
+          icon={IconMoreH}
+          iconProps={{ size: 'medium' }}
+          kind="icon"
+          dataId="btnMoreActions"
+          on:click={(e) => {
+            showMenu(e, { object: doc })
+          }}
+        />
+      </svelte:fragment>
+      <div class="title flex-row-center">
+        <EditBox
+          focusIndex={1}
+          bind:value={title}
+          placeholder={card.string.Card}
+          on:blur={saveTitle}
+          on:value={() => {
+            isTitleEditing = true
+          }}
+        />
+      </div>
+      <svelte:fragment slot="extra">
+        {#if doc}
+          <TagsEditor {doc} dropdownTags={clientWidth < 512} id={'cardSidebar-tags'} />
+        {/if}
+      </svelte:fragment>
     </Header>
     {#if doc}
       <EditCardNewContent _id={doc._id} {doc} {context} {isContextLoaded} />
@@ -95,5 +150,11 @@
     flex: 1;
     min-width: 0;
     min-height: 0;
+  }
+
+  .title {
+    font-size: 1rem;
+    flex: 1;
+    min-width: 2rem;
   }
 </style>

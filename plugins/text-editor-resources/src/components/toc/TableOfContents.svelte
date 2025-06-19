@@ -23,6 +23,7 @@
   export let items: Heading[] = []
   export let selected: Heading | undefined = undefined
   export let enumerated: boolean = false
+  export let position: 'left' | 'right' = 'left'
 
   const dispatch = createEventDispatcher()
 
@@ -44,7 +45,7 @@
     showPopup(
       TableofContentsPopup,
       { items, selected, enumerated },
-      getPopupPositionElement(ev.target as HTMLElement, { v: 'top', h: 'right' }),
+      getPopupPositionElement(ev.target as HTMLElement, { v: 'top', h: position === 'left' ? 'right' : 'left' }),
       (res) => {
         hovered = false
         if (res != null) {
@@ -55,7 +56,7 @@
   }
 </script>
 
-<div class="root no-print">
+<div class="root no-print {position}">
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="toc" class:hovered on:click={handleOpenToc}>
@@ -73,6 +74,11 @@
     justify-content: flex-start;
     align-items: flex-start;
     gap: 1.5rem;
+    width: 2rem;
+
+    &.right {
+      align-items: flex-end;
+    }
   }
 
   .toc {

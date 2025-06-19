@@ -225,7 +225,7 @@
     align-self: stretch;
     min-width: 0;
     position: relative;
-    padding: 0.5rem 4rem;
+    padding: 0.5rem 2rem;
 
     &:hover:not(.noHover) {
       background: var(--global-ui-BackgroundColor);
@@ -247,7 +247,7 @@
   .message__actions {
     position: absolute;
     top: -0.75rem;
-    right: 1rem;
+    right: 2.25rem;
     visibility: hidden;
     z-index: 2;
 

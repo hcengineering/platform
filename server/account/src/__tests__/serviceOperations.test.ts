@@ -197,14 +197,14 @@ describe('integration methods', () => {
     integration: {
       findOne: jest.fn(),
       insertOne: jest.fn(),
-      updateOne: jest.fn(),
+      update: jest.fn(),
       deleteMany: jest.fn(),
       find: jest.fn()
     },
     integrationSecret: {
       findOne: jest.fn(),
       insertOne: jest.fn(),
-      updateOne: jest.fn(),
+      update: jest.fn(),
       deleteMany: jest.fn(),
       find: jest.fn()
     }
@@ -416,7 +416,7 @@ describe('integration methods', () => {
 
       await updateIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegration)
 
-      expect(mockDb.integration.updateOne).toHaveBeenCalledWith(
+      expect(mockDb.integration.update).toHaveBeenCalledWith(
         {
           socialId: mockIntegration.socialId,
           kind: mockIntegration.kind,
@@ -441,7 +441,7 @@ describe('integration methods', () => {
 
       await updateIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegration)
 
-      expect(mockDb.integration.updateOne).toHaveBeenCalledWith(
+      expect(mockDb.integration.update).toHaveBeenCalledWith(
         {
           socialId: mockIntegration.socialId,
           kind: mockIntegration.kind,
@@ -471,7 +471,7 @@ describe('integration methods', () => {
         new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       )
 
-      expect(mockDb.integration.updateOne).not.toHaveBeenCalled()
+      expect(mockDb.integration.update).not.toHaveBeenCalled()
 
       expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
         _id: mockSocialId,
@@ -491,7 +491,7 @@ describe('integration methods', () => {
         new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationNotFound, {}))
       )
 
-      expect(mockDb.integration.updateOne).not.toHaveBeenCalled()
+      expect(mockDb.integration.update).not.toHaveBeenCalled()
     })
 
     test('should throw error for unauthorized service', async () => {
@@ -503,7 +503,7 @@ describe('integration methods', () => {
         new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       )
 
-      expect(mockDb.integration.updateOne).not.toHaveBeenCalled()
+      expect(mockDb.integration.update).not.toHaveBeenCalled()
     })
   })
 
@@ -1081,7 +1081,7 @@ describe('integration methods', () => {
 
       await updateIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecret)
 
-      expect(mockDb.integrationSecret.updateOne).toHaveBeenCalledWith(mockSecretKey, { secret: mockSecret.secret })
+      expect(mockDb.integrationSecret.update).toHaveBeenCalledWith(mockSecretKey, { secret: mockSecret.secret })
       expect(mockDb.socialId.findOne).toHaveBeenCalledWith({ _id: mockSocialId, verifiedOn: { $gt: 0 } })
     })
 
@@ -1099,7 +1099,7 @@ describe('integration methods', () => {
 
       await updateIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecret)
 
-      expect(mockDb.integrationSecret.updateOne).toHaveBeenCalledWith(mockSecretKey, { secret: mockSecret.secret })
+      expect(mockDb.integrationSecret.update).toHaveBeenCalledWith(mockSecretKey, { secret: mockSecret.secret })
       expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
         _id: mockSocialId,
         personUuid: mockAccount,
@@ -1122,7 +1122,7 @@ describe('integration methods', () => {
         new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       )
 
-      expect(mockDb.integrationSecret.updateOne).not.toHaveBeenCalledWith()
+      expect(mockDb.integrationSecret.update).not.toHaveBeenCalledWith()
       expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
         _id: mockSocialId,
         personUuid: mockAccount,
@@ -1141,7 +1141,7 @@ describe('integration methods', () => {
         new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
       )
 
-      expect(mockDb.integrationSecret.updateOne).not.toHaveBeenCalled()
+      expect(mockDb.integrationSecret.update).not.toHaveBeenCalled()
     })
 
     test('should throw error for unauthorized service', async () => {
@@ -1154,7 +1154,7 @@ describe('integration methods', () => {
       )
 
       expect(mockDb.integrationSecret.findOne).not.toHaveBeenCalled()
-      expect(mockDb.integrationSecret.updateOne).not.toHaveBeenCalled()
+      expect(mockDb.integrationSecret.update).not.toHaveBeenCalled()
     })
   })
 
