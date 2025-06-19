@@ -20,6 +20,7 @@ import { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3, google } from 'googleapis'
 import config from './config'
 import { ReccuringData, State, type Token, type User } from './types'
+import { AccountClient, IntegrationSecretKey } from '@hcengineering/account-client'
 
 export class DeferredPromise<T = any> {
   public readonly promise: Promise<T>
