@@ -94,7 +94,12 @@ export async function getWorkspaceTokens (
 
   const byWorkspaces = groupByArray(secrets, (it) => it.workspaceUuid as WorkspaceUuid)
 
-  return new Map(
-    byWorkspaces.entries().map((it) => [it[0], it[1].map((secret: { secret: string }) => JSON.parse(secret.secret))])
-  )
+  const result = new Map<WorkspaceUuid, Token[]>()
+  for (const entry of byWorkspaces.entries()) {
+    result.set(
+      entry[0],
+      entry[1].map((secret: { secret: string }) => JSON.parse(secret.secret))
+    )
+  }
+  return result
 }

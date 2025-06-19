@@ -20,6 +20,7 @@ import {
   isDeletingMode,
   MeasureContext,
   RateLimiter,
+  WorkspaceInfoWithStatus,
   WorkspaceUuid,
   type PersonId
 } from '@hcengineering/core'
@@ -37,6 +38,7 @@ import { serviceToken } from './utils'
 import { WorkspaceClient } from './workspaceClient'
 
 import { AuthProvider } from './gmail/auth'
+import { AccountClient } from '@hcengineering/account-client'
 
 export class GmailController {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
@@ -95,66 +97,91 @@ export class GmailController {
           })
           .filter((id): id is WorkspaceUuid => id != null)
       )
-      while (workspaceIds.size > 0) {
-        const limiter = new RateLimiter(config.InitLimit)
-        this.ctx.info('Workspaces with integrations', { count: workspaceIds.size })
-
-        const workspaceWithInfo = await sysClient.getWorkspacesInfo(Array.from(workspaceIds))
-
-        const allTokens = await getWorkspaceTokens(sysClient)
-
-        for (const info of workspaceWithInfo) {
-          const workspace = info.uuid
-          try {
-            if (isArchivingMode(info.mode) || isDeletingMode(info.mode)) {
-              this.ctx.info('workspace is in archiving or deleting mode, skipping', { workspaceUuid: workspace })
-              workspaceIds.delete(workspace)
-              continue
-            }
-            if (!isActiveMode(info.mode)) {
-              this.ctx.info('workspace is not active, skipping for now.', { workspaceUuid: workspace })
-              continue
-            }
-            const lastVisit = (Date.now() - (info.lastVisit ?? 0)) / (3600 * 24 * 1000) // In days
-
-            if (lastVisit > config.WorkspaceInactivityInterval) {
-              this.ctx.warn('workspace is inactive for too long, skipping for now.', { workspaceUuid: workspace })
-              continue
-            }
-
-            // So we will not start it one more time.
-            workspaceIds.delete(workspace)
-
-            const tokens = allTokens.get(workspace) ?? []
-            await limiter.add(async () => {
-              this.ctx.info('Use stored tokens', { count: tokens.length })
-              const startPromise = this.startWorkspace(workspace, tokens)
-              const timeoutPromise = new Promise<void>((resolve) => {
-                setTimeout(() => {
-                  // Not connected, recheck again.
-                  workspaceIds.add(workspace)
-                  resolve()
-                }, 60000)
-              })
-              await Promise.race([startPromise, timeoutPromise])
-            })
-          } catch (err: any) {
-            this.ctx.error('Failed to create workspace client', { workspaceUuid: workspace, error: err.message })
-          }
-        }
-
-        await limiter.waitProcessing()
-        if (workspaceIds.size > 0) {
-          await new Promise<void>((resolve) => {
-            setTimeout(() => {
-              resolve()
-            }, 60 * 1000) // Wait 1 minute
-          })
-        }
-      }
+      const pendingWorkspaces = await this.startWorkspaces(workspaceIds, sysClient)
+      this.ctx.info('Pending workspaces', { count: pendingWorkspaces.size })
+      void this.checkPendingWorkspaces(pendingWorkspaces, sysClient)
     } catch (err: any) {
       this.ctx.error('Failed to start existing integrations', { error: err.message })
     }
+  }
+
+  async checkPendingWorkspaces (workspaceIds: Set<WorkspaceUuid>, sysClient: AccountClient): Promise<void> {
+    let unprocessedWorkspaces = new Set(workspaceIds)
+    while (unprocessedWorkspaces.size > 0) {
+      unprocessedWorkspaces = await this.startWorkspaces(unprocessedWorkspaces, sysClient)
+      if (unprocessedWorkspaces.size > 0) {
+        this.ctx.info('Waiting for pending workspaces', { count: unprocessedWorkspaces.size })
+        await new Promise<void>((resolve) => {
+          setTimeout(
+            () => {
+              resolve()
+            },
+            5 * 60 * 1000
+          ) // Wait 5 minutes
+        })
+      }
+    }
+  }
+
+  async startWorkspaces (workspaceIds: Set<WorkspaceUuid>, sysClient: AccountClient): Promise<Set<WorkspaceUuid>> {
+    const unprocessedWorkspaces = new Set(workspaceIds)
+    const limiter = new RateLimiter(config.InitLimit)
+    this.ctx.info('Workspaces with integrations', { count: unprocessedWorkspaces.size })
+
+    const workspaceWithInfo = await sysClient.getWorkspacesInfo(Array.from(unprocessedWorkspaces))
+
+    const allTokens = await getWorkspaceTokens(sysClient)
+
+    for (const info of workspaceWithInfo) {
+      const workspace = info.uuid
+      try {
+        const { needSync, needRecheck } = this.checkWorkspace(info)
+        if (!needSync) {
+          if (!needRecheck) unprocessedWorkspaces.delete(workspace)
+          continue
+        }
+
+        // So we will not start it one more time.
+        unprocessedWorkspaces.delete(workspace)
+
+        const tokens = allTokens.get(workspace) ?? []
+        await limiter.add(async () => {
+          this.ctx.info('Use stored tokens', { count: tokens.length })
+          const startPromise = this.startWorkspace(workspace, tokens)
+          const timeoutPromise = new Promise<void>((resolve) => {
+            setTimeout(() => {
+              // Not connected, recheck again.
+              unprocessedWorkspaces.add(workspace)
+              resolve()
+            }, 60000)
+          })
+          await Promise.race([startPromise, timeoutPromise])
+        })
+      } catch (err: any) {
+        this.ctx.error('Failed to create workspace client', { workspaceUuid: workspace, error: err.message })
+      }
+    }
+
+    await limiter.waitProcessing()
+    return unprocessedWorkspaces
+  }
+
+  checkWorkspace (info: WorkspaceInfoWithStatus): { needSync: boolean, needRecheck: boolean } {
+    if (isArchivingMode(info.mode) || isDeletingMode(info.mode)) {
+      this.ctx.info('workspace is in archiving or deleting mode, skipping', { workspaceUuid: info.uuid })
+      return { needSync: false, needRecheck: false }
+    }
+    if (!isActiveMode(info.mode)) {
+      this.ctx.info('workspace is not active, skipping for now.', { workspaceUuid: info.uuid })
+      return { needSync: false, needRecheck: true }
+    }
+    const lastVisit = (Date.now() - (info.lastVisit ?? 0)) / (3600 * 24 * 1000) // In days
+
+    if (lastVisit > config.WorkspaceInactivityInterval) {
+      this.ctx.warn('workspace is inactive for too long, skipping for now.', { workspaceUuid: info.uuid })
+      return { needSync: false, needRecheck: true }
+    }
+    return { needSync: true, needRecheck: false }
   }
 
   async startWorkspace (workspace: WorkspaceUuid, tokens: Token[]): Promise<void> {

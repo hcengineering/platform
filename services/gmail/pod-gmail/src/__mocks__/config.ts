@@ -6,7 +6,8 @@ const config = {
   Credentials: 'test-credentials',
   WATCH_TOPIC_NAME: 'test-watch-topic',
   FooterMessage: '<br><br><p>Sent via <a href="https://huly.io">Huly</a></p>',
-  InitLimit: 50
+  InitLimit: 50,
+  WorkspaceInactivityInterval: 3
 }
 
 export default config

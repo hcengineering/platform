@@ -43,6 +43,8 @@ describe('GmailController', () => {
 
   const workspaceAId: WorkspaceUuid = 'workspace-a' as any
   const workspaceBId: WorkspaceUuid = 'workspace-b' as any
+  const inactiveWorkspaceId: WorkspaceUuid = 'inactive-workspace' as any
+  const outdatedWorkspaceId: WorkspaceUuid = 'outdated-workspace' as any
 
   const workspaceATokens: Token[] = [
     { uuid: workspaceAId, userId: 'user1', workspace: workspaceAId, token: 'token1' } as any,
@@ -53,6 +55,18 @@ describe('GmailController', () => {
     { userId: 'user3', workspace: workspaceBId, token: 'token3' } as any,
     { userId: 'user4', workspace: workspaceBId, token: 'token4' } as any,
     { userId: 'user5', workspace: workspaceBId, token: 'token5' } as any
+  ]
+
+  const inactiveWorkspaceTokens: Token[] = [
+    { userId: 'user3', workspace: workspaceBId, token: 'token6' } as any,
+    { userId: 'user4', workspace: workspaceBId, token: 'token7' } as any,
+    { userId: 'user5', workspace: workspaceBId, token: 'token8' } as any
+  ]
+
+  const outdatedWorkspaceTokens: Token[] = [
+    { userId: 'user3', workspace: workspaceBId, token: 'token6' } as any,
+    { userId: 'user4', workspace: workspaceBId, token: 'token7' } as any,
+    { userId: 'user5', workspace: workspaceBId, token: 'token8' } as any
   ]
 
   beforeEach(() => {
@@ -82,7 +96,12 @@ describe('GmailController', () => {
     // Create mock clients with unique properties
     mockGmailClients = new Map()
 
-    const allUsers = [...workspaceATokens, ...workspaceBTokens].map((token) => token.userId)
+    const allUsers = [
+      ...workspaceATokens,
+      ...workspaceBTokens,
+      ...inactiveWorkspaceTokens,
+      ...outdatedWorkspaceTokens
+    ].map((token) => token.userId)
     allUsers.forEach((userId) => {
       mockGmailClients.set(userId, {
         startSync: jest.fn().mockResolvedValue(undefined),
@@ -111,6 +130,13 @@ describe('GmailController', () => {
       const result = new Map<WorkspaceUuid, Token[]>()
       if (workspaceId === workspaceAId || workspaceId === undefined) result.set(workspaceAId, workspaceATokens)
       if (workspaceId === workspaceBId || workspaceId === undefined) result.set(workspaceBId, workspaceBTokens)
+      if (workspaceId === inactiveWorkspaceId || workspaceId === undefined) {
+        result.set(inactiveWorkspaceId, inactiveWorkspaceTokens)
+      }
+      if (workspaceId === outdatedWorkspaceId || workspaceId === undefined) {
+        result.set(outdatedWorkspaceId, outdatedWorkspaceTokens)
+      }
+
       return result
     })
 
@@ -119,7 +145,21 @@ describe('GmailController', () => {
       getWorkspaceInfo: jest.fn().mockResolvedValue({ mode: 'active' }),
       getWorkspacesInfo: jest.fn().mockResolvedValue([
         { uuid: workspaceAId, workspaceUuid: workspaceAId, name: 'Workspace A', mode: 'active', lastVisit: Date.now() },
-        { uuid: workspaceBId, workspaceUuid: workspaceBId, name: 'Workspace B', mode: 'active', lastVisit: Date.now() }
+        { uuid: workspaceBId, workspaceUuid: workspaceBId, name: 'Workspace B', mode: 'active', lastVisit: Date.now() },
+        {
+          uuid: inactiveWorkspaceId,
+          workspaceUuid: inactiveWorkspaceId,
+          name: 'Inactive Workspace',
+          mode: 'archived',
+          lastVisit: Date.now()
+        },
+        {
+          uuid: outdatedWorkspaceId,
+          workspaceUuid: outdatedWorkspaceId,
+          name: 'Outdated Workspace',
+          mode: 'active',
+          lastVisit: Date.now() - 7 * 3600 * 24 * 1000
+        }
       ])
     } as any)
 
