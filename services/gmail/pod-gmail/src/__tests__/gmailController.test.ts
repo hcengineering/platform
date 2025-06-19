@@ -45,8 +45,8 @@ describe('GmailController', () => {
   const workspaceBId: WorkspaceUuid = 'workspace-b' as any
 
   const workspaceATokens: Token[] = [
-    { userId: 'user1', workspace: workspaceAId, token: 'token1' } as any,
-    { userId: 'user2', workspace: workspaceAId, token: 'token2' } as any
+    { uuid: workspaceAId, userId: 'user1', workspace: workspaceAId, token: 'token1' } as any,
+    { uuid: workspaceBId, userId: 'user2', workspace: workspaceAId, token: 'token2' } as any
   ]
 
   const workspaceBTokens: Token[] = [
@@ -108,14 +108,19 @@ describe('GmailController', () => {
 
     // Mock getWorkspaceTokens
     jest.spyOn(tokens, 'getWorkspaceTokens').mockImplementation(async (_, workspaceId) => {
-      if (workspaceId === workspaceAId) return workspaceATokens
-      if (workspaceId === workspaceBId) return workspaceBTokens
-      return []
+      const result = new Map<WorkspaceUuid, Token[]>()
+      if (workspaceId === workspaceAId || workspaceId === undefined) result.set(workspaceAId, workspaceATokens)
+      if (workspaceId === workspaceBId || workspaceId === undefined) result.set(workspaceBId, workspaceBTokens)
+      return result
     })
 
     // Mock getAccountClient
     jest.spyOn(serverClient, 'getAccountClient').mockReturnValue({
-      getWorkspaceInfo: jest.fn().mockResolvedValue({ mode: 'active' })
+      getWorkspaceInfo: jest.fn().mockResolvedValue({ mode: 'active' }),
+      getWorkspacesInfo: jest.fn().mockResolvedValue([
+        { uuid: workspaceAId, workspaceUuid: workspaceAId, name: 'Workspace A', mode: 'active', lastVisit: Date.now() },
+        { uuid: workspaceBId, workspaceUuid: workspaceBId, name: 'Workspace B', mode: 'active', lastVisit: Date.now() }
+      ])
     } as any)
 
     // Mock serviceToken

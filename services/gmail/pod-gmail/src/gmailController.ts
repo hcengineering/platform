@@ -16,6 +16,8 @@
 import {
   AccountUuid,
   isActiveMode,
+  isArchivingMode,
+  isDeletingMode,
   MeasureContext,
   RateLimiter,
   WorkspaceUuid,
@@ -93,7 +95,7 @@ export class GmailController {
           })
           .filter((id): id is WorkspaceUuid => id != null)
       )
-      while (true) {
+      while (workspaceIds.size > 0) {
         const limiter = new RateLimiter(config.InitLimit)
         this.ctx.info('Workspaces with integrations', { count: workspaceIds.size })
 
@@ -104,15 +106,20 @@ export class GmailController {
         for (const info of workspaceWithInfo) {
           const workspace = info.uuid
           try {
+            if (isArchivingMode(info.mode) || isDeletingMode(info.mode)) {
+              this.ctx.info('workspace is in archiving or deleting mode, skipping', { workspaceUuid: workspace })
+              workspaceIds.delete(workspace)
+              continue
+            }
             if (!isActiveMode(info.mode)) {
-              this.ctx.info('workspace is not active', { workspaceUuid: workspace })
-              return
+              this.ctx.info('workspace is not active, skipping for now.', { workspaceUuid: workspace })
+              continue
             }
             const lastVisit = (Date.now() - (info.lastVisit ?? 0)) / (3600 * 24 * 1000) // In days
 
             if (lastVisit > config.WorkspaceInactivityInterval) {
               this.ctx.warn('workspace is inactive for too long, skipping for now.', { workspaceUuid: workspace })
-              return
+              continue
             }
 
             // So we will not start it one more time.
@@ -137,11 +144,13 @@ export class GmailController {
         }
 
         await limiter.waitProcessing()
-        await new Promise<void>((resolve) => {
-          setTimeout(() => {
-            resolve()
-          }, 60 * 1000) // Wait 1 minute
-        })
+        if (workspaceIds.size > 0) {
+          await new Promise<void>((resolve) => {
+            setTimeout(() => {
+              resolve()
+            }, 60 * 1000) // Wait 1 minute
+          })
+        }
       }
     } catch (err: any) {
       this.ctx.error('Failed to start existing integrations', { error: err.message })
