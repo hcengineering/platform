@@ -1544,6 +1544,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-media",
+      "projectFolder": "pods/media",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/hr",
       "projectFolder": "plugins/hr",
       "shouldPublish": true
@@ -2571,6 +2576,11 @@
     {
       "packageName": "@hcengineering/communication-client-query",
       "projectFolder": "communication/packages/client-query",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/backup-api-pod",
+      "projectFolder": "services/backup/backup-api-pod",
       "shouldPublish": false
     }
   ]

@@ -424,7 +424,7 @@ describe('invite operations', () => {
       ;(mockDb.invite.findOne as jest.Mock).mockResolvedValue(existingInvite)
       global.fetch = jest.fn().mockResolvedValue({ ok: true })
 
-      await resendInvite(mockCtx, mockDb, mockBranding, mockToken, mockEmail, AccountRole.User)
+      await resendInvite(mockCtx, mockDb, mockBranding, mockToken, { email: mockEmail, role: AccountRole.User })
 
       expect(mockDb.invite.updateOne).toHaveBeenCalledWith(
         { id: existingInvite.id },
@@ -446,7 +446,7 @@ describe('invite operations', () => {
       ;(mockDb.invite.insertOne as jest.Mock).mockResolvedValue(newInviteId)
       global.fetch = jest.fn().mockResolvedValue({ ok: true })
 
-      await resendInvite(mockCtx, mockDb, mockBranding, mockToken, mockEmail, AccountRole.User)
+      await resendInvite(mockCtx, mockDb, mockBranding, mockToken, { email: mockEmail, role: AccountRole.User })
 
       expect(mockDb.invite.insertOne).toHaveBeenCalled()
       expect(global.fetch).toHaveBeenCalled()

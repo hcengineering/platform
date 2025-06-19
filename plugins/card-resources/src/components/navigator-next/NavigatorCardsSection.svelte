@@ -73,7 +73,7 @@
     isLabelsLoaded = true
   }
 
-  $: ids = (config.labelFilter?.length ?? 0) > 0 ? labels.map((it) => it.card) : undefined
+  $: ids = (config.labelFilter?.length ?? 0) > 0 ? labels.map((it) => it.cardId) : undefined
 
   $: if (isLabelsLoaded) {
     cardsQuery.query<Card>(
@@ -111,7 +111,7 @@
         }
       },
       (res) => {
-        contextByCard = new Map(res.getResult().map((it) => [it.card as Ref<Card>, it]))
+        contextByCard = new Map(res.getResult().map((it) => [it.cardId, it]))
       }
     )
   } else {

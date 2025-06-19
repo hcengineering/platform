@@ -16,17 +16,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import { MeasureContext } from '@hcengineering/core'
-import { parseContent } from '../utils'
 import { type MtaMessage } from '../types'
-
-// Mock config to ensure storage is available for tests
-jest.mock('../config', () => ({
-  storageConfig: {
-    // Mock minimal storage config to ensure attachments are processed
-    type: 'fs',
-    url: '/tmp'
-  }
-}))
 
 // Create a mock logger context
 const mockContext = {
@@ -41,6 +31,7 @@ describe('parseContent', () => {
   })
 
   test('should parse email with attachment', async () => {
+    const { parseContent } = await import('../utils')
     const attachmentEml = await fs.readFile(path.join(__dirname, '__mocks__/attachment.txt'), 'utf-8')
     // Create MTA message from the sample email file
     const mtaMessage: MtaMessage = {
@@ -75,6 +66,7 @@ describe('parseContent', () => {
   })
 
   test('should parse email with 2 attachments', async () => {
+    const { parseContent } = await import('../utils')
     const attachmentEml = await fs.readFile(path.join(__dirname, '__mocks__/2attachments.txt'), 'utf-8')
     // Create MTA message from the sample email file
     const mtaMessage: MtaMessage = {

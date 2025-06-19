@@ -18,19 +18,18 @@
   import { formatName, Person } from '@hcengineering/contact'
   import { Message } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
+  import { IconDelete, Label } from '@hcengineering/ui'
 
   import communication from '../../plugin'
   import MessageInput from './MessageInput.svelte'
   import MessageContentViewer from './MessageContentViewer.svelte'
   import MessageFooter from './MessageFooter.svelte'
-  import { Label } from '@hcengineering/ui'
 
   export let card: Card
   export let author: Person | undefined
   export let message: Message
   export let isEditing = false
   export let compact: boolean = false
-  export let replies = true
   export let hideAvatar: boolean = false
 
   function formatDate (date: Date): string {
@@ -69,7 +68,7 @@
         />
       {/if}
       {#if !isEditing}
-        <MessageFooter {message} {replies} files={!isEditing} />
+        <MessageFooter {message} />
       {/if}
     </div>
   </div>
@@ -77,28 +76,34 @@
   <div class="message__body">
     {#if !hideAvatar}
       <div class="message__avatar">
-        <PersonPreviewProvider value={author}>
-          <Avatar name={author?.name} person={author} size="medium" />
-        </PersonPreviewProvider>
+        {#if !message.removed}
+          <PersonPreviewProvider value={author}>
+            <Avatar name={author?.name} person={author} size="medium" />
+          </PersonPreviewProvider>
+        {:else}
+          <Avatar icon={IconDelete} size="medium" />
+        {/if}
       </div>
     {/if}
     <div class="message__content">
       <div class="message__header">
-        <PersonPreviewProvider value={author}>
-          <div class="message__username">
-            {formatName(author?.name ?? '')}
-          </div>
-        </PersonPreviewProvider>
+        {#if !message.removed}
+          <PersonPreviewProvider value={author}>
+            <div class="message__username">
+              {formatName(author?.name ?? '')}
+            </div>
+          </PersonPreviewProvider>
+        {/if}
         <div class="message__date">
           {formatDate(message.created)}
         </div>
-        {#if message.edited}
+        {#if message.edited && !message.removed}
           <div class="message__edited-marker">
             (<Label label={communication.string.Edited} />)
           </div>
         {/if}
       </div>
-      {#if !isEditing && message.content !== ''}
+      {#if !isEditing}
         <div class="message__text">
           <MessageContentViewer {message} {card} {author} />
         </div>
@@ -115,7 +120,7 @@
         />
       {/if}
       {#if !isEditing}
-        <MessageFooter {message} {replies} />
+        <MessageFooter {message} />
       {/if}
     </div>
   </div>
@@ -167,6 +172,7 @@
     color: var(--global-tertiary-TextColor);
     font-size: 0.75rem;
     font-weight: 400;
+    white-space: nowrap;
   }
 
   .message__edited-marker {

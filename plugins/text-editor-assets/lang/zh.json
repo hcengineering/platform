@@ -65,6 +65,7 @@
 
     "ConvertToLinkPreview": "显示为链接",
     "ConvertToEmbedPreview": "显示为内容预览",
-    "UnableToLoadEmbeddedContent": "由于权限设置或不支持的内容，无法加载链接预览"
+    "UnableToLoadEmbeddedContent": "由于权限设置或不支持的内容，无法加载链接预览",
+    "CannotConnectToCollaborationService": "无法连接到协作者"
   }
 }

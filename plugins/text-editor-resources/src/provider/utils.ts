@@ -15,12 +15,12 @@
 
 import { type Blob, type CollaborativeDoc, type Ref, generateId } from '@hcengineering/core'
 import { encodeDocumentId } from '@hcengineering/collaborator-client'
-import { getMetadata } from '@hcengineering/platform'
+import { OK, Severity, Status, getMetadata, setPlatformStatus } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
-import textEditor from '@hcengineering/text-editor'
 import { Doc as Ydoc } from 'yjs'
 
-import { CloudCollabProvider } from './cloud'
+import plugin from '../plugin'
+
 import { HocuspocusCollabProvider } from './hocuspocus'
 import { IndexeddbProvider } from './indexeddb'
 import { type Provider } from './types'
@@ -36,28 +36,30 @@ export function createLocalProvider (ydoc: Ydoc, doc: CollaborativeDoc): Provide
 }
 
 export function createRemoteProvider (ydoc: Ydoc, doc: CollaborativeDoc, content: Ref<Blob> | null): Provider {
-  const collaborator = getMetadata(textEditor.metadata.Collaborator)
-
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorUrl = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
 
   const documentId = getDocumentId(doc)
 
-  return collaborator === 'cloud'
-    ? new CloudCollabProvider({
-      url: collaboratorUrl,
-      name: documentId,
-      document: ydoc,
-      content,
-      token
-    })
-    : new HocuspocusCollabProvider({
-      url: collaboratorUrl,
-      name: documentId,
-      document: ydoc,
-      token,
-      parameters: { content }
-    })
+  const provider = new HocuspocusCollabProvider({
+    url: collaboratorUrl,
+    name: documentId,
+    document: ydoc,
+    token,
+    parameters: { content },
+    onConnect: () => {
+      void setPlatformStatus(OK)
+    },
+    onClose: (data) => {
+      if (data.event.code === 1006) {
+        console.error('Failed to connect to collaborator', data.event)
+        const status = new Status(Severity.ERROR, plugin.string.CannotConnectToCollaborationService, {})
+        void setPlatformStatus(status)
+      }
+    }
+  })
+
+  return provider
 }
 
 export const createTiptapCollaborationData = (

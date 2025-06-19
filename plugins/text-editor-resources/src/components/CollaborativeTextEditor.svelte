@@ -152,8 +152,6 @@
 
   let editor: Editor
   let element: HTMLElement
-  let textToolbarElement: HTMLElement
-  let imageToolbarElement: HTMLElement
   let editorPopupContainer: HTMLElement
 
   let placeHolderStr: string = ''
@@ -242,19 +240,12 @@
     needFocus = false
   }
 
-  function handleFocus (): void {
-    needFocus = true
-  }
-
   $: if (editor !== undefined) {
     // When the content is invalid, we don't want to emit an update
     // Preventing synchronization of the invalid content
     const emitUpdate = !contentError
     editor.setEditable(editable, emitUpdate)
   }
-
-  // TODO: should be inside the editor
-  $: showToolbar = canShowPopups
 
   const optionalExtensions: AnyExtension[] = []
 

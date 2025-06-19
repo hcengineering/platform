@@ -548,3 +548,17 @@ export enum StateType {
   Primary,
   Regular
 }
+
+export interface IHeaderState {
+  headerWidth: number
+  extraWidth: number
+  spaceWidth: number
+  titleWidth: number
+  titleOverflow: boolean
+  extraOverflow: boolean
+}
+
+export interface IPanelState extends IHeaderState {
+  panelWidth: number
+  innerWidth: number
+}

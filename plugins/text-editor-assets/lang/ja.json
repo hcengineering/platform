@@ -73,6 +73,7 @@
 
     "ConvertToLinkPreview": "リンクとして表示",
     "ConvertToEmbedPreview": "コンテンツプレビューとして表示",
-    "UnableToLoadEmbeddedContent": "リンクのプレビューを読み込めません。権限設定または非対応のコンテンツが原因です"
+    "UnableToLoadEmbeddedContent": "リンクのプレビューを読み込めません。権限設定または非対応のコンテンツが原因です",
+    "CannotConnectToCollaborationService": "コラボレーションサービスに接続できません"
   }
 }

@@ -11,7 +11,7 @@ export class UserManager {
   accountClient: AccountClient
 
   constructor () {
-    const sysToken = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'github' })
+    const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
     this.accountClient = getAccountClient(sysToken, 30000)
   }
 

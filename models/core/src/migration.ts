@@ -542,9 +542,10 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
                   accountUuidBySocialKey
                 )
 
-                update[`${type.targetClass}`] = {
-                  [role._id]: newAssignees
+                if (update[`${type.targetClass}`] == null) {
+                  update[`${type.targetClass}`] = {}
                 }
+                update[`${type.targetClass}`][role._id] = newAssignees
               }
             }
           }

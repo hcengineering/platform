@@ -35,7 +35,7 @@
     })
 
   $: client
-    .findAll(tag.class.TagElement, { _id: { $in: labels.map((it) => it.label) as any as Ref<TagElement>[] } })
+    .findAll(tag.class.TagElement, { _id: { $in: labels.map((it) => it.labelId) as any as Ref<TagElement>[] } })
     .then((res) => {
       tags = res
     })

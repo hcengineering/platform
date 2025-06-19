@@ -30,7 +30,8 @@ import {
   systemAccountUuid,
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   type WorkspaceMode,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -118,6 +119,8 @@ export async function getAccountDB (
   }
 }
 
+export const assignableRoles = [AccountRole.Guest, AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]
+
 export function getRolePower (role: AccountRole): number {
   return roleOrder[role]
 }
@@ -158,7 +161,11 @@ export function wrap (
 
         if (status.code === platform.status.InternalServerError) {
           Analytics.handleError(err)
-          ctx.error('Error while processing account method', { method: accountMethod.name, status, origErr: err })
+          ctx.error('Error while processing account method', {
+            method: accountMethod.name,
+            status,
+            origErr: err
+          })
         } else {
           ctx.error('Error while processing account method', { method: accountMethod.name, status })
         }
@@ -1076,6 +1083,17 @@ export async function getWorkspaceByUrl (db: AccountDB, url: string): Promise<Wo
   return await db.workspace.findOne({ url })
 }
 
+export async function getWorkspaceByDataId (
+  db: AccountDB,
+  dataId: string | null | undefined
+): Promise<Workspace | null> {
+  if (dataId == null || dataId === '') {
+    return null
+  }
+
+  return await db.workspace.findOne({ dataId: dataId as WorkspaceDataId })
+}
+
 export async function getWorkspaceInvite (db: AccountDB, id: string): Promise<WorkspaceInvite | null> {
   const invite = await db.invite.findOne({ id })
 
@@ -1170,17 +1188,21 @@ export async function loginOrSignUpWithProvider (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  email: string,
+  email: string | undefined,
   first: string,
   last: string,
   socialId: SocialKey,
   signUpDisabled = false
 ): Promise<LoginInfo | null> {
   try {
-    const normalizedEmail = cleanEmail(email)
+    const normalizedEmail = email != null ? cleanEmail(email) : ''
+    const normalizedSocialId: SocialKey = {
+      type: socialId.type,
+      value: normalizeValue(socialId.value)
+    }
 
     // Find if any of the target/email social ids exist
-    const targetSocialId = await db.socialId.findOne(socialId)
+    const targetSocialId = await db.socialId.findOne(normalizedSocialId)
     const emailSocialId =
       normalizedEmail !== ''
         ? await db.socialId.findOne({ type: SocialIdType.EMAIL, value: normalizedEmail })
@@ -1227,7 +1249,7 @@ export async function loginOrSignUpWithProvider (
     let socialIdId: PersonId | undefined
     // Create and/or confirm missing social ids
     if (targetSocialId == null) {
-      socialIdId = await db.socialId.insertOne({ ...socialId, personUuid, verifiedOn: Date.now() })
+      socialIdId = await db.socialId.insertOne({ ...normalizedSocialId, personUuid, verifiedOn: Date.now() })
     } else if (targetSocialId.verifiedOn == null) {
       await db.socialId.updateOne({ key: targetSocialId.key }, { verifiedOn: Date.now() })
       socialIdId = targetSocialId._id
@@ -1248,7 +1270,7 @@ export async function loginOrSignUpWithProvider (
 
     await confirmHulyIds(ctx, db, personUuid as AccountUuid)
     const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
-    ctx.info('Provider login succeeded', { email, normalizedEmail, emailSocialId, ...extraToken })
+    ctx.info('Provider login succeeded', { email, normalizedEmail, emailSocialId, socialId, ...extraToken })
 
     return {
       account: personUuid as AccountUuid,
@@ -1267,14 +1289,14 @@ export async function joinWithProvider (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  email: string,
+  email: string | undefined,
   first: string,
   last: string,
   inviteId: string,
   socialId: SocialKey,
   signUpDisabled = false
 ): Promise<WorkspaceLoginInfo | LoginInfo | null> {
-  const normalizedEmail = cleanEmail(email)
+  const normalizedEmail = email != null ? cleanEmail(email) : ''
   const invite = await getWorkspaceInvite(db, inviteId)
   if (invite == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -1592,7 +1614,8 @@ export async function findExistingIntegration (
   extra: any
 ): Promise<Integration | null> {
   const { socialId, kind, workspaceUuid } = params
-  if (kind == null || socialId == null || workspaceUuid === undefined) {
+  // Note: workspaceUuid === null is a decent use case for account-wise integration not related to a particular workspace
+  if (kind == null || kind === '' || socialId == null || socialId === '' || workspaceUuid === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 

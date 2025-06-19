@@ -301,13 +301,6 @@ class Connection implements ClientConnection {
     }
 
     if (resp.rateLimit !== undefined && resp.rateLimit.remaining < 50) {
-      console.log(
-        'Rate limits:',
-        resp.rateLimit.remaining,
-        resp.rateLimit.limit,
-        resp.rateLimit.reset,
-        resp.rateLimit.retryAfter
-      )
       this.currentRateLimit = resp.rateLimit
       if (this.currentRateLimit.remaining < this.currentRateLimit.limit / 3) {
         if (this.slowDownTimer < 50) {
@@ -347,7 +340,6 @@ class Connection implements ClientConnection {
         if (resp.rateLimit !== undefined) {
           const { remaining, retryAfter } = resp.rateLimit
           if (remaining === 0) {
-            console.log('Rate limit exceed:', resp.rateLimit)
             void new Promise((resolve) => setTimeout(resolve, retryAfter ?? 1)).then(() => {
               // Retry after a while, so rate limits allow to call more.
               promise?.sendData()

@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { ActivityTypeUpdate } from '@hcengineering/communication-types'
-  import card from '@hcengineering/card'
+  import cardPlugin, { MasterTag } from '@hcengineering/card'
   import { getClient } from '@hcengineering/presentation'
-  import { tooltip, IconEdit, Icon, Label } from '@hcengineering/ui'
+  import { IconEdit, Icon, Label, Component } from '@hcengineering/ui'
 
   import communication from '../../../plugin'
 
@@ -25,35 +25,22 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: clazz = hierarchy.getClass(update.newType)
+  $: clazz = hierarchy.getClass(update.newType) as MasterTag
 </script>
 
-<div class="flex-presenter overflow-label flex-gap-1 no-pointer no-word-wrap">
+<div class="type overflow-label flex-gap-1 no-pointer no-word-wrap">
   <span class="mr-1"><Icon icon={IconEdit} size="small" /></span>
   <Label label={communication.string.Set} />
   <span class="lower">
-    <Label label={card.string.MasterTag} />
+    <Label label={cardPlugin.string.MasterTag} />
     <Label label={communication.string.To} />
   </span>
 
-  <div class="tag no-word-wrap" use:tooltip={{ label: clazz.label }}>
-    <span class="overflow-label">
-      <Label label={clazz.label} />
-    </span>
-  </div>
+  <Component is={cardPlugin.component.CardTagColored} props={{ labelIntl: clazz.label, color: clazz.background }} />
 </div>
 
 <style lang="scss">
-  .tag {
-    padding: 0.25rem 0.5rem;
-    border: 1px solid var(--theme-content-color);
-    max-width: 12.5rem;
-    overflow: hidden;
-
-    border-radius: 6rem;
-
-    color: var(--theme-caption-color);
-
+  .type {
     display: flex;
     align-items: center;
   }

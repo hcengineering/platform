@@ -369,7 +369,7 @@ class AccountClientImpl implements AccountClient {
   async resendInvite (email: string, role: AccountRole): Promise<void> {
     const request = {
       method: 'resendInvite' as const,
-      params: [email, role]
+      params: { email, role }
     }
 
     await this.rpc(request)
@@ -475,8 +475,8 @@ class AccountClientImpl implements AccountClient {
       method: 'getWorkspacesInfo' as const,
       params: { ids }
     }
-
-    return await this.rpc(request)
+    const infos: any[] = await this.rpc(request)
+    return Array.from(infos).map((it) => this.flattenStatus(it))
   }
 
   async getWorkspaceInfo (updateLastVisit: boolean = false): Promise<WorkspaceInfoWithStatus> {

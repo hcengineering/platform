@@ -23,7 +23,6 @@
     Location,
     restoreLocation,
     Component,
-    closePopup,
     Label,
     ModernButton,
     IconDelete,

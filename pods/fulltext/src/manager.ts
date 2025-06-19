@@ -116,14 +116,15 @@ export class WorkspaceManager {
     for (const m of msg) {
       const ws = m.id as WorkspaceUuid
 
-      const indexer = await this.getIndexer(
-        this.ctx,
-        ws,
-        generateToken(systemAccountUuid, ws, {
-          service: 'fulltext'
-        }),
-        true
-      )
+      let token: string
+      try {
+        token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
+      } catch (err: any) {
+        this.ctx.error('Error generating token', { err, systemAccountUuid, ws })
+        continue
+      }
+
+      const indexer = await this.getIndexer(this.ctx, ws, token, true)
       await indexer?.fulltext.processDocuments(this.ctx, m.value, control)
     }
   }
@@ -137,17 +138,20 @@ export class WorkspaceManager {
       const ws = m.id as WorkspaceUuid
 
       for (const mm of m.value) {
+        let token: string
+        try {
+          token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
+        } catch (err: any) {
+          this.ctx.error('Error generating token', { err, systemAccountUuid, ws })
+          continue
+        }
+
         if (
           mm.type === QueueWorkspaceEvent.Created ||
           mm.type === QueueWorkspaceEvent.Restored ||
           mm.type === QueueWorkspaceEvent.FullReindex
         ) {
-          const indexer = await this.getIndexer(
-            this.ctx,
-            ws,
-            generateToken(systemAccountUuid, ws, { service: 'fulltext' }),
-            true
-          )
+          const indexer = await this.getIndexer(this.ctx, ws, token, true)
           if (indexer !== undefined) {
             await indexer.dropWorkspace() // TODO: Add heartbeat
             const classes = await indexer.getIndexClassess()
@@ -161,8 +165,7 @@ export class WorkspaceManager {
           mm.type === QueueWorkspaceEvent.Archived ||
           mm.type === QueueWorkspaceEvent.ClearIndex
         ) {
-          const token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
-          const workspaceInfo = await this.getWorkspaceInfo(token)
+          const workspaceInfo = await this.getWorkspaceInfo(this.ctx, token)
           if (workspaceInfo !== undefined) {
             if (workspaceInfo.dataId != null) {
               await this.fulltextAdapter.clean(this.ctx, workspaceInfo.dataId as unknown as WorkspaceUuid)
@@ -170,12 +173,7 @@ export class WorkspaceManager {
             await this.fulltextAdapter.clean(this.ctx, workspaceInfo.uuid)
           }
         } else if (mm.type === QueueWorkspaceEvent.Reindex) {
-          const indexer = await this.getIndexer(
-            this.ctx,
-            ws,
-            generateToken(systemAccountUuid, ws, { service: 'fulltext' }),
-            true
-          )
+          const indexer = await this.getIndexer(this.ctx, ws, token, true)
           const mmd = mm as QueueWorkspaceReindexMessage
           await indexer?.reindex(this.ctx, mmd.domain, mmd.classes, control)
         }
@@ -183,9 +181,14 @@ export class WorkspaceManager {
     }
   }
 
-  public async getWorkspaceInfo (token?: string): Promise<WorkspaceInfoWithStatus | undefined> {
+  public async getWorkspaceInfo (ctx: MeasureContext, token?: string): Promise<WorkspaceInfoWithStatus | undefined> {
     const accountClient = getAccountClient(token)
-    return await accountClient.getWorkspaceInfo(false)
+    try {
+      return await accountClient.getWorkspaceInfo(false)
+    } catch (err: any) {
+      ctx.error('Workspace not available for token', { err })
+      return undefined
+    }
   }
 
   async getTransactorAPIEndpoint (token: string): Promise<string | undefined> {
@@ -200,9 +203,8 @@ export class WorkspaceManager {
   ): Promise<WorkspaceIndexer | undefined> {
     let idx = this.indexers.get(workspace)
     if (idx === undefined && create) {
-      const workspaceInfo = await this.getWorkspaceInfo(token)
+      const workspaceInfo = await this.getWorkspaceInfo(ctx, token)
       if (workspaceInfo === undefined) {
-        ctx.error('Workspace not available for token')
         return
       }
       ctx.warn('indexer created', { workspace })

@@ -354,7 +354,7 @@
       const reaction = reactionNotifications.find((it) => it.messageId === item.id)
       if (reaction != null) {
         void communicationClient.updateNotifications(
-          reaction.context,
+          reaction.contextId,
           {
             id: reaction.id
           },
@@ -406,6 +406,8 @@
   }
 
   async function onUpdate (res: Message[]): Promise<void> {
+    // need for dubug now, will be removed later
+    console.log('last', res[res.length - 1])
     if (messagesCount === res.length) return
     const prevCount = messagesCount
     messagesCount = res.length
@@ -465,7 +467,7 @@
       if (reactionsToRead.length > 0) {
         for (const reaction of reactionsToRead) {
           void communicationClient.updateNotifications(
-            reaction.context,
+            reaction.contextId,
             {
               id: reaction.id
             },

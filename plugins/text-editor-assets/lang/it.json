@@ -71,6 +71,7 @@
     "SetTextColor": "Cambia il colore del testo",
     "ConvertToLinkPreview": "Mostra come link",
     "ConvertToEmbedPreview": "Mostra come anteprima del contenuto",
-    "UnableToLoadEmbeddedContent": "Impossibile caricare l'anteprima del link a causa delle impostazioni dei permessi o di contenuto non supportato"
+    "UnableToLoadEmbeddedContent": "Impossibile caricare l'anteprima del link a causa delle impostazioni dei permessi o di contenuto non supportato",
+    "CannotConnectToCollaborationService": "Impossibile connettersi al servizio di collaborazione"
   }
 }

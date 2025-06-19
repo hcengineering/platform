@@ -121,6 +121,8 @@ export interface Event extends AttachedDoc {
   timeZone?: string
 
   user: PersonId
+
+  blockTime: boolean
 }
 
 /**

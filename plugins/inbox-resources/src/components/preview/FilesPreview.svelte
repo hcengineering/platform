@@ -20,20 +20,20 @@
 
   export let message: Message
 
-  $: showFiles = message.files.length > 0 && message.type !== MessageType.Thread
+  $: showFiles = message.blobs.length > 0
 </script>
 
 {#if showFiles}
   {#if message.content.trim().length > 0}
-    <span class="attachments" use:tooltip={{ component: FilesTooltip, props: { files: message.files } }}>
-      {message.files.length}
+    <span class="attachments" use:tooltip={{ component: FilesTooltip, props: { blobs: message.blobs } }}>
+      {message.blobs.length}
       <Icon icon={communication.icon.File} size="small" />
     </span>
   {:else}
     <span class="attachments-text font-normal overflow-label">
       <Label label={communication.string.Files} />:
-      <span class="ml-1 overflow-label" use:tooltip={{ component: FilesTooltip, props: { files: message.files } }}>
-        {message.files.map(({ filename }) => filename).join(', ')}
+      <span class="ml-1 overflow-label" use:tooltip={{ component: FilesTooltip, props: { blobs: message.blobs } }}>
+        {message.blobs.map(({ fileName }) => fileName).join(', ')}
       </span>
     </span>
   {/if}

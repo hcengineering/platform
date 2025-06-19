@@ -32,6 +32,8 @@ export class DummyQueue implements PlatformQueue {
 
   async shutdown (): Promise<void> {}
 
+  async createTopic (topics: string | string[], partitions: number): Promise<void> {}
+
   createConsumer<T>(
     ctx: MeasureContext,
     topic: QueueTopic | string,

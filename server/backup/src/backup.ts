@@ -67,6 +67,7 @@ export * from './storage'
 
 const dataBlobSize = 250 * 1024 * 1024
 const dataUploadSize = 2 * 1024 * 1024
+const batchSize = 5000
 
 const defaultLevel = 9
 
@@ -139,7 +140,7 @@ export interface BackupInfo {
   // A hash of current domain transactions, so we could skip all other checks if same.
   domainHashes: Record<Domain, string>
 
-  migrations: Record<string, boolean>
+  migrations: Record<string, boolean | string>
 }
 
 async function loadDigest (
@@ -749,7 +750,8 @@ export async function backup (
       snapshots: [],
       domainHashes: {},
       migrations: {
-        zeroCheckSize: true // Assume already checked for new backups
+        zeroCheckSize: true, // Assume already checked for new backups
+        forcedFullCheck: '1' // A force to full recheck.
       }
     }
 
@@ -765,6 +767,8 @@ export async function backup (
     if (backupInfo.migrations == null) {
       backupInfo.migrations = {}
     }
+
+    const forcedFullCheck = '2'
 
     // Apply verification to backup, since we know it should have broken blobs
     if (backupInfo.migrations.zeroCheckSize == null) {
@@ -792,6 +796,11 @@ export async function backup (
     }
 
     let fullCheck = options.fullVerify === true
+
+    if (backupInfo.migrations.forcedFullCheck !== forcedFullCheck) {
+      // We have forced full check to be performed.
+      fullCheck = true
+    }
     if (backupInfo.snapshots.length > options.keepSnapshots) {
       // We need to perform compaction
       ctx.warn('Compacting backup')
@@ -856,7 +865,9 @@ export async function backup (
     const blobClient = new BlobClient(transactorUrl, token, wsIds, { storageAdapter: options.storageAdapter })
 
     const domains = [
+      DOMAIN_BLOB,
       DOMAIN_MODEL_TX,
+      DOMAIN_TX,
       ...connection
         .getHierarchy()
         .domains()
@@ -864,18 +875,14 @@ export async function backup (
           (it) =>
             it !== DOMAIN_TRANSIENT &&
             it !== DOMAIN_MODEL &&
+            it !== DOMAIN_MODEL_TX &&
+            it !== DOMAIN_TX &&
+            it !== DOMAIN_BLOB &&
             it !== ('fulltext-blob' as Domain) &&
             !options.skipDomains.includes(it) &&
             (options.include === undefined || options.include.has(it))
         )
     ]
-    domains.sort((a, b) => {
-      if (a === DOMAIN_TX) {
-        return -1
-      }
-
-      return a.localeCompare(b)
-    })
 
     ctx.info('domains for dump', { domains: domains.length })
 
@@ -900,7 +907,7 @@ export async function backup (
     let downloadedMb = 0
     let downloaded = 0
 
-    const printDownloaded = (msg: string, size?: number | null): void => {
+    const printDownloaded = (msg: string, size?: number | null, pending?: number): void => {
       if (size == null || Number.isNaN(size) || !Number.isInteger(size)) {
         return
       }
@@ -910,9 +917,10 @@ export async function backup (
       const newId = Math.round(newDownloadedMb / 10)
       if (downloadedMb !== newId) {
         downloadedMb = newId
-        ctx.info('Downloaded', {
+        ctx.info('downloaded', {
           msg,
-          written: newDownloadedMb
+          written: newDownloadedMb,
+          pending
         })
       }
     }
@@ -961,8 +969,16 @@ export async function backup (
 
           let needRetrieve: Ref<Doc>[] = []
 
-          for (const { id, hash } of currentChunk.docs) {
+          for (const { id, hash, contentType } of currentChunk.docs) {
             processed++
+            if (
+              domain === DOMAIN_BLOB &&
+              contentType !== undefined &&
+              options.skipBlobContentTypes.length > 0 &&
+              options.skipBlobContentTypes.some((it) => contentType.includes(it))
+            ) {
+              continue
+            }
             if (Date.now() - st > 2500) {
               ctx.info('processed', {
                 processed,
@@ -1005,7 +1021,7 @@ export async function backup (
               changed++
             }
 
-            if (needRetrieve.length > 200) {
+            if (needRetrieve.length > batchSize) {
               needRetrieveChunks.push(needRetrieve)
               needRetrieve = []
             }
@@ -1101,7 +1117,6 @@ export async function backup (
             continue
           }
           let needRetrieve: Ref<Doc>[] = []
-          const batchSize = 200
           const { modified, modifiedFiles } = await verifyDocsFromSnapshot(
             ctx,
             domain,
@@ -1134,7 +1149,7 @@ export async function backup (
                     needRetrieve.push(localDoc._id)
                     changes.updated.set(localDoc._id, same.get(localDoc._id) ?? '')
                     // Docs are not same
-                    if (needRetrieve.length > 200) {
+                    if (needRetrieve.length > batchSize) {
                       needRetrieveChunks.push(needRetrieve)
                       needRetrieve = []
                     }
@@ -1156,7 +1171,7 @@ export async function backup (
         // We need to retrieve all documents from same not matched
         const sameArray: Ref<Doc>[] = Array.from(same.keys())
         while (sameArray.length > 0) {
-          const docs = sameArray.splice(0, 200)
+          const docs = sameArray.splice(0, batchSize)
           needRetrieveChunks.push(docs)
         }
       } else {
@@ -1168,7 +1183,6 @@ export async function backup (
       }
       const totalChunks = needRetrieveChunks.flatMap((it) => it.length).reduce((p, c) => p + c, 0)
       let processed = 0
-      let blobs = 0
 
       try {
         global.gc?.()
@@ -1326,11 +1340,6 @@ export async function backup (
               options.skipBlobContentTypes.length > 0 &&
               options.skipBlobContentTypes.some((it) => blob.contentType.includes(it))
             ) {
-              ctx.info('skip blob download, contentType', {
-                blob: blob._id,
-                provider: blob.provider,
-                size: blob.size / (1024 * 1024)
-              })
               processChanges(d, true)
               if (progress !== undefined) {
                 await progress(10 + (processed / totalChunks) * 90)
@@ -1340,7 +1349,11 @@ export async function backup (
 
             let blobFiled = false
 
-            printDownloaded('', descrJson.length)
+            printDownloaded(
+              '',
+              descrJson.length,
+              needRetrieveChunks.reduce((v, docs) => v + docs.length, 0) + docs.length
+            )
             try {
               const buffers: Buffer[] = []
               await blobClient.writeTo(ctx, blob._id, blob.size, {
@@ -1377,21 +1390,8 @@ export async function backup (
                   resolve()
                 })
               })
-              blobs++
-              if (blob.size > 1024 * 1024 || blobs >= 10) {
-                ctx.info('download blob', {
-                  _id: blob._id,
-                  contentType: blob.contentType,
-                  size: blob.size,
-                  provider: blob.provider,
-                  pending: docs.length
-                })
-                if (blobs >= 10) {
-                  blobs = 0
-                }
-              }
 
-              printDownloaded('', blob.size)
+              printDownloaded('', blob.size, needRetrieveChunks.reduce((v, docs) => v + docs.length, 0) + docs.length)
             } catch (err: any) {
               if (err.message?.startsWith('No file for') === true) {
                 ctx.error('failed to download blob', { message: err.message })
@@ -1411,7 +1411,7 @@ export async function backup (
               })
             })
             processChanges(d)
-            printDownloaded('', data.length)
+            printDownloaded('', data.length, needRetrieveChunks.reduce((v, docs) => v + docs.length, 0) + docs.length)
           }
         }
       }
@@ -1481,6 +1481,7 @@ export async function backup (
 
     if (!canceled()) {
       backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
+      backupInfo.migrations.forcedFullCheck = forcedFullCheck
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
     }
 
@@ -1644,7 +1645,7 @@ export async function backupSize (storage: BackupStorage): Promise<void> {
 /**
  * @public
  */
-export async function backupDownload (storage: BackupStorage, storeIn: string): Promise<void> {
+export async function backupDownload (storage: BackupStorage, storeIn: string, skipDomains: Set<string>): Promise<void> {
   const infoFile = 'backup.json.gz'
   const sizeFile = 'backup.size.gz'
 
@@ -1657,12 +1658,14 @@ export async function backupDownload (storage: BackupStorage, storeIn: string): 
   console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
 
   let sizeInfo: Record<string, number> = {}
-  if (await storage.exists(sizeFile)) {
-    sizeInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(sizeFile))).toString())
+  if (existsSync(join(storeIn, sizeFile))) {
+    console.log('Parse size file')
+    sizeInfo = JSON.parse(gunzipSync(new Uint8Array(readFileSync(join(storeIn, sizeFile)))).toString())
   }
   console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
 
-  const addFileSize = async (file: string | undefined | null, force: boolean = false): Promise<void> => {
+  const downloadFile = async (file: string | undefined | null, force: boolean = false): Promise<void> => {
+    console.log('Checking file', file)
     if (file != null) {
       const target = join(storeIn, file)
       const dir = dirname(target)
@@ -1670,46 +1673,65 @@ export async function backupDownload (storage: BackupStorage, storeIn: string): 
         mkdirSync(dir, { recursive: true })
       }
 
-      const serverSize: number | undefined = sizeInfo[file]
+      const serverSize: number | undefined = sizeInfo[file] ?? (await storage.stat(file))
+      if (serverSize !== sizeInfo[file]) {
+        sizeInfo[file] = serverSize
+        writeFileSync(
+          join(storeIn, sizeFile),
+          gzipSync(JSON.stringify(sizeInfo, undefined, 2), { level: defaultLevel })
+        )
+      }
 
       if (!existsSync(target) || force || (serverSize !== undefined && serverSize !== statSync(target).size)) {
         try {
-          const fileSize = serverSize ?? (await storage.stat(file))
-          console.log('downloading', file, fileSize)
+          console.log('downloading', file, serverSize)
           const readStream = await storage.load(file)
           const outp = createWriteStream(target)
 
           readStream.pipe(outp)
-          await new Promise<void>((resolve) => {
-            readStream.on('end', () => {
+          await new Promise<void>((resolve, reject) => {
+            readStream.on('error', (err) => {
+              console.error('failed to download file', { file, err })
+              reject(err)
+            })
+            outp.on('error', (err) => {
+              console.error('failed to write file', { file, err })
+              reject(err)
+            })
+            outp.on('finish', () => {
               readStream.destroy()
               outp.close()
               resolve()
             })
+            readStream.on('end', () => {
+              outp.end()
+            })
           })
-          size += fileSize
+          size += serverSize
         } catch (err: any) {
           console.error('failed to calculate size', { file, err })
         }
-      } else {
-        console.log('file-same', file)
       }
     }
   }
 
+  await downloadFile(infoFile, true)
   // Let's calculate data size for backup
   for (const sn of backupInfo.snapshots) {
-    for (const [, d] of Object.entries(sn.domains)) {
-      await addFileSize(d.snapshot)
+    for (const [k, d] of Object.entries(sn.domains)) {
+      console.log('processing', sn.date, k)
+      if (skipDomains.has(k)) {
+        continue
+      }
+      await downloadFile(d.snapshot)
       for (const snp of d.snapshots ?? []) {
-        await addFileSize(snp)
+        await downloadFile(snp)
       }
       for (const snp of d.storage ?? []) {
-        await addFileSize(snp)
+        await downloadFile(snp)
       }
     }
   }
-  await addFileSize(infoFile, true)
 
   console.log('Backup size', size / (1024 * 1024), 'Mb')
 }
@@ -3005,7 +3027,7 @@ export async function checkBackupIntegrity (ctx: MeasureContext, storage: Backup
     if (backupInfo.migrations == null) {
       backupInfo.migrations = {}
     }
-    if (!backupInfo.migrations.zeroCheckSize) {
+    if (backupInfo.migrations.zeroCheckSize !== true) {
       backupInfo.migrations.zeroCheckSize = true
       modified = true
     }

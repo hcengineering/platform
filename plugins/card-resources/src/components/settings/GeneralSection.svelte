@@ -18,14 +18,17 @@
   import { IconWithEmoji, getClient } from '@hcengineering/presentation'
   import {
     ButtonIcon,
+    type ColorDefinition,
+    eventToHTMLElement,
     getCurrentLocation,
+    getPlatformColorDef,
     IconDelete,
     ModernEditbox,
     navigate,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import { IconPicker } from '@hcengineering/view-resources'
+  import { ColorsPopup, IconPicker } from '@hcengineering/view-resources'
   import setting from '@hcengineering/setting'
   import card from '../../plugin'
   import { deleteMasterTag } from '../../utils'
@@ -78,11 +81,33 @@
 
   const h = client.getHierarchy()
   $: isEditable = h.hasMixin(masterTag, setting.mixin.Editable) && h.as(masterTag, setting.mixin.Editable).value
+
+  const showColorPopup = (evt: MouseEvent): void => {
+    showPopup(
+      ColorsPopup,
+      { selected: getPlatformColorDef(masterTag.background ?? 0, $themeStore.dark).name },
+      eventToHTMLElement(evt),
+      async (col) => {
+        if (col != null) {
+          masterTag.background = col
+          await client.update(masterTag, { background: col })
+        }
+      }
+    )
+  }
+
+  function getTagStyle (color: ColorDefinition): string {
+    return `
+    background: ${color.color + '33'};
+    border: 1px solid ${color.color + '66'};
+    color: ${color.title ?? 'var(--theme-caption-color)'};
+  `
+  }
 </script>
 
 <div class="hulyComponent-content__column-group">
   <div class="hulyComponent-content__header items-center">
-    <div class="flex items-center">
+    <div class="flex items-center flex-grow">
       <ButtonIcon
         icon={masterTag.icon === view.ids.IconWithEmoji ? IconWithEmoji : masterTag.icon ?? card.icon.MasterTag}
         iconProps={masterTag.icon === view.ids.IconWithEmoji ? { icon: masterTag.color, size: 'large' } : {}}
@@ -106,9 +131,25 @@
           }
         }}
       />
+      <div
+        class="background-selector"
+        style={getTagStyle(getPlatformColorDef(masterTag.background ?? 0, $themeStore.dark))}
+        on:click={showColorPopup}
+      />
     </div>
     {#if isEditable}
       <ButtonIcon icon={IconDelete} size={'large'} kind={'tertiary'} on:click={handleDelete} />
     {/if}
   </div>
 </div>
+
+<style lang="scss">
+  .background-selector {
+    margin-left: auto;
+    margin-right: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+  }
+</style>

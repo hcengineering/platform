@@ -204,6 +204,7 @@
         <TableOfContents
           items={toc}
           selected={toc.find((it) => it.id === selectedToc?.id)}
+          position="right"
           on:select={(evt) => {
             onNavigationClick(evt.detail)
           }}
@@ -269,10 +270,12 @@
   .toc-container {
     position: absolute;
     pointer-events: none;
-    inset: 0;
+    //inset: 0;
     z-index: 1;
     top: 0;
-    left: 0.5rem;
+    right: 0.75rem;
+    width: 2rem;
+    height: fit-content;
 
     &.hidden {
       display: none;

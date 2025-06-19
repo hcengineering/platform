@@ -278,11 +278,12 @@ async function OnCardRemove (ctx: TxRemoveDoc<Card>[], control: TriggerControl):
   }
 
   void control.communicationApi?.event(
-    // TODO: We should decide what to do with communications package and remove this workaround
-    { account: systemAccount as any },
+    { account: systemAccount },
     {
       type: CardRequestEventType.RemoveCard,
-      card: removedCard._id
+      cardId: removedCard._id,
+      date: new Date(removeTx.createdOn ?? removeTx.modifiedOn),
+      socialId: removedCard.modifiedBy
     }
   )
 
@@ -348,14 +349,13 @@ async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl):
   }
   if ((updateTx.operations as any)._class !== undefined) {
     void control.communicationApi?.event(
-      // TODO: We should decide what to do with communications package and remove this workaround
       { account: systemAccount as any },
       {
         type: CardRequestEventType.UpdateCardType,
-        card: doc._id,
+        cardId: doc._id,
         cardType: (updateTx.operations as any)._class,
-        creator: updateTx.createdBy ?? updateTx.modifiedBy,
-        created: new Date(updateTx.createdOn ?? updateTx.modifiedOn)
+        socialId: updateTx.createdBy ?? updateTx.modifiedBy,
+        date: new Date(updateTx.createdOn ?? updateTx.modifiedOn)
       }
     )
   }
@@ -449,15 +449,14 @@ async function updateCollaborators (control: TriggerControl, ctx: TxCreateDoc<Ca
 
     if (collaborators.length === 0) continue
     void communicationApi.event(
-      // TODO: We should decide what to do with communications package and remove this workaround
       { account: systemAccount as any },
       {
         type: NotificationRequestEventType.AddCollaborators,
-        card: tx.objectId,
+        cardId: tx.objectId,
         cardType: tx.objectClass,
         collaborators,
-        creator: tx.createdBy ?? tx.modifiedBy,
-        created: new Date(tx.createdOn ?? tx.modifiedOn)
+        socialId: tx.createdBy ?? tx.modifiedBy,
+        date: new Date(tx.createdOn ?? tx.modifiedOn)
       }
     )
   }

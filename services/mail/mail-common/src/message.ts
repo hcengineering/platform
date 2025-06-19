@@ -35,9 +35,9 @@ import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/ser
 import {
   AddCollaboratorsEvent,
   MessageRequestEventType,
-  CreateFileEvent,
+  AttachBlobEvent,
   CreateMessageEvent,
-  CreateThreadEvent,
+  AttachThreadEvent,
   NotificationRequestEventType
 } from '@hcengineering/communication-sdk-types'
 import { generateMessageId } from '@hcengineering/communication-shared'
@@ -270,13 +270,13 @@ async function createMailThread (
   data: MessageData,
   messageId: MessageID
 ): Promise<void> {
-  const threadEvent: CreateThreadEvent = {
-    type: MessageRequestEventType.CreateThread,
-    card: data.channel,
-    message: messageId,
-    messageCreated: data.created,
-    thread: data.threadId,
-    threadType: chat.masterTag.Thread
+  const threadEvent: AttachThreadEvent = {
+    type: MessageRequestEventType.AttachThread,
+    cardId: data.channel,
+    messageId,
+    threadId: data.threadId,
+    threadType: chat.masterTag.Thread,
+    socialId: data.modifiedBy
   }
   const thread = Buffer.from(JSON.stringify(threadEvent))
   await sendToCommunicationTopic(producer, config, data, thread)
@@ -292,12 +292,12 @@ async function createMailMessage (
   const createMessageEvent: CreateMessageEvent = {
     type: MessageRequestEventType.CreateMessage,
     messageType: MessageType.Message,
-    card: data.isReply ? threadId : data.channel,
+    cardId: data.isReply ? threadId : data.channel,
     cardType: chat.masterTag.Thread,
     content: data.content,
-    creator: data.modifiedBy,
-    created: data.created,
-    id: messageId
+    socialId: data.modifiedBy,
+    date: data.created,
+    messageId
   }
   const createMessageData = Buffer.from(JSON.stringify(createMessageEvent))
   await sendToCommunicationTopic(producer, config, data, createMessageData)
@@ -314,21 +314,20 @@ async function createFiles (
   messageId: MessageID
 ): Promise<void> {
   const fileData: Buffer[] = attachments.map((a) => {
-    const createFileEvent: CreateFileEvent = {
-      type: MessageRequestEventType.CreateFile,
-      card: messageData.isReply ? threadId : messageData.channel,
-      message: messageId,
-      messageCreated: messageData.created,
-      creator: messageData.modifiedBy,
-      data: {
+    const attachBlobEvent: AttachBlobEvent = {
+      type: MessageRequestEventType.AttachBlob,
+      cardId: messageData.isReply ? threadId : messageData.channel,
+      messageId,
+      socialId: messageData.modifiedBy,
+      blobData: {
         blobId: a.id as Ref<Blob>,
-        type: a.contentType,
-        filename: a.name,
+        contentType: a.contentType,
+        fileName: a.name,
         size: a.data.length,
-        meta: getBlobMetadata(ctx, a)
+        metadata: getBlobMetadata(ctx, a)
       }
     }
-    return Buffer.from(JSON.stringify(createFileEvent))
+    return Buffer.from(JSON.stringify(attachBlobEvent))
   })
   const fileEvents = fileData.map((data) => ({
     key: Buffer.from(messageData.channel ?? messageData.spaceId),
@@ -354,10 +353,11 @@ async function addCollaborators (
   }
   const addCollaboratorsEvent: AddCollaboratorsEvent = {
     type: NotificationRequestEventType.AddCollaborators,
-    card: threadId,
+    cardId: threadId,
     cardType: chat.masterTag.Thread,
     collaborators: [data.recipient.uuid as AccountUuid],
-    creator: data.modifiedBy
+    socialId: data.modifiedBy,
+    date: new Date(data.created.getTime() - 1)
   }
   const createMessageData = Buffer.from(JSON.stringify(addCollaboratorsEvent))
   await sendToCommunicationTopic(producer, config, data, createMessageData)

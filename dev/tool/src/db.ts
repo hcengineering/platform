@@ -42,6 +42,7 @@ import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import { type MongoClient } from 'mongodb'
 import type postgres from 'postgres'
+import { type Row } from 'postgres'
 import { getToolToken } from './utils'
 
 export async function moveFromMongoToPG (
@@ -686,6 +687,274 @@ export async function migrateCreatedModifiedBy (
       }
     } finally {
       pg.close()
+    }
+  }
+
+  if (!done) {
+    ctx.error('Failed to migrate created/modified by')
+  }
+}
+
+export async function migrateCreatedModifiedByFixed (
+  ctx: MeasureMetricsContext,
+  dbUrl: string,
+  workspace: Workspace,
+  includeDomains?: string[],
+  excludeDomains?: string[],
+  maxLifetimeSec?: number,
+  batchSize?: number,
+  force: boolean = false,
+  maxReconnects: number = 30,
+  maxRetries: number = 50
+): Promise<void> {
+  if (!dbUrl.startsWith('postgresql')) {
+    throw new Error('Only CockroachDB is supported')
+  }
+
+  const wsUuid = workspace.uuid
+  ctx.info('Processing workspace', {
+    workspaceUuid: workspace.uuid,
+    workspaceName: workspace.name,
+    workspaceUrl: workspace.url
+  })
+
+  if (maxLifetimeSec !== undefined) {
+    setDBExtraOptions({ max_lifetime: maxLifetimeSec })
+  }
+
+  let progressMade = false
+  let connectsCount = 0
+  let retriesCount = 0
+  let reconnecting = false
+  let retrying = false
+  let done = false
+  let pg: ReturnType<typeof getDBClient> | undefined
+  let pgClient: postgres.Sql | undefined
+
+  while (!done && (connectsCount === 0 || retrying || (reconnecting && progressMade))) {
+    try {
+      if (connectsCount === 0 || reconnecting) {
+        ctx.info(reconnecting ? '  Reconnecting...' : '  Connecting...')
+
+        progressMade = false
+        connectsCount++
+
+        pg = getDBClient(sharedPipelineContextVars, dbUrl)
+        pgClient = await pg.getClient()
+
+        // Expect temp table with mapping to be created manually
+        // Create progress table
+        await pgClient`
+          CREATE TABLE IF NOT EXISTS temp_data.account_personid_mapping_fixed_progress (
+              workspace_id text,
+              domain text,
+              field text,
+              CONSTRAINT account_personid_mapping_fixed_progress_pk PRIMARY KEY (workspace_id, domain, field)
+          )
+        `
+      }
+
+      if (pgClient == null) {
+        throw new Error('Could not connect to postgres')
+      }
+
+      if (retrying) {
+        retriesCount++
+      }
+
+      reconnecting = false
+      retrying = false
+
+      // Get list of tables to process
+      const tables = await pgClient`
+        SELECT table_name
+        FROM information_schema.columns 
+        WHERE table_schema = 'public'
+        AND column_name IN ('createdBy', 'modifiedBy')
+        GROUP BY table_name
+        HAVING COUNT(DISTINCT column_name) = 2
+      `
+      let filteredTables: Row[] = tables
+      if (includeDomains != null && includeDomains.length > 0) {
+        filteredTables = tables.filter((t) => includeDomains.includes(t.table_name))
+      }
+      if (excludeDomains != null && excludeDomains.length > 0) {
+        filteredTables = filteredTables.filter((t) => !excludeDomains.includes(t.table_name))
+      }
+
+      ctx.info(`  Found ${filteredTables.length} tables to process`, {
+        domains: filteredTables.map((t) => t.table_name)
+      })
+
+      // Process each table
+      for (const table of filteredTables) {
+        const tableName = table.table_name
+        ctx.info(`  Processing table: ${tableName}`)
+
+        const progress = await pgClient`
+          SELECT field 
+          FROM temp_data.account_personid_mapping_fixed_progress
+          WHERE workspace_id = ${wsUuid} AND domain = ${tableName}
+        `
+
+        const createdDone = !force && progress.some((p) => p.field === 'createdBy')
+        const modifiedDone = !force && progress.some((p) => p.field === 'modifiedBy')
+
+        // Get counts for logging
+        const [createdByCount] = !createdDone
+          ? await pgClient`
+          SELECT COUNT(*) 
+          FROM ${pgClient(tableName)} t
+          JOIN temp_data.account_personid_mapping_fixed m ON t."workspaceId" = m.workspace_id AND t."createdBy" = m.current_person_id
+          WHERE t."workspaceId" = ${wsUuid}
+        `
+          : [{ count: 0 }]
+
+        const [modifiedByCount] = !modifiedDone
+          ? await pgClient`
+          SELECT COUNT(*) 
+          FROM ${pgClient(tableName)} t
+          JOIN temp_data.account_personid_mapping_fixed m ON t."workspaceId" = m.workspace_id AND t."modifiedBy" = m.current_person_id
+          WHERE t."workspaceId" = ${wsUuid}
+        `
+          : [{ count: 0 }]
+
+        ctx.info(
+          `  Table ${tableName}: ${createdByCount.count} createdBy and ${modifiedByCount.count} modifiedBy records need updating`
+        )
+
+        if (createdByCount.count > 0) {
+          ctx.info(`    Updating createdBy for ${tableName}...`)
+          const startTime = Date.now()
+
+          if (batchSize == null || batchSize > createdByCount.count) {
+            ctx.info(`      Processing the whole table ${tableName}...`)
+            await pgClient`
+              UPDATE ${pgClient(tableName)}
+              SET "createdBy" = m.correct_person_id::text
+              FROM temp_data.account_personid_mapping_fixed m
+              WHERE ${pgClient(tableName)}."workspaceId" = ${wsUuid} AND ${pgClient(tableName)}."workspaceId" = m.workspace_id AND ${pgClient(tableName)}."createdBy" = m.current_person_id
+            `
+            progressMade = true
+          } else {
+            ctx.info(`      Processing the table ${tableName} in batches of ${batchSize}...`)
+            let processed = 0
+            while (true) {
+              const res = await pgClient`
+                UPDATE ${pgClient(tableName)}
+                SET "createdBy" = m.correct_person_id::text
+                FROM temp_data.account_personid_mapping_fixed m
+                WHERE ${pgClient(tableName)}."workspaceId" = ${wsUuid} AND ${pgClient(tableName)}."workspaceId" = m.workspace_id AND ${pgClient(tableName)}."createdBy" = m.current_person_id
+                LIMIT ${batchSize}
+              `
+              progressMade = true
+              if (res.count === 0) {
+                break
+              }
+              processed += res.count
+              const duration = (Date.now() - startTime) / 1000
+              const rate = Math.round(processed / duration)
+              ctx.info(
+                `      Processing createdBy for ${tableName}: ${processed} rows in ${duration}s (${rate} rows/sec)`
+              )
+            }
+          }
+
+          await pgClient`INSERT INTO temp_data.account_personid_mapping_fixed_progress (workspace_id, domain, field) VALUES (${wsUuid}, ${tableName}, 'createdBy') ON CONFLICT DO NOTHING`
+
+          const duration = (Date.now() - startTime) / 1000
+          const rate = Math.round(createdByCount.count / duration)
+          ctx.info(
+            `    Updated createdBy for ${tableName}: ${createdByCount.count} rows in ${duration}s (${rate} rows/sec)`
+          )
+        } else {
+          if (createdDone) {
+            ctx.info('    Skipping createdBy for table. Already done', { tableName })
+          } else {
+            await pgClient`INSERT INTO temp_data.account_personid_mapping_fixed_progress (workspace_id, domain, field) VALUES (${wsUuid}, ${tableName}, 'createdBy') ON CONFLICT DO NOTHING`
+          }
+        }
+
+        if (modifiedByCount.count > 0) {
+          ctx.info(`    Updating modifiedBy for ${tableName}...`)
+          const startTime = Date.now()
+
+          if (batchSize == null || batchSize > modifiedByCount.count) {
+            ctx.info(`    Processing the whole table ${tableName}...`)
+            await pgClient`
+              UPDATE ${pgClient(tableName)}
+              SET "modifiedBy" = m.correct_person_id::text
+              FROM temp_data.account_personid_mapping_fixed m
+              WHERE ${pgClient(tableName)}."workspaceId" = ${wsUuid} AND ${pgClient(tableName)}."workspaceId" = m.workspace_id AND ${pgClient(tableName)}."modifiedBy" = m.current_person_id
+            `
+            progressMade = true
+          } else {
+            ctx.info(`    Processing the table ${tableName} in batches of ${batchSize}...`)
+            let processed = 0
+            while (true) {
+              const res = await pgClient`
+                UPDATE ${pgClient(tableName)}
+                SET "modifiedBy" = m.correct_person_id::text
+                FROM temp_data.account_personid_mapping_fixed m
+                WHERE ${pgClient(tableName)}."workspaceId" = ${wsUuid} AND ${pgClient(tableName)}."workspaceId" = m.workspace_id AND ${pgClient(tableName)}."modifiedBy" = m.current_person_id
+                LIMIT ${batchSize}
+              `
+              progressMade = true
+              if (res.count === 0) {
+                break
+              }
+              processed += res.count
+              const duration = (Date.now() - startTime) / 1000
+              const rate = Math.round(processed / duration)
+              ctx.info(
+                `    Processing modifiedBy for ${tableName}: ${processed} rows in ${duration}s (${rate} rows/sec)`
+              )
+            }
+          }
+
+          await pgClient`INSERT INTO temp_data.account_personid_mapping_fixed_progress (workspace_id, domain, field) VALUES (${wsUuid}, ${tableName}, 'modifiedBy') ON CONFLICT DO NOTHING`
+
+          const duration = (Date.now() - startTime) / 1000
+          const rate = Math.round(modifiedByCount.count / duration)
+          ctx.info(
+            `    Updated modifiedBy for ${tableName}: ${modifiedByCount.count} rows in ${duration}s (${rate} rows/sec)`
+          )
+        } else {
+          if (modifiedDone) {
+            ctx.info('    Skipping modifiedBy for table. Already done', { tableName })
+          } else {
+            await pgClient`INSERT INTO temp_data.account_personid_mapping_fixed_progress (workspace_id, domain, field) VALUES (${wsUuid}, ${tableName}, 'modifiedBy') ON CONFLICT DO NOTHING`
+          }
+        }
+      }
+
+      done = true
+      ctx.info('Migration of created/modified completed successfully')
+    } catch (err: any) {
+      if (err.code === '40001' || err.code === '55P03') {
+        // Retry transaction
+        if (retriesCount === maxRetries) {
+          ctx.error('Failed to migrate created/modified by. Max retries reached', { err })
+        } else {
+          retrying = true
+          continue
+        }
+      }
+
+      if (err.code === 'CONNECTION_CLOSED') {
+        // Reconnect
+        ctx.info('  Connection closed...')
+        if (connectsCount === maxReconnects) {
+          ctx.error('Failed to migrate created/modified by. Max reconnects reached', { err })
+        } else {
+          reconnecting = true
+          continue
+        }
+      }
+
+      throw err
+    } finally {
+      pg?.close()
     }
   }
 

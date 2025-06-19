@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AttributeModel } from '@hcengineering/view'
-  import { ActivityUpdate, ActivityUpdateType, RichText } from '@hcengineering/communication-types'
+  import { ActivityUpdate, ActivityUpdateType, Markdown } from '@hcengineering/communication-types'
 
   import ActivityUpdateTagViewer from './ActivityUpdateTagViewer.svelte'
   import ActivityUpdateAttributeViewer from './ActivityUpdateAttributeViewer.svelte'
@@ -25,7 +25,7 @@
 
   export let model: AttributeModel | undefined = undefined
   export let update: ActivityUpdate
-  export let content: RichText
+  export let content: Markdown
   export let card: Card
   export let author: Person | undefined
 </script>

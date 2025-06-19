@@ -67,6 +67,7 @@
   width={width ?? 'min-content'}
   {kind}
   {size}
+  disabled={readonly}
   {justify}
   on:click={onClick}
 >
