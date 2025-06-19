@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import presentation, { ActionContext } from '@hcengineering/presentation'
-  import { personByIdStore, personRefByPersonIdStore, getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
+  import { getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
   import { Label, Loading, resizeObserver, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
