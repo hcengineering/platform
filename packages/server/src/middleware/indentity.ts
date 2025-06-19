@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type EventResult, type RequestEvent, type SessionData } from '@hcengineering/communication-sdk-types'
+import { type SessionData } from '@hcengineering/communication-sdk-types'
 import { systemAccountUuid } from '@hcengineering/core'
 import type {
   AccountID,
@@ -25,10 +25,8 @@ import type {
   NotificationContext
 } from '@hcengineering/communication-types'
 
-import type { Enriched, Middleware, MiddlewareContext, QueryId } from '../types'
+import type { Middleware, MiddlewareContext, QueryId } from '../types'
 import { BaseMiddleware } from './base'
-
-import { ApiError } from '../error'
 
 export class IdentityMiddleware extends BaseMiddleware implements Middleware {
   constructor (
@@ -38,29 +36,12 @@ export class IdentityMiddleware extends BaseMiddleware implements Middleware {
     super(context, next)
   }
 
-  async event (session: SessionData, event: Enriched<RequestEvent>, derived: boolean): Promise<EventResult> {
-    if (event.socialId == null) {
-      if (this.isSystem(session)) {
-        console.error('Missing social id. System accounts cannot be anonymous.', event)
-        throw ApiError.badRequest('Missing social id. System accounts cannot be anonymous.')
-      }
-      event.socialId = session.account.primarySocialId
-    }
-
-    return await this.provideEvent(session, event, derived)
-  }
-
-  private isSystem (session: SessionData): boolean {
-    const account = session.account
-    return systemAccountUuid === account.uuid
-  }
-
   async findNotificationContexts (
     session: SessionData,
     params: FindNotificationContextParams,
     queryId?: QueryId
   ): Promise<NotificationContext[]> {
-    const paramsWithAccount = this.expandParamsWithAccount(session, params)
+    const paramsWithAccount = this.enrichParamsWithAccount(session, params)
     return await this.provideFindNotificationContexts(session, paramsWithAccount, queryId)
   }
 
@@ -69,16 +50,16 @@ export class IdentityMiddleware extends BaseMiddleware implements Middleware {
     params: FindNotificationsParams,
     queryId?: QueryId
   ): Promise<Notification[]> {
-    const paramsWithAccount = this.expandParamsWithAccount(session, params)
+    const paramsWithAccount = this.enrichParamsWithAccount(session, params)
     return await this.provideFindNotifications(session, paramsWithAccount, queryId)
   }
 
   async findLabels (session: SessionData, params: FindLabelsParams, queryId?: QueryId): Promise<Label[]> {
-    const paramsWithAccount = this.expandParamsWithAccount(session, params)
+    const paramsWithAccount = this.enrichParamsWithAccount(session, params)
     return await this.provideFindLabels(session, paramsWithAccount, queryId)
   }
 
-  private expandParamsWithAccount<T extends { account?: AccountID | AccountID[] }>(session: SessionData, params: T): T {
+  private enrichParamsWithAccount<T extends { account?: AccountID | AccountID[] }>(session: SessionData, params: T): T {
     const account = session.account
     const isSystem = account.uuid === systemAccountUuid
 

@@ -14,7 +14,7 @@
 //
 
 import type { MeasureContext } from '@hcengineering/core'
-import type { DbAdapter, EventResult, RequestEvent, SessionData } from '@hcengineering/communication-sdk-types'
+import type { DbAdapter, EventResult, Event, SessionData } from '@hcengineering/communication-sdk-types'
 import type {
   Collaborator,
   FindCollaboratorsParams,
@@ -47,6 +47,7 @@ import { TriggersMiddleware } from './middleware/triggers'
 import { ValidateMiddleware } from './middleware/validate'
 import { DateMiddleware } from './middleware/date'
 import { IdentityMiddleware } from './middleware/indentity'
+import { IdMiddleware } from './middleware/id'
 
 export async function buildMiddlewares (
   ctx: MeasureContext,
@@ -56,10 +57,16 @@ export async function buildMiddlewares (
   broadcast: BroadcastSessionsFunc
 ): Promise<Middlewares> {
   const createFns: MiddlewareCreateFn[] = [
+    // Enrich events
     async (context, next) => new DateMiddleware(context, next),
     async (context, next) => new IdentityMiddleware(context, next),
+    async (context, next) => new IdMiddleware(context, next),
+
+    // Validate events
     async (context, next) => new ValidateMiddleware(context, next),
     async (context, next) => new PermissionsMiddleware(db, context, next),
+
+    // Process events
     async (context, next) => new BroadcastMiddleware(broadcast, context, next),
     async (context, next) => new DatabaseMiddleware(db, context, next),
     async (context, next) => new TriggersMiddleware(db, context, next)
@@ -70,7 +77,8 @@ export async function buildMiddlewares (
     metadata,
     workspace,
     registeredCards: new Set(),
-    accountBySocialID: new Map()
+    accountBySocialID: new Map(),
+    removedContexts: new Map()
   }
 
   return await Middlewares.create(ctx, context, createFns)
@@ -165,9 +173,9 @@ export class Middlewares {
     this.head?.unsubscribeQuery(session, id)
   }
 
-  async event (session: SessionData, event: RequestEvent): Promise<EventResult> {
+  async event (session: SessionData, event: Event): Promise<EventResult> {
     if (this.head === undefined) return {}
-    return (await this.head?.event(session, event as Enriched<RequestEvent>, false)) ?? {}
+    return (await this.head?.event(session, event as Enriched<Event>, false)) ?? {}
   }
 
   async closeSession (sessionId: string): Promise<void> {

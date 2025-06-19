@@ -13,26 +13,35 @@
 // limitations under the License.
 //
 
-import type { MessageID } from '@hcengineering/communication-types'
+import type { LinkPreviewID, MessageID } from '@hcengineering/communication-types'
 
-const COUNTER_BITS = 8n
+const COUNTER_BITS = 10n
 const RANDOM_BITS = 10n
-
 const MAX_SEQUENCE = (1n << COUNTER_BITS) - 1n
-const MAX_RANDOM = (1n << RANDOM_BITS) - 1n
-const EXTERNAL_FLAG = 1n << 62n // sets bit 62
 
 let counter = 0n
 
-/**
- * Generate 64-bit external MessageID and return it as string.
- */
-export function generateMessageId (): MessageID {
+function makeBigIntId (): bigint {
   const ts = BigInt(Date.now())
   counter = counter < MAX_SEQUENCE ? counter + 1n : 0n
-  const random = BigInt(Math.floor(Math.random() * Number(MAX_RANDOM + 1n)))
+  const random = BigInt(Math.floor(Math.random() * Number((1n << RANDOM_BITS) - 1n)))
+  return (ts << (COUNTER_BITS + RANDOM_BITS)) | (counter << RANDOM_BITS) | random
+}
 
-  const idBigInt = EXTERNAL_FLAG | (ts << (COUNTER_BITS + RANDOM_BITS)) | (counter << RANDOM_BITS) | random
+function toBase64Url (bytes: Uint8Array): string {
+  let s = ''
+  for (const b of bytes) s += String.fromCharCode(b)
+  const base64 = typeof btoa === 'function' ? btoa(s) : Buffer.from(bytes).toString('base64')
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
 
-  return idBigInt.toString() as MessageID
+export function generateMessageId (): MessageID {
+  const idBig = makeBigIntId()
+  const buf = new Uint8Array(8)
+  new DataView(buf.buffer).setBigUint64(0, idBig, false)
+  return toBase64Url(buf) as MessageID
+}
+
+export function generateLinkPreviewId (): LinkPreviewID {
+  return makeBigIntId().toString() as LinkPreviewID
 }

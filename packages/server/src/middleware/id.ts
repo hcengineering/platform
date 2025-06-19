@@ -13,13 +13,18 @@
 // limitations under the License.
 //
 
-import { type EventResult, type Event, type SessionData } from '@hcengineering/communication-sdk-types'
-import { systemAccountUuid } from '@hcengineering/core'
+import {
+  type EventResult,
+  MessageEventType,
+  type Event,
+  type SessionData
+} from '@hcengineering/communication-sdk-types'
 
+import { generateMessageId } from '../messageId'
 import type { Middleware, MiddlewareContext, Enriched } from '../types'
 import { BaseMiddleware } from './base'
 
-export class DateMiddleware extends BaseMiddleware implements Middleware {
+export class IdMiddleware extends BaseMiddleware implements Middleware {
   constructor (
     readonly context: MiddlewareContext,
     next?: Middleware
@@ -28,17 +33,12 @@ export class DateMiddleware extends BaseMiddleware implements Middleware {
   }
 
   async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
-    const canSetDate = derived || this.isSystem(session)
-
-    if (!canSetDate || event.date == null) {
-      event.date = new Date()
+    if (event.type === MessageEventType.CreateMessage) {
+      if (event.messageId == null) {
+        event.messageId = generateMessageId()
+      }
     }
 
     return await this.provideEvent(session, event, derived)
-  }
-
-  private isSystem (session: SessionData): boolean {
-    const account = session.account
-    return systemAccountUuid === account.uuid
   }
 }

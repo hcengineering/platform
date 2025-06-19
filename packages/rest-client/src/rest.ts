@@ -15,12 +15,12 @@
 
 import { concatLink } from '@hcengineering/core'
 import {
-  MessageRequestEventType,
   type EventResult,
-  type RequestEvent,
+  type Event,
   type CreateMessageResult,
   type CreateMessageOptions,
-  PatchMessageOptions
+  UpdatePatchOptions,
+  MessageEventType
 } from '@hcengineering/communication-sdk-types'
 import {
   type FindMessagesGroupsParams,
@@ -39,8 +39,7 @@ import {
   type MessageType,
   type BlobID,
   type MessageExtra,
-  type BlobData,
-  PatchType
+  type BlobData
 } from '@hcengineering/communication-types'
 import { retry } from '@hcengineering/communication-shared'
 
@@ -80,7 +79,7 @@ class RestClientImpl implements RestClient {
     }
   }
 
-  async event (event: RequestEvent): Promise<EventResult> {
+  async event (event: Event): Promise<EventResult> {
     const response = await fetch(concatLink(this.endpoint, `/api/v1/event/${this.workspace}`), {
       method: 'POST',
       headers: {
@@ -101,14 +100,14 @@ class RestClientImpl implements RestClient {
     cardType: CardType,
     content: Markdown,
     type: MessageType,
-    extra?: MessageExtra,
-    socialId?: SocialID,
+    extra: MessageExtra | undefined,
+    socialId: SocialID,
     date?: Date,
     messageId?: MessageID,
     options?: CreateMessageOptions
   ): Promise<CreateMessageResult> {
     const result = await this.event({
-      type: MessageRequestEventType.CreateMessage,
+      type: MessageEventType.CreateMessage,
       messageType: type,
       cardId,
       cardType,
@@ -125,64 +124,95 @@ class RestClientImpl implements RestClient {
   async updateMessage (
     cardId: CardID,
     messageId: MessageID,
-    content?: Markdown,
-    extra?: MessageExtra,
-    socialId?: SocialID,
+    content: Markdown | undefined,
+    extra: MessageExtra | undefined,
+    socialId: SocialID,
     date?: Date,
-    options?: PatchMessageOptions
+    options?: UpdatePatchOptions
   ): Promise<void> {
     await this.event({
-      type: MessageRequestEventType.CreatePatch,
-      patchType: PatchType.update,
+      type: MessageEventType.UpdatePatch,
       cardId,
       messageId,
-      data: { content, extra },
+      content,
+      extra,
       socialId,
       date,
       options
     })
   }
 
-  async removeMessage (cardId: CardID, messageId: MessageID, socialId?: SocialID): Promise<void> {
+  async removeMessage (cardId: CardID, messageId: MessageID, socialId: SocialID, date?: Date): Promise<void> {
     await this.event({
-      type: MessageRequestEventType.CreatePatch,
-      patchType: PatchType.remove,
+      type: MessageEventType.RemovePatch,
       cardId,
       messageId,
-      data: {},
-      socialId
-    })
-  }
-
-  async attachBlob (
-    cardId: CardID,
-    messageId: MessageID,
-    blobData: BlobData,
-    socialId?: SocialID,
-    date?: Date
-  ): Promise<void> {
-    await this.event({
-      type: MessageRequestEventType.AttachBlob,
-      cardId,
-      messageId,
-      blobData,
       socialId,
       date
     })
   }
 
-  async detachBlob (
+  async attachBlobs (
     cardId: CardID,
     messageId: MessageID,
-    blobId: BlobID,
-    socialId?: SocialID,
+    blobs: BlobData[],
+    socialId: SocialID,
     date?: Date
   ): Promise<void> {
     await this.event({
-      type: MessageRequestEventType.DetachBlob,
+      type: MessageEventType.BlobPatch,
       cardId,
       messageId,
-      blobId,
+      operations: [
+        {
+          opcode: 'attach',
+          blobs
+        }
+      ],
+      socialId,
+      date
+    })
+  }
+
+  async detachBlobs (
+    cardId: CardID,
+    messageId: MessageID,
+    blobIds: BlobID[],
+    socialId: SocialID,
+    date?: Date
+  ): Promise<void> {
+    await this.event({
+      type: MessageEventType.BlobPatch,
+      cardId,
+      messageId,
+      operations: [
+        {
+          opcode: 'detach',
+          blobIds
+        }
+      ],
+      socialId,
+      date
+    })
+  }
+
+  async setBlobs (
+    cardId: CardID,
+    messageId: MessageID,
+    blobs: BlobData[],
+    socialId: SocialID,
+    date?: Date
+  ): Promise<void> {
+    await this.event({
+      type: MessageEventType.BlobPatch,
+      cardId,
+      messageId,
+      operations: [
+        {
+          opcode: 'set',
+          blobs
+        }
+      ],
       socialId,
       date
     })

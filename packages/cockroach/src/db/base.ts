@@ -31,27 +31,33 @@ export class BaseDb {
     return this.client.getRawClient()
   }
 
-  async execute<T = Row & Iterable<Row>>(sql: string, params?: ParameterOrJSON<any>[], name?: string): Promise<T[]> {
+  async execute<T = Row & Iterable<Row>>(
+    sql: string,
+    params?: ParameterOrJSON<any>[],
+    name?: string,
+    client?: postgres.TransactionSql
+  ): Promise<T[]> {
     if (this.options?.withLogs === true && this.logger !== undefined) {
-      return await this.executeWithLogs(name, this.logger, sql, params)
+      return await this.executeWithLogs(name, this.logger, sql, params, client)
     }
 
-    return await this.client.execute(sql, params)
+    return await this.client.execute(sql, params, client)
   }
 
   private async executeWithLogs<T = Row & Iterable<Row>>(
     name: string | undefined,
     logger: Logger,
     sql: string,
-    params?: ParameterOrJSON<any>[]
+    params?: ParameterOrJSON<any>[],
+    client?: postgres.TransactionSql
   ): Promise<T[]> {
     if (name === undefined) {
-      return await this.client.execute<T>(sql, params)
+      return await this.client.execute<T>(sql, params, client)
     }
     const start = performance.now()
 
     try {
-      return await this.client.execute<T>(sql, params)
+      return await this.client.execute<T>(sql, params, client)
     } finally {
       const time = performance.now() - start
       logger.info(name, { time })

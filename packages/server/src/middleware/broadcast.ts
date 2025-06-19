@@ -14,13 +14,12 @@
 //
 
 import {
-  CardResponseEventType,
+  CardEventType,
+  type Event,
   type EventResult,
-  LabelResponseEventType,
-  MessageResponseEventType,
-  NotificationResponseEventType,
-  type RequestEvent,
-  type ResponseEvent,
+  LabelEventType,
+  MessageEventType,
+  NotificationEventType,
   type SessionData
 } from '@hcengineering/communication-sdk-types'
 import type {
@@ -106,7 +105,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     return await this.provideFindLabels(session, params, queryId)
   }
 
-  async event (session: SessionData, event: Enriched<RequestEvent>, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
     this.createSession(session)
     return await this.provideEvent(session, event, derived)
   }
@@ -120,7 +119,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     data.contextQueries.delete(queryId)
   }
 
-  async response (session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
+  async response (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<void> {
     const sessionIds: string[] = []
     for (const [sessionId, session] of this.dataBySessionId.entries()) {
       if (this.match(event, session)) {
@@ -177,58 +176,44 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     return this.dataBySessionId.get(id)
   }
 
-  private match (event: ResponseEvent, info: SessionInfo): boolean {
+  private match (event: Enriched<Event>, info: SessionInfo): boolean {
     switch (event.type) {
-      case MessageResponseEventType.MessageCreated:
+      case MessageEventType.CreateMessage:
+        if (event.messageId == null) return false
         return this.matchMessagesQuery(
-          { ids: [event.message.id], card: event.cardId },
+          { ids: [event.messageId], card: event.cardId },
           Array.from(info.messageQueries.values()),
           new Set(Array.from(info.contextQueries.values()).flatMap((it) => Array.from(it)))
         )
-      case MessageResponseEventType.PatchCreated:
+      case MessageEventType.ThreadPatch:
+      case MessageEventType.LinkPreviewPatch:
+      case MessageEventType.ReactionPatch:
+      case MessageEventType.BlobPatch:
+      case MessageEventType.RemovePatch:
+      case MessageEventType.UpdatePatch:
         return this.matchMessagesQuery(
           { card: event.cardId, ids: [event.messageId] },
           Array.from(info.messageQueries.values()),
           new Set(Array.from(info.contextQueries.values()).flatMap((it) => Array.from(it)))
         )
-      case MessageResponseEventType.ReactionSet:
-      case MessageResponseEventType.ReactionRemoved:
-      case MessageResponseEventType.LinkPreviewCreated:
-      case MessageResponseEventType.LinkPreviewRemoved:
-      case MessageResponseEventType.BlobAttached:
-      case MessageResponseEventType.BlobDetached:
-      case MessageResponseEventType.ThreadAttached:
-        return this.matchMessagesQuery(
-          { card: event.cardId, ids: [event.messageId] },
-          Array.from(info.messageQueries.values()),
-          new Set()
-        )
-      case NotificationResponseEventType.NotificationCreated:
-        return info.account === event.notification.account
-      case NotificationResponseEventType.NotificationsRemoved:
+      case NotificationEventType.RemoveNotifications:
+      case NotificationEventType.CreateNotification:
+      case NotificationEventType.UpdateNotification:
+      case NotificationEventType.RemoveNotificationContext:
+      case NotificationEventType.UpdateNotificationContext:
+      case NotificationEventType.CreateNotificationContext:
         return info.account === event.account
-      case NotificationResponseEventType.NotificationUpdated:
-        return info.account === event.query.account
-      case NotificationResponseEventType.NotificationContextCreated:
-        return info.account === event.context.account
-      case NotificationResponseEventType.NotificationContextRemoved:
-        return info.account === event.context.account
-      case NotificationResponseEventType.NotificationContextUpdated:
-        return info.account === event.account
-      case MessageResponseEventType.MessagesGroupCreated:
-      case MessageResponseEventType.MessagesGroupRemoved:
+      case MessageEventType.CreateMessagesGroup:
+      case MessageEventType.RemoveMessagesGroup:
         return false
-      case NotificationResponseEventType.RemovedCollaborators:
-      case NotificationResponseEventType.AddedCollaborators:
+      case NotificationEventType.RemoveCollaborators:
+      case NotificationEventType.AddCollaborators:
         return true
-      case MessageResponseEventType.ThreadUpdated:
-        return true
-      case LabelResponseEventType.LabelCreated:
-        return info.account === event.label.account
-      case LabelResponseEventType.LabelRemoved:
+      case LabelEventType.CreateLabel:
+      case LabelEventType.RemoveLabel:
         return info.account === event.account
-      case CardResponseEventType.CardTypeUpdated:
-      case CardResponseEventType.CardRemoved:
+      case CardEventType.UpdateCardType:
+      case CardEventType.RemoveCard:
         return true
     }
   }

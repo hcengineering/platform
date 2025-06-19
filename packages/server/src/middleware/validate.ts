@@ -15,9 +15,9 @@
 
 import {
   type EventResult,
-  MessageRequestEventType,
-  NotificationRequestEventType,
-  type RequestEvent,
+  MessageEventType,
+  NotificationEventType,
+  type Event,
   type SessionData
 } from '@hcengineering/communication-sdk-types'
 import {
@@ -33,7 +33,6 @@ import {
   type MessagesGroup,
   type Notification,
   type NotificationContext,
-  PatchType,
   SortingOrder
 } from '@hcengineering/communication-types'
 import { z } from 'zod'
@@ -94,55 +93,49 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
     return await this.provideFindCollaborators(session, params)
   }
 
-  async event (session: SessionData, event: Enriched<RequestEvent>, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
     if (derived) return await this.provideEvent(session, event, derived)
     switch (event.type) {
-      case MessageRequestEventType.CreateMessage:
+      case MessageEventType.CreateMessage:
         this.validate(event, CreateMessageEventSchema)
         break
-      case MessageRequestEventType.CreatePatch:
-        this.validate(event, CreatePatchEventSchema)
+      case MessageEventType.UpdatePatch:
+        this.validate(event, UpdatePatchEventSchema)
         break
-      case MessageRequestEventType.SetReaction:
-        this.validate(event, SetReactionEventSchema)
+      case MessageEventType.RemovePatch:
+        this.validate(event, RemovePatchEventSchema)
         break
-      case MessageRequestEventType.RemoveReaction:
-        this.validate(event, RemoveReactionEventSchema)
+      case MessageEventType.ReactionPatch:
+        this.validate(event, ReactionPatchEventSchema)
         break
-      case MessageRequestEventType.AttachBlob:
-        this.validate(event, AttachBlobEventSchema)
+      case MessageEventType.BlobPatch:
+        this.validate(event, BlobPatchEventSchema)
         break
-      case MessageRequestEventType.DetachBlob:
-        this.validate(event, DetachBlobEventSchema)
+      case MessageEventType.LinkPreviewPatch:
+        this.validate(event, LinkPreviewPatchEventSchema)
         break
-      case MessageRequestEventType.AttachThread:
-        this.validate(event, AttachThreadEventSchema)
+      case MessageEventType.ThreadPatch:
+        this.validate(event, ThreadPatchEventSchema)
         break
-      case MessageRequestEventType.CreateLinkPreview:
-        this.validate(event, CreateLinkPreviewEventSchema)
-        break
-      case MessageRequestEventType.RemoveLinkPreview:
-        this.validate(event, RemoveLinkPreviewEventSchema)
-        break
-      case MessageRequestEventType.CreateMessagesGroup:
+      case MessageEventType.CreateMessagesGroup:
         this.validate(event, CreateMessagesGroupEventSchema)
         break
-      case MessageRequestEventType.RemoveMessagesGroup:
+      case MessageEventType.RemoveMessagesGroup:
         this.validate(event, RemoveMessagesGroupEventSchema)
         break
-      case NotificationRequestEventType.AddCollaborators:
+      case NotificationEventType.AddCollaborators:
         this.validate(event, AddCollaboratorsEventSchema)
         break
-      case NotificationRequestEventType.RemoveCollaborators:
+      case NotificationEventType.RemoveCollaborators:
         this.validate(event, RemoveCollaboratorsEventSchema)
         break
-      case NotificationRequestEventType.UpdateNotification:
+      case NotificationEventType.UpdateNotification:
         this.validate(event, UpdateNotificationsEventSchema)
         break
-      case NotificationRequestEventType.RemoveNotificationContext:
+      case NotificationEventType.RemoveNotificationContext:
         this.validate(event, RemoveNotificationContextEventSchema)
         break
-      case NotificationRequestEventType.UpdateNotificationContext:
+      case NotificationEventType.UpdateNotificationContext:
         this.validate(event, UpdateNotificationContextEventSchema)
         break
     }
@@ -165,6 +158,33 @@ const MessageTypeSchema = z.string()
 const MessagesGroupSchema = z.any()
 const SocialIDSchema = z.string()
 const SortingOrderSchema = z.union([z.literal(SortingOrder.Ascending), z.literal(SortingOrder.Descending)])
+
+const BlobDataSchema = z.object({
+  blobId: BlobIDSchema,
+  mimeType: z.string(),
+  fileName: z.string(),
+  size: z.number(),
+  metadata: z.record(z.string(), z.any()).optional()
+})
+
+const LinkPreviewDataSchema = z
+  .object({
+    previewId: LinkPreviewIDSchema,
+    url: z.string(),
+    host: z.string(),
+    title: z.string().optional(),
+    description: z.string().optional(),
+    siteName: z.string().optional(),
+    iconUrl: z.string().optional(),
+    previewImage: z
+      .object({
+        url: z.string(),
+        width: z.number().optional(),
+        height: z.number().optional()
+      })
+      .optional()
+  })
+  .strict()
 
 // Find params
 const dateOrRecordSchema = z.union([DateSchema, z.record(DateSchema)])
@@ -235,20 +255,20 @@ const FindCollaboratorsParamsSchema = FindParamsSchema.extend({
 
 // Events
 
-const BaseRequestEventSchema = z
+const BaseEventSchema = z
   .object({
     _id: z.string().optional()
   })
   .strict()
 
 // Message events
-const CreateMessageEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.CreateMessage),
+const CreateMessageEventSchema = BaseEventSchema.extend({
+  type: z.literal(MessageEventType.CreateMessage),
 
   cardId: CardIDSchema,
   cardType: CardTypeSchema,
 
-  messageId: MessageIDSchema.optional(),
+  messageId: MessageIDSchema.min(3).max(22).optional(),
   messageType: MessageTypeSchema,
 
   content: MarkdownSchema,
@@ -260,135 +280,100 @@ const CreateMessageEventSchema = BaseRequestEventSchema.extend({
   options: z
     .object({
       skipLinkPreviews: z.boolean().optional(),
-      ignoreDuplicateIds: z.boolean().optional(),
       noNotify: z.boolean().optional()
     })
     .optional()
 }).strict()
 
-const CreatePatchEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.CreatePatch),
-
+const UpdatePatchEventSchema = BaseEventSchema.extend({
+  type: z.literal(MessageEventType.UpdatePatch),
   cardId: CardIDSchema,
-  messageId: MessageIDSchema,
+  messageId: MessageIDSchema.optional(),
 
-  patchType: z.enum([PatchType.update, PatchType.remove]),
-  data: z.any(),
+  content: MarkdownSchema.optional(),
+  extra: z.record(z.any()).optional(),
 
   socialId: SocialIDSchema,
   date: DateSchema,
 
   options: z
     .object({
-      skipLinkPreviewsUpdate: z.boolean().optional(),
-      markAsUpdated: z.boolean().optional()
+      skipLinkPreviewsUpdate: z.boolean().optional()
     })
     .optional()
 }).strict()
 
-const SetReactionEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.SetReaction),
+const RemovePatchEventSchema = BaseEventSchema.extend({
+  type: z.literal(MessageEventType.RemovePatch),
   cardId: CardIDSchema,
-  messageId: MessageIDSchema,
-  reaction: z.string(),
-  socialId: SocialIDSchema,
-  date: DateSchema
-}).strict()
-
-const RemoveReactionEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.RemoveReaction),
-  cardId: CardIDSchema,
-  messageId: MessageIDSchema,
-  reaction: z.string(),
-  socialId: SocialIDSchema,
-  date: DateSchema
-}).strict()
-
-const AttachThreadEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.AttachThread),
-
-  cardId: CardIDSchema,
-  messageId: MessageIDSchema,
-
-  threadId: CardIDSchema,
-  threadType: CardTypeSchema,
-
-  socialId: SocialIDSchema,
-  date: DateSchema
-})
-
-const AttachBlobEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.AttachBlob),
-
-  cardId: CardIDSchema,
-  messageId: MessageIDSchema,
-
-  blobData: z.object({
-    blobId: BlobIDSchema,
-    contentType: z.string(),
-    fileName: z.string(),
-    size: z.number(),
-    metadata: z.record(z.string(), z.any()).optional()
-  }),
+  messageId: MessageIDSchema.optional(),
 
   socialId: SocialIDSchema,
   date: DateSchema
 }).strict()
 
-const DetachBlobEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.DetachBlob),
+const ReactionOperationSchema = z.union([
+  z.object({ opcode: z.literal('add'), reaction: z.string() }),
+  z.object({ opcode: z.literal('remove'), reaction: z.string() })
+])
 
+const ReactionPatchEventSchema = BaseEventSchema.extend({
+  type: z.literal(MessageEventType.ReactionPatch),
   cardId: CardIDSchema,
   messageId: MessageIDSchema,
-
-  blobId: BlobIDSchema,
-
+  operation: ReactionOperationSchema,
   socialId: SocialIDSchema,
   date: DateSchema
 }).strict()
 
-const CreateLinkPreviewEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.CreateLinkPreview),
+const BlobOperationSchema = z.union([
+  z.object({ opcode: z.literal('attach'), blobs: z.array(BlobDataSchema).nonempty() }),
+  z.object({ opcode: z.literal('detach'), blobIds: z.array(BlobIDSchema).nonempty() }),
+  z.object({ opcode: z.literal('set'), blobs: z.array(BlobDataSchema).nonempty() })
+])
+
+const BlobPatchEventSchema = BaseEventSchema.extend({
+  type: z.literal(MessageEventType.BlobPatch),
   cardId: CardIDSchema,
   messageId: MessageIDSchema,
-
-  preview: z.object({
-    url: z.string(),
-    host: z.string(),
-    title: z.string().optional(),
-    description: z.string().optional(),
-    iconUrl: z.string().optional(),
-    previewImage: z.object({
-      url: z.string(),
-      width: z.number().optional(),
-      height: z.number().optional()
-    })
-  }),
-
+  operations: z.array(BlobOperationSchema).nonempty(),
   socialId: SocialIDSchema,
   date: DateSchema
 }).strict()
 
-const RemoveLinkPreviewEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.RemoveLinkPreview),
+const ThreadPatchEventSchema = BaseEventSchema.extend({
+  type: z.literal(MessageEventType.ThreadPatch),
   cardId: CardIDSchema,
   messageId: MessageIDSchema,
-
-  previewId: LinkPreviewIDSchema,
-
+  operation: z.object({ opcode: z.literal('attach'), threadId: CardIDSchema, threadType: CardTypeSchema }),
   socialId: SocialIDSchema,
   date: DateSchema
 }).strict()
 
-const CreateMessagesGroupEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.CreateMessagesGroup),
+const LinkPreviewOperationSchema = z.union([
+  z.object({ opcode: z.literal('attach'), previews: z.array(LinkPreviewDataSchema).nonempty() }),
+  z.object({ opcode: z.literal('detach'), previewIds: z.array(LinkPreviewIDSchema).nonempty() }),
+  z.object({ opcode: z.literal('set'), previews: z.array(LinkPreviewDataSchema).nonempty() })
+])
+
+const LinkPreviewPatchEventSchema = BaseEventSchema.extend({
+  type: z.literal(MessageEventType.LinkPreviewPatch),
+  cardId: CardIDSchema,
+  messageId: MessageIDSchema.optional(),
+  operations: z.array(LinkPreviewOperationSchema).nonempty(),
+  socialId: SocialIDSchema,
+  date: DateSchema
+}).strict()
+
+const CreateMessagesGroupEventSchema = BaseEventSchema.extend({
+  type: z.literal(MessageEventType.CreateMessagesGroup),
   group: MessagesGroupSchema,
   socialId: SocialIDSchema,
   date: DateSchema
 }).strict()
 
-const RemoveMessagesGroupEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(MessageRequestEventType.RemoveMessagesGroup),
+const RemoveMessagesGroupEventSchema = BaseEventSchema.extend({
+  type: z.literal(MessageEventType.RemoveMessagesGroup),
   cardId: CardIDSchema,
   blobId: BlobIDSchema,
   socialId: SocialIDSchema,
@@ -396,8 +381,8 @@ const RemoveMessagesGroupEventSchema = BaseRequestEventSchema.extend({
 }).strict()
 
 // Notification events
-const UpdateNotificationsEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(NotificationRequestEventType.UpdateNotification),
+const UpdateNotificationsEventSchema = BaseEventSchema.extend({
+  type: z.literal(NotificationEventType.UpdateNotification),
   query: z.object({
     context: ContextIDSchema,
     account: AccountIDSchema,
@@ -409,31 +394,28 @@ const UpdateNotificationsEventSchema = BaseRequestEventSchema.extend({
   updates: z.object({
     read: z.boolean()
   }),
-  socialId: SocialIDSchema,
   date: DateSchema
 }).strict()
 
-const RemoveNotificationContextEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(NotificationRequestEventType.RemoveNotificationContext),
+const RemoveNotificationContextEventSchema = BaseEventSchema.extend({
+  type: z.literal(NotificationEventType.RemoveNotificationContext),
   contextId: ContextIDSchema,
   account: AccountIDSchema,
-  socialId: SocialIDSchema,
   date: DateSchema
 }).strict()
 
-const UpdateNotificationContextEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(NotificationRequestEventType.UpdateNotificationContext),
+const UpdateNotificationContextEventSchema = BaseEventSchema.extend({
+  type: z.literal(NotificationEventType.UpdateNotificationContext),
   contextId: ContextIDSchema,
   account: AccountIDSchema,
   updates: z.object({
     lastView: DateSchema.optional()
   }),
-  socialId: SocialIDSchema,
   date: DateSchema
 }).strict()
 
-const AddCollaboratorsEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(NotificationRequestEventType.AddCollaborators),
+const AddCollaboratorsEventSchema = BaseEventSchema.extend({
+  type: z.literal(NotificationEventType.AddCollaborators),
   cardId: CardIDSchema,
   cardType: CardTypeSchema,
   collaborators: z.array(AccountIDSchema).nonempty(),
@@ -441,8 +423,8 @@ const AddCollaboratorsEventSchema = BaseRequestEventSchema.extend({
   date: DateSchema
 }).strict()
 
-const RemoveCollaboratorsEventSchema = BaseRequestEventSchema.extend({
-  type: z.literal(NotificationRequestEventType.RemoveCollaborators),
+const RemoveCollaboratorsEventSchema = BaseEventSchema.extend({
+  type: z.literal(NotificationEventType.RemoveCollaborators),
   cardId: CardIDSchema,
   cardType: CardTypeSchema,
   collaborators: z.array(AccountIDSchema).nonempty(),
@@ -450,9 +432,9 @@ const RemoveCollaboratorsEventSchema = BaseRequestEventSchema.extend({
   date: DateSchema
 }).strict()
 
-function deserializeEvent (event: Enriched<RequestEvent>): Enriched<RequestEvent> {
+function deserializeEvent (event: Enriched<Event>): Enriched<Event> {
   switch (event.type) {
-    case MessageRequestEventType.CreateMessagesGroup:
+    case MessageEventType.CreateMessagesGroup:
       return {
         ...event,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -465,7 +447,7 @@ function deserializeEvent (event: Enriched<RequestEvent>): Enriched<RequestEvent
           toDate: deserializeDate(event.group.toDate)!
         }
       }
-    case NotificationRequestEventType.UpdateNotificationContext:
+    case NotificationEventType.UpdateNotificationContext:
       return {
         ...event,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

@@ -17,15 +17,13 @@ import type { Account, MeasureContext } from '@hcengineering/core'
 import type {
   DbAdapter,
   EventResult,
-  RequestEvent,
-  ResponseEvent,
-  ResponseEventType,
-  SessionData
+  Event,
+  SessionData, EventType
 } from '@hcengineering/communication-sdk-types'
 import type {
   AccountID,
   CardID,
-  Collaborator,
+  Collaborator, ContextID,
   FindCollaboratorsParams,
   FindLabelsParams,
   FindMessagesGroupsParams,
@@ -72,11 +70,11 @@ export interface Middleware {
   findLabels: (session: SessionData, params: FindLabelsParams, queryId?: QueryId) => Promise<Label[]>
   findCollaborators: (session: SessionData, params: FindCollaboratorsParams) => Promise<Collaborator[]>
 
-  event: (session: SessionData, event: Enriched<RequestEvent>, derived: boolean) => Promise<EventResult>
+  event: (session: SessionData, event: Enriched<Event>, derived: boolean) => Promise<EventResult>
 
   unsubscribeQuery: (session: SessionData, queryId: number) => void
 
-  response: (session: SessionData, event: ResponseEvent, derived: boolean) => Promise<void>
+  response: (session: SessionData, event: Enriched<Event>, derived: boolean) => Promise<void>
 
   closeSession: (sessionId: string) => void
   close: () => void
@@ -88,6 +86,7 @@ export interface MiddlewareContext {
   metadata: Metadata
   registeredCards: Set<CardID>
   accountBySocialID: Map<SocialID, AccountID>
+  removedContexts: Map<ContextID, NotificationContext>
 
   derived?: Middleware
   head?: Middleware
@@ -105,14 +104,14 @@ export interface TriggerCtx {
   account: Account
   registeredCards: Set<CardID>
   accountBySocialID: Map<SocialID, AccountID>
+  removedContexts: Map<ContextID, NotificationContext>
   derived: boolean
-  execute: (event: RequestEvent) => Promise<EventResult>
+  execute: (event: Event) => Promise<EventResult>
 }
 
-export type TriggerFn = (ctx: TriggerCtx, event: ResponseEvent) => Promise<RequestEvent[]>
-export type Triggers = [string, ResponseEventType, TriggerFn][]
+export type TriggerFn = (ctx: TriggerCtx, event: Enriched<Event>) => Promise<Event[]>
+export type Triggers = [string, EventType, TriggerFn][]
 
 export type Enriched<T> = T & {
-  socialId: SocialID
   date: Date
 }

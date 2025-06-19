@@ -112,67 +112,12 @@ interface BasePatch {
   creator: SocialID
   created: Date
 
-  data: PatchData
+  data: Record<string, any>
 }
 
 export interface UpdatePatch extends BasePatch {
   type: PatchType.update
   data: UpdatePatchData
-}
-
-export interface RemovePatch extends BasePatch {
-  type: PatchType.remove
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  data: {}
-}
-
-export interface SetReactionPatch extends BasePatch {
-  type: PatchType.setReaction
-  data: SetReactionPatchData
-}
-
-export interface RemoveReactionPatch extends BasePatch {
-  type: PatchType.removeReaction
-  data: RemoveReactionPatchData
-}
-
-export interface AttachBlobPatch extends BasePatch {
-  type: PatchType.attachBlob
-  data: AttachBlobPatchData
-}
-
-export interface DetachBlobPatch extends BasePatch {
-  type: PatchType.detachBlob
-  data: DetachBlobPatchData
-}
-
-export interface UpdateThreadPatch extends BasePatch {
-  type: PatchType.updateThread
-  data: UpdateThreadPatchData
-}
-
-export type Patch =
-  | UpdatePatch
-  | RemovePatch
-  | SetReactionPatch
-  | RemoveReactionPatch
-  | AttachBlobPatch
-  | DetachBlobPatch
-  | UpdateThreadPatch
-
-export type PatchData =
-  | RemovePatchData
-  | UpdatePatchData
-  | SetReactionPatchData
-  | RemoveReactionPatchData
-  | AttachBlobPatchData
-  | DetachBlobPatchData
-  | UpdateThreadPatchData
-
-export interface UpdateThreadPatchData {
-  threadId: CardID
-  threadType: CardType
-  repliesCountOp?: 'increment' | 'decrement'
 }
 
 export interface UpdatePatchData {
@@ -181,31 +126,97 @@ export interface UpdatePatchData {
   extra?: MessageExtra
 }
 
-export interface SetReactionPatchData {
-  reaction: string
-}
-
-export interface RemoveReactionPatchData {
-  reaction: string
-}
-
-export type AttachBlobPatchData = BlobData
-
-export interface DetachBlobPatchData {
-  blobId: BlobID
+export interface RemovePatch extends BasePatch {
+  type: PatchType.remove
+  data: RemovePatchData
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface RemovePatchData {}
 
+export interface ReactionPatch extends BasePatch {
+  type: PatchType.reaction
+  data: AddReactionPatchData | RemoveReactionPatchData
+}
+
+export interface AddReactionPatchData {
+  operation: 'add'
+  reaction: string
+}
+
+export interface RemoveReactionPatchData {
+  operation: 'remove'
+  reaction: string
+}
+
+export interface BlobPatch extends BasePatch {
+  type: PatchType.blob
+  data: AttachBlobsPatchData | DetachBlobsPatchData | SetBlobsPatchData
+}
+
+export interface AttachBlobsPatchData {
+  operation: 'attach'
+  blobs: BlobData[]
+}
+
+export interface DetachBlobsPatchData {
+  operation: 'detach'
+  blobIds: BlobID[]
+}
+
+export interface SetBlobsPatchData {
+  operation: 'set'
+  blobs: BlobData[]
+}
+
+export interface LinkPreviewPatch extends BasePatch {
+  type: PatchType.linkPreview
+  data: AttachLinkPreviewsPatchData | DetachLinkPreviewsPatchData | SetLinkPreviewsPatchData
+}
+
+export interface AttachLinkPreviewsPatchData {
+  operation: 'attach'
+  previews: (LinkPreviewData & { previewId: LinkPreviewID })[]
+}
+
+export interface DetachLinkPreviewsPatchData {
+  operation: 'detach'
+  previewIds: LinkPreviewID[]
+}
+
+export interface SetLinkPreviewsPatchData {
+  operation: 'set'
+  previews: (LinkPreviewData & { previewId: LinkPreviewID })[]
+}
+
+export interface ThreadPatch extends BasePatch {
+  type: PatchType.thread
+  data: AttachThreadPatchData | UpdateThreadPatchData
+}
+
+export interface AttachThreadPatchData {
+  operation: 'attach'
+  threadId: CardID
+  threadType: CardType
+}
+
+export interface UpdateThreadPatchData {
+  operation: 'update'
+  threadId: CardID
+  threadType?: CardType
+  repliesCountOp?: 'increment' | 'decrement'
+  lastReply?: Date
+}
+
+export type Patch = UpdatePatch | RemovePatch | ReactionPatch | BlobPatch | LinkPreviewPatch | ThreadPatch
+
 export enum PatchType {
   update = 'update',
   remove = 'remove',
-  setReaction = 'setReaction',
-  removeReaction = 'removeReaction',
-  attachBlob = 'attachBlob',
-  detachBlob = 'detachBlob',
-  updateThread = 'updateThread'
+  reaction = 'reaction',
+  blob = 'blob',
+  linkPreview = 'linkPreview',
+  thread = 'thread'
 }
 
 export interface Reaction {
@@ -216,7 +227,7 @@ export interface Reaction {
 
 export interface BlobData {
   blobId: BlobID
-  contentType: string
+  mimeType: string
   fileName: string
   size: number
   metadata?: BlobMetadata

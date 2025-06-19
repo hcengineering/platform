@@ -25,39 +25,28 @@ import {
   type WorkspaceID
 } from '@hcengineering/communication-types'
 import {
-  type CardRemovedEvent,
-  CardResponseEventType,
-  type BlobAttachedEvent,
-  type BlobDetachedEvent,
   type FindClient,
-  MessageResponseEventType,
-  type NotificationContextRemovedEvent,
-  type NotificationContextUpdatedEvent,
-  type NotificationCreatedEvent,
-  NotificationResponseEventType,
-  type NotificationsRemovedEvent,
-  type NotificationUpdatedEvent,
   type PagedQueryCallback,
-  type PatchCreatedEvent,
-  type RequestEvent,
-  type ResponseEvent,
-  type ThreadAttachedEvent,
-  type ThreadUpdatedEvent
+  type Event,
+  NotificationEventType,
+  MessageEventType,
+  CardEventType,
+  CreateNotificationEvent,
+  UpdateNotificationContextEvent,
+  UpdateNotificationEvent,
+  RemoveNotificationsEvent,
+  RemoveNotificationContextEvent,
+  RemoveCardEvent,
+  PatchEvent
 } from '@hcengineering/communication-sdk-types'
-import { applyPatch } from '@hcengineering/communication-shared'
+import { applyPatches, MessageProcessor, NotificationProcessor } from '@hcengineering/communication-shared'
 
 import { defaultQueryParams, type PagedQuery, type QueryId } from '../types'
 import { QueryResult } from '../result'
 import { WindowImpl } from '../window'
-import { attachBlob, attachThread, loadMessageFromGroup, matchNotification, detachBlob, updateThread } from '../utils'
+import { loadMessageFromGroup, matchNotification } from '../utils'
 
-const allowedPatchTypes = [
-  PatchType.update,
-  PatchType.remove,
-  PatchType.attachBlob,
-  PatchType.detachBlob,
-  PatchType.updateThread
-]
+const allowedPatchTypes = [PatchType.update, PatchType.remove, PatchType.blob]
 
 export class NotificationQuery implements PagedQuery<Notification, FindNotificationsParams> {
   private result: QueryResult<Notification> | Promise<QueryResult<Notification>>
@@ -104,49 +93,39 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  async onEvent (event: ResponseEvent): Promise<void> {
+  async onEvent (event: Event): Promise<void> {
     switch (event.type) {
-      case NotificationResponseEventType.NotificationCreated: {
+      case NotificationEventType.CreateNotification: {
         await this.onCreateNotificationEvent(event)
         break
       }
-      case NotificationResponseEventType.NotificationsRemoved: {
+      case NotificationEventType.RemoveNotifications: {
         await this.onRemoveNotificationsEvent(event)
         break
       }
-      case NotificationResponseEventType.NotificationUpdated: {
+      case NotificationEventType.UpdateNotification: {
         await this.onUpdateNotificationEvent(event)
         break
       }
-      case NotificationResponseEventType.NotificationContextUpdated: {
+      case NotificationEventType.UpdateNotificationContext: {
         await this.onUpdateNotificationContextEvent(event)
         break
       }
-      case NotificationResponseEventType.NotificationContextRemoved:
+      case NotificationEventType.RemoveNotificationContext:
         await this.onRemoveNotificationContextEvent(event)
         break
-      case MessageResponseEventType.PatchCreated:
+      case MessageEventType.UpdatePatch:
+      case MessageEventType.RemovePatch:
+      case MessageEventType.BlobPatch:
         await this.onCreatePatchEvent(event)
         break
-      case MessageResponseEventType.BlobAttached:
-        await this.onBlobAttached(event)
-        break
-      case MessageResponseEventType.BlobDetached:
-        await this.onBlobDetached(event)
-        break
-      case MessageResponseEventType.ThreadAttached:
-        await this.onThreadAttached(event)
-        break
-      case MessageResponseEventType.ThreadUpdated:
-        await this.onThreadUpdated(event)
-        break
-      case CardResponseEventType.CardRemoved:
+      case CardEventType.RemoveCard:
         await this.onCardRemoved(event)
         break
     }
   }
 
-  async onRequest (event: RequestEvent): Promise<void> {}
+  async onRequest (event: Event): Promise<void> {}
 
   async unsubscribe (): Promise<void> {
     await this.client.unsubscribeQuery(this.id)
@@ -226,28 +205,30 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     )
   }
 
-  private async onCreateNotificationEvent (event: NotificationCreatedEvent): Promise<void> {
+  private async onCreateNotificationEvent (event: CreateNotificationEvent): Promise<void> {
+    if (event.notificationId == null) return
     if (this.result instanceof Promise) this.result = await this.result
-    if (this.result.get(event.notification.id) != null) return
+    if (this.result.get(event.notificationId) != null) return
     if (!this.result.isTail()) return
 
-    const match = matchNotification(event.notification, { ...this.params, created: undefined })
+    const notification = NotificationProcessor.createFromEvent(event)
+    const match = matchNotification(notification, { ...this.params, created: undefined })
     if (!match) return
 
     if (this.params.order === SortingOrder.Ascending) {
-      this.result.push(event.notification)
+      this.result.push(notification)
     } else {
-      this.result.unshift(event.notification)
+      this.result.unshift(notification)
     }
 
     await this.notify()
   }
 
-  private async onUpdateNotificationContextEvent (event: NotificationContextUpdatedEvent): Promise<void> {
+  private async onUpdateNotificationContextEvent (event: UpdateNotificationContextEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
     if (this.params.context != null && this.params.context !== event.contextId) return
 
-    const lastView = event.lastView
+    const lastView = event.updates.lastView
     if (lastView === undefined) return
 
     const toUpdate = this.result.getResult().filter((it) => it.contextId === event.contextId)
@@ -284,7 +265,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async onUpdateNotificationEvent (event: NotificationUpdatedEvent): Promise<void> {
+  private async onUpdateNotificationEvent (event: UpdateNotificationEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
 
     const toUpdate = (
@@ -297,7 +278,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     await this.updateNotificationRead(this.result, updated)
   }
 
-  private async onRemoveNotificationsEvent (event: NotificationsRemovedEvent): Promise<void> {
+  private async onRemoveNotificationsEvent (event: RemoveNotificationsEvent): Promise<void> {
     if (this.params.context !== undefined && this.params.context !== event.contextId) return
     if (this.result instanceof Promise) this.result = await this.result
 
@@ -318,19 +299,18 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async onRemoveNotificationContextEvent (event: NotificationContextRemovedEvent): Promise<void> {
+  private async onRemoveNotificationContextEvent (event: RemoveNotificationContextEvent): Promise<void> {
+    if (this.params.context != null && this.params.context !== event.contextId) return
     if (this.result instanceof Promise) this.result = await this.result
 
-    if (this.params.context != null && this.params.context !== event.context.id) return
-
-    if (event.context.id === this.params.context) {
+    if (event.contextId === this.params.context) {
       if (this.result.length === 0) return
       this.result.deleteAll()
       this.result.setHead(true)
       this.result.setTail(true)
       void this.notify()
     } else {
-      const toRemove = this.result.getResult().filter((it) => it.contextId === event.context.id)
+      const toRemove = this.result.getResult().filter((it) => it.contextId === event.contextId)
       if (toRemove.length === 0) return
       const length = this.result.length
 
@@ -346,69 +326,20 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     }
   }
 
-  private async onCreatePatchEvent (event: PatchCreatedEvent): Promise<void> {
+  private async onCreatePatchEvent (event: PatchEvent): Promise<void> {
     if (this.params.message !== true) return
-    const isUpdated = await this.updateMessage(
-      (it) => this.matchNotificationByMessage(it, event.cardId, event.patch.messageId),
-      (message) => applyPatch(message, event.patch, allowedPatchTypes)
-    )
-    if (isUpdated) {
-      void this.notify()
-    }
-  }
-
-  private async onBlobAttached (event: BlobAttachedEvent): Promise<void> {
-    if (this.params.message !== true) return
+    const patches = MessageProcessor.eventToPatches(event).filter((it) => allowedPatchTypes.includes(it.type))
+    if (patches.length === 0) return
     const isUpdated = await this.updateMessage(
       (it) => this.matchNotificationByMessage(it, event.cardId, event.messageId),
-      (message) => attachBlob(message, event.blob)
+      (message) => applyPatches(message, patches, allowedPatchTypes)
     )
     if (isUpdated) {
       void this.notify()
     }
   }
 
-  private async onBlobDetached (event: BlobDetachedEvent): Promise<void> {
-    if (this.params.message !== true) return
-    const isUpdated = await this.updateMessage(
-      (it) => this.matchNotificationByMessage(it, event.cardId, event.messageId),
-      (message) => detachBlob(message, event.blobId)
-    )
-    if (isUpdated) {
-      void this.notify()
-    }
-  }
-
-  private async onThreadAttached (event: ThreadAttachedEvent): Promise<void> {
-    if (this.params.message !== true) return
-    const isUpdated = await this.updateMessage(
-      (it) => this.matchNotificationByMessage(it, event.thread.cardId, event.thread.messageId),
-      (message) =>
-        attachThread(
-          message,
-          event.thread.threadId,
-          event.thread.threadType,
-          event.thread.repliesCount,
-          event.thread.lastReply
-        )
-    )
-    if (isUpdated) {
-      void this.notify()
-    }
-  }
-
-  private async onThreadUpdated (event: ThreadUpdatedEvent): Promise<void> {
-    if (this.params.message !== true) return
-    const isUpdated = await this.updateMessage(
-      (it) => this.matchNotificationByMessage(it, event.cardId, event.messageId),
-      (message) => updateThread(message, event.threadId, event.updates.repliesCountOp, event.updates.lastReply)
-    )
-    if (isUpdated) {
-      void this.notify()
-    }
-  }
-
-  private async onCardRemoved (event: CardRemovedEvent): Promise<void> {
+  private async onCardRemoved (event: RemoveCardEvent): Promise<void> {
     if (this.params.message !== true) return
     if (this.result instanceof Promise) this.result = await this.result
     const isUpdated = await this.updateMessage(

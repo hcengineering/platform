@@ -15,20 +15,13 @@
 
 import { applyPatches } from '@hcengineering/communication-shared'
 import {
-  type BlobID,
   type CardID,
-  type CardType,
-  type AttachedBlob,
   type FindNotificationsParams,
-  type LinkPreview,
-  type LinkPreviewID,
   type Message,
   type MessageID,
   type MessagesGroup,
   type Notification,
   type Patch,
-  type Reaction,
-  type SocialID,
   SortingOrder,
   type WorkspaceID
 } from '@hcengineering/communication-types'
@@ -111,96 +104,6 @@ export async function loadMessageFromGroup (
   if (message == null) return
 
   return applyPatches(message, patches)
-}
-
-export function attachBlob (message: Message, blob: AttachedBlob): Message {
-  if (!message.blobs.some((it) => it.blobId === blob.blobId)) {
-    message.blobs.push(blob)
-  }
-  return message
-}
-
-export function detachBlob (message: Message, blobId: BlobID): Message {
-  const blobs = message.blobs.filter((it) => it.blobId !== blobId)
-  if (blobs.length === message.blobs.length) return message
-
-  return {
-    ...message,
-    blobs
-  }
-}
-
-export function addLinkPreview (message: Message, linkPreview: LinkPreview): Message {
-  const current = message.linkPreviews.find((it) => it.id === linkPreview.id)
-  if (current === undefined) {
-    message.linkPreviews.push(linkPreview)
-  }
-  return message
-}
-
-export function removeLinkPreview (message: Message, id: LinkPreviewID): Message {
-  const linkPreviews = message.linkPreviews.filter((it) => it.id !== id)
-  if (linkPreviews.length === message.linkPreviews.length) return message
-  return {
-    ...message,
-    linkPreviews
-  }
-}
-
-export function addReaction (message: Message, reaction: Reaction): Message {
-  const current = message.reactions.find((it) => it.reaction === reaction.reaction && it.creator === reaction.creator)
-  if (current === undefined) {
-    message.reactions.push(reaction)
-  }
-  return message
-}
-
-export function removeReaction (message: Message, emoji: string, creator: SocialID): Message {
-  const reactions = message.reactions.filter((it) => it.reaction !== emoji || it.creator !== creator)
-  if (reactions.length === message.reactions.length) return message
-
-  return {
-    ...message,
-    reactions
-  }
-}
-
-export function attachThread (
-  message: Message,
-  threadId: CardID,
-  threadType: CardType,
-  repliesCount: number,
-  lastReply: Date
-): Message {
-  if (message.thread !== undefined) {
-    return message
-  }
-
-  message.thread = {
-    cardId: message.cardId,
-    messageId: message.id,
-    threadId,
-    threadType,
-    repliesCount,
-    lastReply
-  }
-  return message
-}
-
-export function updateThread (
-  message: Message,
-  threadId: CardID,
-  repliesCountOp: 'increment' | 'decrement',
-  lastReply?: Date
-): Message {
-  if (message.thread === undefined || message.thread.threadId !== threadId) {
-    return message
-  }
-
-  message.thread.repliesCount =
-    repliesCountOp === 'increment' ? message.thread.repliesCount + 1 : Math.max(message.thread.repliesCount - 1, 0)
-  message.thread.lastReply = lastReply ?? message.thread.lastReply
-  return message
 }
 
 export function matchNotification (notification: Notification, params: FindNotificationsParams): boolean {

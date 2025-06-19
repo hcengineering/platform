@@ -24,7 +24,7 @@ import {
 } from '@hcengineering/communication-types'
 
 import { BaseDb } from './base'
-import { type LabelDb, TableName } from './schema'
+import { type LabelDb, TableName } from '../schema'
 import { toLabel } from './mapping'
 import type { LabelUpdates, RemoveLabelQuery } from '@hcengineering/communication-sdk-types'
 

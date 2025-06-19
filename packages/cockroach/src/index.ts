@@ -14,4 +14,3 @@
 //
 
 export * from './adapter'
-export * from './messageId'

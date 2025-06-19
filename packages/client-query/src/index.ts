@@ -13,50 +13,27 @@
 // limitations under the License.
 //
 
-import { LiveQueries } from '@hcengineering/communication-query'
-import type { WorkspaceID } from '@hcengineering/communication-types'
-import type { FindClient } from '@hcengineering/communication-sdk-types'
-
 import { CollaboratorsQuery, LabelsQuery, MessagesQuery, NotificationContextsQuery, NotificationsQuery } from './query'
 
 export type { MessageQueryParams } from '@hcengineering/communication-query'
+export { initLiveQueries } from './init'
 
-let lq: LiveQueries
-let onDestroy: (fn: () => void) => void = () => {}
-
-export function createMessagesQuery (): MessagesQuery {
-  return new MessagesQuery(lq, onDestroy)
+export function createMessagesQuery (dontDestroy?: boolean): MessagesQuery {
+  return new MessagesQuery(dontDestroy)
 }
 
-export function createNotificationsQuery (): NotificationsQuery {
-  return new NotificationsQuery(lq, onDestroy)
+export function createNotificationsQuery (dontDestroy?: boolean): NotificationsQuery {
+  return new NotificationsQuery(dontDestroy)
 }
 
-export function createNotificationContextsQuery (): NotificationContextsQuery {
-  return new NotificationContextsQuery(lq, onDestroy)
+export function createNotificationContextsQuery (dontDestroy?: boolean): NotificationContextsQuery {
+  return new NotificationContextsQuery(dontDestroy)
 }
 
-export function createLabelsQuery (): LabelsQuery {
-  return new LabelsQuery(lq, onDestroy)
+export function createLabelsQuery (dontDestroy?: boolean): LabelsQuery {
+  return new LabelsQuery(dontDestroy)
 }
 
-export function createCollaboratorsQuery (): CollaboratorsQuery {
-  return new CollaboratorsQuery(lq, onDestroy)
-}
-
-export function initLiveQueries (
-  client: FindClient,
-  workspace: WorkspaceID,
-  filesUrl: string,
-  destroyFn?: (fn: () => void) => void
-): void {
-  if (lq != null) {
-    lq.close()
-  }
-
-  if (destroyFn != null) {
-    onDestroy = destroyFn
-  }
-
-  lq = new LiveQueries(client, workspace, filesUrl)
+export function createCollaboratorsQuery (dontDestroy?: boolean): CollaboratorsQuery {
+  return new CollaboratorsQuery(dontDestroy)
 }

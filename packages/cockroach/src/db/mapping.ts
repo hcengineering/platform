@@ -54,7 +54,7 @@ import {
   type ThreadDb,
   type LabelDb,
   type LinkPreviewDb
-} from './schema'
+} from '../schema'
 
 interface RawMessage extends MessageDb {
   thread_id?: CardID
@@ -69,7 +69,6 @@ interface RawMessage extends MessageDb {
 
 interface RawNotification extends NotificationDb {
   account: AccountID
-  card_id: CardID
   message_id: MessageID
   message_type?: MessageType
   message_content?: Markdown
@@ -149,7 +148,7 @@ export function toReaction (raw: ReactionDb): Reaction {
 export function toBlob (raw: Omit<FileDb, 'workspace_id'>): AttachedBlob {
   return {
     blobId: raw.blob_id,
-    contentType: raw.type,
+    mimeType: raw.type,
     fileName: raw.filename,
     size: Number(raw.size),
     metadata: raw.meta,
@@ -313,7 +312,7 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
 
   return {
     id: String(raw.id) as NotificationID,
-    cardId: raw.card_id,
+    cardId: card,
     account: raw.account,
     type: raw.type,
     read: Boolean(raw.read),

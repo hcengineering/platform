@@ -27,9 +27,9 @@ export class SqlClient {
     return this.sql
   }
 
-  async execute<T = SqlRow>(query: string, params?: SqlParams): Promise<T[]> {
+  async execute<T = SqlRow>(query: string, params?: SqlParams, client?: postgres.TransactionSql): Promise<T[]> {
     const convertedParams = convertArrayParams(params)
-    return await this.sql.unsafe<T[]>(query, convertedParams)
+    return await (client ?? this.sql).unsafe<T[]>(query, convertedParams)
   }
 
   cursor<T = SqlRow>(query: string, params?: SqlParams, size?: number): AsyncIterable<NonNullable<T[][number]>[]> {

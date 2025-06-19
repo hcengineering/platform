@@ -15,17 +15,16 @@
 
 import type { FindLabelsParams, Label, WorkspaceID } from '@hcengineering/communication-types'
 import {
-  type CardRemovedEvent,
-  CardResponseEventType,
-  type CardTypeUpdatedEvent,
   type EventResult,
   type FindClient,
-  type LabelCreatedEvent,
-  type LabelRemovedEvent,
-  LabelResponseEventType,
   type QueryCallback,
-  type RequestEvent,
-  type ResponseEvent
+  type Event,
+  LabelEventType,
+  CardEventType,
+  CreateLabelEvent,
+  RemoveLabelEvent,
+  UpdateCardTypeEvent,
+  RemoveCardEvent
 } from '@hcengineering/communication-sdk-types'
 
 import { QueryResult } from '../result'
@@ -56,38 +55,45 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
   }
 
-  async onEvent (event: ResponseEvent): Promise<void> {
+  async onEvent (event: Event): Promise<void> {
     if (this.isCardRemoved) return
     switch (event.type) {
-      case LabelResponseEventType.LabelCreated:
+      case LabelEventType.CreateLabel:
         await this.onLabelCreated(event)
         break
-      case LabelResponseEventType.LabelRemoved:
+      case LabelEventType.RemoveLabel:
         await this.onLabelRemoved(event)
         break
 
-      case CardResponseEventType.CardTypeUpdated:
+      case CardEventType.UpdateCardType:
         await this.onCardTypeUpdated(event)
         break
-      case CardResponseEventType.CardRemoved:
+      case CardEventType.RemoveCard:
         await this.onCardRemoved(event)
         break
     }
   }
 
-  async onLabelCreated (event: LabelCreatedEvent): Promise<void> {
+  async onLabelCreated (event: CreateLabelEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
     if (this.params.limit != null && this.result.length >= this.params.limit) return
+    const label: Label = {
+      labelId: event.labelId,
+      cardId: event.cardId,
+      cardType: event.cardType,
+      account: event.account,
+      created: event.date ?? new Date()
+    }
 
-    const match = this.match(event.label)
+    const match = this.match(label)
     if (!match) return
-    const existing = this.result.get(getId(event.label))
+    const existing = this.result.get(getId(label))
     if (existing != null) return
-    this.result.push(event.label)
+    this.result.push(label)
     void this.notify()
   }
 
-  async onLabelRemoved (event: LabelRemovedEvent): Promise<void> {
+  async onLabelRemoved (event: RemoveLabelEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
 
     const existing = this.result
@@ -105,7 +111,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     void this.notify()
   }
 
-  async onCardTypeUpdated (event: CardTypeUpdatedEvent): Promise<void> {
+  async onCardTypeUpdated (event: UpdateCardTypeEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
 
     const result = this.result.getResult()
@@ -146,7 +152,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
   }
 
-  async onCardRemoved (event: CardRemovedEvent): Promise<void> {
+  async onCardRemoved (event: RemoveCardEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
 
     if (this.params.card === event.cardId) {
@@ -175,7 +181,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
   }
 
-  async onRequest (event: RequestEvent, promise: Promise<EventResult>): Promise<void> {}
+  async onRequest (event: Event, promise: Promise<EventResult>): Promise<void> {}
 
   private async initResult (): Promise<QueryResult<Label>> {
     try {

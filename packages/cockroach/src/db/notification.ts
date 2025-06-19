@@ -32,7 +32,7 @@ import {
 } from '@hcengineering/communication-types'
 
 import { BaseDb } from './base'
-import { type CollaboratorDb, type ContextDb, type NotificationDb, TableName } from './schema'
+import { type CollaboratorDb, type ContextDb, type NotificationDb, TableName } from '../schema'
 import { getCondition } from './utils'
 import { toCollaborator, toNotification, toNotificationContext } from './mapping'
 import type {
@@ -66,7 +66,7 @@ export class NotificationsDb extends BaseDb {
   }
 
   async removeCollaborators (card: CardID, accounts: AccountID[], unsafe = false): Promise<void> {
-    if (accounts === undefined && unsafe) {
+    if (accounts.length === 0 && unsafe) {
       const sql = `DELETE FROM ${TableName.Collaborators} WHERE workspace_id = $1::uuid AND card_id = $2::varchar`
       await this.execute(sql, [this.workspace, card], 'remove collaborators')
     } else if (accounts.length === 1) {
@@ -123,7 +123,7 @@ export class NotificationsDb extends BaseDb {
       content: content ?? {}
     }
     const sql = `INSERT INTO ${TableName.Notification} (message_id, message_created, context_id, read, created, type, content)
-                     VALUES ($1::int8, $2::timestamptz, $3::int8, $4::boolean, $5::timestamptz, $6::varchar, $7::jsonb)
+                     VALUES ($1::varchar, $2::timestamptz, $3::int8, $4::boolean, $5::timestamptz, $6::varchar, $7::jsonb)
                      RETURNING id::text`
     const result = await this.execute(
       sql,
@@ -133,14 +133,19 @@ export class NotificationsDb extends BaseDb {
     return result[0].id as NotificationID
   }
 
-  async updateNotification (query: UpdateNotificationQuery, updates: NotificationUpdates): Promise<void> {
+  async updateNotification (
+    contextId: ContextID,
+    account: AccountID,
+    query: UpdateNotificationQuery,
+    updates: NotificationUpdates
+  ): Promise<void> {
     const where: string[] = [
       'nc.workspace_id = $1::uuid',
       'nc.id = $2::int8',
       'nc.account = $3::uuid',
       'nc.id = n.context_id'
     ]
-    const values: any[] = [this.workspace, query.context, query.account]
+    const values: any[] = [this.workspace, contextId, account]
     let index = values.length + 1
 
     if (query.id != null) {
@@ -153,12 +158,13 @@ export class NotificationsDb extends BaseDb {
       values.push(query.type)
     }
 
-    const createdCondition = getCondition('n', 'created', index, query.created, 'timestamptz')
-
-    if (createdCondition != null) {
-      where.push(createdCondition.where)
-      values.push(...createdCondition.values)
-      index = createdCondition.index
+    if (query.untilDate != null) {
+      const createdCondition = getCondition('n', 'created', index, { lessOrEqual: query.untilDate }, 'timestamptz')
+      if (createdCondition != null) {
+        where.push(createdCondition.where)
+        values.push(...createdCondition.values)
+        index = createdCondition.index
+      }
     }
 
     const whereClause = `WHERE ${where.join(' AND ')}`
@@ -230,14 +236,17 @@ export class NotificationsDb extends BaseDb {
     return result[0].id as ContextID
   }
 
-  async removeContext (contextId: ContextID, account: AccountID): Promise<void> {
+  async removeContext (contextId: ContextID, account: AccountID): Promise<ContextID | undefined> {
     const sql = `DELETE
                  FROM ${TableName.NotificationContext}
                  WHERE workspace_id = $1::uuid
                    AND id = $2::int8
-                   AND account = $3::uuid`
+                   AND account = $3::uuid
+                 RETURNING id::text`
 
-    await this.execute(sql, [this.workspace, contextId, account], 'remove notification context')
+    const result = await this.execute(sql, [this.workspace, contextId, account], 'remove notification context')
+
+    return result[0]?.id as ContextID | undefined
   }
 
   async updateContext (context: ContextID, account: AccountID, updates: NotificationContextUpdates): Promise<void> {
@@ -424,7 +433,7 @@ export class NotificationsDb extends BaseDb {
     const withMessage = params.message === true
 
     let select =
-      'SELECT  n.id, n.created, n.read, n.message_id, n.message_created, n.type, n.content, n.context_id, nc.card_id, nc.account, nc.card_id, nc.last_view '
+      'SELECT  n.id, n.created, n.read, n.message_id, n.message_created, n.type, n.content, n.context_id, nc.card_id, nc.account, nc.last_view '
 
     let joinMessages = ''
 
@@ -647,7 +656,7 @@ export class NotificationsDb extends BaseDb {
     }
 
     if (params.messageId != null) {
-      where.push(`n.message_id = $${index++}::int8`)
+      where.push(`n.message_id = $${index++}::varchar`)
       values.push(params.messageId)
     }
 

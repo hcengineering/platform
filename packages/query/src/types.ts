@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type ResponseEvent, EventResult, RequestEvent } from '@hcengineering/communication-sdk-types'
+import { EventResult, Event } from '@hcengineering/communication-sdk-types'
 import {
   SortingOrder,
   type Window,
@@ -42,8 +42,8 @@ interface BaseQuery<R = any, P = FindParams> {
   readonly id: QueryId
   readonly params: P
 
-  onEvent: (event: ResponseEvent) => Promise<void>
-  onRequest: (event: RequestEvent, promise: Promise<EventResult>) => Promise<void>
+  onEvent: (event: Event) => Promise<void>
+  onRequest: (event: Event, promise: Promise<EventResult>) => Promise<void>
 
   unsubscribe: () => Promise<void>
 

@@ -35,9 +35,15 @@ export async function findMessage (
   filesUrl: string,
   workspace: WorkspaceID,
   card: CardID,
-  id: MessageID
+  id: MessageID,
+  ops?: {
+    files?: boolean
+    replies?: boolean
+    links?: boolean
+    reactions?: boolean
+  }
 ): Promise<Message | undefined> {
-  const message = (await db.findMessages({ card, id, limit: 1, files: true }))[0]
+  const message = (await db.findMessages({ card, id, limit: 1, ...ops }))[0]
   if (message !== undefined) {
     return message
   }

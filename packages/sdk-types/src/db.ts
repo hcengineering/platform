@@ -40,10 +40,8 @@ import {
   FindLabelsParams,
   LabelID,
   CardType,
-  PatchData,
   NotificationContent,
   NotificationType,
-  ComparisonOperator,
   BlobData,
   LinkPreviewData,
   LinkPreviewID
@@ -63,9 +61,8 @@ export interface DbAdapter {
   createPatch: (
     cardId: CardID,
     messageId: MessageID,
-    messageCreated: Date,
     type: PatchType,
-    data: PatchData,
+    data: Record<string, any>,
     creator: SocialID,
     created: Date
   ) => Promise<void>
@@ -73,24 +70,26 @@ export interface DbAdapter {
   createMessagesGroup: (cardId: CardID, blobId: BlobID, fromDate: Date, toDate: Date, count: number) => Promise<void>
   removeMessagesGroup: (cardId: CardID, blobId: BlobID) => Promise<void>
 
-  setReaction: (cardId: CardID, messageId: MessageID, reaction: string, socialId: SocialID, date: Date) => Promise<void>
+  addReaction: (cardId: CardID, messageId: MessageID, reaction: string, socialId: SocialID, date: Date) => Promise<void>
   removeReaction: (cardId: CardID, message: MessageID, reaction: string, socialId: SocialID, date: Date) => Promise<void>
 
-  attachBlob: (cardId: CardID, messageId: MessageID, data: BlobData, socialId: SocialID, date: Date) => Promise<void>
-  detachBlob: (card: CardID, messageId: MessageID, blobId: BlobID, socialId: SocialID, date: Date) => Promise<void>
+  attachBlobs: (cardId: CardID, messageId: MessageID, data: BlobData[], socialId: SocialID, date: Date) => Promise<void>
+  detachBlobs: (card: CardID, messageId: MessageID, blobId: BlobID[], socialId: SocialID, date: Date) => Promise<void>
+  setBlobs: (cardId: CardID, messageId: MessageID, data: BlobData[], socialId: SocialID, date: Date) => Promise<void>
 
-  createLinkPreview: (
+  attachLinkPreviews: (
     cardId: CardID,
     messageId: MessageID,
-    data: LinkPreviewData,
+    data: (LinkPreviewData & { previewId: LinkPreviewID })[],
     socialId: SocialID,
     date: Date
-  ) => Promise<LinkPreviewID>
-  removeLinkPreview: (cardId: CardID, messageId: MessageID, id: LinkPreviewID) => Promise<void>
+  ) => Promise<void>
+  detachLinkPreviews: (cardId: CardID, messageId: MessageID, ids: LinkPreviewID[], socialId: SocialID, date: Date) => Promise<void>
+  setLinkPreviews: (cardId: CardID, messageId: MessageID, data: (LinkPreviewData & { previewId: LinkPreviewID })[], socialId: SocialID, date: Date) => Promise<void>
 
-  attachThread: (cardId: CardID, messageId: MessageID, threadId: CardID, threadType: CardType, date: Date) => Promise<void>
-  removeThreads: (query: RemoveThreadQuery) => Promise<void>
-  updateThread: (thread: CardID, update: ThreadUpdates) => Promise<void>
+  attachThread: (cardId: CardID, messageId: MessageID, threadId: CardID, threadType: CardType, socialId: SocialID, date: Date) => Promise<void>
+  removeThreads: (query: ThreadQuery) => Promise<void>
+  updateThread: (cardId: CardID, messageId: MessageID, thread: CardID, update: ThreadUpdates, socialId: SocialID, date: Date) => Promise<void>
 
   findMessages: (params: FindMessagesParams) => Promise<Message[]>
   findMessagesGroups: (params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
@@ -112,7 +111,7 @@ export interface DbAdapter {
     content: NotificationContent | undefined,
     created: Date
   ) => Promise<NotificationID>
-  updateNotification: (query: UpdateNotificationQuery, updates: NotificationUpdates) => Promise<void>
+  updateNotification: (context: ContextID, account: AccountID, query: UpdateNotificationQuery, updates: NotificationUpdates) => Promise<void>
   removeNotifications: (contextId: ContextID, account: AccountID, ids: NotificationID[]) => Promise<NotificationID[]>
 
   createContext: (
@@ -123,7 +122,7 @@ export interface DbAdapter {
     lastNotify?: Date
   ) => Promise<ContextID>
   updateContext: (contextId: ContextID, account: AccountID, updates: NotificationContextUpdates) => Promise<void>
-  removeContext: (id: ContextID, account: AccountID) => Promise<void>
+  removeContext: (id: ContextID, account: AccountID) => Promise<ContextID | undefined>
 
   findNotificationContexts: (params: FindNotificationContextParams) => Promise<NotificationContext[]>
   findNotifications: (params: FindNotificationsParams) => Promise<Notification[]>
@@ -141,21 +140,20 @@ export interface DbAdapter {
   close: () => void
 }
 
-export type RemoveThreadQuery = Partial<Pick<Thread, 'cardId' | 'threadId' | 'messageId'>>
+export type ThreadQuery = Partial<Pick<Thread, 'cardId' | 'threadId' | 'messageId'>>
 export type RemoveLabelQuery = Partial<Pick<Label, 'cardId' | 'labelId' | 'account'>>
 
 export interface UpdateNotificationQuery {
-  context: ContextID
-  account: AccountID
   type?: NotificationType
   id?: NotificationID
-  created?: Partial<Record<ComparisonOperator, Date>> | Date
+  untilDate?: Date
 }
 export type NotificationUpdates = Partial<Pick<Notification, 'read'>>
 
 export type NotificationContextUpdates = Partial<Pick<NotificationContext, 'lastView' | 'lastUpdate' | 'lastNotify'>>
 
 export interface ThreadUpdates {
+  messageId?: MessageID
   threadType?: CardType
   lastReply?: Date
   repliesCountOp?: 'increment' | 'decrement'

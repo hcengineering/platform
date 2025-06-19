@@ -16,43 +16,28 @@
 import {
   type FindMessagesGroupsParams,
   type FindMessagesParams,
-  type LinkPreview,
   type Message,
   type MessageID,
   type MessagesGroup,
-  MessageType,
   type ParsedFile,
   type Patch,
-  PatchType,
-  type Reaction,
   SortingOrder,
   type WorkspaceID,
-  type AttachedBlob
+  PatchType
 } from '@hcengineering/communication-types'
 import {
-  type CardRemovedEvent,
-  CardResponseEventType,
   type CreateMessageEvent,
   type CreateMessageResult,
   type EventResult,
-  type BlobAttachedEvent,
-  type BlobDetachedEvent,
   type FindClient,
-  type LinkPreviewCreatedEvent,
-  type LinkPreviewRemovedEvent,
-  type MessageCreatedEvent,
-  MessageRequestEventType,
-  MessageResponseEventType,
+  MessageEventType,
   type PagedQueryCallback,
-  type ReactionSetEvent,
-  type ReactionRemovedEvent,
-  type RequestEvent,
-  type ResponseEvent,
-  type ThreadAttachedEvent,
-  PatchCreatedEvent,
-  ThreadUpdatedEvent
+  type Event,
+  PatchEvent,
+  CardEventType,
+  RemoveCardEvent
 } from '@hcengineering/communication-sdk-types'
-import { applyPatch, applyPatches } from '@hcengineering/communication-shared'
+import { applyPatches, MessageProcessor } from '@hcengineering/communication-shared'
 import { loadGroupFile } from '@hcengineering/communication-yaml'
 import { v4 as uuid } from 'uuid'
 
@@ -66,7 +51,6 @@ import {
   type QueryId
 } from '../types'
 import { WindowImpl } from '../window'
-import { attachBlob, addLinkPreview, addReaction, detachBlob, removeLinkPreview, removeReaction } from '../utils'
 
 const GROUPS_LIMIT = 4
 
@@ -97,9 +81,6 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     buffer: [] as Message[]
   }
 
-  private readonly attachedBlobs = new Map<MessageID, AttachedBlob[]>()
-  private readonly createdReactions = new Map<MessageID, Reaction[]>()
-  private readonly createdLinkPreviews = new Map<MessageID, LinkPreview[]>()
   private readonly createdPatches = new Map<MessageID, Patch[]>()
 
   private readonly tmpMessages = new Map<string, MessageID>()
@@ -153,54 +134,29 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  async onEvent (event: ResponseEvent): Promise<void> {
+  async onEvent (event: Event): Promise<void> {
     if (this.isCardRemoved) return
     switch (event.type) {
-      case MessageResponseEventType.MessageCreated: {
+      case MessageEventType.CreateMessage: {
         await this.onMessageCreatedEvent(event)
         break
       }
-      case MessageResponseEventType.PatchCreated: {
-        await this.onPatchCreatedEvent(event)
+      case MessageEventType.UpdatePatch:
+      case MessageEventType.RemovePatch:
+      case MessageEventType.ThreadPatch:
+      case MessageEventType.LinkPreviewPatch:
+      case MessageEventType.BlobPatch:
+      case MessageEventType.ReactionPatch: {
+        await this.onPatchEvent(event)
         break
       }
-      case MessageResponseEventType.ReactionSet: {
-        await this.onReactionSetEvent(event)
-        break
-      }
-      case MessageResponseEventType.ReactionRemoved: {
-        await this.onReactionRemovedEvent(event)
-        break
-      }
-      case MessageResponseEventType.BlobAttached: {
-        await this.onBlobAttachedEvent(event)
-        break
-      }
-      case MessageResponseEventType.BlobDetached: {
-        await this.onBlobDetachedEvent(event)
-        break
-      }
-      case MessageResponseEventType.LinkPreviewCreated: {
-        await this.onLinkPreviewCreatedEvent(event)
-        break
-      }
-      case MessageResponseEventType.LinkPreviewRemoved: {
-        await this.onLinkPreviewRemovedEvent(event)
-        break
-      }
-      case MessageResponseEventType.ThreadAttached:
-        await this.onThreadAttachedEvent(event)
-        break
-      case MessageResponseEventType.ThreadUpdated:
-        await this.onThreadUpdatedEvent(event)
-        break
-      case CardResponseEventType.CardRemoved:
+      case CardEventType.RemoveCard:
         await this.onCardRemoved(event)
         break
     }
   }
 
-  async onCardRemoved (event: CardRemovedEvent): Promise<void> {
+  async onCardRemoved (event: RemoveCardEvent): Promise<void> {
     if (this.result instanceof Promise) this.result = await this.result
     if (this.params.card === event.cardId) {
       this.isCardRemoved = true
@@ -224,10 +180,10 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
   }
 
-  async onRequest (event: RequestEvent, promise: Promise<EventResult>): Promise<void> {
+  async onRequest (event: Event, promise: Promise<EventResult>): Promise<void> {
     if (this.isCardRemoved) return
     switch (event.type) {
-      case MessageRequestEventType.CreateMessage: {
+      case MessageEventType.CreateMessage: {
         await this.onCreateMessageRequest(event, promise as Promise<CreateMessageResult>)
         break
       }
@@ -239,28 +195,15 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     const eventId = event._id
     if (eventId == null || event.socialId == null) return
 
-    const tmpId = uuid() as MessageID
+    const tmpId = event.messageId ?? (uuid() as MessageID)
     let resultId: MessageID | undefined
-    const tmpMessage: Message = {
-      id: tmpId,
-      type: MessageType.Message,
-      removed: false,
-      cardId: event.cardId,
-      content: event.content,
-      creator: event.socialId,
-      created: new Date(),
-      extra: event.extra,
-      edited: undefined,
-      thread: undefined,
-      reactions: [],
-      blobs: [],
-      linkPreviews: []
-    }
+    const tmpMessage = MessageProcessor.createFromEvent(event, tmpId)
 
     if (!this.match(tmpMessage)) return
 
     promise
       .then(async (result) => {
+        if (tmpId === result.messageId) return
         this.tmpMessages.delete(eventId)
         resultId = result.messageId
         if (this.result instanceof Promise) this.result = await this.result
@@ -270,7 +213,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
             await this.notify()
           }
         } else {
-          const updatedMessage = this.fillMessage({ ...tmpMessage, id: resultId })
+          const updatedMessage = this.patchMessage({ ...tmpMessage, id: resultId })
           this.result.delete(tmpId)
 
           this.insertMessage(this.result, updatedMessage)
@@ -776,105 +719,17 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     return true
   }
 
-  private async onThreadAttachedEvent (event: ThreadAttachedEvent): Promise<void> {
-    if (this.params.replies !== true) return
-    if (this.params.card !== event.thread.cardId) return
-    if (this.result instanceof Promise) this.result = await this.result
-
-    const message = this.result.get(event.thread.messageId)
-    if (message !== undefined) {
-      const updated: Message = {
-        ...message,
-        thread: event.thread
-      }
-
-      this.result.update(updated)
-      void this.notify()
-    }
-
-    this.next.buffer = this.next.buffer.map((it) => {
-      if (it.id === event.thread.messageId) {
-        return {
-          ...it,
-          thread: event.thread
-        }
-      }
-      return it
-    })
-    this.prev.buffer = this.next.buffer.map((it) => {
-      if (it.id === event.thread.messageId) {
-        return {
-          ...it,
-          thread: event.thread
-        }
-      }
-      return it
-    })
-  }
-
-  private updateThread (message: Message, repliesCountOp?: 'increment' | 'decrement', lastReply?: Date): Message {
-    if (message.thread === undefined) return message
-    let count = message.thread.repliesCount
-
-    if (repliesCountOp === 'increment') {
-      count = count + 1
-    } else if (repliesCountOp === 'decrement') {
-      count = Math.max(count - 1, 0)
-    }
-
-    return {
-      ...message,
-      thread: { ...message.thread, repliesCount: count, lastReply: lastReply ?? message.thread.lastReply }
-    }
-  }
-
-  private async onThreadUpdatedEvent (event: ThreadUpdatedEvent): Promise<void> {
-    if (this.params.replies !== true) return
-    if (this.params.card !== event.cardId) return
-    if (this.result instanceof Promise) this.result = await this.result
-
-    const message = this.result.get(event.messageId)
-    if (message !== undefined) {
-      const updated: Message = this.updateThread(message, event.updates.repliesCountOp, event.updates.lastReply)
-
-      this.result.update(updated)
-      void this.notify()
-    }
-
-    this.next.buffer = this.next.buffer.map((it) => {
-      if (it.id === event.messageId) {
-        return this.updateThread(it, event.updates.repliesCountOp, event.updates.lastReply)
-      }
-      return it
-    })
-    this.prev.buffer = this.next.buffer.map((it) => {
-      if (it.id === event.messageId) {
-        return this.updateThread(it, event.updates.repliesCountOp, event.updates.lastReply)
-      }
-      return it
-    })
-  }
-
-  private fillMessage (origin: Message): Message {
+  private patchMessage (origin: Message): Message {
     let message = origin
-    if (this.params.files === true) {
-      message.blobs = this.attachedBlobs.get(message.id) ?? []
-    }
-    if (this.params.reactions === true) {
-      message.reactions = this.createdReactions.get(message.id) ?? []
-    }
-    if (this.params.links === true) {
-      message.linkPreviews = this.createdLinkPreviews.get(message.id) ?? []
-    }
     const patches = this.createdPatches.get(message.id) ?? []
-    message = applyPatches(message, patches)
+    message = applyPatches(message, patches, this.allowedPatches())
     return message
   }
 
-  private async onMessageCreatedEvent (event: MessageCreatedEvent): Promise<void> {
+  private async onMessageCreatedEvent (event: CreateMessageEvent): Promise<void> {
+    if (this.params.card !== event.cardId || event.messageId == null) return
     if (this.result instanceof Promise) this.result = await this.result
-    if (this.params.card !== event.message.cardId) return
-    let message = event.message
+    let message = MessageProcessor.createFromEvent(event)
     const exists = this.result.get(message.id)
 
     if (exists !== undefined) {
@@ -883,7 +738,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
     if (!this.match(message)) return
 
-    message = this.fillMessage(message)
+    message = this.patchMessage(message)
 
     if (this.result.isTail()) {
       const eventId = event._id
@@ -929,221 +784,65 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   private cleanCache (message: MessageID): void {
-    this.attachedBlobs.delete(message)
-    this.createdReactions.delete(message)
-    this.createdLinkPreviews.delete(message)
     this.createdPatches.delete(message)
   }
 
-  private async onPatchCreatedEvent (event: PatchCreatedEvent): Promise<void> {
+  private async onPatchEvent (event: PatchEvent): Promise<void> {
     if (this.params.card !== event.cardId) return
+    const allowedPatches = this.allowedPatches()
+    const eventPatches = MessageProcessor.eventToPatches(event).filter((it) => allowedPatches.includes(it.type))
+
+    if (eventPatches.length === 0) return
+
     if (this.result instanceof Promise) this.result = await this.result
 
-    const { patch, messageId, messageCreated } = event
-    const groups = this.groupsBuffer.filter(
-      (it) => it.fromDate.getTime() <= messageCreated.getTime() && it.toDate.getTime() >= messageCreated.getTime()
-    )
-
-    for (const group of groups) {
-      if (group.patches != null) {
-        group.patches.push(patch)
-      }
-    }
+    const { messageId } = event
 
     const message = this.result.get(messageId)
-    if (message === undefined) return
 
-    if (message.created < patch.created) {
-      this.result.update(applyPatch(message, patch, [PatchType.update, PatchType.remove]))
+    if (message !== undefined) {
+      const updatedMessage = applyPatches(message, eventPatches, this.allowedPatches())
+
+      this.result.update(updatedMessage)
       await this.notify()
-    }
-  }
-
-  private async onReactionSetEvent (event: ReactionSetEvent): Promise<void> {
-    if (this.params.reactions !== true || this.params.card !== event.cardId) return
-    const current = this.createdReactions.get(event.messageId) ?? []
-    this.createdReactions.set(event.messageId, [...current, event.reaction])
-    if (this.result instanceof Promise) this.result = await this.result
-
-    const reaction = {
-      ...event.reaction,
-      created: event.reaction.created
-    }
-
-    const message = this.result.get(event.messageId)
-    if (message !== undefined) {
-      this.result.update(addReaction(message, reaction))
-      void this.notify()
-    }
-
-    const fromNextBuffer = this.next.buffer.find((it) => it.id === event.messageId)
-    if (fromNextBuffer !== undefined) {
-      addReaction(fromNextBuffer, reaction)
-    }
-    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === event.messageId)
-    if (fromPrevBuffer !== undefined) {
-      addReaction(fromPrevBuffer, reaction)
-    }
-  }
-
-  private async onReactionRemovedEvent (event: ReactionRemovedEvent): Promise<void> {
-    if (this.params.reactions !== true || this.params.card !== event.cardId) return
-    const current = this.createdReactions.get(event.messageId) ?? []
-
-    const reactions = current.filter((it) => it.reaction !== event.reaction || it.creator !== event.socialId)
-    this.createdReactions.set(event.messageId, reactions)
-    if (this.result instanceof Promise) this.result = await this.result
-
-    const message = this.result.get(event.messageId)
-    if (message !== undefined) {
-      const updated = removeReaction(message, event.reaction, event.socialId)
-      if (updated.reactions.length !== message.reactions.length) {
-        this.result.update(updated)
-        void this.notify()
-      }
-    }
-    this.next.buffer = this.next.buffer.map((it) =>
-      it.id === event.messageId ? removeReaction(it, event.reaction, event.socialId) : it
-    )
-    this.prev.buffer = this.prev.buffer.map((it) =>
-      it.id === event.messageId ? removeReaction(it, event.reaction, event.socialId) : it
-    )
-  }
-
-  private updateFilesCache (message: MessageID, blobs: AttachedBlob[]): void {
-    const blobsCache = this.attachedBlobs.get(message) ?? []
-    this.attachedBlobs.set(message, blobsCache)
-    for (const blob of blobs) {
-      const current = blobsCache.find((it) => it.blobId === blob.blobId)
-      if (current === undefined) {
-        blobsCache.push(blob)
-      }
-    }
-  }
-
-  private async onBlobAttachedEvent (event: BlobAttachedEvent): Promise<void> {
-    if (this.params.files !== true || event.cardId !== this.params.card) return
-    console.log('onFileCreatedEvent', event)
-    this.updateFilesCache(event.messageId, [event.blob])
-    if (this.result instanceof Promise) this.result = await this.result
-
-    const { blob } = event
-    const message = this.result.get(event.messageId)
-    if (message !== undefined) {
-      if (!message.blobs.some((it) => it.blobId === blob.blobId)) {
-        message.blobs.push(blob)
-        this.result.update(message)
-        await this.notify()
-      }
     } else {
-      console.log('no message for file', event)
+      const currentPatches = this.createdPatches.get(messageId) ?? []
+      const patches = currentPatches.concat(eventPatches)
+      this.createdPatches.set(messageId, patches)
+
+      this.next.buffer = this.next.buffer.map((it) => {
+        if (it.id === event.messageId) {
+          this.createdPatches.delete(messageId)
+          return applyPatches(it, eventPatches, this.allowedPatches())
+        }
+        return it
+      })
+      this.prev.buffer = this.next.buffer.map((it) => {
+        if (it.id === event.messageId) {
+          this.createdPatches.delete(messageId)
+          return applyPatches(it, eventPatches, this.allowedPatches())
+        }
+        return it
+      })
     }
-
-    const fromNextBuffer = this.next.buffer.find((it) => it.id === event.messageId)
-    if (fromNextBuffer !== undefined) {
-      attachBlob(fromNextBuffer, blob)
-    }
-    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === event.messageId)
-    if (fromPrevBuffer !== undefined) {
-      attachBlob(fromPrevBuffer, blob)
-    }
-  }
-
-  private async onLinkPreviewCreatedEvent (event: LinkPreviewCreatedEvent): Promise<void> {
-    if (this.params.links !== true || this.params.card !== event.cardId) return
-    const current = this.createdLinkPreviews.get(event.messageId) ?? []
-    this.createdLinkPreviews.set(event.messageId, [...current, event.linkPreview])
-
-    if (this.result instanceof Promise) this.result = await this.result
-    const message = this.result.get(event.messageId)
-    const { linkPreview } = event
-    if (message !== undefined) {
-      if (!message.linkPreviews.some((it) => it.id === linkPreview.id)) {
-        message.linkPreviews.push(linkPreview)
-        this.result.update(message)
-        await this.notify()
-      }
-    }
-
-    const fromNextBuffer = this.next.buffer.find((it) => it.id === event.messageId)
-    if (fromNextBuffer !== undefined) {
-      addLinkPreview(fromNextBuffer, linkPreview)
-    }
-    const fromPrevBuffer = this.prev.buffer.find((it) => it.id === event.messageId)
-    if (fromPrevBuffer !== undefined) {
-      addLinkPreview(fromPrevBuffer, linkPreview)
-    }
-  }
-
-  private async onLinkPreviewRemovedEvent (event: LinkPreviewRemovedEvent): Promise<void> {
-    if (this.params.links !== true || this.params.card !== event.cardId) return
-    const current = this.createdLinkPreviews.get(event.messageId) ?? []
-    const linkPreviews = current.filter((it) => it.id !== event.previewId)
-    this.createdLinkPreviews.set(event.messageId, linkPreviews)
-
-    if (this.result instanceof Promise) this.result = await this.result
-    const message = this.result.get(event.messageId)
-    if (message !== undefined) {
-      const links = message.linkPreviews.filter((it) => it.id !== event.previewId)
-      if (links.length === message.linkPreviews.length) return
-
-      const updated = {
-        ...message,
-        links
-      }
-      this.result.update(updated)
-      await this.notify()
-    }
-
-    this.next.buffer = this.next.buffer.map((it) =>
-      it.id === event.messageId ? removeLinkPreview(it, event.previewId) : it
-    )
-    this.prev.buffer = this.prev.buffer.map((it) =>
-      it.id === event.messageId ? removeLinkPreview(it, event.previewId) : it
-    )
-  }
-
-  private async onBlobDetachedEvent (event: BlobDetachedEvent): Promise<void> {
-    if (this.params.files !== true) return
-    if (this.params.card !== event.cardId) return
-    const current = this.attachedBlobs.get(event.messageId) ?? []
-    const files = current.filter((it) => it.blobId !== event.blobId)
-    this.attachedBlobs.set(event.messageId, files)
-    if (this.result instanceof Promise) this.result = await this.result
-
-    const message = this.result.get(event.messageId)
-    if (message !== undefined) {
-      const files = message.blobs.filter((it) => it.blobId !== event.blobId)
-      if (files.length === message.blobs.length) return
-
-      const updated = {
-        ...message,
-        files
-      }
-      this.result.update(updated)
-      await this.notify()
-    }
-
-    this.next.buffer = this.next.buffer.map((it) => (it.id === event.messageId ? detachBlob(it, event.blobId) : it))
-    this.prev.buffer = this.prev.buffer.map((it) => (it.id === event.messageId ? detachBlob(it, event.blobId) : it))
   }
 
   private allowedPatches (): PatchType[] {
     const result = [PatchType.update, PatchType.remove]
 
     if (this.params.reactions === true) {
-      result.push(PatchType.setReaction, PatchType.removeReaction)
+      result.push(PatchType.reaction)
     }
     if (this.params.files === true) {
-      result.push(PatchType.attachBlob, PatchType.detachBlob)
+      result.push(PatchType.blob)
     }
     if (this.params.replies === true) {
-      result.push(PatchType.updateThread)
+      result.push(PatchType.thread)
     }
-    return result
-  }
+    if (this.params.links === true) {
+      result.push(PatchType.linkPreview)
+    }
 
-  private isAllowedPatch (type: PatchType): boolean {
-    return this.allowedPatches().includes(type)
+    return result
   }
 }

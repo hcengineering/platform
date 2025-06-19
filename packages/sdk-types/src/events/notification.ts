@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type {
+import {
   CardID,
   ContextID,
   MessageID,
@@ -24,10 +24,9 @@ import type {
   NotificationID,
   SocialID
 } from '@hcengineering/communication-types'
-import type { BaseRequestEvent } from './common'
-import type { UpdateNotificationQuery } from '../db.ts'
+import type { BaseEvent } from './common'
 
-export enum NotificationRequestEventType {
+export enum NotificationEventType {
   AddCollaborators = 'addCollaborators',
   RemoveCollaborators = 'removeCollaborators',
 
@@ -40,7 +39,7 @@ export enum NotificationRequestEventType {
   UpdateNotificationContext = 'updateNotificationContext'
 }
 
-export type NotificationRequestEvent =
+export type NotificationEvent =
   | AddCollaboratorsEvent
   | CreateNotificationContextEvent
   | CreateNotificationEvent
@@ -50,10 +49,11 @@ export type NotificationRequestEvent =
   | RemoveNotificationsEvent
   | UpdateNotificationContextEvent
 
-export interface CreateNotificationEvent extends BaseRequestEvent {
-  type: NotificationRequestEventType.CreateNotification
+export interface CreateNotificationEvent extends BaseEvent {
+  type: NotificationEventType.CreateNotification
+  notificationId?: NotificationID
   notificationType: NotificationType
-  read?: boolean
+  read: boolean
   content?: NotificationContent
   cardId: CardID
   contextId: ContextID
@@ -61,53 +61,57 @@ export interface CreateNotificationEvent extends BaseRequestEvent {
   messageCreated: Date
   account: AccountID
 
-  socialId: SocialID
-  date: Date
-}
-
-export interface UpdateNotificationEvent extends BaseRequestEvent {
-  type: NotificationRequestEventType.UpdateNotification
-  query: UpdateNotificationQuery
-  updates: {
-    read: boolean
-  }
-  socialId?: SocialID
   date?: Date
 }
 
-export interface RemoveNotificationsEvent extends BaseRequestEvent {
-  type: NotificationRequestEventType.RemoveNotifications
+export interface UpdateNotificationEvent extends BaseEvent {
+  type: NotificationEventType.UpdateNotification
+  contextId: ContextID
+  account: AccountID
+  query: {
+    type?: NotificationType
+    id?: NotificationID
+    untilDate?: Date
+  }
+  updates: {
+    read: boolean
+  }
+
+  date?: Date
+}
+
+export interface RemoveNotificationsEvent extends BaseEvent {
+  type: NotificationEventType.RemoveNotifications
   contextId: ContextID
   account: AccountID
   ids: NotificationID[]
 
-  socialId?: SocialID
   date?: Date
 }
 
-export interface CreateNotificationContextEvent extends BaseRequestEvent {
-  type: NotificationRequestEventType.CreateNotificationContext
+export interface CreateNotificationContextEvent extends BaseEvent {
+  type: NotificationEventType.CreateNotificationContext
+  contextId?: ContextID
   cardId: CardID
   account: AccountID
+
   lastView: Date
   lastUpdate: Date
   lastNotify?: Date
 
-  socialId: SocialID
-  date: Date
-}
-
-export interface RemoveNotificationContextEvent extends BaseRequestEvent {
-  type: NotificationRequestEventType.RemoveNotificationContext
-  contextId: ContextID
-  account: AccountID
-
-  socialId?: SocialID
   date?: Date
 }
 
-export interface UpdateNotificationContextEvent extends BaseRequestEvent {
-  type: NotificationRequestEventType.UpdateNotificationContext
+export interface RemoveNotificationContextEvent extends BaseEvent {
+  type: NotificationEventType.RemoveNotificationContext
+  contextId: ContextID
+  account: AccountID
+
+  date?: Date
+}
+
+export interface UpdateNotificationContextEvent extends BaseEvent {
+  type: NotificationEventType.UpdateNotificationContext
   contextId: ContextID
   account: AccountID
   updates: {
@@ -115,25 +119,27 @@ export interface UpdateNotificationContextEvent extends BaseRequestEvent {
     lastUpdate?: Date
     lastNotify?: Date
   }
-  socialId?: SocialID
+
   date?: Date
 }
 
-export interface AddCollaboratorsEvent extends BaseRequestEvent {
-  type: NotificationRequestEventType.AddCollaborators
+export interface AddCollaboratorsEvent extends BaseEvent {
+  type: NotificationEventType.AddCollaborators
   cardId: CardID
   cardType: CardType
   collaborators: AccountID[]
-  socialId?: SocialID
+
+  socialId: SocialID
   date?: Date
 }
 
-export interface RemoveCollaboratorsEvent extends BaseRequestEvent {
-  type: NotificationRequestEventType.RemoveCollaborators
+export interface RemoveCollaboratorsEvent extends BaseEvent {
+  type: NotificationEventType.RemoveCollaborators
   cardId: CardID
   cardType: CardType
   collaborators: AccountID[]
-  socialId?: SocialID
+
+  socialId: SocialID
   date?: Date
 }
 

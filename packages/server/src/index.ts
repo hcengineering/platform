@@ -30,7 +30,7 @@ import type {
   Collaborator
 } from '@hcengineering/communication-types'
 import { createDbAdapter } from '@hcengineering/communication-cockroach'
-import type { EventResult, RequestEvent, ServerApi, SessionData } from '@hcengineering/communication-sdk-types'
+import type { EventResult, Event, ServerApi, SessionData } from '@hcengineering/communication-sdk-types'
 
 import { getMetadata } from './metadata'
 import type { BroadcastSessionsFunc, QueryId } from './types'
@@ -94,7 +94,7 @@ export class Api implements ServerApi {
     await this.middlewares.unsubscribeQuery(session, id)
   }
 
-  async event (session: SessionData, event: RequestEvent): Promise<EventResult> {
+  async event (session: SessionData, event: Event): Promise<EventResult> {
     return await this.middlewares.event(session, event)
   }
 

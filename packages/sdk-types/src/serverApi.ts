@@ -29,7 +29,7 @@ import type {
 } from '@hcengineering/communication-types'
 import type { Account } from '@hcengineering/core'
 
-import type { EventResult, RequestEvent } from './event'
+import type { EventResult, Event } from './events/event'
 
 export interface SessionData {
   sessionId?: string
@@ -53,7 +53,7 @@ export interface ServerApi {
   findLabels: (session: SessionData, params: FindLabelsParams) => Promise<Label[]>
   findCollaborators: (session: SessionData, params: FindCollaboratorsParams) => Promise<Collaborator[]>
 
-  event: (session: SessionData, event: RequestEvent) => Promise<EventResult>
+  event: (session: SessionData, event: Event) => Promise<EventResult>
 
   unsubscribeQuery: (session: SessionData, id: number) => Promise<void>
 

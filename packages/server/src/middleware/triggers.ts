@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { DbAdapter, RequestEvent, ResponseEvent, SessionData } from '@hcengineering/communication-sdk-types'
+import type { DbAdapter, Event, SessionData } from '@hcengineering/communication-sdk-types'
 import type { MeasureContext } from '@hcengineering/core'
 
 import triggers from '../triggers/all'
@@ -39,7 +39,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     ) // 1hour
   }
 
-  async response (session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
+  async response (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<void> {
     const ctx: Omit<TriggerCtx, 'ctx'> = {
       metadata: this.context.metadata,
       db: this.db,
@@ -47,10 +47,11 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       account: session.account,
       registeredCards: this.context.registeredCards,
       accountBySocialID: this.context.accountBySocialID,
+      removedContexts: this.context.removedContexts,
       derived,
-      execute: async (event: RequestEvent) => {
+      execute: async (event: Event) => {
         // Will be enriched in head
-        return (await this.context.head?.event(session, event as Enriched<RequestEvent>, true)) ?? {}
+        return (await this.context.head?.event(session, event as Enriched<Event>, true)) ?? {}
       }
     }
     await this.applyTriggers(session, event, ctx)
@@ -63,7 +64,11 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     ).then((res) => this.propagate(session, res))
   }
 
-  private async applyTriggers (session: SessionData, event: ResponseEvent, ctx: Omit<TriggerCtx, 'ctx'>): Promise<void> {
+  private async applyTriggers (
+    session: SessionData,
+    event: Enriched<Event>,
+    ctx: Omit<TriggerCtx, 'ctx'>
+  ): Promise<void> {
     const matchedTriggers = triggers.filter(([_, type]) => type === event.type)
     if (matchedTriggers.length === 0) return
 
@@ -84,10 +89,10 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     await this.propagate(session, derived)
   }
 
-  private async propagate (session: SessionData, derived: RequestEvent[]): Promise<void> {
+  private async propagate (session: SessionData, derived: Event[]): Promise<void> {
     if (derived.length === 0) return
     if (this.context.head === undefined) return
     // Will be enriched in head
-    await Promise.all(derived.map((d) => this.context.head?.event(session, d as Enriched<RequestEvent>, true)))
+    await Promise.all(derived.map((d) => this.context.head?.event(session, d as Enriched<Event>, true)))
   }
 }

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type LiveQueries, MessageQueryParams } from '@hcengineering/communication-query'
+import { MessageQueryParams } from '@hcengineering/communication-query'
 import type { PagedQueryCallback, QueryCallback } from '@hcengineering/communication-sdk-types'
 import {
   type FindLabelsParams,
@@ -27,18 +27,19 @@ import {
   Collaborator
 } from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
+import { getLiveQueries, getOnDestroy } from './init'
 
 class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
   private oldQuery: P | undefined
   private oldCallback: C | undefined
 
-  constructor (
-    protected readonly lq: LiveQueries,
-    onDestroy: (fn: () => void) => void
-  ) {
-    onDestroy(() => {
-      this.unsubscribe()
-    })
+  constructor (dontDestroy?: boolean) {
+    if (dontDestroy !== true) {
+      const destroyFn = getOnDestroy()
+      destroyFn(() => {
+        this.unsubscribe()
+      })
+    }
   }
 
   unsubscribe: () => void = () => {}
@@ -81,7 +82,7 @@ class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
 
 export class MessagesQuery extends BaseQuery<MessageQueryParams, PagedQueryCallback<Message>> {
   override createQuery (params: MessageQueryParams, callback: PagedQueryCallback<Message>): { unsubscribe: () => void } {
-    return this.lq.queryMessages(params, callback)
+    return getLiveQueries().queryMessages(params, callback)
   }
 }
 
@@ -92,7 +93,7 @@ export class NotificationsQuery extends BaseQuery<FindNotificationsParams, Paged
   ): {
       unsubscribe: () => void
     } {
-    return this.lq.queryNotifications(params, callback)
+    return getLiveQueries().queryNotifications(params, callback)
   }
 }
 
@@ -106,7 +107,7 @@ PagedQueryCallback<NotificationContext>
   ): {
       unsubscribe: () => void
     } {
-    return this.lq.queryNotificationContexts(params, callback)
+    return getLiveQueries().queryNotificationContexts(params, callback)
   }
 }
 
@@ -117,7 +118,7 @@ export class LabelsQuery extends BaseQuery<FindLabelsParams, QueryCallback<Label
   ): {
       unsubscribe: () => void
     } {
-    return this.lq.queryLabels(params, callback)
+    return getLiveQueries().queryLabels(params, callback)
   }
 }
 
@@ -128,6 +129,6 @@ export class CollaboratorsQuery extends BaseQuery<FindCollaboratorsParams, Query
   ): {
       unsubscribe: () => void
     } {
-    return this.lq.queryCollaborators(params, callback)
+    return getLiveQueries().queryCollaborators(params, callback)
   }
 }

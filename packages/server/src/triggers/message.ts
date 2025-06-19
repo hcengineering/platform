@@ -14,119 +14,55 @@
 //
 
 import {
-  type BlobAttachedEvent,
-  type BlobDetachedEvent,
-  type MessageCreatedEvent,
-  MessageRequestEventType,
-  MessageResponseEventType,
-  type MessagesGroupCreatedEvent,
-  NotificationRequestEventType,
-  PatchCreatedEvent,
-  type RequestEvent,
-  type ThreadAttachedEvent
+  CreateMessageEvent,
+  CreateMessagesGroupEvent,
+  type Event,
+  MessageEventType,
+  NotificationEventType,
+  PatchEvent,
+  RemovePatchEvent,
+  ThreadPatchEvent
 } from '@hcengineering/communication-sdk-types'
-import {
-  type AttachBlobPatchData,
-  type CardID,
-  type Message,
-  MessageType,
-  PatchType
-} from '@hcengineering/communication-types'
+import { type CardID, type Message, MessageType } from '@hcengineering/communication-types'
 import { generateToken } from '@hcengineering/server-token'
 import { type AccountUuid, concatLink, systemAccountUuid } from '@hcengineering/core'
 import { extractReferences } from '@hcengineering/text-core'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
-import { generateMessageId } from '@hcengineering/communication-cockroach'
 
-import type { TriggerCtx, TriggerFn, Triggers } from '../types'
+import type { Enriched, TriggerCtx, TriggerFn, Triggers } from '../types'
 import { findAccount } from '../utils'
-import { findMessageInFiles } from './utils'
+import { findMessage } from './utils'
+import { generateMessageId } from '../messageId'
 
-async function onMessagesGroupCreated (ctx: TriggerCtx, event: MessagesGroupCreatedEvent): Promise<RequestEvent[]> {
+async function onMessagesGroupCreated (ctx: TriggerCtx, event: CreateMessagesGroupEvent): Promise<Event[]> {
   ctx.registeredCards.delete(event.group.cardId)
   return []
 }
 
-async function onMessageRemoved (ctx: TriggerCtx, event: PatchCreatedEvent): Promise<RequestEvent[]> {
-  if (event.patch.type !== PatchType.remove) return []
+async function onMessageRemoved (ctx: TriggerCtx, event: Enriched<RemovePatchEvent>): Promise<Event[]> {
   const { cardId } = event
   const thread = await ctx.db.findThread(cardId)
   if (thread === undefined) return []
 
-  const result: RequestEvent[] = []
-
-  if (!(await ctx.db.isMessageInDb(thread.cardId, thread.messageId))) {
-    result.push({
-      type: MessageRequestEventType.CreatePatch,
-      patchType: PatchType.updateThread,
+  return [
+    {
+      type: MessageEventType.ThreadPatch,
       cardId: thread.cardId,
       messageId: thread.messageId,
-      data: { threadId: thread.threadId, threadType: thread.threadType, repliesCountOp: 'decrement' },
-      socialId: event.patch.creator,
-      date: event.patch.created
-    })
-  }
-
-  result.push({
-    type: MessageRequestEventType.UpdateThread,
-    cardId: thread.cardId,
-    messageId: thread.messageId,
-    threadId: thread.threadId,
-    updates: {
-      repliesCountOp: 'decrement'
-    },
-    date: event.patch.created,
-    socialId: event.patch.creator
-  })
-
-  return result
-}
-
-async function onBlobAttached (ctx: TriggerCtx, event: BlobAttachedEvent): Promise<RequestEvent[]> {
-  const inDb = await ctx.db.isMessageInDb(event.cardId, event.messageId)
-  if (inDb) return []
-
-  const { blob } = event
-  const patchData: AttachBlobPatchData = {
-    blobId: blob.blobId,
-    contentType: blob.contentType,
-    fileName: blob.fileName,
-    size: blob.size,
-    metadata: blob.metadata
-  }
-
-  return [
-    {
-      type: MessageRequestEventType.CreatePatch,
-      patchType: PatchType.attachBlob,
-      cardId: event.cardId,
-      messageId: event.messageId,
-      data: patchData,
-      socialId: blob.creator,
-      date: blob.created
+      operation: {
+        opcode: 'update',
+        threadId: thread.threadId,
+        updates: {
+          repliesCountOp: 'decrement'
+        }
+      },
+      date: event.date,
+      socialId: event.socialId
     }
   ]
 }
 
-async function onBlobDetached (ctx: TriggerCtx, event: BlobDetachedEvent): Promise<RequestEvent[]> {
-  const inDb = await ctx.db.isMessageInDb(event.cardId, event.messageId)
-  if (inDb) return []
-  const { blobId } = event
-
-  return [
-    {
-      type: MessageRequestEventType.CreatePatch,
-      patchType: PatchType.detachBlob,
-      cardId: event.cardId,
-      messageId: event.messageId,
-      data: { blobId },
-      socialId: event.socialId,
-      date: event.date
-    }
-  ]
-}
-
-async function registerCard (ctx: TriggerCtx, event: PatchCreatedEvent): Promise<RequestEvent[]> {
+async function registerCard (ctx: TriggerCtx, event: PatchEvent): Promise<Event[]> {
   const { workspace, metadata } = ctx
   const card: CardID = event.cardId
 
@@ -149,17 +85,17 @@ async function registerCard (ctx: TriggerCtx, event: PatchCreatedEvent): Promise
   return []
 }
 
-async function addCollaborators (ctx: TriggerCtx, event: MessageCreatedEvent): Promise<RequestEvent[]> {
-  const { creator, type } = event.message
-  if (type === MessageType.Activity) return []
-  const account = await findAccount(ctx, creator)
+async function addCollaborators (ctx: TriggerCtx, event: Enriched<CreateMessageEvent>): Promise<Event[]> {
+  const { messageType, socialId, content, cardId, cardType, date } = event
+  if (messageType === MessageType.Activity) return []
+  const account = await findAccount(ctx, socialId)
   const collaborators: AccountUuid[] = []
 
   if (account !== undefined) {
     collaborators.push(account)
   }
 
-  const markup = markdownToMarkup(event.message.content)
+  const markup = markdownToMarkup(content)
   const references = extractReferences(markup)
   const personIds = references
     .filter((it) => ['contact:class:Person', 'contact:mixin:Employee'].includes(it.objectClass))
@@ -175,134 +111,110 @@ async function addCollaborators (ctx: TriggerCtx, event: MessageCreatedEvent): P
 
   return [
     {
-      type: NotificationRequestEventType.AddCollaborators,
-      cardId: event.message.cardId,
-      cardType: event.cardType,
+      type: NotificationEventType.AddCollaborators,
+      cardId,
+      cardType,
       collaborators,
-      socialId: event.message.creator,
-      date: new Date(event.message.created.getTime() - 1)
+      socialId,
+      date: new Date(date.getTime() - 1)
     }
   ]
 }
 
-async function addThreadReply (ctx: TriggerCtx, event: MessageCreatedEvent): Promise<RequestEvent[]> {
-  if (event.message.type !== MessageType.Message || ctx.derived) {
+async function addThreadReply (ctx: TriggerCtx, event: Enriched<CreateMessageEvent>): Promise<Event[]> {
+  if (event.messageType !== MessageType.Message || event.extra?.threadRoot === true) {
     return []
   }
-  const { message } = event
-  const thread = await ctx.db.findThread(message.cardId)
+  const { cardId, socialId, date } = event
+  const thread = await ctx.db.findThread(cardId)
 
   if (thread === undefined) return []
-  const result: RequestEvent[] = []
-  if (!(await ctx.db.isMessageInDb(thread.cardId, thread.messageId))) {
-    result.push({
-      type: MessageRequestEventType.CreatePatch,
-      patchType: PatchType.updateThread,
+
+  return [
+    {
+      type: MessageEventType.ThreadPatch,
       cardId: thread.cardId,
       messageId: thread.messageId,
-      data: { threadId: thread.threadId, threadType: thread.threadType, repliesCountOp: 'increment' },
-      socialId: event.message.creator,
-      date: event.message.created
-    })
-  }
-
-  result.push({
-    type: MessageRequestEventType.UpdateThread,
-    cardId: thread.cardId,
-    messageId: thread.messageId,
-    threadId: thread.threadId,
-    updates: {
-      lastReply: message.created,
-      repliesCountOp: 'increment'
-    },
-    socialId: event.message.creator,
-    date: message.created
-  })
-
-  return result
+      operation: {
+        opcode: 'update',
+        threadId: thread.threadId,
+        updates: {
+          lastReply: date,
+          repliesCountOp: 'increment'
+        }
+      },
+      socialId,
+      date
+    }
+  ]
 }
 
-async function onThreadAttached (ctx: TriggerCtx, event: ThreadAttachedEvent): Promise<RequestEvent[]> {
-  let message: Message | undefined = (
-    await ctx.db.findMessages({
-      card: event.thread.cardId,
-      id: event.thread.messageId,
-      limit: 1,
+async function onThreadAttached (ctx: TriggerCtx, event: Enriched<ThreadPatchEvent>): Promise<Event[]> {
+  if (event.operation.opcode !== 'attach') return []
+  const message: Message | undefined = await findMessage(
+    ctx.db,
+    ctx.metadata.filesUrl,
+    ctx.workspace,
+    event.cardId,
+    event.messageId,
+    {
       files: true
-    })
-  )[0]
-
-  const result: RequestEvent[] = []
-  if (message === undefined) {
-    message = await findMessageInFiles(
-      ctx.db,
-      ctx.metadata.filesUrl,
-      ctx.workspace,
-      event.thread.cardId,
-      event.thread.messageId
-    )
-
-    if (message !== undefined) {
-      result.push({
-        type: MessageRequestEventType.CreatePatch,
-        patchType: PatchType.updateThread,
-        cardId: event.thread.cardId,
-        messageId: event.thread.messageId,
-        data: { threadId: event.thread.threadId, threadType: event.thread.threadType },
-        socialId: message.creator,
-        date: message.created
-      })
     }
-  }
+  )
 
-  if (message === undefined || message.type === MessageType.Activity || message.extra?.threadRoot === true) {
+  if (message === undefined) return []
+
+  const result: Event[] = []
+
+  if (message.type === MessageType.Activity || message.extra?.threadRoot === true) {
     return []
   }
 
-  const messageId = generateMessageId(true)
+  const messageId = generateMessageId()
 
   result.push({
     messageId,
-    type: MessageRequestEventType.CreateMessage,
+    type: MessageEventType.CreateMessage,
     messageType: message.type,
-    cardId: event.thread.threadId,
-    cardType: event.thread.threadType,
+    cardId: event.operation.threadId,
+    cardType: event.operation.threadType,
     content: message.content,
     extra: { ...message.extra, threadRoot: true },
     socialId: message.creator,
     date: message.created
   })
 
-  for (const blob of message.blobs) {
-    result.push({
-      type: MessageRequestEventType.AttachBlob,
-      cardId: event.thread.threadId,
-      messageId,
-      blobData: {
-        blobId: blob.blobId,
-        contentType: blob.contentType,
-        fileName: blob.fileName,
-        size: blob.size,
-        metadata: blob.metadata
-      },
-      socialId: blob.creator,
-      date: blob.created
-    })
-  }
+  result.push({
+    type: MessageEventType.BlobPatch,
+    cardId: event.operation.threadId,
+    messageId,
+    operations: [
+      {
+        opcode: 'attach',
+        blobs: message.blobs
+      }
+    ],
+    socialId: message.creator,
+    date: message.created
+  })
 
   return result
 }
 
 const triggers: Triggers = [
-  ['add_collaborators_on_message_created', MessageResponseEventType.MessageCreated, addCollaborators as TriggerFn],
-  ['add_thread_reply_on_message_created', MessageResponseEventType.MessageCreated, addThreadReply as TriggerFn],
-  ['register_card_on_message_created', MessageResponseEventType.MessageCreated, registerCard as TriggerFn],
-  ['register_card_on_patch', MessageResponseEventType.PatchCreated, registerCard as TriggerFn],
-  ['on_messages_group_created', MessageResponseEventType.MessagesGroupCreated, onMessagesGroupCreated as TriggerFn],
-  ['remove_reply_on_messages_removed', MessageResponseEventType.PatchCreated, onMessageRemoved as TriggerFn],
-  ['on_thread_created', MessageResponseEventType.ThreadAttached, onThreadAttached as TriggerFn],
-  ['on_blob_attached', MessageResponseEventType.BlobAttached, onBlobAttached as TriggerFn],
-  ['on_blob_detached', MessageResponseEventType.BlobDetached, onBlobDetached as TriggerFn]
+  ['add_collaborators_on_message_created', MessageEventType.CreateMessage, addCollaborators as TriggerFn],
+  ['add_thread_reply_on_message_created', MessageEventType.CreateMessage, addThreadReply as TriggerFn],
+  ['register_card_on_message_created', MessageEventType.CreateMessage, registerCard as TriggerFn],
+  ['register_card_on_update_patch', MessageEventType.UpdatePatch, registerCard as TriggerFn],
+  ['register_card_on_remove_patch', MessageEventType.RemovePatch, registerCard as TriggerFn],
+  ['register_card_on_reaction_patch', MessageEventType.ReactionPatch, registerCard as TriggerFn],
+  ['register_card_on_blob_patch', MessageEventType.BlobPatch, registerCard as TriggerFn],
+  ['register_card_on_link_preview_patch', MessageEventType.LinkPreviewPatch, registerCard as TriggerFn],
+  ['register_card_on_thread_patch', MessageEventType.ThreadPatch, registerCard as TriggerFn],
+
+  ['on_messages_group_created', MessageEventType.CreateMessagesGroup, onMessagesGroupCreated as TriggerFn],
+  ['remove_reply_on_messages_removed', MessageEventType.RemovePatch, onMessageRemoved as TriggerFn],
+  ['on_thread_created', MessageEventType.ThreadPatch, onThreadAttached as TriggerFn]
 ]
 
 export default triggers

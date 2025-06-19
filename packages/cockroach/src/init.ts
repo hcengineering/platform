@@ -14,6 +14,7 @@
 //
 
 import type postgres from 'postgres'
+import { TableName } from './schema'
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -115,7 +116,15 @@ function getMigrations (): [string, string][] {
     migrationV3_1(),
     migrationV4_1(),
     migrationV5_1(),
-    migrationV5_2()
+    migrationV5_2(),
+    migrationV6_1(),
+    migrationV6_2(),
+    migrationV6_3(),
+    migrationV6_4(),
+    migrationV6_5(),
+    migrationV6_6(),
+    migrationV6_7(),
+    migrationV6_8()
   ]
 }
 
@@ -398,4 +407,200 @@ function migrationV5_2 (): [string, string] {
       );
   `
   return ['init_message_created_table-v5_2', sql]
+}
+
+function migrationV6_1 (): [string, string] {
+  const sql = `
+      ALTER TABLE ${TableName.Message}
+          ADD COLUMN IF NOT EXISTS message_id_str VARCHAR(22);
+      ALTER TABLE ${TableName.Patch}
+          ADD COLUMN IF NOT EXISTS message_id_str VARCHAR(22);
+      ALTER TABLE ${TableName.File}
+          ADD COLUMN IF NOT EXISTS message_id_str VARCHAR(22);
+      ALTER TABLE ${TableName.Reaction}
+          ADD COLUMN IF NOT EXISTS message_id_str VARCHAR(22);
+      ALTER TABLE ${TableName.Thread}
+          ADD COLUMN IF NOT EXISTS message_id_str VARCHAR(22);
+      ALTER TABLE ${TableName.LinkPreview}
+          ADD COLUMN IF NOT EXISTS message_id_str VARCHAR(22);
+      ALTER TABLE ${TableName.Notification}
+          ADD COLUMN IF NOT EXISTS message_id_str VARCHAR(22);
+      ALTER TABLE ${TableName.MessageCreated}
+          ADD COLUMN IF NOT EXISTS message_id_str VARCHAR(22);
+  `
+  return ['add_message_id_str_columns-v6_1', sql]
+}
+
+function migrationV6_2 (): [string, string] {
+  const sql = `
+      UPDATE ${TableName.Message}
+      SET message_id_str = id::text;
+      UPDATE ${TableName.Patch}
+      SET message_id_str = message_id::text;
+      UPDATE ${TableName.File}
+      SET message_id_str = message_id::text;
+      UPDATE ${TableName.Reaction}
+      SET message_id_str = message_id::text;
+      UPDATE ${TableName.Thread}
+      SET message_id_str = message_id::text;
+      UPDATE ${TableName.LinkPreview}
+      SET message_id_str = message_id::text;
+      UPDATE ${TableName.Notification}
+      SET message_id_str = message_id::text;
+      UPDATE ${TableName.MessageCreated}
+      SET message_id_str = message_id::text;
+  `
+  return ['copy_int8_ids_to_str_columns-v6_2', sql]
+}
+
+function migrationV6_3 (): [string, string] {
+  const sql = `
+      ALTER TABLE ${TableName.Reaction}
+          DROP CONSTRAINT IF EXISTS reactions_workspace_id_card_id_message_id_fkey;
+
+      DROP INDEX IF EXISTS communication.thread_unique_constraint CASCADE;
+
+      DROP INDEX IF EXISTS communication.idx_patch_workspace_card_message;
+      DROP INDEX IF EXISTS communication.files_workspace_card_message_idx;
+      DROP INDEX IF EXISTS communication.idx_reactions_workspace_card_message;
+      DROP INDEX IF EXISTS communication.idx_thread_workspace_card_message;
+      DROP INDEX IF EXISTS communication.workspace_id_card_id_message_id_idx;
+      DROP INDEX IF EXISTS communication.notifications_context_id_read_created_desc_idx;
+      DROP INDEX IF EXISTS communication.notifications_type_storing_rec_idx;
+  `
+  return ['drop_constraints_and_indexes_for_rename-v6_3', sql]
+}
+
+function migrationV6_4 (): [string, string] {
+  const sql = `
+      ALTER TABLE ${TableName.Message}
+          RENAME COLUMN id TO message_id_old;
+      ALTER TABLE ${TableName.Message}
+          RENAME COLUMN message_id_str TO id;
+
+      ALTER TABLE ${TableName.Patch}
+          RENAME COLUMN message_id TO message_id_old;
+      ALTER TABLE ${TableName.Patch}
+          RENAME COLUMN message_id_str TO message_id;
+
+      ALTER TABLE ${TableName.File}
+          RENAME COLUMN message_id TO message_id_old;
+      ALTER TABLE ${TableName.File}
+          RENAME COLUMN message_id_str TO message_id;
+
+      ALTER TABLE ${TableName.Reaction}
+          RENAME COLUMN message_id TO message_id_old;
+      ALTER TABLE ${TableName.Reaction}
+          RENAME COLUMN message_id_str TO message_id;
+
+      ALTER TABLE ${TableName.Thread}
+          RENAME COLUMN message_id TO message_id_old;
+      ALTER TABLE ${TableName.Thread}
+          RENAME COLUMN message_id_str TO message_id;
+
+      ALTER TABLE ${TableName.LinkPreview}
+          RENAME COLUMN message_id TO message_id_old;
+      ALTER TABLE ${TableName.LinkPreview}
+          RENAME COLUMN message_id_str TO message_id;
+
+      ALTER TABLE ${TableName.Notification}
+          RENAME COLUMN message_id TO message_id_old;
+      ALTER TABLE ${TableName.Notification}
+          RENAME COLUMN message_id_str TO message_id;
+
+      ALTER TABLE ${TableName.MessageCreated}
+          RENAME COLUMN message_id TO message_id_old;
+      ALTER TABLE ${TableName.MessageCreated}
+          RENAME COLUMN message_id_str TO message_id;
+  `
+  return ['rename_message_id_columns-v6_4', sql]
+}
+
+function migrationV6_5 (): [string, string] {
+  const sql = `
+      ALTER TABLE ${TableName.Message}
+          ALTER COLUMN id SET NOT NULL;
+
+      ALTER TABLE ${TableName.MessageCreated}
+          ALTER COLUMN message_id SET NOT NULL;
+      ALTER TABLE ${TableName.File}
+          ALTER COLUMN message_id SET NOT NULL;
+      ALTER TABLE ${TableName.Reaction}
+          ALTER COLUMN message_id SET NOT NULL;
+      ALTER TABLE ${TableName.Thread}
+          ALTER COLUMN message_id SET NOT NULL;
+      ALTER TABLE ${TableName.LinkPreview}
+          ALTER COLUMN message_id SET NOT NULL;
+      ALTER TABLE ${TableName.Notification}
+          ALTER COLUMN message_id SET NOT NULL;
+
+  `
+  return ['make_message_id_not_null-v6_5', sql]
+}
+
+function migrationV6_6 (): [string, string] {
+  const sql = `
+      ALTER TABLE ${TableName.Message}
+          ALTER PRIMARY KEY USING COLUMNS (workspace_id, card_id, id);
+      ALTER TABLE ${TableName.MessageCreated}
+          ALTER PRIMARY KEY USING COLUMNS (workspace_id, card_id, message_id);
+      ALTER TABLE ${TableName.File}
+          ALTER PRIMARY KEY USING COLUMNS (workspace_id, card_id, message_id, blob_id);
+      ALTER TABLE ${TableName.Reaction}
+          ALTER PRIMARY KEY USING COLUMNS (workspace_id, card_id, message_id, creator, reaction);
+  `
+  return ['recrate_primary_keys-v6_6', sql]
+}
+
+function migrationV6_7 (): [string, string] {
+  const sql = `
+      ALTER TABLE ${TableName.Reaction}
+          ADD CONSTRAINT fk_reactions_message
+              FOREIGN KEY (workspace_id, card_id, message_id)
+                  REFERENCES ${TableName.Message} (workspace_id, card_id, id)
+                  ON DELETE CASCADE;
+
+      CREATE INDEX IF NOT EXISTS idx_patch_workspace_card_message
+          ON ${TableName.Patch} (workspace_id, card_id, message_id);
+
+      CREATE INDEX IF NOT EXISTS files_workspace_card_message_idx
+          ON ${TableName.File} (workspace_id, card_id, message_id);
+
+      CREATE INDEX IF NOT EXISTS idx_reactions_workspace_card_message
+          ON ${TableName.Reaction} (workspace_id, card_id, message_id);
+
+      ALTER TABLE ${TableName.Thread} ADD CONSTRAINT thread_unique_constraint UNIQUE (workspace_id, card_id, message_id);
+
+      CREATE INDEX IF NOT EXISTS idx_thread_workspace_card_message
+          ON ${TableName.Thread} (workspace_id, card_id, message_id);
+
+      CREATE INDEX IF NOT EXISTS workspace_id_card_id_message_id_idx
+          ON ${TableName.LinkPreview} (workspace_id, card_id, message_id);
+
+      CREATE INDEX IF NOT EXISTS notifications_context_id_read_created_desc_idx
+          ON ${TableName.Notification} (context_id, read, created DESC);
+  `
+  return ['recreate_constraints_and_indexes-v6_7', sql]
+}
+
+function migrationV6_8 (): [string, string] {
+  const sql = `
+      ALTER TABLE ${TableName.Message}
+          DROP COLUMN IF EXISTS message_id_old;
+      ALTER TABLE ${TableName.Patch}
+          DROP COLUMN IF EXISTS message_id_old;
+      ALTER TABLE ${TableName.File}
+          DROP COLUMN IF EXISTS message_id_old;
+      ALTER TABLE ${TableName.Reaction}
+          DROP COLUMN IF EXISTS message_id_old;
+      ALTER TABLE ${TableName.Thread}
+          DROP COLUMN IF EXISTS message_id_old;
+      ALTER TABLE ${TableName.LinkPreview}
+          DROP COLUMN IF EXISTS message_id_old;
+      ALTER TABLE ${TableName.Notification}
+          DROP COLUMN IF EXISTS message_id_old;
+      ALTER TABLE ${TableName.MessageCreated}
+          DROP COLUMN IF EXISTS message_id_old;
+  `
+  return ['drop_old_message_id_columns-v6_8', sql]
 }

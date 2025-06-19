@@ -83,10 +83,10 @@ export function parseYaml (data: string): ParsedFile {
             }
           : undefined,
       blobs:
-        message.blobs ??
+        message.blobs?.map((it) => ({ ...it, mimeType: it.mimeType ?? (it as any).contentType })) ??
         (message as any).files?.map((it: any) => ({
           blobId: it.blobId,
-          contentType: it.type,
+          mimeType: it.type,
           fileName: it.filename,
           size: it.size,
           metadata: it.meta

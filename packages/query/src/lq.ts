@@ -28,9 +28,8 @@ import {
 } from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
 import type {
-  ResponseEvent,
   QueryCallback,
-  RequestEvent,
+  Event,
   EventResult,
   PagedQueryCallback,
   FindClient
@@ -67,13 +66,13 @@ export class LiveQueries {
     }
   }
 
-  async onEvent (event: ResponseEvent): Promise<void> {
+  async onEvent (event: Event): Promise<void> {
     for (const q of this.queries.values()) {
       void q.onEvent(event)
     }
   }
 
-  async onRequest (event: RequestEvent, promise: Promise<EventResult>): Promise<void> {
+  async onRequest (event: Event, promise: Promise<EventResult>): Promise<void> {
     for (const q of this.queries.values()) {
       void q.onRequest(event, promise)
     }
@@ -124,7 +123,7 @@ export class LiveQueries {
     QueryClass: new (...args: any[]) => Q,
     finder: (params: P) => Q | undefined
   ): CreateQueryResult {
-    const query = this.createQuery<P, Q>(params, callback, QueryClass, finder)
+    const query = this.findOrCreateQuery<P, Q>(params, callback, QueryClass, finder)
     this.queries.set(query.id, query)
 
     return {
@@ -134,7 +133,7 @@ export class LiveQueries {
     }
   }
 
-  private createQuery<P, Q extends AnyQuery>(
+  private findOrCreateQuery<P, Q extends AnyQuery>(
     params: P,
     callback: any,
     QueryClass: new (...args: any[]) => Q,
@@ -150,6 +149,7 @@ export class LiveQueries {
         return exists
       } else {
         const result = exists.copyResult()
+
         return new QueryClass(this.client, this.workspace, this.filesUrl, id, params, callback, result)
       }
     }

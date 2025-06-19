@@ -13,12 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  type EventResult,
-  type RequestEvent,
-  type ResponseEvent,
-  type SessionData
-} from '@hcengineering/communication-sdk-types'
+import { type EventResult, type Event, type SessionData } from '@hcengineering/communication-sdk-types'
 import type {
   FindMessagesGroupsParams,
   FindMessagesParams,
@@ -78,11 +73,11 @@ export class BaseMiddleware implements Middleware {
     return await this.provideFindCollaborators(session, params)
   }
 
-  async event (session: SessionData, event: Enriched<RequestEvent>, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
     return await this.provideEvent(session, event, derived)
   }
 
-  async response (session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
+  async response (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<void> {
     await this.provideResponse(session, event, derived)
   }
 
@@ -95,11 +90,7 @@ export class BaseMiddleware implements Middleware {
   close (): void {}
   closeSession (sessionId: string): void {}
 
-  protected async provideEvent (
-    session: SessionData,
-    event: Enriched<RequestEvent>,
-    derived: boolean
-  ): Promise<EventResult> {
+  protected async provideEvent (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
     if (this.next !== undefined) {
       return await this.next.event(session, event, derived)
     }
@@ -171,7 +162,7 @@ export class BaseMiddleware implements Middleware {
     return []
   }
 
-  protected async provideResponse (session: SessionData, event: ResponseEvent, derived: boolean): Promise<void> {
+  protected async provideResponse (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<void> {
     if (this.next !== undefined) {
       await this.next.response(session, event, derived)
     }

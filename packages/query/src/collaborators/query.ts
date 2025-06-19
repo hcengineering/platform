@@ -15,16 +15,15 @@
 
 import type { AccountID, Collaborator, FindCollaboratorsParams, WorkspaceID } from '@hcengineering/communication-types'
 import {
-  type CardRemovedEvent,
-  CardResponseEventType,
   type EventResult,
   type FindClient,
-  NotificationResponseEventType,
   type QueryCallback,
-  type RequestEvent,
-  type ResponseEvent,
-  AddedCollaboratorsEvent,
-  RemovedCollaboratorsEvent
+  type Event,
+  NotificationEventType,
+  CardEventType,
+  AddCollaboratorsEvent,
+  RemoveCollaboratorsEvent,
+  RemoveCardEvent
 } from '@hcengineering/communication-sdk-types'
 
 import { QueryResult } from '../result'
@@ -51,22 +50,22 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
     }
   }
 
-  async onEvent (event: ResponseEvent): Promise<void> {
+  async onEvent (event: Event): Promise<void> {
     if (this.isCardRemoved) return
     switch (event.type) {
-      case NotificationResponseEventType.AddedCollaborators:
+      case NotificationEventType.AddCollaborators:
         await this.onCollaboratorsAdded(event)
         break
-      case NotificationResponseEventType.RemovedCollaborators:
+      case NotificationEventType.RemoveCollaborators:
         await this.onCollaboratorsRemoved(event)
         break
-      case CardResponseEventType.CardRemoved:
+      case CardEventType.RemoveCard:
         await this.onCardRemoved(event)
         break
     }
   }
 
-  async onCollaboratorsAdded (event: AddedCollaboratorsEvent): Promise<void> {
+  async onCollaboratorsAdded (event: AddCollaboratorsEvent): Promise<void> {
     if (event.cardId !== this.params.card || event.collaborators.length === 0) return
     if (this.result instanceof Promise) this.result = await this.result
 
@@ -90,7 +89,7 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
     }
   }
 
-  async onCollaboratorsRemoved (event: RemovedCollaboratorsEvent): Promise<void> {
+  async onCollaboratorsRemoved (event: RemoveCollaboratorsEvent): Promise<void> {
     if (event.cardId !== this.params.card || event.collaborators.length === 0) return
     if (this.result instanceof Promise) this.result = await this.result
 
@@ -110,7 +109,7 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
     void this.notify()
   }
 
-  async onCardRemoved (event: CardRemovedEvent): Promise<void> {
+  async onCardRemoved (event: RemoveCardEvent): Promise<void> {
     if (this.params.card !== event.cardId) return
     if (this.result instanceof Promise) this.result = await this.result
 
@@ -119,7 +118,7 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
     void this.notify()
   }
 
-  async onRequest (event: RequestEvent, promise: Promise<EventResult>): Promise<void> {}
+  async onRequest (event: Event, promise: Promise<EventResult>): Promise<void> {}
 
   private async initResult (): Promise<QueryResult<Collaborator>> {
     try {

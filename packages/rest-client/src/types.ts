@@ -17,8 +17,8 @@ import type {
   CreateMessageOptions,
   CreateMessageResult,
   EventResult,
-  PatchMessageOptions,
-  RequestEvent
+  UpdatePatchOptions,
+  Event
 } from '@hcengineering/communication-sdk-types'
 import type {
   FindMessagesGroupsParams,
@@ -46,15 +46,15 @@ export interface RestClient {
   findNotificationContexts: (params: FindNotificationContextParams) => Promise<NotificationContext[]>
   findNotifications: (params: FindNotificationsParams) => Promise<Notification[]>
 
-  event: (event: RequestEvent) => Promise<EventResult>
+  event: (event: Event) => Promise<EventResult>
 
   createMessage: (
     cardId: CardID,
     cardType: CardType,
     content: Markdown,
     type: MessageType,
-    extra?: MessageExtra,
-    socialId?: SocialID,
+    extra: MessageExtra | undefined,
+    socialId: SocialID,
     date?: Date,
     messageId?: MessageID,
     options?: CreateMessageOptions
@@ -62,14 +62,27 @@ export interface RestClient {
   updateMessage: (
     cardId: CardID,
     messageId: MessageID,
-    content?: Markdown,
-    extra?: MessageExtra,
-    socialId?: SocialID,
+    content: Markdown | undefined,
+    extra: MessageExtra | undefined,
+    socialId: SocialID,
     date?: Date,
-    options?: PatchMessageOptions
+    options?: UpdatePatchOptions
   ) => Promise<void>
-  removeMessage: (cardId: CardID, messageId: MessageID, socialId?: SocialID) => Promise<void>
+  removeMessage: (cardId: CardID, messageId: MessageID, socialId: SocialID, date?: Date) => Promise<void>
 
-  attachBlob: (cardId: CardID, messageId: MessageID, data: BlobData, socialId?: SocialID, date?: Date) => Promise<void>
-  detachBlob: (cardId: CardID, messageId: MessageID, blobId: BlobID, socialId?: SocialID, date?: Date) => Promise<void>
+  attachBlobs: (
+    cardId: CardID,
+    messageId: MessageID,
+    blobs: BlobData[],
+    socialId: SocialID,
+    date?: Date
+  ) => Promise<void>
+  detachBlobs: (
+    cardId: CardID,
+    messageId: MessageID,
+    blobIds: BlobID[],
+    socialId: SocialID,
+    date?: Date
+  ) => Promise<void>
+  setBlobs: (cardId: CardID, messageId: MessageID, blobs: BlobData[], socialId: SocialID, date?: Date) => Promise<void>
 }

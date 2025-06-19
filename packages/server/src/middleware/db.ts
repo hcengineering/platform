@@ -14,6 +14,7 @@
 //
 
 import {
+  CardID,
   type Collaborator,
   type FindCollaboratorsParams,
   type FindLabelsParams,
@@ -23,73 +24,51 @@ import {
   type FindNotificationsParams,
   type Label,
   type Message,
+  MessageID,
   type MessagesGroup,
   type Notification,
   type NotificationContext,
-  Patch,
   PatchType,
-  type Reaction
+  SocialID,
+  UpdatePatchData
 } from '@hcengineering/communication-types'
 import {
   type AddCollaboratorsEvent,
-  type AttachBlobEvent,
-  type AttachThreadEvent,
-  type BlobAttachedEvent,
-  type BlobDetachedEvent,
-  CardRequestEventType,
-  CardResponseEventType,
+  BlobPatchEvent,
+  CardEventType,
   type CreateLabelEvent,
-  type CreateLinkPreviewEvent,
   type CreateMessageEvent,
   type CreateMessagesGroupEvent,
   type CreateNotificationContextEvent,
   type CreateNotificationEvent,
-  type CreatePatchEvent,
   type DbAdapter,
-  type DetachBlobEvent,
+  type Event,
   type EventResult,
-  LabelRequestEventType,
-  LabelResponseEventType,
-  type LinkPreviewCreatedEvent,
-  type LinkPreviewRemovedEvent,
-  type MessageCreatedEvent,
-  MessageRequestEventType,
-  MessageResponseEventType,
-  type MessagesGroupCreatedEvent,
-  type NotificationContextCreatedEvent,
-  type NotificationContextRemovedEvent,
-  type NotificationContextUpdatedEvent,
-  NotificationRequestEventType,
-  NotificationResponseEventType,
-  type NotificationsRemovedEvent,
-  type NotificationUpdatedEvent,
-  PatchCreatedEvent,
-  type ReactionRemovedEvent,
-  type ReactionSetEvent,
+  LabelEventType,
+  LinkPreviewPatchEvent,
+  MessageEventType,
+  NotificationEventType,
+  ReactionPatchEvent,
   type RemoveCardEvent,
   type RemoveCollaboratorsEvent,
   type RemoveLabelEvent,
-  type RemoveLinkPreviewEvent,
   type RemoveMessagesGroupEvent,
   type RemoveNotificationContextEvent,
   type RemoveNotificationsEvent,
-  type RemoveReactionEvent,
-  type RequestEvent,
-  type ResponseEvent,
+  RemovePatchEvent,
   type SessionData,
-  type SetReactionEvent,
-  type ThreadAttachedEvent,
   type UpdateCardTypeEvent,
   type UpdateNotificationContextEvent,
   type UpdateNotificationEvent,
-  type UpdateThreadEvent
+  UpdatePatchEvent,
+  ThreadPatchEvent
 } from '@hcengineering/communication-sdk-types'
 
 import type { Enriched, Middleware, MiddlewareContext } from '../types'
 import { BaseMiddleware } from './base'
 
 interface Result {
-  responseEvent?: ResponseEvent
+  response?: Enriched<Event>
   result?: EventResult
 }
 
@@ -129,75 +108,69 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     return await this.db.findCollaborators(params)
   }
 
-  async event (session: SessionData, event: Enriched<RequestEvent>, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
     const result = await this.processEvent(session, event)
-    if (result.responseEvent != null) {
-      void this.context.head?.response(session, result.responseEvent, derived)
+    if (result.response != null) {
+      void this.context.head?.response(session, result.response, derived)
     }
 
     return result.result ?? {}
   }
 
-  private async processEvent (session: SessionData, event: Enriched<RequestEvent>): Promise<Result> {
+  private async processEvent (session: SessionData, event: Enriched<Event>): Promise<Result> {
     switch (event.type) {
       // Messages
-      case MessageRequestEventType.CreateMessage:
+      case MessageEventType.CreateMessage:
         return await this.createMessage(event)
-      case MessageRequestEventType.CreatePatch:
-        return await this.createPatch(event)
-      case MessageRequestEventType.SetReaction:
-        return await this.setReaction(event)
-      case MessageRequestEventType.RemoveReaction:
-        return await this.removeReaction(event)
-      case MessageRequestEventType.AttachBlob:
-        return await this.attachBlob(event)
-      case MessageRequestEventType.DetachBlob:
-        return await this.detachBlob(event)
-      case MessageRequestEventType.CreateLinkPreview:
-        return await this.createLinkPreview(event)
-      case MessageRequestEventType.RemoveLinkPreview:
-        return await this.removeLinkPreview(event)
-      case MessageRequestEventType.AttachThread:
-        return await this.attachThread(event)
-      case MessageRequestEventType.UpdateThread:
-        return await this.updateThread(event)
-      case MessageRequestEventType.CreateMessagesGroup:
+      case MessageEventType.UpdatePatch:
+        return await this.updatePatch(event)
+      case MessageEventType.RemovePatch:
+        return await this.removePatch(event)
+      case MessageEventType.ReactionPatch:
+        return await this.reactionPatch(event)
+      case MessageEventType.BlobPatch:
+        return await this.blobPatch(event)
+      case MessageEventType.LinkPreviewPatch:
+        return await this.linkPreviewPatch(event)
+      case MessageEventType.ThreadPatch:
+        return await this.threadPatch(event)
+      case MessageEventType.CreateMessagesGroup:
         return await this.createMessagesGroup(event)
-      case MessageRequestEventType.RemoveMessagesGroup:
+      case MessageEventType.RemoveMessagesGroup:
         return await this.removeMessagesGroup(event)
 
       // Labels
-      case LabelRequestEventType.CreateLabel:
+      case LabelEventType.CreateLabel:
         return await this.createLabel(event)
-      case LabelRequestEventType.RemoveLabel:
+      case LabelEventType.RemoveLabel:
         return await this.removeLabel(event)
 
       // Cards
-      case CardRequestEventType.UpdateCardType:
+      case CardEventType.UpdateCardType:
         return await this.updateCardType(event)
-      case CardRequestEventType.RemoveCard:
+      case CardEventType.RemoveCard:
         return await this.removeCard(event)
 
       // Collaborators
-      case NotificationRequestEventType.AddCollaborators:
+      case NotificationEventType.AddCollaborators:
         return await this.addCollaborators(event)
-      case NotificationRequestEventType.RemoveCollaborators:
+      case NotificationEventType.RemoveCollaborators:
         return await this.removeCollaborators(event)
 
       // Notifications
-      case NotificationRequestEventType.CreateNotification:
+      case NotificationEventType.CreateNotification:
         return await this.createNotification(event)
-      case NotificationRequestEventType.RemoveNotifications:
+      case NotificationEventType.RemoveNotifications:
         return await this.removeNotifications(event)
-      case NotificationRequestEventType.UpdateNotification:
+      case NotificationEventType.UpdateNotification:
         return await this.updateNotification(event)
 
       // Notification Contexts
-      case NotificationRequestEventType.CreateNotificationContext:
+      case NotificationEventType.CreateNotificationContext:
         return await this.createNotificationContext(event)
-      case NotificationRequestEventType.RemoveNotificationContext:
+      case NotificationEventType.RemoveNotificationContext:
         return await this.removeNotificationContext(event)
-      case NotificationRequestEventType.UpdateNotificationContext:
+      case NotificationEventType.UpdateNotificationContext:
         return await this.updateNotificationContext(event)
     }
   }
@@ -206,15 +179,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     const added = await this.db.addCollaborators(event.cardId, event.cardType, event.collaborators, event.date)
     if (added.length === 0) return {}
     return {
-      responseEvent: {
-        _id: event._id,
-        type: NotificationResponseEventType.AddedCollaborators,
-        cardId: event.cardId,
-        cardType: event.cardType,
-        collaborators: added,
-        socialId: event.socialId,
-        date: event.date
-      }
+      response: event
     }
   }
 
@@ -223,24 +188,13 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     await this.db.removeCollaborators(event.cardId, event.collaborators)
 
     return {
-      responseEvent: {
-        _id: event._id,
-        type: NotificationResponseEventType.RemovedCollaborators,
-        cardId: event.cardId,
-        cardType: event.cardType,
-        collaborators: event.collaborators,
-        socialId: event.socialId,
-        date: event.date
-      }
+      response: event
     }
   }
 
   private async createMessage (event: Enriched<CreateMessageEvent>): Promise<Result> {
     if (event.messageId == null) {
       throw new Error('Message id is required')
-    }
-    if (event.date == null) {
-      throw new Error('Date is required')
     }
 
     const created = await this.db.createMessage(
@@ -262,218 +216,114 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       }
     }
 
-    const message: Message = {
-      id: event.messageId,
-      type: event.messageType,
-      cardId: event.cardId,
+    return {
+      response: event,
+      result: {
+        messageId: event.messageId,
+        created: event.date
+      }
+    }
+  }
+
+  private async createPatch (
+    cardId: CardID,
+    messageId: MessageID,
+    type: PatchType,
+    data: Record<string, any>,
+    socialId: SocialID,
+    date: Date
+  ): Promise<void> {
+    await this.db.createPatch(cardId, messageId, type, data, socialId, date)
+  }
+
+  private async updatePatch (event: Enriched<UpdatePatchEvent>): Promise<Result> {
+    const data: UpdatePatchData = {
       content: event.content,
-      creator: event.socialId,
-      created: event.date,
-      extra: event.extra,
-
-      removed: false,
-
-      reactions: [],
-      blobs: [],
-      linkPreviews: []
+      extra: event.extra
     }
-    const responseEvent: MessageCreatedEvent = {
-      _id: event._id,
-      type: MessageResponseEventType.MessageCreated,
-      cardId: event.cardId,
-      cardType: event.cardType,
-      message,
-      options: event.options
+    await this.createPatch(event.cardId, event.messageId, PatchType.update, data, event.socialId, event.date)
+
+    return { response: event }
+  }
+
+  private async removePatch (event: Enriched<RemovePatchEvent>): Promise<Result> {
+    await this.createPatch(event.cardId, event.messageId, PatchType.remove, {}, event.socialId, event.date)
+    return { response: event }
+  }
+
+  private async reactionPatch (event: Enriched<ReactionPatchEvent>): Promise<Result> {
+    const { operation } = event
+
+    if (operation.opcode === 'add') {
+      await this.db.addReaction(event.cardId, event.messageId, operation.reaction, event.socialId, event.date)
+    } else if (operation.opcode === 'remove') {
+      await this.db.removeReaction(event.cardId, event.messageId, operation.reaction, event.socialId, event.date)
     }
-    return {
-      responseEvent,
-      result: {
-        messageId: event.messageId,
-        created: event.date
+
+    return { response: event }
+  }
+
+  private async blobPatch (event: Enriched<BlobPatchEvent>): Promise<Result> {
+    const { operations } = event
+
+    for (const operation of operations) {
+      if (operation.opcode === 'attach') {
+        await this.db.attachBlobs(event.cardId, event.messageId, operation.blobs, event.socialId, event.date)
+      } else if (operation.opcode === 'detach') {
+        await this.db.detachBlobs(event.cardId, event.messageId, operation.blobIds, event.socialId, event.date)
+      } else if (operation.opcode === 'set') {
+        await this.db.setBlobs(event.cardId, event.messageId, operation.blobs, event.socialId, event.date)
       }
     }
+
+    return { response: event }
   }
 
-  private async createPatch (event: Enriched<CreatePatchEvent>): Promise<Result> {
-    const messageCreated = await this.db.getMessageCreated(event.cardId, event.messageId)
-    if (messageCreated == null) return {}
-    await this.db.createPatch(
-      event.cardId,
-      event.messageId,
-      messageCreated,
-      event.patchType,
-      event.data,
-      event.socialId,
-      event.date
-    )
-
-    const patch = {
-      type: event.patchType,
-      messageId: event.messageId,
-      data: event.data,
-      creator: event.socialId,
-      created: event.date
-    } as any as Patch
-
-    const responseEvent: PatchCreatedEvent = {
-      _id: event._id,
-      type: MessageResponseEventType.PatchCreated,
-      cardId: event.cardId,
-      messageId: event.messageId,
-      messageCreated,
-      patch,
-      options: event.options
-    }
-
-    return {
-      responseEvent
-    }
-  }
-
-  private async setReaction (event: Enriched<SetReactionEvent>): Promise<Result> {
-    const inDb = await this.db.isMessageInDb(event.cardId, event.messageId)
-    if (inDb) {
-      await this.db.setReaction(event.cardId, event.messageId, event.reaction, event.socialId, event.date)
-    } else {
-      await this.createPatch({
-        type: MessageRequestEventType.CreatePatch,
-        cardId: event.cardId,
-        messageId: event.messageId,
-        patchType: PatchType.setReaction,
-        data: {
-          reaction: event.reaction
-        },
-        socialId: event.socialId,
-        date: event.date
-      })
-    }
-
-    const reaction: Reaction = {
-      reaction: event.reaction,
-      creator: event.socialId,
-      created: event.date
-    }
-    const responseEvent: ReactionSetEvent = {
-      _id: event._id,
-      type: MessageResponseEventType.ReactionSet,
-      cardId: event.cardId,
-      messageId: event.messageId,
-      reaction
-    }
-    return {
-      responseEvent
-    }
-  }
-
-  private async removeReaction (event: Enriched<RemoveReactionEvent>): Promise<Result> {
-    const inDb = await this.db.isMessageInDb(event.cardId, event.messageId)
-    if (inDb) {
-      await this.db.removeReaction(event.cardId, event.messageId, event.reaction, event.socialId, event.date)
-    } else {
-      await this.createPatch({
-        type: MessageRequestEventType.CreatePatch,
-        cardId: event.cardId,
-        messageId: event.messageId,
-        patchType: PatchType.removeReaction,
-        data: {
-          reaction: event.reaction
-        },
-        socialId: event.socialId,
-        date: event.date
-      })
-    }
-
-    const responseEvent: ReactionRemovedEvent = {
-      _id: event._id,
-      type: MessageResponseEventType.ReactionRemoved,
-      cardId: event.cardId,
-      messageId: event.messageId,
-      reaction: event.reaction,
-      socialId: event.socialId,
-      date: event.date
-    }
-    return {
-      responseEvent
-    }
-  }
-
-  private async attachBlob (event: Enriched<AttachBlobEvent>): Promise<Result> {
-    await this.db.attachBlob(event.cardId, event.messageId, event.blobData, event.socialId, event.date)
-    const responseEvent: BlobAttachedEvent = {
-      _id: event._id,
-      type: MessageResponseEventType.BlobAttached,
-      cardId: event.cardId,
-      messageId: event.messageId,
-      blob: {
-        ...event.blobData,
-        creator: event.socialId,
-        created: event.date
-      }
-    }
-    return {
-      responseEvent
-    }
-  }
-
-  private async detachBlob (event: Enriched<DetachBlobEvent>): Promise<Result> {
-    await this.db.detachBlob(event.cardId, event.messageId, event.blobId, event.socialId, event.date)
-    const responseEvent: BlobDetachedEvent = {
-      _id: event._id,
-      type: MessageResponseEventType.BlobDetached,
-      cardId: event.cardId,
-      messageId: event.messageId,
-      blobId: event.blobId,
-      socialId: event.socialId,
-      date: event.date
-    }
-    return {
-      responseEvent
-    }
-  }
-
-  private async createLinkPreview (event: Enriched<CreateLinkPreviewEvent>): Promise<Result> {
-    const id = await this.db.createLinkPreview(
-      event.cardId,
-      event.messageId,
-      event.previewData,
-      event.socialId,
-      event.date
-    )
-
-    const responseEvent: LinkPreviewCreatedEvent = {
-      _id: event._id,
-      type: MessageResponseEventType.LinkPreviewCreated,
-      cardId: event.cardId,
-      messageId: event.messageId,
-      linkPreview: {
-        ...event.previewData,
-        id,
-        creator: event.socialId,
-        created: event.date
+  private async linkPreviewPatch (event: Enriched<LinkPreviewPatchEvent>): Promise<Result> {
+    for (const operation of event.operations) {
+      if (operation.opcode === 'attach') {
+        await this.db.attachLinkPreviews(event.cardId, event.messageId, operation.previews, event.socialId, event.date)
+      } else if (operation.opcode === 'detach') {
+        await this.db.detachLinkPreviews(
+          event.cardId,
+          event.messageId,
+          operation.previewIds,
+          event.socialId,
+          event.date
+        )
+      } else if (operation.opcode === 'set') {
+        await this.db.setLinkPreviews(event.cardId, event.messageId, operation.previews, event.socialId, event.date)
       }
     }
 
     return {
-      responseEvent,
-      result: {
-        previewId: id,
-        created: event.date
-      }
+      response: event
     }
   }
 
-  private async removeLinkPreview (event: Enriched<RemoveLinkPreviewEvent>): Promise<Result> {
-    await this.db.removeLinkPreview(event.cardId, event.messageId, event.previewId)
-    const responseEvent: LinkPreviewRemovedEvent = {
-      _id: event._id,
-      type: MessageResponseEventType.LinkPreviewRemoved,
-      cardId: event.cardId,
-      messageId: event.messageId,
-      previewId: event.previewId
+  private async threadPatch (event: Enriched<ThreadPatchEvent>): Promise<Result> {
+    if (event.operation.opcode === 'attach') {
+      await this.db.attachThread(
+        event.cardId,
+        event.messageId,
+        event.operation.threadId,
+        event.operation.threadType,
+        event.socialId,
+        event.date
+      )
+    } else if (event.operation.opcode === 'update') {
+      await this.db.updateThread(
+        event.cardId,
+        event.messageId,
+        event.operation.threadId,
+        event.operation.updates,
+        event.socialId,
+        event.date
+      )
     }
 
     return {
-      responseEvent
+      response: event
     }
   }
 
@@ -489,53 +339,26 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     )
 
     return {
-      responseEvent: {
-        _id: event._id,
-        type: NotificationResponseEventType.NotificationCreated,
-        notification: {
-          id,
-          cardId: event.cardId,
-          account: event.account,
-          type: event.notificationType,
-          content: event.content ?? {},
-          contextId: event.contextId,
-          messageId: event.messageId,
-          messageCreated: event.messageCreated,
-          read: event.read ?? false,
-          created: event.date
-        }
-      }
+      response: { ...event, notificationId: id }
     }
   }
 
-  private async updateNotification (event: UpdateNotificationEvent): Promise<Result> {
-    await this.db.updateNotification(event.query, event.updates)
-    const responseEvent: NotificationUpdatedEvent = {
-      _id: event._id,
-      type: NotificationResponseEventType.NotificationUpdated,
-      query: event.query,
-      updates: event.updates
-    }
+  private async updateNotification (event: Enriched<UpdateNotificationEvent>): Promise<Result> {
+    await this.db.updateNotification(event.contextId, event.account, event.query, event.updates)
+
     return {
-      responseEvent
+      response: event
     }
   }
 
-  private async removeNotifications (event: RemoveNotificationsEvent): Promise<Result> {
+  private async removeNotifications (event: Enriched<RemoveNotificationsEvent>): Promise<Result> {
     if (event.ids.length === 0) return {}
     const ids = await this.db.removeNotifications(event.contextId, event.account, event.ids)
-    const responseEvent: NotificationsRemovedEvent = {
-      _id: event._id,
-      type: NotificationResponseEventType.NotificationsRemoved,
-      contextId: event.contextId,
-      account: event.account,
-      ids
-    }
     return {
       result: {
         ids
       },
-      responseEvent
+      response: { ...event, ids }
     }
   }
 
@@ -547,53 +370,30 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       event.lastView,
       event.lastNotify
     )
-    const responseEvent: NotificationContextCreatedEvent = {
-      _id: event._id,
-      type: NotificationResponseEventType.NotificationContextCreated,
-      context: {
-        id,
-        account: event.account,
-        cardId: event.cardId,
-        lastView: event.lastView,
-        lastUpdate: event.lastUpdate,
-        lastNotify: event.lastNotify
-      }
-    }
     return {
-      responseEvent,
+      response: { ...event, contextId: id },
       result: { id }
     }
   }
 
-  private async removeNotificationContext (event: RemoveNotificationContextEvent): Promise<Result> {
+  private async removeNotificationContext (event: Enriched<RemoveNotificationContextEvent>): Promise<Result> {
     const context = (await this.db.findNotificationContexts({ id: event.contextId, account: event.account }))[0]
-    if (context === undefined) return {}
+    if (context == null) return {}
 
-    await this.db.removeContext(event.contextId, event.account)
-    const responseEvent: NotificationContextRemovedEvent = {
-      _id: event._id,
-      type: NotificationResponseEventType.NotificationContextRemoved,
-      context
-    }
+    this.context.removedContexts.set(context.id, context)
+
+    const id = await this.db.removeContext(context.id, context.account)
+    if (id == null) return {}
     return {
-      responseEvent
+      response: event
     }
   }
 
-  async updateNotificationContext (event: UpdateNotificationContextEvent): Promise<Result> {
+  async updateNotificationContext (event: Enriched<UpdateNotificationContextEvent>): Promise<Result> {
     await this.db.updateContext(event.contextId, event.account, event.updates)
 
-    const responseEvent: NotificationContextUpdatedEvent = {
-      _id: event._id,
-      type: NotificationResponseEventType.NotificationContextUpdated,
-      contextId: event.contextId,
-      account: event.account,
-      lastView: event.updates.lastView,
-      lastUpdate: event.updates.lastUpdate,
-      lastNotify: event.updates.lastNotify
-    }
     return {
-      responseEvent
+      response: event
     }
   }
 
@@ -601,19 +401,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     const { fromDate, toDate, count, cardId, blobId } = event.group
     await this.db.createMessagesGroup(cardId, blobId, fromDate, toDate, count)
 
-    const responseEvent: MessagesGroupCreatedEvent = {
-      _id: event._id,
-      type: MessageResponseEventType.MessagesGroupCreated,
-      group: {
-        cardId,
-        blobId,
-        fromDate,
-        toDate,
-        count
-      }
-    }
     return {
-      responseEvent
+      response: event
     }
   }
 
@@ -621,47 +410,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     await this.db.removeMessagesGroup(event.cardId, event.blobId)
 
     return {
-      responseEvent: {
-        _id: event._id,
-        type: MessageResponseEventType.MessagesGroupRemoved,
-        cardId: event.cardId,
-        blobId: event.blobId
-      }
-    }
-  }
-
-  private async attachThread (event: Enriched<AttachThreadEvent>): Promise<Result> {
-    await this.db.attachThread(event.cardId, event.messageId, event.threadId, event.threadType, event.date)
-    const responseEvent: ThreadAttachedEvent = {
-      _id: event._id,
-      type: MessageResponseEventType.ThreadAttached,
-      cardId: event.cardId,
-      messageId: event.messageId,
-      thread: {
-        cardId: event.cardId,
-        messageId: event.messageId,
-        threadId: event.threadId,
-        threadType: event.threadType,
-        repliesCount: 0,
-        lastReply: event.date
-      }
-    }
-    return {
-      responseEvent
-    }
-  }
-
-  private async updateThread (event: Enriched<UpdateThreadEvent>): Promise<Result> {
-    await this.db.updateThread(event.threadId, event.updates)
-    return {
-      responseEvent: {
-        _id: event._id,
-        type: MessageResponseEventType.ThreadUpdated,
-        cardId: event.cardId,
-        messageId: event.messageId,
-        threadId: event.threadId,
-        updates: event.updates
-      }
+      response: event
     }
   }
 
@@ -669,17 +418,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     await this.db.createLabel(event.labelId, event.cardId, event.cardType, event.account, event.date)
 
     return {
-      responseEvent: {
-        _id: event._id,
-        type: LabelResponseEventType.LabelCreated,
-        label: {
-          labelId: event.labelId,
-          cardId: event.cardId,
-          cardType: event.cardType,
-          account: event.account,
-          created: event.date
-        }
-      }
+      response: event
     }
   }
 
@@ -690,38 +429,19 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       account: event.account
     })
     return {
-      responseEvent: {
-        _id: event._id,
-        type: LabelResponseEventType.LabelRemoved,
-        labelId: event.labelId,
-        cardId: event.cardId,
-        account: event.account
-      }
+      response: event
     }
   }
 
-  private async updateCardType (event: UpdateCardTypeEvent): Promise<Result> {
+  private async updateCardType (event: Enriched<UpdateCardTypeEvent>): Promise<Result> {
     return {
-      responseEvent: {
-        _id: event._id,
-        type: CardResponseEventType.CardTypeUpdated,
-        cardId: event.cardId,
-        cardType: event.cardType,
-        socialId: event.socialId,
-        date: event.date
-      }
+      response: event
     }
   }
 
-  private async removeCard (event: RemoveCardEvent): Promise<Result> {
+  private async removeCard (event: Enriched<RemoveCardEvent>): Promise<Result> {
     return {
-      responseEvent: {
-        _id: event._id,
-        type: CardResponseEventType.CardRemoved,
-        cardId: event.cardId,
-        socialId: event.socialId,
-        date: event.date
-      }
+      response: event
     }
   }
 

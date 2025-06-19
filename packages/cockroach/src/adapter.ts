@@ -40,7 +40,6 @@ import {
   type FindLabelsParams,
   type LabelID,
   type CardType,
-  type PatchData,
   NotificationType,
   type NotificationContent,
   type LinkPreviewData,
@@ -52,7 +51,7 @@ import type {
   DbAdapter,
   LabelUpdates,
   NotificationContextUpdates,
-  NotificationUpdates, RemoveLabelQuery, RemoveThreadQuery,
+  NotificationUpdates, RemoveLabelQuery, ThreadQuery,
   ThreadUpdates,
   UpdateNotificationQuery
 } from '@hcengineering/communication-sdk-types'
@@ -97,13 +96,12 @@ export class CockroachAdapter implements DbAdapter {
   async createPatch (
     cardId: CardID,
     messageId: MessageID,
-    messageCreated: Date,
     type: PatchType,
-    data: PatchData,
+    data: Record<string, any>,
     creator: SocialID,
     created: Date
   ): Promise<void> {
-    await this.message.createPatch(cardId, messageId, messageCreated, type, data, creator, created)
+    await this.message.createPatch(cardId, messageId, type, data, creator, created)
   }
 
   async createMessagesGroup (
@@ -120,14 +118,14 @@ export class CockroachAdapter implements DbAdapter {
     await this.message.removeMessagesGroup(card, blobId)
   }
 
-  async setReaction (
+  async addReaction (
     cardId: CardID,
     message: MessageID,
     reaction: string,
     socialId: SocialID,
     date: Date
   ): Promise<void> {
-    await this.message.setReaction(cardId, message, reaction, socialId, date)
+    await this.message.addReaction(cardId, message, reaction, socialId, date)
   }
 
   async removeReaction (
@@ -140,32 +138,52 @@ export class CockroachAdapter implements DbAdapter {
     await this.message.removeReaction(cardId, messageId, reaction, socialId, date)
   }
 
-  async attachBlob (
+  async attachBlobs (
     cardId: CardID,
     messageId: MessageID,
-    data: BlobData,
+    blobs: BlobData[],
     socialId: SocialID,
     date: Date
   ): Promise<void> {
-    await this.message.attachBlob(cardId, messageId, data, socialId, date)
+    await this.message.attachBlobs(cardId, messageId, blobs, socialId, date)
   }
 
-  async detachBlob (cardId: CardID, messageId: MessageID, blobId: BlobID, socialId: SocialID, date: Date): Promise<void> {
-    await this.message.detachBlob(cardId, messageId, blobId, socialId, date)
+  async detachBlobs (cardId: CardID, messageId: MessageID, blobIds: BlobID[], socialId: SocialID, date: Date): Promise<void> {
+    await this.message.detachBlobs(cardId, messageId, blobIds, socialId, date)
   }
 
-  async createLinkPreview (
+  async setBlobs (
     cardId: CardID,
     messageId: MessageID,
-    data: LinkPreviewData,
+    blobs: BlobData[],
     socialId: SocialID,
     date: Date
-  ): Promise<LinkPreviewID> {
-    return await this.message.createLinkPreview(cardId, messageId, data, socialId, date)
+  ): Promise<void> {
+    await this.message.setBlobs(cardId, messageId, blobs, socialId, date)
   }
 
-  async removeLinkPreview (cardId: CardID, messageId: MessageID, previewId: LinkPreviewID): Promise<void> {
-    await this.message.removeLinkPreview(cardId, messageId, previewId)
+  async attachLinkPreviews (
+    cardId: CardID,
+    messageId: MessageID,
+    data: (LinkPreviewData & { previewId: LinkPreviewID })[],
+    socialId: SocialID,
+    date: Date
+  ): Promise<void> {
+    await this.message.attachLinkPreviews(cardId, messageId, data, socialId, date)
+  }
+
+  async setLinkPreviews (
+    cardId: CardID,
+    messageId: MessageID,
+    data: (LinkPreviewData & { previewId: LinkPreviewID })[],
+    socialId: SocialID,
+    date: Date
+  ): Promise<void> {
+    await this.message.setLinkPreviews(cardId, messageId, data, socialId, date)
+  }
+
+  async detachLinkPreviews (cardId: CardID, messageId: MessageID, previewIds: LinkPreviewID[], socialId: SocialID, date: Date): Promise<void> {
+    await this.message.detachLinkPreviews(cardId, messageId, previewIds, socialId, date)
   }
 
   async attachThread (
@@ -173,17 +191,18 @@ export class CockroachAdapter implements DbAdapter {
     messageId: MessageID,
     threadId: CardID,
     threadType: CardType,
+    socialId: SocialID,
     date: Date
   ): Promise<void> {
-    await this.message.attachThread(cardId, messageId, threadId, threadType, date)
+    await this.message.attachThread(cardId, messageId, threadId, threadType, socialId, date)
   }
 
-  async removeThreads (query: RemoveThreadQuery): Promise<void> {
+  async updateThread (cardId: CardID, messageId: MessageID, threadId: CardID, update: ThreadUpdates, socialId: SocialID, date: Date): Promise<void> {
+    await this.message.updateThread(cardId, messageId, threadId, update, socialId, date)
+  }
+
+  async removeThreads (query: ThreadQuery): Promise<void> {
     await this.message.removeThreads(query)
-  }
-
-  async updateThread (threadId: CardID, update: ThreadUpdates): Promise<void> {
-    await this.message.updateThread(threadId, update)
   }
 
   async findMessages (params: FindMessagesParams): Promise<Message[]> {
@@ -235,8 +254,8 @@ export class CockroachAdapter implements DbAdapter {
     )
   }
 
-  async updateNotification (query: UpdateNotificationQuery, updates: NotificationUpdates): Promise<void> {
-    await this.notification.updateNotification(query, updates)
+  async updateNotification (contextId: ContextID, account: AccountID, query: UpdateNotificationQuery, updates: NotificationUpdates): Promise<void> {
+    await this.notification.updateNotification(contextId, account, query, updates)
   }
 
   async removeNotifications (
@@ -261,8 +280,8 @@ export class CockroachAdapter implements DbAdapter {
     await this.notification.updateContext(context, account, updates)
   }
 
-  async removeContext (contextId: ContextID, account: AccountID): Promise<void> {
-    await this.notification.removeContext(contextId, account)
+  async removeContext (contextId: ContextID, account: AccountID): Promise<ContextID | undefined> {
+    return await this.notification.removeContext(contextId, account)
   }
 
   async findNotificationContexts (params: FindNotificationContextParams): Promise<NotificationContext[]> {

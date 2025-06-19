@@ -27,10 +27,11 @@ import type {
   NotificationContext
 } from '@hcengineering/communication-types'
 
-import type { EventResult, RequestEvent, ResponseEvent } from './event'
+import type { EventResult, Event } from './events/event'
 
 export interface FindClient {
-  onEvent: (event: ResponseEvent) => void
+  onEvent: (event: Event) => void
+  onRequest: (event: Event, promise: Promise<EventResult>) => void
 
   findMessages: (params: FindMessagesParams, queryId?: number) => Promise<Message[]>
 
@@ -43,8 +44,6 @@ export interface FindClient {
   findLabels: (params: FindLabelsParams, queryId?: number) => Promise<Label[]>
 
   findCollaborators: (params: FindCollaboratorsParams, queryId?: number) => Promise<Collaborator[]>
-
-  onRequest: (event: RequestEvent, promise: Promise<EventResult>) => void
 
   unsubscribeQuery: (id: number) => Promise<void>
 }
