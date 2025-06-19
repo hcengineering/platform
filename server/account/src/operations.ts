@@ -99,7 +99,8 @@ import {
   updateAllowReadOnlyGuests,
   READONLY_GUEST_ACCOUNT,
   getWorkspaceByDataId,
-  assignableRoles
+  assignableRoles,
+  getWorkspacesInfoWithStatusByIds
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -308,7 +309,7 @@ export async function signUpOtp (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
     }
 
-    await db.person.updateOne({ uuid: emailSocialId.personUuid }, { firstName, lastName: lastName ?? '' })
+    await db.person.update({ uuid: emailSocialId.personUuid }, { firstName, lastName: lastName ?? '' })
 
     personUuid = emailSocialId.personUuid
   } else {
@@ -357,7 +358,7 @@ export async function validateOtp (
     await db.otp.deleteMany({ socialId: emailSocialId._id })
 
     if (emailSocialId.verifiedOn == null) {
-      await db.socialId.updateOne({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
+      await db.socialId.update({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
     }
 
     // This method handles both login and signup
@@ -706,7 +707,7 @@ export async function resendInvite (
   let inviteId: string
   if (invite != null) {
     inviteId = invite.id
-    await db.invite.updateOne({ id: invite.id }, { expiresOn: newExp, remainingUses: 1, role })
+    await db.invite.update({ id: invite.id }, { expiresOn: newExp, remainingUses: 1, role })
   } else {
     inviteId = await createInvite(ctx, db, branding, token, { exp: newExp, email, limit: 1, role })
   }
@@ -1163,7 +1164,7 @@ export async function restorePassword (
   await setPassword(ctx, db, branding, account, password)
 
   if (emailSocialId.verifiedOn == null) {
-    await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
+    await db.socialId.update({ key: emailSocialId.key }, { verifiedOn: Date.now() })
   }
 
   return await login(ctx, db, branding, token, { email, password })
@@ -1240,7 +1241,7 @@ export async function changeUsername (
 
   const { account } = decodeTokenVerbose(ctx, token)
 
-  await db.person.updateOne({ uuid: account }, { firstName: first, lastName: last ?? '' })
+  await db.person.update({ uuid: account }, { firstName: first, lastName: last ?? '' })
 
   ctx.info('Person name changed', { account, first, last })
 }
@@ -1266,7 +1267,7 @@ export async function updateWorkspaceName (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  await db.workspace.updateOne(
+  await db.workspace.update(
     { uuid: workspace },
     {
       name
@@ -1288,7 +1289,7 @@ export async function deleteWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  await db.workspaceStatus.updateOne(
+  await db.workspaceStatus.update(
     { workspaceUuid: workspace },
     {
       isDisabled: true,
@@ -1346,17 +1347,36 @@ export async function getWorkspacesInfo (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  const workspaces: WorkspaceInfoWithStatus[] = []
-  for (const id of ids) {
-    const ws = await getWorkspaceInfoWithStatusById(db, id)
-    if (ws !== null) {
-      workspaces.push(ws)
-    }
-  }
-
+  const workspaces: WorkspaceInfoWithStatus[] = await getWorkspacesInfoWithStatusByIds(db, ids)
   workspaces.sort((a, b) => (b.status.lastVisit ?? 0) - (a.status.lastVisit ?? 0))
 
   return workspaces
+}
+
+/**
+ * @public
+ */
+export async function updateLastVisit (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { ids: WorkspaceUuid[] }
+): Promise<void> {
+  const { ids } = params
+
+  if (ids == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  if (account !== systemAccountUuid) {
+    ctx.error('updateLastVisit with wrong user', { account, token })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  await db.workspaceStatus.update({ workspaceUuid: { $in: ids } }, { lastVisit: Date.now() })
 }
 
 export async function getWorkspaceInfo (
@@ -1395,7 +1415,7 @@ export async function getWorkspaceInfo (
   }
 
   if (!isGuest && updateLastVisit) {
-    await db.workspaceStatus.updateOne({ workspaceUuid }, { lastVisit: Date.now() })
+    await db.workspaceStatus.update({ workspaceUuid }, { lastVisit: Date.now() })
   }
 
   return workspace
@@ -1994,6 +2014,7 @@ export type AccountMethods =
   | 'getUserWorkspaces'
   | 'getWorkspaceInfo'
   | 'getWorkspacesInfo'
+  | 'updateLastVisit'
   | 'getLoginInfoByToken'
   | 'getLoginWithWorkspaceInfo'
   | 'getSocialIds'
@@ -2058,6 +2079,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getUserWorkspaces: wrap(getUserWorkspaces),
     getWorkspaceInfo: wrap(getWorkspaceInfo),
     getWorkspacesInfo: wrap(getWorkspacesInfo),
+    updateLastVisit: wrap(updateLastVisit),
     getLoginInfoByToken: wrap(getLoginInfoByToken),
     getLoginWithWorkspaceInfo: wrap(getLoginWithWorkspaceInfo),
     getSocialIds: wrap(getSocialIds),
