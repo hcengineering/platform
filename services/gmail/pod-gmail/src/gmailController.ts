@@ -99,6 +99,7 @@ export class GmailController {
       )
       const pendingWorkspaces = await this.startWorkspaces(workspaceIds, sysClient)
       this.ctx.info('Pending workspaces', { count: pendingWorkspaces.size })
+      // Start async check for pending workspaces
       void this.checkPendingWorkspaces(pendingWorkspaces, sysClient)
     } catch (err: any) {
       this.ctx.error('Failed to start existing integrations', { error: err.message })
@@ -106,20 +107,24 @@ export class GmailController {
   }
 
   async checkPendingWorkspaces (workspaceIds: Set<WorkspaceUuid>, sysClient: AccountClient): Promise<void> {
-    let unprocessedWorkspaces = new Set(workspaceIds)
-    while (unprocessedWorkspaces.size > 0) {
-      unprocessedWorkspaces = await this.startWorkspaces(unprocessedWorkspaces, sysClient)
-      if (unprocessedWorkspaces.size > 0) {
-        this.ctx.info('Waiting for pending workspaces', { count: unprocessedWorkspaces.size })
-        await new Promise<void>((resolve) => {
-          setTimeout(
-            () => {
-              resolve()
-            },
-            5 * 60 * 1000
-          ) // Wait 5 minutes
-        })
+    try {
+      let unprocessedWorkspaces = new Set(workspaceIds)
+      while (unprocessedWorkspaces.size > 0) {
+        unprocessedWorkspaces = await this.startWorkspaces(unprocessedWorkspaces, sysClient)
+        if (unprocessedWorkspaces.size > 0) {
+          this.ctx.info('Waiting for pending workspaces', { count: unprocessedWorkspaces.size })
+          await new Promise<void>((resolve) => {
+            setTimeout(
+              () => {
+                resolve()
+              },
+              5 * 60 * 1000
+            ) // Wait 5 minutes
+          })
+        }
       }
+    } catch (err: any) {
+      this.ctx.error('Failed to check pending workspaces', { error: err.message, workspaceIds })
     }
   }
 
