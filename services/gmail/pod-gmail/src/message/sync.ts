@@ -148,9 +148,7 @@ export class SyncManager {
               }
             }
           } catch (err: any) {
-            if (this.isClosing) {
-              return
-            }
+            if (this.isClosing) return
             this.ctx.error('Full sync message error', { workspace: this.workspace, userId, messageId: id, err })
           }
         }
@@ -173,9 +171,7 @@ export class SyncManager {
       }
       this.ctx.info('Full sync finished', { workspaceUuid: this.workspace, userId, userEmail })
     } catch (err) {
-      if (this.isClosing) {
-        return
-      }
+      if (this.isClosing) return
       this.ctx.error('Full sync error', { workspace: this.workspace, userId, err })
     }
   }
@@ -205,9 +201,7 @@ export class SyncManager {
         await this.fullSync(userId, userEmail)
       }
     } catch (err) {
-      if (this.isClosing) {
-        return
-      }
+      if (this.isClosing) return
       this.ctx.error('Sync error', { workspace: this.workspace, userId, err })
     } finally {
       releaseLock()
