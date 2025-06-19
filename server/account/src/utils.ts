@@ -524,7 +524,7 @@ export async function signUpByEmail (
     account = emailSocialId.personUuid as AccountUuid
     socialId = emailSocialId._id
     // Person exists, but may have different name, need to update with what's been provided
-    await db.person.updateOne({ uuid: account }, { firstName, lastName })
+    await db.person.update({ uuid: account }, { firstName, lastName })
   } else {
     // There's no person we can link to this email, so we need to create a new one
     account = await db.person.insertOne({ firstName, lastName })
@@ -1022,19 +1022,19 @@ export async function confirmEmail (
     )
   }
 
-  await db.socialId.updateOne({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
+  await db.socialId.update({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
   return emailSocialId._id
 }
 
 export async function confirmHulyIds (ctx: MeasureContext, db: AccountDB, account: AccountUuid): Promise<void> {
   const hulySocialIds = await db.socialId.find({ personUuid: account, type: SocialIdType.HULY, verifiedOn: null })
   for (const hulySocialId of hulySocialIds) {
-    await db.socialId.updateOne({ _id: hulySocialId._id }, { verifiedOn: Date.now() })
+    await db.socialId.update({ _id: hulySocialId._id }, { verifiedOn: Date.now() })
   }
 }
 
 export async function useInvite (db: AccountDB, inviteId: string): Promise<void> {
-  await db.invite.updateOne({ id: inviteId }, { $inc: { remainingUses: -1 } })
+  await db.invite.update({ id: inviteId }, { $inc: { remainingUses: -1 } })
 }
 
 export async function getAccount (db: AccountDB, uuid: AccountUuid): Promise<Account | null> {
@@ -1144,7 +1144,7 @@ export async function updateArchiveInfo (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
   }
 
-  await db.workspaceStatus.updateOne(
+  await db.workspaceStatus.update(
     { workspaceUuid: workspace },
     {
       mode: 'archived'
@@ -1235,7 +1235,7 @@ export async function loginOrSignUpWithProvider (
       }
 
       await createAccount(db, personUuid, true)
-      await db.person.updateOne({ uuid: personUuid }, { firstName: first, lastName: last })
+      await db.person.update({ uuid: personUuid }, { firstName: first, lastName: last })
     }
 
     // We should check and reset password if there's an account with password but no social ids have been
@@ -1251,7 +1251,7 @@ export async function loginOrSignUpWithProvider (
     if (targetSocialId == null) {
       socialIdId = await db.socialId.insertOne({ ...normalizedSocialId, personUuid, verifiedOn: Date.now() })
     } else if (targetSocialId.verifiedOn == null) {
-      await db.socialId.updateOne({ key: targetSocialId.key }, { verifiedOn: Date.now() })
+      await db.socialId.update({ key: targetSocialId.key }, { verifiedOn: Date.now() })
       socialIdId = targetSocialId._id
     }
 
@@ -1265,7 +1265,7 @@ export async function loginOrSignUpWithProvider (
         })
       }
     } else if (emailSocialId.verifiedOn == null) {
-      await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
+      await db.socialId.update({ key: emailSocialId.key }, { verifiedOn: Date.now() })
     }
 
     await confirmHulyIds(ctx, db, personUuid as AccountUuid)
@@ -1537,7 +1537,7 @@ export async function doReleaseSocialId (
   const account = await db.account.findOne({ uuid: personUuid as AccountUuid })
 
   for (const socialId of socialIds) {
-    await db.socialId.updateOne({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}`, isDeleted: true })
+    await db.socialId.update({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}`, isDeleted: true })
     if (account != null) {
       await db.accountEvent.insertOne({
         accountUuid: account.uuid,
@@ -1590,7 +1590,7 @@ export async function setTimezoneIfNotDefined (
       return
     }
     if (existingAccount.timezone != null) return
-    await db.account.updateOne({ uuid: accountId }, { timezone: meta.timezone })
+    await db.account.update({ uuid: accountId }, { timezone: meta.timezone })
   } catch (err: any) {
     ctx.error('Failed to set account timezone', err)
   }
@@ -1669,13 +1669,10 @@ export async function doMergePersons (
   // Keep their ids. This way all PersonIds inside the workspaces will remain the same.
   const secondarySocialIds = await db.socialId.find({ personUuid: secondaryPerson })
   for (const secondarySocialId of secondarySocialIds) {
-    await db.socialId.updateOne(
-      { _id: secondarySocialId._id, personUuid: secondaryPerson },
-      { personUuid: primaryPerson }
-    )
+    await db.socialId.update({ _id: secondarySocialId._id, personUuid: secondaryPerson }, { personUuid: primaryPerson })
   }
 
-  await db.person.updateOne({ uuid: secondaryPerson }, { migratedTo: primaryPerson })
+  await db.person.update({ uuid: secondaryPerson }, { migratedTo: primaryPerson })
 }
 
 export async function doMergeAccounts (
