@@ -12,7 +12,7 @@ import { type Card } from '@hcengineering/card'
 import { type TriggerControl } from '@hcengineering/server-core'
 import activity from '@hcengineering/activity'
 import { type ActivityControl } from '@hcengineering/server-activity'
-import { type ServerApi as CommunicationApi, MessageRequestEventType } from '@hcengineering/communication-sdk-types'
+import { type ServerApi as CommunicationApi, MessageEventType } from '@hcengineering/communication-sdk-types'
 import {
   type ActivityAttributeUpdate,
   type ActivityMessageExtra,
@@ -87,7 +87,7 @@ async function createMessages (
         account: systemAccount
       },
       {
-        type: MessageRequestEventType.CreateMessage,
+        type: MessageEventType.CreateMessage,
         messageType: MessageType.Activity,
         cardId: card._id,
         cardType: card._class,

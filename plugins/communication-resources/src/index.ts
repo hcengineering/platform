@@ -19,6 +19,7 @@ import CardMessagesSection from './components/CardMessagesSection.svelte'
 import { unsubscribe, subscribe, canSubscribe, canUnsubscribe } from './utils'
 
 export { isActivityMessage } from './activity'
+export * from './stores'
 
 export { default as MessagePresenter } from './components/message/MessagePresenter.svelte'
 export { default as MessageInput } from './components/message/MessageInput.svelte'
