@@ -44,12 +44,6 @@ const KEEP_ALIVE_MAX = 1000
 
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': '*'
-}
-
 export const keepAlive = (options: { timeout: number, max: number }): RequestHandler => {
   const { timeout, max } = options
   return (req: Request, res: Response, next: NextFunction) => {
@@ -115,7 +109,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
   const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
 
   const app = express()
-  app.use(cors())
+  app.use(cors({}))
   app.use(express.json({ limit: '50mb' }))
   app.use(keepAlive({ timeout: KEEP_ALIVE_TIMEOUT, max: KEEP_ALIVE_MAX }))
 
@@ -233,8 +227,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
         .status(200)
         .set({
           'content-type': 'text/html',
-          etag: data?.lastTxId ?? '',
-          ...CORS
+          etag: data?.lastTxId ?? ''
         })
         .end(backupInfoHTML)
       return
@@ -266,8 +259,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
         .status(200)
         .set({
           'content-type': 'application/json',
-          etag: jsonData.info?.lastTxId ?? '',
-          ...CORS
+          etag: jsonData.info?.lastTxId ?? ''
         })
         .end(JSON.stringify(jsonData))
       return
@@ -280,7 +272,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
         res
           .status(200)
           .set({
-            headers: { 'content-type': 'text/plain', ...CORS }
+            headers: { 'content-type': 'text/plain' }
           })
           .end(fileInfo.etag)
       }
@@ -295,8 +287,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
         'content-type': fileInfo.contentType ?? 'application/octet-stream',
         'content-length': fileInfo.size.toString(),
         etag: fileInfo.etag,
-        'last-modified': new Date(fileInfo.lastModified).toUTCString(),
-        ...CORS
+        'last-modified': new Date(fileInfo.lastModified).toUTCString()
       }
 
       // Check If-None-Match header
