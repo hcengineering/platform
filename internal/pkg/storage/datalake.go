@@ -21,8 +21,10 @@ import (
 	"io"
 	"mime/multipart"
 	"net/textproto"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -170,6 +172,11 @@ func (d *DatalakeStorage) DeleteFile(ctx context.Context, fileName string) error
 		return errors.Wrapf(err, "delete failed")
 	}
 
+	if err := okResponse(res); err != nil {
+		logRequestError(logger, err, "bad status code", res)
+		return err
+	}
+
 	logger.Debug("deleted")
 
 	return nil
@@ -205,13 +212,10 @@ func (d *DatalakeStorage) PatchMeta(ctx context.Context, filename string, md *Me
 		return err
 	}
 
-	if resp.StatusCode() != fasthttp.StatusOK {
-		var err = fmt.Errorf("unexpected status code: %d", resp.StatusCode())
-		logger.Debug("bad status code", zap.Error(err))
+	if err := okResponse(resp); err != nil {
+		logRequestError(logger, err, "bad status code", resp)
 		return err
 	}
-
-	fmt.Println(string(resp.Body()))
 
 	return nil
 }
@@ -237,9 +241,8 @@ func (d *DatalakeStorage) GetMeta(ctx context.Context, filename string) (*Metada
 		return nil, err
 	}
 
-	if resp.StatusCode() != fasthttp.StatusOK {
-		var err = fmt.Errorf("unexpected status code: %d", resp.StatusCode())
-		logger.Debug("bad status code", zap.Error(err))
+	if err := okResponse(resp); err != nil {
+		logRequestError(logger, err, "bad status code", resp)
 		return nil, err
 	}
 
@@ -270,10 +273,8 @@ func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination str
 		return err
 	}
 
-	// Check the response status code
-	if resp.StatusCode() != fasthttp.StatusOK {
-		var err = fmt.Errorf("unexpected status code: %d", resp.StatusCode())
-		logger.Debug("bad status code", zap.Error(err))
+	if err := okResponse(resp); err != nil {
+		logRequestError(logger, err, "bad status code", resp)
 		return err
 	}
 
@@ -291,7 +292,13 @@ func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination str
 		return err
 	}
 
-	logger.Debug("file downloaded successfully")
+	stat, err := os.Stat(destination)
+	if err != nil {
+		logger.Error("can't stat the file", zap.Error(err))
+		return err
+	}
+
+	logger.Info("file downloaded successfully", zap.Int64("size", stat.Size()))
 	return nil
 }
 
@@ -316,9 +323,7 @@ func (d *DatalakeStorage) StatFile(ctx context.Context, filename string) (*BlobI
 		return nil, err
 	}
 
-	// Check the response status code
-	if resp.StatusCode() != fasthttp.StatusOK {
-		var err = fmt.Errorf("unexpected status code: %d", resp.StatusCode())
+	if err := okResponse(resp); err != nil {
 		logRequestError(logger, err, "bad status code", resp)
 		return nil, err
 	}
@@ -346,7 +351,7 @@ func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string
 	req.SetRequestURI(d.baseURL + "/blob/" + d.workspace + "/" + objectKey + "/parent")
 	req.Header.SetMethod(fasthttp.MethodPatch)
 	req.Header.Add("Authorization", "Bearer "+d.token)
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.SetContentType("application/json")
 
 	body := map[string]any{
 		"parent": parentKey,
@@ -365,15 +370,20 @@ func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string
 		return err
 	}
 
-	// Check the response status code
-	var statusOK = resp.StatusCode() >= 200 && resp.StatusCode() < 300
-	if !statusOK {
-		var err = fmt.Errorf("unexpected status code: %d", resp.StatusCode())
-		logger.Debug("bad status code", zap.Error(err), zap.Int("status", resp.StatusCode()), zap.String("response", resp.String()))
+	if err := okResponse(resp); err != nil {
+		logRequestError(logger, err, "bad status code", resp)
 		return err
 	}
 
-	logger.Debug("finished")
+	return nil
+}
+
+func okResponse(res *fasthttp.Response) error {
+	var statusOK = res.StatusCode() >= 200 && res.StatusCode() < 300
+
+	if !statusOK {
+		return fmt.Errorf("unexpected status code: %d", res.StatusCode())
+	}
 
 	return nil
 }

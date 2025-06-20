@@ -35,6 +35,8 @@ import (
 // See at https://man7.org/linux/man-pages/man7/inotify.7.html
 const inotifyCloseWrite uint32 = 0x8 // IN_CLOSE_WRITE
 const inotifyMovedTo uint32 = 0x80   // IN_MOVED_TO
+const inotifyDelete uint32 = 0x200   // IN_DELETE
+const inotifyMovedFrom uint32 = 0x40 // IN_MOVED_FROM
 
 // Uploader represents file uploader
 type Uploader interface {
@@ -250,9 +252,12 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 	}
 
 	// Check if the file exists
-	_, err := os.Stat(f)
-	if err != nil {
-		logger.Debug("file does not exist")
+	if _, err := os.Stat(f); err != nil {
+		if os.IsNotExist(err) {
+			logger.Debug("file does not exist", zap.Error(err))
+		} else {
+			logger.Error("failed to stat file", zap.Error(err))
+		}
 		return
 	}
 
@@ -300,6 +305,7 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 	}
 }
 
+// startWatch watches for changes in the directory and uploads created files
 func (u *uploaderImpl) startWatch(ready chan<- struct{}) {
 	defer close(u.watcherDoneCh)
 
@@ -317,7 +323,7 @@ func (u *uploaderImpl) startWatch(ready chan<- struct{}) {
 		}
 	}()
 
-	if err := watcher.AddWatch(u.options.Dir, inotifyCloseWrite|inotifyMovedTo); err != nil {
+	if err := watcher.AddWatch(u.options.Dir, inotifyCloseWrite|inotifyMovedTo|inotifyDelete|inotifyMovedFrom); err != nil {
 		logger.Error("can not start watching", zap.Error(err))
 		close(ready)
 		return
@@ -348,7 +354,18 @@ func (u *uploaderImpl) startWatch(ready chan<- struct{}) {
 			if strings.HasSuffix(event.Name, ".tmp") {
 				continue
 			}
+			if event.Mask&(inotifyDelete|inotifyMovedFrom) != 0 {
+				logger.Debug("file deleted or moved away", zap.String("event", event.Name), zap.Uint32("mask", event.Mask))
+				continue
+			}
+
 			logger.Debug("received an event", zap.String("event", event.Name), zap.Uint32("mask", event.Mask))
+
+			if _, err := os.Stat(event.Name); os.IsNotExist(err) {
+				logger.Warn("file does not exist", zap.String("file", event.Name))
+				// wait a bit for file operations to complete
+				time.Sleep(100 * time.Millisecond)
+			}
 
 			u.filesCh <- event.Name
 		case err, ok := <-watcher.Error:
