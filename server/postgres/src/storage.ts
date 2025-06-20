@@ -22,6 +22,7 @@ import core, {
   type DocumentQuery,
   type DocumentUpdate,
   type Domain,
+  DOMAIN_COLLABORATOR,
   DOMAIN_MODEL,
   DOMAIN_MODEL_TX,
   DOMAIN_RELATION,
@@ -673,7 +674,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           const select = `SELECT ${this.getProjection(vars, domain, projection, joins, options?.associations)} FROM ${domain}`
 
           const showArchived = shouldShowArchived(query, options)
-          const secJoin = this.addSecurity(vars, query, showArchived, domain, ctx.contextData)
+          const secJoin = this.addSecurity(_class, vars, query, showArchived, domain, ctx.contextData)
           if (secJoin !== undefined) {
             sqlChunks.push(secJoin)
           }
@@ -694,7 +695,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             if (options?.total === true) {
               const pvars = new ValuesVariables()
               const showArchived = shouldShowArchived(query, options)
-              const secJoin = this.addSecurity(pvars, query, showArchived, domain, ctx.contextData)
+              const secJoin = this.addSecurity(_class, pvars, query, showArchived, domain, ctx.contextData)
               const totalChunks: string[] = []
               if (secJoin !== undefined) {
                 totalChunks.push(secJoin)
@@ -784,6 +785,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   addSecurity<T extends Doc>(
+    _class: Ref<Class<T>>,
     vars: ValuesVariables,
     query: DocumentQuery<T>,
     showArchived: boolean,
@@ -801,8 +803,15 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? '"objectSpace"' : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
         const archivedCheck = showArchived ? '' : ' AND sec.archived = false'
-        const q = `(sec.members @> '{"${acc.uuid}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})${archivedCheck}`
-        return `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND ${q}`
+        const q = `(sec._id = '${core.space.Space}' OR sec."_class" = '${core.class.SystemSpace}' OR sec.members @> '{"${acc.uuid}"}'${privateCheck})${archivedCheck}`
+        const res = `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND ${q}`
+
+        const collabSec = this.modelDb.findAllSync(core.class.ClassCollaborators, { attachedTo: _class })[0]
+        if (collabSec === undefined || collabSec.provideSecurity !== true || acc.role !== AccountRole.Guest) {
+          return res
+        }
+        const collab = ` INNER JOIN ${translateDomain(DOMAIN_COLLABORATOR)} AS collab_sec ON collab_sec.collaborator = '${acc.uuid}' AND collab_sec."attachedTo" = ${domain}._id AND collab_sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND ${q}`
+        return res + collab
       }
     }
   }

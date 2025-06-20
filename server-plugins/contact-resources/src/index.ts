@@ -50,7 +50,6 @@ import core, {
   TxUpdateDoc,
   TypedSpace
 } from '@hcengineering/core'
-import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
 import { makeRank } from '@hcengineering/rank'
 import { getAccountBySocialId, getCurrentPerson } from '@hcengineering/server-contact'
@@ -253,29 +252,13 @@ export async function OnChannelUpdate (txes: Tx[], control: TriggerControl): Pro
       const doc = (await control.findAll(control.ctx, uTx.objectClass, { _id: uTx.objectId }, { limit: 1 }))[0]
       const account = await getAccountBySocialId(control, tx.modifiedBy)
       if (doc !== undefined && account != null) {
-        if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
-          const collab = control.hierarchy.as(doc, notification.mixin.Collaborators) as Doc as Collaborators
-          if (collab.collaborators.includes(account)) {
-            result.push(
-              control.txFactory.createTxMixin(doc._id, doc._class, doc.space, notification.mixin.Collaborators, {
-                $push: {
-                  collaborators: account
-                }
-              })
-            )
-          }
-        } else {
-          const res = control.txFactory.createTxMixin<Doc, Collaborators>(
-            doc._id,
-            doc._class,
-            doc.space,
-            notification.mixin.Collaborators,
-            {
-              collaborators: [account]
-            }
-          )
-          result.push(res)
-        }
+        const tx = control.txFactory.createTxCreateDoc(core.class.Collaborator, doc.space, {
+          attachedTo: doc._id,
+          attachedToClass: doc._class,
+          collection: 'collaborators',
+          collaborator: account
+        })
+        result.push(tx)
       }
     }
   }

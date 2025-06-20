@@ -31,7 +31,14 @@ import {
   TrainingSpecialIds
 } from '@hcengineering/training'
 
-import { AccountRole, type Data, type FindOptions, type Permission, type Ref } from '@hcengineering/core'
+import {
+  AccountRole,
+  ClassCollaborators,
+  type Data,
+  type FindOptions,
+  type Permission,
+  type Ref
+} from '@hcengineering/core'
 import { Prop, type Builder } from '@hcengineering/model'
 
 import contacts from '@hcengineering/model-contact'
@@ -569,8 +576,9 @@ function defineTrainingRequest (builder: Builder): void {
     titleProvider: training.function.TrainingRequestObjectTitleProvider
   })
 
-  builder.mixin(training.class.TrainingRequest, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['trainees'] as Array<keyof TrainingRequest>
+  builder.createDoc<ClassCollaborators<TrainingRequest>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: training.class.TrainingRequest,
+    fields: ['trainees']
   })
 
   builder.createDoc<NotificationType>(

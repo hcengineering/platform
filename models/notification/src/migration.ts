@@ -23,7 +23,10 @@ import core, {
   type DocumentQuery,
   type Ref,
   type Space,
-  type AccountUuid
+  type AccountUuid,
+  DOMAIN_COLLABORATOR,
+  type Collaborator,
+  generateId
 } from '@hcengineering/core'
 import {
   migrateSpace,
@@ -39,7 +42,8 @@ import notification, {
   type PushSubscription,
   type BrowserNotification,
   type DocNotifyContext,
-  type InboxNotification
+  type InboxNotification,
+  type OldCollaborators
 } from '@hcengineering/notification'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 
@@ -239,6 +243,78 @@ export async function migrateDuplicateContexts (client: MigrationClient): Promis
   }
 }
 
+async function migrateCollaborators (client: MigrationClient): Promise<void> {
+  const alreadyMigrated = await client.find<Collaborator>(DOMAIN_COLLABORATOR, {}, { limit: 1 })
+  if (alreadyMigrated.length > 0) {
+    client.logger.log('collaborators already migrated, skipping', {})
+    return
+  }
+  const hierarchy = client.hierarchy
+  client.logger.log('processing extract collaborators ', {})
+  for (const domain of client.hierarchy.domains()) {
+    if (['tx'].includes(domain)) continue
+    client.logger.log('processing domain ', { domain })
+    let processed = 0
+    const iterator = await client.traverse(domain, {})
+
+    try {
+      while (true) {
+        const docs = await iterator.next(200)
+        if (docs === null || docs.length === 0) {
+          break
+        }
+
+        const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+        const collabs: Collaborator[] = []
+
+        for (const doc of docs) {
+          const mixin = hierarchy.as(doc, notification.mixin.Collaborators) as any as OldCollaborators
+          const oldCollaborators = mixin.collaborators
+
+          if (oldCollaborators === undefined || oldCollaborators.length === 0) continue
+
+          for (const collab of oldCollaborators) {
+            collabs.push({
+              _id: generateId(),
+              _class: core.class.Collaborator,
+              space: doc.space,
+              collaborator: collab,
+              attachedTo: doc._id,
+              attachedToClass: doc._class,
+              collection: 'collaborators',
+              modifiedOn: Date.now(),
+              modifiedBy: core.account.System
+            })
+          }
+
+          operations.push({
+            filter: { _id: doc._id },
+            update: {
+              $unset: {
+                'notification:mixin:Collaborators': true
+              }
+            }
+          })
+        }
+
+        if (operations.length > 0) {
+          await client.bulk(domain, operations)
+          await client.create(DOMAIN_COLLABORATOR, collabs)
+        }
+
+        processed += docs.length
+        client.logger.log('...processed', { count: processed })
+      }
+
+      client.logger.log('finished processing domain ', { domain, processed })
+    } finally {
+      await iterator.close()
+    }
+  }
+  client.logger.log('finished processing collaborators ', {})
+}
+
 /**
  * Migrates old accounts to new accounts/social ids.
  * Should be applied to prodcution directly without applying migrateSocialIdsToAccountUuids
@@ -268,8 +344,10 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
 
         const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
 
+        const collabs: Collaborator[] = []
+
         for (const doc of docs) {
-          const mixin = hierarchy.as(doc, notification.mixin.Collaborators)
+          const mixin = hierarchy.as(doc, notification.mixin.Collaborators) as any as OldCollaborators
           const oldCollaborators = mixin.collaborators
 
           if (oldCollaborators === undefined || oldCollaborators.length === 0) continue
@@ -281,11 +359,25 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
             accountUuidByOldAccount
           )
 
+          for (const collab of newCollaborators) {
+            collabs.push({
+              _id: generateId(),
+              _class: core.class.Collaborator,
+              space: doc.space,
+              collaborator: collab,
+              attachedTo: doc._id,
+              attachedToClass: doc._class,
+              collection: 'collaborators',
+              modifiedOn: Date.now(),
+              modifiedBy: core.account.System
+            })
+          }
+
           operations.push({
             filter: { _id: doc._id },
             update: {
-              [`${notification.mixin.Collaborators}`]: {
-                collaborators: newCollaborators
+              $unset: {
+                'notification:mixin:Collaborators': true
               }
             }
           })
@@ -293,6 +385,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
 
         if (operations.length > 0) {
           await client.bulk(domain, operations)
+          await client.create(DOMAIN_COLLABORATOR, collabs)
         }
 
         processed += docs.length
@@ -751,6 +844,11 @@ export const notificationOperation: MigrateOperation = {
         state: 'accounts-to-social-ids-v2',
         mode: 'upgrade',
         func: migrateAccounts
+      },
+      {
+        state: 'migrate-collaborators',
+        mode: 'upgrade',
+        func: migrateCollaborators
       }
     ])
   },

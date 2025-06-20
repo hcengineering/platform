@@ -30,7 +30,9 @@ import {
   Tx,
   TxCUD,
   TxOperations,
-  AccountUuid
+  AccountUuid,
+  Collaborator,
+  CollectionSize
 } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -43,6 +45,7 @@ import { PersonSpace } from '@hcengineering/contact'
 import { Readable, Writable } from './types'
 
 export * from './types'
+export * from './utils'
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 export const DOMAIN_DOC_NOTIFY = 'notification-dnc' as Domain
@@ -188,13 +191,6 @@ export interface NotificationTypeSetting extends Preference {
 /**
  * @public
  */
-export interface ClassCollaborators extends Class<Doc> {
-  fields: string[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
-}
-
-/**
- * @public
- */
 export interface NotificationObjectPresenter extends Class<Doc> {
   presenter: AnyComponent
 }
@@ -203,6 +199,13 @@ export interface NotificationObjectPresenter extends Class<Doc> {
  * @public
  */
 export interface Collaborators extends Doc {
+  collaborators: CollectionSize<Collaborator>
+}
+
+/**
+ * @public
+ */
+export interface OldCollaborators extends Doc {
   collaborators: AccountUuid[]
 }
 
@@ -307,7 +310,7 @@ export interface InboxNotificationsClient {
   inboxNotificationsByContext: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>>
 
   readDoc: (_id: Ref<Doc>) => Promise<void>
-  forceReadDoc: (_id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
+  forceReadDoc: (doc: Doc) => Promise<void>
   readNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   unreadNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   archiveNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
@@ -339,7 +342,6 @@ export type NotifyFunc = (title: string, body: string, _id?: string, onClick?: (
  */
 const notification = plugin(notificationId, {
   mixin: {
-    ClassCollaborators: '' as Ref<Mixin<ClassCollaborators>>,
     Collaborators: '' as Ref<Mixin<Collaborators>>,
     NotificationObjectPresenter: '' as Ref<Mixin<NotificationObjectPresenter>>,
     NotificationPreview: '' as Ref<Mixin<NotificationPreview>>,
@@ -386,7 +388,8 @@ const notification = plugin(notificationId, {
     DocNotifyContextPresenter: '' as AnyComponent,
     NotificationCollaboratorsChanged: '' as AnyComponent,
     ReactionNotificationPresenter: '' as AnyComponent,
-    GeneralPreferencesGroup: '' as AnyComponent
+    GeneralPreferencesGroup: '' as AnyComponent,
+    CollaboratorEditor: '' as AnyComponent
   },
   action: {
     PinDocNotifyContext: '' as Ref<Action>,
@@ -435,7 +438,8 @@ const notification = plugin(notificationId, {
     SoundNotificationsDescription: '' as IntlString,
     Sound: '' as IntlString,
     NoAccessToObject: '' as IntlString,
-    ViewIn: '' as IntlString
+    ViewIn: '' as IntlString,
+    Collaborators: '' as IntlString
   },
   function: {
     Notify: '' as Resource<NotifyFunc>,
