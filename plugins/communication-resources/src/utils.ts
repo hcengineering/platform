@@ -123,7 +123,7 @@ export async function toggleReaction (message: Message, emoji: string): Promise<
   if (reaction !== undefined) {
     await communicationClient.removeReaction(message.cardId, message.id, emoji)
   } else {
-    await communicationClient.setReaction(message.cardId, message.id, emoji)
+    await communicationClient.addReaction(message.cardId, message.id, emoji)
   }
 }
 

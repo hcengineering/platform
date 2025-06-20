@@ -35,7 +35,7 @@ import core, {
 import { TriggerControl } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
 import view from '@hcengineering/view'
-import { CardRequestEventType, NotificationRequestEventType } from '@hcengineering/communication-sdk-types'
+import { CardEventType, NotificationEventType } from '@hcengineering/communication-sdk-types'
 import { getEmployee, getPersonSpaces } from '@hcengineering/server-contact'
 import contact from '@hcengineering/contact'
 
@@ -280,7 +280,7 @@ async function OnCardRemove (ctx: TxRemoveDoc<Card>[], control: TriggerControl):
   void control.communicationApi?.event(
     { account: systemAccount },
     {
-      type: CardRequestEventType.RemoveCard,
+      type: CardEventType.RemoveCard,
       cardId: removedCard._id,
       date: new Date(removeTx.createdOn ?? removeTx.modifiedOn),
       socialId: removedCard.modifiedBy
@@ -351,7 +351,7 @@ async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl):
     void control.communicationApi?.event(
       { account: systemAccount as any },
       {
-        type: CardRequestEventType.UpdateCardType,
+        type: CardEventType.UpdateCardType,
         cardId: doc._id,
         cardType: (updateTx.operations as any)._class,
         socialId: updateTx.createdBy ?? updateTx.modifiedBy,
@@ -451,7 +451,7 @@ async function updateCollaborators (control: TriggerControl, ctx: TxCreateDoc<Ca
     void communicationApi.event(
       { account: systemAccount as any },
       {
-        type: NotificationRequestEventType.AddCollaborators,
+        type: NotificationEventType.AddCollaborators,
         cardId: tx.objectId,
         cardType: tx.objectClass,
         collaborators,

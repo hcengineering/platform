@@ -27,7 +27,7 @@ function geLocalStorageKey (card: Ref<Card>): string | undefined {
   const me = getCurrentAccount()
   const workspace = get(locationWorkspaceStore) ?? ''
   if (me == null || workspace === '') return undefined
-  return `${workspace}.${me.uuid}.${card}.message_draft.v1`
+  return `${workspace}.${me.uuid}.${card}.message_draft.v2`
 }
 
 export function getEmptyDraft (): MessageDraft {
@@ -90,7 +90,7 @@ export function messageToDraft (message: Message): MessageDraft {
     links: [...message.linkPreviews],
     blobs: message.blobs.map((it) => ({
       blobId: it.blobId,
-      contentType: it.contentType,
+      mimeType: it.mimeType,
       fileName: it.fileName,
       size: it.size,
       metadata: it.metadata
