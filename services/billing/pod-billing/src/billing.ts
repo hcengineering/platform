@@ -49,10 +49,9 @@ export async function handleSetLiveKitSessions (
   req: Request,
   res: Response
 ): Promise<void> {
-  const { workspace } = req.params
-  const data = await req.body as LiveKitSessionData[]
-  await db.setLiveKitSessions(ctx, workspace, data)
-  res.status(204)
+  const data = (await req.body) as LiveKitSessionData[]
+  await db.setLiveKitSessions(ctx, data)
+  res.status(204).send()
 }
 
 export async function handleSetLiveKitEgress (
@@ -62,10 +61,9 @@ export async function handleSetLiveKitEgress (
   req: Request,
   res: Response
 ): Promise<void> {
-  const { workspace } = req.params
-  const data = await req.body as LiveKitEgressData[]
-  await db.setLiveKitEgress(ctx, workspace, data)
-  res.status(204)
+  const data = (await req.body) as LiveKitEgressData[]
+  await db.setLiveKitEgress(ctx, data)
+  res.status(204).send()
 }
 
 export async function handleGetStats (
@@ -123,16 +121,3 @@ async function collectDatalakeStats (ctx: MeasureContext, workspace: WorkspaceUu
 
   return result
 }
-
-/*
-export async function handleLiveKitEgress(request: IRequest, env: Env): Promise<Response> {
-  const workspace = request.params.workspace
-  const data = await request.json<LiveKitEgressData>()
-
-  await withPostgres(env, async (db) => {
-    await db.createLiveKitEgressData(workspace, data)
-  })
-
-  return new Response(null, { status: 204 })
-}
-*/

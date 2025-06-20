@@ -56,11 +56,11 @@ export class RetryDB implements BillingDB {
     return await retry(() => this.db.listLiveKitEgress(ctx, workspace), this.options)
   }
 
-  async setLiveKitSessions (ctx: MeasureContext, workspace: string, data: LiveKitSessionData[]): Promise<void> {
-    await retry(() => this.db.setLiveKitSessions(ctx, workspace, data), this.options)
+  async setLiveKitSessions (ctx: MeasureContext, data: LiveKitSessionData[]): Promise<void> {
+    await retry(() => this.db.setLiveKitSessions(ctx, data), this.options)
   }
 
-  async setLiveKitEgress (ctx: MeasureContext, workspace: string, data: LiveKitEgressData[]): Promise<void> {
-    await retry(() => this.db.setLiveKitEgress(ctx, workspace, data), this.options)
+  async setLiveKitEgress (ctx: MeasureContext, data: LiveKitEgressData[]): Promise<void> {
+    await retry(() => this.db.setLiveKitEgress(ctx, data), this.options)
   }
 }

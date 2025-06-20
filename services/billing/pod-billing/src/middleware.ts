@@ -14,22 +14,17 @@
 //
 
 import type { NextFunction, Request, Response } from 'express'
-import { extractToken } from '@hcengineering/server-client'
+import { extractToken, getAccountClient } from '@hcengineering/server-client'
 import { AccountRole, systemAccountUuid } from '@hcengineering/core'
 import { Token } from '@hcengineering/server-token'
-import { getClient as getAccountClient } from '@hcengineering/account-client'
 
 interface RequestWithAuth extends Request {
   token?: Token
 }
 
-export const withWorkspace = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
+export const withToken = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
   const token = extractToken(req.headers)
   if (token === undefined || token == null) {
-    res.status(401).end()
-    return
-  }
-  if ((token.workspace as string) !== req.params.workspace) {
     res.status(401).end()
     return
   }
@@ -58,8 +53,12 @@ const withOwnerAsync = async (req: RequestWithAuth, res: Response, next: NextFun
     res.status(401).end()
     return
   }
+  if ((req.token.workspace as string) !== req.params.workspace) {
+    res.status(401).end()
+    return
+  }
   if (req.token.account !== systemAccountUuid && req.token.extra?.admin !== 'true') {
-    const accountClient = getAccountClient('http://huly.local:3000', req.headers.authorization?.split(' ')[1])
+    const accountClient = getAccountClient(req.headers.authorization?.split(' ')[1])
     const loginInfo = await accountClient.getLoginInfoByToken()
     if (!('role' in loginInfo) || loginInfo.role !== AccountRole.Owner) {
       res.status(401).end()

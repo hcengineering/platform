@@ -35,11 +35,11 @@ export class LoggedDB implements BillingDB {
     return await ctx.with('db.listLiveKitEgress', {}, () => this.db.listLiveKitEgress(this.ctx, workspace))
   }
 
-  async setLiveKitSessions (ctx: MeasureContext, workspace: string, data: LiveKitSessionData[]): Promise<void> {
-    await ctx.with('db.setLiveKitSessions', {}, () => this.db.setLiveKitSessions(this.ctx, workspace, data))
+  async setLiveKitSessions (ctx: MeasureContext, data: LiveKitSessionData[]): Promise<void> {
+    await ctx.with('db.setLiveKitSessions', {}, () => this.db.setLiveKitSessions(this.ctx, data))
   }
 
-  async setLiveKitEgress (ctx: MeasureContext, workspace: string, data: LiveKitEgressData[]): Promise<void> {
-    await ctx.with('db.setLiveKitEgress', {}, () => this.db.setLiveKitEgress(this.ctx, workspace, data))
+  async setLiveKitEgress (ctx: MeasureContext, data: LiveKitEgressData[]): Promise<void> {
+    await ctx.with('db.setLiveKitEgress', {}, () => this.db.setLiveKitEgress(this.ctx, data))
   }
 }

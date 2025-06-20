@@ -20,9 +20,11 @@ import { Analytics } from '@hcengineering/analytics'
 import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { join } from 'path'
 import { initStatisticsContext } from '@hcengineering/server-core'
+import { setMetadata } from '@hcengineering/platform'
+import serverClient from '@hcengineering/server-client'
 
 const setupMetadata = (): void => {
-  // setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
 }
 
 export const main = async (): Promise<void> => {

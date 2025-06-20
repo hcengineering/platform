@@ -16,12 +16,12 @@
 import { MeasureContext } from '@hcengineering/core'
 
 export interface LiveKitSessionsUsageData {
-  totalBandwidth: number
-  totalMinutes: number
+  bandwidth: number
+  minutes: number
 }
 
 export interface LiveKitEgressUsageData {
-  totalMinutes: number
+  minutes: number
 }
 
 export interface LiveKitUsageData {
@@ -30,6 +30,7 @@ export interface LiveKitUsageData {
 }
 
 export interface LiveKitSessionData {
+  workspace: string
   room: string
   sessionId: string
   sessionStart: string
@@ -39,6 +40,7 @@ export interface LiveKitSessionData {
 }
 
 export interface LiveKitEgressData {
+  workspace: string
   room: string
   egressId: string
   egressStart: string
@@ -50,6 +52,6 @@ export interface BillingDB {
   getLiveKitStats: (ctx: MeasureContext, workspace: string) => Promise<LiveKitUsageData>
   listLiveKitSessions: (ctx: MeasureContext, workspace: string) => Promise<LiveKitSessionData[] | null>
   listLiveKitEgress: (ctx: MeasureContext, workspace: string) => Promise<LiveKitEgressData[] | null>
-  setLiveKitSessions: (ctx: MeasureContext, workspace: string, data: LiveKitSessionData[]) => Promise<void>
-  setLiveKitEgress: (ctx: MeasureContext, workspace: string, data: LiveKitEgressData[]) => Promise<void>
+  setLiveKitSessions: (ctx: MeasureContext, data: LiveKitSessionData[]) => Promise<void>
+  setLiveKitEgress: (ctx: MeasureContext, data: LiveKitEgressData[]) => Promise<void>
 }

@@ -1,6 +1,12 @@
 import { concatLink, WorkspaceUuid } from '@hcengineering/core'
 import { BillingError, NetworkError } from './error'
-import { BillingStats, DatalakeStats, LiveKitEgressStats, LiveKitSessionsStats, LiveKitStats } from './types'
+import {
+  BillingStats,
+  DatalakeStats, LiveKitEgressData, LiveKitEgressStats,
+  LiveKitSessionData,
+  LiveKitSessionsStats,
+  LiveKitStats
+} from './types'
 
 /** @public */
 export function getClient (billingUrl?: string, token?: string): BillingClient {
@@ -21,7 +27,10 @@ export class BillingClient {
     private readonly endpoint: string,
     private readonly token: string
   ) {
-    this.headers = { Authorization: 'Bearer ' + token }
+    this.headers = {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    }
   }
 
   async getBillingStats (
@@ -67,6 +76,24 @@ export class BillingClient {
     const url = new URL(concatLink(this.endpoint, path))
     const response = await fetchSafe(url, { headers: { ...this.headers } })
     return (await response.json()) as LiveKitEgressStats
+  }
+
+  async postLiveKitSessions (
+    sessions: LiveKitSessionData[]
+  ): Promise<void> {
+    const path = '/api/v1/livekit/sessions'
+    const url = new URL(concatLink(this.endpoint, path))
+    const body = JSON.stringify(sessions)
+    await fetchSafe(url, { method: 'POST', headers: { ...this.headers }, body })
+  }
+
+  async postLiveKitEgress (
+    egress: LiveKitEgressData[]
+  ): Promise<void> {
+    const path = '/api/v1/livekit/egress'
+    const url = new URL(concatLink(this.endpoint, path))
+    const body = JSON.stringify(egress)
+    await fetchSafe(url, { method: 'POST', headers: { ...this.headers }, body })
   }
 }
 

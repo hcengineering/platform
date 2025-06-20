@@ -98,22 +98,22 @@ export class PostgresDB implements BillingDB {
     const params = [workspace]
 
     const sessionsQuery = `
-        SELECT COALESCE(SUM(bandwidth), 0) AS totalBandwidth, COALESCE(SUM(minutes), 0) AS totalMinutes
+        SELECT COALESCE(SUM(bandwidth), 0) AS bandwidth, COALESCE(SUM(minutes), 0) AS minutes
         FROM billing.livekit_session
         WHERE workspace = $1
       `
     const sessionStats = await this.execute<LiveKitSessionsUsageData[]>(sessionsQuery, params)
 
     const egressQuery = `
-        SELECT COALESCE(SUM(duration), 0) AS totalMinutes
+        SELECT COALESCE(SUM(duration), 0) AS minutes
         FROM billing.livekit_egress
         WHERE workspace = $1
       `
     const egressStats = await this.execute<LiveKitEgressUsageData[]>(egressQuery, params)
 
     return {
-      sessions: sessionStats?.length > 0 ? sessionStats[0] : { totalBandwidth: 0, totalMinutes: 0 },
-      egress: egressStats?.length > 0 ? egressStats[0] : { totalMinutes: 0 }
+      sessions: sessionStats?.length > 0 ? sessionStats[0] : { bandwidth: 0, minutes: 0 },
+      egress: egressStats?.length > 0 ? egressStats[0] : { minutes: 0 }
     }
   }
 
@@ -138,7 +138,7 @@ export class PostgresDB implements BillingDB {
     return await this.execute<LiveKitEgressData[]>(query, params)
   }
 
-  async setLiveKitSessions (ctx: MeasureContext, workspace: string, data: LiveKitSessionData[]): Promise<void> {
+  async setLiveKitSessions (ctx: MeasureContext, data: LiveKitSessionData[]): Promise<void> {
     for (let i = 0; i < data.length; i += BATCH_SIZE) {
       const batch = data.slice(i, i + BATCH_SIZE)
       const values = []
@@ -146,7 +146,7 @@ export class PostgresDB implements BillingDB {
       let paramIndex = 1
 
       for (const item of batch) {
-        const { sessionId, sessionStart, sessionEnd, room, bandwidth, minutes } = item
+        const { workspace, sessionId, sessionStart, sessionEnd, room, bandwidth, minutes } = item
         values.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`)
         params.push(workspace, sessionId, sessionStart, sessionEnd, room, bandwidth, minutes)
       }
@@ -159,7 +159,7 @@ export class PostgresDB implements BillingDB {
     }
   }
 
-  async setLiveKitEgress (ctx: MeasureContext, workspace: string, data: LiveKitEgressData[]): Promise<void> {
+  async setLiveKitEgress (ctx: MeasureContext, data: LiveKitEgressData[]): Promise<void> {
     for (let i = 0; i < data.length; i += BATCH_SIZE) {
       const batch = data.slice(i, i + BATCH_SIZE)
       const values = []
@@ -167,8 +167,8 @@ export class PostgresDB implements BillingDB {
       let paramIndex = 1
 
       for (const item of batch) {
-        const { egressId, egressStart, egressEnd, room, duration } = item
-        values.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`)
+        const { workspace, egressId, egressStart, egressEnd, room, duration } = item
+        values.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`)
         params.push(workspace, egressId, egressStart, egressEnd, room, duration)
       }
 

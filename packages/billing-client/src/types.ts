@@ -14,10 +14,29 @@ export interface LiveKitStats {
 }
 
 export interface LiveKitSessionsStats {
-  totalBandwidth: number
-  totalMinutes: number
+  bandwidth: number
+  minutes: number
 }
 
 export interface LiveKitEgressStats {
-  totalMinutes: number
+  minutes: number
+}
+
+export interface LiveKitSessionData {
+  workspace: string
+  room: string
+  sessionId: string
+  sessionStart: string
+  sessionEnd: string
+  bandwidth: number
+  minutes: number
+}
+
+export interface LiveKitEgressData {
+  workspace: string
+  room: string
+  egressId: string
+  egressStart: string
+  egressEnd: string
+  duration: number
 }

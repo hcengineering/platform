@@ -16,6 +16,7 @@
 import { concatLink, MeasureContext, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { AccessToken, EgressInfo } from 'livekit-server-sdk'
+import { getClient as getBillingClient, LiveKitSessionData } from '@hcengineering/billing-client'
 import config from './config'
 
 interface LiveKitSession {
@@ -71,6 +72,9 @@ async function getLiveKitSessions (ctx: MeasureContext, start: string, page: num
 }
 
 export async function updateLiveKitSessions (ctx: MeasureContext): Promise<void> {
+  const token = generateToken(systemAccountUuid, undefined, { service: 'love' })
+  const billingClient = getBillingClient(config.BillingUrl, token)
+
   const startDate = new Date()
   startDate.setHours(0, 0, 0, 0)
   startDate.setDate(startDate.getDate() - 1)
@@ -81,6 +85,9 @@ export async function updateLiveKitSessions (ctx: MeasureContext): Promise<void>
 
   cleanupCache(startDate.getTime())
 
+  const sessionsToSend: LiveKitSessionData[] = []
+  const sessionsToCache = new Map<string, number>()
+
   let liveKitSessions: LiveKitSession[]
   let page = 0
   do {
@@ -90,40 +97,33 @@ export async function updateLiveKitSessions (ctx: MeasureContext): Promise<void>
       if (processedSessionsCache.has(session.sessionId)) continue
       const sessionStart = Date.parse(session.createdAt)
       const sessionEnd = Date.parse(session.endedAt ?? session.lastActive)
-
       const workspace = session.roomName.split('_')[0] as WorkspaceUuid
-      const endpoint = concatLink(config.BillingUrl, `/api/v1/billing/${workspace}/livekit/session`)
-      const token = generateToken(systemAccountUuid, workspace, { service: 'love' })
 
-      try {
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            sessionId: session.sessionId,
-            sessionStart: session.createdAt,
-            sessionEnd: session.endedAt ?? session.lastActive,
-            bandwidth: Math.max(Number(session.bandwidthOut), Number(session.bandwidthIn)),
-            minutes: Math.round((sessionEnd - sessionStart) / (1000 * 60)),
-            room: session.roomName
-          })
-        })
-        if (!res.ok) {
-          throw new Error(await res.text())
-        }
-
-        if (session.endedAt !== undefined) {
-          processedSessionsCache.set(session.sessionId, sessionStart)
-        }
-      } catch (err: any) {
-        ctx.error('failed to save session billing', { workspace, session, err })
+      sessionsToSend.push({
+        workspace,
+        sessionId: session.sessionId,
+        sessionStart: session.createdAt,
+        sessionEnd: session.endedAt ?? session.lastActive,
+        bandwidth: Math.max(Number(session.bandwidthOut), Number(session.bandwidthIn)),
+        minutes: Math.round((sessionEnd - sessionStart) / (1000 * 60)),
+        room: session.roomName
+      })
+      if (session.endedAt !== undefined) {
+        sessionsToCache.set(session.sessionId, sessionStart)
       }
     }
     page++
   } while (liveKitSessions.length > 0)
+
+  try {
+    await billingClient.postLiveKitSessions(sessionsToSend)
+
+    sessionsToCache.forEach((value, key, map) => {
+      processedSessionsCache.set(key, value)
+    })
+  } catch (err: any) {
+    ctx.error('failed to save sessions billing', { err })
+  }
 }
 
 export async function saveLiveKitEgressBilling (ctx: MeasureContext, egress: EgressInfo): Promise<void> {
@@ -136,28 +136,18 @@ export async function saveLiveKitEgressBilling (ctx: MeasureContext, egress: Egr
   const duration = (egressEnd - egressStart) / 1000
 
   const workspace = egress.roomName.split('_')[0] as WorkspaceUuid
-  const endpoint = concatLink(config.BillingUrl, `/api/v1/billing/${workspace}/livekit/egress`)
-
-  const token = generateToken(systemAccountUuid, workspace, { service: 'love' })
+  const token = generateToken(systemAccountUuid, undefined, { service: 'love' })
+  const billingClient = getBillingClient(config.BillingUrl, token)
 
   try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        room: egress.roomName,
-        egressId: egress.egressId,
-        egressStart: new Date(egressStart).toISOString(),
-        egressEnd: new Date(egressEnd).toISOString(),
-        duration
-      })
-    })
-    if (!res.ok) {
-      throw new Error(await res.text())
-    }
+    await billingClient.postLiveKitEgress([{
+      workspace,
+      room: egress.roomName,
+      egressId: egress.egressId,
+      egressStart: new Date(egressStart).toISOString(),
+      egressEnd: new Date(egressEnd).toISOString(),
+      duration
+    }])
   } catch (err: any) {
     ctx.error('failed to save egress billing', { workspace, egress, err })
     throw new Error('Failed to save egress billing: ' + err)
