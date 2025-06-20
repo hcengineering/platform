@@ -85,6 +85,7 @@ export interface CardSection extends Doc {
   component: AnyComponent
   order: number
   navigation: CardNavigation[]
+  checkVisibility?: Resource<(doc: Card) => Promise<boolean>>
 }
 
 export interface CardViewDefaults extends MasterTag {

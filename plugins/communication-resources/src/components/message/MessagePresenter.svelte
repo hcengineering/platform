@@ -225,7 +225,7 @@
     align-self: stretch;
     min-width: 0;
     position: relative;
-    padding: 0.5rem 2rem;
+    padding: 0.5rem 1em;
 
     &:hover:not(.noHover) {
       background: var(--global-ui-BackgroundColor);

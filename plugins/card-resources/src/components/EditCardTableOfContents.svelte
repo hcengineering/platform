@@ -24,6 +24,7 @@
   import { Heading } from '@hcengineering/text-editor'
 
   import { CardSectionAction } from '../types'
+  import { getResource } from '@hcengineering/platform'
 
   export let doc: Card
   export let context: NotificationContext | undefined = undefined
@@ -33,7 +34,7 @@
 
   const client = getClient()
 
-  const sections: CardSection[] = client
+  let sections: CardSection[] = client
     .getModel()
     .findAllSync(card.class.CardSection, {})
     .sort((a, b) => a.order - b.order)
@@ -188,6 +189,24 @@
     }
   }
 
+  async function filterSections (s: CardSection[], doc: Card): Promise<void> {
+    const newSections: CardSection[] = []
+    for (const section of s) {
+      if (section.checkVisibility !== undefined) {
+        const isVisibleFn = await getResource(section.checkVisibility)
+        const isVisible = await isVisibleFn(doc)
+        if (isVisible) {
+          newSections.push(section)
+        }
+      } else {
+        newSections.push(section)
+      }
+    }
+
+    sections = newSections
+  }
+
+  $: void filterSections(sections, doc)
   $: updateToc(sections, subTocBySection)
   $: showOverlay = !isScrollInitialized || Object.values(sectionOverlays).some((it) => it)
 </script>
@@ -273,7 +292,7 @@
     //inset: 0;
     z-index: 1;
     top: 0;
-    right: 0.75rem;
+    right: 0.25rem;
     width: 2rem;
     height: fit-content;
 
