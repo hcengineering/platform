@@ -32,7 +32,7 @@
     savedViews: true,
     groupBySpace: false,
     hideEmpty: true,
-    limit: 10,
+    limit: 5,
     labelFilter: [SubscriptionLabelID],
     preorder: [
       { type: chat.masterTag.Thread, order: 1 },
