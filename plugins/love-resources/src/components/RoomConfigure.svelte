@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Contact, Person } from '@hcengineering/contact'
-  import { AssigneeBox, personByIdStore } from '@hcengineering/contact-resources'
+  import { AssigneeBox } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { ActionIcon, EditBox, Icon, IconDelete, resizeObserver } from '@hcengineering/ui'
@@ -26,6 +26,7 @@
   import { infos, lockedRoom } from '../stores'
   import { RoomSide, shadowNormal } from '../types'
   import { getRoomLabel } from '../utils'
+  import { IntlString } from '@hcengineering/platform'
 
   export let room: Room
   export let cellSize: number
@@ -160,6 +161,11 @@
         : undefined
   }
 
+  let roomLabel: IntlString
+  $: void getRoomLabel(room).then((label) => {
+    roomLabel = label
+  })
+
   onMount(() => {
     if (container) roomRect = container.getBoundingClientRect()
   })
@@ -215,12 +221,7 @@
     {/each}
   {/each}
   <div class="floorGrid-configureRoom__header">
-    <EditBox
-      bind:value={room.name}
-      on:change={updateName}
-      placeholder={getRoomLabel(room, $personByIdStore)}
-      kind={'editbox'}
-    />
+    <EditBox bind:value={room.name} on:change={updateName} placeholder={roomLabel} kind={'editbox'} />
     {#if showButtons}
       <div
         class="flex-row-center flex-no-shrink h-full {zoomOut ? 'flex-gap-1' : 'flex-gap-2'}"

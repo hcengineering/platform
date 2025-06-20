@@ -1,4 +1,4 @@
-import { getPersonBySocialId, formatName } from '@hcengineering/contact'
+import { getPersonByPersonId, formatName } from '@hcengineering/contact'
 import { Ref, TxOperations } from '@hcengineering/core'
 import notification, { DocNotifyContext, CommonInboxNotification, ActivityInboxNotification, InboxNotification } from '@hcengineering/notification'
 import { IntlString, addEventListener, translate } from '@hcengineering/platform'
@@ -67,7 +67,7 @@ async function hydrateNotificationAsYouCan (lastNotification: InboxNotification)
     body: ''
   }
 
-  const person = await getPersonBySocialId(client, lastNotification.modifiedBy)
+  const person = await getPersonByPersonId(client, lastNotification.modifiedBy)
   if (person == null) {
     return noPersonData
   }

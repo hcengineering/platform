@@ -3,7 +3,7 @@
 //
 import { get } from 'svelte/store'
 import { type Employee } from '@hcengineering/contact'
-import { personRefByAccountUuidStore } from '@hcengineering/contact-resources'
+import { employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
 import type { Training, TrainingRequest } from '@hcengineering/training'
 import core, { notEmpty, type AttachedData, type Ref, type Role, type RolesAssignment } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
@@ -49,7 +49,7 @@ export async function createTrainingRequest (
     }
 
     const mixin = client.getHierarchy().as(space, spaceType.targetClass) as unknown as RolesAssignment
-    const personRefByAccountUuid = get(personRefByAccountUuidStore)
+    const personRefByAccountUuid = get(employeeRefByAccountUuidStore)
     const employeeRefs = new Set(
       roles
         .map((roleId) => mixin[roleId] ?? [])

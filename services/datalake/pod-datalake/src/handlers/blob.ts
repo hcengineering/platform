@@ -183,14 +183,26 @@ export async function handleBlobSetParent (
   const { workspace, name } = req.params
   const { parent } = (await req.body) as BlobParentRequest
 
-  const heads = await Promise.all(
-    parent != null
-      ? [datalake.head(ctx, workspace, name), datalake.head(ctx, workspace, parent)]
-      : [datalake.head(ctx, workspace, name)]
-  )
-  if (heads.some((head) => head == null)) {
-    res.status(404).send()
-    return
+  if (parent != null) {
+    const [blobHead, parentHead] = await Promise.all([
+      datalake.head(ctx, workspace, name),
+      datalake.head(ctx, workspace, parent)
+    ])
+
+    if (blobHead == null) {
+      res.status(404).send()
+      return
+    }
+    if (parentHead == null) {
+      res.status(400).send()
+      return
+    }
+  } else {
+    const blobHead = await datalake.head(ctx, workspace, name)
+    if (blobHead == null) {
+      res.status(404).send()
+      return
+    }
   }
 
   try {

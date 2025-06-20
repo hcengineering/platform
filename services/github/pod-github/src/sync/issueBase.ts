@@ -99,7 +99,7 @@ export abstract class IssueSyncManagerBase {
     // Find Assignees and reviewers
     const assignees: PersonId[] = []
 
-    for (const o of issue.assignees.nodes ?? []) {
+    for (const o of issue.assignees?.nodes ?? []) {
       const acc = await this.provider.getAccount(o)
       if (acc !== undefined) {
         assignees.push(acc)
@@ -393,6 +393,7 @@ export abstract class IssueSyncManagerBase {
         Analytics.handleError(err)
         this.ctx.error('error during description update', err)
       }
+      delete update.description
     }
 
     if (Object.keys(update).length > 0) {

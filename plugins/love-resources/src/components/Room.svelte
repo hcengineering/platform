@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { personByIdStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import presentation, { ActionContext } from '@hcengineering/presentation'
+  import { getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
   import { Label, Loading, resizeObserver, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
@@ -30,7 +31,6 @@
     TrackPublication
   } from 'livekit-client'
   import { onDestroy, onMount, tick } from 'svelte'
-  import presentation from '@hcengineering/presentation'
   import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
 
   import love from '../plugin'
@@ -46,6 +46,8 @@
   } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import ParticipantView from './ParticipantView.svelte'
+  import { Ref } from '@hcengineering/core'
+  import { Person } from '@hcengineering/contact'
 
   export let withVideo: boolean
   export let canMaximize: boolean = true
@@ -65,8 +67,16 @@
   let screen: HTMLVideoElement
   let roomEl: HTMLDivElement
 
-  $: aiPersonId =
-    $aiBotSocialIdentityStore != null ? $personRefByPersonIdStore.get($aiBotSocialIdentityStore._id) : undefined
+  let aiPersonRef: Ref<Person> | undefined
+  $: if ($aiBotSocialIdentityStore != null) {
+    getPersonRefByPersonIdCb($aiBotSocialIdentityStore?._id, (ref) => {
+      if (ref != null) {
+        aiPersonRef = ref
+      }
+    })
+  } else {
+    aiPersonRef = undefined
+  }
 
   function handleTrackSubscribed (
     track: RemoteTrack,
@@ -239,7 +249,7 @@
       $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)
     ) {
       const info = $infos.filter((p) => p.room === room._id)
-      await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
+      await tryConnect($myInfo, room, info, $myRequests, $invites)
     }
 
     await awaitConnect()
@@ -297,7 +307,7 @@
           muted: true,
           mirror: false,
           connecting: true,
-          isAgent: aiPersonId === info.person
+          isAgent: aiPersonRef === info.person
         }
         participants.push(value)
       }
@@ -386,6 +396,7 @@
 </script>
 
 <div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
+  <ActionContext context={{ mode: 'workbench' }} />
   {#if $isConnected && !$isCurrentInstanceConnected}
     <div class="flex justify-center error h-full w-full clear-mins">
       <Label label={love.string.AnotherWindowError} />

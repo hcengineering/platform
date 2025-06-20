@@ -18,29 +18,38 @@ import { generateToken } from '@hcengineering/server-token'
 import { AccessToken, EgressInfo } from 'livekit-server-sdk'
 import config from './config'
 
-// Example:
-//  {
-//    "roomId": "RM_ROOM_ID",
-//    "roomName": "w-room-name",
-//    "numParticipants": 2,
-//    "bandwidth": "1000",
-//    "connectionMinutes": "120",
-//    "startTime": "2025-01-01T12:00:00Z",
-//    "endTime": "2025-01-01T13:00:00Z",
-//    "participants": [ ... ]
-//  }
 interface LiveKitSession {
-  roomId: string
+  sessionId: string
+  createdAt: string
+  lastActive: string
+  bandwidthIn: string
+  bandwidthOut: string
+  numParticipants: string
   roomName: string
-  startTime: string
-  endTime: string
-  bandwidth: string
-  connectionMinutes: string
+  endedAt?: string
 }
 
-async function getLiveKitSession (ctx: MeasureContext, sessionId: string): Promise<LiveKitSession> {
+const processedSessionsCache = new Map<string, number>()
+
+const createAnalyticsToken = async (): Promise<string> => {
+  const at = new AccessToken(config.ApiKey, config.ApiSecret, { ttl: '10m' })
+  at.addGrant({ roomList: true })
+
+  return await at.toJwt()
+}
+
+function cleanupCache (currentDate: number): void {
+  for (const [sessionId, date] of processedSessionsCache) {
+    if (date >= currentDate) continue
+    processedSessionsCache.delete(sessionId)
+  }
+}
+
+async function getLiveKitSessions (ctx: MeasureContext, start: string, page: number): Promise<LiveKitSession[]> {
   const token = await createAnalyticsToken()
-  const endpoint = `https://cloud-api.livekit.io/api/project/${config.LiveKitProject}/sessions/${sessionId}?v=2`
+  const projectId = config.LiveKitProject
+  const endpoint = `https://cloud-api.livekit.io/api/project/${projectId}/sessions?start=${start}&page=${page}&limit=100`
+
   try {
     const response = await fetch(endpoint, {
       method: 'GET',
@@ -51,57 +60,70 @@ async function getLiveKitSession (ctx: MeasureContext, sessionId: string): Promi
     })
 
     if (!response.ok) {
-      ctx.error('failed to get session analytics', { session: sessionId, status: response.status })
+      ctx.error('failed to get sessions list', { status: response.status })
       throw new Error(`HTTP error: ${response.status} ${response.statusText}`)
     }
 
-    return (await response.json()) as LiveKitSession
+    return ((await response.json()) as { sessions: LiveKitSession[] }).sessions ?? []
   } catch (error) {
     throw new Error('Failed to get session analytics')
   }
 }
 
-const createAnalyticsToken = async (): Promise<string> => {
-  const at = new AccessToken(config.ApiKey, config.ApiSecret, { ttl: '10m' })
-  at.addGrant({ roomList: true })
+export async function updateLiveKitSessions (ctx: MeasureContext): Promise<void> {
+  const startDate = new Date()
+  startDate.setHours(0, 0, 0, 0)
+  startDate.setDate(startDate.getDate() - 1)
+  const year = startDate.getFullYear()
+  const month = String(startDate.getMonth() + 1).padStart(2, '0')
+  const day = String(startDate.getDate()).padStart(2, '0')
+  const start = `${year}-${month}-${day}`
 
-  return await at.toJwt()
-}
+  cleanupCache(startDate.getTime())
 
-export async function saveLiveKitSessionBilling (ctx: MeasureContext, sessionId: string): Promise<void> {
-  if (config.BillingUrl === '' || config.LiveKitProject === '') {
-    return
-  }
+  let liveKitSessions: LiveKitSession[]
+  let page = 0
+  do {
+    liveKitSessions = await getLiveKitSessions(ctx, start, page)
 
-  const session = await getLiveKitSession(ctx, sessionId)
-  const workspace = session.roomName.split('_')[0] as WorkspaceUuid
-  const endpoint = concatLink(config.BillingUrl, `/api/v1/billing/${workspace}/livekit/session`)
+    for (const session of liveKitSessions) {
+      if (processedSessionsCache.has(session.sessionId)) continue
+      const sessionStart = Date.parse(session.createdAt)
+      const sessionEnd = Date.parse(session.endedAt ?? session.lastActive)
 
-  const token = generateToken(systemAccountUuid, workspace, { service: 'love' })
+      const workspace = session.roomName.split('_')[0] as WorkspaceUuid
+      const endpoint = concatLink(config.BillingUrl, `/api/v1/billing/${workspace}/livekit/session`)
+      const token = generateToken(systemAccountUuid, workspace, { service: 'love' })
 
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        sessionId,
-        sessionStart: session.startTime,
-        sessionEnd: session.endTime,
-        bandwidth: Number(session.bandwidth),
-        minutes: Number(session.connectionMinutes),
-        room: session.roomName
-      })
-    })
-    if (!res.ok) {
-      throw new Error(await res.text())
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sessionId: session.sessionId,
+            sessionStart: session.createdAt,
+            sessionEnd: session.endedAt ?? session.lastActive,
+            bandwidth: Math.max(Number(session.bandwidthOut), Number(session.bandwidthIn)),
+            minutes: Math.round((sessionEnd - sessionStart) / (1000 * 60)),
+            room: session.roomName
+          })
+        })
+        if (!res.ok) {
+          throw new Error(await res.text())
+        }
+
+        if (session.endedAt !== undefined) {
+          processedSessionsCache.set(session.sessionId, sessionStart)
+        }
+      } catch (err: any) {
+        ctx.error('failed to save session billing', { workspace, session, err })
+      }
     }
-  } catch (err: any) {
-    ctx.error('failed to save session billing', { workspace, session, err })
-    throw new Error('Failed to save session billing: ' + err)
-  }
+    page++
+  } while (liveKitSessions.length > 0)
 }
 
 export async function saveLiveKitEgressBilling (ctx: MeasureContext, egress: EgressInfo): Promise<void> {

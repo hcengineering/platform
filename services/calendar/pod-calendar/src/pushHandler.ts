@@ -16,10 +16,10 @@
 import { AccountClient } from '@hcengineering/account-client'
 import core, { isActiveMode, MeasureContext, TxOperations } from '@hcengineering/core'
 import { getClient } from './client'
-import { getUserByEmail } from './kvsUtils'
+import { getUserByEmail, removeUserByEmail } from './kvsUtils'
 import { IncomingSyncManager } from './sync'
-import { GoogleEmail, Token } from './types'
-import { getGoogleClient, getWorkspaceToken } from './utils'
+import { CALENDAR_INTEGRATION, GoogleEmail, Token } from './types'
+import { getGoogleClient, getWorkspaceToken, removeIntegrationSecret, setCredentials } from './utils'
 
 export class PushHandler {
   constructor (
@@ -35,8 +35,18 @@ export class PushHandler {
         const client = await getClient(getWorkspaceToken(token.workspace))
         const txOp = new TxOperations(client, core.account.System)
         const res = getGoogleClient()
-        res.auth.setCredentials(token)
-        await IncomingSyncManager.push(this.ctx, this.accountClient, txOp, token, res.google, calendarId)
+        const authSuccess = await setCredentials(res.auth, token)
+        if (!authSuccess) {
+          await removeUserByEmail(token, token.email)
+          await removeIntegrationSecret(this.ctx, this.accountClient, {
+            kind: CALENDAR_INTEGRATION,
+            workspaceUuid: token.workspace,
+            socialId: token.userId,
+            key: token.email
+          })
+        } else {
+          await IncomingSyncManager.push(this.ctx, this.accountClient, txOp, token, res.google, calendarId)
+        }
         await txOp.close()
       },
       { workspace: token.workspace, user: token.userId }

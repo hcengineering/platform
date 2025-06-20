@@ -18,7 +18,7 @@ import core, { TxFactory, type Blob, type Ref, type Tx } from '@hcengineering/co
 const factory = new TxFactory(core.account.System)
 
 export const blobEvents = {
-  created: function blobCreated (
+  created: function (
     name: string,
     data: {
       size: number
@@ -40,7 +40,30 @@ export const blobEvents = {
       lastModified
     )
   },
-  deleted: function blobDeleted (name: string): Tx {
+  updated: function (
+    name: string,
+    data: {
+      size: number
+      etag: string
+      contentType: string
+      lastModified: number
+    }
+  ): Tx {
+    const { lastModified, ...rest } = data
+    return factory.createTxUpdateDoc(
+      core.class.Blob,
+      core.space.Configuration,
+      name as Ref<Blob>,
+      {
+        provider: 'datalake',
+        version: '',
+        ...rest
+      },
+      false,
+      lastModified
+    )
+  },
+  deleted: function (name: string): Tx {
     return factory.createTxRemoveDoc(core.class.Blob, core.space.Configuration, name as Ref<Blob>)
   }
 }

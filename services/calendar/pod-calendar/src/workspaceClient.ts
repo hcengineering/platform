@@ -114,15 +114,17 @@ export class WorkspaceClient {
         await client.startSync()
       })
     }
-    await limiter.waitProcessing()
   }
 
-  private async createCalendarClient (user: Token): Promise<CalendarClient> {
+  private async createCalendarClient (user: Token): Promise<CalendarClient | undefined> {
     const current = this.clients.get(user.email)
     if (current !== undefined) {
       return current
     }
     const newClient = await CalendarClient.create(this.ctx, this.accountClient, user, this.client, this)
+    if (newClient === undefined) {
+      return
+    }
     this.clients.set(user.email, newClient)
     return newClient
   }
@@ -155,7 +157,7 @@ export class WorkspaceClient {
 
   async pushEvent (user: Token, event: Event, type: 'create' | 'update' | 'delete'): Promise<void> {
     const client =
-      (await this.getCalendarClientByCalendar(event.calendar as Ref<ExternalCalendar>)) ??
+      this.getCalendarClientByCalendar(event.calendar as Ref<ExternalCalendar>) ??
       (await this.createCalendarClient(user))
     if (client === undefined) {
       console.warn('Client not found', event.calendar, this.workspace)
@@ -182,7 +184,7 @@ export class WorkspaceClient {
     const query = lastSync !== undefined ? { modifiedOn: { $gt: lastSync } } : {}
     const newEvents = await this.client.findAll(calendar.class.Event, query)
     for (const newEvent of newEvents) {
-      const client = await this.getCalendarClientByCalendar(newEvent.calendar as Ref<ExternalCalendar>)
+      const client = this.getCalendarClientByCalendar(newEvent.calendar as Ref<ExternalCalendar>)
       if (client === undefined) {
         this.ctx.warn('Client not found', { calendar: newEvent.calendar, workspace: this.workspace })
         continue
@@ -190,13 +192,13 @@ export class WorkspaceClient {
       await client.syncMyEvent(newEvent)
       await this.updateSyncTime()
     }
-    this.ctx.info('all outcoming messages synced', this.workspace)
+    this.ctx.info('all outcoming messages synced', { workspace: this.workspace })
   }
 
-  private async getCalendarClientByCalendar (id: Ref<ExternalCalendar>): Promise<CalendarClient | undefined> {
-    const calendar = this.calendarsByExternal.get(id)
+  private getCalendarClientByCalendar (id: Ref<ExternalCalendar>): CalendarClient | undefined {
+    const calendar = this.calendarsById.get(id)
     if (calendar === undefined) {
-      console.warn("couldn't find calendar by id", id)
+      this.ctx.warn("couldn't find calendar by id", { id })
       return
     }
     return this.clients.get(calendar.externalUser as GoogleEmail)

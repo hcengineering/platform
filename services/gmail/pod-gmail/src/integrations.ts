@@ -13,23 +13,22 @@
 // limitations under the License.
 //
 
+import { Integration, type AccountClient } from '@hcengineering/account-client'
 import { AccountUuid, MeasureContext, PersonId, TxOperations, WorkspaceUuid } from '@hcengineering/core'
-import { getAccountClient } from '@hcengineering/server-client'
-import { Integration } from '@hcengineering/account-client'
 import gmail from '@hcengineering/gmail'
+import { getAccountClient } from '@hcengineering/server-client'
 import setting from '@hcengineering/setting'
 
-import { serviceToken } from './utils'
-import { GMAIL_INTEGRATION } from './types'
 import { getAccountSocialIds } from './accounts'
+import { GMAIL_INTEGRATION } from './types'
+import { serviceToken } from './utils'
 
 export async function getIntegration (socialId: PersonId, workspaceUuid?: WorkspaceUuid): Promise<Integration | null> {
   const client = getAccountClient(serviceToken())
   return await client.getIntegration({ kind: GMAIL_INTEGRATION, socialId, workspaceUuid: workspaceUuid ?? null })
 }
 
-export async function getIntegrations (token: string): Promise<Integration[]> {
-  const client = getAccountClient(token)
+export async function getIntegrations (client: AccountClient, token: string): Promise<Integration[]> {
   return (await client.listIntegrations({ kind: GMAIL_INTEGRATION })) ?? []
 }
 

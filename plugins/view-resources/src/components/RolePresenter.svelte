@@ -51,7 +51,7 @@
         style={getMixinStyle(mixin._id, true, $themeStore.dark)}
       >
         {#if !userMixin || fullSize}
-          <Label label={mixin.label} />
+          <span class="overflow-label"><Label label={mixin.label} /></span>
         {:else}
           <div use:tooltip={{ label: mixin.label }}>
             {#if mixin.icon}
@@ -69,11 +69,14 @@
 <style lang="scss">
   .mixin-container {
     display: flex;
+    min-width: 0;
     .mixin-selector {
       margin-left: 8px;
+      padding-inline: 0.25rem;
       cursor: pointer;
       height: 24px;
       min-width: 84px;
+      max-width: 12rem;
 
       border-radius: 8px;
 
@@ -85,6 +88,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
     .user-selector {
       min-width: 24px;

@@ -87,6 +87,7 @@ import templates from '@hcengineering/templates'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action } from '@hcengineering/view'
 import contact from './plugin'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 
 export { contactId } from '@hcengineering/contact'
 export { contactOperation } from './migration'
@@ -826,10 +827,6 @@ export function createModel (builder: Builder): void {
     presenter: contact.component.PersonPresenter
   })
 
-  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.ArrayEditor, {
-    inlineEditor: contact.component.PersonIdArrayEditor
-  })
-
   builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.ArrayEditor, {
     inlineEditor: contact.component.AccountArrayEditor
   })
@@ -1291,7 +1288,15 @@ export function createModel (builder: Builder): void {
   })
 
   createAttributePresenter(builder, contact.component.SpaceMembersEditor, core.class.Space, 'members', 'array')
-  createSystemType(builder, contact.class.UserProfile, contact.icon.Person, contact.string.UserProfile)
+  createSystemType(
+    builder,
+    contact.class.UserProfile,
+    contact.icon.Person,
+    contact.string.UserProfile,
+    undefined,
+    undefined,
+    PaletteColorIndexes.Pink
+  )
   builder.createDoc(core.class.Attribute, core.space.Model, {
     attributeOf: contact.class.UserProfile,
     name: 'person',

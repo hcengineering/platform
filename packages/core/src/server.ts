@@ -27,6 +27,8 @@ export interface DocInfo {
   hash: string
 
   size?: number
+
+  contentType?: string
 }
 /**
  * @public

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureContext, RateLimiter, Ref, Blob, groupByArray } from '@hcengineering/core'
+import core, { MeasureContext, RateLimiter, Ref, Blob, groupByArray } from '@hcengineering/core'
 import {
   type CardID,
   type FileMessage,
@@ -27,7 +27,7 @@ import {
 import cardPlugin, { type Card } from '@hcengineering/card'
 import yaml from 'js-yaml'
 import { v4 as uuid } from 'uuid'
-import { MessageRequestEventType } from '@hcengineering/communication-sdk-types'
+import { MessageEventType } from '@hcengineering/communication-sdk-types'
 import { applyPatches, retry } from '@hcengineering/communication-shared'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { deserializeMessage } from '@hcengineering/communication-yaml'
@@ -174,7 +174,7 @@ async function applyPatchesToGroup (
   try {
     const file = await getFile(storage, ctx, workspace, group.blobId)
     const parsedFile = await parseFileStream(file)
-    const patchesByMessage = groupByArray(group.patches, (it) => it.message)
+    const patchesByMessage = groupByArray(group.patches, (it) => it.messageId)
     const updatedMessages = parsedFile.messages.map((message) => {
       const patches = patchesByMessage.get(message.id) ?? []
       if (patches.length === 0) {
@@ -187,18 +187,14 @@ async function applyPatchesToGroup (
       ctx,
       storage,
       workspace,
-      parsedFile.metadata,
+      parsedFile.cardId,
+      parsedFile.title,
+      parsedFile.fromDate,
+      parsedFile.toDate,
       updatedMessages.map(deserializeMessage)
     )
-    await createGroup(
-      client,
-      group.card,
-      blob,
-      parsedFile.metadata.fromDate,
-      parsedFile.metadata.toDate,
-      updatedMessages.length
-    )
-    await removeGroup(client, group.card, group.blobId)
+    await createGroup(client, group.cardId, blob, parsedFile.fromDate, parsedFile.toDate, updatedMessages.length)
+    await removeGroup(client, group.cardId, group.blobId)
     await removePatches(db, workspace, card, Array.from(patchesByMessage.keys()))
     await removeFile(storage, ctx, workspace, group.blobId)
   } catch (error) {
@@ -286,13 +282,13 @@ async function createNewGroup (
   if (messages.length === 0) return []
 
   const lastMessage = messages[messages.length - 1]
-  const toDate = lastMessage.created
+  const lastCreated = lastMessage.created
 
   const messagesFromRange = (
     await client.findMessages({
       card: card._id,
       order: SortingOrder.Ascending,
-      created: toDate,
+      created: lastCreated,
       reactions: true,
       replies: true,
       files: true
@@ -302,14 +298,11 @@ async function createNewGroup (
     .map(deserializeMessage)
 
   const allMessages = messages.concat(messagesFromRange)
-  const metadata: FileMetadata = {
-    card: card._id,
-    title: card.title,
-    fromDate: allMessages[0].created,
-    toDate: allMessages[allMessages.length - 1].created
-  }
-  const blob = await uploadGroupFile(ctx, storage, workspace, metadata, allMessages)
-  await createGroup(client, card._id, blob, metadata.fromDate, metadata.toDate, allMessages.length)
+
+  const fromDate = allMessages[0].created
+  const toDate = allMessages[allMessages.length - 1].created
+  const blob = await uploadGroupFile(ctx, storage, workspace, card._id, card.title, fromDate, toDate, allMessages)
+  await createGroup(client, card._id, blob, fromDate, toDate, allMessages.length)
 
   return allMessages
 }
@@ -365,17 +358,19 @@ async function pushMessagesToGroup (
       .map(deserializeMessage)
       .concat(messages)
       .sort((a, b) => a.created.getTime() - b.created.getTime())
-    const blob = await uploadGroupFile(ctx, storage, workspace, parsedFile.metadata, newMessages)
-    await removeFile(storage, ctx, workspace, group.blobId)
-    await removeGroup(client, group.card, group.blobId)
-    await createGroup(
-      client,
-      group.card,
-      blob,
-      parsedFile.metadata.fromDate,
-      parsedFile.metadata.toDate,
-      newMessages.length
+    const blob = await uploadGroupFile(
+      ctx,
+      storage,
+      workspace,
+      parsedFile.cardId,
+      parsedFile.title,
+      parsedFile.fromDate,
+      parsedFile.toDate,
+      newMessages
     )
+    await removeFile(storage, ctx, workspace, group.blobId)
+    await removeGroup(client, group.cardId, group.blobId)
+    await createGroup(client, group.cardId, blob, parsedFile.fromDate, parsedFile.toDate, newMessages.length)
   } catch (err: any) {
     ctx.error('Failed to push messages to group', { group: group.blobId, error: err })
     throw err
@@ -384,7 +379,7 @@ async function pushMessagesToGroup (
 
 async function createGroup (
   client: CommunicationRestClient,
-  card: CardID,
+  cardId: CardID,
   blobId: Ref<Blob>,
   fromDate: Date,
   toDate: Date,
@@ -393,26 +388,30 @@ async function createGroup (
   await retry(
     async () =>
       await client.event({
-        type: MessageRequestEventType.CreateMessagesGroup,
+        type: MessageEventType.CreateMessagesGroup,
         group: {
-          card,
+          cardId,
           blobId,
           fromDate,
           toDate,
           count
-        }
+        },
+        socialId: core.account.System,
+        date: new Date()
       }),
     { retries: 3 }
   )
 }
 
-async function removeGroup (client: CommunicationRestClient, card: CardID, blobId: Ref<Blob>): Promise<void> {
+async function removeGroup (client: CommunicationRestClient, cardId: CardID, blobId: Ref<Blob>): Promise<void> {
   await retry(
     async () =>
       await client.event({
-        type: MessageRequestEventType.RemoveMessagesGroup,
-        card,
-        blobId
+        type: MessageEventType.RemoveMessagesGroup,
+        cardId,
+        blobId,
+        socialId: core.account.System,
+        date: new Date()
       }),
     { retries: 3 }
   )
@@ -446,9 +445,18 @@ async function uploadGroupFile (
   ctx: MeasureContext,
   storage: StorageAdapter,
   workspace: WorkspaceID,
-  metadata: FileMetadata,
+  cardId: CardID,
+  title: string,
+  fromDate: Date,
+  toDate: Date,
   messages: FileMessage[]
 ): Promise<Ref<Blob>> {
+  const metadata: FileMetadata = {
+    cardId,
+    title,
+    fromDate,
+    toDate
+  }
   const yamlMetadata = yaml.dump(metadata, { noRefs: true }).trim()
   const yamlMessages = yaml.dump(messages, { noRefs: true, indent: 0 }).trim()
   const yamlContent = `---\n${yamlMetadata}\n---\n${yamlMessages}`

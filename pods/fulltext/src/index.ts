@@ -20,11 +20,13 @@ import { initStatisticsContext, type StorageConfiguration } from '@hcengineering
 import { join } from 'path'
 
 import { createElasticAdapter } from '@hcengineering/elastic'
+import { getPlatformQueue } from '@hcengineering/kafka'
+import { setMetadata } from '@hcengineering/platform'
 import { createRekoniAdapter, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import serverToken from '@hcengineering/server-token'
 import { readFileSync } from 'fs'
 import { startIndexer } from './server'
-import { getPlatformQueue } from '@hcengineering/kafka'
 
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
@@ -33,6 +35,8 @@ if (serverSecret === undefined) {
   console.info('Please provide server secret')
   process.exit(1)
 }
+
+setMetadata(serverToken.metadata.Secret, serverSecret)
 
 const metricsContext = initStatisticsContext('fulltext', {
   factory: () =>

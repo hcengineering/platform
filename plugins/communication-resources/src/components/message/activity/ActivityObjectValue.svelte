@@ -30,7 +30,7 @@
 
   $: clazz = hierarchy.getClass(card._class)
   $: objectPanel = hierarchy.classHierarchyMixin(card._class, view.mixin.ObjectPanel)
-  $: action = message.data.action
+  $: action = message.extra.action
 </script>
 
 <span class="container flex-gap-1 overflow-label">

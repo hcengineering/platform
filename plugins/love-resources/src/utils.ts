@@ -4,7 +4,6 @@ import { Analytics } from '@hcengineering/analytics'
 import calendar, { type Event, type Schedule, getAllEvents } from '@hcengineering/calendar'
 import chunter from '@hcengineering/chunter'
 import contact, { getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
-import { personByIdStore } from '@hcengineering/contact-resources'
 import core, {
   AccountRole,
   type Client,
@@ -15,7 +14,6 @@ import core, {
   generateId,
   getCurrentAccount,
   type Hierarchy,
-  type IdMap,
   type Ref,
   type RelatedDocument,
   type Space,
@@ -104,6 +102,7 @@ import {
   selectedRoomPlace
 } from './stores'
 import MeetingMinutesSearchItem from './components/MeetingMinutesSearchItem.svelte'
+import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 
 export async function getToken (
   roomName: string,
@@ -714,10 +713,10 @@ export async function setShare (value: boolean, withAudio: boolean = false): Pro
   }
 }
 
-export function getRoomName (room: Room, personByIdStore: IdMap<Person>): string {
+export async function getRoomName (room: Room): Promise<string> {
   if (isOffice(room) && room.person !== null && room.name === '') {
-    const employee = personByIdStore.get(room.person)
-    if (employee !== undefined) {
+    const employee = await getPersonByPersonRef(room.person)
+    if (employee != null) {
       const client = getClient()
       return getName(client.getHierarchy(), employee)
     }
@@ -725,8 +724,8 @@ export function getRoomName (room: Room, personByIdStore: IdMap<Person>): string
   return room.name
 }
 
-export function getRoomLabel (room: Room, personByIdStore: IdMap<Person>): IntlString {
-  const name = getRoomName(room, personByIdStore)
+export async function getRoomLabel (room: Room): Promise<IntlString> {
+  const name = await getRoomName(room)
   if (name !== '') return getEmbeddedLabel(name)
   return isOffice(room) ? love.string.Office : love.string.Room
 }
@@ -804,7 +803,7 @@ async function initMeetingMinutes (room: Room): Promise<void> {
       attachedToClass: room._class,
       collection: 'meetings',
       space: core.space.Workspace,
-      title: `${getRoomName(room, get(personByIdStore))} ${date}`,
+      title: `${await getRoomName(room)} ${date}`,
       description: null,
       status: MeetingStatus.Active,
       modifiedBy: getCurrentAccount().primarySocialId,
@@ -873,7 +872,6 @@ function checkPlace (room: Room, info: ParticipantInfo[], x: number, y: number):
 }
 
 export async function connectToMeeting (
-  personByIdStore: IdMap<Person>,
   currentInfo: ParticipantInfo | undefined,
   info: ParticipantInfo[],
   currentRequests: JoinRequest[],
@@ -895,7 +893,6 @@ export async function connectToMeeting (
   }
 
   await tryConnect(
-    personByIdStore,
     currentInfo,
     room,
     info.filter((p) => p.room === room._id),
@@ -905,7 +902,6 @@ export async function connectToMeeting (
 }
 
 export async function tryConnect (
-  personByIdStore: IdMap<Person>,
   currentInfo: ParticipantInfo | undefined,
   room: Room,
   info: ParticipantInfo[],
@@ -914,8 +910,8 @@ export async function tryConnect (
   place?: { x: number, y: number }
 ): Promise<void> {
   const me = getCurrentEmployee()
-  const currentPerson = personByIdStore.get(me)
-  if (currentPerson === undefined) return
+  const currentPerson = await getPersonByPersonRef(me)
+  if (currentPerson == null) return
   const client = getClient()
 
   // guests can't join without invite

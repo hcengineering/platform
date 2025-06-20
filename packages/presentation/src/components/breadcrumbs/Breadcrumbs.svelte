@@ -21,6 +21,7 @@
 
   export let models: readonly BreadcrumbsModel[]
   export let disabled: boolean = false
+  export let maxWidth: string | undefined = undefined
 
   $: trimmed = models.length > 3
   $: narrowModel = trimmed ? [models[0], models[models.length - 1]] : models
@@ -43,16 +44,16 @@
 {#each narrowModel as model, i}
   {#if hasComponent(model)}
     {@const { component, props } = model}
-    <div class="title">
+    <div class="title inline-flex min-w-6" style:max-width={maxWidth}>
       {#if typeof component === 'string'}
-        <Component is={component} {props} />
+        <Component is={component} props={{ ...props, maxWidth }} />
       {:else}
-        <svelte:component this={component} {...props} />
+        <svelte:component this={component} {...props} {maxWidth} />
       {/if}
     </div>
   {:else}
     {@const { title, href, onClick } = model}
-    <NavLink {href} noUnderline {onClick} {disabled}>
+    <NavLink {href} noUnderline {onClick} {disabled} {maxWidth}>
       <div class="title">{title}</div>
     </NavLink>
   {/if}

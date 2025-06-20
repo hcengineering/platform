@@ -23,7 +23,7 @@ import { unwrapETag } from './utils'
 export interface ObjectMetadata {
   lastModified: number
   name: string
-  type: string
+  contentType: string
   etag: string
   size?: number
 }

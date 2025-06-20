@@ -52,6 +52,7 @@
   export let type: ObjectPresenterType = 'link'
   export let overflowLabel = true
   export let inlineBlock = false
+  export let shrink: boolean = false
 
   const client = getClient()
 
@@ -96,6 +97,7 @@
         {maxWidth}
         {showStatus}
         {overflowLabel}
+        {shrink}
       />
       <span class="status">
         <Label label={statusLabel} />
@@ -121,6 +123,7 @@
       {showStatus}
       {overflowLabel}
       {inlineBlock}
+      {shrink}
     />
   {/if}
 {:else if shouldShowPlaceholder}

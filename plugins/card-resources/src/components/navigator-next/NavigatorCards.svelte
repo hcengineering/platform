@@ -16,12 +16,13 @@
 <script lang="ts">
   import cardPlugin, { Card, CardSpace, FavoriteCard, MasterTag } from '@hcengineering/card'
   import { Ref, WithLookup } from '@hcengineering/core'
-  import { createQuery, createNotificationContextsQuery } from '@hcengineering/presentation'
+  import { createQuery, createNotificationContextsQuery, getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
-  import { NotificationContext, NotificationType, SortingOrder } from '@hcengineering/communication-types'
+  import { Label, NotificationContext, NotificationType, SortingOrder } from '@hcengineering/communication-types'
   import { NavGroup } from '@hcengineering/ui'
   import preference from '@hcengineering/preference'
   import { createEventDispatcher } from 'svelte'
+  import { labelsStore } from '@hcengineering/communication-resources'
 
   import type { CardsNavigatorConfig } from '../../types'
   import NavigatorCard from './NavigatorCard.svelte'
@@ -35,12 +36,17 @@
   export let selectedCard: Ref<Card> | undefined = undefined
   export let selectedSpecial: string | undefined = undefined
 
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
   const favoritesQuery = createQuery()
   const contextsQuery = createNotificationContextsQuery()
 
   let favorites: WithLookup<FavoriteCard>[] = []
   let contexts: NotificationContext[] = []
+
+  let labels: Label[] = []
+  $: labels = config.labelFilter ? $labelsStore.filter((it) => (config.labelFilter ?? []).includes(it.labelId)) : []
 
   $: favoritesQuery.query(
     cardPlugin.class.FavoriteCard,
@@ -110,7 +116,7 @@
     {#each favorites as favorite (favorite.attachedTo)}
       {@const card = getCard(favorite)}
       {#if card}
-        {@const context = contexts.find((it) => it.card === card._id)}
+        {@const context = contexts.find((it) => it.cardId === card._id)}
         <NavigatorCard {card} {context} {favorite} {applicationId} {selectedCard} {config} on:selectCard />
       {/if}
     {/each}
@@ -120,7 +126,7 @@
       {#if visibleItem !== undefined && !isOpen}
         {@const card = getCard(visibleItem)}
         {#if card}
-          {@const context = contexts.find((it) => it.card === card._id)}
+          {@const context = contexts.find((it) => it.cardId === card._id)}
           <NavigatorCard
             {card}
             {context}
@@ -143,6 +149,7 @@
     {selectedType}
     {selectedCard}
     {applicationId}
+    labels={labels.filter((it) => hierarchy.isDerived(it.cardType, type._id))}
     {favorites}
     on:selectType
     on:selectCard

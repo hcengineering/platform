@@ -19,7 +19,7 @@ import core, {
   type Client,
   type Collection,
   type Doc,
-  groupByArray,
+  groupByArrayAsync,
   type Hierarchy,
   type Mixin,
   type Ref,
@@ -37,8 +37,7 @@ import {
 import contact, { type Person } from '@hcengineering/contact'
 import { type IntlString } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
-import { get } from 'svelte/store'
-import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
+import { getPersonRefByPersonId } from '@hcengineering/contact-resources'
 import activity, {
   type ActivityMessage,
   type DisplayActivityMessage,
@@ -257,7 +256,10 @@ export async function combineActivityMessages (
 
   const result: Array<DisplayActivityMessage | undefined> = [...uncombined]
 
-  const groupedByType: Map<string, DocUpdateMessage[]> = groupByArray(docUpdateMessages, getDocUpdateMessageKey)
+  const groupedByType: Map<string, DocUpdateMessage[]> = await groupByArrayAsync(
+    docUpdateMessages,
+    getDocUpdateMessageKey
+  )
 
   for (const [, groupedMessages] of groupedByType) {
     const cantMerge = groupedMessages.filter(
@@ -365,8 +367,8 @@ function groupByTime<T extends ActivityMessage> (messages: T[]): T[][] {
   return result
 }
 
-function getDocUpdateMessageKey (message: DocUpdateMessage): string {
-  const personRef = get(personRefByPersonIdStore).get(message.createdBy as any)
+async function getDocUpdateMessageKey (message: DocUpdateMessage): Promise<string> {
+  const personRef = await getPersonRefByPersonId(message.createdBy as any)
 
   if (message.action === 'update') {
     return [message._class, message.attachedTo, message.action, personRef, getAttributeUpdatesKey(message)].join('_')

@@ -18,12 +18,8 @@
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
-  import contact, { getCurrentEmployee, type SocialIdentityRef } from '@hcengineering/contact'
-  import {
-    personByPersonIdStore,
-    primarySocialIdByPersonIdStore,
-    socialIdsStore
-  } from '@hcengineering/contact-resources'
+  import contact, { getCurrentEmployee, Person, SocialIdentity } from '@hcengineering/contact'
+  import { getPersonByPersonIdCb, getSocialIdByPersonIdCb } from '@hcengineering/contact-resources'
   import { Class, Doc, Markup, Ref, Space, WithLookup } from '@hcengineering/core'
   import { getClient, MessageViewer, pendingCreatedDocs } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
@@ -80,9 +76,19 @@
       : []
 
   $: personId = value?.createdBy
-  $: person = personId !== undefined ? $personByPersonIdStore.get(personId) : undefined
-
-  $: socialId = personId !== undefined ? $socialIdsStore.get(personId as SocialIdentityRef) : undefined
+  let person: Person | undefined
+  let socialId: SocialIdentity | undefined
+  $: if (personId !== undefined) {
+    getPersonByPersonIdCb(personId, (p) => {
+      person = p ?? undefined
+    })
+    getSocialIdByPersonIdCb(personId, (s) => {
+      socialId = s ?? undefined
+    })
+  } else {
+    person = undefined
+    socialId = undefined
+  }
 
   let originalText = value?.message
 

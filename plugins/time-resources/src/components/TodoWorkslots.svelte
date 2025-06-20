@@ -71,6 +71,7 @@
       description: todo.description,
       participants: [getCurrentEmployee()],
       title: todo.title,
+      blockTime: true,
       allDay: false,
       access: 'owner',
       user: currentAccount.primarySocialId,

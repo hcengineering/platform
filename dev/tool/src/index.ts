@@ -19,10 +19,14 @@ import accountPlugin, {
   createWorkspaceRecord,
   flattenStatus,
   getAccountDB,
+  getWorkspaceById,
   getWorkspaceInfoWithStatusById,
+  getWorkspaces,
+  getWorkspacesInfoWithStatusByIds,
   signUpByEmail,
   updateWorkspaceInfo,
-  type AccountDB
+  type AccountDB,
+  type Workspace
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
 import {
@@ -55,6 +59,8 @@ import { updateField } from './workspace'
 
 import {
   AccountRole,
+  isArchivingMode,
+  isDeletingMode,
   MeasureMetricsContext,
   metricsToString,
   SocialIdType,
@@ -102,6 +108,7 @@ import {
   ensureGlobalPersonsForLocalAccounts,
   filterMergedAccountsInMembers,
   migrateCreatedModifiedBy,
+  migrateCreatedModifiedByFixed,
   migrateMergedAccounts,
   moveAccountDbFromMongoToPG
 } from './db'
@@ -113,6 +120,7 @@ import { createRestClient } from '@hcengineering/api-client'
 import { mkdir, writeFile } from 'fs/promises'
 import { basename, dirname } from 'path'
 import { existsSync } from 'fs'
+import { restoreMarkupRefs } from './markup'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -1062,7 +1070,7 @@ export function devTool (
 
       const skipWorkspaces = new Set(cmd.skip.split(',').map((it) => it.trim()))
 
-      const token = generateToken(systemAccountUuid, '' as WorkspaceUuid, {
+      const token = generateToken(systemAccountUuid, undefined, {
         service: 'tool'
       })
       const workspaces = (await getAccountClient(token).listWorkspaces(cmd.region))
@@ -1351,15 +1359,17 @@ export function devTool (
   program
     .command('backup-s3-download <bucketName> <dirName> <storeIn>')
     .description('Download a full backup from s3 to local dir')
+    .option('-s, --skip <skip>', 'skip downloading of these files')
     .action(async (bucketName: string, dirName: string, storeIn: string, cmd) => {
       const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
       const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
       const backupIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
       try {
         const storage = await createStorageBackupStorage(toolCtx, storageAdapter, backupIds, dirName)
-        await backupDownload(storage, storeIn)
+        console.log('downloading backup...', cmd.skip)
+        await backupDownload(storage, storeIn, new Set(cmd.skip.split(';')))
       } catch (err: any) {
-        toolCtx.error('failed to size backup', { err })
+        toolCtx.error('failed to download backup', { err })
       }
       await storageAdapter.close()
     })
@@ -1690,7 +1700,7 @@ export function devTool (
     .description('Enable or disable profiling')
     .option('-o, --output <output>', 'Output file', 'profile.cpuprofile')
     .action(async (endpoint: string, mode: string, opt: { output: string }) => {
-      const token = generateToken(systemAccountUuid, '' as WorkspaceUuid, { admin: 'true' })
+      const token = generateToken(systemAccountUuid, undefined, { admin: 'true' })
       if (mode === 'start') {
         await fetch(`${endpoint}/api/v1/manage?token=${token}&operation=profile-start`, {
           method: 'PUT'
@@ -2193,29 +2203,41 @@ export function devTool (
       })
     })
 
-  // program
-  //   .command('fulltext-reindex-all')
-  //   .description('reindex workspaces')
-  //   .action(async () => {
-  //     const fulltextUrl = process.env.FULLTEXT_URL
-  //     if (fulltextUrl === undefined) {
-  //       console.error('please provide FULLTEXT_URL')
-  //       process.exit(1)
-  //     }
+  program
+    .command('fulltext-reindex-all')
+    .description('reindex workspaces')
+    .action(async () => {
+      const fulltextUrl = process.env.FULLTEXT_URL
+      if (fulltextUrl === undefined) {
+        console.error('please provide FULLTEXT_URL')
+        process.exit(1)
+      }
 
-  //     await withAccountDatabase(async (db) => {
-  //       const workspaces = await listWorkspacesRaw(db)
-  //       workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
-  //       for (const workspace of workspaces) {
-  //         const wsid = getWorkspaceId(workspace.workspace)
-  //         const token = generateToken(systemAccountEmail, wsid)
+      let workspaces: Workspace[] = []
 
-  //         console.log('reindex workspace', workspace)
-  //         await reindexWorkspace(toolCtx, fulltextUrl, token)
-  //         console.log('done', workspace)
-  //       }
-  //     })
-  //   })
+      await withAccountDatabase(async (db) => {
+        const statuses = await db.workspaceStatus.find({ mode: 'active', isDisabled: false })
+        const statusByWs = new Map(statuses.map((it) => [it.workspaceUuid, it]))
+
+        workspaces = await db.workspace.find({})
+        workspaces = workspaces.filter((p) => statusByWs.has(p.uuid))
+        workspaces.sort((a, b) => {
+          const sa = statusByWs.get(a.uuid)
+          const sb = statusByWs.get(b.uuid)
+          return (sb?.lastVisit ?? 0) - (sa?.lastVisit ?? 0)
+        })
+      })
+
+      console.log('found workspaces', workspaces.length)
+      for (const ws of workspaces) {
+        console.log('reindex workspace', ws)
+        const queue = getPlatformQueue('tool', ws.region)
+        const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
+        await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
+        await queue.shutdown()
+      }
+      console.log('done')
+    })
 
   // program
   //   .command('remove-duplicates-ids-mongo <workspaces>')
@@ -2395,6 +2417,65 @@ export function devTool (
       await migrateCreatedModifiedBy(toolCtx, dbUrl, domains, maxLifetime, batchSize)
     })
 
+  program
+    .command('migrate-created-modified-by-fixed')
+    .option('--include-domains <includeDomains>', 'Domains to migrate(comma-separated)')
+    .option('--exclude-domains <excludeDomains>', 'Domains to skip migration for(comma-separated)')
+    .option('--lifetime <lifetime>', 'Max lifetime for the connection in seconds')
+    .option('--batch <batch>', 'Batch size')
+    .option('--force <force>', 'Force update', false)
+    .option('--max-reconnects <maxReconnects>', 'Max reconnects', '30')
+    .option('--max-retries <maxRetries>', 'Max reconnects', '50')
+    .option('--workspaces <workspaces>', 'Workspaces to migrate(comma-separated)')
+    .action(
+      async (cmd: {
+        includeDomains?: string
+        excludeDomains?: string
+        lifetime?: string
+        batch?: string
+        workspaces?: string
+        force: boolean
+        maxReconnects: string
+        maxRetries: string
+      }) => {
+        const { dbUrl } = prepareTools()
+        const includeDomains = cmd.includeDomains?.split(',').map((d) => d.trim())
+        const excludeDomains = cmd.excludeDomains?.split(',').map((d) => d.trim())
+        const maxLifetime = cmd.lifetime != null ? parseInt(cmd.lifetime) : undefined
+        const batchSize = cmd.batch != null ? parseInt(cmd.batch) : undefined
+        const maxReconnects = parseInt(cmd.maxReconnects)
+        const maxRetries = parseInt(cmd.maxRetries)
+        const wsUuids = cmd.workspaces?.split(',').map((it) => it.trim()) as WorkspaceUuid[]
+
+        await withAccountDatabase(async (accDb) => {
+          const rawWorkspaces =
+            wsUuids != null && wsUuids.length > 0
+              ? await getWorkspacesInfoWithStatusByIds(accDb, wsUuids)
+              : await getWorkspaces(accDb, null, null, null)
+          const workspaces = rawWorkspaces
+            .filter((it) => !isArchivingMode(it.status.mode) && !isDeletingMode(it.status.mode))
+            .sort((a, b) => (b.status.lastVisit ?? 0) - (a.status.lastVisit ?? 0))
+
+          toolCtx.info('Workspaces found', { count: workspaces.length })
+
+          for (const workspace of workspaces) {
+            await migrateCreatedModifiedByFixed(
+              toolCtx,
+              dbUrl,
+              workspace,
+              includeDomains,
+              excludeDomains,
+              maxLifetime,
+              batchSize,
+              cmd.force,
+              maxReconnects,
+              maxRetries
+            )
+          }
+        })
+      }
+    )
+
   program.command('ensure-global-persons-for-local-accounts').action(async () => {
     const { dbUrl } = prepareTools()
 
@@ -2545,7 +2626,9 @@ export function devTool (
       const client = getMongoClient(mongodbUri)
       const _client = await client.getClient()
 
-      await performGithubAccountMigrations(_client.db(cmd.db), cmd.region ?? null)
+      const { dbUrl, txes } = prepareTools()
+
+      await performGithubAccountMigrations(_client.db(cmd.db), dbUrl, txes, cmd.region ?? null)
       await _client.close()
       client.close()
     })
@@ -2569,7 +2652,9 @@ export function devTool (
       const _client = await client.getClient()
 
       const kvsUrl = getKvsUrl()
-      await performGmailAccountMigrations(_client.db(cmd.db), cmd.region ?? null, kvsUrl)
+      const { dbUrl, txes } = prepareTools()
+
+      await performGmailAccountMigrations(_client.db(cmd.db), dbUrl, cmd.region ?? null, kvsUrl, txes)
       await _client.close()
       client.close()
     })
@@ -2587,6 +2672,18 @@ export function devTool (
       await performCalendarAccountMigrations(_client.db(cmd.db), cmd.region ?? null, kvsUrl)
       await _client.close()
       client.close()
+    })
+
+  program
+    .command('restore-markup-refs')
+    .option('--region <region>', 'DB region')
+    .action(async (cmd: { region?: string }) => {
+      const { dbUrl, txes } = prepareTools()
+      const region = cmd.region ?? null
+
+      await withStorage(async (adapter) => {
+        await restoreMarkupRefs(dbUrl, txes, adapter, region)
+      })
     })
 
   extendProgram?.(program)

@@ -25,7 +25,7 @@ import { getClient } from './client'
 import { addUserByEmail, removeUserByEmail } from './kvsUtils'
 import { IncomingSyncManager, lock } from './sync'
 import { CALENDAR_INTEGRATION, GoogleEmail, SCOPES, State, Token, User } from './types'
-import { getGoogleClient, getWorkspaceToken } from './utils'
+import { getGoogleClient, getWorkspaceToken, removeIntegrationSecret } from './utils'
 import { WatchController } from './watch'
 
 interface AuthResult {
@@ -62,7 +62,7 @@ export class AuthController {
         const mutex = await lock(`${state.workspace}:${state.userId}`)
         try {
           const client = await getClient(getWorkspaceToken(state.workspace))
-          const txOp = new TxOperations(client, core.account.System)
+          const txOp = new TxOperations(client, state.userId)
           const controller = new AuthController(ctx, accountClient, txOp, state)
           await controller.process(code)
         } finally {
@@ -106,6 +106,7 @@ export class AuthController {
   private async signout (value: GoogleEmail): Promise<void> {
     const integration = await this.client.findOne(setting.class.Integration, {
       type: calendar.integrationType.Calendar,
+      createdBy: this.user.userId,
       value
     })
     if (integration !== undefined) {
@@ -121,13 +122,9 @@ export class AuthController {
     const secret = await this.accountClient.getIntegrationSecret(data)
     if (secret == null) return
     const token = JSON.parse(secret.secret)
-    const watchController = WatchController.get(this.accountClient)
+    const watchController = WatchController.get(this.ctx, this.accountClient)
     await watchController.unsubscribe(token)
-    await this.accountClient.deleteIntegrationSecret(data)
-    const left = await this.accountClient.listIntegrationsSecrets(data)
-    if (left.length === 0) {
-      await this.accountClient.deleteIntegration(data)
-    }
+    await removeIntegrationSecret(this.ctx, this.accountClient, data)
   }
 
   private async process (code: string): Promise<void> {

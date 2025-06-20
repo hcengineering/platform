@@ -56,7 +56,7 @@
   let oldSelected = false
   let oldReadonly = false
   let sendLiveData: ((key: string, data: any) => void) | undefined
-  let getFollowee: (() => Person | undefined) | undefined
+  let getFollowee: (() => Promise<Person | undefined>) | undefined
   let panning = false
   let followee: Person | undefined
   const dataTopicOffset = 'drawing-board-offset'
@@ -155,14 +155,14 @@
     }
   }
 
-  function onFolloweeData (data: any): void {
+  async function onFolloweeData (data: any): Promise<void> {
     if (data === undefined) {
       followee = undefined
       personCursorVisible = false
       return
     }
     if (followee === undefined && getFollowee !== undefined) {
-      followee = getFollowee()
+      followee = await getFollowee()
     }
     if (data.boardId === boardId) {
       const newOffset = data.offset

@@ -14,7 +14,8 @@
 -->
 
 <script lang="ts">
-  import { getPersonBySocialId, Person } from '@hcengineering/contact'
+  import { Person } from '@hcengineering/contact'
+  import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
   import { getClient, getCommunicationClient } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
   import { getCurrentAccount } from '@hcengineering/core'
@@ -26,7 +27,6 @@
     IconEdit,
     Menu
   } from '@hcengineering/ui'
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
   import type { SocialID } from '@hcengineering/communication-types'
   import { Message, MessageType } from '@hcengineering/communication-types'
   import emojiPlugin from '@hcengineering/emoji'
@@ -41,12 +41,10 @@
   export let card: Card
   export let message: Message
   export let editable: boolean = true
-  export let replies: boolean = true
   export let padding: string | undefined = undefined
   export let compact: boolean = false
   export let hideAvatar: boolean = false
 
-  const client = getClient()
   const communicationClient = getCommunicationClient()
   const me = getCurrentAccount()
 
@@ -54,7 +52,7 @@
   let isDeleted = false
   let author: Person | undefined
 
-  $: isDeleted = message.removed || (message.type === MessageType.Thread && message.thread == null)
+  $: isDeleted = message.removed
   $: void updateAuthor(message.creator)
 
   function canEdit (): boolean {
@@ -73,14 +71,14 @@
   }
 
   function canReply (): boolean {
-    return message.type === MessageType.Message || message.type === MessageType.Thread
+    return message.type === MessageType.Message && message.extra?.threadRoot !== true
   }
 
   async function updateAuthor (socialId: SocialID): Promise<void> {
-    author = $personByPersonIdStore.get(socialId)
+    author = $employeeByPersonIdStore.get(socialId)
 
     if (author === undefined) {
-      author = await getPersonBySocialId(client, socialId)
+      author = (await getPersonByPersonId(socialId)) ?? undefined
     }
   }
 
@@ -92,7 +90,7 @@
   async function handleRemove (): Promise<void> {
     if (!canRemove()) return
     message.removed = true
-    await communicationClient.removeMessage(message.card, message.id, message.created)
+    await communicationClient.removeMessage(message.cardId, message.id)
   }
 
   function isInside (x: number, y: number, rect: DOMRect): boolean {
@@ -182,7 +180,7 @@
 
   let isActionsOpened = false
 
-  $: isThread = message.thread != null || message.type === MessageType.Thread
+  $: isThread = message.thread != null
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -195,10 +193,10 @@
   class:noHover={!editable}
   style:padding
 >
-  {#if isThread || message.type === MessageType.Activity || message.removed}
-    <OneRowMessageBody {message} {card} {author} {replies} {hideAvatar} />
+  {#if message.type === MessageType.Activity || (message.removed && message.thread?.threadId === undefined)}
+    <OneRowMessageBody {message} {card} {author} {hideAvatar} />
   {:else}
-    <MessageBody {message} {card} {author} bind:isEditing {compact} {replies} {hideAvatar} />
+    <MessageBody {message} {card} {author} bind:isEditing compact={compact && !isThread} {hideAvatar} />
   {/if}
 
   {#if !isEditing && editable && !isDeleted}
@@ -227,7 +225,7 @@
     align-self: stretch;
     min-width: 0;
     position: relative;
-    padding: 0.5rem 4rem;
+    padding: 0.5rem 2rem;
 
     &:hover:not(.noHover) {
       background: var(--global-ui-BackgroundColor);
@@ -249,7 +247,7 @@
   .message__actions {
     position: absolute;
     top: -0.75rem;
-    right: 1rem;
+    right: 2.25rem;
     visibility: hidden;
     z-index: 2;
 

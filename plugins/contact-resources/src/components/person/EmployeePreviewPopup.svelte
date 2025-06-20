@@ -23,9 +23,9 @@
   import ModernProfilePopup from './ModernProfilePopup.svelte'
   import contact from '../../plugin'
   import Avatar from '../Avatar.svelte'
-  import { employeeByIdStore, personByIdStore } from '../../utils'
+  import { employeeByIdStore } from '../../utils'
   import { getPersonTimezone } from './utils'
-  import { EmployeePresenter } from '../../index'
+  import { EmployeePresenter, getPersonByPersonRefStore } from '../../index'
   import TimePresenter from './TimePresenter.svelte'
   import DeactivatedHeader from './DeactivatedHeader.svelte'
 
@@ -39,7 +39,8 @@
   let timezone: string | undefined = undefined
   let isEmployee: boolean = false
 
-  $: employee = $employeeByIdStore.get(_id) ?? $personByIdStore.get(_id)
+  $: personByRefStore = getPersonByPersonRefStore([_id])
+  $: employee = $employeeByIdStore.get(_id) ?? $personByRefStore.get(_id)
   $: isEmployee = $employeeByIdStore.has(_id)
   $: void loadPersonTimezone(employee)
 
@@ -98,6 +99,7 @@
           </span>
         </div>
       </div>
+      <!-- Hide achievements for now, as achievmment service is not yet implemented
       {#if isEmployee}
         <div class="py-1">
           <ComponentExtensions
@@ -108,6 +110,7 @@
           />
         </div>
       {/if}
+      -->
     {:else}
       <div class="flex-presenter flex-gap-2 p-2">
         <div class="flex-presenter">

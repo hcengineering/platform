@@ -23,7 +23,7 @@ import {
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import { type Readable } from 'stream'
 
-export type ListBlobResult = Omit<Blob, 'contentType' | 'version'>
+export type ListBlobResult = Omit<Blob, 'contentType' | 'version'> & { contentType?: string }
 export interface UploadedObjectInfo {
   etag: string
   versionId: string | null

@@ -31,9 +31,7 @@
   export let author: Person | undefined
 </script>
 
-{#if message.type === MessageType.Thread || message.thread != null}
-  <ThreadMessageViewer {message} thread={message.thread} />
-{:else if isActivityMessage(message)}
+{#if isActivityMessage(message)}
   <ActivityMessageViewer {message} {card} {author} />
 {:else if message.removed}
   <span class="overflow-label removed-label">

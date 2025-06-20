@@ -74,7 +74,7 @@
       class="hulyReactions-button"
       class:highlight={includesAny(emojiInfo.persons, me.socialIds)}
       class:cursor-pointer={!readonly}
-      use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: emojiInfo.persons } }}
+      use:tooltip={{ component: ReactionsTooltip, props: { socialIds: emojiInfo.persons } }}
       on:click={getClickHandler({ text: emoji, image: emojiInfo.image })}
     >
       <span class="emoji">

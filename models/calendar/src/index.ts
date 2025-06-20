@@ -140,6 +140,8 @@ export class TEvent extends TAttachedDoc implements Event {
   timeZone?: string
 
   user!: PersonId
+
+  blockTime!: boolean
 }
 
 @Model(calendar.class.ReccuringEvent, calendar.class.Event)

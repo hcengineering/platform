@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Attachment, SavedAttachments } from '@hcengineering/attachment'
   import { AttachmentPreview, savedAttachmentsStore } from '@hcengineering/attachment-resources'
-  import { Person, getName as getContactName } from '@hcengineering/contact'
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
-  import { getDisplayTime, PersonId, Ref, WithLookup } from '@hcengineering/core'
+  import { getName as getContactName } from '@hcengineering/contact'
+  import { getPersonByPersonId } from '@hcengineering/contact-resources'
+  import { getDisplayTime, Ref, WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label, Scroller, Lazy } from '@hcengineering/ui'
   import activity, { ActivityMessage, SavedMessage } from '@hcengineering/activity'
@@ -48,10 +48,10 @@
     })
   }
 
-  function getName (attach: Attachment, personByPersonId: Map<PersonId, Person>): string | undefined {
-    const person = personByPersonId.get(attach.modifiedBy)
+  async function getName (attach: Attachment): Promise<string | undefined> {
+    const person = await getPersonByPersonId(attach.modifiedBy)
 
-    if (person !== undefined) {
+    if (person != null) {
       return getContactName(client.getHierarchy(), person)
     }
   }
@@ -94,13 +94,15 @@
           <Lazy>
             <AttachmentPreview value={attach.$lookup.attachedTo} isSaved={true} />
             <div class="label">
-              <Label
-                label={chunter.string.SharedBy}
-                params={{
-                  name: getName(attach.$lookup.attachedTo, $personByPersonIdStore),
-                  time: getDisplayTime(attach.modifiedOn)
-                }}
-              />
+              {#await getName(attach.$lookup.attachedTo) then name}
+                <Label
+                  label={chunter.string.SharedBy}
+                  params={{
+                    name,
+                    time: getDisplayTime(attach.modifiedOn)
+                  }}
+                />
+              {/await}
             </div>
           </Lazy>
         </div>

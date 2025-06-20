@@ -28,6 +28,21 @@ import {
   getFirstName,
   getLastName,
   getName,
+  contactCache,
+  getPersonRefByPersonId as getPersonRefByPersonIdBase,
+  getPersonRefsByPersonIds as getPersonRefsByPersonIdsBase,
+  getPersonByPersonId as getPersonByPersonIdBase,
+  getPersonsByPersonIds as getPersonsByPersonIdsBase,
+  getPersonByPersonRef as getPersonByPersonRefBase,
+  getPersonsByPersonRefs as getPersonsByPersonRefsBase,
+  getPersonRefByPersonIdCb as getPersonRefByPersonIdCbBase,
+  getPersonRefsByPersonIdsCb as getPersonRefsByPersonIdsCbBase,
+  getPersonByPersonIdCb as getPersonByPersonIdCbBase,
+  getPersonsByPersonIdsCb as getPersonsByPersonIdsCbBase,
+  getPersonByPersonRefCb as getPersonByPersonRefCbBase,
+  getPersonsByPersonRefsCb as getPersonsByPersonRefsCbBase,
+  getSocialIdByPersonId as getSocialIdByPersonIdBase,
+  getSocialIdByPersonIdCb as getSocialIdByPersonIdCbBase,
   type PermissionsBySpace,
   type PermissionsStore,
   type Person,
@@ -63,7 +78,7 @@ import core, {
 import login from '@hcengineering/login'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { getMetadata, getResource, type IntlString, translate } from '@hcengineering/platform'
-import presentation, { createQuery, getClient, onClient } from '@hcengineering/presentation'
+import presentation, { addTxListener, createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import {
   getCurrentResolvedLocation,
@@ -80,6 +95,7 @@ import { derived, get, type Readable, writable } from 'svelte/store'
 
 import contact from './plugin'
 import { getPreviewPopup } from './components/person/utils'
+import ContactCacheStoreManager from './cache'
 
 export function formatDate (dueDateMs: Timestamp): string {
   return new Date(dueDateMs).toLocaleString('default', {
@@ -318,6 +334,9 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
  */
 export const employeeByIdStore = writable<IdMap<WithLookup<Employee>>>(new Map())
 
+/**
+ * Tracks current employee
+ */
 export const currentEmployeeRefStore = writable<Ref<Employee> | undefined>(getCurrentEmployee())
 
 addEmployeeListenrer((ref) => {
@@ -330,118 +349,32 @@ export const myEmployeeStore = derived(
     return currentEmployeeRef !== undefined ? employeeById.get(currentEmployeeRef) : undefined
   }
 )
-/**
- * [Ref<Person> => Person] mapping
- * Does not contain ALL persons.
- * Only employees for now. Later need to be extended to possibly include guests and GitHub persons.
- */
-export const personByIdStore = writable<IdMap<WithLookup<Person>>>(new Map())
-export const socialIdsStore = writable<IdMap<WithLookup<SocialIdentity>>>(new Map())
 
 /**
- * [Ref<Person> => SocialIdentity[]] mapping
+ * [Ref<Employee> => PersonId (primary)] mapping
  */
-export const socialIdsByPersonRefStore: Readable<Map<Ref<Person>, SocialIdentity[]>> = derived(
-  [socialIdsStore],
-  ([socialIds]) => {
-    const sidsByPersonRef = Array.from(socialIds.values()).reduce<Record<Ref<Person>, SocialIdentity[]>>((acc, si) => {
-      acc[si.attachedTo] = acc[si.attachedTo] ?? []
-      acc[si.attachedTo].push(si)
-      return acc
-    }, {})
+export const primarySocialIdByEmployeeRefStore = writable<Map<Ref<Employee>, PersonId>>(new Map())
 
-    return new Map(Object.entries(sidsByPersonRef) as Array<[Ref<Person>, SocialIdentity[]]>)
-  }
-)
-/**
- * [Ref<Person> => PersonId (primary)] mapping
- */
-export const primarySocialIdByPersonRefStore: Readable<Map<Ref<Person>, PersonId>> = derived(
-  socialIdsByPersonRefStore,
-  (socialIdsByPersonRef) => {
-    const mapped = Array.from(socialIdsByPersonRef.entries())
-      .filter(([_, socialIds]) => socialIds.length > 0)
-      .map(([_id, socialIds]) => [_id, pickPrimarySocialId(socialIds)._id] as const)
-    return new Map(mapped)
-  }
-)
-/**
- * [PersonId (social ID) => Ref<Person>] mapping
- */
-export const personRefByPersonIdStore: Readable<Map<PersonId, Ref<Person>>> = derived(socialIdsStore, (socialIds) => {
-  const mapped = Array.from(socialIds.values()).map((si) => [si._id, si.attachedTo] as const)
-  return new Map(mapped)
-})
-/**
- * [string (social key) => Ref<Person>] mapping
- */
-export const personRefBySocialKeyStore: Readable<Map<string, Ref<Person>>> = derived(socialIdsStore, (socialIds) => {
-  const mapped = Array.from(socialIds.values()).map((si) => [si.key, si.attachedTo] as const)
-  return new Map(mapped)
-})
 /**
  * [AccountUuid => Ref<Person>] mapping
  */
-export const personRefByAccountUuidStore = writable<Map<AccountUuid, Ref<Employee>>>(new Map())
-/**
- * [PersonId (social ID) => Person] mapping
- */
-export const personByPersonIdStore: Readable<Map<PersonId, Person>> = derived(
-  [personRefByPersonIdStore, personByIdStore],
-  ([personRefByPersonId, personById]) => {
-    const mapped = Array.from(personRefByPersonId.entries())
-      .map(([personId, personRef]) => {
-        const person = personById.get(personRef)
-        if (person === undefined) {
-          return undefined
-        }
-        return [personId, person] as const
-      })
-      .filter(notEmpty)
-
-    return new Map(mapped)
-  }
-)
+export const employeeRefByAccountUuidStore = writable<Map<AccountUuid, Ref<Employee>>>(new Map())
 
 /**
  * [PersonId (social ID) => Employee] mapping
  */
-export const employeeByPersonIdStore: Readable<Map<PersonId, Employee>> = derived(
-  [personByPersonIdStore, employeeByIdStore],
-  ([personByPersonId, employeeById]) => {
-    const mapped = Array.from(personByPersonId.entries())
-      .map(([personId, person]) => {
-        const employee = employeeById.get(person._id as Ref<Employee>)
-        if (employee === undefined) return undefined
-        return [personId, employee] as const
-      })
-      .filter(notEmpty)
-    return new Map(mapped)
-  }
-)
+export const employeeByPersonIdStore = writable<Map<PersonId, Employee>>(new Map())
+
 /**
  * [string (social key) => Employee] mapping
  */
-export const employeeBySocialKeyStore: Readable<Map<string, Employee>> = derived(
-  [personRefBySocialKeyStore, employeeByIdStore],
-  ([personRefBySocialKey, employeeById]) => {
-    const mapped = Array.from(personRefBySocialKey.entries())
-      .map(([socialKey, personRef]) => {
-        const employee = employeeById.get(personRef as Ref<Employee>)
-        if (employee === undefined) {
-          return undefined
-        }
-        return [socialKey, employee] as const
-      })
-      .filter(notEmpty)
-    return new Map(mapped)
-  }
-)
+export const employeeBySocialKeyStore = writable<Map<string, Employee>>(new Map())
+
 /**
  * [AccountUuid => Person] mapping
  */
 export const employeeByAccountStore = derived(
-  [personRefByAccountUuidStore, employeeByIdStore],
+  [employeeRefByAccountUuidStore, employeeByIdStore],
   ([personRefByAccount, employeeById]) => {
     const mapped = Array.from(personRefByAccount.entries())
       .map(([account, employeeRef]) => {
@@ -455,66 +388,67 @@ export const employeeByAccountStore = derived(
     return new Map(mapped)
   }
 )
-/**
- * [PersonId (social ID) => SocialIdentity[]] mapping
- */
-export const socialIdsByPersonIdStore: Readable<Map<PersonId, SocialIdentity[]>> = derived(
-  [personRefByPersonIdStore, socialIdsByPersonRefStore],
-  ([personRefByPersonId, socialIdsByPersonRef]) => {
-    const mapped = Array.from(personRefByPersonId.entries()).map(([personId, personRef]) => {
-      const socialIds = socialIdsByPersonRef.get(personRef) ?? []
-      return [personId, socialIds] as const
-    })
-    return new Map(mapped)
-  }
-)
-/**
- * [PersonId (social ID) => PersonId (primary)] mapping
- */
-export const primarySocialIdByPersonIdStore: Readable<Map<PersonId, PersonId>> = derived(
-  socialIdsByPersonIdStore,
-  (socialIdsByPersonId) => {
-    const mapped = Array.from(socialIdsByPersonId.entries())
-      .filter(([_, socialIds]) => socialIds.length > 0)
-      .map(([personId, socialIds]) => [personId, pickPrimarySocialId(socialIds)._id] as const)
-    return new Map(mapped)
-  }
-)
 
 export const channelProviders = writable<ChannelProvider[]>([])
 export const statusByUserStore = writable<Map<AccountUuid, UserStatus>>(new Map())
 
 const providerQuery = createQuery(true)
 const employeesQuery = createQuery(true)
-const siQuery = createQuery(true)
 
 onClient(() => {
   providerQuery.query(contact.class.ChannelProvider, {}, (res) => {
     channelProviders.set(res)
   })
 
-  employeesQuery.query(contact.mixin.Employee, { active: { $in: [true, false] } }, (res) => {
-    employeeByIdStore.set(toIdMap(res))
-
-    // We may need to extend this later with guests and github users
-    personRefByAccountUuidStore.set(
-      new Map(
-        res.filter((p) => p.active && p.personUuid != null).map((p) => [p.personUuid as AccountUuid, p._id] as const)
-      )
-    )
-  })
-
-  siQuery.query(
-    contact.class.SocialIdentity,
-    {},
+  employeesQuery.query(
+    contact.mixin.Employee,
+    { active: { $in: [true, false] } },
     (res) => {
-      socialIdsStore.set(toIdMap(res))
-      const persons = res.map((it) => it.$lookup?.attachedTo).filter((it) => it !== undefined) as Person[]
-      personByIdStore.set(toIdMap(persons))
+      const personIdToEmployee = new Map<PersonId, Employee>()
+      const socialKeyToEmployee = new Map<string, Employee>()
+      for (const employee of res) {
+        // warmup persons cache with employees
+        contactCache.fillCachesForPersonRef(employee._id, employee)
+
+        for (const socialId of (employee.$lookup?.socialIds ?? []) as SocialIdentity[]) {
+          personIdToEmployee.set(socialId._id, employee)
+          socialKeyToEmployee.set(socialId.key, employee)
+        }
+      }
+      employeeByPersonIdStore.set(personIdToEmployee)
+      employeeBySocialKeyStore.set(socialKeyToEmployee)
+      primarySocialIdByEmployeeRefStore.set(
+        new Map(
+          res
+            .map((e) => {
+              const socialIds = (e.$lookup?.socialIds ?? []) as SocialIdentity[]
+              const primaryId = socialIds.length !== 0 ? pickPrimarySocialId(socialIds) : undefined
+              if (primaryId === undefined) {
+                return null
+              }
+
+              return [e._id, primaryId._id] as const
+            })
+            .filter(notEmpty)
+        )
+      )
+
+      // Remove lookups before storing the map as the interface doesn't expose it anyways
+      for (const employee of res) {
+        delete employee.$lookup
+      }
+      employeeByIdStore.set(toIdMap(res))
+
+      // We may need to extend this later with guests and github users
+      employeeRefByAccountUuidStore.set(
+        new Map(
+          res.filter((p) => p.active && p.personUuid != null).map((p) => [p.personUuid as AccountUuid, p._id] as const)
+        )
+      )
     },
     {
       lookup: {
-        attachedTo: contact.class.Person
+        _id: { socialIds: contact.class.SocialIdentity }
       }
     }
   )
@@ -750,65 +684,68 @@ export function getPermittedPersons (
 
 const spacesStore = writable<Space[]>([])
 
-export const permissionsStore = derived([spacesStore, personRefByAccountUuidStore], ([spaces, personRefByAccount]) => {
-  const whitelistedSpaces = new Set<Ref<Space>>()
-  const permissionsBySpace: PermissionsBySpace = {}
-  const employeesByPermission: PersonsByPermission = {}
-  const membersBySpace: MembersBySpace = {}
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
+export const permissionsStore = derived(
+  [spacesStore, employeeRefByAccountUuidStore],
+  ([spaces, personRefByAccount]) => {
+    const whitelistedSpaces = new Set<Ref<Space>>()
+    const permissionsBySpace: PermissionsBySpace = {}
+    const employeesByPermission: PersonsByPermission = {}
+    const membersBySpace: MembersBySpace = {}
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
 
-  for (const s of spaces) {
-    membersBySpace[s._id] = new Set(s.members.map((m) => personRefByAccount.get(m)).filter(notEmpty))
-    if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
-      const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
-      const mixin = type?.targetClass
+    for (const s of spaces) {
+      membersBySpace[s._id] = new Set(s.members.map((m) => personRefByAccount.get(m)).filter(notEmpty))
+      if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
+        const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
+        const mixin = type?.targetClass
 
-      if (mixin === undefined) {
-        permissionsBySpace[s._id] = new Set()
-        employeesByPermission[s._id] = {}
-        continue
-      }
-
-      const asMixin = hierarchy.as(s, mixin)
-      const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
-      const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(getCurrentAccount().uuid))
-      permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
-
-      employeesByPermission[s._id] = {}
-
-      for (const role of roles) {
-        const assignment: AccountUuid[] = (asMixin as any)[role._id] ?? []
-
-        if (assignment.length === 0) {
+        if (mixin === undefined) {
+          permissionsBySpace[s._id] = new Set()
+          employeesByPermission[s._id] = {}
           continue
         }
 
-        for (const permissionId of role.permissions) {
-          if (employeesByPermission[s._id][permissionId] === undefined) {
-            employeesByPermission[s._id][permissionId] = new Set()
+        const asMixin = hierarchy.as(s, mixin)
+        const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
+        const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(getCurrentAccount().uuid))
+        permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
+
+        employeesByPermission[s._id] = {}
+
+        for (const role of roles) {
+          const assignment: AccountUuid[] = (asMixin as any)[role._id] ?? []
+
+          if (assignment.length === 0) {
+            continue
           }
 
-          assignment.forEach((acc) => {
-            const personRef = personRefByAccount.get(acc)
-            if (personRef !== undefined) {
-              employeesByPermission[s._id][permissionId].add(personRef)
+          for (const permissionId of role.permissions) {
+            if (employeesByPermission[s._id][permissionId] === undefined) {
+              employeesByPermission[s._id][permissionId] = new Set()
             }
-          })
+
+            assignment.forEach((acc) => {
+              const personRef = personRefByAccount.get(acc)
+              if (personRef !== undefined) {
+                employeesByPermission[s._id][permissionId].add(personRef)
+              }
+            })
+          }
         }
+      } else {
+        whitelistedSpaces.add(s._id)
       }
-    } else {
-      whitelistedSpaces.add(s._id)
+    }
+
+    return {
+      ps: permissionsBySpace,
+      ap: employeesByPermission,
+      ms: membersBySpace,
+      whitelist: whitelistedSpaces
     }
   }
-
-  return {
-    ps: permissionsBySpace,
-    ap: employeesByPermission,
-    ms: membersBySpace,
-    whitelist: whitelistedSpaces
-  }
-})
+)
 
 const spaceTypesQuery = createQuery(true)
 const permissionsQuery = createQuery(true)
@@ -843,4 +780,89 @@ export function getAccountClient (): AccountClient {
   const token = getMetadata(presentation.metadata.Token)
 
   return getAccountClientRaw(accountsUrl, token)
+}
+
+export async function getPersonRefByPersonId (personId: PersonId): Promise<Ref<Person> | null> {
+  return await getPersonRefByPersonIdBase(getClient(), personId)
+}
+
+export function getPersonRefByPersonIdCb (personId: PersonId, cb: (person: Ref<Person> | null) => void): void {
+  getPersonRefByPersonIdCbBase(getClient(), personId, cb)
+}
+
+export async function getPersonRefsByPersonIds (personIds: PersonId[]): Promise<Map<PersonId, Ref<Person>>> {
+  return await getPersonRefsByPersonIdsBase(getClient(), personIds)
+}
+
+export function getPersonRefsByPersonIdsCb (
+  personIds: PersonId[],
+  cb: (personRefs: Map<PersonId, Ref<Person>>) => void
+): void {
+  getPersonRefsByPersonIdsCbBase(getClient(), personIds, cb)
+}
+
+export async function getPersonByPersonId (personId: PersonId): Promise<Person | null> {
+  return await getPersonByPersonIdBase(getClient(), personId)
+}
+
+export function getPersonByPersonIdCb (personId: PersonId, cb: (person: Readonly<Person> | null) => void): void {
+  getPersonByPersonIdCbBase(getClient(), personId, cb)
+}
+
+export async function getPersonsByPersonIds (personIds: PersonId[]): Promise<Map<PersonId, Readonly<Person>>> {
+  return await getPersonsByPersonIdsBase(getClient(), personIds)
+}
+
+export function getPersonsByPersonIdsCb (
+  personIds: PersonId[],
+  cb: (persons: Map<PersonId, Readonly<Person>>) => void
+): void {
+  getPersonsByPersonIdsCbBase(getClient(), personIds, cb)
+}
+
+export async function getPersonByPersonRef (personRef: Ref<Person>): Promise<Person | null> {
+  return await getPersonByPersonRefBase(getClient(), personRef)
+}
+
+export function getPersonByPersonRefCb (personRef: Ref<Person>, cb: (person: Readonly<Person> | null) => void): void {
+  getPersonByPersonRefCbBase(getClient(), personRef, cb)
+}
+
+export async function getPersonsByPersonRefs (
+  personRefs: Array<Ref<Person>>
+): Promise<Map<Ref<Person>, Readonly<Person>>> {
+  return await getPersonsByPersonRefsBase(getClient(), personRefs)
+}
+
+export function getPersonsByPersonRefsCb (
+  personRefs: Array<Ref<Person>>,
+  cb: (persons: Map<Ref<Person>, Readonly<Person>>) => void
+): void {
+  getPersonsByPersonRefsCbBase(getClient(), personRefs, cb)
+}
+
+export async function getSocialIdByPersonId (personId: PersonId): Promise<SocialIdentity | null> {
+  return await getSocialIdByPersonIdBase(getClient(), personId)
+}
+
+export function getSocialIdByPersonIdCb (personId: PersonId, cb: (socialId: SocialIdentity | null) => void): void {
+  getSocialIdByPersonIdCbBase(getClient(), personId, cb)
+}
+
+addTxListener(contactCache.handleTx)
+
+export const contactCacheStoreManager = ContactCacheStoreManager.instance
+
+export function getPersonRefByPersonIdStore (personIds: PersonId[]): Readable<Map<PersonId, Ref<Person>>> {
+  return contactCacheStoreManager.getPersonRefByPersonIdStore(personIds)
+}
+
+export function getPersonByPersonIdStore (personIds: PersonId[]): Readable<Map<PersonId, Readonly<Person>>> {
+  return contactCacheStoreManager.getPersonByPersonIdStore(personIds)
+}
+
+export function getPersonByPersonRefStore (
+  personRefs: Array<Ref<Person>>
+): Readable<Map<Ref<Person>, Readonly<Person>>> {
+  return contactCacheStoreManager.getPersonByPersonRefStore(personRefs)
 }

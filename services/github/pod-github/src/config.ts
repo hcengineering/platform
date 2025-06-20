@@ -96,7 +96,7 @@ const config: Config = (() => {
 
     SentryDSN: process.env[envMap.SentryDSN],
     BrandingPath: process.env[envMap.BrandingPath] ?? '',
-    WorkspaceInactivityInterval: parseInt(process.env[envMap.WorkspaceInactivityInterval] ?? '5'), // In days
+    WorkspaceInactivityInterval: parseInt(process.env[envMap.WorkspaceInactivityInterval] ?? '3'), // In days
     RateLimit: parseInt(process.env[envMap.RateLimit] ?? '25')
   }
 

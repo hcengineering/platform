@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountArrayEditor, personRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import { type AccountUuid, TypedSpace, notEmpty } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
@@ -27,7 +27,7 @@
   export let size: ButtonSize = 'large'
   export let width: string | undefined = undefined
 
-  $: persons = (object?.members ?? []).map((m) => $personRefByAccountUuidStore.get(m)).filter(notEmpty)
+  $: persons = (object?.members ?? []).map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
 </script>
 
 {#if object !== undefined}

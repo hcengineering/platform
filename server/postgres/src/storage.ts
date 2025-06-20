@@ -88,6 +88,7 @@ import {
   DBCollectionHelper,
   type DBDoc,
   doFetchTypes,
+  escape,
   filterProjection,
   getDBClient,
   inferType,
@@ -661,7 +662,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       {},
       async () => {
         try {
-          const domain = translateDomain(options?.domain ?? this.hierarchy.getDomain(_class))
+          const domain = translateDomain(this.hierarchy.getDomain(_class))
           const sqlChunks: string[] = []
 
           const joins = this.buildJoins<T>(_class, options)
@@ -685,7 +686,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             sqlChunks.push(this.buildOrder(_class, domain, options.sort, joins))
           }
           if (options?.limit !== undefined) {
-            sqlChunks.push(`LIMIT ${options.limit}`)
+            sqlChunks.push(`LIMIT ${escape(options.limit)}`)
           }
 
           return (await this.mgr.retry(ctx.id, async (connection) => {
@@ -715,11 +716,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             fquery = finalSql
 
             const result = await connection.execute(finalSql, vars.getValues())
-            if (
-              options?.lookup === undefined &&
-              options?.domainLookup === undefined &&
-              options?.associations === undefined
-            ) {
+            if (options?.lookup === undefined && options?.associations === undefined) {
               return toFindResult(
                 result.map((p) => parseDocWithProjection(p, domain, projection)),
                 total
@@ -752,49 +749,37 @@ abstract class PostgresAdapterBase implements DbAdapter {
   ): Projection<T> | undefined {
     if (projection === undefined) return
 
+    const res: Projection<T> = {}
     if (!this.hierarchy.isMixin(_class)) {
-      return projection
+      for (const key in projection) {
+        ;(res as any)[escape(key)] = escape(projection[key])
+      }
+      return res
     }
 
-    projection = { ...projection }
     for (const key in projection) {
-      if (key.includes('.')) continue
-      try {
-        const attr = this.hierarchy.findAttribute(_class, key)
-        if (attr !== undefined && this.hierarchy.isMixin(attr.attributeOf)) {
-          const newKey = `${attr.attributeOf}.${attr.name}` as keyof Projection<T>
-          projection[newKey] = projection[key]
-
-          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          delete projection[key]
+      if (key.includes('.')) {
+        ;(res as any)[escape(key)] = escape(projection[key])
+      } else {
+        try {
+          const attr = this.hierarchy.findAttribute(_class, key)
+          if (attr !== undefined && this.hierarchy.isMixin(attr.attributeOf)) {
+            const newKey = `${attr.attributeOf}.${attr.name}` as keyof Projection<T>
+            res[newKey] = escape(projection[key])
+          } else {
+            ;(res as any)[escape(key)] = escape(projection[key])
+          }
+        } catch (err: any) {
+          // ignore, if
         }
-      } catch (err: any) {
-        // ignore, if
       }
     }
 
-    return projection
+    return res
   }
 
   private buildJoins<T extends Doc>(_class: Ref<Class<T>>, options: ServerFindOptions<T> | undefined): JoinProps[] {
     const joins = this.buildJoin(_class, options?.lookup)
-    if (options?.domainLookup !== undefined) {
-      const baseDomain = translateDomain(this.hierarchy.getDomain(_class))
-
-      const domain = translateDomain(options.domainLookup.domain)
-      const key = options.domainLookup.field
-      const as = `lookup_${domain}_${key}`
-      joins.push({
-        isReverse: false,
-        table: domain,
-        path: options.domainLookup.field,
-        toAlias: as,
-        toField: '_id',
-        fromField: key,
-        fromAlias: baseDomain,
-        toClass: undefined
-      })
-    }
     return joins
   }
 
@@ -853,7 +838,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         for (const column in row) {
           if (column.startsWith('reverse_lookup_')) {
             if (row[column] != null) {
-              const join = reverseJoins.find((j) => j.toAlias === column)
+              const join = reverseJoins.find((j) => j.toAlias.toLowerCase() === column)
               if (join === undefined) {
                 continue
               }
@@ -1054,7 +1039,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
     parentAlias?: string
   ): void {
     const baseDomain = parentAlias ?? translateDomain(this.hierarchy.getDomain(clazz))
-    for (const key in lookup) {
+    for (const _key in lookup) {
+      const key = escape(_key)
       if (key === '_id') {
         this.getReverseLookupValue(baseDomain, lookup, res, parentKey)
         continue
@@ -1195,7 +1181,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (options?.skipClass !== true) {
       query._class = this.fillClass(_class, query) as any
     }
-    for (const key in query) {
+    for (const _key in query) {
+      const key = escape(_key)
       if (options?.skipSpace === true && key === 'space') {
         continue
       }
@@ -1526,7 +1513,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   getAssociationsProjections (vars: ValuesVariables, baseDomain: string, associations: AssociationQuery[]): string[] {
     const res: string[] = []
     for (const association of associations) {
-      const _id = association[0]
+      const _id = escape(association[0])
       const assoc = this.modelDb.findObject(_id)
       if (assoc === undefined) {
         continue
@@ -1547,7 +1534,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           AND relation."workspaceId" = ${wsId}
           WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id" 
           AND relation.association = '${_id}'
-          AND assoc."workspaceId" = ${wsId}) AS assoc_${tagetDomain}_${association[0]}`
+          AND assoc."workspaceId" = ${wsId}) AS assoc_${tagetDomain}_${_id}`
       )
     }
     return res
@@ -1581,7 +1568,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
       if (projection._class === undefined) {
         res.push(`${baseDomain}."_class" AS "_class"`)
       }
-      for (const key in projection) {
+      for (const _key in projection) {
+        const key = escape(_key)
         if (isDataField(baseDomain, key)) {
           if (!dataAdded) {
             res.push(`${baseDomain}.data as data`)
