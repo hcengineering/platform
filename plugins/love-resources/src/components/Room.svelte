@@ -14,6 +14,8 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
+  import presentation, { ActionContext } from '@hcengineering/presentation'
+  import { getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
   import { Label, Loading, resizeObserver, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
@@ -29,7 +31,6 @@
     TrackPublication
   } from 'livekit-client'
   import { onDestroy, onMount, tick } from 'svelte'
-  import presentation from '@hcengineering/presentation'
   import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
 
   import love from '../plugin'
@@ -47,7 +48,6 @@
   import ParticipantView from './ParticipantView.svelte'
   import { Ref } from '@hcengineering/core'
   import { Person } from '@hcengineering/contact'
-  import { getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
 
   export let withVideo: boolean
   export let canMaximize: boolean = true
@@ -396,6 +396,7 @@
 </script>
 
 <div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
+  <ActionContext context={{ mode: 'workbench' }} />
   {#if $isConnected && !$isCurrentInstanceConnected}
     <div class="flex justify-center error h-full w-full clear-mins">
       <Label label={love.string.AnotherWindowError} />
