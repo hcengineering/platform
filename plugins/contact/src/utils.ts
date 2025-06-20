@@ -233,7 +233,7 @@ const SEP = ','
  * @public
  */
 export function combineName (first: string, last: string): string {
-  return last + SEP + first
+  return (last ?? '') + SEP + (first ?? '')
 }
 
 /**
