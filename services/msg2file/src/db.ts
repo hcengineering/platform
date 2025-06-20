@@ -117,7 +117,7 @@ export class PostgresDB {
         FROM ${this.messagesTable}
         WHERE workspace_id = $1::uuid
           AND card_id = $2::varchar
-          AND id = ANY ($3::bigint[]);`
+          AND id = ANY ($3::varchar[]);`
 
     await this.client.unsafe(sql, [workspace, card, ids])
   }
@@ -129,7 +129,7 @@ export class PostgresDB {
         FROM ${this.patchesTable}
         WHERE workspace_id = $1::uuid
           AND card_id = $2::varchar
-          AND message_id = ANY ($3::bigint[]);`
+          AND message_id = ANY ($3::varchar[]);`
 
     await this.client.unsafe(sql, [workspace, card, ids])
   }
