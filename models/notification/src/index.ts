@@ -18,9 +18,12 @@ import activity, { type ActivityMessage } from '@hcengineering/activity'
 import { type PersonSpace } from '@hcengineering/contact'
 import {
   AccountRole,
+  type Collaborator,
+  type CollectionSize,
   DOMAIN_MODEL,
+  DOMAIN_TRANSIENT,
   IndexKind,
-  type PersonId,
+  type AccountUuid,
   type AttachedDoc,
   type Class,
   type Collection,
@@ -29,41 +32,40 @@ import {
   type DocumentQuery,
   type IndexingConfiguration,
   type Markup,
+  type PersonId,
   type Ref,
   type Space,
   type Timestamp,
   type Tx,
-  type TxCUD,
-  DOMAIN_TRANSIENT,
-  type AccountUuid
+  type TxCUD
 } from '@hcengineering/core'
 import {
-  ArrOf,
+  Collection as CollectionType,
   Index,
   Mixin,
   Model,
   Prop,
+  TypeAccountUuid,
   TypeBoolean,
   TypeDate,
   TypeIntlString,
   TypeMarkup,
   TypeRef,
   UX,
-  type Builder,
-  TypeAccountUuid
+  type Builder
 } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction, template } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import {
-  notificationId,
-  DOMAIN_USER_NOTIFY,
-  DOMAIN_NOTIFICATION,
+  type Collaborators,
   DOMAIN_DOC_NOTIFY,
+  DOMAIN_NOTIFICATION,
+  DOMAIN_USER_NOTIFY,
+  notificationId,
   type ActivityInboxNotification,
   type ActivityNotificationViewlet,
-  type NotificationType,
   type BrowserNotification,
   type CommonInboxNotification,
   type DocNotifyContext,
@@ -78,6 +80,7 @@ import {
   type NotificationProviderDefaults,
   type NotificationProviderSetting,
   type NotificationTemplate,
+  type NotificationType,
   type NotificationTypeSetting,
   type PushSubscription,
   type PushSubscriptionKeys
@@ -88,7 +91,7 @@ import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 
 import notification from './plugin'
 
-export { notificationId, DOMAIN_USER_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_DOC_NOTIFY } from '@hcengineering/notification'
+export { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY, notificationId } from '@hcengineering/notification'
 export { notificationOperation } from './migration'
 export { notification as default }
 
@@ -155,17 +158,11 @@ export class TNotificationProviderSetting extends TPreference implements Notific
   enabled!: boolean
 }
 
-@Mixin(notification.mixin.ClassCollaborators, core.class.Class)
-export class TClassCollaborators extends TClass {
-  fields!: string[]
-}
-
 @Mixin(notification.mixin.Collaborators, core.class.Doc)
 @UX(notification.string.Collaborators)
-export class TCollaborators extends TDoc {
-  @Prop(ArrOf(TypeAccountUuid()), notification.string.Collaborators)
-  @Index(IndexKind.Indexed)
-    collaborators!: AccountUuid[]
+export class TCollaborators extends TDoc implements Collaborators {
+  @Prop(CollectionType(core.class.Collaborator), notification.string.Collaborators)
+    collaborators!: CollectionSize<Collaborator>
 }
 
 @Mixin(notification.mixin.NotificationObjectPresenter, core.class.Class)
@@ -342,12 +339,11 @@ export const notificationActionTemplates = template({
 
 export function createModel (builder: Builder): void {
   builder.createModel(
+    TCollaborators,
     TBrowserNotification,
     TNotificationType,
     TNotificationGroup,
     TNotificationPreferencesGroup,
-    TClassCollaborators,
-    TCollaborators,
     TNotificationObjectPresenter,
     TNotificationPreview,
     TDocNotifyContext,
@@ -434,34 +430,39 @@ export function createModel (builder: Builder): void {
       label: notification.string.Collaborators,
       group: notification.ids.NotificationGroup,
       txClasses: [],
-      objectClass: notification.mixin.Collaborators,
+      objectClass: core.class.Collaborator,
       defaultEnabled: true
     },
     notification.ids.CollaboratoAddNotification
   )
 
-  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
-    presenter: notification.component.NotificationCollaboratorsChanged,
-    messageMatch: {
-      _class: activity.class.DocUpdateMessage,
-      'attributeUpdates.attrClass': notification.mixin.Collaborators
-    }
-  })
+  builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: core.class.Collaborator,
+      action: 'create',
+      icon: notification.icon.Notifications,
+      component: notification.component.CollaboratorsChanged
+    },
+    notification.ids.CollaboratorsAddMessage
+  )
 
   builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
-      objectClass: notification.mixin.Collaborators,
-      action: 'update',
+      objectClass: core.class.Collaborator,
+      action: 'remove',
       icon: notification.icon.Notifications,
-      label: notification.string.ChangeCollaborators
+      component: notification.component.CollaboratorsChanged
     },
-    notification.ids.CollaboratorsChangedMessage
+    notification.ids.CollaboratorsRemoveMessage
   )
 
-  builder.mixin(notification.mixin.Collaborators, core.class.Class, activity.mixin.ActivityAttributeUpdatesPresenter, {
-    presenter: notification.component.CollaboratorsChanged
+  builder.mixin(core.class.Collaborator, core.class.Class, view.mixin.CollectionEditor, {
+    editor: notification.component.CollaboratorEditor,
+    inlineEditor: notification.component.CollaboratorEditor
   })
 
   createAction(

@@ -1,4 +1,4 @@
-import { DOMAIN_MODEL_TX, DOMAIN_RELATION, DOMAIN_SPACE, DOMAIN_TX } from '@hcengineering/core'
+import { DOMAIN_COLLABORATOR, DOMAIN_MODEL_TX, DOMAIN_RELATION, DOMAIN_SPACE, DOMAIN_TX } from '@hcengineering/core'
 
 export type DataType = 'bigint' | 'bool' | 'text' | 'text[]'
 
@@ -66,6 +66,25 @@ const defaultSchema: Schema = {
   attachedTo: {
     type: 'text',
     notNull: false,
+    index: true
+  }
+}
+
+const collaboratorSchema: Schema = {
+  ...baseSchema,
+  attachedTo: {
+    type: 'text',
+    notNull: true,
+    index: true
+  },
+  attachedToClass: {
+    type: 'text',
+    notNull: true,
+    index: true
+  },
+  collaborator: {
+    type: 'text',
+    notNull: true,
     index: true
   }
 }
@@ -297,6 +316,7 @@ export const domainSchemas: Record<string, Schema> = {
   [translateDomain('github_sync')]: docSyncInfo,
   [translateDomain('github_user')]: githubLogin,
   [DOMAIN_RELATION]: relationSchema,
+  [DOMAIN_COLLABORATOR]: collaboratorSchema,
   kanban: defaultSchema
 }
 

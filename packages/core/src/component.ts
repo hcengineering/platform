@@ -60,7 +60,9 @@ import type {
   TypedSpace,
   UserStatus,
   Version,
-  AccountUuid
+  AccountUuid,
+  ClassCollaborators,
+  Collaborator
 } from './classes'
 import { type Status, type StatusCategory } from './status'
 import type {
@@ -148,6 +150,7 @@ export default plugin(coreId, {
     Version: '' as Ref<Class<Version>>,
     PluginConfiguration: '' as Ref<Class<PluginConfiguration>>,
     UserStatus: '' as Ref<Class<UserStatus>>,
+
     TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>,
     DomainIndexConfiguration: '' as Ref<Class<DomainIndexConfiguration>>,
 
@@ -161,7 +164,9 @@ export default plugin(coreId, {
     FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
     Association: '' as Ref<Class<Association>>,
     Relation: '' as Ref<Class<Relation>>,
-    Sequence: '' as Ref<Class<Sequence>>
+    Sequence: '' as Ref<Class<Sequence>>,
+    ClassCollaborators: '' as Ref<Class<ClassCollaborators<Doc>>>,
+    Collaborator: '' as Ref<Class<Collaborator>>
   },
   icon: {
     TypeString: '' as Asset,

@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import type { Person } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
-import { type Timestamp, type Domain, type Ref, type Tx } from '@hcengineering/core'
+import { type Timestamp, type Domain, type Ref, type Tx, type ClassCollaborators } from '@hcengineering/core'
 import {
   ArrOf,
   type Builder,
@@ -108,7 +108,8 @@ export function createModel (builder: Builder): void {
     presenter: request.component.RequestView
   })
 
-  builder.mixin(request.class.Request, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Request>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: request.class.Request,
     fields: ['requested', 'createdBy']
   })
 

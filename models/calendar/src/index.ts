@@ -35,7 +35,8 @@ import {
   type Markup,
   type Ref,
   type Timestamp,
-  type PersonId
+  type PersonId,
+  type ClassCollaborators
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -247,7 +248,8 @@ export function createModel (builder: Builder): void {
     calendar.ids.CalendarNotificationGroup
   )
 
-  builder.mixin(calendar.class.Event, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Event>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: calendar.class.Event,
     fields: ['participants']
   })
 
