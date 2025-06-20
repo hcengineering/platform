@@ -16,6 +16,7 @@
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
 import documentsPlugin, {
+  type ControlledDocument,
   documentsId,
   DocumentState,
   type Document,
@@ -37,7 +38,7 @@ import setting from '@hcengineering/setting'
 import tags from '@hcengineering/tags'
 import textEditor from '@hcengineering/text-editor'
 
-import { AccountRole, type Class, type Doc, type Ref } from '@hcengineering/core'
+import { AccountRole, type ClassCollaborators, type Class, type Doc, type Ref } from '@hcengineering/core'
 import { type Action } from '@hcengineering/view'
 import { definePermissions } from './permissions'
 import documents from './plugin'
@@ -976,7 +977,8 @@ export function defineNotifications (builder: Builder): void {
     components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
-  builder.mixin(documents.class.ControlledDocument, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<ControlledDocument>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: documents.class.ControlledDocument,
     fields: ['author', 'owner', 'reviewers', 'approvers', 'coAuthors']
   })
 

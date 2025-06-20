@@ -36,6 +36,7 @@ import {
 } from '@hcengineering/contact'
 import {
   AccountRole,
+  type ClassCollaborators,
   DOMAIN_MODEL,
   DateRangeMode,
   IndexKind,
@@ -615,7 +616,8 @@ export function createModel (builder: Builder): void {
     inlineEditor: contact.component.ContactArrayEditor
   })
 
-  builder.mixin(contact.class.Contact, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Contact>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: contact.class.Contact,
     fields: []
   })
 
@@ -623,7 +625,8 @@ export function createModel (builder: Builder): void {
     component: contact.component.ChannelPanel
   })
 
-  builder.mixin(contact.class.Channel, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Channel>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: contact.class.Channel,
     fields: ['modifiedBy']
   })
 

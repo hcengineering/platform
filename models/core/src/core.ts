@@ -14,24 +14,28 @@
 //
 
 import {
-  type PersonId,
+  type AccountUuid,
   type AnyAttribute,
   type ArrOf,
   type Association,
   type AttachedDoc,
   type Blob,
   type Class,
+  type ClassCollaborators,
   type ClassifierKind,
+  type Collaborator,
   type Collection,
   type Configuration,
   type ConfigurationElement,
   type Doc,
   type Domain,
   DOMAIN_BLOB,
+  DOMAIN_COLLABORATOR,
   DOMAIN_CONFIGURATION,
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
   DOMAIN_RELATION,
+  DOMAIN_SEQUENCE,
   type DomainIndexConfiguration,
   type Enum,
   type EnumOf,
@@ -43,18 +47,18 @@ import {
   type MigrationState,
   type Mixin,
   type Obj,
+  type PersonId,
   type PluginConfiguration,
   type Ref,
   type RefTo,
   type Relation,
-  type Space,
   type Sequence,
+  type Space,
   type Timestamp,
   type TransientConfiguration,
   type Type,
   type TypeAny,
-  type Version,
-  DOMAIN_SEQUENCE
+  type Version
 } from '@hcengineering/core'
 import {
   Hidden,
@@ -66,10 +70,10 @@ import {
   TypeBoolean,
   TypeFileSize,
   TypeIntlString,
+  TypePersonId,
   TypeRef,
   TypeString,
   TypeTimestamp,
-  TypePersonId,
   UX
 } from '@hcengineering/model'
 import { getEmbeddedLabel, type IntlString, type Plugin } from '@hcengineering/platform'
@@ -389,4 +393,16 @@ export class TSequence extends TDoc implements Sequence {
     attachedTo!: Ref<Class<Doc>>
 
   sequence!: number
+}
+
+@Model(core.class.ClassCollaborators, core.class.Doc, DOMAIN_MODEL)
+export class TClassCollaborators extends TDoc implements ClassCollaborators<Doc> {
+  attachedTo!: Ref<Class<Doc>>
+  fields!: (keyof Doc)[]
+  provideSecurity?: boolean
+}
+
+@Model(core.class.Collaborator, core.class.Doc, DOMAIN_COLLABORATOR)
+export class TCollaborator extends TAttachedDoc implements Collaborator {
+  collaborator!: AccountUuid
 }
