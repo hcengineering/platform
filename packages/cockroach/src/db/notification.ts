@@ -304,10 +304,6 @@ export class NotificationsDb extends BaseDb {
         ON nc.workspace_id = m.workspace_id 
         AND nc.card_id = m.card_id
         AND n.message_id = m.id 
-      LEFT JOIN ${TableName.Thread} t
-        ON nc.workspace_id = t.workspace_id
-        AND nc.card_id = t.card_id
-        AND n.message_id = t.message_id
       LEFT JOIN ${TableName.MessagesGroup} mg 
         ON nc.workspace_id = mg.workspace_id 
         AND nc.card_id = mg.card_id 
@@ -330,10 +326,6 @@ export class NotificationsDb extends BaseDb {
         'message_group_from_date', mg.from_date,
         'message_group_to_date', mg.to_date,
         'message_group_count', mg.count,
-        'message_thread_id', t.thread_id,
-        'message_thread_type', t.thread_type,
-        'message_replies', t.replies_count,
-        'message_last_reply', t.last_reply,
         'message_patches', (
           SELECT COALESCE(
             JSON_AGG(
@@ -447,10 +439,6 @@ export class NotificationsDb extends BaseDb {
       mg.from_date AS message_group_from_date,
       mg.to_date AS message_group_to_date,
       mg.count AS message_group_count,
-      t.thread_id AS message_thread_id,
-      t.thread_type AS message_thread_type,
-      t.replies_count AS message_replies,
-      t.last_reply AS message_last_reply,
       (SELECT json_agg(
         jsonb_build_object(
           'type', p.type,
@@ -475,7 +463,6 @@ export class NotificationsDb extends BaseDb {
       FROM ${TableName.File} f
       WHERE f.workspace_id = m.workspace_id AND f.card_id = m.card_id AND f.message_id = m.id) AS message_files
     `
-
       joinMessages = `
       LEFT JOIN ${TableName.Message} m 
         ON nc.workspace_id = m.workspace_id
@@ -484,12 +471,7 @@ export class NotificationsDb extends BaseDb {
       LEFT JOIN ${TableName.MessagesGroup} mg
         ON nc.workspace_id = mg.workspace_id
         AND nc.card_id = mg.card_id
-        AND n.message_created BETWEEN mg.from_date AND mg.to_date
-      LEFT JOIN ${TableName.Thread} t
-        ON nc.workspace_id = t.workspace_id
-        AND nc.card_id = t.card_id
-        AND n.message_id = t.message_id
-    `
+        AND n.message_created BETWEEN mg.from_date AND mg.to_date `
     }
 
     select += ` FROM ${TableName.Notification} n

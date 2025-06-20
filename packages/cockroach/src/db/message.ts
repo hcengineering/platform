@@ -625,7 +625,16 @@ export class MessagesDb extends BaseDb {
 
     if (!inDb) {
       await this.getRowClient().begin(async (s) => {
-        await this.execute(sql, [...values, this.workspace, threadId, cardId, messageId], 'update thread', s)
+        const res = await this.execute(
+          sql,
+          [...values, this.workspace, threadId, cardId, messageId],
+          'update thread',
+          s
+        )
+
+        if (res.count === 0) {
+          return
+        }
 
         const data: UpdateThreadPatchData = {
           operation: 'update',
@@ -1052,7 +1061,7 @@ export class MessagesDb extends BaseDb {
                         AND mc.message_id = $3::varchar
                       LIMIT 1`
     const result = await this.execute(select, [this.workspace, cardId, messageId])
-    const created = result[0].created
+    const created = result[0]?.created
     return created != null ? new Date(created) : undefined
   }
 }

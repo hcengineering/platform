@@ -17,6 +17,7 @@ import { type ParameterOrJSON, type Row } from 'postgres'
 
 export type SqlRow = Row & Iterable<Row>
 export type SqlParams = ParameterOrJSON<any>[]
+export type SqlResult<T extends SqlRow = SqlRow> = T[] & { count: number }
 
 export interface Logger {
   info: (message: string, data?: Record<string, any>) => void

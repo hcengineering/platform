@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import postgres, { type ParameterOrJSON, type Row } from 'postgres'
+import postgres, { type ParameterOrJSON } from 'postgres'
 import type { WorkspaceID } from '@hcengineering/communication-types'
 
-import { type Logger, type Options } from '../types'
+import { SqlRow, type Logger, type Options, type SqlResult } from '../types'
 import { SqlClient } from '../client'
 
 export class BaseDb {
@@ -31,12 +31,12 @@ export class BaseDb {
     return this.client.getRawClient()
   }
 
-  async execute<T = Row & Iterable<Row>>(
+  async execute<T extends SqlRow>(
     sql: string,
     params?: ParameterOrJSON<any>[],
     name?: string,
     client?: postgres.TransactionSql
-  ): Promise<T[]> {
+  ): Promise<SqlResult<T>> {
     if (this.options?.withLogs === true && this.logger !== undefined) {
       return await this.executeWithLogs(name, this.logger, sql, params, client)
     }
@@ -44,13 +44,13 @@ export class BaseDb {
     return await this.client.execute(sql, params, client)
   }
 
-  private async executeWithLogs<T = Row & Iterable<Row>>(
+  private async executeWithLogs<T extends SqlRow>(
     name: string | undefined,
     logger: Logger,
     sql: string,
     params?: ParameterOrJSON<any>[],
     client?: postgres.TransactionSql
-  ): Promise<T[]> {
+  ): Promise<SqlResult<T>> {
     if (name === undefined) {
       return await this.client.execute<T>(sql, params, client)
     }

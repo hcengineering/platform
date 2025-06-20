@@ -14,7 +14,7 @@
 import postgres from 'postgres'
 
 import type { PostgresClientReference } from './connection'
-import type { SqlParams, SqlRow } from './types'
+import type { SqlParams, SqlResult, SqlRow } from './types'
 import { convertArrayParams } from './utils'
 
 export class SqlClient {
@@ -27,9 +27,9 @@ export class SqlClient {
     return this.sql
   }
 
-  async execute<T = SqlRow>(query: string, params?: SqlParams, client?: postgres.TransactionSql): Promise<T[]> {
+  async execute<T extends SqlRow>(query: string, params?: SqlParams, client?: postgres.TransactionSql): Promise<SqlResult<T>> {
     const convertedParams = convertArrayParams(params)
-    return await (client ?? this.sql).unsafe<T[]>(query, convertedParams)
+    return await (client ?? this.sql).unsafe<T[]>(query, convertedParams) as SqlResult<T>
   }
 
   cursor<T = SqlRow>(query: string, params?: SqlParams, size?: number): AsyncIterable<NonNullable<T[][number]>[]> {

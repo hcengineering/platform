@@ -78,10 +78,6 @@ interface RawNotification extends NotificationDb {
   message_group_from_date?: Date
   message_group_to_date?: Date
   message_group_count?: number
-  message_thread_id?: CardID
-  message_thread_type?: CardType
-  message_replies?: number
-  message_last_reply?: Date
   message_patches?: {
     type: PatchType
     data: Record<string, any>
@@ -248,18 +244,6 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
       })
     )
 
-    let thread: Thread | undefined
-
-    if (raw.message_thread_id != null && raw.message_thread_type != null) {
-      thread = {
-        cardId: card,
-        messageId: String(raw.message_id) as MessageID,
-        threadId: raw.message_thread_id,
-        threadType: raw.message_thread_type,
-        repliesCount: Number(raw.message_replies ?? 0),
-        lastReply: raw.message_last_reply != null ? new Date(raw.message_last_reply) : created
-      }
-    }
     message = {
       id: String(raw.message_id) as MessageID,
       type: raw.message_type,
@@ -272,7 +256,6 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
       edited: undefined,
       reactions: [],
       blobs: messageBlobs ?? [],
-      thread,
       linkPreviews: []
     }
 
