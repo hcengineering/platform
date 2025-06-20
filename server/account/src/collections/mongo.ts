@@ -192,7 +192,7 @@ implements DbCollection<T> {
     throw new Error('Not implemented')
   }
 
-  async updateOne (query: Query<T>, ops: Operations<T>): Promise<void> {
+  async update (query: Query<T>, ops: Operations<T>): Promise<void> {
     const resOps: any = { $set: {} }
 
     for (const key of Object.keys(ops)) {
@@ -206,8 +206,7 @@ implements DbCollection<T> {
         }
       }
     }
-
-    await this.collection.updateOne(getFilteredQuery(query) as Filter<T>, resOps)
+    await this.collection.updateMany(getFilteredQuery(query) as Filter<T>, resOps)
   }
 
   async deleteMany (query: Query<T>): Promise<void> {
@@ -353,7 +352,7 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
       }
     }
 
-    await this.wsCollection.updateOne({ uuid: data.workspaceUuid }, statusData)
+    await this.wsCollection.update({ uuid: data.workspaceUuid }, statusData)
 
     return data.workspaceUuid
   }
@@ -362,8 +361,8 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
     throw new Error('Not implemented')
   }
 
-  async updateOne (query: Query<WorkspaceStatus>, ops: Operations<WorkspaceStatus>): Promise<void> {
-    await this.wsCollection.updateOne(this.toWsQuery(query), this.toWsOperations(ops))
+  async update (query: Query<WorkspaceStatus>, ops: Operations<WorkspaceStatus>): Promise<void> {
+    await this.wsCollection.update(this.toWsQuery(query), this.toWsOperations(ops))
   }
 
   async deleteMany (query: Query<WorkspaceStatus>): Promise<void> {
@@ -486,14 +485,14 @@ export class MongoAccountDB implements AccountDB {
     if (!exists) {
       await this.migration.insertOne({ key, completed: false, lastProcessedTime: Date.now() })
     } else {
-      await this.migration.updateOne({ key }, { lastProcessedTime: Date.now() })
+      await this.migration.update({ key }, { lastProcessedTime: Date.now() })
     }
 
     const processingHandle = setInterval(() => {
-      void this.migration.updateOne({ key }, { lastProcessedTime: Date.now() })
+      void this.migration.update({ key }, { lastProcessedTime: Date.now() })
     }, 1000 * 5)
     await op()
-    await this.migration.updateOne({ key }, { completed: true, lastProcessedTime: Date.now() })
+    await this.migration.update({ key }, { completed: true, lastProcessedTime: Date.now() })
     clearInterval(processingHandle)
     console.log(`Migration ${key} completed`)
   }
@@ -590,7 +589,7 @@ export class MongoAccountDB implements AccountDB {
   }
 
   async updateAllowReadOnlyGuests (workspaceId: WorkspaceUuid, readOnlyGuestsAllowed: boolean): Promise<void> {
-    await this.workspace.updateOne(
+    await this.workspace.update(
       {
         uuid: workspaceId
       },
@@ -740,7 +739,7 @@ export class MongoAccountDB implements AccountDB {
   }
 
   async updateWorkspaceRole (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole): Promise<void> {
-    await this.workspaceMembers.updateOne(
+    await this.workspaceMembers.update(
       {
         workspaceUuid: workspaceId,
         accountUuid: accountId
@@ -784,10 +783,10 @@ export class MongoAccountDB implements AccountDB {
   }
 
   async setPassword (accountId: AccountUuid, passwordHash: Buffer, salt: Buffer): Promise<void> {
-    await this.account.updateOne({ uuid: accountId }, { hash: passwordHash, salt })
+    await this.account.update({ uuid: accountId }, { hash: passwordHash, salt })
   }
 
   async resetPassword (accountId: AccountUuid): Promise<void> {
-    await this.account.updateOne({ uuid: accountId }, { hash: null, salt: null })
+    await this.account.update({ uuid: accountId }, { hash: null, salt: null })
   }
 }

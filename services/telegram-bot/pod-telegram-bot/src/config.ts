@@ -21,8 +21,6 @@ export interface Config {
   BotToken: string
   DbUrl: string
   Domain: string
-  MongoDB: string
-  MongoURL: string
   OtpRetryDelaySec: number
   OtpTimeToLiveSec: number
   Port: number
@@ -39,9 +37,6 @@ const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4020,
     BotToken: process.env.BOT_TOKEN,
-    // TODO: remove mongo
-    MongoURL: process.env.MONGO_URL ?? '',
-    MongoDB: process.env.MONGO_DB ?? '',
     AccountsUrl: process.env.ACCOUNTS_URL,
     ServiceId: process.env.SERVICE_ID ?? 'telegram-bot',
     Secret: process.env.SECRET,

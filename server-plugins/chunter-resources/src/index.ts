@@ -115,13 +115,19 @@ export async function CommentRemove (
   })
 }
 
-async function OnThreadMessageCreated (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+async function OnThreadMessageCreated (
+  ctx: MeasureContext,
+  originTx: TxCUD<Doc>,
+  control: TriggerControl
+): Promise<Tx[]> {
   const tx = originTx as TxCreateDoc<ThreadMessage>
 
   const threadMessage = TxProcessor.createDoc2Doc(tx)
-  const message = (
-    await control.findAll(control.ctx, activity.class.ActivityMessage, { _id: threadMessage.attachedTo })
-  )[0]
+  const message = await ctx.with(
+    'load-message',
+    {},
+    async () => (await control.findAll(ctx, activity.class.ActivityMessage, { _id: threadMessage.attachedTo }))[0]
+  )
 
   if (message === undefined) {
     return []
@@ -136,7 +142,7 @@ async function OnThreadMessageCreated (originTx: TxCUD<Doc>, control: TriggerCon
     }
   )
 
-  const person = await getPerson(control, originTx.modifiedBy)
+  const person = await ctx.with('load-message', {}, () => getPerson(control, originTx.modifiedBy))
   if (person === undefined) {
     return [lastReplyTx]
   }
@@ -294,7 +300,9 @@ export async function ChunterTrigger (txes: TxCUD<Doc>[], control: TriggerContro
       tx._class === core.class.TxCreateDoc &&
       control.hierarchy.isDerived(tx.objectClass, chunter.class.ThreadMessage)
     ) {
-      res.push(...(await control.ctx.with('OnThreadMessageCreated', {}, (ctx) => OnThreadMessageCreated(tx, control))))
+      res.push(
+        ...(await control.ctx.with('OnThreadMessageCreated', {}, (ctx) => OnThreadMessageCreated(ctx, tx, control)))
+      )
     }
     if (
       tx._class === core.class.TxRemoveDoc &&

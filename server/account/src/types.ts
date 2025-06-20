@@ -227,7 +227,7 @@ export interface DbCollection<T> {
   findOne: (query: Query<T>) => Promise<T | null>
   insertOne: (data: Partial<T>) => Promise<any>
   insertMany: (data: Partial<T>[]) => Promise<any>
-  updateOne: (query: Query<T>, ops: Operations<T>) => Promise<void>
+  update: (query: Query<T>, ops: Operations<T>) => Promise<void>
   deleteMany: (query: Query<T>) => Promise<void>
 }
 

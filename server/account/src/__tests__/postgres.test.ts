@@ -174,7 +174,7 @@ describe('PostgresDbCollection', () => {
 
   describe('updateOne', () => {
     it('should handle simple field updates', async () => {
-      await collection.updateOne({ uuid: 'ws1' as WorkspaceUuid }, { mode: 'creating' as const })
+      await collection.update({ uuid: 'ws1' as WorkspaceUuid }, { mode: 'creating' as const })
 
       expect(mockClient.unsafe).toHaveBeenCalledWith(
         'UPDATE global_account.workspace SET "mode" = $1 WHERE "uuid" = $2',
@@ -183,7 +183,7 @@ describe('PostgresDbCollection', () => {
     })
 
     it('should handle increment operations', async () => {
-      await collection.updateOne({ uuid: 'ws1' as WorkspaceUuid }, { $inc: { processingAttempts: 1 } })
+      await collection.update({ uuid: 'ws1' as WorkspaceUuid }, { $inc: { processingAttempts: 1 } })
 
       expect(mockClient.unsafe).toHaveBeenCalledWith(
         'UPDATE global_account.workspace SET "processing_attempts" = "processing_attempts" + $1 WHERE "uuid" = $2',
@@ -406,19 +406,19 @@ describe('AccountPostgresDbCollection', () => {
 
   describe('updateOne', () => {
     it('should prevent updating with password fields in query', async () => {
-      await expect(collection.updateOne({ hash: Buffer.from([]) }, { timezone: 'UTC' })).rejects.toThrow(
+      await expect(collection.update({ hash: Buffer.from([]) }, { timezone: 'UTC' })).rejects.toThrow(
         'Passwords are not allowed in update query'
       )
     })
 
     it('should prevent updating password fields', async () => {
       await expect(
-        collection.updateOne({ uuid: 'acc1' as AccountUuid }, { hash: Buffer.from([]), salt: Buffer.from([]) })
+        collection.update({ uuid: 'acc1' as AccountUuid }, { hash: Buffer.from([]), salt: Buffer.from([]) })
       ).rejects.toThrow('Passwords are not allowed in update query')
     })
 
     it('should allow updating non-password fields', async () => {
-      await collection.updateOne({ uuid: 'acc1' as AccountUuid }, { timezone: 'UTC', locale: 'en' })
+      await collection.update({ uuid: 'acc1' as AccountUuid }, { timezone: 'UTC', locale: 'en' })
 
       expect(mockClient.unsafe).toHaveBeenCalledWith(
         'UPDATE global_account.account SET "timezone" = $1, "locale" = $2 WHERE "uuid" = $3',

@@ -193,7 +193,7 @@ export async function performWorkspaceOperation (
     }
 
     if (Object.keys(update).length !== 0) {
-      await db.workspaceStatus.updateOne({ workspaceUuid: workspace.uuid }, update)
+      await db.workspaceStatus.update({ workspaceUuid: workspace.uuid }, update)
       ops++
     }
   }
@@ -412,13 +412,13 @@ export async function updateWorkspaceInfo (
     update.processingMessage = message
   }
 
-  await db.workspaceStatus.updateOne(query, {
+  await db.workspaceStatus.update(query, {
     lastProcessingTime: ts, // Some operations override it.
     ...update
   })
 
   if (Object.keys(wsUpdate).length !== 0) {
-    await db.workspace.updateOne({ uuid: workspaceUuid }, wsUpdate)
+    await db.workspace.update({ uuid: workspaceUuid }, wsUpdate)
   }
 }
 
@@ -461,7 +461,7 @@ export async function updateBackupInfo (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
   }
 
-  await db.workspaceStatus.updateOne(
+  await db.workspaceStatus.update(
     { workspaceUuid: workspace },
     {
       backupInfo,
@@ -616,7 +616,7 @@ export async function updateSocialId (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdNotFound, { _id: personId }))
   }
 
-  await db.socialId.updateOne({ _id: personId }, { displayValue })
+  await db.socialId.update({ _id: personId }, { displayValue })
 }
 
 export async function createIntegration (
@@ -658,7 +658,7 @@ export async function updateIntegration (
   }
 
   const { socialId, kind, workspaceUuid, data } = params
-  await db.integration.updateOne({ socialId, kind, workspaceUuid }, { data })
+  await db.integration.update({ socialId, kind, workspaceUuid }, { data })
 }
 
 export async function deleteIntegration (
@@ -812,7 +812,7 @@ export async function updateIntegrationSecret (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
   }
 
-  await db.integrationSecret.updateOne(secretKey, { secret })
+  await db.integrationSecret.update(secretKey, { secret })
 }
 
 export async function deleteIntegrationSecret (

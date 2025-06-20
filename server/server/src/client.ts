@@ -15,7 +15,7 @@
 
 import type { LoginInfoWithWorkspaces } from '@hcengineering/account-client'
 import {
-  type RequestEvent as CommunicationEvent,
+  type Event as CommunicationEvent,
   type SessionData as CommunicationSession,
   type EventResult
 } from '@hcengineering/communication-sdk-types'
@@ -455,8 +455,7 @@ export class ClientSession implements Session {
   private getCommunicationCtx (): CommunicationSession {
     return {
       sessionId: this.sessionId,
-      // TODO: We should decide what to do with communications package and remove this workaround
-      account: this.account as any
+      account: this.account
     }
   }
 }
