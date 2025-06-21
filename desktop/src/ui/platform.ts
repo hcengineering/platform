@@ -67,6 +67,7 @@ import { inboxId } from '@hcengineering/inbox'
 import { achievementId } from '@hcengineering/achievement'
 import communication, {communicationId} from '@hcengineering/communication'
 import { emojiId } from '@hcengineering/emoji'
+import { billingId } from '@hcengineering/billing'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/analytics-collector-assets'
@@ -121,6 +122,7 @@ import '@hcengineering/achievement-assets'
 import '@hcengineering/emoji-assets'
 import '@hcengineering/media-assets'
 import '@hcengineering/communication-assets'
+import '@hcengineering/billing-assets'
 
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import { coreId } from '@hcengineering/core'
@@ -235,6 +237,7 @@ function configureI18n (): void {
   addStringsLoader(achievementId, async (lang: string) => await import(`@hcengineering/achievement-assets/lang/${lang}.json`))
   addStringsLoader(communicationId, async (lang: string) => await import(`@hcengineering/communication-assets/lang/${lang}.json`))
   addStringsLoader(emojiId, async (lang: string) => await import(`@hcengineering/emoji-assets/lang/${lang}.json`))
+  addStringsLoader(billingId, async (lang: string) => await import(`@hcengineering/billing-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform (): Promise<void> {
@@ -379,6 +382,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(achievementId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/achievement-resources'))
   addLocation(communicationId, () => import(/* webpackChunkName: "communication" */ '@hcengineering/communication-resources'))
   addLocation(emojiId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/emoji-resources'))
+  addLocation(billingId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/billing-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

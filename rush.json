@@ -2587,6 +2587,26 @@
       "packageName": "@hcengineering/communication-client-query",
       "projectFolder": "communication/packages/client-query",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/billing",
+      "projectFolder": "plugins/billing",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/billing-assets",
+      "projectFolder": "plugins/billing-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/billing-resources",
+      "projectFolder": "plugins/billing-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-billing",
+      "projectFolder": "models/billing",
+      "shouldPublish": false
     }
   ]
 }
