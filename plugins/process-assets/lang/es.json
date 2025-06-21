@@ -65,7 +65,9 @@
     "AddTransition": "Agregar transición",
     "ToDo": "Tarea",
     "CurrentCard": "Tarjeta actual",
-    "Data": "Datos"
+    "Data": "Datos",
+    "Transitions": "Transiciones",
+    "OnExecutionStart": "Al iniciar la ejecución"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",

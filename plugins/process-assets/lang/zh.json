@@ -65,7 +65,9 @@
     "AddTransition": "添加转换",
     "ToDo": "待办事项",
     "CurrentCard": "当前卡片",
-    "Data": "数据"
+    "Data": "数据",
+    "Transitions": "转换",
+    "OnExecutionStart": "执行开始时"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

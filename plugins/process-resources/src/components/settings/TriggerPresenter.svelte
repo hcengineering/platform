@@ -15,12 +15,13 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { parseContext, Process, SelectedExecutonContext, Trigger } from '@hcengineering/process'
-  import { Icon, IconError, tooltip } from '@hcengineering/ui'
+  import { parseContext, Process, Trigger } from '@hcengineering/process'
+  import { Icon, IconError, Label, tooltip } from '@hcengineering/ui'
 
   export let value: Ref<Trigger>
   export let process: Process
   export let params: Record<string, any>
+  export let withLabel: boolean = false
 
   const client = getClient()
   $: trigger = client.getModel().findObject(value)
@@ -52,10 +53,10 @@
 </script>
 
 {#if trigger}
-  {#if error}
-    <Icon icon={IconError} size="medium" />
-  {/if}
-  <div use:tooltip={{ label: trigger.label }}>
-    <Icon icon={trigger.icon} size={'medium'} />
+  <div class="flex flex-gap-2" use:tooltip={{ label: trigger.label }}>
+    <Icon icon={error ? IconError : trigger.icon} size={'medium'} />
+    {#if withLabel}
+      <Label label={trigger.label} />
+    {/if}
   </div>
 {/if}

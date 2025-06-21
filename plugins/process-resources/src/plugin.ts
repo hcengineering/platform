@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { type Ref } from '@hcengineering/core'
-import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
+import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { type PresentationMiddlewareCreator } from '@hcengineering/presentation'
 import process, { processId } from '@hcengineering/process'
 import { type AnyComponent } from '@hcengineering/ui'
@@ -53,7 +53,9 @@ export default mergeIds(processId, process, {
     StatePresenter: '' as AnyComponent,
     ToDoCloseEditor: '' as AnyComponent,
     ToDoRemoveEditor: '' as AnyComponent,
-    ProcessesCardSection: '' as AnyComponent
+    ProcessesCardSection: '' as AnyComponent,
+    TransitionEditor: '' as AnyComponent,
+    StateEditor: '' as AnyComponent
   },
   function: {
     ShowDoneQuery: '' as ViewQueryAction,
@@ -117,6 +119,8 @@ export default mergeIds(processId, process, {
     AddTransition: '' as IntlString,
     ToDo: '' as IntlString,
     CurrentCard: '' as IntlString,
-    Data: '' as IntlString
+    Data: '' as IntlString,
+    Transitions: '' as IntlString,
+    OnExecutionStart: '' as IntlString
   }
 })

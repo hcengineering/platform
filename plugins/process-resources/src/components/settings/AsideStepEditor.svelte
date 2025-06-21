@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Doc, Ref } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { Process, State, Transition, type Step } from '@hcengineering/process'
+  import { Process, Transition, type Step } from '@hcengineering/process'
   import { clearSettingsStore } from '@hcengineering/setting-resources'
   import { ButtonIcon, IconDelete, Modal } from '@hcengineering/ui'
   import plugin from '../../plugin'
@@ -10,7 +10,7 @@
   export let readonly: boolean
   export let process: Process
   export let step: Step<Doc>
-  export let _id: Ref<Transition | State>
+  export let _id: Ref<Transition>
 
   const client = getClient()
 

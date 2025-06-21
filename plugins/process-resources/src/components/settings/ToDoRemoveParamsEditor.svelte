@@ -15,24 +15,11 @@
 
 <script lang="ts">
   import { Process } from '@hcengineering/process'
-  import { Label } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
-  import plugin from '../../plugin'
-  import ToDoContextSelector from '../contextEditors/ToDoContextSelector.svelte'
+  import ToDoParamsEditor from './ToDoParamsEditor.svelte'
 
   export let readonly: boolean
   export let process: Process
   export let params: Record<string, any>
-  export let skipRollback: boolean = false
-
-  const dispatch = createEventDispatcher()
-
-  function change (e: CustomEvent<string>): void {
-    if (readonly || e.detail == null) return
-    params._id = e.detail
-    dispatch('change', params)
-  }
 </script>
 
-<Label label={plugin.string.ToDo} />
-<ToDoContextSelector {readonly} {skipRollback} {process} value={params._id} on:change={change} />
+<ToDoParamsEditor {readonly} {process} {params} skipRollback on:change />

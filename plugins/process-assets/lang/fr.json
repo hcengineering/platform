@@ -65,7 +65,9 @@
     "AddTransition": "Ajouter une transition",
     "ToDo": "Tâche",
     "CurrentCard": "Carte actuelle",
-    "Data": "Données"
+    "Data": "Données",
+    "Transitions": "Transitions",
+    "OnExecutionStart": "Au début de l'exécution"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

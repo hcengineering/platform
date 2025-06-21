@@ -65,7 +65,9 @@
     "AddTransition": "Přidat přechod",
     "ToDo": "Úkol",
     "CurrentCard": "Aktuální karta",
-    "Data": "Data"
+    "Data": "Data",
+    "Transitions": "Přechody",
+    "OnExecutionStart": "Při spuštění provedení"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

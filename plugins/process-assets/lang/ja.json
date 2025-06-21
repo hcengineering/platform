@@ -64,7 +64,9 @@
     "AddTransition": "遷移を追加",
     "ToDo": "ToDo",
     "CurrentCard": "現在のカード",
-    "Data": "データ"
+    "Data": "データ",
+    "Transitions": "遷移",
+    "OnExecutionStart": "実行開始時"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

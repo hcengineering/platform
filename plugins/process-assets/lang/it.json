@@ -65,7 +65,9 @@
     "AddTransition": "Aggiungi transizione",
     "ToDo": "Attività",
     "CurrentCard": "Scheda corrente",
-    "Data": "Dati"
+    "Data": "Dati",
+    "Transitions": "Transizioni",
+    "OnExecutionStart": "All'avvio dell'esecuzione"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",

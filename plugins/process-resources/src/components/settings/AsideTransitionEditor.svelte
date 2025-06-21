@@ -1,25 +1,18 @@
 <script lang="ts">
-  import { Doc } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { Process, Step, StepId, Transition } from '@hcengineering/process'
+  import { Process, Transition, Trigger } from '@hcengineering/process'
   import { clearSettingsStore } from '@hcengineering/setting-resources'
   import {
-    Button,
     ButtonIcon,
     Component,
     DropdownIntlItem,
-    DropdownLabelsPopupIntl,
-    getEventPositionElement,
-    IconAdd,
+    DropdownLabelsIntl,
     IconDelete,
     Label,
-    Modal,
-    showPopup
+    Modal
   } from '@hcengineering/ui'
   import plugin from '../../plugin'
-  import { initState } from '../../utils'
-  import ActionPresenter from './ActionPresenter.svelte'
-  import StepEditor from './StepEditor.svelte'
   import TransitionPresenter from './TransitionPresenter.svelte'
 
   export let readonly: boolean
@@ -31,7 +24,7 @@
   const client = getClient()
 
   async function save (): Promise<void> {
-    await client.update(transition, { triggerParams: params, actions: transition.actions })
+    await client.update(transition, { triggerParams: params, trigger: selectedTrigger })
     clearSettingsStore()
   }
 
@@ -44,28 +37,12 @@
     params = e.detail
   }
 
-  function addAction (e: MouseEvent): void {
-    const items: DropdownIntlItem[] = client
-      .getModel()
-      .findAllSync(plugin.class.Method, {})
-      .map((x) => ({
-        id: x._id,
-        label: x.label
-      }))
+  let selectedTrigger: Ref<Trigger> = transition.trigger
+  $: trigger = client.getModel().findObject(selectedTrigger)
 
-    showPopup(DropdownLabelsPopupIntl, { items }, getEventPositionElement(e), async (res) => {
-      if (res !== undefined) {
-        const step = await initState(res)
-        transition.actions.push(step)
-        transition.actions = transition.actions
-        await client.update(transition, { actions: transition.actions })
-      }
-    })
-  }
+  const triggers = client.getModel().findAllSync(plugin.class.Trigger, { init: transition.from === null })
 
-  $: trigger = client.getModel().findObject(transition.trigger)
-
-  let expanded = new Set<StepId>()
+  const triggersItems: DropdownIntlItem[] = triggers.map((p) => ({ label: p.label, id: p._id, icon: p.icon }))
 </script>
 
 <Modal
@@ -88,38 +65,20 @@
         <TransitionPresenter {transition} />
       </div>
     </div>
-    {#if trigger !== undefined}
-      <div class="flex-col-center text-lg">
-        <Label label={trigger.label} />
-      </div>
-      {#if trigger.editor !== undefined}
-        <Component is={trigger.editor} props={{ process, params, readonly }} on:change={change} />
-      {/if}
-    {/if}
-    <div class="divider" />
-    <div class="flex-col flex-gap-2">
-      {#each transition.actions as action}
-        <Button
-          justify="left"
-          size="large"
-          kind="regular"
-          width="100%"
-          on:click={() => {
-            if (readonly) return
-            expanded.has(action._id) ? expanded.delete(action._id) : expanded.add(action._id)
-            expanded = expanded
-          }}
-        >
-          <svelte:fragment slot="content">
-            <ActionPresenter {action} {process} {readonly} />
-          </svelte:fragment>
-        </Button>
-        {#if expanded.has(action._id)}
-          <StepEditor bind:step={action} {process} withoutHeader />
+    <div class="grid">
+      {#if trigger !== undefined}
+        <Label label={plugin.string.Trigger} />
+        <DropdownLabelsIntl
+          items={triggersItems}
+          bind:selected={selectedTrigger}
+          label={plugin.string.Trigger}
+          justify={'left'}
+          width={'100%'}
+          kind={'no-border'}
+        />
+        {#if trigger.editor !== undefined}
+          <Component is={trigger.editor} props={{ process, params, readonly }} on:change={change} />
         {/if}
-      {/each}
-      {#if !readonly}
-        <Button kind={'ghost'} width={'100%'} icon={IconAdd} label={plugin.string.AddAction} on:click={addAction} />
       {/if}
     </div>
   </div>
@@ -130,12 +89,20 @@
     padding: 1rem 1.25rem 2rem 1.25rem;
   }
 
-  .title {
-    padding-bottom: 1rem;
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-rows: minmax(2rem, max-content);
+    justify-content: start;
+    align-items: center;
+    row-gap: 0.25rem;
+    column-gap: 1rem;
+    margin: 0.25rem 2rem 0;
+    width: calc(100% - 4rem);
+    height: min-content;
   }
 
-  .divider {
-    border-bottom: 1px solid var(--theme-divider-color);
-    margin: 1rem 0;
+  .title {
+    padding-bottom: 1rem;
   }
 </style>
