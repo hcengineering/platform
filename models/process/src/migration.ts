@@ -75,7 +75,7 @@ async function migrateActionsFromStates (client: Client): Promise<void> {
         )
       } else {
         for (const transition of transitions) {
-          const actions = [...state.actions, transition.actions]
+          const actions = [...state.actions, ...transition.actions]
           await txOp.update(transition, actions, undefined, undefined, state.modifiedBy)
         }
       }
