@@ -277,7 +277,7 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 		return
 	}
 
-	if err := waitFileExists(f); os.IsNotExist(err) {
+	if err := waitFileExists(f); err != nil {
 		if os.IsNotExist(err) {
 			logger.Debug("file does not exist", zap.Error(err))
 		} else {
@@ -392,9 +392,10 @@ func (u *uploaderImpl) startWatch(ready chan<- struct{}) {
 
 func waitFileExists(file string) error {
 	var err error
+	var stat os.FileInfo
 
 	for range 10 {
-		stat, err := os.Stat(file)
+		stat, err = os.Stat(file)
 		if err == nil && stat.Size() > 0 {
 			return nil
 		}

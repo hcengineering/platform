@@ -28,10 +28,11 @@ func Test_BuildVideoCommand_Scaling(t *testing.T) {
 		Input:         "pipe:0",
 		UploadID:      "1",
 		Threads:       4,
+		LogLevel:      mediaconvert.LogLevelDebug,
 		ScalingLevels: []string{"720p", "480p"},
 	})
 
-	const expected = `-threads 4 -i pipe:0 -map 0:v -vf scale=-2:720 -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_720p.ts test/1/1_720p_master.m3u8 -map 0:v -vf scale=-2:480 -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
+	const expected = `-y -v debug -threads 4 -i pipe:0 -map 0:v -vf scale=-2:720 -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_720p.ts test/1/1_720p_master.m3u8 -map 0:v -vf scale=-2:480 -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
 
 	require.Contains(t, expected, strings.Join(scaleCommand, " "))
 }
@@ -42,11 +43,12 @@ func Test_BuildVideoCommand_Scaling_NoRaw(t *testing.T) {
 		Input:         "pipe:0",
 		UploadID:      "1",
 		Threads:       4,
+		LogLevel:      mediaconvert.LogLevelDebug,
 		Level:         "720p",
 		ScalingLevels: []string{"720p", "480p"},
 	})
 
-	const expected = `-threads 4 -i pipe:0 -map 0:v -vf scale=-2:480 -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
+	const expected = `-y -v debug -threads 4 -i pipe:0 -map 0:v -vf scale=-2:480 -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
 
 	require.Contains(t, expected, strings.Join(scaleCommand, " "))
 }
@@ -57,11 +59,12 @@ func Test_BuildVideoCommand_Raw_NoTranscode(t *testing.T) {
 		Input:     "pipe:0",
 		UploadID:  "1",
 		Threads:   4,
+		LogLevel:  mediaconvert.LogLevelDebug,
 		Level:     resconv.Level("651:490"),
 		Transcode: false,
 	})
 
-	const expected = `"-threads 4 -i pipe:0 -c:a copy -c:v copy -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
+	const expected = `"-y -v debug -threads 4 -i pipe:0 -c:a copy -c:v copy -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
 
 	require.Contains(t, expected, strings.Join(rawCommand, " "))
 }
@@ -72,11 +75,12 @@ func Test_BuildVideoCommand_Raw_Transcode(t *testing.T) {
 		Input:     "pipe:0",
 		UploadID:  "1",
 		Threads:   4,
+		LogLevel:  mediaconvert.LogLevelDebug,
 		Level:     resconv.Level("651:490"),
 		Transcode: true,
 	})
 
-	const expected = `-threads 4 -i pipe:0 -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
+	const expected = `-y -v debug -threads 4 -i pipe:0 -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
 
 	require.Contains(t, expected, strings.Join(rawCommand, " "))
 }

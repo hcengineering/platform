@@ -44,6 +44,7 @@ type Transcoder struct {
 	logger *zap.Logger
 }
 
+// Command represents a ffmpeg command
 type Command struct {
 	cmd       *exec.Cmd
 	stdoutBuf bytes.Buffer
@@ -186,7 +187,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 		if cmdErr != nil {
 			logger.Error("can not create a new command", zap.Error(cmdErr), zap.Strings("args", args))
 			go uploader.Cancel()
-			return nil, errors.Wrapf(err, "can not create a new command")
+			return nil, errors.Wrapf(cmdErr, "can not create a new command")
 		}
 
 		var command = Command{
@@ -209,13 +210,19 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 	logger.Debug("phase 7: wait for the result")
 
 	for _, cmd := range cmds {
-		if err = cmd.cmd.Wait(); err != nil {
-			logger.Error("can not wait for command end ", zap.Error(err))
-			os.Stdout.Write(cmd.stdoutBuf.Bytes())
-			os.Stderr.Write(cmd.stderrBuf.Bytes())
-			go uploader.Cancel()
-			return nil, errors.Wrapf(err, "can not wait for command end")
+		if err = cmd.cmd.Wait(); err == nil {
+			continue
 		}
+
+		logger.Error("can not wait for command end ", zap.Error(err))
+		if _, err = os.Stdout.Write(cmd.stdoutBuf.Bytes()); err != nil {
+			logger.Error("can not write stdout ", zap.Error(err))
+		}
+		if _, err = os.Stderr.Write(cmd.stderrBuf.Bytes()); err != nil {
+			logger.Error("can not write stderr", zap.Error(err))
+		}
+		go uploader.Cancel()
+		return nil, errors.Wrapf(err, "can not wait for command end")
 	}
 
 	logger.Debug("phase 8: schedule cleanup")

@@ -29,18 +29,28 @@ import (
 	"go.uber.org/zap"
 )
 
+// LogLevel is ffmpeg log level
 type LogLevel string
 
 const (
-	LogLevelQuiet   LogLevel = "quiet"
-	LogLevelPanic   LogLevel = "panic"
-	LogLevelFatal   LogLevel = "fatal"
-	LogLevelError   LogLevel = "error"
+	// LogLevelQuiet is quiet log level
+	LogLevelQuiet LogLevel = "quiet"
+	// LogLevelPanic is panic log level
+	LogLevelPanic LogLevel = "panic"
+	// LogLevelFatal is fatal log level
+	LogLevelFatal LogLevel = "fatal"
+	// LogLevelError is error log level
+	LogLevelError LogLevel = "error"
+	// LogLevelWarning is warning log level
 	LogLevelWarning LogLevel = "warning"
-	LogLevelInfo    LogLevel = "info"
+	// LogLevelInfo is info log level
+	LogLevelInfo LogLevel = "info"
+	// LogLevelVerbose is verbose log level
 	LogLevelVerbose LogLevel = "verbose"
-	LogLevelDebug   LogLevel = "debug"
-	LogLevelTrace   LogLevel = "trace"
+	// LogLevelDebug is debug log level
+	LogLevelDebug LogLevel = "debug"
+	// LogLevelTrace is trace log level
+	LogLevelTrace LogLevel = "trace"
 )
 
 // Options represents configuration for the ffmpeg command

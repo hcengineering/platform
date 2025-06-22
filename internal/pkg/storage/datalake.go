@@ -285,7 +285,7 @@ func (d *DatalakeStorage) GetFile(ctx context.Context, filename, destination str
 	defer func() {
 		_ = file.Close()
 	}()
-	if err := resp.BodyWriteTo(file); err != nil {
+	if err = resp.BodyWriteTo(file); err != nil {
 		logger.Debug("can't write to file", zap.Error(err))
 		return err
 	}
