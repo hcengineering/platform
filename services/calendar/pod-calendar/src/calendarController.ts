@@ -14,7 +14,6 @@
 //
 
 import { AccountClient, Integration } from '@hcengineering/account-client'
-import { Event } from '@hcengineering/calendar'
 import {
   MeasureContext,
   RateLimiter,
@@ -94,11 +93,5 @@ export class CalendarController {
       return false
     }
     return true
-  }
-
-  async pushEvent (workspace: WorkspaceUuid, event: Event, type: 'create' | 'update' | 'delete'): Promise<void> {
-    if (event.access === 'owner' || event.access === 'writer') {
-      await WorkspaceClient.push(this.ctx, this.accountClient, workspace, event, type)
-    }
   }
 }

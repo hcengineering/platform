@@ -25,11 +25,12 @@ import { AuthController } from './auth'
 import { decode64 } from './base64'
 import { CalendarController } from './calendarController'
 import config from './config'
+import { OutcomingClient } from './outcomingClient'
+import { PushHandler } from './pushHandler'
 import { createServer, listen } from './server'
 import { CALENDAR_INTEGRATION, GoogleEmail, type Endpoint, type State } from './types'
 import { getServiceToken } from './utils'
 import { WatchController } from './watch'
-import { PushHandler } from './pushHandler'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
   try {
@@ -165,7 +166,7 @@ export const main = async (): Promise<void> => {
           res.status(400).send({ err: "'event' or 'workspace' or 'type' is missing" })
           return
         }
-        void calendarController.pushEvent(workspace, event, type)
+        void OutcomingClient.push(ctx, accountClient, workspace, event, type)
         res.send()
       }
     }

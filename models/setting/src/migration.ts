@@ -23,10 +23,8 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import setting, { type Integration, settingId } from '@hcengineering/setting'
+import setting, { DOMAIN_SETTING, type Integration, settingId } from '@hcengineering/setting'
 import { getSocialKeyByOldAccount, getUniqueAccountsFromOldAccounts } from '@hcengineering/model-core'
-
-import { DOMAIN_SETTING } from '.'
 
 /**
  * Migrates old accounts to new accounts

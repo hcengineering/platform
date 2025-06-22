@@ -13,14 +13,23 @@
 // limitations under the License.
 //
 
-import { RecurringRule } from '@hcengineering/calendar'
-import { MeasureContext, systemAccountUuid, Timestamp, WorkspaceUuid } from '@hcengineering/core'
+import { AccountClient, IntegrationSecretKey } from '@hcengineering/account-client'
+import { Event, RecurringRule } from '@hcengineering/calendar'
+import {
+  Doc,
+  Hierarchy,
+  MeasureContext,
+  Mixin,
+  Ref,
+  systemAccountUuid,
+  Timestamp,
+  WorkspaceUuid
+} from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3, google } from 'googleapis'
 import config from './config'
 import { CALENDAR_INTEGRATION, ReccuringData, State, type Token, type User } from './types'
-import { AccountClient, IntegrationSecretKey } from '@hcengineering/account-client'
 
 export class DeferredPromise<T = any> {
   public readonly promise: Promise<T>
@@ -312,4 +321,35 @@ export async function removeIntegrationSecret (
   } catch (err: any) {
     ctx.error('Failed to remove integration secret', { message: err.message, ...data })
   }
+}
+
+export function convertDate (
+  value: number,
+  allDay: boolean,
+  timeZone: string | undefined
+): calendar_v3.Schema$EventDateTime {
+  return allDay
+    ? { date: new Date(value).toISOString().split('T')[0] }
+    : { dateTime: new Date(value).toISOString(), timeZone: timeZone ?? 'Etc/GMT' }
+}
+
+export function getTimezone (event: Event): string | undefined {
+  return event.timeZone
+}
+
+export function getMixinFields (h: Hierarchy, event: Event): Record<string, any> {
+  const res = {}
+  for (const [k, v] of Object.entries(event)) {
+    if (typeof v === 'object' && h.isMixin(k as Ref<Mixin<Doc>>)) {
+      for (const [key, value] of Object.entries(v)) {
+        if (value !== undefined) {
+          const obj = (res as any)[k] ?? {}
+          obj[key] = value
+          ;(res as any)[k] = obj
+        }
+      }
+    }
+  }
+
+  return res
 }
