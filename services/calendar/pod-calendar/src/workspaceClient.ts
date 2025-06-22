@@ -24,7 +24,6 @@ import core, {
   WorkspaceUuid,
   type Ref
 } from '@hcengineering/core'
-import setting from '@hcengineering/setting'
 import { CalendarClient } from './calendar'
 import { getClient } from './client'
 import config from './config'
@@ -69,10 +68,8 @@ export class WorkspaceClient {
 
   private async fillParticipants (): Promise<void> {
     const personsBySocialId = await getPersonRefsBySocialIds(this.client)
-    const emailSocialIds = await this.client.findAll(contact.class.SocialIdentity, { type: SocialIdType.EMAIL })
-    const emails = await this.client.findAll(contact.class.Channel, { provider: contact.channelProvider.Email })
-    const integrations = await this.client.findAll(setting.class.Integration, {
-      type: calendar.integrationType.Calendar
+    const emailSocialIds = await this.client.findAll(contact.class.SocialIdentity, {
+      type: { $in: [SocialIdType.GOOGLE, SocialIdType.EMAIL] }
     })
     this.participants.clear()
 
@@ -81,21 +78,6 @@ export class WorkspaceClient {
       const pers = personsBySocialId[sID._id]
       if (pers != null) {
         this.participants.set(pers, sID.value)
-      }
-    }
-
-    for (const channel of emails) {
-      if (channel.value === '') continue
-      const pers = channel.attachedTo as Ref<Person>
-      if (this.participants.has(pers)) continue
-      this.participants.set(pers, channel.value)
-    }
-
-    for (const integration of integrations) {
-      if (integration.value === '') continue
-      const pers = personsBySocialId[integration.createdBy ?? integration.modifiedBy]
-      if (pers != null) {
-        this.participants.set(pers, integration.value)
       }
     }
   }
