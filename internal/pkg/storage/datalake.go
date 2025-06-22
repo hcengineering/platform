@@ -21,10 +21,8 @@ import (
 	"io"
 	"mime/multipart"
 	"net/textproto"
-	"net/url"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 

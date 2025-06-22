@@ -85,6 +85,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 	}
 
 	defer func() {
+		logger.Debug("remove temporary folder")
 		if err = os.RemoveAll(destinationFolder); err != nil {
 			logger.Error("failed to cleanup temporary folder", zap.Error(err))
 		}
@@ -218,7 +219,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 	}
 
 	logger.Debug("phase 8: schedule cleanup")
-	go uploader.Stop()
+	uploader.Stop()
 
 	logger.Debug("phase 9: try to set metadata")
 

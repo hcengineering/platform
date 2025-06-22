@@ -34,9 +34,9 @@ import (
 
 // See at https://man7.org/linux/man-pages/man7/inotify.7.html
 const inotifyCloseWrite uint32 = 0x8 // IN_CLOSE_WRITE
+const inotifyMovedFrom uint32 = 0x40 // IN_MOVED_FROM
 const inotifyMovedTo uint32 = 0x80   // IN_MOVED_TO
 const inotifyDelete uint32 = 0x200   // IN_DELETE
-const inotifyMovedFrom uint32 = 0x40 // IN_MOVED_FROM
 
 // Uploader represents file uploader
 type Uploader interface {
@@ -104,50 +104,66 @@ func New(ctx context.Context, s storage.Storage, opts Options) Uploader {
 }
 
 func (u *uploaderImpl) Stop() {
+	u.logger.Info("stopping upload")
 	u.stop(false)
 }
 
 func (u *uploaderImpl) Cancel() {
+	u.logger.Info("canceling upload")
 	u.stop(true)
 }
 
-func (u *uploaderImpl) scanInitialFiles() {
-	u.workerWaitGroup.Add(1)
+func (u *uploaderImpl) scanFiles() {
+	logger := u.logger.With(zap.String("dir", u.options.Dir))
 
-	go func() {
-		defer u.workerWaitGroup.Done()
+	logger.Info("scan files")
+	files, err := os.ReadDir(u.options.Dir)
+	if err != nil {
+		logger.Error("failed to read files", zap.Error(err))
+		return
+	}
 
-		logger := u.logger.With(zap.String("dir", u.options.Dir))
-
-		logger.Info("initial file scan")
-		initFiles, err := os.ReadDir(u.options.Dir)
-		if err != nil {
-			logger.Error("failed to read initial files", zap.Error(err))
-			return
+	count := 0
+	for _, f := range files {
+		if f.IsDir() {
+			continue
 		}
 
-		for _, f := range initFiles {
-			if f.IsDir() {
-				continue
-			}
+		var filePath = filepath.Join(u.options.Dir, f.Name())
 
-			// Ignore source file
-			var filePath = filepath.Join(u.options.Dir, f.Name())
-			if filePath == u.options.SourceFile {
-				continue
-			}
-			u.filesCh <- filePath
+		// Ignore source file
+		if filePath == u.options.SourceFile {
+			continue
 		}
 
-		logger.Info("initial file scan complete", zap.Int("count", len(initFiles)))
-	}()
+		if _, uploaded := u.sentFiles.Load(filePath); uploaded {
+			logger.Debug("file already uploaded", zap.String("file", filePath))
+			continue
+		}
+
+		u.filesCh <- filePath
+		count++
+	}
+
+	logger.Info("scan complete", zap.Int("count", count))
 }
 
 func (u *uploaderImpl) stop(rollback bool) {
+	// Stop watching for new files
 	close(u.watcherStopCh)
 	<-u.watcherDoneCh
-	u.logger.Debug("file watch stopped")
 
+	// Scan remaining files in the directory
+	u.scanFiles()
+
+	// Close filesCh so no new files added
+	close(u.filesCh)
+
+	// Wait for all workers to finish processing
+	u.workerWaitGroup.Wait()
+	u.logger.Debug("workers done")
+
+	// Perform rollback
 	if rollback {
 		u.logger.Debug("starting rollback...")
 		var i uint32
@@ -161,15 +177,25 @@ func (u *uploaderImpl) stop(rollback bool) {
 		})
 		u.logger.Debug("rollback done")
 	}
-	close(u.filesCh)
-	u.workerWaitGroup.Wait()
-	u.logger.Debug("workers done")
 
 	u.uploadCancel()
-	_ = os.RemoveAll(u.options.Dir)
+
+	remainingFiles, err := os.ReadDir(u.options.Dir)
+	if err != nil && !os.IsNotExist(err) {
+		u.logger.Error("failed to read dir", zap.Error(err))
+	}
+	// log remaining files
+	if len(remainingFiles) > 0 {
+		files := make([]string, 0, len(remainingFiles))
+		for _, entry := range remainingFiles {
+			files = append(files, entry.Name())
+		}
+		u.logger.Info("remaining files", zap.Int("count", len(files)), zap.Any("files", files))
+	}
+
 	u.sentFiles.Clear()
 
-	u.logger.Debug("finish done", zap.Bool("cancel", rollback))
+	u.logger.Debug("stopped", zap.Bool("rollback", rollback))
 }
 
 func (u *uploaderImpl) Start() {
@@ -180,7 +206,7 @@ func (u *uploaderImpl) Start() {
 
 	<-watcherReady
 
-	u.scanInitialFiles()
+	u.scanFiles()
 }
 
 func (u *uploaderImpl) startWorkers() {
@@ -251,8 +277,7 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 		return
 	}
 
-	// Check if the file exists
-	if _, err := os.Stat(f); err != nil {
+	if err := waitFileExists(f); os.IsNotExist(err) {
 		if os.IsNotExist(err) {
 			logger.Debug("file does not exist", zap.Error(err))
 		} else {
@@ -342,30 +367,18 @@ func (u *uploaderImpl) startWatch(ready chan<- struct{}) {
 				logger.Error("file channel was closed")
 				return
 			}
-			if !strings.Contains(event.Name, u.options.Dir) {
+			if event.Name == u.options.Dir ||
+				event.Name == u.options.SourceFile ||
+				strings.HasSuffix(event.Name, ".tmp") {
 				continue
 			}
-			if event.Name == u.options.Dir {
-				continue
-			}
-			if event.Name == u.options.SourceFile {
-				continue
-			}
-			if strings.HasSuffix(event.Name, ".tmp") {
-				continue
-			}
+
 			if event.Mask&(inotifyDelete|inotifyMovedFrom) != 0 {
 				logger.Debug("file deleted or moved away", zap.String("event", event.Name), zap.Uint32("mask", event.Mask))
 				continue
 			}
 
 			logger.Debug("received an event", zap.String("event", event.Name), zap.Uint32("mask", event.Mask))
-
-			if _, err := os.Stat(event.Name); os.IsNotExist(err) {
-				logger.Warn("file does not exist", zap.String("file", event.Name))
-				// wait a bit for file operations to complete
-				time.Sleep(100 * time.Millisecond)
-			}
 
 			u.filesCh <- event.Name
 		case err, ok := <-watcher.Error:
@@ -375,4 +388,19 @@ func (u *uploaderImpl) startWatch(ready chan<- struct{}) {
 			logger.Error("received an error", zap.Error(err))
 		}
 	}
+}
+
+func waitFileExists(file string) error {
+	var err error
+
+	for range 10 {
+		stat, err := os.Stat(file)
+		if err == nil && stat.Size() > 0 {
+			return nil
+		}
+
+		time.Sleep(50 * time.Millisecond)
+	}
+
+	return err
 }
