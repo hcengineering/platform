@@ -853,6 +853,7 @@ async function getTxCollabs (
       (await control.findAll(ctx, core.class.Collaborator, {
         attachedTo: doc._id
       }))
+    cache.set(doc._id, collaborators)
     const collabs = collaborators.map((c) => c.collaborator)
     const ops = isMixinTx(tx) ? tx.attributes : (tx as TxUpdateDoc<Doc>).operations
     const newCollaborators = (await getNewCollaborators(ops, mixin, doc._class, control)).filter(
@@ -1375,45 +1376,51 @@ async function updateCollaborators (
   tx: TxCUD<Doc>,
   cache: Map<Ref<Doc>, Collaborator[]>
 ): Promise<Tx[]> {
-  if (tx._class !== core.class.TxCreateDoc && tx._class !== core.class.TxRemoveDoc) return []
-  if (tx.objectClass !== core.class.Collaborator) return []
+  if (tx._class !== core.class.TxUpdateDoc && tx._class !== core.class.TxMixin) return []
 
   const hierarchy = control.hierarchy
 
-  const mixin = getClassCollaborators(control.modelDb, hierarchy, tx.objectClass)
-  if (mixin === undefined || tx.attachedToClass === undefined || tx.attachedTo === undefined) return []
+  if (hierarchy.classHierarchyMixin(tx.objectClass, activity.mixin.ActivityDoc) === undefined) return []
 
-  if (hierarchy.classHierarchyMixin(tx.attachedToClass, activity.mixin.ActivityDoc) === undefined) return []
+  const mixin = getClassCollaborators(control.modelDb, hierarchy, tx.objectClass)
+  if (mixin === undefined) return []
+
+  const doc = (await control.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+  if (doc === undefined) return []
+
+  const collabsResult = await getTxCollabs(ctx, tx, control, cache, doc)
+  if (collabsResult.added.length === 0 && collabsResult.removed.length === 0) return []
+
+  const res: Tx[] = []
+
+  const { txes: collabTxes } = await createSyncCollaboratorsTxes(
+    ctx,
+    control,
+    cache,
+    doc._id,
+    doc._class,
+    doc.space,
+    collabsResult.added,
+    collabsResult.removed
+  )
+
+  res.push(...collabTxes)
 
   const contexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, { objectId: tx.attachedTo })
-  const res: Tx[] = []
-  if (tx._class === core.class.TxCreateDoc) {
-    const collab = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Collaborator>)
-    const addedInfo = await getReceiversInfo(ctx, [collab.collaborator], control)
+  const addedInfo = collabsResult.added.length > 0 ? await getReceiversInfo(ctx, collabsResult.added, control) : []
 
-    for (const info of addedInfo.values()) {
-      const context = getDocNotifyContext(control, contexts, tx.attachedTo, info.account)
-      if (context !== undefined) {
-        if (context.hidden) {
-          res.push(control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, { hidden: false }))
-        }
+  for (const info of addedInfo) {
+    const context = getDocNotifyContext(control, contexts, doc._id, info.account)
+    if (context !== undefined) {
+      if (context.hidden) {
+        res.push(control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, { hidden: false }))
       }
-      await createNotifyContext(
-        ctx,
-        control,
-        tx.attachedTo,
-        tx.attachedToClass,
-        tx.objectSpace,
-        info,
-        tx.modifiedBy,
-        undefined,
-        tx
-      )
     }
-  } else {
-    const removed = control.removedMap.get(tx.objectId) as Collaborator
-    if (removed === undefined) return []
-    await removeContexts(ctx, contexts, [removed.collaborator], control)
+    await createNotifyContext(ctx, control, doc._id, doc._class, doc.space, info, tx.modifiedBy, undefined, tx)
+  }
+
+  if (collabsResult.removed.length > 0) {
+    await removeContexts(ctx, contexts, collabsResult.removed, control)
   }
 
   return res
