@@ -56,18 +56,18 @@ export class BillingClient {
     return (await response.json()) as LiveKitStats
   }
 
-  async getLiveKitSessionsStats (workspace: WorkspaceUuid): Promise<LiveKitSessionsStats> {
+  async getLiveKitSessionsStats (workspace: WorkspaceUuid): Promise<LiveKitSessionsStats[]> {
     const path = `/api/v1/${workspace}/livekit/sessions`
     const url = new URL(concatLink(this.endpoint, path))
     const response = await fetchSafe(url, { headers: { ...this.headers } })
-    return (await response.json()) as LiveKitSessionsStats
+    return (await response.json()) as LiveKitSessionsStats[]
   }
 
-  async getLiveKitEgressStats (workspace: WorkspaceUuid): Promise<LiveKitEgressStats> {
+  async getLiveKitEgressStats (workspace: WorkspaceUuid): Promise<LiveKitEgressStats[]> {
     const path = `/api/v1/${workspace}/livekit/egress`
     const url = new URL(concatLink(this.endpoint, path))
     const response = await fetchSafe(url, { headers: { ...this.headers } })
-    return (await response.json()) as LiveKitEgressStats
+    return (await response.json()) as LiveKitEgressStats[]
   }
 
   async postLiveKitSessions (sessions: LiveKitSessionData[]): Promise<void> {
