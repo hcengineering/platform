@@ -268,7 +268,7 @@ const CreateMessageEventSchema = BaseEventSchema.extend({
   cardId: CardIDSchema,
   cardType: CardTypeSchema,
 
-  messageId: MessageIDSchema.min(3).max(22).optional(),
+  messageId: MessageIDSchema.max(22).optional(),
   messageType: MessageTypeSchema,
 
   content: MarkdownSchema,
