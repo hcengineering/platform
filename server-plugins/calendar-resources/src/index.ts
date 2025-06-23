@@ -372,6 +372,7 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
   const { _class, space, attachedTo, attachedToClass, collection, ...attr } = event
   const data = attr as any as Data<Event>
   const calendars = await control.findAll(control.ctx, calendar.class.Calendar, { hidden: false })
+  const events = await control.findAll(control.ctx, calendar.class.Event, { eventId: event.eventId })
   const access = 'reader'
   for (const part of event.participants) {
     const socialIds = await getSocialIds(control, part as Ref<Person>)
@@ -382,6 +383,7 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
     const user = primarySocialString
     const calendar = getCalendar(calendars, socialStrings)
     if (calendar === undefined) continue
+    if (events.find((p) => p.user === user) !== undefined) continue
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
       space,
