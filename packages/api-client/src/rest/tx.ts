@@ -19,10 +19,14 @@ import {
   type Client,
   type Doc,
   type DocumentQuery,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
   type FindOptions,
   type FindResult,
   Hierarchy,
   ModelDb,
+  type OperationDomain,
   type Ref,
   type SearchOptions,
   type SearchQuery,
@@ -70,6 +74,14 @@ class RestTxClient implements Client {
       return this.hierarchy.updateLookupMixin(_class, v, options)
     })
     return toFindResult(result, data.total)
+  }
+
+  async domainRequest<T>(
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ): Promise<DomainResult<T>> {
+    throw new Error('Domain request operation not supported')
   }
 
   async findOne<T extends Doc>(

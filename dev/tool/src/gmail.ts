@@ -17,14 +17,14 @@ import core, {
   isDeletingMode,
   systemAccountUuid
 } from '@hcengineering/core'
-import { getAccountClient } from '@hcengineering/server-client'
 import { getClient as getKvsClient } from '@hcengineering/kvs-client'
-import { generateToken } from '@hcengineering/server-token'
 import { getAccountsFromTxes, getSocialKeyByOldEmail } from '@hcengineering/model-core'
+import { getAccountClient } from '@hcengineering/server-client'
+import { generateToken } from '@hcengineering/server-token'
 
-import type { Db } from 'mongodb'
 import { type PipelineFactory, createDummyStorageAdapter, wrapPipeline } from '@hcengineering/server-core'
-import { createBackupPipeline } from '@hcengineering/server-pipeline'
+import { createBackupPipeline, createEmptyBroadcastOps } from '@hcengineering/server-pipeline'
+import type { Db } from 'mongodb'
 
 // Old token and history types
 interface Credentials {
@@ -305,7 +305,7 @@ export async function loadAccounts (
   factory: PipelineFactory,
   metricsContext: MeasureMetricsContext
 ): Promise<(Doc & { email?: string })[]> {
-  const pipeline = await factory(metricsContext, ws, (): void => {}, null, null)
+  const pipeline = await factory(metricsContext, ws, createEmptyBroadcastOps(), null)
   const client = wrapPipeline(metricsContext, pipeline, ws, false)
 
   const accountsTxes: TxCUD<Doc>[] = []

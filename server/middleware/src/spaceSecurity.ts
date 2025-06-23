@@ -343,7 +343,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  getTargets (accounts: AccountUuid[]): string[] {
+  getTargets (accounts: AccountUuid[]): AccountUuid[] {
     const res = Array.from(new Set(accounts))
     // We need to add system account for targets for integrations to work properly
     res.push(systemAccountUuid)

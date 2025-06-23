@@ -1,31 +1,32 @@
+import { getClient as getAccountClientRaw, type AccountClient } from '@hcengineering/account-client'
+import contact, {
+  AvatarType,
+  combineName,
+  type Person,
+  type SocialIdentity,
+  type SocialIdentityRef
+} from '@hcengineering/contact'
 import core, {
   buildSocialIdString,
   generateId,
-  systemAccountUuid,
   pickPrimarySocialId,
+  systemAccountUuid,
   TxFactory,
   TxProcessor,
   type AttachedData,
-  type Data,
   type Class,
+  type Data,
   type Doc,
   type MeasureContext,
+  type OperationDomain,
   type Ref,
   type SearchOptions,
   type SearchQuery,
   type TxCUD
 } from '@hcengineering/core'
+import { rpcJSONReplacer, type RateLimitInfo } from '@hcengineering/rpc'
 import type { ClientSessionCtx, ConnectionSocket, Session, SessionManager } from '@hcengineering/server-core'
 import { decodeToken } from '@hcengineering/server-token'
-import { rpcJSONReplacer, type RateLimitInfo } from '@hcengineering/rpc'
-import contact, {
-  AvatarType,
-  combineName,
-  type SocialIdentity,
-  type Person,
-  type SocialIdentityRef
-} from '@hcengineering/contact'
-import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
 
 import { createHash } from 'crypto'
 import { type Express, type Response as ExpressResponse, type Request } from 'express'
@@ -36,6 +37,8 @@ import { gzip } from 'zlib'
 import { retrieveJson } from './utils'
 
 import { unknownError } from '@hcengineering/platform'
+
+export const COMMUNICATION_DOMAIN = 'communication' as OperationDomain
 interface RPCClientInfo {
   client: ConnectionSocket
   session: Session
@@ -305,7 +308,9 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     void withSession(req, res, async (ctx, session) => {
       const params = req.query.params !== undefined ? JSON.parse(req.query.params as string) : {}
 
-      const result = await session.findMessagesRaw(ctx, params)
+      const result = await session.domainRequestRaw(ctx, COMMUNICATION_DOMAIN, {
+        findMessages: { params }
+      })
       await sendJson(req, res, result)
     })
   })
@@ -313,7 +318,9 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     void withSession(req, res, async (ctx, session) => {
       const params = req.query.params !== undefined ? JSON.parse(req.query.params as string) : {}
 
-      const result = await session.findMessagesGroupsRaw(ctx, params)
+      const result = await session.domainRequestRaw(ctx, COMMUNICATION_DOMAIN, {
+        findMessagesGroups: { params }
+      })
       await sendJson(req, res, result)
     })
   })
@@ -321,7 +328,9 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     void withSession(req, res, async (ctx, session) => {
       const event: any = (await retrieveJson(req)) ?? {}
 
-      const result = await session.eventRaw(ctx, event)
+      const result = await session.domainRequestRaw(ctx, COMMUNICATION_DOMAIN, {
+        sendEvent: event
+      })
       await sendJson(req, res, result)
     })
   })

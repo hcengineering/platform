@@ -15,6 +15,7 @@
 
 import {
   TxProcessor,
+  type AccountUuid,
   type BroadcastTargets,
   type Class,
   type Doc,
@@ -25,7 +26,7 @@ import {
   type TxCUD
 } from '@hcengineering/core'
 import type {
-  BroadcastFunc,
+  BroadcastOps,
   Middleware,
   MiddlewareCreator,
   PipelineContext,
@@ -40,13 +41,13 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
   constructor (
     context: PipelineContext,
     protected readonly next: Middleware | undefined,
-    readonly broadcast: BroadcastFunc
+    readonly broadcast: BroadcastOps
   ) {
     super(context, next)
     context.broadcastEvent = (ctx, tx) => this.doBroadcast(ctx, tx)
   }
 
-  static create (broadcast: BroadcastFunc): MiddlewareCreator {
+  static create (broadcast: BroadcastOps): MiddlewareCreator {
     return async (ctx, pipelineContext, next) => new BroadcastMiddleware(pipelineContext, next, broadcast)
   }
 
@@ -54,6 +55,10 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     await this.next?.handleBroadcast(ctx)
 
     await this.doBroadcast(ctx, ctx.contextData.broadcast.txes, ctx.contextData.broadcast.targets)
+
+    if (Object.keys(ctx.contextData.broadcast.sessions).length > 0) {
+      this.broadcast.broadcastSessions(ctx, ctx.contextData.broadcast.sessions)
+    }
   }
 
   tx (ctx: MeasureContext<SessionData>, tx: Tx[]): Promise<TxMiddlewareResult> {
@@ -70,9 +75,9 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
 
     // Combine targets by sender
 
-    const toSendTarget = new Map<string, Tx[]>()
+    const toSendTarget = new Map<AccountUuid | '', Tx[]>()
 
-    const getTxes = (key: string): Tx[] => {
+    const getTxes = (key: AccountUuid | ''): Tx[] => {
       let txes = toSendTarget.get(key)
       if (txes === undefined) {
         txes = [...(toSendTarget.get('') ?? [])] // We also need to add all from to all
@@ -83,7 +88,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
 
     // Put current user as send target
     for (const txd of tx) {
-      let target: string[] | undefined
+      let target: AccountUuid[] | undefined
       for (const tt of Object.values(targets ?? {})) {
         target = tt(txd)
         if (target !== undefined) {
@@ -107,8 +112,8 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     const handleSend = async (
       ctx: MeasureContext<SessionData>,
       derived: Tx[],
-      target?: string,
-      exclude?: string[]
+      target?: AccountUuid,
+      exclude?: AccountUuid[]
     ): Promise<void> => {
       if (derived.length === 0) {
         return
@@ -118,7 +123,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
         await this.sendWithPart(derived, ctx, target, exclude)
       } else {
         // Let's send after our response will go out
-        this.broadcast(ctx, derived, target, exclude)
+        this.broadcast.broadcast(ctx, derived, target, exclude)
       }
     }
 
@@ -127,17 +132,17 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
 
     // Then send targeted and all other
     for (const [k, v] of toSendTarget.entries()) {
-      void handleSend(ctx, v, k)
+      void handleSend(ctx, v, k as AccountUuid)
     }
     // Send all other except us.
-    await handleSend(ctx, toSendAll, undefined, Array.from(toSendTarget.keys()))
+    await handleSend(ctx, toSendAll, undefined, Array.from(toSendTarget.keys()) as AccountUuid[])
   }
 
   private async sendWithPart (
     derived: Tx[],
     ctx: MeasureContext<SessionData>,
-    target: string | undefined,
-    exclude: string[] | undefined
+    target: AccountUuid | undefined,
+    exclude: AccountUuid[] | undefined
   ): Promise<void> {
     const classes = new Set<Ref<Class<Doc>>>()
     for (const dtx of derived) {
@@ -150,6 +155,6 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
       }
     }
     const bevent = createBroadcastEvent(Array.from(classes))
-    this.broadcast(ctx, [bevent], target, exclude)
+    this.broadcast.broadcast(ctx, [bevent], target, exclude)
   }
 }

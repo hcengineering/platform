@@ -223,7 +223,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       sctx.account,
       sctx.sessionId,
       sctx.admin,
-      { txes: [], targets: {} },
+      { txes: [], targets: {}, queue: [], sessions: {} },
       this.context.workspace,
       true,
       sctx.removedMap,
