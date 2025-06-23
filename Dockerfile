@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.24.1 AS builder
+FROM golang:1.24.4 AS builder
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 ENV GOBIN=/bin

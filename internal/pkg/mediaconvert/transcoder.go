@@ -16,8 +16,10 @@
 package mediaconvert
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -42,6 +44,13 @@ type Transcoder struct {
 	logger *zap.Logger
 }
 
+// Command represents a ffmpeg command
+type Command struct {
+	cmd       *exec.Cmd
+	stdoutBuf bytes.Buffer
+	stderrBuf bytes.Buffer
+}
+
 // NewTranscoder creates a new instance of task transcoder
 func NewTranscoder(ctx context.Context, cfg *config.Config) *Transcoder {
 	var p = &Transcoder{
@@ -54,7 +63,7 @@ func NewTranscoder(ctx context.Context, cfg *config.Config) *Transcoder {
 }
 
 // Transcode handles one transcoding task
-func (p *Transcoder) Transcode(ctx context.Context, task *Task) (TaskResult, error) {
+func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, error) {
 	var logger = p.logger.With(zap.String("task-id", task.ID))
 
 	logger.Debug("start")
@@ -64,7 +73,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (TaskResult, err
 	var tokenString, err = token.NewToken(p.cfg.ServerSecret, task.Workspace, "stream", "datalake")
 	if err != nil {
 		logger.Error("can not create token", zap.Error(err))
-		return TaskResult{}, errors.Wrapf(err, "can not create token")
+		return nil, errors.Wrapf(err, "can not create token")
 	}
 
 	logger.Debug("phase 2: preparing fs")
@@ -73,10 +82,11 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (TaskResult, err
 	err = os.MkdirAll(destinationFolder, os.ModePerm)
 	if err != nil {
 		logger.Error("can not create temporary folder", zap.Error(err))
-		return TaskResult{}, errors.Wrapf(err, "can not create temporary folder")
+		return nil, errors.Wrapf(err, "can not create temporary folder")
 	}
 
 	defer func() {
+		logger.Debug("remove temporary folder")
 		if err = os.RemoveAll(destinationFolder); err != nil {
 			logger.Error("failed to cleanup temporary folder", zap.Error(err))
 		}
@@ -87,38 +97,38 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (TaskResult, err
 	remoteStorage, err := storage.NewStorageByURL(ctx, p.cfg.Endpoint(), p.cfg.EndpointURL.Scheme, tokenString, task.Workspace)
 	if err != nil {
 		logger.Error("can not create storage by url", zap.Error(err), zap.String("url", p.cfg.EndpointURL.String()))
-		return TaskResult{}, errors.Wrapf(err, "can not create storage by url")
+		return nil, errors.Wrapf(err, "can not create storage by url")
 	}
 
 	stat, err := remoteStorage.StatFile(ctx, task.Source)
 	if err != nil {
 		logger.Error("can not stat file", zap.Error(err), zap.String("filepath", task.Source))
-		return TaskResult{}, errors.Wrapf(err, "can not stat file")
+		return nil, errors.Wrapf(err, "can not stat file")
 	}
 
 	if !IsSupportedMediaType(stat.Type) {
 		logger.Info("unsupported media type", zap.String("type", stat.Type))
-		return TaskResult{}, fmt.Errorf("unsupported media type: %s", stat.Type)
+		return nil, fmt.Errorf("unsupported media type: %s", stat.Type)
 	}
 
 	sourceFilePath := filepath.Join(destinationFolder, filename)
 	if err = remoteStorage.GetFile(ctx, task.Source, sourceFilePath); err != nil {
 		logger.Error("can not download source file", zap.Error(err), zap.String("filepath", task.Source))
 		// TODO: reschedule
-		return TaskResult{}, errors.Wrapf(err, "can not download source file")
+		return nil, errors.Wrapf(err, "can not download source file")
 	}
 
 	logger.Debug("phase 4: prepare to transcode")
 	probe, err := ffprobe.ProbeURL(ctx, sourceFilePath)
 	if err != nil {
 		logger.Error("can not get ffprobe", zap.Error(err), zap.String("filepath", sourceFilePath))
-		return TaskResult{}, errors.Wrapf(err, "can not get ffprobe")
+		return nil, errors.Wrapf(err, "can not get ffprobe")
 	}
 
 	videoStream := probe.FirstVideoStream()
 	if videoStream == nil {
 		logger.Error("no video stream found", zap.String("filepath", sourceFilePath))
-		return TaskResult{}, errors.Wrapf(err, "no video stream found")
+		return nil, errors.Wrapf(err, "no video stream found")
 	}
 
 	logger.Debug("video stream found", zap.String("codec", videoStream.CodecName), zap.Int("width", videoStream.Width), zap.Int("height", videoStream.Height))
@@ -136,6 +146,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (TaskResult, err
 		Input:         sourceFilePath,
 		OutputDir:     p.cfg.OutputDir,
 		Level:         level,
+		LogLevel:      LogLevel(p.cfg.LogLevel),
 		Transcode:     !IsHLSSupportedVideoCodec(codec),
 		ScalingLevels: append(sublevels, level),
 		UploadID:      task.ID,
@@ -157,7 +168,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (TaskResult, err
 	err = manifest.GenerateHLSPlaylist(opts.ScalingLevels, p.cfg.OutputDir, opts.UploadID)
 	if err != nil {
 		logger.Error("can not generate hls playlist", zap.String("out", p.cfg.OutputDir), zap.String("uploadID", opts.UploadID))
-		return TaskResult{}, errors.Wrapf(err, "can not generate hls playlist")
+		return nil, errors.Wrapf(err, "can not generate hls playlist")
 	}
 
 	go uploader.Start()
@@ -169,34 +180,53 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (TaskResult, err
 		BuildRawVideoCommand(&opts),
 		BuildScalingVideoCommand(&opts),
 	}
-	var cmds []*exec.Cmd
+	var cmds []Command
 
 	for _, args := range argsSlice {
 		cmd, cmdErr := newFfmpegCommand(ctx, nil, args)
 		if cmdErr != nil {
 			logger.Error("can not create a new command", zap.Error(cmdErr), zap.Strings("args", args))
 			go uploader.Cancel()
-			return TaskResult{}, errors.Wrapf(err, "can not create a new command")
+			return nil, errors.Wrapf(cmdErr, "can not create a new command")
 		}
-		cmds = append(cmds, cmd)
+
+		var command = Command{
+			cmd:       cmd,
+			stdoutBuf: bytes.Buffer{},
+			stderrBuf: bytes.Buffer{},
+		}
+
+		cmd.Stdout = io.MultiWriter(os.Stdout, &command.stdoutBuf)
+		cmd.Stderr = io.MultiWriter(os.Stderr, &command.stderrBuf)
+
+		cmds = append(cmds, command)
 		if err = cmd.Start(); err != nil {
 			logger.Error("can not start a command", zap.Error(err), zap.Strings("args", args))
 			go uploader.Cancel()
-			return TaskResult{}, errors.Wrapf(err, "can not start a command")
+			return nil, errors.Wrapf(err, "can not start a command")
 		}
 	}
 
 	logger.Debug("phase 7: wait for the result")
+
 	for _, cmd := range cmds {
-		if err = cmd.Wait(); err != nil {
-			logger.Error("can not wait for command end ", zap.Error(err))
-			go uploader.Cancel()
-			return TaskResult{}, errors.Wrapf(err, "can not wait for command end")
+		if err = cmd.cmd.Wait(); err == nil {
+			continue
 		}
+
+		logger.Error("can not wait for command end ", zap.Error(err))
+		if _, err = os.Stdout.Write(cmd.stdoutBuf.Bytes()); err != nil {
+			logger.Error("can not write stdout ", zap.Error(err))
+		}
+		if _, err = os.Stderr.Write(cmd.stderrBuf.Bytes()); err != nil {
+			logger.Error("can not write stderr", zap.Error(err))
+		}
+		go uploader.Cancel()
+		return nil, errors.Wrapf(err, "can not wait for command end")
 	}
 
 	logger.Debug("phase 8: schedule cleanup")
-	go uploader.Stop()
+	uploader.Stop()
 
 	logger.Debug("phase 9: try to set metadata")
 
@@ -226,5 +256,5 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (TaskResult, err
 		}
 	}
 
-	return result, nil
+	return &result, nil
 }

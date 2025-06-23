@@ -299,6 +299,8 @@ func IsSupportedMediaType(mediaType string) bool {
 		return true
 	case "video/webm":
 		return true
+	case "video/quicktime":
+		return true
 	default:
 		return false
 	}

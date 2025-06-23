@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -30,12 +29,37 @@ import (
 	"go.uber.org/zap"
 )
 
+// LogLevel is ffmpeg log level
+type LogLevel string
+
+const (
+	// LogLevelQuiet is quiet log level
+	LogLevelQuiet LogLevel = "quiet"
+	// LogLevelPanic is panic log level
+	LogLevelPanic LogLevel = "panic"
+	// LogLevelFatal is fatal log level
+	LogLevelFatal LogLevel = "fatal"
+	// LogLevelError is error log level
+	LogLevelError LogLevel = "error"
+	// LogLevelWarning is warning log level
+	LogLevelWarning LogLevel = "warning"
+	// LogLevelInfo is info log level
+	LogLevelInfo LogLevel = "info"
+	// LogLevelVerbose is verbose log level
+	LogLevelVerbose LogLevel = "verbose"
+	// LogLevelDebug is debug log level
+	LogLevelDebug LogLevel = "debug"
+	// LogLevelTrace is trace log level
+	LogLevelTrace LogLevel = "trace"
+)
+
 // Options represents configuration for the ffmpeg command
 type Options struct {
 	Input         string
 	OutputDir     string
 	ScalingLevels []string
 	Level         string
+	LogLevel      LogLevel
 	Transcode     bool
 	Threads       int
 	UploadID      string
@@ -51,8 +75,6 @@ func newFfmpegCommand(ctx context.Context, in io.Reader, args []string) (*exec.C
 	logger.Debug("prepared command: ", zap.Strings("args", args))
 
 	var result = exec.CommandContext(ctx, "ffmpeg", args...)
-	result.Stderr = os.Stdout
-	result.Stdout = os.Stdout
 	result.Stdin = in
 
 	return result, nil
@@ -60,6 +82,8 @@ func newFfmpegCommand(ctx context.Context, in io.Reader, args []string) (*exec.C
 
 func buildCommonCommand(opts *Options) []string {
 	var result = []string{
+		"-y", // Overwrite output files without asking.
+		"-v", string(opts.LogLevel),
 		"-threads", fmt.Sprint(opts.Threads),
 		"-i", opts.Input,
 	}
@@ -96,7 +120,7 @@ func BuildRawVideoCommand(opts *Options) []string {
 			"-g", "60",
 			"-f", "hls",
 			"-hls_time", "5",
-			"-hls_flags", "split_by_time",
+			"-hls_flags", "split_by_time+temp_file",
 			"-hls_list_size", "0",
 			"-hls_segment_filename", filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", opts.Level)),
 			filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, opts.Level)))
@@ -107,7 +131,7 @@ func BuildRawVideoCommand(opts *Options) []string {
 		"-c:v", "copy", // Copy video stream
 		"-f", "hls",
 		"-hls_time", "5",
-		"-hls_flags", "split_by_time",
+		"-hls_flags", "split_by_time+temp_file",
 		"-hls_list_size", "0",
 		"-hls_segment_filename", filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", opts.Level)),
 		filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, opts.Level)))
@@ -142,7 +166,15 @@ func BuildScalingVideoCommand(opts *Options) []string {
 			"-g", "60",
 			"-f", "hls",
 			"-hls_time", "5",
-			"-hls_flags", "split_by_time",
+			// Use HLS flags
+			// - split_by_time
+			//     Allow segments to start on frames other than key frames.
+			//     This improves behavior on some players when the time between key frames is inconsistent,
+			//     but may make things worse on others, and can cause some oddities during seeking.
+			//     This flag should be used with the hls_time option.
+			// - temp_file
+			//     Write segment data to filename.tmp and rename to filename only once the segment is complete.
+			"-hls_flags", "split_by_time+temp_file",
 			"-hls_list_size", "0",
 			"-hls_segment_filename", filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", level)),
 			filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, level)))
