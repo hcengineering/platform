@@ -21,6 +21,7 @@ import {
   buildSocialIdString,
   concatLink,
   isActiveMode,
+  isDeletingMode,
   isWorkspaceCreating,
   type MeasureContext,
   type Person,
@@ -1320,7 +1321,7 @@ export async function getUserWorkspaces (
   const { account } = decodeTokenVerbose(ctx, token)
 
   return (await db.getAccountWorkspaces(account)).filter(
-    (ws) => !ws.status.isDisabled || isWorkspaceCreating(ws.status.mode)
+    (ws) => isWorkspaceCreating(ws.status.mode) || !(isDeletingMode(ws.status.mode) || ws.status.isDisabled)
   )
 }
 
