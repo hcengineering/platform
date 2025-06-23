@@ -92,9 +92,9 @@ async function OnMessageSend (originTxs: TxCreateDoc<ChatMessage>[], control: Tr
     const messageDoc = await getMessageDoc(message, control)
 
     if (messageDoc !== undefined) {
-      const aiBotShouldReplay = await isAiBotShouldReplay(control, message, messageDoc, aiBotSocialIdentity)
-      if (aiBotShouldReplay) {
-        await OnAiBotShouldReplay(control, message, messageDoc)
+      const aiBotShouldReply = await isAiBotShouldReply(control, message, messageDoc, aiBotSocialIdentity)
+      if (aiBotShouldReply) {
+        await OnAiBotShouldReply(control, message, messageDoc)
       }
     }
   }
@@ -146,7 +146,7 @@ async function isDirectAvailable (direct: DirectMessage, control: TriggerControl
   return direct.members.length === 2 && direct.members.includes(account)
 }
 
-async function isAiBotShouldReplay (
+async function isAiBotShouldReply (
   control: TriggerControl,
   message: ChatMessage,
   messageDoc: Doc,
@@ -190,7 +190,7 @@ function getThreadMessageData (message: ThreadMessage): AIEventRequest {
   }
 }
 
-async function OnAiBotShouldReplay (control: TriggerControl, message: ChatMessage, messageDoc: Doc): Promise<void> {
+async function OnAiBotShouldReply (control: TriggerControl, message: ChatMessage, messageDoc: Doc): Promise<void> {
   const messageEvent = isThreadMessage(control, message)
     ? getThreadMessageData(message as ThreadMessage)
     : getMessageData(messageDoc, message)

@@ -250,7 +250,7 @@ describe('OnMessageSend', () => {
     )
   })
 
-  it('AI bot should not replay to self message', async () => {
+  it('AI bot should not reply to self message', async () => {
     const socialIdentity = createSocialIdentity()
     const messageDoc = createAiBotPerson()
     const message = createChatMessage({
@@ -260,7 +260,7 @@ describe('OnMessageSend', () => {
       collection: 'comments',
       createdBy: socialIdentity._id,
       modifiedBy: socialIdentity._id,
-      message: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"AI bot replay"}]}]}',
+      message: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"AI bot reply"}]}]}',
       space: contact.space.Contacts
     })
 
