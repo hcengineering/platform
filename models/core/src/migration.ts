@@ -964,6 +964,11 @@ export const coreOperation: MigrateOperation = {
         state: 'accounts-to-social-ids',
         mode: 'upgrade',
         func: migrateAccounts
+      },
+      {
+        state: 'clean-old-model',
+        mode: 'upgrade',
+        func: cleanOldModel
       }
       // ,
       // {
@@ -1014,4 +1019,11 @@ async function retry<T> (retries: number, op: () => Promise<T>): Promise<T> {
     }
   }
   throw error
+}
+
+async function cleanOldModel (client: MigrationClient): Promise<void> {
+  await client.deleteMany(DOMAIN_MODEL_TX, {
+    modifiedBy: core.account.System,
+    objectClass: { $nin: ['core:class:Account', 'contact:class:PersonAccount'] }
+  })
 }

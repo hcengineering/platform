@@ -50,7 +50,7 @@ export const cardOperation: MigrateOperation = {
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
     await tryUpgrade(mode, state, client, cardId, [
       {
-        state: 'migrateViewlets-v3',
+        state: 'migrateViewlets-v4',
         func: migrateViewlets
       },
       {
