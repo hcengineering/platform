@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 
 export interface LiveKitSessionsUsageData {
   day: string
@@ -51,9 +51,9 @@ export interface LiveKitEgressData {
 }
 
 export interface BillingDB {
-  getLiveKitStats: (ctx: MeasureContext, workspace: string, start: Date, end: Date) => Promise<LiveKitUsageData>
-  listLiveKitSessions: (ctx: MeasureContext, workspace: string) => Promise<LiveKitSessionData[] | null>
-  listLiveKitEgress: (ctx: MeasureContext, workspace: string) => Promise<LiveKitEgressData[] | null>
+  getLiveKitStats: (ctx: MeasureContext, workspace: WorkspaceUuid, start: Date, end: Date) => Promise<LiveKitUsageData>
+  listLiveKitSessions: (ctx: MeasureContext, workspace: WorkspaceUuid) => Promise<LiveKitSessionData[] | null>
+  listLiveKitEgress: (ctx: MeasureContext, workspace: WorkspaceUuid) => Promise<LiveKitEgressData[] | null>
   setLiveKitSessions: (ctx: MeasureContext, data: LiveKitSessionData[]) => Promise<void>
   setLiveKitEgress: (ctx: MeasureContext, data: LiveKitEgressData[]) => Promise<void>
 }

@@ -27,7 +27,7 @@ export async function handleListLiveKitSessions (
   req: Request,
   res: Response
 ): Promise<void> {
-  const { workspace } = req.params
+  const workspace = getWorkspaceUuid(req)
   res.status(200).json(await db.listLiveKitSessions(ctx, workspace))
 }
 
@@ -38,7 +38,7 @@ export async function handleListLiveKitEgress (
   req: Request,
   res: Response
 ): Promise<void> {
-  const { workspace } = req.params
+  const workspace = getWorkspaceUuid(req)
   res.status(200).json(await db.listLiveKitEgress(ctx, workspace))
 }
 
@@ -73,10 +73,10 @@ export async function handleGetStats (
   req: Request,
   res: Response
 ): Promise<void> {
-  const { workspace } = req.params
+  const workspace = getWorkspaceUuid(req)
   const { fromDate, toDate } = parseDateParameters(req)
   const liveKitStats = await db.getLiveKitStats(ctx, workspace, fromDate, toDate)
-  const datalakeStats = await collectDatalakeStats(ctx, workspace as WorkspaceUuid, storageConfigs)
+  const datalakeStats = await collectDatalakeStats(ctx, workspace, storageConfigs)
   res.status(200).json({ liveKitStats, datalakeStats })
 }
 
@@ -87,7 +87,7 @@ export async function handleGetLiveKitStats (
   req: Request,
   res: Response
 ): Promise<void> {
-  const { workspace } = req.params
+  const workspace = getWorkspaceUuid(req)
   const { fromDate, toDate } = parseDateParameters(req)
   res.status(200).json(await db.getLiveKitStats(ctx, workspace, fromDate, toDate))
 }
@@ -99,8 +99,8 @@ export async function handleGetDatalakeStats (
   req: Request,
   res: Response
 ): Promise<void> {
-  const { workspace } = req.params
-  res.status(200).json(await collectDatalakeStats(ctx, workspace as WorkspaceUuid, storageConfigs))
+  const workspace = getWorkspaceUuid(req)
+  res.status(200).json(await collectDatalakeStats(ctx, workspace, storageConfigs))
 }
 
 async function collectDatalakeStats (
@@ -126,6 +126,15 @@ async function collectDatalakeStats (
   }
 
   return result
+}
+
+function getWorkspaceUuid (req: Request): WorkspaceUuid {
+  const { workspace } = req.params
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  if (uuidRegex.test(workspace)) {
+    return workspace as WorkspaceUuid
+  }
+  throw new Error('Unknown workspace')
 }
 
 function parseDateParameters (req: Request): { fromDate: Date, toDate: Date } {

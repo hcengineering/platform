@@ -22,7 +22,7 @@ import {
   LiveKitEgressUsageData
 } from '../types'
 import postgres, { type Row, Sql } from 'postgres'
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { LoggedDB } from './logged'
 import { RetryDB } from './retry'
 import { getMigrations } from './migrations'
@@ -94,7 +94,7 @@ export class PostgresDB implements BillingDB {
     }
   }
 
-  async getLiveKitStats (ctx: MeasureContext, workspace: string, start: Date, end: Date): Promise<LiveKitUsageData> {
+  async getLiveKitStats (ctx: MeasureContext, workspace: WorkspaceUuid, start: Date, end: Date): Promise<LiveKitUsageData> {
     return {
       sessions: await this.getDailySessionTotals(ctx, workspace, start, end),
       egress: await this.getDailyEgressTotals(ctx, workspace, start, end)
@@ -103,7 +103,7 @@ export class PostgresDB implements BillingDB {
 
   async getDailySessionTotals (
     ctx: MeasureContext,
-    workspace: string,
+    workspace: WorkspaceUuid,
     start: Date,
     end: Date
   ): Promise<LiveKitSessionsUsageData[]> {
@@ -131,7 +131,7 @@ export class PostgresDB implements BillingDB {
 
   async getDailyEgressTotals (
     ctx: MeasureContext,
-    workspace: string,
+    workspace: WorkspaceUuid,
     start: Date,
     end: Date
   ): Promise<LiveKitEgressUsageData[]> {
@@ -157,7 +157,7 @@ export class PostgresDB implements BillingDB {
     })
   }
 
-  async listLiveKitSessions (ctx: MeasureContext, workspace: string): Promise<LiveKitSessionData[] | null> {
+  async listLiveKitSessions (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<LiveKitSessionData[] | null> {
     const query = `
         SELECT workspace, session_id, session_start, session_end, room, bandwidth, minutes
         FROM billing.livekit_session
@@ -168,7 +168,7 @@ export class PostgresDB implements BillingDB {
     return await this.execute<LiveKitSessionData[]>(query, params)
   }
 
-  async listLiveKitEgress (ctx: MeasureContext, workspace: string): Promise<LiveKitEgressData[] | null> {
+  async listLiveKitEgress (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<LiveKitEgressData[] | null> {
     const query = `
         SELECT workspace, egress_id, egress_start, egress_end, room, duration
         FROM billing.livekit_egress

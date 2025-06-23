@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { BillingDB, LiveKitEgressData, LiveKitSessionData, LiveKitUsageData } from '../types'
 
 interface RetryOptions {
@@ -43,15 +43,15 @@ export class RetryDB implements BillingDB {
     private readonly options: RetryOptions
   ) {}
 
-  async getLiveKitStats (ctx: MeasureContext, workspace: string, start: Date, end: Date): Promise<LiveKitUsageData> {
+  async getLiveKitStats (ctx: MeasureContext, workspace: WorkspaceUuid, start: Date, end: Date): Promise<LiveKitUsageData> {
     return await retry(() => this.db.getLiveKitStats(ctx, workspace, start, end), this.options)
   }
 
-  async listLiveKitSessions (ctx: MeasureContext, workspace: string): Promise<LiveKitSessionData[] | null> {
+  async listLiveKitSessions (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<LiveKitSessionData[] | null> {
     return await retry(() => this.db.listLiveKitSessions(ctx, workspace), this.options)
   }
 
-  async listLiveKitEgress (ctx: MeasureContext, workspace: string): Promise<LiveKitEgressData[] | null> {
+  async listLiveKitEgress (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<LiveKitEgressData[] | null> {
     return await retry(() => this.db.listLiveKitEgress(ctx, workspace), this.options)
   }
 

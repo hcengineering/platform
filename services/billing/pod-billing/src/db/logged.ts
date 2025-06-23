@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { BillingDB, LiveKitEgressData, LiveKitSessionData, LiveKitUsageData } from '../types'
 
 export class LoggedDB implements BillingDB {
@@ -22,15 +22,15 @@ export class LoggedDB implements BillingDB {
     private readonly db: BillingDB
   ) {}
 
-  async getLiveKitStats (ctx: MeasureContext, workspace: string, start: Date, end: Date): Promise<LiveKitUsageData> {
+  async getLiveKitStats (ctx: MeasureContext, workspace: WorkspaceUuid, start: Date, end: Date): Promise<LiveKitUsageData> {
     return await ctx.with('db.getLiveKitUsage', {}, () => this.db.getLiveKitStats(this.ctx, workspace, start, end))
   }
 
-  async listLiveKitSessions (ctx: MeasureContext, workspace: string): Promise<LiveKitSessionData[] | null> {
+  async listLiveKitSessions (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<LiveKitSessionData[] | null> {
     return await ctx.with('db.listLiveKitSessions', {}, () => this.db.listLiveKitSessions(this.ctx, workspace))
   }
 
-  async listLiveKitEgress (ctx: MeasureContext, workspace: string): Promise<LiveKitEgressData[] | null> {
+  async listLiveKitEgress (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<LiveKitEgressData[] | null> {
     return await ctx.with('db.listLiveKitEgress', {}, () => this.db.listLiveKitEgress(this.ctx, workspace))
   }
 
