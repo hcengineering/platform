@@ -137,6 +137,9 @@ services:
       - cockroach
       - minio
       - redpanda
+    depends_on:
+      redpanda:
+        condition: service_started
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
@@ -186,6 +189,9 @@ services:
   transactor:
     image: hardcoreeng/transactor
     pull_policy: never
+    depends_on:
+      redpanda:
+        condition: service_started
     links:
       - mongodb
       - elastic
@@ -245,6 +251,9 @@ services:
   fulltext:
     image: hardcoreeng/fulltext
     restart: unless-stopped
+    depends_on:
+      redpanda:
+        condition: service_started
     links:
       - elastic
       - mongodb
