@@ -29,6 +29,7 @@ import { getAccountBySocialKey } from '@hcengineering/server-contact'
 import { aiBotEmailSocialKey, AIEventRequest } from '@hcengineering/ai-bot'
 import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
+import { type SocialIdentity } from '@hcengineering/contact'
 
 import { createAccountRequest, hasAiEndpoint, sendAIEvents } from './utils'
 
@@ -63,10 +64,7 @@ async function OnUserStatus (txes: TxCUD<UserStatus>[], control: TriggerControl)
       }
     }
 
-    const socialIdentity = (
-      await control.findAll(control.ctx, contact.class.SocialIdentity, { key: aiBotEmailSocialKey }, { limit: 1 })
-    )[0]
-
+    const socialIdentity = await findAiBotSocialIdentity(control)
     if (socialIdentity === undefined) {
       await createAccountRequest(control.workspace.uuid, control.ctx)
       return []
@@ -80,44 +78,88 @@ async function OnMessageSend (originTxs: TxCreateDoc<ChatMessage>[], control: Tr
   if (!hasAiEndpoint()) {
     return []
   }
-  const { account } = control.ctx.contextData
-  const primaryIdentity = (
-    await control.findAll(control.ctx, contact.class.SocialIdentity, { key: aiBotEmailSocialKey }, { limit: 1 })
-  )[0]
 
-  if (primaryIdentity === undefined) return []
-
-  const allAiSocialIds: PersonId[] = account.socialIds.includes(primaryIdentity._id)
-    ? account.socialIds
-    : (
-        await control.findAll(control.ctx, contact.class.SocialIdentity, {
-          attachedTo: primaryIdentity.attachedTo
-        })
-      ).map((it) => it._id)
-
-  const { hierarchy } = control
-  const txes = originTxs.filter((it) => !allAiSocialIds.includes(it.modifiedBy))
-
-  if (txes.length === 0) {
+  const aiBotSocialIdentity = await findAiBotSocialIdentity(control)
+  if (aiBotSocialIdentity === undefined) {
     return []
   }
 
-  for (const tx of txes) {
-    const message = TxProcessor.createDoc2Doc(tx)
+  const allAiSocialIds = await findAiBotAllSocialIds(control, aiBotSocialIdentity)
+  const notAiBotTxes = originTxs.filter((it) => !allAiSocialIds.includes(it.modifiedBy))
 
-    const isThread = hierarchy.isDerived(tx.objectClass, chunter.class.ThreadMessage)
-    const docClass = isThread ? (message as ThreadMessage).objectClass : message.attachedToClass
+  for (const notAiBotTx of notAiBotTxes) {
+    const message = TxProcessor.createDoc2Doc(notAiBotTx)
+    const messageDoc = await getMessageDoc(message, control)
 
-    if (!hierarchy.isDerived(docClass, chunter.class.DirectMessage)) {
-      continue
-    }
-
-    if (docClass === chunter.class.DirectMessage) {
-      await onBotDirectMessageSend(control, message)
+    if (messageDoc !== undefined) {
+      const aiBotShouldReplay = await isAiBotShouldReplay(control, message, messageDoc, aiBotSocialIdentity)
+      if (aiBotShouldReplay) {
+        await OnAiBotShouldReplay(control, message, messageDoc)
+      }
     }
   }
 
   return []
+}
+
+async function findAiBotSocialIdentity (control: TriggerControl): Promise<SocialIdentity | undefined> {
+  return (
+    await control.findAll(control.ctx, contact.class.SocialIdentity, { key: aiBotEmailSocialKey }, { limit: 1 })
+  )[0]
+}
+
+async function findAiBotAllSocialIds (control: TriggerControl, socialIdentity: SocialIdentity): Promise<PersonId[]> {
+  const { account } = control.ctx.contextData
+  if (account.socialIds.includes(socialIdentity._id)) {
+    return account.socialIds
+  }
+
+  return (
+    await control.findAll(control.ctx, contact.class.SocialIdentity, { attachedTo: socialIdentity.attachedTo })
+  ).map((it) => it._id)
+}
+
+function isThreadMessage (control: TriggerControl, message: ChatMessage): boolean {
+  return control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)
+}
+
+async function getMessageDoc (message: ChatMessage, control: TriggerControl): Promise<Doc | undefined> {
+  if (isThreadMessage(control, message)) {
+    const thread = message as ThreadMessage
+    const _id = thread.objectId
+    const _class = thread.objectClass
+
+    return (await control.findAll(control.ctx, _class, { _id }))[0]
+  }
+  const _id = message.attachedTo
+  const _class = message.attachedToClass
+
+  return (await control.findAll(control.ctx, _class, { _id }))[0]
+}
+
+async function isDirectAvailable (direct: DirectMessage, control: TriggerControl): Promise<boolean> {
+  const account = await getAccountBySocialKey(control, aiBotEmailSocialKey)
+  if (account == null) {
+    return false
+  }
+
+  return direct.members.length === 2 && direct.members.includes(account)
+}
+
+async function isAiBotShouldReplay (
+  control: TriggerControl,
+  message: ChatMessage,
+  messageDoc: Doc,
+  aiBotSocialIdentity: SocialIdentity
+): Promise<boolean> {
+  const aiBotPersonId = aiBotSocialIdentity.attachedTo
+
+  const isDirect =
+    messageDoc._class === chunter.class.DirectMessage && (await isDirectAvailable(messageDoc as DirectMessage, control))
+  const isAiBotPersonalChat = messageDoc._id === aiBotPersonId
+  const isAiBotMentioned = message.message.includes(aiBotPersonId)
+
+  return isDirect || isAiBotPersonalChat || isAiBotMentioned
 }
 
 function getMessageData (doc: Doc, message: ChatMessage): AIEventRequest {
@@ -148,51 +190,11 @@ function getThreadMessageData (message: ThreadMessage): AIEventRequest {
   }
 }
 
-async function getMessageDoc (message: ChatMessage, control: TriggerControl): Promise<Doc | undefined> {
-  if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-    const thread = message as ThreadMessage
-    const _id = thread.objectId
-    const _class = thread.objectClass
+async function OnAiBotShouldReplay (control: TriggerControl, message: ChatMessage, messageDoc: Doc): Promise<void> {
+  const messageEvent = isThreadMessage(control, message)
+    ? getThreadMessageData(message as ThreadMessage)
+    : getMessageData(messageDoc, message)
 
-    return (await control.findAll(control.ctx, _class, { _id }))[0]
-  } else {
-    const _id = message.attachedTo
-    const _class = message.attachedToClass
-
-    return (await control.findAll(control.ctx, _class, { _id }))[0]
-  }
-}
-
-async function isDirectAvailable (direct: DirectMessage, control: TriggerControl): Promise<boolean> {
-  const { members } = direct
-  const account = await getAccountBySocialKey(control, aiBotEmailSocialKey)
-
-  if (account == null) {
-    return false
-  }
-
-  if (!members.includes(account)) {
-    return false
-  }
-
-  return members.length === 2
-}
-
-async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<void> {
-  const direct = (await getMessageDoc(message, control)) as DirectMessage
-  if (direct === undefined) {
-    return
-  }
-  const isAvailable = await isDirectAvailable(direct, control)
-  if (!isAvailable) {
-    return
-  }
-  let messageEvent: AIEventRequest
-  if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-    messageEvent = getThreadMessageData(message as ThreadMessage)
-  } else {
-    messageEvent = getMessageData(direct, message)
-  }
   await sendAIEvents([messageEvent], control.workspace.uuid, control.ctx)
 }
 
