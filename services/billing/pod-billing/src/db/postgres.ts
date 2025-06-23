@@ -94,27 +94,57 @@ export class PostgresDB implements BillingDB {
     }
   }
 
-  async getLiveKitStats (ctx: MeasureContext, workspace: string): Promise<LiveKitUsageData> {
-    const params = [workspace]
-
-    const sessionsQuery = `
-        SELECT COALESCE(SUM(bandwidth), 0) AS bandwidth, COALESCE(SUM(minutes), 0) AS minutes
-        FROM billing.livekit_session
-        WHERE workspace = $1
-      `
-    const sessionStats = await this.execute<LiveKitSessionsUsageData[]>(sessionsQuery, params)
-
-    const egressQuery = `
-        SELECT COALESCE(SUM(duration), 0) AS minutes
-        FROM billing.livekit_egress
-        WHERE workspace = $1
-      `
-    const egressStats = await this.execute<LiveKitEgressUsageData[]>(egressQuery, params)
-
+  async getLiveKitStats (ctx: MeasureContext, workspace: string, start: Date, end: Date): Promise<LiveKitUsageData> {
     return {
-      sessions: sessionStats?.length > 0 ? sessionStats[0] : { bandwidth: 0, minutes: 0 },
-      egress: egressStats?.length > 0 ? egressStats[0] : { minutes: 0 }
+      sessions: await this.getDailySessionTotals(ctx, workspace, start, end),
+      egress: await this.getDailyEgressTotals(ctx, workspace, start, end)
     }
+  }
+
+  async getDailySessionTotals (ctx: MeasureContext, workspace: string, start: Date, end: Date): Promise<LiveKitSessionsUsageData[]> {
+    const query = `
+      SELECT
+          DATE_TRUNC('day', session_start) AS day,
+          COALESCE(SUM(bandwidth), 0) AS bandwidth,
+          COALESCE(SUM(minutes), 0) AS minutes
+      FROM billing.livekit_session
+      WHERE 
+          workspace = $1
+          AND session_start >= $2
+          AND session_start <= $3
+      GROUP BY DATE_TRUNC('day', session_start)
+      ORDER BY day;
+    `
+
+    const params = [workspace, start, end]
+
+    const sessionTotals = await this.execute<{ day: string, bandwidth: string, minutes: string }[]>(query, params)
+    return sessionTotals.map((s) => {
+      return { day: s.day, bandwidth: parseInt(s.bandwidth), minutes: parseInt(s.minutes)}
+    })
+  }
+
+  async getDailyEgressTotals (ctx: MeasureContext, workspace: string, start: Date, end: Date): Promise<LiveKitEgressUsageData[]> {
+    const query = `
+      SELECT
+          DATE_TRUNC('day', egress_start) AS day,
+          COALESCE(SUM(duration), 0) AS minutes
+      FROM billing.livekit_egress
+      WHERE 
+          workspace = $1
+          AND egress_start >= $2
+          AND egress_start <= $3
+      GROUP BY DATE_TRUNC('day', egress_start)
+      ORDER BY day;
+    `
+
+    const params = [workspace, start, end]
+
+    const egressTotals = await this.execute<{ day: string, minutes: string }[]>(query, params)
+
+    return egressTotals.map((e) => {
+      return { day: e.day, minutes: parseInt(e.minutes) }
+    })
   }
 
   async listLiveKitSessions (ctx: MeasureContext, workspace: string): Promise<LiveKitSessionData[] | null> {
@@ -131,7 +161,7 @@ export class PostgresDB implements BillingDB {
   async listLiveKitEgress (ctx: MeasureContext, workspace: string): Promise<LiveKitEgressData[] | null> {
     const query = `
         SELECT workspace, egress_id, egress_start, egress_end, room, duration
-        FROM billing.livekit_session
+        FROM billing.livekit_egress
         WHERE workspace = $1
       `
     const params = [workspace]

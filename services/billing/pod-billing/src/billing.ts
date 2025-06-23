@@ -74,7 +74,8 @@ export async function handleGetStats (
   res: Response
 ): Promise<void> {
   const { workspace } = req.params
-  const liveKitStats = await db.getLiveKitStats(ctx, workspace)
+  const { fromDate, toDate } = parseDateParameters(req)
+  const liveKitStats = await db.getLiveKitStats(ctx, workspace, fromDate, toDate)
   const datalakeStats = await collectDatalakeStats(ctx, workspace as WorkspaceUuid, storageConfigs)
   res.status(200).json({ liveKitStats, datalakeStats })
 }
@@ -87,7 +88,8 @@ export async function handleGetLiveKitStats (
   res: Response
 ): Promise<void> {
   const { workspace } = req.params
-  res.status(200).json(await db.getLiveKitStats(ctx, workspace))
+  const { fromDate, toDate } = parseDateParameters(req)
+  res.status(200).json(await db.getLiveKitStats(ctx, workspace, fromDate, toDate))
 }
 
 export async function handleGetDatalakeStats (
@@ -120,4 +122,22 @@ async function collectDatalakeStats (ctx: MeasureContext, workspace: WorkspaceUu
   }
 
   return result
+}
+
+function parseDateParameters (req: Request): { fromDate: Date, toDate: Date } {
+  let fromDate: Date
+  if (typeof req.query.fromDate === 'string') {
+    fromDate = new Date(Date.parse(req.query.fromDate))
+  } else {
+    fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+  }
+
+  let toDate: Date
+  if (typeof req.query.toDate === 'string') {
+    toDate = new Date(Date.parse(req.query.toDate))
+  } else {
+    toDate = new Date(Date.now())
+  }
+
+  return { fromDate, toDate }
 }

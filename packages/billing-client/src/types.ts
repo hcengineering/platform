@@ -9,16 +9,18 @@ export interface DatalakeStats {
 }
 
 export interface LiveKitStats {
-  sessions: LiveKitSessionsStats
-  egress: LiveKitEgressStats
+  sessions: LiveKitSessionsStats[]
+  egress: LiveKitEgressStats[]
 }
 
 export interface LiveKitSessionsStats {
+  day: Date
   bandwidth: number
   minutes: number
 }
 
 export interface LiveKitEgressStats {
+  day: Date
   minutes: number
 }
 
