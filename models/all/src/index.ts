@@ -472,11 +472,7 @@ export default function buildModel (): Builder {
     [emojiModel, emojiId],
     [communicationModel, communicationId],
     [mailModel, mailId],
-    [
-      billingModel,
-      billingId,
-      { beta: false, hidden: true, enabled: true }
-    ],
+    [billingModel, billingId, { beta: false, hidden: true, enabled: true }],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],

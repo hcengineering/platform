@@ -103,7 +103,11 @@ export async function handleGetDatalakeStats (
   res.status(200).json(await collectDatalakeStats(ctx, workspace as WorkspaceUuid, storageConfigs))
 }
 
-async function collectDatalakeStats (ctx: MeasureContext, workspace: WorkspaceUuid, storageConfigs: StorageConfig[]): Promise<WorkspaceStats> {
+async function collectDatalakeStats (
+  ctx: MeasureContext,
+  workspace: WorkspaceUuid,
+  storageConfigs: StorageConfig[]
+): Promise<WorkspaceStats> {
   const result = {
     count: 0,
     size: 0

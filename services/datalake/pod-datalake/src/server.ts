@@ -46,7 +46,8 @@ import {
   handleS3CreateBlob,
   handleS3CreateBlobParams,
   handleUploadFormData,
-  handleBlobSetParent, handleWorkspaceStats
+  handleBlobSetParent,
+  handleWorkspaceStats
 } from './handlers'
 import { Datalake, Location } from './datalake'
 import { DatalakeImpl } from './datalake/datalake'
@@ -151,7 +152,12 @@ export async function createServer (
 
   app.use(morgan('short', { stream: new LogStream() }))
 
-  app.get('/stats/:workspace', withAdminAuthorization, withWorkspace, wrapRequest(ctx, 'workspaceStats', handleWorkspaceStats))
+  app.get(
+    '/stats/:workspace',
+    withAdminAuthorization,
+    withWorkspace,
+    wrapRequest(ctx, 'workspaceStats', handleWorkspaceStats)
+  )
 
   app.get('/blob/:workspace', withAdminAuthorization, withWorkspace, wrapRequest(ctx, 'listBlobs', handleBlobList))
 

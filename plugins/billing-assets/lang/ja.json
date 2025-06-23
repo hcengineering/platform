@@ -1,5 +1,10 @@
 {
   "string": {
-    "Billing": "Billing"
+    "Billing": "請求",
+    "DriveSize": "ファイルサイズ",
+    "DriveCount": "ファイル数",
+    "OfficeSessionsDuration": "会議時間",
+    "OfficeSessionsBandwidth": "会議帯域幅",
+    "OfficeEgressDuration": "録画時間"
   }
 }

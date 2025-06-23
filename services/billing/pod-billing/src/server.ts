@@ -27,7 +27,8 @@ import {
   handleSetLiveKitSessions,
   handleListLiveKitEgress,
   handleGetLiveKitStats,
-  handleGetDatalakeStats, handleGetStats
+  handleGetDatalakeStats,
+  handleGetStats
 } from './billing'
 import { BillingDB } from './types'
 import { createDb } from './db/postgres'
@@ -43,7 +44,7 @@ type AsyncRequestHandler = (
   db: BillingDB,
   storageConfigs: StorageConfig[],
   req: Request,
-  res: Response,
+  res: Response
 ) => Promise<void>
 
 const handleRequest = async (
@@ -99,19 +100,44 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
   const wrapRequest =
     (ctx: MeasureContext, name: string, fn: AsyncRequestHandler) =>
       (req: Request, res: Response, next: NextFunction) => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
         handleRequest(ctx, name, db, storageConfigs, fn, req, res, next)
       }
 
   app.use(morgan('short', { stream: new LogStream() }))
 
-  app.post('/api/v1/livekit/sessions', withToken, withAdmin, wrapRequest(ctx, 'setLiveKitSessions', handleSetLiveKitSessions))
+  app.post(
+    '/api/v1/livekit/sessions',
+    withToken,
+    withAdmin,
+    wrapRequest(ctx, 'setLiveKitSessions', handleSetLiveKitSessions)
+  )
   app.post('/api/v1/livekit/egress', withToken, withAdmin, wrapRequest(ctx, 'setLiveKitEgress', handleSetLiveKitEgress))
 
-  app.get('/api/v1/:workspace/livekit/sessions', withToken, withOwner, wrapRequest(ctx, 'listLiveKitSessions', handleListLiveKitSessions))
-  app.get('/api/v1/:workspace/livekit/egress', withToken, withOwner, wrapRequest(ctx, 'listLiveKitEgress', handleListLiveKitEgress))
-  app.get('/api/v1/:workspace/livekit/stats', withToken, withOwner, wrapRequest(ctx, 'getLiveKitStats', handleGetLiveKitStats))
-  app.get('/api/v1/:workspace/datalake/stats', withToken, withOwner, wrapRequest(ctx, 'getDatalakeStats', handleGetDatalakeStats))
+  app.get(
+    '/api/v1/:workspace/livekit/sessions',
+    withToken,
+    withOwner,
+    wrapRequest(ctx, 'listLiveKitSessions', handleListLiveKitSessions)
+  )
+  app.get(
+    '/api/v1/:workspace/livekit/egress',
+    withToken,
+    withOwner,
+    wrapRequest(ctx, 'listLiveKitEgress', handleListLiveKitEgress)
+  )
+  app.get(
+    '/api/v1/:workspace/livekit/stats',
+    withToken,
+    withOwner,
+    wrapRequest(ctx, 'getLiveKitStats', handleGetLiveKitStats)
+  )
+  app.get(
+    '/api/v1/:workspace/datalake/stats',
+    withToken,
+    withOwner,
+    wrapRequest(ctx, 'getDatalakeStats', handleGetDatalakeStats)
+  )
   app.get('/api/v1/:workspace/stats', withToken, withOwner, wrapRequest(ctx, 'getStats', handleGetStats))
 
   app.use((_req, res) => {
@@ -120,8 +146,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
 
   return {
     app,
-    close: () => {
-    }
+    close: () => {}
   }
 }
 

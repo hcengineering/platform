@@ -5,7 +5,6 @@
 
   export let icon: Asset | AnySvelteComponent | ComponentType
   export let label: IntlString
-
 </script>
 
 <div class="hulyComponent-content flex-col flex-gap-4">
@@ -24,7 +23,7 @@
 
 <style lang="scss">
   .title {
-    margin: .25rem;
+    margin: 0.25rem;
     font-weight: 500;
     font-size: 1rem;
   }

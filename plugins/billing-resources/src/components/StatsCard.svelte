@@ -9,12 +9,12 @@
 <div class="flex-col clear-mins stats-card" {...$$restProps}>
   <div class="flex-row-center">
     <span class="fs-title">
-      <Label label={label} />
+      <Label {label} />
     </span>
   </div>
   <div class="my-3 flex-grow flex-center stats">
     <span>
-      {#if (typeof text === 'string')}
+      {#if typeof text === 'string'}
         {text}
       {:else}
         {#await text then value}

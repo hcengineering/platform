@@ -41,8 +41,7 @@ export class RetryDB implements BillingDB {
   constructor (
     private readonly db: BillingDB,
     private readonly options: RetryOptions
-  ) {
-  }
+  ) {}
 
   async getLiveKitStats (ctx: MeasureContext, workspace: string, start: Date, end: Date): Promise<LiveKitUsageData> {
     return await retry(() => this.db.getLiveKitStats(ctx, workspace, start, end), this.options)

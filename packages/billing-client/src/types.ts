@@ -14,13 +14,13 @@ export interface LiveKitStats {
 }
 
 export interface LiveKitSessionsStats {
-  day: Date
+  day: string
   bandwidth: number
   minutes: number
 }
 
 export interface LiveKitEgressStats {
-  day: Date
+  day: string
   minutes: number
 }
 

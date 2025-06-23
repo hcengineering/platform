@@ -14,58 +14,56 @@
 -->
 <script lang="ts">
   import { getBillingClient } from '../utils'
-  import {
-    Breadcrumb,
-    Header,
-    Loading,
-    Scroller,
-    formatDuration,
-    themeStore
-  } from '@hcengineering/ui'
+  import { Breadcrumb, Header, Loading, Scroller, formatDuration, themeStore } from '@hcengineering/ui'
   import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { BillingStats } from '@hcengineering/billing-client'
   import billingPlugin from '@hcengineering/billing'
   import filesize from 'filesize'
-  import LineChart from './Chart/LineChart.svelte'
   import StatsCard from './StatsCard.svelte'
   import drivePlugin from '@hcengineering/drive'
   import Category from './Category.svelte'
   import love from '@hcengineering/love'
   import ChartCard from './ChartCard.svelte'
 
-  const testData = [
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) },
-    { date: new Date(Date.now()), value: Math.round(Math.random() * 999) }
-  ]
-
   const billingClient = getBillingClient()
-  let billingStats: BillingStats
+
+  let totalDatalakeSize = 0
+  let totalDatalakeCount = 0
+  let totalSessionsDuration = 0
+  let totalSessionsBandwidth = 0
+  let totalEgressDuration = 0
+  let sessionsDurationByDay: { date: number, value: number }[] = []
+  let sessionsBandwidthByDay: { date: number, value: number }[] = []
+  let egressDurationByDay: { date: number, value: number }[] = []
 
   async function loadBillingData (): Promise<void> {
-    billingStats = await billingClient.getBillingStats(getCurrentWorkspaceUuid())
-    console.log(billingStats)
+    const billingStats = await billingClient.getBillingStats(getCurrentWorkspaceUuid())
+    totalDatalakeSize = billingStats.datalakeStats.size
+    totalDatalakeCount = billingStats.datalakeStats.count
+    totalSessionsDuration = billingStats.liveKitStats.sessions.reduce((sum, s) => sum + s.minutes, 0) * 60000
+    totalSessionsBandwidth = billingStats.liveKitStats.sessions.reduce((sum, s) => sum + s.bandwidth, 0)
+    totalEgressDuration = billingStats.liveKitStats.egress.reduce((sum, e) => sum + e.minutes, 0) * 60000
+
+    sessionsDurationByDay = billingStats.liveKitStats.sessions.map((s) => {
+      const date = new Date(Date.parse(s.day))
+      date.setHours(0, 0, 0, 0)
+      return { date: date.getTime(), value: s.minutes * 60000 }
+    })
+
+    sessionsBandwidthByDay = billingStats.liveKitStats.sessions.map((s) => {
+      const date = new Date(Date.parse(s.day))
+      date.setHours(0, 0, 0, 0)
+      return { date: date.getTime(), value: s.bandwidth }
+    })
+
+    egressDurationByDay = billingStats.liveKitStats.egress.map((s) => {
+      const date = new Date(Date.parse(s.day))
+      date.setHours(0, 0, 0, 0)
+      return { date: date.getTime(), value: s.minutes * 60000 }
+    })
   }
+
+  // function normalize
 </script>
 
 <div class="hulyComponent">
@@ -80,18 +78,45 @@
         <div class="hulyComponent-content gapV-8">
           <Category icon={drivePlugin.icon.DriveApplication} label={drivePlugin.string.Drive}>
             <div class="row">
-              <StatsCard label={billingPlugin.string.DriveSize} text={filesize(billingStats.datalakeStats.size, { spacer: ' ' })}/>
-              <StatsCard label={billingPlugin.string.DriveCount} text={billingStats.datalakeStats.count.toString()}/>
+              <StatsCard label={billingPlugin.string.DriveSize} text={filesize(totalDatalakeSize, { spacer: ' ' })} />
+              <StatsCard label={billingPlugin.string.DriveCount} text={totalDatalakeCount.toString()} />
             </div>
           </Category>
           <Category icon={love.icon.Love} label={love.string.Office}>
             <div class="row">
-              <StatsCard label={billingPlugin.string.OfficeSessionsDuration} text={formatDuration(billingStats.liveKitStats.sessions.minutes * 60000, $themeStore.language)}/>
-              <StatsCard label={billingPlugin.string.OfficeSessionsBandwidth} text={filesize(billingStats.liveKitStats.sessions.bandwidth, { spacer: ' ' })}/>
-              <StatsCard label={billingPlugin.string.OfficeEgressDuration} text={formatDuration(billingStats.liveKitStats.egress.minutes * 60000, $themeStore.language)}/>
+              <StatsCard
+                label={billingPlugin.string.OfficeSessionsDuration}
+                text={formatDuration(totalSessionsDuration, $themeStore.language)}
+              />
+              <StatsCard
+                label={billingPlugin.string.OfficeSessionsBandwidth}
+                text={filesize(totalSessionsBandwidth, { spacer: ' ' })}
+              />
+              <StatsCard
+                label={billingPlugin.string.OfficeEgressDuration}
+                text={formatDuration(totalEgressDuration, $themeStore.language)}
+              />
             </div>
             <div class="row">
-              <ChartCard data={testData} />
+              <ChartCard
+                label={billingPlugin.string.OfficeSessionsDuration}
+                valueFormatter={(v) => formatDuration(v, $themeStore.language)}
+                data={sessionsDurationByDay}
+              />
+            </div>
+            <div class="row">
+              <ChartCard
+                label={billingPlugin.string.OfficeSessionsBandwidth}
+                valueFormatter={(v) => Promise.resolve(filesize(v, { spacer: ' ' }))}
+                data={sessionsBandwidthByDay}
+              />
+            </div>
+            <div class="row">
+              <ChartCard
+                label={billingPlugin.string.OfficeEgressDuration}
+                valueFormatter={(v) => formatDuration(v, $themeStore.language)}
+                data={egressDurationByDay}
+              />
             </div>
           </Category>
         </div>

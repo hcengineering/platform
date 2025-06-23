@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { concatLink, MeasureContext, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
+import { MeasureContext, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { AccessToken, EgressInfo } from 'livekit-server-sdk'
 import { getClient as getBillingClient, LiveKitSessionData } from '@hcengineering/billing-client'
@@ -140,14 +140,16 @@ export async function saveLiveKitEgressBilling (ctx: MeasureContext, egress: Egr
   const billingClient = getBillingClient(config.BillingUrl, token)
 
   try {
-    await billingClient.postLiveKitEgress([{
-      workspace,
-      room: egress.roomName,
-      egressId: egress.egressId,
-      egressStart: new Date(egressStart).toISOString(),
-      egressEnd: new Date(egressEnd).toISOString(),
-      duration
-    }])
+    await billingClient.postLiveKitEgress([
+      {
+        workspace,
+        room: egress.roomName,
+        egressId: egress.egressId,
+        egressStart: new Date(egressStart).toISOString(),
+        egressEnd: new Date(egressEnd).toISOString(),
+        duration
+      }
+    ])
   } catch (err: any) {
     ctx.error('failed to save egress billing', { workspace, egress, err })
     throw new Error('Failed to save egress billing: ' + err)

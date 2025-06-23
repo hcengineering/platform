@@ -101,7 +101,12 @@ export class PostgresDB implements BillingDB {
     }
   }
 
-  async getDailySessionTotals (ctx: MeasureContext, workspace: string, start: Date, end: Date): Promise<LiveKitSessionsUsageData[]> {
+  async getDailySessionTotals (
+    ctx: MeasureContext,
+    workspace: string,
+    start: Date,
+    end: Date
+  ): Promise<LiveKitSessionsUsageData[]> {
     const query = `
       SELECT
           DATE_TRUNC('day', session_start) AS day,
@@ -120,11 +125,16 @@ export class PostgresDB implements BillingDB {
 
     const sessionTotals = await this.execute<{ day: string, bandwidth: string, minutes: string }[]>(query, params)
     return sessionTotals.map((s) => {
-      return { day: s.day, bandwidth: parseInt(s.bandwidth), minutes: parseInt(s.minutes)}
+      return { day: s.day, bandwidth: parseInt(s.bandwidth), minutes: parseInt(s.minutes) }
     })
   }
 
-  async getDailyEgressTotals (ctx: MeasureContext, workspace: string, start: Date, end: Date): Promise<LiveKitEgressUsageData[]> {
+  async getDailyEgressTotals (
+    ctx: MeasureContext,
+    workspace: string,
+    start: Date,
+    end: Date
+  ): Promise<LiveKitEgressUsageData[]> {
     const query = `
       SELECT
           DATE_TRUNC('day', egress_start) AS day,
@@ -177,7 +187,9 @@ export class PostgresDB implements BillingDB {
 
       for (const item of batch) {
         const { workspace, sessionId, sessionStart, sessionEnd, room, bandwidth, minutes } = item
-        values.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`)
+        values.push(
+          `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`
+        )
         params.push(workspace, sessionId, sessionStart, sessionEnd, room, bandwidth, minutes)
       }
 
@@ -198,7 +210,9 @@ export class PostgresDB implements BillingDB {
 
       for (const item of batch) {
         const { workspace, egressId, egressStart, egressEnd, room, duration } = item
-        values.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`)
+        values.push(
+          `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`
+        )
         params.push(workspace, egressId, egressStart, egressEnd, room, duration)
       }
 

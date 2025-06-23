@@ -98,10 +98,7 @@ export class DatalakeClient {
     return concatLink(this.endpoint, path)
   }
 
-  async getWorkspaceStats (
-    ctx: MeasureContext,
-    workspace: WorkspaceUuid
-  ): Promise<WorkspaceStats> {
+  async getWorkspaceStats (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<WorkspaceStats> {
     const path = `/stats/${workspace}`
     const url = new URL(concatLink(this.endpoint, path))
     const response = await fetchSafe(ctx, url, { headers: { ...this.headers } })
