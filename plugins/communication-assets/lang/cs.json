@@ -41,6 +41,8 @@
     "ThreadWasDeleted": "Tato vlákno byla smazána.",
     "MessageWasRemoved": "Tato zpráva byla odstraněna.",
     "JoinedThe": "Připojil se k",
-    "LeftThe": "Opustil se z"
+    "LeftThe": "Opustil se z",
+    "Translating": "Překládám...",
+    "ShowOriginal": "Zobrazit původní"
   }
 }

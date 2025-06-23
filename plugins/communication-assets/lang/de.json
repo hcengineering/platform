@@ -41,6 +41,8 @@
     "ThreadWasDeleted": "Dieser Thread wurde gelöscht.",
     "MessageWasRemoved": "Diese Nachricht wurde entfernt.",
     "JoinedThe": "Beigetreten",
-    "LeftThe": "Verließ"
+    "LeftThe": "Verließ",
+    "Translating": "Übersetzen...",
+    "ShowOriginal": "Original anzeigen"
   }
 }

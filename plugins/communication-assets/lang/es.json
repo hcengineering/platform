@@ -41,6 +41,8 @@
     "ThreadWasDeleted": "Este hilo fue eliminado.",
     "MessageWasRemoved": "Este mensaje fue eliminado.",
     "JoinedThe": "Unido al",
-    "LeftThe": "Dejó el"
+    "LeftThe": "Dejó el",
+    "Translating": "Traduciendo...",
+    "ShowOriginal": "Mostrar original"
   }
 }

@@ -41,6 +41,8 @@
     "ThreadWasDeleted": "此线程已被删除。",
     "MessageWasRemoved": "此消息已被删除。",
     "JoinedThe": "加入",
-    "LeftThe": "离开"
+    "LeftThe": "离开",
+    "Translating": "翻译中...",
+    "ShowOriginal": "显示原文"
   }
 }

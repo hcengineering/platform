@@ -41,6 +41,8 @@
     "ThreadWasDeleted": "Questo thread è stato eliminato.",
     "MessageWasRemoved": "Questo messaggio è stato rimosso.",
     "JoinedThe": "Unisciti al",
-    "LeftThe": "Abbandonato dal"
+    "LeftThe": "Abbandonato dal",
+    "Translating": "Traduzione...",
+    "ShowOriginal": "Mostra l'originale"
   }
 }

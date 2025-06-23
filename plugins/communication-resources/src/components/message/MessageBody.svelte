@@ -24,6 +24,7 @@
   import MessageInput from './MessageInput.svelte'
   import MessageContentViewer from './MessageContentViewer.svelte'
   import MessageFooter from './MessageFooter.svelte'
+  import { translateMessagesStore } from '../../stores'
 
   export let card: Card
   export let author: Person | undefined
@@ -102,6 +103,16 @@
             (<Label label={communication.string.Edited} />)
           </div>
         {/if}
+        {#if !message.removed && $translateMessagesStore.get(message.id)?.inProgress === true}
+          <div class="message__translating">
+            <Label label={communication.string.Translating} />
+          </div>
+        {/if}
+        {#if !message.removed && $translateMessagesStore.get(message.id)?.shown === true}
+          <div class="message__show-original">
+            <Label label={communication.string.ShowOriginal} />
+          </div>
+        {/if}
       </div>
       {#if !isEditing}
         <div class="message__text">
@@ -178,8 +189,24 @@
   .message__edited-marker {
     text-transform: lowercase;
     color: var(--global-tertiary-TextColor);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 400;
+  }
+
+  .message__translating {
+    color: var(--global-tertiary-TextColor);
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+
+  .message__show-original {
+    font-size: 0.75rem;
+    color: var(--global-tertiary-TextColor);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--global-secondary-TextColor);
+    }
   }
 
   .message__text {

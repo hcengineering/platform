@@ -41,6 +41,8 @@
     "ThreadWasDeleted": "このスレッドは削除されました。",
     "MessageWasRemoved": "このメッセージは削除されました。",
     "JoinedThe": "参加",
-    "LeftThe": "退出"
+    "LeftThe": "退出",
+    "Translating": "翻訳中...",
+    "ShowOriginal": "元のメッセージを表示"
   }
 }

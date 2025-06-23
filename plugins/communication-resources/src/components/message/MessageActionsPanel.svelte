@@ -14,109 +14,23 @@
 -->
 
 <script lang="ts">
-  import ui, { showPopup, ButtonIcon, IconDelete, IconEdit } from '@hcengineering/ui'
-  import { Message } from '@hcengineering/communication-types'
-  import { createEventDispatcher } from 'svelte'
-  import emojiPlugin from '@hcengineering/emoji'
+  import { ButtonIcon, Action } from '@hcengineering/ui'
 
-  import IconMessageMultiple from '../icons/MessageMultiple.svelte'
-  import communication from '../../plugin'
-  import { toggleReaction } from '../../utils'
-  import { Action } from '../../types'
-
-  export let message: Message
-  export let editable: boolean = true
-  export let canReply: boolean = true
-  export let canReact: boolean = true
-  export let isOpened: boolean = false
-  export let canRemove: boolean = false
-
-  const dispatch = createEventDispatcher()
-
-  function getActions (): Action[] {
-    const actions: Action[] = []
-    if (canReact) {
-      actions.push({
-        id: 'emoji',
-        label: communication.string.Emoji,
-
-        icon: emojiPlugin.icon.Emoji,
-        order: 10,
-        action: (event: MouseEvent): void => {
-          isOpened = true
-          showPopup(
-            emojiPlugin.component.EmojiPopup,
-            {},
-            event.target as HTMLElement,
-            async (result) => {
-              isOpened = false
-              const emoji = result?.text
-              if (emoji == null) {
-                return
-              }
-
-              await toggleReaction(message, emoji)
-            },
-            () => {
-              isOpened = false
-            }
-          )
-        }
-      })
-    }
-
-    if (canReply) {
-      actions.push({
-        id: 'reply',
-        label: communication.string.Reply,
-        icon: IconMessageMultiple,
-        order: 20,
-        action: (): void => {
-          dispatch('reply')
-        }
-      })
-    }
-
-    if (editable) {
-      actions.push({
-        id: 'edit',
-        label: communication.string.Edit,
-        icon: IconEdit,
-        order: 30,
-        action: () => {
-          dispatch('edit')
-        }
-      })
-    }
-
-    if (canRemove) {
-      actions.push({
-        id: 'remove',
-        label: ui.string.Remove,
-        icon: IconDelete,
-        order: 999,
-        action: () => {
-          dispatch('remove')
-        }
-      })
-    }
-
-    return actions.sort((a, b) => a.order - b.order)
-  }
-
-  const actions: Action[] = getActions()
+  export let actions: Action[]
 </script>
 
 <div class="message-actions-panel">
-  {#each actions as action (action.id)}
-    <ButtonIcon
-      icon={action.icon}
-      iconSize="small"
-      size="small"
-      kind="tertiary"
-      tooltip={{ label: action.label, direction: 'bottom' }}
-      on:click={action.action}
-    />
+  {#each actions as action}
+    {#if action.icon}
+      <ButtonIcon
+        icon={action.icon}
+        iconSize="small"
+        size="small"
+        kind="tertiary"
+        tooltip={{ label: action.label, direction: 'bottom' }}
+        on:click={(ev) => action.action({}, ev)}
+      />
+    {/if}
   {/each}
 </div>
 

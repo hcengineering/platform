@@ -41,6 +41,8 @@
     "ThreadWasRemoved": "Этот поток был удален.",
     "MessageWasRemoved": "Это сообщение было удалено.",
     "JoinedThe": "Присоединился(aсь) к",
-    "LeftThe": "Покинул(a) к"
+    "LeftThe": "Покинул(a) к",
+    "Translating": "Перевод...",
+    "ShowOriginal": "Показать оригинал"
   }
 }

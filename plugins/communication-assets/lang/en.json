@@ -41,6 +41,8 @@
     "ThreadWasRemoved": "This thread was removed.",
     "MessageWasRemoved": "This message was removed.",
     "JoinedThe": "Joined the",
-    "LeftThe": "Left the"
+    "LeftThe": "Left the",
+    "Translating": "Translating...",
+    "ShowOriginal": "Showing original"
   }
 }

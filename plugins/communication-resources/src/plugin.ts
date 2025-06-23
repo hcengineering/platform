@@ -54,6 +54,8 @@ export default mergeIds(communicationId, communication, {
     ThreadWasRemoved: '' as IntlString,
     MessageWasRemoved: '' as IntlString,
     JoinedThe: '' as IntlString,
-    LeftThe: '' as IntlString
+    LeftThe: '' as IntlString,
+    Translating: '' as IntlString,
+    ShowOriginal: '' as IntlString
   }
 })

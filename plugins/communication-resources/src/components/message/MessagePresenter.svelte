@@ -19,17 +19,12 @@
   import { getCommunicationClient } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
   import { getCurrentAccount } from '@hcengineering/core'
-  import ui, {
-    getEventPositionElement,
-    showPopup,
-    Action as MenuAction,
-    IconDelete,
-    IconEdit,
-    Menu
-  } from '@hcengineering/ui'
-  import type { SocialID } from '@hcengineering/communication-types'
+  import ui, { getEventPositionElement, showPopup, Action, IconDelete, IconEdit, Menu } from '@hcengineering/ui'
+  import type { MessageID, SocialID } from '@hcengineering/communication-types'
   import { Message, MessageType } from '@hcengineering/communication-types'
   import emojiPlugin from '@hcengineering/emoji'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import view from '@hcengineering/view'
 
   import communication from '../../plugin'
   import { toggleReaction, replyToThread } from '../../utils'
@@ -37,6 +32,7 @@
   import IconMessageMultiple from '../icons/MessageMultiple.svelte'
   import MessageBody from './MessageBody.svelte'
   import OneRowMessageBody from './OneRowMessageBody.svelte'
+  import { showOriginalMessage, translateMessage, TranslateMessagesStatus, translateMessagesStore } from '../../stores'
 
   export let card: Card
   export let message: Message
@@ -116,23 +112,26 @@
     return false
   }
 
-  function handleContextMenu (event: MouseEvent): void {
-    const showCustomPopup = !isContentClicked(event.target as HTMLElement, event.clientX, event.clientY)
-    if (showCustomPopup) {
-      event.preventDefault()
-      event.stopPropagation()
-
-      const actions: MenuAction[] = []
-
-      actions.push({
+  function getActions (
+    message: Message,
+    translateMessages: Map<MessageID, TranslateMessagesStatus>,
+    event?: MouseEvent,
+    fromPanel?: boolean
+  ): Action[] {
+    const actions: Action[] = [
+      {
         label: communication.string.Emoji,
         icon: emojiPlugin.icon.Emoji,
-        action: async (): Promise<void> => {
+        action: async (_, ev): Promise<void> => {
+          if (fromPanel === true) {
+            isActionsPanelOpened = true
+          }
           showPopup(
             emojiPlugin.component.EmojiPopup,
             {},
-            event.target as HTMLElement,
+            (ev ?? event)?.target as HTMLElement,
             async (result) => {
+              isActionsPanelOpened = false
               const emoji = result?.emoji
               if (emoji == null) {
                 return
@@ -143,39 +142,74 @@
             () => {}
           )
         }
+      }
+    ]
+
+    if (canReply()) {
+      actions.push({
+        label: communication.string.Reply,
+        icon: IconMessageMultiple,
+        action: async (): Promise<void> => {
+          await replyToThread(message, card)
+        }
       })
-
-      if (canReply()) {
-        actions.push({
-          label: communication.string.Reply,
-          icon: IconMessageMultiple,
-          action: async (): Promise<void> => {
-            await replyToThread(message, card)
-          }
-        })
-      }
-
-      if (canEdit()) {
-        actions.push({
-          label: communication.string.Edit,
-          icon: IconEdit,
-          action: handleEdit
-        })
-      }
-
-      if (canRemove()) {
-        actions.push({
-          label: ui.string.Remove,
-          icon: IconDelete,
-          action: handleRemove
-        })
-      }
-
-      showPopup(Menu, { actions }, getEventPositionElement(event), () => {})
     }
+
+    const translateResult = translateMessages.get(message.id)
+    const isShowTranslated = translateResult?.shown === true && translateResult?.result != null
+    if (message.type === MessageType.Message && !isShowTranslated) {
+      actions.push({
+        label: getEmbeddedLabel('Translate'),
+        icon: view.icon.Translate,
+        action: async () => {
+          await translateMessage(message)
+        }
+      })
+    } else if (message.type === MessageType.Message && isShowTranslated) {
+      actions.push({
+        label: getEmbeddedLabel('Show Original'),
+        icon: view.icon.Undo,
+        action: async () => {
+          showOriginalMessage(message.id)
+        }
+      })
+    }
+
+    if (canEdit()) {
+      actions.push({
+        label: communication.string.Edit,
+        icon: IconEdit,
+        action: handleEdit
+      })
+    }
+
+    if (canRemove()) {
+      actions.push({
+        label: ui.string.Remove,
+        icon: IconDelete,
+        action: handleRemove
+      })
+    }
+
+    return actions
   }
 
-  let isActionsOpened = false
+  function handleContextMenu (event: MouseEvent): void {
+    const showCustomPopup = !isContentClicked(event.target as HTMLElement, event.clientX, event.clientY)
+    if (!showCustomPopup) return
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    showPopup(
+      Menu,
+      { actions: getActions(message, $translateMessagesStore, event) },
+      getEventPositionElement(event),
+      () => {}
+    )
+  }
+
+  let isActionsPanelOpened = false
 
   $: showActions = !isEditing && !isDeleted && !readonly
   $: isThread = message.thread != null
@@ -187,7 +221,7 @@
   class="message"
   id={`${message.id}`}
   on:contextmenu={showActions ? handleContextMenu : undefined}
-  class:active={isActionsOpened && !isEditing}
+  class:active={isActionsPanelOpened && !isEditing}
   class:noHover={readonly}
   style:padding
 >
@@ -198,19 +232,8 @@
   {/if}
 
   {#if showActions}
-    <div class="message__actions" class:opened={isActionsOpened}>
-      <MessageActionsPanel
-        {message}
-        editable={canEdit()}
-        canReply={canReply()}
-        canRemove={canRemove()}
-        bind:isOpened={isActionsOpened}
-        on:edit={handleEdit}
-        on:remove={handleRemove}
-        on:reply={() => {
-          void replyToThread(message, card)
-        }}
-      />
+    <div class="message__actions" class:opened={isActionsPanelOpened}>
+      <MessageActionsPanel actions={getActions(message, $translateMessagesStore, undefined, true)} />
     </div>
   {/if}
 </div>
