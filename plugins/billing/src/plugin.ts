@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Asset, type IntlString, plugin, type Plugin } from '@hcengineering/platform'
+import { Asset, type IntlString, type Metadata, plugin, type Plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 
 /** @public */
 export const billingId = 'billing' as Plugin
 
 export const billingPlugin = plugin(billingId, {
+  metadata: {
+    BillingURL: '' as Metadata<string>
+  },
   component: {
     Settings: '' as AnyComponent
   },

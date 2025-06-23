@@ -65,9 +65,9 @@ import { mailId } from '@hcengineering/mail'
 import { chatId } from '@hcengineering/chat'
 import { inboxId } from '@hcengineering/inbox'
 import { achievementId } from '@hcengineering/achievement'
-import communication, {communicationId} from '@hcengineering/communication'
+import communication, { communicationId } from '@hcengineering/communication'
 import { emojiId } from '@hcengineering/emoji'
-import { billingId } from '@hcengineering/billing'
+import billingPlugin, { billingId } from '@hcengineering/billing'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/analytics-collector-assets'
@@ -302,6 +302,8 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(aiBot.metadata.EndpointURL, config.AI_URL)
   setMetadata(presence.metadata.PresenceUrl, config.PRESENCE_URL ?? '')
   setMetadata(exportPlugin.metadata.ExportUrl, config.EXPORT_URL ?? '')
+
+  setMetadata(billingPlugin.metadata.BillingURL, config.BILLING_URL ?? '')
 
   const languages = myBranding.languages !== undefined && myBranding.languages !== '' ? myBranding.languages.split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de', 'ja']
 

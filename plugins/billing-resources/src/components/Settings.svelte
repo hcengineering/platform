@@ -16,7 +16,6 @@
   import { getBillingClient } from '../utils'
   import { Breadcrumb, Header, Loading, Scroller, formatDuration, themeStore } from '@hcengineering/ui'
   import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
-  import { BillingStats } from '@hcengineering/billing-client'
   import billingPlugin from '@hcengineering/billing'
   import filesize from 'filesize'
   import StatsCard from './StatsCard.svelte'
@@ -37,6 +36,7 @@
   let egressDurationByDay: { date: number, value: number }[] = []
 
   async function loadBillingData (): Promise<void> {
+    if (billingClient == null) return
     const billingStats = await billingClient.getBillingStats(getCurrentWorkspaceUuid())
     totalDatalakeSize = billingStats.datalakeStats.size
     totalDatalakeCount = billingStats.datalakeStats.count

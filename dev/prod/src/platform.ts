@@ -76,7 +76,7 @@ import {inboxId} from '@hcengineering/inbox'
 import {achievementId} from '@hcengineering/achievement'
 import communication, { communicationId } from '@hcengineering/communication'
 import {emojiId} from '@hcengineering/emoji'
-import {billingId} from '@hcengineering/billing'
+import billingPlugin, {billingId} from '@hcengineering/billing'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/analytics-collector-assets'
@@ -196,6 +196,7 @@ export interface Config {
   EXPORT_URL?: string
   MAIL_URL?: string,
   COMMUNICATION_API_ENABLED?: string
+  BILLING_URL?: string
 }
 
 export interface Branding {
@@ -479,6 +480,8 @@ export async function configurePlatform() {
   setMetadata(sign.metadata.SignURL, config.SIGN_URL)
   setMetadata(presence.metadata.PresenceUrl, config.PRESENCE_URL ?? '')
   setMetadata(exportPlugin.metadata.ExportUrl, config.EXPORT_URL ?? '')
+
+  setMetadata(billingPlugin.metadata.BillingURL, config.BILLING_URL ?? '')
 
   const languages = myBranding.languages
     ? (myBranding.languages as string).split(',').map((l) => l.trim())

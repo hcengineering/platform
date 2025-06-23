@@ -46,6 +46,7 @@ export interface Config {
   EXPORT_URL?: string
   MAIL_URL?: string
   COMMUNICATION_API_ENABLED?: string
+  BILLING_URL?: string
 }
 
 export interface Branding {
