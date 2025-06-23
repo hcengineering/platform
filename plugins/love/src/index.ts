@@ -1,6 +1,6 @@
 import { Event, Schedule } from '@hcengineering/calendar'
 import { Person } from '@hcengineering/contact'
-import { AttachedDoc, Class, MarkupBlobRef, Doc, Mixin, Ref, Timestamp } from '@hcengineering/core'
+import { AttachedDoc, Class, MarkupBlobRef, Doc, Mixin, Ref, Timestamp, AccountUuid } from '@hcengineering/core'
 import { Drive } from '@hcengineering/drive'
 import { NotificationType } from '@hcengineering/notification'
 import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/platform'
@@ -122,6 +122,7 @@ export interface ParticipantInfo extends Doc {
   x: number
   y: number
   sessionId: string | null
+  account: AccountUuid | null
 }
 
 export interface RoomInfo extends Doc {

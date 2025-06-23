@@ -67,6 +67,7 @@ export * from './storage'
 
 const dataBlobSize = 250 * 1024 * 1024
 const dataUploadSize = 2 * 1024 * 1024
+const batchSize = 5000
 
 const defaultLevel = 9
 
@@ -139,7 +140,7 @@ export interface BackupInfo {
   // A hash of current domain transactions, so we could skip all other checks if same.
   domainHashes: Record<Domain, string>
 
-  migrations: Record<string, boolean>
+  migrations: Record<string, boolean | string>
 }
 
 async function loadDigest (
@@ -749,7 +750,8 @@ export async function backup (
       snapshots: [],
       domainHashes: {},
       migrations: {
-        zeroCheckSize: true // Assume already checked for new backups
+        zeroCheckSize: true, // Assume already checked for new backups
+        forcedFullCheck: '1' // A force to full recheck.
       }
     }
 
@@ -765,6 +767,8 @@ export async function backup (
     if (backupInfo.migrations == null) {
       backupInfo.migrations = {}
     }
+
+    const forcedFullCheck = '2'
 
     // Apply verification to backup, since we know it should have broken blobs
     if (backupInfo.migrations.zeroCheckSize == null) {
@@ -792,6 +796,11 @@ export async function backup (
     }
 
     let fullCheck = options.fullVerify === true
+
+    if (backupInfo.migrations.forcedFullCheck !== forcedFullCheck) {
+      // We have forced full check to be performed.
+      fullCheck = true
+    }
     if (backupInfo.snapshots.length > options.keepSnapshots) {
       // We need to perform compaction
       ctx.warn('Compacting backup')
@@ -898,7 +907,7 @@ export async function backup (
     let downloadedMb = 0
     let downloaded = 0
 
-    const printDownloaded = (msg: string, size?: number | null): void => {
+    const printDownloaded = (msg: string, size?: number | null, pending?: number): void => {
       if (size == null || Number.isNaN(size) || !Number.isInteger(size)) {
         return
       }
@@ -908,9 +917,10 @@ export async function backup (
       const newId = Math.round(newDownloadedMb / 10)
       if (downloadedMb !== newId) {
         downloadedMb = newId
-        ctx.info('Downloaded', {
+        ctx.info('downloaded', {
           msg,
-          written: newDownloadedMb
+          written: newDownloadedMb,
+          pending
         })
       }
     }
@@ -1011,7 +1021,7 @@ export async function backup (
               changed++
             }
 
-            if (needRetrieve.length > 200) {
+            if (needRetrieve.length > batchSize) {
               needRetrieveChunks.push(needRetrieve)
               needRetrieve = []
             }
@@ -1107,7 +1117,6 @@ export async function backup (
             continue
           }
           let needRetrieve: Ref<Doc>[] = []
-          const batchSize = 200
           const { modified, modifiedFiles } = await verifyDocsFromSnapshot(
             ctx,
             domain,
@@ -1140,7 +1149,7 @@ export async function backup (
                     needRetrieve.push(localDoc._id)
                     changes.updated.set(localDoc._id, same.get(localDoc._id) ?? '')
                     // Docs are not same
-                    if (needRetrieve.length > 200) {
+                    if (needRetrieve.length > batchSize) {
                       needRetrieveChunks.push(needRetrieve)
                       needRetrieve = []
                     }
@@ -1162,7 +1171,7 @@ export async function backup (
         // We need to retrieve all documents from same not matched
         const sameArray: Ref<Doc>[] = Array.from(same.keys())
         while (sameArray.length > 0) {
-          const docs = sameArray.splice(0, 200)
+          const docs = sameArray.splice(0, batchSize)
           needRetrieveChunks.push(docs)
         }
       } else {
@@ -1174,7 +1183,6 @@ export async function backup (
       }
       const totalChunks = needRetrieveChunks.flatMap((it) => it.length).reduce((p, c) => p + c, 0)
       let processed = 0
-      let blobs = 0
 
       try {
         global.gc?.()
@@ -1332,11 +1340,6 @@ export async function backup (
               options.skipBlobContentTypes.length > 0 &&
               options.skipBlobContentTypes.some((it) => blob.contentType.includes(it))
             ) {
-              ctx.info('skip blob download, contentType', {
-                blob: blob._id,
-                provider: blob.provider,
-                size: blob.size / (1024 * 1024)
-              })
               processChanges(d, true)
               if (progress !== undefined) {
                 await progress(10 + (processed / totalChunks) * 90)
@@ -1346,7 +1349,11 @@ export async function backup (
 
             let blobFiled = false
 
-            printDownloaded('', descrJson.length)
+            printDownloaded(
+              '',
+              descrJson.length,
+              needRetrieveChunks.reduce((v, docs) => v + docs.length, 0) + docs.length
+            )
             try {
               const buffers: Buffer[] = []
               await blobClient.writeTo(ctx, blob._id, blob.size, {
@@ -1383,21 +1390,8 @@ export async function backup (
                   resolve()
                 })
               })
-              blobs++
-              if (blob.size > 1024 * 1024 || blobs >= 10) {
-                ctx.info('download blob', {
-                  _id: blob._id,
-                  contentType: blob.contentType,
-                  size: blob.size,
-                  provider: blob.provider,
-                  pending: docs.length
-                })
-                if (blobs >= 10) {
-                  blobs = 0
-                }
-              }
 
-              printDownloaded('', blob.size)
+              printDownloaded('', blob.size, needRetrieveChunks.reduce((v, docs) => v + docs.length, 0) + docs.length)
             } catch (err: any) {
               if (err.message?.startsWith('No file for') === true) {
                 ctx.error('failed to download blob', { message: err.message })
@@ -1417,7 +1411,7 @@ export async function backup (
               })
             })
             processChanges(d)
-            printDownloaded('', data.length)
+            printDownloaded('', data.length, needRetrieveChunks.reduce((v, docs) => v + docs.length, 0) + docs.length)
           }
         }
       }
@@ -1487,6 +1481,7 @@ export async function backup (
 
     if (!canceled()) {
       backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
+      backupInfo.migrations.forcedFullCheck = forcedFullCheck
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
     }
 
@@ -3032,7 +3027,7 @@ export async function checkBackupIntegrity (ctx: MeasureContext, storage: Backup
     if (backupInfo.migrations == null) {
       backupInfo.migrations = {}
     }
-    if (!backupInfo.migrations.zeroCheckSize) {
+    if (backupInfo.migrations.zeroCheckSize !== true) {
       backupInfo.migrations.zeroCheckSize = true
       modified = true
     }

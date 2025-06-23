@@ -15,15 +15,7 @@
 -->
 <script lang="ts">
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
-  import core, {
-    ClassifierKind,
-    type CollaborativeDoc,
-    Data,
-    Doc,
-    type MarkupBlobRef,
-    Mixin,
-    Ref
-  } from '@hcengineering/core'
+  import { Data, Doc, type MarkupBlobRef, Mixin, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
@@ -33,7 +25,7 @@
   import tracker from '@hcengineering/tracker'
   import { Button, Component, EditBox, IconMixin, IconMoreH, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { DocAttributeBar, DocNavLink, showMenu } from '@hcengineering/view-resources'
+  import { DocAttributeBar, DocNavLink, getDocMixins, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import VacancyApplications from './VacancyApplications.svelte'
@@ -80,24 +72,10 @@
 
   $: updateObject(_id)
 
-  const ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
   const hierarchy = client.getHierarchy()
   let mixins: Mixin<Doc>[] = []
 
-  function getMixins (object: Doc, showAllMixins: boolean): void {
-    if (object === undefined) return
-    const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
-
-    mixins = descendants.filter(
-      (m) =>
-        m.kind === ClassifierKind.MIXIN &&
-        !ignoreMixins.has(m._id) &&
-        (hierarchy.hasMixin(object, m._id) ||
-          (showAllMixins && hierarchy.isDerived(object._class, hierarchy.getBaseClass(m._id))))
-    )
-  }
-
-  $: getMixins(object, showAllMixins)
+  $: mixins = getDocMixins(object, showAllMixins)
 
   let descriptionBox: AttachmentStyleBoxCollabEditor
   $: descriptionKey = client.getHierarchy().getAttribute(recruit.class.Vacancy, 'fullDescription')

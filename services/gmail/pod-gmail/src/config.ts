@@ -31,6 +31,8 @@ interface Config extends BaseConfig {
   QueueConfig: string
   QueueRegion: string
   CommunicationTopic: string
+
+  WorkspaceInactivityInterval: number // Interval in days to stop workspace synchronization if not visited
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -47,7 +49,8 @@ const envMap: { [key in keyof Config]: string } = {
   Version: 'VERSION',
   QueueConfig: 'QUEUE_CONFIG',
   QueueRegion: 'QUEUE_REGION',
-  CommunicationTopic: 'COMMUNICATION_TOPIC'
+  CommunicationTopic: 'COMMUNICATION_TOPIC',
+  WorkspaceInactivityInterval: 'WORKSPACE_INACTIVITY_INTERVAL'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -74,7 +77,8 @@ const config: Config = (() => {
     Version: version,
     QueueConfig: process.env[envMap.QueueConfig] ?? '',
     QueueRegion: process.env[envMap.QueueRegion] ?? '',
-    CommunicationTopic: process.env[envMap.CommunicationTopic] ?? 'hulygun'
+    CommunicationTopic: process.env[envMap.CommunicationTopic] ?? 'hulygun',
+    WorkspaceInactivityInterval: parseNumber(process.env[envMap.WorkspaceInactivityInterval] ?? '3') // In days
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)

@@ -34,11 +34,11 @@ import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import {
   AddCollaboratorsEvent,
-  MessageRequestEventType,
-  AttachBlobEvent,
+  BlobPatchEvent,
   CreateMessageEvent,
-  AttachThreadEvent,
-  NotificationRequestEventType
+  MessageEventType,
+  NotificationEventType,
+  ThreadPatchEvent
 } from '@hcengineering/communication-sdk-types'
 import { generateMessageId } from '@hcengineering/communication-shared'
 
@@ -270,13 +270,17 @@ async function createMailThread (
   data: MessageData,
   messageId: MessageID
 ): Promise<void> {
-  const threadEvent: AttachThreadEvent = {
-    type: MessageRequestEventType.AttachThread,
+  const threadEvent: ThreadPatchEvent = {
+    type: MessageEventType.ThreadPatch,
     cardId: data.channel,
     messageId,
-    threadId: data.threadId,
-    threadType: chat.masterTag.Thread,
-    socialId: data.modifiedBy
+    operation: {
+      opcode: 'attach',
+      threadId: data.threadId,
+      threadType: chat.masterTag.Thread
+    },
+    socialId: data.modifiedBy,
+    date: data.created
   }
   const thread = Buffer.from(JSON.stringify(threadEvent))
   await sendToCommunicationTopic(producer, config, data, thread)
@@ -290,7 +294,7 @@ async function createMailMessage (
 ): Promise<MessageID> {
   const messageId = generateMessageId()
   const createMessageEvent: CreateMessageEvent = {
-    type: MessageRequestEventType.CreateMessage,
+    type: MessageEventType.CreateMessage,
     messageType: MessageType.Message,
     cardId: data.isReply ? threadId : data.channel,
     cardType: chat.masterTag.Thread,
@@ -314,18 +318,25 @@ async function createFiles (
   messageId: MessageID
 ): Promise<void> {
   const fileData: Buffer[] = attachments.map((a) => {
-    const attachBlobEvent: AttachBlobEvent = {
-      type: MessageRequestEventType.AttachBlob,
+    const attachBlobEvent: BlobPatchEvent = {
+      type: MessageEventType.BlobPatch,
       cardId: messageData.isReply ? threadId : messageData.channel,
       messageId,
       socialId: messageData.modifiedBy,
-      blobData: {
-        blobId: a.id as Ref<Blob>,
-        contentType: a.contentType,
-        fileName: a.name,
-        size: a.data.length,
-        metadata: getBlobMetadata(ctx, a)
-      }
+      operations: [
+        {
+          opcode: 'attach',
+          blobs: [
+            {
+              blobId: a.id as Ref<Blob>,
+              mimeType: a.contentType,
+              fileName: a.name,
+              size: a.data.length,
+              metadata: getBlobMetadata(ctx, a)
+            }
+          ]
+        }
+      ]
     }
     return Buffer.from(JSON.stringify(attachBlobEvent))
   })
@@ -352,7 +363,7 @@ async function addCollaborators (
     return // Message author should be automatically added as a collaborator
   }
   const addCollaboratorsEvent: AddCollaboratorsEvent = {
-    type: NotificationRequestEventType.AddCollaborators,
+    type: NotificationEventType.AddCollaborators,
     cardId: threadId,
     cardType: chat.masterTag.Thread,
     collaborators: [data.recipient.uuid as AccountUuid],

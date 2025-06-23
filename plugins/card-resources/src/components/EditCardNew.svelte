@@ -60,18 +60,22 @@
   let isContextLoaded = false
 
   let title: string = ''
+  let isTitleEditing = false
   let prevId: Ref<Card> = _id
 
   $: if (prevId !== _id) {
     prevId = _id
     context = undefined
     isContextLoaded = false
+    isTitleEditing = false
   }
 
   $: query.query(card.class.Card, { _id }, async (result) => {
     if (result.length > 0) {
       ;[doc] = result
-      title = doc.title
+      if (!isTitleEditing) {
+        title = doc.title
+      }
     } else {
       const loc = getCurrentLocation()
       loc.path.length = 3
@@ -86,17 +90,17 @@
 
   async function saveTitle (ev: Event): Promise<void> {
     ev.preventDefault()
+    isTitleEditing = false
     const client = getClient()
+    const trimmedTitle = title.trim()
+    const canSave = trimmedTitle.length > 0
 
-    const canSave = title.trim().length > 0
     if (doc === undefined || !canSave) {
       return
     }
 
-    const nameTrimmed = title.trim()
-
-    if (nameTrimmed.length > 0 && nameTrimmed !== doc.title) {
-      await client.update(doc, { title: nameTrimmed })
+    if (trimmedTitle !== doc.title) {
+      await client.update(doc, { title: trimmedTitle })
     }
   }
 
@@ -164,7 +168,15 @@
         <ParentsNavigator element={doc} maxWidth={'10rem'} />
       {/if}
       <div class="title flex-row-center">
-        <EditBox focusIndex={1} bind:value={title} placeholder={card.string.Card} on:blur={saveTitle} />
+        <EditBox
+          focusIndex={1}
+          bind:value={title}
+          placeholder={card.string.Card}
+          on:blur={saveTitle}
+          on:value={() => {
+            isTitleEditing = true
+          }}
+        />
       </div>
     </svelte:fragment>
 

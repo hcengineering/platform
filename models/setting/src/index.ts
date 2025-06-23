@@ -15,7 +15,15 @@
 
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
-import { AccountRole, DOMAIN_MODEL, type Blob, type Domain, type Ref, type AccountUuid } from '@hcengineering/core'
+import {
+  AccountRole,
+  DOMAIN_MODEL,
+  type Blob,
+  type Domain,
+  type Ref,
+  type AccountUuid,
+  type ClassCollaborators
+} from '@hcengineering/core'
 import { Mixin, Model, type Builder, UX } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
@@ -146,7 +154,8 @@ export function createModel (builder: Builder): void {
     setting.ids.SettingsWidget
   )
 
-  builder.mixin(setting.class.Integration, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Integration>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: setting.class.Integration,
     fields: ['modifiedBy']
   })
 

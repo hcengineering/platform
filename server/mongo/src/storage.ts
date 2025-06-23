@@ -543,13 +543,9 @@ abstract class MongoAdapterBase implements DbAdapter {
     lookup: Lookup<T> | undefined,
     object: any,
     parent?: string,
-    parentObject?: any,
-    domainLookup?: {
-      field: string
-      domain: Domain
-    }
+    parentObject?: any
   ): void {
-    if (lookup === undefined && domainLookup === undefined) return
+    if (lookup === undefined) return
     for (const key in lookup) {
       if (key === '_id') {
         this.fillReverseLookup(clazz, lookup, object, parent, parentObject)
@@ -566,14 +562,6 @@ abstract class MongoAdapterBase implements DbAdapter {
       } else {
         this.fillLookup(value, object, key, fullKey, targetObject)
       }
-    }
-    if (domainLookup !== undefined) {
-      if (object.$lookup === undefined) {
-        object.$lookup = {}
-      }
-      object.$lookup._id = object['dl_' + domainLookup.field + '_lookup'][0]
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete object['dl_' + domainLookup.field + '_lookup']
     }
   }
 
@@ -654,17 +642,8 @@ abstract class MongoAdapterBase implements DbAdapter {
     const pipeline: any[] = []
     const tquery = this.translateQuery(clazz, query, options)
 
-    const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort) || options.domainLookup !== undefined
+    const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort)
     const steps = this.getLookups(clazz, options?.lookup)
-
-    if (options.domainLookup !== undefined) {
-      steps.push({
-        from: options.domainLookup.domain,
-        localField: options.domainLookup.field,
-        foreignField: '_id',
-        as: 'dl_' + options.domainLookup.field + '_lookup'
-      })
-    }
 
     if (options.associations !== undefined && options.associations.length > 0) {
       const assoc = this.getAssociations(options.associations)
@@ -731,7 +710,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
     for (const row of result) {
       ctx.withSync('fill-lookup', {}, (ctx) => {
-        this.fillLookupValue(ctx, clazz, options?.lookup, row, undefined, undefined, options.domainLookup)
+        this.fillLookupValue(ctx, clazz, options?.lookup, row)
       })
       if (row.$lookup !== undefined) {
         for (const [, v] of Object.entries(row.$lookup)) {
@@ -901,13 +880,12 @@ abstract class MongoAdapterBase implements DbAdapter {
     return addOperation(ctx, 'find-all', {}, async () => {
       const st = platformNow()
       let result: FindResult<T>
-      const domain = options?.domain ?? this.hierarchy.getDomain(_class)
+      const domain = this.hierarchy.getDomain(_class)
       if (
         options?.lookup != null ||
         options?.associations != null ||
         this.isEnumSort(_class, options) ||
-        this.isRulesSort(options) ||
-        options?.domainLookup !== undefined
+        this.isRulesSort(options)
       ) {
         return await this.findWithPipeline(ctx, domain, _class, query, options ?? {}, stTime)
       }

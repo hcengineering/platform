@@ -98,7 +98,9 @@ import {
   wrap,
   updateAllowReadOnlyGuests,
   READONLY_GUEST_ACCOUNT,
-  getWorkspaceByDataId
+  getWorkspaceByDataId,
+  assignableRoles,
+  getWorkspacesInfoWithStatusByIds
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -145,6 +147,11 @@ export async function login (
   }
 ): Promise<LoginInfo> {
   const { email, password } = params
+
+  if (email == null || password == null || email === '' || password === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const normalizedEmail = cleanEmail(email)
 
   try {
@@ -199,6 +206,10 @@ export async function loginOtp (
 ): Promise<OtpInfo> {
   const { email } = params
 
+  if (email == null || email === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   // Note: can support OTP based on any other social logins later
   const normalizedEmail = cleanEmail(email)
   const emailSocialId = await getEmailSocialId(db, normalizedEmail)
@@ -231,12 +242,17 @@ export async function signUp (
     email: string
     password: string
     firstName: string
-    lastName: string
+    lastName?: string
   },
   meta?: Meta
 ): Promise<LoginInfo> {
   const { email, password, firstName, lastName } = params
-  const { account, socialId } = await signUpByEmail(ctx, db, branding, email, password, firstName, lastName)
+
+  if (email == null || password == null || firstName == null || email === '' || password === '' || firstName === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const { account, socialId } = await signUpByEmail(ctx, db, branding, email, password, firstName, lastName ?? '')
   const person = await db.person.findOne({ uuid: account })
   if (person == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
@@ -251,6 +267,7 @@ export async function signUp (
   } else {
     ctx.warn('Please provide MAIL_URL to enable sign up email confirmations.')
     await confirmEmail(ctx, db, account, email)
+    await confirmHulyIds(ctx, db, account)
   }
 
   void setTimezoneIfNotDefined(ctx, db, account, null, meta)
@@ -270,10 +287,15 @@ export async function signUpOtp (
   params: {
     email: string
     firstName: string
-    lastName: string
+    lastName?: string
   }
 ): Promise<OtpInfo> {
   const { email, firstName, lastName } = params
+
+  if (email == null || firstName == null || email === '' || firstName === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   // Note: can support OTP based on any other social logins later
   const normalizedEmail = cleanEmail(email)
   let emailSocialId = await getEmailSocialId(db, normalizedEmail)
@@ -287,12 +309,12 @@ export async function signUpOtp (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
     }
 
-    await db.person.updateOne({ uuid: emailSocialId.personUuid }, { firstName, lastName })
+    await db.person.update({ uuid: emailSocialId.personUuid }, { firstName, lastName: lastName ?? '' })
 
     personUuid = emailSocialId.personUuid
   } else {
     // There's no person linked to this email, so we need to create a new one
-    personUuid = await db.person.insertOne({ firstName, lastName })
+    personUuid = await db.person.insertOne({ firstName, lastName: lastName ?? '' })
     const newSocialId = { type: SocialIdType.EMAIL, value: normalizedEmail, personUuid }
     const emailSocialIdId = await db.socialId.insertOne(newSocialId)
     emailSocialId = { ...newSocialId, _id: emailSocialIdId, key: buildSocialIdString(newSocialId) }
@@ -314,6 +336,10 @@ export async function validateOtp (
 ): Promise<LoginInfo> {
   const { email, code, password } = params
 
+  if (email == null || code == null || email === '' || code === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   // Note: can support OTP based on any other social logins later
   const normalizedEmail = cleanEmail(email)
   try {
@@ -332,7 +358,7 @@ export async function validateOtp (
     await db.otp.deleteMany({ socialId: emailSocialId._id })
 
     if (emailSocialId.verifiedOn == null) {
-      await db.socialId.updateOne({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
+      await db.socialId.update({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
     }
 
     // This method handles both login and signup
@@ -383,6 +409,11 @@ export async function createWorkspace (
   }
 ): Promise<WorkspaceLoginInfo> {
   const { workspaceName, region } = params
+
+  if (workspaceName == null || workspaceName.length === 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const { account } = decodeTokenVerbose(ctx, token)
 
   checkRateLimit(account, workspaceName)
@@ -448,6 +479,11 @@ export async function createInvite (
   }
 ): Promise<string> {
   const { exp, emailMask, email, limit, role, autoJoin } = params
+
+  if (role == null || !assignableRoles.includes(role)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
 
   const currentAccount = await db.account.findOne({ uuid: account })
@@ -501,6 +537,11 @@ export async function sendInvite (
   }
 ): Promise<void> {
   const { email, role, expHours } = params
+
+  if (email == null || email === '' || role == null || !assignableRoles.includes(role)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
 
   const currentAccount = await db.account.findOne({ uuid: account })
@@ -540,6 +581,11 @@ export async function createInviteLink (
   }
 ): Promise<string> {
   const { email, role, autoJoin, firstName, lastName, navigateUrl, expHours } = params
+
+  if (email == null || email === '' || role == null || !assignableRoles.includes(role)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
 
   const currentAccount = await db.account.findOne({ uuid: account })
@@ -626,10 +672,19 @@ export async function resendInvite (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  email: string,
-  role: AccountRole
+  params: {
+    email: string
+    role: AccountRole
+  }
 ): Promise<void> {
+  const { email, role } = params
+
+  if (email == null || email === '' || role == null || !assignableRoles.includes(role)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
+
   const currentAccount = await db.account.findOne({ uuid: account })
   if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
@@ -652,7 +707,7 @@ export async function resendInvite (
   let inviteId: string
   if (invite != null) {
     inviteId = invite.id
-    await db.invite.updateOne({ id: invite.id }, { expiresOn: newExp, remainingUses: 1, role })
+    await db.invite.update({ id: invite.id }, { expiresOn: newExp, remainingUses: 1, role })
   } else {
     inviteId = await createInvite(ctx, db, branding, token, { exp: newExp, email, limit: 1, role })
   }
@@ -687,6 +742,11 @@ export async function join (
   meta?: Meta
 ): Promise<WorkspaceLoginInfo | LoginInfo> {
   const { email, password, inviteId } = params
+
+  if (email == null || email === '' || password == null || password === '' || inviteId == null || inviteId === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const normalizedEmail = cleanEmail(email)
   const invite = await getWorkspaceInvite(db, inviteId)
   if (invite == null) {
@@ -725,6 +785,10 @@ export async function checkJoin (
   params: { inviteId: string }
 ): Promise<WorkspaceLoginInfo> {
   const { inviteId } = params
+
+  if (inviteId == null || inviteId === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
 
   const invite = await getWorkspaceInvite(db, inviteId)
   if (invite == null) {
@@ -766,6 +830,11 @@ export async function checkAutoJoin (
   params: { inviteId: string, firstName?: string, lastName?: string }
 ): Promise<WorkspaceLoginInfo | WorkspaceInviteInfo> {
   const { inviteId, firstName, lastName } = params
+
+  if (inviteId == null || inviteId === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const invite = await getWorkspaceInvite(db, inviteId)
   if (invite == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -878,12 +947,26 @@ export async function signUpJoin (
     email: string
     password: string
     first: string
-    last: string
+    last?: string
     inviteId: string
   },
   meta?: Meta
 ): Promise<WorkspaceLoginInfo> {
   const { email, password, first, last, inviteId } = params
+
+  if (
+    email == null ||
+    email === '' ||
+    password == null ||
+    password === '' ||
+    first == null ||
+    first === '' ||
+    inviteId == null ||
+    inviteId === ''
+  ) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const normalizedEmail = cleanEmail(email)
   ctx.info('Signing up and joining a workspace using invite', { email, normalizedEmail, first, last, inviteId })
 
@@ -899,7 +982,7 @@ export async function signUpJoin (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
-  const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last, true)
+  const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last ?? '', true)
   void setTimezoneIfNotDefined(ctx, db, account, null, meta)
 
   return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
@@ -951,6 +1034,11 @@ export async function changePassword (
   }
 ): Promise<void> {
   const { oldPassword, newPassword } = params
+
+  if (oldPassword == null || oldPassword === '' || newPassword == null || newPassword === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const { account: accountUuid } = decodeTokenVerbose(ctx, token)
 
   ctx.info('Changing password', { accountUuid })
@@ -978,6 +1066,11 @@ export async function requestPasswordReset (
   params: { email: string }
 ): Promise<void> {
   const { email } = params
+
+  if (email == null || email === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const normalizedEmail = cleanEmail(email)
 
   ctx.info('Requesting password reset', { email, normalizedEmail })
@@ -1046,6 +1139,10 @@ export async function restorePassword (
 ): Promise<LoginInfo> {
   const { password } = params
 
+  if (password == null || password === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const { account, extra } = decodeTokenVerbose(ctx, token)
   ctx.info('Restoring password', { account, extra })
 
@@ -1067,7 +1164,7 @@ export async function restorePassword (
   await setPassword(ctx, db, branding, account, password)
 
   if (emailSocialId.verifiedOn == null) {
-    await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
+    await db.socialId.update({ key: emailSocialId.key }, { verifiedOn: Date.now() })
   }
 
   return await login(ctx, db, branding, token, { email, password })
@@ -1081,6 +1178,11 @@ export async function leaveWorkspace (
   params: { account: AccountUuid }
 ): Promise<LoginInfo | null> {
   const { account: targetAccount } = params
+
+  if (targetAccount == null || targetAccount === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const { account, workspace } = decodeTokenVerbose(ctx, token)
   ctx.info('Removing account from workspace', { account, workspace })
 
@@ -1128,17 +1230,20 @@ export async function changeUsername (
   token: string,
   params: {
     first: string
-    last: string
+    last?: string
   }
 ): Promise<void> {
   const { first, last } = params
+
+  if (first == null || first === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const { account } = decodeTokenVerbose(ctx, token)
 
-  ctx.info('Changing name of person', { account, first, last })
+  await db.person.update({ uuid: account }, { firstName: first, lastName: last ?? '' })
 
-  await db.person.updateOne({ uuid: account }, { firstName: first, lastName: last })
-
-  ctx.info('Name changed', { account, first, last })
+  ctx.info('Person name changed', { account, first, last })
 }
 
 export async function updateWorkspaceName (
@@ -1149,6 +1254,11 @@ export async function updateWorkspaceName (
   params: { name: string }
 ): Promise<void> {
   const { name } = params
+
+  if (name == null || name === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const { account, workspace } = decodeTokenVerbose(ctx, token)
   const role = await db.getWorkspaceRole(account, workspace)
 
@@ -1157,7 +1267,7 @@ export async function updateWorkspaceName (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  await db.workspace.updateOne(
+  await db.workspace.update(
     { uuid: workspace },
     {
       name
@@ -1179,7 +1289,7 @@ export async function deleteWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  await db.workspaceStatus.updateOne(
+  await db.workspaceStatus.update(
     { workspaceUuid: workspace },
     {
       isDisabled: true,
@@ -1224,24 +1334,49 @@ export async function getWorkspacesInfo (
   token: string,
   params: { ids: WorkspaceUuid[] }
 ): Promise<WorkspaceInfoWithStatus[]> {
-  const { account } = decodeTokenVerbose(ctx, token)
   const { ids } = params
+
+  if (ids == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const { account } = decodeTokenVerbose(ctx, token)
 
   if (account !== systemAccountUuid) {
     ctx.error('getWorkspaceInfos with wrong user', { account, token })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  const workspaces: WorkspaceInfoWithStatus[] = []
-  for (const id of ids) {
-    const ws = await getWorkspaceInfoWithStatusById(db, id)
-    if (ws !== null) {
-      workspaces.push(ws)
-    }
-  }
 
+  const workspaces: WorkspaceInfoWithStatus[] = await getWorkspacesInfoWithStatusByIds(db, ids)
   workspaces.sort((a, b) => (b.status.lastVisit ?? 0) - (a.status.lastVisit ?? 0))
 
   return workspaces
+}
+
+/**
+ * @public
+ */
+export async function updateLastVisit (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { ids: WorkspaceUuid[] }
+): Promise<void> {
+  const { ids } = params
+
+  if (ids == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  if (account !== systemAccountUuid) {
+    ctx.error('updateLastVisit with wrong user', { account, token })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  await db.workspaceStatus.update({ workspaceUuid: { $in: ids } }, { lastVisit: Date.now() })
 }
 
 export async function getWorkspaceInfo (
@@ -1280,7 +1415,7 @@ export async function getWorkspaceInfo (
   }
 
   if (!isGuest && updateLastVisit) {
-    await db.workspaceStatus.updateOne({ workspaceUuid }, { lastVisit: Date.now() })
+    await db.workspaceStatus.update({ workspaceUuid }, { lastVisit: Date.now() })
   }
 
   return workspace
@@ -1547,6 +1682,11 @@ export async function findPersonBySocialKey (
   params: { socialString: string, requireAccount?: boolean }
 ): Promise<PersonUuid | undefined> {
   const { socialString } = params
+
+  if (socialString == null || socialString === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   decodeTokenVerbose(ctx, token)
 
   const socialId = await db.socialId.findOne({ key: socialString })
@@ -1572,6 +1712,11 @@ export async function findPersonBySocialId (
   params: { socialId: PersonId, requireAccount?: boolean }
 ): Promise<PersonUuid | undefined> {
   const { socialId, requireAccount } = params
+
+  if (socialId == null || socialId === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   decodeTokenVerbose(ctx, token)
 
   const socialIdObj = await db.socialId.findOne({ _id: socialId })
@@ -1650,8 +1795,12 @@ export async function getAccountInfo (
   token: string,
   params: { accountId: AccountUuid }
 ): Promise<AccountInfo> {
-  decodeTokenVerbose(ctx, token)
   const { accountId } = params
+  if (accountId == null || accountId === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  decodeTokenVerbose(ctx, token)
   const account = await getAccount(db, accountId)
   if (account === undefined || account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
@@ -1729,8 +1878,13 @@ async function createMailbox (
     domain: string
   }
 ): Promise<{ mailbox: string, socialId: PersonId }> {
-  const { account } = decodeTokenVerbose(ctx, token)
   const { name, domain } = params
+
+  if (name == null || name === '' || domain == null || domain === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const { account } = decodeTokenVerbose(ctx, token)
   const normalizedName = cleanEmail(name)
   const normalizedDomain = cleanEmail(domain)
   const mailbox = normalizedName + '@' + normalizedDomain
@@ -1778,6 +1932,10 @@ async function deleteMailbox (
   token: string,
   params: { mailbox: string }
 ): Promise<void> {
+  if (params.mailbox == null || params.mailbox === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const { account } = decodeTokenVerbose(ctx, token)
   const mailbox = cleanEmail(params.mailbox)
 
@@ -1856,6 +2014,7 @@ export type AccountMethods =
   | 'getUserWorkspaces'
   | 'getWorkspaceInfo'
   | 'getWorkspacesInfo'
+  | 'updateLastVisit'
   | 'getLoginInfoByToken'
   | 'getLoginWithWorkspaceInfo'
   | 'getSocialIds'
@@ -1920,6 +2079,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getUserWorkspaces: wrap(getUserWorkspaces),
     getWorkspaceInfo: wrap(getWorkspaceInfo),
     getWorkspacesInfo: wrap(getWorkspacesInfo),
+    updateLastVisit: wrap(updateLastVisit),
     getLoginInfoByToken: wrap(getLoginInfoByToken),
     getLoginWithWorkspaceInfo: wrap(getLoginWithWorkspaceInfo),
     getSocialIds: wrap(getSocialIds),

@@ -122,7 +122,7 @@ export class AuthController {
     const secret = await this.accountClient.getIntegrationSecret(data)
     if (secret == null) return
     const token = JSON.parse(secret.secret)
-    const watchController = WatchController.get(this.accountClient)
+    const watchController = WatchController.get(this.ctx, this.accountClient)
     await watchController.unsubscribe(token)
     await removeIntegrationSecret(this.ctx, this.accountClient, data)
   }

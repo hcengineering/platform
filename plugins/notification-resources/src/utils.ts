@@ -30,7 +30,6 @@ import chunter, { type ThreadMessage } from '@hcengineering/chunter'
 import core, {
   type Class,
   type Doc,
-  type DocumentUpdate,
   getCurrentAccount,
   type Ref,
   SortingOrder,
@@ -39,9 +38,9 @@ import core, {
 } from '@hcengineering/core'
 import notification, {
   type ActivityInboxNotification,
-  type Collaborators,
   type DisplayInboxNotification,
   type DocNotifyContext,
+  getClassCollaborators,
   type InboxNotification,
   type MentionInboxNotification,
   notificationId,
@@ -64,8 +63,8 @@ import {
 } from '@hcengineering/ui'
 import view, { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
 import { getObjectLinkId, parseLinkId } from '@hcengineering/view-resources'
-import { get, writable } from 'svelte/store'
 import type { LocationData } from '@hcengineering/workbench'
+import { get, writable } from 'svelte/store'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
@@ -235,36 +234,22 @@ export async function subscribeDoc (
 ): Promise<void> {
   const myAcc = getCurrentAccount()
   const hierarchy = client.getHierarchy()
-
-  if (hierarchy.classHierarchyMixin(docClass, notification.mixin.ClassCollaborators) === undefined) return
+  const classCollaborators = getClassCollaborators(client.getModel(), hierarchy, docClass)
+  if (classCollaborators === undefined) return
 
   const target = doc ?? (await client.findOne(docClass, { _id: docId }))
   if (target === undefined) return
-  if (hierarchy.hasMixin(target, notification.mixin.Collaborators)) {
-    const collab = hierarchy.as(target, notification.mixin.Collaborators)
-    let collabUpdate: DocumentUpdate<Collaborators> | undefined
-    const includesMe = collab.collaborators.includes(myAcc.uuid)
-
-    if (includesMe && op === 'remove') {
-      collabUpdate = {
-        $pull: {
-          collaborators: myAcc.uuid
-        }
-      }
-    } else if (!includesMe && op === 'add') {
-      collabUpdate = {
-        $push: {
-          collaborators: myAcc.uuid
-        }
-      }
-    }
-
-    if (collabUpdate !== undefined) {
-      await client.updateMixin(collab._id, collab._class, collab.space, notification.mixin.Collaborators, collabUpdate)
-    }
-  } else if (op === 'add') {
-    await client.createMixin(docId, docClass, target.space, notification.mixin.Collaborators, {
-      collaborators: [myAcc.uuid]
+  const current = await client.findOne(core.class.Collaborator, {
+    attachedTo: docId,
+    collaborator: myAcc.uuid
+  })
+  if (op === 'remove') {
+    if (current === undefined) return // already removed
+    await client.remove(current)
+  } else {
+    if (current !== undefined) return // already added
+    await client.addCollection(core.class.Collaborator, target.space, target._id, target._class, 'collaborators', {
+      collaborator: myAcc.uuid
     })
   }
 }

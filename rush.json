@@ -2589,6 +2589,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/backup-api-pod",
+      "projectFolder": "services/backup/backup-api-pod",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/billing",
       "projectFolder": "plugins/billing",
       "shouldPublish": false

@@ -379,7 +379,7 @@ async function ActivityMessagesHandler (_txes: TxCUD<Doc>[], control: TriggerCon
     const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx as TxCreateDoc<DocUpdateMessage>))
 
     const notificationTxes = await control.ctx.with('createCollaboratorNotifications', {}, (ctx) =>
-      createCollaboratorNotifications(ctx, tx, control, messages, undefined, cache.docs as Map<Ref<Doc>, Doc>)
+      createCollaboratorNotifications(ctx, tx, control, messages)
     )
 
     result.push(...txes, ...notificationTxes)

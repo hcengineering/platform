@@ -15,7 +15,7 @@
 
 import {
   type ServerApi as CommunicationApi,
-  type RequestEvent as CommunicationEvent,
+  type Event as CommunicationEvent,
   type EventResult
 } from '@hcengineering/communication-sdk-types'
 import {
@@ -68,16 +68,10 @@ import { type StorageAdapter } from './storage'
 import { type PlatformQueueProducer, type QueueTopic, type PlatformQueue } from './queue'
 
 export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
-  domain?: Domain // Allow to find for Doc's in specified domain only.
   prefix?: string
 
   skipClass?: boolean
   skipSpace?: boolean
-
-  domainLookup?: {
-    field: string
-    domain: Domain
-  }
 
   // using for join query security
   allowedSpaces?: Ref<Space>[]

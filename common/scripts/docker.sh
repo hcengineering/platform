@@ -1,0 +1,27 @@
+rush docker:build -p 20 \
+--to @hcengineering/pod-server \
+--to @hcengineering/pod-front \
+--to @hcengineering/prod \
+--to @hcengineering/pod-account \
+--to @hcengineering/pod-workspace \
+--to @hcengineering/pod-collaborator \
+--to @hcengineering/tool \
+--to @hcengineering/pod-print \
+--to @hcengineering/pod-sign \
+--to @hcengineering/pod-analytics-collector \
+--to @hcengineering/rekoni-service \
+--to @hcengineering/pod-ai-bot \
+--to @hcengineering/import-tool \
+--to @hcengineering/pod-stats \
+--to @hcengineering/pod-fulltext \
+--to @hcengineering/pod-love \
+--to @hcengineering/pod-mail \
+--to @hcengineering/pod-datalake \
+--to @hcengineering/pod-inbound-mail \
+--to @hcengineering/pod-export \
+--to @hcengineering/pod-msg2file \
+--to @hcengineering/pod-media \
+--to @hcengineering/pod-external \
+--to @hcengineering/pod-backup \
+--to @hcengineering/backup-api-pod \
+--to @hcengineering/pod-billing

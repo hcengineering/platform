@@ -55,7 +55,7 @@
   .date-separator {
     display: flex;
     width: 100%;
-    padding: 0 4rem;
+    padding: 0 2rem;
     font-size: 0.75rem;
     height: 2.25rem;
     position: relative;
@@ -84,9 +84,9 @@
     flex: 1;
     height: 1px;
     min-height: 1px;
-    width: calc(100% - 8rem);
+    width: calc(100% - 4rem);
     background: var(--highlight-select-border);
-    margin: 0 4rem;
+    margin: 0 2rem;
     margin-top: -2rem;
   }
 </style>

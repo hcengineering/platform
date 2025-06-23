@@ -97,7 +97,7 @@
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER": "ws",
-        "MODEL_VERSION": "0.7.110",
+        "MODEL_VERSION": "0.7.145",
         // "VERSION": "0.6.289",
         "COMMUNICATION_API_ENABLED": "true",
         "ELASTIC_INDEX_NAME": "local_storage_index",
@@ -522,6 +522,24 @@
       "sourceMaps": true,
       "outputCapture": "std",
       "cwd": "${workspaceRoot}/pods/backup",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug backup API",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "SECRET": "secret",
+        "BUCKET_NAME": "backups"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "showAsyncStacks": true,
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/services/backup/backup-api-pod",
       "protocol": "inspector"
     },
     {

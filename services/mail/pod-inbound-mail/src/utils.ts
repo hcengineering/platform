@@ -20,7 +20,6 @@ import { MeasureContext } from '@hcengineering/core'
 import { type Attachment } from '@hcengineering/mail-common'
 
 import { MtaMessage } from './types'
-import config from './config'
 import { getDecodedContent } from './decode'
 
 export async function parseContent (
@@ -55,30 +54,25 @@ export async function parseContent (
   }
 
   const attachments: Attachment[] = []
-  if (config.storageConfig !== undefined) {
-    for (const a of email.attachments ?? []) {
-      if (a.name === undefined || a.name.length === 0) {
-        // EML parser returns attachments with empty name for parts of content
-        // that do not have "Content-Disposition: attachment" e.g. for part
-        // Content-Type: text/calendar; charset="UTF-8"; method=REQUEST
-        continue
-      }
-      const attachment: Attachment = {
-        id: randomUUID(),
-        name: a.name,
-        data: Buffer.from(a.data64, 'base64'),
-        contentType: a.contentType.split(';')[0].trim()
-      }
-      attachments.push(attachment)
+  for (const a of email.attachments ?? []) {
+    if (a.name === undefined || a.name.length === 0) {
+      // EML parser returns attachments with empty name for parts of content
+      // that do not have "Content-Disposition: attachment" e.g. for part
+      // Content-Type: text/calendar; charset="UTF-8"; method=REQUEST
+      continue
+    }
+    const attachment: Attachment = {
+      id: randomUUID(),
+      name: a.name,
+      data: Buffer.from(a.data64, 'base64'),
+      contentType: a.contentType.split(';')[0].trim()
+    }
+    attachments.push(attachment)
 
-      // For inline images, replace the CID references with the blob id
-      if (isMarkdown && a.inline && a.id !== undefined) {
-        const cid = a.id.replace(/[<>]/g, '')
-        content = content.replaceAll(
-          new RegExp(`!\\[.*?\\]\\(cid:${cid}\\)`, 'g'),
-          `![${a.name}](cid:${attachment.id})`
-        )
-      }
+    // For inline images, replace the CID references with the blob id
+    if (isMarkdown && a.inline && a.id !== undefined) {
+      const cid = a.id.replace(/[<>]/g, '')
+      content = content.replaceAll(new RegExp(`!\\[.*?\\]\\(cid:${cid}\\)`, 'g'), `![${a.name}](cid:${attachment.id})`)
     }
   }
   return { content, attachments }

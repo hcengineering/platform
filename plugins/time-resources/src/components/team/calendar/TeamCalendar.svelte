@@ -62,7 +62,7 @@
   const txCreateQuery = createQuery()
 
   let personsSocialIds: PersonId[] = []
-  let txes: Tx[]
+  let txes: Tx[] = []
   let txesMap = new Map<Ref<Person>, Tx[]>()
 
   const socialIdsQuery = createQuery()

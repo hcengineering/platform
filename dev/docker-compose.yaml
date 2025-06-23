@@ -294,6 +294,7 @@ services:
       - BRANDING_URL=http://huly.local:8087/branding.json
       - STREAM_URL=http://huly.local:1080/recording
       - COMMUNICATION_API_ENABLED=true
+      - BACKUP_URL=http://huly.local:4039/api/backup
       # - DISABLE_SIGNUP=true
     restart: unless-stopped
   transactor:
@@ -577,6 +578,51 @@ services:
       - HULY_TOKEN_SECRET=secret
       - HULY_ACCOUNT_SERVICE=http://huly.local:3000
     restart: unless-stopped
+  # backup-cockroach:
+  #   image: hardcoreeng/backup
+  #   extra_hosts:
+  #     - 'huly.local:host-gateway'
+  #   depends_on:
+  #     minio:
+  #       condition: service_healthy
+  #     cockroach:
+  #       condition: service_started
+  #     stats:
+  #       condition: service_started
+  #     account:
+  #       condition: service_started
+  #   environment:
+  #     - SECRET=secret
+  #     - ACCOUNTS_URL=http://huly.local:3000
+  #     - STATS_URL=http://huly.local:4900
+  #     - DB_URL=${DB_CR_URL}
+  #     - REGION=cockroach
+  #     - BUCKET_NAME=backups
+  #     - INTERVAL=3600
+  #     - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
+  #     - WORKSPACE_STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
+  #   restart: unless-stopped
+  # backup-api:
+  #   image: hardcoreeng/backup-api
+  #   extra_hosts:
+  #     - 'huly.local:host-gateway'
+  #   depends_on:
+  #     minio:
+  #       condition: service_healthy
+  #     stats:
+  #       condition: service_started
+  #     account:
+  #       condition: service_started
+  #   ports:
+  #     - 4039:4039
+  #   environment:
+  #     - PORT=4039
+  #     - SECRET=secret
+  #     - ACCOUNTS_URL=http://huly.local:3000
+  #     - STATS_URL=http://huly.local:4900
+  #     - BUCKET_NAME=backups
+  #     - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
+  #   restart: unless-stopped
 volumes:
   db:
   dbpg:

@@ -22,6 +22,7 @@ import core, {
   type DocumentQuery,
   type DocumentUpdate,
   type Domain,
+  DOMAIN_COLLABORATOR,
   DOMAIN_MODEL,
   DOMAIN_MODEL_TX,
   DOMAIN_RELATION,
@@ -88,6 +89,7 @@ import {
   DBCollectionHelper,
   type DBDoc,
   doFetchTypes,
+  escape,
   filterProjection,
   getDBClient,
   inferType,
@@ -661,7 +663,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       {},
       async () => {
         try {
-          const domain = translateDomain(options?.domain ?? this.hierarchy.getDomain(_class))
+          const domain = translateDomain(this.hierarchy.getDomain(_class))
           const sqlChunks: string[] = []
 
           const joins = this.buildJoins<T>(_class, options)
@@ -672,7 +674,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           const select = `SELECT ${this.getProjection(vars, domain, projection, joins, options?.associations)} FROM ${domain}`
 
           const showArchived = shouldShowArchived(query, options)
-          const secJoin = this.addSecurity(vars, query, showArchived, domain, ctx.contextData)
+          const secJoin = this.addSecurity(_class, vars, query, showArchived, domain, ctx.contextData)
           if (secJoin !== undefined) {
             sqlChunks.push(secJoin)
           }
@@ -685,7 +687,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             sqlChunks.push(this.buildOrder(_class, domain, options.sort, joins))
           }
           if (options?.limit !== undefined) {
-            sqlChunks.push(`LIMIT ${options.limit}`)
+            sqlChunks.push(`LIMIT ${escape(options.limit)}`)
           }
 
           return (await this.mgr.retry(ctx.id, async (connection) => {
@@ -693,7 +695,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             if (options?.total === true) {
               const pvars = new ValuesVariables()
               const showArchived = shouldShowArchived(query, options)
-              const secJoin = this.addSecurity(pvars, query, showArchived, domain, ctx.contextData)
+              const secJoin = this.addSecurity(_class, pvars, query, showArchived, domain, ctx.contextData)
               const totalChunks: string[] = []
               if (secJoin !== undefined) {
                 totalChunks.push(secJoin)
@@ -715,11 +717,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             fquery = finalSql
 
             const result = await connection.execute(finalSql, vars.getValues())
-            if (
-              options?.lookup === undefined &&
-              options?.domainLookup === undefined &&
-              options?.associations === undefined
-            ) {
+            if (options?.lookup === undefined && options?.associations === undefined) {
               return toFindResult(
                 result.map((p) => parseDocWithProjection(p, domain, projection)),
                 total
@@ -752,53 +750,42 @@ abstract class PostgresAdapterBase implements DbAdapter {
   ): Projection<T> | undefined {
     if (projection === undefined) return
 
+    const res: Projection<T> = {}
     if (!this.hierarchy.isMixin(_class)) {
-      return projection
+      for (const key in projection) {
+        ;(res as any)[escape(key)] = escape(projection[key])
+      }
+      return res
     }
 
-    projection = { ...projection }
     for (const key in projection) {
-      if (key.includes('.')) continue
-      try {
-        const attr = this.hierarchy.findAttribute(_class, key)
-        if (attr !== undefined && this.hierarchy.isMixin(attr.attributeOf)) {
-          const newKey = `${attr.attributeOf}.${attr.name}` as keyof Projection<T>
-          projection[newKey] = projection[key]
-
-          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          delete projection[key]
+      if (key.includes('.')) {
+        ;(res as any)[escape(key)] = escape(projection[key])
+      } else {
+        try {
+          const attr = this.hierarchy.findAttribute(_class, key)
+          if (attr !== undefined && this.hierarchy.isMixin(attr.attributeOf)) {
+            const newKey = `${attr.attributeOf}.${attr.name}` as keyof Projection<T>
+            res[newKey] = escape(projection[key])
+          } else {
+            ;(res as any)[escape(key)] = escape(projection[key])
+          }
+        } catch (err: any) {
+          // ignore, if
         }
-      } catch (err: any) {
-        // ignore, if
       }
     }
 
-    return projection
+    return res
   }
 
   private buildJoins<T extends Doc>(_class: Ref<Class<T>>, options: ServerFindOptions<T> | undefined): JoinProps[] {
     const joins = this.buildJoin(_class, options?.lookup)
-    if (options?.domainLookup !== undefined) {
-      const baseDomain = translateDomain(this.hierarchy.getDomain(_class))
-
-      const domain = translateDomain(options.domainLookup.domain)
-      const key = options.domainLookup.field
-      const as = `lookup_${domain}_${key}`
-      joins.push({
-        isReverse: false,
-        table: domain,
-        path: options.domainLookup.field,
-        toAlias: as,
-        toField: '_id',
-        fromField: key,
-        fromAlias: baseDomain,
-        toClass: undefined
-      })
-    }
     return joins
   }
 
   addSecurity<T extends Doc>(
+    _class: Ref<Class<T>>,
     vars: ValuesVariables,
     query: DocumentQuery<T>,
     showArchived: boolean,
@@ -816,8 +803,15 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? '"objectSpace"' : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
         const archivedCheck = showArchived ? '' : ' AND sec.archived = false'
-        const q = `(sec.members @> '{"${acc.uuid}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})${archivedCheck}`
-        return `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND ${q}`
+        const q = `(sec._id = '${core.space.Space}' OR sec."_class" = '${core.class.SystemSpace}' OR sec.members @> '{"${acc.uuid}"}'${privateCheck})${archivedCheck}`
+        const res = `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND ${q}`
+
+        const collabSec = this.modelDb.findAllSync(core.class.ClassCollaborators, { attachedTo: _class })[0]
+        if (collabSec === undefined || collabSec.provideSecurity !== true || acc.role !== AccountRole.Guest) {
+          return res
+        }
+        const collab = ` INNER JOIN ${translateDomain(DOMAIN_COLLABORATOR)} AS collab_sec ON collab_sec.collaborator = '${acc.uuid}' AND collab_sec."attachedTo" = ${domain}._id AND collab_sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND ${q}`
+        return res + collab
       }
     }
   }
@@ -1054,7 +1048,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
     parentAlias?: string
   ): void {
     const baseDomain = parentAlias ?? translateDomain(this.hierarchy.getDomain(clazz))
-    for (const key in lookup) {
+    for (const _key in lookup) {
+      const key = escape(_key)
       if (key === '_id') {
         this.getReverseLookupValue(baseDomain, lookup, res, parentKey)
         continue
@@ -1195,7 +1190,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (options?.skipClass !== true) {
       query._class = this.fillClass(_class, query) as any
     }
-    for (const key in query) {
+    for (const _key in query) {
+      const key = escape(_key)
       if (options?.skipSpace === true && key === 'space') {
         continue
       }
@@ -1526,7 +1522,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   getAssociationsProjections (vars: ValuesVariables, baseDomain: string, associations: AssociationQuery[]): string[] {
     const res: string[] = []
     for (const association of associations) {
-      const _id = association[0]
+      const _id = escape(association[0])
       const assoc = this.modelDb.findObject(_id)
       if (assoc === undefined) {
         continue
@@ -1547,7 +1543,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           AND relation."workspaceId" = ${wsId}
           WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id" 
           AND relation.association = '${_id}'
-          AND assoc."workspaceId" = ${wsId}) AS assoc_${tagetDomain}_${association[0]}`
+          AND assoc."workspaceId" = ${wsId}) AS assoc_${tagetDomain}_${_id}`
       )
     }
     return res
@@ -1581,7 +1577,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
       if (projection._class === undefined) {
         res.push(`${baseDomain}."_class" AS "_class"`)
       }
-      for (const key in projection) {
+      for (const _key in projection) {
+        const key = escape(_key)
         if (isDataField(baseDomain, key)) {
           if (!dataAdded) {
             res.push(`${baseDomain}.data as data`)

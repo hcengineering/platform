@@ -19,7 +19,10 @@ import accountPlugin, {
   createWorkspaceRecord,
   flattenStatus,
   getAccountDB,
+  getWorkspaceById,
   getWorkspaceInfoWithStatusById,
+  getWorkspaces,
+  getWorkspacesInfoWithStatusByIds,
   signUpByEmail,
   updateWorkspaceInfo,
   type AccountDB,
@@ -56,6 +59,8 @@ import { updateField } from './workspace'
 
 import {
   AccountRole,
+  isArchivingMode,
+  isDeletingMode,
   MeasureMetricsContext,
   metricsToString,
   SocialIdType,
@@ -103,6 +108,7 @@ import {
   ensureGlobalPersonsForLocalAccounts,
   filterMergedAccountsInMembers,
   migrateCreatedModifiedBy,
+  migrateCreatedModifiedByFixed,
   migrateMergedAccounts,
   moveAccountDbFromMongoToPG
 } from './db'
@@ -114,6 +120,7 @@ import { createRestClient } from '@hcengineering/api-client'
 import { mkdir, writeFile } from 'fs/promises'
 import { basename, dirname } from 'path'
 import { existsSync } from 'fs'
+import { restoreMarkupRefs } from './markup'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -1352,6 +1359,7 @@ export function devTool (
   program
     .command('backup-s3-download <bucketName> <dirName> <storeIn>')
     .description('Download a full backup from s3 to local dir')
+    .option('-s, --skip <skip>', 'skip downloading of these files')
     .action(async (bucketName: string, dirName: string, storeIn: string, cmd) => {
       const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
       const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
@@ -1361,7 +1369,7 @@ export function devTool (
         console.log('downloading backup...', cmd.skip)
         await backupDownload(storage, storeIn, new Set(cmd.skip.split(';')))
       } catch (err: any) {
-        toolCtx.error('failed to size backup', { err })
+        toolCtx.error('failed to download backup', { err })
       }
       await storageAdapter.close()
     })
@@ -2409,6 +2417,65 @@ export function devTool (
       await migrateCreatedModifiedBy(toolCtx, dbUrl, domains, maxLifetime, batchSize)
     })
 
+  program
+    .command('migrate-created-modified-by-fixed')
+    .option('--include-domains <includeDomains>', 'Domains to migrate(comma-separated)')
+    .option('--exclude-domains <excludeDomains>', 'Domains to skip migration for(comma-separated)')
+    .option('--lifetime <lifetime>', 'Max lifetime for the connection in seconds')
+    .option('--batch <batch>', 'Batch size')
+    .option('--force <force>', 'Force update', false)
+    .option('--max-reconnects <maxReconnects>', 'Max reconnects', '30')
+    .option('--max-retries <maxRetries>', 'Max reconnects', '50')
+    .option('--workspaces <workspaces>', 'Workspaces to migrate(comma-separated)')
+    .action(
+      async (cmd: {
+        includeDomains?: string
+        excludeDomains?: string
+        lifetime?: string
+        batch?: string
+        workspaces?: string
+        force: boolean
+        maxReconnects: string
+        maxRetries: string
+      }) => {
+        const { dbUrl } = prepareTools()
+        const includeDomains = cmd.includeDomains?.split(',').map((d) => d.trim())
+        const excludeDomains = cmd.excludeDomains?.split(',').map((d) => d.trim())
+        const maxLifetime = cmd.lifetime != null ? parseInt(cmd.lifetime) : undefined
+        const batchSize = cmd.batch != null ? parseInt(cmd.batch) : undefined
+        const maxReconnects = parseInt(cmd.maxReconnects)
+        const maxRetries = parseInt(cmd.maxRetries)
+        const wsUuids = cmd.workspaces?.split(',').map((it) => it.trim()) as WorkspaceUuid[]
+
+        await withAccountDatabase(async (accDb) => {
+          const rawWorkspaces =
+            wsUuids != null && wsUuids.length > 0
+              ? await getWorkspacesInfoWithStatusByIds(accDb, wsUuids)
+              : await getWorkspaces(accDb, null, null, null)
+          const workspaces = rawWorkspaces
+            .filter((it) => !isArchivingMode(it.status.mode) && !isDeletingMode(it.status.mode))
+            .sort((a, b) => (b.status.lastVisit ?? 0) - (a.status.lastVisit ?? 0))
+
+          toolCtx.info('Workspaces found', { count: workspaces.length })
+
+          for (const workspace of workspaces) {
+            await migrateCreatedModifiedByFixed(
+              toolCtx,
+              dbUrl,
+              workspace,
+              includeDomains,
+              excludeDomains,
+              maxLifetime,
+              batchSize,
+              cmd.force,
+              maxReconnects,
+              maxRetries
+            )
+          }
+        })
+      }
+    )
+
   program.command('ensure-global-persons-for-local-accounts').action(async () => {
     const { dbUrl } = prepareTools()
 
@@ -2605,6 +2672,18 @@ export function devTool (
       await performCalendarAccountMigrations(_client.db(cmd.db), cmd.region ?? null, kvsUrl)
       await _client.close()
       client.close()
+    })
+
+  program
+    .command('restore-markup-refs')
+    .option('--region <region>', 'DB region')
+    .action(async (cmd: { region?: string }) => {
+      const { dbUrl, txes } = prepareTools()
+      const region = cmd.region ?? null
+
+      await withStorage(async (adapter) => {
+        await restoreMarkupRefs(dbUrl, txes, adapter, region)
+      })
     })
 
   extendProgram?.(program)

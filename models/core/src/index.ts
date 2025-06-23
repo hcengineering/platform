@@ -69,7 +69,9 @@ import {
   TTypeString,
   TTypeTimestamp,
   TVersion,
-  TSequence
+  TSequence,
+  TClassCollaborators,
+  TCollaborator
 } from './core'
 import { definePermissions } from './permissions'
 import { TPermission, TRole, TSpace, TSpaceType, TSpaceTypeDescriptor, TSystemSpace, TTypedSpace } from './security'
@@ -161,7 +163,9 @@ export function createModel (builder: Builder): void {
     TAssociation,
     TDomainIndexConfiguration,
     TBenchmarkDoc,
-    TTransientConfiguration
+    TTransientConfiguration,
+    TClassCollaborators,
+    TCollaborator
   )
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {

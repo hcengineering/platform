@@ -1,4 +1,4 @@
-import calendar from '@hcengineering/calendar'
+import { type AccountClient } from '@hcengineering/account-client'
 import {
   type PersonId,
   type WorkspaceInfoWithStatus,
@@ -7,11 +7,9 @@ import {
   systemAccountUuid
 } from '@hcengineering/core'
 import { getClient as getKvsClient } from '@hcengineering/kvs-client'
-import { createClient, getAccountClient } from '@hcengineering/server-client'
+import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
-import setting from '@hcengineering/setting'
 import type { Db } from 'mongodb'
-import { getWorkspaceTransactorEndpoint } from './utils'
 
 interface Credentials {
   refresh_token?: string | null
@@ -85,34 +83,16 @@ export async function performCalendarAccountMigrations (db: Db, region: string |
   console.log('Finished Calendar migrations')
 }
 
-const workspacePersonsMap = new Map<WorkspaceUuid, Record<string, PersonId>>()
+const personsMap = new Map<string, PersonId | undefined>()
 
-async function getPersonIdByEmail (workspace: WorkspaceUuid, email: string): Promise<PersonId | undefined> {
-  const map = workspacePersonsMap.get(workspace)
-  if (map != null) {
-    return map[email]
+async function getPersonIdByEmail (accountClient: AccountClient, email: string): Promise<PersonId | undefined> {
+  if (personsMap.has(email)) {
+    const val = personsMap.get(email)
+    return val
   } else {
-    const transactorUrl = await getWorkspaceTransactorEndpoint(workspace)
-    const token = generateToken(systemAccountUuid, workspace, {
-      model: 'upgrade',
-      mode: 'backup'
-    })
-    const client = await createClient(transactorUrl, token)
-    try {
-      const res: Record<string, PersonId> = {}
-      const integrations = await client.findAll(setting.class.Integration, {
-        type: calendar.integrationType.Calendar
-      })
-      for (const integration of integrations) {
-        const val = integration.value.trim()
-        if (val === '') continue
-        res[val] = integration.createdBy ?? integration.modifiedBy
-      }
-      workspacePersonsMap.set(workspace, res)
-      return res[email]
-    } finally {
-      await client.close()
-    }
+    const res = await accountClient.findSocialIdBySocialKey(`email:${email}`)
+    personsMap.set(email, res)
+    return res
   }
 }
 
@@ -137,7 +117,7 @@ async function migrateCalendarIntegrations (
         if (!isActiveMode(ws.mode)) continue
         token.workspace = ws.uuid
 
-        const personId = await getPersonIdByEmail(ws.uuid, token.email)
+        const personId = await getPersonIdByEmail(accountClient, token.email)
         if (personId == null) {
           console.error('No socialId found for token', token)
           continue
@@ -208,6 +188,7 @@ async function migrateCalendarHistory (
 ): Promise<void> {
   try {
     console.log('Start Calendar history migrations')
+    const accountClient = getAccountClient(token)
     const history = db.collection<OldHistory>('histories')
     const allHistories = await history.find({}).toArray()
     const calendarHistory = db.collection<OldHistory>('calendarHistories')
@@ -223,7 +204,7 @@ async function migrateCalendarHistory (
         }
         if (!isActiveMode(ws.mode)) continue
 
-        const personId = await getPersonIdByEmail(ws.uuid, history.email)
+        const personId = await getPersonIdByEmail(accountClient, history.email)
         if (personId == null) {
           console.error('No socialId found for token', token)
           continue

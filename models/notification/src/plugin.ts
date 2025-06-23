@@ -27,7 +27,6 @@ export default mergeIds(notificationId, notification, {
     PlatformNotification: '' as IntlString,
     BrowserNotification: '' as IntlString,
     EmailNotification: '' as IntlString,
-    Collaborators: '' as IntlString,
     Archive: '' as IntlString,
     MarkAsUnread: '' as IntlString,
     MarkAsRead: '' as IntlString,
@@ -42,7 +41,8 @@ export default mergeIds(notificationId, notification, {
     Inbox: '' as Ref<Application>
   },
   ids: {
-    CollaboratorsChangedMessage: '' as Ref<DocUpdateMessageViewlet>
+    CollaboratorsAddMessage: '' as Ref<DocUpdateMessageViewlet>,
+    CollaboratorsRemoveMessage: '' as Ref<DocUpdateMessageViewlet>
   },
   component: {
     NotificationSettings: '' as AnyComponent,
