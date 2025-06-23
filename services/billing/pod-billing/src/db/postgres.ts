@@ -94,7 +94,12 @@ export class PostgresDB implements BillingDB {
     }
   }
 
-  async getLiveKitStats (ctx: MeasureContext, workspace: WorkspaceUuid, start: Date, end: Date): Promise<LiveKitUsageData> {
+  async getLiveKitStats (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    start: Date,
+    end: Date
+  ): Promise<LiveKitUsageData> {
     return {
       sessions: await this.getDailySessionTotals(ctx, workspace, start, end),
       egress: await this.getDailyEgressTotals(ctx, workspace, start, end)

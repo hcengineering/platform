@@ -22,7 +22,12 @@ export class LoggedDB implements BillingDB {
     private readonly db: BillingDB
   ) {}
 
-  async getLiveKitStats (ctx: MeasureContext, workspace: WorkspaceUuid, start: Date, end: Date): Promise<LiveKitUsageData> {
+  async getLiveKitStats (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    start: Date,
+    end: Date
+  ): Promise<LiveKitUsageData> {
     return await ctx.with('db.getLiveKitUsage', {}, () => this.db.getLiveKitStats(this.ctx, workspace, start, end))
   }
 
