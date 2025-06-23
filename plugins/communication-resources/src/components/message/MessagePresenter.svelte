@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
   import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
-  import { getClient, getCommunicationClient } from '@hcengineering/presentation'
+  import { getCommunicationClient } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
   import { getCurrentAccount } from '@hcengineering/core'
   import ui, {
@@ -40,10 +40,10 @@
 
   export let card: Card
   export let message: Message
-  export let editable: boolean = true
   export let padding: string | undefined = undefined
   export let compact: boolean = false
   export let hideAvatar: boolean = false
+  export let readonly: boolean = false
 
   const communicationClient = getCommunicationClient()
   const me = getCurrentAccount()
@@ -56,15 +56,12 @@
   $: void updateAuthor(message.creator)
 
   function canEdit (): boolean {
-    if (!editable) return false
     if (message.type !== MessageType.Message) return false
-    if (message.thread != null) return false
 
     return me.socialIds.includes(message.creator)
   }
 
   function canRemove (): boolean {
-    if (!editable) return false
     if (message.type !== MessageType.Message) return false
 
     return me.socialIds.includes(message.creator)
@@ -180,6 +177,7 @@
 
   let isActionsOpened = false
 
+  $: showActions = !isEditing && !isDeleted && !readonly
   $: isThread = message.thread != null
 </script>
 
@@ -188,9 +186,9 @@
 <div
   class="message"
   id={`${message.id}`}
-  on:contextmenu={editable && !isEditing && !isDeleted ? handleContextMenu : undefined}
+  on:contextmenu={showActions ? handleContextMenu : undefined}
   class:active={isActionsOpened && !isEditing}
-  class:noHover={!editable}
+  class:noHover={readonly}
   style:padding
 >
   {#if message.type === MessageType.Activity || (message.removed && message.thread?.threadId === undefined)}
@@ -199,7 +197,7 @@
     <MessageBody {message} {card} {author} bind:isEditing compact={compact && !isThread} {hideAvatar} />
   {/if}
 
-  {#if !isEditing && editable && !isDeleted}
+  {#if showActions}
     <div class="message__actions" class:opened={isActionsOpened}>
       <MessageActionsPanel
         {message}
