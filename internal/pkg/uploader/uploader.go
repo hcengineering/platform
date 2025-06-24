@@ -165,17 +165,7 @@ func (u *uploaderImpl) stop(rollback bool) {
 
 	// Perform rollback
 	if rollback {
-		u.logger.Debug("starting rollback...")
-		var i uint32
-		u.sentFiles.Range(func(key, _ any) bool {
-			i++
-			var filename = key.(string)
-			u.workersCh[i%u.options.WorkerCount] <- func() {
-				u.deleteRemoteFile(filename)
-			}
-			return true
-		})
-		u.logger.Debug("rollback done")
+		u.uploadRollback()
 	}
 
 	u.uploadCancel()
@@ -196,6 +186,36 @@ func (u *uploaderImpl) stop(rollback bool) {
 	u.sentFiles.Clear()
 
 	u.logger.Debug("stopped", zap.Bool("rollback", rollback))
+}
+
+func (u *uploaderImpl) uploadRollback() {
+	u.logger.Debug("starting rollback...")
+
+	// Create a separate worker pool for rollback
+	var rollbackWg sync.WaitGroup
+	rollbackCh := make(chan string, u.options.BufferSize)
+
+	// Start rollback workers
+	for range u.options.WorkerCount {
+		rollbackWg.Add(1)
+		go func() {
+			defer rollbackWg.Done()
+			for filename := range rollbackCh {
+				u.deleteRemoteFile(filename)
+			}
+		}()
+	}
+
+	// Send files to rollback
+	u.sentFiles.Range(func(key, _ any) bool {
+		rollbackCh <- key.(string)
+		return true
+	})
+
+	// Close channel and wait for rollback to complete
+	close(rollbackCh)
+	rollbackWg.Wait()
+	u.logger.Debug("rollback done")
 }
 
 func (u *uploaderImpl) Start() {
