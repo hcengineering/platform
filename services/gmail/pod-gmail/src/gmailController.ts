@@ -235,7 +235,7 @@ export class GmailController {
     }
     this.ctx.info('Processing push', { clients: clients.size, email })
     for (const client of clients.values()) {
-      void client.sync()
+      void client.sync({ noNotify: false })
     }
   }
 
