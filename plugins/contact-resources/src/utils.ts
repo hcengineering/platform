@@ -402,7 +402,7 @@ onClient(() => {
 
   employeesQuery.query(
     contact.mixin.Employee,
-    { active: { $in: [true, false] } },
+    {},
     (res) => {
       const personIdToEmployee = new Map<PersonId, Employee>()
       const socialKeyToEmployee = new Map<string, Employee>()
