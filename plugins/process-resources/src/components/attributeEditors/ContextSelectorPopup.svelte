@@ -54,7 +54,7 @@
 
   function getProcessContext (process: Process, attribute: AnyAttribute): ProcessContext[] {
     const res: ProcessContext[] = []
-    for (const key in process.context) {
+    for (const key in process?.context ?? {}) {
       const ctx = process.context[key as ContextId]
       if (ctx._class === attribute.type._class && isTypeEqual(ctx.type, attribute.type)) {
         res.push(ctx)

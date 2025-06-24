@@ -65,7 +65,18 @@
     "AddTransition": "Ajouter une transition",
     "ToDo": "Tâche",
     "CurrentCard": "Carte actuelle",
-    "Data": "Données"
+    "Data": "Données",
+    "Prepend": "Préfixer",
+    "Append": "Ajouter",
+    "Replace": "Remplacer",
+    "ReplaceAll": "Remplacer tout",
+    "Split": "Diviser",
+    "Cut": "Couper",
+    "Replacement": "Remplacement",
+    "Search": "Rechercher",
+    "Separator": "Séparateur",
+    "Start": "Début",
+    "End": "Fin"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

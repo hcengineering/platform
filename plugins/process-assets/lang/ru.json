@@ -65,7 +65,18 @@
     "AddTransition": "Добавить переход",
     "ToDo": "ToDo",
     "CurrentCard": "Текущая карточка",
-    "Data": "Данные"
+    "Data": "Данные",
+    "Prepend": "Добавить в начало",
+    "Append": "Добавить в конец",
+    "Replace": "Заменить",
+    "ReplaceAll": "Заменить все",
+    "Split": "Разделить",
+    "Cut": "Вырезать",
+    "Replacement": "Замена",
+    "Search": "Поиск",
+    "Separator": "Разделитель",
+    "Start": "Начало",
+    "End": "Конец"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
