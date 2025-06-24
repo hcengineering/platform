@@ -78,7 +78,15 @@
     "Search": "Search",
     "Separator": "Separator",
     "Start": "Start",
-    "End": "End"
+    "End": "End",
+    "Multiply": "Multiply",
+    "Divide": "Divide",
+    "Modulo": "Modulo",
+    "Power": "Power",
+    "Round": "Round",
+    "Absolute": "Absolute",
+    "Ceil": "Ceil",
+    "Floor": "Floor"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",
