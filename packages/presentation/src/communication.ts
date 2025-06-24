@@ -101,9 +101,14 @@ export function getCommunicationClient (): CommunicationClient {
 export async function setCommunicationClient (platformClient: PlatformClient): Promise<void> {
   if (client !== undefined) {
     client.close()
+    client = undefined
   }
-  client = new Client(platformClient)
-  initLiveQueries(client, getCurrentWorkspaceUuid(), getFilesUrl(), onDestroy)
+  const _client = new Client(platformClient)
+  initLiveQueries(_client, getCurrentWorkspaceUuid(), getFilesUrl(), onDestroy)
+  client = _client
+  onClientListeners.forEach((fn) => {
+    fn()
+  })
 }
 
 const COMMUNICATION = 'communication' as OperationDomain
