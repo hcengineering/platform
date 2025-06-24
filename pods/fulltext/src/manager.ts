@@ -177,14 +177,17 @@ export class WorkspaceManager {
           if (mm.type === QueueWorkspaceEvent.Restored) {
             this.restoring.delete(ws)
           }
-          if (this.restoring.has(ws) || !await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
-            await indexer.dropWorkspace() // TODO: Add heartbeat
-            const classes = await indexer.getIndexClassess()
-            await this.workspaceProducer.send(
-              ws,
-              classes.map((it) => workspaceEvents.reindex(it.domain, it.classes))
-            )
-          })) {
+          if (
+            this.restoring.has(ws) ||
+            !(await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
+              await indexer.dropWorkspace() // TODO: Add heartbeat
+              const classes = await indexer.getIndexClassess()
+              await this.workspaceProducer.send(
+                ws,
+                classes.map((it) => workspaceEvents.reindex(it.domain, it.classes))
+              )
+            }))
+          ) {
             await this.workspaceProducer.send(ws, [workspaceEvents.fullReindex()]).catch((err) => {
               this.ctx.error('error', { err })
             })
