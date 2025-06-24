@@ -15,8 +15,8 @@ import { type Resources } from '@hcengineering/platform'
 import FunctionSelector from './components/attributeEditors/FunctionSelector.svelte'
 import NestedContextSelector from './components/attributeEditors/NestedContextSelector.svelte'
 import RelatedContextSelector from './components/attributeEditors/RelatedContextSelector.svelte'
-import DateOffsetEditor from './components/contextEditors/DateOffsetEditor.svelte'
-import NumberOffsetEditor from './components/contextEditors/NumberOffsetEditor.svelte'
+import DateOffsetEditor from './components/transformEditors/DateOffsetEditor.svelte'
+import NumberOffsetEditor from './components/transformEditors/NumberOffsetEditor.svelte'
 import RequestUserInput from './components/contextEditors/RequestUserInput.svelte'
 import ErrorPresenter from './components/ErrorPresenter.svelte'
 import ExecutonPresenter from './components/ExecutonPresenter.svelte'
@@ -44,6 +44,10 @@ import ProcessesCardSection from './components/ProcessesCardSection.svelte'
 
 import { continueExecution, showDoneQuery, todoTranstionCheck } from './utils'
 import { ProcessMiddleware } from './middleware'
+import AppendEditor from './components/transformEditors/AppendEditor.svelte'
+import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
+import SplitEditor from './components/transformEditors/SplitEditor.svelte'
+import CutEditor from './components/transformEditors/CutEditor.svelte'
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
@@ -68,8 +72,6 @@ export default async (): Promise<Resources> => ({
     FunctionSelector,
     Main,
     RunProcessCardPopup,
-    DateOffsetEditor,
-    NumberOffsetEditor,
     ErrorPresenter,
     RequestUserInput,
     ResultInput,
@@ -80,6 +82,14 @@ export default async (): Promise<Resources> => ({
     ToDoRemoveEditor: ToDoParamsEditor,
     ToDoCloseEditor: ToDoParamsEditor,
     ProcessesCardSection
+  },
+  transformEditor: {
+    DateOffsetEditor,
+    NumberOffsetEditor,
+    AppendEditor,
+    ReplaceEditor,
+    SplitEditor,
+    CutEditor
   },
   triggerCheck: {
     ToDo: todoTranstionCheck
