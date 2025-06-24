@@ -17,7 +17,7 @@ import { type MeasureContext, type Tx } from '@hcengineering/core'
 import { PlatformQueueProducer } from '@hcengineering/server-core'
 import { Readable } from 'stream'
 
-import { type BlobDB } from './db'
+import { type BlobDB, WorkspaceStatsResult } from './db'
 import { digestToUUID, stringToUUID } from './encodings'
 import { type BlobHead, type BlobBody, type BlobList, type BlobStorage, type Datalake, type Location } from './types'
 import { type S3Bucket } from '../s3'
@@ -236,6 +236,10 @@ export class DatalakeImpl implements Datalake {
       throw new Error(`Unsupported location: ${location}`)
     }
     return { location, bucket }
+  }
+
+  async getWorkspaceStats (ctx: MeasureContext, workspace: string): Promise<WorkspaceStatsResult> {
+    return await this.db.getWorkspaceStats(ctx, workspace)
   }
 
   selectLocation (workspace: string): Location {

@@ -136,6 +136,18 @@ importers:
       '@rush-temp/backup-service':
         specifier: file:./projects/backup-service.tgz
         version: file:projects/backup-service.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/billing':
+        specifier: file:./projects/billing.tgz
+        version: file:projects/billing.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/billing-assets':
+        specifier: file:./projects/billing-assets.tgz
+        version: file:projects/billing-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/billing-client':
+        specifier: file:./projects/billing-client.tgz
+        version: file:projects/billing-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/billing-resources':
+        specifier: file:./projects/billing-resources.tgz
+        version: file:projects/billing-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/bitrix':
         specifier: file:./projects/bitrix.tgz
         version: file:projects/bitrix.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
@@ -490,6 +502,9 @@ importers:
       '@rush-temp/model-attachment':
         specifier: file:./projects/model-attachment.tgz
         version: file:projects/model-attachment.tgz
+      '@rush-temp/model-billing':
+        specifier: file:./projects/model-billing.tgz
+        version: file:projects/model-billing.tgz
       '@rush-temp/model-bitrix':
         specifier: file:./projects/model-bitrix.tgz
         version: file:projects/model-bitrix.tgz
@@ -784,6 +799,9 @@ importers:
       '@rush-temp/pod-backup':
         specifier: file:./projects/pod-backup.tgz
         version: file:projects/pod-backup.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
+      '@rush-temp/pod-billing':
+        specifier: file:./projects/pod-billing.tgz
+        version: file:projects/pod-billing.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
       '@rush-temp/pod-calendar':
         specifier: file:./projects/pod-calendar.tgz
         version: file:projects/pod-calendar.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@6.0.4)
@@ -3922,11 +3940,27 @@ packages:
     version: 0.0.0
 
   '@rush-temp/backup-api-pod@file:projects/backup-api-pod.tgz':
-    resolution: {integrity: sha512-roFrEBV0Kdm0zfsPXGCZOGcl8ssqxBvMwDLDJjdd9R1g+vrEBRHd9ITycv9Lb4KkLPaFDtuBXaMEvabL3AfsQA==, tarball: file:projects/backup-api-pod.tgz}
+    resolution: {integrity: sha512-feE9xvOz+vO12tXlIQfk+YauqLDwMwEMjL+rEMVH3v+xf3t6jOWEeNmuWlXFf/80HiyufiXp14FNPABBrrUefQ==, tarball: file:projects/backup-api-pod.tgz}
     version: 0.0.0
 
   '@rush-temp/backup-service@file:projects/backup-service.tgz':
     resolution: {integrity: sha512-aNVhJsn6esAPErFbuLc55NHzeW83/dPorSUk/9l1rPGy5cCXbVzDKPFLSDeMcEpT2u5WATB/qY7IjCNrOF72rg==, tarball: file:projects/backup-service.tgz}
+    version: 0.0.0
+
+  '@rush-temp/billing-assets@file:projects/billing-assets.tgz':
+    resolution: {integrity: sha512-x1KT0V1ooklMp3POF8zCihjSmsYiQxK6+6VxxMMLrGuvO/HhTHvx+ktwHDbKXhc4MboBxMKvGdEk6HU5ecAftA==, tarball: file:projects/billing-assets.tgz}
+    version: 0.0.0
+
+  '@rush-temp/billing-client@file:projects/billing-client.tgz':
+    resolution: {integrity: sha512-CLO8rTN+ZBPuOvqTuqcpiT3h+4V2aYpoDiIDPd+3ONntjG7OgxZRmyDjEM1XZtx+7a+gjIc8QjeBoqcIQjtBsA==, tarball: file:projects/billing-client.tgz}
+    version: 0.0.0
+
+  '@rush-temp/billing-resources@file:projects/billing-resources.tgz':
+    resolution: {integrity: sha512-m0KGGpcn5C0/v/HT2SmIYuaEsr7UMDyBLpOwaq0x9BnbmKlGz53M1KCEOtMaZxSSWLD4nIo0eI6TGZMGxr2BkA==, tarball: file:projects/billing-resources.tgz}
+    version: 0.0.0
+
+  '@rush-temp/billing@file:projects/billing.tgz':
+    resolution: {integrity: sha512-0thPlxKiEgoMOfCphzpmDUooCD4aVMZr2Nvqy0vkkJjrjhCGZ+ZkEhX6sAStHScl7I01haC24xe4mXF679W2vg==, tarball: file:projects/billing.tgz}
     version: 0.0.0
 
   '@rush-temp/bitrix-assets@file:projects/bitrix-assets.tgz':
@@ -4118,7 +4152,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-2BOPa9LfXg7PQhgYZoHr8z0cBXufjnKuVlkt/K4coVpBswxW+cCeLIN5y4y+dvmNFhti2TVo66q5kOrc90YoiQ==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-ImVkzGo/qJ0L7GhN54QDVNGv19r98j4uHMDQ87wS3gdwIH5GwfVYlYyC/BD5+z9yg2op1kXWjsvuvvl418Gi2w==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4386,7 +4420,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-all@file:projects/model-all.tgz':
-    resolution: {integrity: sha512-PQeZJY2wob53vGyp8XHBAyfZKPGKNS5FjQOKpnhfvmvhBYz7i29FqqKKHVt3iFD/qQgt216cK8ddNfglsbG5QQ==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-xTkgKvNrpzEzl/SQ9PCj/zn+WLZdUvjxYkF8lDeRYrfZwatgKViqo/6IuhrE1FXXUcYHsasBPbUO7wS9NWXadA==, tarball: file:projects/model-all.tgz}
     version: 0.0.0
 
   '@rush-temp/model-analytics-collector@file:projects/model-analytics-collector.tgz':
@@ -4395,6 +4429,10 @@ packages:
 
   '@rush-temp/model-attachment@file:projects/model-attachment.tgz':
     resolution: {integrity: sha512-7hzeDAKLGYrkteX/IxXYTiszF5wdIgXm5owCuGE1OazcRmJfNS1r7RNZKXL5Rg51QgZqdmQmWnzJXEW6cqusnw==, tarball: file:projects/model-attachment.tgz}
+    version: 0.0.0
+
+  '@rush-temp/model-billing@file:projects/model-billing.tgz':
+    resolution: {integrity: sha512-3kTNtO2Pn18NNZtXlFecftH08JhNN8gy6+tD9WDkPOgOOybLyO804zYg5DIdUKOkvUCF4g5YqZKJPEGq/ghHoA==, tarball: file:projects/model-billing.tgz}
     version: 0.0.0
 
   '@rush-temp/model-bitrix@file:projects/model-bitrix.tgz':
@@ -4793,6 +4831,10 @@ packages:
     resolution: {integrity: sha512-5zwc6BJ0qwdOv/STKbVT0zOTinP4/1tsyjcXi+JK75YOvgjLyAKJpLlCFDl109EmlMKio3QvtcVtIuvSAOsg6g==, tarball: file:projects/pod-backup.tgz}
     version: 0.0.0
 
+  '@rush-temp/pod-billing@file:projects/pod-billing.tgz':
+    resolution: {integrity: sha512-73NpRNiYU/Zzhzlrc9vZLnRJIikEeNROXUfdRMDCSnnnD5rd3BxpqwDBZDHCb6iYPoJB2vMQiE/rmwL5zMgjdg==, tarball: file:projects/pod-billing.tgz}
+    version: 0.0.0
+
   '@rush-temp/pod-calendar-mailer@file:projects/pod-calendar-mailer.tgz':
     resolution: {integrity: sha512-xdITTmh0XkwAatniD4nHCMCLYMwAwQ2/P8fBJi84soDdiqwlCI24VEsdkuUXbscPLMIGRfIHApNuIwdiOBdjRg==, tarball: file:projects/pod-calendar-mailer.tgz}
     version: 0.0.0
@@ -4838,7 +4880,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
-    resolution: {integrity: sha512-xDHHIqCINZr5nPUMiqt6WXT59KqdGx81Yyajf1/52u6IIGp38ldq+crQFDGnT17soaNxUYJjZuEkDoF1vgJ38w==, tarball: file:projects/pod-love.tgz}
+    resolution: {integrity: sha512-ii97uZ2rg+aZ44gF7p0RLuW5Qs7S/Skb5RgAxuAgIRqydgNVaUelwBeGxgbpr5JnNfvp+jdWxRaTcN6S9o8tJQ==, tarball: file:projects/pod-love.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
@@ -4906,7 +4948,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
-    resolution: {integrity: sha512-bMSkIMVw78JU9foCyHxngjWO5uPLhczp/XgPsqn+rVsQ+g4fm5WiLwEYQt504vk0DspkFc7xPjDFnMyOpwfR6w==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-3GXelK24zvVFtIfKALBxN76biAVNO6/Lql+VnntoYLPbd3fXoW+Or8YXfd8NkzCeCNPSv8peCCanLDn6+3KztA==, tarball: file:projects/presentation.tgz}
     version: 0.0.0
 
   '@rush-temp/print-assets@file:projects/print-assets.tgz':
@@ -4934,7 +4976,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
-    resolution: {integrity: sha512-tD+6x24aPyUOgW+E3tdW+fOqoJoo4TIMCsztuCpJjKwHP4OAIv31EM6gUARZUz6VT6Txi+rOkVGu++plOtdepA==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-T4g4IfjD/0Op9iqtGgWixhNMmdGJc+pKl/errCAuujrH+uoyToKqDpjOFwNQMBVKjuz04IRs9tBhCSm1tJsx+g==, tarball: file:projects/prod.tgz}
     version: 0.0.0
 
   '@rush-temp/products-assets@file:projects/products-assets.tgz':
@@ -5494,7 +5536,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-S6rXcycEw6Q3S7/AncUq4N6DfgMnyTS6TsFY5ZY1LcuVq1yraxkX+5BQvbD6f0pHQL+SB6dkaIF5HwapeTBRZQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-9EoO13I7hXqI5uHeAETJaNQ9xlzDMqCrdu+aFJgAvrhzg5LMs8pUZsWeEjnSa95Xpww+/u76n+Lpcj+vWqsFgg==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -16697,10 +16739,6 @@ snapshots:
 
   '@rush-temp/backup-api-pod@file:projects/backup-api-pod.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
-      '@aws-sdk/client-s3': 3.738.0
-      '@aws-sdk/lib-storage': 3.738.0(@aws-sdk/client-s3@3.738.0)
-      '@aws-sdk/s3-request-presigner': 3.738.0
-      '@smithy/node-http-handler': 4.0.2
       '@tsconfig/node16': 1.0.4
       '@types/cors': 2.8.17
       '@types/express': 4.17.21
@@ -16708,7 +16746,6 @@ snapshots:
       '@types/jest': 29.5.12
       '@types/morgan': 1.9.9
       '@types/node': 22.15.29
-      '@types/on-headers': 1.0.3
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
@@ -16722,10 +16759,8 @@ snapshots:
       eslint-plugin-node: 11.1.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.21.2
-      express-fileupload: 1.5.1
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       morgan: 1.10.0
-      on-headers: 1.0.2
       postgres: 3.4.7
       prettier: 3.2.5
       sharp: 0.32.6
@@ -16737,7 +16772,6 @@ snapshots:
       - '@jest/types'
       - '@swc/core'
       - '@swc/wasm'
-      - aws-crt
       - babel-jest
       - babel-plugin-macros
       - node-notifier
@@ -16763,6 +16797,123 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/billing-assets@file:projects/billing-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 22.15.29
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/billing-client@file:projects/billing-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 22.15.29
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      cross-env: 7.0.3
+      esbuild: 0.24.2
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/billing-resources@file:projects/billing-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 22.15.29
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      filesize: 8.0.7
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
+      sass: 1.71.1
+      svelte: 4.2.19
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.19)
+      svelte-loader: 3.2.0(svelte@4.2.19)
+      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)(typescript@5.8.3)
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - coffeescript
+      - esbuild
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+      - ts-node
+
+  '@rush-temp/billing@file:projects/billing.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
       - babel-jest
       - babel-plugin-macros
       - esbuild
@@ -20281,6 +20432,21 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@rush-temp/model-billing@file:projects/model-billing.tgz':
+    dependencies:
+      '@types/node': 22.15.29
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
+
   '@rush-temp/model-bitrix@file:projects/model-bitrix.tgz':
     dependencies:
       '@types/node': 22.15.29
@@ -22080,6 +22246,48 @@ snapshots:
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       ts-node: 10.9.2(@types/node@22.15.29)(typescript@5.8.3)
       typescript: 5.8.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@swc/core'
+      - '@swc/wasm'
+      - babel-jest
+      - babel-plugin-macros
+      - node-notifier
+      - supports-color
+
+  '@rush-temp/pod-billing@file:projects/pod-billing.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
+    dependencies:
+      '@tsconfig/node16': 1.0.4
+      '@types/cors': 2.8.17
+      '@types/express': 4.17.21
+      '@types/jest': 29.5.12
+      '@types/morgan': 1.9.9
+      '@types/node': 22.15.29
+      '@types/on-headers': 1.0.3
+      '@types/uuid': 8.3.4
+      '@types/ws': 8.5.11
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      cors: 2.8.5
+      dotenv: 16.0.3
+      esbuild: 0.24.2
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-node: 11.1.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      express: 4.21.2
+      jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      morgan: 1.10.0
+      on-headers: 1.0.2
+      postgres: 3.4.7
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
+      ts-node: 10.9.2(@types/node@22.15.29)(typescript@5.8.3)
+      typescript: 5.8.3
+      uuid: 8.3.2
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'

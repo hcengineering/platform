@@ -33,10 +33,10 @@ import {
 } from '@hcengineering/server-core'
 import serverToken, { generateToken } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
-import { type UploadObjectParams, DatalakeClient } from './client'
+import { type UploadObjectParams, DatalakeClient, type WorkspaceStats } from './client'
 import { NotFoundError } from './error'
 
-export { DatalakeClient }
+export { DatalakeClient, type WorkspaceStats }
 
 /**
  * @public

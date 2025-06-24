@@ -125,6 +125,7 @@
     "@hcengineering/model-inbox": "^0.6.0",
     "@hcengineering/model-achievement": "^0.6.0",
     "@hcengineering/model-communication": "^0.6.0",
-    "@hcengineering/model-emoji": "^0.6.0"
+    "@hcengineering/model-emoji": "^0.6.0",
+    "@hcengineering/model-billing": "^0.6.0"
   }
 }

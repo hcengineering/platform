@@ -118,6 +118,7 @@ import processes, { processId, createModel as processModel } from '@hcengineerin
 import inbox, { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
 import { achievementId, createModel as achievementModel } from '@hcengineering/model-achievement'
 import { emojiId, createModel as emojiModel } from '@hcengineering/model-emoji'
+import { billingId, createModel as billingModel } from '@hcengineering/model-billing'
 import { communicationId, createModel as communicationModel } from '@hcengineering/model-communication'
 import { type Plugin } from '@hcengineering/platform'
 
@@ -471,6 +472,7 @@ export default function buildModel (): Builder {
     [emojiModel, emojiId],
     [communicationModel, communicationId],
     [mailModel, mailId],
+    [billingModel, billingId, { beta: false, hidden: true, enabled: true }],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
