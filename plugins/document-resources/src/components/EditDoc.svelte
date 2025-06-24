@@ -83,6 +83,9 @@
   let title = ''
   let innerWidth: number
 
+  let isCopied = false
+  let copyTimeout: ReturnType<typeof setTimeout>
+
   let headings: Heading[] = []
 
   let loadedDocumentContent = false
@@ -101,6 +104,7 @@
 
   onDestroy(async () => {
     void notificationClient.then((client) => client.readDoc(_id))
+    clearTimeout(copyTimeout)
   })
 
   const starredQuery = createQuery()
@@ -230,10 +234,17 @@
   $: actions = [
     {
       icon: view.icon.CopyId,
-      label: document.string.CopyDocumentUrl,
+      label: isCopied ? document.string.DocumentUrlCopied : document.string.CopyDocumentUrl,
       action: () => {
         if (doc !== undefined) {
           void copyTextToClipboard(getDocumentUrl(doc))
+          isCopied = true
+
+          clearTimeout(copyTimeout)
+
+          copyTimeout = setTimeout(() => {
+            isCopied = false
+          }, 2000)
         }
       }
     },
