@@ -43,6 +43,14 @@
     "JoinedThe": "Unisciti al",
     "LeftThe": "Abbandonato dal",
     "Translating": "Traduzione...",
-    "ShowOriginal": "Mostra l'originale"
+    "ShowOriginal": "Mostra l'originale",
+    "AddReaction": "Aggiungi reazione",
+    "ReplyInThread": "Rispondi nel thread",
+    "TranslateMessage": "Traduci messaggio",
+    "ShowOriginalMessage": "Mostra messaggio originale",
+    "EditMessage": "Modifica messaggio",
+    "RemoveMessage": "Rimuovi messaggio",
+    "CreateCard": "Crea scheda",
+    "MessageAlreadyHasCardAttached": "Oops! Questo messaggio ha già una scheda allegata."
   }
 }

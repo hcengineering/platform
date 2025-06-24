@@ -24,7 +24,7 @@
   import MessageInput from './MessageInput.svelte'
   import MessageContentViewer from './MessageContentViewer.svelte'
   import MessageFooter from './MessageFooter.svelte'
-  import { translateMessagesStore } from '../../stores'
+  import { translateMessagesStore, messageEditingStore } from '../../stores'
 
   export let card: Card
   export let author: Person | undefined
@@ -61,10 +61,10 @@
           {card}
           {message}
           onCancel={() => {
-            isEditing = false
+            messageEditingStore.set(undefined)
           }}
           on:edited={() => {
-            isEditing = false
+            messageEditingStore.set(undefined)
           }}
         />
       {/if}
@@ -123,10 +123,10 @@
           {card}
           {message}
           onCancel={() => {
-            isEditing = false
+            messageEditingStore.set(undefined)
           }}
           on:edited={() => {
-            isEditing = false
+            messageEditingStore.set(undefined)
           }}
         />
       {/if}

@@ -124,6 +124,7 @@
       {#if $$slots.buttons}
         <slot name="buttons" />
       {/if}
+      <slot name="footer" />
     </div>
   {/if}
 </div>

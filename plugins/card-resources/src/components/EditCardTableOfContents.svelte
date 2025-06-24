@@ -34,7 +34,8 @@
 
   const client = getClient()
 
-  let sections: CardSection[] = client
+  let sections: CardSection[] = []
+  const _sections: CardSection[] = client
     .getModel()
     .findAllSync(card.class.CardSection, {})
     .sort((a, b) => a.order - b.order)
@@ -206,7 +207,7 @@
     sections = newSections
   }
 
-  $: void filterSections(sections, doc)
+  $: void filterSections(_sections, doc)
   $: updateToc(sections, subTocBySection)
   $: showOverlay = !isScrollInitialized || Object.values(sectionOverlays).some((it) => it)
 </script>

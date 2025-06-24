@@ -17,6 +17,21 @@ import { type Resources } from '@hcengineering/platform'
 
 import CardMessagesSection from './components/CardMessagesSection.svelte'
 import { unsubscribe, subscribe, canSubscribe, canUnsubscribe } from './utils'
+import {
+  addReaction,
+  canCreateCard,
+  canEditMessage,
+  canRemoveMessage,
+  canReplyInThread,
+  canShowOriginalMessage,
+  canTranslateMessage,
+  createCard,
+  editMessage,
+  removeMessage,
+  replyInThread,
+  showOriginalMessage,
+  translateMessage
+} from './actions'
 
 export { isActivityMessage } from './activity'
 export * from './stores'
@@ -29,12 +44,27 @@ export default async (): Promise<Resources> => ({
   component: {
     CardMessagesSection
   },
+  messageActionImpl: {
+    AddReaction: addReaction,
+    ReplyInThread: replyInThread,
+    TranslateMessage: translateMessage,
+    ShowOriginalMessage: showOriginalMessage,
+    EditMessage: editMessage,
+    RemoveMessage: removeMessage,
+    CreateCard: createCard
+  },
   action: {
     Unsubscribe: unsubscribe,
     Subscribe: subscribe
   },
   function: {
     CanSubscribe: canSubscribe,
-    CanUnsubscribe: canUnsubscribe
+    CanUnsubscribe: canUnsubscribe,
+    CanReplyInThread: canReplyInThread,
+    CanTranslateMessage: canTranslateMessage,
+    CanShowOriginalMessage: canShowOriginalMessage,
+    CanEditMessage: canEditMessage,
+    CanRemoveMessage: canRemoveMessage,
+    CanCreateCard: canCreateCard
   }
 })

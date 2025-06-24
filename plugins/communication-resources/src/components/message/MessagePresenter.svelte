@@ -16,23 +16,25 @@
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
   import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
-  import { getCommunicationClient } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
-  import { getCurrentAccount } from '@hcengineering/core'
-  import ui, { getEventPositionElement, showPopup, Action, IconDelete, IconEdit, Menu } from '@hcengineering/ui'
+  import { getEventPositionElement, showPopup, Action, Menu } from '@hcengineering/ui'
   import type { MessageID, SocialID } from '@hcengineering/communication-types'
   import { Message, MessageType } from '@hcengineering/communication-types'
-  import emojiPlugin from '@hcengineering/emoji'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import view from '@hcengineering/view'
+  import { getResource } from '@hcengineering/platform'
+  import { MessageAction } from '@hcengineering/communication'
+  import { Ref } from '@hcengineering/core'
 
-  import communication from '../../plugin'
-  import { toggleReaction, replyToThread } from '../../utils'
   import MessageActionsPanel from './MessageActionsPanel.svelte'
-  import IconMessageMultiple from '../icons/MessageMultiple.svelte'
   import MessageBody from './MessageBody.svelte'
   import OneRowMessageBody from './OneRowMessageBody.svelte'
-  import { showOriginalMessage, translateMessage, TranslateMessagesStatus, translateMessagesStore } from '../../stores'
+  import {
+    messageEditingStore,
+    TranslateMessagesStatus,
+    translateMessagesStore,
+    threadCreateMessageStore
+  } from '../../stores'
+  import { getMessageActions } from '../../actions'
+  import communication from '../../plugin'
 
   export let card: Card
   export let message: Message
@@ -41,31 +43,13 @@
   export let hideAvatar: boolean = false
   export let readonly: boolean = false
 
-  const communicationClient = getCommunicationClient()
-  const me = getCurrentAccount()
-
   let isEditing = false
   let isDeleted = false
   let author: Person | undefined
 
   $: isDeleted = message.removed
+  $: isEditing = $messageEditingStore === message.id
   $: void updateAuthor(message.creator)
-
-  function canEdit (): boolean {
-    if (message.type !== MessageType.Message) return false
-
-    return me.socialIds.includes(message.creator)
-  }
-
-  function canRemove (): boolean {
-    if (message.type !== MessageType.Message) return false
-
-    return me.socialIds.includes(message.creator)
-  }
-
-  function canReply (): boolean {
-    return message.type === MessageType.Message && message.extra?.threadRoot !== true
-  }
 
   async function updateAuthor (socialId: SocialID): Promise<void> {
     author = $employeeByPersonIdStore.get(socialId)
@@ -75,15 +59,11 @@
     }
   }
 
-  async function handleEdit (): Promise<void> {
-    if (!canEdit()) return
-    isEditing = true
-  }
-
-  async function handleRemove (): Promise<void> {
-    if (!canRemove()) return
-    message.removed = true
-    await communicationClient.removeMessage(message.cardId, message.id)
+  $: updateStore(message)
+  function updateStore (message: Message): void {
+    if (!readonly && message.id === $threadCreateMessageStore?.id) {
+      threadCreateMessageStore.set(message)
+    }
   }
 
   function isInside (x: number, y: number, rect: DOMRect): boolean {
@@ -112,86 +92,27 @@
     return false
   }
 
-  function getActions (
-    message: Message,
-    translateMessages: Map<MessageID, TranslateMessagesStatus>,
-    event?: MouseEvent,
-    fromPanel?: boolean
-  ): Action[] {
-    const actions: Action[] = [
-      {
-        label: communication.string.Emoji,
-        icon: emojiPlugin.icon.Emoji,
-        action: async (_, ev): Promise<void> => {
-          if (fromPanel === true) {
-            isActionsPanelOpened = true
-          }
-          showPopup(
-            emojiPlugin.component.EmojiPopup,
-            {},
-            (ev ?? event)?.target as HTMLElement,
-            async (result) => {
-              isActionsPanelOpened = false
-              const emoji = result?.emoji
-              if (emoji == null) {
-                return
-              }
+  let allActions: MessageAction[] = []
+  let excludedActions: Ref<MessageAction>[] = []
+  let actions: MessageAction[] = []
 
-              await toggleReaction(message, emoji)
-            },
-            () => {}
-          )
-        }
-      }
-    ]
+  $: excludedActions = getExcludedActions($translateMessagesStore)
 
-    if (canReply()) {
-      actions.push({
-        label: communication.string.Reply,
-        icon: IconMessageMultiple,
-        action: async (): Promise<void> => {
-          await replyToThread(message, card)
-        }
-      })
+  $: void getMessageActions(message).then((res) => {
+    allActions = res
+  })
+
+  $: actions = allActions.filter((it) => !excludedActions.includes(it._id))
+
+  function getExcludedActions (translatedMessages: Map<MessageID, TranslateMessagesStatus>): Ref<MessageAction>[] {
+    const result: TranslateMessagesStatus | undefined = translatedMessages.get(message.id)
+    if (result === undefined || result.inProgress || !result.shown) {
+      return [communication.messageAction.ShowOriginalMessage]
+    } else if (result.shown) {
+      return [communication.messageAction.TranslateMessage]
     }
 
-    const translateResult = translateMessages.get(message.id)
-    const isShowTranslated = translateResult?.shown === true && translateResult?.result != null
-    if (message.type === MessageType.Message && !isShowTranslated) {
-      actions.push({
-        label: getEmbeddedLabel('Translate'),
-        icon: view.icon.Translate,
-        action: async () => {
-          await translateMessage(message)
-        }
-      })
-    } else if (message.type === MessageType.Message && isShowTranslated) {
-      actions.push({
-        label: getEmbeddedLabel('Show Original'),
-        icon: view.icon.Undo,
-        action: async () => {
-          showOriginalMessage(message.id)
-        }
-      })
-    }
-
-    if (canEdit()) {
-      actions.push({
-        label: communication.string.Edit,
-        icon: IconEdit,
-        action: handleEdit
-      })
-    }
-
-    if (canRemove()) {
-      actions.push({
-        label: ui.string.Remove,
-        icon: IconDelete,
-        action: handleRemove
-      })
-    }
-
-    return actions
+    return []
   }
 
   function handleContextMenu (event: MouseEvent): void {
@@ -201,12 +122,16 @@
     event.preventDefault()
     event.stopPropagation()
 
-    showPopup(
-      Menu,
-      { actions: getActions(message, $translateMessagesStore, event) },
-      getEventPositionElement(event),
-      () => {}
-    )
+    const contextMenuActions: Action[] = actions.map((action) => ({
+      label: action.label,
+      icon: action.icon,
+      action: async () => {
+        const actionFn = await getResource(action.action)
+        await actionFn(message, card, event)
+      }
+    }))
+
+    showPopup(Menu, { actions: contextMenuActions }, getEventPositionElement(event), () => {})
   }
 
   let isActionsPanelOpened = false
@@ -228,12 +153,22 @@
   {#if message.type === MessageType.Activity || (message.removed && message.thread?.threadId === undefined)}
     <OneRowMessageBody {message} {card} {author} {hideAvatar} />
   {:else}
-    <MessageBody {message} {card} {author} bind:isEditing compact={compact && !isThread} {hideAvatar} />
+    <MessageBody {message} {card} {author} {isEditing} compact={compact && !isThread} {hideAvatar} />
   {/if}
 
   {#if showActions}
     <div class="message__actions" class:opened={isActionsPanelOpened}>
-      <MessageActionsPanel actions={getActions(message, $translateMessagesStore, undefined, true)} />
+      <MessageActionsPanel
+        {message}
+        {card}
+        {actions}
+        onOpen={() => {
+          isActionsPanelOpened = true
+        }}
+        onClose={() => {
+          isActionsPanelOpened = false
+        }}
+      />
     </div>
   {/if}
 </div>

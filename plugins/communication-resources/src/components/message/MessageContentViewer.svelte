@@ -25,12 +25,8 @@
   import { toMarkup } from '../../utils'
   import { isActivityMessage } from '../../activity'
   import communication from '../../plugin'
-  import {
-    isShownTranslatedMessage,
-    translateMessage,
-    TranslateMessagesStatus,
-    translateMessagesStore
-  } from '../../stores'
+  import { isShownTranslatedMessage, TranslateMessagesStatus, translateMessagesStore } from '../../stores'
+  import { translateMessage } from '../../actions'
 
   export let card: Card
   export let message: Message
@@ -53,7 +49,7 @@
   $: if (prevContent !== message.content) {
     prevContent = message.content
     if (isShownTranslatedMessage(message.id)) {
-      void translateMessage(message)
+      void translateMessage(message, card)
     } else {
       translateMessagesStore.update((store) => {
         store.delete(message.id)

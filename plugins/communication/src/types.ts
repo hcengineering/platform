@@ -11,7 +11,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { Message } from '@hcengineering/communication-types'
+import { Doc } from '@hcengineering/core'
+import { Asset, IntlString, Resource } from '@hcengineering/platform'
+import { Card } from '@hcengineering/card'
+
 export enum MessagesNavigationAnchors {
   ConversationStart = 'conversationStart',
   LatestMessages = 'latestMessages'
+}
+
+export type MessageActionFunction = (
+  message: Message,
+  card: Card,
+  evt?: Event,
+  onOpen?: () => void,
+  onClose?: () => void
+) => Promise<void>
+export type MessageActionFunctionResource = Resource<MessageActionFunction>
+
+export type MessageActionVisibilityTester = (message: Message) => boolean
+export type MessageActionVisibilityTesterResource = Resource<MessageActionVisibilityTester>
+
+export interface MessageAction extends Doc {
+  label: IntlString
+  icon: Asset
+  action: MessageActionFunctionResource
+  visibilityTester?: MessageActionVisibilityTesterResource
+
+  order: number
+  menu?: boolean
 }

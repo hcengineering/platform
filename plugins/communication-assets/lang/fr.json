@@ -43,6 +43,14 @@
     "JoinedThe": "A rejoint le",
     "LeftThe": "A quitté le",
     "Translating": "Traduction...",
-    "ShowOriginal": "Afficher l'original"
+    "ShowOriginal": "Afficher l'original",
+    "AddReaction": "Ajouter une réaction",
+    "ReplyInThread": "Répondre dans le fil de discussion",
+    "TranslateMessage": "Traduire le message",
+    "ShowOriginalMessage": "Afficher le message original",
+    "EditMessage": "Modifier le message",
+    "RemoveMessage": "Supprimer le message",
+    "CreateCard": "Créer une carte",
+    "MessageAlreadyHasCardAttached": "Oups! Ce message a déjà une carte attachée."
   }
 }

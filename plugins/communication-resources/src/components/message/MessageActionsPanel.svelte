@@ -14,13 +14,48 @@
 -->
 
 <script lang="ts">
-  import { ButtonIcon, Action } from '@hcengineering/ui'
+  import { ButtonIcon, IconMoreV, showPopup, Action, getEventPositionElement, Menu } from '@hcengineering/ui'
+  import { MessageAction } from '@hcengineering/communication'
+  import { getResource } from '@hcengineering/platform'
+  import { Message } from '@hcengineering/communication-types'
+  import { Card } from '@hcengineering/card'
+  import view from '@hcengineering/view'
 
-  export let actions: Action[]
+  export let message: Message
+  export let card: Card
+  export let actions: MessageAction[]
+  export let onClose: () => void
+  export let onOpen: () => void
+
+  let menuActions: MessageAction[] = []
+  let inlineActions: MessageAction[] = []
+
+  $: menuActions = actions.filter((a) => a.menu)
+  $: inlineActions = actions.filter((a) => !(a.menu ?? false))
+
+  async function handleAction (action: MessageAction, ev: MouseEvent): Promise<void> {
+    const actionFn = await getResource(action.action)
+    await actionFn(message, card, ev, onOpen, onClose)
+  }
+
+  function showMenu (ev: MouseEvent): void {
+    onOpen()
+
+    const actions: Action[] = menuActions.map((action) => ({
+      id: action._id,
+      label: action.label,
+      icon: action.icon,
+      action: async () => {
+        await handleAction(action, ev)
+      }
+    }))
+
+    showPopup(Menu, { actions }, getEventPositionElement(ev), onClose)
+  }
 </script>
 
 <div class="message-actions-panel">
-  {#each actions as action}
+  {#each inlineActions as action}
     {#if action.icon}
       <ButtonIcon
         icon={action.icon}
@@ -28,10 +63,21 @@
         size="small"
         kind="tertiary"
         tooltip={{ label: action.label, direction: 'bottom' }}
-        on:click={(ev) => action.action({}, ev)}
+        on:click={(ev) => handleAction(action, ev)}
       />
     {/if}
   {/each}
+
+  {#if menuActions.length > 0}
+    <ButtonIcon
+      icon={IconMoreV}
+      iconSize="small"
+      size="small"
+      kind="tertiary"
+      tooltip={{ label: view.string.MoreActions, direction: 'bottom' }}
+      on:click={showMenu}
+    />
+  {/if}
 </div>
 
 <style lang="scss">

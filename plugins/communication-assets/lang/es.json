@@ -43,6 +43,14 @@
     "JoinedThe": "Unido al",
     "LeftThe": "Dejó el",
     "Translating": "Traduciendo...",
-    "ShowOriginal": "Mostrar original"
+    "ShowOriginal": "Mostrar original",
+    "AddReaction": "Añadir reacción",
+    "ReplyInThread": "Responder en el hilo",
+    "TranslateMessage": "Traducir mensaje",
+    "ShowOriginalMessage": "Mostrar mensaje original",
+    "EditMessage": "Editar mensaje",
+    "RemoveMessage": "Eliminar mensaje",
+    "CreateCard": "Crear tarjeta",
+    "MessageAlreadyHasCardAttached": "¡Vaya! Este mensaje ya tiene una tarjeta adjunta."
   }
 }

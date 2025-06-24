@@ -43,6 +43,14 @@
     "JoinedThe": "Joined the",
     "LeftThe": "Left the",
     "Translating": "Translating...",
-    "ShowOriginal": "Showing original"
+    "ShowOriginal": "Showing original",
+    "AddReaction": "Add reaction",
+    "ReplyInThread": "Reply in thread",
+    "TranslateMessage": "Translate message",
+    "ShowOriginalMessage": "Show original message",
+    "EditMessage": "Edit message",
+    "RemoveMessage": "Remove message",
+    "CreateCard": "Create card",
+    "MessageAlreadyHasCardAttached": "Oops! This message already has a card attached."
   }
 }

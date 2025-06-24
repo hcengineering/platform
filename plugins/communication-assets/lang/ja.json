@@ -43,6 +43,14 @@
     "JoinedThe": "参加",
     "LeftThe": "退出",
     "Translating": "翻訳中...",
-    "ShowOriginal": "元のメッセージを表示"
+    "ShowOriginal": "元のメッセージを表示",
+    "AddReaction": "リアクションを追加",
+    "ReplyInThread": "スレッドに返信",
+    "TranslateMessage": "メッセージを翻訳",
+    "ShowOriginalMessage": "元のメッセージを表示",
+    "EditMessage": "メッセージを編集",
+    "RemoveMessage": "メッセージを削除",
+    "CreateCard": "カードを作成",
+    "MessageAlreadyHasCardAttached": "おっと！このメッセージはすでにカードが添付されています。"
   }
 }

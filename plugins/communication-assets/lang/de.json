@@ -43,6 +43,14 @@
     "JoinedThe": "Beigetreten",
     "LeftThe": "Verließ",
     "Translating": "Übersetzen...",
-    "ShowOriginal": "Original anzeigen"
+    "ShowOriginal": "Original anzeigen",
+    "AddReaction": "Reaktion hinzufügen",
+    "ReplyInThread": "Im Thread antworten",
+    "TranslateMessage": "Nachricht übersetzen",
+    "ShowOriginalMessage": "Originalnachricht anzeigen",
+    "EditMessage": "Nachricht bearbeiten",
+    "RemoveMessage": "Nachricht entfernen",
+    "CreateCard": "Karte erstellen",
+    "MessageAlreadyHasCardAttached": "Oops! Diese Nachricht hat bereits eine Karte angehängt."
   }
 }
