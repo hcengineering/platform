@@ -16,6 +16,7 @@
 import { type AccountClient } from '@hcengineering/account-client'
 import core, {
   type Branding,
+  type Client,
   coreId,
   DOMAIN_BENCHMARK,
   DOMAIN_MIGRATION,
@@ -27,32 +28,31 @@ import core, {
   type MeasureContext,
   type MigrationState,
   ModelDb,
+  type PersonInfo,
   platformNow,
   platformNowDiff,
+  type Ref,
   systemAccountUuid,
   type Tx,
   type TxOperations,
+  type WithLookup,
   type WorkspaceIds,
-  type WorkspaceUuid,
-  type Client,
-  type PersonInfo,
-  type Ref,
-  type WithLookup
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import {
   consoleModelLogger,
+  type MigrateMode,
   type MigrateOperation,
   type ModelLogger,
-  tryMigrate,
-  type MigrateMode
+  tryMigrate
 } from '@hcengineering/model'
 import {
+  type DbAdapter,
   DomainIndexHelperImpl,
   type Pipeline,
-  type StorageAdapter,
-  type DbAdapter,
   type PlatformQueueProducer,
-  type QueueWorkspaceMessage
+  type QueueWorkspaceMessage,
+  type StorageAdapter
 } from '@hcengineering/server-core'
 import { type InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'

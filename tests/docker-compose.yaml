@@ -89,7 +89,7 @@ services:
       - 9002:9000
       - 9003:9001
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ['CMD', 'mc', 'ready', 'local']
       interval: 5s
       retries: 10
   elastic:

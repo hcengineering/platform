@@ -221,6 +221,7 @@ export async function startIndexer (
       req.body = {}
 
       ctx.info('reindex', { workspace: decoded.workspace })
+      await manager.closeWorkspace(decoded.workspace)
       const indexer = await manager.getIndexer(ctx, decoded.workspace, token, true)
       if (indexer !== undefined) {
         indexer.lastUpdate = Date.now()

@@ -236,8 +236,13 @@ async function processMigrateContentFor (
             try {
               const buffer = Buffer.from(value)
               await storageAdapter.put(client.ctx, client.wsIds, blobId, buffer, 'application/json', buffer.length)
-            } catch (err) {
-              client.logger.error('failed to process document', { _class: doc._class, _id: doc._id, err })
+            } catch (err: any) {
+              client.logger.error('failed to process document', {
+                _class: doc._class,
+                _id: doc._id,
+                err: err.message,
+                stack: err.stack
+              })
             }
 
             update[attributeName] = blobId

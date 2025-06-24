@@ -1,6 +1,16 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import type { Doc, MeasureContext, Space, Tx, TxCUD, WorkspaceInfoWithStatus, WorkspaceUuid } from '@hcengineering/core'
-import { Hierarchy, systemAccountUuid } from '@hcengineering/core'
+import type {
+  Doc,
+  MeasureContext,
+  Space,
+  Tx,
+  TxCreateDoc,
+  TxCUD,
+  Version,
+  WorkspaceInfoWithStatus,
+  WorkspaceUuid
+} from '@hcengineering/core'
+import core, { Hierarchy, systemAccountUuid, TxProcessor, versionToString } from '@hcengineering/core'
 import { getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import {
   createContentAdapter,
@@ -50,6 +60,11 @@ export class WorkspaceManager {
     for (const tx of model) {
       this.sysHierarchy.tx(tx)
     }
+    this.supportedVersion = TxProcessor.createDoc2Doc(
+      model.find(
+        (it) => TxProcessor.isExtendsCUD(it._class) && (it as TxCUD<Doc>).objectClass === core.class.Version
+      ) as TxCreateDoc<Version>
+    )
 
     this.workspaceProducer = this.opt.queue.getProducer<QueueWorkspaceMessage>(this.ctx, QueueTopic.Workspace)
   }
@@ -63,6 +78,8 @@ export class WorkspaceManager {
   workspaceProducer!: PlatformQueueProducer<QueueWorkspaceMessage>
 
   txInformer: any
+
+  supportedVersion: Version
 
   async startIndexer (): Promise<void> {
     this.contentAdapter = await this.ctx.with('create content adapter', {}, (ctx) =>
@@ -125,7 +142,12 @@ export class WorkspaceManager {
       }
 
       const indexer = await this.getIndexer(this.ctx, ws, token, true)
-      await indexer?.fulltext.processDocuments(this.ctx, m.value, control)
+      // TODO: If workspace is not upgraded, we will loose the fulltext index
+      if (indexer === undefined) {
+        // this.workspaceProducer
+      } else {
+        await indexer?.fulltext.processDocuments(this.ctx, m.value, control)
+      }
     }
   }
 
@@ -159,6 +181,10 @@ export class WorkspaceManager {
               ws,
               classes.map((it) => workspaceEvents.reindex(it.domain, it.classes))
             )
+          } else {
+            await this.workspaceProducer.send(ws, [workspaceEvents.fullReindex()]).catch((err) => {
+              this.ctx.error('error', { err })
+            })
           }
         } else if (
           mm.type === QueueWorkspaceEvent.Deleted ||
@@ -176,6 +202,9 @@ export class WorkspaceManager {
           const indexer = await this.getIndexer(this.ctx, ws, token, true)
           const mmd = mm as QueueWorkspaceReindexMessage
           await indexer?.reindex(this.ctx, mmd.domain, mmd.classes, control)
+        } else if (mm.type === QueueWorkspaceEvent.Upgraded) {
+          console.error('Upgraded', this.supportedVersion)
+          await this.closeWorkspace(ws)
         }
       }
     }
@@ -195,20 +224,38 @@ export class WorkspaceManager {
     return (await getTransactorEndpoint(token, 'internal')).replace('wss://', 'https://').replace('ws://', 'http://')
   }
 
-  async getIndexer (
+  async createIndexer (
     ctx: MeasureContext,
     workspace: WorkspaceUuid,
-    token: string | undefined,
-    create: boolean = false
-  ): Promise<WorkspaceIndexer | undefined> {
-    let idx = this.indexers.get(workspace)
-    if (idx === undefined && create) {
+    token: string | undefined
+  ): Promise<WorkspaceIndexer> {
+    while (true) {
       const workspaceInfo = await this.getWorkspaceInfo(ctx, token)
       if (workspaceInfo === undefined) {
-        return
+        throw new Error('Workspace not found')
+      }
+      if (
+        workspaceInfo.versionMajor !== this.supportedVersion.major ||
+        workspaceInfo.versionMinor !== this.supportedVersion.minor ||
+        workspaceInfo.versionPatch !== this.supportedVersion.patch
+      ) {
+        ctx.warn('wrong version', {
+          workspace,
+          version: versionToString({
+            major: workspaceInfo.versionMajor,
+            minor: workspaceInfo.versionMinor,
+            patch: workspaceInfo.versionPatch
+          }),
+          supportedVersion: this.supportedVersion
+        })
+        if (workspaceInfo.processingAttemps < 4) {
+          await new Promise((resolve) => setTimeout(resolve, 10000))
+          continue
+        }
+        throw new Error('Workspace limit reached')
       }
       ctx.warn('indexer created', { workspace })
-      idx = WorkspaceIndexer.create(
+      return await WorkspaceIndexer.create(
         ctx,
         this.model,
         {
@@ -223,11 +270,31 @@ export class WorkspaceManager {
         (token) => this.getTransactorAPIEndpoint(token),
         this.opt.listener
       )
+    }
+  }
+
+  async getIndexer (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    token: string | undefined,
+    create: boolean = false
+  ): Promise<WorkspaceIndexer | undefined> {
+    let idx = this.indexers.get(workspace)
+    if (idx === undefined && create) {
+      idx = this.createIndexer(ctx, workspace, token)
       this.indexers.set(workspace, idx)
     }
-    if (idx instanceof Promise) {
-      idx = await idx
-      this.indexers.set(workspace, idx)
+    if (idx === undefined) {
+      return undefined
+    }
+    try {
+      if (idx instanceof Promise) {
+        idx = await idx
+        this.indexers.set(workspace, idx)
+      }
+    } catch (err: any) {
+      this.indexers.delete(workspace)
+      return undefined
     }
     return idx
   }

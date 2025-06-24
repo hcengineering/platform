@@ -45,6 +45,7 @@ class TestWorkspaceManager extends WorkspaceManager {
       dataId: decodedToken.workspace as unknown as WorkspaceDataId,
       mode: 'active',
       processingProgress: 0,
+      processingAttemps: 0,
       backupInfo: {
         dataSize: 0,
         blobsSize: 0,

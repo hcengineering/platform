@@ -6,9 +6,7 @@
 ./tool-local.sh create-workspace sanity-ws email:user1 -r cockroach
 
 # Restore workspace contents in mongo/elastic
-./tool-local.sh backup-restore ./sanity-ws sanity-ws
-
-./tool-local.sh upgrade-workspace sanity-ws
+./tool-local.sh backup-restore ./sanity-ws sanity-ws --upgrade
 
 ./tool-local.sh assign-workspace user1 sanity-ws
 ./tool-local.sh assign-workspace user2 sanity-ws
