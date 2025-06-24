@@ -15,16 +15,16 @@
 <script lang="ts">
   import presentation, { Card } from '@hcengineering/presentation'
   import { ProcessFunction } from '@hcengineering/process'
+  import { Label } from '@hcengineering/ui'
+  import { NumberEditor } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import process from '../../plugin'
-  import { NumberEditor } from '@hcengineering/view-resources'
-  import { Label } from '@hcengineering/ui'
 
   export let func: ProcessFunction
   export let props: Record<string, any> = {}
 
-  let start: number = props?.start ?? ''
-  let end: number = props?.end ?? ''
+  let start: number | undefined = props?.start
+  let end: number | undefined = props?.end
 
   const dispatch = createEventDispatcher()
 
