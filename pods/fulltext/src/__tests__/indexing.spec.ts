@@ -54,7 +54,7 @@ class TestWorkspaceManager extends WorkspaceManager {
         backups: 0
       },
       versionMajor: 0,
-      versionMinor: 0,
+      versionMinor: 6,
       versionPatch: 0,
       lastVisit: 0,
       createdOn: 0,
