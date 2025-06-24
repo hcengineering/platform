@@ -39,8 +39,6 @@
 
   let editable: boolean = false
   $: editable = hasAccountRole(me, AccountRole.Maintainer)
-  let canViewMinutes: boolean = false
-  $: canViewMinutes = hasAccountRole(me, AccountRole.User)
 </script>
 
 <div class="hulyComponent">
@@ -51,7 +49,6 @@
         bind:viewlet
         bind:preference
         bind:loading
-        hidden={!canViewMinutes}
         viewletQuery={{ attachTo: lovePlg.class.Floor }}
       />
     </svelte:fragment>
