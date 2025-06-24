@@ -84,6 +84,8 @@ func buildCommonCommand(opts *Options) []string {
 	var result = []string{
 		"-y", // Overwrite output files without asking.
 		"-v", string(opts.LogLevel),
+		"-err_detect", "ignore_err",
+		"-fflags", "+discardcorrupt",
 		"-threads", fmt.Sprint(opts.Threads),
 		"-i", opts.Input,
 	}
@@ -113,6 +115,8 @@ func BuildAudioCommand(opts *Options) []string {
 func BuildRawVideoCommand(opts *Options) []string {
 	if opts.Transcode {
 		return append(buildCommonCommand(opts),
+			"-map", "0:v:0",
+			"-map", "0:a?",
 			"-c:a", "aac",
 			"-c:v", "libx264",
 			"-preset", "veryfast",
@@ -149,6 +153,14 @@ func BuildThumbnailCommand(opts *Options) []string {
 
 // BuildScalingVideoCommand returns flags for ffmpeg for video scaling
 func BuildScalingVideoCommand(opts *Options) []string {
+	if len(opts.ScalingLevels) == 0 {
+		return []string{}
+	}
+
+	if len(opts.ScalingLevels) == 1 && opts.ScalingLevels[0] == opts.Level {
+		return []string{}
+	}
+
 	var result = buildCommonCommand(opts)
 
 	for _, level := range opts.ScalingLevels {
@@ -157,7 +169,8 @@ func BuildScalingVideoCommand(opts *Options) []string {
 		}
 
 		result = append(result,
-			"-map", "0:v",
+			"-map", "0:v:0",
+			"-map", "0:a?",
 			"-vf", "scale=-2:"+level[:len(level)-1],
 			"-c:a", "aac",
 			"-c:v", "libx264",

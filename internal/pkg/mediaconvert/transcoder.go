@@ -47,8 +47,8 @@ type Transcoder struct {
 // Command represents a ffmpeg command
 type Command struct {
 	cmd       *exec.Cmd
-	stdoutBuf bytes.Buffer
-	stderrBuf bytes.Buffer
+	stdoutBuf *bytes.Buffer
+	stderrBuf *bytes.Buffer
 }
 
 // NewTranscoder creates a new instance of task transcoder
@@ -183,6 +183,11 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 	var cmds []Command
 
 	for _, args := range argsSlice {
+		if len(args) == 0 {
+			logger.Debug("skip empty command")
+			continue
+		}
+
 		cmd, cmdErr := newFfmpegCommand(ctx, nil, args)
 		if cmdErr != nil {
 			logger.Error("can not create a new command", zap.Error(cmdErr), zap.Strings("args", args))
@@ -192,12 +197,12 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 
 		var command = Command{
 			cmd:       cmd,
-			stdoutBuf: bytes.Buffer{},
-			stderrBuf: bytes.Buffer{},
+			stdoutBuf: &bytes.Buffer{},
+			stderrBuf: &bytes.Buffer{},
 		}
 
-		cmd.Stdout = io.MultiWriter(os.Stdout, &command.stdoutBuf)
-		cmd.Stderr = io.MultiWriter(os.Stderr, &command.stderrBuf)
+		cmd.Stdout = io.MultiWriter(os.Stdout, command.stdoutBuf)
+		cmd.Stderr = io.MultiWriter(os.Stderr, command.stderrBuf)
 
 		cmds = append(cmds, command)
 		if startErr := cmd.Start(); startErr != nil {
@@ -215,7 +220,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 			continue
 		}
 
-		logger.Error("can not wait for command end ", zap.Error(cmdErr))
+		logger.Error("can not wait for command end", zap.Error(cmdErr), zap.String("cmd", cmd.cmd.String()))
 		if _, writeErr := os.Stdout.Write(cmd.stdoutBuf.Bytes()); writeErr != nil {
 			logger.Error("can not write stdout ", zap.Error(writeErr))
 		}
