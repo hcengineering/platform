@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Billing": "计费",
+    "DriveSize": "文件大小",
+    "DriveCount": "文件数量",
+    "OfficeSessionsDuration": "会议时间",
+    "OfficeSessionsBandwidth": "会议带宽",
+    "OfficeEgressDuration": "录制时间"
+  }
+}

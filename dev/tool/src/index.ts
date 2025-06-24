@@ -19,7 +19,6 @@ import accountPlugin, {
   createWorkspaceRecord,
   flattenStatus,
   getAccountDB,
-  getWorkspaceById,
   getWorkspaceInfoWithStatusById,
   getWorkspaces,
   getWorkspacesInfoWithStatusByIds,
@@ -117,9 +116,9 @@ import { performGmailAccountMigrations } from './gmail'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 
 import { createRestClient } from '@hcengineering/api-client'
-import { mkdir, writeFile } from 'fs/promises'
-import { basename, dirname } from 'path'
 import { existsSync } from 'fs'
+import { mkdir, writeFile } from 'fs/promises'
+import { dirname } from 'path'
 import { restoreMarkupRefs } from './markup'
 
 const colorConstants = {
@@ -438,58 +437,67 @@ export function devTool (
   //   })
   // })
 
+  async function doUpgrade (
+    toolCtx: MeasureMetricsContext,
+    workspace: WorkspaceUuid,
+    forceUpdate: boolean,
+    forceIndexes: boolean
+  ): Promise<void> {
+    const { version, txes, migrateOperations } = prepareTools()
+
+    await withAccountDatabase(async (db) => {
+      const info = await getWorkspace(db, workspace)
+      if (info === null) {
+        throw new Error(`workspace ${workspace} not found`)
+      }
+
+      const wsInfo = await getWorkspaceInfoWithStatusById(db, info.uuid)
+      if (wsInfo === null) {
+        throw new Error(`workspace ${workspace} not found`)
+      }
+
+      const coreWsInfo = flattenStatus(wsInfo)
+      const measureCtx = new MeasureMetricsContext('upgrade-workspace', {})
+      const accountClient = getAccountClient(getToolToken(wsInfo.uuid))
+      const queue = getPlatformQueue('tool', info.region)
+      const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
+      await upgradeWorkspace(
+        measureCtx,
+        version,
+        txes,
+        migrateOperations,
+        accountClient,
+        coreWsInfo,
+        consoleModelLogger,
+        wsProducer,
+        async () => {},
+        forceUpdate,
+        forceIndexes,
+        true
+      )
+
+      await updateWorkspaceInfo(measureCtx, db, null, getToolToken(), {
+        workspaceUuid: info.uuid,
+        event: 'upgrade-done',
+        version,
+        progress: 100
+      })
+
+      console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
+
+      await wsProducer.send(info.uuid, [workspaceEvents.upgraded()])
+      await queue.shutdown()
+      console.log('upgrade-workspace done')
+    })
+  }
+
   program
     .command('upgrade-workspace <name>')
     .description('upgrade workspace')
     .option('-f|--force [force]', 'Force update', true)
     .option('-i|--indexes [indexes]', 'Force indexes rebuild', false)
     .action(async (workspace, cmd: { force: boolean, indexes: boolean }) => {
-      const { version, txes, migrateOperations } = prepareTools()
-
-      await withAccountDatabase(async (db) => {
-        const info = await getWorkspace(db, workspace)
-        if (info === null) {
-          throw new Error(`workspace ${workspace} not found`)
-        }
-
-        const wsInfo = await getWorkspaceInfoWithStatusById(db, info.uuid)
-        if (wsInfo === null) {
-          throw new Error(`workspace ${workspace} not found`)
-        }
-
-        const coreWsInfo = flattenStatus(wsInfo)
-        const measureCtx = new MeasureMetricsContext('upgrade-workspace', {})
-        const accountClient = getAccountClient(getToolToken(wsInfo.uuid))
-        const queue = getPlatformQueue('tool', info.region)
-        const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
-        await upgradeWorkspace(
-          measureCtx,
-          version,
-          txes,
-          migrateOperations,
-          accountClient,
-          coreWsInfo,
-          consoleModelLogger,
-          wsProducer,
-          async () => {},
-          cmd.force,
-          cmd.indexes,
-          true
-        )
-
-        await updateWorkspaceInfo(measureCtx, db, null, getToolToken(), {
-          workspaceUuid: info.uuid,
-          event: 'upgrade-done',
-          version,
-          progress: 100
-        })
-
-        console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
-
-        await wsProducer.send(info.uuid, [workspaceEvents.upgraded()])
-        await queue.shutdown()
-        console.log('upgrade-workspace done')
-      })
+      await doUpgrade(toolCtx, workspace, cmd.force, cmd.indexes)
     })
 
   // program
@@ -1133,6 +1141,7 @@ export function devTool (
     .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .option('--use-storage <useStorage>', 'Use workspace storage adapter from env variable', '')
+    .option('--upgrade', 'Upgrade workspace', false)
     .option(
       '--history-file <historyFile>',
       'Store blob send info into file. Will skip already send documents.',
@@ -1152,6 +1161,7 @@ export function devTool (
           skip: string
           useStorage: string
           historyFile: string
+          upgrade: boolean
         }
       ) => {
         await withAccountDatabase(async (db) => {
@@ -1169,6 +1179,11 @@ export function devTool (
           const storage = await createFileBackupStorage(dirName)
           const storageConfig = cmd.useStorage !== '' ? storageConfigFromEnv(process.env[cmd.useStorage]) : undefined
 
+          const queue = getPlatformQueue('tool', ws.region)
+          const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
+
+          await wsProducer.send(ws.uuid, [workspaceEvents.restoring()])
+
           const workspaceStorage: StorageAdapter | undefined =
             storageConfig !== undefined ? buildStorageFromConfig(storageConfig) : undefined
           await restore(toolCtx, await getWorkspaceTransactorEndpoint(workspace), wsIds, storage, {
@@ -1181,9 +1196,13 @@ export function devTool (
             storageAdapter: workspaceStorage,
             historyFile: cmd.historyFile
           })
-          const queue = getPlatformQueue('tool', ws.region)
-          const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
-          await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
+
+          if (cmd.upgrade) {
+            await doUpgrade(toolCtx, workspace, true, true)
+          }
+
+          console.log('workspace restored')
+          await wsProducer.send(ws.uuid, [workspaceEvents.restored()])
           await queue.shutdown()
           await workspaceStorage?.close()
         })
@@ -1359,7 +1378,7 @@ export function devTool (
   program
     .command('backup-s3-download <bucketName> <dirName> <storeIn>')
     .description('Download a full backup from s3 to local dir')
-    .option('-s, --skip <skip>', 'skip downloading of these files')
+    .option('-s, --skip <skip>', 'skip downloading of these files', '')
     .action(async (bucketName: string, dirName: string, storeIn: string, cmd) => {
       const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
       const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])

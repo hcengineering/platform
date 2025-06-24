@@ -52,6 +52,8 @@
       errorProps = undefined
     }
   }
+
+  $: params = { ...action.params }
 </script>
 
 {#if method !== undefined}
@@ -61,7 +63,7 @@
     </div>
   {/if}
   {#if method.presenter !== undefined}
-    <Component is={method.presenter} props={{ step: action, process, readonly }} />
+    <Component is={method.presenter} props={{ step: action, params, process, readonly }} />
   {:else}
     <Label label={method.label} />
   {/if}

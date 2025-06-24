@@ -118,6 +118,7 @@
             allDay: event.allDay,
             date: eventStart,
             dueDate: eventEnd,
+            blockTime: event.blockTime,
             day,
             access: event.access
           })
@@ -136,6 +137,7 @@
           result.push({
             _id: event._id,
             allDay: event.allDay,
+            blockTime: event.blockTime,
             date: eventStart,
             dueDate: eventEnd,
             day: -1,
@@ -343,8 +345,9 @@
     }
   }
 
-  const calcTime = (events: CalendarItem[]): number => {
-    if (events.length === 0) return 0
+  const calcTime = (_events: CalendarItem[]): number => {
+    if (_events.length === 0) return 0
+    const events = _events.filter((ev) => ev.blockTime)
 
     // Extract and sort intervals by start time
     const intervals = events.map((it) => [it.date, it.dueDate]).sort((a, b) => a[0] - b[0])

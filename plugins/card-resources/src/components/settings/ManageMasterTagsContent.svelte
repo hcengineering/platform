@@ -50,7 +50,12 @@
 
   let selectedSubObjectId: Ref<Doc> | undefined = undefined
   let subEditor: AnySvelteComponent | undefined = undefined
-  let subEditorTitle: string | undefined = undefined
+  let subEditorParamas: SubEditorParams[] = []
+  interface SubEditorParams {
+    id: Ref<Doc>
+    editor: AnyComponent
+    title: string
+  }
 
   function selectSubItem (editorId: AnyComponent | undefined, objId: Ref<Doc> | undefined): void {
     if (editorId !== undefined && objId !== undefined) {
@@ -59,14 +64,13 @@
         .then((res) => (subEditor = res))
         .catch((err) => {
           subEditor = undefined
-          subEditorTitle = undefined
+          subEditorParamas = []
           console.error(err)
         })
     } else {
+      subEditorParamas = []
       selectedSubObjectId = undefined
-      subEditorTitle = undefined
       subEditor = undefined
-      subEditorTitle = undefined
     }
   }
 
@@ -79,10 +83,12 @@
   })
 
   function handleSubEditorOpen (event: CustomEvent): void {
-    subEditorTitle = event.detail
+    if (Array.isArray(event.detail)) {
+      subEditorParamas = event.detail
+    }
   }
 
-  function getBreadcrumbs (tag: Ref<MasterTag> | undefined, subEditorTitle: string | undefined): BreadcrumbItem[] {
+  function getBreadcrumbs (tag: Ref<MasterTag> | undefined, subEditorParams: SubEditorParams[]): BreadcrumbItem[] {
     if (tag === undefined) return []
     const toAncestors = hierarchy.getAncestors(card.class.Card)
     const ancestors = hierarchy.getAncestors(tag)
@@ -91,13 +97,16 @@
       id: it,
       label: hierarchy.getClass(it).label
     }))
-    if (subEditorTitle !== undefined) {
-      res.push({ id: subEditorTitle, title: subEditorTitle })
+    for (const subEditorParam of subEditorParams) {
+      res.push({
+        id: subEditorParam.id,
+        title: subEditorParam.title
+      })
     }
     return res
   }
 
-  $: items = getBreadcrumbs(masterTag?._id, subEditorTitle)
+  $: items = getBreadcrumbs(masterTag?._id, subEditorParamas)
 
   onMount(() => {
     setTimeout(() => {
@@ -108,9 +117,15 @@
   function handleSelect (e: CustomEvent<any>): void {
     const id = items[e.detail]?.id
     if (id !== undefined) {
+      const isSub = subEditorParamas.find((it) => it.id === id)
       const loc = getCurrentLocation()
-      loc.path[4] = id
-      loc.path.length = 5
+      if (isSub !== undefined) {
+        loc.path[5] = isSub.editor
+        loc.path[6] = isSub.id
+      } else {
+        loc.path[4] = id
+        loc.path.length = 5
+      }
       navigate(loc)
     }
   }

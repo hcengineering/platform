@@ -60,20 +60,36 @@
   getEditor()
 </script>
 
-<Card on:close width={'menu'} label={func.label} canSave okAction={save} okLabel={presentation.string.Save}>
-  <ProcessAttribute
-    {process}
-    {masterTag}
-    {context}
-    {attribute}
-    presenterClass={{
-      attrClass: core.class.TypeNumber,
-      category: 'attribute'
-    }}
-    {value}
-    {editor}
-    on:change={(e) => {
-      value = e.detail
-    }}
-  />
+<Card on:close width={'x-small'} label={func.label} canSave okAction={save} okLabel={presentation.string.Save}>
+  <div class="grid">
+    <ProcessAttribute
+      {process}
+      {masterTag}
+      {context}
+      {attribute}
+      presenterClass={{
+        attrClass: core.class.TypeNumber,
+        category: 'attribute'
+      }}
+      {value}
+      {editor}
+      on:change={(e) => {
+        value = e.detail
+      }}
+    />
+  </div>
 </Card>
+
+<style lang="scss">
+  .grid {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-rows: minmax(1rem, max-content);
+    justify-content: start;
+    align-items: center;
+    row-gap: 0.25rem;
+    column-gap: 1rem;
+    height: min-content;
+  }
+</style>

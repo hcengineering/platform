@@ -43,6 +43,8 @@
     "SurveySubmitConfirm": "Une fois soumis, les réponses ne pourront pas être modifiées. Voulez-vous vraiment soumettre maintenant ?",
     "ValidateFail": "Certaines questions obligatoires n'ont pas été répondues",
     "ValidateInfo": "Voici à quoi ressemblera le formulaire pour les utilisateurs. Essayez de saisir des réponses et de sélectionner des options pour tester le sondage. L'icône verte en haut indique que le formulaire est correctement rempli.",
-    "ValidateOk": "Le formulaire est correctement rempli"
+    "ValidateOk": "Le formulaire est correctement rempli",
+    "ConfigLabel": "Enquêtes",
+    "ConfigDescription": "Extension pour gérer les enquêtes"
   }
 }

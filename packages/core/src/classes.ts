@@ -839,6 +839,7 @@ export interface WorkspaceInfoWithStatus extends WorkspaceInfo {
   mode: WorkspaceMode
   processingProgress?: number
   backupInfo?: BackupStatus
+  processingAttemps: number
 }
 
 export interface WorkspaceMemberInfo {

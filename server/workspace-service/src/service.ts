@@ -543,6 +543,9 @@ export class WorkspaceWorker {
         if (await this.doRestore(ctx, workspace, opt)) {
           // We should reindex fulltext
           await sendEvent('restore-done', 100)
+
+          workspace.mode = 'active'
+          await this._upgradeWorkspace(ctx, workspace, opt)
           await this.workspaceQueue.send(workspace.uuid, [workspaceEvents.restored()])
         }
         break

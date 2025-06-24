@@ -43,6 +43,8 @@
     "SurveySubmitConfirm": "Po odeslání nebude možné odpovědi změnit. Opravdu chcete odeslat nyní?",
     "ValidateFail": "Některé povinné otázky nejsou zodpovězeny",
     "ValidateInfo": "Takto bude formulář vypadat pro uživatele. Vyzkoušejte zadat odpovědi a vybrat možnosti, abyste si otestovali průzkum. Zelená ikona v horním záhlaví ukazuje, že je formulář správně vyplněn.",
-    "ValidateOk": "Formulář je správně vyplněn"
+    "ValidateOk": "Formulář je správně vyplněn",
+    "ConfigLabel": "Průzkumy",
+    "ConfigDescription": "Rozšíření pro správu průzkumů"
   }
 }

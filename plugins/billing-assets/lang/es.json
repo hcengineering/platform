@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Billing": "Facturación",
+    "DriveSize": "Tamaño de archivos",
+    "DriveCount": "Cantidad de archivos",
+    "OfficeSessionsDuration": "Tiempo de reuniones",
+    "OfficeSessionsBandwidth": "Ancho de banda de reuniones",
+    "OfficeEgressDuration": "Tiempo de grabación"
+  }
+}

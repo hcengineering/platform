@@ -236,8 +236,13 @@ async function processMigrateContentFor (
             try {
               const buffer = Buffer.from(value)
               await storageAdapter.put(client.ctx, client.wsIds, blobId, buffer, 'application/json', buffer.length)
-            } catch (err) {
-              client.logger.error('failed to process document', { _class: doc._class, _id: doc._id, err })
+            } catch (err: any) {
+              client.logger.error('failed to process document', {
+                _class: doc._class,
+                _id: doc._id,
+                err: err.message,
+                stack: err.stack
+              })
             }
 
             update[attributeName] = blobId
@@ -964,6 +969,11 @@ export const coreOperation: MigrateOperation = {
         state: 'accounts-to-social-ids',
         mode: 'upgrade',
         func: migrateAccounts
+      },
+      {
+        state: 'clean-old-model',
+        mode: 'upgrade',
+        func: cleanOldModel
       }
       // ,
       // {
@@ -1014,4 +1024,11 @@ async function retry<T> (retries: number, op: () => Promise<T>): Promise<T> {
     }
   }
   throw error
+}
+
+async function cleanOldModel (client: MigrationClient): Promise<void> {
+  await client.deleteMany(DOMAIN_MODEL_TX, {
+    modifiedBy: core.account.System,
+    objectClass: { $nin: ['core:class:Account', 'contact:class:PersonAccount'] }
+  })
 }

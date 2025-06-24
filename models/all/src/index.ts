@@ -111,13 +111,14 @@ import {
   serverDocumentsId,
   createModel as serverDocumentsModel
 } from '@hcengineering/model-server-controlled-documents'
-import { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
+import survey, { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
 import { presenceId, createModel as presenceModel } from '@hcengineering/model-presence'
 import chat, { chatId, createModel as chatModel } from '@hcengineering/model-chat'
 import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
 import inbox, { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
 import { achievementId, createModel as achievementModel } from '@hcengineering/model-achievement'
 import { emojiId, createModel as emojiModel } from '@hcengineering/model-emoji'
+import { billingId, createModel as billingModel } from '@hcengineering/model-billing'
 import { communicationId, createModel as communicationModel } from '@hcengineering/model-communication'
 import { type Plugin } from '@hcengineering/platform'
 
@@ -455,7 +456,17 @@ export default function buildModel (): Builder {
         classFilter: defaultFilter
       }
     ],
-    [surveyModel, surveyId],
+    [
+      surveyModel,
+      surveyId,
+      {
+        label: survey.string.ConfigLabel,
+        description: survey.string.ConfigDescription,
+        enabled: false,
+        beta: true,
+        classFilter: defaultFilter
+      }
+    ],
     [presenceModel, presenceId],
     [
       chatModel,
@@ -471,6 +482,7 @@ export default function buildModel (): Builder {
     [emojiModel, emojiId],
     [communicationModel, communicationId],
     [mailModel, mailId],
+    [billingModel, billingId, { beta: false, hidden: true, enabled: true }],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
