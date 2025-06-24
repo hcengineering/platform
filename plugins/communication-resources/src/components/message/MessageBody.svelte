@@ -25,6 +25,7 @@
   import MessageContentViewer from './MessageContentViewer.svelte'
   import MessageFooter from './MessageFooter.svelte'
   import { translateMessagesStore, messageEditingStore } from '../../stores'
+  import { showOriginalMessage } from '../../actions'
 
   export let card: Card
   export let author: Person | undefined
@@ -109,7 +110,7 @@
           </div>
         {/if}
         {#if !message.removed && $translateMessagesStore.get(message.id)?.shown === true}
-          <div class="message__show-original">
+          <div class="message__show-original" on:click={() => showOriginalMessage(message, card)}>
             <Label label={communication.string.ShowOriginal} />
           </div>
         {/if}

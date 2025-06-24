@@ -44,7 +44,6 @@ export const addReaction: MessageActionFunction = async (message, _: Card, evt, 
     {},
     evt?.target as HTMLElement,
     async (result) => {
-      console.log('result', result)
       if (onClose !== undefined) onClose()
       const emoji = result?.text
       if (emoji == null) return
