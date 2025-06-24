@@ -1488,8 +1488,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return type === 'common'
       ? `${tlkey} = ${vars.add(value, valType)}`
       : type === 'array'
-        ? `${tkey} @> '${typeof value === 'string' ? '{"' + value + '"}' : value}'`
-        : `${tkey} @> '${typeof value === 'string' ? '"' + value + '"' : value}'`
+        ? `${tkey} @> '${typeof value === 'string' ? '{"' + escape(value) + '"}' : value}'`
+        : `${tkey} @> '${typeof value === 'string' ? '"' + escape(value) + '"' : value}'`
   }
 
   private getReverseProjection (vars: ValuesVariables, join: JoinProps): string[] {
