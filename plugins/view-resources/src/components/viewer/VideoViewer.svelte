@@ -39,7 +39,7 @@
 >
   {#if contentType.toLowerCase().endsWith('x-mpegurl')}
     {@const src = getFileUrl(value, '')}
-    <HlsVideo {src} hlsSrc={src} preload={true} />
+    <HlsVideo {src} hlsSrc={src} preload />
   {:else}
     {#await getVideoMeta(value, name) then meta}
       {#if meta?.hls?.source !== undefined}
@@ -47,7 +47,7 @@
         <HlsVideo {src} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
       {:else}
         {@const src = getFileUrl(value, '')}
-        <Video {src} {name} />
+        <Video {src} {name} preload />
       {/if}
     {/await}
   {/if}
