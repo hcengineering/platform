@@ -427,7 +427,7 @@ class Client {
 
     const eventPromise: Promise<EventResult> = this.connection
       .domainRequest<EventResult>(COMMUNICATION, {
-      sendEvent: ev
+      event: ev
     })
       .then((result) => result.value)
     this.onRequest(ev, eventPromise)

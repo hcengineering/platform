@@ -22,7 +22,8 @@ import core, {
   type Ref,
   type SearchOptions,
   type SearchQuery,
-  type TxCUD
+  type TxCUD,
+  type TxDomainEvent
 } from '@hcengineering/core'
 import { rpcJSONReplacer, type RateLimitInfo } from '@hcengineering/rpc'
 import type { ClientSessionCtx, ConnectionSocket, Session, SessionManager } from '@hcengineering/server-core'
@@ -250,8 +251,16 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     void withSession(req, res, async (ctx, session, rateLimit) => {
       const tx: any = (await retrieveJson(req)) ?? {}
 
-      const result = await session.txRaw(ctx, tx)
-      await sendJson(req, res, result.result, rateLimitToHeaders(rateLimit))
+      if (tx._class === core.class.TxDomainEvent) {
+        const domainTx = tx as TxDomainEvent
+        const result = await session.domainRequestRaw(ctx, domainTx.domain, {
+          event: domainTx.event
+        })
+        await sendJson(req, res, result.value, rateLimitToHeaders(rateLimit))
+      } else {
+        const result = await session.txRaw(ctx, tx)
+        await sendJson(req, res, result.result, rateLimitToHeaders(rateLimit))
+      }
     })
   })
   app.get('/api/v1/account/:workspaceId', (req, res) => {
@@ -304,34 +313,17 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     })
   })
 
-  app.get('/api/v1/find-messages/:workspaceId', (req, res) => {
+  app.get('/api/v1/request/:domain/:operation/:workspaceId', (req, res) => {
     void withSession(req, res, async (ctx, session) => {
+      const domain = req.params.domain as OperationDomain
+      const operation = req.params.operation
+
       const params = req.query.params !== undefined ? JSON.parse(req.query.params as string) : {}
 
-      const result = await session.domainRequestRaw(ctx, COMMUNICATION_DOMAIN, {
-        findMessages: { params }
+      const result = await session.domainRequestRaw(ctx, domain, {
+        [operation]: { params }
       })
-      await sendJson(req, res, result)
-    })
-  })
-  app.get('/api/v1/find-messages-groups/:workspaceId', (req, res) => {
-    void withSession(req, res, async (ctx, session) => {
-      const params = req.query.params !== undefined ? JSON.parse(req.query.params as string) : {}
-
-      const result = await session.domainRequestRaw(ctx, COMMUNICATION_DOMAIN, {
-        findMessagesGroups: { params }
-      })
-      await sendJson(req, res, result)
-    })
-  })
-  app.post('/api/v1/event/:workspaceId', (req, res) => {
-    void withSession(req, res, async (ctx, session) => {
-      const event: any = (await retrieveJson(req)) ?? {}
-
-      const result = await session.domainRequestRaw(ctx, COMMUNICATION_DOMAIN, {
-        sendEvent: event
-      })
-      await sendJson(req, res, result)
+      await sendJson(req, res, result.value)
     })
   })
 

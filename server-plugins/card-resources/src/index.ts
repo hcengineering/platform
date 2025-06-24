@@ -291,7 +291,7 @@ async function OnCardRemove (ctx: TxRemoveDoc<Card>[], control: TriggerControl):
   }
 
   void control.domainRequest(control.ctx, 'communication' as OperationDomain, {
-    sendEvent: event
+    event
   })
 
   return res
@@ -363,7 +363,7 @@ async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl):
       date: new Date(updateTx.createdOn ?? updateTx.modifiedOn)
     }
     void control.domainRequest(control.ctx, 'communication' as OperationDomain, {
-      sendEvent: event
+      event
     })
   }
 
@@ -461,7 +461,7 @@ async function updateCollaborators (control: TriggerControl, ctx: TxCreateDoc<Ca
       date: new Date((tx.createdOn ?? tx.modifiedOn) + 1)
     }
     void control.domainRequest(control.ctx, 'communication' as OperationDomain, {
-      sendEvent: event
+      event
     })
   }
 }

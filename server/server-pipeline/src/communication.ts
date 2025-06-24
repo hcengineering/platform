@@ -21,8 +21,7 @@ import core, {
   type MeasureContext,
   type OperationDomain,
   type SessionData,
-  type TxDomainEvent,
-  systemAccount
+  type TxDomainEvent
 } from '@hcengineering/core'
 import type {
   CommunicationApiFactory,
@@ -122,8 +121,8 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
       await this.communicationApi.unsubscribeQuery(ctx, id)
       return
     }
-    if (args.sendEvent !== undefined) {
-      const event = args.sendEvent
+    if (args.event !== undefined) {
+      const event = args.event
       return await this.communicationApi.event(ctx, event)
     }
     return {}
@@ -133,8 +132,9 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
     return {
       ...ctx,
       sessionId: ctx.contextData.sessionId,
+      derived: ctx.contextData.isTriggerCtx === true,
       // TODO: We should decide what to do with communications package and remove this workaround
-      account: ctx.contextData.isTriggerCtx === true ? systemAccount : ctx.contextData.account
+      account: ctx.contextData.account
     }
   }
 }

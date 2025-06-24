@@ -87,7 +87,7 @@ async function createMessages (tx: TxCUD<Card>, control: TriggerControl, card: C
       date: new Date(tx.modifiedOn)
     }
 
-    void control.domainRequest(control.ctx, 'communication' as OperationDomain, { sendEvent: event })
+    void control.domainRequest(control.ctx, 'communication' as OperationDomain, { event })
   }
 }
 
