@@ -251,12 +251,12 @@ async function saveMessageToSpaces (
         isReply
       }
 
-      const messageId = await createMailMessage(producer, config, messageData, threadId)
-      await createFiles(ctx, producer, config, attachments, messageData, threadId, messageId)
       if (!isReply) {
         await addCollaborators(producer, config, messageData, threadId)
-        await createMailThread(producer, config, messageData, messageId)
+        await createMailThread(producer, config, messageData)
       }
+      const messageId = await createMailMessage(producer, config, messageData, threadId)
+      await createFiles(ctx, producer, config, attachments, messageData, threadId, messageId)
 
       await threadLookup.setThreadId(mailId, space._id, threadId)
     })
@@ -264,16 +264,25 @@ async function saveMessageToSpaces (
   await rateLimiter.waitProcessing()
 }
 
-async function createMailThread (
-  producer: Producer,
-  config: BaseConfig,
-  data: MessageData,
-  messageId: MessageID
-): Promise<void> {
+async function createMailThread (producer: Producer, config: BaseConfig, data: MessageData): Promise<void> {
+  const subjectId = generateMessageId()
+  const createSubjectEvent: CreateMessageEvent = {
+    type: MessageEventType.CreateMessage,
+    messageType: MessageType.Message,
+    cardId: data.channel,
+    cardType: chat.masterTag.Thread,
+    content: data.subject,
+    socialId: data.modifiedBy,
+    date: data.created,
+    messageId: subjectId
+  }
+  const createSubjectData = Buffer.from(JSON.stringify(createSubjectEvent))
+  await sendToCommunicationTopic(producer, config, data, createSubjectData)
+
   const threadEvent: ThreadPatchEvent = {
     type: MessageEventType.ThreadPatch,
     cardId: data.channel,
-    messageId,
+    messageId: subjectId,
     operation: {
       opcode: 'attach',
       threadId: data.threadId,
@@ -296,7 +305,7 @@ async function createMailMessage (
   const createMessageEvent: CreateMessageEvent = {
     type: MessageEventType.CreateMessage,
     messageType: MessageType.Message,
-    cardId: data.isReply ? threadId : data.channel,
+    cardId: threadId,
     cardType: chat.masterTag.Thread,
     content: data.content,
     socialId: data.modifiedBy,
