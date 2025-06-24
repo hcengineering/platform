@@ -16,10 +16,8 @@
 package mediaconvert
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -42,13 +40,6 @@ type Transcoder struct {
 	ctx    context.Context
 	cfg    *config.Config
 	logger *zap.Logger
-}
-
-// Command represents a ffmpeg command
-type Command struct {
-	cmd       *exec.Cmd
-	stdoutBuf *bytes.Buffer
-	stderrBuf *bytes.Buffer
 }
 
 // NewTranscoder creates a new instance of task transcoder
@@ -180,8 +171,8 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 		BuildRawVideoCommand(&opts),
 		BuildScalingVideoCommand(&opts),
 	}
-	var cmds []Command
 
+	var cmds []*exec.Cmd
 	for _, args := range argsSlice {
 		if len(args) == 0 {
 			logger.Debug("skip empty command")
@@ -195,46 +186,19 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 			return nil, errors.Wrapf(cmdErr, "can not create a new command")
 		}
 
-		var command = Command{
-			cmd:       cmd,
-			stdoutBuf: &bytes.Buffer{},
-			stderrBuf: &bytes.Buffer{},
-		}
-
-		cmd.Stdout = io.MultiWriter(os.Stdout, command.stdoutBuf)
-		cmd.Stderr = io.MultiWriter(os.Stderr, command.stderrBuf)
-
-		cmds = append(cmds, command)
-		if startErr := cmd.Start(); startErr != nil {
-			logger.Error("can not start a command", zap.Error(startErr), zap.Strings("args", args))
-			go uploader.Cancel()
-			return nil, errors.Wrapf(startErr, "can not start a command")
-		}
+		cmds = append(cmds, cmd)
 	}
 
-	logger.Debug("phase 7: wait for the result")
-
-	for _, cmd := range cmds {
-		var cmdErr error
-		if cmdErr = cmd.cmd.Wait(); cmdErr == nil {
-			continue
-		}
-
-		logger.Error("can not wait for command end", zap.Error(cmdErr), zap.String("cmd", cmd.cmd.String()))
-		if _, writeErr := os.Stdout.Write(cmd.stdoutBuf.Bytes()); writeErr != nil {
-			logger.Error("can not write stdout ", zap.Error(writeErr))
-		}
-		if _, writeErr := os.Stderr.Write(cmd.stderrBuf.Bytes()); writeErr != nil {
-			logger.Error("can not write stderr", zap.Error(writeErr))
-		}
+	executor := NewCommandExecutor(ctx)
+	if execErr := executor.Execute(cmds); execErr != nil {
 		uploader.Cancel()
-		return nil, errors.Wrapf(cmdErr, "can not wait for command end")
+		return nil, errors.Wrapf(execErr, "can not execute command")
 	}
 
-	logger.Debug("phase 8: schedule cleanup")
+	logger.Debug("phase 7: schedule cleanup")
 	uploader.Stop()
 
-	logger.Debug("phase 9: try to set metadata")
+	logger.Debug("phase 8: try to set metadata")
 
 	var result = TaskResult{
 		Width:     videoStream.Width,
