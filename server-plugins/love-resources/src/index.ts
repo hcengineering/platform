@@ -224,6 +224,9 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl):
         )
       }
     } else {
+      const room = (await control.findAll(control.ctx, love.class.Room, { _id: info.room }))[0]
+      if (room === undefined) return res
+      if (isOffice(room) && room.person === info.person) return res
       const _id = generateId<MeetingMinutes>()
       const date = new Date()
         .toLocaleDateString('en-GB', {
@@ -255,6 +258,21 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl):
           collaborator: info.account
         })
       )
+      if (isOffice(room) && room.person !== info.person && room.person !== null) {
+        const person = (
+          await control.findAll(control.ctx, contact.mixin.Employee, { _id: room.person as Ref<Employee> })
+        )[0]
+        if (person.personUuid !== undefined) {
+          res.push(
+            control.txFactory.createTxCreateDoc(core.class.Collaborator, core.space.Workspace, {
+              attachedTo: _id,
+              attachedToClass: love.class.MeetingMinutes,
+              collection: 'collaborators',
+              collaborator: person.personUuid
+            })
+          )
+        }
+      }
     }
   }
   return res
