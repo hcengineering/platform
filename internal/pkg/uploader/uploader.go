@@ -297,6 +297,13 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 		return
 	}
 
+	// Check if the file has already been uploaded
+	_, ok := u.sentFiles.Load(f)
+	if ok && !u.shouldDeleteOnStop(f) {
+		logger.Debug("file already uploaded")
+		return
+	}
+
 	if err := waitFileExists(f); err != nil {
 		if os.IsNotExist(err) {
 			logger.Debug("file does not exist", zap.Error(err))
@@ -306,18 +313,11 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 		return
 	}
 
-	// Check if the file has already been uploaded
-	var _, ok = u.sentFiles.Load(f)
-	if ok && !u.shouldDeleteOnStop(f) {
-		logger.Debug("file already uploaded")
-		return
-	}
-
 	for attempt := range u.options.RetryCount {
 		logger = logger.With(zap.Int("attempt", attempt))
-		var ctx, cancel = context.WithTimeout(u.uploadCtx, u.options.Timeout)
-		var err = u.storage.PutFile(ctx, f)
-		cancel()
+		var putCtx, putCancel = context.WithTimeout(u.uploadCtx, u.options.Timeout)
+		var err = u.storage.PutFile(putCtx, f)
+		putCancel()
 
 		if err != nil {
 			logger.Error("attempt failed", zap.Error(err))
@@ -328,7 +328,9 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 
 			// Update the file's parent if SourceFile is set
 			if u.options.Source != "" {
-				err = u.storage.SetParent(ctx, f, u.options.Source)
+				var setParentCtx, setParentCancel = context.WithTimeout(u.uploadCtx, u.options.Timeout)
+				err = u.storage.SetParent(setParentCtx, f, u.options.Source)
+				setParentCancel()
 				if err != nil {
 					logger.Error("can not set blob parent", zap.Error(err), zap.String("filename", f), zap.String("source", u.options.Source))
 				}

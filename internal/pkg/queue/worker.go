@@ -85,7 +85,7 @@ func (w *Worker) fetchAndProcessMessage(ctx context.Context) error {
 	err = w.processMessage(ctx, msg, logger)
 	if err != nil {
 		w.logger.Error("failed to process message", zap.Error(err))
-		return err
+		return fmt.Errorf("process message: %w", err)
 	}
 
 	return nil
