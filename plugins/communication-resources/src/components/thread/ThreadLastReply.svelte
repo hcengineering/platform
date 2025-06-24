@@ -26,15 +26,15 @@
 
     return new Date(date).getTime()
   }
-  $:time = getTime(lastReply)
+  $: time = getTime(lastReply)
 </script>
 
 {#if time !== undefined}
-<span class="thread__last-reply">
-  <Label label={communication.string.LastReply} />
-  <TimeSince value={time} />
-</span>
-  {/if}
+  <span class="thread__last-reply">
+    <Label label={communication.string.LastReply} />
+    <TimeSince value={time} />
+  </span>
+{/if}
 
 <style lang="scss">
   .thread__last-reply {

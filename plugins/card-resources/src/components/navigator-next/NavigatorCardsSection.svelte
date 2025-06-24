@@ -78,9 +78,9 @@
         // TODO: Should be join instead of $in. But for now labels and cards in different api.
         ...(ids === undefined ? {} : { _id: { $in: ids } }),
         ...(space !== undefined ? { space: space._id } : {}),
-        ...config.lookback !== undefined
+        ...(config.lookback !== undefined
           ? { modifiedOn: { $gte: Date.now() - parseLookbackDuration(config.lookback) } }
-          : {}
+          : {})
       },
       (res) => {
         const cardsResult = res
