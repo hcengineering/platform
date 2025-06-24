@@ -17,6 +17,15 @@ import core, { type Blob, type Doc, type MeasureContext, type TxCUD, type TxCrea
 import { PlatformQueueProducer } from '@hcengineering/server-core'
 import { VideoTranscodeRequest, VideoTranscodeResult } from './types'
 
+const transcodeIgnoredContentTypes = [
+  'video/x-mpegurl', // HLS playlist
+  'video/mp2t' // MPEG-2 Transport Stream
+]
+
+function shouldTranscode (contentType: string): boolean {
+  return contentType.startsWith('video/') && !transcodeIgnoredContentTypes.includes(contentType)
+}
+
 export async function handleTx (
   ctx: MeasureContext,
   workspaceUuid: string,
@@ -27,15 +36,15 @@ export async function handleTx (
   if (tx._class !== core.class.TxCreateDoc) return
 
   const createTx = tx as TxCreateDoc<Blob>
-  if (createTx.attributes.contentType.startsWith('video/')) {
+  if (shouldTranscode(createTx.attributes.contentType)) {
     const msg: VideoTranscodeRequest = {
       workspaceUuid,
       blobId: createTx.objectId,
       contentType: createTx.attributes.contentType
     }
 
-    ctx.info('Transcode request', { msg })
-    await producer.send(createTx.objectId, [msg])
+    ctx.info('Transcode request', { workspaceUuid, msg })
+    await producer.send(workspaceUuid, [msg])
   }
 }
 
