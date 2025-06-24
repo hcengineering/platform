@@ -47,6 +47,9 @@ export class WorkspaceIndexer {
 
   lastUpdate: number = Date.now()
 
+  operations: number = 0
+  closing: boolean = false
+
   constructor (readonly fulltextAdapter: FullTextAdapter) {}
 
   static async create (
@@ -158,8 +161,30 @@ export class WorkspaceIndexer {
     return await this.fulltext.getIndexClassess()
   }
 
-  async close (): Promise<void> {
-    this.fulltext.cancel()
-    await this.pipeline.close()
+  async doOperation (op: (indexer: WorkspaceIndexer) => Promise<void>): Promise<boolean> {
+    this.operations++
+    try {
+      await op(this)
+    } finally {
+      this.operations--
+    }
+    if (this.closing) {
+      return await this.close()
+    }
+    return false
+  }
+
+  async close (): Promise<boolean> {
+    this.closing = true
+    if (this.operations === 0) {
+      try {
+        this.fulltext.cancel()
+        await this.pipeline.close()
+      } catch (err: any) {
+        console.error('error during closing', { err })
+      }
+      return true
+    }
+    return false
   }
 }

@@ -353,31 +353,27 @@ export async function continueExecution (value: Execution): Promise<void> {
   } else {
     const _transition = client.getModel().findObject(transition)
     if (_transition === undefined) return
-    const targetState = _transition.to
-    context = targetState == null ? value.context : await getNextStateUserInput(value, targetState, value.context)
+    context = await getNextStateUserInput(value, _transition, value.context)
   }
   await client.update(value, { status: ExecutionStatus.Active, context })
 }
 
 export async function requestUserInput (
   processId: Ref<Process>,
-  target: Ref<State>,
+  target: Transition,
   userContext: ExecutionContext
 ): Promise<ExecutionContext> {
-  const client = getClient()
-  const state = client.getModel().findObject(target)
-  if (state === undefined) return userContext
-  userContext = await getStateUserInput(processId, state, userContext)
-  userContext = await getSubProcessesUserInput(state, userContext)
+  userContext = await getTransitionUserInput(processId, target, userContext)
+  userContext = await getSubProcessesUserInput(target, userContext)
   return userContext
 }
 
-export async function getStateUserInput (
+export async function getTransitionUserInput (
   processId: Ref<Process>,
-  state: State,
+  transition: Transition,
   userContext: ExecutionContext
 ): Promise<ExecutionContext> {
-  for (const action of state.actions) {
+  for (const action of transition.actions) {
     if (action == null) continue
     for (const key in action.params) {
       const value = (action.params as any)[key]
@@ -386,7 +382,7 @@ export async function getStateUserInput (
         const promise = new Promise<void>((resolve) => {
           showPopup(
             process.component.RequestUserInput,
-            { processId, state: state._id, key: context.key, _class: context._class },
+            { processId, transition: transition._id, key: context.key, _class: context._class },
             undefined,
             (res) => {
               if (res?.value !== undefined) {
@@ -403,8 +399,11 @@ export async function getStateUserInput (
   return userContext
 }
 
-export async function getSubProcessesUserInput (state: State, userContext: ExecutionContext): Promise<ExecutionContext> {
-  for (const action of state.actions) {
+export async function getSubProcessesUserInput (
+  transition: Transition,
+  userContext: ExecutionContext
+): Promise<ExecutionContext> {
+  for (const action of transition.actions) {
     if (action.methodId !== process.method.RunSubProcess) continue
     const processId = action.params._id as Ref<Process>
     if (processId === undefined) continue
@@ -421,20 +420,23 @@ export async function newExecutionUserInput (
   userContext: ExecutionContext
 ): Promise<ExecutionContext> {
   const client = getClient()
-  const process = client.getModel().findObject(_id)
-  if (process === undefined) return userContext
-  return await requestUserInput(_id, process.initState, userContext)
+  const initTransition = client.getModel().findAllSync(process.class.Transition, {
+    process: _id,
+    from: null
+  })[0]
+  if (initTransition === undefined) return userContext
+  return await requestUserInput(_id, initTransition, userContext)
 }
 
 export async function getNextStateUserInput (
   execution: Execution,
-  targetState: Ref<State>,
+  transition: Transition,
   userContext: ExecutionContext
 ): Promise<ExecutionContext> {
   const client = getClient()
   const process = client.getModel().findObject(execution.process)
   if (process === undefined) return userContext
-  return await requestUserInput(execution.process, targetState, userContext)
+  return await requestUserInput(execution.process, transition, userContext)
 }
 
 export async function createExecution (card: Ref<Card>, _id: Ref<Process>, space: Ref<Space>): Promise<void> {
@@ -443,10 +445,14 @@ export async function createExecution (card: Ref<Card>, _id: Ref<Process>, space
   const context = await newExecutionUserInput(_id, {} as ExecutionContext)
   const _process = client.getModel().findObject(_id)
   if (_process === undefined) return
-
+  const initTransition = client.getModel().findAllSync(process.class.Transition, {
+    process: _id,
+    from: null
+  })[0]
+  if (initTransition === undefined) return
   await client.createDoc(process.class.Execution, space, {
     process: _id,
-    currentState: _process.initState,
+    currentState: initTransition.to,
     card,
     rollback: [],
     context,
@@ -478,13 +484,10 @@ export function getToDoEndAction (prevState: State): Step<Doc> {
 export async function requestResult (
   txop: TxOperations,
   execution: Execution,
+  transition: Transition,
   context: ExecutionContext
 ): Promise<void> {
-  if (execution.currentState === null) return
-  const client = getClient()
-  const state = client.getModel().findObject(execution.currentState)
-  if (state === undefined) return
-  for (const action of state.actions) {
+  for (const action of transition.actions) {
     if (action.result == null) continue
     const promise = new Promise<void>((resolve, reject) => {
       showPopup(

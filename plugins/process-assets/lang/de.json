@@ -66,6 +66,8 @@
     "ToDo": "Aufgabe",
     "CurrentCard": "Aktuelle Karte",
     "Data": "Daten",
+    "Transitions": "Übergänge",
+    "OnExecutionStart": "Bei Ausführungsstart",
     "Prepend": "Voranstellen",
     "Append": "Anhängen",
     "Replace": "Ersetzen",

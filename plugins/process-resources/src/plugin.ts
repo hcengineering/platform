@@ -50,7 +50,9 @@ export default mergeIds(processId, process, {
     StatePresenter: '' as AnyComponent,
     ToDoCloseEditor: '' as AnyComponent,
     ToDoRemoveEditor: '' as AnyComponent,
-    ProcessesCardSection: '' as AnyComponent
+    ProcessesCardSection: '' as AnyComponent,
+    TransitionEditor: '' as AnyComponent,
+    StateEditor: '' as AnyComponent
   },
   transformEditor: {
     DateOffsetEditor: '' as AnyComponent,
@@ -129,6 +131,8 @@ export default mergeIds(processId, process, {
     ToDo: '' as IntlString,
     CurrentCard: '' as IntlString,
     Data: '' as IntlString,
+    Transitions: '' as IntlString,
+    OnExecutionStart: '' as IntlString,
     Replacement: '' as IntlString,
     Search: '' as IntlString,
     Separator: '' as IntlString,

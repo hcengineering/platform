@@ -13,7 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ContextId, parseContext, Process, SelectedContext, SelectedExecutonContext } from '@hcengineering/process'
+  import { getClient } from '@hcengineering/presentation'
+  import {
+    ContextId,
+    MethodParams,
+    parseContext,
+    Process,
+    ProcessToDo,
+    SelectedContext,
+    SelectedExecutonContext
+  } from '@hcengineering/process'
   import ui, {
     Button,
     ButtonKind,
@@ -32,13 +41,16 @@
   export let readonly: boolean
   export let process: Process
   export let value: string
+  export let skipRollback: boolean = false
 
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
-  export let justify: 'left' | 'center' = 'center'
+  export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
 
   $: context = getContext(value)
+
+  const client = getClient()
 
   function getContext (value: string): SelectedExecutonContext | undefined {
     const context = parseContext(value)
@@ -59,6 +71,23 @@
     for (const key in process.context) {
       const ctx = process.context[key as ContextId]
       if (ctx._class === plugin.class.ProcessToDo) {
+        if (skipRollback) {
+          const transition = client.getModel().findObject(ctx.producer)
+          if (transition === undefined) {
+            continue
+          }
+
+          const action = transition.actions.find((a) => a._id === ctx.action)
+          if (action === undefined) {
+            continue
+          }
+          const params = (action.params ?? {}) as MethodParams<ProcessToDo>
+
+          if (params.withRollback === true) {
+            // skip rollback contexts
+            continue
+          }
+        }
         const item: SelectPopupValueType = {
           id: key,
           component: ProcessContextPresenter,

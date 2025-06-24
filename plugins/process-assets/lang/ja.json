@@ -65,6 +65,8 @@
     "ToDo": "ToDo",
     "CurrentCard": "現在のカード",
     "Data": "データ",
+    "Transitions": "遷移",
+    "OnExecutionStart": "実行開始時",
     "Prepend": "先頭に追加",
     "Append": "末尾に追加",
     "Replace": "置換",

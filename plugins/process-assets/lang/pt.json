@@ -66,6 +66,8 @@
     "ToDo": "Tarefa",
     "CurrentCard": "Cartão Atual",
     "Data": "Dados",
+    "Transitions": "Transições",
+    "OnExecutionStart": "Ao iniciar execução",
     "Prepend": "Prefixar",
     "Append": "Anexar",
     "Replace": "Substituir",

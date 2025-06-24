@@ -29,7 +29,6 @@ export interface Process extends Doc {
   masterTag: Ref<MasterTag | Tag>
   name: string
   description: string
-  initState: Ref<State>
   parallelExecutionForbidden?: boolean
   autoStart?: boolean
   context: Record<ContextId, ProcessContext>
@@ -40,7 +39,7 @@ export interface ProcessContext {
   name: string
   _class: Ref<Class<Doc>>
   action: StepId
-  producer: Ref<Transition | State>
+  producer: Ref<Transition>
   isResult?: boolean
   type?: Type<any>
   value: SelectedExecutonContext
@@ -54,12 +53,13 @@ export interface Trigger extends Doc {
   requiredParams: string[]
   editor?: AnyComponent
   checkFunction?: Resource<CheckFunc>
+  init: boolean
 }
 
 export interface Transition extends Doc {
   process: Ref<Process>
-  from: Ref<State>
-  to: Ref<State> | null
+  from: Ref<State> | null
+  to: Ref<State>
   actions: Step<Doc>[]
   trigger: Ref<Trigger>
   triggerParams: Record<string, any>
@@ -91,13 +91,13 @@ export interface ExecutionError {
   error: IntlString
   props: Record<string, any>
   intlProps: Record<string, IntlString>
-  transition: Ref<Transition> | null
+  transition: Ref<Transition>
 }
 
 export interface ProcessToDo extends ToDo {
   execution: Ref<Execution>
-  // state which created todo
-  state: Ref<State>
+
+  withRollback: boolean
 }
 
 export type MethodParams<T extends Doc> = {
@@ -107,7 +107,6 @@ export type MethodParams<T extends Doc> = {
 export interface State extends Doc {
   process: Ref<Process>
   title: string
-  actions: Step<Doc>[]
 }
 
 export type StepId = string & { __stepId: true }
@@ -168,7 +167,8 @@ export default plugin(processId, {
   trigger: {
     OnSubProcessesDone: '' as Ref<Trigger>,
     OnToDoClose: '' as Ref<Trigger>,
-    OnToDoRemove: '' as Ref<Trigger>
+    OnToDoRemove: '' as Ref<Trigger>,
+    OnExecutionStart: '' as Ref<Trigger>
   },
   triggerCheck: {
     ToDo: '' as Resource<CheckFunc>

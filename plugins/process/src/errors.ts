@@ -38,6 +38,6 @@ export function processError (
   return new ProcessError(message, message, props, intlProps, shouldLog)
 }
 
-export function parseError (err: ProcessError, transition: Ref<Transition> | null): ExecutionError {
+export function parseError (err: ProcessError, transition: Ref<Transition>): ExecutionError {
   return { error: err.message, props: err.props, intlProps: err.intlProps, transition }
 }

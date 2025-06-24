@@ -66,6 +66,8 @@
     "ToDo": "ToDo",
     "CurrentCard": "Текущая карточка",
     "Data": "Данные",
+    "Transitions": "Переходы",
+    "OnExecutionStart": "При запуске",
     "Prepend": "Добавить в начало",
     "Append": "Добавить в конец",
     "Replace": "Заменить",

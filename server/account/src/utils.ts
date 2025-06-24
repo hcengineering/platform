@@ -1341,7 +1341,12 @@ export function flattenStatus (ws: WorkspaceInfoWithStatus): WorkspaceInfoWithSt
   }
 
   const status = ws.status
-  const result: WorkspaceInfoWithStatusCore = { ...ws, ...status, createdOn: ws.createdOn as number }
+  const result: WorkspaceInfoWithStatusCore = {
+    ...ws,
+    ...status,
+    createdOn: ws.createdOn as number,
+    processingAttemps: status.processingAttempts ?? 0
+  }
   delete (result as any).status
 
   return result

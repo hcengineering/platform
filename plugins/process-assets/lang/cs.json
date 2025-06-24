@@ -66,6 +66,8 @@
     "ToDo": "Úkol",
     "CurrentCard": "Aktuální karta",
     "Data": "Data",
+    "Transitions": "Přechody",
+    "OnExecutionStart": "Při spuštění provedení",
     "Prepend": "Přidat na začátek",
     "Append": "Přidat na konec",
     "Replace": "Nahradit",

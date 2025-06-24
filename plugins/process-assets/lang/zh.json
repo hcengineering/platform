@@ -66,6 +66,8 @@
     "ToDo": "待办事项",
     "CurrentCard": "当前卡片",
     "Data": "数据",
+    "Transitions": "转换",
+    "OnExecutionStart": "执行开始时",
     "Prepend": "前置",
     "Append": "追加",
     "Replace": "替换",

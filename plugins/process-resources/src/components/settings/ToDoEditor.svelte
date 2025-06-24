@@ -34,7 +34,7 @@
     }
   }
 
-  const keys = ['title', 'user', 'dueDate']
+  const keys = ['title', 'user', 'dueDate', 'withRollback']
 
   function changeResult (e: CustomEvent<any>): void {
     if (e.detail !== undefined) {

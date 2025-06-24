@@ -66,6 +66,8 @@
     "ToDo": "ToDo",
     "CurrentCard": "Current card",
     "Data": "Data",
+    "Transitions": "Transitions",
+    "OnExecutionStart": "On execution start",
     "Prepend": "Prepend",
     "Append": "Append",
     "Replace": "Replace",
