@@ -45,12 +45,7 @@
   <Header adaptive={'disabled'}>
     <Breadcrumb title={selectedFloor?.name ?? ''} size={'large'} isCurrent />
     <svelte:fragment slot="beforeTitle">
-      <ViewletSelector
-        bind:viewlet
-        bind:preference
-        bind:loading
-        viewletQuery={{ attachTo: lovePlg.class.Floor }}
-      />
+      <ViewletSelector bind:viewlet bind:preference bind:loading viewletQuery={{ attachTo: lovePlg.class.Floor }} />
     </svelte:fragment>
     <svelte:fragment slot="actions">
       {#if editable}
