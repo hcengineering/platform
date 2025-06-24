@@ -262,7 +262,7 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl):
         const person = (
           await control.findAll(control.ctx, contact.mixin.Employee, { _id: room.person as Ref<Employee> })
         )[0]
-        if (person.personUuid !== undefined) {
+        if (person?.personUuid !== undefined) {
           res.push(
             control.txFactory.createTxCreateDoc(core.class.Collaborator, core.space.Workspace, {
               attachedTo: _id,
