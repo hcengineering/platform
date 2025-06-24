@@ -43,6 +43,8 @@
     "SurveySubmitConfirm": "Una volta inviato, non sarà possibile modificare le risposte. Sei sicuro di voler inviare ora?",
     "ValidateFail": "Alcune domande obbligatorie non sono state risposte",
     "ValidateInfo": "Ecco come apparirà il modulo per gli utenti. Prova a inserire risposte e selezionare opzioni per testare il sondaggio. L'icona verde in alto indica che il modulo è correttamente compilato.",
-    "ValidateOk": "Il modulo è correttamente compilato"
+    "ValidateOk": "Il modulo è correttamente compilato",
+    "ConfigLabel": "Sondaggi",
+    "ConfigDescription": "Estensione per gestire i sondaggi"
   }
 }
