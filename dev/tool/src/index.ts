@@ -1359,7 +1359,7 @@ export function devTool (
   program
     .command('backup-s3-download <bucketName> <dirName> <storeIn>')
     .description('Download a full backup from s3 to local dir')
-    .option('-s, --skip <skip>', 'skip downloading of these files')
+    .option('-s, --skip <skip>', 'skip downloading of these files', '')
     .action(async (bucketName: string, dirName: string, storeIn: string, cmd) => {
       const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
       const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
