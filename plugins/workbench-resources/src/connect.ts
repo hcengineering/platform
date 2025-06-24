@@ -8,24 +8,24 @@ import core, {
   type Client,
   ClientConnectEvent,
   concatLink,
+  type Person as GlobalPerson,
   isWorkspaceCreating,
   type MeasureMetricsContext,
   metricsToString,
-  type Person as GlobalPerson,
   pickPrimarySocialId,
-  setCurrentAccount,
   type SocialId,
   type Version,
   versionToString
 } from '@hcengineering/core'
 import login, { loginId, type Pages } from '@hcengineering/login'
 import platform, {
-  PlatformEvent,
   broadcastEvent,
   getMetadata,
   getResource,
   OK,
+  PlatformEvent,
   setMetadata,
+  setPlatformStatus,
   Severity,
   Status,
   translateCB
@@ -366,22 +366,28 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   // Ensure employee and social identifiers
-  const employee = await ensureEmployee(ctx, me, newClient, socialIds, getGlobalPerson)
+  if (workspaceLoginInfo.role !== AccountRole.Admin) {
+    const employee = await ensureEmployee(ctx, me, newClient, socialIds, getGlobalPerson)
 
-  if (employee == null) {
-    console.log('Failed to ensure employee')
-    navigate({
-      path: [loginId],
-      query: {}
-    })
-    return
+    if (employee == null) {
+      console.log('Failed to ensure employee')
+      navigate({
+        path: [loginId],
+        query: {}
+      })
+      return
+    }
+    setCurrentEmployee(employee)
+    await setPlatformStatus(OK)
+  } else {
+    setCurrentEmployee(core.employee.System)
+    await setPlatformStatus(new Status(Severity.INFO, platform.status.SystemAccount, {}))
   }
 
   Analytics.setUser(account)
   Analytics.setTag('workspace', wsUrl)
   console.log('Logged in with account: ', me)
   setCurrentAccount(me)
-  setCurrentEmployee(employee)
 
   if (me.role === AccountRole.ReadOnlyGuest) {
     await broadcastEvent(PlatformEvent, new Status(Severity.INFO, platform.status.ReadOnlyAccount, {}))

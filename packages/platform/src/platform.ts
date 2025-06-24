@@ -168,7 +168,8 @@ export default plugin(platformId, {
     InviteNotFound: '' as StatusCode<{ email: string }>,
     MailboxError: '' as StatusCode<{ reason: string }>,
     SocialIdAlreadyExists: '' as StatusCode,
-    ReadOnlyAccount: '' as StatusCode
+    ReadOnlyAccount: '' as StatusCode,
+    SystemAccount: '' as StatusCode
   },
   metadata: {
     locale: '' as Metadata<string>,

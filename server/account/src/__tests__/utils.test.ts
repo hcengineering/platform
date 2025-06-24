@@ -1182,7 +1182,7 @@ describe('account utils', () => {
           endpoint: 'http://external:3000',
           workspace: mockWorkspace.uuid,
           workspaceUrl: mockWorkspace.url,
-          role: AccountRole.Owner
+          role: AccountRole.Admin
         })
       })
     })

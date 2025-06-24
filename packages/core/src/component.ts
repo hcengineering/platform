@@ -197,6 +197,9 @@ export default plugin(coreId, {
     Configuration: '' as Ref<Space>,
     Workspace: '' as Ref<Space>
   },
+  employee: {
+    System: '' as Ref<any> // An system employee reference.
+  },
   account: {
     System: '' as PersonId,
     ConfigUser: '' as PersonId
