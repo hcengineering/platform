@@ -101,7 +101,6 @@ export function getCommunicationClient (): CommunicationClient {
 export async function setCommunicationClient (platformClient: PlatformClient): Promise<void> {
   if (client !== undefined) {
     client.close()
-    client = undefined
   }
   const _client = new Client(platformClient)
   initLiveQueries(_client, getCurrentWorkspaceUuid(), getFilesUrl(), onDestroy)
