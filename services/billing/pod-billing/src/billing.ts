@@ -19,6 +19,7 @@ import { LiveKitSessionData, BillingDB, LiveKitEgressData } from './types'
 import { generateToken } from '@hcengineering/server-token'
 import { StorageConfig } from '@hcengineering/server-core'
 import { createDatalakeClient, DatalakeConfig, WorkspaceStats } from '@hcengineering/datalake'
+import { validate as uuidValidate } from 'uuid'
 
 export async function handleListLiveKitSessions (
   ctx: MeasureContext,
@@ -130,8 +131,7 @@ async function collectDatalakeStats (
 
 function getWorkspaceUuid (req: Request): WorkspaceUuid {
   const { workspace } = req.params
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-  if (uuidRegex.test(workspace)) {
+  if (uuidValidate(workspace)) {
     return workspace as WorkspaceUuid
   }
   throw new Error('Unknown workspace')
