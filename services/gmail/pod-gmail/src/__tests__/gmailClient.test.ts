@@ -339,7 +339,11 @@ describe('GmailClient', () => {
     await client.sync({ noNotify: true })
 
     // Fix unbound method reference by using the spy
-    expect(jest.spyOn(SyncManager.prototype, 'sync')).toHaveBeenCalledWith(mockSocialId._id, { noNotify: true }, 'test@example.com')
+    expect(jest.spyOn(SyncManager.prototype, 'sync')).toHaveBeenCalledWith(
+      mockSocialId._id,
+      { noNotify: true },
+      'test@example.com'
+    )
   })
 
   it('should initialize integration', async () => {

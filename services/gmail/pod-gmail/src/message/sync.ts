@@ -40,7 +40,12 @@ export class SyncManager {
     this.stateManager = new SyncStateManager(keyValueClient, workspace, config.Version)
   }
 
-  private async partSync (userId: PersonId, userEmail: string | undefined, historyId: string, options: SyncOptions): Promise<void> {
+  private async partSync (
+    userId: PersonId,
+    userEmail: string | undefined,
+    historyId: string,
+    options: SyncOptions
+  ): Promise<void> {
     if (userEmail === undefined) {
       throw new Error('Cannot sync without user email')
     }
