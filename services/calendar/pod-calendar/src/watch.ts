@@ -159,10 +159,10 @@ export class WatchController {
   }
 
   static get (ctx: MeasureContext, accountClient: AccountClient): WatchController {
-    if (WatchController._instance !== undefined) {
-      return WatchController._instance
+    if (WatchController._instance === undefined) {
+      WatchController._instance = new WatchController(ctx, accountClient)
     }
-    return new WatchController(ctx, accountClient)
+    return WatchController._instance
   }
 
   private async getUserWatches (userId: PersonId, workspace: WorkspaceUuid): Promise<Record<string, Watch>> {
@@ -265,16 +265,13 @@ export class WatchController {
     user: User,
     email: GoogleEmail,
     calendarId: string | null,
-    googleClient: calendar_v3.Calendar,
-    force: boolean = false
+    googleClient: calendar_v3.Calendar
   ): Promise<void> {
-    if (!force) {
-      const client = getKvsClient()
-      const key = `${CALENDAR_INTEGRATION}:watch:${user.workspace}:${user.userId}:${email}:${calendarId ?? 'null'}`
-      const exists = await client.getValue<Watch>(key)
-      if (exists != null) {
-        return
-      }
+    const client = getKvsClient()
+    const key = `${CALENDAR_INTEGRATION}:watch:${user.workspace}:${user.userId}:${email}:${calendarId ?? 'null'}`
+    const exists = await client.getValue<Watch>(key)
+    if (exists != null) {
+      return
     }
     try {
       if (calendarId != null) {

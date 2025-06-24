@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref, AccountUuid } from '@hcengineering/core'
+import type { AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref, AccountUuid, Domain } from '@hcengineering/core'
 import type { Metadata, Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, Resource, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
@@ -24,6 +24,8 @@ import { SpaceTypeCreator, SpaceTypeEditor } from './spaceTypeEditor'
 export * from './spaceTypeEditor'
 export * from './utils'
 export * from './analytics'
+
+export const DOMAIN_SETTING = 'setting' as Domain
 
 /**
  * @public
