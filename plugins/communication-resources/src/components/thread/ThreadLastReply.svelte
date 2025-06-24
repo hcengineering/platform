@@ -13,15 +13,28 @@
 
 <script lang="ts">
   import { Label, TimeSince } from '@hcengineering/ui'
+  import { Timestamp } from '@hcengineering/core'
+
   import communication from '../../plugin'
 
-  export let lastReply: Date
+  export let lastReply: Date | string | number | undefined = undefined
+
+  function getTime (date: Date | string | number | undefined): Timestamp | undefined {
+    if (date === undefined) return undefined
+    if (date instanceof Date) return date.getTime()
+    if (typeof date === 'number') return date
+
+    return new Date(date).getTime()
+  }
+  $:time = getTime(lastReply)
 </script>
 
+{#if time !== undefined}
 <span class="thread__last-reply">
   <Label label={communication.string.LastReply} />
-  <TimeSince value={lastReply.getTime()} />
+  <TimeSince value={time} />
 </span>
+  {/if}
 
 <style lang="scss">
   .thread__last-reply {

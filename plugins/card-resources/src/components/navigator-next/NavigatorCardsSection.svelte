@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { Card, CardSpace, FavoriteCard, MasterTag } from '@hcengineering/card'
-  import { Ref, SortingOrder } from '@hcengineering/core'
+  import { Ref, SortingOrder, Timestamp } from '@hcengineering/core'
   import { createNotificationContextsQuery, createQuery } from '@hcengineering/presentation'
   import { Label, NotificationContext, NotificationType } from '@hcengineering/communication-types'
   import ui, { ModernButton } from '@hcengineering/ui'
@@ -48,13 +48,39 @@
 
   $: ids = (config.labelFilter?.length ?? 0) > 0 ? labels.map((it) => it.cardId) : undefined
 
+  function parseLookbackDuration (input: string): Timestamp {
+    if (input.length < 2) throw new Error('Invalid duration format')
+
+    const unit = input.slice(-1)
+    const numberPart = input.slice(0, -1)
+    const value = Number(numberPart)
+
+    if (isNaN(value) || value <= 0) throw new Error('Invalid numeric value')
+
+    const multipliers: Record<string, number> = {
+      m: 60 * 1000,
+      h: 60 * 60 * 1000,
+      d: 24 * 60 * 60 * 1000,
+      w: 7 * 24 * 60 * 60 * 1000
+    }
+
+    const multiplier = multipliers[unit]
+
+    if (!multiplier) throw new Error(`Unsupported time unit: ${unit}`)
+
+    return value * multiplier
+  }
+
   $: if ((ids && ids.length > 0) || (config.labelFilter?.length ?? 0) === 0) {
     cardsQuery.query<Card>(
       type._id,
       {
         // TODO: Should be join instead of $in. But for now labels and cards in different api.
         ...(ids === undefined ? {} : { _id: { $in: ids } }),
-        ...(space !== undefined ? { space: space._id } : {})
+        ...(space !== undefined ? { space: space._id } : {}),
+        ...config.lookback !== undefined
+          ? { modifiedOn: { $gte: Date.now() - parseLookbackDuration(config.lookback) } }
+          : {}
       },
       (res) => {
         const cardsResult = res

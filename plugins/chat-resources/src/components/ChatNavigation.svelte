@@ -40,9 +40,7 @@
     ],
     fixedTypes: [chat.masterTag.Thread, chat.masterTag.Channel],
     defaultSorting: 'recent',
-    specialSorting: {
-      [chat.masterTag.Channel]: 'alphabetical'
-    },
+    lookback: '1w',
     showTypeIcon: false,
     showCardIcon: true
   }}
