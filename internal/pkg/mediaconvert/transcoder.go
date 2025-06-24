@@ -200,29 +200,30 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 		cmd.Stderr = io.MultiWriter(os.Stderr, &command.stderrBuf)
 
 		cmds = append(cmds, command)
-		if err = cmd.Start(); err != nil {
-			logger.Error("can not start a command", zap.Error(err), zap.Strings("args", args))
+		if startErr := cmd.Start(); startErr != nil {
+			logger.Error("can not start a command", zap.Error(startErr), zap.Strings("args", args))
 			go uploader.Cancel()
-			return nil, errors.Wrapf(err, "can not start a command")
+			return nil, errors.Wrapf(startErr, "can not start a command")
 		}
 	}
 
 	logger.Debug("phase 7: wait for the result")
 
 	for _, cmd := range cmds {
-		if err = cmd.cmd.Wait(); err == nil {
+		var cmdErr error
+		if cmdErr = cmd.cmd.Wait(); cmdErr == nil {
 			continue
 		}
 
-		logger.Error("can not wait for command end ", zap.Error(err))
-		if _, err = os.Stdout.Write(cmd.stdoutBuf.Bytes()); err != nil {
-			logger.Error("can not write stdout ", zap.Error(err))
+		logger.Error("can not wait for command end ", zap.Error(cmdErr))
+		if _, writeErr := os.Stdout.Write(cmd.stdoutBuf.Bytes()); writeErr != nil {
+			logger.Error("can not write stdout ", zap.Error(writeErr))
 		}
-		if _, err = os.Stderr.Write(cmd.stderrBuf.Bytes()); err != nil {
-			logger.Error("can not write stderr", zap.Error(err))
+		if _, writeErr := os.Stderr.Write(cmd.stderrBuf.Bytes()); writeErr != nil {
+			logger.Error("can not write stderr", zap.Error(writeErr))
 		}
-		go uploader.Cancel()
-		return nil, errors.Wrapf(err, "can not wait for command end")
+		uploader.Cancel()
+		return nil, errors.Wrapf(cmdErr, "can not wait for command end")
 	}
 
 	logger.Debug("phase 8: schedule cleanup")
@@ -244,7 +245,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 			zap.String("thumbnail", result.Thumbnail),
 			zap.String("source", task.Source),
 		)
-		err = metaProvider.PatchMeta(
+		metaErr := metaProvider.PatchMeta(
 			ctx,
 			task.Source,
 			&storage.Metadata{
@@ -256,8 +257,8 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 				"height": result.Height,
 			},
 		)
-		if err != nil {
-			logger.Error("can not patch the source file", zap.Error(err))
+		if metaErr != nil {
+			logger.Error("can not patch the source file", zap.Error(metaErr))
 		}
 	}
 
