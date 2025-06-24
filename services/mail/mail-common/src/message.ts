@@ -226,10 +226,10 @@ async function saveMessageToSpaces (
             createdBy: modifiedBy,
             modifiedBy,
             parent: channel,
-            createdOn: createdDate
+            createdOn: createdDate - 4 // Add a small shift to ensure correct ordering
           },
           generateId(),
-          createdDate,
+          createdDate - 4,
           modifiedBy
         )
         threadId = newThreadId as Ref<Card>
@@ -273,7 +273,7 @@ async function createMailThread (producer: Producer, config: BaseConfig, data: M
     cardType: chat.masterTag.Thread,
     content: data.subject,
     socialId: data.modifiedBy,
-    date: data.created,
+    date: new Date(data.created.getTime() - 1),
     messageId: subjectId
   }
   const createSubjectData = Buffer.from(JSON.stringify(createSubjectEvent))
@@ -289,7 +289,7 @@ async function createMailThread (producer: Producer, config: BaseConfig, data: M
       threadType: chat.masterTag.Thread
     },
     socialId: data.modifiedBy,
-    date: data.created
+    date: new Date(data.created.getTime() - 3)
   }
   const thread = Buffer.from(JSON.stringify(threadEvent))
   await sendToCommunicationTopic(producer, config, data, thread)
@@ -377,7 +377,7 @@ async function addCollaborators (
     cardType: chat.masterTag.Thread,
     collaborators: [data.recipient.uuid as AccountUuid],
     socialId: data.modifiedBy,
-    date: new Date(data.created.getTime() - 1)
+    date: new Date(data.created.getTime() - 2)
   }
   const createMessageData = Buffer.from(JSON.stringify(addCollaboratorsEvent))
   await sendToCommunicationTopic(producer, config, data, createMessageData)
