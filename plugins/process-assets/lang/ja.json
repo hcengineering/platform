@@ -66,7 +66,18 @@
     "CurrentCard": "現在のカード",
     "Data": "データ",
     "Transitions": "遷移",
-    "OnExecutionStart": "実行開始時"
+    "OnExecutionStart": "実行開始時",
+    "Prepend": "先頭に追加",
+    "Append": "末尾に追加",
+    "Replace": "置換",
+    "ReplaceAll": "すべて置換",
+    "Split": "分割",
+    "Cut": "切り取り",
+    "Replacement": "置換文字列",
+    "Search": "検索",
+    "Separator": "区切り文字",
+    "Start": "開始",
+    "End": "終了"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

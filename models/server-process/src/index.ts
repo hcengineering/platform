@@ -89,6 +89,30 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.Trim
   })
 
+  builder.mixin(process.function.Prepend, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Prepend
+  })
+
+  builder.mixin(process.function.Append, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Append
+  })
+
+  builder.mixin(process.function.Replace, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Replace
+  })
+
+  builder.mixin(process.function.ReplaceAll, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.ReplaceAll
+  })
+
+  builder.mixin(process.function.Split, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Split
+  })
+
+  builder.mixin(process.function.Cut, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Cut
+  })
+
   builder.mixin(process.function.Add, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Add
   })

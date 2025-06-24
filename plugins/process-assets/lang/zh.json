@@ -67,7 +67,18 @@
     "CurrentCard": "当前卡片",
     "Data": "数据",
     "Transitions": "转换",
-    "OnExecutionStart": "执行开始时"
+    "OnExecutionStart": "执行开始时",
+    "Prepend": "前置",
+    "Append": "追加",
+    "Replace": "替换",
+    "ReplaceAll": "全部替换",
+    "Split": "分割",
+    "Cut": "剪切",
+    "Replacement": "替换内容",
+    "Search": "搜索",
+    "Separator": "分隔符",
+    "Start": "开始",
+    "End": "结束"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

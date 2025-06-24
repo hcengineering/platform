@@ -43,6 +43,8 @@
     "SurveySubmitConfirm": "提交后无法更改答案。您确定现在提交吗？",
     "ValidateFail": "某些必填问题未作答",
     "ValidateInfo": "这是用户看到的表单样式。请尝试输入答案并选择选项来测试调查。顶部的绿色图标表示表单已正确填写。",
-    "ValidateOk": "表单填写正确"
+    "ValidateOk": "表单填写正确",
+    "ConfigLabel": "调查",
+    "ConfigDescription": "管理调查的扩展"
   }
 }

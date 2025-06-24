@@ -67,7 +67,18 @@
     "CurrentCard": "Current card",
     "Data": "Data",
     "Transitions": "Transitions",
-    "OnExecutionStart": "On execution start"
+    "OnExecutionStart": "On execution start",
+    "Prepend": "Prepend",
+    "Append": "Append",
+    "Replace": "Replace",
+    "ReplaceAll": "Replace all",
+    "Split": "Split",
+    "Cut": "Cut",
+    "Replacement": "Replacement",
+    "Search": "Search",
+    "Separator": "Separator",
+    "Start": "Start",
+    "End": "End"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

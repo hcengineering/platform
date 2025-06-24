@@ -22,7 +22,6 @@ import core, {
   getObjectValue,
   Ref,
   RefTo,
-  Timestamp,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -59,7 +58,25 @@ import { TriggerControl } from '@hcengineering/server-core'
 import serverProcess, { ExecuteResult } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
 import { isError } from './errors'
-import { pickTransition } from './utils'
+import {
+  Add,
+  Append,
+  Cut,
+  FirstValue,
+  FirstWorkingDayAfter,
+  LastValue,
+  LowerCase,
+  Offset,
+  Prepend,
+  Random,
+  Replace,
+  ReplaceAll,
+  Split,
+  Subtract,
+  Trim,
+  UpperCase
+} from './transform'
+import { getAttributeValue, pickTransition } from './utils'
 
 export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
@@ -207,28 +224,6 @@ async function fillValue (
     value = await f(value, func.props, control, execution)
   }
   return value
-}
-
-async function getAttributeValue (
-  control: TriggerControl,
-  execution: Execution,
-  context: SelectedContext
-): Promise<any> {
-  const cardValue = await control.findAll(control.ctx, card.class.Card, { _id: execution.card }, { limit: 1 })
-  if (cardValue.length > 0) {
-    const val = getObjectValue(context.key, cardValue[0])
-    if (val == null) {
-      const attr = control.hierarchy.findAttribute(cardValue[0]._class, context.key)
-      throw processError(
-        process.error.EmptyAttributeContextValue,
-        {},
-        { attr: attr?.label ?? getEmbeddedLabel(context.key) }
-      )
-    }
-    return val
-  } else {
-    throw processError(process.error.ObjectNotFound, { _id: execution.card }, {}, true)
-  }
 }
 
 async function getNestedValue (
@@ -644,36 +639,6 @@ export async function RunSubProcess (
   return { txes: res, rollback: undefined }
 }
 
-export function FirstValue (value: Doc[]): Doc {
-  if (!Array.isArray(value)) return value
-  return value[0]
-}
-
-export function LastValue (value: Doc[]): Doc {
-  if (!Array.isArray(value)) return value
-  return value[value.length - 1]
-}
-
-export function Random (value: Doc[]): Doc {
-  if (!Array.isArray(value)) return value
-  return value[Math.floor(Math.random() * value.length)]
-}
-
-export function UpperCase (value: string): string {
-  if (typeof value !== 'string') return value
-  return value.toUpperCase()
-}
-
-export function LowerCase (value: string): string {
-  if (typeof value !== 'string') return value
-  return value.toLowerCase()
-}
-
-export function Trim (value: string): string {
-  if (typeof value !== 'string') return value
-  return value.trim()
-}
-
 export async function RoleContext (
   value: null,
   props: Record<string, any>,
@@ -684,69 +649,6 @@ export async function RoleContext (
   if (targetRole === undefined) return []
   const users = await control.findAll(control.ctx, contact.class.UserRole, { role: targetRole })
   return users.map((it) => it.user)
-}
-
-export async function Add (
-  value: number,
-  props: Record<string, any>,
-  control: TriggerControl,
-  execution: Execution
-): Promise<number> {
-  const context = parseContext(props.offset)
-  if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const offset = await getAttributeValue(control, execution, context)
-      return value + offset
-    }
-  } else if (typeof value === 'number') {
-    return value + props.offset
-  }
-  return value
-}
-
-export async function Subtract (
-  value: number,
-  props: Record<string, any>,
-  control: TriggerControl,
-  execution: Execution
-): Promise<number> {
-  const context = parseContext(props.offset)
-  if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const offset = await getAttributeValue(control, execution, context)
-      return value - offset
-    }
-  } else if (typeof value === 'number') {
-    return value - props.offset
-  }
-  return value
-}
-
-export function Offset (val: Timestamp, props: Record<string, any>): Timestamp {
-  if (typeof val !== 'number') return val
-  const value = new Date(val)
-  const offset = props.offset * (props.direction === 'after' ? 1 : -1)
-  switch (props.offsetType) {
-    case 'days':
-      return value.setDate(value.getDate() + offset)
-    case 'weeks':
-      return value.setDate(value.getDate() + 7 * offset)
-    case 'months':
-      return value.setMonth(value.getMonth() + offset)
-  }
-  return val
-}
-
-export function FirstWorkingDayAfter (val: Timestamp): Timestamp {
-  if (typeof val !== 'number') return val
-  const value = new Date(val)
-  const day = value.getUTCDay()
-  if (day === 6 || day === 0) {
-    const date = value.getDate() + (day === 6 ? 2 : 1)
-    const res = value.setDate(date)
-    return res
-  }
-  return val
 }
 
 export async function OnExecutionContinue (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
@@ -935,6 +837,12 @@ export default async () => ({
     UpperCase,
     LowerCase,
     Trim,
+    Prepend,
+    Append,
+    Replace,
+    ReplaceAll,
+    Split,
+    Cut,
     Add,
     Subtract,
     Offset,

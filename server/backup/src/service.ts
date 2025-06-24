@@ -64,7 +64,7 @@ export interface BackupConfig {
 
 class BackupWorker {
   downloadLimit: number = 100
-  workspacesToBackup: WorkspaceInfoWithStatus[] = []
+  workspacesToBackup = new Map<WorkspaceUuid, WorkspaceInfoWithStatus>()
   rateLimiter: RateLimiter
 
   constructor (
@@ -97,9 +97,8 @@ class BackupWorker {
     const allWorkspaces = await this.getWorkspacesList()
 
     let skipped = 0
-    const currentSet = new Set(this.workspacesToBackup.map((it) => it.uuid))
     const workspaces = allWorkspaces.filter((it) => {
-      if (currentSet.has(it.uuid)) {
+      if (this.workspacesToBackup.has(it.uuid) || this.activeWorkspaces.has(it.uuid)) {
         // We already had ws in set
         return false
       }
@@ -158,8 +157,10 @@ class BackupWorker {
       }
     }
 
-    this.workspacesToBackup = this.workspacesToBackup.concat(mixedBackupSorting)
-    ctx.info('skipped workspaces', { skipped, workspaces: this.workspacesToBackup.length, workspacesIgnore })
+    for (const ws of mixedBackupSorting) {
+      this.workspacesToBackup.set(ws.uuid, ws)
+    }
+    ctx.info('skipped workspaces', { skipped, workspaces: this.workspacesToBackup.size, workspacesIgnore })
   })
 
   async schedule (ctx: MeasureContext): Promise<void> {
@@ -169,9 +170,9 @@ class BackupWorker {
       const avgTime = this.allBackupTime / (this.processed + 1)
       ctx.warn('********** backup info **********', {
         processed: this.processed,
-        toGo: this.workspacesToBackup.length,
+        toGo: this.workspacesToBackup.size,
         avgTime,
-        ETA: Math.round((this.workspacesToBackup.length + this.activeWorkspaces.size) * avgTime),
+        ETA: Math.round((this.workspacesToBackup.size + this.activeWorkspaces.size) * avgTime),
         activeLen: this.activeWorkspaces.size,
         active: Array.from(this.activeWorkspaces).join(',')
       })
@@ -223,15 +224,16 @@ class BackupWorker {
 
   async backup (ctx: MeasureContext): Promise<void> {
     while (true) {
-      const ws = this.workspacesToBackup.shift()
+      const ws = this.workspacesToBackup.values().next().value
       if (ws === undefined) {
         await new Promise<void>((resolve) => setTimeout(resolve, 1000))
         continue
       }
+      this.workspacesToBackup.delete(ws.uuid)
+      this.activeWorkspaces.add(ws.uuid)
       await this.rateLimiter.add(
         async () => {
           try {
-            this.activeWorkspaces.add(ws.uuid)
             if (this.canceled) {
               return // If canceled, we should stop
             }
@@ -254,7 +256,7 @@ class BackupWorker {
               f.counter++
             }
             if ((f?.counter ?? 1) < 5) {
-              this.workspacesToBackup.push(ws)
+              this.workspacesToBackup.set(ws.uuid, ws)
             }
           } finally {
             this.activeWorkspaces.delete(ws.uuid)

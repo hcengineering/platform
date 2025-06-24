@@ -17,7 +17,7 @@ import { type MeasureContext, type Tx } from '@hcengineering/core'
 import { PlatformQueueProducer } from '@hcengineering/server-core'
 import { Readable } from 'stream'
 
-import { type BlobDB } from './db'
+import { type BlobDB, WorkspaceStatsResult } from './db'
 import { digestToUUID, stringToUUID } from './encodings'
 import { type BlobHead, type BlobBody, type BlobList, type BlobStorage, type Datalake, type Location } from './types'
 import { type S3Bucket } from '../s3'
@@ -203,6 +203,16 @@ export class DatalakeImpl implements Datalake {
       await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
     }
 
+    try {
+      const event =
+        data != null
+          ? blobEvents.updated(name, { contentType, lastModified, size, etag: hash })
+          : blobEvents.created(name, { contentType, lastModified, size, etag: hash })
+      await this.producer.send(workspace, [event])
+    } catch (err) {
+      ctx.error('failed to send blob created event', { err })
+    }
+
     return { name, size, contentType, lastModified, etag: hash }
   }
 
@@ -226,6 +236,10 @@ export class DatalakeImpl implements Datalake {
       throw new Error(`Unsupported location: ${location}`)
     }
     return { location, bucket }
+  }
+
+  async getWorkspaceStats (ctx: MeasureContext, workspace: string): Promise<WorkspaceStatsResult> {
+    return await this.db.getWorkspaceStats(ctx, workspace)
   }
 
   selectLocation (workspace: string): Location {

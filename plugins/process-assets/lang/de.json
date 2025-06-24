@@ -67,7 +67,18 @@
     "CurrentCard": "Aktuelle Karte",
     "Data": "Daten",
     "Transitions": "Übergänge",
-    "OnExecutionStart": "Bei Ausführungsstart"
+    "OnExecutionStart": "Bei Ausführungsstart",
+    "Prepend": "Voranstellen",
+    "Append": "Anhängen",
+    "Replace": "Ersetzen",
+    "ReplaceAll": "Alles ersetzen",
+    "Split": "Teilen",
+    "Cut": "Ausschneiden",
+    "Replacement": "Ersetzung",
+    "Search": "Suchen",
+    "Separator": "Trennzeichen",
+    "Start": "Start",
+    "End": "Ende"
   },  
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

@@ -67,7 +67,18 @@
     "CurrentCard": "Carte actuelle",
     "Data": "Données",
     "Transitions": "Transitions",
-    "OnExecutionStart": "Au début de l'exécution"
+    "OnExecutionStart": "Au début de l'exécution",
+    "Prepend": "Préfixer",
+    "Append": "Ajouter",
+    "Replace": "Remplacer",
+    "ReplaceAll": "Remplacer tout",
+    "Split": "Diviser",
+    "Cut": "Couper",
+    "Replacement": "Remplacement",
+    "Search": "Rechercher",
+    "Separator": "Séparateur",
+    "Start": "Début",
+    "End": "Fin"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

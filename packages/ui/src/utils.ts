@@ -347,7 +347,7 @@ export async function formatDuration (duration: number, language: string): Promi
     text += await translate(ui.string.HoursShort, { value: hours }, language)
   }
   const minutes = Math.floor((duration % HOUR) / MINUTE)
-  if (minutes > 0) {
+  if (minutes >= 0) {
     text += ' '
     text += await translate(ui.string.MinutesShort, { value: minutes }, language)
   }

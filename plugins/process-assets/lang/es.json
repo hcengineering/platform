@@ -67,7 +67,18 @@
     "CurrentCard": "Tarjeta actual",
     "Data": "Datos",
     "Transitions": "Transiciones",
-    "OnExecutionStart": "Al iniciar la ejecución"
+    "OnExecutionStart": "Al iniciar la ejecución",
+    "Prepend": "Anteponer",
+    "Append": "Añadir",
+    "Replace": "Reemplazar",
+    "ReplaceAll": "Reemplazar todo",
+    "Split": "Dividir",
+    "Cut": "Cortar",
+    "Replacement": "Reemplazo",
+    "Search": "Buscar",
+    "Separator": "Separador",
+    "Start": "Inicio",
+    "End": "Fin"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",
