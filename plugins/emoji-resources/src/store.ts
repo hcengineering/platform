@@ -14,6 +14,7 @@ export const resultEmojis = derived([unicodeEmojiStore, customEmojiStore, search
       }
       return (
         (emoji.tags?.some((tag: string) => tag.toLowerCase().startsWith(search.toLowerCase())) ?? false) ||
+        (emoji.shortcodes?.some((shortcode: string) => shortcode.toLowerCase().startsWith(search.toLowerCase())) ?? false) ||
           emoji.label.toLowerCase().includes(search.toLowerCase())
       )
     })
