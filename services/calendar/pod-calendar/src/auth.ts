@@ -15,8 +15,17 @@
 
 import { AccountClient, IntegrationSecret } from '@hcengineering/account-client'
 import calendar from '@hcengineering/calendar'
-import contact, { getPrimarySocialId } from '@hcengineering/contact'
-import core, { AccountUuid, MeasureContext, PersonId, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import contact, { Employee, getPrimarySocialId, SocialIdentityRef } from '@hcengineering/contact'
+import core, {
+  AccountUuid,
+  buildSocialIdString,
+  MeasureContext,
+  PersonId,
+  Ref,
+  SocialIdType,
+  TxOperations,
+  WorkspaceUuid
+} from '@hcengineering/core'
 import setting from '@hcengineering/setting'
 import { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3, google } from 'googleapis'
@@ -214,6 +223,7 @@ export class AuthController {
             })
           }
         }
+        await this.addSocialId(res.email)
       },
       {
         user: this.user.userId,
@@ -275,6 +285,21 @@ export class AuthController {
     } catch (err) {
       this.ctx.error('update token error', { workspace: this.user.workspace, user: this.user.userId, err })
     }
+  }
+
+  private async addSocialId (email: GoogleEmail): Promise<void> {
+    const socialString = buildSocialIdString({ type: SocialIdType.GOOGLE, value: email })
+    const exists = await this.accountClient.findFullSocialIdBySocialKey(socialString)
+    if (exists !== undefined) {
+      return
+    }
+    const sID = await this.client.findOne(contact.class.SocialIdentity, {
+      _id: this.user.userId as SocialIdentityRef
+    })
+    if (sID === undefined) return
+    const person = await this.client.findOne(contact.mixin.Employee, { _id: sID.attachedTo as Ref<Employee> })
+    if (person?.personUuid === undefined) return
+    await this.accountClient.addSocialIdToPerson(person.personUuid, SocialIdType.GOOGLE, email, true)
   }
 
   static getAuthUrl (redirectURL: string, workspace: WorkspaceUuid, userId: PersonId, token: string): string {

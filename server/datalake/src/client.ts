@@ -77,6 +77,12 @@ export interface R2UploadParams {
 }
 
 /** @public */
+export interface WorkspaceStats {
+  count: number
+  size: number
+}
+
+/** @public */
 export class DatalakeClient {
   private readonly headers: Record<string, string>
 
@@ -90,6 +96,13 @@ export class DatalakeClient {
   getObjectUrl (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): string {
     const path = `/blob/${workspace}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
+  }
+
+  async getWorkspaceStats (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<WorkspaceStats> {
+    const path = `/stats/${workspace}`
+    const url = new URL(concatLink(this.endpoint, path))
+    const response = await fetchSafe(ctx, url, { headers: { ...this.headers } })
+    return (await response.json()) as WorkspaceStats
   }
 
   async listObjects (

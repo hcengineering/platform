@@ -33,6 +33,17 @@ interface DeleteBlobsRequest {
   names: string[]
 }
 
+export async function handleWorkspaceStats (
+  ctx: MeasureContext,
+  req: Request,
+  res: Response,
+  datalake: Datalake
+): Promise<void> {
+  const { workspace } = req.params
+  const stats = await datalake.getWorkspaceStats(ctx, workspace)
+  res.status(200).json(stats)
+}
+
 export async function handleBlobList (
   ctx: MeasureContext,
   req: Request,

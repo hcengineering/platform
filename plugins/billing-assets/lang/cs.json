@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Billing": "Fakturace",
+    "DriveSize": "Velikost souborů",
+    "DriveCount": "Počet souborů",
+    "OfficeSessionsDuration": "Doba schůzek",
+    "OfficeSessionsBandwidth": "Šířka pásma schůzek",
+    "OfficeEgressDuration": "Doba záznamu"
+  }
+}

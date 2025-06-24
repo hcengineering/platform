@@ -14,7 +14,7 @@
 //
 
 import { type Calendar, calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
-import core, { type AccountUuid, type Doc, type Ref, type Space, toIdMap } from '@hcengineering/core'
+import core, { type AccountUuid, type Doc, type Ref, SocialIdType, type Space, toIdMap } from '@hcengineering/core'
 import {
   createDefaultSpace,
   type MigrateOperation,
@@ -26,6 +26,7 @@ import {
   tryUpgrade
 } from '@hcengineering/model'
 import { DOMAIN_SPACE, getAccountUuidBySocialKey, getSocialKeyByOldAccount } from '@hcengineering/model-core'
+import setting, { DOMAIN_SETTING, type Integration } from '@hcengineering/setting'
 import { DOMAIN_CALENDAR, DOMAIN_EVENT } from '.'
 import calendar from './plugin'
 
@@ -364,6 +365,11 @@ export const calendarOperation: MigrateOperation = {
         state: 'fill-block-time',
         mode: 'upgrade',
         func: fillBlockTime
+      },
+      {
+        state: 'fill_social-ids',
+        mode: 'upgrade',
+        func: fillSocialIdsFromIntegrations
       }
     ])
   },
@@ -375,5 +381,24 @@ export const calendarOperation: MigrateOperation = {
           createDefaultSpace(client, calendar.space.Calendar, { name: 'Space for all events and calendars' })
       }
     ])
+  }
+}
+
+async function fillSocialIdsFromIntegrations (client: MigrationClient): Promise<void> {
+  const integrations = await client.find<Integration>(DOMAIN_SETTING, {
+    _class: setting.class.Integration,
+    type: calendar.integrationType.Calendar
+  })
+  for (const integration of integrations) {
+    try {
+      const val = integration.value.trim().toLowerCase()
+      if (val === '') continue
+      const person = await client.accountClient.findPersonBySocialId(
+        integration.createdBy ?? integration.modifiedBy,
+        true
+      )
+      if (person === undefined) continue
+      await client.accountClient.addSocialIdToPerson(person, SocialIdType.GOOGLE, val, true)
+    } catch {}
   }
 }

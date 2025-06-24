@@ -58,7 +58,7 @@
   }
 
   const options: Plyr.Options = {
-    controls: ['play-large', 'play', 'progress', 'current-time', 'volume', 'settings', 'fullscreen']
+    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen']
   }
 
   function initialize (src: string): void {
@@ -193,5 +193,7 @@
   @import 'plyr/dist/plyr.css';
   :global(.plyr) {
     min-width: 10rem;
+    --plyr-control-spacing: 0.5rem;
+    --plyr-control-icon-size: 1rem;
   }
 </style>

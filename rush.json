@@ -593,6 +593,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/billing-client",
+      "projectFolder": "packages/billing-client",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/prod",
       "projectFolder": "dev/prod",
       "shouldPublish": false
@@ -2164,6 +2169,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-billing",
+      "projectFolder": "services/billing/pod-billing",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-love",
       "projectFolder": "services/love",
       "shouldPublish": false
@@ -2581,6 +2591,26 @@
     {
       "packageName": "@hcengineering/backup-api-pod",
       "projectFolder": "services/backup/backup-api-pod",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/billing",
+      "projectFolder": "plugins/billing",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/billing-assets",
+      "projectFolder": "plugins/billing-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/billing-resources",
+      "projectFolder": "plugins/billing-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-billing",
+      "projectFolder": "models/billing",
       "shouldPublish": false
     }
   ]
