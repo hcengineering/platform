@@ -132,7 +132,7 @@ describe('full-text-indexing', () => {
       const personId = randomUUID().toString() as PersonUuid
       const wsId: WorkspaceUuid = randomUUID().toString() as WorkspaceUuid
       const token = generateToken(personId, wsId)
-      const indexer = await queue.mgr.getIndexer(toolCtx, wsId, token, true)
+      const indexer = await queue.mgr.withIndexer(toolCtx, wsId, token, true, async () => {})
       expect(indexer).toBeDefined()
 
       const dataId = generateId()

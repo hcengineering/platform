@@ -1179,6 +1179,11 @@ export function devTool (
           const storage = await createFileBackupStorage(dirName)
           const storageConfig = cmd.useStorage !== '' ? storageConfigFromEnv(process.env[cmd.useStorage]) : undefined
 
+          const queue = getPlatformQueue('tool', ws.region)
+          const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
+
+          await wsProducer.send(ws.uuid, [workspaceEvents.restoring()])
+
           const workspaceStorage: StorageAdapter | undefined =
             storageConfig !== undefined ? buildStorageFromConfig(storageConfig) : undefined
           await restore(toolCtx, await getWorkspaceTransactorEndpoint(workspace), wsIds, storage, {
@@ -1196,9 +1201,8 @@ export function devTool (
             await doUpgrade(toolCtx, workspace, true, true)
           }
 
-          const queue = getPlatformQueue('tool', ws.region)
-          const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
-          await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
+          console.log('workspace restored')
+          await wsProducer.send(ws.uuid, [workspaceEvents.restored()])
           await queue.shutdown()
           await workspaceStorage?.close()
         })

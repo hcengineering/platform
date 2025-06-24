@@ -254,6 +254,8 @@ services:
     depends_on:
       redpanda:
         condition: service_started
+      cockroach:
+        condition: service_started
     links:
       - elastic
       - mongodb

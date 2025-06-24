@@ -38,6 +38,8 @@ const closeTimeout = 5 * 60 * 1000
 
 export class WorkspaceManager {
   indexers = new Map<string, WorkspaceIndexer | Promise<WorkspaceIndexer>>()
+
+  restoring = new Set<WorkspaceUuid>()
   sysHierarchy = new Hierarchy()
 
   workspaceConsumer?: ConsumerHandle
@@ -141,13 +143,9 @@ export class WorkspaceManager {
         continue
       }
 
-      const indexer = await this.getIndexer(this.ctx, ws, token, true)
-      // TODO: If workspace is not upgraded, we will loose the fulltext index
-      if (indexer === undefined) {
-        // this.workspaceProducer
-      } else {
-        await indexer?.fulltext.processDocuments(this.ctx, m.value, control)
-      }
+      await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
+        await indexer.fulltext.processDocuments(this.ctx, m.value, control)
+      })
     }
   }
 
@@ -156,10 +154,10 @@ export class WorkspaceManager {
     control: ConsumerControl
   ): Promise<void> {
     for (const m of msg) {
-      this.ctx.info('workspace message', { message: m })
       const ws = m.id as WorkspaceUuid
 
       for (const mm of m.value) {
+        this.ctx.info('workspace event', { type: mm.type, workspace: ws, restoring: Array.from(this.restoring) })
         let token: string
         try {
           token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
@@ -168,20 +166,25 @@ export class WorkspaceManager {
           continue
         }
 
-        if (
+        if (mm.type === QueueWorkspaceEvent.Restoring) {
+          this.restoring.add(ws)
+          await this.closeWorkspace(ws)
+        } else if (
           mm.type === QueueWorkspaceEvent.Created ||
           mm.type === QueueWorkspaceEvent.Restored ||
           mm.type === QueueWorkspaceEvent.FullReindex
         ) {
-          const indexer = await this.getIndexer(this.ctx, ws, token, true)
-          if (indexer !== undefined) {
+          if (mm.type === QueueWorkspaceEvent.Restored) {
+            this.restoring.delete(ws)
+          }
+          if (this.restoring.has(ws) || !await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
             await indexer.dropWorkspace() // TODO: Add heartbeat
             const classes = await indexer.getIndexClassess()
             await this.workspaceProducer.send(
               ws,
               classes.map((it) => workspaceEvents.reindex(it.domain, it.classes))
             )
-          } else {
+          })) {
             await this.workspaceProducer.send(ws, [workspaceEvents.fullReindex()]).catch((err) => {
               this.ctx.error('error', { err })
             })
@@ -199,11 +202,14 @@ export class WorkspaceManager {
             await this.fulltextAdapter.clean(this.ctx, workspaceInfo.uuid)
           }
         } else if (mm.type === QueueWorkspaceEvent.Reindex) {
-          const indexer = await this.getIndexer(this.ctx, ws, token, true)
           const mmd = mm as QueueWorkspaceReindexMessage
-          await indexer?.reindex(this.ctx, mmd.domain, mmd.classes, control)
+          if (!this.restoring.has(ws)) {
+            await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
+              await indexer.reindex(this.ctx, mmd.domain, mmd.classes, control)
+            })
+          }
         } else if (mm.type === QueueWorkspaceEvent.Upgraded) {
-          console.error('Upgraded', this.supportedVersion)
+          this.ctx.warn('Upgraded', this.supportedVersion)
           await this.closeWorkspace(ws)
         }
       }
@@ -273,19 +279,23 @@ export class WorkspaceManager {
     }
   }
 
-  async getIndexer (
+  async withIndexer (
     ctx: MeasureContext,
     workspace: WorkspaceUuid,
     token: string | undefined,
-    create: boolean = false
-  ): Promise<WorkspaceIndexer | undefined> {
+    create: boolean = false,
+    op: (indexer: WorkspaceIndexer) => Promise<void>
+  ): Promise<boolean> {
+    while (this.restoring.has(workspace)) {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+    }
     let idx = this.indexers.get(workspace)
     if (idx === undefined && create) {
       idx = this.createIndexer(ctx, workspace, token)
       this.indexers.set(workspace, idx)
     }
     if (idx === undefined) {
-      return undefined
+      return false
     }
     try {
       if (idx instanceof Promise) {
@@ -294,9 +304,12 @@ export class WorkspaceManager {
       }
     } catch (err: any) {
       this.indexers.delete(workspace)
-      return undefined
+      return false
     }
-    return idx
+    if (await idx.doOperation(op)) {
+      this.indexers.delete(workspace)
+    }
+    return true
   }
 
   async shutdown (deleteTopics: boolean = false): Promise<void> {
@@ -322,10 +335,13 @@ export class WorkspaceManager {
 
   async closeWorkspace (workspace: WorkspaceUuid): Promise<void> {
     let idx = this.indexers.get(workspace)
-    this.indexers.delete(workspace)
-    if (idx !== undefined && idx instanceof Promise) {
-      idx = await idx
+    if (idx !== undefined) {
+      if (idx instanceof Promise) {
+        idx = await idx
+      }
+      if (await idx.close()) {
+        this.indexers.delete(workspace)
+      }
     }
-    await idx?.close()
   }
 }
