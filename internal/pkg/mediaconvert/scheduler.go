@@ -47,7 +47,7 @@ type Task struct {
 
 // TaskResult represents transcoding task result
 type TaskResult struct {
-	Source    string `json:"source"`
+	Playlist  string `json:"playlist"`
 	Thumbnail string `json:"thumbnail"`
 	Width     int    `json:"width"`
 	Height    int    `json:"height"`
@@ -258,19 +258,29 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	logger.Debug("phase 9: try to set metadata")
 
 	if metaProvider, ok := remoteStorage.(storage.MetaProvider); ok {
-		var hls = TaskResult{
+		var result = TaskResult{
 			Width:     videoStream.Width,
 			Height:    videoStream.Height,
-			Source:    task.ID + "_master.m3u8",
+			Playlist:  task.ID + "_master.m3u8",
 			Thumbnail: task.ID + ".jpg",
 		}
 
-		logger.Debug("applying metadata", zap.String("url", hls.Source), zap.String("thumbnail", hls.Thumbnail), zap.String("source", task.Source))
+		logger.Debug(
+			"applying metadata",
+			zap.String("url", result.Playlist),
+			zap.String("thumbnail", result.Thumbnail),
+			zap.String("source", task.Source),
+		)
 		err = metaProvider.PatchMeta(
 			ctx,
 			task.Source,
 			&storage.Metadata{
-				"hls": hls,
+				"hls": map[string]any{
+					"source":    result.Playlist,
+					"thumbnail": result.Thumbnail,
+				},
+				"width":  result.Width,
+				"height": result.Height,
 			},
 		)
 		if err != nil {

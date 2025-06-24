@@ -233,14 +233,14 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 	var result = TaskResult{
 		Width:     videoStream.Width,
 		Height:    videoStream.Height,
-		Source:    task.ID + "_master.m3u8",
+		Playlist:  task.ID + "_master.m3u8",
 		Thumbnail: task.ID + ".jpg",
 	}
 
 	if metaProvider, ok := remoteStorage.(storage.MetaProvider); ok {
 		logger.Debug(
 			"applying metadata",
-			zap.String("url", result.Source),
+			zap.String("url", result.Playlist),
 			zap.String("thumbnail", result.Thumbnail),
 			zap.String("source", task.Source),
 		)
@@ -248,7 +248,12 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 			ctx,
 			task.Source,
 			&storage.Metadata{
-				"hls": result,
+				"hls": map[string]any{
+					"source":    result.Playlist,
+					"thumbnail": result.Thumbnail,
+				},
+				"width":  result.Width,
+				"height": result.Height,
 			},
 		)
 		if err != nil {
