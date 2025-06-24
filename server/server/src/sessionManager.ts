@@ -678,9 +678,10 @@ export class TSessionManager implements SessionManager {
 
   broadcastSessions (measure: MeasureContext, sessionIds: Record<string, Tx[]>): void {
     const ctx = measure.newChild('📬 broadcast sessions', {})
-    const sessions = Object.entries(sessionIds).map((it) => ({
-      session: this.sessions.get(it[0]),
-      txes: it[1]
+    const allSessions = Array.from(this.sessions.values())
+    const sessions = Object.entries(sessionIds).map(([sessionId, txes]) => ({
+      session: allSessions.find((it) => it.session.sessionId === sessionId),
+      txes
     }))
 
     function send (): void {

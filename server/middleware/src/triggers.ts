@@ -141,8 +141,10 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       modelDb: this.context.modelDb,
       hierarchy: this.context.hierarchy,
       cache: this.cache,
-      communicationApi: this.context.communicationApi,
       userStatusMap: this.context.userStatusMap ?? new Map(),
+      domainRequest: async (a, b, c) => {
+        return (await this.context.head?.domainRequest(a, b, c)) ?? { domain: b, value: undefined }
+      },
       apply: async (ctx, tx, needResult) => {
         if (needResult === true) {
           return (await this.context.derived?.tx(ctx, tx)) ?? {}

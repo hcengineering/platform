@@ -21,7 +21,8 @@ import core, {
   type MeasureContext,
   type OperationDomain,
   type SessionData,
-  type TxDomainEvent
+  type TxDomainEvent,
+  systemAccount
 } from '@hcengineering/core'
 import type {
   CommunicationApiFactory,
@@ -133,7 +134,7 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
       ...ctx,
       sessionId: ctx.contextData.sessionId,
       // TODO: We should decide what to do with communications package and remove this workaround
-      account: ctx.contextData.account
+      account: ctx.contextData.isTriggerCtx === true ? systemAccount : ctx.contextData.account
     }
   }
 }

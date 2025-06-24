@@ -201,7 +201,6 @@ export interface PipelineContext {
   contextVars: Record<string, any>
 
   broadcastEvent?: (ctx: MeasureContext, tx: Tx[]) => Promise<void>
-  communicationApi: CommunicationApi | null
   userStatusMap?: Map<Ref<UserStatus>, { online: boolean, user: AccountUuid }>
 }
 /**
@@ -275,10 +274,9 @@ export interface TriggerControl {
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
   userStatusMap: Map<Ref<UserStatus>, { online: boolean, user: AccountUuid }>
+  domainRequest: (ctx: MeasureContext, domain: OperationDomain, params: DomainParams) => Promise<DomainResult>
 
   queue?: PlatformQueue
-
-  communicationApi: CommunicationApi | null
 
   // Cache per workspace
   cache: Map<string, any>

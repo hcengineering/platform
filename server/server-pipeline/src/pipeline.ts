@@ -170,8 +170,7 @@ export function createServerPipeline (
       hierarchy,
       queue: opt.queue,
       storageAdapter: opt.externalStorage,
-      contextVars: opt.pipelineContextVars ?? sharedPipelineContextVars,
-      communicationApi: null
+      contextVars: opt.pipelineContextVars ?? sharedPipelineContextVars
     }
     return createPipeline(ctx, middlewares, context)
   }
@@ -218,8 +217,7 @@ export function createBackupPipeline (
       modelDb,
       hierarchy,
       storageAdapter: opt.externalStorage,
-      contextVars: {},
-      communicationApi: null
+      contextVars: {}
     }
     return createPipeline(ctx, middlewares, context)
   }

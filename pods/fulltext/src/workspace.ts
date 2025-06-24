@@ -84,9 +84,7 @@ export class WorkspaceIndexer {
       modelDb,
       hierarchy,
       storageAdapter: externalStorage,
-      contextVars: {},
-      // TODO: Communication API ??
-      communicationApi: null
+      contextVars: {}
     }
     result.pipeline = await createPipeline(ctx, middlewares, context)
 

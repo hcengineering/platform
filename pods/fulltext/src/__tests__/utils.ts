@@ -97,8 +97,7 @@ export async function preparePipeline (
     modelDb,
     hierarchy,
     storageAdapter: storage,
-    contextVars: {},
-    communicationApi: null
+    contextVars: {}
   }
   const pipeline = await createPipeline(toolCtx, middlewares, context)
   return { pipeline, wsIds }
