@@ -12,12 +12,11 @@
 // limitations under the License.
 
 import { type Ref } from '@hcengineering/core'
-import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
+import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { type PresentationMiddlewareCreator } from '@hcengineering/presentation'
 import process, { processId } from '@hcengineering/process'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type ViewQueryAction, type Viewlet } from '@hcengineering/view'
-
 export default mergeIds(processId, process, {
   viewlet: {
     ExecutionsList: '' as Ref<Viewlet>,
@@ -42,8 +41,6 @@ export default mergeIds(processId, process, {
     RelatedContextSelector: '' as AnyComponent,
     FunctionSelector: '' as AnyComponent,
     RunProcessCardPopup: '' as AnyComponent,
-    DateOffsetEditor: '' as AnyComponent,
-    NumberOffsetEditor: '' as AnyComponent,
     ErrorPresenter: '' as AnyComponent,
     RequestUserInput: '' as AnyComponent,
     ResultInput: '' as AnyComponent,
@@ -54,6 +51,14 @@ export default mergeIds(processId, process, {
     ToDoCloseEditor: '' as AnyComponent,
     ToDoRemoveEditor: '' as AnyComponent,
     ProcessesCardSection: '' as AnyComponent
+  },
+  transformEditor: {
+    DateOffsetEditor: '' as AnyComponent,
+    NumberOffsetEditor: '' as AnyComponent,
+    AppendEditor: '' as AnyComponent,
+    ReplaceEditor: '' as AnyComponent,
+    SplitEditor: '' as AnyComponent,
+    CutEditor: '' as AnyComponent
   },
   function: {
     ShowDoneQuery: '' as ViewQueryAction,
@@ -85,6 +90,12 @@ export default mergeIds(processId, process, {
     UpperCase: '' as IntlString,
     LowerCase: '' as IntlString,
     Trim: '' as IntlString,
+    Prepend: '' as IntlString,
+    Append: '' as IntlString,
+    Replace: '' as IntlString,
+    ReplaceAll: '' as IntlString,
+    Split: '' as IntlString,
+    Cut: '' as IntlString,
     FirstValue: '' as IntlString,
     LastValue: '' as IntlString,
     Random: '' as IntlString,
@@ -117,6 +128,11 @@ export default mergeIds(processId, process, {
     AddTransition: '' as IntlString,
     ToDo: '' as IntlString,
     CurrentCard: '' as IntlString,
-    Data: '' as IntlString
+    Data: '' as IntlString,
+    Replacement: '' as IntlString,
+    Search: '' as IntlString,
+    Separator: '' as IntlString,
+    Start: '' as IntlString,
+    End: '' as IntlString
   }
 })

@@ -303,6 +303,90 @@ export function createModel (builder: Builder): void {
     process.class.ProcessFunction,
     core.space.Model,
     {
+      of: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.Prepend,
+      allowMany: true,
+      type: 'transform',
+      editor: process.transformEditor.AppendEditor
+    },
+    process.function.Prepend
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.Append,
+      allowMany: true,
+      type: 'transform',
+      editor: process.transformEditor.AppendEditor
+    },
+    process.function.Append
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.Replace,
+      allowMany: true,
+      type: 'transform',
+      editor: process.transformEditor.ReplaceEditor
+    },
+    process.function.Replace
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.ReplaceAll,
+      allowMany: true,
+      type: 'transform',
+      editor: process.transformEditor.ReplaceEditor
+    },
+    process.function.ReplaceAll
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.Split,
+      allowMany: true,
+      type: 'transform',
+      editor: process.transformEditor.SplitEditor
+    },
+    process.function.Split
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.Cut,
+      allowMany: true,
+      editor: process.transformEditor.CutEditor,
+      type: 'transform'
+    },
+    process.function.Cut
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
       of: core.class.ArrOf,
       category: undefined,
       label: process.string.FirstValue,
@@ -344,7 +428,7 @@ export function createModel (builder: Builder): void {
       category: 'attribute',
       label: process.string.Add,
       allowMany: true,
-      editor: process.component.NumberOffsetEditor
+      editor: process.transformEditor.NumberOffsetEditor
     },
     process.function.Add
   )
@@ -357,7 +441,7 @@ export function createModel (builder: Builder): void {
       category: 'attribute',
       label: process.string.Subtract,
       allowMany: true,
-      editor: process.component.NumberOffsetEditor,
+      editor: process.transformEditor.NumberOffsetEditor,
       type: 'transform'
     },
     process.function.Subtract
@@ -370,7 +454,7 @@ export function createModel (builder: Builder): void {
       of: core.class.TypeDate,
       category: 'attribute',
       label: process.string.Offset,
-      editor: process.component.DateOffsetEditor,
+      editor: process.transformEditor.DateOffsetEditor,
       type: 'transform'
     },
     process.function.Offset
