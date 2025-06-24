@@ -112,7 +112,13 @@ func (w *Worker) processMessage(ctx context.Context, msg kafka.Message, logger *
 	res, err := transcoder.Transcode(ctx, &task)
 
 	if err == nil {
-		if err = w.producer.Send(ctx, req.WorkspaceUUID, res); err != nil {
+		result := TranscodeResult{
+			BlobID:        req.BlobID,
+			WorkspaceUUID: req.WorkspaceUUID,
+			Playlist:      res.Playlist,
+			Thumbnail:     res.Thumbnail,
+		}
+		if err = w.producer.Send(ctx, req.WorkspaceUUID, result); err != nil {
 			logger.Error("failed to send transcode result", zap.Error(err))
 		}
 	}

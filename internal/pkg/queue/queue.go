@@ -39,10 +39,10 @@ type TranscodeRequest struct {
 
 // TranscodeResult represents transcode result.
 type TranscodeResult struct {
-	BlobID        string
-	WorkspaceUUID string
-	Playlist      string
-	Thumbnail     string
+	BlobID        string `json:"blobId"`
+	WorkspaceUUID string `json:"workspaceUuid"`
+	Playlist      string `json:"playlist"`
+	Thumbnail     string `json:"thumbnail"`
 }
 
 // ConsumerOptions represents options for the consumer
