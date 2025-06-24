@@ -24,5 +24,5 @@ export interface VideoTranscodeResult {
   workspaceUuid: string
 
   thumbnail?: string
-  hls?: string
+  playlist?: string
 }
