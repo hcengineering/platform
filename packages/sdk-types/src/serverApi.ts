@@ -34,6 +34,7 @@ import type { EventResult, Event } from './events/event'
 export interface SessionData {
   sessionId?: string
   account: Account
+  derived?: boolean
   contextData?: any
 }
 

@@ -175,7 +175,7 @@ export class Middlewares {
 
   async event (session: SessionData, event: Event): Promise<EventResult> {
     if (this.head === undefined) return {}
-    return (await this.head?.event(session, event as Enriched<Event>, false)) ?? {}
+    return (await this.head?.event(session, event as Enriched<Event>, session.derived ?? false)) ?? {}
   }
 
   async closeSession (sessionId: string): Promise<void> {

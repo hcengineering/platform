@@ -46,7 +46,7 @@ export interface RestClient {
   findNotificationContexts: (params: FindNotificationContextParams) => Promise<NotificationContext[]>
   findNotifications: (params: FindNotificationsParams) => Promise<Notification[]>
 
-  event: (event: Event) => Promise<EventResult>
+  event: (event: Event, socialId: SocialID) => Promise<EventResult>
 
   createMessage: (
     cardId: CardID,

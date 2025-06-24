@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { concatLink } from '@hcengineering/core'
+import core, { concatLink, generateId, OperationDomain, TxDomainEvent } from '@hcengineering/core'
 import {
   type EventResult,
   type Event,
@@ -79,15 +79,49 @@ class RestClientImpl implements RestClient {
     }
   }
 
-  async event (event: Event): Promise<EventResult> {
-    const response = await fetch(concatLink(this.endpoint, `/api/v1/event/${this.workspace}`), {
+  private wrapEvent (event: Event, modifiedBy: SocialID): TxDomainEvent {
+    return {
+      _id: generateId(),
+      _class: core.class.TxDomainEvent,
+      space: core.space.Tx,
+      objectSpace: core.space.Tx,
+      domain: 'communication' as OperationDomain,
+      event,
+      modifiedBy,
+      modifiedOn: Date.now()
+    }
+  }
+
+  private async find<T>(operation: string, params: Record<string, any>): Promise<T[]> {
+    const searchParams = new URLSearchParams()
+    if (Object.keys(params).length > 0) {
+      searchParams.append('params', JSON.stringify(params))
+    }
+    const requestUrl = concatLink(
+      this.endpoint,
+      `/api/v1/request/communication/${operation}/${this.workspace}?${searchParams.toString()}`
+    )
+    return await retry(
+      async () => {
+        const response = await fetch(requestUrl, this.requestInit())
+        if (!response.ok) {
+          throw new Error(response.statusText)
+        }
+        return await extractJson<T[]>(response)
+      },
+      { retries }
+    )
+  }
+
+  async event (event: Event, socialId: SocialID): Promise<EventResult> {
+    const response = await fetch(concatLink(this.endpoint, `/api/v1/tx/${this.workspace}`), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + this.token
       },
       keepalive: true,
-      body: JSON.stringify(event)
+      body: JSON.stringify(this.wrapEvent(event, socialId))
     })
     if (!response.ok) {
       throw new Error(response.statusText)
@@ -106,18 +140,21 @@ class RestClientImpl implements RestClient {
     messageId?: MessageID,
     options?: CreateMessageOptions
   ): Promise<CreateMessageResult> {
-    const result = await this.event({
-      type: MessageEventType.CreateMessage,
-      messageType: type,
-      cardId,
-      cardType,
-      content,
-      extra,
-      socialId,
-      date,
-      messageId,
-      options
-    })
+    const result = await this.event(
+      {
+        type: MessageEventType.CreateMessage,
+        messageType: type,
+        cardId,
+        cardType,
+        content,
+        extra,
+        socialId,
+        date,
+        messageId,
+        options
+      },
+      socialId
+    )
     return result as CreateMessageResult
   }
 
@@ -130,26 +167,32 @@ class RestClientImpl implements RestClient {
     date?: Date,
     options?: UpdatePatchOptions
   ): Promise<void> {
-    await this.event({
-      type: MessageEventType.UpdatePatch,
-      cardId,
-      messageId,
-      content,
-      extra,
-      socialId,
-      date,
-      options
-    })
+    await this.event(
+      {
+        type: MessageEventType.UpdatePatch,
+        cardId,
+        messageId,
+        content,
+        extra,
+        socialId,
+        date,
+        options
+      },
+      socialId
+    )
   }
 
   async removeMessage (cardId: CardID, messageId: MessageID, socialId: SocialID, date?: Date): Promise<void> {
-    await this.event({
-      type: MessageEventType.RemovePatch,
-      cardId,
-      messageId,
-      socialId,
-      date
-    })
+    await this.event(
+      {
+        type: MessageEventType.RemovePatch,
+        cardId,
+        messageId,
+        socialId,
+        date
+      },
+      socialId
+    )
   }
 
   async attachBlobs (
@@ -159,19 +202,22 @@ class RestClientImpl implements RestClient {
     socialId: SocialID,
     date?: Date
   ): Promise<void> {
-    await this.event({
-      type: MessageEventType.BlobPatch,
-      cardId,
-      messageId,
-      operations: [
-        {
-          opcode: 'attach',
-          blobs
-        }
-      ],
-      socialId,
-      date
-    })
+    await this.event(
+      {
+        type: MessageEventType.BlobPatch,
+        cardId,
+        messageId,
+        operations: [
+          {
+            opcode: 'attach',
+            blobs
+          }
+        ],
+        socialId,
+        date
+      },
+      socialId
+    )
   }
 
   async detachBlobs (
@@ -181,19 +227,22 @@ class RestClientImpl implements RestClient {
     socialId: SocialID,
     date?: Date
   ): Promise<void> {
-    await this.event({
-      type: MessageEventType.BlobPatch,
-      cardId,
-      messageId,
-      operations: [
-        {
-          opcode: 'detach',
-          blobIds
-        }
-      ],
-      socialId,
-      date
-    })
+    await this.event(
+      {
+        type: MessageEventType.BlobPatch,
+        cardId,
+        messageId,
+        operations: [
+          {
+            opcode: 'detach',
+            blobIds
+          }
+        ],
+        socialId,
+        date
+      },
+      socialId
+    )
   }
 
   async setBlobs (
@@ -203,100 +252,37 @@ class RestClientImpl implements RestClient {
     socialId: SocialID,
     date?: Date
   ): Promise<void> {
-    await this.event({
-      type: MessageEventType.BlobPatch,
-      cardId,
-      messageId,
-      operations: [
-        {
-          opcode: 'set',
-          blobs
-        }
-      ],
-      socialId,
-      date
-    })
+    await this.event(
+      {
+        type: MessageEventType.BlobPatch,
+        cardId,
+        messageId,
+        operations: [
+          {
+            opcode: 'set',
+            blobs
+          }
+        ],
+        socialId,
+        date
+      },
+      socialId
+    )
   }
 
   async findMessages (params: FindMessagesParams): Promise<Message[]> {
-    const searchParams = new URLSearchParams()
-    if (Object.keys(params).length > 0) {
-      searchParams.append('params', JSON.stringify(params))
-    }
-    const requestUrl = concatLink(this.endpoint, `/api/v1/find-messages/${this.workspace}?${searchParams.toString()}`)
-
-    return await retry(
-      async () => {
-        const response = await fetch(requestUrl, this.requestInit())
-        if (!response.ok) {
-          throw new Error(response.statusText)
-        }
-        return await extractJson<Message[]>(response)
-      },
-      { retries }
-    )
+    return await this.find<Message>('findMessages', params)
   }
 
   async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    const searchParams = new URLSearchParams()
-    if (Object.keys(params).length > 0) {
-      searchParams.append('params', JSON.stringify(params))
-    }
-    const requestUrl = concatLink(
-      this.endpoint,
-      `/api/v1/find-messages-groups/${this.workspace}?${searchParams.toString()}`
-    )
-    return await retry(
-      async () => {
-        const response = await fetch(requestUrl, this.requestInit())
-        if (!response.ok) {
-          throw new Error(response.statusText)
-        }
-        return await extractJson<MessagesGroup[]>(response)
-      },
-      { retries }
-    )
+    return await this.find<MessagesGroup>('findMessagesGroups', params)
   }
 
   async findNotificationContexts (params: FindNotificationContextParams): Promise<NotificationContext[]> {
-    const searchParams = new URLSearchParams()
-    if (Object.keys(params).length > 0) {
-      searchParams.append('params', JSON.stringify(params))
-    }
-    const requestUrl = concatLink(
-      this.endpoint,
-      `/api/v1/find-notification-contexts/${this.workspace}?${searchParams.toString()}`
-    )
-    return await retry(
-      async () => {
-        const response = await fetch(requestUrl, this.requestInit())
-        if (!response.ok) {
-          throw new Error(response.statusText)
-        }
-        return await extractJson<NotificationContext[]>(response)
-      },
-      { retries }
-    )
+    return await this.find<NotificationContext>('findNotificationContexts', params)
   }
 
   async findNotifications (params: FindNotificationsParams): Promise<Notification[]> {
-    const searchParams = new URLSearchParams()
-    if (Object.keys(params).length > 0) {
-      searchParams.append('params', JSON.stringify(params))
-    }
-    const requestUrl = concatLink(
-      this.endpoint,
-      `/api/v1/find-notifications/${this.workspace}?${searchParams.toString()}`
-    )
-    return await retry(
-      async () => {
-        const response = await fetch(requestUrl, this.requestInit())
-        if (!response.ok) {
-          throw new Error(response.statusText)
-        }
-        return await extractJson<Notification[]>(response)
-      },
-      { retries }
-    )
+    return await this.find<Notification>('findNotifications', params)
   }
 }
