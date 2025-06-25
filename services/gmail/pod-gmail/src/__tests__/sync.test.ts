@@ -130,7 +130,7 @@ describe('SyncManager', () => {
       const spyFullSync = jest.spyOn(syncManager, 'fullSync').mockResolvedValue(undefined)
 
       // Act
-      await syncManager.sync(userId, userEmail)
+      await syncManager.sync(userId, { noNotify: true }, userEmail)
 
       // Assert
       expect(spyFullSync).toHaveBeenCalledWith(userId, userEmail)
@@ -145,7 +145,7 @@ describe('SyncManager', () => {
       })
 
       // Act
-      await syncManager.sync(userId, userEmail)
+      await syncManager.sync(userId, { noNotify: true }, userEmail)
 
       // Assert
       expect(mockGmail.history.list).toHaveBeenCalledWith({
