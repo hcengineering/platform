@@ -1295,7 +1295,7 @@ export function devTool (
     .option(
       '-ct, --contentTypes <contentTypes>',
       'A list of ; separated content types for blobs to exclude from backup',
-      'video/;application/octet-stream'
+      'video/;application/octet-stream;audio/;image/'
     )
     .action(async (bucketName: string, dirName: string, cmd: { force: boolean, contentTypes: string }) => {
       const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
