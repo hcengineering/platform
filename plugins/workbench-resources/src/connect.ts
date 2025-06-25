@@ -13,6 +13,7 @@ import core, {
   type MeasureMetricsContext,
   metricsToString,
   pickPrimarySocialId,
+  setCurrentAccount,
   type SocialId,
   type Version,
   versionToString
