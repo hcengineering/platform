@@ -62,8 +62,6 @@
       return { date: date.getTime(), value: s.minutes * 60000 }
     })
   }
-
-  // function normalize
 </script>
 
 <div class="hulyComponent">
