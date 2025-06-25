@@ -14,12 +14,12 @@
 -->
 
 <script lang="ts">
+  import core from '@hcengineering/core'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import { ContextId, Process, ProcessContext } from '@hcengineering/process'
+  import { clearSettingsStore } from '@hcengineering/setting-resources'
   import { EditBox, Grid, Modal } from '@hcengineering/ui'
   import plugin from '../../plugin'
-  import presentation, { getClient } from '@hcengineering/presentation'
-  import { clearSettingsStore } from '@hcengineering/setting-resources'
-  import core from '@hcengineering/core'
   import ProcessContextRawPresenter from '../contextEditors/ProcessContextRawPresenter.svelte'
 
   export let process: Process
@@ -49,7 +49,7 @@
   onCancel={clearSettingsStore}
 >
   <div class="mt-2">
-    <Grid>
+    <Grid rowGap={1}>
       {#each Object.entries(process.context) as val}
         <div class="context flex-center">
           <ProcessContextRawPresenter context={val[1]} />

@@ -43,6 +43,8 @@
     "SurveySubmitConfirm": "Você não poderá alterar as respostas após o envio. Tem certeza de que deseja enviar agora?",
     "ValidateFail": "Algumas perguntas obrigatórias não foram respondidas",
     "ValidateInfo": "É assim que o formulário será exibido para um usuário. Tente digitar respostas e selecionar opções para testar sua pesquisa. Um ícone verde no cabeçalho acima indica que o formulário está preenchido corretamente",
-    "ValidateOk": "Formulário preenchido corretamente"
+    "ValidateOk": "Formulário preenchido corretamente",
+    "ConfigLabel": "Pesquisas",
+    "ConfigDescription": "Extensão para gerenciar pesquisas"
   }
 }

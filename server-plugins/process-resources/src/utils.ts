@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import { Doc } from '@hcengineering/core'
-import { getResource } from '@hcengineering/platform'
-import { Execution, Transition, parseContext } from '@hcengineering/process'
+import { Doc, getObjectValue } from '@hcengineering/core'
+import card from '@hcengineering/card'
+import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
+import process, { Execution, SelectedContext, Transition, parseContext, processError } from '@hcengineering/process'
 import { TriggerControl } from '@hcengineering/server-core'
 import serverProcess from '@hcengineering/server-process'
 
@@ -53,4 +54,26 @@ function fillParams (params: Record<string, any>, execution: Execution): Record<
     }
   }
   return res
+}
+
+export async function getAttributeValue (
+  control: TriggerControl,
+  execution: Execution,
+  context: SelectedContext
+): Promise<any> {
+  const cardValue = await control.findAll(control.ctx, card.class.Card, { _id: execution.card }, { limit: 1 })
+  if (cardValue.length > 0) {
+    const val = getObjectValue(context.key, cardValue[0])
+    if (val == null) {
+      const attr = control.hierarchy.findAttribute(cardValue[0]._class, context.key)
+      throw processError(
+        process.error.EmptyAttributeContextValue,
+        {},
+        { attr: attr?.label ?? getEmbeddedLabel(context.key) }
+      )
+    }
+    return val
+  } else {
+    throw processError(process.error.ObjectNotFound, { _id: execution.card }, {}, true)
+  }
 }

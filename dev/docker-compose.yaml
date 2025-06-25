@@ -175,6 +175,9 @@ services:
       - cockroach
       - minio
       - stats
+    depends_on:
+      redpanda:
+        condition: service_started
     volumes:
       - ./branding.json:/var/cfg/branding.json
     environment:
@@ -257,6 +260,9 @@ services:
       - minio
       - account
       - stats
+    depends_on:
+      redpanda:
+        condition: service_started
     ports:
       - 3332:3332
     volumes:

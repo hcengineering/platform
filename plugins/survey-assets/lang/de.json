@@ -43,6 +43,8 @@
     "SurveySubmitConfirm": "Nach dem Absenden können die Antworten nicht mehr geändert werden. Möchten Sie jetzt wirklich absenden?",
     "ValidateFail": "Einige Pflichtfragen wurden nicht beantwortet",
     "ValidateInfo": "So wird das Formular für die Benutzer aussehen. Versuchen Sie, Antworten einzugeben und Optionen auszuwählen, um die Umfrage zu testen. Das grüne Symbol oben zeigt an, dass das Formular korrekt ausgefüllt ist.",
-    "ValidateOk": "Das Formular ist korrekt ausgefüllt"
+    "ValidateOk": "Das Formular ist korrekt ausgefüllt",
+    "ConfigLabel": "Umfragen",
+    "ConfigDescription": "Erweiterung zur Verwaltung von Umfragen"
   }
 }

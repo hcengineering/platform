@@ -198,12 +198,9 @@ export async function startIndexer (
       const token = request.token ?? req.headers.authorization?.split(' ')[1]
       const decoded = decodeToken(token) // Just to be safe
 
-      const indexer = await manager.getIndexer(ctx, decoded.workspace, token)
-      if (indexer !== undefined) {
+      await manager.withIndexer(ctx, decoded.workspace, token, false, async (indexer) => {
         indexer.lastUpdate = Date.now()
-        // TODO: Fixme
-        // await ctx.with('index-documents', {}, (ctx) => indexer.fulltext.indexDocuments(ctx, request.requests))
-      }
+      })
       req.body = {}
     } catch (err: any) {
       Analytics.handleError(err)
@@ -221,15 +218,14 @@ export async function startIndexer (
       req.body = {}
 
       ctx.info('reindex', { workspace: decoded.workspace })
-      const indexer = await manager.getIndexer(ctx, decoded.workspace, token, true)
-      if (indexer !== undefined) {
+      await manager.withIndexer(ctx, decoded.workspace, token, true, async (indexer) => {
         indexer.lastUpdate = Date.now()
         if (request?.onlyDrop ?? false) {
           await manager.workspaceProducer.send(decoded.workspace, [workspaceEvents.clearIndex()])
         } else {
           await manager.workspaceProducer.send(decoded.workspace, [workspaceEvents.fullReindex()])
         }
-      }
+      })
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)

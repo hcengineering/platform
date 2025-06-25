@@ -57,5 +57,5 @@
     <DropdownLabelsIntl items={directions} bind:selected={direction} />
     <NumberInput bind:value={offset} autoFocus minValue={0} focusable maxDigitsAfterPoint={0} />
     <DropdownLabelsIntl {items} bind:selected={offsetType} {params} />
-  </div></Card
->
+  </div>
+</Card>

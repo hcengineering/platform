@@ -65,7 +65,20 @@
     "AddTransition": "Přidat přechod",
     "ToDo": "Úkol",
     "CurrentCard": "Aktuální karta",
-    "Data": "Data"
+    "Data": "Data",
+    "Transitions": "Přechody",
+    "OnExecutionStart": "Při spuštění provedení",
+    "Prepend": "Přidat na začátek",
+    "Append": "Přidat na konec",
+    "Replace": "Nahradit",
+    "ReplaceAll": "Nahradit vše",
+    "Split": "Rozdělit",
+    "Cut": "Vyjmout",
+    "Replacement": "Náhrada",
+    "Search": "Hledat",
+    "Separator": "Oddělovač",
+    "Start": "Spustit",
+    "End": "Konec"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

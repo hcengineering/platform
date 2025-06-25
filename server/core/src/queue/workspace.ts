@@ -10,6 +10,7 @@ export enum QueueWorkspaceEvent {
   Deleted = 'deleted',
   Archived = 'archived',
   Restored = 'restored',
+  Restoring = 'restoring',
   FullReindex = 'full-fulltext-reindex',
   Reindex = 'fulltext-reindex',
   ClearIndex = 'clear-fulltext-index'
@@ -35,6 +36,7 @@ export const workspaceEvents = {
   createFailed: (): QueueWorkspaceMessage => ({ type: QueueWorkspaceEvent.CreateFailed }),
   deleted: (): QueueWorkspaceMessage => ({ type: QueueWorkspaceEvent.Deleted }),
   archived: (): QueueWorkspaceMessage => ({ type: QueueWorkspaceEvent.Archived }),
+  restoring: (): QueueWorkspaceMessage => ({ type: QueueWorkspaceEvent.Restoring }),
   restored: (): QueueWorkspaceMessage => ({ type: QueueWorkspaceEvent.Restored }),
   fullReindex: (): QueueWorkspaceMessage => ({ type: QueueWorkspaceEvent.FullReindex }),
   clearIndex: (): QueueWorkspaceMessage => ({ type: QueueWorkspaceEvent.ClearIndex }),

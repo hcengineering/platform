@@ -17,7 +17,7 @@
   import core, { generateId, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Process, State, Step } from '@hcengineering/process'
+  import { Process, State } from '@hcengineering/process'
   import { ButtonIcon, getCurrentLocation, Icon, IconAdd, Label, navigate } from '@hcengineering/ui'
   import process from '../plugin'
 
@@ -31,19 +31,25 @@
       name: await translate(process.string.NewProcess, {}),
       masterTag: masterTag._id,
       context: {},
-      description: '',
-      initState
+      description: ''
     })
     await client.createDoc(
       process.class.State,
       core.space.Model,
       {
         process: id,
-        title: await translate(process.string.NewState, {}),
-        actions: []
+        title: await translate(process.string.NewState, {})
       },
       initState
     )
+    await client.createDoc(process.class.Transition, core.space.Model, {
+      process: id,
+      from: null,
+      to: initState,
+      trigger: process.trigger.OnExecutionStart,
+      actions: [],
+      triggerParams: {}
+    })
     handleSelect(id)
   }
 

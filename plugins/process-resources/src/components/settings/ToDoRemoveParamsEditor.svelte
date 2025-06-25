@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,18 +11,15 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
 
-export interface VideoTranscodeRequest {
-  blobId: string
-  workspaceUuid: string
-  contentType: string
-}
+<script lang="ts">
+  import { Process } from '@hcengineering/process'
+  import ToDoParamsEditor from './ToDoParamsEditor.svelte'
 
-export interface VideoTranscodeResult {
-  blobId: string
-  workspaceUuid: string
+  export let readonly: boolean
+  export let process: Process
+  export let params: Record<string, any>
+</script>
 
-  thumbnail?: string
-  playlist?: string
-}
+<ToDoParamsEditor {readonly} {process} {params} skipRollback on:change />

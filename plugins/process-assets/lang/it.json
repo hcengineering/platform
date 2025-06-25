@@ -65,7 +65,20 @@
     "AddTransition": "Aggiungi transizione",
     "ToDo": "Attività",
     "CurrentCard": "Scheda corrente",
-    "Data": "Dati"
+    "Data": "Dati",
+    "Transitions": "Transizioni",
+    "OnExecutionStart": "All'avvio dell'esecuzione",
+    "Prepend": "Anteporre",
+    "Append": "Aggiungere",
+    "Replace": "Sostituire",
+    "ReplaceAll": "Sostituire tutto",
+    "Split": "Dividere",
+    "Cut": "Tagliare",
+    "Replacement": "Sostituzione",
+    "Search": "Cercare",
+    "Separator": "Separatore",
+    "Start": "Inizio",
+    "End": "Fine"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",
