@@ -21,6 +21,7 @@
     "InvalidOtp": "Codice non valido",
     "InviteNotFound": "Invito con email:{email} non trovato.",
     "WorkspaceLimitReached": "Hai raggiunto il limite di spazi di lavoro. Contattaci...",
-    "ReadOnlyAccount": "Modalità sola lettura"
+    "ReadOnlyAccount": "Modalità sola lettura",
+    "SystemAccount": "Account di sistema"
   }
 }

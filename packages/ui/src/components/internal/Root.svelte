@@ -95,6 +95,7 @@
 
   let status = OK
   let readonlyAccount = false
+  let systemAccount = false
   let maintenanceTime = -1
 
   addEventListener(PlatformEvent, async (_event, _status: Status) => {
@@ -104,6 +105,10 @@
       if (readonlyAccount) return
       if (_status.code === platform.status.ReadOnlyAccount) {
         readonlyAccount = true
+      }
+      if (_status.code === platform.status.SystemAccount) {
+        systemAccount = true
+        return
       }
       status = _status
     }
@@ -241,6 +246,11 @@
             </div>
           {:else if status.severity !== Severity.OK}
             <StatusComponent {status} />
+          {/if}
+          {#if systemAccount}
+            <div class="flex-row-center maintenanceScheduled">
+              <Label label={platform.status.SystemAccount} />
+            </div>
           {/if}
         </div>
         <div class="flex-row-reverse flex-gap-0-5" style:-webkit-app-region={'no-drag'}>

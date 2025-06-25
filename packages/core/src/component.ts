@@ -200,6 +200,9 @@ export default plugin(coreId, {
     Workspace: '' as Ref<Space>,
     Domain: '' as Ref<Space>
   },
+  employee: {
+    System: '' as Ref<any> // An system employee reference.
+  },
   account: {
     System: '' as PersonId,
     ConfigUser: '' as PersonId
