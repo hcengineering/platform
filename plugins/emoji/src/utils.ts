@@ -22,7 +22,9 @@ import {
   type Locale,
   type CompactEmoji,
   type FetchEmojisExpandedOptions,
-  type FetchEmojisOptions, type FetchFromCDNOptions, type MessagesDataset,
+  type FetchEmojisOptions,
+  type FetchFromCDNOptions,
+  type MessagesDataset,
   type ShortcodesDataset
 } from 'emojibase'
 
@@ -45,7 +47,8 @@ async function fetchEmojis (locale: Locale, options: FetchEmojisExpandedOptions 
   const shortcodes: ShortcodesDataset[] = []
 
   for (const preset of presets) {
-    const shortcodeData = (await import(`emojibase-data/${locale}/shortcodes/${preset}.json`)).default as ShortcodesDataset
+    const shortcodeData = (await import(`emojibase-data/${locale}/shortcodes/${preset}.json`))
+      .default as ShortcodesDataset
     shortcodes.push(shortcodeData)
   }
 
