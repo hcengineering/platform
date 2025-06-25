@@ -37,7 +37,7 @@
     "@types/jest": "^29.5.5",
     "jest-environment-jsdom": "^29.7.0",
     "fast-equals": "^5.2.2",
-    "y-prosemirror": "^1.2.15"
+    "y-prosemirror": "^1.3.6"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
