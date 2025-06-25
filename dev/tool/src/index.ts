@@ -107,7 +107,6 @@ import {
   ensureGlobalPersonsForLocalAccounts,
   filterMergedAccountsInMembers,
   migrateCreatedModifiedBy,
-  migrateCreatedModifiedByFixed,
   migrateMergedAccounts,
   moveAccountDbFromMongoToPG
 } from './db'
@@ -2424,20 +2423,6 @@ export function devTool (
 
   program
     .command('migrate-created-modified-by')
-    .option('--domains <domains>', 'Domains to migrate(comma-separated)')
-    .option('--lifetime <lifetime>', 'Max lifetime for the connection in seconds')
-    .option('--batch <batch>', 'Batch size')
-    .action(async (cmd: { domains?: string, lifetime?: string, batch?: string }) => {
-      const { dbUrl } = prepareTools()
-      const domains = cmd.domains?.split(',').map((d) => d.trim())
-      const maxLifetime = cmd.lifetime != null ? parseInt(cmd.lifetime) : undefined
-      const batchSize = cmd.batch != null ? parseInt(cmd.batch) : undefined
-
-      await migrateCreatedModifiedBy(toolCtx, dbUrl, domains, maxLifetime, batchSize)
-    })
-
-  program
-    .command('migrate-created-modified-by-fixed')
     .option('--include-domains <includeDomains>', 'Domains to migrate(comma-separated)')
     .option('--exclude-domains <excludeDomains>', 'Domains to skip migration for(comma-separated)')
     .option('--lifetime <lifetime>', 'Max lifetime for the connection in seconds')
@@ -2478,7 +2463,7 @@ export function devTool (
           toolCtx.info('Workspaces found', { count: workspaces.length })
 
           for (const workspace of workspaces) {
-            await migrateCreatedModifiedByFixed(
+            await migrateCreatedModifiedBy(
               toolCtx,
               dbUrl,
               workspace,

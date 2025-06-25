@@ -24,8 +24,6 @@ export type GoogleEmail = string & { googleEmail: true }
 
 export interface WatchBase {
   email: GoogleEmail
-  userId: PersonId
-  workspace: WorkspaceUuid
   expired: Timestamp
   channelId: string
   resourceId: string

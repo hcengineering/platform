@@ -49,6 +49,8 @@
     "@hcengineering/server-chunter-resources": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-token": "^0.6.11",
-    "@hcengineering/training": "^0.1.0"
+    "@hcengineering/training": "^0.1.0",
+    "@hcengineering/workbench": "^0.6.16",
+    "slugify": "^1.6.6"
   }
 }
