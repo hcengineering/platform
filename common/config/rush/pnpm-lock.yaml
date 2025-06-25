@@ -2231,7 +2231,7 @@ importers:
         specifier: ^9.0.12
         version: 9.0.12(yjs@13.6.23)
       y-prosemirror:
-        specifier: ^1.3.5
+        specifier: ^1.3.6
         version: 1.3.6(prosemirror-model@1.24.1)(prosemirror-state@1.4.3)(prosemirror-view@1.37.2)(y-protocols@1.0.6(yjs@13.6.23))(yjs@13.6.23)
       y-protocols:
         specifier: ^1.0.6
@@ -5160,7 +5160,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-controlled-documents-resources@file:projects/server-controlled-documents-resources.tgz':
-    resolution: {integrity: sha512-QV06gugaPdI5zCgIBD1SimgmgM/x7f39dSmLi4Y/By2vqW+2bEYES5JtoBLVlyzfAfUU8sc5GD7YSSRqv6PM3A==, tarball: file:projects/server-controlled-documents-resources.tgz}
+    resolution: {integrity: sha512-R5eyJx5d6zSEu1WDSvgGm1tdBtZ1+QJgs9IK7Gr8rmblRP6kqxlXZCh5cd0VafXQlzCsppJHwmS8ncnChx039Q==, tarball: file:projects/server-controlled-documents-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/server-controlled-documents@file:projects/server-controlled-documents.tgz':
@@ -5496,7 +5496,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-editor-resources@file:projects/text-editor-resources.tgz':
-    resolution: {integrity: sha512-gB42s0kWFGmQfU0zX+KHV3YvZkyh53UwVPJFt4a3FDJZkBWK4BBYLVQm9JoWtQ471lsyrzIdEcz+KEvEo92G8Q==, tarball: file:projects/text-editor-resources.tgz}
+    resolution: {integrity: sha512-I36q2YtMBV6V9y6S69o3cUWU82/s9Ekb1yunAWdMdqitMITc5GsCc7LfSSk+HUbTvycphD/X272w86g5Xh4++Q==, tarball: file:projects/text-editor-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/text-editor@file:projects/text-editor.tgz':
@@ -5512,7 +5512,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-ydoc@file:projects/text-ydoc.tgz':
-    resolution: {integrity: sha512-2ae84wO/EPhpT3jVgXViytwB8YOgYFje2vaihl2rOZzuk7yDGnAhb4KYUWL1oPdjldI8gZsadXXn8fb8AJmCnQ==, tarball: file:projects/text-ydoc.tgz}
+    resolution: {integrity: sha512-vKLzX1+/6aZmMzsR213dQDXADDE4cDw3M2Ofkn3r7QKV6GidHGHipTlBO4jjsCbYK4G0L1QIf8ZHi7QhpE8icQ==, tarball: file:projects/text-ydoc.tgz}
     version: 0.0.0
 
   '@rush-temp/text@file:projects/text.tgz':
@@ -24916,6 +24916,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       prettier: 3.2.5
+      slugify: 1.6.6
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
     transitivePeerDependencies:

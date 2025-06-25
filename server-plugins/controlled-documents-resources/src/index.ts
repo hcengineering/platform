@@ -16,11 +16,12 @@ import core, {
   type Doc,
   type RolesAssignment,
   type Timestamp,
-  type TxCUD
+  type TxCUD,
+  concatLink
 } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import { getEmployees, getSocialIds } from '@hcengineering/server-contact'
-import { TriggerControl } from '@hcengineering/server-core'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
 
 import documents, {
   ControlledDocument,
@@ -35,6 +36,9 @@ import documents, {
 } from '@hcengineering/controlled-documents'
 import { RequestStatus } from '@hcengineering/request'
 import training, { TrainingState, type TrainingRequest } from '@hcengineering/training'
+import { getMetadata } from '@hcengineering/platform'
+import { workbenchId } from '@hcengineering/workbench'
+import slugify from 'slugify'
 
 async function getDocs (
   control: TriggerControl,
@@ -363,8 +367,37 @@ export async function OnDocApprovalRequestApproved (
   return result
 }
 
-export async function documentTextPresenter (doc: ControlledDocument): Promise<string> {
+export async function ControlledDocumentTextPresenter (doc: ControlledDocument): Promise<string> {
   return doc.title
+}
+
+export async function ControlledDocumentHTMLPresenter (
+  doc: ControlledDocument,
+  control: TriggerControl
+): Promise<string> {
+  const title = await ControlledDocumentTextPresenter(doc)
+
+  const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
+
+  const prjdoc = (await control.findAll(control.ctx, documents.class.ProjectDocument, { document: doc._id }))[0]
+  if (prjdoc === undefined) {
+    return title
+  }
+
+  const project = prjdoc.project ?? documents.ids.NoProject
+
+  function getDocumentLinkId (doc: Document): string {
+    const slug = slugify(doc.title, { lower: true })
+    return `${slug}---${doc._id}`
+  }
+
+  let path = `${workbenchId}/${control.workspace.url}/documents/${getDocumentLinkId(doc)}`
+  if (project !== documents.ids.NoProject) {
+    path += `/${project}`
+  }
+
+  const link = concatLink(front, path)
+  return `<a href='${link}'>${title}</a>`
 }
 
 async function CoAuthorsTypeMatch (
@@ -402,7 +435,8 @@ export default async () => ({
     OnDocHasBecomeEffective
   },
   function: {
-    ControlledDocumentTextPresenter: documentTextPresenter,
+    ControlledDocumentTextPresenter,
+    ControlledDocumentHTMLPresenter,
     CoAuthorsTypeMatch
   }
 })
