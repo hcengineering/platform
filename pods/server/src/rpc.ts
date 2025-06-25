@@ -263,6 +263,21 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       }
     })
   })
+
+  /**
+   * @deprecated Use /api/v1/tx/:workspaceIdd instead
+   */
+  app.post('/api/v1/event/:workspaceId', (req, res) => {
+    void withSession(req, res, async (ctx, session) => {
+      const event: any = (await retrieveJson(req)) ?? {}
+
+      const result = await session.domainRequestRaw(ctx, COMMUNICATION_DOMAIN, {
+        event
+      })
+      await sendJson(req, res, result.value)
+    })
+  })
+
   app.get('/api/v1/account/:workspaceId', (req, res) => {
     void withSession(req, res, async (ctx, session, rateLimit) => {
       const result = session.getRawAccount()
