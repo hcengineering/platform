@@ -314,7 +314,7 @@ class BackupWorker {
             connectTimeout: 5 * 60 * 1000, // 5 minutes to,
             keepSnapshots: this.config.KeepSnapshots,
             blobDownloadLimit: this.downloadLimit,
-            skipBlobContentTypes: ['video/'],
+            skipBlobContentTypes: ['video/', 'audio/', 'image/'],
             fullVerify: this.fullCheck,
             storageAdapter: this.workspaceStorageAdapter,
             getLastTx: async (): Promise<Tx | undefined> => {
