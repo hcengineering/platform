@@ -133,8 +133,8 @@ export interface BroadcastOps {
 }
 
 export interface BroadcastSessionsFunc {
-  broadcast: (ctx: MeasureContext, sessionIds: string[], result: any) => void
-  enqueue: (ctx: MeasureContext, result: any) => void
+  broadcast: (ctx: MeasureContext, sessionIds: string[], result: any, isAsync: boolean) => void
+  enqueue: (ctx: MeasureContext, result: any, isAsync: boolean) => void
 }
 
 /**
