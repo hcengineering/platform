@@ -72,7 +72,7 @@ class HtmlParseState {
 
   addText (text: string): void {
     const top = this.top()
-    if (top === undefined || text.length === 0) {
+    if (top === undefined || text.length === 0 || top.type === MarkupNodeType.doc) {
       return
     }
 
@@ -89,7 +89,7 @@ class HtmlParseState {
   }
 
   closeMark (mark: MarkupMarkType): void {
-    if (this.marks[this.marks.length - 1].type === mark) {
+    if (this.marks[this.marks.length - 1]?.type === mark) {
       this.marks.pop()
     }
   }
