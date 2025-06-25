@@ -276,6 +276,7 @@ export function start (
     hideLocalLogin?: string
     streamUrl?: string
     mailUrl?: string
+    billingUrl?: string
   },
   port: number,
   extraConfig?: Record<string, string | undefined>
@@ -351,6 +352,7 @@ export function start (
       DISABLE_SIGNUP: config.disableSignUp,
       HIDE_LOCAL_LOGIN: config.hideLocalLogin,
       MAIL_URL: config.mailUrl,
+      BILLING_URL: config.billingUrl,
       ...(extraConfig ?? {})
     }
     res.status(200)
