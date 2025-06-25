@@ -276,6 +276,10 @@ async function OnCardRemove (ctx: TxRemoveDoc<Card>[], control: TriggerControl):
       })
     )
   }
+  const favorites = await control.findAll(control.ctx, card.class.FavoriteCard, { attachedTo: removedCard._id })
+  for (const favorite of favorites) {
+    res.push(control.txFactory.createTxRemoveDoc(favorite._class, favorite.space, favorite._id))
+  }
 
   void control.communicationApi?.event(
     { account: systemAccount },
