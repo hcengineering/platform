@@ -118,6 +118,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   const mailUrl = process.env.MAIL_URL
 
+  const billingUrl = process.env.BILLING_URL
+
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
@@ -145,7 +147,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     hideLocalLogin,
     linkPreviewUrl,
     streamUrl,
-    mailUrl
+    mailUrl,
+    billingUrl
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)
