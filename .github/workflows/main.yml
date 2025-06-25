@@ -774,7 +774,8 @@ jobs:
           TEAM_ID: ${{ secrets.TEAM_ID }}
         run: |
           cd desktop-package
-          node ../common/scripts/install-run-rushx.js dist --linux --windows --x64
+          node ../common/scripts/install-run-rushx.js dist --linux --x64
+          node ../common/scripts/install-run-rushx.js dist --windows --x64 --arm64
           node ../common/scripts/install-run-rushx.js dist-signed --macos --x64 --arm64
           ./scripts/copy-publish-artifacts.sh ${{ env.PublishTempFolder}}
       - name: Publish distribution assets and version

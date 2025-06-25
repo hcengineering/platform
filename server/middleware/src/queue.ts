@@ -50,7 +50,10 @@ export class QueueMiddleware extends BaseMiddleware {
     }
     await Promise.all([
       this.provideBroadcast(ctx),
-      this.txProducer.send(this.context.workspace.uuid, ctx.contextData.broadcast.txes)
+      this.txProducer.send(
+        this.context.workspace.uuid,
+        ctx.contextData.broadcast.txes.concat(ctx.contextData.broadcast.queue)
+      )
     ])
   }
 }

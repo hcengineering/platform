@@ -16,63 +16,40 @@
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
   import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
-  import { getClient, getCommunicationClient } from '@hcengineering/presentation'
   import { Card } from '@hcengineering/card'
-  import { getCurrentAccount } from '@hcengineering/core'
-  import ui, {
-    getEventPositionElement,
-    showPopup,
-    Action as MenuAction,
-    IconDelete,
-    IconEdit,
-    Menu
-  } from '@hcengineering/ui'
-  import type { SocialID } from '@hcengineering/communication-types'
+  import { getEventPositionElement, showPopup, Action, Menu } from '@hcengineering/ui'
+  import type { MessageID, SocialID } from '@hcengineering/communication-types'
   import { Message, MessageType } from '@hcengineering/communication-types'
-  import emojiPlugin from '@hcengineering/emoji'
+  import { getResource } from '@hcengineering/platform'
+  import { MessageAction } from '@hcengineering/communication'
+  import { Ref } from '@hcengineering/core'
 
-  import communication from '../../plugin'
-  import { toggleReaction, replyToThread } from '../../utils'
   import MessageActionsPanel from './MessageActionsPanel.svelte'
-  import IconMessageMultiple from '../icons/MessageMultiple.svelte'
   import MessageBody from './MessageBody.svelte'
   import OneRowMessageBody from './OneRowMessageBody.svelte'
+  import {
+    messageEditingStore,
+    TranslateMessagesStatus,
+    translateMessagesStore,
+    threadCreateMessageStore
+  } from '../../stores'
+  import { getMessageActions } from '../../actions'
+  import communication from '../../plugin'
 
   export let card: Card
   export let message: Message
-  export let editable: boolean = true
   export let padding: string | undefined = undefined
   export let compact: boolean = false
   export let hideAvatar: boolean = false
-
-  const communicationClient = getCommunicationClient()
-  const me = getCurrentAccount()
+  export let readonly: boolean = false
 
   let isEditing = false
   let isDeleted = false
   let author: Person | undefined
 
   $: isDeleted = message.removed
+  $: isEditing = $messageEditingStore === message.id
   $: void updateAuthor(message.creator)
-
-  function canEdit (): boolean {
-    if (!editable) return false
-    if (message.type !== MessageType.Message) return false
-    if (message.thread != null) return false
-
-    return me.socialIds.includes(message.creator)
-  }
-
-  function canRemove (): boolean {
-    if (!editable) return false
-    if (message.type !== MessageType.Message) return false
-
-    return me.socialIds.includes(message.creator)
-  }
-
-  function canReply (): boolean {
-    return message.type === MessageType.Message && message.extra?.threadRoot !== true
-  }
 
   async function updateAuthor (socialId: SocialID): Promise<void> {
     author = $employeeByPersonIdStore.get(socialId)
@@ -82,15 +59,11 @@
     }
   }
 
-  async function handleEdit (): Promise<void> {
-    if (!canEdit()) return
-    isEditing = true
-  }
-
-  async function handleRemove (): Promise<void> {
-    if (!canRemove()) return
-    message.removed = true
-    await communicationClient.removeMessage(message.cardId, message.id)
+  $: updateStore(message)
+  function updateStore (message: Message): void {
+    if (!readonly && message.id === $threadCreateMessageStore?.id) {
+      threadCreateMessageStore.set(message)
+    }
   }
 
   function isInside (x: number, y: number, rect: DOMRect): boolean {
@@ -119,67 +92,51 @@
     return false
   }
 
-  function handleContextMenu (event: MouseEvent): void {
-    const showCustomPopup = !isContentClicked(event.target as HTMLElement, event.clientX, event.clientY)
-    if (showCustomPopup) {
-      event.preventDefault()
-      event.stopPropagation()
+  let allActions: MessageAction[] = []
+  let excludedActions: Ref<MessageAction>[] = []
+  let actions: MessageAction[] = []
 
-      const actions: MenuAction[] = []
+  $: excludedActions = getExcludedActions($translateMessagesStore)
 
-      actions.push({
-        label: communication.string.Emoji,
-        icon: emojiPlugin.icon.Emoji,
-        action: async (): Promise<void> => {
-          showPopup(
-            emojiPlugin.component.EmojiPopup,
-            {},
-            event.target as HTMLElement,
-            async (result) => {
-              const emoji = result?.emoji
-              if (emoji == null) {
-                return
-              }
+  $: void getMessageActions(message).then((res) => {
+    allActions = res
+  })
 
-              await toggleReaction(message, emoji)
-            },
-            () => {}
-          )
-        }
-      })
+  $: actions = allActions.filter((it) => !excludedActions.includes(it._id))
 
-      if (canReply()) {
-        actions.push({
-          label: communication.string.Reply,
-          icon: IconMessageMultiple,
-          action: async (): Promise<void> => {
-            await replyToThread(message, card)
-          }
-        })
-      }
-
-      if (canEdit()) {
-        actions.push({
-          label: communication.string.Edit,
-          icon: IconEdit,
-          action: handleEdit
-        })
-      }
-
-      if (canRemove()) {
-        actions.push({
-          label: ui.string.Remove,
-          icon: IconDelete,
-          action: handleRemove
-        })
-      }
-
-      showPopup(Menu, { actions }, getEventPositionElement(event), () => {})
+  function getExcludedActions (translatedMessages: Map<MessageID, TranslateMessagesStatus>): Ref<MessageAction>[] {
+    const result: TranslateMessagesStatus | undefined = translatedMessages.get(message.id)
+    if (result === undefined || result.inProgress || !result.shown) {
+      return [communication.messageAction.ShowOriginalMessage]
+    } else if (result.shown) {
+      return [communication.messageAction.TranslateMessage]
     }
+
+    return []
   }
 
-  let isActionsOpened = false
+  function handleContextMenu (event: MouseEvent): void {
+    const showCustomPopup = !isContentClicked(event.target as HTMLElement, event.clientX, event.clientY)
+    if (!showCustomPopup) return
 
+    event.preventDefault()
+    event.stopPropagation()
+
+    const contextMenuActions: Action[] = actions.map((action) => ({
+      label: action.label,
+      icon: action.icon,
+      action: async () => {
+        const actionFn = await getResource(action.action)
+        await actionFn(message, card, event)
+      }
+    }))
+
+    showPopup(Menu, { actions: contextMenuActions }, getEventPositionElement(event), () => {})
+  }
+
+  let isActionsPanelOpened = false
+
+  $: showActions = !isEditing && !isDeleted && !readonly
   $: isThread = message.thread != null
 </script>
 
@@ -188,29 +145,28 @@
 <div
   class="message"
   id={`${message.id}`}
-  on:contextmenu={editable && !isEditing && !isDeleted ? handleContextMenu : undefined}
-  class:active={isActionsOpened && !isEditing}
-  class:noHover={!editable}
+  on:contextmenu={showActions ? handleContextMenu : undefined}
+  class:active={isActionsPanelOpened && !isEditing}
+  class:noHover={readonly}
   style:padding
 >
   {#if message.type === MessageType.Activity || (message.removed && message.thread?.threadId === undefined)}
     <OneRowMessageBody {message} {card} {author} {hideAvatar} />
   {:else}
-    <MessageBody {message} {card} {author} bind:isEditing compact={compact && !isThread} {hideAvatar} />
+    <MessageBody {message} {card} {author} {isEditing} compact={compact && !isThread} {hideAvatar} />
   {/if}
 
-  {#if !isEditing && editable && !isDeleted}
-    <div class="message__actions" class:opened={isActionsOpened}>
+  {#if showActions}
+    <div class="message__actions" class:opened={isActionsPanelOpened}>
       <MessageActionsPanel
         {message}
-        editable={canEdit()}
-        canReply={canReply()}
-        canRemove={canRemove()}
-        bind:isOpened={isActionsOpened}
-        on:edit={handleEdit}
-        on:remove={handleRemove}
-        on:reply={() => {
-          void replyToThread(message, card)
+        {card}
+        {actions}
+        onOpen={() => {
+          isActionsPanelOpened = true
+        }}
+        onClose={() => {
+          isActionsPanelOpened = false
         }}
       />
     </div>
@@ -225,7 +181,7 @@
     align-self: stretch;
     min-width: 0;
     position: relative;
-    padding: 0.5rem 2rem;
+    padding: 0.5rem 1em;
 
     &:hover:not(.noHover) {
       background: var(--global-ui-BackgroundColor);

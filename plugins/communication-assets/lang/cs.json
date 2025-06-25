@@ -41,6 +41,16 @@
     "ThreadWasDeleted": "Tato vlákno byla smazána.",
     "MessageWasRemoved": "Tato zpráva byla odstraněna.",
     "JoinedThe": "Připojil se k",
-    "LeftThe": "Opustil se z"
+    "LeftThe": "Opustil se z",
+    "Translating": "Překládám...",
+    "ShowOriginal": "Zobrazit původní",
+    "AddReaction": "Přidat reakci",
+    "ReplyInThread": "Odpovědět v vlákně",
+    "TranslateMessage": "Přeložit zprávu",
+    "ShowOriginalMessage": "Zobrazit původní zprávu",
+    "EditMessage": "Upravit zprávu",
+    "RemoveMessage": "Odstranit zprávu",
+    "CreateCard": "Vytvořit kartu",
+    "MessageAlreadyHasCardAttached": "Jejda! Tato zpráva již má připojenou kartu."
   }
 }

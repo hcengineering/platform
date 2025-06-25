@@ -381,7 +381,7 @@
 
   function hasChanges (blobs: BlobData[], message: Message | undefined): boolean {
     if (isEmptyDraft()) return false
-    if (message === undefined) return blobs.length > 0
+    if (message === undefined) return blobs.length > 0 || !isEmptyMarkup(draft.content)
     if (message.blobs.length !== blobs.length) return true
     if (message.blobs.some((it) => !blobs.some((f) => f.blobId === it.blobId))) return true
 

@@ -59,7 +59,7 @@ import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
 import view, { createAction, type Viewlet } from '@hcengineering/model-view'
 import workbench, { WidgetType } from '@hcengineering/model-workbench'
-import { type Asset, getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
+import { type Asset, getEmbeddedLabel, type IntlString, type Resource } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type BuildModelKey } from '@hcengineering/view'
@@ -132,6 +132,7 @@ export class TCardSection extends TDoc implements CardSection {
   component!: AnyComponent
   order!: number
   navigation!: CardNavigation[]
+  checkVisibility?: Resource<(doc: Card) => Promise<boolean>>
 }
 
 @Mixin(card.mixin.CardViewDefaults, card.class.MasterTag)
@@ -902,7 +903,8 @@ function defineTabs (builder: Builder): void {
       label: core.string.Relations,
       component: card.sectionComponent.RelationsSection,
       order: 500,
-      navigation: []
+      navigation: [],
+      checkVisibility: card.function.CheckRelationsSectionVisibility
     },
     card.section.Relations
   )

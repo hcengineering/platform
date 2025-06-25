@@ -241,6 +241,11 @@ export type Domain = string & { __domain: true }
 /**
  * @public
  */
+export type OperationDomain = string & { __domain: true }
+
+/**
+ * @public
+ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Interface<T extends Doc> extends Classifier {
   extends?: Ref<Interface<Doc>>[]
@@ -527,7 +532,8 @@ export enum AccountRole {
   Guest = 'GUEST',
   User = 'USER',
   Maintainer = 'MAINTAINER',
-  Owner = 'OWNER'
+  Owner = 'OWNER',
+  Admin = 'ADMIN'
 }
 
 /**
@@ -539,7 +545,8 @@ export const roleOrder: Record<AccountRole, number> = {
   [AccountRole.Guest]: 20,
   [AccountRole.User]: 30,
   [AccountRole.Maintainer]: 40,
-  [AccountRole.Owner]: 50
+  [AccountRole.Owner]: 50,
+  [AccountRole.Admin]: 100
 }
 
 /**

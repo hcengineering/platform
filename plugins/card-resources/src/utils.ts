@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { type Card, CardEvents, cardId, type CardSpace, type MasterTag } from '@hcengineering/card'
-import {
+import core, {
   type Class,
   type Client,
   type Data,
@@ -261,4 +261,27 @@ export function cardCustomLinkEncode (doc: Card): Location {
   const loc = getCurrentResolvedLocation()
   loc.path[3] = encodeObjectURI(doc._id, card.class.Card)
   return loc
+}
+
+export async function checkRelationsSectionVisibility (doc: Card): Promise<boolean> {
+  const client = getClient()
+  const h = client.getHierarchy()
+
+  const parents = h.getAncestors(doc._class)
+  const mixins = h.findAllMixins(doc)
+  const associationsB = client
+    .getModel()
+    .findAllSync(core.class.Association, { classA: { $in: [...parents, ...mixins] } })
+    .filter((a) => a.nameB.trim().length > 0)
+
+  if (associationsB.length > 0) {
+    return true
+  }
+
+  return (
+    client
+      .getModel()
+      .findAllSync(core.class.Association, { classB: { $in: [...parents, ...mixins] } })
+      .filter((a) => a.nameA.trim().length > 0).length > 0
+  )
 }

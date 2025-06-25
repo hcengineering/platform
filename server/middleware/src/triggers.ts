@@ -141,8 +141,10 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       modelDb: this.context.modelDb,
       hierarchy: this.context.hierarchy,
       cache: this.cache,
-      communicationApi: this.context.communicationApi,
       userStatusMap: this.context.userStatusMap ?? new Map(),
+      domainRequest: async (ctx, domain, params) => {
+        return (await this.context.head?.domainRequest(ctx, domain, params)) ?? { domain, value: undefined }
+      },
       apply: async (ctx, tx, needResult) => {
         if (needResult === true) {
           return (await this.context.derived?.tx(ctx, tx)) ?? {}
@@ -223,7 +225,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       sctx.account,
       sctx.sessionId,
       sctx.admin,
-      { txes: [], targets: {} },
+      { txes: [], targets: {}, queue: [], sessions: {} },
       this.context.workspace,
       true,
       sctx.removedMap,

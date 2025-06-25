@@ -16,10 +16,13 @@ import core, {
   type DocChunk,
   type DocumentQuery,
   type Domain,
+  type DomainParams,
+  type DomainResult,
   type FindOptions,
   type FindResult,
   type MeasureContext,
   type ModelDb,
+  type OperationDomain,
   type PersonId,
   type Ref,
   type SearchResult,
@@ -181,7 +184,9 @@ export class SessionDataImpl implements SessionData {
     if (this._broadcast === undefined) {
       this._broadcast = {
         targets: {},
-        txes: []
+        txes: [],
+        queue: [],
+        sessions: {}
       }
     }
     return this._broadcast
@@ -241,7 +246,7 @@ export function wrapPipeline (
     systemAccount,
     'pipeline',
     true,
-    { targets: {}, txes: [] },
+    { targets: {}, txes: [], queue: [], sessions: {} },
     wsIds,
     true,
     undefined,
@@ -260,6 +265,9 @@ export function wrapPipeline (
     findAll: (_class, query, options) => pipeline.findAll(ctx, _class, query, options),
     findOne: async (_class, query, options) =>
       (await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })).shift(),
+    domainRequest: async (domain, params) => {
+      return await pipeline.domainRequest(ctx, domain, params)
+    },
     clean: (domain, docs) => backupOps.clean(ctx, domain, docs),
     close: () => pipeline.close(),
     closeChunk: (idx) => backupOps.closeChunk(ctx, idx),
@@ -307,6 +315,10 @@ export function wrapAdapterToClient (ctx: MeasureContext, storageAdapter: DbAdap
       options?: FindOptions<Doc>
     ): Promise<FindResult<T>> {
       return (await storageAdapter.findAll(ctx, _class, query, options)) as any
+    }
+
+    async domainRequest<T>(domain: OperationDomain, params: DomainParams): Promise<DomainResult<T>> {
+      return { domain, value: null as any }
     }
 
     async tx (tx: Tx): Promise<TxResult> {

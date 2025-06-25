@@ -38,12 +38,14 @@ export interface StorageIterator {
   close: (ctx: MeasureContext) => Promise<void>
 }
 
-export type BroadcastTargets = Record<string, (tx: Tx) => string[] | undefined>
+export type BroadcastTargets = Record<string, (tx: Tx) => AccountUuid[] | undefined>
 
 export interface SessionData {
   broadcast: {
     txes: Tx[]
     targets: BroadcastTargets // A set of broadcast filters if required
+    queue: Tx[] // Queue only broadcast
+    sessions: Record<string, Tx[]> // Session based broadcast
   }
   contextCache: Map<string, any>
   removedMap: Map<Ref<Doc>, Doc>

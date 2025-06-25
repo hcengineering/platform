@@ -78,7 +78,15 @@
     "Search": "Hledat",
     "Separator": "Oddělovač",
     "Start": "Spustit",
-    "End": "Konec"
+    "End": "Konec",
+    "Multiply": "Násobit",
+    "Divide": "Dělit",
+    "Modulo": "Zbytek po dělení",
+    "Power": "Umocnit",
+    "Round": "Zaokrouhlit",
+    "Floor": "Zaokrouhlit dolů",
+    "Ceil": "Zaokrouhlit nahoru",
+    "Absolute": "Absolutní hodnota"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

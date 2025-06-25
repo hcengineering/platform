@@ -78,6 +78,7 @@ export async function updateDocWithPresenter (
     }
   }
   async function formatTemplate (template: FieldTemplate): Promise<string> {
+    if (template === undefined) return ''
     let tValue = ''
     for (const t of template) {
       if (typeof t === 'string') {
@@ -92,17 +93,17 @@ export async function updateDocWithPresenter (
   for (const prop of props) {
     try {
       if (!Array.isArray(prop.config)) {
-        if (prop.config.fields !== undefined) {
+        if (prop.config?.fields !== undefined) {
           const params: string[] = []
           for (const f of prop.config.fields) {
             params.push(await extractParam(f))
           }
           elasticDoc[prop.name + '_fields'] = params
         }
-        if (prop.config.template !== undefined) {
+        if (prop.config?.template !== undefined) {
           elasticDoc[prop.name] = await formatTemplate(prop.config.template)
         }
-        if (prop.config.extraFields !== undefined) {
+        if (prop.config?.extraFields !== undefined) {
           elasticDoc[prop.name + '_extra'] = []
           for (const t of prop.config.extraFields) {
             elasticDoc[prop.name + '_extra'].push(await formatTemplate(t))

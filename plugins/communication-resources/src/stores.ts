@@ -11,11 +11,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import { createLabelsQuery, onCommunicationClient } from '@hcengineering/presentation'
-import type { Label } from '@hcengineering/communication-types'
+import type { Label, Message, MessageID } from '@hcengineering/communication-types'
+import type { Markup } from '@hcengineering/core'
+import { languageStore } from '@hcengineering/ui'
 
 export const labelsStore = writable<Label[]>([])
+export const messageEditingStore = writable<MessageID | undefined>(undefined)
+export const translateMessagesStore = writable<Map<MessageID, TranslateMessagesStatus>>(new Map())
+export const threadCreateMessageStore = writable<Message | undefined>(undefined)
+
+export interface TranslateMessagesStatus {
+  inProgress: boolean
+  shown: boolean
+  result?: Markup
+}
+
+languageStore.subscribe(() => {
+  translateMessagesStore.set(new Map())
+})
+
+export function isMessageTranslated (messageId: MessageID): boolean {
+  return get(translateMessagesStore).get(messageId)?.result != null
+}
+
+export function isMessageTranslating (messageId: MessageID): boolean {
+  return get(translateMessagesStore).get(messageId)?.inProgress === true
+}
+
+export function getMessageTranslatedMarkup (messageId: MessageID): Markup | undefined {
+  return get(translateMessagesStore).get(messageId)?.result
+}
+
+export function isShownTranslatedMessage (messageId: MessageID): boolean {
+  const result = get(translateMessagesStore).get(messageId)
+  return result?.shown === true && result?.result != null
+}
 
 const query = createLabelsQuery(true)
 

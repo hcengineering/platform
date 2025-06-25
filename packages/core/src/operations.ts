@@ -11,7 +11,6 @@ import {
   toFindResult
 } from '.'
 import type {
-  PersonId,
   AnyAttribute,
   AttachedData,
   AttachedDoc,
@@ -19,6 +18,8 @@ import type {
   Data,
   Doc,
   Mixin,
+  OperationDomain,
+  PersonId,
   Ref,
   Space,
   Timestamp
@@ -27,6 +28,8 @@ import { type Client } from './client'
 import core from './component'
 import type {
   DocumentQuery,
+  DomainParams,
+  DomainResult,
   FindOptions,
   FindResult,
   SearchOptions,
@@ -44,7 +47,7 @@ import { type DocumentClassQuery, type Tx, type TxApplyResult, type TxCUD, TxFac
  *
  * `notify` is not supported by TxOperations.
  */
-export class TxOperations implements Omit<Client, 'notify' | 'getConnection'> {
+export class TxOperations implements Omit<Client, 'notify'> {
   readonly txFactory: TxFactory
 
   constructor (
@@ -81,6 +84,10 @@ export class TxOperations implements Omit<Client, 'notify' | 'getConnection'> {
     options?: FindOptions<T> | undefined
   ): Promise<WithLookup<T> | undefined> {
     return this.client.findOne(_class, query, options)
+  }
+
+  domainRequest<T>(domain: OperationDomain, params: DomainParams): Promise<DomainResult<T>> {
+    return this.client.domainRequest(domain, params)
   }
 
   searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
@@ -468,6 +475,7 @@ export class ApplyOperations extends TxOperations {
       findOne: (_class, query, options?) => ops.client.findOne(_class, query, options),
       findAll: (_class, query, options?) => ops.client.findAll(_class, query, options),
       searchFulltext: (query, options) => ops.client.searchFulltext(query, options),
+      domainRequest: (domain, params) => ops.client.domainRequest(domain, params),
       tx: async (tx): Promise<TxResult> => {
         if (TxProcessor.isExtendsCUD(tx._class)) {
           this.txes.push(tx as TxCUD<Doc>)
@@ -559,6 +567,7 @@ export class TxBuilder extends TxOperations {
       findOne: async (_class, query, options?) => undefined,
       findAll: async (_class, query, options?) => toFindResult([]),
       searchFulltext: async (query, options) => ({ docs: [] }),
+      domainRequest: async (domain, params) => ({ domain, value: null as any }),
       tx: async (tx): Promise<TxResult> => {
         if (TxProcessor.isExtendsCUD(tx._class)) {
           this.txes.push(tx as TxCUD<Doc>)

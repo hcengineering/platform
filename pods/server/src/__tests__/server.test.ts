@@ -81,6 +81,8 @@ describe('server', () => {
           [],
           undefined
         ],
+        domainRequest: async (ctx, domain, params) => ({ domain, value: null as any }),
+        closeSession: async (ctx, sessionId) => {},
         close: async () => {},
         domains: async () => [],
         groupBy: async () => new Map(),
@@ -96,9 +98,6 @@ describe('server', () => {
         },
         loadModel: async (ctx, lastModelTx, hash) => []
       }
-    },
-    communicationApiFactory: async () => {
-      return {} as any
     },
     brandingMap: {},
     accountsUrl: '',
@@ -199,6 +198,8 @@ describe('server', () => {
             [],
             undefined
           ],
+          domainRequest: async (ctx, domain, params) => ({ domain, value: null as any }),
+          closeSession: async (ctx, sessionId) => {},
           groupBy: async () => new Map(),
           close: async () => {},
           domains: async () => [],
@@ -214,9 +215,6 @@ describe('server', () => {
           },
           loadModel: async (ctx, lastModelTx, hash) => []
         }
-      },
-      communicationApiFactory: async () => {
-        return {} as any
       },
       brandingMap: {},
       accountsUrl: '',

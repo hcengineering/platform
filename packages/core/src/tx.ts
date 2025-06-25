@@ -22,6 +22,7 @@ import type {
   Doc,
   Domain,
   Mixin,
+  OperationDomain,
   PersonId,
   PropertyType,
   Ref,
@@ -62,6 +63,10 @@ export enum WorkspaceEvent {
 export interface TxWorkspaceEvent<T = any> extends Tx {
   event: WorkspaceEvent
   params: T
+}
+export interface TxDomainEvent<T = any> extends Tx {
+  domain: OperationDomain
+  event: T
 }
 
 /**

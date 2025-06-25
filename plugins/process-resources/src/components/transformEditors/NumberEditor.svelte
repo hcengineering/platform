@@ -30,14 +30,14 @@
   export let attribute: AnyAttribute
   export let props: Record<string, any> = {}
 
-  let value: number = props?.offset ?? 0
+  let value: number = props?.value ?? 0
 
   const dispatch = createEventDispatcher()
   const client = getClient()
   const h = client.getHierarchy()
 
   function save (): void {
-    dispatch('close', { offset: value })
+    dispatch('close', { value })
   }
 
   let editor: AnySvelteComponent | undefined

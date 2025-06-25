@@ -1,31 +1,33 @@
-import core, {
-  buildSocialIdString,
-  generateId,
-  systemAccountUuid,
-  pickPrimarySocialId,
-  TxFactory,
-  TxProcessor,
-  type AttachedData,
-  type Data,
-  type Class,
-  type Doc,
-  type MeasureContext,
-  type Ref,
-  type SearchOptions,
-  type SearchQuery,
-  type TxCUD
-} from '@hcengineering/core'
-import type { ClientSessionCtx, ConnectionSocket, Session, SessionManager } from '@hcengineering/server-core'
-import { decodeToken } from '@hcengineering/server-token'
-import { rpcJSONReplacer, type RateLimitInfo } from '@hcengineering/rpc'
+import { getClient as getAccountClientRaw, type AccountClient } from '@hcengineering/account-client'
 import contact, {
   AvatarType,
   combineName,
-  type SocialIdentity,
   type Person,
+  type SocialIdentity,
   type SocialIdentityRef
 } from '@hcengineering/contact'
-import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
+import core, {
+  buildSocialIdString,
+  generateId,
+  pickPrimarySocialId,
+  systemAccountUuid,
+  TxFactory,
+  TxProcessor,
+  type AttachedData,
+  type Class,
+  type Data,
+  type Doc,
+  type MeasureContext,
+  type OperationDomain,
+  type Ref,
+  type SearchOptions,
+  type SearchQuery,
+  type TxCUD,
+  type TxDomainEvent
+} from '@hcengineering/core'
+import { rpcJSONReplacer, type RateLimitInfo } from '@hcengineering/rpc'
+import type { ClientSessionCtx, ConnectionSocket, Session, SessionManager } from '@hcengineering/server-core'
+import { decodeToken } from '@hcengineering/server-token'
 
 import { createHash } from 'crypto'
 import { type Express, type Response as ExpressResponse, type Request } from 'express'
@@ -36,6 +38,8 @@ import { gzip } from 'zlib'
 import { retrieveJson } from './utils'
 
 import { unknownError } from '@hcengineering/platform'
+
+export const COMMUNICATION_DOMAIN = 'communication' as OperationDomain
 interface RPCClientInfo {
   client: ConnectionSocket
   session: Session
@@ -247,10 +251,33 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     void withSession(req, res, async (ctx, session, rateLimit) => {
       const tx: any = (await retrieveJson(req)) ?? {}
 
-      const result = await session.txRaw(ctx, tx)
-      await sendJson(req, res, result.result, rateLimitToHeaders(rateLimit))
+      if (tx._class === core.class.TxDomainEvent) {
+        const domainTx = tx as TxDomainEvent
+        const result = await session.domainRequestRaw(ctx, domainTx.domain, {
+          event: domainTx.event
+        })
+        await sendJson(req, res, result.value, rateLimitToHeaders(rateLimit))
+      } else {
+        const result = await session.txRaw(ctx, tx)
+        await sendJson(req, res, result.result, rateLimitToHeaders(rateLimit))
+      }
     })
   })
+
+  /**
+   * @deprecated Use /api/v1/tx/:workspaceIdd instead
+   */
+  app.post('/api/v1/event/:workspaceId', (req, res) => {
+    void withSession(req, res, async (ctx, session) => {
+      const event: any = (await retrieveJson(req)) ?? {}
+
+      const result = await session.domainRequestRaw(ctx, COMMUNICATION_DOMAIN, {
+        event
+      })
+      await sendJson(req, res, result.value)
+    })
+  })
+
   app.get('/api/v1/account/:workspaceId', (req, res) => {
     void withSession(req, res, async (ctx, session, rateLimit) => {
       const result = session.getRawAccount()
@@ -301,28 +328,17 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     })
   })
 
-  app.get('/api/v1/find-messages/:workspaceId', (req, res) => {
+  app.get('/api/v1/request/:domain/:operation/:workspaceId', (req, res) => {
     void withSession(req, res, async (ctx, session) => {
+      const domain = req.params.domain as OperationDomain
+      const operation = req.params.operation
+
       const params = req.query.params !== undefined ? JSON.parse(req.query.params as string) : {}
 
-      const result = await session.findMessagesRaw(ctx, params)
-      await sendJson(req, res, result)
-    })
-  })
-  app.get('/api/v1/find-messages-groups/:workspaceId', (req, res) => {
-    void withSession(req, res, async (ctx, session) => {
-      const params = req.query.params !== undefined ? JSON.parse(req.query.params as string) : {}
-
-      const result = await session.findMessagesGroupsRaw(ctx, params)
-      await sendJson(req, res, result)
-    })
-  })
-  app.post('/api/v1/event/:workspaceId', (req, res) => {
-    void withSession(req, res, async (ctx, session) => {
-      const event: any = (await retrieveJson(req)) ?? {}
-
-      const result = await session.eventRaw(ctx, event)
-      await sendJson(req, res, result)
+      const result = await session.domainRequestRaw(ctx, domain, {
+        [operation]: { params }
+      })
+      await sendJson(req, res, result.value)
     })
   })
 

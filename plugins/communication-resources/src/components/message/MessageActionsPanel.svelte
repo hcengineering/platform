@@ -14,110 +14,70 @@
 -->
 
 <script lang="ts">
-  import ui, { showPopup, ButtonIcon, IconDelete, IconEdit } from '@hcengineering/ui'
+  import { ButtonIcon, IconMoreV, showPopup, Action, getEventPositionElement, Menu } from '@hcengineering/ui'
+  import { MessageAction } from '@hcengineering/communication'
+  import { getResource } from '@hcengineering/platform'
   import { Message } from '@hcengineering/communication-types'
-  import { createEventDispatcher } from 'svelte'
-  import emojiPlugin from '@hcengineering/emoji'
-
-  import IconMessageMultiple from '../icons/MessageMultiple.svelte'
-  import communication from '../../plugin'
-  import { toggleReaction } from '../../utils'
-  import { Action } from '../../types'
+  import { Card } from '@hcengineering/card'
+  import view from '@hcengineering/view'
 
   export let message: Message
-  export let editable: boolean = true
-  export let canReply: boolean = true
-  export let canReact: boolean = true
-  export let isOpened: boolean = false
-  export let canRemove: boolean = false
+  export let card: Card
+  export let actions: MessageAction[]
+  export let onClose: () => void
+  export let onOpen: () => void
 
-  const dispatch = createEventDispatcher()
+  let menuActions: MessageAction[] = []
+  let inlineActions: MessageAction[] = []
 
-  function getActions (): Action[] {
-    const actions: Action[] = []
-    if (canReact) {
-      actions.push({
-        id: 'emoji',
-        label: communication.string.Emoji,
+  $: menuActions = actions.filter((a) => a.menu)
+  $: inlineActions = actions.filter((a) => !(a.menu ?? false))
 
-        icon: emojiPlugin.icon.Emoji,
-        order: 10,
-        action: (event: MouseEvent): void => {
-          isOpened = true
-          showPopup(
-            emojiPlugin.component.EmojiPopup,
-            {},
-            event.target as HTMLElement,
-            async (result) => {
-              isOpened = false
-              const emoji = result?.text
-              if (emoji == null) {
-                return
-              }
-
-              await toggleReaction(message, emoji)
-            },
-            () => {
-              isOpened = false
-            }
-          )
-        }
-      })
-    }
-
-    if (canReply) {
-      actions.push({
-        id: 'reply',
-        label: communication.string.Reply,
-        icon: IconMessageMultiple,
-        order: 20,
-        action: (): void => {
-          dispatch('reply')
-        }
-      })
-    }
-
-    if (editable) {
-      actions.push({
-        id: 'edit',
-        label: communication.string.Edit,
-        icon: IconEdit,
-        order: 30,
-        action: () => {
-          dispatch('edit')
-        }
-      })
-    }
-
-    if (canRemove) {
-      actions.push({
-        id: 'remove',
-        label: ui.string.Remove,
-        icon: IconDelete,
-        order: 999,
-        action: () => {
-          dispatch('remove')
-        }
-      })
-    }
-
-    return actions.sort((a, b) => a.order - b.order)
+  async function handleAction (action: MessageAction, ev: MouseEvent): Promise<void> {
+    const actionFn = await getResource(action.action)
+    await actionFn(message, card, ev, onOpen, onClose)
   }
 
-  const actions: Action[] = getActions()
+  function showMenu (ev: MouseEvent): void {
+    onOpen()
+
+    const actions: Action[] = menuActions.map((action) => ({
+      id: action._id,
+      label: action.label,
+      icon: action.icon,
+      action: async () => {
+        await handleAction(action, ev)
+      }
+    }))
+
+    showPopup(Menu, { actions }, getEventPositionElement(ev), onClose)
+  }
 </script>
 
 <div class="message-actions-panel">
-  {#each actions as action (action.id)}
+  {#each inlineActions as action}
+    {#if action.icon}
+      <ButtonIcon
+        icon={action.icon}
+        iconSize="small"
+        size="small"
+        kind="tertiary"
+        tooltip={{ label: action.label, direction: 'bottom' }}
+        on:click={(ev) => handleAction(action, ev)}
+      />
+    {/if}
+  {/each}
+
+  {#if menuActions.length > 0}
     <ButtonIcon
-      icon={action.icon}
+      icon={IconMoreV}
       iconSize="small"
       size="small"
       kind="tertiary"
-      tooltip={{ label: action.label, direction: 'bottom' }}
-      on:click={action.action}
+      tooltip={{ label: view.string.MoreActions, direction: 'bottom' }}
+      on:click={showMenu}
     />
-  {/each}
+  {/if}
 </div>
 
 <style lang="scss">

@@ -20,6 +20,7 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(communication.icon, {
   Bell: `${icons}#bell`,
   BellCrossed: `${icons}#bell-crossed`,
-  File: `${icons}#file`
+  File: `${icons}#file`,
+  MessageMultiple: `${icons}#message-multiple`
 })
 addStringsLoader(communicationId, async (lang: string) => await import(`../lang/${lang}.json`))

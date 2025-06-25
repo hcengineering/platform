@@ -29,6 +29,7 @@ import {
   type PlatformQueue
 } from '@hcengineering/server-core'
 import {
+  createEmptyBroadcastOps,
   getConfig,
   registerAdapterFactory,
   registerDestroyFactory,
@@ -85,7 +86,7 @@ export async function preparePipeline (
     DBAdapterInitMiddleware.create,
     ModelMiddleware.create(model),
     DBAdapterMiddleware.create(conf), // Configure DB adapters
-    ...(useBroadcast ? [BroadcastMiddleware.create((ctx, tx) => {})] : [])
+    ...(useBroadcast ? [BroadcastMiddleware.create(createEmptyBroadcastOps())] : [])
   ]
 
   const hierarchy = new Hierarchy()
@@ -96,8 +97,7 @@ export async function preparePipeline (
     modelDb,
     hierarchy,
     storageAdapter: storage,
-    contextVars: {},
-    communicationApi: null
+    contextVars: {}
   }
   const pipeline = await createPipeline(toolCtx, middlewares, context)
   return { pipeline, wsIds }

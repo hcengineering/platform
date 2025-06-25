@@ -32,7 +32,7 @@
     savedViews: true,
     groupBySpace: false,
     hideEmpty: true,
-    limit: 10,
+    limit: 5,
     labelFilter: [SubscriptionLabelID],
     preorder: [
       { type: chat.masterTag.Thread, order: 1 },
@@ -40,9 +40,7 @@
     ],
     fixedTypes: [chat.masterTag.Thread, chat.masterTag.Channel],
     defaultSorting: 'recent',
-    specialSorting: {
-      [chat.masterTag.Channel]: 'alphabetical'
-    },
+    lookback: '1w',
     showTypeIcon: false,
     showCardIcon: true
   }}

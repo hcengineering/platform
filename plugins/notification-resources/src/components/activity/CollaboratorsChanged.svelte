@@ -14,26 +14,25 @@
 -->
 
 <script lang="ts">
-  import { Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
+  import activity, { DisplayDocUpdateMessage } from '@hcengineering/activity'
   import { employeeRefByAccountUuidStore, PersonRefPresenter } from '@hcengineering/contact-resources'
-  import { Person } from '@hcengineering/contact'
-  import { type Ref, type AccountUuid, notEmpty, Doc, Collaborator } from '@hcengineering/core'
-  import activity, { DisplayDocUpdateMessage, DocAttributeUpdates } from '@hcengineering/activity'
+  import { Collaborator } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
+  import { Icon, Label } from '@hcengineering/ui'
 
   export let message: DisplayDocUpdateMessage
-  export let value: Collaborator
+  export let value: Collaborator | undefined
 
-  $: person = $employeeRefByAccountUuidStore.get(value.collaborator)
+  $: person = value ? $employeeRefByAccountUuidStore.get(value?.collaborator) : undefined
 </script>
 
 <span class="root">
   <Icon icon={activity.icon.Activity} size="small" />
   <span class="label">
     {#if message.action === 'create'}
-      <Label label={notification.string.NewCollaborators} />:
+      <Label label={notification.string.NewCollaborators} />
     {:else}
-      <Label label={notification.string.RemovedCollaborators} />:
+      <Label label={notification.string.RemovedCollaborators} />
     {/if}
   </span>
 

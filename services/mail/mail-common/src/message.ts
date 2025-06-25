@@ -42,7 +42,7 @@ import {
 } from '@hcengineering/communication-sdk-types'
 import { generateMessageId } from '@hcengineering/communication-shared'
 
-import { BaseConfig, type Attachment } from './types'
+import { BaseConfig, SyncOptions, type Attachment } from './types'
 import { EmailMessage, MailRecipient, MessageData } from './types'
 import { getBlobMetadata, getMdContent } from './utils'
 import { PersonCacheFactory } from './person'
@@ -86,7 +86,8 @@ export async function createMessages (
   wsInfo: WorkspaceLoginInfo,
   message: EmailMessage,
   attachments: Attachment[],
-  recipients?: MailRecipient[]
+  recipients?: MailRecipient[],
+  options?: SyncOptions
 ): Promise<void> {
   const { mailId, from, subject, replyTo } = message
   const tos = [...(message.to ?? []), ...(message.copy ?? [])]
@@ -169,7 +170,8 @@ export async function createMessages (
           person,
           message.sendOn,
           channelCache,
-          replyTo
+          replyTo,
+          options
         )
       }
     } catch (error) {
@@ -195,7 +197,8 @@ async function saveMessageToSpaces (
   recipient: MailRecipient,
   createdDate: number,
   channelCache: ChannelCache,
-  inReplyTo?: string
+  inReplyTo?: string,
+  options?: SyncOptions
 ): Promise<void> {
   const rateLimiter = new RateLimiter(10)
   for (const space of spaces) {
@@ -253,9 +256,9 @@ async function saveMessageToSpaces (
 
       if (!isReply) {
         await addCollaborators(producer, config, messageData, threadId)
-        await createMailThread(producer, config, messageData)
+        await createMailThread(producer, config, messageData, options)
       }
-      const messageId = await createMailMessage(producer, config, messageData, threadId)
+      const messageId = await createMailMessage(producer, config, messageData, threadId, options)
       await createFiles(ctx, producer, config, attachments, messageData, threadId, messageId)
 
       await threadLookup.setThreadId(mailId, space._id, threadId)
@@ -264,7 +267,12 @@ async function saveMessageToSpaces (
   await rateLimiter.waitProcessing()
 }
 
-async function createMailThread (producer: Producer, config: BaseConfig, data: MessageData): Promise<void> {
+async function createMailThread (
+  producer: Producer,
+  config: BaseConfig,
+  data: MessageData,
+  options?: SyncOptions
+): Promise<void> {
   const subjectId = generateMessageId()
   const createSubjectEvent: CreateMessageEvent = {
     type: MessageEventType.CreateMessage,
@@ -274,7 +282,10 @@ async function createMailThread (producer: Producer, config: BaseConfig, data: M
     content: data.subject,
     socialId: data.modifiedBy,
     date: new Date(data.created.getTime() - 1),
-    messageId: subjectId
+    messageId: subjectId,
+    options: {
+      noNotify: options?.noNotify
+    }
   }
   const createSubjectData = Buffer.from(JSON.stringify(createSubjectEvent))
   await sendToCommunicationTopic(producer, config, data, createSubjectData)
@@ -299,7 +310,8 @@ async function createMailMessage (
   producer: Producer,
   config: BaseConfig,
   data: MessageData,
-  threadId: Ref<Card>
+  threadId: Ref<Card>,
+  options?: SyncOptions
 ): Promise<MessageID> {
   const messageId = generateMessageId()
   const createMessageEvent: CreateMessageEvent = {
@@ -310,7 +322,10 @@ async function createMailMessage (
     content: data.content,
     socialId: data.modifiedBy,
     date: data.created,
-    messageId
+    messageId,
+    options: {
+      noNotify: options?.noNotify
+    }
   }
   const createMessageData = Buffer.from(JSON.stringify(createMessageEvent))
   await sendToCommunicationTopic(producer, config, data, createMessageData)
@@ -329,7 +344,7 @@ async function createFiles (
   const fileData: Buffer[] = attachments.map((a) => {
     const attachBlobEvent: BlobPatchEvent = {
       type: MessageEventType.BlobPatch,
-      cardId: messageData.isReply ? threadId : messageData.channel,
+      cardId: threadId,
       messageId,
       socialId: messageData.modifiedBy,
       operations: [
