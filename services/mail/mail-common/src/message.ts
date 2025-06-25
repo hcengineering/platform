@@ -344,7 +344,7 @@ async function createFiles (
   const fileData: Buffer[] = attachments.map((a) => {
     const attachBlobEvent: BlobPatchEvent = {
       type: MessageEventType.BlobPatch,
-      cardId: messageData.isReply ? threadId : messageData.channel,
+      cardId: threadId,
       messageId,
       socialId: messageData.modifiedBy,
       operations: [
