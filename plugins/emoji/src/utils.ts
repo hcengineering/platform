@@ -59,4 +59,4 @@ async function fetchMessages (locale: Locale, options?: FetchFromCDNOptions): Pr
   return (await import(`emojibase-data/${locale}/messages.json`)).default as MessagesDataset
 }
 
-export { fetchEmojis, fetchMessages }
+export { fetchEmojis, fetchMessages, type Locale }
