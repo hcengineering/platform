@@ -16,7 +16,17 @@ import EMOJI_REGEX from 'emojibase-regex'
 import EMOTICON_REGEX from 'emojibase-regex/emoticon'
 import SHORTCODE_REGEX from 'emojibase-regex/shortcode'
 
-export { fetchEmojis, fetchMessages, type Locale } from 'emojibase'
+import {
+  joinShortcodes,
+  Emoji,
+  type Locale,
+  type CompactEmoji,
+  type FetchEmojisExpandedOptions,
+  type FetchEmojisOptions,
+  type FetchFromCDNOptions,
+  type MessagesDataset,
+  type ShortcodesDataset
+} from 'emojibase'
 
 export const emojiRegex = new RegExp(`(?:^|\\s)(${EMOJI_REGEX.source})$`)
 export const emojiGlobalRegex = new RegExp(EMOJI_REGEX.source, EMOJI_REGEX.flags + 'g')
@@ -26,3 +36,27 @@ export const emoticonGlobalRegex = new RegExp(EMOTICON_REGEX.source, EMOTICON_RE
 
 export const shortcodeRegex = new RegExp(`(?:^|\\s)(${SHORTCODE_REGEX.source})$`)
 export const shortcodeGlobalRegex = new RegExp(SHORTCODE_REGEX.source, SHORTCODE_REGEX.flags + 'g')
+
+async function fetchEmojis (locale: Locale, options: FetchEmojisOptions & { compact: true }): Promise<CompactEmoji[]>
+
+async function fetchEmojis (locale: Locale, options?: FetchEmojisOptions & { compact?: false }): Promise<Emoji[]>
+
+async function fetchEmojis (locale: Locale, options: FetchEmojisExpandedOptions = {}): Promise<unknown[]> {
+  const { compact = false, shortcodes: presets = [] } = options
+  const emojis = (await import(`emojibase-data/${locale}/${compact ? 'compact' : 'data'}.json`)).default as Emoji[]
+  const shortcodes: ShortcodesDataset[] = []
+
+  for (const preset of presets) {
+    const shortcodeData = (await import(`emojibase-data/${locale}/shortcodes/${preset}.json`))
+      .default as ShortcodesDataset
+    shortcodes.push(shortcodeData)
+  }
+
+  return joinShortcodes(emojis, shortcodes)
+}
+
+async function fetchMessages (locale: Locale, options?: FetchFromCDNOptions): Promise<MessagesDataset> {
+  return (await import(`emojibase-data/${locale}/messages.json`)).default as MessagesDataset
+}
+
+export { fetchEmojis, fetchMessages, type Locale }
