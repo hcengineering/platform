@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   type AnyAttribute,
   type Class,
   type Doc,
+  docKey,
   type FullTextSearchContext,
   getFullTextContext,
   type Hierarchy,
@@ -25,6 +26,8 @@ import {
 } from '@hcengineering/core'
 import { type IndexedDoc } from '@hcengineering/server-core'
 import { type FullTextPipeline } from './types'
+import { type Message } from '@hcengineering/communication-types'
+import cardPlugin, { type Card } from '@hcengineering/card'
 
 export { docKey, isFullTextAttribute } from '@hcengineering/core'
 
@@ -100,6 +103,26 @@ export function createIndexedDoc (doc: Doc, mixins: Ref<Class<Doc>>[] | undefine
     modifiedBy: doc.modifiedBy,
     modifiedOn: doc.modifiedOn,
     space
+  }
+  return indexedDoc
+}
+
+/**
+ * @public
+ */
+export function createIndexedDocFromMessage (card: Card, message: Message): IndexedDoc {
+  const modifiedDate = message.edited ?? message.created
+  const modifiedOn = modifiedDate.getTime()
+  const indexedDoc = {
+    id: message.id as any,
+    _class: [`${cardPlugin.class.Card}%message` as Ref<Class<Doc>>],
+    space: card.space,
+    [docKey('createdOn', core.class.Doc)]: message.created.getTime(),
+    [docKey('createdBy', core.class.Doc)]: message.creator,
+    modifiedBy: message.creator,
+    modifiedOn,
+    attachedTo: card._id,
+    attachedToClass: card._class
   }
   return indexedDoc
 }

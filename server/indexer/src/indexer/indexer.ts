@@ -30,6 +30,7 @@ import core, {
   type MeasureContext,
   type ModelDb,
   type Ref,
+  SortingOrder,
   type Space,
   type TxCUD,
   TxProcessor,
@@ -58,9 +59,15 @@ import type {
 } from '@hcengineering/server-core'
 import { RateLimiter, SessionDataImpl } from '@hcengineering/server-core'
 import { jsonToText, markupToJSON, markupToText } from '@hcengineering/text'
+import card, { type Card } from '@hcengineering/card'
+import { type RestClient as CommunicationClient } from '@hcengineering/communication-rest-client'
 import { findSearchPresenter, updateDocWithPresenter } from '../mapper'
 import { type FullTextPipeline } from './types'
-import { createIndexedDoc, getContent } from './utils'
+import { createIndexedDoc, createIndexedDocFromMessage, getContent } from './utils'
+import { type CardID, type Message } from '@hcengineering/communication-types'
+import { parseYaml } from '@hcengineering/communication-yaml'
+import { applyPatches } from '@hcengineering/communication-shared'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 
 export * from './types'
 export * from './utils'
@@ -177,6 +184,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     readonly storageAdapter: StorageAdapter,
     readonly contentAdapter: ContentTextAdapter,
     readonly broadcastUpdate: (ctx: MeasureContext, classes: Ref<Class<Doc>>[]) => void,
+    readonly communicationClient?: CommunicationClient,
     readonly listener?: FulltextListener
   ) {
     this.contexts = new Map(model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it]))
@@ -217,6 +225,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     ctx.warn('verify document structure', { workspace: this.workspace.uuid })
 
     let processed = 0
+    let processedCommunication = 0
     await ctx.with('reindex-domain', { domain }, async (ctx) => {
       // Iterate over all domain documents and add appropriate entries
       const allDocs = this.storage.rawFind(ctx, domain)
@@ -240,6 +249,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             }
 
             await this.indexDocuments(ctx, v, values, pushQueue)
+            if (this.hierarchy.isDerived(v, card.class.Card)) {
+              processedCommunication += await this.indexCommunication(ctx, v, values, pushQueue)
+            }
             await control?.heartbeat()
           }
 
@@ -251,7 +263,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
           const now = platformNow()
           if (now - lastPrint > 2500) {
-            ctx.info('processed', { processed, elapsed: Math.round(now - lastPrint), domain })
+            ctx.info('processed', { processed, processedCommunication, elapsed: Math.round(now - lastPrint), domain })
             lastPrint = now
           }
         }
@@ -466,6 +478,109 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     await rateLimit.waitProcessing()
   }
 
+  async indexCommunication (
+    ctx: MeasureContext,
+    _class: Ref<Class<Doc>>,
+    docs: Doc[],
+    pushQueue: ElasticPushQueue
+  ): Promise<number> {
+    const communicationClient = this.communicationClient
+    if (communicationClient === undefined) {
+      return 0
+    }
+    let processed = 0
+    for (const doc of docs) {
+      if (this.cancelling) {
+        return processed
+      }
+      await ctx.with('process-communication', { _class: doc._class }, async (ctx) => {
+        let groups = await communicationClient.findMessagesGroups({
+          card: doc._id as CardID,
+          limit: 100,
+          order: SortingOrder.Ascending
+        })
+        while (groups.length > 0) {
+          for (const group of groups) {
+            if (this.cancelling) {
+              return processed
+            }
+            const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
+            const messagesFile = Buffer.concat(blob as any).toString()
+            const messagesParsedFile = parseYaml(messagesFile)
+            let patchedMessages
+            if (group.patches !== undefined && group.patches.length > 0) {
+              const patchesByMessage = groupByArray(group.patches, (it) => it.messageId)
+              patchedMessages = messagesParsedFile.messages.map((message) => {
+                const patches = patchesByMessage.get(message.id) ?? []
+                if (patches.length === 0) {
+                  return message
+                } else {
+                  return applyPatches(message, patches)
+                }
+              })
+            } else {
+              patchedMessages = messagesParsedFile.messages
+            }
+            for (const message of patchedMessages) {
+              if (message.removed) {
+                continue
+              }
+              const indexedDoc = createIndexedDocFromMessage(doc as Card, message)
+              await this.processCommunicationMessage(ctx, message, indexedDoc)
+              if (this.listener?.onIndexing !== undefined) {
+                await this.listener.onIndexing(indexedDoc)
+              }
+              await pushQueue.push(indexedDoc)
+              processed += 1
+            }
+          }
+          if (this.cancelling) {
+            return processed
+          }
+          groups = await communicationClient.findMessagesGroups({
+            card: doc._id as CardID,
+            limit: 100,
+            order: SortingOrder.Ascending,
+            fromDate: {
+              greater: groups[groups.length - 1].toDate
+            }
+          })
+        }
+        let messages = await communicationClient.findMessages({
+          card: doc._id as CardID,
+          limit: 100,
+          order: SortingOrder.Ascending
+        })
+        while (messages.length > 0) {
+          for (const message of messages) {
+            if (this.cancelling) {
+              return processed
+            }
+            const indexedDoc = createIndexedDocFromMessage(doc as Card, message)
+            await this.processCommunicationMessage(ctx, message, indexedDoc)
+            if (this.listener?.onIndexing !== undefined) {
+              await this.listener.onIndexing(indexedDoc)
+            }
+            await pushQueue.push(indexedDoc)
+            processed += 1
+          }
+          messages = await communicationClient.findMessages({
+            card: doc._id as CardID,
+            limit: 100,
+            order: SortingOrder.Ascending,
+            created: {
+              greater: messages[messages.length - 1].created
+            }
+          })
+        }
+        if (this.cancelling) {
+          return processed
+        }
+      })
+    }
+    return processed
+  }
+
   public async processDocuments (ctx: MeasureContext, result: TxCUD<Doc>[], control: ConsumerControl): Promise<void> {
     const contextData = this.createContextData()
     ctx.contextData = contextData
@@ -660,6 +775,23 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         workspace: this.workspace.uuid
       })
     }
+  }
+
+  @withContext('process-communication-message')
+  private async processCommunicationMessage (
+    ctx: MeasureContext<any>,
+    message: Message,
+    indexedDoc: IndexedDoc
+  ): Promise<void> {
+    const markup = markdownToMarkup(message.content)
+    let textContent = jsonToText(markup)
+    textContent = textContent
+      .split(/ +|\t+|\f+/)
+      .filter((it) => it)
+      .join(' ')
+      .split(/\n\n+/)
+      .join('\n')
+    indexedDoc.fulltextSummary = textContent
   }
 
   private async handleBlob (ctx: MeasureContext<any>, docInfo: Blob | undefined, indexedDoc: IndexedDoc): Promise<void> {
