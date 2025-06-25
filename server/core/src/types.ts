@@ -15,6 +15,7 @@
 
 import { type ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
 import {
+  type AccountRole,
   type Account,
   type AccountUuid,
   type Branding,
@@ -550,7 +551,13 @@ export interface ClientSessionCtx {
   ctx: MeasureContext
 
   pipeline: Pipeline
-  socialStringsToUsers: Map<PersonId, AccountUuid>
+  socialStringsToUsers: Map<
+  PersonId,
+  {
+    accontUuid: AccountUuid
+    role: AccountRole
+  }
+  >
   requestId: ReqId | undefined
   sendResponse: (id: ReqId | undefined, msg: any) => Promise<void>
   sendPong: () => void

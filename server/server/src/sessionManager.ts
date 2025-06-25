@@ -1083,12 +1083,27 @@ export class TSessionManager implements SessionManager {
   }
 
   // TODO: cache this map and update when sessions created/closed
-  getActiveSocialStringsToUsersMap (workspace: WorkspaceUuid, ...extra: Session[]): Map<PersonId, AccountUuid> {
+  getActiveSocialStringsToUsersMap (
+    workspace: WorkspaceUuid,
+    ...extra: Session[]
+  ): Map<
+    PersonId,
+    {
+      accontUuid: AccountUuid
+      role: AccountRole
+    }
+    > {
     const ws = this.workspaces.get(workspace)
     if (ws === undefined) {
       return new Map()
     }
-    const res = new Map<PersonId, AccountUuid>()
+    const res = new Map<
+    PersonId,
+    {
+      accontUuid: AccountUuid
+      role: AccountRole
+    }
+    >()
     for (const s of [...Array.from(ws.sessions.values()).map((it) => it.session), ...extra]) {
       const sessionAccount = s.getUser()
       if (sessionAccount === systemAccountUuid) {
@@ -1096,7 +1111,10 @@ export class TSessionManager implements SessionManager {
       }
       const userSocialIds = s.getUserSocialIds()
       for (const id of userSocialIds) {
-        res.set(id, sessionAccount)
+        res.set(id, {
+          accontUuid: sessionAccount,
+          role: s.getRawAccount().role
+        })
       }
     }
     return res

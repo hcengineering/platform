@@ -534,7 +534,7 @@ export async function getSenderInfo (
   control: TriggerControl
 ): Promise<SenderInfo> {
   const controlAccount = control.ctx.contextData.account
-  let account: AccountUuid | undefined = control.ctx.contextData.socialStringsToUsers.get(socialId)
+  let account: AccountUuid | undefined = control.ctx.contextData.socialStringsToUsers.get(socialId)?.accontUuid
 
   if (account == null && controlAccount.socialIds.includes(socialId)) {
     account = controlAccount.uuid

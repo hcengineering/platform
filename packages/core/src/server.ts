@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Account, AccountUuid, Doc, Domain, PersonId, Ref } from './classes'
+import type { Account, AccountRole, AccountUuid, Doc, Domain, PersonId, Ref } from './classes'
 import { type MeasureContext } from './measurements'
 import { type DocumentQuery, type FindOptions } from './storage'
 import type { DocumentUpdate, Tx } from './tx'
@@ -38,7 +38,16 @@ export interface StorageIterator {
   close: (ctx: MeasureContext) => Promise<void>
 }
 
-export type BroadcastTargets = Record<string, (tx: Tx) => AccountUuid[] | undefined>
+export interface BroadcastTargetResult {
+  target: AccountUuid[]
+}
+
+export interface BroadcastExcludeResult {
+  exclude: AccountUuid[]
+}
+
+export type BroadcastResult = BroadcastTargetResult | BroadcastExcludeResult | undefined
+export type BroadcastTargets = Record<string, (tx: Tx) => Promise<BroadcastResult>>
 
 export interface SessionData {
   broadcast: {
@@ -55,7 +64,13 @@ export interface SessionData {
   admin?: boolean
   isTriggerCtx?: boolean
   workspace: WorkspaceIds
-  socialStringsToUsers: Map<PersonId, AccountUuid>
+  socialStringsToUsers: Map<
+  PersonId,
+  {
+    accontUuid: AccountUuid
+    role: AccountRole
+  }
+  >
 
   asyncRequests?: ((ctx: MeasureContext) => Promise<void>)[]
 }
