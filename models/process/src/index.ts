@@ -430,7 +430,7 @@ export function createModel (builder: Builder): void {
       category: 'attribute',
       label: process.string.Add,
       allowMany: true,
-      editor: process.transformEditor.NumberOffsetEditor
+      editor: process.transformEditor.NumberEditor
     },
     process.function.Add
   )
@@ -443,10 +443,118 @@ export function createModel (builder: Builder): void {
       category: 'attribute',
       label: process.string.Subtract,
       allowMany: true,
-      editor: process.transformEditor.NumberOffsetEditor,
+      editor: process.transformEditor.NumberEditor,
       type: 'transform'
     },
     process.function.Subtract
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Multiply,
+      type: 'transform',
+      allowMany: true,
+      editor: process.transformEditor.NumberEditor
+    },
+    process.function.Multiply
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Divide,
+      type: 'transform',
+      allowMany: true,
+      editor: process.transformEditor.NumberEditor
+    },
+    process.function.Divide
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Modulo,
+      type: 'transform',
+      allowMany: true,
+      editor: process.transformEditor.NumberEditor
+    },
+    process.function.Modulo
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Power,
+      type: 'transform',
+      allowMany: true,
+      editor: process.transformEditor.NumberEditor
+    },
+    process.function.Power
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Round,
+      type: 'transform',
+      allowMany: true
+    },
+    process.function.Round
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Absolute,
+      type: 'transform',
+      allowMany: true
+    },
+    process.function.Absolute
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Ceil,
+      type: 'transform',
+      allowMany: true
+    },
+    process.function.Ceil
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Floor,
+      type: 'transform',
+      allowMany: true
+    },
+    process.function.Floor
   )
 
   builder.createDoc(

@@ -77,7 +77,15 @@
     "Search": "検索",
     "Separator": "区切り文字",
     "Start": "開始",
-    "End": "終了"
+    "End": "終了",
+    "Multiply": "掛け算",
+    "Divide": "割り算",
+    "Modulo": "剰余",
+    "Power": "べき乗する",
+    "Round": "四捨五入",
+    "Floor": "切り捨て",
+    "Ceil": "切り上げ",
+    "Absolute": "絶対値"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

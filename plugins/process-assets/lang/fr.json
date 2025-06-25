@@ -78,7 +78,15 @@
     "Search": "Rechercher",
     "Separator": "Séparateur",
     "Start": "Début",
-    "End": "Fin"
+    "End": "Fin",
+    "Multiply": "Multiplier",
+    "Divide": "Diviser",
+    "Modulo": "Modulo",
+    "Power": "Élever à la puissance",
+    "Round": "Arrondir",
+    "Floor": "Arrondir vers le bas",
+    "Ceil": "Arrondir vers le haut",
+    "Absolute": "Valeur absolue"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",
