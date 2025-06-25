@@ -131,6 +131,8 @@
     "Loading": "Caricamento...",
     "NoRelations": "Nessuna relazione",
     "ReadOnlyWarningTitle": "Modalità sola lettura",
-    "ReadOnlyWarningMessage": "Contatta l'amministratore per ottenere l'accesso completo a quest'area di lavoro."
+    "ReadOnlyWarningMessage": "Contatta l'amministratore per ottenere l'accesso completo a quest'area di lavoro.",
+    "Icon": "Icona",
+    "Color": "Colore"
   }
 }

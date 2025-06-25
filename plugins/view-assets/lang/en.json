@@ -136,6 +136,8 @@
     "Loading": "Loading...",
     "NoRelations": "No relations",
     "ReadOnlyWarningTitle": "Read only mode",
-    "ReadOnlyWarningMessage": "Contact the administrator to gain full access to this workspace."
+    "ReadOnlyWarningMessage": "Contact the administrator to gain full access to this workspace.",
+    "Icon": "Icon",
+    "Color": "Color"
   }
 }

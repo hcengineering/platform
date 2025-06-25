@@ -65,12 +65,15 @@ import FavoriteCardPresenter from './components/FavoriteCardPresenter.svelte'
 import CardTagsColored from './components/CardTagsColored.svelte'
 import CardTagColored from './components/CardTagColored.svelte'
 import CardWidgetTab from './components/CardWidgetTab.svelte'
+import CardIcon from './components/CardIcon.svelte'
 
 export { default as CardSelector } from './components/CardSelector.svelte'
+export { default as CardIcon } from './components/CardIcon.svelte'
 export { default as Navigator } from './components/navigator-next/Navigator.svelte'
 export { default as Favorites } from './components/Favorites.svelte'
 
 export * from './types'
+export { getCardIconInfo } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -105,7 +108,8 @@ export default async (): Promise<Resources> => ({
     CardWidgetTab,
     FavoriteCardPresenter,
     CardTagColored,
-    CardTagsColored
+    CardTagsColored,
+    CardIcon
   },
   sectionComponent: {
     AttachmentsSection: AttachmentsCardSection,
