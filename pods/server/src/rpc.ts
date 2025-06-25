@@ -207,7 +207,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         )
       }
     } catch (err: any) {
-      sendError(res, 500, { message: 'Failed to execute operation', error: err.message, stack: err.stack })
+      sendError(res, 500, { message: 'Failed to execute operation', error: err.message })
     }
   }
 
@@ -232,6 +232,9 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       const _class = req.query.class as Ref<Class<Doc>>
       const query = req.query.query !== undefined ? JSON.parse(req.query.query as string) : {}
       const options = req.query.options !== undefined ? JSON.parse(req.query.options as string) : {}
+      if (req.query.limit !== undefined) {
+        options.limit = parseInt(req.query.limit as string)
+      }
 
       const result = await session.findAllRaw(ctx, _class, query, options)
       await sendJson(req, res, result, rateLimitToHeaders(rateLimit))

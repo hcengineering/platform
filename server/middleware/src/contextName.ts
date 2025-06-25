@@ -16,13 +16,16 @@
 import core, {
   registerOperationLog,
   updateOperationLog,
+  type DomainParams,
   type MeasureContext,
   type Metrics,
+  type OperationDomain,
   type OperationLog,
   type SessionData,
   type Tx,
   type TxApplyIf
 } from '@hcengineering/core'
+import type { DomainResult } from '@hcengineering/core/src'
 import type { Middleware, PipelineContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from '@hcengineering/server-core'
 
@@ -35,6 +38,19 @@ export class ContextNameMiddleware extends BaseMiddleware implements Middleware 
 
   static async create (ctx: MeasureContext, context: PipelineContext, next?: Middleware): Promise<Middleware> {
     return new ContextNameMiddleware(context, next)
+  }
+
+  domainRequest (ctx: MeasureContext, domain: OperationDomain, params: DomainParams): Promise<DomainResult> {
+    return ctx.with('domain-request', { source: ctx.contextData.service, domain }, (ctx) => {
+      return ctx.with(
+        `${domain}-${Object.keys(params)[0]}`,
+        {},
+        async (ctx) => await this.provideDomainRequest(ctx, domain, params),
+        {
+          params
+        }
+      )
+    })
   }
 
   async tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
