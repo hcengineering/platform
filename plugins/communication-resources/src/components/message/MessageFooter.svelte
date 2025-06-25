@@ -22,7 +22,7 @@
   import { getResource } from '@hcengineering/platform'
 
   import ReactionsList from '../ReactionsList.svelte'
-  import MessageReplies from './MessageReplies.svelte'
+  import MessageThread from '../thread/Thread.svelte'
   import { toggleReaction } from '../../utils'
 
   export let message: Message
@@ -108,12 +108,7 @@
 {/if}
 {#if message.thread && message.thread.threadId}
   <div class="message__replies overflow-label">
-    <MessageReplies
-      thread={message.thread}
-      count={message.thread.repliesCount}
-      lastReply={message.thread.lastReply}
-      on:click={handleReply}
-    />
+    <MessageThread thread={message.thread} on:click={handleReply} />
   </div>
 {/if}
 

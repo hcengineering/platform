@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { cardId } from '@hcengineering/card'
+import { type Card, cardId } from '@hcengineering/card'
 import card from '@hcengineering/card-resources/src/plugin'
 import type { Client, Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
@@ -54,7 +54,8 @@ export default mergeIds(cardId, card, {
     CardIdProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     GetCardLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     CardCustomLinkMatch: '' as Resource<(doc: Doc) => boolean>,
-    CardCustomLinkEncode: '' as Resource<(doc: Doc) => Location>
+    CardCustomLinkEncode: '' as Resource<(doc: Doc) => Location>,
+    CheckRelationsSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
   },
   label: {
     Subscribed: '' as Ref<TagElement>,

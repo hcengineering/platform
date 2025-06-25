@@ -51,7 +51,6 @@
     display: flex;
     overflow: hidden;
     align-items: center;
-    justify-content: center;
     gap: 0.25rem;
   }
   .divider {

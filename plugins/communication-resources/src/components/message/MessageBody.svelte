@@ -24,6 +24,8 @@
   import MessageInput from './MessageInput.svelte'
   import MessageContentViewer from './MessageContentViewer.svelte'
   import MessageFooter from './MessageFooter.svelte'
+  import { translateMessagesStore, messageEditingStore } from '../../stores'
+  import { showOriginalMessage } from '../../actions'
 
   export let card: Card
   export let author: Person | undefined
@@ -60,10 +62,10 @@
           {card}
           {message}
           onCancel={() => {
-            isEditing = false
+            messageEditingStore.set(undefined)
           }}
           on:edited={() => {
-            isEditing = false
+            messageEditingStore.set(undefined)
           }}
         />
       {/if}
@@ -102,6 +104,16 @@
             (<Label label={communication.string.Edited} />)
           </div>
         {/if}
+        {#if !message.removed && $translateMessagesStore.get(message.id)?.inProgress === true}
+          <div class="message__translating">
+            <Label label={communication.string.Translating} />
+          </div>
+        {/if}
+        {#if !message.removed && $translateMessagesStore.get(message.id)?.shown === true}
+          <div class="message__show-original" on:click={() => showOriginalMessage(message, card)}>
+            <Label label={communication.string.ShowOriginal} />
+          </div>
+        {/if}
       </div>
       {#if !isEditing}
         <div class="message__text">
@@ -112,10 +124,10 @@
           {card}
           {message}
           onCancel={() => {
-            isEditing = false
+            messageEditingStore.set(undefined)
           }}
           on:edited={() => {
-            isEditing = false
+            messageEditingStore.set(undefined)
           }}
         />
       {/if}
@@ -178,8 +190,24 @@
   .message__edited-marker {
     text-transform: lowercase;
     color: var(--global-tertiary-TextColor);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 400;
+  }
+
+  .message__translating {
+    color: var(--global-tertiary-TextColor);
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+
+  .message__show-original {
+    font-size: 0.75rem;
+    color: var(--global-tertiary-TextColor);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--global-secondary-TextColor);
+    }
   }
 
   .message__text {

@@ -12,8 +12,14 @@
 // limitations under the License.
 
 import { type IntlString, mergeIds } from '@hcengineering/platform'
-import communication, { communicationId } from '@hcengineering/communication'
+import communication, {
+  communicationId,
+  type MessageAction,
+  type MessageActionFunctionResource,
+  type MessageActionVisibilityTesterResource
+} from '@hcengineering/communication'
 import { type AnyComponent } from '@hcengineering/ui'
+import { type Ref } from '@hcengineering/core'
 
 export default mergeIds(communicationId, communication, {
   component: {
@@ -54,6 +60,42 @@ export default mergeIds(communicationId, communication, {
     ThreadWasRemoved: '' as IntlString,
     MessageWasRemoved: '' as IntlString,
     JoinedThe: '' as IntlString,
-    LeftThe: '' as IntlString
+    LeftThe: '' as IntlString,
+    Translating: '' as IntlString,
+    ShowOriginal: '' as IntlString,
+    AddReaction: '' as IntlString,
+    ReplyInThread: '' as IntlString,
+    TranslateMessage: '' as IntlString,
+    ShowOriginalMessage: '' as IntlString,
+    EditMessage: '' as IntlString,
+    RemoveMessage: '' as IntlString,
+    CreateCard: '' as IntlString,
+    MessageAlreadyHasCardAttached: '' as IntlString
+  },
+  messageActionImpl: {
+    AddReaction: '' as MessageActionFunctionResource,
+    ReplyInThread: '' as MessageActionFunctionResource,
+    TranslateMessage: '' as MessageActionFunctionResource,
+    ShowOriginalMessage: '' as MessageActionFunctionResource,
+    EditMessage: '' as MessageActionFunctionResource,
+    RemoveMessage: '' as MessageActionFunctionResource,
+    CreateCard: '' as MessageActionFunctionResource
+  },
+  messageAction: {
+    AddReaction: '' as Ref<MessageAction>,
+    ReplyInThread: '' as Ref<MessageAction>,
+    TranslateMessage: '' as Ref<MessageAction>,
+    ShowOriginalMessage: '' as Ref<MessageAction>,
+    EditMessage: '' as Ref<MessageAction>,
+    RemoveMessage: '' as Ref<MessageAction>,
+    CreateCard: '' as Ref<MessageAction>
+  },
+  function: {
+    CanReplyInThread: '' as MessageActionVisibilityTesterResource,
+    CanTranslateMessage: '' as MessageActionVisibilityTesterResource,
+    CanShowOriginalMessage: '' as MessageActionVisibilityTesterResource,
+    CanEditMessage: '' as MessageActionVisibilityTesterResource,
+    CanRemoveMessage: '' as MessageActionVisibilityTesterResource,
+    CanCreateCard: '' as MessageActionVisibilityTesterResource
   }
 })

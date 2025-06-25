@@ -13,7 +13,9 @@
 
 import { Asset, IntlString, Metadata, plugin, Plugin } from '@hcengineering/platform'
 import { CardSection } from '@hcengineering/card'
-import { Ref } from '@hcengineering/core'
+import { Class, Ref } from '@hcengineering/core'
+
+import { MessageAction } from './types'
 
 export * from './types'
 
@@ -23,10 +25,14 @@ export * from './types'
 export const communicationId = 'communication' as Plugin
 
 export default plugin(communicationId, {
+  class: {
+    MessageAction: '' as Ref<Class<MessageAction>>
+  },
   icon: {
     Bell: '' as Asset,
     BellCrossed: '' as Asset,
-    File: '' as Asset
+    File: '' as Asset,
+    MessageMultiple: '' as Asset
   },
   metadata: {
     Enabled: '' as Metadata<boolean>

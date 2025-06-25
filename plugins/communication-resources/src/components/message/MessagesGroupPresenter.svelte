@@ -60,7 +60,7 @@
       {#if separatorIndex !== 0 && index === separatorIndex}
         <MessagesSeparator bind:element={separatorDiv} />
       {/if}
-      <MessagePresenter {message} {card} editable={!readonly} {compact} />
+      <MessagePresenter {message} {card} {readonly} {compact} />
     {/each}
   </div>
 </div>

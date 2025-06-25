@@ -34,6 +34,7 @@ type Sorting = 'alphabetical' | 'recent'
 export interface CardsNavigatorConfig extends BaseNavigatorConfig {
   variant: 'cards'
   limit: number
+  lookback?: string // e.g. 1m, 1h, 1d, 1w
   hideEmpty?: boolean
   labelFilter?: LabelID[]
   fixedTypes?: Array<Ref<MasterTag>>

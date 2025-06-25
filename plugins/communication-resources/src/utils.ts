@@ -11,33 +11,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {
-  canDisplayLinkPreview,
-  fetchLinkPreviewDetails,
-  getClient,
-  getCommunicationClient
-} from '@hcengineering/presentation'
-import cardPlugin, { type Card } from '@hcengineering/card'
-import {
-  fillDefaults,
-  generateId,
-  getCurrentAccount,
-  type Markup,
-  type MarkupBlobRef,
-  type Ref,
-  SortingOrder
-} from '@hcengineering/core'
-import { getMetadata, getResource } from '@hcengineering/platform'
+import { canDisplayLinkPreview, fetchLinkPreviewDetails, getCommunicationClient } from '@hcengineering/presentation'
+import { type Card } from '@hcengineering/card'
+import { getCurrentAccount, type Markup } from '@hcengineering/core'
+import { getMetadata } from '@hcengineering/platform'
 import { showPopup } from '@hcengineering/ui'
-import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
-import { getEmployeeBySocialId } from '@hcengineering/contact'
 import { type LinkPreviewData, type Message } from '@hcengineering/communication-types'
 import emoji from '@hcengineering/emoji'
 import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
-import { jsonToMarkup, markupToJSON, markupToText } from '@hcengineering/text'
-import { get } from 'svelte/store'
-import chat from '@hcengineering/chat'
-import { makeRank } from '@hcengineering/rank'
+import { jsonToMarkup, markupToJSON } from '@hcengineering/text'
 
 import IconAt from './components/icons/At.svelte'
 
@@ -125,65 +107,6 @@ export async function toggleReaction (message: Message, emoji: string): Promise<
   } else {
     await communicationClient.addReaction(message.cardId, message.id, emoji)
   }
-}
-
-export async function replyToThread (message: Message, parentCard: Card): Promise<void> {
-  const client = getClient()
-  const communicationClient = getCommunicationClient()
-  const hierarchy = client.getHierarchy()
-
-  const thread = message.thread
-  if (thread != null) {
-    const _id = thread.threadId
-    const card = await client.findOne(cardPlugin.class.Card, { _id: _id as Ref<Card> })
-    if (card === undefined) return
-    const r = await getResource(cardPlugin.function.OpenCardInSidebar)
-    await r(_id, card)
-    return
-  }
-
-  const author =
-    get(employeeByPersonIdStore).get(message.creator) ?? (await getEmployeeBySocialId(client, message.creator))
-  const lastOne = await client.findOne(cardPlugin.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
-  const title = createThreadTitle(message, parentCard)
-  const data = fillDefaults<Card>(
-    hierarchy,
-    {
-      title,
-      rank: makeRank(lastOne?.rank, undefined),
-      content: '' as MarkupBlobRef,
-      parent: parentCard._id,
-      blobs: {},
-      parentInfo: [
-        ...(parentCard.parentInfo ?? []),
-        {
-          _id: parentCard._id,
-          _class: parentCard._class,
-          title: parentCard.title
-        }
-      ]
-    },
-    chat.masterTag.Thread
-  )
-  const apply = client.apply('create thread', undefined, true)
-  const threadCardID = generateId<Card>()
-  await apply.createDoc(chat.masterTag.Thread, cardPlugin.space.Default, data, threadCardID)
-  await apply.commit()
-  await communicationClient.attachThread(parentCard._id, message.id, threadCardID, chat.masterTag.Thread)
-  if (author?.active === true && author?.personUuid !== undefined) {
-    await communicationClient.addCollaborators(threadCardID, chat.masterTag.Thread, [author.personUuid])
-  }
-  const threadCard = await client.findOne(cardPlugin.class.Card, { _id: threadCardID })
-  if (threadCard === undefined) return
-  const r = await getResource(cardPlugin.function.OpenCardInSidebar)
-  await r(threadCard._id, threadCard)
-}
-
-function createThreadTitle (message: Message, parent: Card): string {
-  const markup = jsonToMarkup(markdownToMarkup(message.content))
-  const messageText = markupToText(markup).trim()
-
-  return messageText.length > 0 ? messageText : `Thread from ${parent.title}`
 }
 
 export async function loadLinkPreviewData (url: string): Promise<LinkPreviewData | undefined> {

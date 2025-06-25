@@ -41,6 +41,16 @@
     "ThreadWasRemoved": "Этот поток был удален.",
     "MessageWasRemoved": "Это сообщение было удалено.",
     "JoinedThe": "Присоединился(aсь) к",
-    "LeftThe": "Покинул(a) к"
+    "LeftThe": "Покинул(a) к",
+    "Translating": "Перевод...",
+    "ShowOriginal": "Показать оригинал",
+    "AddReaction": "Добавить реакцию",
+    "ReplyInThread": "Ответить в потоке",
+    "TranslateMessage": "Перевести сообщение",
+    "ShowOriginalMessage": "Показать оригинальное сообщение",
+    "EditMessage": "Редактировать сообщение",
+    "RemoveMessage": "Удалить сообщение",
+    "CreateCard": "Создать карточку",
+    "MessageAlreadyHasCardAttached": "Упс! Это сообщение уже имеет прикрепленную карточку."
   }
 }

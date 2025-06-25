@@ -41,6 +41,16 @@
     "ThreadWasRemoved": "This thread was removed.",
     "MessageWasRemoved": "This message was removed.",
     "JoinedThe": "Joined the",
-    "LeftThe": "Left the"
+    "LeftThe": "Left the",
+    "Translating": "Translating...",
+    "ShowOriginal": "Showing original",
+    "AddReaction": "Add reaction",
+    "ReplyInThread": "Reply in thread",
+    "TranslateMessage": "Translate message",
+    "ShowOriginalMessage": "Show original message",
+    "EditMessage": "Edit message",
+    "RemoveMessage": "Remove message",
+    "CreateCard": "Create card",
+    "MessageAlreadyHasCardAttached": "Oops! This message already has a card attached."
   }
 }

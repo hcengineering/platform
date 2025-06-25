@@ -41,6 +41,16 @@
     "ThreadWasDeleted": "Dieser Thread wurde gelöscht.",
     "MessageWasRemoved": "Diese Nachricht wurde entfernt.",
     "JoinedThe": "Beigetreten",
-    "LeftThe": "Verließ"
+    "LeftThe": "Verließ",
+    "Translating": "Übersetzen...",
+    "ShowOriginal": "Original anzeigen",
+    "AddReaction": "Reaktion hinzufügen",
+    "ReplyInThread": "Im Thread antworten",
+    "TranslateMessage": "Nachricht übersetzen",
+    "ShowOriginalMessage": "Originalnachricht anzeigen",
+    "EditMessage": "Nachricht bearbeiten",
+    "RemoveMessage": "Nachricht entfernen",
+    "CreateCard": "Karte erstellen",
+    "MessageAlreadyHasCardAttached": "Oops! Diese Nachricht hat bereits eine Karte angehängt."
   }
 }
