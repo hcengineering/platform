@@ -1,4 +1,5 @@
 import core, {
+  type AccountRole,
   ClientConnectEvent,
   WorkspaceEvent,
   generateId,
@@ -172,7 +173,13 @@ export class SessionDataImpl implements SessionData {
     _removedMap: Map<Ref<Doc>, Doc> | undefined,
     _contextCache: Map<string, any> | undefined,
     readonly modelDb: ModelDb,
-    readonly socialStringsToUsers: Map<PersonId, AccountUuid>,
+    readonly socialStringsToUsers: Map<
+    PersonId,
+    {
+      accontUuid: AccountUuid
+      role: AccountRole
+    }
+    >,
     readonly service: string
   ) {
     this._removedMap = _removedMap

@@ -29,10 +29,10 @@ import tracker from '@hcengineering/tracker'
  */
 export async function OnGithubBroadcast (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   // Enhance broadcast to send DocSyncInfo change only to system account.
-  control.ctx.contextData.broadcast.targets.github = (it) => {
+  control.ctx.contextData.broadcast.targets.github = async (it) => {
     if (TxProcessor.isExtendsCUD(it._class)) {
       if ((it as TxCUD<Doc>).objectClass === github.class.DocSyncInfo) {
-        return [systemAccountUuid]
+        return { target: [systemAccountUuid] }
       }
     }
   }

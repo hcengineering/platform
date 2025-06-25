@@ -14,6 +14,8 @@
 //
 
 import {
+  type BroadcastExcludeResult,
+  type BroadcastResult,
   TxProcessor,
   type AccountUuid,
   type BroadcastTargets,
@@ -76,6 +78,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     // Combine targets by sender
 
     const toSendTarget = new Map<AccountUuid | '', Tx[]>()
+    const excluded = new Map<AccountUuid, Tx[]>()
 
     const getTxes = (key: AccountUuid | ''): Tx[] => {
       let txes = toSendTarget.get(key)
@@ -88,9 +91,9 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
 
     // Put current user as send target
     for (const txd of tx) {
-      let target: AccountUuid[] | undefined
+      let target: BroadcastResult
       for (const tt of Object.values(targets ?? {})) {
-        target = tt(txd)
+        target = await tt(txd)
         if (target !== undefined) {
           break
         }
@@ -103,8 +106,20 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
           v.push(txd)
         }
       } else {
-        for (const t of target) {
-          getTxes(t).push(txd)
+        if (isExlcude(target)) {
+          for (const e of target.exclude) {
+            const txes = excluded.get(e)
+            if (txes === undefined) {
+              excluded.set(e, [txd])
+            } else {
+              txes.push(txd)
+            }
+          }
+          continue
+        } else {
+          for (const t of target.target) {
+            getTxes(t).push(txd)
+          }
         }
       }
     }
@@ -134,6 +149,11 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     for (const [k, v] of toSendTarget.entries()) {
       void handleSend(ctx, v, k as AccountUuid)
     }
+
+    for (const [k, v] of excluded.entries()) {
+      void handleSend(ctx, v, undefined, [k])
+    }
+
     // Send all other except us.
     await handleSend(ctx, toSendAll, undefined, Array.from(toSendTarget.keys()) as AccountUuid[])
   }
@@ -157,4 +177,8 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     const bevent = createBroadcastEvent(Array.from(classes))
     this.broadcast.broadcast(ctx, [bevent], target, exclude)
   }
+}
+
+function isExlcude (result: BroadcastResult): result is BroadcastExcludeResult {
+  return (result as BroadcastExcludeResult).exclude !== undefined
 }

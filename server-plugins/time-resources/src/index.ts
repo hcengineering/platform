@@ -329,9 +329,9 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
     await control.apply(control.ctx, txes)
 
     const ids = txes.map((it) => it._id)
-    control.ctx.contextData.broadcast.targets.notifications = (it) => {
+    control.ctx.contextData.broadcast.targets.notifications = async (it) => {
       if (ids.includes(it._id)) {
-        return [receiverInfo.account]
+        return { target: [receiverInfo.account] }
       }
     }
   }

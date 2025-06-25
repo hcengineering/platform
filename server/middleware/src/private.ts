@@ -70,20 +70,21 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
 
   tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     for (const tx of txes) {
-      let target: AccountUuid[] | undefined
       if (this.isTargetDomain(tx)) {
         const account = ctx.contextData.account
         if (!account.socialIds.includes(tx.modifiedBy) && account.uuid !== systemAccountUuid) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
-        const modifiedByAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)
-        target = [account.uuid, systemAccountUuid]
+        const modifiedByAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)?.accontUuid
+        const target = [account.uuid, systemAccountUuid]
         if (modifiedByAccount !== undefined && !target.includes(modifiedByAccount)) {
           target.push(modifiedByAccount)
         }
-        ctx.contextData.broadcast.targets['checkDomain' + account.uuid] = (tx) => {
+        ctx.contextData.broadcast.targets['checkDomain' + account.uuid] = async (tx) => {
           if (this.isTargetDomain(tx)) {
-            return target
+            return {
+              target
+            }
           }
         }
       }
