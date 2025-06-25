@@ -25,7 +25,7 @@
   import DocumentsPopup from './DocumentsPopup.svelte'
 
   export let items: Ref<Document>[] = []
-  export let readonlyItems = new Set<Ref<Document>>()
+  export let readonlyItems: Ref<Document>[] = []
   export let _class: Ref<Class<Document>> = documents.class.Document
   export let docQuery: DocumentQuery<Document> | undefined = undefined
   export let label: IntlString | undefined = undefined
@@ -34,8 +34,8 @@
   export let width: string | undefined = undefined
   export let readonly: boolean = false
 
-  $: fixedItems = readonly ? items : items.filter((item) => readonlyItems.has(item))
-  $: editableItems = readonly ? [] : items.filter((item) => !readonlyItems.has(item))
+  $: fixedItems = readonly ? items : items.filter((item) => readonlyItems.includes(item))
+  $: editableItems = readonly ? [] : items.filter((item) => !readonlyItems.includes(item))
 
   const dispatch = createEventDispatcher()
 
@@ -49,7 +49,7 @@
         multiSelect: true,
         allowDeselect: false,
         selectedDocuments: items,
-        ignoreDocuments: Array.of(readonlyItems),
+        ignoreDocuments: readonlyItems,
         readonly
       },
       evt.target as HTMLElement,
