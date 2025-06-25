@@ -241,6 +241,11 @@ export type Domain = string & { __domain: true }
 /**
  * @public
  */
+export type OperationDomain = string & { __domain: true }
+
+/**
+ * @public
+ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Interface<T extends Doc> extends Classifier {
   extends?: Ref<Interface<Doc>>[]

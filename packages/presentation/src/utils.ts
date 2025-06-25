@@ -22,10 +22,12 @@ import core, {
   type AttachedDoc,
   type Class,
   type Client,
-  type ClientConnection,
   type Collection,
   type Doc,
   type DocumentQuery,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
   type FindOptions,
   type FindResult,
   getCurrentAccount,
@@ -34,6 +36,7 @@ import core, {
   type Mixin,
   type ModelDb,
   type Obj,
+  type OperationDomain,
   reduceCalls,
   type Ref,
   type RefTo,
@@ -61,7 +64,7 @@ import { onDestroy } from 'svelte'
 import { get, writable } from 'svelte/store'
 
 import { type KeyedAttribute } from '..'
-import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
+import { OptimizeQueryMiddleware, type PresentationPipeline, PresentationPipelineImpl } from './pipeline'
 import plugin, { type ClientHook } from './plugin'
 
 export { reduceCalls } from '@hcengineering/core'
@@ -304,10 +307,6 @@ class ClientHookImpl implements Client {
     return await this.client.findOne(_class, query, options)
   }
 
-  get getConnection (): (() => ClientConnection) | undefined {
-    return this.client.getConnection
-  }
-
   async close (): Promise<void> {
     await this.client.close()
   }
@@ -321,6 +320,17 @@ class ClientHookImpl implements Client {
       return await this.hook.findAll(this.client, _class, query, options)
     }
     return await this.client.findAll(_class, query, options)
+  }
+
+  async domainRequest<T>(
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ): Promise<DomainResult<T>> {
+    if (this.hook !== undefined) {
+      return await this.hook.domainRequest(this.client, domain, params, options)
+    }
+    return await this.client.domainRequest(domain, params, options)
   }
 
   async tx (tx: Tx): Promise<TxResult> {

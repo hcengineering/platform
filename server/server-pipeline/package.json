@@ -178,6 +178,8 @@
     "@hcengineering/chat": "^0.6.0",
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/mail": "^0.6.0",
-    "@hcengineering/kafka": "^0.6.0"
+    "@hcengineering/kafka": "^0.6.0",
+    "@hcengineering/communication-types": "^0.1.0",
+    "@hcengineering/communication-sdk-types": "^0.1.0"
   }
 }

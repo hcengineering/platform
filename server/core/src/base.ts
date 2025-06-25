@@ -18,10 +18,12 @@ import {
   type Doc,
   type DocumentQuery,
   type Domain,
+  type DomainParams,
   type FindOptions,
   type FindResult,
   type LoadModelResponse,
   type MeasureContext,
+  type OperationDomain,
   type Ref,
   type SearchOptions,
   type SearchQuery,
@@ -31,6 +33,7 @@ import {
   toFindResult,
   type Tx
 } from '@hcengineering/core'
+import type { DomainResult } from '@hcengineering/core/src/storage'
 import type { Middleware, PipelineContext, TxMiddlewareResult } from './types'
 
 export const emptyFindResult = Promise.resolve(toFindResult([]))
@@ -140,5 +143,31 @@ export abstract class BaseMiddleware implements Middleware {
       return this.next.searchFulltext(ctx, query, options)
     }
     return emptySearchResult
+  }
+
+  domainRequest (ctx: MeasureContext, domain: OperationDomain, params: DomainParams): Promise<DomainResult> {
+    return this.provideDomainRequest(ctx, domain, params)
+  }
+
+  protected async provideDomainRequest (
+    ctx: MeasureContext,
+    domain: OperationDomain,
+    params: DomainParams
+  ): Promise<DomainResult> {
+    if (this.next !== undefined) {
+      return await this.next.domainRequest(ctx, domain, params)
+    }
+    return { domain, value: null }
+  }
+
+  provideCloseSession (ctx: MeasureContext, sessionId: string): Promise<void> {
+    if (this.next !== undefined) {
+      return this.next.closeSession(ctx, sessionId)
+    }
+    return Promise.resolve()
+  }
+
+  closeSession (ctx: MeasureContext, sessionId: string): Promise<void> {
+    return this.provideCloseSession(ctx, sessionId)
   }
 }

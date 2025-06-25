@@ -19,7 +19,15 @@ import { type ClientConnection } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
-import type { DocumentQuery, FindResult, SearchOptions, SearchQuery, SearchResult, TxResult } from '../storage'
+import type {
+  DocumentQuery,
+  DomainResult,
+  FindResult,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
+  TxResult
+} from '../storage'
 import type { Tx } from '../tx'
 import { DOMAIN_TX } from '../tx'
 import { genMinModel } from './minmodel'
@@ -72,6 +80,10 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
       }
       const result = await Promise.all([model.tx(tx), transactions.tx(tx)])
       return result[0]
+    }
+
+    async domainRequest (): Promise<DomainResult> {
+      return await Promise.resolve({ domain: 'test' as Domain, value: null })
     }
 
     async close (): Promise<void> {}

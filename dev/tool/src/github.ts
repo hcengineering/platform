@@ -16,7 +16,7 @@ import core, {
 import { getAccountsFromTxes, getSocialKeyByOldEmail } from '@hcengineering/model-core'
 import { getAccountClient } from '@hcengineering/server-client'
 import { createDummyStorageAdapter, wrapPipeline, type PipelineFactory } from '@hcengineering/server-core'
-import { createBackupPipeline } from '@hcengineering/server-pipeline'
+import { createBackupPipeline, createEmptyBroadcastOps } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
 import type { Db } from 'mongodb'
 
@@ -106,7 +106,7 @@ export async function performGithubAccountMigrations (
       it.workspace = ws.uuid
       replaces.set(it.workspace, ws.uuid)
 
-      const pipeline = await factory(metricsContext, ws, (): void => {}, null, null)
+      const pipeline = await factory(metricsContext, ws, createEmptyBroadcastOps(), null)
       const client = wrapPipeline(metricsContext, pipeline, ws, false)
 
       const systemAccounts = [core.account.System, core.account.ConfigUser]

@@ -15,13 +15,23 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { type BackupClient, type DocChunk } from './backup'
-import { type Class, DOMAIN_MODEL, type Doc, type Domain, type Ref, type Timestamp } from './classes'
+import {
+  type Class,
+  DOMAIN_MODEL,
+  type Doc,
+  type Domain,
+  type OperationDomain,
+  type Ref,
+  type Timestamp
+} from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { type MeasureContext, MeasureMetricsContext } from './measurements'
 import { ModelDb } from './memdb'
 import type {
   DocumentQuery,
+  DomainParams,
+  DomainResult,
   FindOptions,
   FindResult,
   FulltextStorage,
@@ -40,6 +50,9 @@ import { platformNow, platformNowDiff, toFindResult } from './utils'
  */
 export type TxHandler = (...tx: Tx[]) => void
 
+export interface DomainRequestOptions {
+  retry?: boolean
+}
 /**
  * @public
  */
@@ -53,7 +66,12 @@ export interface Client extends Storage, FulltextStorage {
     options?: FindOptions<T>
   ) => Promise<WithLookup<T> | undefined>
   close: () => Promise<void>
-  getConnection?: () => ClientConnection
+
+  domainRequest: <T>(
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ) => Promise<DomainResult<T>>
 }
 
 /**
@@ -81,8 +99,6 @@ export enum ClientConnectEvent {
   Maintenance // In case workspace are in maintenance mode
 }
 
-export type Handler = (...result: any[]) => void
-
 /**
  * @public
  */
@@ -94,9 +110,9 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
 
   // If hash is passed, will return LoadModelResponse
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
-
   getLastHash?: (ctx: MeasureContext) => Promise<string | undefined>
-  pushHandler: (handler: Handler) => void
+  pushHandler: (handler: TxHandler) => void
+  domainRequest: (ctx: OperationDomain, params: DomainParams, options?: DomainRequestOptions) => Promise<DomainResult>
 }
 
 class ClientImpl implements Client, BackupClient {
@@ -145,6 +161,14 @@ class ClientImpl implements Client, BackupClient {
 
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return await this.conn.searchFulltext(query, options)
+  }
+
+  async domainRequest (
+    ctx: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ): Promise<DomainResult> {
+    return await this.conn.domainRequest(ctx, params, options)
   }
 
   async findOne<T extends Doc>(

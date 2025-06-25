@@ -22,7 +22,15 @@ import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
 import { TxOperations } from '../operations'
-import type { DocumentQuery, FindResult, SearchOptions, SearchQuery, SearchResult, TxResult } from '../storage'
+import type {
+  DocumentQuery,
+  DomainResult,
+  FindResult,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
+  TxResult
+} from '../storage'
 import { type Tx, TxFactory, TxProcessor } from '../tx'
 import { fillConfiguration, generateId, pluginFilterTx } from '../utils'
 import { connect } from './connection'
@@ -122,6 +130,10 @@ describe('client', () => {
         isConnected = (): boolean => true
         findAll = findAll
         pushHandler = (): void => {}
+
+        domainRequest (): Promise<DomainResult> {
+          return Promise.resolve({ domain: 'test' as Domain, value: null })
+        }
 
         searchFulltext = async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
           return { docs: [] }
