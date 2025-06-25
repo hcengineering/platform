@@ -136,6 +136,8 @@
     "Loading": "加载中...",
     "NoRelations": "无关系",
     "ReadOnlyWarningTitle": "只读模式",
-    "ReadOnlyWarningMessage": "请联系管理员获取此工作区的完全访问权限。"
+    "ReadOnlyWarningMessage": "请联系管理员获取此工作区的完全访问权限。",
+    "Icon": "图标",
+    "Color": "颜色"
   }
 }

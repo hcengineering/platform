@@ -44,11 +44,13 @@ import core, {
 import {
   type Builder,
   Collection,
+  Hidden,
   Index,
   Mixin,
   Model,
   Prop,
   TypeCollaborativeDoc,
+  TypeNumber,
   TypeRef,
   TypeString,
   UX
@@ -107,6 +109,16 @@ export class TCard extends TDoc implements Card {
 
   @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
     todos?: CollectionSize<ToDo>
+
+  @Prop(TypeString(), view.string.Icon)
+  @Hidden()
+  @Index(IndexKind.FullText)
+    icon?: Asset
+
+  @Prop(TypeNumber(), view.string.Color)
+  @Hidden()
+  @Index(IndexKind.FullText)
+    color?: number
 
   children?: number
 
@@ -319,6 +331,10 @@ export function createModel (builder: Builder): void {
   )
 
   defineTabs(builder)
+
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectIcon, {
+    component: card.component.CardIcon
+  })
 
   createSystemType(
     builder,

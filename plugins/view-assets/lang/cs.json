@@ -136,6 +136,8 @@
     "Loading": "Načítání...",
     "NoRelations": "Žádné vztahy",
     "ReadOnlyWarningTitle": "Režim pouze pro čtení",
-    "ReadOnlyWarningMessage": "Pro úplný přístup k tomuto pracovnímu prostoru kontaktujte administrátora."
+    "ReadOnlyWarningMessage": "Pro úplný přístup k tomuto pracovnímu prostoru kontaktujte administrátora.",
+    "Icon": "Ikona",
+    "Color": "Barva"
   }
 }

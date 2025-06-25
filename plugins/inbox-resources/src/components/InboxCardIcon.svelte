@@ -13,34 +13,18 @@
 -->
 
 <script lang="ts">
-  import { getClient, IconWithEmoji } from '@hcengineering/presentation'
-  import cardPlugin, { Card, MasterTag } from '@hcengineering/card'
-  import { getPlatformColorDef, Icon, IconSize, themeStore } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import cardPlugin, { Card } from '@hcengineering/card'
+  import { Component, IconSize } from '@hcengineering/ui'
 
   import NotifyMarker from './NotifyMarker.svelte'
 
   export let size: IconSize = 'medium'
   export let card: Card
   export let count: number = 0
-
-  const client = getClient()
-
-  $: clazz = client.getHierarchy().getClass(card._class) as MasterTag
-  $: iconId = clazz.icon ?? cardPlugin.icon.Card
-  $: icon = iconId === view.ids.IconWithEmoji ? IconWithEmoji : iconId
-  $: background = clazz.background ?? 0
 </script>
 
 <div class="card-icon">
-  {#if icon}
-    <Icon
-      {icon}
-      {size}
-      iconProps={iconId === view.ids.IconWithEmoji ? { icon: clazz.color } : {}}
-      fill={getPlatformColorDef(background, $themeStore.dark).color}
-    />
-  {/if}
+  <Component is={cardPlugin.component.CardIcon} props={{ value: card, size }} />
 
   {#if count > 0}
     <div class="card-icon__marker">
