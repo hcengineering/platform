@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   AttachedData,
   Data,
   Doc,
@@ -78,6 +78,7 @@ export class IncomingSyncManager {
   private readonly rateLimiter: RateLimiter
   private calendars: ExternalCalendar[] = []
   private readonly participants = new Map<string, Ref<Person>>()
+  private readonly systemClient: TxOperations
   private constructor (
     private readonly ctx: MeasureContext,
     private readonly accountClient: AccountClient,
@@ -87,6 +88,7 @@ export class IncomingSyncManager {
     private readonly googleClient: calendar_v3.Calendar
   ) {
     this.rateLimiter = getRateLimitter(this.email)
+    this.systemClient = new TxOperations(client.client, core.account.System)
   }
 
   static async sync (
@@ -479,7 +481,7 @@ export class IncomingSyncManager {
     const data: AttachedData<Event> = await this.parseData(event, accessRole, _calendar._id)
     if (event.recurringEventId != null) {
       const parseRule = parseRecurrenceStrings(event.recurrence ?? [])
-      const id = await this.client.addCollection(
+      const id = await this.systemClient.addCollection(
         calendar.class.ReccuringInstance,
         calendar.space.Calendar,
         calendar.ids.NoAttached,
@@ -500,7 +502,7 @@ export class IncomingSyncManager {
     } else if (event.status !== 'cancelled') {
       if (event.recurrence != null) {
         const parseRule = parseRecurrenceStrings(event.recurrence)
-        const id = await this.client.addCollection(
+        const id = await this.systemClient.addCollection(
           calendar.class.ReccuringEvent,
           calendar.space.Calendar,
           calendar.ids.NoAttached,
@@ -517,7 +519,7 @@ export class IncomingSyncManager {
         )
         await this.saveMixins(event, id)
       } else {
-        const id = await this.client.addCollection(
+        const id = await this.systemClient.addCollection(
           calendar.class.Event,
           calendar.space.Calendar,
           calendar.ids.NoAttached,
@@ -536,7 +538,7 @@ export class IncomingSyncManager {
       for (const mixin in mixins) {
         const attr = mixins[mixin]
         if (typeof attr === 'object' && Object.keys(attr).length > 0) {
-          await this.client.createMixin(
+          await this.systemClient.createMixin(
             _id,
             calendar.class.Event,
             calendar.space.Calendar,
