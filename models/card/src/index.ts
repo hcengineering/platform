@@ -392,7 +392,6 @@ export function createModel (builder: Builder): void {
     {
       label: card.string.CardApplication,
       icon: card.icon.Card,
-      accessLevel: AccountRole.User,
       alias: cardId,
       hidden: false,
       locationResolver: card.resolver.Location,
@@ -401,7 +400,6 @@ export function createModel (builder: Builder): void {
         specials: [
           {
             id: 'browser',
-            accessLevel: AccountRole.User,
             label: core.string.Spaces,
             icon: view.icon.List,
             component: workbench.component.SpecialView,
