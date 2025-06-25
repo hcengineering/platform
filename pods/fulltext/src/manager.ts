@@ -199,7 +199,10 @@ export class WorkspaceManager {
         ) {
           const workspaceInfo = await this.getWorkspaceInfo(this.ctx, token)
           if (workspaceInfo !== undefined) {
-            await this.fulltextAdapter.clean(this.ctx, (workspaceInfo.dataId as unknown as WorkspaceUuid) ?? workspaceInfo.uuid)
+            await this.fulltextAdapter.clean(
+              this.ctx,
+              (workspaceInfo.dataId as unknown as WorkspaceUuid) ?? workspaceInfo.uuid
+            )
           }
         } else if (mm.type === QueueWorkspaceEvent.Reindex) {
           const mmd = mm as QueueWorkspaceReindexMessage
