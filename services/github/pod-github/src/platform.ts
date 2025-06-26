@@ -26,7 +26,7 @@ import core, {
   type PersonUuid,
   type Ref
 } from '@hcengineering/core'
-import github, { GithubAuthentication, makeQuery, type GithubIntegration } from '@hcengineering/github'
+import github, { GithubAuthentication, makeQuery, type GithubIntegration, githubIntegrationKind } from '@hcengineering/github'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
 import tracker from '@hcengineering/tracker'
@@ -115,7 +115,7 @@ export class PlatformWorker {
     const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
     const accountsClient = getAccountClient(config.AccountsURL, sysToken)
 
-    const allIntegrations = await accountsClient.listIntegrations({ kind: 'github' })
+    const allIntegrations = await accountsClient.listIntegrations({ kind: githubIntegrationKind })
 
     this.integrations = []
 
@@ -143,7 +143,7 @@ export class PlatformWorker {
           workspace: integr.workspace
         })
         await accountsClient.deleteIntegration({
-          kind: 'github',
+          kind: githubIntegrationKind,
           workspaceUuid: integr.workspace,
           socialId: integr.accountId
         })
@@ -237,14 +237,14 @@ export class PlatformWorker {
         const oldWorkspace = oldInstallation.workspace
 
         await accountsClient.createIntegration({
-          kind: 'github',
+          kind: githubIntegrationKind,
           workspaceUuid: workspace,
           socialId: accountId,
           data: { installationId: oldInstallation.installationId }
         })
 
         await accountsClient.deleteIntegration({
-          kind: 'github',
+          kind: githubIntegrationKind,
           workspaceUuid: oldWorkspace,
           socialId: accountId
         })
@@ -288,7 +288,7 @@ export class PlatformWorker {
       {},
       async (ctx) => {
         await accountsClient.createIntegration({
-          kind: 'github',
+          kind: githubIntegrationKind,
           workspaceUuid: record.workspace,
           socialId: record.accountId,
           data: { installationId: record.installationId }
@@ -806,7 +806,7 @@ export class PlatformWorker {
       const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
       const sysAccountClient = getAccountClient(config.AccountsURL, sysToken)
       await sysAccountClient.deleteIntegration({
-        kind: 'github',
+        kind: githubIntegrationKind,
         workspaceUuid: interg.workspace,
         socialId: interg.accountId
       })

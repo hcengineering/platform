@@ -1,4 +1,5 @@
-import { type AccountClient, calendarIntegrationKind } from '@hcengineering/account-client'
+import { type AccountClient } from '@hcengineering/account-client'
+import { calendarIntegrationKind } from '@hcengineering/calendar'
 import {
   type PersonId,
   type WorkspaceInfoWithStatus,

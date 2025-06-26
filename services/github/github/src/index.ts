@@ -496,6 +496,11 @@ export const githubIntegrationKind = 'github' as IntegrationKind
 /**
  * @public
  */
+export const githubUserIntegrationKind = 'github-user' as IntegrationKind
+
+/**
+ * @public
+ */
 export const githubId = 'github' as Plugin
 
 export default plugin(githubId, {

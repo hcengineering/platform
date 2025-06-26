@@ -25,7 +25,7 @@ import { getClient } from './client'
 import { addUserByEmail, removeUserByEmail } from './kvsUtils'
 import { IncomingSyncManager, lock } from './sync'
 import { GoogleEmail, SCOPES, State, Token, User } from './types'
-import { getGoogleClient, getWorkspaceToken } from './utils'
+import { getGoogleClient, getWorkspaceToken, removeIntegrationSecret } from './utils'
 import { WatchController } from './watch'
 
 interface AuthResult {

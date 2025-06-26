@@ -14,7 +14,7 @@
 //
 
 import { AccountClient } from '@hcengineering/account-client'
-import calendar, { Event, ExternalCalendar, ReccuringEvent, ReccuringInstance } from '@hcengineering/calendar'
+import calendar, { Event, ExternalCalendar, ReccuringEvent, ReccuringInstance, calendarIntegrationKind } from '@hcengineering/calendar'
 import { Client, Doc, MeasureContext, Mixin, Ref, TxOperations } from '@hcengineering/core'
 import { htmlToMarkup, jsonToHTML, markupToJSON } from '@hcengineering/text'
 import { deepEqual } from 'fast-equals'
@@ -22,7 +22,7 @@ import { OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
 import { IncomingSyncManager } from './sync'
-import { CALENDAR_INTEGRATION, type Token } from './types'
+import { type Token } from './types'
 import { encodeReccuring, getGoogleClient, removeIntegrationSecret, setCredentials } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
 import { removeUserByEmail } from './kvsUtils'
@@ -60,7 +60,7 @@ export class CalendarClient {
       await removeUserByEmail(user, user.email)
       await removeIntegrationSecret(ctx, calendarClient.accountClient, {
         socialId: user.userId,
-        kind: CALENDAR_INTEGRATION,
+        kind: calendarIntegrationKind,
         workspaceUuid: user.workspace,
         key: user.email
       })

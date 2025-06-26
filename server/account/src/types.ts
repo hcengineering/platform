@@ -28,7 +28,8 @@ import {
   type PersonUuid,
   type SocialId as SocialIdBase,
   type WorkspaceDataId,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type IntegrationKind
 } from '@hcengineering/core'
 import type { EndpointInfo } from './utils'
 
@@ -152,7 +153,7 @@ export interface MailboxInfo {
 
 export interface Integration {
   socialId: PersonId
-  kind: string // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
+  kind: IntegrationKind // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
   workspaceUuid: WorkspaceUuid | null
   data?: Record<string, any>
 }
@@ -161,7 +162,7 @@ export type IntegrationKey = Omit<Integration, 'data'>
 
 export interface IntegrationSecret {
   socialId: PersonId
-  kind: string // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
+  kind: IntegrationKind // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
   workspaceUuid: WorkspaceUuid | null
   key: string // Key for the secret in the integration. Different secrets for the same integration must have different keys. Can be any string. E.g. '', 'user_app_1' etc.
   secret: string
