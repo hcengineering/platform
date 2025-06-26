@@ -186,6 +186,36 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     this.publicSpaces.delete(_id)
   }
 
+  private async handeCollaborator (ctx: MeasureContext<SessionData>, tx: TxCUD<Collaborator>): Promise<void> {
+    if (!this.context.hierarchy.isDerived(tx.objectClass, core.class.Collaborator)) return
+    if (tx._class === core.class.TxCreateDoc) {
+      const collab = TxProcessor.createDoc2Doc<Collaborator>(tx as TxCreateDoc<Collaborator>)
+      this.handleChangeCollaborator(ctx, collab)
+    } else if (tx._class === core.class.TxRemoveDoc) {
+      const collab = (await this.next?.findAll(ctx, core.class.Collaborator, {
+        _id: tx.objectId
+      })) as Collaborator[]
+      if (collab.length === 0) return
+      this.handleChangeCollaborator(ctx, collab[0])
+    }
+  }
+
+  private handleChangeCollaborator (ctx: MeasureContext<SessionData>, collab: Collaborator): void {
+    const collabSec = this.context.modelDb.findAllSync(core.class.ClassCollaborators, {
+      attachedTo: collab.attachedToClass
+    })[0]
+    if (collabSec?.provideSecurity === true) {
+      for (const val of ctx.contextData.socialStringsToUsers.values()) {
+        if (
+          val.accontUuid === collab.collaborator &&
+          [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(val.role)
+        ) {
+          this.brodcastEvent(ctx, [val.accontUuid])
+        }
+      }
+    }
+  }
+
   private handleCreate (tx: TxCUD<Space>): void {
     const createTx = tx as TxCreateDoc<Space>
     if (!this.context.hierarchy.isDerived(createTx.objectClass, core.class.Space)) return
@@ -404,6 +434,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
           }
         }
         await this.handleTx(ctx, cudTx as TxCUD<Space>)
+      } else {
+        await this.handeCollaborator(ctx, cudTx as TxCUD<Collaborator>)
       }
       await this.processTxSpaceDomain(ctx, tx as TxCUD<Doc>)
     } else if (tx._class === core.class.TxWorkspaceEvent) {
