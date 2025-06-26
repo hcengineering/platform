@@ -149,6 +149,7 @@ export class WorkspaceClient {
           continue
         }
         await client.syncMyEvent(newEvent)
+        this.lastSync = newEvent.modifiedOn
       } catch (err) {
         this.ctx.error('Failed to sync event', {
           event: newEvent._id,
