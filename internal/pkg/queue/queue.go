@@ -17,6 +17,7 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/hcengineering/stream/internal/pkg/log"
@@ -168,7 +169,12 @@ func NewProducer(ctx context.Context, options ProducerOptions) Producer {
 
 // Send sends a message to the queue topic
 func (p *TProducer) Send(ctx context.Context, workspaceID string, data any) error {
+	if data == nil {
+		return fmt.Errorf("event data is empty")
+	}
+
 	value, err := json.Marshal(data)
+
 	if err != nil {
 		return err
 	}

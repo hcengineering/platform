@@ -111,7 +111,7 @@ func (w *Worker) processMessage(ctx context.Context, msg kafka.Message, logger *
 	transcoder := mediaconvert.NewTranscoder(ctx, w.cfg)
 	res, err := transcoder.Transcode(ctx, &task)
 
-	if err == nil {
+	if res != nil {
 		result := TranscodeResult{
 			BlobID:        req.BlobID,
 			WorkspaceUUID: req.WorkspaceUUID,

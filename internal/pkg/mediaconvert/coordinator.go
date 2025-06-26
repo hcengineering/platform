@@ -17,7 +17,11 @@ package mediaconvert
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -27,7 +31,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/hcengineering/stream/internal/pkg/config"
 	"github.com/hcengineering/stream/internal/pkg/log"
-	"github.com/hcengineering/stream/internal/pkg/resconv"
 	"github.com/hcengineering/stream/internal/pkg/sharedpipe"
 	"github.com/hcengineering/stream/internal/pkg/storage"
 	"github.com/hcengineering/stream/internal/pkg/uploader"
@@ -40,7 +43,7 @@ type StreamCoordinator struct {
 	conf          *config.Config
 	uploadOptions uploader.Options
 
-	activeScalling int32
+	activeTranscoding int32
 
 	mainContext context.Context
 	logger      *zap.Logger
@@ -48,6 +51,11 @@ type StreamCoordinator struct {
 	streams sync.Map
 	cancels sync.Map
 }
+
+var _ handler.DataStore = (*StreamCoordinator)(nil)
+var _ handler.ConcaterDataStore = (*StreamCoordinator)(nil)
+var _ handler.TerminaterDataStore = (*StreamCoordinator)(nil)
+var _ handler.LengthDeferrerDataStore = (*StreamCoordinator)(nil)
 
 // NewStreamCoordinator creates a new scheduler for transcode operations.
 func NewStreamCoordinator(ctx context.Context, c *config.Config) *StreamCoordinator {
@@ -81,42 +89,64 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 		done:   make(chan struct{}),
 	}
 
-	var scaling = resconv.SubLevels(info.MetaData["resolution"])
-	var level = resconv.Level(info.MetaData["resolution"])
-	var cost int64
-
-	for _, scale := range scaling {
-		cost += int64(resconv.Pixels(resconv.Resolution(scale)))
-	}
-
-	if atomic.AddInt32(&s.activeScalling, 1) > int32(s.conf.MaxParallelScalingCount) {
-		atomic.AddInt32(&s.activeScalling, -1)
+	if atomic.AddInt32(&s.activeTranscoding, 1) > int32(s.conf.MaxParallelTranscodingCount) {
+		atomic.AddInt32(&s.activeTranscoding, -1)
 		s.logger.Debug("run out of resources for scaling")
-		scaling = nil
+		// TODO do not transcode
 	}
+
+	width, err := strconv.Atoi(info.MetaData["width"])
+	if err != nil {
+		return nil, errors.Wrapf(err, "can not parse video width: %v", info.MetaData["width"])
+	}
+
+	height, err := strconv.Atoi(info.MetaData["height"])
+	if err != nil {
+		return nil, errors.Wrapf(err, "can not parse video height: %v", info.MetaData["height"])
+	}
+
+	meta := VideoMeta{
+		Width:       width,
+		Height:      height,
+		Codec:       extractCodec(info.MetaData["contentType"]),
+		ContentType: extractContentType(info.MetaData["contentType"]),
+	}
+	profiles := FastTranscodingProfiles(meta)
 
 	var commandOptions = Options{
-		Input:         "pipe:0",
-		OutputDir:     s.conf.OutputDir,
-		Threads:       s.conf.MaxThreadCount,
-		UploadID:      info.ID,
-		Transcode:     true,
-		Level:         level,
-		ScalingLevels: scaling,
+		Input:     "pipe:0",
+		OutputDir: s.conf.OutputDir,
+		Threads:   s.conf.MaxThreadCount,
+		UploadID:  info.ID,
+		Profiles:  profiles,
 	}
 
 	if s.conf.EndpointURL != nil {
 		s.logger.Sugar().Debugf("initializing uploader for %v", info)
+
+		// setup content uploader for transcoded outputs
 		var opts = s.uploadOptions
 		opts.Dir = filepath.Join(opts.Dir, info.ID)
 
-		var storage, err = storage.NewStorageByURL(s.mainContext, s.conf.Endpoint(), s.conf.EndpointURL.Scheme, info.MetaData["token"], info.MetaData["workspace"])
+		// create storage backend
+		var stg, err = storage.NewStorageByURL(s.mainContext, s.conf.Endpoint(), s.conf.EndpointURL.Scheme, info.MetaData["token"], info.MetaData["workspace"])
 		if err != nil {
-			s.logger.Error("can not create storage by url")
-			return nil, err
+			s.logger.Error("can not create storage by url", zap.Error(err))
+			return nil, errors.Wrapf(err, "can not create storage")
 		}
-		var contentUploader = uploader.New(s.mainContext, storage, opts)
+		stream.storage = stg
 
+		// if storage supports multipart, initialize raw upload
+		if ms, ok := stg.(storage.MultipartStorage); ok {
+			multipart, err := NewMultipartUpload(s.mainContext, ms, info, meta.ContentType)
+			if err != nil {
+				s.logger.Error("multipart upload failed", zap.Error(err))
+				return nil, errors.Wrapf(err, "multipart upload failed")
+			}
+			stream.multipart = multipart
+		}
+		// uploader for processed outputs
+		var contentUploader = uploader.New(s.mainContext, stg, opts)
 		stream.contentUploader = contentUploader
 	}
 
@@ -127,10 +157,7 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 
 	go func() {
 		stream.commandGroup.Wait()
-		if scaling != nil {
-			atomic.AddInt32(&s.activeScalling, -1)
-		}
-		s.logger.Debug("returned capacity", zap.Int64("capacity", cost))
+		atomic.AddInt32(&s.activeTranscoding, -1)
 		close(stream.done)
 	}()
 
@@ -142,26 +169,26 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 
 // GetUpload returns current a worker based on upload id
 func (s *StreamCoordinator) GetUpload(ctx context.Context, id string) (upload handler.Upload, err error) {
+	logger := s.logger.With(zap.String("func", "GetUpload")).With(zap.String("id", id))
+
 	if v, ok := s.streams.Load(id); ok {
-		s.logger.Debug("GetUpload: found stream by id", zap.String("id", id))
+		logger.Debug("found stream")
 		var w = v.(*Stream)
 		s.manageTimeout(w)
 		return w, nil
 	}
-	s.logger.Debug("GetUpload: stream not found", zap.String("id", id))
-	return nil, errors.New("bad id")
+
+	logger.Warn("stream not found")
+	return nil, fmt.Errorf("stream not found: %v", id)
 }
 
 // AsTerminatableUpload returns tusd handler.TerminatableUpload
 func (s *StreamCoordinator) AsTerminatableUpload(upload handler.Upload) handler.TerminatableUpload {
-	var worker = upload.(*Stream)
-	s.logger.Debug("AsTerminatableUpload")
-	return worker
+	return upload.(*Stream)
 }
 
 // AsLengthDeclarableUpload returns tusd handler.LengthDeclarableUpload
 func (s *StreamCoordinator) AsLengthDeclarableUpload(upload handler.Upload) handler.LengthDeclarableUpload {
-	s.logger.Debug("AsLengthDeclarableUpload")
 	return upload.(*Stream)
 }
 
@@ -190,4 +217,24 @@ func (s *StreamCoordinator) manageTimeout(w *Stream) {
 			s.streams.Delete(w.info.ID)
 		}
 	}()
+}
+
+func extractCodec(mimeType string) string {
+	codecRegex := regexp.MustCompile(`codecs["\s=]+([^",\s]+)`)
+	matches := codecRegex.FindStringSubmatch(mimeType)
+	codec := "unknown"
+	if len(matches) > 1 {
+		codec = matches[1]
+	}
+
+	return codec
+}
+
+func extractContentType(mimeType string) string {
+	contentType := "video/mp4"
+	parts := strings.Split(mimeType, ";")
+	if parts[0] != "" {
+		contentType = strings.TrimSpace(parts[0])
+	}
+	return contentType
 }

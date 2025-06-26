@@ -18,83 +18,79 @@ import (
 	"testing"
 
 	"github.com/hcengineering/stream/internal/pkg/mediaconvert"
-	"github.com/hcengineering/stream/internal/pkg/resconv"
+	"github.com/hcengineering/stream/internal/pkg/profile"
 	"github.com/stretchr/testify/require"
 )
 
+func Test_BuildVideoCommand_Empty(t *testing.T) {
+	var profiles []profile.VideoProfile
+
+	var rawCommand = mediaconvert.BuildVideoCommand(&mediaconvert.Options{
+		OutputDir: "test",
+		Input:     "pipe:0",
+		UploadID:  "1",
+		Threads:   4,
+		LogLevel:  mediaconvert.LogLevelDebug,
+		Profiles:  profiles,
+	})
+
+	require.Empty(t, rawCommand)
+}
+
 func Test_BuildVideoCommand_Scaling(t *testing.T) {
-	var scaleCommand = mediaconvert.BuildScalingVideoCommand(&mediaconvert.Options{
-		OutputDir:     "test",
-		Input:         "pipe:0",
-		UploadID:      "1",
-		Threads:       4,
-		LogLevel:      mediaconvert.LogLevelDebug,
-		ScalingLevels: []string{"720p", "480p"},
-	})
+	var profiles = []profile.VideoProfile{
+		profile.Profile720p,
+		profile.Profile480p,
+	}
 
-	const expected = `-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -map 0:v:0 -map 0:a? -vf scale=-2:720 -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_720p.ts test/1/1_720p_master.m3u8 -map 0:v:0 -map 0:a? -vf scale=-2:480 -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
-
-	require.Contains(t, expected, strings.Join(scaleCommand, " "))
-}
-
-func Test_BuildVideoCommand_Scaling_NoRaw(t *testing.T) {
-	var scaleCommand = mediaconvert.BuildScalingVideoCommand(&mediaconvert.Options{
-		OutputDir:     "test",
-		Input:         "pipe:0",
-		UploadID:      "1",
-		Threads:       4,
-		LogLevel:      mediaconvert.LogLevelDebug,
-		Level:         "720p",
-		ScalingLevels: []string{"720p", "480p"},
-	})
-
-	const expected = `-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -map 0:v:0 -map 0:a? -vf scale=-2:480 -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
-
-	require.Contains(t, expected, strings.Join(scaleCommand, " "))
-}
-
-func Test_BuildVideoCommand_Raw_NoTranscode(t *testing.T) {
-	var rawCommand = mediaconvert.BuildRawVideoCommand(&mediaconvert.Options{
+	var scaleCommand = mediaconvert.BuildVideoCommand(&mediaconvert.Options{
 		OutputDir: "test",
 		Input:     "pipe:0",
 		UploadID:  "1",
 		Threads:   4,
 		LogLevel:  mediaconvert.LogLevelDebug,
-		Level:     resconv.Level("651:490"),
-		Transcode: false,
+		Profiles:  profiles,
 	})
 
-	const expected = `"-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -c:a copy -c:v copy -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
+	const expected = `-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -map 0:v:0 -map 0:a? -c:a aac -c:v libx264 -preset veryfast -crf 25 -g 60 -vf scale=-2:720 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_720p.ts test/1/1_720p_master.m3u8 -map 0:v:0 -map 0:a? -c:a aac -c:v libx264 -preset veryfast -crf 27 -g 60 -vf scale=-2:480 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
 
-	require.Contains(t, expected, strings.Join(rawCommand, " "))
+	require.Contains(t, expected, strings.Join(scaleCommand, " "))
 }
 
-func Test_BuildVideoCommand_Raw_Transcode(t *testing.T) {
-	var rawCommand = mediaconvert.BuildRawVideoCommand(&mediaconvert.Options{
+func Test_BuildVideoCommand_Original(t *testing.T) {
+	var profiles = []profile.VideoProfile{
+		profile.MakeProfileOriginal(640, 480),
+	}
+
+	var rawCommand = mediaconvert.BuildVideoCommand(&mediaconvert.Options{
 		OutputDir: "test",
 		Input:     "pipe:0",
 		UploadID:  "1",
 		Threads:   4,
 		LogLevel:  mediaconvert.LogLevelDebug,
-		Level:     resconv.Level("651:490"),
-		Transcode: true,
+		Profiles:  profiles,
 	})
 
-	const expected = `-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -map 0:v:0 -map 0:a? -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
+	const expected = `-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -map 0:v:0 -map 0:a? -c:a copy -c:v copy -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_orig.ts test/1/1_orig_master.m3u8`
 
 	require.Contains(t, expected, strings.Join(rawCommand, " "))
 }
 
-func Test_BuildVideoCommand_Scaling_Small(t *testing.T) {
-	var scaleCommand = mediaconvert.BuildScalingVideoCommand(&mediaconvert.Options{
-		OutputDir:     "test",
-		Input:         "pipe:0",
-		UploadID:      "1",
-		Threads:       4,
-		LogLevel:      mediaconvert.LogLevelDebug,
-		Level:         "360p",
-		ScalingLevels: []string{"360p"},
+func Test_BuildVideoCommand_OriginalT(t *testing.T) {
+	var profiles = []profile.VideoProfile{
+		profile.MakeProfileOriginalT(640, 480),
+	}
+
+	var rawCommand = mediaconvert.BuildVideoCommand(&mediaconvert.Options{
+		OutputDir: "test",
+		Input:     "pipe:0",
+		UploadID:  "1",
+		Threads:   4,
+		LogLevel:  mediaconvert.LogLevelDebug,
+		Profiles:  profiles,
 	})
 
-	require.Empty(t, scaleCommand)
+	const expected = `-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -map 0:v:0 -map 0:a? -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_orig.ts test/1/1_orig_master.m3u8`
+
+	require.Contains(t, expected, strings.Join(rawCommand, " "))
 }

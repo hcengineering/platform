@@ -21,13 +21,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/hcengineering/stream/internal/pkg/config"
 	"github.com/hcengineering/stream/internal/pkg/log"
 	"github.com/hcengineering/stream/internal/pkg/manifest"
-	"github.com/hcengineering/stream/internal/pkg/resconv"
 	"github.com/hcengineering/stream/internal/pkg/storage"
 	"github.com/hcengineering/stream/internal/pkg/token"
 	"github.com/hcengineering/stream/internal/pkg/uploader"
@@ -94,7 +94,7 @@ func (p *Scheduler) start() {
 		close(p.taskCh)
 	}()
 
-	for range p.cfg.MaxParallelScalingCount {
+	for range p.cfg.MaxParallelTranscodingCount {
 		go func() {
 			for task := range p.taskCh {
 				p.processTask(p.ctx, task)
@@ -185,17 +185,24 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 
 	logger.Debug("video stream found", zap.String("codec", videoStream.CodecName), zap.Int("width", videoStream.Width), zap.Int("height", videoStream.Height))
 
-	var res = fmt.Sprintf("%v:%v", videoStream.Width, videoStream.Height)
-	var codec = videoStream.CodecName
-	var level = resconv.Level(res)
+	meta := VideoMeta{
+		Width:       videoStream.Width,
+		Height:      videoStream.Height,
+		Codec:       videoStream.CodecName,
+		ContentType: stat.Type,
+	}
+
+	var profiles = DefaultTranscodingProfiles(meta)
+
 	var opts = Options{
-		Input:         sourceFilePath,
-		OutputDir:     p.cfg.OutputDir,
-		Level:         level,
-		Transcode:     !IsHLSSupportedVideoCodec(codec),
-		ScalingLevels: append(resconv.SubLevels(res), level),
-		UploadID:      task.ID,
-		Threads:       p.cfg.MaxThreadCount,
+		Input:     sourceFilePath,
+		OutputDir: p.cfg.OutputDir,
+		UploadID:  task.ID,
+		Threads:   p.cfg.MaxThreadCount,
+		Profiles:  profiles,
+		//		Level:         level,
+		//		Transcode:     !IsHLSSupportedVideoCodec(codec),
+		//		ScalingLevels: append(resconv.SubLevels(res), level),
 	}
 
 	logger.Debug("phase 5: start async upload process")
@@ -210,7 +217,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		SourceFile:  sourceFilePath,
 	})
 
-	err = manifest.GenerateHLSPlaylist(opts.ScalingLevels, p.cfg.OutputDir, opts.UploadID)
+	err = manifest.GenerateHLSPlaylist(profiles, p.cfg.OutputDir, opts.UploadID)
 	if err != nil {
 		logger.Error("can not generate hls playlist", zap.String("out", p.cfg.OutputDir), zap.String("uploadID", opts.UploadID))
 		_ = os.RemoveAll(destinationFolder)
@@ -223,8 +230,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 
 	var argsSlice = [][]string{
 		BuildThumbnailCommand(&opts),
-		BuildRawVideoCommand(&opts),
-		BuildScalingVideoCommand(&opts),
+		BuildVideoCommand(&opts),
 	}
 	var cmds []*exec.Cmd
 
@@ -295,6 +301,11 @@ func IsHLSSupportedVideoCodec(codec string) bool {
 	case "h264", "h265":
 		return true
 	default:
+		if strings.HasPrefix(codec, "avc1") {
+			return true
+		} else if strings.HasPrefix(codec, "av1") {
+			return true
+		}
 		return false
 	}
 }

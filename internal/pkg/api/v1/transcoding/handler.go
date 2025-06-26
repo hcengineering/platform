@@ -68,7 +68,7 @@ func (t *trascodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// NewHandler creates a new trnascoding http handler, requires context and config.
+// NewHandler creates a new transcoding http handler, requires context and config.
 func NewHandler(ctx context.Context, cfg *config.Config) http.Handler {
 	return &trascodeHandler{
 		scheduler: mediaconvert.NewScheduler(ctx, cfg),

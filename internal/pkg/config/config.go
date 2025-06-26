@@ -25,15 +25,15 @@ import (
 
 // Config represents configuration for the huly-stream application.
 type Config struct {
-	SentryDsn               string   `split_words:"true" default:"" desc:"sentry dsn value"`
-	LogLevel                string   `split_words:"true" default:"debug" desc:"sets log level for the application"`
-	ServerSecret            string   `split_words:"true" default:"" desc:"server secret required to generate and verify tokens"`
-	PprofEnabled            bool     `split_words:"true" default:"true" desc:"starts profile server on localhost:6060 if true"`
-	Insecure                bool     `split_words:"true" default:"false" desc:"ignores authorization check if true"`
-	ServeURL                string   `split_words:"true" desc:"listen on url" default:"0.0.0.0:1080"`
-	EndpointURL             *url.URL `split_words:"true" default:"s3://127.0.0.1:9000" desc:"S3 or Datalake endpoint, example: s3://my-ip-address, datalake://my-ip-address"`
-	MaxParallelScalingCount int      `split_words:"true" default:"2" desc:"how much parallel scaling can be processed"`
-	MaxThreadCount          int      `split_words:"true" default:"4" desc:"max number of threads for transcoder"`
+	SentryDsn                   string   `split_words:"true" default:"" desc:"sentry dsn value"`
+	LogLevel                    string   `split_words:"true" default:"debug" desc:"sets log level for the application"`
+	ServerSecret                string   `split_words:"true" default:"" desc:"server secret required to generate and verify tokens"`
+	PprofEnabled                bool     `split_words:"true" default:"true" desc:"starts profile server on localhost:6060 if true"`
+	Insecure                    bool     `split_words:"true" default:"false" desc:"ignores authorization check if true"`
+	ServeURL                    string   `split_words:"true" desc:"listen on url" default:"0.0.0.0:1080"`
+	EndpointURL                 *url.URL `split_words:"true" default:"s3://127.0.0.1:9000" desc:"S3 or Datalake endpoint, example: s3://my-ip-address, datalake://my-ip-address"`
+	MaxParallelTranscodingCount int      `split_words:"true" default:"2" desc:"how much parallel transcodings can be processed"`
+	MaxThreadCount              int      `split_words:"true" default:"4" desc:"max number of threads for transcoder"`
 
 	QueueConfig string `split_words:"true" default:"" desc:"queue config"`
 	Region      string `split_words:"true" default:"" desc:"service region"`

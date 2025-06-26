@@ -21,8 +21,10 @@ import (
 	"io"
 	"mime/multipart"
 	"net/textproto"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -376,6 +378,140 @@ func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string
 	return nil
 }
 
+func (d *DatalakeStorage) MultipartUploadStart(ctx context.Context, objectName, contentType string) (string, error) {
+	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("objectName", objectName))
+	url := fmt.Sprintf("%v/upload/multipart/%v/%v", d.baseURL, d.workspace, objectName)
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+	req.SetRequestURI(url)
+	req.Header.SetMethod(fasthttp.MethodPost)
+	req.Header.Add("Authorization", "Bearer "+d.token)
+	req.Header.SetContentType(contentType)
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	if err := d.client.Do(req, resp); err != nil {
+		logRequestError(logger, err, "request failed", resp)
+		return "", err
+	}
+
+	if err := okResponse(resp); err != nil {
+		logRequestError(logger, err, "bad status code", resp)
+		return "", err
+	}
+
+	var result struct {
+		UploadID string `json:"uploadId"`
+	}
+	err := json.Unmarshal(resp.Body(), &result)
+
+	return result.UploadID, err
+}
+
+func (d *DatalakeStorage) MultipartUploadPart(ctx context.Context, objectName, uploadID string, partNumber int, data []byte) (*MultipartPart, error) {
+	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("uploadID", uploadID), zap.Int("partNumber", partNumber))
+	params := url.Values{}
+	params.Add("uploadId", uploadID)
+	params.Add("partNumber", strconv.Itoa(partNumber))
+	url := fmt.Sprintf("%v/upload/multipart/%v/%v/part?%v", d.baseURL, d.workspace, objectName, params.Encode())
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+	req.SetRequestURI(url)
+	req.Header.SetMethod(fasthttp.MethodPut)
+	req.Header.Add("Authorization", "Bearer "+d.token)
+	req.Header.SetContentType("application/octet-stream")
+	req.Header.SetContentLength(len(data))
+	req.SetBody(data)
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	if err := d.client.Do(req, resp); err != nil {
+		logRequestError(logger, err, "request failed", resp)
+		return nil, err
+	}
+
+	if err := okResponse(resp); err != nil {
+		logRequestError(logger, err, "bad status code", resp)
+		return nil, err
+	}
+
+	var part MultipartPart
+	err := json.Unmarshal(resp.Body(), &part)
+
+	return &part, err
+}
+
+func (d *DatalakeStorage) MultipartUploadComplete(ctx context.Context, objectName, uploadID string, parts []MultipartPart) error {
+	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("uploadID", uploadID), zap.String("objectName", objectName))
+	params := url.Values{}
+	params.Add("uploadId", uploadID)
+	url := fmt.Sprintf("%v/upload/multipart/%v/%v/complete?%v", d.baseURL, d.workspace, objectName, params.Encode())
+
+	body, err := json.Marshal(map[string]any{
+		"parts": parts,
+	})
+
+	if err != nil {
+		logger.Debug("can not encode body", zap.Error(err))
+		return err
+	}
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+	req.SetRequestURI(url)
+	req.Header.SetMethod(fasthttp.MethodPost)
+	req.Header.Add("Authorization", "Bearer "+d.token)
+	req.Header.SetContentType("application/json")
+	req.SetBody(body)
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	if err := d.client.Do(req, resp); err != nil {
+		logRequestError(logger, err, "request failed", resp)
+		return err
+	}
+
+	if err := okResponse(resp); err != nil {
+		logRequestError(logger, err, "bad status code", resp)
+		return err
+	}
+
+	return nil
+}
+
+func (d *DatalakeStorage) MultipartUploadCancel(ctx context.Context, objectName, uploadID string) error {
+	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("uploadID", uploadID))
+	params := url.Values{}
+	params.Add("uploadId", uploadID)
+	url := fmt.Sprintf("%v/upload/multipart/%v/%v/abort?%v", d.baseURL, d.workspace, objectName, params.Encode())
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+	req.SetRequestURI(url)
+	req.Header.SetMethod(fasthttp.MethodPost)
+	req.Header.Add("Authorization", "Bearer "+d.token)
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	if err := d.client.Do(req, resp); err != nil {
+		logRequestError(logger, err, "request failed", resp)
+		return err
+	}
+
+	if err := okResponse(resp); err != nil {
+		logRequestError(logger, err, "bad status code", resp)
+		return err
+	}
+
+	return nil
+}
+
 func okResponse(res *fasthttp.Response) error {
 	var statusOK = res.StatusCode() >= 200 && res.StatusCode() < 300
 
@@ -397,4 +533,5 @@ func logRequestError(logger *zap.Logger, err error, msg string, res *fasthttp.Re
 }
 
 var _ Storage = (*DatalakeStorage)(nil)
+var _ MultipartStorage = (*DatalakeStorage)(nil)
 var _ MetaProvider = (*DatalakeStorage)(nil)

@@ -11,44 +11,69 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package mediaconvert provides types and functions for video trnascoding
+// Package mediaconvert provides types and functions for video transcoding
 package mediaconvert
 
 import (
 	"context"
 	"io"
+	"os/exec"
 	"sync"
 
 	"github.com/pkg/errors"
 
 	"github.com/hcengineering/stream/internal/pkg/manifest"
 	"github.com/hcengineering/stream/internal/pkg/sharedpipe"
+	"github.com/hcengineering/stream/internal/pkg/storage"
 	"github.com/hcengineering/stream/internal/pkg/uploader"
 	"github.com/tus/tusd/v2/pkg/handler"
 	"go.uber.org/zap"
 )
 
-// Stream manages client's input and transcodes it based on the passsed configuration
+// Stream manages client's input and transcodes it based on the passed configuration
 type Stream struct {
 	contentUploader uploader.Uploader
 	logger          *zap.Logger
 	info            handler.FileInfo
 	writer          *sharedpipe.Writer
 	reader          *sharedpipe.Reader
+	storage         storage.Storage
+	multipart       *MultipartUpload
 
 	commandGroup sync.WaitGroup
 	done         chan struct{}
 }
 
-// WriteChunk calls when client sends a chunk of raw data
+var _ handler.Upload = (*Stream)(nil)
+var _ handler.ConcatableUpload = (*Stream)(nil)
+var _ handler.TerminatableUpload = (*Stream)(nil)
+var _ handler.LengthDeclarableUpload = (*Stream)(nil)
+
+// WriteChunk is called when client sends a chunk of raw data
 func (w *Stream) WriteChunk(ctx context.Context, _ int64, src io.Reader) (int64, error) {
 	w.logger.Debug("Write Chunk start", zap.Int64("offset", w.info.Offset))
-	var bytes, err = io.ReadAll(src)
-	_, _ = w.writer.Write(bytes)
-	var n = int64(len(bytes))
+	data, err := io.ReadAll(src)
+	if err != nil {
+		return 0, err
+	}
+	// write into pipeline for transcoding
+	written, err := w.writer.Write(data)
+	if err != nil {
+		return int64(written), err
+	}
+
+	n := int64(len(data))
 	w.info.Offset += n
-	w.logger.Debug("Write Chunk end", zap.Int64("offset", w.info.Offset), zap.Error(err))
-	return n, err
+
+	if w.multipart != nil {
+		if writeErr := w.multipart.Write(ctx, data); writeErr != nil {
+			w.logger.Error("multipart upload part failed", zap.Error(writeErr))
+			return n, writeErr
+		}
+	}
+
+	w.logger.Debug("write chunk end", zap.Int64("offset", w.info.Offset), zap.Error(err))
+	return n, nil
 }
 
 // DeclareLength sets length of the video input
@@ -73,14 +98,40 @@ func (w *Stream) GetReader(ctx context.Context) (io.ReadCloser, error) {
 
 // Terminate calls when upload has failed
 func (w *Stream) Terminate(ctx context.Context) error {
-	w.logger.Debug("Terminating...")
+	w.logger.Debug("terminate upload")
+
+	// Close the writer first to signal EOF to all readers
+	if err := w.writer.Close(); err != nil {
+		w.logger.Error("failed to close writer", zap.Error(err))
+		return err
+	}
+
+	var wg sync.WaitGroup
+
+	// cancel upload if in progress
 	if w.contentUploader != nil {
+		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			w.commandGroup.Wait()
 			w.contentUploader.Cancel()
 		}()
 	}
-	return w.writer.Close()
+
+	// cancel multipart upload if in progress
+	if w.multipart != nil {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := w.multipart.Terminate(ctx); err != nil {
+				w.logger.Error("multipart upload cancel failed", zap.Error(err))
+			}
+		}()
+	}
+
+	wg.Wait()
+
+	return nil
 }
 
 // ConcatUploads calls when upload resumed after fail
@@ -94,16 +145,56 @@ func (w *Stream) ConcatUploads(ctx context.Context, partialUploads []handler.Upl
 
 // FinishUpload calls when upload finished without errors on the client side
 func (w *Stream) FinishUpload(ctx context.Context) error {
-	w.logger.Debug("finishing upload...")
+	w.logger.Debug("finish upload")
+
+	// Close the writer first to signal EOF to all readers
+	if err := w.writer.Close(); err != nil {
+		w.logger.Error("failed to close writer", zap.Error(err))
+		return err
+	}
+
+	var wg sync.WaitGroup
 
 	if w.contentUploader != nil {
+		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			w.commandGroup.Wait()
 			w.contentUploader.Stop()
 		}()
 	}
 
-	return w.writer.Close()
+	// finalize raw multipart stream if supported
+	if w.multipart != nil {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := w.multipart.Complete(ctx); err != nil {
+				w.logger.Error("multipart upload complete failed", zap.Error(err))
+				return
+			}
+
+			if metaProvider, ok := w.storage.(storage.MetaProvider); ok {
+				metaErr := metaProvider.PatchMeta(
+					ctx,
+					w.info.ID,
+					&storage.Metadata{
+						"hls": map[string]any{
+							"source":    w.info.ID + "_master.m3u8",
+							"thumbnail": w.info.ID + ".jpg",
+						},
+					},
+				)
+				if metaErr != nil {
+					w.logger.Error("can not patch the source file", zap.Error(metaErr))
+				}
+			}
+		}()
+	}
+
+	wg.Wait()
+
+	return nil
 }
 
 // AsConcatableUpload returns tusd handler.ConcatableUpload
@@ -115,47 +206,38 @@ func (s *StreamCoordinator) AsConcatableUpload(upload handler.Upload) handler.Co
 func (w *Stream) start(ctx context.Context, options *Options) error {
 	defer w.logger.Debug("start done")
 	w.reader = w.writer.Transpile()
-	if err := manifest.GenerateHLSPlaylist(append(options.ScalingLevels, options.Level), options.OutputDir, options.UploadID); err != nil {
+	if err := manifest.GenerateHLSPlaylist(options.Profiles, options.OutputDir, options.UploadID); err != nil {
 		return err
+	}
+
+	var argsSlice = [][]string{
+		BuildThumbnailCommand(options),
+		BuildVideoCommand(options),
+	}
+
+	var cmds []*exec.Cmd
+	for idx, args := range argsSlice {
+		reader := w.reader
+		if idx > 0 {
+			reader = w.writer.Transpile()
+		}
+
+		cmd, cmdErr := newFfmpegCommand(ctx, reader, args)
+		if cmdErr != nil {
+			w.logger.Error("can not create a new command", zap.Error(cmdErr), zap.Strings("args", args))
+			return errors.Wrapf(cmdErr, "can not create a new command")
+		}
+		cmds = append(cmds, cmd)
 	}
 
 	w.commandGroup.Add(1)
 	go func() {
 		defer w.commandGroup.Done()
-		var logger = w.logger.With(zap.String("command", "raw"))
-		defer logger.Debug("done")
-
-		var args = BuildRawVideoCommand(options)
-		var convertSourceCommand, err = newFfmpegCommand(ctx, w.reader, args)
-		if err != nil {
-			logger.Debug("can not start", zap.Error(err))
-		}
-		err = convertSourceCommand.Run()
-		if err != nil {
-			logger.Debug("finished with error", zap.Error(err))
+		executor := NewCommandExecutor(ctx)
+		if execErr := executor.Execute(cmds); execErr != nil {
+			w.logger.Error("can not execute command", zap.Error(execErr))
 		}
 	}()
-
-	if len(options.ScalingLevels) > 0 {
-		w.commandGroup.Add(1)
-		var scalingCommandReader = w.writer.Transpile()
-
-		go func() {
-			defer w.commandGroup.Done()
-			var logger = w.logger.With(zap.String("command", "scaling"))
-			defer logger.Debug("done")
-
-			var args = BuildScalingVideoCommand(options)
-			var convertSourceCommand, err = newFfmpegCommand(ctx, scalingCommandReader, args)
-			if err != nil {
-				logger.Debug("can not start", zap.Error(err))
-			}
-			err = convertSourceCommand.Run()
-			if err != nil {
-				logger.Debug("finished with error", zap.Error(err))
-			}
-		}()
-	}
 
 	go w.contentUploader.Start()
 
