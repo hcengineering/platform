@@ -52,6 +52,7 @@ You can find API usage examples in the [Huly examples](https://github.com/hcengi
     - [UI tests](#ui-tests)
   - [Package publishing](#package-publishing)
   - [Additional testing](#additional-testing)
+  - [WSL build guide](#wsl-build-guide)
 
 ## Pre-requisites
 
@@ -269,5 +270,78 @@ node ./common/scripts/bump.js -p projectName
 ## Additional testing
 
 This project is tested with BrowserStack.
+
+## WSL build guide
+
+This guide describes the nuances of building and running the application from source code located on your NTFS drive, which is accessible from both Windows and WSL.
+
+### Prerequisites
+
+#### Disk Space Requirements
+
+Ensure you have sufficient disk space available:
+- A fully deployed local application in clean Docker will consume slightly more than **35 GB** of WSL virtual disk space
+- The application folder after build (sources + artifacts) will occupy **4.5 GB**
+
+If there's insufficient space on your system drive (usually `C:\`), you can change the virtual disk location in Docker Settings → Resources → Advanced.
+
+#### Docker WSL Integration
+
+Make sure Docker is accessible from WSL:
+
+1. Go to Docker Settings → Resources → Advanced → WSL Integration
+2. Select the distribution where you'll be building and running the application
+3. Verify integration works by running this command in WSL:
+   ```bash
+   docker run hello-world
+   ```
+
+### Common Issues and Solutions
+
+#### Git Line Endings on Windows
+
+Windows Git often automatically replaces line endings. Since most build scripts are `.sh` files, ensure your Windows checkout doesn't break them.
+
+**Solution options:**
+- Checkout from WSL instead of Windows
+- Configure Git on Windows to disable auto-replacement:
+  ```bash
+  git config --global core.autocrlf false
+  ```
+  This disables auto-replacement for all repositories on your machine.
+
+#### Elevated Privileges in WSL
+
+Some commands in the instructions require elevated privileges when working in WSL. If you're using Ubuntu distribution, prefix commands with `sudo`:
+
+```bash
+sudo npm install -g @microsoft/rush
+```
+
+#### WSL Configuration
+
+Edit the `/etc/wsl.conf` file in WSL (e.g., `sudo nano /etc/wsl.conf`) and add the following content if it doesn't exist:
+
+```ini
+[automount]
+enabled = true
+root = /mnt/
+options = "metadata,umask=22,fmask=11"
+
+[interop]
+appendWindowsPath = false
+```
+
+### Running the Application
+
+After these preparations, the build instructions should work without issues.
+
+#### Port Conflicts
+
+When starting the application (`rush docker:up`), some network ports in Windows might be occupied. You can fix port mapping in the `\dev\docker-compose.yaml` file.
+
+**Important:** Depending on which port you change, you'll need to:
+1. Find what's using that port
+2. Update the new address in the corresponding service configuration
 
 <sub><sup>&copy; 2025 <a href="https://hardcoreeng.com">Hardcore Engineering Inc</a>.</sup></sub>

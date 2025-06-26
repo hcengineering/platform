@@ -221,9 +221,9 @@ export async function startIndexer (
       await manager.withIndexer(ctx, decoded.workspace, token, true, async (indexer) => {
         indexer.lastUpdate = Date.now()
         if (request?.onlyDrop ?? false) {
-          await manager.workspaceProducer.send(decoded.workspace, [workspaceEvents.clearIndex()])
+          await manager.fulltextProducer.send(decoded.workspace, [workspaceEvents.clearIndex()])
         } else {
-          await manager.workspaceProducer.send(decoded.workspace, [workspaceEvents.fullReindex()])
+          await manager.fulltextProducer.send(decoded.workspace, [workspaceEvents.fullReindex()])
         }
       })
     } catch (err: any) {
