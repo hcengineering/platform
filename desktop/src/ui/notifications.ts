@@ -125,7 +125,14 @@ export function configureNotifications (): void {
 
     notificationsQuery.query({ read: false, limit: 1000 }, res => {
       newUnreadNotifications = res.getResult().length
-      electronAPI.setBadge(prevUnViewdNotificationsCount + newUnreadNotifications)
+
+      if (preferences.showUnreadCounter) {
+        electronAPI.setBadge(prevUnViewdNotificationsCount + newUnreadNotifications)
+      }
+
+      if (preferences.bounceAppIcon) {
+        electronAPI.dockBounce()
+      }
     })
 
     async function handleNotifications (notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>): Promise<void> {
