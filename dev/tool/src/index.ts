@@ -977,7 +977,7 @@ export function devTool (
       'A list of ; separated content types for blobs to skip download if size >= limit',
       ''
     )
-    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
+    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 5mb)', '5')
     .option('-f, --force', 'Force backup', false)
     .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
     .option('-k, --keepSnapshots <keepSnapshots>', 'Keep snapshots for days', '14')
@@ -1043,13 +1043,13 @@ export function devTool (
     .option(
       '-ct, --contentTypes <contentTypes>',
       'A list of ; separated content types for blobs to exclude from backup',
-      'video/;application/octet-stream'
+      'video/;application/octet-stream;audio/;image/'
     )
     .option('-k, --keepSnapshots <keepSnapshots>', 'Keep snapshots for days', '14')
     .action(async (dirName: string, cmd: { force: boolean, contentTypes: string, keepSnapshots: string }) => {
       const storage = await createFileBackupStorage(dirName)
       await compactBackup(toolCtx, storage, cmd.force, {
-        blobLimit: 10 * 1024 * 1024, // 10 MB
+        blobLimit: 5 * 1024 * 1024, // 5 MB
         skipContentTypes: cmd.contentTypes.split(';')
       })
     })
@@ -1302,10 +1302,16 @@ export function devTool (
       const backupIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
       try {
         const storage = await createStorageBackupStorage(toolCtx, storageAdapter, backupIds, dirName)
-        await compactBackup(toolCtx, storage, cmd.force, {
-          blobLimit: 10 * 1024 * 1024, // 10 MB
-          skipContentTypes: cmd.contentTypes !== undefined ? cmd.contentTypes.split(';') : undefined
-        })
+        await compactBackup(
+          toolCtx,
+          storage,
+          cmd.force,
+          {
+            blobLimit: 5 * 1024 * 1024, // 5 MB
+            skipContentTypes: cmd.contentTypes !== undefined ? cmd.contentTypes.split(';') : undefined
+          },
+          true
+        )
       } catch (err: any) {
         toolCtx.error('failed to size backup', { err })
       }
