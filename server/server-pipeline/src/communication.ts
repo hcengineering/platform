@@ -23,13 +23,14 @@ import core, {
   type SessionData,
   type TxDomainEvent
 } from '@hcengineering/core'
-import type {
-  CommunicationApiFactory,
-  Middleware,
-  MiddlewareCreator,
-  PipelineContext
+import {
+  type CommunicationApiFactory,
+  type Middleware,
+  type MiddlewareCreator,
+  type PipelineContext,
+  SessionDataImpl,
+  BaseMiddleware
 } from '@hcengineering/server-core'
-import { BaseMiddleware } from '@hcengineering/server-core'
 
 export const COMMUNICATION_DOMAIN = 'communication' as OperationDomain
 
@@ -49,40 +50,68 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
   static create (communicationApiFactory: CommunicationApiFactory): MiddlewareCreator {
     return async (ctx, context, next): Promise<Middleware> => {
       const communicationApi = await communicationApiFactory(ctx, context.workspace, {
-        broadcast: (ctx, sessions, result: Event, isAsync) => {
-          const { contextData, evt } = CommunicationMiddleware.wrapEvent(ctx, result)
-          for (const s of sessions) {
-            contextData.broadcast.sessions[s] = (contextData.broadcast.sessions[s] ?? []).concat(evt)
+        asyncBroadcast: (ctx, result, queue: Event[]) => {
+          const { contextData: sctx, txEvents: queueEvents } = CommunicationMiddleware.wrapEvents(ctx, queue)
+          const asyncContextData: SessionDataImpl = new SessionDataImpl(
+            sctx.account,
+            sctx.sessionId,
+            sctx.admin,
+            { txes: [], targets: {}, queue: [], sessions: {} },
+            context.workspace,
+            true,
+            sctx.removedMap,
+            sctx.contextCache,
+            context.modelDb,
+            sctx.socialStringsToUsers,
+            sctx.service
+          )
+
+          asyncContextData.broadcast.queue = queueEvents
+          for (const [sessionId, events] of Object.entries(result)) {
+            const { contextData, txEvents } = CommunicationMiddleware.wrapEvents(ctx, events)
+
+            asyncContextData.broadcast.sessions[sessionId] = (contextData.broadcast.sessions[sessionId] ?? []).concat(
+              txEvents
+            )
           }
-          if (isAsync) {
-            void context.head?.handleBroadcast(ctx)
+          ctx.contextData = asyncContextData
+          void context.head?.handleBroadcast(ctx)
+        },
+        broadcast: (ctx, result) => {
+          for (const [sessionId, events] of Object.entries(result)) {
+            const { contextData, txEvents } = CommunicationMiddleware.wrapEvents(ctx, events)
+            contextData.broadcast.sessions[sessionId] = (contextData.broadcast.sessions[sessionId] ?? []).concat(
+              txEvents
+            )
           }
         },
-        enqueue: (ctx, result: Event, isAsync) => {
-          const { contextData, evt } = CommunicationMiddleware.wrapEvent(ctx, result)
-          contextData.broadcast.queue.push(evt)
-          if (isAsync) {
-            void context.head?.handleBroadcast(ctx)
-          }
+        enqueue: (ctx, result: Event[]) => {
+          const { contextData, txEvents } = CommunicationMiddleware.wrapEvents(ctx, result)
+          contextData.broadcast.queue.push(...txEvents)
         }
       })
       return new CommunicationMiddleware(ctx, context, next, communicationApi)
     }
   }
 
-  private static wrapEvent (ctx: MeasureContext<any>, result: Event): { contextData: SessionData, evt: TxDomainEvent } {
+  private static wrapEvents (
+    ctx: MeasureContext<any>,
+    result: Event[]
+  ): { contextData: SessionData, txEvents: TxDomainEvent[] } {
     const contextData = ctx.contextData as SessionData
-    const evt: TxDomainEvent = {
-      _id: generateId(),
-      space: core.space.Tx,
-      objectSpace: core.space.Domain,
-      _class: core.class.TxDomainEvent,
-      domain: COMMUNICATION_DOMAIN,
-      event: result,
-      modifiedBy: contextData.account.primarySocialId,
-      modifiedOn: Date.now()
+    return {
+      contextData,
+      txEvents: result.map((it) => ({
+        _id: generateId(),
+        space: core.space.Tx,
+        objectSpace: core.space.Domain,
+        _class: core.class.TxDomainEvent,
+        domain: COMMUNICATION_DOMAIN,
+        event: it,
+        modifiedBy: contextData.account.primarySocialId,
+        modifiedOn: Date.now()
+      }))
     }
-    return { contextData, evt }
   }
 
   async domainRequest (ctx: MeasureContext, domain: OperationDomain, params: DomainParams): Promise<DomainResult> {
@@ -138,6 +167,7 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
     return {
       ...ctx,
       sessionId: ctx.contextData.sessionId,
+      asyncData: [],
       derived: ctx.contextData.isTriggerCtx === true,
       // TODO: We should decide what to do with communications package and remove this workaround
       account: ctx.contextData.account

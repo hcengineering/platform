@@ -408,8 +408,8 @@ export class ClientSession implements Session {
         await asyncsPromise
       }
     } catch (err) {
-      await ctx.sendError(ctx.requestId, 'Failed to findAll', unknownError(err))
-      ctx.ctx.error('failed to findAll', { err })
+      await ctx.sendError(ctx.requestId, 'Failed to domeainRequest', unknownError(err))
+      ctx.ctx.error('failed to domainRequest', { err })
     }
   }
 

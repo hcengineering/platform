@@ -60,7 +60,6 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
 
     if (Object.keys(ctx.contextData.broadcast.sessions).length > 0) {
       this.broadcast.broadcastSessions(ctx, ctx.contextData.broadcast.sessions)
-      ctx.contextData.broadcast.sessions = {}
     }
   }
 

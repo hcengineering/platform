@@ -48,9 +48,13 @@ export class QueueMiddleware extends BaseMiddleware {
       await this.connected
       this.connected = undefined
     }
-    const toBroadcast = ctx.contextData.broadcast.txes.concat(ctx.contextData.broadcast.queue)
-    ctx.contextData.broadcast.queue = []
 
-    await Promise.all([this.provideBroadcast(ctx), this.txProducer.send(this.context.workspace.uuid, toBroadcast)])
+    await Promise.all([
+      this.provideBroadcast(ctx),
+      this.txProducer.send(
+        this.context.workspace.uuid,
+        ctx.contextData.broadcast.txes.concat(ctx.contextData.broadcast.queue)
+      )
+    ])
   }
 }
