@@ -41,10 +41,23 @@ import setting from '@hcengineering/setting'
 import { htmlToMarkup } from '@hcengineering/text'
 import { deepEqual } from 'fast-equals'
 import { calendar_v3 } from 'googleapis'
-import { getCalendarsSyncHistory, getEventHistory, setCalendarsSyncHistory, setEventHistory } from './kvsUtils'
+import { getClient } from './client'
+import {
+  getCalendarsSyncHistory,
+  getEventHistory,
+  removeUserByEmail,
+  setCalendarsSyncHistory,
+  setEventHistory
+} from './kvsUtils'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
-import { GoogleEmail, Token, User } from './types'
-import { parseRecurrenceStrings } from './utils'
+import { CALENDAR_INTEGRATION, GoogleEmail, Token, User } from './types'
+import {
+  getGoogleClient,
+  getWorkspaceToken,
+  parseRecurrenceStrings,
+  removeIntegrationSecret,
+  setCredentials
+} from './utils'
 import { WatchController } from './watch'
 
 const locks = new Map<string, Promise<void>>()
@@ -91,7 +104,7 @@ export class IncomingSyncManager {
     this.systemClient = new TxOperations(client.client, core.account.System)
   }
 
-  static async sync (
+  static async initSync (
     ctx: MeasureContext,
     accountClient: AccountClient,
     client: TxOperations,
@@ -105,6 +118,31 @@ export class IncomingSyncManager {
       await syncManager.startSync()
     } finally {
       mutex()
+    }
+  }
+
+  static async sync (ctx: MeasureContext, accountClient: AccountClient, user: Token, email: GoogleEmail): Promise<void> {
+    const client = await getClient(getWorkspaceToken(user.workspace))
+    const txOp = new TxOperations(client, user.userId)
+    const google = getGoogleClient()
+    const mutex = await lock(`${user.workspace}:${user.userId}:${email}`)
+    try {
+      const authSucces = await setCredentials(google.auth, user)
+      if (!authSucces) {
+        await removeUserByEmail(user, user.email)
+        await removeIntegrationSecret(ctx, accountClient, {
+          socialId: user.userId,
+          kind: CALENDAR_INTEGRATION,
+          workspaceUuid: user.workspace,
+          key: user.email
+        })
+        return
+      }
+      const syncManager = new IncomingSyncManager(ctx, accountClient, txOp, user, email, google.google)
+      await syncManager.startSync()
+    } finally {
+      mutex()
+      await txOp.close()
     }
   }
 

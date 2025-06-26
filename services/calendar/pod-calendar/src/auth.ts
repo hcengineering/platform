@@ -140,7 +140,7 @@ export class AuthController {
     const authRes = await this.authorize(code)
     await this.setWorkspaceIntegration(authRes)
     if (authRes.success) {
-      void IncomingSyncManager.sync(
+      void IncomingSyncManager.initSync(
         this.ctx,
         this.accountClient,
         this.client,
