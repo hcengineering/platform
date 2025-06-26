@@ -272,6 +272,11 @@ export class WatchController {
     const key = `${CALENDAR_INTEGRATION}:watch:${email}:${calendarId ?? 'null'}`
     const exists = await client.getValue<Watch>(key)
     if (exists != null) {
+      this.ctx.info('Watch already exists', {
+        workspace: user.workspace,
+        user: user.userId,
+        calendar: calendarId
+      })
       return
     }
     try {
@@ -280,6 +285,11 @@ export class WatchController {
       } else {
         await watchCalendars(email, googleClient)
       }
+      this.ctx.info('Watch added', {
+        workspace: user.workspace,
+        user: user.userId,
+        calendar: calendarId
+      })
     } catch (err: any) {
       this.ctx.error('Watch add error', {
         workspace: user.workspace,
