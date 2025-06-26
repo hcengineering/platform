@@ -43,22 +43,24 @@
   let update: (() => Promise<void>) | undefined
 
   $: accountsByPersonRef = new Map(
-    accounts.map((uuid) => {
-      const empRef = $employeeRefByAccountUuidStore.get(uuid)
+    accounts
+      .map((uuid) => {
+        const empRef = $employeeRefByAccountUuidStore.get(uuid)
 
-      if (empRef === undefined) {
-        console.error('Employee not found by account id', uuid)
-        return null
-      }
+        if (empRef === undefined) {
+          console.error('Employee not found by account id', uuid)
+          return null
+        }
 
-      const employee = $employeeByIdStore.get(empRef)
+        const employee = $employeeByIdStore.get(empRef)
 
-      if (employee?.active !== true) {
-        return null
-      }
+        if (employee?.active !== true) {
+          return null
+        }
 
-      return [empRef, uuid] as const
-    }).filter(notEmpty)
+        return [empRef, uuid] as const
+      })
+      .filter(notEmpty)
   )
 
   function onUpdate (evt: CustomEvent<Ref<Employee>[]>): void {
