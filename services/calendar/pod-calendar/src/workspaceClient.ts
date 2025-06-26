@@ -28,6 +28,7 @@ import { CalendarClient } from './calendar'
 import { getClient } from './client'
 import config from './config'
 import { addUserByEmail, getSyncHistory, setSyncHistory } from './kvsUtils'
+import { IncomingSyncManager } from './sync'
 import { getWorkspaceTokens } from './tokens'
 import { GoogleEmail, Token } from './types'
 import { getWorkspaceToken } from './utils'
@@ -37,6 +38,7 @@ export class WorkspaceClient {
   private readonly calendarsByExternal = new Map<string, ExternalCalendar>()
   readonly calendarsById = new Map<Ref<ExternalCalendar>, ExternalCalendar>()
   readonly participants = new Map<Ref<Person>, string>()
+  private lastSync: number = 0
 
   private constructor (
     private readonly ctx: MeasureContext,
@@ -86,14 +88,16 @@ export class WorkspaceClient {
     const tokens = await getWorkspaceTokens(this.accountClient, this.workspace)
     for (const token of tokens) {
       if (token.workspaceUuid === null) continue
-      await addUserByEmail(JSON.parse(token.secret), token.key as GoogleEmail)
-      await this.createCalendarClient(JSON.parse(token.secret))
+      const parsedToken = JSON.parse(token.secret)
+      await addUserByEmail(parsedToken, token.key as GoogleEmail)
+      await this.createCalendarClient(parsedToken)
     }
     await this.getNewEvents()
     const limiter = new RateLimiter(config.InitLimit)
-    for (const client of this.clients.values()) {
+    for (const token of tokens) {
       await limiter.add(async () => {
-        await client.startSync()
+        const parsedToken = JSON.parse(token.secret)
+        await IncomingSyncManager.sync(this.ctx, this.accountClient, parsedToken, parsedToken.email)
       })
     }
   }
@@ -118,27 +122,43 @@ export class WorkspaceClient {
 
   // #region Events
 
-  private async getSyncTime (): Promise<number | undefined> {
-    return (await getSyncHistory(this.workspace)) ?? undefined
-  }
-
-  private async updateSyncTime (): Promise<void> {
-    await setSyncHistory(this.workspace)
+  private async updateSyncHistory (): Promise<void> {
+    try {
+      await setSyncHistory(this.workspace, this.lastSync)
+    } catch (err) {
+      this.ctx.error('Failed to update sync history', {
+        workspace: this.workspace,
+        error: err instanceof Error ? err.message : String(err)
+      })
+    }
   }
 
   private async getNewEvents (): Promise<void> {
-    const lastSync = await this.getSyncTime()
+    const lastSync = await getSyncHistory(this.workspace)
+    this.lastSync = lastSync ?? 0
     const query = lastSync !== undefined ? { modifiedOn: { $gt: lastSync } } : {}
-    const newEvents = await this.client.findAll(calendar.class.Event, query)
+    const newEvents = await this.client.findAll(calendar.class.Event, query, { sort: { modifiedOn: 1 } })
+    const interval = setInterval(() => {
+      void this.updateSyncHistory()
+    }, 5000)
     for (const newEvent of newEvents) {
-      const client = this.getCalendarClientByCalendar(newEvent.calendar as Ref<ExternalCalendar>)
-      if (client === undefined) {
-        this.ctx.warn('Client not found', { calendar: newEvent.calendar, workspace: this.workspace })
-        continue
+      try {
+        const client = this.getCalendarClientByCalendar(newEvent.calendar as Ref<ExternalCalendar>)
+        if (client === undefined) {
+          this.ctx.warn('Client not found', { calendar: newEvent.calendar, workspace: this.workspace })
+          continue
+        }
+        await client.syncMyEvent(newEvent)
+        this.lastSync = newEvent.modifiedOn
+      } catch (err) {
+        this.ctx.error('Failed to sync event', {
+          event: newEvent._id,
+          workspace: this.workspace,
+          error: err instanceof Error ? err.message : String(err)
+        })
       }
-      await client.syncMyEvent(newEvent)
-      await this.updateSyncTime()
     }
+    clearInterval(interval)
     this.ctx.info('all outcoming messages synced', { workspace: this.workspace })
   }
 
