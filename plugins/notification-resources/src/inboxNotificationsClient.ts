@@ -164,6 +164,10 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       { projection: { _id: 1, _class: 1, space: 1 } }
     )
 
+    if (inboxNotifications.length === 0) {
+      return
+    }
+
     for (const notification of inboxNotifications) {
       await op.updateDoc(notification._class, notification.space, notification._id, { isViewed: true })
     }
