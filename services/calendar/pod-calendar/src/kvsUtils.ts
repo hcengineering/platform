@@ -15,14 +15,16 @@ export function getKvsClient (): KeyValueClient {
 export async function getSyncHistory (workspace: WorkspaceUuid): Promise<number | undefined> {
   const client = getKvsClient()
   const key = `${CALENDAR_INTEGRATION}:calendarSync:${workspace}`
-  const res = await client.getValue<number>(key)
-  return res ?? undefined
+  try {
+    const res = await client.getValue<number>(key)
+    return res ?? undefined
+  } catch {}
 }
 
-export async function setSyncHistory (workspace: WorkspaceUuid): Promise<void> {
+export async function setSyncHistory (workspace: WorkspaceUuid, value: number): Promise<void> {
   const client = getKvsClient()
   const key = `${CALENDAR_INTEGRATION}:calendarSync:${workspace}`
-  await client.setValue(key, Date.now())
+  await client.setValue(key, value)
 }
 
 function calendarsHistoryKey (user: User, email: GoogleEmail): string {

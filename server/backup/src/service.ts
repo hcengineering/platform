@@ -63,7 +63,7 @@ export interface BackupConfig {
 }
 
 class BackupWorker {
-  downloadLimit: number = 100
+  downloadLimit: number = 5
   workspacesToBackup = new Map<WorkspaceUuid, WorkspaceInfoWithStatus>()
   rateLimiter: RateLimiter
 

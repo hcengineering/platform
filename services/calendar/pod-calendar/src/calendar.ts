@@ -22,7 +22,6 @@ import { OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
 import { removeUserByEmail } from './kvsUtils'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
-import { IncomingSyncManager } from './sync'
 import { CALENDAR_INTEGRATION, type Token } from './types'
 import {
   convertDate,
@@ -75,21 +74,6 @@ export class CalendarClient {
       return
     }
     return calendarClient
-  }
-
-  async startSync (): Promise<void> {
-    try {
-      await IncomingSyncManager.sync(
-        this.ctx,
-        this.accountClient,
-        this.client,
-        this.user,
-        this.user.email,
-        this.calendar
-      )
-    } catch (err) {
-      this.ctx.error('Start sync error', { workspace: this.user.workspace, user: this.user.userId, err })
-    }
   }
 
   private areDatesEqual (first: calendar_v3.Schema$EventDateTime, second: calendar_v3.Schema$EventDateTime): boolean {

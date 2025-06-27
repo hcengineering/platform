@@ -346,8 +346,8 @@
   }
 
   const calcTime = (_events: CalendarItem[]): number => {
-    if (_events.length === 0) return 0
     const events = _events.filter((ev) => ev.blockTime)
+    if (events.length === 0) return 0
 
     // Extract and sort intervals by start time
     const intervals = events.map((it) => [it.date, it.dueDate]).sort((a, b) => a[0] - b[0])

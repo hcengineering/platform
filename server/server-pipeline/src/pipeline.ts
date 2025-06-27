@@ -128,15 +128,15 @@ export function createServerPipeline (
       FindSecurityMiddleware.create,
       PluginConfigurationMiddleware.create,
       PrivateMiddleware.create,
-      ...(opt.communicationApiFactory !== undefined
-        ? [CommunicationMiddleware.create(opt.communicationApiFactory)]
-        : []),
       (ctx: MeasureContext, context: PipelineContext, next?: Middleware) =>
         SpaceSecurityMiddleware.create(opt.adapterSecurity ?? false, ctx, context, next),
       SpacePermissionsMiddleware.create,
       ConfigurationMiddleware.create,
       ContextNameMiddleware.create,
       MarkDerivedEntryMiddleware.create,
+      ...(opt.communicationApiFactory !== undefined
+        ? [CommunicationMiddleware.create(opt.communicationApiFactory)]
+        : []),
       UserStatusMiddleware.create,
       ApplyTxMiddleware.create, // Extract apply
       TxMiddleware.create, // Store tx into transaction domain

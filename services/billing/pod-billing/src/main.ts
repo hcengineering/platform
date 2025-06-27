@@ -22,8 +22,10 @@ import { join } from 'path'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
+import serverToken from '@hcengineering/server-token'
 
 const setupMetadata = (): void => {
+  setMetadata(serverToken.metadata.Secret, config.Secret)
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
 }
 

@@ -28,10 +28,12 @@ import core, {
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
-import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
+import { getClient, IconWithEmoji, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import {
   getCurrentResolvedLocation,
   getPanelURI,
+  type IconComponent,
+  type IconProps,
   type Location,
   type ResolvedLocation,
   showPopup
@@ -284,4 +286,27 @@ export async function checkRelationsSectionVisibility (doc: Card): Promise<boole
       .findAllSync(core.class.Association, { classB: { $in: [...parents, ...mixins] } })
       .filter((a) => a.nameA.trim().length > 0).length > 0
   )
+}
+
+export function getCardIconInfo (doc?: Card): { icon: IconComponent, props: IconProps } {
+  if (doc === undefined) return { icon: card.icon.Card, props: {} }
+  if (doc.icon === view.ids.IconWithEmoji) {
+    return { icon: IconWithEmoji, props: { icon: doc.color } }
+  }
+
+  if (doc.icon !== undefined) {
+    return {
+      icon: doc.icon,
+      props: {}
+    }
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const clazz = hierarchy.getClass(doc._class) as MasterTag
+
+  return {
+    icon: clazz?.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz?.icon ?? card.icon.MasterTag,
+    props: clazz?.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}
+  }
 }

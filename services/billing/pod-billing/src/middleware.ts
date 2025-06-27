@@ -25,7 +25,7 @@ interface RequestWithAuth extends Request {
 export const withToken = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
   const token = extractToken(req.headers)
   if (token === undefined || token == null) {
-    res.status(401).end()
+    res.status(401).json({ message: 'Token error' }).end()
     return
   }
   req.token = token
@@ -34,11 +34,11 @@ export const withToken = (req: RequestWithAuth, res: Response, next: NextFunctio
 
 export const withAdmin = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
   if (req.token === undefined || req.token == null) {
-    res.status(401).end()
+    res.status(401).json({ message: 'Token error' }).end()
     return
   }
   if (req.token.account !== systemAccountUuid && req.token.extra?.admin !== 'true') {
-    res.status(401).end()
+    res.status(401).json({ message: 'Admins only' }).end()
     return
   }
   next()
@@ -50,18 +50,22 @@ export const withOwner = (req: RequestWithAuth, res: Response, next: NextFunctio
 
 const withOwnerAsync = async (req: RequestWithAuth, res: Response, next: NextFunction): Promise<void> => {
   if (req.token === undefined || req.token == null) {
-    res.status(401).end()
+    res.status(401).json({ message: 'Token error' }).end()
     return
   }
   if ((req.token.workspace as string) !== req.params.workspace) {
-    res.status(401).end()
+    res.status(401).json({ message: 'Workspace mismatch' }).end()
     return
   }
   if (req.token.account !== systemAccountUuid && req.token.extra?.admin !== 'true') {
     const accountClient = getAccountClient(req.headers.authorization?.split(' ')[1])
     const loginInfo = await accountClient.getLoginInfoByToken()
-    if (!('role' in loginInfo) || loginInfo.role !== AccountRole.Owner) {
-      res.status(401).end()
+    if (!('role' in loginInfo)) {
+      res.status(401).json({ message: 'Missing workspace role' }).end()
+      return
+    }
+    if (loginInfo.role !== AccountRole.Owner) {
+      res.status(401).json({ message: 'Workspace owners only' }).end()
       return
     }
   }

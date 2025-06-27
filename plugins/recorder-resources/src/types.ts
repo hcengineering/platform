@@ -41,4 +41,6 @@ export interface RecordingResult {
   name: string
   uuid: string
   type: string
+  width: number
+  height: number
 }

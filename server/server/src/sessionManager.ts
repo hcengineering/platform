@@ -898,7 +898,7 @@ export class TSessionManager implements SessionManager {
                     // await communicationApi.closeSession(sessionRef.session.sessionId)
                     if (user !== guestAccount && user !== systemAccountUuid) {
                       await this.trySetStatus(
-                        workspace.context,
+                        sessionRef.session.userCtx ?? workspace.context,
                         pipeline,
                         sessionRef.session,
                         false,
@@ -1139,6 +1139,19 @@ export class TSessionManager implements SessionManager {
     return this.limitter.checkRateLimit(service.getUser() + (service.token.extra?.service ?? ''))
   }
 
+  getUserCtx (requestCtx: MeasureContext, service: Session, mode: string): MeasureContext {
+    const userCtx =
+      service.userCtx ??
+      requestCtx.newChild('📞 client', {
+        source: service.token.extra?.service ?? '🤦‍♂️user',
+        mode
+      })
+    if (service.userCtx === undefined) {
+      service.userCtx = userCtx
+    }
+    return userCtx
+  }
+
   async handleRequest<S extends Session>(
     requestCtx: MeasureContext,
     service: S,
@@ -1146,10 +1159,7 @@ export class TSessionManager implements SessionManager {
     request: Request<any>,
     workspaceId: WorkspaceUuid
   ): Promise<void> {
-    const userCtx = requestCtx.newChild('📞 client', {
-      source: service.token.extra?.service ?? '🤦‍♂️user',
-      mode: '🧭 handleRequest'
-    })
+    const userCtx = this.getUserCtx(requestCtx, service, '🧭 handleRequest')
 
     // Calculate total number of clients
     const reqId = generateId()
@@ -1274,10 +1284,7 @@ export class TSessionManager implements SessionManager {
       return await Promise.resolve(rateLimitStatus)
     }
 
-    const userCtx = requestCtx.newChild('📞 client', {
-      source: service.token.extra?.service ?? '🤦‍♂️user',
-      mode: '🧭 handleRPC'
-    })
+    const userCtx = this.getUserCtx(requestCtx, service, '🧭 handleRPC')
 
     // Calculate total number of clients
     const reqId = generateId()
@@ -1297,8 +1304,12 @@ export class TSessionManager implements SessionManager {
 
       try {
         await workspace.with(async (pipeline) => {
-          const uctx = this.createOpContext(userCtx, userCtx, pipeline, reqId, service, ws, rateLimitStatus)
-          await operation(uctx, rateLimitStatus)
+          await userCtx.with('🧨 process', {}, (callTx) =>
+            operation(
+              this.createOpContext(callTx, userCtx, pipeline, reqId, service, ws, rateLimitStatus),
+              rateLimitStatus
+            )
+          )
         })
       } catch (err: any) {
         Analytics.handleError(err)
@@ -1393,7 +1404,7 @@ export class TSessionManager implements SessionManager {
           account,
           useCompression: service.useCompression
         }
-        await ws.send(requestCtx, helloResponse, false, false)
+        await ws.send(ctx, helloResponse, false, false)
       })
       if (account.uuid !== guestAccount && account.uuid !== systemAccountUuid) {
         void workspace.with(async (pipeline) => {

@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Card, FavoriteCard, MasterTag } from '@hcengineering/card'
   import core, { Class, Ref } from '@hcengineering/core'
-  import { getClient, IconWithEmoji } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import { IconMoreV, NavItem, Action, ButtonIcon } from '@hcengineering/ui'
   import { NotificationContext } from '@hcengineering/communication-types'
@@ -26,6 +26,7 @@
 
   import cardPlugin from '../../plugin'
   import { CardsNavigatorConfig } from '../../types'
+  import { getCardIconInfo } from '../../utils'
 
   export let type: Ref<MasterTag> | undefined = undefined
   export let card: Card
@@ -92,14 +93,13 @@
     return card.title
   }
 
-  $: iconId = clazz.icon ?? cardPlugin.icon.Card
-  $: icon = iconId === view.ids.IconWithEmoji ? IconWithEmoji : iconId
+  $: iconInfo = getCardIconInfo(card)
 </script>
 
 <NavItem
   _id={card._id}
-  icon={config.showCardIcon ? icon : undefined}
-  iconProps={iconId === view.ids.IconWithEmoji ? { icon: clazz.color } : {}}
+  icon={config.showCardIcon ? iconInfo.icon : undefined}
+  iconProps={iconInfo.props}
   iconSize="small"
   title={getCardTitle(card)}
   selected={selectedCard === card._id}

@@ -14,7 +14,7 @@
 //
 
 import { AccountClient } from '@hcengineering/account-client'
-import core, { isActiveMode, MeasureContext, TxOperations } from '@hcengineering/core'
+import { isActiveMode, MeasureContext, TxOperations } from '@hcengineering/core'
 import { getClient } from './client'
 import { getUserByEmail, removeUserByEmail } from './kvsUtils'
 import { IncomingSyncManager } from './sync'
@@ -32,22 +32,31 @@ export class PushHandler {
       'Push handler',
       {},
       async () => {
-        const client = await getClient(getWorkspaceToken(token.workspace))
-        const txOp = new TxOperations(client, core.account.System)
-        const res = getGoogleClient()
-        const authSuccess = await setCredentials(res.auth, token)
-        if (!authSuccess) {
-          await removeUserByEmail(token, token.email)
-          await removeIntegrationSecret(this.ctx, this.accountClient, {
-            kind: CALENDAR_INTEGRATION,
-            workspaceUuid: token.workspace,
-            socialId: token.userId,
-            key: token.email
+        try {
+          const client = await getClient(getWorkspaceToken(token.workspace))
+          const res = getGoogleClient()
+          const authSuccess = await setCredentials(res.auth, token)
+          if (!authSuccess) {
+            await removeUserByEmail(token, token.email)
+            await removeIntegrationSecret(this.ctx, this.accountClient, {
+              kind: CALENDAR_INTEGRATION,
+              workspaceUuid: token.workspace,
+              socialId: token.userId,
+              key: token.email
+            })
+          } else {
+            const txOp = new TxOperations(client, token.userId)
+            await IncomingSyncManager.push(this.ctx, this.accountClient, txOp, token, res.google, calendarId)
+            await txOp.close()
+          }
+        } catch (err) {
+          this.ctx.error('Push sync error', {
+            user: token.userId,
+            workspace: token.workspace,
+            email: token.email,
+            error: err instanceof Error ? err.message : String(err)
           })
-        } else {
-          await IncomingSyncManager.push(this.ctx, this.accountClient, txOp, token, res.google, calendarId)
         }
-        await txOp.close()
       },
       { workspace: token.workspace, user: token.userId }
     )
@@ -55,6 +64,7 @@ export class PushHandler {
 
   async push (email: GoogleEmail, mode: 'events' | 'calendar', calendarId?: string): Promise<void> {
     const tokens = await getUserByEmail(email)
+    this.ctx.info('push', { email, mode, calendarId, tokens: tokens.length })
     const workspaces = [...new Set(tokens.map((p) => p.workspace))]
     const infos = await this.accountClient.getWorkspacesInfo(workspaces)
     for (const token of tokens) {

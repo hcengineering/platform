@@ -418,11 +418,6 @@ export class ClientSession implements Session {
     this.total.find++
     this.current.find++
     this.includeSessionContext(ctx)
-    const result: DomainResult = await ctx.ctx.with('domainRequest', { domain }, (_ctx) =>
-      _ctx.with(`${domain}-${Object.keys(params)[0]}`, {}, (_ctx) => ctx.pipeline.domainRequest(_ctx, domain, params), {
-        params
-      })
-    )
-    return result
+    return await ctx.pipeline.domainRequest(ctx.ctx, domain, params)
   }
 }

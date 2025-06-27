@@ -38,9 +38,9 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const initialMembers = space.members.reduce<Record<Ref<Person>, AccountUuid>>((acc, m) => {
-    const personRef = $employeeRefByAccountUuidStore.get(m)
-    if (personRef === undefined) return acc
-    acc[personRef] = m
+    const empRef = $employeeRefByAccountUuidStore.get(m)
+    if (empRef === undefined) return acc
+    acc[empRef] = m
     return acc
   }, {})
   $: label = hierarchy.getClass(space._class).label
@@ -54,6 +54,8 @@
     const employeeRefs = accounts.map((acc) => $employeeRefByAccountUuidStore.get(acc)).filter(notEmpty)
     const query: DocumentQuery<Employee> =
       isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: employeeRefs } }
+    query.active = true
+
     const employees = await client.findAll(contact.mixin.Employee, query, { sort: { name: SortingOrder.Descending } })
     members = new Set(employees.filter((p) => employeeRefs.includes(p._id)).map((p) => p._id))
 

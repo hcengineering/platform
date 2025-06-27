@@ -84,7 +84,7 @@ export function combineMediaStreams (...streams: MediaStream[]): MediaStream {
   return new MediaStream(tracks)
 }
 
-export const getVideoDimensions = (stream: MediaStream): { width: number, height: number } => {
+export const getVideoDimensions = async (stream: MediaStream): Promise<{ width: number, height: number }> => {
   const tracks = stream.getVideoTracks()
   if (tracks.length > 0) {
     let maxWidth = 0
@@ -94,6 +94,26 @@ export const getVideoDimensions = (stream: MediaStream): { width: number, height
       const { width, height } = track.getSettings()
       maxWidth = Math.max(maxWidth, width ?? 0)
       maxHeight = Math.max(maxHeight, height ?? 0)
+    }
+
+    if (maxWidth === 0 || maxHeight === 0) {
+      // in Firefox width and height may be not available in track settings,
+      // so we need to create a video element to get the dimensions
+      await new Promise((resolve) => {
+        const video = document.createElement('video')
+        video.srcObject = stream
+        video.onloadedmetadata = () => {
+          maxWidth = video.videoWidth
+          maxHeight = video.videoHeight
+          video.remove()
+          resolve(null)
+        }
+        video.play().catch(() => {
+          // Ignore play errors, just resolve
+          video.remove()
+          resolve(null)
+        })
+      })
     }
 
     if (maxWidth === 0 || maxHeight === 0) {

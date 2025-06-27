@@ -28,6 +28,7 @@ export interface TusUploaderOptions {
   endpoint: string
   workspace: string
   token: string
+  contentType: string
   width: number
   height: number
 }
@@ -39,8 +40,7 @@ export class TusUploader implements Uploader {
   private waiterReject: (reason?: any) => void = () => {}
 
   constructor (reader: ChunkReader, options: TusUploaderOptions) {
-    const { endpoint, workspace, token, width, height } = options
-    const resolution = width + ':' + height
+    const { endpoint, workspace, token, width, height, contentType } = options
 
     this.waiterPromise = new Promise<RecordingResult>((resolve, reject) => {
       this.waiterResolve = resolve
@@ -54,19 +54,24 @@ export class TusUploader implements Uploader {
       chunkSize: 2 * 1024 * 1024,
       uploadLengthDeferred: true,
       endpoint,
-      metadata: { resolution, token, workspace },
+      metadata: {
+        width: width.toString(),
+        height: height.toString(),
+        contentType,
+        token,
+        workspace
+      },
       onSuccess: () => {
-        const uploadId = this.upload.url?.split('/').pop()
-        console.debug('TusUploader: upload success:', uploadId)
-        if (uploadId === undefined) {
+        const uuid = this.upload.url?.split('/').pop()
+        console.debug('TusUploader: upload success:', uuid)
+        if (uuid === undefined) {
           console.error('TusUploader: upload URL does not contain upload ID')
           return
         }
 
-        const name = options.name
-        const uuid = uploadId + '_master.m3u8'
-        const type = 'video/x-mpegURL'
-        this.waiterResolve({ name, uuid, type })
+        const name = options.name + '.mp4'
+        const type = contentType.split(';')[0]
+        this.waiterResolve({ name, uuid, type, width, height })
       },
       onError: (error) => {
         console.error('TusUploader: upload failed:', error)
