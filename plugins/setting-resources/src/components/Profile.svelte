@@ -32,13 +32,14 @@
   import { logIn, logOut } from '@hcengineering/workbench-resources'
 
   import setting from '../plugin'
+  import SocialIdsEditor from './socialIds/SocialIdsEditor.svelte'
 
   const client = getClient()
   const account = getCurrentAccount()
   const email = account.fullSocialIds.find((si) => si.type === SocialIdType.EMAIL)?.value ?? ''
 
-  let firstName = $myEmployeeStore !== undefined ? getFirstName($myEmployeeStore.name) : ''
-  let lastName = $myEmployeeStore !== undefined ? getLastName($myEmployeeStore.name) : ''
+  $: firstName = $myEmployeeStore !== undefined ? getFirstName($myEmployeeStore.name) : ''
+  $: lastName = $myEmployeeStore !== undefined ? getLastName($myEmployeeStore.name) : ''
 
   let avatarEditor: EditableAvatar
   async function onAvatarDone (e: any): Promise<void> {
@@ -87,7 +88,7 @@
   <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.AccountSettings} label={setting.string.AccountSettings} size={'large'} isCurrent />
   </Header>
-  <div class="ac-body p-10">
+  <div class="ac-body p-10 flex-col max-w-240">
     {#if $myEmployeeStore}
       <div class="flex flex-grow w-full">
         <div class="mr-8">
@@ -136,10 +137,13 @@
         </div>
       </div>
     {/if}
+    <div class="separator" />
+    <SocialIdsEditor />
     <div class="footer">
       <Button
         icon={setting.icon.Signout}
         label={setting.string.Leave}
+        kind="dangerous"
         on:click={() => {
           void leave()
         }}
@@ -161,6 +165,7 @@
   }
 
   .footer {
+    margin-top: 2rem;
     align-self: flex-end;
   }
 </style>

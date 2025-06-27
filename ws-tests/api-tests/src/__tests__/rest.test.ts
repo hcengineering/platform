@@ -74,7 +74,7 @@ describe('rest-api-server', () => {
     accountClient = getAccountClient(config.ACCOUNTS_URL, apiWorkspace1.token)
     const person = await accountClient.getPerson()
 
-    const socialIds: SocialId[] = await accountClient.getSocialIds()
+    const socialIds: SocialId[] = await accountClient.getSocialIds(true)
 
     // Ensure employee is created
 

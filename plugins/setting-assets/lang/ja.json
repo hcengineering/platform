@@ -16,6 +16,7 @@
     "Saving": "保存中...",
     "Saved": "保存済み",
     "Add": "追加",
+    "AddNew": "追加 {type}",
     "Value": "値",
     "EnterCurrentPassword": "現在のパスワードを入力",
     "EnterNewPassword": "新しいパスワードを入力",
@@ -161,6 +162,14 @@
     "EmailIsUsed": "メールアドレスは他のアカウントで使用されています",
     "Customize": "カスタマイズ",
     "GuestAccess": "匿名ゲスト",
-    "GuestAccessDescription": "匿名ユーザーがワークスペースを読み取り専用モードで閲覧できます"
+    "GuestAccessDescription": "匿名ユーザーがワークスペースを読み取り専用モードで閲覧できます",
+    "ManageIdentities": "IDを管理",
+    "Release": "リリース",
+    "ReleaseSocialId": "ソーシャルIDをリリース",
+    "ReleaseSocialIdConfirm": "本当にこのソーシャルID: {socialId} をリリースしますか？これによりアカウントから削除され、ログインに使用できなくなります。また、関連するすべての統合も削除されます。",
+    "ReleasePrimarySocialId": "プライマリソーシャルIDをリリース",
+    "ReleasePrimarySocialIdConfirm": "現在のプライマリソーシャルIDをリリースするには、ページの再読み込みが必要です。続行してもよろしいですか？",
+    "Login": "ログイン",
+    "Primary": "プライマリ"
   }
 }

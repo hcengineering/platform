@@ -155,6 +155,7 @@ export default plugin(platformId, {
     SocialIdNotFound: '' as StatusCode<{ value?: string, type?: string, _id?: string }>,
     SocialIdNotConfirmed: '' as StatusCode<{ socialId: string, type: string }>,
     SocialIdAlreadyConfirmed: '' as StatusCode<{ socialId: string, type: string }>,
+    IntegrationExists: '' as StatusCode,
     IntegrationAlreadyExists: '' as StatusCode,
     IntegrationNotFound: '' as StatusCode,
     IntegrationSecretAlreadyExists: '' as StatusCode,

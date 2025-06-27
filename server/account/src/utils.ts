@@ -1492,7 +1492,7 @@ export async function getInviteEmail (
   }
 }
 
-export async function addSocialId (
+export async function addSocialIdBase (
   db: AccountDB,
   personUuid: PersonUuid,
   type: SocialIdType,
@@ -1535,30 +1535,49 @@ export async function doReleaseSocialId (
   personUuid: PersonUuid,
   type: SocialIdType,
   value: string,
-  releasedBy: string
-): Promise<void> {
-  const socialIds = await db.socialId.find({ personUuid, type, value })
+  releasedBy: string,
+  deleteIntegrations = false
+): Promise<SocialId> {
+  const socialId = await db.socialId.findOne({ personUuid, type, value, isDeleted: { $ne: true } })
 
-  if (socialIds.length === 0) {
+  if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdNotFound, {}))
   }
 
   const account = await db.account.findOne({ uuid: personUuid as AccountUuid })
 
-  for (const socialId of socialIds) {
-    await db.socialId.update({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}`, isDeleted: true })
-    if (account != null) {
-      await db.accountEvent.insertOne({
-        accountUuid: account.uuid,
-        eventType: AccountEventType.SOCIAL_ID_RELEASED,
-        time: Date.now(),
-        data: {
-          socialId: socialId._id,
-          releasedBy: releasedBy ?? ''
-        }
-      })
-    }
+  const integrations = await db.integration.find({ socialId: socialId._id })
+  if (!deleteIntegrations && integrations.length > 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationExists, {}))
   }
+
+  // Delete all integrations for this socialId
+  // TODO: Send to pipe? to notify integration services somehow so they can clean up if needed
+  await db.integrationSecret.deleteMany({ socialId: socialId._id })
+  await db.integration.deleteMany({ socialId: socialId._id })
+
+  // Release socialId
+  await db.socialId.update({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}`, isDeleted: true })
+  if (account != null) {
+    await db.accountEvent.insertOne({
+      accountUuid: account.uuid,
+      eventType: AccountEventType.SOCIAL_ID_RELEASED,
+      time: Date.now(),
+      data: {
+        socialId: socialId._id,
+        releasedBy: releasedBy ?? ''
+      }
+    })
+  }
+
+  // read updated id (to avoid generating updated key manually)
+  const deletedSocialId = await db.socialId.findOne({ _id: socialId._id })
+
+  if (deletedSocialId == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
+  return deletedSocialId
 }
 
 export async function getWorkspaceRole (

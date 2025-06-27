@@ -16,6 +16,7 @@
     "Saving": "Wird gespeichert...",
     "Saved": "Gespeichert",
     "Add": "Hinzufügen",
+    "AddNew": "Hinzufügen {type}",
     "Value": "Wert",
     "EnterCurrentPassword": "Aktuelles Passwort eingeben",
     "EnterNewPassword": "Neues Passwort eingeben",
@@ -161,6 +162,14 @@
     "EmailIsUsed": "E-Mail-Adresse wird in einem anderen Konto verwendet",
     "Customize": "Anpassen",
     "GuestAccess": "Anonyme Gäste",
-    "GuestAccessDescription": "Ermöglicht anonymen Benutzern den schreibgeschützten Zugriff auf den Arbeitsbereich"
+    "GuestAccessDescription": "Ermöglicht anonymen Benutzern den schreibgeschützten Zugriff auf den Arbeitsbereich",
+    "ManageIdentities": "Identitäten verwalten",
+    "Release": "Freigeben",
+    "ReleaseSocialId": "Social ID freigeben",
+    "ReleaseSocialIdConfirm": "Sind Sie sicher, dass Sie diese Social ID freigeben möchten: {socialId}? Dies entfernt sie aus Ihrem Konto und Sie können sie nicht mehr zur Anmeldung verwenden. Außerdem werden alle zugehörigen Integrationen entfernt.",
+    "ReleasePrimarySocialId": "Primäre Social ID freigeben",
+    "ReleasePrimarySocialIdConfirm": "Die Freigabe Ihrer aktuellen primären Social ID erfordert ein Neuladen der Seite. Sind Sie sicher, dass Sie fortfahren möchten?",
+    "Login": "Anmelden",
+    "Primary": "Primär"
   }
 }

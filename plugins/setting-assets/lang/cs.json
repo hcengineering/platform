@@ -16,6 +16,7 @@
     "Saving": "Ukládání...",
     "Saved": "Uloženo",
     "Add": "Přidat",
+    "AddNew": "Přidat {type}",
     "Value": "Hodnota",
     "EnterCurrentPassword": "Zadejte aktuální heslo",
     "EnterNewPassword": "Zadejte nové heslo",
@@ -161,6 +162,12 @@
     "EmailIsUsed": "E-mailová adresa je již použita jiným účtem",
     "Customize": "Přizpůsobit",
     "GuestAccess": "Anonymní hosté",
-    "GuestAccessDescription": "Umožňuje anonymním uživatelům prohlížet pracovní prostor v režimu pouze pro čtení"
+    "GuestAccessDescription": "Umožňuje anonymním uživatelům prohlížet pracovní prostor v režimu pouze pro čtení",
+    "ManageIdentities": "Spravovat identity",
+    "Release": "Uvolnění",
+    "ReleaseSocialId": "Uvolnit sociální ID",
+    "ReleaseSocialIdConfirm": "Opravdu chcete uvolnit toto sociální ID: {socialId}? Tím ho odeberete ze svého účtu a nebudete ho již moci používat k přihlášení. Také budou odstraněny všechny související integrace.",
+    "ReleasePrimarySocialId": "Uvolnit primární sociální ID",
+    "ReleasePrimarySocialIdConfirm": "Uvolnění vašeho současného primárního sociálního ID bude vyžadovat obnovení stránky. Opravdu chcete pokračovat?"
   }
 }

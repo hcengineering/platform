@@ -181,7 +181,8 @@ export default plugin(settingId, {
     CreateAttributePopup: '' as AnyComponent,
     CreateRelation: '' as AnyComponent,
     EditRelation: '' as AnyComponent,
-    Mailboxes: '' as AnyComponent
+    Mailboxes: '' as AnyComponent,
+    AddEmailSocialId: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,

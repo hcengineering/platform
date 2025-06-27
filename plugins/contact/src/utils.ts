@@ -414,6 +414,7 @@ export async function ensureEmployeeForPerson (
   const txFactory = new TxFactory(me.primarySocialId)
   const personByUuid = await client.findOne(contact.class.Person, { personUuid: person.uuid })
   let personRef: Ref<Person> | undefined = personByUuid?._id
+
   if (personRef === undefined) {
     const socialIdentity = await client.findOne(contact.class.SocialIdentity, {
       _id: { $in: person.socialIds as SocialIdentityRef[] }
@@ -424,6 +425,8 @@ export async function ensureEmployeeForPerson (
   }
 
   if (personRef === undefined) {
+    // Local person not found: neither by personUuid nor by a local social identity
+    // Creating a new local person
     await ctx.with('create-person', {}, async () => {
       if (globalPerson === undefined) {
         console.error('Cannot get global person')
@@ -442,6 +445,7 @@ export async function ensureEmployeeForPerson (
       await client.tx(createPersonTx)
     })
   } else if (personByUuid === undefined) {
+    // Local person found only by social identity, need to set personUuid
     const updatePersonTx = txFactory.createTxUpdateDoc(contact.class.Person, contact.space.Contacts, personRef, {
       personUuid: person.uuid
     })
@@ -478,7 +482,8 @@ export async function ensureEmployeeForPerson (
               type: socialId.type,
               value: socialId.value,
               key: buildSocialIdString(socialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
-              verifiedOn: socialId.verifiedOn
+              verifiedOn: socialId.verifiedOn,
+              isDeleted: socialId.isDeleted
             },
             socialId._id as SocialIdentityRef
           )
@@ -492,16 +497,37 @@ export async function ensureEmployeeForPerson (
         throw new Error('Social identity is attached to the wrong person')
       }
 
-      // Check and update if needed
+      // Check and update if needed. It can:
+      // 1. Become verified (changes verifiedOn)
       if (existing.verifiedOn == null) {
         const updateSocialIdentityTx = txFactory.createTxUpdateDoc(
           contact.class.SocialIdentity,
           contact.space.Contacts,
           existing._id,
           {
-            verifiedOn: socialId.verifiedOn
+            verifiedOn: socialId.verifiedOn,
+            value: socialId.value,
+            key: socialId.key,
+            isDeleted: socialId.isDeleted
           }
         )
+
+        await client.tx(updateSocialIdentityTx)
+      }
+
+      // 2. Become deleted (changes value/key/isDeleted)
+      if (existing.isDeleted !== socialId.isDeleted && socialId.isDeleted === true) {
+        const updateSocialIdentityTx = txFactory.createTxUpdateDoc(
+          contact.class.SocialIdentity,
+          contact.space.Contacts,
+          existing._id,
+          {
+            value: socialId.value,
+            key: socialId.key,
+            isDeleted: socialId.isDeleted
+          }
+        )
+
         await client.tx(updateSocialIdentityTx)
       }
     }

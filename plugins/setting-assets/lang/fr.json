@@ -16,6 +16,7 @@
     "Saving": "Enregistrement...",
     "Saved": "Enregistré",
     "Add": "Ajouter",
+    "AddNew": "Ajouter {type}",
     "Value": "Valeur",
     "EnterCurrentPassword": "Entrez le mot de passe actuel",
     "EnterNewPassword": "Entrez le nouveau mot de passe",
@@ -161,6 +162,14 @@
     "EmailIsUsed": "L'adresse e-mail est déjà utilisée par un autre compte",
     "Customize": "Personnaliser",
     "GuestAccess": "Invités anonymes",
-    "GuestAccessDescription": "Autorise les utilisateurs anonymes à accéder à l'espace de travail en lecture seule"
+    "GuestAccessDescription": "Autorise les utilisateurs anonymes à accéder à l'espace de travail en lecture seule",
+    "ManageIdentities": "Gérer les identités",
+    "Release": "Libération",
+    "ReleaseSocialId": "Libérer l'ID social",
+    "ReleaseSocialIdConfirm": "Êtes-vous sûr de vouloir libérer cet ID social : {socialId} ? Cela le supprimera de votre compte et vous ne pourrez plus l'utiliser pour vous connecter. De plus, toutes les intégrations associées seront supprimées.",
+    "ReleasePrimarySocialId": "Libérer l'ID social principal",
+    "ReleasePrimarySocialIdConfirm": "Libérer votre ID social principal actuel nécessitera de recharger la page. Êtes-vous sûr de vouloir continuer ?",
+    "Login": "Connexion",
+    "Primary": "Principal"
   }
 }

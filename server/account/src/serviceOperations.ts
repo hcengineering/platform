@@ -60,11 +60,10 @@ import {
   getWorkspacesInfoWithStatusByIds,
   verifyAllowedServices,
   wrap,
-  addSocialId,
+  addSocialIdBase,
   getWorkspaces,
   updateWorkspaceRole,
   getPersonName,
-  doReleaseSocialId,
   doMergeAccounts,
   doMergePersons,
   READONLY_GUEST_ACCOUNT,
@@ -557,26 +556,6 @@ export async function getPersonInfo (
   }
 }
 
-export async function releaseSocialId (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { personUuid: PersonUuid, type: SocialIdType, value: string }
-): Promise<void> {
-  const { extra } = decodeTokenVerbose(ctx, token)
-
-  verifyAllowedServices(['github', 'tool', 'workspace'], extra)
-
-  const { personUuid, type, value } = params
-
-  if (personUuid == null || !Object.values(SocialIdType).includes(type) || value == null || value === '') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-  }
-
-  await doReleaseSocialId(db, personUuid, type, value, extra?.service ?? '')
-}
-
 export async function addSocialIdToPerson (
   ctx: MeasureContext,
   db: AccountDB,
@@ -593,7 +572,7 @@ export async function addSocialIdToPerson (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  return await addSocialId(db, person, type, value, confirmed, displayValue)
+  return await addSocialIdBase(db, person, type, value, confirmed, displayValue)
 }
 
 export async function updateSocialId (
@@ -951,6 +930,38 @@ export async function mergeSpecifiedAccounts (
   await doMergeAccounts(db, primaryAccount, secondaryAccount)
 }
 
+export async function findPersonBySocialKey (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { socialString: string, requireAccount?: boolean }
+): Promise<PersonUuid | undefined> {
+  const { socialString } = params
+
+  if (socialString == null || socialString === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const { extra } = decodeTokenVerbose(ctx, token)
+
+  verifyAllowedServices(['tool', 'workspace', 'aibot', ...integrationServices], extra)
+
+  const socialId = await db.socialId.findOne({ key: socialString })
+
+  if (socialId == null) {
+    return
+  }
+
+  if (params.requireAccount === true) {
+    const account = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
+
+    return account?.uuid
+  }
+
+  return socialId.personUuid
+}
+
 export type AccountServiceMethods =
   | 'getPendingWorkspace'
   | 'updateWorkspaceInfo'
@@ -963,7 +974,6 @@ export type AccountServiceMethods =
   | 'addSocialIdToPerson'
   | 'updateSocialId'
   | 'getPersonInfo'
-  | 'releaseSocialId'
   | 'createIntegration'
   | 'updateIntegration'
   | 'deleteIntegration'
@@ -977,6 +987,7 @@ export type AccountServiceMethods =
   | 'findFullSocialIdBySocialKey'
   | 'mergeSpecifiedPersons'
   | 'mergeSpecifiedAccounts'
+  | 'findPersonBySocialKey'
 
 /**
  * @public
@@ -994,7 +1005,6 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     addSocialIdToPerson: wrap(addSocialIdToPerson),
     updateSocialId: wrap(updateSocialId),
     getPersonInfo: wrap(getPersonInfo),
-    releaseSocialId: wrap(releaseSocialId),
     createIntegration: wrap(createIntegration),
     updateIntegration: wrap(updateIntegration),
     deleteIntegration: wrap(deleteIntegration),
@@ -1007,6 +1017,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     listIntegrationsSecrets: wrap(listIntegrationsSecrets),
     findFullSocialIdBySocialKey: wrap(findFullSocialIdBySocialKey),
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
-    mergeSpecifiedAccounts: wrap(mergeSpecifiedAccounts)
+    mergeSpecifiedAccounts: wrap(mergeSpecifiedAccounts),
+    findPersonBySocialKey: wrap(findPersonBySocialKey)
   }
 }

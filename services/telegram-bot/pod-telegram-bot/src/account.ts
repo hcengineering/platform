@@ -41,6 +41,7 @@ export async function getAccountPerson (account: AccountUuid): Promise<Person | 
 export async function getAccountSocialIds (account: AccountUuid): Promise<SocialId[]> {
   try {
     const accountClient = getAccountClient(generateToken(account, undefined, { service: 'telegram-bot' }))
+    // We only want not-deleted social ids here?
     return await accountClient.getSocialIds()
   } catch (e) {
     console.error(e)

@@ -51,7 +51,6 @@ export interface SocialId extends SocialIdBase {
   personUuid: PersonUuid
   createdOn?: Timestamp
   verifiedOn?: Timestamp
-  isDeleted?: boolean
 }
 
 export interface Account {

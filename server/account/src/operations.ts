@@ -23,6 +23,7 @@ import {
   isActiveMode,
   isDeletingMode,
   isWorkspaceCreating,
+  loginSocialTypes,
   type MeasureContext,
   type Person,
   type PersonId,
@@ -54,7 +55,7 @@ import type {
   WorkspaceLoginInfo
 } from './types'
 import {
-  addSocialId,
+  addSocialIdBase,
   checkInvite,
   cleanEmail,
   confirmEmail,
@@ -422,7 +423,7 @@ export async function createWorkspace (
   ctx.info('Creating workspace record', { workspaceName, account, region })
 
   // Any confirmed social ID will do
-  const socialId = (await getSocialIds(ctx, db, branding, token, { confirmed: true }))[0]
+  const socialId = (await getSocialIds(ctx, db, branding, token, { confirmed: true, includeDeleted: false }))[0]
 
   if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, {}))
@@ -1459,7 +1460,7 @@ export async function getLoginInfoByToken (
 
   if (!isDocGuest && !isSystem) {
     // Any confirmed social ID will do
-    socialId = (await getSocialIds(ctx, db, branding, token, { confirmed: true }))[0]
+    socialId = (await getSocialIds(ctx, db, branding, token, { confirmed: true, includeDeleted: false }))[0]
     if (socialId == null) {
       return {
         account: accountUuid
@@ -1649,9 +1650,9 @@ export async function getSocialIds (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { confirmed: boolean }
+  params: { confirmed: boolean, includeDeleted: boolean }
 ): Promise<SocialId[]> {
-  const { confirmed = true } = params
+  const { confirmed = true, includeDeleted = false } = params
   const { account } = decodeTokenVerbose(ctx, token)
 
   // do not expose not-confirmed social ids for now
@@ -1661,7 +1662,7 @@ export async function getSocialIds (
 
   const socialIds = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
 
-  return socialIds.filter((si) => si.isDeleted !== true)
+  return includeDeleted ? socialIds : socialIds.filter((si) => si.isDeleted !== true)
 }
 
 export async function isReadOnlyGuest (
@@ -1689,36 +1690,6 @@ export async function getPerson (
   }
 
   return person
-}
-
-export async function findPersonBySocialKey (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { socialString: string, requireAccount?: boolean }
-): Promise<PersonUuid | undefined> {
-  const { socialString } = params
-
-  if (socialString == null || socialString === '') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-  }
-
-  decodeTokenVerbose(ctx, token)
-
-  const socialId = await db.socialId.findOne({ key: socialString })
-
-  if (socialId == null) {
-    return
-  }
-
-  if (params.requireAccount === true) {
-    const account = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
-
-    return account?.uuid
-  }
-
-  return socialId.personUuid
 }
 
 export async function findPersonBySocialId (
@@ -1927,7 +1898,7 @@ async function createMailbox (
 
   await db.mailbox.insertOne({ accountUuid: account, mailbox })
   await db.mailboxSecret.insertOne({ mailbox, secret: generatePassword() })
-  const socialId = await addSocialId(db, account, SocialIdType.EMAIL, mailbox, true)
+  const socialId = await addSocialIdBase(db, account, SocialIdType.EMAIL, mailbox, true)
   ctx.info('Mailbox created', { mailbox, account, socialId })
   return { mailbox, socialId }
 }
@@ -1967,7 +1938,7 @@ async function deleteMailbox (
 
   await db.mailboxSecret.deleteMany({ mailbox })
   await db.mailbox.deleteMany({ mailbox })
-  await doReleaseSocialId(db, account, SocialIdType.EMAIL, mailbox, 'deleteMailbox')
+  await doReleaseSocialId(db, account, SocialIdType.EMAIL, mailbox, `deleteMailbox@${account}`)
   ctx.info('Mailbox deleted', { mailbox, account })
 }
 
@@ -1999,6 +1970,90 @@ async function exchangeGuestToken (
   }
 
   return token
+}
+
+async function addSocialId (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    type: SocialIdType
+    value: string
+    displayValue?: string
+  }
+): Promise<PersonId> {
+  const { type, value } = params
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
+  }
+
+  const normalizedValue = normalizeValue(value)
+  const existing = await db.socialId.findOne({ type, value: normalizedValue })
+
+  // Upon verification:
+  // If none exists, create a new one
+  // If exists only for person without account - merge person to the account
+  // If exists for this account but not verified - proceed to verification
+  // If exists for this account and verified - throw an error
+  // If exists for another account - throw an error? Must merge accounts with a different method.
+
+  if (existing != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, { value, type }))
+  }
+
+  const socialId = await db.socialId.insertOne({ type, value: normalizedValue, personUuid: account })
+
+  return socialId
+}
+
+export async function releaseSocialId (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { personUuid?: PersonUuid, type: SocialIdType, value: string, deleteIntegrations?: boolean }
+): Promise<SocialId> {
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  let { personUuid } = params
+  const { type, value, deleteIntegrations } = params
+
+  if (!Object.values(SocialIdType).includes(type) || value == null || value === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const allowedService = verifyAllowedServices(['github', 'tool', 'workspace'], extra, false)
+
+  if (!allowedService) {
+    if (personUuid != null && personUuid !== account) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    } else {
+      personUuid = account
+    }
+  }
+
+  if (personUuid == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  if (!allowedService) {
+    // User should always have at least one Huly and one "login" social id
+    // so do not allow releasing last ones
+    const socialIds = await db.socialId.find({ personUuid, verifiedOn: { $gt: 0 }, isDeleted: { $ne: true } })
+    const afterRemoval = socialIds.filter((it) => it.type !== type || it.value !== value)
+
+    if (afterRemoval.filter((it) => it.type === SocialIdType.HULY).length === 0) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+
+    if (afterRemoval.filter((it) => loginSocialTypes.includes(it.type)).length === 0) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
+  return await doReleaseSocialId(db, personUuid, type, value, extra?.service ?? account, deleteIntegrations)
 }
 
 export type AccountMethods =
@@ -2039,7 +2094,6 @@ export type AccountMethods =
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
   | 'updateAllowReadOnlyGuests'
-  | 'findPersonBySocialKey'
   | 'findPersonBySocialId'
   | 'findSocialIdBySocialKey'
   | 'ensurePerson'
@@ -2048,10 +2102,10 @@ export type AccountMethods =
   | 'createMailbox'
   | 'getMailboxes'
   | 'deleteMailbox'
-  | 'addSocialIdToPerson'
-  | 'updateSocialId'
   | 'getAccountInfo'
   | 'isReadOnlyGuest'
+  | 'addSocialId'
+  | 'releaseSocialId'
 
 /**
  * @public
@@ -2090,6 +2144,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     deleteMailbox: wrap(deleteMailbox),
     ensurePerson: wrap(ensurePerson),
     exchangeGuestToken: wrap(exchangeGuestToken),
+    addSocialId: wrap(addSocialId),
+    releaseSocialId: wrap(releaseSocialId),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
@@ -2101,7 +2157,6 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getLoginWithWorkspaceInfo: wrap(getLoginWithWorkspaceInfo),
     getSocialIds: wrap(getSocialIds),
     getPerson: wrap(getPerson),
-    findPersonBySocialKey: wrap(findPersonBySocialKey),
     findPersonBySocialId: wrap(findPersonBySocialId),
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),
     getWorkspaceMembers: wrap(getWorkspaceMembers),

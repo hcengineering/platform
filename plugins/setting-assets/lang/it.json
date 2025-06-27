@@ -16,6 +16,7 @@
     "Saving": "Salvataggio...",
     "Saved": "Salvato",
     "Add": "Aggiungi",
+    "AddNew": "Aggiungi {type}",
     "Value": "Valore",
     "EnterCurrentPassword": "Inserisci la password attuale",
     "EnterNewPassword": "Inserisci la nuova password",
@@ -161,6 +162,14 @@
     "EmailIsUsed": "L'email è già in uso",
     "Customize": "Personalizzare",
     "GuestAccess": "Ospiti anonimi",
-    "GuestAccessDescription": "Consente agli utenti anonimi di accedere all'area di lavoro in modalità sola lettura"
+    "GuestAccessDescription": "Consente agli utenti anonimi di accedere all'area di lavoro in modalità sola lettura",
+    "ManageIdentities": "Gestisci identità",
+    "Release": "Rilascio",
+    "ReleaseSocialId": "Rilascia ID social",
+    "ReleaseSocialIdConfirm": "Sei sicuro di voler rilasciare questo ID social: {socialId}? Questo lo rimuoverà dal tuo account e non potrai più usarlo per accedere. Inoltre, tutte le integrazioni associate verranno rimosse.",
+    "ReleasePrimarySocialId": "Rilascia ID social primario",
+    "ReleasePrimarySocialIdConfirm": "Rilasciare il tuo ID social primario attuale richiederà il ricaricamento della pagina. Sei sicuro di voler procedere?",
+    "Login": "Accesso",
+    "Primary": "Primario"
   }
 }

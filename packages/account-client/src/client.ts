@@ -109,7 +109,7 @@ export interface AccountClient {
   isReadOnlyGuest: () => Promise<boolean>
   getPerson: () => Promise<Person>
   getPersonInfo: (account: PersonUuid) => Promise<PersonInfo>
-  getSocialIds: () => Promise<SocialId[]>
+  getSocialIds: (includeDeleted?: boolean) => Promise<SocialId[]>
   getWorkspaceMembers: () => Promise<WorkspaceMemberInfo[]>
   updateWorkspaceRole: (account: string, role: AccountRole) => Promise<void>
   updateAllowReadOnlyGuests: (
@@ -164,7 +164,21 @@ export interface AccountClient {
   ) => Promise<PersonId>
   updateSocialId: (personId: PersonId, displayValue: string) => Promise<PersonId>
   exchangeGuestToken: (token: string) => Promise<string>
-  releaseSocialId: (personUuid: PersonUuid, type: SocialIdType, value: string) => Promise<void>
+  /**
+   * Releases the target social id for the target account.
+   * If called with user's token it releases the social id for the user's account.
+   * @param personUuid Required for services
+   * @param type Social id type
+   * @param value Social id value
+   * @param deleteIntegrations Deletes associated integrations if true. Otherwise, throws an error if any.
+   * @returns Deleted social id with updated isDeleted flag and key/value
+   */
+  releaseSocialId: (
+    personUuid: PersonUuid | undefined,
+    type: SocialIdType,
+    value: string,
+    deleteIntegrations?: boolean
+  ) => Promise<SocialId>
   createIntegration: (integration: Integration) => Promise<void>
   updateIntegration: (integration: Integration) => Promise<void>
   deleteIntegration: (integrationKey: IntegrationKey) => Promise<void>
@@ -578,10 +592,10 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async getSocialIds (): Promise<SocialId[]> {
+  async getSocialIds (includeDeleted?: boolean): Promise<SocialId[]> {
     const request = {
       method: 'getSocialIds' as const,
-      params: {}
+      params: { includeDeleted }
     }
 
     return await this.rpc(request)
@@ -842,13 +856,18 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async releaseSocialId (personUuid: PersonUuid, type: SocialIdType, value: string): Promise<void> {
+  async releaseSocialId (
+    personUuid: PersonUuid | undefined,
+    type: SocialIdType,
+    value: string,
+    deleteIntegrations = false
+  ): Promise<SocialId> {
     const request = {
       method: 'releaseSocialId' as const,
-      params: { personUuid, type, value }
+      params: { personUuid, type, value, deleteIntegrations }
     }
 
-    await this.rpc(request)
+    return await this.rpc(request)
   }
 
   async createIntegration (integration: Integration): Promise<void> {
