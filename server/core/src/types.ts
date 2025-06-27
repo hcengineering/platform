@@ -134,7 +134,6 @@ export interface BroadcastOps {
 
 export interface CommunicationCallbacks {
   registerAsyncRequest: (ctx: MeasureContext, promise: (ctx: MeasureContext) => Promise<void>) => void
-  asyncBroadcast: (ctx: MeasureContext, sessionIds: Record<string, any[]>, queue: any[]) => void
   broadcast: (ctx: MeasureContext, sessionIds: Record<string, any[]>) => void
   enqueue: (ctx: MeasureContext, result: any[]) => void
 }

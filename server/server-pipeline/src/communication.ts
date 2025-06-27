@@ -28,7 +28,6 @@ import {
   type Middleware,
   type MiddlewareCreator,
   type PipelineContext,
-  SessionDataImpl,
   BaseMiddleware
 } from '@hcengineering/server-core'
 
@@ -59,43 +58,20 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
             }
           ]
         },
-        asyncBroadcast: (ctx, result, queue: Event[]) => {
-          const { contextData: sctx, txEvents: queueEvents } = CommunicationMiddleware.wrapEvents(ctx, queue)
-          const asyncContextData: SessionDataImpl = new SessionDataImpl(
-            sctx.account,
-            sctx.sessionId,
-            sctx.admin,
-            { txes: [], targets: {}, queue: [], sessions: {} },
-            context.workspace,
-            true,
-            sctx.removedMap,
-            sctx.contextCache,
-            context.modelDb,
-            sctx.socialStringsToUsers,
-            sctx.service
-          )
-
-          asyncContextData.broadcast.queue = queueEvents
-          for (const [sessionId, events] of Object.entries(result)) {
-            const { contextData, txEvents } = CommunicationMiddleware.wrapEvents(ctx, events)
-
-            asyncContextData.broadcast.sessions[sessionId] = (contextData.broadcast.sessions[sessionId] ?? []).concat(
-              txEvents
-            )
-          }
-          ctx.contextData = asyncContextData
-          void context.head?.handleBroadcast(ctx)
-        },
         broadcast: (ctx, result) => {
+          const contextData = ctx.contextData as SessionData
+          contextData.hasDomainBroadcast = true
           for (const [sessionId, events] of Object.entries(result)) {
-            const { contextData, txEvents } = CommunicationMiddleware.wrapEvents(ctx, events)
+            const txEvents = CommunicationMiddleware.wrapEvents(contextData, events)
             contextData.broadcast.sessions[sessionId] = (contextData.broadcast.sessions[sessionId] ?? []).concat(
               txEvents
             )
           }
         },
         enqueue: (ctx, result: Event[]) => {
-          const { contextData, txEvents } = CommunicationMiddleware.wrapEvents(ctx, result)
+          const contextData = ctx.contextData as SessionData
+          const txEvents = CommunicationMiddleware.wrapEvents(contextData, result)
+          contextData.hasDomainBroadcast = true
           contextData.broadcast.queue.push(...txEvents)
         }
       })
@@ -103,24 +79,17 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  private static wrapEvents (
-    ctx: MeasureContext<any>,
-    result: Event[]
-  ): { contextData: SessionData, txEvents: TxDomainEvent[] } {
-    const contextData = ctx.contextData as SessionData
-    return {
-      contextData,
-      txEvents: result.map((it) => ({
-        _id: generateId(),
-        space: core.space.Tx,
-        objectSpace: core.space.Domain,
-        _class: core.class.TxDomainEvent,
-        domain: COMMUNICATION_DOMAIN,
-        event: it,
-        modifiedBy: contextData.account.primarySocialId,
-        modifiedOn: Date.now()
-      }))
-    }
+  private static wrapEvents (ctx: SessionData, result: Event[]): TxDomainEvent[] {
+    return result.map((it) => ({
+      _id: generateId(),
+      space: core.space.Tx,
+      objectSpace: core.space.Domain,
+      _class: core.class.TxDomainEvent,
+      domain: COMMUNICATION_DOMAIN,
+      event: it,
+      modifiedBy: ctx.account.primarySocialId,
+      modifiedOn: Date.now()
+    }))
   }
 
   async domainRequest (ctx: MeasureContext, domain: OperationDomain, params: DomainParams): Promise<DomainResult> {
