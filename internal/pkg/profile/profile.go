@@ -53,7 +53,7 @@ var profileOriginalT = VideoProfile{
 	Scale:      false,
 	VideoCodec: "libx264",
 	AudioCodec: "aac",
-	CRF:         23,
+	CRF:        23,
 }
 
 // Profile360p is a profile for transcoding video in 360p
@@ -89,7 +89,7 @@ var Profile720p = VideoProfile{
 	Bandwidth:  5000000,
 	VideoCodec: "libx264",
 	AudioCodec: "aac",
-	CRF: 25,
+	CRF:        25,
 }
 
 // Profile1080p is a profile for transcoding video in 1080p
@@ -140,6 +140,7 @@ var Profile4320p = VideoProfile{
 	CRF:        22,
 }
 
+// Profiles is a map of all supported profiles
 var Profiles = map[string]VideoProfile{
 	"360p":  Profile360p,
 	"480p":  Profile480p,
@@ -150,13 +151,13 @@ var Profiles = map[string]VideoProfile{
 	"4320p": Profile4320p,
 }
 
+// MakeProfileOriginal creates a profile for original video without transcoding
 func MakeProfileOriginal(width, height int) VideoProfile {
 	resolution := fmt.Sprintf("%v:%v", width, height)
 	level := resconv.Level(resolution)
 	bandwidth := resconv.Bandwidth(level)
 
 	profile := profileOriginal
-	//profile.Name = level
 	profile.Width = width
 	profile.Height = height
 	profile.Bandwidth = bandwidth
@@ -164,13 +165,13 @@ func MakeProfileOriginal(width, height int) VideoProfile {
 	return profile
 }
 
+// MakeProfileOriginalT creates a profile for transcoding video in the original resolution
 func MakeProfileOriginalT(width, height int) VideoProfile {
 	resolution := fmt.Sprintf("%v:%v", width, height)
 	level := resconv.Level(resolution)
 	bandwidth := resconv.Bandwidth(level)
 
 	profile := profileOriginalT
-	//profile.Name = level
 	profile.Width = width
 	profile.Height = height
 	profile.Bandwidth = bandwidth

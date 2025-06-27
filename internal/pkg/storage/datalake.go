@@ -378,6 +378,7 @@ func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string
 	return nil
 }
 
+// MultipartUploadStart creates a new multipart upload
 func (d *DatalakeStorage) MultipartUploadStart(ctx context.Context, objectName, contentType string) (string, error) {
 	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("objectName", objectName))
 	url := fmt.Sprintf("%v/upload/multipart/%v/%v", d.baseURL, d.workspace, objectName)
@@ -410,6 +411,7 @@ func (d *DatalakeStorage) MultipartUploadStart(ctx context.Context, objectName, 
 	return result.UploadID, err
 }
 
+// MultipartUploadPart uploads a part of a multipart upload
 func (d *DatalakeStorage) MultipartUploadPart(ctx context.Context, objectName, uploadID string, partNumber int, data []byte) (*MultipartPart, error) {
 	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("uploadID", uploadID), zap.Int("partNumber", partNumber))
 	params := url.Values{}
@@ -445,6 +447,7 @@ func (d *DatalakeStorage) MultipartUploadPart(ctx context.Context, objectName, u
 	return &part, err
 }
 
+// MultipartUploadComplete completes a multipart upload
 func (d *DatalakeStorage) MultipartUploadComplete(ctx context.Context, objectName, uploadID string, parts []MultipartPart) error {
 	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("uploadID", uploadID), zap.String("objectName", objectName))
 	params := url.Values{}
@@ -484,6 +487,7 @@ func (d *DatalakeStorage) MultipartUploadComplete(ctx context.Context, objectNam
 	return nil
 }
 
+// MultipartUploadCancel cancels a multipart upload
 func (d *DatalakeStorage) MultipartUploadCancel(ctx context.Context, objectName, uploadID string) error {
 	var logger = d.logger.With(zap.String("workspace", d.workspace), zap.String("uploadID", uploadID))
 	params := url.Values{}

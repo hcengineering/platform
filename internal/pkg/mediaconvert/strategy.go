@@ -22,6 +22,7 @@ import (
 	"github.com/hcengineering/stream/internal/pkg/resconv"
 )
 
+// VideoMeta contains information about the video
 type VideoMeta struct {
 	Width       int
 	Height      int

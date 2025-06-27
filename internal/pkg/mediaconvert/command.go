@@ -120,7 +120,7 @@ func buildHLSCommand(profile profile.VideoProfile, opts *Options) []string {
 	}
 }
 
-func buildVideoCommand(profile profile.VideoProfile, opts *Options) []string {
+func buildVideoCommand(profile profile.VideoProfile) []string {
 	crf := profile.CRF
 	if crf == 0 {
 		crf = 23
@@ -162,7 +162,7 @@ func BuildVideoCommand(opts *Options) []string {
 
 	var command = buildCommonCommand(opts)
 	for _, profile := range opts.Profiles {
-		command = append(command, buildVideoCommand(profile, opts)...)
+		command = append(command, buildVideoCommand(profile)...)
 		command = append(command, buildHLSCommand(profile, opts)...)
 		command = append(command, filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, profile.Name)))
 	}
@@ -172,6 +172,7 @@ func BuildVideoCommand(opts *Options) []string {
 // BuildThumbnailCommand creates a command that creates a thumbnail for the input video
 func BuildThumbnailCommand(opts *Options) []string {
 	return append([]string{},
+		"-y", // Overwrite output files without asking.
 		"-i", opts.Input,
 		"-vframes", "1",
 		"-update", "1",

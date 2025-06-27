@@ -30,6 +30,7 @@ import (
 // minimum size for multipart parts (backend requires >=5MiB for all but last part)
 const minPartSize = 5 * 1024 * 1024
 
+// MultipartUpload uploads chunks via multipart upload
 type MultipartUpload struct {
 	logger *zap.Logger
 	buffer *bytes.Buffer
@@ -48,6 +49,7 @@ type MultipartUpload struct {
 	bytesUploaded int64
 }
 
+// NewMultipartUpload creates a new multipart upload
 func NewMultipartUpload(
 	ctx context.Context,
 	multipartStorage storage.MultipartStorage,
@@ -122,7 +124,7 @@ func (w *MultipartUpload) Terminate(ctx context.Context) error {
 
 	w.logger.Debug("terminating multipart upload", zap.Int("parts", len(w.parts)))
 
-	// create new context in case the main context is cancelled
+	// create new context in case the main context is canceled
 	cancelCtx := ctx
 	if ctx.Err() != nil {
 		var cancel context.CancelFunc

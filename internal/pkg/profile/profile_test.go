@@ -104,6 +104,7 @@ func TestMakeProfileOriginal(t *testing.T) {
 				Width:      640,
 				Height:     480,
 				Bandwidth:  2000000,
+				CRF:        23,
 			},
 		},
 		{
@@ -117,6 +118,7 @@ func TestMakeProfileOriginal(t *testing.T) {
 				Width:      2000,
 				Height:     1200,
 				Bandwidth:  8000000,
+				CRF:        23,
 			},
 		},
 	}
@@ -147,6 +149,7 @@ func TestMakeProfileOriginalT(t *testing.T) {
 				Width:      1280,
 				Height:     720,
 				Bandwidth:  5000000,
+				CRF:        23,
 			},
 		},
 		{
@@ -160,6 +163,7 @@ func TestMakeProfileOriginalT(t *testing.T) {
 				Width:      3840,
 				Height:     2160,
 				Bandwidth:  25000000,
+				CRF:        23,
 			},
 		},
 	}

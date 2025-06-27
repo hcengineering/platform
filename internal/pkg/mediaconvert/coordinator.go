@@ -90,8 +90,8 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 	}
 
 	if atomic.AddInt32(&s.activeTranscoding, 1) > int32(s.conf.MaxParallelTranscodingCount) {
-		atomic.AddInt32(&s.activeTranscoding, -1)
 		s.logger.Debug("run out of resources for scaling")
+		//		atomic.AddInt32(&s.activeTranscoding, -1)
 		// TODO do not transcode
 	}
 
