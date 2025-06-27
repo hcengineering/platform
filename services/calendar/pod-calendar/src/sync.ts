@@ -13,6 +13,16 @@
 // limitations under the License.
 //
 
+import { AccountClient } from '@hcengineering/account-client'
+import calendar, {
+  Calendar,
+  Event,
+  ExternalCalendar,
+  ReccuringEvent,
+  ReccuringInstance,
+  Visibility
+} from '@hcengineering/calendar'
+import contact, { Contact, getPersonRefsBySocialIds, Person } from '@hcengineering/contact'
 import core, {
   AttachedData,
   Data,
@@ -27,24 +37,27 @@ import core, {
   TxOperations,
   TxProcessor
 } from '@hcengineering/core'
-import { getCalendarsSyncHistory, getEventHistory, setCalendarsSyncHistory, setEventHistory } from './kvsUtils'
-import { GoogleEmail, Token, User } from './types'
-import { calendar_v3 } from 'googleapis'
-import { getRateLimitter, RateLimiter } from './rateLimiter'
-import calendar, {
-  Calendar,
-  Event,
-  ExternalCalendar,
-  ReccuringEvent,
-  ReccuringInstance,
-  Visibility
-} from '@hcengineering/calendar'
-import { parseRecurrenceStrings } from './utils'
+import setting from '@hcengineering/setting'
 import { htmlToMarkup } from '@hcengineering/text'
 import { deepEqual } from 'fast-equals'
-import contact, { Contact, getPersonRefsBySocialIds, Person } from '@hcengineering/contact'
-import setting from '@hcengineering/setting'
-import { AccountClient } from '@hcengineering/account-client'
+import { calendar_v3 } from 'googleapis'
+import { getClient } from './client'
+import {
+  getCalendarsSyncHistory,
+  getEventHistory,
+  removeUserByEmail,
+  setCalendarsSyncHistory,
+  setEventHistory
+} from './kvsUtils'
+import { getRateLimitter, RateLimiter } from './rateLimiter'
+import { CALENDAR_INTEGRATION, GoogleEmail, Token, User } from './types'
+import {
+  getGoogleClient,
+  getWorkspaceToken,
+  parseRecurrenceStrings,
+  removeIntegrationSecret,
+  setCredentials
+} from './utils'
 import { WatchController } from './watch'
 
 const locks = new Map<string, Promise<void>>()
@@ -91,7 +104,7 @@ export class IncomingSyncManager {
     this.systemClient = new TxOperations(client.client, core.account.System)
   }
 
-  static async sync (
+  static async initSync (
     ctx: MeasureContext,
     accountClient: AccountClient,
     client: TxOperations,
@@ -105,6 +118,31 @@ export class IncomingSyncManager {
       await syncManager.startSync()
     } finally {
       mutex()
+    }
+  }
+
+  static async sync (ctx: MeasureContext, accountClient: AccountClient, user: Token, email: GoogleEmail): Promise<void> {
+    const client = await getClient(getWorkspaceToken(user.workspace))
+    const txOp = new TxOperations(client, user.userId)
+    const google = getGoogleClient()
+    const mutex = await lock(`${user.workspace}:${user.userId}:${email}`)
+    try {
+      const authSucces = await setCredentials(google.auth, user)
+      if (!authSucces) {
+        await removeUserByEmail(user, user.email)
+        await removeIntegrationSecret(ctx, accountClient, {
+          socialId: user.userId,
+          kind: CALENDAR_INTEGRATION,
+          workspaceUuid: user.workspace,
+          key: user.email
+        })
+        return
+      }
+      const syncManager = new IncomingSyncManager(ctx, accountClient, txOp, user, email, google.google)
+      await syncManager.startSync()
+    } finally {
+      mutex()
+      await txOp.close()
     }
   }
 
@@ -171,7 +209,19 @@ export class IncomingSyncManager {
   }
 
   private async sync (calendarId: string): Promise<void> {
+    this.ctx.info('Sync calendar', {
+      workspace: this.user.workspace,
+      user: this.user.userId,
+      emai: this.email,
+      calendarId
+    })
     await this.syncEvents(calendarId)
+    this.ctx.info('Sync calendar finished', {
+      workspace: this.user.workspace,
+      user: this.user.userId,
+      emai: this.email,
+      calendarId
+    })
     const watchController = WatchController.get(this.ctx, this.accountClient)
     await this.rateLimiter.take(1)
     await watchController.addWatch(this.user, this.email, calendarId, this.googleClient)
@@ -182,11 +232,22 @@ export class IncomingSyncManager {
       await this.getMyCalendars()
       await this.syncCalendars()
       await this.getMyCalendars()
+      this.ctx.info('Sync started for calendars', {
+        workspace: this.user.workspace,
+        user: this.user.userId,
+        emai: this.email,
+        count: this.calendars.length
+      })
       for (const calendar of this.calendars) {
         if (calendar.externalId !== undefined) {
           await this.sync(calendar.externalId)
         }
       }
+      this.ctx.info('Incoming sync finished', {
+        workspace: this.user.workspace,
+        user: this.user.userId,
+        emai: this.email
+      })
     } catch (err) {
       this.ctx.error('Start sync error', { workspace: this.user.workspace, user: this.user.userId, err })
     }
@@ -565,7 +626,17 @@ export class IncomingSyncManager {
 
   async syncCalendars (): Promise<void> {
     const history = await getCalendarsSyncHistory(this.user, this.email)
+    this.ctx.info('Sync calendars', {
+      workspace: this.user.workspace,
+      user: this.user.userId,
+      email: this.email
+    })
     await this.calendarSync(history)
+    this.ctx.info('Sync calendars finished', {
+      workspace: this.user.workspace,
+      user: this.user.userId,
+      email: this.email
+    })
     const watchController = WatchController.get(this.ctx, this.accountClient)
     await this.rateLimiter.take(1)
     await watchController.addWatch(this.user, this.email, null, this.googleClient)

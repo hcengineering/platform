@@ -2,7 +2,7 @@ import { getPersonByPersonId, formatName } from '@hcengineering/contact'
 import { Ref, TxOperations } from '@hcengineering/core'
 import notification, { DocNotifyContext, CommonInboxNotification, ActivityInboxNotification, InboxNotification } from '@hcengineering/notification'
 import { IntlString, addEventListener, translate } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
+import { createNotificationsQuery, getClient } from '@hcengineering/presentation'
 import { location } from '@hcengineering/ui'
 import workbench, { workbenchId } from '@hcengineering/workbench'
 import desktopPreferences, { defaultNotificationPreference } from '@hcengineering/desktop-preferences'
@@ -114,19 +114,26 @@ export function configureNotifications (): void {
   // because we generate them on a client
   let initTimestamp = 0
   const notificationHistory = new Map<string, number>()
-  const newUnreadNotifications = 0
+  let newUnreadNotifications = 0
 
   addEventListener(workbench.event.NotifyConnection, async () => {
     client = getClient()
     const electronAPI: IPCMainExposed = (window as any).electron
 
     const inboxClient = InboxNotificationsClientImpl.getClient()
+    const notificationsQuery = createNotificationsQuery(true)
 
-    // TODO: FIX ME
-    // notificationsQuery.query({ read: false, limit: 1000 }, res => {
-    //   newUnreadNotifications = res.getResult().length
-    //   electronAPI.setBadge(prevUnViewdNotificationsCount + newUnreadNotifications)
-    // })
+    notificationsQuery.query({ read: false, limit: 1000 }, res => {
+      newUnreadNotifications = res.getResult().length
+
+      if (preferences.showUnreadCounter) {
+        electronAPI.setBadge(prevUnViewdNotificationsCount + newUnreadNotifications)
+      }
+
+      if (preferences.bounceAppIcon) {
+        electronAPI.dockBounce()
+      }
+    })
 
     async function handleNotifications (notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>): Promise<void> {
       const inboxData = await getDisplayInboxData(notificationsByContext)

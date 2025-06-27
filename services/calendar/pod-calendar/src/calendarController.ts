@@ -68,8 +68,12 @@ export class CalendarController {
         const integrations = groups.get(info.uuid) ?? []
         if (await this.checkWorkspace(info, integrations)) {
           await limiter.add(async () => {
-            this.ctx.info('start workspace', { workspace: info.uuid })
-            await WorkspaceClient.run(this.ctx, this.accountClient, info.uuid)
+            try {
+              this.ctx.info('start workspace', { workspace: info.uuid })
+              await WorkspaceClient.run(this.ctx, this.accountClient, info.uuid)
+            } catch (err) {
+              this.ctx.error('Failed to start workspace', { workspace: info.uuid, error: err })
+            }
           })
         }
       }

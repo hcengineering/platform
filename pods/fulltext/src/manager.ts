@@ -16,6 +16,7 @@ import {
   createContentAdapter,
   QueueTopic,
   QueueWorkspaceEvent,
+  workspaceEvents,
   type ConsumerControl,
   type ConsumerHandle,
   type ConsumerMessage,
@@ -42,6 +43,8 @@ export class WorkspaceManager {
   sysHierarchy = new Hierarchy()
 
   workspaceConsumer?: ConsumerHandle
+
+  fulltextConsumer?: ConsumerHandle
   txConsumer?: ConsumerHandle
 
   constructor (
@@ -66,8 +69,7 @@ export class WorkspaceManager {
         (it) => TxProcessor.isExtendsCUD(it._class) && (it as TxCUD<Doc>).objectClass === core.class.Version
       ) as TxCreateDoc<Version>
     )
-
-    this.workspaceProducer = this.opt.queue.getProducer<QueueWorkspaceMessage>(this.ctx, QueueTopic.Workspace)
+    this.fulltextProducer = this.opt.queue.getProducer<QueueWorkspaceMessage>(this.ctx, QueueTopic.Fulltext)
   }
 
   shutdownInterval: any
@@ -76,7 +78,7 @@ export class WorkspaceManager {
 
   fulltextAdapter!: FullTextAdapter
 
-  workspaceProducer!: PlatformQueueProducer<QueueWorkspaceMessage>
+  fulltextProducer!: PlatformQueueProducer<QueueWorkspaceMessage>
 
   txInformer: any
 
@@ -108,6 +110,15 @@ export class WorkspaceManager {
       this.opt.queue.getClientId(),
       async (msg, control) => {
         await this.processWorkspaceEvent(msg, control)
+      }
+    )
+
+    this.fulltextConsumer = this.opt.queue.createConsumer<QueueWorkspaceMessage>(
+      this.ctx,
+      QueueTopic.Fulltext,
+      this.opt.queue.getClientId(),
+      async (msg, control) => {
+        await this.processFulltextEvent(msg, control)
       }
     )
 
@@ -181,17 +192,7 @@ export class WorkspaceManager {
             // Ignore fulltext in case of restoring
             continue
           }
-          await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
-            if (mm.type !== QueueWorkspaceEvent.Created) {
-              // No need to drop workspace if it was created
-              await indexer.dropWorkspace()
-            }
-            const toIndex = await indexer.getIndexClassess()
-            for (const { domain, classes } of toIndex) {
-              await control.heartbeat()
-              await indexer.reindex(this.ctx, domain, classes, control)
-            }
-          })
+          await this.fulltextProducer.send(ws, [workspaceEvents.fullReindex()])
         } else if (
           mm.type === QueueWorkspaceEvent.Deleted ||
           mm.type === QueueWorkspaceEvent.Archived ||
@@ -204,6 +205,40 @@ export class WorkspaceManager {
               (workspaceInfo.dataId as unknown as WorkspaceUuid) ?? workspaceInfo.uuid
             )
           }
+        } else if (mm.type === QueueWorkspaceEvent.Upgraded) {
+          this.ctx.warn('Upgraded', this.supportedVersion)
+          await this.closeWorkspace(ws)
+        }
+      }
+    }
+  }
+
+  private async processFulltextEvent (
+    msg: ConsumerMessage<QueueWorkspaceMessage>[],
+    control: ConsumerControl
+  ): Promise<void> {
+    for (const m of msg) {
+      const ws = m.id as WorkspaceUuid
+
+      for (const mm of m.value) {
+        this.ctx.info('fulltext event', { type: mm.type, workspace: ws, restoring: Array.from(this.restoring) })
+        let token: string
+        try {
+          token = generateToken(systemAccountUuid, ws, { service: 'fulltext' })
+        } catch (err: any) {
+          this.ctx.error('Error generating token', { err, systemAccountUuid, ws })
+          continue
+        }
+
+        if (mm.type === QueueWorkspaceEvent.FullReindex) {
+          await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
+            await indexer.dropWorkspace()
+            const toIndex = await indexer.getIndexClassess()
+            for (const { domain, classes } of toIndex) {
+              await control.heartbeat()
+              await indexer.reindex(this.ctx, domain, classes, control)
+            }
+          })
         } else if (mm.type === QueueWorkspaceEvent.Reindex) {
           const mmd = mm as QueueWorkspaceReindexMessage
           if (!this.restoring.has(ws)) {
@@ -211,9 +246,6 @@ export class WorkspaceManager {
               await indexer.reindex(this.ctx, mmd.domain, mmd.classes, control)
             })
           }
-        } else if (mm.type === QueueWorkspaceEvent.Upgraded) {
-          this.ctx.warn('Upgraded', this.supportedVersion)
-          await this.closeWorkspace(ws)
         }
       }
     }
@@ -320,7 +352,8 @@ export class WorkspaceManager {
     clearTimeout(this.txInformer)
     await this.txConsumer?.close()
     await this.workspaceConsumer?.close()
-    await this.workspaceProducer.close()
+    await this.fulltextConsumer?.close()
+    await this.fulltextProducer.close()
 
     for (const v of this.indexers.values()) {
       if (v instanceof Promise) {

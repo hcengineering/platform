@@ -65,7 +65,7 @@ export class OutcomingClient {
     } else if (type === 'create') {
       await this.create(event, calendar)
     }
-    await setSyncHistory(this.workspace)
+    await setSyncHistory(this.workspace, Date.now())
   }
 
   private async convertBody (event: Event): Promise<calendar_v3.Schema$Event> {

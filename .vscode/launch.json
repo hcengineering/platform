@@ -724,6 +724,25 @@
       "cwd": "${workspaceRoot}/services/analytics-collector/pod-analytics-collector"
     },
     {
+      "name": "Debug calendar",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "ACCOUNTS_URL" : "http://localhost:3000",
+        "Credentials" : "",
+        "KVS_URL" : "http://localhost:8094",
+        "SECRET" : "secret",
+        "WATCH_URL" : "https://calendar.hc.engineering/push"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "showAsyncStacks": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/services/calendar/pod-calendar"
+    },
+    {
       "name": "Debug AI bot",
       "type": "node",
       "request": "launch",
