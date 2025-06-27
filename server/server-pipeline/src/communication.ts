@@ -50,6 +50,15 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
   static create (communicationApiFactory: CommunicationApiFactory): MiddlewareCreator {
     return async (ctx, context, next): Promise<Middleware> => {
       const communicationApi = await communicationApiFactory(ctx, context.workspace, {
+        registerAsyncRequest: (ctx, promise) => {
+          const contextData = ctx.contextData as SessionData
+          contextData.asyncRequests = [
+            ...(contextData.asyncRequests ?? []),
+            async (_ctx) => {
+              await promise(_ctx)
+            }
+          ]
+        },
         asyncBroadcast: (ctx, result, queue: Event[]) => {
           const { contextData: sctx, txEvents: queueEvents } = CommunicationMiddleware.wrapEvents(ctx, queue)
           const asyncContextData: SessionDataImpl = new SessionDataImpl(
