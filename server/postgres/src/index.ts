@@ -13,19 +13,20 @@
 // limitations under the License.
 //
 
+import { getDBClient, retryTxn } from '@hcengineering/postgres-base'
 import type { WorkspaceDestroyAdapter } from '@hcengineering/server-core'
 import { domainSchemas } from './schemas'
-import { getDBClient, retryTxn } from './utils'
 
-export { createDBClient } from './client'
 export { getDocFieldsByDomains, translateDomain } from './schemas'
 export * from './storage'
-export { convertDoc, createTables, getDBClient, retryTxn, setDBExtraOptions, shutdownPostgres } from './utils'
+export { convertDoc, createTables } from './utils'
+
+export * from '@hcengineering/postgres-base'
 
 export function createPostgreeDestroyAdapter (url: string): WorkspaceDestroyAdapter {
   return {
-    deleteWorkspace: async (ctx, contextVars, workspaceUuid): Promise<void> => {
-      const client = getDBClient(contextVars, url)
+    deleteWorkspace: async (ctx, workspaceUuid): Promise<void> => {
+      const client = getDBClient(url)
       try {
         if (workspaceUuid == null) {
           throw new Error('Workspace uuid is not defined')
