@@ -193,7 +193,11 @@ const connections = new Map<string, PostgresClientReferenceImpl>()
  * Initialize a connection to DB
  * @public
  */
-export function getDBClient (connectionString: string, database?: string, serviceName: string = 'transactor'): PostgresClientReference {
+export function getDBClient (
+  connectionString: string,
+  database?: string,
+  serviceName: string = 'transactor'
+): PostgresClientReference {
   const extraOptions = JSON.parse(process.env.POSTGRES_OPTIONS ?? '{}')
   const key = `${connectionString}${extraOptions}`
 
