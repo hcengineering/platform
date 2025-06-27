@@ -147,7 +147,8 @@ export class TEvent extends TAttachedDoc implements Event {
 
   timeZone?: string
 
-  user!: PersonId
+  @Index(IndexKind.Indexed)
+    user!: PersonId
 
   blockTime!: boolean
 }
