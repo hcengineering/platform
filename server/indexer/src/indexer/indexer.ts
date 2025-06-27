@@ -33,6 +33,7 @@ import core, {
   SortingOrder,
   type Space,
   type TxCUD,
+  type TxDomainEvent,
   TxProcessor,
   type WorkspaceIds,
   type WorkspaceUuid,
@@ -64,10 +65,17 @@ import { type RestClient as CommunicationClient } from '@hcengineering/communica
 import { findSearchPresenter, updateDocWithPresenter } from '../mapper'
 import { type FullTextPipeline } from './types'
 import { createIndexedDoc, createIndexedDocFromMessage, getContent } from './utils'
-import { type CardID, type Message } from '@hcengineering/communication-types'
+import { type Markdown, type CardID } from '@hcengineering/communication-types'
 import { parseYaml } from '@hcengineering/communication-yaml'
 import { applyPatches } from '@hcengineering/communication-shared'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
+import {
+  type CreateMessageEvent,
+  type UpdatePatchEvent,
+  type RemovePatchEvent,
+  MessageEventType,
+  type Event
+} from '@hcengineering/communication-sdk-types'
 
 export * from './types'
 export * from './utils'
@@ -250,7 +258,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
             await this.indexDocuments(ctx, v, values, pushQueue)
             if (this.hierarchy.isDerived(v, card.class.Card)) {
-              processedCommunication += await this.indexCommunication(ctx, v, values, pushQueue)
+              processedCommunication += await this.indexCommunication(
+                ctx,
+                v as Ref<Class<Card>>,
+                values as Card[],
+                pushQueue
+              )
             }
             await control?.heartbeat()
           }
@@ -480,8 +493,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   async indexCommunication (
     ctx: MeasureContext,
-    _class: Ref<Class<Doc>>,
-    docs: Doc[],
+    _class: Ref<Class<Card>>,
+    docs: Card[],
     pushQueue: ElasticPushQueue
   ): Promise<number> {
     const communicationClient = this.communicationClient
@@ -525,8 +538,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               if (message.removed) {
                 continue
               }
-              const indexedDoc = createIndexedDocFromMessage(doc as Card, message)
-              await this.processCommunicationMessage(ctx, message, indexedDoc)
+              const indexedDoc = createIndexedDocFromMessage(doc._id, doc.space, doc._class, message)
+              await this.processCommunicationMessage(ctx, message.content, indexedDoc)
               if (this.listener?.onIndexing !== undefined) {
                 await this.listener.onIndexing(indexedDoc)
               }
@@ -556,8 +569,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             if (this.cancelling) {
               return processed
             }
-            const indexedDoc = createIndexedDocFromMessage(doc as Card, message)
-            await this.processCommunicationMessage(ctx, message, indexedDoc)
+            const indexedDoc = createIndexedDocFromMessage(doc._id, doc.space, doc._class, message)
+            await this.processCommunicationMessage(ctx, message.content, indexedDoc)
             if (this.listener?.onIndexing !== undefined) {
               await this.listener.onIndexing(indexedDoc)
             }
@@ -581,14 +594,27 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     return processed
   }
 
-  public async processDocuments (ctx: MeasureContext, result: TxCUD<Doc>[], control: ConsumerControl): Promise<void> {
+  public async processTransactions (
+    ctx: MeasureContext,
+    result: (TxCUD<Doc> | TxDomainEvent<Event>)[],
+    control: ConsumerControl
+  ): Promise<void> {
     const contextData = this.createContextData()
     ctx.contextData = contextData
     // Find documents matching query
 
     // We need to update hierarchy and local model if required.
 
-    for (const tx of result) {
+    const docEvents = result.filter((tx) => tx._class !== core.class.TxDomainEvent) as TxCUD<Doc>[]
+    const messageEvents = result.filter(
+      (tx) =>
+        tx._class === core.class.TxDomainEvent &&
+        (tx as TxDomainEvent<any>).domain === 'communication' &&
+        ((tx as TxDomainEvent<Event>).event.type === MessageEventType.CreateMessage ||
+          (tx as TxDomainEvent<Event>).event.type === MessageEventType.UpdatePatch ||
+          (tx as TxDomainEvent<Event>).event.type === MessageEventType.RemovePatch)
+    ) as TxDomainEvent<CreateMessageEvent | UpdatePatchEvent | RemovePatchEvent>[]
+    for (const tx of docEvents) {
       try {
         this.hierarchy.tx(tx)
         const domain = this.hierarchy.findDomain(tx.objectClass)
@@ -601,7 +627,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       }
     }
 
-    const byClass = groupByArray<TxCUD<Doc>, Ref<Class<Doc>>>(result, (it) => it.objectClass)
+    const byClass = groupByArray<TxCUD<Doc>, Ref<Class<Doc>>>(docEvents, (it) => it.objectClass)
 
     const pushQueue = new ElasticPushQueue(this.fulltextAdapter, this.workspace, ctx, control)
 
@@ -621,6 +647,50 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       } catch (err: any) {
         ctx.error('failed to index documents', { err, tx: v })
         Analytics.handleError(err)
+      }
+    }
+
+    const messagesByCardId = groupByArray(messageEvents, (e) => e.event.cardId)
+    for (const [cardId, txes] of messagesByCardId) {
+      const cardDoc = (await this.storage.findAll(ctx, card.class.Card, { _id: cardId }))[0]
+      for (const tx of txes) {
+        if (tx.event.type === MessageEventType.CreateMessage) {
+          const event = tx.event
+          if (event.messageId === undefined) {
+            continue
+          }
+          const message = {
+            id: event.messageId,
+            cardId: event.cardId,
+            creator: event.socialId,
+            created: new Date(Date.parse(event.date as any))
+          }
+          const indexedDoc = createIndexedDocFromMessage(cardDoc._id, cardDoc.space, cardDoc._class, message)
+          await this.processCommunicationMessage(ctx, event.content, indexedDoc)
+          if (this.listener?.onIndexing !== undefined) {
+            await this.listener.onIndexing(indexedDoc)
+          }
+          await pushQueue.push(indexedDoc)
+        } else if (tx.event.type === MessageEventType.UpdatePatch) {
+          const event = tx.event as UpdatePatchEvent
+          const message = {
+            id: event.messageId,
+            cardId: event.cardId,
+            creator: event.socialId,
+            created: new Date(Date.parse(event.date as any))
+          }
+          const indexedDoc = createIndexedDocFromMessage(cardDoc._id, cardDoc.space, cardDoc._class, message)
+          if (event.content != null) {
+            await this.processCommunicationMessage(ctx, event.content, indexedDoc)
+          }
+          if (this.listener?.onIndexing !== undefined) {
+            await this.listener.onIndexing(indexedDoc)
+          }
+          await pushQueue.push(indexedDoc)
+        } else if (tx.event.type === MessageEventType.RemovePatch) {
+          const event = tx.event
+          toRemove.push({ _id: event.messageId as any, _class: `${card.class.Card}%message` as Ref<Class<Doc>> })
+        }
       }
     }
 
@@ -780,10 +850,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   @withContext('process-communication-message')
   private async processCommunicationMessage (
     ctx: MeasureContext<any>,
-    message: Message,
+    messageContent: Markdown,
     indexedDoc: IndexedDoc
   ): Promise<void> {
-    const markup = markdownToMarkup(message.content)
+    const markup = markdownToMarkup(messageContent)
     let textContent = jsonToText(markup)
     textContent = textContent
       .split(/ +|\t+|\f+/)

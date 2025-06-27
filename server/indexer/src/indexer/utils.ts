@@ -110,19 +110,24 @@ export function createIndexedDoc (doc: Doc, mixins: Ref<Class<Doc>>[] | undefine
 /**
  * @public
  */
-export function createIndexedDocFromMessage (card: Card, message: Message): IndexedDoc {
+export function createIndexedDocFromMessage (
+  cardId: Ref<Card>,
+  cardSpace: Ref<Space>,
+  cardClass: Ref<Class<Card>>,
+  message: Pick<Message, 'id' | 'edited' | 'created' | 'creator'>
+): IndexedDoc {
   const modifiedDate = message.edited ?? message.created
   const modifiedOn = modifiedDate.getTime()
   const indexedDoc = {
     id: message.id as any,
     _class: [`${cardPlugin.class.Card}%message` as Ref<Class<Doc>>],
-    space: card.space,
+    space: cardSpace,
     [docKey('createdOn', core.class.Doc)]: message.created.getTime(),
     [docKey('createdBy', core.class.Doc)]: message.creator,
     modifiedBy: message.creator,
     modifiedOn,
-    attachedTo: card._id,
-    attachedToClass: card._class
+    attachedTo: cardId,
+    attachedToClass: cardClass
   }
   return indexedDoc
 }

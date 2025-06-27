@@ -6,6 +6,7 @@ import type {
   Tx,
   TxCreateDoc,
   TxCUD,
+  TxDomainEvent,
   Version,
   WorkspaceInfoWithStatus,
   WorkspaceUuid
@@ -31,6 +32,7 @@ import {
 } from '@hcengineering/server-core'
 import { type FulltextDBConfiguration } from '@hcengineering/server-indexer'
 import { generateToken } from '@hcengineering/server-token'
+import { type Event } from '@hcengineering/communication-sdk-types'
 
 import { WorkspaceIndexer } from './workspace'
 
@@ -123,7 +125,7 @@ export class WorkspaceManager {
     )
 
     let txMessages: number = 0
-    this.txConsumer = this.opt.queue.createConsumer<TxCUD<Doc>>(
+    this.txConsumer = this.opt.queue.createConsumer<TxCUD<Doc> | TxDomainEvent<Event>>(
       this.ctx,
       QueueTopic.Tx,
       this.opt.queue.getClientId(),
@@ -136,12 +138,15 @@ export class WorkspaceManager {
 
         txMessages += msg.length
 
-        await this.processDocuments(msg, control)
+        await this.processTransactions(msg, control)
       }
     )
   }
 
-  private async processDocuments (msg: ConsumerMessage<TxCUD<Doc<Space>>>[], control: ConsumerControl): Promise<void> {
+  private async processTransactions (
+    msg: ConsumerMessage<TxCUD<Doc<Space>> | TxDomainEvent<Event>>[],
+    control: ConsumerControl
+  ): Promise<void> {
     for (const m of msg) {
       const ws = m.workspace
 
@@ -154,7 +159,7 @@ export class WorkspaceManager {
       }
 
       await this.withIndexer(this.ctx, ws, token, true, async (indexer) => {
-        await indexer.fulltext.processDocuments(this.ctx, m.value, control)
+        await indexer.fulltext.processTransactions(this.ctx, m.value, control)
       })
     }
   }
