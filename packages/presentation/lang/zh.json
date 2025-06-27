@@ -41,6 +41,7 @@
     "ColorRemove": "删除颜色预设",
     "ColorReset": "重置颜色预设",
     "Copy": "复制",
+    "DocumentUrlCopied": "已复制",
     "CopyLink": "复制链接",
     "AccessDenied": "对象不存在或您无权访问。",
     "UnableToFollowMention": "无法打开提及的对象"

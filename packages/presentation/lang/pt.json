@@ -40,7 +40,8 @@
     "ColorAdd": "Adicionar predefinição de cor",
     "ColorRemove": "Remover predefinição de cor",
     "ColorReset": "Repor predefinições de cores",
-    "Copiar": "Copiar",
+    "Copy": "Copiar",
+    "DocumentUrlCopied": "Copiado!",
     "CopyLink": "Copiar link",
     "AccessDenied": "O objeto não existe ou você não tem permissão para acessá-lo.",
     "UnableToFollowMention": "Não foi possível abrir o objeto mencionado"
