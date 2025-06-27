@@ -49,6 +49,8 @@ export default mergeIds(recorderId, plugin, {
     TopLeft: '' as IntlString,
     TopRight: '' as IntlString,
     BottomLeft: '' as IntlString,
-    BottomRight: '' as IntlString
+    BottomRight: '' as IntlString,
+    Resolution: '' as IntlString,
+    Original: '' as IntlString
   }
 })

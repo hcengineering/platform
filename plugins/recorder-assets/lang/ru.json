@@ -25,6 +25,8 @@
     "TopLeft": "Слева вверху",
     "TopRight": "Справа вверху",
     "BottomLeft": "Слева внизу",
-    "BottomRight": "Справа внизу"
+    "BottomRight": "Справа внизу",
+    "Resolution": "Разрешение",
+    "Original": "Оригинал"
   }
 }
