@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import core, { getCurrentAccount } from '@hcengineering/core'
+  import { DevicesPreference } from '@hcengineering/love'
   import { getClient } from '@hcengineering/presentation'
   import { Breadcrumb, Header, Label, Toggle } from '@hcengineering/ui'
-  import { DevicesPreference } from '@hcengineering/love'
+  import { isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
   import love from '../plugin'
   import { myPreferences } from '../stores'
   import { krispProcessor } from '../utils'
-  import { isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
 
   const client = getClient()
 
@@ -14,9 +14,9 @@
     if (myPreferences !== undefined) {
       await client.update(myPreferences, { micEnabled: !value })
     } else {
-      const space = getCurrentAccount().uuid as unknown as Ref<Space>
-      await client.createDoc(love.class.DevicesPreference, space, {
-        attachedTo: space,
+      const acc = getCurrentAccount().uuid
+      await client.createDoc(love.class.DevicesPreference, core.space.Workspace, {
+        attachedTo: acc,
         noiseCancellation: true,
         micEnabled: !value,
         camEnabled: true,
@@ -29,9 +29,9 @@
     if (myPreferences !== undefined) {
       await client.update(myPreferences, { camEnabled: !value })
     } else {
-      const space = getCurrentAccount().uuid as unknown as Ref<Space>
-      await client.createDoc(love.class.DevicesPreference, space, {
-        attachedTo: space,
+      const acc = getCurrentAccount().uuid
+      await client.createDoc(love.class.DevicesPreference, core.space.Workspace, {
+        attachedTo: acc,
         noiseCancellation: true,
         camEnabled: !value,
         micEnabled: true,
@@ -47,9 +47,9 @@
     if (myPreferences !== undefined) {
       await client.update(myPreferences, { noiseCancellation: value })
     } else {
-      const space = getCurrentAccount().uuid as unknown as Ref<Space>
-      await client.createDoc(love.class.DevicesPreference, space, {
-        attachedTo: space,
+      const acc = getCurrentAccount().uuid
+      await client.createDoc(love.class.DevicesPreference, core.space.Workspace, {
+        attachedTo: acc,
         noiseCancellation: value,
         camEnabled: true,
         micEnabled: true,
@@ -69,7 +69,7 @@
       <div class="flex-row-center flex-gap-4">
         <Label label={love.string.StartWithMutedMic} />
         <Toggle
-          on={!($myPreferences?.micEnabled ?? false)}
+          on={!($myPreferences?.micEnabled ?? true)}
           on:change={(e) => {
             saveMicPreference($myPreferences, e.detail)
           }}
@@ -78,7 +78,7 @@
       <div class="flex-row-center flex-gap-4">
         <Label label={love.string.StartWithoutVideo} />
         <Toggle
-          on={!($myPreferences?.camEnabled ?? false)}
+          on={!($myPreferences?.camEnabled ?? true)}
           on:change={(e) => {
             saveCamPreference($myPreferences, e.detail)
           }}
