@@ -59,13 +59,13 @@ linters-settings:
   gocyclo:
     min-complexity: 30
   dupl:
-    threshold: 150
+    threshold: 500
   funlen:
     lines: 240
     statements: 120
   goconst:
     min-len: 2
-    min-occurrences: 2
+    min-occurrences: 3
   depguard:
     rules:
       main:

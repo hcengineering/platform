@@ -26,7 +26,6 @@ import (
 	"github.com/hcengineering/stream/internal/pkg/config"
 	"github.com/hcengineering/stream/internal/pkg/log"
 	"github.com/hcengineering/stream/internal/pkg/manifest"
-	"github.com/hcengineering/stream/internal/pkg/resconv"
 	"github.com/hcengineering/stream/internal/pkg/storage"
 	"github.com/hcengineering/stream/internal/pkg/token"
 	"github.com/hcengineering/stream/internal/pkg/uploader"
@@ -119,7 +118,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 	videoStream := probe.FirstVideoStream()
 	if videoStream == nil {
 		logger.Error("no video stream found", zap.String("filepath", sourceFilePath))
-		return nil, errors.Wrapf(err, "no video stream found")
+		return nil, fmt.Errorf("no video stream found")
 	}
 
 	logger.Debug("video stream found", zap.String("codec", videoStream.CodecName), zap.Int("width", videoStream.Width), zap.Int("height", videoStream.Height))
@@ -129,19 +128,22 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 		logger.Info("no audio stream found", zap.String("filepath", sourceFilePath))
 	}
 
-	var res = fmt.Sprintf("%v:%v", videoStream.Width, videoStream.Height)
-	var codec = videoStream.CodecName
-	var level = resconv.Level(res)
-	var sublevels = resconv.SubLevels(res)
+	meta := VideoMeta{
+		Width:       videoStream.Width,
+		Height:      videoStream.Height,
+		Codec:       videoStream.CodecName,
+		ContentType: stat.Type,
+	}
+
+	var profiles = DefaultTranscodingProfiles(meta)
+
 	var opts = Options{
-		Input:         sourceFilePath,
-		OutputDir:     p.cfg.OutputDir,
-		Level:         level,
-		LogLevel:      LogLevel(p.cfg.LogLevel),
-		Transcode:     !IsHLSSupportedVideoCodec(codec),
-		ScalingLevels: append(sublevels, level),
-		UploadID:      task.ID,
-		Threads:       p.cfg.MaxThreadCount,
+		Input:     sourceFilePath,
+		OutputDir: p.cfg.OutputDir,
+		LogLevel:  LogLevel(p.cfg.LogLevel),
+		Profiles:  profiles,
+		UploadID:  task.ID,
+		Threads:   p.cfg.MaxThreadCount,
 	}
 
 	logger.Debug("phase 5: start async upload process")
@@ -156,7 +158,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 		SourceFile:  sourceFilePath,
 	})
 
-	err = manifest.GenerateHLSPlaylist(opts.ScalingLevels, p.cfg.OutputDir, opts.UploadID)
+	err = manifest.GenerateHLSPlaylist(profiles, p.cfg.OutputDir, opts.UploadID)
 	if err != nil {
 		logger.Error("can not generate hls playlist", zap.String("out", p.cfg.OutputDir), zap.String("uploadID", opts.UploadID))
 		return nil, errors.Wrapf(err, "can not generate hls playlist")
@@ -168,8 +170,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 
 	var argsSlice = [][]string{
 		BuildThumbnailCommand(&opts),
-		BuildRawVideoCommand(&opts),
-		BuildScalingVideoCommand(&opts),
+		BuildVideoCommand(&opts),
 	}
 
 	var cmds []*exec.Cmd

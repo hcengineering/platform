@@ -18,13 +18,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
-	"github.com/hcengineering/stream/internal/pkg/resconv"
+	"github.com/hcengineering/stream/internal/pkg/profile"
 )
 
 // GenerateHLSPlaylist generates master file for master files for resolution levels
-func GenerateHLSPlaylist(levels []string, outputPath, uploadID string) error {
+func GenerateHLSPlaylist(profiles []profile.VideoProfile, outputPath, uploadID string) error {
 	p := filepath.Join(outputPath, uploadID, fmt.Sprintf("%v_master.m3u8", uploadID))
 	d := filepath.Dir(p)
 	_ = os.MkdirAll(d, os.ModePerm)
@@ -40,16 +39,16 @@ func GenerateHLSPlaylist(levels []string, outputPath, uploadID string) error {
 		return err
 	}
 
-	for _, res := range levels {
-		var bandwidth = resconv.Bandwidth(res)
-		var resolution = strings.ReplaceAll(resconv.Resolution(res), ":", "x")
+	for _, profile := range profiles {
+		var bandwidth = profile.Bandwidth
+		var resolution = fmt.Sprintf("%vx%v", profile.Width, profile.Height)
 
 		_, err = file.WriteString(fmt.Sprintf("#EXT-X-STREAM-INF:BANDWIDTH=%d,RESOLUTION=%v\n", bandwidth, resolution))
 		if err != nil {
 			return err
 		}
 
-		_, err = file.WriteString(fmt.Sprintf("%s_%s_master.m3u8\n", uploadID, res))
+		_, err = file.WriteString(fmt.Sprintf("%s_%s_master.m3u8\n", uploadID, profile.Name))
 		if err != nil {
 			return err
 		}

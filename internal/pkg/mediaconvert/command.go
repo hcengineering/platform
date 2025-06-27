@@ -21,11 +21,13 @@ import (
 	"io"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
 
 	"github.com/hcengineering/stream/internal/pkg/log"
+	"github.com/hcengineering/stream/internal/pkg/profile"
 	"go.uber.org/zap"
 )
 
@@ -55,14 +57,12 @@ const (
 
 // Options represents configuration for the ffmpeg command
 type Options struct {
-	Input         string
-	OutputDir     string
-	ScalingLevels []string
-	Level         string
-	LogLevel      LogLevel
-	Transcode     bool
-	Threads       int
-	UploadID      string
+	Input     string
+	OutputDir string
+	LogLevel  LogLevel
+	Threads   int
+	UploadID  string
+	Profiles  []profile.VideoProfile
 }
 
 func newFfmpegCommand(ctx context.Context, in io.Reader, args []string) (*exec.Cmd, error) {
@@ -70,14 +70,13 @@ func newFfmpegCommand(ctx context.Context, in io.Reader, args []string) (*exec.C
 		return nil, errors.New("ctx should not be nil")
 	}
 
+	var cmd = exec.CommandContext(ctx, "ffmpeg", args...)
+	cmd.Stdin = in
+
 	var logger = log.FromContext(ctx).With(zap.String("func", "newFFMpegCommand"))
+	logger.Debug("prepared command: ", zap.String("cmd", cmd.String()))
 
-	logger.Debug("prepared command: ", zap.Strings("args", args))
-
-	var result = exec.CommandContext(ctx, "ffmpeg", args...)
-	result.Stdin = in
-
-	return result, nil
+	return cmd, nil
 }
 
 func buildCommonCommand(opts *Options) []string {
@@ -90,6 +89,7 @@ func buildCommonCommand(opts *Options) []string {
 		"-i", opts.Input,
 	}
 
+	// If input is a URL, add HTTP specific parameters
 	if strings.HasPrefix(opts.Input, "http://") || strings.HasPrefix(opts.Input, "https://") {
 		result = append(result,
 			"-reconnect", "1",
@@ -99,6 +99,49 @@ func buildCommonCommand(opts *Options) []string {
 	}
 
 	return result
+}
+
+func buildHLSCommand(profile profile.VideoProfile, opts *Options) []string {
+	return []string{
+		"-f", "hls",
+		"-hls_time", "5",
+		// Use HLS flags
+		// - split_by_time
+		//     Allow segments to start on frames other than key frames.
+		//     This improves behavior on some players when the time between key frames is inconsistent,
+		//     but may make things worse on others, and can cause some oddities during seeking.
+		//     This flag should be used with the hls_time option.
+		// - temp_file
+		//     Write segment data to filename.tmp and rename to filename only once the segment is complete.
+		"-hls_flags", "split_by_time+temp_file",
+		// Do not limit number of HLS segments
+		"-hls_list_size", "0",
+		"-hls_segment_filename", filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", profile.Name)),
+	}
+}
+
+func buildVideoCommand(profile profile.VideoProfile) []string {
+	crf := profile.CRF
+	if crf == 0 {
+		crf = 23
+	}
+	command := []string{
+		// Transcode only first video and optionally audio stream
+		"-map", "0:v:0",
+		"-map", "0:a?",
+		// Set up codecs
+		"-c:a", profile.AudioCodec,
+		"-c:v", profile.VideoCodec,
+		"-preset", "veryfast",
+		"-crf", strconv.Itoa(crf),
+		"-g", "60",
+	}
+
+	if profile.VideoCodec != "copy" && profile.Scale {
+		command = append(command, "-vf", "scale=-2:"+strconv.Itoa(profile.Height))
+	}
+
+	return command
 }
 
 // BuildAudioCommand returns flags for getting the audio from the input
@@ -111,87 +154,28 @@ func BuildAudioCommand(opts *Options) []string {
 	)
 }
 
-// BuildRawVideoCommand returns an extremely lightweight ffmpeg command for converting raw video without extra cost.
-func BuildRawVideoCommand(opts *Options) []string {
-	if opts.Transcode {
-		return append(buildCommonCommand(opts),
-			"-map", "0:v:0",
-			"-map", "0:a?",
-			"-c:a", "aac",
-			"-c:v", "libx264",
-			"-preset", "veryfast",
-			"-crf", "23",
-			"-g", "60",
-			"-f", "hls",
-			"-hls_time", "5",
-			"-hls_flags", "split_by_time+temp_file",
-			"-hls_list_size", "0",
-			"-hls_segment_filename", filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", opts.Level)),
-			filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, opts.Level)))
+// BuildVideoCommand returns ffmpeg command for converting video.
+func BuildVideoCommand(opts *Options) []string {
+	if len(opts.Profiles) == 0 {
+		return []string{}
 	}
 
-	return append(buildCommonCommand(opts),
-		"-c:a", "copy", // Copy audio stream
-		"-c:v", "copy", // Copy video stream
-		"-f", "hls",
-		"-hls_time", "5",
-		"-hls_flags", "split_by_time+temp_file",
-		"-hls_list_size", "0",
-		"-hls_segment_filename", filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", opts.Level)),
-		filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, opts.Level)))
+	var command = buildCommonCommand(opts)
+	for _, profile := range opts.Profiles {
+		command = append(command, buildVideoCommand(profile)...)
+		command = append(command, buildHLSCommand(profile, opts)...)
+		command = append(command, filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, profile.Name)))
+	}
+	return command
 }
 
 // BuildThumbnailCommand creates a command that creates a thumbnail for the input video
 func BuildThumbnailCommand(opts *Options) []string {
 	return append([]string{},
+		"-y", // Overwrite output files without asking.
 		"-i", opts.Input,
 		"-vframes", "1",
 		"-update", "1",
 		filepath.Join(opts.OutputDir, opts.UploadID, opts.UploadID+".jpg"),
 	)
-}
-
-// BuildScalingVideoCommand returns flags for ffmpeg for video scaling
-func BuildScalingVideoCommand(opts *Options) []string {
-	if len(opts.ScalingLevels) == 0 {
-		return []string{}
-	}
-
-	if len(opts.ScalingLevels) == 1 && opts.ScalingLevels[0] == opts.Level {
-		return []string{}
-	}
-
-	var result = buildCommonCommand(opts)
-
-	for _, level := range opts.ScalingLevels {
-		if level == opts.Level {
-			continue
-		}
-
-		result = append(result,
-			"-map", "0:v:0",
-			"-map", "0:a?",
-			"-vf", "scale=-2:"+level[:len(level)-1],
-			"-c:a", "aac",
-			"-c:v", "libx264",
-			"-preset", "veryfast",
-			"-crf", "23",
-			"-g", "60",
-			"-f", "hls",
-			"-hls_time", "5",
-			// Use HLS flags
-			// - split_by_time
-			//     Allow segments to start on frames other than key frames.
-			//     This improves behavior on some players when the time between key frames is inconsistent,
-			//     but may make things worse on others, and can cause some oddities during seeking.
-			//     This flag should be used with the hls_time option.
-			// - temp_file
-			//     Write segment data to filename.tmp and rename to filename only once the segment is complete.
-			"-hls_flags", "split_by_time+temp_file",
-			"-hls_list_size", "0",
-			"-hls_segment_filename", filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", level)),
-			filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, level)))
-	}
-
-	return result
 }

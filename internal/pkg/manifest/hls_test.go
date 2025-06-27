@@ -19,14 +19,24 @@ import (
 	"testing"
 
 	"github.com/hcengineering/stream/internal/pkg/manifest"
+	"github.com/hcengineering/stream/internal/pkg/profile"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGenerateHLSPlaylist(t *testing.T) {
-	resolutions := []string{"320p", "480p", "720p", "1080p", "4k", "8k"}
+	profiles := []profile.VideoProfile{
+		profile.Profile360p,
+		profile.Profile480p,
+		profile.Profile720p,
+		profile.Profile1080p,
+		profile.Profile1440p,
+	}
 	uploadID := "test123"
+	defer func() {
+		_ = os.RemoveAll(uploadID)
+	}()
 
-	err := manifest.GenerateHLSPlaylist(resolutions, "", uploadID)
+	err := manifest.GenerateHLSPlaylist(profiles, "", uploadID)
 	require.NoError(t, err)
 
 	outputPath := filepath.Join(uploadID, uploadID+"_master.m3u8")
@@ -42,10 +52,8 @@ func TestGenerateHLSPlaylist(t *testing.T) {
 
 	require.Contains(t, playlistContent, "#EXTM3U", "File must start with #EXTM3U")
 
-	for _, res := range resolutions {
-		expectedLine := uploadID + "_" + res + "_master.m3u8"
+	for _, prof := range profiles {
+		expectedLine := uploadID + "_" + prof.Name + "_master.m3u8"
 		require.Contains(t, playlistContent, expectedLine, "Missing expected reference: "+expectedLine)
 	}
-
-	_ = os.RemoveAll(uploadID)
 }

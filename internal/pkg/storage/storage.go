@@ -46,6 +46,20 @@ type Storage interface {
 	SetParent(ctx context.Context, fileName string, parentName string) error
 }
 
+// MultipartPart represents uploaded multipart part
+type MultipartPart struct {
+	PartNumber int    `json:"partNumber"`
+	ETag       string `json:"etag"`
+}
+
+// MultipartStorage represents multipart-based storage
+type MultipartStorage interface {
+	MultipartUploadStart(ctx context.Context, objectName, contentType string) (string, error)
+	MultipartUploadPart(ctx context.Context, objectName, uploadID string, partNumber int, data []byte) (*MultipartPart, error)
+	MultipartUploadComplete(ctx context.Context, objectName, uploadID string, parts []MultipartPart) error
+	MultipartUploadCancel(ctx context.Context, objectName, uploadID string) error
+}
+
 // NewStorageByURL creates a new storage based on the type from the url scheme, for example "datalake://my-datalake-endpoint"
 func NewStorageByURL(ctx context.Context, u *url.URL, storageType, token, workspace string) (Storage, error) {
 	if workspace == "" {
