@@ -89,6 +89,10 @@ export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.Issue, core.class.Class, serverTime.mixin.OnToDo, {
     onDone: serverTime.function.IssueToDoDone
   })
+
+  builder.mixin(time.class.ToDo, core.class.Class, serverCore.mixin.SearchPresenter, {
+    title: [['title']]
+  })
 }
 
 export * from '@hcengineering/server-time'
