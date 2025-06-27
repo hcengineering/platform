@@ -38,7 +38,6 @@ export default mergeIds(loginId, login, {
     Password: '' as IntlString,
     PasswordRepeat: '' as IntlString,
     Workspace: '' as IntlString,
-    LogIn: '' as IntlString,
     SignUp: '' as IntlString,
     SelectWorkspace: '' as IntlString,
     DoNotHaveAnAccount: '' as IntlString,

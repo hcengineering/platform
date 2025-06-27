@@ -218,7 +218,9 @@ export async function logIn (loginInfo: { account: string, token?: string }): Pr
 
 export async function logOut (): Promise<void> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-  await getAccountClient(accountsUrl).deleteCookie()
+  try {
+    void getAccountClient(accountsUrl).deleteCookie()
+  } catch (e) {}
 
   const currentWorkspace = getMetadata(presentation.metadata.WorkspaceUuid)
   if (currentWorkspace !== undefined) {
