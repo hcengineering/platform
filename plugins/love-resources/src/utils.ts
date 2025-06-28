@@ -355,9 +355,9 @@ export async function updateBlurRadius (value: number): Promise<void> {
   if ($myPreferences !== undefined) {
     await client.update($myPreferences, { blurRadius: value })
   } else {
-    const space = getCurrentEmployee() as string as Ref<Space>
-    await client.createDoc(love.class.DevicesPreference, space, {
-      attachedTo: space,
+    const acc = getCurrentAccount().uuid
+    await client.createDoc(love.class.DevicesPreference, core.space.Workspace, {
+      attachedTo: acc,
       noiseCancellation: true,
       camEnabled: true,
       micEnabled: true,

@@ -119,7 +119,7 @@
     "Everyone": "Все",
     "Here": "Здесь",
     "EveryoneDescription": "Уведомить всех в этом {title}",
-    "HereDescription": "Уведомить всех в этом{title}",
+    "HereDescription": "Уведомить всех в этом {title}",
     "Guest": "Гость"
   }
 }
