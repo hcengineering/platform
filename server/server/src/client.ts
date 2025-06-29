@@ -388,6 +388,12 @@ export class ClientSession implements Session {
       // We need to broadcast all collected transactions
       const broadcastPromise = ctx.pipeline.handleBroadcast(ctx.ctx)
 
+      await broadcastPromise
+
+      ctx.ctx.contextData.broadcast.queue = []
+      ctx.ctx.contextData.broadcast.txes = []
+      ctx.ctx.contextData.broadcast.sessions = {}
+
       // ok we could perform async requests if any
       const asyncs = (ctx.ctx.contextData as SessionData).asyncRequests ?? []
       let asyncsPromise: Promise<void> | undefined
@@ -403,13 +409,14 @@ export class ClientSession implements Session {
         }
         asyncsPromise = handleAyncs()
       }
-      await broadcastPromise
+
       if (asyncsPromise !== undefined) {
         await asyncsPromise
+        await ctx.pipeline?.handleBroadcast(ctx.ctx)
       }
     } catch (err) {
-      await ctx.sendError(ctx.requestId, 'Failed to findAll', unknownError(err))
-      ctx.ctx.error('failed to findAll', { err })
+      await ctx.sendError(ctx.requestId, 'Failed to domainRequest', unknownError(err))
+      ctx.ctx.error('failed to domainRequest', { err })
     }
   }
 

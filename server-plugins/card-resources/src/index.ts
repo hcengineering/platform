@@ -294,7 +294,7 @@ async function OnCardRemove (ctx: TxRemoveDoc<Card>[], control: TriggerControl):
     socialId: removedCard.modifiedBy
   }
 
-  void control.domainRequest(control.ctx, 'communication' as OperationDomain, {
+  await control.domainRequest(control.ctx, 'communication' as OperationDomain, {
     event
   })
 
@@ -366,7 +366,7 @@ async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl):
       socialId: updateTx.createdBy ?? updateTx.modifiedBy,
       date: new Date(updateTx.createdOn ?? updateTx.modifiedOn)
     }
-    void control.domainRequest(control.ctx, 'communication' as OperationDomain, {
+    await control.domainRequest(control.ctx, 'communication' as OperationDomain, {
       event
     })
   }
@@ -464,7 +464,7 @@ async function updateCollaborators (control: TriggerControl, ctx: TxCreateDoc<Ca
       socialId: tx.createdBy ?? tx.modifiedBy,
       date: new Date((tx.createdOn ?? tx.modifiedOn) + 1)
     }
-    void control.domainRequest(control.ctx, 'communication' as OperationDomain, {
+    await control.domainRequest(control.ctx, 'communication' as OperationDomain, {
       event
     })
   }

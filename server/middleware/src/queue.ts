@@ -48,6 +48,7 @@ export class QueueMiddleware extends BaseMiddleware {
       await this.connected
       this.connected = undefined
     }
+
     await Promise.all([
       this.provideBroadcast(ctx),
       this.txProducer.send(
