@@ -1552,8 +1552,9 @@ export async function getLoginWithWorkspaceInfo (
 ): Promise<LoginInfoWithWorkspaces> {
   let accountUuid: AccountUuid
   let extra: any
+  let workspace: WorkspaceUuid | undefined
   try {
-    ;({ account: accountUuid, extra } = decodeTokenVerbose(ctx, token))
+    ;({ account: accountUuid, extra, workspace } = decodeTokenVerbose(ctx, token))
   } catch (err: any) {
     Analytics.handleError(err)
     ctx.error('Invalid token', { token })
@@ -1631,6 +1632,13 @@ export async function getLoginWithWorkspaceInfo (
         ])
     ),
     socialIds
+  }
+
+  for (const ws of userWorkspaces) {
+    if (ws.uuid === workspace) {
+      await db.workspaceStatus.update({ workspaceUuid: workspace }, { lastVisit: Date.now() })
+      break
+    }
   }
 
   return loginInfo
