@@ -38,8 +38,8 @@ import {
 } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { FileModelLogger, prepareTools } from '@hcengineering/server-tool'
-import path from 'path'
 import { randomUUID } from 'crypto'
+import path from 'path'
 
 import { Analytics } from '@hcengineering/analytics'
 import {
@@ -718,6 +718,9 @@ export class WorkspaceWorker {
       if (result) {
         ctx.info('restore completed')
         return true
+      } else {
+        // Restore failed
+        await opt.errorHandler(workspace, new Error('Restore failed'))
       }
     } finally {
       clearInterval(notifyInt)
