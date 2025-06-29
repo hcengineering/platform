@@ -35,7 +35,8 @@ import core, {
   Ref,
   SocialIdType,
   TxOperations,
-  TxProcessor
+  TxProcessor,
+  WorkspaceUuid
 } from '@hcengineering/core'
 import setting from '@hcengineering/setting'
 import { htmlToMarkup } from '@hcengineering/text'
@@ -59,6 +60,8 @@ import {
   setCredentials
 } from './utils'
 import { WatchController } from './watch'
+
+export const synced = new Set<WorkspaceUuid>()
 
 const locks = new Map<string, Promise<void>>()
 
@@ -269,6 +272,12 @@ export class IncomingSyncManager {
         showDeleted: syncToken != null
       })
       if (res.status === 410) {
+        this.ctx.warn('Sync token is no longer valid, resyncing calendar', {
+          workspace: this.user.workspace,
+          user: this.user.userId,
+          email: this.email,
+          calendarId
+        })
         await this.eventsSync(calendarId)
         return
       }
@@ -290,6 +299,12 @@ export class IncomingSyncManager {
     } catch (err: any) {
       if (err?.response?.status === 410) {
         await this.eventsSync(calendarId)
+        this.ctx.warn('Sync token is no longer valid, resyncing calendar', {
+          workspace: this.user.workspace,
+          user: this.user.userId,
+          email: this.email,
+          calendarId
+        })
         return
       }
       this.ctx.error('Event sync error', { workspace: this.user.workspace, user: this.user.userId, err })
