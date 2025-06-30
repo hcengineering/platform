@@ -267,7 +267,7 @@ class AccountClientImpl implements AccountClient {
       return ws
     }
 
-    const result = { ...ws, ...status }
+    const result = { ...ws, ...status, processingAttemps: status.processingAttempts ?? 0 }
     delete result.status
 
     return result

@@ -15,14 +15,14 @@
   let membersToAdd: Ref<Employee>[] = []
   const channelMembers: Ref<Person>[] = value.members
     .map((acc) => {
-      const personRef = $employeeRefByAccountUuidStore.get(acc)
+      const employeeRef = $employeeRefByAccountUuidStore.get(acc)
 
-      if (personRef === undefined) {
-        console.error(`Person with social id ${acc} not found`)
+      if (employeeRef === undefined) {
+        console.error(`Employee with account ${acc} not found`)
         return undefined
       }
 
-      return personRef
+      return employeeRef
     })
     .filter(notEmpty)
 

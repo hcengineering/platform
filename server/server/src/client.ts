@@ -15,33 +15,21 @@
 
 import type { LoginInfoWithWorkspaces } from '@hcengineering/account-client'
 import {
-  type Event as CommunicationEvent,
-  type SessionData as CommunicationSession,
-  type EventResult
-} from '@hcengineering/communication-sdk-types'
-import {
-  type FindCollaboratorsParams,
-  type FindLabelsParams,
-  type FindMessagesGroupsParams,
-  type FindMessagesParams,
-  type FindNotificationContextParams,
-  type FindNotificationsParams,
-  type Message,
-  type MessagesGroup
-} from '@hcengineering/communication-types'
-import {
-  type AccountUuid,
   generateId,
   TxProcessor,
   type Account,
+  type AccountUuid,
   type Class,
   type Doc,
   type DocumentQuery,
   type Domain,
+  type DomainParams,
+  type DomainResult,
   type FindOptions,
   type FindResult,
   type LoadModelResponse,
   type MeasureContext,
+  type OperationDomain,
   type PersonId,
   type Ref,
   type SearchOptions,
@@ -392,70 +380,51 @@ export class ClientSession implements Session {
     await ctx.sendResponse(ctx.requestId, {})
   }
 
-  async eventRaw (ctx: ClientSessionCtx, event: CommunicationEvent): Promise<EventResult> {
-    this.lastRequest = Date.now()
-    return await ctx.communicationApi.event(this.getCommunicationCtx(), event)
-  }
+  async domainRequest (ctx: ClientSessionCtx, domain: OperationDomain, params: DomainParams): Promise<void> {
+    try {
+      const result: DomainResult = await this.domainRequestRaw(ctx, domain, params)
+      await ctx.sendResponse(ctx.requestId, result)
 
-  async event (ctx: ClientSessionCtx, event: CommunicationEvent): Promise<void> {
-    const result = await this.eventRaw(ctx, event)
-    await ctx.sendResponse(ctx.requestId, result)
-  }
+      // We need to broadcast all collected transactions
+      const broadcastPromise = ctx.pipeline.handleBroadcast(ctx.ctx)
 
-  async findMessagesRaw (ctx: ClientSessionCtx, params: FindMessagesParams, queryId?: number): Promise<Message[]> {
-    this.lastRequest = Date.now()
-    return await ctx.communicationApi.findMessages(this.getCommunicationCtx(), params, queryId)
-  }
+      await broadcastPromise
 
-  async findMessages (ctx: ClientSessionCtx, params: FindMessagesParams, queryId?: number): Promise<void> {
-    const result = await this.findMessagesRaw(ctx, params, queryId)
-    await ctx.sendResponse(ctx.requestId, result)
-  }
+      ctx.ctx.contextData.broadcast.queue = []
+      ctx.ctx.contextData.broadcast.txes = []
+      ctx.ctx.contextData.broadcast.sessions = {}
 
-  async findMessagesGroupsRaw (ctx: ClientSessionCtx, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    this.lastRequest = Date.now()
-    return await ctx.communicationApi.findMessagesGroups(this.getCommunicationCtx(), params)
-  }
+      // ok we could perform async requests if any
+      const asyncs = (ctx.ctx.contextData as SessionData).asyncRequests ?? []
+      let asyncsPromise: Promise<void> | undefined
+      if (asyncs.length > 0) {
+        const handleAyncs = async (): Promise<void> => {
+          try {
+            for (const r of asyncs) {
+              await r(ctx.ctx)
+            }
+          } catch (err: any) {
+            ctx.ctx.error('failed to handleAsyncs', { err })
+          }
+        }
+        asyncsPromise = handleAyncs()
+      }
 
-  async findMessagesGroups (ctx: ClientSessionCtx, params: FindMessagesGroupsParams): Promise<void> {
-    const result = await this.findMessagesGroupsRaw(ctx, params)
-    await ctx.sendResponse(ctx.requestId, result)
-  }
-
-  async findNotifications (ctx: ClientSessionCtx, params: FindNotificationsParams): Promise<void> {
-    const result = await ctx.communicationApi.findNotifications(this.getCommunicationCtx(), params)
-    await ctx.sendResponse(ctx.requestId, result)
-  }
-
-  async findNotificationContexts (
-    ctx: ClientSessionCtx,
-    params: FindNotificationContextParams,
-    queryId?: number
-  ): Promise<void> {
-    const result = await ctx.communicationApi.findNotificationContexts(this.getCommunicationCtx(), params, queryId)
-    await ctx.sendResponse(ctx.requestId, result)
-  }
-
-  async findLabels (ctx: ClientSessionCtx, params: FindLabelsParams): Promise<void> {
-    const result = await ctx.communicationApi.findLabels(this.getCommunicationCtx(), params)
-    await ctx.sendResponse(ctx.requestId, result)
-  }
-
-  async findCollaborators (ctx: ClientSessionCtx, params: FindCollaboratorsParams): Promise<void> {
-    const result = await ctx.communicationApi.findCollaborators(this.getCommunicationCtx(), params)
-    await ctx.sendResponse(ctx.requestId, result)
-  }
-
-  async unsubscribeQuery (ctx: ClientSessionCtx, id: number): Promise<void> {
-    this.lastRequest = Date.now()
-    await ctx.communicationApi.unsubscribeQuery(this.getCommunicationCtx(), id)
-    await ctx.sendResponse(ctx.requestId, {})
-  }
-
-  private getCommunicationCtx (): CommunicationSession {
-    return {
-      sessionId: this.sessionId,
-      account: this.account
+      if (asyncsPromise !== undefined) {
+        await asyncsPromise
+        await ctx.pipeline?.handleBroadcast(ctx.ctx)
+      }
+    } catch (err) {
+      await ctx.sendError(ctx.requestId, 'Failed to domainRequest', unknownError(err))
+      ctx.ctx.error('failed to domainRequest', { err })
     }
+  }
+
+  async domainRequestRaw (ctx: ClientSessionCtx, domain: OperationDomain, params: DomainParams): Promise<DomainResult> {
+    this.lastRequest = Date.now()
+    this.total.find++
+    this.current.find++
+    this.includeSessionContext(ctx)
+    return await ctx.pipeline.domainRequest(ctx.ctx, domain, params)
   }
 }

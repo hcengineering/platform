@@ -82,7 +82,9 @@
 
   $: query.query(queryDef, (res: Window<Message>) => {
     window = res
-    messages = queryDef.order === SortingOrder.Ascending ? res.getResult() : res.getResult().reverse()
+    messages = (queryDef.order === SortingOrder.Ascending ? res.getResult() : res.getResult().reverse()).filter(
+      (it) => !it.removed || it.thread != null
+    )
 
     if (messages.length < limit && res.hasNextPage()) {
       void window.loadNextPage()

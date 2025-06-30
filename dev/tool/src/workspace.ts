@@ -39,6 +39,7 @@ import {
 import { createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { connect } from '@hcengineering/server-tool'
 import { generateModelDiff, printDiff } from './mdiff'
+import { createEmptyBroadcastOps } from '@hcengineering/server-pipeline'
 
 export async function diffWorkspace (mongoUrl: string, dbName: string, rawTxes: Tx[]): Promise<void> {
   const client = getMongoClient(mongoUrl)
@@ -164,7 +165,7 @@ export async function backupRestore (
         recheck: false,
         storageAdapter: workspaceStorage,
         getConnection: async () => {
-          return wrapPipeline(ctx, await pipelineFactory(ctx, wsUrl, () => {}, null, null), wsUrl)
+          return wrapPipeline(ctx, await pipelineFactory(ctx, wsUrl, createEmptyBroadcastOps(), null), wsUrl)
         }
       })
     )

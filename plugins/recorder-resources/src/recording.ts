@@ -29,7 +29,11 @@ export async function record ({ onFileUploaded }: FileUploadOptions): Promise<vo
     await onFileUploaded?.({
       uuid: result.uuid as Ref<PlatformBlob>,
       name: result.name,
-      file
+      file,
+      metadata: {
+        width: result.width,
+        height: result.height
+      }
     })
   }
   showPopup(RecordingPopup, { onSuccess }, 'centered')
@@ -41,7 +45,7 @@ export async function startRecording (options: RecordingOptions): Promise<void> 
     throw new Error('Recording already started')
   }
 
-  const recorder = createScreenRecorder(options)
+  const recorder = await createScreenRecorder(options)
   await recorder.start()
 
   recording.set({ recorder, options, stream: options.stream, state: 'recording' })

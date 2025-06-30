@@ -70,6 +70,7 @@ import type {
   TxApplyIf,
   TxCUD,
   TxCreateDoc,
+  TxDomainEvent,
   TxMixin,
   TxModelUpgrade,
   TxRemoveDoc,
@@ -111,6 +112,7 @@ export default plugin(coreId, {
     Tx: '' as Ref<Class<Tx>>,
     TxModelUpgrade: '' as Ref<Class<TxModelUpgrade>>,
     TxWorkspaceEvent: '' as Ref<Class<TxWorkspaceEvent>>,
+    TxDomainEvent: '' as Ref<Class<TxDomainEvent>>,
     TxApplyIf: '' as Ref<Class<TxApplyIf>>,
     TxCUD: '' as Ref<Class<TxCUD<Doc>>>,
     TxCreateDoc: '' as Ref<Class<TxCreateDoc<Doc>>>,
@@ -195,7 +197,11 @@ export default plugin(coreId, {
     Model: '' as Ref<Space>,
     Space: '' as Ref<TypedSpace>,
     Configuration: '' as Ref<Space>,
-    Workspace: '' as Ref<Space>
+    Workspace: '' as Ref<Space>,
+    Domain: '' as Ref<Space>
+  },
+  employee: {
+    System: '' as Ref<any> // An system employee reference.
   },
   account: {
     System: '' as PersonId,

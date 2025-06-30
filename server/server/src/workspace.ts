@@ -14,7 +14,6 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { type ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
 import { type Branding, type MeasureContext, type WorkspaceIds } from '@hcengineering/core'
 import type { ConnectionSocket, Pipeline, Session } from '@hcengineering/server-core'
 
@@ -23,17 +22,13 @@ interface TickHandler {
   operation: () => void
 }
 
-export interface PipelinePair {
-  pipeline: Pipeline
-  communicationApi: CommunicationApi
-}
-export type WorkspacePipelineFactory = () => Promise<PipelinePair>
+export type WorkspacePipelineFactory = () => Promise<Pipeline>
 
 /**
  * @public
  */
 export class Workspace {
-  pipeline?: PipelinePair | Promise<PipelinePair>
+  pipeline?: Pipeline | Promise<Pipeline>
   upgrade: boolean = false
   closing?: Promise<void>
 
@@ -61,22 +56,22 @@ export class Workspace {
     this.softShutdown = softShutdown
   }
 
-  private getPipelinePair (): PipelinePair | Promise<PipelinePair> {
+  private getPipeline (): Pipeline | Promise<Pipeline> {
     if (this.pipeline === undefined) {
       this.pipeline = this.factory()
     }
     return this.pipeline
   }
 
-  async with<T>(op: (pipeline: Pipeline, communicationApi: CommunicationApi) => Promise<T>): Promise<T> {
+  async with<T>(op: (pipeline: Pipeline) => Promise<T>): Promise<T> {
     this.operations++
-    let pair = this.getPipelinePair()
-    if (pair instanceof Promise) {
-      pair = await pair
-      this.pipeline = pair
+    let pipeline = this.getPipeline()
+    if (pipeline instanceof Promise) {
+      pipeline = await pipeline
+      this.pipeline = pipeline
     }
     try {
-      return await op(pair.pipeline, pair.communicationApi)
+      return await op(pipeline)
     } finally {
       this.operations--
     }
@@ -86,7 +81,7 @@ export class Workspace {
     if (this.pipeline === undefined) {
       return
     }
-    const { pipeline, communicationApi } = await this.pipeline
+    const pipeline = await this.pipeline
     const closePipeline = async (): Promise<void> => {
       try {
         await ctx.with('close-pipeline', {}, async () => {
@@ -98,20 +93,10 @@ export class Workspace {
       }
     }
 
-    const closeCommunicationApi = async (): Promise<void> => {
-      try {
-        await ctx.with('close-communication-api', {}, async () => {
-          await communicationApi.close()
-        })
-      } catch (err: any) {
-        Analytics.handleError(err)
-        ctx.error('close-pipeline-error', { error: err })
-      }
-    }
     await ctx.with('closing', {}, async () => {
       const to = timeoutPromise(120000)
-      const closePromises = [closePipeline(), closeCommunicationApi()]
-      await Promise.race([Promise.all(closePromises), to.promise])
+      const closePromises = closePipeline()
+      await Promise.race([closePromises, to.promise])
       to.cancelHandle()
     })
   }

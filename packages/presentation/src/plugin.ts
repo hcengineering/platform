@@ -15,26 +15,31 @@
 //
 
 import {
-  type WorkspaceDataId,
-  type WorkspaceUuid,
   type Class,
   type Client,
   type Doc,
   type DocumentQuery,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
   type FindOptions,
   type FindResult,
   type Mixin,
+  type OperationDomain,
   type Ref,
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
   type Tx,
   type TxResult,
-  type WithLookup
+  type WithLookup,
+  type WorkspaceDataId,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { type ComponentExtensionId } from '@hcengineering/ui/src/types'
+import { type UploadConfig } from './file'
 import { type PresentationMiddlewareFactory } from './pipeline'
 import type { PreviewConfig } from './preview'
 import {
@@ -45,7 +50,6 @@ import {
   type InstantTransactions,
   type ObjectSearchCategory
 } from './types'
-import { type UploadConfig } from './file'
 
 /**
  * @public
@@ -69,6 +73,13 @@ export interface ClientHook {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<WithLookup<T> | undefined>
+
+  domainRequest: <T>(
+    client: Client,
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ) => Promise<DomainResult<T>>
 
   tx: (client: Client, tx: Tx) => Promise<TxResult>
 

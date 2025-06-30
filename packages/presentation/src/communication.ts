@@ -12,6 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { initLiveQueries } from '@hcengineering/communication-client-query'
+import {
+  type AddCollaboratorsEvent,
+  type AttachBlobsOperation,
+  type AttachLinkPreviewsOperation,
+  type BlobPatchEvent,
+  type CreateMessageEvent,
+  type CreateMessageResult,
+  type DetachBlobsOperation,
+  type DetachLinkPreviewsOperation,
+  type Event,
+  type EventResult,
+  type LinkPreviewPatchEvent,
+  MessageEventType,
+  NotificationEventType,
+  type ReactionPatchEvent,
+  type RemoveCollaboratorsEvent,
+  type RemoveNotificationContextEvent,
+  type RemovePatchEvent,
+  type SetBlobsOperation,
+  type SetLinkPreviewsOperation,
+  type ThreadPatchEvent,
+  type UpdateNotificationContextEvent,
+  type UpdateNotificationEvent,
+  type UpdateNotificationQuery,
+  type UpdatePatchEvent
+} from '@hcengineering/communication-sdk-types'
 import {
   type AccountID,
   type BlobData,
@@ -38,41 +65,22 @@ import {
   type NotificationContext,
   type SocialID
 } from '@hcengineering/communication-types'
-import {
-  type AddCollaboratorsEvent,
-  type CreateMessageEvent,
-  type CreateMessageResult,
-  type EventResult,
-  type RemoveCollaboratorsEvent,
-  type RemoveNotificationContextEvent,
-  type UpdateNotificationContextEvent,
-  type UpdateNotificationEvent,
-  type UpdateNotificationQuery,
-  type Event,
-  type ThreadPatchEvent,
-  MessageEventType,
-  type UpdatePatchEvent,
-  type RemovePatchEvent,
-  type ReactionPatchEvent,
-  NotificationEventType,
-  type BlobPatchEvent,
-  type AttachBlobsOperation,
-  type DetachBlobsOperation,
-  type SetBlobsOperation,
-  type LinkPreviewPatchEvent,
-  type AttachLinkPreviewsOperation,
-  type DetachLinkPreviewsOperation,
-  type SetLinkPreviewsOperation
-} from '@hcengineering/communication-sdk-types'
-import {
-  type Client as PlatformClient,
-  type ClientConnection as PlatformConnection,
+import core, {
   generateId,
   getCurrentAccount,
-  SocialIdType
+  type OperationDomain,
+  type Client as PlatformClient,
+  SocialIdType,
+  type Tx,
+  type TxDomainEvent
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
-import {
+
+import { generateLinkPreviewId } from '@hcengineering/communication-shared'
+import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
+import { addTxListener, removeTxListener, type TxListener } from './utils'
+
+export {
   createCollaboratorsQuery,
   createLabelsQuery,
   createMessagesQuery,
@@ -81,29 +89,6 @@ import {
   initLiveQueries,
   type MessageQueryParams
 } from '@hcengineering/communication-client-query'
-import { generateLinkPreviewId } from '@hcengineering/communication-shared'
-
-import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
-
-export {
-  createMessagesQuery,
-  createNotificationsQuery,
-  createNotificationContextsQuery,
-  createLabelsQuery,
-  createCollaboratorsQuery
-}
-export type { MessageQueryParams }
-
-interface Connection extends PlatformConnection {
-  findMessages: (params: FindMessagesParams, queryId?: number) => Promise<Message[]>
-  findMessagesGroups: (params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
-  findNotificationContexts: (params: FindNotificationContextParams, queryId?: number) => Promise<NotificationContext[]>
-  findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<Notification[]>
-  findLabels: (params: FindLabelsParams) => Promise<Label[]>
-  findCollaborators: (params: FindCollaboratorsParams, queryId?: number) => Promise<Collaborator[]>
-  sendEvent: (event: Event) => Promise<EventResult>
-  unsubscribeQuery: (id: number) => Promise<void>
-}
 
 let client: CommunicationClient
 
@@ -114,11 +99,10 @@ export function getCommunicationClient (): CommunicationClient {
 }
 
 export async function setCommunicationClient (platformClient: PlatformClient): Promise<void> {
-  const connection = platformClient.getConnection?.()
-  if (connection === undefined) {
-    return
+  if (client !== undefined) {
+    client.close()
   }
-  const _client = new Client(connection as unknown as Connection)
+  const _client = new Client(platformClient)
   initLiveQueries(_client, getCurrentWorkspaceUuid(), getFilesUrl(), onDestroy)
   client = _client
   onClientListeners.forEach((fn) => {
@@ -126,15 +110,22 @@ export async function setCommunicationClient (platformClient: PlatformClient): P
   })
 }
 
+const COMMUNICATION = 'communication' as OperationDomain
+
 class Client {
-  constructor (private readonly connection: Connection) {
-    connection.pushHandler((...events: any[]) => {
-      for (const event of events) {
-        if (event != null && 'type' in event) {
-          this.onEvent(event as Event)
-        }
+  txHandler: TxListener
+  constructor (private readonly connection: PlatformClient) {
+    this.txHandler = this.doHandleEvents.bind(this)
+    addTxListener(this.txHandler)
+  }
+
+  doHandleEvents (events: Tx[]): void {
+    for (const event of events) {
+      if (event._class === core.class.TxDomainEvent && (event as TxDomainEvent).domain === COMMUNICATION) {
+        const evt = event as TxDomainEvent<Event>
+        this.onEvent(evt.event)
       }
-    })
+    }
   }
 
   onEvent: (event: Event) => void = () => {}
@@ -375,43 +366,74 @@ class Client {
   }
 
   async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
-    return await this.connection.findMessages(params, queryId)
+    return (
+      await this.connection.domainRequest<Message[]>(COMMUNICATION, {
+        findMessages: { params, queryId }
+      })
+    ).value
   }
 
   async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    return await this.connection.findMessagesGroups(params)
+    return (
+      await this.connection.domainRequest<MessagesGroup[]>(COMMUNICATION, {
+        findMessagesGroups: { params }
+      })
+    ).value
   }
 
   async findNotificationContexts (
     params: FindNotificationContextParams,
     queryId?: number
   ): Promise<NotificationContext[]> {
-    return await this.connection.findNotificationContexts(params, queryId)
+    return (
+      await this.connection.domainRequest<NotificationContext[]>(COMMUNICATION, {
+        findNotificationContexts: { params, queryId }
+      })
+    ).value
   }
 
   async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<Notification[]> {
-    return await this.connection.findNotifications(params, queryId)
+    return (
+      await this.connection.domainRequest<Notification[]>(COMMUNICATION, {
+        findNotifications: { params, queryId }
+      })
+    ).value
   }
 
   async findLabels (params: FindLabelsParams): Promise<Label[]> {
-    return await this.connection.findLabels(params)
+    return (
+      await this.connection.domainRequest<Label[]>(COMMUNICATION, {
+        findLabels: { params }
+      })
+    ).value
   }
 
-  async findCollaborators (params: FindCollaboratorsParams, queryId?: number): Promise<Collaborator[]> {
-    return await this.connection.findCollaborators(params, queryId)
+  async findCollaborators (params: FindCollaboratorsParams): Promise<Collaborator[]> {
+    return (
+      await this.connection.domainRequest<Collaborator[]>(COMMUNICATION, {
+        findCollaborators: { params }
+      })
+    ).value
   }
 
   async unsubscribeQuery (id: number): Promise<void> {
-    await this.connection.unsubscribeQuery(id)
+    await this.connection.domainRequest<Message[]>(COMMUNICATION, {
+      unsubscribeQuery: id
+    })
   }
 
   close (): void {
-    // do nothing
+    removeTxListener(this.txHandler)
   }
 
   private async sendEvent (event: Event): Promise<EventResult> {
     const ev: Event = { ...event, _id: generateId() }
-    const eventPromise = this.connection.sendEvent(ev)
+
+    const eventPromise: Promise<EventResult> = this.connection
+      .domainRequest<EventResult>(COMMUNICATION, {
+      event: ev
+    })
+      .then((result) => result.value)
     this.onRequest(ev, eventPromise)
     return await eventPromise
   }

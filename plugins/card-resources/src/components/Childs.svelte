@@ -179,9 +179,7 @@
             listProvider.updateSelection(event.detail.docs, event.detail.value)
           }}
           on:content={(evt) => {
-            if (evt.detail.length > 0) {
-              dispatch('loaded')
-            }
+            dispatch('loaded')
             listProvider.update(evt.detail)
           }}
         />

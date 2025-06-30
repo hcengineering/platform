@@ -25,6 +25,8 @@
     "TopLeft": "Canto superior esquerdo",
     "TopRight": "Canto superior direito",
     "BottomLeft": "Canto inferior esquerdo",
-    "BottomRight": "Canto inferior direito"
+    "BottomRight": "Canto inferior direito",
+    "Resolution": "Resolução",
+    "Original": "Original"
   }
 }

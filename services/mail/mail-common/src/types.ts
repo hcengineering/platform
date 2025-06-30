@@ -74,3 +74,7 @@ export interface MessageData {
   recipient: MailRecipient
   isReply: boolean
 }
+
+export interface SyncOptions {
+  noNotify?: boolean
+}

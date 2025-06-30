@@ -25,6 +25,8 @@
     "TopLeft": "左上",
     "TopRight": "右上",
     "BottomLeft": "左下",
-    "BottomRight": "右下"
+    "BottomRight": "右下",
+    "Resolution": "分辨率",
+    "Original": "原始"
   }
 }

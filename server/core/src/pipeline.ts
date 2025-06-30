@@ -21,10 +21,13 @@ import {
   type Doc,
   type DocumentQuery,
   type Domain,
+  type DomainParams,
+  type DomainResult,
   type FindOptions,
   type FindResult,
   type LoadModelResponse,
   type MeasureContext,
+  type OperationDomain,
   type Ref,
   type SearchOptions,
   type SearchQuery,
@@ -100,11 +103,11 @@ class PipelineImpl implements Pipeline {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    return this.head !== undefined ? this.head.findAll(ctx, _class, query, options) : Promise.resolve(toFindResult([]))
+    return this.head?.findAll(ctx, _class, query, options) ?? Promise.resolve(toFindResult([]))
   }
 
   loadModel (ctx: MeasureContext, lastModelTx: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
-    return this.head !== undefined ? this.head.loadModel(ctx, lastModelTx, hash) : Promise.resolve([])
+    return this.head?.loadModel(ctx, lastModelTx, hash) ?? Promise.resolve([])
   }
 
   groupBy<T, P extends Doc>(
@@ -113,22 +116,31 @@ class PipelineImpl implements Pipeline {
     field: string,
     query?: DocumentQuery<P>
   ): Promise<Map<T, number>> {
-    return this.head !== undefined ? this.head.groupBy(ctx, domain, field, query) : Promise.resolve(new Map())
+    return this.head?.groupBy(ctx, domain, field, query) ?? Promise.resolve(new Map())
   }
 
   searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    return this.head !== undefined ? this.head.searchFulltext(ctx, query, options) : Promise.resolve({ docs: [] })
+    return this.head?.searchFulltext(ctx, query, options) ?? Promise.resolve({ docs: [] })
   }
 
   tx (ctx: MeasureContext, tx: Tx[]): Promise<TxResult> {
-    if (this.head !== undefined) {
-      return this.head.tx(ctx, tx)
-    }
-    return Promise.resolve({})
+    return this.head?.tx(ctx, tx) ?? Promise.resolve({})
   }
 
   handleBroadcast (ctx: MeasureContext<SessionData>): Promise<void> {
     return this.head?.handleBroadcast(ctx) ?? emptyBroadcastResult
+  }
+
+  domainRequest<T>(
+    ctx: MeasureContext<SessionData>,
+    domain: OperationDomain,
+    params: DomainParams
+  ): Promise<DomainResult<T>> {
+    return this.head?.domainRequest(ctx, domain, params) ?? Promise.resolve({ domain, value: undefined })
+  }
+
+  closeSession (ctx: MeasureContext<SessionData>, sessionId: string): Promise<void> {
+    return this.head?.closeSession(ctx, sessionId) ?? Promise.resolve()
   }
 
   async close (): Promise<void> {

@@ -41,6 +41,7 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/ui": "^0.6.15",
     "emojibase": "^16.0.0",
+    "emojibase-data": "^16.0.0",
     "emojibase-regex": "^16.0.0"
   },
   "repository": "https://github.com/hcengineering/platform",

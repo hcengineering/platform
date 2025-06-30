@@ -111,13 +111,6 @@ export function start (
 
   const externalStorage = buildStorageFromConfig(opt.storageConfig)
 
-  const pipelineFactory = createServerPipeline(
-    metrics,
-    dbUrl,
-    model,
-    { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl), queue: opt.queue },
-    {}
-  )
   const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace, broadcastSessions) => {
     if (dbUrl.startsWith('mongodb') || !opt.communicationApiEnabled) {
       return {
@@ -140,13 +133,19 @@ export function start (
       ctx.newChild('💬 communication api', {}),
       workspace.uuid,
       dbUrl,
-      broadcastSessions as any // FIXME when communication will be inside the repo
+      broadcastSessions
     )
   }
+  const pipelineFactory = createServerPipeline(
+    metrics,
+    dbUrl,
+    model,
+    { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl), queue: opt.queue, communicationApiFactory },
+    {}
+  )
 
   const sessionManager = startSessionManager(metrics, {
     pipelineFactory,
-    communicationApiFactory,
     brandingMap: opt.brandingMap,
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,

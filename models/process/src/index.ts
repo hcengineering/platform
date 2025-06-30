@@ -22,8 +22,7 @@ import core, {
   type Ref,
   SortingOrder,
   type Space,
-  type Tx,
-  type Type
+  type Tx
 } from '@hcengineering/core'
 import { type Builder, Model, Prop, ReadOnly, TypeAny, TypeBoolean, TypeRef, TypeString } from '@hcengineering/model'
 import { TDoc } from '@hcengineering/model-core'
@@ -91,6 +90,8 @@ export class TTrigger extends TDoc implements Trigger {
   requiredParams!: string[]
 
   checkFunction?: Resource<CheckFunc>
+
+  init!: boolean
 }
 
 @Model(process.class.Transition, core.class.Doc, DOMAIN_MODEL)
@@ -99,10 +100,10 @@ export class TTransition extends TDoc implements Transition {
     process!: Ref<Process>
 
   @Prop(TypeRef(process.class.State), process.string.From)
-    from!: Ref<State>
+    from!: Ref<State> | null
 
   @Prop(TypeRef(process.class.State), process.string.To)
-    to!: Ref<State> | null
+    to!: Ref<State>
 
   @Prop(TypeAny(process.component.ActionsPresenter, process.string.Actions), process.string.Actions)
     actions!: Step<Doc>[]
@@ -147,6 +148,9 @@ export class TProcessToDo extends TToDo implements ProcessToDo {
   execution!: Ref<Execution>
 
   state!: Ref<State>
+
+  @Prop(TypeBoolean(), process.string.Rollback)
+    withRollback!: boolean
 }
 
 @Model(process.class.Method, core.class.Doc, DOMAIN_MODEL)
@@ -170,8 +174,6 @@ export class TMethod extends TDoc implements Method<Doc> {
 export class TState extends TDoc implements State {
   process!: Ref<Process>
   title!: string
-  actions!: Step<Doc>[]
-  resultType?: Type<any> | null
 }
 
 @Model(process.class.ProcessFunction, core.class.Doc, DOMAIN_MODEL)
@@ -428,7 +430,7 @@ export function createModel (builder: Builder): void {
       category: 'attribute',
       label: process.string.Add,
       allowMany: true,
-      editor: process.transformEditor.NumberOffsetEditor
+      editor: process.transformEditor.NumberEditor
     },
     process.function.Add
   )
@@ -441,10 +443,118 @@ export function createModel (builder: Builder): void {
       category: 'attribute',
       label: process.string.Subtract,
       allowMany: true,
-      editor: process.transformEditor.NumberOffsetEditor,
+      editor: process.transformEditor.NumberEditor,
       type: 'transform'
     },
     process.function.Subtract
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Multiply,
+      type: 'transform',
+      allowMany: true,
+      editor: process.transformEditor.NumberEditor
+    },
+    process.function.Multiply
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Divide,
+      type: 'transform',
+      allowMany: true,
+      editor: process.transformEditor.NumberEditor
+    },
+    process.function.Divide
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Modulo,
+      type: 'transform',
+      allowMany: true,
+      editor: process.transformEditor.NumberEditor
+    },
+    process.function.Modulo
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Power,
+      type: 'transform',
+      allowMany: true,
+      editor: process.transformEditor.NumberEditor
+    },
+    process.function.Power
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Round,
+      type: 'transform',
+      allowMany: true
+    },
+    process.function.Round
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Absolute,
+      type: 'transform',
+      allowMany: true
+    },
+    process.function.Absolute
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Ceil,
+      type: 'transform',
+      allowMany: true
+    },
+    process.function.Ceil
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Floor,
+      type: 'transform',
+      allowMany: true
+    },
+    process.function.Floor
   )
 
   builder.createDoc(
@@ -508,7 +618,7 @@ export function createModel (builder: Builder): void {
         baseMenuClass: process.class.Execution
       },
       viewOptions: {
-        groupBy: ['process', 'done'],
+        groupBy: ['process', 'currentState', 'card'],
         orderBy: [
           ['modifiedOn', SortingOrder.Descending],
           ['createdOn', SortingOrder.Descending]
@@ -663,6 +773,18 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    process.class.Trigger,
+    core.space.Model,
+    {
+      label: process.string.OnExecutionStart,
+      icon: process.icon.Process,
+      init: true,
+      requiredParams: []
+    },
+    process.trigger.OnExecutionStart
+  )
+
+  builder.createDoc(
     process.class.Method,
     core.space.Model,
     {
@@ -682,7 +804,8 @@ export function createModel (builder: Builder): void {
     {
       label: process.string.OnSubProcessesDone,
       icon: process.icon.WaitSubprocesses,
-      requiredParams: []
+      requiredParams: [],
+      init: false
     },
     process.trigger.OnSubProcessesDone
   )
@@ -695,7 +818,8 @@ export function createModel (builder: Builder): void {
       icon: process.icon.ToDo,
       editor: process.component.ToDoCloseEditor,
       requiredParams: ['_id'],
-      checkFunction: process.triggerCheck.ToDo
+      checkFunction: process.triggerCheck.ToDo,
+      init: false
     },
     process.trigger.OnToDoClose
   )
@@ -708,7 +832,8 @@ export function createModel (builder: Builder): void {
       icon: process.icon.ToDoRemove,
       editor: process.component.ToDoRemoveEditor,
       requiredParams: ['_id'],
-      checkFunction: process.triggerCheck.ToDo
+      checkFunction: process.triggerCheck.ToDo,
+      init: false
     },
     process.trigger.OnToDoRemove
   )

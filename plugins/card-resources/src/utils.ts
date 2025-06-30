@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { type Card, CardEvents, cardId, type CardSpace, type MasterTag } from '@hcengineering/card'
-import {
+import core, {
   type Class,
   type Client,
   type Data,
@@ -28,10 +28,12 @@ import {
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
-import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
+import { getClient, IconWithEmoji, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import {
   getCurrentResolvedLocation,
   getPanelURI,
+  type IconComponent,
+  type IconProps,
   type Location,
   type ResolvedLocation,
   showPopup
@@ -261,4 +263,50 @@ export function cardCustomLinkEncode (doc: Card): Location {
   const loc = getCurrentResolvedLocation()
   loc.path[3] = encodeObjectURI(doc._id, card.class.Card)
   return loc
+}
+
+export async function checkRelationsSectionVisibility (doc: Card): Promise<boolean> {
+  const client = getClient()
+  const h = client.getHierarchy()
+
+  const parents = h.getAncestors(doc._class)
+  const mixins = h.findAllMixins(doc)
+  const associationsB = client
+    .getModel()
+    .findAllSync(core.class.Association, { classA: { $in: [...parents, ...mixins] } })
+    .filter((a) => a.nameB.trim().length > 0)
+
+  if (associationsB.length > 0) {
+    return true
+  }
+
+  return (
+    client
+      .getModel()
+      .findAllSync(core.class.Association, { classB: { $in: [...parents, ...mixins] } })
+      .filter((a) => a.nameA.trim().length > 0).length > 0
+  )
+}
+
+export function getCardIconInfo (doc?: Card): { icon: IconComponent, props: IconProps } {
+  if (doc === undefined) return { icon: card.icon.Card, props: {} }
+  if (doc.icon === view.ids.IconWithEmoji) {
+    return { icon: IconWithEmoji, props: { icon: doc.color } }
+  }
+
+  if (doc.icon !== undefined) {
+    return {
+      icon: doc.icon,
+      props: {}
+    }
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const clazz = hierarchy.getClass(doc._class) as MasterTag
+
+  return {
+    icon: clazz?.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz?.icon ?? card.icon.MasterTag,
+    props: clazz?.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}
+  }
 }

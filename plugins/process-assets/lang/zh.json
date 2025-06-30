@@ -66,6 +66,8 @@
     "ToDo": "待办事项",
     "CurrentCard": "当前卡片",
     "Data": "数据",
+    "Transitions": "转换",
+    "OnExecutionStart": "执行开始时",
     "Prepend": "前置",
     "Append": "追加",
     "Replace": "替换",
@@ -76,7 +78,15 @@
     "Search": "搜索",
     "Separator": "分隔符",
     "Start": "开始",
-    "End": "结束"
+    "End": "结束",
+    "Multiply": "乘法",
+    "Divide": "除法",
+    "Modulo": "取模",
+    "Power": "求幂",
+    "Round": "四舍五入",
+    "Floor": "向下取整",
+    "Ceil": "向上取整",
+    "Absolute": "绝对值"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

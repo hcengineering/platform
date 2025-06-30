@@ -13,18 +13,9 @@
 // limitations under the License.
 //
 
+import { type ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
 import {
-  type ServerApi as CommunicationApi,
-  type Event as CommunicationEvent,
-  type EventResult
-} from '@hcengineering/communication-sdk-types'
-import {
-  type FindMessagesGroupsParams,
-  type FindMessagesParams,
-  type Message,
-  type MessagesGroup
-} from '@hcengineering/communication-types'
-import {
+  type AccountRole,
   type Account,
   type AccountUuid,
   type Branding,
@@ -32,6 +23,8 @@ import {
   type Doc,
   type DocumentQuery,
   type Domain,
+  type DomainParams,
+  type DomainResult,
   type FindOptions,
   type FindResult,
   type Hierarchy,
@@ -40,6 +33,7 @@ import {
   type MeasureContext,
   type ModelDb,
   type Obj,
+  type OperationDomain,
   type PersonId,
   type Ref,
   type SearchOptions,
@@ -63,9 +57,9 @@ import type { Token } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
 
 import type { DbAdapter, DomainHelper } from './adapter'
+import { type PlatformQueue, type PlatformQueueProducer, type QueueTopic } from './queue'
 import type { StatisticsElement, WorkspaceStatistics } from './stats'
 import { type StorageAdapter } from './storage'
-import { type PlatformQueueProducer, type QueueTopic, type PlatformQueue } from './queue'
 
 export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
   prefix?: string
@@ -119,20 +113,30 @@ export interface Middleware {
     hash?: string
   ) => Promise<Tx[] | LoadModelResponse>
 
+  // Operation to some specific domain
+  domainRequest: (
+    ctx: MeasureContext<SessionData>,
+    domain: OperationDomain,
+    params: DomainParams
+  ) => Promise<DomainResult>
+  closeSession: (ctx: MeasureContext<SessionData>, sessionId: string) => Promise<void>
   close: () => Promise<void>
 }
 
 /**
  * @public
  */
-export type BroadcastFunc = (
-  ctx: MeasureContext<SessionData>,
-  tx: Tx[],
-  targets?: string | string[],
-  exclude?: string[]
-) => void
+export interface BroadcastOps {
+  broadcast: (ctx: MeasureContext, tx: Tx[], targets?: AccountUuid | AccountUuid[], exclude?: AccountUuid[]) => void
 
-export type BroadcastSessionsFunc = (ctx: MeasureContext, sessionIds: string[], result: any) => void
+  broadcastSessions: (measure: MeasureContext, sessionIds: Record<string, Tx[]>) => void
+}
+
+export interface CommunicationCallbacks {
+  registerAsyncRequest: (ctx: MeasureContext, promise: (ctx: MeasureContext) => Promise<void>) => void
+  broadcast: (ctx: MeasureContext, sessionIds: Record<string, any[]>) => void
+  enqueue: (ctx: MeasureContext, result: any[]) => void
+}
 
 /**
  * @public
@@ -199,7 +203,6 @@ export interface PipelineContext {
   contextVars: Record<string, any>
 
   broadcastEvent?: (ctx: MeasureContext, tx: Tx[]) => Promise<void>
-  communicationApi: CommunicationApi | null
   userStatusMap?: Map<Ref<UserStatus>, { online: boolean, user: AccountUuid }>
 }
 /**
@@ -228,6 +231,14 @@ export interface Pipeline {
   ) => Promise<Tx[] | LoadModelResponse>
 
   handleBroadcast: (ctx: MeasureContext<SessionData>) => Promise<void>
+
+  domainRequest: <T>(
+    ctx: MeasureContext<SessionData>,
+    domain: OperationDomain,
+    params: DomainParams
+  ) => Promise<DomainResult<T>>
+
+  closeSession: (ctx: MeasureContext<SessionData>, sessionId: string) => Promise<void>
 }
 
 /**
@@ -236,15 +247,14 @@ export interface Pipeline {
 export type PipelineFactory = (
   ctx: MeasureContext,
   ws: WorkspaceIds,
-  broadcast: BroadcastFunc,
-  branding: Branding | null,
-  communicationApi: CommunicationApi | null
+  broadcast: BroadcastOps,
+  branding: Branding | null
 ) => Promise<Pipeline>
 
 export type CommunicationApiFactory = (
   ctx: MeasureContext,
   ws: WorkspaceIds,
-  broadcastSessions: BroadcastSessionsFunc
+  callbacks: CommunicationCallbacks
 ) => Promise<CommunicationApi>
 
 /**
@@ -266,10 +276,9 @@ export interface TriggerControl {
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
   userStatusMap: Map<Ref<UserStatus>, { online: boolean, user: AccountUuid }>
+  domainRequest: (ctx: MeasureContext, domain: OperationDomain, params: DomainParams) => Promise<DomainResult>
 
   queue?: PlatformQueue
-
-  communicationApi: CommunicationApi | null
 
   // Cache per workspace
   cache: Map<string, any>
@@ -543,9 +552,13 @@ export interface ClientSessionCtx {
   ctx: MeasureContext
 
   pipeline: Pipeline
-  communicationApi: CommunicationApi
-
-  socialStringsToUsers: Map<PersonId, AccountUuid>
+  socialStringsToUsers: Map<
+  PersonId,
+  {
+    accontUuid: AccountUuid
+    role: AccountRole
+  }
+  >
   requestId: ReqId | undefined
   sendResponse: (id: ReqId | undefined, msg: any) => Promise<void>
   sendPong: () => void
@@ -629,11 +642,11 @@ export interface Session {
 
   includeSessionContext: (ctx: ClientSessionCtx) => void
 
-  eventRaw: (ctx: ClientSessionCtx, event: CommunicationEvent) => Promise<EventResult>
-  findMessagesRaw: (ctx: ClientSessionCtx, params: FindMessagesParams) => Promise<Message[]>
-  findMessagesGroupsRaw: (ctx: ClientSessionCtx, params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
-
   updateLast: () => void
+
+  domainRequestRaw: (ctx: ClientSessionCtx, domain: OperationDomain, params: DomainParams) => Promise<DomainResult>
+
+  userCtx?: MeasureContext
 }
 
 /**
@@ -694,7 +707,12 @@ export interface SessionManager {
     sessionId: string | undefined
   ) => Promise<AddSessionResponse>
 
-  broadcastAll: (workspace: WorkspaceUuid, tx: Tx[], targets?: string[]) => void
+  broadcastAll: (
+    workspace: WorkspaceUuid,
+    tx: Tx[],
+    targets?: AccountUuid | AccountUuid[],
+    exclude?: AccountUuid[]
+  ) => void
 
   close: (ctx: MeasureContext, ws: ConnectionSocket, workspaceId: WorkspaceUuid) => Promise<void>
 
@@ -728,7 +746,6 @@ export interface SessionManager {
     ctx: MeasureContext,
     sendCtx: MeasureContext,
     pipeline: Pipeline,
-    communicationApi: CommunicationApi,
     requestId: Request<any>['id'],
     service: Session,
     ws: ConnectionSocket,

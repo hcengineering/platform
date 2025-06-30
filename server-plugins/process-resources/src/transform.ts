@@ -130,46 +130,6 @@ export function FirstWorkingDayAfter (val: Timestamp): Timestamp {
   return val
 }
 
-// #endregion
-
-// #region Numbers
-
-export async function Add (
-  value: number,
-  props: Record<string, any>,
-  control: TriggerControl,
-  execution: Execution
-): Promise<number> {
-  const context = parseContext(props.offset)
-  if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const offset = await getAttributeValue(control, execution, context)
-      return value + offset
-    }
-  } else if (typeof value === 'number') {
-    return value + props.offset
-  }
-  return value
-}
-
-export async function Subtract (
-  value: number,
-  props: Record<string, any>,
-  control: TriggerControl,
-  execution: Execution
-): Promise<number> {
-  const context = parseContext(props.offset)
-  if (context !== undefined) {
-    if (context.type === 'attribute') {
-      const offset = await getAttributeValue(control, execution, context)
-      return value - offset
-    }
-  } else if (typeof value === 'number') {
-    return value - props.offset
-  }
-  return value
-}
-
 export function Offset (val: Timestamp, props: Record<string, any>): Timestamp {
   if (typeof val !== 'number') return val
   const value = new Date(val)
@@ -183,6 +143,158 @@ export function Offset (val: Timestamp, props: Record<string, any>): Timestamp {
       return value.setMonth(value.getMonth() + offset)
   }
   return val
+}
+
+// #endregion
+
+// #region Numbers
+
+export async function Add (
+  value: number,
+  props: Record<string, any>,
+  control: TriggerControl,
+  execution: Execution
+): Promise<number> {
+  const context = parseContext(props.value)
+  if (context !== undefined) {
+    if (context.type === 'attribute') {
+      const offset = await getAttributeValue(control, execution, context)
+      return value + offset
+    }
+  } else if (typeof value === 'number' && typeof props.value === 'number') {
+    return value + props.value
+  }
+  return value
+}
+
+export async function Subtract (
+  value: number,
+  props: Record<string, any>,
+  control: TriggerControl,
+  execution: Execution
+): Promise<number> {
+  const context = parseContext(props.value)
+  if (context !== undefined) {
+    if (context.type === 'attribute') {
+      const offset = await getAttributeValue(control, execution, context)
+      return value - offset
+    }
+  } else if (typeof value === 'number' && typeof props.value === 'number') {
+    return value - props.value
+  }
+  return value
+}
+
+export async function Multiply (
+  value: number,
+  props: Record<string, any>,
+  control: TriggerControl,
+  execution: Execution
+): Promise<number> {
+  const context = parseContext(props.value)
+  if (context !== undefined) {
+    if (context.type === 'attribute') {
+      const val = await getAttributeValue(control, execution, context)
+      return value * val
+    }
+  } else if (typeof value === 'number' && typeof props.value === 'number') {
+    return value * props.value
+  }
+  return value
+}
+
+export async function Divide (
+  value: number,
+  props: Record<string, any>,
+  control: TriggerControl,
+  execution: Execution
+): Promise<number> {
+  const context = parseContext(props.value)
+  if (context !== undefined) {
+    if (context.type === 'attribute') {
+      const val = await getAttributeValue(control, execution, context)
+      if (val === 0) {
+        return value // Avoid division by zero
+      }
+      return value / val
+    }
+  } else if (typeof value === 'number' && typeof props.value === 'number') {
+    if (props.value === 0) {
+      return value // Avoid division by zero
+    }
+    return value / props.value
+  }
+  return value
+}
+
+export async function Modulo (
+  value: number,
+  props: Record<string, any>,
+  control: TriggerControl,
+  execution: Execution
+): Promise<number> {
+  const context = parseContext(props.value)
+  if (context !== undefined) {
+    if (context.type === 'attribute') {
+      const val = await getAttributeValue(control, execution, context)
+      if (val === 0) {
+        return value // Avoid division by zero
+      }
+      return value % val
+    }
+  } else if (typeof value === 'number' && typeof props.value === 'number') {
+    if (props.value === 0) {
+      return value // Avoid division by zero
+    }
+    return value % props.value
+  }
+  return value
+}
+
+export async function Power (
+  value: number,
+  props: Record<string, any>,
+  control: TriggerControl,
+  execution: Execution
+): Promise<number> {
+  const context = parseContext(props.value)
+  if (context !== undefined) {
+    if (context.type === 'attribute') {
+      const val = await getAttributeValue(control, execution, context)
+      return Math.pow(value, val)
+    }
+  } else if (typeof value === 'number' && typeof props.value === 'number') {
+    return Math.pow(value, props.value)
+  }
+  return value
+}
+
+export function Round (value: number): number {
+  if (typeof value === 'number') {
+    return Math.round(value)
+  }
+  return value
+}
+
+export function Absolute (value: number): number {
+  if (typeof value === 'number') {
+    return Math.abs(value)
+  }
+  return value
+}
+
+export function Ceil (value: number): number {
+  if (typeof value === 'number') {
+    return Math.ceil(value)
+  }
+  return value
+}
+
+export function Floor (value: number): number {
+  if (typeof value === 'number') {
+    return Math.floor(value)
+  }
+  return value
 }
 
 // #endregion

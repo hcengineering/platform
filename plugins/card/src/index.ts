@@ -27,6 +27,7 @@ import {
 import { Asset, IntlString, plugin, Plugin, Resource } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import { Preference } from '@hcengineering/preference'
+import { IconProps } from '@hcengineering/view'
 
 export * from './analytics'
 
@@ -37,16 +38,14 @@ export interface MasterTag extends Class<Card> {
   roles?: CollectionSize<Role>
 }
 
-export interface Tag extends MasterTag, Mixin<Card> {
-  background?: number
-}
+export interface Tag extends MasterTag, Mixin<Card> {}
 
 export interface Role extends AttachedDoc<MasterTag | Tag, 'roles'> {
   name: string
   attachedTo: Ref<MasterTag | Tag>
 }
 
-export interface Card extends Doc {
+export interface Card extends Doc, IconProps {
   _class: Ref<MasterTag>
   title: string
   content: MarkupBlobRef
@@ -85,6 +84,7 @@ export interface CardSection extends Doc {
   component: AnyComponent
   order: number
   navigation: CardNavigation[]
+  checkVisibility?: Resource<(doc: Card) => Promise<boolean>>
 }
 
 export interface CardViewDefaults extends MasterTag {
@@ -165,7 +165,8 @@ const cardPlugin = plugin(cardId, {
   component: {
     LabelsPresenter: '' as AnyComponent,
     CardTagColored: '' as AnyComponent,
-    CardTagsColored: '' as AnyComponent
+    CardTagsColored: '' as AnyComponent,
+    CardIcon: '' as AnyComponent
   },
   function: {
     OpenCardInSidebar: '' as Resource<(_id: Ref<Card>, card?: Card) => Promise<void>>

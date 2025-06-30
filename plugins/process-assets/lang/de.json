@@ -66,6 +66,8 @@
     "ToDo": "Aufgabe",
     "CurrentCard": "Aktuelle Karte",
     "Data": "Daten",
+    "Transitions": "Übergänge",
+    "OnExecutionStart": "Bei Ausführungsstart",
     "Prepend": "Voranstellen",
     "Append": "Anhängen",
     "Replace": "Ersetzen",
@@ -76,7 +78,15 @@
     "Search": "Suchen",
     "Separator": "Trennzeichen",
     "Start": "Start",
-    "End": "Ende"
+    "End": "Ende",
+    "Multiply": "Multiplizieren",
+    "Divide": "Dividieren",
+    "Modulo": "Modulo",
+    "Power": "Potenzieren",
+    "Round": "Runden",
+    "Floor": "Abrunden",
+    "Ceil": "Aufrunden",
+    "Absolute": "Absolutwert"
   },  
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

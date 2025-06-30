@@ -42,11 +42,6 @@ import type {
 import { BaseMiddleware } from '@hcengineering/server-core'
 import crypto from 'node:crypto'
 
-const isUserTx = (it: Tx): boolean =>
-  it.modifiedBy !== core.account.System ||
-  (it as TxCUD<Doc>).objectClass === 'contact:class:Person' ||
-  (it as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
-
 const isAccountTx = (it: TxCUD<Doc>): boolean =>
   ['core:class:Account', 'contact:class:PersonAccount'].includes(it.objectClass)
 
@@ -88,7 +83,7 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
   @withContext('get-model')
   async getUserTx (ctx: MeasureContext, txAdapter: TxAdapter): Promise<Tx[]> {
     const allUserTxes = await ctx.with('fetch-model', {}, (ctx) => txAdapter.getModel(ctx))
-    return allUserTxes.filter((it) => isUserTx(it) && !isAccountTx(it as TxCUD<Doc>))
+    return allUserTxes.filter((it) => !isAccountTx(it as TxCUD<Doc>))
   }
 
   findAll<T extends Doc>(

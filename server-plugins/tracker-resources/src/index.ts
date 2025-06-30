@@ -167,8 +167,10 @@ export async function OnProjectRemove (txes: Tx[], control: TriggerControl): Pro
       }
     }
   }
-  control.ctx.contextData.broadcast.targets.projectRemove = (it) => {
-    return []
+  control.ctx.contextData.broadcast.targets.projectRemove = async (it) => {
+    return {
+      target: []
+    }
   }
   return result
 }

@@ -198,7 +198,7 @@ async function loadDigest (
           result.delete(k as Ref<Doc>)
         }
       } catch (err: any) {
-        ctx.warn('digest is broken, will do full backup for', { domain, err: err.message, snapshot })
+        ctx.warn('digest is broken', { domain, err: err.message, snapshot })
       }
     }
     // Stop if stop date is matched and provided
@@ -400,7 +400,7 @@ async function updateDigest (
     } catch (err: any) {
       digestToRemove.add(snapshot)
       modifiedFiles.push(snapshot)
-      ctx.warn('digest is broken, will do full backup for', { domain, err: err.message, snapshot })
+      ctx.warn('digest is broken', { domain, err: err.message, snapshot })
       modified = true
     }
   }
@@ -705,8 +705,8 @@ export async function backup (
     timeout: 0,
     skipDomains: [],
     connectTimeout: 30000,
-    skipBlobContentTypes: ['video/'],
-    blobDownloadLimit: 15,
+    skipBlobContentTypes: ['video/', 'image/', 'audio/'],
+    blobDownloadLimit: 5,
     keepSnapshots: 7 * 12
   }
 ): Promise<BackupResult> {
@@ -2288,7 +2288,7 @@ export async function restore (
         try {
           await connection.clean(c, part)
         } catch (err: any) {
-          ctx.error('failed to clean, will retry', { error: err, workspaceId })
+          ctx.error('failed to clean, will retry', { error: err.message, workspaceId })
           docsToRemove.push(...part)
         }
       }
@@ -2496,7 +2496,8 @@ export async function compactBackup (
   opt?: {
     blobLimit?: number
     skipContentTypes?: string[]
-  }
+  },
+  recalculateDigest: boolean = false
 ): Promise<void> {
   console.log('starting backup compaction')
 
@@ -2956,6 +2957,15 @@ export async function compactBackup (
       } catch (err: any) {
         // Ignore
       }
+    }
+    const result: BackupResult = {
+      result: true,
+      dataSize: 0,
+      blobsSize: 0,
+      backupSize: 0
+    }
+    if (recalculateDigest) {
+      await rebuildSizeInfo(storage, [], ctx, result, backupInfo, infoFile)
     }
   } catch (err: any) {
     console.error(err)

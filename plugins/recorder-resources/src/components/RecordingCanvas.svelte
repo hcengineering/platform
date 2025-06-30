@@ -21,10 +21,9 @@
   export let screenStream: MediaStream | null = null
   export let cameraStream: MediaStream | null = null
 
+  export let fps: number = 30
   export let canvasWidth: number = 1280
   export let canvasHeight: number = 720
-  export let fps: number = 30
-  export let originalSize: boolean = true
 
   export let cameraSize: CameraSize = 'medium'
   export let cameraPos: CameraPosition = 'bottom-left'
@@ -118,13 +117,8 @@
       if (canvas == null || ctx == null) return
       if (screenVideo === null || cameraVideo === null) return
 
-      if (originalSize) {
-        canvasWidth = canvas.width = screenVideo.videoWidth
-        canvasHeight = canvas.height = screenVideo.videoHeight
-      } else {
-        const screenAspectRatio = screenVideo.videoWidth / screenVideo.videoHeight
-        canvasWidth = canvas.width = Math.floor(canvas.height * screenAspectRatio)
-      }
+      canvasWidth = canvas.width = screenVideo.videoWidth
+      canvasHeight = canvas.height = screenVideo.videoHeight
 
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 

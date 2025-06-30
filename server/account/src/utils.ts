@@ -617,18 +617,21 @@ export async function selectWorkspace (
     }
   }
 
-  if (accountUuid === systemAccountUuid || extra?.admin === 'true') {
+  if (accountUuid === systemAccountUuid) {
     return {
       account: accountUuid,
       token: generateToken(accountUuid, workspace.uuid, extra),
       endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
       workspace: workspace.uuid,
       workspaceUrl: workspace.url,
-      role: AccountRole.Owner
+      role: AccountRole.Admin
     }
   }
 
   let role = await db.getWorkspaceRole(accountUuid, workspace.uuid)
+  if (role == null && extra?.admin === 'true') {
+    role = AccountRole.Admin
+  }
   let account = await db.account.findOne({ uuid: accountUuid })
 
   if ((role == null || account == null) && workspace.allowReadOnlyGuest) {
@@ -1341,7 +1344,12 @@ export function flattenStatus (ws: WorkspaceInfoWithStatus): WorkspaceInfoWithSt
   }
 
   const status = ws.status
-  const result: WorkspaceInfoWithStatusCore = { ...ws, ...status, createdOn: ws.createdOn as number }
+  const result: WorkspaceInfoWithStatusCore = {
+    ...ws,
+    ...status,
+    createdOn: ws.createdOn as number,
+    processingAttemps: status.processingAttempts ?? 0
+  }
   delete (result as any).status
 
   return result

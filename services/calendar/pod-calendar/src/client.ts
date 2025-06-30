@@ -19,7 +19,7 @@ import { setMetadata } from '@hcengineering/platform'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 
 export async function getClient (token: string): Promise<Client> {
-  const endpoint = await getTransactorEndpoint(token)
+  const endpoint = await getTransactorEndpoint(token, 'external')
   setMetadata(client.metadata.FilterModel, 'client')
   return await createClient(endpoint, token)
 }

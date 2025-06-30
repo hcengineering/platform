@@ -454,7 +454,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             ctx.error('failed to process document', {
               id: doc._id,
               class: doc._class,
-              workspace: this.workspace.uuid
+              workspace: this.workspace.uuid,
+              err: err.message,
+              stack: err.stack
             })
             Analytics.handleError(err)
           }

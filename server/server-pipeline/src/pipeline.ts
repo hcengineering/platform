@@ -46,6 +46,8 @@ import {
   createInMemoryAdapter,
   createNullAdapter,
   createPipeline,
+  type BroadcastOps,
+  type CommunicationApiFactory,
   type DbAdapterFactory,
   type DbConfiguration,
   type Middleware,
@@ -59,6 +61,7 @@ import {
 } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { createStorageDataAdapter } from './blobStorage'
+import { CommunicationMiddleware } from './communication'
 
 /**
  * @public
@@ -109,10 +112,11 @@ export function createServerPipeline (
 
     extraLogging?: boolean // If passed, will log every request/etc.
     pipelineContextVars?: Record<string, any>
+    communicationApiFactory?: CommunicationApiFactory
   },
   extensions?: Partial<DbConfiguration>
 ): PipelineFactory {
-  return (ctx, workspace, broadcast, branding, communicationApi) => {
+  return (ctx, workspace, broadcast, branding) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
     const wsMetrics = metricsCtx.newChild('🧲 session', {})
     const conf = getConfig(metrics, dbUrl, wsMetrics, opt, extensions)
@@ -130,6 +134,9 @@ export function createServerPipeline (
       ConfigurationMiddleware.create,
       ContextNameMiddleware.create,
       MarkDerivedEntryMiddleware.create,
+      ...(opt.communicationApiFactory !== undefined
+        ? [CommunicationMiddleware.create(opt.communicationApiFactory)]
+        : []),
       UserStatusMiddleware.create,
       ApplyTxMiddleware.create, // Extract apply
       TxMiddleware.create, // Store tx into transaction domain
@@ -163,8 +170,7 @@ export function createServerPipeline (
       hierarchy,
       queue: opt.queue,
       storageAdapter: opt.externalStorage,
-      contextVars: opt.pipelineContextVars ?? sharedPipelineContextVars,
-      communicationApi
+      contextVars: opt.pipelineContextVars ?? sharedPipelineContextVars
     }
     return createPipeline(ctx, middlewares, context)
   }
@@ -185,7 +191,7 @@ export function createBackupPipeline (
     externalStorage: StorageAdapter
   }
 ): PipelineFactory {
-  return (ctx, workspace, broadcast, branding, communicationApi) => {
+  return (ctx, workspace, broadcast, branding) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
     const wsMetrics = metricsCtx.newChild('🧲 backup', {})
     const conf = getConfig(metrics, dbUrl, wsMetrics, {
@@ -211,10 +217,16 @@ export function createBackupPipeline (
       modelDb,
       hierarchy,
       storageAdapter: opt.externalStorage,
-      contextVars: {},
-      communicationApi
+      contextVars: {}
     }
     return createPipeline(ctx, middlewares, context)
+  }
+}
+
+export function createEmptyBroadcastOps (): BroadcastOps {
+  return {
+    broadcast: (): void => {},
+    broadcastSessions: (): void => {}
   }
 }
 
@@ -227,6 +239,7 @@ export async function getServerPipeline (
   opt?: {
     queue?: PlatformQueue
     disableTriggers?: boolean
+    communicationApiFactory?: CommunicationApiFactory
   }
 ): Promise<Pipeline> {
   const pipelineFactory = createServerPipeline(ctx, dbUrl, model, {
@@ -234,11 +247,11 @@ export async function getServerPipeline (
     usePassedCtx: true,
     disableTriggers: opt?.disableTriggers ?? false,
     adapterSecurity: isAdapterSecurity(dbUrl),
-    queue: opt?.queue
+    queue: opt?.queue,
+    communicationApiFactory: opt?.communicationApiFactory
   })
 
-  // TODO: Communication API ??
-  return await pipelineFactory(ctx, wsUrl, () => {}, null, null)
+  return await pipelineFactory(ctx, wsUrl, createEmptyBroadcastOps(), null)
 }
 
 const txAdapterFactories: Record<string, DbAdapterFactory> = {}

@@ -59,18 +59,26 @@ import serverProcess, { ExecuteResult } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
 import { isError } from './errors'
 import {
+  Absolute,
   Add,
   Append,
+  Ceil,
   Cut,
+  Divide,
   FirstValue,
   FirstWorkingDayAfter,
+  Floor,
   LastValue,
   LowerCase,
+  Modulo,
+  Multiply,
   Offset,
+  Power,
   Prepend,
   Random,
   Replace,
   ReplaceAll,
+  Round,
   Split,
   Subtract,
   Trim,
@@ -90,12 +98,7 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
     )[0]
     if (todo === undefined) continue
     const execution = (
-      await control.findAll(
-        control.ctx,
-        process.class.Execution,
-        { currentState: todo.state, _id: todo.execution },
-        { limit: 1 }
-      )
+      await control.findAll(control.ctx, process.class.Execution, { _id: todo.execution }, { limit: 1 })
     )[0]
     if (execution === undefined) continue
     const _process = await control.modelDb.findOne(process.class.Process, { _id: execution.process })
@@ -123,72 +126,63 @@ async function executeTransition (
   const res: Tx[] = []
   const _process = control.modelDb.findObject(execution.process)
   if (_process === undefined) return res
-  if (transition.to === null) {
-    const rollback = execution.rollback.pop()
-    if (rollback !== undefined) {
-      for (const rollbackTx of rollback) {
-        res.push(rollbackTx)
-      }
-    }
-    return res
-  } else {
-    const state = control.modelDb.findObject(transition.to)
-    if (state === undefined) return res
-    const isDone =
-      control.modelDb.findAllSync(process.class.Transition, {
-        from: transition.to,
-        process: transition.process
-      }).length === 0
-    const errors: ExecutionError[] = []
-    if (execution.currentState !== null) {
-      rollback.push(
-        control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
-          currentState: execution.currentState,
-          status: execution.status
-        })
-      )
-    } else {
-      rollback.push(control.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
-    }
-    if (isDone && execution.parentId !== undefined) {
-      const parentWaitTxes = await checkParent(execution, control)
-      if (parentWaitTxes !== undefined) {
-        res.push(...parentWaitTxes)
-      }
-    }
-    for (const action of [...transition.actions, ...state.actions]) {
-      const actionResult = await executeAction(action, transition._id, execution, control)
-      if (isError(actionResult)) {
-        errors.push(actionResult)
-      } else {
-        if (actionResult.rollback !== undefined) {
-          rollback.push(...actionResult.rollback)
-        }
-        res.push(...actionResult.txes)
-      }
-    }
-    if (!disableRollback) {
-      execution.rollback.push(rollback)
-    }
-    res.push(
+
+  const state = control.modelDb.findObject(transition.to)
+  if (state === undefined) return res
+  const isDone =
+    control.modelDb.findAllSync(process.class.Transition, {
+      from: transition.to,
+      process: transition.process
+    }).length === 0
+  const errors: ExecutionError[] = []
+  if (execution.currentState !== null) {
+    rollback.push(
       control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
-        rollback: execution.rollback,
-        context: execution.context,
-        currentState: state._id,
-        status: isDone ? ExecutionStatus.Done : ExecutionStatus.Active
+        currentState: execution.currentState,
+        status: execution.status
       })
     )
-    if (errors.length === 0) {
-      return res
-    } else {
-      return [control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, { error: errors })]
+  } else {
+    rollback.push(control.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
+  }
+  if (isDone && execution.parentId !== undefined) {
+    const parentWaitTxes = await checkParent(execution, control)
+    if (parentWaitTxes !== undefined) {
+      res.push(...parentWaitTxes)
     }
+  }
+  for (const action of transition.actions) {
+    const actionResult = await executeAction(action, transition._id, execution, control)
+    if (isError(actionResult)) {
+      errors.push(actionResult)
+    } else {
+      if (actionResult.rollback !== undefined) {
+        rollback.push(...actionResult.rollback)
+      }
+      res.push(...actionResult.txes)
+    }
+  }
+  if (!disableRollback) {
+    execution.rollback.push(rollback)
+  }
+  res.push(
+    control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+      rollback: execution.rollback,
+      context: execution.context,
+      currentState: state._id,
+      status: isDone ? ExecutionStatus.Done : ExecutionStatus.Active
+    })
+  )
+  if (errors.length === 0) {
+    return res
+  } else {
+    return [control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, { error: errors })]
   }
 }
 
 async function executeAction<T extends Doc> (
   action: Step<T>,
-  transition: Ref<Transition> | null,
+  transition: Ref<Transition>,
   execution: Execution,
   control: TriggerControl
 ): Promise<ExecuteResult> {
@@ -445,14 +439,17 @@ function getExecutionContextValue (
 async function initState (execution: Execution, control: TriggerControl): Promise<Tx[]> {
   const _process = control.modelDb.findObject(execution.process)
   if (_process === undefined) return []
-  const state = control.modelDb.findObject(_process.initState)
-  if (state === undefined) return []
+  const transition = control.modelDb.findAllSync(process.class.Transition, {
+    process: execution.process,
+    from: null
+  })[0]
+  if (transition === undefined) return []
   const errors: ExecutionError[] = []
   const res: Tx[] = []
   const rollback: Tx[] = []
   rollback.push(control.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
-  for (const action of state.actions) {
-    const actionResult = await executeAction(action, null, execution, control)
+  for (const action of transition.actions) {
+    const actionResult = await executeAction(action, transition._id, execution, control)
     if (isError(actionResult)) {
       errors.push(actionResult)
     } else {
@@ -465,7 +462,7 @@ async function initState (execution: Execution, control: TriggerControl): Promis
   execution.rollback.push(rollback)
   res.push(
     control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
-      currentState: state._id,
+      currentState: transition.to,
       rollback: execution.rollback,
       context: execution.context,
       status: ExecutionStatus.Active
@@ -525,26 +522,35 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
     if (removedTodo === undefined) continue
     const execution = (await control.findAll(control.ctx, process.class.Execution, { _id: removedTodo.execution }))[0]
     if (execution === undefined) continue
-    const transitions = control.modelDb.findAllSync(process.class.Transition, {
-      from: execution.currentState,
-      process: execution.process,
-      trigger: process.trigger.OnToDoRemove
-    })
-    const transition = await pickTransition(control, execution, transitions, removedTodo)
-    if (transition === undefined) continue
-    const rollback: Tx[] = [
-      control.txFactory.createTxCreateDoc(
-        removedTodo._class,
-        removedTodo.space,
-        {
-          ...removedTodo
-        },
-        removedTodo._id,
-        removedTodo.modifiedOn,
-        removeTx.modifiedBy
-      )
-    ]
-    res.push(...(await executeTransition(execution, transition, control, rollback)))
+    if (removedTodo.withRollback) {
+      const rollback = execution.rollback.pop()
+      if (rollback !== undefined) {
+        for (const rollbackTx of rollback) {
+          res.push(rollbackTx)
+        }
+      }
+    } else {
+      const transitions = control.modelDb.findAllSync(process.class.Transition, {
+        from: execution.currentState,
+        process: execution.process,
+        trigger: process.trigger.OnToDoRemove
+      })
+      const transition = await pickTransition(control, execution, transitions, removedTodo)
+      if (transition === undefined) continue
+      const rollback: Tx[] = [
+        control.txFactory.createTxCreateDoc(
+          removedTodo._class,
+          removedTodo.space,
+          {
+            ...removedTodo
+          },
+          removedTodo._id,
+          removedTodo.modifiedOn,
+          removeTx.modifiedBy
+        )
+      ]
+      res.push(...(await executeTransition(execution, transition, control, rollback)))
+    }
   }
   return res
 }
@@ -568,14 +574,14 @@ export async function CreateToDo (
         collection: 'todos',
         workslots: 0,
         execution: execution._id,
-        state: execution.currentState,
         title: params.title,
         user: params.user,
         description: params.description ?? '',
         dueDate: params.dueDate,
         priority: params.priority ?? ToDoPriority.NoPriority,
         visibility: 'public',
-        rank: ''
+        rank: '',
+        withRollback: params.withRollback ?? false
       },
       id
     )
@@ -623,13 +629,14 @@ export async function RunSubProcess (
       return
     }
   }
+  const initTransition = control.modelDb.findAllSync(process.class.Transition, { process: target._id, from: null })[0]
   const res: Tx[] = []
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const emptyContext = {} as ExecutionContext
   res.push(
     control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
       process: processId,
-      currentState: target.initState,
+      currentState: initTransition.to,
       card,
       context: emptyContext,
       status: ExecutionStatus.Active,
@@ -668,13 +675,9 @@ export async function OnExecutionContinue (txes: Tx[], control: TriggerControl):
     res.push(control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, { error: null }))
     const _process = await control.modelDb.findOne(process.class.Process, { _id: execution.process })
     if (_process === undefined) continue
-    if (error[0].transition !== null) {
-      const transition = control.modelDb.findObject(error[0].transition)
-      if (transition !== undefined) {
-        res.push(...(await executeTransition(execution, transition, control, [])))
-      }
-    } else if (execution.currentState === _process.initState) {
-      res.push(...(await initState(execution, control)))
+    const transition = control.modelDb.findObject(error[0].transition)
+    if (transition !== undefined) {
+      res.push(...(await executeTransition(execution, transition, control, [])))
     }
   }
   return res
@@ -712,18 +715,6 @@ export async function OnStateRemove (txes: Tx[], control: TriggerControl): Promi
     if (state === undefined) continue
     const _process = control.modelDb.findObject(state.process)
     if (_process === undefined) continue
-    if (_process.initState === state._id) {
-      // let's take the first one
-      const states = control.modelDb.findAllSync(process.class.State, { process: _process._id })
-      if (states.length > 0) {
-        const initState = states[0]
-        res.push(
-          control.txFactory.createTxUpdateDoc(_process._class, _process.space, _process._id, {
-            initState: initState._id
-          })
-        )
-      }
-    }
     const syncTx = await syncContext(control, _process)
     if (syncTx !== undefined) {
       res.push(syncTx)
@@ -775,12 +766,11 @@ export async function OnTransition (txes: Tx[], control: TriggerControl): Promis
 }
 
 async function syncContext (control: TriggerControl, _process: Process): Promise<Tx | undefined> {
-  const states = control.modelDb.findAllSync(process.class.State, { process: _process._id })
   const transitions = control.modelDb.findAllSync(process.class.Transition, { process: _process._id })
   const exists = new Set<ContextId>()
   let changed = false
-  for (const state of [...states, ...transitions]) {
-    for (const action of state.actions) {
+  for (const transition of transitions) {
+    for (const action of transition.actions) {
       if (action.contextId != null) {
         exists.add(action.contextId)
         const context = _process.context[action.contextId]
@@ -797,7 +787,7 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
               name: '',
               _class: method.contextClass,
               action: action._id,
-              producer: state._id,
+              producer: transition._id,
               value: ctx
             }
           }
@@ -819,7 +809,7 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
           type: action.result.type,
           _class: action.result.type._class,
           action: action._id,
-          producer: state._id,
+          producer: transition._id,
           value: ctx
         }
       }
@@ -863,6 +853,14 @@ export default async () => ({
     Cut,
     Add,
     Subtract,
+    Multiply,
+    Divide,
+    Modulo,
+    Power,
+    Round,
+    Absolute,
+    Ceil,
+    Floor,
     Offset,
     FirstWorkingDayAfter,
     RoleContext

@@ -63,7 +63,7 @@ export interface BackupConfig {
 }
 
 class BackupWorker {
-  downloadLimit: number = 100
+  downloadLimit: number = 5
   workspacesToBackup = new Map<WorkspaceUuid, WorkspaceInfoWithStatus>()
   rateLimiter: RateLimiter
 
@@ -314,7 +314,7 @@ class BackupWorker {
             connectTimeout: 5 * 60 * 1000, // 5 minutes to,
             keepSnapshots: this.config.KeepSnapshots,
             blobDownloadLimit: this.downloadLimit,
-            skipBlobContentTypes: ['video/'],
+            skipBlobContentTypes: ['video/', 'audio/', 'image/'],
             fullVerify: this.fullCheck,
             storageAdapter: this.workspaceStorageAdapter,
             getLastTx: async (): Promise<Tx | undefined> => {
@@ -347,7 +347,15 @@ class BackupWorker {
             },
             getConnection: async () => {
               if (pipeline === undefined) {
-                pipeline = await this.pipelineFactory(ctx, wsIds, () => {}, null, null)
+                pipeline = await this.pipelineFactory(
+                  ctx,
+                  wsIds,
+                  {
+                    broadcast: () => {},
+                    broadcastSessions: () => {}
+                  },
+                  null
+                )
               }
               return wrapPipeline(ctx, pipeline, wsIds)
             },
@@ -500,7 +508,15 @@ export async function doRestoreWorkspace (
           cleanIndexState,
           getConnection: async () => {
             if (pipeline === undefined) {
-              pipeline = await pipelineFactory(ctx, wsIds, () => {}, null, null)
+              pipeline = await pipelineFactory(
+                ctx,
+                wsIds,
+                {
+                  broadcast: () => {},
+                  broadcastSessions: () => {}
+                },
+                null
+              )
             }
             return wrapPipeline(ctx, pipeline, wsIds)
           },

@@ -66,6 +66,8 @@
     "ToDo": "Úkol",
     "CurrentCard": "Aktuální karta",
     "Data": "Data",
+    "Transitions": "Přechody",
+    "OnExecutionStart": "Při spuštění provedení",
     "Prepend": "Přidat na začátek",
     "Append": "Přidat na konec",
     "Replace": "Nahradit",
@@ -76,7 +78,15 @@
     "Search": "Hledat",
     "Separator": "Oddělovač",
     "Start": "Spustit",
-    "End": "Konec"
+    "End": "Konec",
+    "Multiply": "Násobit",
+    "Divide": "Dělit",
+    "Modulo": "Zbytek po dělení",
+    "Power": "Umocnit",
+    "Round": "Zaokrouhlit",
+    "Floor": "Zaokrouhlit dolů",
+    "Ceil": "Zaokrouhlit nahoru",
+    "Absolute": "Absolutní hodnota"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

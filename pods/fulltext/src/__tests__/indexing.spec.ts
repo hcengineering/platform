@@ -45,6 +45,7 @@ class TestWorkspaceManager extends WorkspaceManager {
       dataId: decodedToken.workspace as unknown as WorkspaceDataId,
       mode: 'active',
       processingProgress: 0,
+      processingAttemps: 0,
       backupInfo: {
         dataSize: 0,
         blobsSize: 0,
@@ -53,7 +54,7 @@ class TestWorkspaceManager extends WorkspaceManager {
         backups: 0
       },
       versionMajor: 0,
-      versionMinor: 0,
+      versionMinor: 6,
       versionPatch: 0,
       lastVisit: 0,
       createdOn: 0,
@@ -131,7 +132,7 @@ describe('full-text-indexing', () => {
       const personId = randomUUID().toString() as PersonUuid
       const wsId: WorkspaceUuid = randomUUID().toString() as WorkspaceUuid
       const token = generateToken(personId, wsId)
-      const indexer = await queue.mgr.getIndexer(toolCtx, wsId, token, true)
+      const indexer = await queue.mgr.withIndexer(toolCtx, wsId, token, true, async () => {})
       expect(indexer).toBeDefined()
 
       const dataId = generateId()

@@ -42,6 +42,8 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
+    "@hcengineering/ai-bot": "^0.6.0",
+    "@hcengineering/ai-bot-resources": "^0.6.0",
     "@hcengineering/attachment-resources": "^0.6.0",
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/chat": "^0.6.0",

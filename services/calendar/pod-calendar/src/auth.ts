@@ -131,16 +131,16 @@ export class AuthController {
     const secret = await this.accountClient.getIntegrationSecret(data)
     if (secret == null) return
     const token = JSON.parse(secret.secret)
+    await removeIntegrationSecret(this.ctx, this.accountClient, data)
     const watchController = WatchController.get(this.ctx, this.accountClient)
     await watchController.unsubscribe(token)
-    await removeIntegrationSecret(this.ctx, this.accountClient, data)
   }
 
   private async process (code: string): Promise<void> {
     const authRes = await this.authorize(code)
     await this.setWorkspaceIntegration(authRes)
     if (authRes.success) {
-      void IncomingSyncManager.sync(
+      void IncomingSyncManager.initSync(
         this.ctx,
         this.accountClient,
         this.client,

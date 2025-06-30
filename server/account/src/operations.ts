@@ -1391,10 +1391,14 @@ export async function getWorkspaceInfo (
 
   const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
   const isGuest = extra?.guest === 'true'
+  const isAdmin = extra?.admin === 'true'
   const skipAssignmentCheck = isGuest || account === systemAccountUuid
 
   if (!skipAssignmentCheck) {
-    const role = await db.getWorkspaceRole(account, workspaceUuid)
+    let role = await db.getWorkspaceRole(account, workspaceUuid)
+    if (role === null && isAdmin) {
+      role = AccountRole.Admin
+    }
 
     if (role == null) {
       ctx.error('Not a member of the workspace', { workspaceUuid, account })
@@ -1415,7 +1419,7 @@ export async function getWorkspaceInfo (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
-  if (!isGuest && updateLastVisit) {
+  if (!isGuest && updateLastVisit && !isAdmin) {
     await db.workspaceStatus.update({ workspaceUuid }, { lastVisit: Date.now() })
   }
 
@@ -1450,6 +1454,7 @@ export async function getLoginInfoByToken (
 
   const isDocGuest = accountUuid === GUEST_ACCOUNT && extra?.guest === 'true'
   const isSystem = accountUuid === systemAccountUuid
+  const isAdmin = extra?.admin === 'true'
   let socialId: SocialId | null = null
 
   if (!isDocGuest && !isSystem) {
@@ -1514,7 +1519,10 @@ export async function getLoginInfoByToken (
       }
     }
 
-    const role = await getWorkspaceRole(db, accountUuid, workspace.uuid)
+    let role = await getWorkspaceRole(db, accountUuid, workspace.uuid)
+    if (role === null && isAdmin) {
+      role = AccountRole.Admin
+    }
 
     if (role == null) {
       // User might have been removed from the workspace
@@ -1544,8 +1552,9 @@ export async function getLoginWithWorkspaceInfo (
 ): Promise<LoginInfoWithWorkspaces> {
   let accountUuid: AccountUuid
   let extra: any
+  let workspace: WorkspaceUuid | undefined
   try {
-    ;({ account: accountUuid, extra } = decodeTokenVerbose(ctx, token))
+    ;({ account: accountUuid, extra, workspace } = decodeTokenVerbose(ctx, token))
   } catch (err: any) {
     Analytics.handleError(err)
     ctx.error('Invalid token', { token })
@@ -1623,6 +1632,13 @@ export async function getLoginWithWorkspaceInfo (
         ])
     ),
     socialIds
+  }
+
+  for (const ws of userWorkspaces) {
+    if (ws.uuid === workspace) {
+      await db.workspaceStatus.update({ workspaceUuid: workspace }, { lastVisit: Date.now() })
+      break
+    }
   }
 
   return loginInfo

@@ -28,7 +28,6 @@ import core, {
   FindResult,
   FulltextStorage,
   generateId,
-  Handler,
   Hierarchy,
   LoadModelResponse,
   ModelDb,
@@ -39,7 +38,12 @@ import core, {
   Timestamp,
   Tx,
   TxDb,
-  TxResult
+  TxResult,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
+  type OperationDomain,
+  type TxHandler
 } from '@hcengineering/core'
 import { genMinModel } from './minmodel'
 
@@ -49,7 +53,7 @@ BackupClient &
 FulltextStorage & {
   isConnected: () => boolean
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
-  pushHandler: (handler: Handler) => void
+  pushHandler: (handler: TxHandler) => void
 }
 > {
   const txes = genMinModel()
@@ -97,6 +101,14 @@ FulltextStorage & {
       options?: FindOptions<T>
     ): Promise<T | undefined> {
       return (await this.findAll(_class, query, { ...options, limit: 1 })).shift()
+    }
+
+    async domainRequest (
+      domain: OperationDomain,
+      params: DomainParams,
+      options?: DomainRequestOptions
+    ): Promise<DomainResult> {
+      return { domain, value: null }
     }
 
     getHierarchy (): Hierarchy {

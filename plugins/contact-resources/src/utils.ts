@@ -402,7 +402,7 @@ onClient(() => {
 
   employeesQuery.query(
     contact.mixin.Employee,
-    { active: { $in: [true, false] } },
+    {},
     (res) => {
       const personIdToEmployee = new Map<PersonId, Employee>()
       const socialKeyToEmployee = new Map<string, Employee>()
@@ -441,9 +441,7 @@ onClient(() => {
 
       // We may need to extend this later with guests and github users
       employeeRefByAccountUuidStore.set(
-        new Map(
-          res.filter((p) => p.active && p.personUuid != null).map((p) => [p.personUuid as AccountUuid, p._id] as const)
-        )
+        new Map(res.filter((p) => p.personUuid != null).map((p) => [p.personUuid as AccountUuid, p._id] as const))
       )
     },
     {

@@ -60,6 +60,10 @@ export function createModel (builder: Builder): void {
     presenter: serverDocuments.function.ControlledDocumentTextPresenter
   })
 
+  builder.mixin(documents.class.ControlledDocument, core.class.Class, serverNotification.mixin.HTMLPresenter, {
+    presenter: serverDocuments.function.ControlledDocumentHTMLPresenter
+  })
+
   builder.mixin(
     documents.notification.CoAuthorsNotification,
     notification.class.NotificationType,

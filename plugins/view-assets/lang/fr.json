@@ -131,6 +131,8 @@
     "Loading": "Chargement...",
     "NoRelations": "Aucune relation",
     "ReadOnlyWarningTitle": "Mode lecture seule",
-    "ReadOnlyWarningMessage": "Contactez l'administrateur pour obtenir un accès complet à cet espace de travail."
+    "ReadOnlyWarningMessage": "Contactez l'administrateur pour obtenir un accès complet à cet espace de travail.",
+    "Icon": "Icône",
+    "Color": "Couleur"
   }
 }

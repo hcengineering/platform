@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # Restore workspace contents in mongo/elastic
-./tool-pg.sh backup-restore ./sanity-ws sanity-ws
+./tool-pg.sh backup-restore ./sanity-ws sanity-ws --upgrade
 
-./tool-pg.sh upgrade-workspace sanity-ws
+# ./tool-pg.sh upgrade-workspace sanity-ws
 
 # Re-assign user to workspace.
 ./tool-pg.sh assign-workspace user1 sanity-ws

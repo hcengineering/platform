@@ -16,13 +16,14 @@
 <script lang="ts">
   import { Process } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
-  import plugin from '../../plugin'
   import { createEventDispatcher } from 'svelte'
+  import plugin from '../../plugin'
   import ToDoContextSelector from '../contextEditors/ToDoContextSelector.svelte'
 
   export let readonly: boolean
   export let process: Process
   export let params: Record<string, any>
+  export let skipRollback: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -33,22 +34,5 @@
   }
 </script>
 
-<div class="grid">
-  <Label label={plugin.string.ToDo} />
-  <ToDoContextSelector {readonly} {process} value={params._id} on:change={change} />
-</div>
-
-<style lang="scss">
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    grid-auto-rows: minmax(2rem, max-content);
-    justify-content: start;
-    align-items: center;
-    row-gap: 0.25rem;
-    column-gap: 1rem;
-    margin: 0.25rem 2rem 0;
-    width: calc(100% - 4rem);
-    height: min-content;
-  }
-</style>
+<Label label={plugin.string.ToDo} />
+<ToDoContextSelector {readonly} {skipRollback} {process} value={params._id} on:change={change} />

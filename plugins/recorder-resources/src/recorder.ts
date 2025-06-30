@@ -25,6 +25,7 @@ export interface RecorderOptions {
 }
 
 export class Recorder {
+  readonly mimeType: string
   private readonly mediaRecorder: MediaRecorder
   private readonly chunkStream: ChunkReader
   private readonly chunkInterval: number
@@ -35,21 +36,24 @@ export class Recorder {
 
   constructor (
     private readonly mediaStream: MediaStream,
-    private readonly options: RecorderOptions
+    readonly options: RecorderOptions
   ) {
     const supportedTypes = getSupportedMimeTypes()
     if (supportedTypes.length === 0) {
       throw new Error('Recorder: video recording is not supported')
     }
 
+    this.mimeType = supportedTypes[0]
     this.chunkInterval = options.chunkIntervalMs ?? chunkIntervalMs
     this.chunkStream = new ChunkReader()
 
     this.mediaRecorder = new MediaRecorder(mediaStream, {
-      mimeType: supportedTypes[0],
+      mimeType: this.mimeType,
       audioBitsPerSecond: options.audioBps,
       videoBitsPerSecond: options.videoBps
     })
+
+    console.debug('Recorder: MediaRecorder using', this.mimeType)
 
     this.mediaRecorder.ondataavailable = async (e) => {
       const kb = Math.floor(e.data.size / 1024)
