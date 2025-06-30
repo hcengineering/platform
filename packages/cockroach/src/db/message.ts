@@ -1010,8 +1010,10 @@ export class MessagesDb extends BaseDb {
 
     let index = 2
 
-    where.push(`mg.card_id = $${index++}::varchar`)
-    values.push(params.card)
+    if (params.card != null) {
+      where.push(`mg.card_id = $${index++}::varchar`)
+      values.push(params.card)
+    }
 
     if (params.blobId != null) {
       where.push(`mg.blob_id = $${index++}`)

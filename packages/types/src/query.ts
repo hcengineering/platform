@@ -43,7 +43,7 @@ interface FindParams {
 
 export interface FindMessagesParams extends FindParams {
   id?: MessageID
-  card: CardID
+  card?: CardID
   files?: boolean
   reactions?: boolean
   replies?: boolean
@@ -52,7 +52,7 @@ export interface FindMessagesParams extends FindParams {
 }
 
 export interface FindMessagesGroupsParams extends FindParams {
-  card: CardID
+  card?: CardID
   blobId?: BlobID
   patches?: boolean
   fromDate?: Partial<Record<ComparisonOperator, Date>> | Date

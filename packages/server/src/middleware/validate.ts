@@ -198,7 +198,7 @@ const FindParamsSchema = z
 
 const FindMessagesParamsSchema = FindParamsSchema.extend({
   id: MessageIDSchema.optional(),
-  card: CardIDSchema,
+  card: CardIDSchema.optional(),
   files: z.boolean().optional(),
   reactions: z.boolean().optional(),
   replies: z.boolean().optional(),
@@ -207,7 +207,7 @@ const FindMessagesParamsSchema = FindParamsSchema.extend({
 }).strict()
 
 const FindMessagesGroupsParamsSchema = FindParamsSchema.extend({
-  card: CardIDSchema,
+  card: CardIDSchema.optional(),
   blobId: BlobIDSchema.optional(),
   patches: z.boolean().optional(),
   fromDate: dateOrRecordSchema.optional(),
