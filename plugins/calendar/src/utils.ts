@@ -1,5 +1,13 @@
-import { Timestamp, generateId } from '@hcengineering/core'
-import calendar, { Event, ReccuringEvent, ReccuringInstance, RecurringRule } from '.'
+import { AccountUuid, Ref, Timestamp, generateId } from '@hcengineering/core'
+import calendar, {
+  Calendar,
+  PrimaryCalendar,
+  Event,
+  ExternalCalendar,
+  ReccuringEvent,
+  ReccuringInstance,
+  RecurringRule
+} from '.'
 
 function getInstance (event: ReccuringEvent, date: Timestamp): ReccuringInstance {
   const diff = event.dueDate - event.date
@@ -379,4 +387,25 @@ function encodeToBase32Hex (input: string): string {
   }
 
   return result
+}
+
+export function getPrimaryCalendar (
+  calendars: Calendar[],
+  preference: PrimaryCalendar | undefined,
+  acc: AccountUuid
+): Ref<Calendar> {
+  if (preference?.attachedTo !== undefined) {
+    const pref = calendars.find((p) => p._id === preference.attachedTo && p)
+    if (pref !== undefined) return pref._id
+  }
+  for (const _calendar of calendars) {
+    if (
+      _calendar._class === calendar.class.ExternalCalendar &&
+      !_calendar.hidden &&
+      (_calendar as ExternalCalendar).default
+    ) {
+      return _calendar._id
+    }
+  }
+  return `${acc}_calendar` as Ref<Calendar>
 }

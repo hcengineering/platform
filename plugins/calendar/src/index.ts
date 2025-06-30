@@ -27,6 +27,7 @@ import type {
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { Preference } from '@hcengineering/preference'
 import { Handler, IntegrationType } from '@hcengineering/setting'
 import { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 
@@ -42,6 +43,8 @@ export interface Calendar extends Doc {
   name: string
   hidden: boolean
   visibility: Visibility
+  user: PersonId
+  access: AccessLevel
 }
 
 /**
@@ -51,6 +54,10 @@ export interface ExternalCalendar extends Calendar {
   default: boolean
   externalId: string
   externalUser: string
+}
+
+export interface PrimaryCalendar extends Preference {
+  attachedTo: Ref<Calendar>
 }
 
 /**
@@ -116,13 +123,20 @@ export interface Event extends AttachedDoc {
 
   visibility?: Visibility
 
-  access: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
+  access: AccessLevel
 
   timeZone?: string
 
   user: PersonId
 
   blockTime: boolean
+}
+
+export enum AccessLevel {
+  FreeBusyReaded = 'freeBusyReader',
+  Reader = 'reader',
+  Writer = 'writer',
+  Owner = 'owner'
 }
 
 /**
@@ -156,6 +170,7 @@ export interface Schedule extends Doc {
   meetingInterval: number
   availability: ScheduleAvailability
   timeZone: string
+  calendar?: Ref<Calendar>
 }
 
 /**
@@ -173,7 +188,8 @@ const calendarPlugin = plugin(calendarId, {
     Event: '' as Ref<Class<Event>>,
     ReccuringEvent: '' as Ref<Class<ReccuringEvent>>,
     ReccuringInstance: '' as Ref<Class<ReccuringInstance>>,
-    Schedule: '' as Ref<Class<Schedule>>
+    Schedule: '' as Ref<Class<Schedule>>,
+    PrimaryCalendar: '' as Ref<Class<PrimaryCalendar>>
   },
   mixin: {
     CalendarEventPresenter: '' as Ref<Mixin<CalendarEventPresenter>>

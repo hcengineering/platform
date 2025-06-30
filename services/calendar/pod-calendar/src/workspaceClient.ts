@@ -136,15 +136,12 @@ export class WorkspaceClient {
 
   private async getNewEvents (): Promise<void> {
     const lastSync = await getSyncHistory(this.workspace)
-    if (lastSync === undefined) {
+    if (lastSync === undefined || Date.now() - lastSync > 7 * 24 * 60 * 60 * 1000) {
       await setSyncHistory(this.workspace, Date.now())
       return
     }
     this.lastSync = lastSync ?? 0
-    const baseQuery = {
-      calendar: { $in: Array.from(this.calendarsById.keys()) }
-    }
-    const query = lastSync !== undefined ? { modifiedOn: { $gt: lastSync }, ...baseQuery } : baseQuery
+    const query = { modifiedOn: { $gt: lastSync }, calendar: { $in: Array.from(this.calendarsById.keys()) } }
     const newEvents = await this.client.findAll(calendar.class.Event, query, { sort: { modifiedOn: 1 } })
     const interval = setInterval(() => {
       void this.updateSyncHistory()

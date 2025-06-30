@@ -1,6 +1,6 @@
 import type { WorkSlot, ToDo } from '@hcengineering/time'
 import type { DefSeparators } from '@hcengineering/ui'
-import core, { type Class, type Client, type Doc, type Ref } from '@hcengineering/core'
+import core, { getCurrentAccount, type Class, type Client, type Doc, type Ref } from '@hcengineering/core'
 import time from '@hcengineering/time'
 import { type TextEditorMode, type AnyExtension } from '@hcengineering/text-editor'
 import { SvelteNodeViewRenderer, TodoItemExtension, TodoListExtension } from '@hcengineering/text-editor-resources'
@@ -8,6 +8,7 @@ import { getClient } from '@hcengineering/presentation'
 
 import ToDoItemNodeView from './components/text-editor/node-view/ToDoItemNodeView.svelte'
 import ToDoListNodeView from './components/text-editor/node-view/ToDoListNodeView.svelte'
+import calendarPlugin, { AccessLevel, type Calendar, getPrimaryCalendar } from '@hcengineering/calendar'
 
 export * from './types'
 
@@ -119,4 +120,17 @@ export function calculateEventsDuration (events: WorkSlot[]): number {
   })
 
   return duration
+}
+
+export async function findPrimaryCalendar (): Promise<Ref<Calendar>> {
+  const acc = getCurrentAccount()
+  const primary = acc.primarySocialId
+  const client = getClient()
+  const calendars = await client.findAll(calendarPlugin.class.Calendar, {
+    user: primary,
+    hidden: false,
+    access: { $in: [AccessLevel.Owner, AccessLevel.Writer] }
+  })
+  const preference = await client.findOne(calendarPlugin.class.PrimaryCalendar, {})
+  return getPrimaryCalendar(calendars, preference, acc.uuid)
 }

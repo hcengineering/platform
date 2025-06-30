@@ -1,4 +1,5 @@
 import {
+  AccessLevel,
   type Calendar,
   type Event,
   type ReccuringEvent,
@@ -163,7 +164,7 @@ export async function updateReccuringInstance (
                   location: object.location,
                   eventId: object.eventId,
                   calendar: object.calendar,
-                  access: 'owner',
+                  access: AccessLevel.Owner,
                   rules: object.rules,
                   exdate: object.exdate,
                   rdate: object.rdate,

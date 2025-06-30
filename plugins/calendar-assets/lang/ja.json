@@ -104,6 +104,8 @@
     "CalDavAccessEnable": "ワークスペース {ws} 内の個人カレンダーへの CalDAV アクセスを有効にする",
     "CalDavAccessServer": "CalDAV サーバー",
     "CalDavAccessAccount": "Huly アカウント",
-    "CalDavAccessPassword": "パスワード（自動生成）"
+    "CalDavAccessPassword": "パスワード（自動生成）",
+    "PrimaryCalendar": "プライマリカレンダー",
+    "Hidden": "非表示"
   }
 }

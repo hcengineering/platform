@@ -15,6 +15,7 @@
 
 import { AccountClient } from '@hcengineering/account-client'
 import calendar, {
+  AccessLevel,
   Calendar,
   Event,
   ExternalCalendar,
@@ -410,17 +411,14 @@ export class IncomingSyncManager {
     }
   }
 
-  private getAccess (
-    event: calendar_v3.Schema$Event,
-    accessRole: string
-  ): 'freeBusyReader' | 'reader' | 'writer' | 'owner' {
-    if (accessRole !== 'owner') {
-      return accessRole as 'freeBusyReader' | 'reader' | 'writer'
+  private getAccess (event: calendar_v3.Schema$Event, accessRole: string): AccessLevel {
+    if (accessRole !== AccessLevel.Owner) {
+      return accessRole as AccessLevel
     }
     if (event.creator?.self === true) {
-      return 'owner'
+      return AccessLevel.Owner
     } else {
-      return 'reader'
+      return AccessLevel.Reader
     }
   }
 
@@ -635,7 +633,7 @@ export class IncomingSyncManager {
 
   private async getMyCalendars (): Promise<void> {
     this.calendars = await this.client.findAll(calendar.class.ExternalCalendar, {
-      createdBy: this.user.userId
+      user: this.user.userId
     })
   }
 
@@ -710,13 +708,9 @@ export class IncomingSyncManager {
           hidden: false,
           externalId: val.id,
           externalUser: this.email,
-          default: false
-        }
-        if (val.primary === true) {
-          const primaryExists = this.calendars.find((p) => p.default)
-          if (primaryExists === undefined) {
-            data.default = true
-          }
+          default: val.primary === true,
+          user: this.user.userId,
+          access: (val.accessRole as AccessLevel) ?? AccessLevel.Owner
         }
         const _id = generateId<ExternalCalendar>()
         const tx = this.client.txFactory.createTxCreateDoc<ExternalCalendar>(
@@ -733,6 +727,9 @@ export class IncomingSyncManager {
         const update: DocumentUpdate<ExternalCalendar> = {}
         if (exists.name !== val.summary) {
           update.name = val.summary ?? exists.name
+        }
+        if (exists.access !== (val.accessRole as AccessLevel)) {
+          update.access = (val.accessRole as AccessLevel) ?? AccessLevel.Owner
         }
         if (Object.keys(update).length > 0) {
           await this.client.update(exists, update)
