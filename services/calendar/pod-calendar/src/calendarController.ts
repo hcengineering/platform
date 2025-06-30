@@ -25,6 +25,7 @@ import {
 import config from './config'
 import { getIntegrations } from './integrations'
 import { WorkspaceClient } from './workspaceClient'
+import { cleanUserByEmail } from './kvsUtils'
 
 export class CalendarController {
   protected static _instance: CalendarController
@@ -66,6 +67,7 @@ export class CalendarController {
   }
 
   private async runAll (groups: Map<WorkspaceUuid, Integration[]>): Promise<void> {
+    await cleanUserByEmail()
     const ids = [...groups.keys()]
     if (ids.length === 0) return
     const limiter = new RateLimiter(config.InitLimit)
