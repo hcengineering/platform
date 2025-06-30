@@ -14,7 +14,7 @@
 //
 
 import { AccountClient } from '@hcengineering/account-client'
-import { isActiveMode, MeasureContext, TxOperations } from '@hcengineering/core'
+import { MeasureContext, TxOperations } from '@hcengineering/core'
 import { getClient } from './client'
 import { getUserByEmail, removeUserByEmail } from './kvsUtils'
 import { IncomingSyncManager } from './sync'
