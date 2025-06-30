@@ -38,9 +38,12 @@ import (
 	"go.uber.org/zap"
 )
 
+var recordingDir = "r"
+
 // StreamCoordinator represents manager for streams. It creates a new stream for a client and manages it's life cycle.
 type StreamCoordinator struct {
 	conf          *config.Config
+	outputDir     string
 	uploadOptions uploader.Options
 
 	activeTranscoding int32
@@ -59,18 +62,21 @@ var _ handler.LengthDeferrerDataStore = (*StreamCoordinator)(nil)
 
 // NewStreamCoordinator creates a new scheduler for transcode operations.
 func NewStreamCoordinator(ctx context.Context, c *config.Config) *StreamCoordinator {
+	outputDir := filepath.Join(c.OutputDir, recordingDir)
+
 	return &StreamCoordinator{
-		conf: c,
+		conf:      c,
+		outputDir: outputDir,
 		uploadOptions: uploader.Options{
 			RetryDelay:  time.Millisecond * 100,
 			Timeout:     c.Timeout,
 			WorkerCount: uint32(c.MaxThreadCount),
 			RetryCount:  10,
 			BufferSize:  128,
-			Dir:         c.OutputDir,
+			Dir:         outputDir,
 		},
 		mainContext: ctx,
-		logger:      log.FromContext(ctx).With(zap.String("Scheduler", c.OutputDir)),
+		logger:      log.FromContext(ctx).With(zap.String("Scheduler", outputDir)),
 	}
 }
 
@@ -115,7 +121,7 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 
 	var commandOptions = Options{
 		Input:     "pipe:0",
-		OutputDir: s.conf.OutputDir,
+		OutputDir: s.outputDir,
 		Threads:   s.conf.MaxThreadCount,
 		UploadID:  info.ID,
 		Profiles:  profiles,

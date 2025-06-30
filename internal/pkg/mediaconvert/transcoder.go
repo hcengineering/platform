@@ -34,19 +34,25 @@ import (
 	"gopkg.in/vansante/go-ffprobe.v2"
 )
 
+var transcodingDir = "t"
+
 // Transcoder process one transcoding task
 type Transcoder struct {
-	ctx    context.Context
-	cfg    *config.Config
-	logger *zap.Logger
+	ctx       context.Context
+	cfg       *config.Config
+	outputDir string
+	logger    *zap.Logger
 }
 
 // NewTranscoder creates a new instance of task transcoder
 func NewTranscoder(ctx context.Context, cfg *config.Config) *Transcoder {
+	outputDir := filepath.Join(cfg.OutputDir, transcodingDir)
+
 	var p = &Transcoder{
-		cfg:    cfg,
-		ctx:    ctx,
-		logger: log.FromContext(ctx).With(zap.String("transcoding", "transcoder")),
+		cfg:       cfg,
+		ctx:       ctx,
+		outputDir: outputDir,
+		logger:    log.FromContext(ctx).With(zap.String("transcoding", "transcoder")),
 	}
 
 	return p
@@ -67,7 +73,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 	}
 
 	logger.Debug("phase 2: preparing fs")
-	var destinationFolder = filepath.Join(p.cfg.OutputDir, task.ID)
+	var destinationFolder = filepath.Join(p.outputDir, task.ID)
 	var _, filename = filepath.Split(task.Source)
 	err = os.MkdirAll(destinationFolder, os.ModePerm)
 	if err != nil {
@@ -139,7 +145,7 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 
 	var opts = Options{
 		Input:     sourceFilePath,
-		OutputDir: p.cfg.OutputDir,
+		OutputDir: p.outputDir,
 		LogLevel:  LogLevel(p.cfg.LogLevel),
 		Profiles:  profiles,
 		UploadID:  task.ID,
@@ -158,9 +164,9 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 		SourceFile:  sourceFilePath,
 	})
 
-	err = manifest.GenerateHLSPlaylist(profiles, p.cfg.OutputDir, opts.UploadID)
+	err = manifest.GenerateHLSPlaylist(profiles, p.outputDir, opts.UploadID)
 	if err != nil {
-		logger.Error("can not generate hls playlist", zap.String("out", p.cfg.OutputDir), zap.String("uploadID", opts.UploadID))
+		logger.Error("can not generate hls playlist", zap.String("out", p.outputDir), zap.String("uploadID", opts.UploadID))
 		return nil, errors.Wrapf(err, "can not generate hls playlist")
 	}
 
