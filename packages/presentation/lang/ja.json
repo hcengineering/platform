@@ -41,6 +41,7 @@
     "ColorRemove": "カラープリセットを削除",
     "ColorReset": "カラープリセットをリセット",
     "Copy": "コピー",
+    "DocumentUrlCopied": "コピーしました",
     "CopyLink": "リンクをコピー",
     "AccessDenied": "オブジェクトが存在しないか、アクセス権限がありません。",
     "UnableToFollowMention": "言及されたオブジェクトを開くことができません"

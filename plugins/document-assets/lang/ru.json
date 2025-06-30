@@ -39,6 +39,7 @@
     "Description": "Описание",
 
     "CopyDocumentUrl": "Копировать URL-адрес документа в буфер обмена",
+    "DocumentUrlCopied": "Скопировано!",
 
     "ViewMode": "Просмотр",
     "EditMode": "Редактирование",

@@ -142,6 +142,7 @@ export default plugin(presentationId, {
     ColorRemove: '' as IntlString,
     ColorReset: '' as IntlString,
     Copy: '' as IntlString,
+    DocumentUrlCopied: '' as IntlString,
     CopyLink: '' as IntlString,
     UnableToFollowMention: '' as IntlString,
     AccessDenied: '' as IntlString
