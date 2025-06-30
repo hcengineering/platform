@@ -108,12 +108,7 @@ export interface TxAdapter extends DbAdapter {
  * @public
  */
 export interface WorkspaceDestroyAdapter {
-  deleteWorkspace: (
-    ctx: MeasureContext,
-    contextVars: Record<string, any>,
-    workspace: WorkspaceUuid,
-    dataId?: string
-  ) => Promise<void>
+  deleteWorkspace: (ctx: MeasureContext, workspace: WorkspaceUuid, dataId?: string) => Promise<void>
 }
 
 /**
@@ -121,7 +116,6 @@ export interface WorkspaceDestroyAdapter {
  */
 export type DbAdapterFactory = (
   ctx: MeasureContext,
-  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceIds,

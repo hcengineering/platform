@@ -1,4 +1,6 @@
 <script lang="ts">
+  import core, { getCurrentAccount } from '@hcengineering/core'
+  import { DevicesPreference } from '@hcengineering/love'
   import {
     getSelectedMicId,
     getSelectedSpeakerId,
@@ -6,15 +8,13 @@
     updateSelectedSpeakerId
   } from '@hcengineering/media'
   import { translate } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import { DropdownLabels, DropdownTextItem, Label, Toggle } from '@hcengineering/ui'
+  import { isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
   import { Room } from 'livekit-client'
   import love from '../plugin'
-  import { getActive, krispProcessor, lk } from '../utils'
-  import { DevicesPreference } from '@hcengineering/love'
-  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
   import { myPreferences } from '../stores'
-  import { isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
+  import { getActive, krispProcessor, lk } from '../utils'
 
   void Room.getLocalDevices().then(async (devices) => {
     devices.forEach((device) => {
@@ -51,9 +51,9 @@
     if (myPreferences !== undefined) {
       await client.update(myPreferences, { noiseCancellation: value })
     } else {
-      const space = getCurrentAccount().uuid as unknown as Ref<Space>
-      await client.createDoc(love.class.DevicesPreference, space, {
-        attachedTo: space,
+      const acc = getCurrentAccount().uuid
+      await client.createDoc(love.class.DevicesPreference, core.space.Workspace, {
+        attachedTo: acc,
         noiseCancellation: value,
         camEnabled: true,
         micEnabled: true,

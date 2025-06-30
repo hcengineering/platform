@@ -24,21 +24,30 @@ import { getVideoDimensions } from './utils'
 
 import plugin from './plugin'
 
-export function createScreenRecorder (options: RecordingOptions): ScreenRecorder {
+export async function createScreenRecorder (options: RecordingOptions): Promise<ScreenRecorder> {
   const name = options.name
   const stream = options.stream
   const videoBps = options.videoBps ?? DefaultOptions.videoBps
   const audioBps = options.audioBps ?? DefaultOptions.audioBps
   const chunkIntervalMs = options.chunkIntervalMs ?? DefaultOptions.chunkIntervalMs
 
-  const { width, height } = getVideoDimensions(stream)
+  const { width, height } = await getVideoDimensions(stream)
 
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const workspace = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
   const endpoint = getMetadata(plugin.metadata.StreamUrl) ?? ''
 
   const recorder = new Recorder(stream, { chunkIntervalMs, audioBps, videoBps })
-  const uploader = new TusUploader(recorder.asStream(), { token, workspace, endpoint, name, width, height })
+  const contentType = recorder.mimeType
+  const uploader = new TusUploader(recorder.asStream(), {
+    token,
+    workspace,
+    endpoint,
+    name,
+    width,
+    height,
+    contentType
+  })
   return new ScreenRecorder(stream, recorder, uploader)
 }
 

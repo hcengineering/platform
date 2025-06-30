@@ -24,8 +24,7 @@ import {
   registerAdapterFactory,
   registerDestroyFactory,
   registerTxAdapterFactory,
-  setAdapterSecurity,
-  sharedPipelineContextVars
+  setAdapterSecurity
 } from '@hcengineering/server-pipeline'
 import { join } from 'path'
 
@@ -47,10 +46,10 @@ const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').to
 
 // Register close on process exit.
 process.on('exit', () => {
-  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+  shutdownPostgres().catch((err) => {
     console.error(err)
   })
-  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+  shutdownMongo().catch((err) => {
     console.error(err)
   })
 })
@@ -103,6 +102,5 @@ startBackup(
       externalStorage,
       disableTriggers: true
     })
-  },
-  sharedPipelineContextVars
+  }
 )

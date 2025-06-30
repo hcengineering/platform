@@ -80,7 +80,6 @@ describe('mongo operations', () => {
     const mctx = new MeasureMetricsContext('', {})
     const txStorage = await createMongoTxAdapter(
       new MeasureMetricsContext('', {}),
-      {},
       hierarchy,
       mongodbUri,
       {
@@ -92,7 +91,6 @@ describe('mongo operations', () => {
 
     serverStorage = await createMongoAdapter(
       new MeasureMetricsContext('', {}),
-      {},
       hierarchy,
       mongodbUri,
       {

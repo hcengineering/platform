@@ -22,7 +22,6 @@ import { DummyDbAdapter } from './mem'
  */
 export async function createNullAdapter (
   ctx: MeasureContext,
-  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceIds,

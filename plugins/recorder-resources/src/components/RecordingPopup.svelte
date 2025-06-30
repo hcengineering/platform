@@ -98,8 +98,8 @@
   $: cameraStreamPromise = updateCameraStream(camEnabled, camDeviceId, videoRes, screenStream)
   $: micStreamPromise = updateMicStream(micEnabled, micDeviceId)
 
-  $: hasCamAccess = $camAccess.state === 'granted'
-  $: hasMicAccess = $micAccess.state === 'granted'
+  $: hasCamAccess = $camAccess.state !== 'denied'
+  $: hasMicAccess = $micAccess.state !== 'denied'
 
   $: if (state !== null && state.state === 'stopped') {
     dispatch('close')
@@ -481,13 +481,13 @@
           style:transform-origin="0 0"
         >
           <RecordingCanvas
+            bind:canvas
+            bind:canvasWidth
+            bind:canvasHeight
             {screenStream}
             {cameraStream}
             {cameraSize}
             {cameraPos}
-            bind:canvas
-            bind:canvasWidth
-            bind:canvasHeight
           />
         </div>
       </div>

@@ -30,7 +30,6 @@ import core, {
   DOMAIN_TX,
   type FindOptions,
   type FindResult,
-  generateId,
   groupByArray,
   type Hierarchy,
   isOperator,
@@ -63,6 +62,13 @@ import core, {
   type WorkspaceUuid
 } from '@hcengineering/core'
 import {
+  type ConnectionMgr,
+  createDBClient,
+  type DBClient,
+  doFetchTypes,
+  getDBClient
+} from '@hcengineering/postgres-base'
+import {
   calcHashHash,
   type DbAdapter,
   type DbAdapterHandler,
@@ -72,7 +78,6 @@ import {
   type TxAdapter
 } from '@hcengineering/server-core'
 import type postgres from 'postgres'
-import { createDBClient, type DBClient } from './client'
 import {
   getDocFieldsByDomains,
   getSchema,
@@ -88,10 +93,8 @@ import {
   createTables,
   DBCollectionHelper,
   type DBDoc,
-  doFetchTypes,
   escape,
   filterProjection,
-  getDBClient,
   inferType,
   isDataField,
   isOwner,
@@ -125,212 +128,6 @@ async function * createCursorGenerator (
   } catch (err: any) {
     console.error('failed to recieve data', { err })
     throw err // Rethrow the error after logging
-  }
-}
-
-class ConnectionInfo {
-  // It should preserve at least one available connection in pool, other connection should be closed
-  available: DBClient[] = []
-
-  released: boolean = false
-
-  constructor (
-    readonly mgrId: string,
-    readonly connectionId: string,
-    protected readonly client: DBClient,
-    readonly managed: boolean
-  ) {}
-
-  async withReserve (action: (reservedClient: DBClient) => Promise<any>, forced: boolean = false): Promise<any> {
-    let reserved: DBClient | undefined
-
-    // Check if we have at least one available connection and reserve one more if required.
-    if (this.available.length === 0) {
-      if (this.managed || forced) {
-        reserved = await this.client.reserve()
-      }
-    } else {
-      reserved = this.available.shift() as DBClient
-    }
-
-    try {
-      // Use reserved or pool
-      return await action(reserved ?? this.client)
-    } catch (err: any) {
-      console.error(err)
-      throw err
-    } finally {
-      if (this.released) {
-        try {
-          reserved?.release()
-        } catch (err: any) {
-          console.error('failed to release', err)
-        }
-      } else if (reserved !== undefined) {
-        if (this.available.length > 0) {
-          reserved?.release()
-        } else {
-          this.available.push(reserved)
-        }
-      }
-    }
-  }
-
-  release (): void {
-    for (const c of [...this.available]) {
-      c.release()
-    }
-    this.available = []
-  }
-}
-
-class ConnectionMgr {
-  constructor (
-    protected readonly client: DBClient,
-    protected readonly connections: () => Map<string, ConnectionInfo>,
-    readonly mgrId: string
-  ) {}
-
-  async write (id: string | undefined, fn: (client: DBClient) => Promise<any>): Promise<void> {
-    const backoffInterval = 25 // millis
-    const maxTries = 5
-    let tries = 0
-
-    const realId = id ?? generateId()
-
-    const connection = this.getConnection(realId, false)
-
-    try {
-      while (true) {
-        const retry: boolean | Error = await connection.withReserve(async (client) => {
-          tries++
-          try {
-            await client.execute('BEGIN;')
-            await fn(client)
-            await client.execute('COMMIT;')
-            return true
-          } catch (err: any) {
-            await client.execute('ROLLBACK;')
-            console.error({ message: 'failed to process tx', error: err.message, cause: err })
-
-            if (!this.isRetryableError(err) || tries === maxTries) {
-              return err
-            } else {
-              console.log('Transaction failed. Retrying.')
-              console.log(err.message)
-              return false
-            }
-          }
-        }, true)
-        if (retry === true) {
-          break
-        }
-        if (retry instanceof Error) {
-          // Pass it to exit
-          throw retry
-        }
-        // Retry for a timeout
-        await new Promise((resolve) => setTimeout(resolve, backoffInterval))
-      }
-    } finally {
-      if (!connection.managed) {
-        // We need to relase in case it temporaty connection was used
-        connection.release()
-      }
-    }
-  }
-
-  async retry (id: string | undefined, fn: (client: DBClient) => Promise<any>): Promise<any> {
-    const backoffInterval = 25 // millis
-    const maxTries = 5
-    let tries = 0
-
-    const realId = id ?? generateId()
-    // Will reuse reserved if had and use new one if not
-    const connection = this.getConnection(realId, false)
-
-    try {
-      while (true) {
-        const retry: false | { result: any } | Error = await connection.withReserve(async (client) => {
-          tries++
-          try {
-            return { result: await fn(client) }
-          } catch (err: any) {
-            console.error({ message: 'failed to process sql', error: err.message, cause: err })
-            if (!this.isRetryableError(err) || tries === maxTries) {
-              return err
-            } else {
-              console.log('Read Transaction failed. Retrying.')
-              console.log(err.message)
-              return false
-            }
-          }
-        })
-        if (retry instanceof Error) {
-          // Pass it to exit
-          throw retry
-        }
-        if (retry === false) {
-          // Retry for a timeout
-          await new Promise((resolve) => setTimeout(resolve, backoffInterval))
-          continue
-        }
-        return retry.result
-      }
-    } finally {
-      if (!connection.managed) {
-        // We need to relase in case it temporaty connection was used
-        connection.release()
-      }
-    }
-  }
-
-  release (id: string): void {
-    const conn = this.connections().get(id)
-    if (conn !== undefined) {
-      conn.released = true
-      this.connections().delete(id) // We need to delete first
-      conn.release()
-    } else {
-      console.log('wrne')
-    }
-  }
-
-  close (): void {
-    const cnts = this.connections()
-    for (const [k, conn] of Array.from(cnts.entries()).filter(
-      ([, it]: [string, ConnectionInfo]) => it.mgrId === this.mgrId
-    )) {
-      cnts.delete(k)
-      try {
-        conn.release()
-      } catch (err: any) {
-        console.error('failed to release connection')
-      }
-    }
-  }
-
-  getConnection (id: string, managed: boolean = true): ConnectionInfo {
-    let conn = this.connections().get(id)
-    if (conn === undefined) {
-      conn = new ConnectionInfo(this.mgrId, id, this.client, managed)
-    }
-    if (managed) {
-      this.connections().set(id, conn)
-    }
-    return conn
-  }
-
-  private isRetryableError (err: any): boolean {
-    const msg: string = err?.message ?? ''
-
-    return (
-      err.code === '40001' || // Retry transaction
-      err.code === '55P03' || // Lock not available
-      err.code === 'CONNECTION_CLOSED' || // This error is thrown if the connection was closed without an error.
-      err.code === 'CONNECTION_DESTROYED' || // This error is thrown for any queries that were pending when the timeout to sql.end({ timeout: X }) was reached. If the DB client is being closed completely retry will result in CONNECTION_ENDED which is not retried so should be fine.
-      msg.includes('RETRY_SERIALIZABLE')
-    )
   }
 }
 
@@ -409,12 +206,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly _helper: DBCollectionHelper
   protected readonly tableFields = new Map<string, string[]>()
 
-  protected connections = new Map<string, ConnectionInfo>()
-
-  mgr: ConnectionMgr
-
   constructor (
     protected readonly client: DBClient,
+
+    protected readonly mgr: ConnectionMgr,
     protected readonly refClient: {
       url: () => string
       close: () => void
@@ -425,15 +220,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
     readonly mgrId: string
   ) {
     this._helper = new DBCollectionHelper(this.client, this.workspaceId)
-    this.mgr = new ConnectionMgr(client, () => this.connections, mgrId)
   }
 
   reserveContext (id: string): () => void {
-    const conn = this.mgr.getConnection(id, true)
+    this.mgr.getConnection(id, true)
     return () => {
-      conn.released = true
-      conn.release()
-      this.connections.delete(id) // We need to delete first
+      this.mgr.release(id) // We need to release first
     }
   }
 
@@ -1863,8 +1655,6 @@ export class PostgresAdapter extends PostgresAdapterBase {
     domains?: string[],
     excludeDomains?: string[]
   ): Promise<void> {
-    this.connections = contextVars.cntInfoPG ?? new Map<string, ConnectionInfo>()
-    contextVars.cntInfoPG = this.connections
     let resultDomains = [...(domains ?? this.hierarchy.domains()), 'kanban']
     if (excludeDomains !== undefined) {
       resultDomains = resultDomains.filter((it) => !excludeDomains.includes(it))
@@ -2186,9 +1976,6 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
     domains?: string[],
     excludeDomains?: string[]
   ): Promise<void> {
-    this.connections = contextVars.cntInfoPG ?? new Map<string, ConnectionInfo>()
-    contextVars.cntInfoPG = this.connections
-
     const resultDomains = domains ?? [DOMAIN_TX, DOMAIN_MODEL_TX]
     await initRateLimit.exec(async () => {
       const url = this.refClient.url()
@@ -2263,31 +2050,45 @@ function prepareJsonValue (tkey: string, valType: string): { tlkey: string, arro
  */
 export async function createPostgresAdapter (
   ctx: MeasureContext,
-  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   wsIds: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
-  const client = getDBClient(contextVars, url)
+  const client = getDBClient(url)
   const connection = await client.getClient()
-  return new PostgresAdapter(createDBClient(connection), client, wsIds.uuid, hierarchy, modelDb, 'default-' + wsIds.url)
+  return new PostgresAdapter(
+    createDBClient(connection),
+    client.mgr,
+    client,
+    wsIds.uuid,
+    hierarchy,
+    modelDb,
+    'default-' + wsIds.url
+  )
 }
 /**
  * @public
  */
 export async function createPostgresTxAdapter (
   ctx: MeasureContext,
-  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   wsIds: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<TxAdapter> {
-  const client = getDBClient(contextVars, url)
+  const client = getDBClient(url)
   const connection = await client.getClient()
 
-  return new PostgresTxAdapter(createDBClient(connection), client, wsIds.uuid, hierarchy, modelDb, 'tx' + wsIds.url)
+  return new PostgresTxAdapter(
+    createDBClient(connection),
+    client.mgr,
+    client,
+    wsIds.uuid,
+    hierarchy,
+    modelDb,
+    'tx' + wsIds.url
+  )
 }
 
 function isPersonAccount (tx: Tx): boolean {

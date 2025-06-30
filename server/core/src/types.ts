@@ -132,9 +132,10 @@ export interface BroadcastOps {
   broadcastSessions: (measure: MeasureContext, sessionIds: Record<string, Tx[]>) => void
 }
 
-export interface BroadcastSessionsFunc {
-  broadcast: (ctx: MeasureContext, sessionIds: string[], result: any) => void
-  enqueue: (ctx: MeasureContext, result: any) => void
+export interface CommunicationCallbacks {
+  registerAsyncRequest: (ctx: MeasureContext, promise: (ctx: MeasureContext) => Promise<void>) => void
+  broadcast: (ctx: MeasureContext, sessionIds: Record<string, any[]>) => void
+  enqueue: (ctx: MeasureContext, result: any[]) => void
 }
 
 /**
@@ -253,7 +254,7 @@ export type PipelineFactory = (
 export type CommunicationApiFactory = (
   ctx: MeasureContext,
   ws: WorkspaceIds,
-  broadcastSessions: BroadcastSessionsFunc
+  callbacks: CommunicationCallbacks
 ) => Promise<CommunicationApi>
 
 /**

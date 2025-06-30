@@ -75,6 +75,7 @@ async function createMessages (tx: TxCUD<Card>, control: TriggerControl, card: C
     result.push({ action })
   }
 
+  const events: CreateMessageEvent[] = []
   for (const data of result) {
     const event: CreateMessageEvent = {
       type: MessageEventType.CreateMessage,
@@ -86,9 +87,12 @@ async function createMessages (tx: TxCUD<Card>, control: TriggerControl, card: C
       extra: data,
       date: new Date(tx.modifiedOn)
     }
-
-    void control.domainRequest(control.ctx, 'communication' as OperationDomain, { event })
+    events.push(event)
   }
+
+  await Promise.all(
+    events.map((event) => control.domainRequest(control.ctx, 'communication' as OperationDomain, { event }))
+  )
 }
 
 function getActivityAction (control: ActivityControl, tx: TxCUD<Doc>): 'create' | 'remove' | 'update' {

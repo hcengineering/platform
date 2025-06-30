@@ -87,12 +87,6 @@ export function getTxAdapterFactory (
 }
 
 /**
- * A pipelice context used by standalong services to hold global variables.
- * In case of Durable Objects, it should not be shared and individual context should be created.
- */
-export const sharedPipelineContextVars: Record<string, any> = {}
-
-/**
  * @public
  */
 
@@ -170,7 +164,7 @@ export function createServerPipeline (
       hierarchy,
       queue: opt.queue,
       storageAdapter: opt.externalStorage,
-      contextVars: opt.pipelineContextVars ?? sharedPipelineContextVars
+      contextVars: opt.pipelineContextVars ?? {}
     }
     return createPipeline(ctx, middlewares, context)
   }

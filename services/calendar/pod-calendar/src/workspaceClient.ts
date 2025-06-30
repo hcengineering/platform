@@ -28,7 +28,7 @@ import { CalendarClient } from './calendar'
 import { getClient } from './client'
 import config from './config'
 import { addUserByEmail, getSyncHistory, setSyncHistory } from './kvsUtils'
-import { IncomingSyncManager } from './sync'
+import { IncomingSyncManager, synced } from './sync'
 import { getWorkspaceTokens } from './tokens'
 import { GoogleEmail, Token } from './types'
 import { getWorkspaceToken } from './utils'
@@ -136,7 +136,10 @@ export class WorkspaceClient {
   private async getNewEvents (): Promise<void> {
     const lastSync = await getSyncHistory(this.workspace)
     this.lastSync = lastSync ?? 0
-    const query = lastSync !== undefined ? { modifiedOn: { $gt: lastSync } } : {}
+    const baseQuery = {
+      calendar: { $in: Array.from(this.calendarsById.keys()) }
+    }
+    const query = lastSync !== undefined ? { modifiedOn: { $gt: lastSync }, ...baseQuery } : baseQuery
     const newEvents = await this.client.findAll(calendar.class.Event, query, { sort: { modifiedOn: 1 } })
     const interval = setInterval(() => {
       void this.updateSyncHistory()
@@ -159,6 +162,8 @@ export class WorkspaceClient {
       }
     }
     clearInterval(interval)
+    await setSyncHistory(this.workspace, Date.now())
+    synced.add(this.workspace)
     this.ctx.info('all outcoming messages synced', { workspace: this.workspace })
   }
 

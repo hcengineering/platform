@@ -25,6 +25,8 @@
     "TopLeft": "Oben links",
     "TopRight": "Oben rechts",
     "BottomLeft": "Unten links",
-    "BottomRight": "Unten rechts"
+    "BottomRight": "Unten rechts",
+    "Resolution": "Auflösung",
+    "Original": "Original"
   }
 }
