@@ -43,7 +43,7 @@ import { LabelsQuery } from './label/query'
 import { CollaboratorsQuery } from './collaborators/query'
 
 interface CreateQueryResult {
-  unsubscribe: (isUpdate: boolean) => void
+  unsubscribe: (force: boolean) => void
 }
 
 const maxQueriesCache = 50
@@ -127,8 +127,8 @@ export class LiveQueries {
     this.queries.set(query.id, query)
 
     return {
-      unsubscribe: (isUpdate) => {
-        this.unsubscribeQuery(query, isUpdate)
+      unsubscribe: (force) => {
+        this.unsubscribeQuery(query, force)
       }
     }
   }

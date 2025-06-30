@@ -36,12 +36,16 @@ class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
     if (dontDestroy !== true) {
       const destroyFn = getOnDestroy()
       destroyFn(() => {
-        this.unsubscribe(false)
+        this.unsubscribe()
       })
     }
   }
 
-  unsubscribe: (isUpdate: boolean) => void = () => {}
+  private _unsubscribe: (isUpdate: boolean) => void = () => {}
+
+  public unsubscribe (): void {
+    this._unsubscribe(false)
+  }
 
   query (params: P, callback: C): boolean {
     if (!this.needUpdate(params, callback)) {
@@ -53,16 +57,16 @@ class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
 
   private doQuery (query: P, callback: C): void {
     const isUpdate = this.oldQuery !== undefined
-    this.unsubscribe(isUpdate)
+    this._unsubscribe(isUpdate)
     this.oldCallback = callback
     this.oldQuery = query
 
     const { unsubscribe } = this.createQuery(query, callback)
-    this.unsubscribe = (isUpdate) => {
+    this._unsubscribe = (isUpdate) => {
       unsubscribe(isUpdate)
       this.oldCallback = undefined
       this.oldQuery = undefined
-      this.unsubscribe = () => {}
+      this._unsubscribe = () => {}
     }
   }
 
