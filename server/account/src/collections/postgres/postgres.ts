@@ -878,6 +878,7 @@ export class PostgresAccountDB implements AccountDB {
           w.uuid,
           w.name,
           w.url,
+          w.data_id,
           w.branding,
           w.location,
           w.region,
