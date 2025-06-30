@@ -20,7 +20,7 @@
     "InvalidOtp": "無効なコードです",
     "InviteNotFound": "メールアドレス {email} に対する招待が見つかりませんでした",
     "WorkspaceLimitReached": "作成可能なワークスペースの上限に達しました。お問い合わせください",
-    "ReadOnlyAccount": "読み取り専用モード",
+    "ReadOnlyAccount": "ゲストデモ",
     "SystemAccount": "システムアカウント"
   }
 }

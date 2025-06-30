@@ -21,7 +21,7 @@
     "InvalidOtp": "Neplatný kód",
     "InviteNotFound": "Pozvánka s email:{email} nebyla nalezena.",
     "WorkspaceLimitReached": "Dosáhli jste limitu pracovních prostorů. Kontaktujte nás...",
-    "ReadOnlyAccount": "Režim pouze pro čtení",
+    "ReadOnlyAccount": "Ukázka pro hosty",
     "SystemAccount": "Systémový účet"
   }
 }
