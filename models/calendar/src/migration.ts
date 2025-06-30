@@ -388,9 +388,9 @@ export const calendarOperation: MigrateOperation = {
         func: fillSocialIdsFromIntegrations
       },
       {
-        state: 'fill-calendar-user-and-acess',
+        state: 'fill-calendar-user-and-access',
         mode: 'upgrade',
-        func: fillCalendarUserAndAcess
+        func: fillCalendarUserAndAccess
       }
     ])
   },
@@ -424,7 +424,7 @@ async function fillSocialIdsFromIntegrations (client: MigrationClient): Promise<
   }
 }
 
-async function fillCalendarUserAndAcess (client: MigrationClient): Promise<void> {
+async function fillCalendarUserAndAccess (client: MigrationClient): Promise<void> {
   const calendars = await client.find<Calendar>(DOMAIN_CALENDAR, { user: { $exists: false } })
   const userMap = new Map<PersonId, PersonId>()
   for (const _calendar of calendars) {
@@ -467,6 +467,8 @@ function getCalendarAccess (_calendar: Calendar): AccessLevel {
   if (
     ext.externalId === 'addressbook#contacts@group.v.calendar.google.com' ||
     ext.externalId.includes('holiday@group.v.calendar.google.com')
-  ) { return AccessLevel.Reader }
+  ) {
+    return AccessLevel.Reader
+  }
   return AccessLevel.Writer
 }

@@ -133,7 +133,7 @@ export interface Event extends AttachedDoc {
 }
 
 export enum AccessLevel {
-  FreeBusyReaded = 'freeBusyReader',
+  FreeBusyReader = 'freeBusyReader',
   Reader = 'reader',
   Writer = 'writer',
   Owner = 'owner'
