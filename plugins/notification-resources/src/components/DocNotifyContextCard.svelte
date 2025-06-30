@@ -23,7 +23,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
+  import { AccountRole, Class, Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import chunter from '@hcengineering/chunter'
   import { getPersonRefsByPersonIds } from '@hcengineering/contact-resources'
   import { Person } from '@hcengineering/contact'
@@ -40,6 +40,7 @@
 
   const maxNotifications = 3
 
+  const account = getCurrentAccount()
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
@@ -226,7 +227,7 @@
         <div class="flex-center min-w-6">
           {#if isArchiving}
             <Spinner size="small" />
-          {:else}
+          {:else if account.role !== AccountRole.ReadOnlyGuest}
             <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
           {/if}
         </div>
