@@ -1,7 +1,10 @@
 import { Employee, Person } from '@hcengineering/contact'
 import { Data, generateId, Ref } from '@hcengineering/core'
 
-import love, { Office, Room, ParticipantInfo, RoomAccess, RoomType, GRID_WIDTH } from '.'
+import love from './plugin'
+import { Office, ParticipantInfo, Room, RoomAccess, RoomType } from './types'
+
+export const GRID_WIDTH = 15
 
 interface Slot {
   _id?: Ref<Room>
