@@ -201,10 +201,11 @@ export function startHttpServer (
       res.end()
     }
   })
-  app.put('/api/v1/manage', (req, res) => {
+  app.put('/api/v1/manage', async (req, res) => {
     try {
       const token = (req.query.token as string) ?? (req.headers.authorization ?? '').split(' ')[1]
       const payload = decodeToken(token)
+
       if (payload.extra?.admin !== 'true' && payload.account !== systemAccountUuid) {
         console.warn('Non admin attempt to maintenance action', { payload })
         res.writeHead(404, {})
@@ -216,8 +217,9 @@ export function startHttpServer (
 
       switch (operation) {
         case 'maintenance': {
+          const message: string | undefined = await retrieveJson(req)
           const timeMinutes = parseInt((req.query.timeout as string) ?? '5')
-          sessions.scheduleMaintenance(timeMinutes)
+          sessions.scheduleMaintenance(timeMinutes, message)
 
           res.writeHead(200)
           res.end()

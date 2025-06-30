@@ -109,6 +109,7 @@ export class TSessionManager implements SessionManager {
 
   maintenanceTimer: any
   timeMinutes = 0
+  maintenanceMessage?: string
 
   modelVersion = process.env.MODEL_VERSION ?? ''
   serverVersion = process.env.VERSION ?? ''
@@ -146,8 +147,9 @@ export class TSessionManager implements SessionManager {
     this.ticksContext = ctx.newChild('ticks', {})
   }
 
-  scheduleMaintenance (timeMinutes: number): void {
+  scheduleMaintenance (timeMinutes: number, message?: string): void {
     this.timeMinutes = timeMinutes
+    this.maintenanceMessage = message
 
     this.sendMaintenanceWarning()
 
@@ -190,7 +192,8 @@ export class TSessionManager implements SessionManager {
       space: core.space.DerivedTx,
       createdBy: core.account.System,
       params: {
-        timeMinutes: this.timeMinutes
+        timeMinutes: this.timeMinutes,
+        message: this.maintenanceMessage
       }
     }
   }
@@ -306,7 +309,7 @@ export class TSessionManager implements SessionManager {
               wsId,
               total: s.session.requests.size,
               user: s.session.getUser(),
-              ...cutObjectArray(r.params)
+              params: cutObjectArray(r.params)
             })
           }
         }

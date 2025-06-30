@@ -721,7 +721,7 @@ export interface SessionManager {
 
   closeWorkspaces: (ctx: MeasureContext) => Promise<void>
 
-  scheduleMaintenance: (timeMinutes: number) => void
+  scheduleMaintenance: (timeMinutes: number, message?: string) => void
 
   profiling?: {
     start: () => void
