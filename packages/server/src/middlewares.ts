@@ -32,7 +32,7 @@ import type {
 } from '@hcengineering/communication-types'
 
 import type {
-  BroadcastSessionsFunc,
+  CommunicationCallbacks,
   Enriched,
   Metadata,
   Middleware,
@@ -54,7 +54,7 @@ export async function buildMiddlewares (
   workspace: WorkspaceID,
   metadata: Metadata,
   db: DbAdapter,
-  broadcast: BroadcastSessionsFunc
+  callbacks: CommunicationCallbacks
 ): Promise<Middlewares> {
   const createFns: MiddlewareCreateFn[] = [
     // Enrich events
@@ -67,9 +67,9 @@ export async function buildMiddlewares (
     async (context, next) => new PermissionsMiddleware(db, context, next),
 
     // Process events
-    async (context, next) => new BroadcastMiddleware(broadcast, context, next),
-    async (context, next) => new DatabaseMiddleware(db, context, next),
-    async (context, next) => new TriggersMiddleware(db, context, next)
+    async (context, next) => new TriggersMiddleware(callbacks, db, context, next),
+    async (context, next) => new BroadcastMiddleware(callbacks, context, next),
+    async (context, next) => new DatabaseMiddleware(db, context, next)
   ]
 
   const context: MiddlewareContext = {
@@ -92,7 +92,8 @@ export class Middlewares {
   private constructor (
     private readonly ctx: MeasureContext,
     private readonly context: MiddlewareContext
-  ) {}
+  ) {
+  }
 
   static async create (
     ctx: MeasureContext,
@@ -175,7 +176,11 @@ export class Middlewares {
 
   async event (session: SessionData, event: Event): Promise<EventResult> {
     if (this.head === undefined) return {}
-    return (await this.head?.event(session, event as Enriched<Event>, session.derived ?? false)) ?? {}
+    const result = (await this.head?.event(session, event as Enriched<Event>, session.derived ?? false)) ?? {}
+
+    this.head?.handleBroadcast(session, [event] as Enriched<Event>[])
+
+    return result
   }
 
   async closeSession (sessionId: string): Promise<void> {

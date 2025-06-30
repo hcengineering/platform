@@ -16,7 +16,7 @@
 import {
   CardEventType,
   type Event,
-  type EventResult,
+  EventResult,
   LabelEventType,
   MessageEventType,
   NotificationEventType,
@@ -38,7 +38,7 @@ import type {
   NotificationContext
 } from '@hcengineering/communication-types'
 
-import type { BroadcastSessionsFunc, Enriched, Middleware, MiddlewareContext, QueryId } from '../types'
+import type { CommunicationCallbacks, Enriched, Middleware, MiddlewareContext, QueryId } from '../types'
 import { BaseMiddleware } from './base'
 
 interface SessionInfo {
@@ -51,7 +51,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
   private readonly dataBySessionId = new Map<string, SessionInfo>()
 
   constructor (
-    private readonly broadcastFn: BroadcastSessionsFunc,
+    private readonly callbacks: CommunicationCallbacks,
     readonly context: MiddlewareContext,
     next?: Middleware
   ) {
@@ -119,31 +119,30 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     data.contextQueries.delete(queryId)
   }
 
-  async response (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<void> {
-    const sessionIds: string[] = []
+  handleBroadcast (session: SessionData, events: Enriched<Event>[]): void {
+    if (events.length === 0) return
+    const sessionIds: Record<string, Enriched<Event>[]> = {}
+
     for (const [sessionId, session] of this.dataBySessionId.entries()) {
-      if (this.match(event, session)) {
-        sessionIds.push(sessionId)
-      }
+      sessionIds[sessionId] = events.filter((it) => this.match(it, session))
     }
 
     const ctx = this.context.ctx.newChild('enqueue', {})
     ctx.contextData = session.contextData
 
-    if (sessionIds.length > 0) {
+    if (Object.keys(sessionIds).length > 0) {
       try {
-        this.broadcastFn.broadcast(ctx, sessionIds, event)
+        this.callbacks.broadcast(ctx, sessionIds)
       } catch (e) {
         this.context.ctx.error('Failed to broadcast event', { error: e })
       }
     }
 
     try {
-      this.broadcastFn.enqueue(ctx, event)
+      this.callbacks.enqueue(ctx, events)
     } catch (e) {
       this.context.ctx.error('Failed to broadcast event', { error: e })
     }
-    await this.provideResponse(session, event, derived)
   }
 
   closeSession (sessionId: string): void {

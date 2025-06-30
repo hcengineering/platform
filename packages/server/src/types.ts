@@ -74,7 +74,7 @@ export interface Middleware {
 
   unsubscribeQuery: (session: SessionData, queryId: number) => void
 
-  response: (session: SessionData, event: Enriched<Event>, derived: boolean) => Promise<void>
+  handleBroadcast: (session: SessionData, events: Enriched<Event>[]) => void
 
   closeSession: (sessionId: string) => void
   close: () => void
@@ -94,9 +94,10 @@ export interface MiddlewareContext {
 
 export type MiddlewareCreateFn = (context: MiddlewareContext, next?: Middleware) => Promise<Middleware>
 
-export interface BroadcastSessionsFunc {
-  broadcast: (ctx: MeasureContext, sessionIds: string[], result: Enriched<Event>) => void
-  enqueue: (ctx: MeasureContext, result: Enriched<Event>) => void
+export interface CommunicationCallbacks {
+  registerAsyncRequest: (ctx: MeasureContext, promise: (ctx: MeasureContext) => Promise<void>) => void
+  broadcast: (ctx: MeasureContext, result: Record<string, Enriched<Event>[]>) => void
+  enqueue: (ctx: MeasureContext, result: Enriched<Event>[]) => void
 }
 
 export interface TriggerCtx {
@@ -116,5 +117,6 @@ export type TriggerFn = (ctx: TriggerCtx, event: Enriched<Event>) => Promise<Eve
 export type Triggers = [string, EventType, TriggerFn][]
 
 export type Enriched<T> = T & {
+  skipPropagate?: boolean
   date: Date
 }

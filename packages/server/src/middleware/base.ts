@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type EventResult, type Event, type SessionData } from '@hcengineering/communication-sdk-types'
+import { type Event, EventResult, type SessionData } from '@hcengineering/communication-sdk-types'
 import type {
   FindMessagesGroupsParams,
   FindMessagesParams,
@@ -77,8 +77,8 @@ export class BaseMiddleware implements Middleware {
     return await this.provideEvent(session, event, derived)
   }
 
-  async response (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<void> {
-    await this.provideResponse(session, event, derived)
+  handleBroadcast (session: SessionData, events: Enriched<Event>[]): void {
+    this.provideHandleBroadcast(session, events)
   }
 
   unsubscribeQuery (session: SessionData, queryId: number): void {
@@ -162,9 +162,9 @@ export class BaseMiddleware implements Middleware {
     return []
   }
 
-  protected async provideResponse (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<void> {
+  protected provideHandleBroadcast (session: SessionData, events: Enriched<Event>[]): void {
     if (this.next !== undefined) {
-      await this.next.response(session, event, derived)
+      this.next.handleBroadcast(session, events)
     }
   }
 }

@@ -13,12 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  type EventResult,
-  MessageEventType,
-  type Event,
-  type SessionData
-} from '@hcengineering/communication-sdk-types'
+import { EventResult, MessageEventType, type Event, type SessionData } from '@hcengineering/communication-sdk-types'
 
 import { generateMessageId } from '../messageId'
 import type { Middleware, MiddlewareContext, Enriched } from '../types'

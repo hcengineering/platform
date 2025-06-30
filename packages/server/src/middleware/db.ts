@@ -43,7 +43,6 @@ import {
   type CreateNotificationEvent,
   type DbAdapter,
   type Event,
-  type EventResult,
   LabelEventType,
   LinkPreviewPatchEvent,
   MessageEventType,
@@ -61,14 +60,15 @@ import {
   type UpdateNotificationContextEvent,
   type UpdateNotificationEvent,
   UpdatePatchEvent,
-  ThreadPatchEvent
+  ThreadPatchEvent,
+  EventResult
 } from '@hcengineering/communication-sdk-types'
 
 import type { Enriched, Middleware, MiddlewareContext } from '../types'
 import { BaseMiddleware } from './base'
 
 interface Result {
-  response?: Enriched<Event>
+  skipPropagate?: boolean
   result?: EventResult
 }
 
@@ -108,10 +108,11 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     return await this.db.findCollaborators(params)
   }
 
-  async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
+  async event (session: SessionData, event: Enriched<Event>): Promise<EventResult> {
     const result = await this.processEvent(session, event)
-    if (result.response != null) {
-      void this.context.head?.response(session, result.response, derived)
+
+    if (result.skipPropagate === true) {
+      event.skipPropagate = true
     }
 
     return result.result ?? {}
@@ -177,19 +178,16 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
 
   private async addCollaborators (event: Enriched<AddCollaboratorsEvent>): Promise<Result> {
     const added = await this.db.addCollaborators(event.cardId, event.cardType, event.collaborators, event.date)
-    if (added.length === 0) return {}
-    return {
-      response: event
-    }
+
+    if (added.length === 0) return { skipPropagate: true }
+    return {}
   }
 
   private async removeCollaborators (event: Enriched<RemoveCollaboratorsEvent>): Promise<Result> {
-    if (event.collaborators.length === 0) return {}
+    if (event.collaborators.length === 0) return { skipPropagate: true }
     await this.db.removeCollaborators(event.cardId, event.collaborators)
 
-    return {
-      response: event
-    }
+    return {}
   }
 
   private async createMessage (event: Enriched<CreateMessageEvent>): Promise<Result> {
@@ -209,6 +207,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
 
     if (!created) {
       return {
+        skipPropagate: true,
         result: {
           messageId: event.messageId,
           created: event.date
@@ -217,7 +216,6 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
 
     return {
-      response: event,
       result: {
         messageId: event.messageId,
         created: event.date
@@ -243,12 +241,12 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
     await this.createPatch(event.cardId, event.messageId, PatchType.update, data, event.socialId, event.date)
 
-    return { response: event }
+    return {}
   }
 
   private async removePatch (event: Enriched<RemovePatchEvent>): Promise<Result> {
     await this.createPatch(event.cardId, event.messageId, PatchType.remove, {}, event.socialId, event.date)
-    return { response: event }
+    return {}
   }
 
   private async reactionPatch (event: Enriched<ReactionPatchEvent>): Promise<Result> {
@@ -260,7 +258,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       await this.db.removeReaction(event.cardId, event.messageId, operation.reaction, event.socialId, event.date)
     }
 
-    return { response: event }
+    return {}
   }
 
   private async blobPatch (event: Enriched<BlobPatchEvent>): Promise<Result> {
@@ -276,7 +274,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       }
     }
 
-    return { response: event }
+    return {}
   }
 
   private async linkPreviewPatch (event: Enriched<LinkPreviewPatchEvent>): Promise<Result> {
@@ -296,9 +294,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       }
     }
 
-    return {
-      response: event
-    }
+    return {}
   }
 
   private async threadPatch (event: Enriched<ThreadPatchEvent>): Promise<Result> {
@@ -322,9 +318,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       )
     }
 
-    return {
-      response: event
-    }
+    return {}
   }
 
   private async createNotification (event: Enriched<CreateNotificationEvent>): Promise<Result> {
@@ -338,27 +332,25 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       event.date
     )
 
-    return {
-      response: { ...event, notificationId: id }
-    }
+    event.notificationId = id
+
+    return {}
   }
 
   private async updateNotification (event: Enriched<UpdateNotificationEvent>): Promise<Result> {
     await this.db.updateNotification(event.contextId, event.account, event.query, event.updates)
 
-    return {
-      response: event
-    }
+    return {}
   }
 
   private async removeNotifications (event: Enriched<RemoveNotificationsEvent>): Promise<Result> {
-    if (event.ids.length === 0) return {}
+    if (event.ids.length === 0) return { skipPropagate: true }
     const ids = await this.db.removeNotifications(event.contextId, event.account, event.ids)
+    event.ids = ids
     return {
       result: {
         ids
-      },
-      response: { ...event, ids }
+      }
     }
   }
 
@@ -370,56 +362,47 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       event.lastView,
       event.lastNotify
     )
+
+    event.contextId = id
     return {
-      response: { ...event, contextId: id },
       result: { id }
     }
   }
 
   private async removeNotificationContext (event: Enriched<RemoveNotificationContextEvent>): Promise<Result> {
     const context = (await this.db.findNotificationContexts({ id: event.contextId, account: event.account }))[0]
-    if (context == null) return {}
+    if (context == null) return { skipPropagate: true }
 
     this.context.removedContexts.set(context.id, context)
 
     const id = await this.db.removeContext(context.id, context.account)
-    if (id == null) return {}
-    return {
-      response: event
-    }
+    if (id == null) return { skipPropagate: true }
+    return {}
   }
 
   async updateNotificationContext (event: Enriched<UpdateNotificationContextEvent>): Promise<Result> {
     await this.db.updateContext(event.contextId, event.account, event.updates)
 
-    return {
-      response: event
-    }
+    return {}
   }
 
   async createMessagesGroup (event: Enriched<CreateMessagesGroupEvent>): Promise<Result> {
     const { fromDate, toDate, count, cardId, blobId } = event.group
     await this.db.createMessagesGroup(cardId, blobId, fromDate, toDate, count)
 
-    return {
-      response: event
-    }
+    return {}
   }
 
   async removeMessagesGroup (event: Enriched<RemoveMessagesGroupEvent>): Promise<Result> {
     await this.db.removeMessagesGroup(event.cardId, event.blobId)
 
-    return {
-      response: event
-    }
+    return {}
   }
 
   private async createLabel (event: Enriched<CreateLabelEvent>): Promise<Result> {
     await this.db.createLabel(event.labelId, event.cardId, event.cardType, event.account, event.date)
 
-    return {
-      response: event
-    }
+    return {}
   }
 
   private async removeLabel (event: Enriched<RemoveLabelEvent>): Promise<Result> {
@@ -428,21 +411,16 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       cardId: event.cardId,
       account: event.account
     })
-    return {
-      response: event
-    }
+
+    return {}
   }
 
   private async updateCardType (event: Enriched<UpdateCardTypeEvent>): Promise<Result> {
-    return {
-      response: event
-    }
+    return {}
   }
 
   private async removeCard (event: Enriched<RemoveCardEvent>): Promise<Result> {
-    return {
-      response: event
-    }
+    return {}
   }
 
   close (): void {

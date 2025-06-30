@@ -16,7 +16,7 @@
 import {
   type DbAdapter,
   type Event,
-  type EventResult,
+  EventResult,
   MessageEventType,
   NotificationEventType,
   type SessionData

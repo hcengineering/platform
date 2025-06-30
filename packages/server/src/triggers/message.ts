@@ -181,7 +181,10 @@ async function onThreadAttached (ctx: TriggerCtx, event: Enriched<ThreadPatchEve
     content: message.content,
     extra: { ...message.extra, threadRoot: true },
     socialId: message.creator,
-    date: message.created
+    date: message.created,
+    options: {
+      noNotify: true
+    }
   })
 
   result.push({

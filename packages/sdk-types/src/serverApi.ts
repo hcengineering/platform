@@ -27,15 +27,21 @@ import type {
   FindCollaboratorsParams,
   Collaborator
 } from '@hcengineering/communication-types'
-import type { Account } from '@hcengineering/core'
+import type { Account, MeasureContext } from '@hcengineering/core'
 
 import type { EventResult, Event } from './events/event'
+
+export type ContextData = {
+  asyncRequests?: ((ctx: MeasureContext) => Promise<void>)[]
+} & Record<string, any>
 
 export interface SessionData {
   sessionId?: string
   account: Account
   derived?: boolean
-  contextData?: any
+  isAsyncContext?: boolean
+  contextData?: ContextData
+  asyncData: Event[]
 }
 
 export interface ServerApi {

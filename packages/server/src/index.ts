@@ -33,7 +33,7 @@ import { createDbAdapter } from '@hcengineering/communication-cockroach'
 import type { EventResult, Event, ServerApi, SessionData } from '@hcengineering/communication-sdk-types'
 
 import { getMetadata } from './metadata'
-import type { BroadcastSessionsFunc, QueryId } from './types'
+import type { CommunicationCallbacks, QueryId } from './types'
 import { buildMiddlewares, Middlewares } from './middlewares'
 
 export class Api implements ServerApi {
@@ -46,14 +46,14 @@ export class Api implements ServerApi {
     ctx: MeasureContext,
     workspace: WorkspaceID,
     dbUrl: string,
-    broadcast: BroadcastSessionsFunc
+    callbacks: CommunicationCallbacks
   ): Promise<Api> {
     const db = await createDbAdapter(dbUrl, workspace, ctx, {
       withLogs: process.env.COMMUNICATION_TIME_LOGGING_ENABLED === 'true'
     })
 
     const metadata = getMetadata()
-    const middleware = await buildMiddlewares(ctx, workspace, metadata, db, broadcast)
+    const middleware = await buildMiddlewares(ctx, workspace, metadata, db, callbacks)
 
     return new Api(ctx, middleware)
   }
