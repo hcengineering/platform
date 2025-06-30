@@ -92,7 +92,6 @@ export class WorkspaceClient {
       await addUserByEmail(parsedToken, token.key as GoogleEmail)
       await this.createCalendarClient(parsedToken)
     }
-    await this.getNewEvents()
     const limiter = new RateLimiter(config.InitLimit)
     for (const token of tokens) {
       await limiter.add(async () => {
@@ -100,6 +99,8 @@ export class WorkspaceClient {
         await IncomingSyncManager.sync(this.ctx, this.accountClient, parsedToken, parsedToken.email)
       })
     }
+    await limiter.waitProcessing()
+    await this.getNewEvents()
   }
 
   private async createCalendarClient (user: Token): Promise<CalendarClient | undefined> {
@@ -135,6 +136,10 @@ export class WorkspaceClient {
 
   private async getNewEvents (): Promise<void> {
     const lastSync = await getSyncHistory(this.workspace)
+    if (lastSync === undefined) {
+      await setSyncHistory(this.workspace, Date.now())
+      return
+    }
     this.lastSync = lastSync ?? 0
     const baseQuery = {
       calendar: { $in: Array.from(this.calendarsById.keys()) }
