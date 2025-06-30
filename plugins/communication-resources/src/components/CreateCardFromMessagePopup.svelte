@@ -40,6 +40,7 @@
   $: _message = $threadCreateMessageStore ?? message
   let title = getDefaultTitle(message)
   let selectedType: Ref<MasterTag> | undefined
+  let inProgress = false
 
   function getDefaultTitle (message: Message): string {
     const markup = toMarkup(message.content)
@@ -50,8 +51,13 @@
 
   async function attachCard (): Promise<void> {
     if (selectedType === undefined || title.trim() === '') return
-    await attachCardToMessage(_message, card, title, selectedType)
-    dispatch('close')
+    try {
+      inProgress = true
+      await attachCardToMessage(_message, card, title, selectedType)
+      dispatch('close')
+    } finally {
+      inProgress = false
+    }
   }
 
   function filterClasses (): [DropdownIntlItem, DropdownIntlItem[]][] {
@@ -129,7 +135,7 @@
     />
   </div>
   <svelte:fragment slot="footer">
-    {#if _message.thread != null}
+    {#if _message.thread != null && !inProgress}
       <div class="footer-error">
         <Label label={communication.string.MessageAlreadyHasCardAttached} />
       </div>

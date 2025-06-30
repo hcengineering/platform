@@ -1,4 +1,5 @@
 import { ScreenSource } from '@hcengineering/love'
+import { Plugin } from '@hcengineering/platform'
 
 /**
  * @public
@@ -75,6 +76,7 @@ export interface NotificationParams {
   title: string
   body: string
   silent: boolean
+  application: Plugin
 }
 
 /**
@@ -87,7 +89,7 @@ export interface IPCMainExposed {
   branding: () => Promise<Branding>
   on: (event: string, op: (channel: any, args: any[]) => void) => void
   handleDeepLink: (callback: (url: string) => void) => void
-  handleNotificationNavigation: (callback: () => void) => void
+  handleNotificationNavigation: (callback: (application: Plugin) => void) => void
   handleUpdateDownloadProgress: (callback: (progress: number) => void) => void
   setFrontCookie: (host: string, name: string, value: string) => Promise<void>
   dockBounce: () => void

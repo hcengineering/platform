@@ -258,6 +258,7 @@
     "electron-updater": "^6.3.4",
     "livekit-client": "^2.13.3",
     "@hcengineering/server-backup": "^0.6.0",
+    "@hcengineering/communication-types": "^0.1.0",
     "ws": "^8.18.2"
   },
   "productName": "Huly Desktop",
