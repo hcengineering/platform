@@ -39,6 +39,7 @@
     "Description": "描述",
 
     "CopyDocumentUrl": "复制文档 URL 到剪贴板",
+    "DocumentUrlCopied": "已复制",
 
     "ViewMode": "查看",
     "EditMode": "编辑",

@@ -358,7 +358,7 @@ export async function pushInboxNotifications (
 
   const notificationData = {
     user: receiver.account,
-    isViewed: false,
+    isViewed: receiver.role === 'GUEST',
     docNotifyContext: docNotifyContextId,
     archived: false,
     objectId,

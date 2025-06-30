@@ -21,6 +21,6 @@
     "InvalidOtp": "无效的代码",
     "InviteNotFound": "未找到 id 为 {email} 的邀请。",
     "WorkspaceLimitReached": "您已达到工作区限制。请联系我们...",
-    "ReadOnlyAccount": "只读模式"
+    "ReadOnlyAccount": "访客演示"
   }
 }

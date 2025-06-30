@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { AccountRole, Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { BrowserNotification } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { addNotification, getCurrentResolvedLocation, Location, NotificationSeverity } from '@hcengineering/ui'
@@ -54,6 +54,7 @@
     )
   }
 
+  const account = getCurrentAccount()
   const client = getClient()
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
@@ -85,14 +86,14 @@
     const sidebarObjectId = getSidebarObject()?._id
 
     if (_id && _id === sidebarObjectId) {
-      await client.remove(value)
+      await removeNotification(value)
       return
     }
 
     const locObjectId = await getObjectIdFromLocation(getCurrentResolvedLocation())
 
     if (_id && _id === locObjectId) {
-      await client.remove(value)
+      await removeNotification(value)
       return
     }
     addNotification(
@@ -103,7 +104,13 @@
       NotificationSeverity.Info,
       `notification-${value.objectId}`
     )
-    await client.remove(value)
+    await removeNotification(value)
+  }
+
+  async function removeNotification (value: BrowserNotification): Promise<void> {
+    if (account.role !== AccountRole.ReadOnlyGuest) {
+      await client.remove(value)
+    }
   }
 
   const query = createQuery()
