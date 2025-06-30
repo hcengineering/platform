@@ -28,7 +28,14 @@ import onHeaders from 'on-headers'
 import { cacheControl } from './const'
 import { createDb } from './datalake/db'
 import { ApiError } from './error'
-import { keepAlive, withAdminAuthorization, withAuthorization, withBlob, withWorkspace } from './middleware'
+import {
+  keepAlive,
+  withAdminAuthorization,
+  withAuthorization,
+  withBlob,
+  withWorkspace,
+  withReadonly
+} from './middleware'
 import {
   handleBlobDelete,
   handleBlobDeleteList,
@@ -151,6 +158,10 @@ export async function createServer (
       }
 
   app.use(morgan('short', { stream: new LogStream() }))
+
+  if (config.Readonly) {
+    app.use(withReadonly)
+  }
 
   app.get(
     '/stats/:workspace',
