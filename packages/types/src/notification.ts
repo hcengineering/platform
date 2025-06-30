@@ -47,12 +47,16 @@ export enum NotificationType {
   Reaction = 'reaction'
 }
 
-export interface ReactionNotificationContent {
+export type NotificationContent = {
+  title: string
+  shortText: string
+  senderName: string
+} & Record<string, any>
+
+export type ReactionNotificationContent = NotificationContent & {
   emoji: string
   creator: SocialID
 }
-
-export type NotificationContent = Record<string, any>
 
 export interface NotificationContext {
   id: ContextID

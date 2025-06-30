@@ -240,7 +240,7 @@ export class CockroachAdapter implements DbAdapter {
     messageCreated: Date,
     type: NotificationType,
     read: boolean,
-    content: NotificationContent | undefined,
+    content: NotificationContent,
     created: Date
   ): Promise<NotificationID> {
     return await this.notification.createNotification(
@@ -341,6 +341,17 @@ export class CockroachAdapter implements DbAdapter {
     const name: string | undefined = result[0]?.name
 
     return name != null ? formatName(name) : undefined
+  }
+
+  async getCardTitle (_id: CardID): Promise<string | undefined> {
+    const sql = `SELECT data ->> 'title' AS title
+                 FROM public.card
+                 WHERE "workspaceId" = $1::uuid
+                   AND "_id" = $2::text
+                 LIMIT 1`
+    const result = await this.sql.execute(sql, [this.workspace, _id])
+
+    return result[0]?.title
   }
 
   async getMessageCreated (cardId: CardID, messageId: MessageID): Promise<Date | undefined> {

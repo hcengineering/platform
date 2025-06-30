@@ -24,7 +24,6 @@ import {
 import { type ActivityTypeUpdate, ActivityUpdateType, MessageType } from '@hcengineering/communication-types'
 
 import type { Enriched, TriggerCtx, TriggerFn, Triggers } from '../types'
-import { getNameBySocialID } from './utils'
 
 async function createActivityOnCardTypeUpdate (ctx: TriggerCtx, event: UpdateCardTypeEvent): Promise<Event[]> {
   const updateDate: ActivityTypeUpdate = {
@@ -32,15 +31,13 @@ async function createActivityOnCardTypeUpdate (ctx: TriggerCtx, event: UpdateCar
     newType: event.cardType
   }
 
-  const sender = await getNameBySocialID(ctx, event.socialId)
-
   return [
     {
       type: MessageEventType.CreateMessage,
       messageType: MessageType.Activity,
       cardId: event.cardId,
       cardType: event.cardType,
-      content: `${sender} changed type`,
+      content: 'Changed type',
       socialId: event.socialId,
       date: event.date,
       extra: {

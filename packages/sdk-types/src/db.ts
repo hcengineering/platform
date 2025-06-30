@@ -108,7 +108,7 @@ export interface DbAdapter {
     messageCreated: Date,
     type: NotificationType,
     read: boolean,
-    content: NotificationContent | undefined,
+    content: NotificationContent,
     created: Date
   ) => Promise<NotificationID>
   updateNotification: (context: ContextID, account: AccountID, query: UpdateNotificationQuery, updates: NotificationUpdates) => Promise<void>
@@ -132,6 +132,7 @@ export interface DbAdapter {
   findLabels: (params: FindLabelsParams) => Promise<Label[]>
   updateLabels: (cardId: CardID, update: LabelUpdates) => Promise<void>
 
+  getCardTitle: (cardId: CardID) => Promise<string | undefined>
   getAccountsByPersonIds: (ids: string[]) => Promise<AccountID[]>
   getNameByAccount: (id: AccountID) => Promise<string | undefined>
   getMessageCreated: (cardId: CardID, messageId: MessageID) => Promise<Date | undefined>

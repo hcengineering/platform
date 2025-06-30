@@ -54,7 +54,7 @@ export interface CreateNotificationEvent extends BaseEvent {
   notificationId?: NotificationID
   notificationType: NotificationType
   read: boolean
-  content?: NotificationContent
+  content: NotificationContent
   cardId: CardID
   contextId: ContextID
   messageId: MessageID

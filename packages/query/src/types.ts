@@ -19,7 +19,8 @@ import {
   type Window,
   type ComparisonOperator,
   type CardID,
-  type MessageID
+  type MessageID,
+  FindNotificationsParams
 } from '@hcengineering/communication-types'
 
 import { QueryResult } from './result'
@@ -101,3 +102,4 @@ export interface OneMessageQueryParams extends BaseMessageQueryParams {
 }
 
 export type MessageQueryParams = OneMessageQueryParams | ManyMessagesQueryParams
+export type NotificationQueryParams = FindNotificationsParams & { strict?: boolean }

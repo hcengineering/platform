@@ -25,6 +25,7 @@ import {
   type CardID,
   type CardType,
   type ContextID,
+  Markdown,
   type MessageID,
   NewMessageLabelID,
   type NotificationContext,
@@ -36,7 +37,9 @@ import {
 
 import type { Enriched, TriggerCtx } from '../types'
 import { findAccount } from '../utils'
-import { findMessage } from '../triggers/utils'
+import { findMessage, getNameBySocialID } from '../triggers/utils'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
+import { jsonToMarkup, markupToText } from '@hcengineering/text-core'
 
 const BATCH_SIZE = 500
 
@@ -44,7 +47,15 @@ export async function notify (ctx: TriggerCtx, event: Enriched<Event>): Promise<
   switch (event.type) {
     case MessageEventType.CreateMessage: {
       if (event.options?.noNotify === true || event.messageId == null) return []
-      return await notifyMessage(ctx, event.cardId, event.cardType, event.messageId, event.socialId, event.date)
+      return await notifyMessage(
+        ctx,
+        event.cardId,
+        event.cardType,
+        event.messageId,
+        event.content,
+        event.socialId,
+        event.date
+      )
     }
     case MessageEventType.ReactionPatch: {
       if (event.operation.opcode === 'add') {
@@ -164,7 +175,10 @@ async function notifyReaction (
 
   const content: ReactionNotificationContent = {
     emoji: reaction,
-    creator: socialId
+    creator: socialId,
+    senderName: (await getNameBySocialID(ctx, socialId)) ?? 'System',
+    title: 'Reacted to your message',
+    shortText: reaction
   }
   result.push({
     type: NotificationEventType.CreateNotification,
@@ -198,12 +212,15 @@ async function notifyMessage (
   cardId: CardID,
   cardType: CardType,
   messageId: MessageID,
+  markdown: Markdown,
   socialId: SocialID,
   date: Date
 ): Promise<Event[]> {
   const cursor = ctx.db.getCollaboratorsCursor(cardId, date, BATCH_SIZE)
   const creatorAccount = await findAccount(ctx, socialId)
   const result: Event[] = []
+
+  const cardTitle = (await ctx.db.getCardTitle(cardId)) ?? 'New message'
 
   let isFirstBatch = true
 
@@ -221,9 +238,12 @@ async function notifyMessage (
           ctx,
           cardId,
           cardType,
+          cardTitle,
           messageId,
+          markdown,
           date,
           collaborator,
+          socialId,
           creatorAccount,
           context
         )
@@ -243,9 +263,12 @@ async function processCollaborator (
   ctx: TriggerCtx,
   cardId: CardID,
   cardType: CardType,
+  cardTitle: string,
   messageId: MessageID,
+  markdown: Markdown,
   date: Date,
   collaborator: AccountID,
+  creatorSocialId: SocialID,
   creatorAccount?: AccountID,
   context?: NotificationContext
 ): Promise<Event[]> {
@@ -268,6 +291,8 @@ async function processCollaborator (
 
   if (contextId == null || isOwn) return result
 
+  const text = markupToText(jsonToMarkup(markdownToMarkup(markdown)))
+  const shortText = text.slice(0, 100)
   result.push({
     type: NotificationEventType.CreateNotification,
     notificationType: NotificationType.Message,
@@ -277,6 +302,11 @@ async function processCollaborator (
     messageId,
     messageCreated: date,
     date,
+    content: {
+      senderName: (await getNameBySocialID(ctx, creatorSocialId)) ?? 'System',
+      title: cardTitle,
+      shortText: shortText.length < text.length ? shortText + '...' : text
+    },
     read: date.getTime() < (context?.lastView?.getTime() ?? 0)
   })
   return result

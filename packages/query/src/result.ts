@@ -82,6 +82,14 @@ export class QueryResult<T> {
     return last
   }
 
+  shift (): T | undefined {
+    const array = Array.from(this.objectById.values())
+    const first = array[0]
+    if (first === undefined) return
+    this.objectById.delete(this.getId(first))
+    return first
+  }
+
   update (object: T): void {
     this.objectById.set(this.getId(object), object)
   }

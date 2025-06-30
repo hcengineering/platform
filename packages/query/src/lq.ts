@@ -43,7 +43,7 @@ import { LabelsQuery } from './label/query'
 import { CollaboratorsQuery } from './collaborators/query'
 
 interface CreateQueryResult {
-  unsubscribe: () => void
+  unsubscribe: (isUpdate: boolean) => void
 }
 
 const maxQueriesCache = 50
@@ -127,8 +127,8 @@ export class LiveQueries {
     this.queries.set(query.id, query)
 
     return {
-      unsubscribe: () => {
-        this.unsubscribeQuery(query)
+      unsubscribe: (isUpdate) => {
+        this.unsubscribeQuery(query, isUpdate)
       }
     }
   }
@@ -206,11 +206,14 @@ export class LiveQueries {
     this.unsubscribed.delete(id)
   }
 
-  private unsubscribeQuery (query: AnyQuery): void {
+  private unsubscribeQuery (query: AnyQuery, force: boolean = false): void {
     this.unsubscribed.add(query.id)
     query.removeCallback()
     if (this.unsubscribed.size > maxQueriesCache) {
       this.removeOldQueries()
+    }
+    if (force) {
+      this.unsubscribe(query.id)
     }
   }
 

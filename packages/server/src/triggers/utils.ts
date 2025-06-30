@@ -105,17 +105,15 @@ export async function getAddCollaboratorsMessageContent (
   sender: AccountID | undefined,
   collaborators: AccountID[]
 ): Promise<Markdown> {
-  const senderName = sender != null ? (await ctx.db.getNameByAccount(sender)) ?? 'System' : 'System'
-
   if (sender != null && collaborators.length === 1 && collaborators.includes(sender)) {
-    return `${senderName} joined`
+    return 'Joined card'
   }
 
   const collaboratorsNames = (await Promise.all(collaborators.map((it) => ctx.db.getNameByAccount(it)))).filter(
     (it): it is string => it != null && it !== ''
   )
 
-  return `${senderName} added ${collaboratorsNames.join(', ')}`
+  return `Added ${collaboratorsNames.join(', ')}`
 }
 
 export async function getRemoveCollaboratorsMessageContent (
@@ -123,14 +121,13 @@ export async function getRemoveCollaboratorsMessageContent (
   sender: AccountID | undefined,
   collaborators: AccountID[]
 ): Promise<Markdown> {
-  const senderName = sender != null ? (await ctx.db.getNameByAccount(sender)) ?? 'System' : 'System'
   if (sender != null && collaborators.length === 1 && collaborators.includes(sender)) {
-    return `${senderName} left`
+    return 'Left card'
   }
 
   const collaboratorsNames = (await Promise.all(collaborators.map((it) => ctx.db.getNameByAccount(it)))).filter(
     (it): it is string => it != null && it !== ''
   )
 
-  return `${senderName} removed ${collaboratorsNames.join(', ')}`
+  return `Removed ${collaboratorsNames.join(', ')}`
 }

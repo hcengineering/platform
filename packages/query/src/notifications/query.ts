@@ -41,14 +41,14 @@ import {
 } from '@hcengineering/communication-sdk-types'
 import { applyPatches, MessageProcessor, NotificationProcessor } from '@hcengineering/communication-shared'
 
-import { defaultQueryParams, type PagedQuery, type QueryId } from '../types'
+import { defaultQueryParams, NotificationQueryParams, type PagedQuery, type QueryId } from '../types'
 import { QueryResult } from '../result'
 import { WindowImpl } from '../window'
 import { loadMessageFromGroup, matchNotification } from '../utils'
 
 const allowedPatchTypes = [PatchType.update, PatchType.remove, PatchType.blob]
 
-export class NotificationQuery implements PagedQuery<Notification, FindNotificationsParams> {
+export class NotificationQuery implements PagedQuery<Notification, NotificationQueryParams> {
   private result: QueryResult<Notification> | Promise<QueryResult<Notification>>
 
   constructor (
@@ -56,7 +56,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     private readonly workspace: WorkspaceID,
     private readonly filesUrl: string,
     public readonly id: QueryId,
-    public readonly params: FindNotificationsParams,
+    public readonly params: NotificationQueryParams,
     private callback?: PagedQueryCallback<Notification>,
     initialResult?: QueryResult<Notification>
   ) {
@@ -64,7 +64,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     const findParams: FindNotificationsParams = {
       ...this.params,
       order: this.params.order ?? defaultQueryParams.order,
-      limit: limit + 1
+      limit: this.params.strict === true ? limit : limit + 1
     }
 
     if (initialResult !== undefined) {
@@ -132,12 +132,14 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   }
 
   async requestLoadNextPage (): Promise<void> {
+    if (this.params.strict === true) return
     if (this.result instanceof Promise) this.result = await this.result
 
     await this.loadPage(SortingOrder.Ascending, this.result.getLast()?.created)
   }
 
   async requestLoadPrevPage (): Promise<void> {
+    if (this.params.strict === true) return
     if (this.result instanceof Promise) this.result = await this.result
     await this.loadPage(SortingOrder.Descending, this.result.getFirst()?.created)
   }
@@ -186,7 +188,8 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     return this.result instanceof Promise ? undefined : this.result.copy()
   }
 
-  private async find (params: FindNotificationsParams): Promise<Notification[]> {
+  private async find (params: NotificationQueryParams): Promise<Notification[]> {
+    delete params.strict
     const notifications = await this.client.findNotifications(params, this.id)
     if (params.message !== true) return notifications
 
@@ -215,9 +218,27 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     const match = matchNotification(notification, { ...this.params, created: undefined })
     if (!match) return
 
+    if (this.params.message === true) {
+      const message = await this.client.findMessages({
+        card: notification.cardId,
+        id: notification.messageId,
+        limit: 1,
+        files: true
+      })
+      notification.message = message[0]
+    }
+
     if (this.params.order === SortingOrder.Ascending) {
+      if (this.params.limit !== undefined && this.result.length === this.params.limit && this.params.strict === true) {
+        this.result.setTail(false)
+        return
+      }
       this.result.push(notification)
     } else {
+      if (this.params.limit !== undefined && this.result.length === this.params.limit && this.params.strict === true) {
+        this.result.pop()
+        this.result.setHead(false)
+      }
       this.result.unshift(notification)
     }
 

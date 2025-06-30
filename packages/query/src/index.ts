@@ -15,4 +15,4 @@
 
 export * from './lq'
 
-export type { MessageQueryParams } from './types'
+export type { MessageQueryParams, NotificationQueryParams } from './types'

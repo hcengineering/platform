@@ -110,7 +110,7 @@ export class NotificationsDb extends BaseDb {
     messageCreated: Date,
     type: NotificationType,
     read: boolean,
-    content: NotificationContent | undefined,
+    content: NotificationContent,
     created: Date
   ): Promise<NotificationID> {
     const db: Omit<NotificationDb, 'id'> = {
@@ -120,7 +120,7 @@ export class NotificationsDb extends BaseDb {
       read,
       context_id: context,
       created,
-      content: content ?? {}
+      content
     }
     const sql = `INSERT INTO ${TableName.Notification} (message_id, message_created, context_id, read, created, type, content)
                      VALUES ($1::varchar, $2::timestamptz, $3::int8, $4::boolean, $5::timestamptz, $6::varchar, $7::jsonb)

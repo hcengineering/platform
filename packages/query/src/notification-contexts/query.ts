@@ -410,6 +410,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     if (!match) return
 
     const context = this.result.get(notification.contextId)
+    if ((context?.notifications ?? []).some((it) => it.id === notification.id)) return
     if (context !== undefined) {
       const message =
         this.params.notifications.message === true
@@ -422,7 +423,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
             notification.messageCreated,
             false,
             true,
-            true
+            false
           )
           : undefined
 
