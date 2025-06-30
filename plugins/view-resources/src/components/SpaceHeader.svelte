@@ -18,7 +18,7 @@
   export let showLabelSelector = false
   export let modeSelectorProps: IModeSelector | undefined = undefined
   export let adaptive: HeaderAdaptive = 'doubleRow'
-  export let currentTabId: Ref<WorkbenchTab> | undefined = undefined;
+  export let currentTabId: Ref<WorkbenchTab> | undefined = undefined
 
   let scroller: HTMLElement
 </script>
@@ -47,7 +47,7 @@
 
   <svelte:fragment slot="search">
     <SearchInput bind:value={search} collapsed />
-    <FilterButton {_class} {space} currentTabId={currentTabId}/>
+    <FilterButton {_class} {space} {currentTabId} />
   </svelte:fragment>
   <svelte:fragment slot="actions">
     <slot name="actions" />

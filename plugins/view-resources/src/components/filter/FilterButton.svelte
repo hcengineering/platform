@@ -39,18 +39,18 @@
     }
   })
 
-function load (_class: Ref<Class<Doc>> | undefined): void {
-  const key = getFilterKey(_class, currentTabId);
-  const items = localStorage.getItem(key);
-  if (items !== null) {
-    filterStore.set(JSON.parse(items));
+  function load (_class: Ref<Class<Doc>> | undefined): void {
+    const key = getFilterKey(_class, currentTabId)
+    const items = localStorage.getItem(key)
+    if (items !== null) {
+      filterStore.set(JSON.parse(items))
+    }
   }
-}
 
-function save (_class: Ref<Class<Doc>> | undefined, p: Filter[]): void {
-  const key = getFilterKey(_class, currentTabId);
-  localStorage.setItem(key, JSON.stringify(p));
-}
+  function save (_class: Ref<Class<Doc>> | undefined, p: Filter[]): void {
+    const key = getFilterKey(_class, currentTabId)
+    localStorage.setItem(key, JSON.stringify(p))
+  }
 
   filterStore.subscribe((p) => {
     save(_class, p)
@@ -88,10 +88,10 @@ function save (_class: Ref<Class<Doc>> | undefined, p: Filter[]): void {
   }
 
   onMount(() => {
-    load(_class);
-  });
- $: if (currentTabId) {
-    load(_class);
+    load(_class)
+  })
+  $: if (currentTabId) {
+    load(_class)
   }
 </script>
 

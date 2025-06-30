@@ -101,10 +101,9 @@ export interface WidgetTab {
 
 /** @public */
 export interface TabUiState {
-  viewletId?: string;
-  filterBarState?: Record<string, any>;
+  viewletId?: string
+  filterBarState?: Record<string, any>
 }
-
 
 /** @public */
 export interface WorkbenchTab extends Preference {
@@ -112,7 +111,7 @@ export interface WorkbenchTab extends Preference {
   location: string
   isPinned: boolean
   name?: string
-  uiState?: TabUiState;
+  uiState?: TabUiState
 }
 
 /** @public */
