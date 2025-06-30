@@ -57,10 +57,12 @@ async function traverseBackup (
   ctx: MeasureContext,
   storage: BackupStorage,
   snapshot: (date: number) => void,
-  addFile: (name: string, size?: number) => void
+  addFile: (name: string, size?: number) => void,
+  addBlobInfo: (info: Record<string, [string, number]>) => void
 ): Promise<BackupInfo | undefined> {
   const infoFile = 'backup.json.gz'
   const sizeFile = 'backup.size.gz'
+  const blobInfoFile = 'blob-info.json.gz'
 
   const backupInfoFile = await storage.loadFile(infoFile)
 
@@ -75,6 +77,16 @@ async function traverseBackup (
     const backupSizeFile = await storage.loadFile(sizeFile)
     if (backupSizeFile != null) {
       sizeInfo = JSON.parse(gunzipSync(backupSizeFile).toString())
+    }
+  } catch (err: any) {
+    console.error('failed to load size file', err)
+  }
+
+  let blobInfo: Record<string, [string, number]> = {}
+  try {
+    const blobInfoData = await storage.loadFile(blobInfoFile)
+    if (blobInfoData != null) {
+      blobInfo = JSON.parse(gunzipSync(blobInfoData).toString())
     }
   } catch (err: any) {
     console.error('failed to load size file', err)
@@ -101,6 +113,7 @@ async function traverseBackup (
   }
   sizeInfo[infoFile] = backupInfoFile.length
   await addFileSize(infoFile)
+  addBlobInfo(blobInfo)
   return backupInfo
 }
 
@@ -218,7 +231,8 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
             backupInfoHTML += `<span><a href="${name}">${name}</a> Size: ${size ?? 'unknown'}  <a href="${
               name + '.hash'
             }">etag</a><br/></span>\n`
-          }
+          },
+          (info) => {}
         )
       } catch (err: any) {
         backupInfoHTML += `Error: ${err.message}`
@@ -235,10 +249,12 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
     if (file === 'index.json') {
       const jsonData: {
         files: { name: string, size?: number }[]
+        extraBlobs: { name: string, size: number, contentType: string }[]
         error?: string
         info?: BackupInfo
       } = {
-        files: []
+        files: [],
+        extraBlobs: []
       }
 
       try {
@@ -248,6 +264,11 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
           (snapshot) => {},
           (name, size) => {
             jsonData.files.push({ name, size })
+          },
+          (info) => {
+            for (const [name, [contentType, size]] of Object.entries(info)) {
+              jsonData.extraBlobs.push({ name, size, contentType })
+            }
           }
         )
       } catch (err: any) {

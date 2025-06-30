@@ -244,14 +244,21 @@ export function startHttpServer (
         case 'profile-stop': {
           profiling = false
           if (sessions.profiling?.stop != null) {
-            void sessions.profiling.stop().then((profile) => {
-              ctx.warn(
-                '---------------------------------------------PROFILING SESSION STOPPED---------------------------------------------',
-                {}
-              )
-              res.writeHead(200, { 'Content-Type': 'application/json' })
-              res.end(profile ?? '{ error: "no profiling" }')
-            })
+            void sessions.profiling
+              .stop()
+              .then((profile) => {
+                ctx.warn(
+                  '---------------------------------------------PROFILING SESSION STOPPED---------------------------------------------',
+                  {}
+                )
+                res.writeHead(200, { 'Content-Type': 'application/json' })
+                res.end(profile ?? '{ error: "no profiling" }')
+              })
+              .catch((err) => {
+                ctx.error('error', { err })
+                res.writeHead(500)
+                res.end()
+              })
           } else {
             res.writeHead(404)
             res.end()
@@ -259,9 +266,20 @@ export function startHttpServer (
 
           return
         }
+        case 'force-maintenance': {
+          const wsId = req.query.wsId as WorkspaceUuid
+          void sessions.forceMaintenance(ctx, wsId ?? payload.workspace).catch((err) => {
+            ctx.error('error', { err })
+          })
+          res.writeHead(200)
+          res.end()
+          return
+        }
         case 'force-close': {
           const wsId = req.query.wsId as WorkspaceUuid
-          void sessions.forceClose(wsId ?? payload.workspace)
+          void sessions.forceClose(wsId ?? payload.workspace).catch((err) => {
+            ctx.error('error', { err })
+          })
           res.writeHead(200)
           res.end()
           return

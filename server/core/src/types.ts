@@ -718,6 +718,8 @@ export interface SessionManager {
 
   forceClose: (wsId: WorkspaceUuid, ignoreSocket?: ConnectionSocket) => Promise<void>
 
+  forceMaintenance: (ctx: MeasureContext, workspaceId: WorkspaceUuid) => Promise<void>
+
   closeWorkspaces: (ctx: MeasureContext) => Promise<void>
 
   scheduleMaintenance: (timeMinutes: number) => void

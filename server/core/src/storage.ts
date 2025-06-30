@@ -18,7 +18,7 @@ export function getBucketId (workspace: WorkspaceUuid): string {
   return workspace
 }
 
-const chunkSize = 5000
+const chunkSize = 50000
 
 /**
  * @public
@@ -45,6 +45,7 @@ export class BackupClientOps {
     idx?: number
   ): Promise<{
       idx: number
+      size?: number
       docs: DocInfo[]
       finished: boolean
     }> {

@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 import {
-  type MeasureContext,
   systemAccountUuid,
   type Branding,
+  type MeasureContext,
   type WorkspaceIds,
   type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
@@ -61,7 +61,6 @@ export function startBackup (
     storageAdapter,
     { ...config, Token: token },
     pipelineFactory,
-    workspaceStorageAdapter,
     (ctx, workspace, branding, externalStorage) => {
       return getConfig(ctx, mainDbUrl, workspace, branding, externalStorage)
     },
@@ -120,7 +119,6 @@ export async function backupWorkspace (
       storageAdapter,
       { ...config, Token: token },
       pipelineFactory,
-      workspaceStorageAdapter,
       (ctx, workspace, branding, externalStorage) => {
         return getConfig(ctx, mainDbUrl, workspace, branding, externalStorage)
       },

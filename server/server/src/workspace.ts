@@ -29,7 +29,7 @@ export type WorkspacePipelineFactory = () => Promise<Pipeline>
  */
 export class Workspace {
   pipeline?: Pipeline | Promise<Pipeline>
-  upgrade: boolean = false
+  maintenance: boolean = false
   closing?: Promise<void>
 
   workspaceInitCompleted: boolean = false
