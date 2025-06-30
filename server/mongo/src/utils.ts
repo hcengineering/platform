@@ -25,7 +25,7 @@ const clientRefs = new Map<string, ClientRef>()
 /**
  * @public
  */
-export async function shutdownMongo (contextVars: Record<string, any> = {}): Promise<void> {
+export async function shutdownMongo (): Promise<void> {
   for (const it of Array.from(clientRefs.values())) {
     console.error((it as any).stack)
   }

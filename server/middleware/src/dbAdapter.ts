@@ -55,7 +55,6 @@ export class DBAdapterMiddleware extends BaseMiddleware implements Middleware {
           key,
           await adapterConf.factory(
             ctx,
-            this.context.contextVars,
             this.context.hierarchy,
             adapterConf.url,
             this.context.workspace,

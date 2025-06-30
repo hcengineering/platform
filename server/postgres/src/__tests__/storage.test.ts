@@ -25,8 +25,13 @@ import core, {
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
-import { createPostgresAdapter, createPostgresTxAdapter } from '..'
-import { getDBClient, type PostgresClientReference, shutdownPostgres } from '../utils'
+import {
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  getDBClient,
+  shutdownPostgres,
+  type PostgresClientReference
+} from '..'
 import { genMinModel } from './minmodel'
 import { createTaskModel, type Task, type TaskComment, taskPlugin } from './tasks'
 
@@ -40,7 +45,7 @@ describe('postgres operations', () => {
   const baseDbUri: string = process.env.DB_URL ?? 'postgresql://root@localhost:26257/defaultdb?sslmode=disable'
   let dbUuid = crypto.randomUUID() as WorkspaceUuid
   let dbUri: string = baseDbUri.replace('defaultdb', dbUuid)
-  const clientRef: PostgresClientReference = getDBClient(contextVars, baseDbUri)
+  const clientRef: PostgresClientReference = getDBClient(baseDbUri)
   let hierarchy: Hierarchy
   let model: ModelDb
   let client: Client
@@ -49,7 +54,7 @@ describe('postgres operations', () => {
 
   afterAll(async () => {
     clientRef.close()
-    await shutdownPostgres(contextVars)
+    await shutdownPostgres()
   })
 
   beforeEach(async () => {
@@ -90,7 +95,6 @@ describe('postgres operations', () => {
     const mctx = new MeasureMetricsContext('', {})
     const txStorage = await createPostgresTxAdapter(
       mctx,
-      contextVars,
       hierarchy,
       dbUri,
       {
@@ -110,7 +114,6 @@ describe('postgres operations', () => {
     const ctx = new MeasureMetricsContext('client', {})
     const serverStorage = await createPostgresAdapter(
       ctx,
-      contextVars,
       hierarchy,
       dbUri,
       {

@@ -152,7 +152,6 @@ class StorageBlobAdapter implements DbAdapter {
  */
 export async function createStorageDataAdapter (
   ctx: MeasureContext,
-  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   wsIds: WorkspaceIds,

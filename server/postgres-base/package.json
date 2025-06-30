@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/postgres",
+  "name": "@hcengineering/postgres-base",
   "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
@@ -34,10 +34,6 @@
     "@types/node": "^22.15.29"
   },
   "dependencies": {
-    "postgres": "^3.4.7",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/postgres-base": "^0.6.0"
+    "postgres": "^3.4.7"
   }
 }

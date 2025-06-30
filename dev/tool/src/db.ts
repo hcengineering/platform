@@ -37,7 +37,6 @@ import {
 } from '@hcengineering/postgres'
 import { type DBDoc } from '@hcengineering/postgres/types/utils'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
-import { sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import { type MongoClient } from 'mongodb'
@@ -57,7 +56,7 @@ export async function moveFromMongoToPG (
   }
   const client = getMongoClient(mongoUrl)
   const mongo = await client.getClient()
-  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
   for (let index = 0; index < workspaces.length; index++) {
@@ -181,7 +180,7 @@ export async function moveWorkspaceFromMongoToPG (
   }
   const client = getMongoClient(mongoUrl)
   const mongo = await client.getClient()
-  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
   await moveWorkspace(accountDb, mongo, pgClient, ws, region, include, force)
@@ -530,7 +529,7 @@ export async function migrateCreatedModifiedBy (
         progressMade = false
         connectsCount++
 
-        pg = getDBClient(sharedPipelineContextVars, dbUrl)
+        pg = getDBClient(dbUrl)
         pgClient = await pg.getClient()
 
         // Expect temp table with mapping to be created manually
@@ -907,7 +906,7 @@ export async function migrateMergedAccounts (
     throw new Error('Only CockroachDB is supported')
   }
 
-  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
   const token = getToolToken()
 
@@ -1020,7 +1019,7 @@ export async function filterMergedAccountsInMembers (
     throw new Error('Only CockroachDB is supported')
   }
 
-  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
   try {
@@ -1083,7 +1082,7 @@ export async function ensureGlobalPersonsForLocalAccounts (
     throw new Error('Only CockroachDB is supported')
   }
 
-  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
   const token = getToolToken()
 
