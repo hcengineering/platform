@@ -2582,6 +2582,11 @@
       "packageName": "@hcengineering/backup-api-pod",
       "projectFolder": "services/backup/backup-api-pod",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/integration",
+      "projectFolder": "packages/integration",
+      "shouldPublish": false
     }
   ]
 }
