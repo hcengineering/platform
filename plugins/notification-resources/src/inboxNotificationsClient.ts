@@ -14,14 +14,15 @@
 //
 import activity from '@hcengineering/activity'
 import core, {
-  SortingOrder,
-  getCurrentAccount,
-  toIdMap,
   type Account,
+  AccountRole,
   type Client,
   type Doc,
+  getCurrentAccount,
   type IdMap,
   type Ref,
+  SortingOrder,
+  toIdMap,
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
@@ -152,7 +153,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   async readDoc (_id: Ref<Doc>): Promise<void> {
     const docNotifyContext = this._contextByDoc.get(_id)
 
-    if (docNotifyContext === undefined) {
+    if (docNotifyContext === undefined || getCurrentAccount().role === AccountRole.ReadOnlyGuest) {
       return
     }
 
@@ -163,10 +164,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       { docNotifyContext: docNotifyContext._id, isViewed: false },
       { projection: { _id: 1, _class: 1, space: 1 } }
     )
-
-    if (inboxNotifications.length === 0) {
-      return
-    }
 
     for (const notification of inboxNotifications) {
       await op.updateDoc(notification._class, notification.space, notification._id, { isViewed: true })
