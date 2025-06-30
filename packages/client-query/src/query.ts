@@ -81,7 +81,10 @@ class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
 }
 
 export class MessagesQuery extends BaseQuery<MessageQueryParams, PagedQueryCallback<Message>> {
-  override createQuery (params: MessageQueryParams, callback: PagedQueryCallback<Message>): { unsubscribe: (isUpdate: boolean) => void } {
+  override createQuery (
+    params: MessageQueryParams,
+    callback: PagedQueryCallback<Message>
+  ): { unsubscribe: (isUpdate: boolean) => void } {
     return getLiveQueries().queryMessages(params, callback)
   }
 }
