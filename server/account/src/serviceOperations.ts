@@ -261,6 +261,7 @@ export async function getPendingWorkspace (
     ctx.info('getPendingWorkspace', {
       workspaceId: result.uuid,
       workspaceName: result.name,
+      dataId: result.dataId,
       mode: result.status.mode,
       operation,
       region,

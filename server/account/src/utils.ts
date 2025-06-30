@@ -40,7 +40,6 @@ import { pbkdf2Sync, randomBytes } from 'crypto'
 import otpGenerator from 'otp-generator'
 
 import { Analytics } from '@hcengineering/analytics'
-import { sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import { decodeTokenVerbose, generateToken, TokenError } from '@hcengineering/server-token'
 import { MongoAccountDB } from './collections/mongo'
 import { PostgresAccountDB } from './collections/postgres/postgres'
@@ -93,7 +92,7 @@ export async function getAccountDB (
         application_name: appName
       }
     })
-    const client = getDBClient(sharedPipelineContextVars, uri)
+    const client = getDBClient(uri)
     const pgClient = await client.getClient()
     const pgAccount = new PostgresAccountDB(pgClient, dbNs ?? 'global_account')
 

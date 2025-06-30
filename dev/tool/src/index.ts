@@ -44,8 +44,7 @@ import {
   registerServerPlugins,
   registerStringLoaders,
   registerTxAdapterFactory,
-  setAdapterSecurity,
-  sharedPipelineContextVars
+  setAdapterSecurity
 } from '@hcengineering/server-pipeline'
 import serverToken, { generateToken } from '@hcengineering/server-token'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
@@ -134,10 +133,10 @@ const colorConstants = {
 
 // Register close on process exit.
 process.on('exit', () => {
-  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+  shutdownPostgres().catch((err) => {
     console.error(err)
   })
-  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+  shutdownMongo().catch((err) => {
     console.error(err)
   })
 })
@@ -663,7 +662,6 @@ export function devTool (
   //                 },
   //                 cmd.region,
   //                 5000, // 5 gigabytes per blob
-  //                 sharedPipelineContextVars,
   //                 async (storage, workspaceStorage) => {
   //                   if (cmd.remove) {
   //                     await updateArchiveInfo(toolCtx, db, ws.workspace, true)
@@ -783,7 +781,6 @@ export function devTool (
   //               },
   //               cmd.region,
   //               100,
-  //               sharedPipelineContextVars
   //             )
   //           ) {
   //             processed++

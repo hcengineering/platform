@@ -253,6 +253,10 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
         // We need to send all to recipients
         await this.context.head?.handleBroadcast(ctx)
       })
+    } else if (ctx.contextData.hasDomainBroadcast === true) {
+      await ctx.with('broadcast-async-domain-request', {}, async (ctx) => {
+        await this.context.head?.handleBroadcast(ctx)
+      })
     }
   }
 

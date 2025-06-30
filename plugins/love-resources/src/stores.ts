@@ -1,4 +1,6 @@
+import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
 import { getCurrentEmployee } from '@hcengineering/contact'
+import { getPersonRefByPersonId } from '@hcengineering/contact-resources'
 import { type Ref } from '@hcengineering/core'
 import {
   RequestStatus,
@@ -6,16 +8,14 @@ import {
   type Floor,
   type Invite,
   type JoinRequest,
+  type MeetingMinutes,
   type Office,
   type ParticipantInfo,
-  type Room,
-  type MeetingMinutes
+  type Room
 } from '@hcengineering/love'
+import { type MediaSession } from '@hcengineering/media'
 import { createQuery, onClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
-import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
-import { type MediaSession } from '@hcengineering/media'
-import { getPersonRefByPersonId } from '@hcengineering/contact-resources'
 
 import love from './plugin'
 

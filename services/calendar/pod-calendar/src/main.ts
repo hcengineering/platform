@@ -66,6 +66,7 @@ export const main = async (): Promise<void> => {
 
   const calendarController = CalendarController.getCalendarController(ctx, accountClient)
   await calendarController.startAll()
+  ctx.info('Calendar controller started')
   watchController.startCheck()
   const endpoints: Endpoint[] = [
     {

@@ -63,6 +63,7 @@ export interface SessionData {
   sessionId: string
   admin?: boolean
   isTriggerCtx?: boolean
+  hasDomainBroadcast?: boolean
   workspace: WorkspaceIds
   socialStringsToUsers: Map<
   PersonId,

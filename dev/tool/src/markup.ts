@@ -55,11 +55,7 @@ import { getDBClient } from '@hcengineering/postgres'
 import { withRetry } from '@hcengineering/retry'
 import { getAccountClient } from '@hcengineering/server-client'
 import { type PipelineFactory, type StorageAdapter, createDummyStorageAdapter } from '@hcengineering/server-core'
-import {
-  createBackupPipeline,
-  createEmptyBroadcastOps,
-  sharedPipelineContextVars
-} from '@hcengineering/server-pipeline'
+import { createBackupPipeline, createEmptyBroadcastOps } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
 import { isEmptyMarkup } from '@hcengineering/text-core'
 
@@ -396,7 +392,7 @@ export async function restoreMarkupRefs (
     usePassedCtx: true
   })
 
-  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
   try {
