@@ -37,6 +37,7 @@
     "Untitled": "Sans titre",
     "Description": "Description",
     "CopyDocumentUrl": "Copier l'URL du document dans le presse-papiers",
+    "DocumentUrlCopied": "Copié !",
     "ViewMode": "Visualiser",
     "EditMode": "Éditer",
     "SuggestMode": "Suggérer",

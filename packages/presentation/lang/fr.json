@@ -41,6 +41,7 @@
     "ColorRemove": "Supprimer le préréglage de couleur",
     "ColorReset": "Réinitialiser les préréglages de couleur",
     "Copy": "Copier",
+    "DocumentUrlCopied": "Copié !",
     "CopyLink": "Copier le lien",
     "AccessDenied": "L’objet n’existe pas ou vous n’êtes pas autorisé à y accéder.",
     "UnableToFollowMention": "Impossible d’ouvrir l’objet mentionné"

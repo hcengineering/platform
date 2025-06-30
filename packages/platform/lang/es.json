@@ -21,7 +21,7 @@
     "InvalidOtp": "Código no válido",
     "InviteNotFound": "No se encontró la invitación con email:{email}.",
     "WorkspaceLimitReached": "Ha alcanzado el límite de espacios de trabajo. Póngase en contacto con nosotros...",
-    "ReadOnlyAccount": "Modo de solo lectura",
+    "ReadOnlyAccount": "Demo de Invitado",
     "SystemAccount": "Cuenta del sistema"
   }
 }

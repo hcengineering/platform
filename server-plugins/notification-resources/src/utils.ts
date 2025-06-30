@@ -221,7 +221,6 @@ export async function isShouldNotifyTx (
   notificationControl: NotificationProviderControl,
   docUpdateMessage?: DocUpdateMessage
 ): Promise<NotifyResult> {
-  if (receiver.role === 'GUEST') return new Map<Ref<NotificationProvider>, NotificationType[]>()
   const types = getMatchedTypes(control, tx, isOwn, isSpace, docUpdateMessage?.attributeUpdates?.attrKey)
   const modifiedByPersonId = tx.modifiedBy
   const result = new Map<Ref<NotificationProvider>, NotificationType[]>()
