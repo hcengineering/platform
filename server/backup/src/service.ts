@@ -285,7 +285,8 @@ class BackupWorker {
     const st = Date.now()
     rootCtx.warn('\n\nBACKUP WORKSPACE ', {
       workspace: ws.uuid,
-      url: ws.url
+      url: ws.url,
+      dataId: ws.dataId
     })
     const ctx = rootCtx.newChild('doBackup', {})
     const dataId = ws.dataId ?? (ws.uuid as unknown as WorkspaceDataId)
