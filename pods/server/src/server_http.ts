@@ -205,6 +205,7 @@ export function startHttpServer (
     try {
       const token = (req.query.token as string) ?? (req.headers.authorization ?? '').split(' ')[1]
       const payload = decodeToken(token)
+
       if (payload.extra?.admin !== 'true' && payload.account !== systemAccountUuid) {
         console.warn('Non admin attempt to maintenance action', { payload })
         res.writeHead(404, {})
@@ -216,11 +217,13 @@ export function startHttpServer (
 
       switch (operation) {
         case 'maintenance': {
-          const timeMinutes = parseInt((req.query.timeout as string) ?? '5')
-          sessions.scheduleMaintenance(timeMinutes)
+          void retrieveJson(req).then((message) => {
+            const timeMinutes = parseInt((req.query.timeout as string) ?? '5')
+            sessions.scheduleMaintenance(timeMinutes, message)
 
-          res.writeHead(200)
-          res.end()
+            res.writeHead(200)
+            res.end()
+          })
           return
         }
         case 'wipe-statistics': {
