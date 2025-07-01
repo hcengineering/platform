@@ -16,7 +16,7 @@
 import { AccountClient } from '@hcengineering/account-client'
 import calendar, { Event, ExternalCalendar, ReccuringEvent, ReccuringInstance } from '@hcengineering/calendar'
 import { Client, MeasureContext, Ref, TxOperations } from '@hcengineering/core'
-import { jsonToHTML, markupToJSON } from '@hcengineering/text'
+import { isEmptyMarkup, jsonToHTML, markupToJSON } from '@hcengineering/text'
 import { deepEqual } from 'fast-equals'
 import { OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
@@ -29,6 +29,7 @@ import {
   getGoogleClient,
   getMixinFields,
   getTimezone,
+  parseEventDate,
   removeIntegrationSecret,
   setCredentials
 } from './utils'
@@ -333,7 +334,10 @@ export class CalendarClient {
       }
     }
     const description = jsonToHTML(markupToJSON(current.description))
-    if ((event.description ?? '') !== description) {
+    if (
+      (event.description ?? '') !== description &&
+      isEmptyMarkup(description) !== isEmptyMarkup(event.description ?? '')
+    ) {
       res = true
       this.ctx.info('Update event diff: description', {
         calendarId: current.calendar,
@@ -377,8 +381,9 @@ export class CalendarClient {
         }
       }
     }
-    const newStart = convertDate(current.date, event.start?.date !== undefined, getTimezone(current))
-    if (!deepEqual(newStart, event.start)) {
+    const currentStart = parseEventDate(event.start)
+    if (currentStart !== current.date) {
+      const newStart = convertDate(current.date, event.start?.date !== undefined, getTimezone(current))
       res = true
       this.ctx.info('Update event diff: start', {
         calendarId: current.calendar,
@@ -391,9 +396,10 @@ export class CalendarClient {
       })
       event.start = newStart
     }
-    const newEnd = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))
-    if (!deepEqual(newEnd, event.end)) {
+    const currentEnd = parseEventDate(event.start)
+    if (currentEnd !== current.dueDate) {
       res = true
+      const newEnd = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))
       this.ctx.info('Update event diff: end', {
         calendarId: current.calendar,
         eventId: current.eventId,
