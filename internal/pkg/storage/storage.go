@@ -37,9 +37,14 @@ type BlobInfo struct {
 	ETag string
 }
 
+// PutOptions represents options for the PutFile operation
+type PutOptions struct {
+	NoCache bool
+}
+
 // Storage represents file-based storage
 type Storage interface {
-	PutFile(ctx context.Context, fileName string) error
+	PutFile(ctx context.Context, fileName string, options PutOptions) error
 	DeleteFile(ctx context.Context, fileName string) error
 	GetFile(ctx context.Context, fileName, destination string) error
 	StatFile(ctx context.Context, fileName string) (*BlobInfo, error)
