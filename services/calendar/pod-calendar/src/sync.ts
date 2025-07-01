@@ -35,8 +35,7 @@ import core, {
   Ref,
   SocialIdType,
   TxOperations,
-  TxProcessor,
-  WorkspaceUuid
+  TxProcessor
 } from '@hcengineering/core'
 import setting from '@hcengineering/setting'
 import { htmlToMarkup } from '@hcengineering/text'
@@ -50,6 +49,7 @@ import {
   setCalendarsSyncHistory,
   setEventHistory
 } from './kvsUtils'
+import { lock } from './mutex'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
 import { CALENDAR_INTEGRATION, GoogleEmail, Token, User } from './types'
 import {
@@ -60,35 +60,6 @@ import {
   setCredentials
 } from './utils'
 import { WatchController } from './watch'
-
-export const synced = new Set<WorkspaceUuid>()
-
-const locks = new Map<string, Promise<void>>()
-
-export async function lock (key: string): Promise<() => void> {
-  // Wait for any existing lock to be released
-  const currentLock = locks.get(key)
-  if (currentLock != null) {
-    await currentLock
-  }
-
-  // Create a new lock
-  let releaseFn!: () => void
-  const newLock = new Promise<void>((resolve) => {
-    releaseFn = resolve
-  })
-
-  // Store the lock
-  locks.set(key, newLock)
-
-  // Return the release function
-  return () => {
-    if (locks.get(key) === newLock) {
-      locks.delete(key)
-    }
-    releaseFn()
-  }
-}
 
 export class IncomingSyncManager {
   private readonly rateLimiter: RateLimiter

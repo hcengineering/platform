@@ -35,7 +35,7 @@ import {
   removeIntegrationSecret,
   setCredentials
 } from './utils'
-import { synced } from './sync'
+import { lock, synced } from './mutex'
 
 export class OutcomingClient {
   private readonly calendar: calendar_v3.Calendar
@@ -57,6 +57,14 @@ export class OutcomingClient {
   async push (event: Event, type: 'create' | 'update' | 'delete'): Promise<void> {
     const calendar = await this.getCalendar(event)
     if (calendar === undefined) return
+    this.ctx.info('Push outcoming event', {
+      calendarId: calendar.externalId,
+      eventId: event.eventId,
+      user: this.user.email,
+      workspace: this.workspace,
+      event: event._id,
+      type
+    })
     if (type === 'delete') {
       await this.remove(event.eventId, calendar.externalId)
     } else if (type === 'update') {
@@ -151,7 +159,25 @@ export class OutcomingClient {
         await this.rateLimiter.take(1)
         const current = await this.calendar.events.get({ calendarId, eventId: event.eventId })
         if (current !== undefined && current.data.status !== 'cancelled') {
+          this.ctx.info('Update event', {
+            calendarId,
+            eventId: event.eventId,
+            user: this.user.email,
+            workspace: this.workspace,
+            event: event._id,
+            current: current.data.id
+          })
           const ev = await this.applyUpdate(current.data, event)
+          if (ev === undefined) {
+            this.ctx.info('No changes to update', {
+              calendarId,
+              eventId: event.eventId,
+              user: this.user.email,
+              workspace: this.workspace,
+              event: event._id
+            })
+            return true
+          }
           await this.rateLimiter.take(1)
           await this.calendar.events.update({
             calendarId,
@@ -177,12 +203,30 @@ export class OutcomingClient {
   ): Promise<calendar_v3.Schema$Event | undefined> {
     let res: boolean = false
     if (current.title !== event.summary) {
+      this.ctx.info('Update event diff: title', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.workspace,
+        event: current._id,
+        prev: event.summary,
+        current: current.title
+      })
       event.summary = current.title
       res = true
     }
     if (current.visibility !== undefined) {
       const newVisibility = current.visibility === 'public' ? 'public' : 'private'
       if (newVisibility !== event.visibility) {
+        this.ctx.info('Update event diff: visibility', {
+          calendarId: current.calendar,
+          eventId: current.eventId,
+          user: this.user.email,
+          workspace: this.workspace,
+          event: current._id,
+          prev: event.visibility,
+          current: newVisibility
+        })
         event.visibility = newVisibility
         res = true
       }
@@ -199,10 +243,28 @@ export class OutcomingClient {
     const description = jsonToHTML(markupToJSON(current.description))
     if ((event.description ?? '') !== description) {
       res = true
+      this.ctx.info('Update event diff: description', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.workspace,
+        event: current._id,
+        prev: event.description,
+        current: description
+      })
       event.description = description
     }
     if (current.location !== event.location) {
       res = true
+      this.ctx.info('Update event diff: location', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.workspace,
+        event: current._id,
+        prev: event.location,
+        current: current.location
+      })
       event.location = current.location
     }
     const attendees = await this.getAttendees(current)
@@ -210,6 +272,15 @@ export class OutcomingClient {
       for (const attendee of attendees) {
         if (event.attendees.findIndex((p) => p.email === attendee) === -1) {
           res = true
+          this.ctx.info('Update event diff: attendees', {
+            calendarId: current.calendar,
+            eventId: current.eventId,
+            user: this.user.email,
+            workspace: this.workspace,
+            event: current._id,
+            prev: event.attendees,
+            current: attendee
+          })
           event.attendees.push({ email: attendee })
         }
       }
@@ -217,11 +288,29 @@ export class OutcomingClient {
     const newStart = convertDate(current.date, event.start?.date !== undefined, getTimezone(current))
     if (!deepEqual(newStart, event.start)) {
       res = true
+      this.ctx.info('Update event diff: start', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.workspace,
+        event: current._id,
+        prev: event.start,
+        current: newStart
+      })
       event.start = newStart
     }
     const newEnd = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))
     if (!deepEqual(newEnd, event.end)) {
       res = true
+      this.ctx.info('Update event diff: end', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.workspace,
+        event: current._id,
+        prev: event.end,
+        current: newEnd
+      })
       event.end = newEnd
     }
     if (current._class === calendar.class.ReccuringEvent) {
@@ -229,6 +318,15 @@ export class OutcomingClient {
       const newRec = encodeReccuring(rec.rules, rec.rdate, rec.exdate)
       if (!deepEqual(newRec, event.recurrence)) {
         res = true
+        this.ctx.info('Update event diff: recurrence', {
+          calendarId: current.calendar,
+          eventId: current.eventId,
+          user: this.user.email,
+          workspace: this.workspace,
+          event: current._id,
+          prev: event.recurrence,
+          current: newRec
+        })
         event.recurrence = newRec
       }
     }
@@ -289,6 +387,7 @@ export class OutcomingClient {
     type: 'create' | 'update' | 'delete'
   ): Promise<void> {
     if (event.access === 'owner' || event.access === 'writer') {
+      const mutex = await lock(`outcoming:${workspace}`)
       const client = await getClient(getWorkspaceToken(workspace))
       const txOp = new TxOperations(client, core.account.System)
       try {
@@ -299,6 +398,11 @@ export class OutcomingClient {
         const calendarClient = new OutcomingClient(ctx, workspace, txOp, user)
         const authSucces = await setCredentials(calendarClient.oAuth2Client, user)
         if (!authSucces) {
+          ctx.warn('OutcomingClient push: remove user', {
+            user: user.userId,
+            workspace: user.workspace,
+            email: user.email
+          })
           await removeUserByEmail(user, user.email)
           await removeIntegrationSecret(ctx, accountClient, {
             socialId: user.userId,
@@ -311,6 +415,7 @@ export class OutcomingClient {
         await calendarClient.push(event, type)
       } finally {
         await txOp.close()
+        mutex()
       }
     }
   }
