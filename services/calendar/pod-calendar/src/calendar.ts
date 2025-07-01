@@ -30,6 +30,7 @@ import {
   getMixinFields,
   getTimezone,
   parseEventDate,
+  parseRecurrenceStrings,
   removeIntegrationSecret,
   setCredentials
 } from './utils'
@@ -414,9 +415,14 @@ export class CalendarClient {
     }
     if (current._class === calendar.class.ReccuringEvent) {
       const rec = current as ReccuringEvent
-      const newRec = encodeReccuring(rec.rules, rec.rdate, rec.exdate)
-      if (!deepEqual(newRec, event.recurrence)) {
+      const parsed = parseRecurrenceStrings(event.recurrence ?? [])
+      if (
+        !deepEqual(rec.rules, parsed.rules) ||
+        !deepEqual(rec.rdate, parsed.rdate) ||
+        !deepEqual(rec.exdate, parsed.exdate)
+      ) {
         res = true
+        const newRec = encodeReccuring(rec.rules, rec.rdate, rec.exdate)
         this.ctx.info('Update event diff: recurrence', {
           calendarId: current.calendar,
           eventId: current.eventId,
