@@ -645,7 +645,15 @@ export interface Session {
 
   updateLast: () => void
 
-  domainRequestRaw: (ctx: ClientSessionCtx, domain: OperationDomain, params: DomainParams) => Promise<DomainResult>
+  domainRequestRaw: (
+    ctx: ClientSessionCtx,
+    domain: OperationDomain,
+    params: DomainParams
+  ) => Promise<{
+    result: DomainResult
+    broadcastPromise: Promise<void>
+    asyncsPromise: Promise<void> | undefined
+  }>
 
   userCtx?: MeasureContext
 }
