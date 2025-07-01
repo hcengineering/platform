@@ -13,16 +13,180 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SocialIdentityProvider } from '@hcengineering/contact'
+  import { createEventDispatcher } from 'svelte'
+  import contact, { SocialIdentityProvider } from '@hcengineering/contact'
+  import { EditBox, Label, Button, CodeForm, TimeLeft, Status as StatusControl } from '@hcengineering/ui'
+  import { OtpInfo } from '@hcengineering/account-client'
+  import { getCurrentAccount, setCurrentAccount, SocialId, Timestamp } from '@hcengineering/core'
+  import { OK, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 
   import AddSocialId from './AddSocialId.svelte'
+  import setting from '../../plugin'
+  import { getAccountClient } from '../../utils'
 
   export let provider: SocialIdentityProvider
+  export let onAdded: (socialId: SocialId) => void | Promise<void>
+
+  let email: string
+  let otpInfo: OtpInfo | null = null
+
+  const dispatch = createEventDispatcher()
+  const accountClient = getAccountClient()
+  const codeFields = [
+    { id: 'code-1', name: 'code-1', optional: false },
+    { id: 'code-2', name: 'code-2', optional: false },
+    { id: 'code-3', name: 'code-3', optional: false },
+    { id: 'code-4', name: 'code-4', optional: false },
+    { id: 'code-5', name: 'code-5', optional: false },
+    { id: 'code-6', name: 'code-6', optional: false }
+  ]
+
+  $: canSend = getCleanEmail(email) !== ''
+
+  let status: Status = OK
+  let retryOn: Timestamp = 0
+  let timer: TimeLeft | undefined
+  let codeForm: CodeForm | undefined
+  let canResend = false
+
+  function getCleanEmail (value: string | undefined): string {
+    return value?.trim().toLowerCase() ?? ''
+  }
+
+  async function sendConfirmation (): Promise<void> {
+    try {
+      status = OK
+      otpInfo = await accountClient.addEmailSocialId(getCleanEmail(email))
+      retryOn = otpInfo.retryOn
+      canResend = false
+    } catch (err: any) {
+      console.error(err)
+      if (err instanceof PlatformError) {
+        status = err.status
+      } else {
+        status = unknownError(err)
+      }
+    }
+  }
+
+  async function handleSendConfirmation (): Promise<void> {
+    if (otpInfo != null) return
+
+    await sendConfirmation()
+  }
+
+  async function handleResend (): Promise<void> {
+    if (codeForm != null) codeForm.clear()
+    await sendConfirmation()
+
+    if (timer != null) timer.restart(retryOn)
+  }
+
+  async function handleCode (event: CustomEvent): Promise<void> {
+    const code = event.detail
+    if (code == null) return
+    status = OK
+
+    try {
+      const newSocialIdLoginInfo = await accountClient.validateOtp(email, code, undefined, 'verify')
+      const currAcc = getCurrentAccount()
+      const socialIds = await accountClient.getSocialIds()
+
+      const newSocialId = socialIds.find((it) => it._id === newSocialIdLoginInfo.socialId)
+      if (newSocialId == null) {
+        console.error(`New social id ${newSocialIdLoginInfo.socialId} not found in the updated social ids list`)
+        return
+      }
+
+      setCurrentAccount({
+        ...currAcc,
+        fullSocialIds: socialIds,
+        socialIds: socialIds.map((si) => si._id)
+      })
+      if (onAdded != null) {
+        console.log('Callback onAdded')
+        void onAdded(newSocialId)
+      }
+      dispatch('close')
+    } catch (err: any) {
+      console.error(err)
+      if (err instanceof PlatformError) {
+        status = err.status
+      } else {
+        status = unknownError(err)
+      }
+    }
+  }
 </script>
 
-<AddSocialId {provider}>
-  {'Coming soon'}
+<AddSocialId {provider} on:close>
+  <div class="flex-col flex-gap-2">
+    <div class="flex-row-center flex-gap-4">
+      <span class="newEmail"><Label label={setting.string.NewEmail} /></span>
+      <EditBox
+        maxWidth="10rem"
+        placeholder={contact.string.Email}
+        bind:value={email}
+        disabled={otpInfo != null}
+        focusIndex={0}
+      />
+
+      <div class="flex-row-center">
+        {#if otpInfo != null}
+          <Label label={setting.string.CodeSent} />
+        {/if}
+
+        {#if retryOn > 0 && !canResend}
+          <span class="flex-row-top ml-1">
+            <Label label={setting.string.SendAgainIn} />
+            <span class="ml-1">
+              <TimeLeft
+                bind:this={timer}
+                time={retryOn}
+                on:timeout={() => {
+                  canResend = true
+                }}
+              />
+            </span>
+          </span>
+        {/if}
+
+        {#if canResend}
+          <div class="ml-1">
+            <Button label={setting.string.SendAgain} kind="ghost" size="small" on:click={handleResend} />
+          </div>
+        {/if}
+      </div>
+    </div>
+
+    {#if otpInfo != null}
+      <CodeForm bind:this={codeForm} fields={codeFields} size="small" on:submit={handleCode} />
+    {:else}
+      <div class="sendOtp">
+        <Button
+          label={setting.string.SendConfirmation}
+          kind="primary"
+          size="small"
+          disabled={!canSend}
+          on:click={handleSendConfirmation}
+        />
+      </div>
+    {/if}
+
+    {#if status.severity !== Severity.OK}
+      <div class="flex-row-center mt-1" class:error={status.severity === Severity.ERROR}>
+        <StatusControl {status} overflow={false} />
+      </div>
+    {/if}
+  </div>
 </AddSocialId>
 
 <style lang="scss">
+  .newEmail {
+    width: 6rem;
+  }
+
+  .sendOtp {
+    margin-top: 1.825rem;
+  }
 </style>

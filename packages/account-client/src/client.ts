@@ -62,7 +62,7 @@ export interface AccountClient {
     kind?: 'external' | 'internal' | 'byregion',
     externalRegions?: string[]
   ) => Promise<WorkspaceLoginInfo>
-  validateOtp: (email: string, code: string, password?: string) => Promise<LoginInfo>
+  validateOtp: (email: string, code: string, password?: string, action?: 'verify') => Promise<LoginInfo>
   loginOtp: (email: string) => Promise<OtpInfo>
   getLoginInfoByToken: () => Promise<LoginInfo | WorkspaceLoginInfo>
   getLoginWithWorkspaceInfo: () => Promise<LoginInfoWithWorkspaces>
@@ -192,6 +192,7 @@ export interface AccountClient {
   getAccountInfo: (uuid: AccountUuid) => Promise<AccountInfo>
   mergeSpecifiedPersons: (primaryPerson: PersonUuid, secondaryPerson: PersonUuid) => Promise<void>
   mergeSpecifiedAccounts: (primaryAccount: AccountUuid, secondaryAccount: AccountUuid) => Promise<void>
+  addEmailSocialId: (email: string) => Promise<OtpInfo>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -309,10 +310,10 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async validateOtp (email: string, code: string, password?: string): Promise<LoginInfo> {
+  async validateOtp (email: string, code: string, password?: string, action?: 'verify'): Promise<LoginInfo> {
     const request = {
       method: 'validateOtp' as const,
-      params: { email, code, password }
+      params: { email, code, password, action }
     }
 
     return await this.rpc(request)
@@ -985,6 +986,15 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async addEmailSocialId (email: string): Promise<OtpInfo> {
+    const request = {
+      method: 'addEmailSocialId' as const,
+      params: { email }
+    }
+
+    return await this.rpc(request)
   }
 
   async setCookie (): Promise<void> {

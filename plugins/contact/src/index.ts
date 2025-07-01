@@ -365,7 +365,8 @@ export const contactPlugin = plugin(contactId, {
     EveryoneDescription: '' as IntlString,
     HereDescription: '' as IntlString,
     Guest: '' as IntlString,
-    Deleted: '' as IntlString
+    Deleted: '' as IntlString,
+    Email: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,

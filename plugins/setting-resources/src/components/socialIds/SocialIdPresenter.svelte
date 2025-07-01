@@ -135,7 +135,10 @@
 
 <style lang="scss">
   .root {
+    padding: 1rem;
+
     &:hover {
+      background-color: var(--global-ui-highlight-BackgroundColor);
       .on-hover {
         display: block;
       }

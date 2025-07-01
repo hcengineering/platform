@@ -13,14 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { SocialIdentityProvider } from '@hcengineering/contact'
   import { ModernDialog } from '@hcengineering/ui'
   import { getCurrentLanguage } from '@hcengineering/theme'
-  import { translate } from '@hcengineering/platform'
+  import { IntlString, translate } from '@hcengineering/platform'
 
   import setting from '../../plugin'
 
   export let provider: SocialIdentityProvider
+  export let canSubmit: boolean = false
+  export let hideSubmit: boolean = true
+  export let submitLabel: IntlString = setting.string.Add
+  export let onSubmit: () => void | Promise<void> = () => {}
+
+  const dispatch = createEventDispatcher()
 
   let typeString: string
   $: void translate(provider.label, {}, getCurrentLanguage()).then((s) => {
@@ -28,18 +35,20 @@
   })
 
   async function handleClose (): Promise<void> {
-    // TODO
+    dispatch('close')
   }
 
   async function handleSubmit (): Promise<void> {
-    // TODO
+    await onSubmit()
   }
 </script>
 
 <ModernDialog
   label={setting.string.AddNew}
   labelProps={{ type: typeString }}
-  submitLabel={setting.string.Add}
+  {submitLabel}
+  {canSubmit}
+  {hideSubmit}
   on:submit={handleSubmit}
   on:close={handleClose}
 >

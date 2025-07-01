@@ -197,6 +197,9 @@ export default plugin(settingId, {
     Delete: '' as IntlString,
     Disconnect: '' as IntlString,
     Add: '' as IntlString,
+    Proceed: '' as IntlString,
+    SendConfirmation: '' as IntlString,
+    NewEmail: '' as IntlString,
     AccountSettings: '' as IntlString,
     ChangePassword: '' as IntlString,
     CurrentPassword: '' as IntlString,
@@ -251,7 +254,10 @@ export default plugin(settingId, {
     IntegrationFailed: '' as IntlString,
     IntegrationError: '' as IntlString,
     EmailIsUsed: '' as IntlString,
-    Customize: '' as IntlString
+    Customize: '' as IntlString,
+    CodeSent: '' as IntlString,
+    SendAgain: '' as IntlString,
+    SendAgainIn: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

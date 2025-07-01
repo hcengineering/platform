@@ -1676,7 +1676,8 @@ export async function findExistingIntegration (
 export async function doMergePersons (
   db: AccountDB,
   primaryPerson: PersonUuid,
-  secondaryPerson: PersonUuid
+  secondaryPerson: PersonUuid,
+  mergeVerified = false
 ): Promise<void> {
   if (primaryPerson === secondaryPerson) {
     // Nothing to do
@@ -1693,9 +1694,14 @@ export async function doMergePersons (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: secondaryPerson }))
   }
 
-  // Merge social ids. Re-wire the secondary account social ids to the primary account.
+  // Merge social ids. Re-wire the secondary person social ids to the primary person.
   // Keep their ids. This way all PersonIds inside the workspaces will remain the same.
   const secondarySocialIds = await db.socialId.find({ personUuid: secondaryPerson })
+
+  if (!mergeVerified && secondarySocialIds.some((si) => si.verifiedOn != null)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Conflict, {}))
+  }
+
   for (const secondarySocialId of secondarySocialIds) {
     await db.socialId.update({ _id: secondarySocialId._id, personUuid: secondaryPerson }, { personUuid: primaryPerson })
   }
@@ -1723,7 +1729,7 @@ export async function doMergeAccounts (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: secondaryAccount }))
   }
 
-  await doMergePersons(db, primaryAccount, secondaryAccount)
+  await doMergePersons(db, primaryAccount, secondaryAccount, true)
 
   // Workspace assignments. Assign primary account to all workspaces of the secondary account.
   const secondaryWorkspacesRoles = await db.getWorkspaceRoles(secondaryAccount)

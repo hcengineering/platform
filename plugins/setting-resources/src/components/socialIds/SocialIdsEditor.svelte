@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getCurrentAccount, loginSocialTypes, notEmpty, SocialIdType } from '@hcengineering/core'
-  import { FocusHandler, createFocusManager, showPopup, Label, Button, Menu, Action } from '@hcengineering/ui'
+  import { FocusHandler, createFocusManager, showPopup, Label, Button, Menu, Action, Scroller } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import contact from '@hcengineering/contact'
   import view from '@hcengineering/view'
@@ -43,16 +43,14 @@
         icon: pr.icon ?? contact.icon.Profile,
         label: pr.label,
         action: async () => {
-          showPopup(creator, { provider: pr })
+          showPopup(creator, { provider: pr, onAdded: handleAccountUpdated })
         }
       }
     })
     .filter(notEmpty)
 
   function handleAdd (ev: MouseEvent): void {
-    showPopup(Menu, { actions: addActions }, ev.target as HTMLElement, (result) => {
-      // TODO close? or no op
-    })
+    showPopup(Menu, { actions: addActions }, ev.target as HTMLElement)
   }
 
   $: onlyHuly = socialIds.filter((it) => it.type === SocialIdType.HULY).length === 1
@@ -70,17 +68,24 @@
     <Label label={setting.string.ManageIdentities} />
     <Button icon={view.icon.Add} kind="icon" size="small" on:click={handleAdd} />
   </div>
+
   <div class="items">
-    {#each socialIds as socialId}
-      {@const socialIdProvider = socialIdProviders.get(socialId.type)}
-      {@const canRelease =
-        socialId.type === SocialIdType.HULY ? !onlyHuly : loginSocialTypes.includes(socialId.type) ? !onlyLogin : true}
-      {#if socialIdProvider}
-        <div class="item">
-          <SocialIdPresenter {socialId} {socialIdProvider} {canRelease} on:released={handleAccountUpdated} />
-        </div>
-      {/if}
-    {/each}
+    <Scroller>
+      {#each socialIds as socialId}
+        {@const socialIdProvider = socialIdProviders.get(socialId.type)}
+        {@const canRelease =
+          socialId.type === SocialIdType.HULY
+            ? !onlyHuly
+            : loginSocialTypes.includes(socialId.type)
+              ? !onlyLogin
+              : true}
+        {#if socialIdProvider}
+          <div class="item">
+            <SocialIdPresenter {socialId} {socialIdProvider} {canRelease} on:released={handleAccountUpdated} />
+          </div>
+        {/if}
+      {/each}
+    </Scroller>
   </div>
 </div>
 
@@ -92,14 +97,13 @@
   }
 
   .items {
-    padding: 0 1rem;
     border: 1px solid var(--theme-divider-color);
     border-radius: 0.25rem;
+    min-height: 10rem;
+    max-height: 25rem;
   }
 
   .item {
-    padding: 1rem 0;
-
     &:not(:last-child) {
       border-bottom: 1px solid var(--theme-divider-color);
     }

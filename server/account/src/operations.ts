@@ -102,7 +102,8 @@ import {
   READONLY_GUEST_ACCOUNT,
   getWorkspaceByDataId,
   assignableRoles,
-  getWorkspacesInfoWithStatusByIds
+  getWorkspacesInfoWithStatusByIds,
+  doMergePersons
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -325,6 +326,9 @@ export async function signUpOtp (
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
 
+/**
+ * Validates email OTP for login/sign up/new social id
+ */
 export async function validateOtp (
   ctx: MeasureContext,
   db: AccountDB,
@@ -334,9 +338,10 @@ export async function validateOtp (
     email: string
     code: string
     password?: string
+    action?: 'verify'
   }
 ): Promise<LoginInfo> {
-  const { email, code, password } = params
+  const { email, code, password, action } = params
 
   if (email == null || code == null || email === '' || code === '') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
@@ -357,27 +362,87 @@ export async function validateOtp (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
     }
 
-    await db.otp.deleteMany({ socialId: emailSocialId._id })
+    let callerAccountUuid: AccountUuid | null = null
 
-    if (emailSocialId.verifiedOn == null) {
-      await db.socialId.update({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
+    if (action === 'verify') {
+      callerAccountUuid = decodeTokenVerbose(ctx, token).account
+      const callerAccount = await db.account.findOne({ uuid: callerAccountUuid })
+
+      if (callerAccount == null) {
+        throw new PlatformError(
+          new Status(Severity.ERROR, platform.status.AccountNotFound, { account: callerAccountUuid })
+        )
+      }
     }
 
-    // This method handles both login and signup
-    const account = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
+    await db.otp.deleteMany({ socialId: emailSocialId._id })
 
-    if (account == null) {
-      // This is a signup
-      await createAccount(db, emailSocialId.personUuid, true)
-      if (password != null) {
-        await setPassword(ctx, db, branding, emailSocialId.personUuid as AccountUuid, password)
+    const targetAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
+
+    if (action !== 'verify') {
+      // login/sign up
+      if (emailSocialId.verifiedOn == null) {
+        await db.socialId.update({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
       }
 
-      ctx.info('OTP signup success', emailSocialId)
-    } else {
-      await confirmHulyIds(ctx, db, account.uuid)
+      if (targetAccount == null) {
+        // This is a signup
+        await createAccount(db, emailSocialId.personUuid, true)
+        if (password != null) {
+          await setPassword(ctx, db, branding, emailSocialId.personUuid as AccountUuid, password)
+        }
 
-      ctx.info('OTP login success', emailSocialId)
+        ctx.info('OTP signup success', emailSocialId)
+      } else {
+        await confirmHulyIds(ctx, db, targetAccount.uuid)
+
+        ctx.info('OTP login/verification success', emailSocialId)
+      }
+    } else {
+      if (callerAccountUuid == null) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+      }
+
+      if (targetAccount == null) {
+        // only person exists means there's no verified social id associated with it -> merge it to the current account
+        // doMergePersons will fail if there's a verified social id
+
+        await doMergePersons(db, callerAccountUuid, emailSocialId.personUuid)
+
+        // what happens to local persons referencing this person in various workspaces?
+        // there can be some persons but no Employees because there's no account
+        // we know where the person is migrated to so can update later as needed
+
+        if (emailSocialId.verifiedOn == null) {
+          await db.socialId.update({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
+        } else {
+          // Normally, it should not be the case
+          ctx.error("Verifying new social id belonging to person w/o account but it's already verified", {
+            emailSocialId,
+            callerAccountUuid
+          })
+        }
+      } else {
+        if (callerAccountUuid === targetAccount.uuid) {
+          if (emailSocialId.verifiedOn == null) {
+            await db.socialId.update({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
+          }
+        } else {
+          if (emailSocialId.verifiedOn == null) {
+            // Move the target social id to current account, we can easily do this because it was not verified
+            await db.socialId.update(
+              { _id: emailSocialId._id },
+              { personUuid: callerAccountUuid, verifiedOn: Date.now() }
+            )
+          } else {
+            // Throw for now. Should probably be another workflow to merge accounts.
+            // Alternatively, we can allow the same workflow as with not verfied here just to move
+            // the social id to the current account, but need to add extra checks like there's at least one more
+            // login method for the target account
+            throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
+          }
+        }
+      }
     }
 
     const person = await db.person.findOne({ uuid: emailSocialId.personUuid })
@@ -395,7 +460,7 @@ export async function validateOtp (
     }
   } catch (err: any) {
     Analytics.handleError(err)
-    ctx.error('OTP login error', { email, err })
+    ctx.error(action === 'verify' ? 'OTP verification error' : 'OTP login/sign up error', { email, err })
     throw err
   }
 }
@@ -1972,41 +2037,55 @@ async function exchangeGuestToken (
   return token
 }
 
-async function addSocialId (
+async function addEmailSocialId (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string,
   params: {
-    type: SocialIdType
-    value: string
-    displayValue?: string
+    email: string
   }
-): Promise<PersonId> {
-  const { type, value } = params
+): Promise<OtpInfo> {
+  const { email } = params
   const { account } = decodeTokenVerbose(ctx, token)
+
+  if (email == null || email === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
 
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
   }
 
-  const normalizedValue = normalizeValue(value)
-  const existing = await db.socialId.findOne({ type, value: normalizedValue })
+  const normalizedEmail = normalizeValue(email)
+  const existing = await db.socialId.findOne({ type: SocialIdType.EMAIL, value: normalizedEmail })
 
-  // Upon verification:
-  // If none exists, create a new one
-  // If exists only for person without account - merge person to the account
-  // If exists for this account but not verified - proceed to verification
-  // If exists for this account and verified - throw an error
-  // If exists for another account - throw an error? Must merge accounts with a different method.
-
+  // This schema should be applied to all types in general, they should only differ by the verification process.
+  // If none exists, create a new one and proceed to verification
+  // If exists only for person without account - will be able to merge person to the account, proceed to verification
+  // If exists for this account but not verified - proceed to verification right away
+  // If exists for this account and verified - throw an error (already exists)
+  // If exists for another account and not verified - will move only this id to the current account, proceed to verification
+  // If exists for another account and verified - throw an error for now, support merge accounts later, maybe through a different procedure
+  let targetSocialId: SocialId
   if (existing != null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, { value, type }))
+    if (existing.verifiedOn != null) {
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, { value: email, type: SocialIdType.EMAIL })
+      )
+    }
+    targetSocialId = existing
+  } else {
+    const newSocialId = {
+      type: SocialIdType.EMAIL,
+      value: normalizedEmail,
+      personUuid: account
+    }
+    const _id = await db.socialId.insertOne(newSocialId)
+    targetSocialId = { ...newSocialId, _id, key: buildSocialIdString(newSocialId) }
   }
 
-  const socialId = await db.socialId.insertOne({ type, value: normalizedValue, personUuid: account })
-
-  return socialId
+  return await sendOtp(ctx, db, branding, targetSocialId)
 }
 
 export async function releaseSocialId (
@@ -2104,7 +2183,7 @@ export type AccountMethods =
   | 'deleteMailbox'
   | 'getAccountInfo'
   | 'isReadOnlyGuest'
-  | 'addSocialId'
+  | 'addEmailSocialId'
   | 'releaseSocialId'
 
 /**
@@ -2144,7 +2223,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     deleteMailbox: wrap(deleteMailbox),
     ensurePerson: wrap(ensurePerson),
     exchangeGuestToken: wrap(exchangeGuestToken),
-    addSocialId: wrap(addSocialId),
+    addEmailSocialId: wrap(addEmailSocialId),
     releaseSocialId: wrap(releaseSocialId),
 
     /* READ OPERATIONS */

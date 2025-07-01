@@ -27,7 +27,8 @@
     Header,
     createFocusManager,
     showPopup,
-    navigate
+    navigate,
+    Scroller
   } from '@hcengineering/ui'
   import { logIn, logOut } from '@hcengineering/workbench-resources'
 
@@ -88,71 +89,77 @@
   <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.AccountSettings} label={setting.string.AccountSettings} size={'large'} isCurrent />
   </Header>
-  <div class="ac-body p-10 flex-col max-w-240">
-    {#if $myEmployeeStore}
-      <div class="flex flex-grow w-full">
-        <div class="mr-8">
-          <EditableAvatar
-            person={$myEmployeeStore}
-            {email}
-            size={'x-large'}
-            name={$myEmployeeStore.name}
-            bind:this={avatarEditor}
-            on:done={onAvatarDone}
-          />
-        </div>
-        <div class="flex-grow flex-col">
-          <EditBox
-            placeholder={contact.string.PersonFirstNamePlaceholder}
-            bind:value={firstName}
-            kind={'large-style'}
-            autoFocus
-            focusIndex={1}
-            on:change={nameChange}
-          />
-          <EditBox
-            placeholder={contact.string.PersonLastNamePlaceholder}
-            bind:value={lastName}
-            kind={'large-style'}
-            focusIndex={2}
-            on:change={nameChange}
-          />
-          <div class="location">
-            <AttributeEditor
-              maxWidth="20rem"
-              _class={contact.class.Person}
-              object={$myEmployeeStore}
-              focusIndex={3}
-              key="city"
+  <Scroller>
+    <div class="ac-body p-10 flex-col max-w-240 content">
+      {#if $myEmployeeStore}
+        <div class="flex flex-grow w-full">
+          <div class="mr-8">
+            <EditableAvatar
+              person={$myEmployeeStore}
+              {email}
+              size={'x-large'}
+              name={$myEmployeeStore.name}
+              bind:this={avatarEditor}
+              on:done={onAvatarDone}
             />
           </div>
-          <div class="separator" />
-          <ChannelsEditor
-            attachedTo={$myEmployeeStore._id}
-            attachedClass={$myEmployeeStore._class}
-            focusIndex={10}
-            allowOpen={false}
-            restricted={[contact.channelProvider.Email]}
-          />
+          <div class="flex-grow flex-col">
+            <EditBox
+              placeholder={contact.string.PersonFirstNamePlaceholder}
+              bind:value={firstName}
+              kind={'large-style'}
+              autoFocus
+              focusIndex={1}
+              on:change={nameChange}
+            />
+            <EditBox
+              placeholder={contact.string.PersonLastNamePlaceholder}
+              bind:value={lastName}
+              kind={'large-style'}
+              focusIndex={2}
+              on:change={nameChange}
+            />
+            <div class="location">
+              <AttributeEditor
+                maxWidth="20rem"
+                _class={contact.class.Person}
+                object={$myEmployeeStore}
+                focusIndex={3}
+                key="city"
+              />
+            </div>
+            <div class="separator" />
+            <ChannelsEditor
+              attachedTo={$myEmployeeStore._id}
+              attachedClass={$myEmployeeStore._class}
+              focusIndex={10}
+              allowOpen={false}
+              restricted={[contact.channelProvider.Email]}
+            />
+          </div>
         </div>
+      {/if}
+      <div class="separator" />
+      <SocialIdsEditor />
+      <div class="footer">
+        <Button
+          icon={setting.icon.Signout}
+          label={setting.string.Leave}
+          kind="dangerous"
+          on:click={() => {
+            void leave()
+          }}
+        />
       </div>
-    {/if}
-    <div class="separator" />
-    <SocialIdsEditor />
-    <div class="footer">
-      <Button
-        icon={setting.icon.Signout}
-        label={setting.string.Leave}
-        kind="dangerous"
-        on:click={() => {
-          void leave()
-        }}
-      />
     </div>
-  </div>
+  </Scroller>
 </div>
 
 <style lang="scss">
+  .content {
+    flex: 0 0 auto;
+  }
+
   .location {
     margin-top: 0.25rem;
     font-size: 0.75rem;

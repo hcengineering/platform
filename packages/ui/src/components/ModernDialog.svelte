@@ -31,6 +31,7 @@
   export let submitKind: ButtonKind = 'primary'
   export let cancelLabel: IntlString = ui.string.Cancel
   export let canSubmit: boolean = false
+  export let hideSubmit: boolean = false
   export let shouldSubmitOnEnter: boolean = false
   export let shouldCloseOnCancel: boolean = true
   export let hasBack: boolean = false
@@ -139,15 +140,17 @@
           <slot name="btnsXtraStart" />
           <Button kind="regular" size="large" label={cancelLabel} on:click={cancel} {loading} />
           <slot name="btnsXtraBetween" />
-          <Button
-            kind={submitKind}
-            size="large"
-            label={submitLabel}
-            focusIndex={10001}
-            disabled={!canSubmit}
-            on:click={submit}
-            {loading}
-          />
+          {#if !hideSubmit}
+            <Button
+              kind={submitKind}
+              size="large"
+              label={submitLabel}
+              focusIndex={10001}
+              disabled={!canSubmit}
+              on:click={submit}
+              {loading}
+            />
+          {/if}
           <slot name="btnsXtraEnd" />
         </slot>
       </div>
