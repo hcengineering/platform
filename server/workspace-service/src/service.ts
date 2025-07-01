@@ -616,7 +616,6 @@ export class WorkspaceWorker {
           KeepSnapshots: 7 * 12
         },
         pipelineFactory,
-        workspaceStorageAdapter,
         (ctx, workspace, branding, externalStorage) => {
           return getConfig(ctx, dbUrl, ctx, {
             externalStorage,
@@ -702,7 +701,6 @@ export class WorkspaceWorker {
         opt.backup.backupStorage,
         opt.backup.bucketName,
         pipelineFactory,
-        workspaceStorageAdapter,
         [DOMAIN_BLOB],
         true,
         (_p: number) => {

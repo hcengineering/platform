@@ -645,7 +645,15 @@ export interface Session {
 
   updateLast: () => void
 
-  domainRequestRaw: (ctx: ClientSessionCtx, domain: OperationDomain, params: DomainParams) => Promise<DomainResult>
+  domainRequestRaw: (
+    ctx: ClientSessionCtx,
+    domain: OperationDomain,
+    params: DomainParams
+  ) => Promise<{
+    result: DomainResult
+    broadcastPromise: Promise<void>
+    asyncsPromise: Promise<void> | undefined
+  }>
 
   userCtx?: MeasureContext
 }
@@ -719,9 +727,11 @@ export interface SessionManager {
 
   forceClose: (wsId: WorkspaceUuid, ignoreSocket?: ConnectionSocket) => Promise<void>
 
+  forceMaintenance: (ctx: MeasureContext, workspaceId: WorkspaceUuid) => Promise<void>
+
   closeWorkspaces: (ctx: MeasureContext) => Promise<void>
 
-  scheduleMaintenance: (timeMinutes: number) => void
+  scheduleMaintenance: (timeMinutes: number, message?: string) => void
 
   profiling?: {
     start: () => void

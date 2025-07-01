@@ -37,6 +37,7 @@ if (serverSecret === undefined) {
 }
 
 setMetadata(serverToken.metadata.Secret, serverSecret)
+setMetadata(serverToken.metadata.Service, 'fulltext')
 
 const metricsContext = initStatisticsContext('fulltext', {
   factory: () =>

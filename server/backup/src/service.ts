@@ -14,28 +14,22 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import core, {
-  DOMAIN_TX,
+import {
   groupByArray,
-  Hierarchy,
   isActiveMode,
-  ModelDb,
   RateLimiter,
   reduceCalls,
-  SortingOrder,
   systemAccountUuid,
   WorkspaceDataId,
   WorkspaceUuid,
   type BackupStatus,
   type Branding,
   type MeasureContext,
-  type Tx,
   type WorkspaceIds,
   type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
 import { getAccountClient } from '@hcengineering/server-client'
 import {
-  wrapPipeline,
   type DbConfiguration,
   type Pipeline,
   type PipelineFactory,
@@ -43,8 +37,9 @@ import {
 } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { clearInterval } from 'node:timers'
-import { backup, restore } from '.'
 import { createStorageBackupStorage } from './storage'
+import { backup } from './backup'
+import { restore } from './restore'
 
 export interface BackupConfig {
   AccountsURL: string
@@ -71,7 +66,6 @@ class BackupWorker {
     readonly storageAdapter: StorageAdapter,
     readonly config: BackupConfig,
     readonly pipelineFactory: PipelineFactory,
-    readonly workspaceStorageAdapter: StorageAdapter,
     readonly getConfig: (
       ctx: MeasureContext,
       workspace: WorkspaceIds,
@@ -303,11 +297,23 @@ class BackupWorker {
         dataId: ws.dataId,
         url: ws.url
       }
+      pipeline = await this.pipelineFactory(
+        ctx,
+        wsIds,
+        {
+          broadcast: () => {},
+          broadcastSessions: () => {}
+        },
+        null
+      )
+      if (pipeline === undefined) {
+        throw new Error('Pipeline is undefined, cannot proceed with backup')
+      }
       const result = await ctx.with(
         'backup',
         {},
         (ctx) =>
-          backup(ctx, '', wsIds, storage, {
+          backup(ctx, pipeline as Pipeline, wsIds, storage, {
             skipDomains: this.skipDomains,
             force: true,
             timeout: this.config.Timeout * 1000,
@@ -316,48 +322,6 @@ class BackupWorker {
             blobDownloadLimit: this.downloadLimit,
             skipBlobContentTypes: ['video/', 'audio/', 'image/'],
             fullVerify: this.fullCheck,
-            storageAdapter: this.workspaceStorageAdapter,
-            getLastTx: async (): Promise<Tx | undefined> => {
-              const config = this.getConfig(ctx, wsIds, null, this.workspaceStorageAdapter)
-              const adapterConf = config.adapters[config.domains[DOMAIN_TX]]
-              const hierarchy = new Hierarchy()
-              const modelDb = new ModelDb(hierarchy)
-              const txAdapter = await adapterConf.factory(
-                ctx,
-                hierarchy,
-                adapterConf.url,
-                wsIds,
-                modelDb,
-                this.workspaceStorageAdapter
-              )
-              try {
-                await txAdapter.init?.(ctx, {})
-
-                return (
-                  await txAdapter.rawFindAll<Tx>(
-                    DOMAIN_TX,
-                    { objectSpace: { $ne: core.space.Model } },
-                    { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
-                  )
-                ).shift()
-              } finally {
-                await txAdapter.close()
-              }
-            },
-            getConnection: async () => {
-              if (pipeline === undefined) {
-                pipeline = await this.pipelineFactory(
-                  ctx,
-                  wsIds,
-                  {
-                    broadcast: () => {},
-                    broadcastSessions: () => {}
-                  },
-                  null
-                )
-              }
-              return wrapPipeline(ctx, pipeline, wsIds)
-            },
             progress: (progress) => {
               return notify?.(progress) ?? Promise.resolve()
             }
@@ -409,7 +373,6 @@ export function backupService (
   storage: StorageAdapter,
   config: BackupConfig,
   pipelineFactory: PipelineFactory,
-  workspaceStorageAdapter: StorageAdapter,
   getConfig: (
     ctx: MeasureContext,
     workspace: WorkspaceIds,
@@ -419,7 +382,7 @@ export function backupService (
   region: string,
   recheck?: boolean
 ): () => void {
-  const backupWorker = new BackupWorker(storage, config, pipelineFactory, workspaceStorageAdapter, getConfig, region)
+  const backupWorker = new BackupWorker(storage, config, pipelineFactory, getConfig, region)
 
   const shutdown = (): void => {
     void backupWorker.close()
@@ -435,7 +398,6 @@ export async function doBackupWorkspace (
   storage: StorageAdapter,
   config: BackupConfig,
   pipelineFactory: PipelineFactory,
-  workspaceStorageAdapter: StorageAdapter,
   getConfig: (
     ctx: MeasureContext,
     workspace: WorkspaceIds,
@@ -448,16 +410,7 @@ export async function doBackupWorkspace (
   fullCheck: boolean = false,
   notify?: (progress: number) => Promise<void>
 ): Promise<boolean> {
-  const backupWorker = new BackupWorker(
-    storage,
-    config,
-    pipelineFactory,
-    workspaceStorageAdapter,
-    getConfig,
-    region,
-    skipDomains,
-    fullCheck
-  )
+  const backupWorker = new BackupWorker(storage, config, pipelineFactory, getConfig, region, skipDomains, fullCheck)
   backupWorker.downloadLimit = downloadLimit
   const result = await backupWorker.doBackup(ctx, workspace, notify)
   await backupWorker.close()
@@ -470,7 +423,6 @@ export async function doRestoreWorkspace (
   backupAdapter: StorageAdapter,
   bucketName: string,
   pipelineFactory: PipelineFactory,
-  workspaceStorageAdapter: StorageAdapter,
   skipDomains: string[],
   cleanIndexState: boolean,
   notify?: (progress: number) => Promise<void>
@@ -482,32 +434,29 @@ export async function doRestoreWorkspace (
   const ctx = rootCtx.newChild('doRestore', {})
   let pipeline: Pipeline | undefined
   try {
+    pipeline = await pipelineFactory(
+      ctx,
+      wsIds,
+      {
+        broadcast: () => {},
+        broadcastSessions: () => {}
+      },
+      null
+    )
+    if (pipeline === undefined) {
+      throw new Error('Pipeline is undefined, cannot proceed with restore')
+    }
     const restoreIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
     const storage = await createStorageBackupStorage(ctx, backupAdapter, restoreIds, wsIds.dataId ?? wsIds.uuid)
     const result: boolean = await ctx.with(
       'restore',
       {},
       (ctx) =>
-        restore(ctx, '', wsIds, storage, {
+        restore(ctx, pipeline as Pipeline, wsIds, storage, {
           date: -1,
           skip: new Set(skipDomains),
           recheck: false, // Do not need to recheck
-          storageAdapter: workspaceStorageAdapter,
           cleanIndexState,
-          getConnection: async () => {
-            if (pipeline === undefined) {
-              pipeline = await pipelineFactory(
-                ctx,
-                wsIds,
-                {
-                  broadcast: () => {},
-                  broadcastSessions: () => {}
-                },
-                null
-              )
-            }
-            return wrapPipeline(ctx, pipeline, wsIds)
-          },
           progress: (progress) => {
             return notify?.(progress) ?? Promise.resolve()
           }

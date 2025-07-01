@@ -41,8 +41,9 @@ async function main (): Promise<void> {
   })
 
   configureAnalytics(config.sentryDSN, config)
-  Analytics.setTag('application', 'telegram-bot-service')
+  Analytics.setTag('application', 'calendar-mailer')
   setMetadata(serverToken.metadata.Secret, config.secret)
+  setMetadata(serverToken.metadata.Service, 'calendar-mailer')
 
   const queue = getPlatformQueue('calendarMailerService', config.queueRegion)
 

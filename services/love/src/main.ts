@@ -59,6 +59,7 @@ export const main = async (): Promise<void> => {
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'love')
 
   const storageConfigs: StorageConfiguration = storageConfigFromEnv()
   const s3StorageConfigs: StorageConfiguration | undefined =

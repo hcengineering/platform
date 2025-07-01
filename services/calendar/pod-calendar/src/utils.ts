@@ -353,3 +353,13 @@ export function getMixinFields (h: Hierarchy, event: Event): Record<string, any>
 
   return res
 }
+
+export function parseEventDate (date: calendar_v3.Schema$EventDateTime | undefined): number {
+  if (date?.dateTime != null) {
+    return new Date(date.dateTime).getTime()
+  }
+  if (date?.date != null) {
+    return new Date(date.date).getTime()
+  }
+  return 0
+}

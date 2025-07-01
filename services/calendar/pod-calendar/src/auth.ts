@@ -32,10 +32,11 @@ import { calendar_v3, google } from 'googleapis'
 import { encode64 } from './base64'
 import { getClient } from './client'
 import { addUserByEmail, removeUserByEmail, setSyncHistory } from './kvsUtils'
-import { IncomingSyncManager, lock } from './sync'
+import { IncomingSyncManager } from './sync'
 import { CALENDAR_INTEGRATION, GoogleEmail, SCOPES, State, Token, User } from './types'
 import { getGoogleClient, getWorkspaceToken, removeIntegrationSecret } from './utils'
 import { WatchController } from './watch'
+import { lock } from './mutex'
 
 interface AuthResult {
   success: boolean

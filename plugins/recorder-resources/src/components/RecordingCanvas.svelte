@@ -28,6 +28,8 @@
   export let cameraSize: CameraSize = 'medium'
   export let cameraPos: CameraPosition = 'bottom-left'
 
+  const worker = new Worker(new URL('../worker.ts', import.meta.url))
+
   function getCameraSize (size: CameraSize): number {
     switch (size) {
       case 'small':
@@ -76,12 +78,15 @@
   let cameraR: number = 64
 
   let running = false
-  let animationFrameId: number | null = null
   let cameraVideo: HTMLVideoElement | null = null
   let screenVideo: HTMLVideoElement | null = null
 
   $: updateCameraPos(cameraSize, cameraPos, canvasWidth, canvasHeight)
   $: updateVideoSources(screenStream, cameraStream)
+
+  $: if (running && fps > 0) {
+    worker.postMessage({ type: 'fps', fps })
+  }
 
   function updateVideoSources (screenStream: MediaStream | null, cameraStream: MediaStream | null): void {
     if (screenVideo === null || cameraVideo === null) {
@@ -90,6 +95,61 @@
 
     screenVideo.srcObject = screenStream ?? cameraStream
     cameraVideo.srcObject = screenStream !== null ? cameraStream : null
+  }
+
+  let ctx: CanvasRenderingContext2D | null = null
+
+  function drawFrame (): void {
+    if (!ctx || !canvas || !screenVideo || !cameraVideo) return
+
+    // Only update canvas size if video dimensions changed
+    if (screenVideo.videoWidth && screenVideo.videoHeight) {
+      if (canvas.width !== screenVideo.videoWidth || canvas.height !== screenVideo.videoHeight) {
+        canvasWidth = canvas.width = screenVideo.videoWidth
+        canvasHeight = canvas.height = screenVideo.videoHeight
+      }
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    // Draw the screen video
+    if (screenVideo.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {
+      ctx.drawImage(screenVideo, 0, 0, canvas.width, canvas.height)
+    }
+
+    // Draw the camera video
+    if (cameraVideo.srcObject !== null && cameraVideo.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {
+      let camDrawX = cameraX - cameraR
+      let camDrawY = cameraY - cameraR
+      let camDrawW = 2 * cameraR
+      let camDrawH = 2 * cameraR
+
+      const cameraAspectRatio = cameraVideo.videoWidth / cameraVideo.videoHeight
+
+      if (cameraAspectRatio > 1) {
+        // camera is wider than container
+        camDrawW = camDrawH * cameraAspectRatio
+        camDrawX = cameraX - camDrawW / 2
+      } else {
+        // camera is taller than container
+        camDrawH = camDrawW / cameraAspectRatio
+        camDrawY = cameraY - camDrawH / 2
+      }
+
+      ctx.beginPath()
+      ctx.arc(cameraX, cameraY, cameraR, 0, Math.PI * 2)
+      ctx.closePath()
+      ctx.save()
+      ctx.clip()
+      ctx.drawImage(cameraVideo, camDrawX, camDrawY, camDrawW, camDrawH)
+      ctx.restore()
+    }
+  }
+
+  function handleWorkerMessage (e: MessageEvent): void {
+    if (e.data.type === 'frame' && running) {
+      drawFrame()
+    }
   }
 
   function startDrawing (): void {
@@ -106,84 +166,23 @@
     cameraVideo.srcObject = screenStream !== null ? cameraStream : null
     cameraVideo.autoplay = true
 
-    const ctx = canvas.getContext('2d')
+    ctx = canvas.getContext('2d', {
+      alpha: false,
+      desynchronized: true
+    })
     if (ctx === null) return
     ctx.imageSmoothingEnabled = true
     ctx.imageSmoothingQuality = 'high'
 
-    const interval = 1000 / fps
-
-    const drawFrame = (): void => {
-      if (canvas == null || ctx == null) return
-      if (screenVideo === null || cameraVideo === null) return
-
-      canvasWidth = canvas.width = screenVideo.videoWidth
-      canvasHeight = canvas.height = screenVideo.videoHeight
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      // Draw the screen video
-      if (screenVideo.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {
-        // const bitmap = await createImageBitmap(screenVideo)
-        // ctx.drawImage(bitmap, 0, 0, width, height);
-        // bitmap.close();
-        ctx.drawImage(screenVideo, 0, 0, canvas.width, canvas.height)
-      }
-
-      // Draw the camera video
-      if (cameraVideo.srcObject !== null && cameraVideo.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {
-        let camDrawX = cameraX - cameraR
-        let camDrawY = cameraY - cameraR
-        let camDrawW = 2 * cameraR
-        let camDrawH = 2 * cameraR
-
-        const cameraAspectRatio = cameraVideo.videoWidth / cameraVideo.videoHeight
-
-        if (cameraAspectRatio > 1) {
-          // camera is wider than container
-          camDrawW = camDrawH * cameraAspectRatio
-          camDrawX = cameraX - camDrawW / 2
-        } else {
-          // camera is taller than container
-          camDrawH = camDrawW / cameraAspectRatio
-          camDrawY = cameraY - camDrawH / 2
-        }
-
-        ctx.beginPath()
-        ctx.arc(cameraX, cameraY, cameraR, 0, Math.PI * 2)
-        ctx.closePath()
-        ctx.save()
-        ctx.clip()
-        ctx.drawImage(cameraVideo, camDrawX, camDrawY, camDrawW, camDrawH)
-        ctx.restore()
-      }
-    }
-
-    // Main drawing loop
-    // let lastDraw = 0
-    const draw = (now: number): void => {
-      if (!running) return
-      // const elapsed = now - lastDraw
-
-      // if (elapsed >= interval) {
-      //   drawFrame()
-      //   lastDraw = now
-      // }
-
-      drawFrame()
-      animationFrameId = requestAnimationFrame(draw)
-    }
-
-    animationFrameId = requestAnimationFrame(draw)
+    worker.addEventListener('message', handleWorkerMessage)
+    worker.postMessage({ type: 'start', fps })
   }
 
   function stopDrawing (): void {
     running = false
 
-    if (animationFrameId !== null) {
-      cancelAnimationFrame(animationFrameId)
-      animationFrameId = null
-    }
+    worker.postMessage({ type: 'stop' })
+    worker.removeEventListener('message', handleWorkerMessage)
 
     if (cameraVideo !== null) {
       cameraVideo.pause()

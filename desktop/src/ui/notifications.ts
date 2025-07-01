@@ -1,13 +1,21 @@
-import { getPersonByPersonId, formatName } from '@hcengineering/contact'
-import { Ref, TxOperations } from '@hcengineering/core'
-import notification, { DocNotifyContext, CommonInboxNotification, ActivityInboxNotification, InboxNotification } from '@hcengineering/notification'
-import { IntlString, addEventListener, translate } from '@hcengineering/platform'
+import { formatName, getPersonByPersonId } from '@hcengineering/contact'
+import { Ref, SortingOrder, TxOperations } from '@hcengineering/core'
+import notification, {
+  notificationId,
+  ActivityInboxNotification,
+  CommonInboxNotification,
+  DocNotifyContext,
+  InboxNotification
+} from '@hcengineering/notification'
+import { addEventListener, getMetadata, IntlString, translate } from '@hcengineering/platform'
 import { createNotificationsQuery, getClient } from '@hcengineering/presentation'
 import { location } from '@hcengineering/ui'
 import workbench, { workbenchId } from '@hcengineering/workbench'
 import desktopPreferences, { defaultNotificationPreference } from '@hcengineering/desktop-preferences'
 import { activePreferences } from '@hcengineering/desktop-preferences-resources'
-import { InboxNotificationsClientImpl, getDisplayInboxData } from '@hcengineering/notification-resources'
+import { getDisplayInboxData, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+import { inboxId } from '@hcengineering/inbox'
+import communication from '@hcengineering/communication'
 
 import { IPCMainExposed } from './types'
 
@@ -123,17 +131,49 @@ export function configureNotifications (): void {
     const inboxClient = InboxNotificationsClientImpl.getClient()
     const notificationsQuery = createNotificationsQuery(true)
 
-    notificationsQuery.query({ read: false, limit: 1000 }, res => {
-      newUnreadNotifications = res.getResult().length
+    const isCommunicationEnabled = getMetadata(communication.metadata.Enabled) ?? false
 
-      if (preferences.showUnreadCounter) {
-        electronAPI.setBadge(prevUnViewdNotificationsCount + newUnreadNotifications)
-      }
+    if (isCommunicationEnabled) {
+      notificationsQuery.query({ read: false, limit: 1000 }, res => {
+        newUnreadNotifications = res.getResult().length
 
-      if (preferences.bounceAppIcon) {
-        electronAPI.dockBounce()
-      }
-    })
+        if (preferences.showUnreadCounter) {
+          electronAPI.setBadge(prevUnViewdNotificationsCount + newUnreadNotifications)
+        }
+
+        if (preferences.bounceAppIcon) {
+          electronAPI.dockBounce()
+        }
+      })
+    }
+
+    function startNotificationQuery (): void {
+      if (!isCommunicationEnabled) return
+      notificationsQuery.query({
+        read: false,
+        limit: 1,
+        strict: true,
+        order: SortingOrder.Descending,
+        created: {
+          greaterOrEqual: new Date()
+        }
+      }, (res) => {
+        if (!preferences.showNotifications) return
+        const notification = res.getResult()[0]
+        if (notification !== undefined) {
+          electronAPI.sendNotification({
+            silent: !preferences.playSound,
+            application: inboxId,
+            title: notification.content.title,
+            body: `${notification.content.senderName}: ${notification.content.shortText}`
+          })
+        }
+      })
+    }
+
+    if (preferences.showNotifications) {
+      startNotificationQuery()
+    }
 
     async function handleNotifications (notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>): Promise<void> {
       const inboxData = await getDisplayInboxData(notificationsByContext)
@@ -174,6 +214,7 @@ export function configureNotifications (): void {
 
           electronAPI.sendNotification({
             silent: !preferences.playSound,
+            application: notificationId,
             ...notificationData
           })
         }
@@ -194,6 +235,10 @@ export function configureNotifications (): void {
       }
       if (!preferences.showUnreadCounter && newPreferences.showUnreadCounter) {
         electronAPI.setBadge(prevUnViewdNotificationsCount + newUnreadNotifications)
+      }
+
+      if (newPreferences.showNotifications && !preferences.showNotifications) {
+        startNotificationQuery()
       }
       preferences = newPreferences
     })

@@ -256,7 +256,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
 
       if (tx._class === core.class.TxDomainEvent) {
         const domainTx = tx as TxDomainEvent
-        const result = await session.domainRequestRaw(ctx, domainTx.domain, {
+        const { result } = await session.domainRequestRaw(ctx, domainTx.domain, {
           event: domainTx.event
         })
         await sendJson(req, res, result.value, rateLimitToHeaders(rateLimit))
@@ -274,7 +274,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     void withSession(req, res, async (ctx, session) => {
       const event: any = (await retrieveJson(req)) ?? {}
 
-      const result = await session.domainRequestRaw(ctx, COMMUNICATION_DOMAIN, {
+      const { result } = await session.domainRequestRaw(ctx, COMMUNICATION_DOMAIN, {
         event
       })
       await sendJson(req, res, result.value)
@@ -338,7 +338,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
 
       const params = req.query.params !== undefined ? JSON.parse(req.query.params as string) : {}
 
-      const result = await session.domainRequestRaw(ctx, domain, {
+      const { result } = await session.domainRequestRaw(ctx, domain, {
         [operation]: { params }
       })
       await sendJson(req, res, result.value)

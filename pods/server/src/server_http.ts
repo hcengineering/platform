@@ -205,6 +205,7 @@ export function startHttpServer (
     try {
       const token = (req.query.token as string) ?? (req.headers.authorization ?? '').split(' ')[1]
       const payload = decodeToken(token)
+
       if (payload.extra?.admin !== 'true' && payload.account !== systemAccountUuid) {
         console.warn('Non admin attempt to maintenance action', { payload })
         res.writeHead(404, {})
@@ -216,11 +217,13 @@ export function startHttpServer (
 
       switch (operation) {
         case 'maintenance': {
-          const timeMinutes = parseInt((req.query.timeout as string) ?? '5')
-          sessions.scheduleMaintenance(timeMinutes)
+          void retrieveJson(req).then((message) => {
+            const timeMinutes = parseInt((req.query.timeout as string) ?? '5')
+            sessions.scheduleMaintenance(timeMinutes, message)
 
-          res.writeHead(200)
-          res.end()
+            res.writeHead(200)
+            res.end()
+          })
           return
         }
         case 'wipe-statistics': {
@@ -244,14 +247,21 @@ export function startHttpServer (
         case 'profile-stop': {
           profiling = false
           if (sessions.profiling?.stop != null) {
-            void sessions.profiling.stop().then((profile) => {
-              ctx.warn(
-                '---------------------------------------------PROFILING SESSION STOPPED---------------------------------------------',
-                {}
-              )
-              res.writeHead(200, { 'Content-Type': 'application/json' })
-              res.end(profile ?? '{ error: "no profiling" }')
-            })
+            void sessions.profiling
+              .stop()
+              .then((profile) => {
+                ctx.warn(
+                  '---------------------------------------------PROFILING SESSION STOPPED---------------------------------------------',
+                  {}
+                )
+                res.writeHead(200, { 'Content-Type': 'application/json' })
+                res.end(profile ?? '{ error: "no profiling" }')
+              })
+              .catch((err) => {
+                ctx.error('error', { err })
+                res.writeHead(500)
+                res.end()
+              })
           } else {
             res.writeHead(404)
             res.end()
@@ -259,9 +269,20 @@ export function startHttpServer (
 
           return
         }
+        case 'force-maintenance': {
+          const wsId = req.query.wsId as WorkspaceUuid
+          void sessions.forceMaintenance(ctx, wsId ?? payload.workspace).catch((err) => {
+            ctx.error('error', { err })
+          })
+          res.writeHead(200)
+          res.end()
+          return
+        }
         case 'force-close': {
           const wsId = req.query.wsId as WorkspaceUuid
-          void sessions.forceClose(wsId ?? payload.workspace)
+          void sessions.forceClose(wsId ?? payload.workspace).catch((err) => {
+            ctx.error('error', { err })
+          })
           res.writeHead(200)
           res.end()
           return

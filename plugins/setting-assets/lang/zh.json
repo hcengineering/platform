@@ -132,6 +132,7 @@
     "BackupFileDownload": "下载文件",
     "BackupFiles": "备份文件",
     "BackupNoBackup": "当前没有可用的备份。",
+    "NonBackupedBlobs": "未备份的 Blob",
     "Calendar": "日历",
     "StartOfTheWeek": "本周开始",
     "SystemSetupString": "系统设置({day})",

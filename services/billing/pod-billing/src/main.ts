@@ -26,6 +26,7 @@ import serverToken from '@hcengineering/server-token'
 
 const setupMetadata = (): void => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'billing')
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
 }
 

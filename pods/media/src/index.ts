@@ -32,6 +32,7 @@ const topicTranscodeResult = 'stream.transcode.result'
 
 const setupMetadata = (): void => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'media')
 }
 
 async function main (): Promise<void> {

@@ -28,10 +28,11 @@ import { CalendarClient } from './calendar'
 import { getClient } from './client'
 import config from './config'
 import { addUserByEmail, getSyncHistory, setSyncHistory } from './kvsUtils'
-import { IncomingSyncManager, synced } from './sync'
+import { IncomingSyncManager } from './sync'
 import { getWorkspaceTokens } from './tokens'
 import { GoogleEmail, Token } from './types'
 import { getWorkspaceToken } from './utils'
+import { synced } from './mutex'
 
 export class WorkspaceClient {
   private readonly clients = new Map<GoogleEmail, CalendarClient>()

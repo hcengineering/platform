@@ -19,51 +19,18 @@ import { Buffer } from 'node:buffer'
 
 // Will use temporary file to store huge content into
 export class BlobClient {
-  transactorAPIUrl: string
   index: number
   constructor (
-    readonly transactorUrl: string,
-    readonly token: string,
-    readonly workspace: WorkspaceIds,
-    readonly opt?: {
-      storageAdapter?: StorageAdapter
-    }
+    readonly storageAdapter: StorageAdapter,
+    readonly workspace: WorkspaceIds
   ) {
     this.index = 0
-    let url = transactorUrl
-    if (url.endsWith('/')) {
-      url = url.slice(0, url.length - 1)
-    }
-
-    this.transactorAPIUrl = url.replaceAll('wss://', 'https://').replace('ws://', 'http://') + '/api/v1/blob'
   }
 
   async checkFile (ctx: MeasureContext, name: string): Promise<boolean> {
-    if (this.opt?.storageAdapter !== undefined) {
-      const obj = await this.opt?.storageAdapter.stat(ctx, this.workspace, name)
-      if (obj !== undefined) {
-        return true
-      }
-    }
-    for (let i = 0; i < 5; i++) {
-      try {
-        const response = await fetch(this.transactorAPIUrl + `?name=${encodeURIComponent(name)}`, {
-          headers: {
-            Authorization: 'Bearer ' + this.token,
-            Range: 'bytes=0-1'
-          }
-        })
-        if (response.status === 404) {
-          return false
-        }
-        const buff = await response.arrayBuffer()
-        return buff.byteLength > 0
-      } catch (err: any) {
-        if (i === 4) {
-          ctx.error('Failed to check file', { name, error: err })
-        }
-        await new Promise<void>((resolve) => setTimeout(resolve, 10))
-      }
+    const obj = await this.storageAdapter.stat(ctx, this.workspace, name)
+    if (obj !== undefined) {
+      return true
     }
     return false
   }
@@ -81,75 +48,22 @@ export class BlobClient {
     const chunkSize = 50 * 1024 * 1024
 
     // Use ranges to iterave through file with retry if required.
-    while (written < size || size === -1) {
+    while (written < size) {
       let i = 0
-      let response: Response | undefined
       for (; i < 5; i++) {
         try {
-          const st = Date.now()
-          let chunk: Buffer
-
-          if (this.opt?.storageAdapter !== undefined) {
-            const chunks: Buffer[] = []
-            const readable = await this.opt.storageAdapter.partial(ctx, this.workspace, name, written, chunkSize)
-            await new Promise<void>((resolve) => {
-              readable.on('data', (chunk) => {
-                chunks.push(chunk)
-              })
-              readable.on('end', () => {
-                readable.destroy()
-                resolve()
-              })
+          const chunks: Buffer[] = []
+          const readable = await this.storageAdapter.partial(ctx, this.workspace, name, written, chunkSize)
+          await new Promise<void>((resolve) => {
+            readable.on('data', (chunk) => {
+              chunks.push(chunk)
             })
-            chunk = Buffer.concat(chunks)
-          } else {
-            const header: Record<string, string> = {
-              Authorization: 'Bearer ' + this.token
-            }
-
-            if (!(size !== -1 && written === 0 && size < chunkSize)) {
-              header.Range = `bytes=${written}-${size === -1 ? written + chunkSize : Math.min(size - 1, written + chunkSize)}`
-            }
-
-            response = await fetch(this.transactorAPIUrl + `?name=${encodeURIComponent(name)}`, { headers: header })
-            if (header.Range != null) {
-              ctx.info('fetch part', { time: Date.now() - st, blobId: name, written, size })
-            }
-            if (response.status === 403) {
-              i = 5
-              // No file, so make it empty
-              throw new Error(`Unauthorized ${this.transactorAPIUrl}/${this.workspace.uuid}/${name}`)
-            }
-            if (response.status === 404) {
-              i = 5
-              // No file, so make it empty
-              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.uuid}/${name}`)
-            }
-            if (response.status === 416) {
-              if (size === -1) {
-                size = parseInt((response.headers.get('content-range') ?? '').split('*/')[1])
-                continue
-              }
-
-              // No file, so make it empty
-              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.uuid}/${name}`)
-            }
-            chunk = Buffer.from(await response.arrayBuffer())
-
-            if (header.Range == null) {
-              size = chunk.length
-            }
-            // We need to parse
-            // 'Content-Range': `bytes ${start}-${end}/${size}`
-            // To determine if something is left
-            const range = response.headers.get('Content-Range')
-            if (range !== null) {
-              const [, total] = range.split(' ')[1].split('/')
-              if (total !== undefined) {
-                size = parseInt(total)
-              }
-            }
-          }
+            readable.on('end', () => {
+              readable.destroy()
+              resolve()
+            })
+          })
+          const chunk = Buffer.concat(chunks)
 
           await new Promise<void>((resolve, reject) => {
             writable.write(chunk, (err) => {
@@ -189,44 +103,6 @@ export class BlobClient {
   }
 
   async upload (ctx: MeasureContext, name: string, size: number, contentType: string, buffer: Buffer): Promise<void> {
-    if (this.opt?.storageAdapter !== undefined) {
-      await this.opt.storageAdapter.put(ctx, this.workspace, name, buffer, contentType, size)
-    } else {
-      // TODO: We need to improve this logig, to allow restore of huge blobs
-      for (let i = 0; i < 5; i++) {
-        try {
-          const resp = await (
-            await fetch(
-              this.transactorAPIUrl +
-                `?name=${encodeURIComponent(name)}&contentType=${encodeURIComponent(contentType)}&size=${size}`,
-              {
-                keepalive: true,
-                method: 'PUT',
-                headers: {
-                  Authorization: 'Bearer ' + this.token,
-                  'Content-Type': contentType
-                },
-                body: buffer
-              }
-            )
-          ).text()
-          try {
-            const json = JSON.parse(resp)
-            if (json.error !== undefined) {
-              ctx.error('failed to upload file, error from server', { name, message: json.error })
-              return
-            }
-          } catch (err) {
-            console.log(err)
-          }
-          break
-        } catch (err: any) {
-          if (i === 4) {
-            ctx.error('failed to upload file', { name, message: err.message, cause: err.cause?.message })
-            throw err
-          }
-        }
-      }
-    }
+    await this.storageAdapter.put(ctx, this.workspace, name, buffer, contentType, size)
   }
 }

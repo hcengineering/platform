@@ -233,6 +233,7 @@ export default plugin(settingId, {
     BackupFileDownload: '' as IntlString,
     BackupFiles: '' as IntlString,
     BackupNoBackup: '' as IntlString,
+    NonBackupedBlobs: '' as IntlString,
     AddAttribute: '' as IntlString,
     Mailboxes: '' as IntlString,
     CreateMailbox: '' as IntlString,
