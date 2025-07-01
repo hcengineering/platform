@@ -94,6 +94,8 @@ function escapeHtml (text: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
+    .replace(/\r/g, '&#13;')
+    .replace(/\n/g, '&#10;')
 }
 
 function addMark (builder: NodeBuilder, mark?: MarkupMark, next?: () => void): void {
@@ -276,11 +278,25 @@ function addNodeContent (builder: NodeBuilder, node?: MarkupNode): void {
     addNodes(builder, nodes)
     builder.closeTag('tr')
   } else if (node.type === MarkupNodeType.table_cell) {
-    builder.openTag('td')
+    const colspan = toNumber(attrs.colspan) ?? 1
+    const rowspan = toNumber(attrs.rowspan) ?? 1
+    const colwidth = toNumber(attrs.colwidth)
+    builder.openTag('td', {
+      colspan: colspan !== 1 ? colspan : undefined,
+      rowspan: rowspan !== 1 ? rowspan : undefined,
+      colwidth: colwidth !== undefined && colwidth > 0 ? colwidth : undefined
+    })
     addNodes(builder, nodes)
     builder.closeTag('td')
   } else if (node.type === MarkupNodeType.table_header) {
-    builder.openTag('th')
+    const colspan = toNumber(attrs.colspan) ?? 1
+    const rowspan = toNumber(attrs.rowspan) ?? 1
+    const colwidth = toNumber(attrs.colwidth)
+    builder.openTag('th', {
+      colspan: colspan !== 1 ? colspan : undefined,
+      rowspan: rowspan !== 1 ? rowspan : undefined,
+      colwidth: colwidth !== undefined && colwidth > 0 ? colwidth : undefined
+    })
     addNodes(builder, nodes)
     builder.closeTag('th')
   } else if (node.type === MarkupNodeType.comment) {

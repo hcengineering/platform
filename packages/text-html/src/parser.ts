@@ -121,6 +121,8 @@ class HtmlParseState {
 }
 
 function nodeHandler ({ node, getAttrs, wrapContent, wrapNode }: HtmlNodeRule): HtmlTagHandler {
+  const wrapStack: boolean[] = []
+
   return {
     handleOpenTag: (state: HtmlParseState, tag: string, attributes: Record<string, string>) => {
       const attrs =
@@ -130,9 +132,12 @@ function nodeHandler ({ node, getAttrs, wrapContent, wrapNode }: HtmlNodeRule): 
             ? { ...getAttrs }
             : undefined
 
-      if (wrapNode === true) {
+      const shouldWrapNode = wrapNode === true && state.top()?.type !== MarkupNodeType.paragraph
+
+      if (shouldWrapNode) {
         state.openNode(MarkupNodeType.paragraph)
       }
+      wrapStack.push(shouldWrapNode)
 
       state.openNode(node, attrs)
 
@@ -146,8 +151,7 @@ function nodeHandler ({ node, getAttrs, wrapContent, wrapNode }: HtmlNodeRule): 
       }
 
       state.closeNode(node)
-
-      if (wrapNode === true) {
+      if (wrapStack.pop() === true) {
         state.closeNode(MarkupNodeType.paragraph)
       }
     }
