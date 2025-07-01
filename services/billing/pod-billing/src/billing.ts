@@ -15,7 +15,14 @@
 
 import type { Request, Response } from 'express'
 import { MeasureContext, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
-import { LiveKitSessionData, BillingDB, LiveKitEgressData } from './types'
+import {
+  LiveKitSessionData,
+  BillingDB,
+  LiveKitEgressData,
+  LiveKitSessionCursor,
+  BillingPeriod,
+  LiveKitEgressCursor
+} from './types'
 import { generateToken } from '@hcengineering/server-token'
 import { StorageConfig } from '@hcengineering/server-core'
 import { createDatalakeClient, DatalakeConfig, WorkspaceStats } from '@hcengineering/datalake'
@@ -29,7 +36,16 @@ export async function handleListLiveKitSessions (
   res: Response
 ): Promise<void> {
   const workspace = getWorkspaceUuid(req)
-  res.status(200).json(await db.listLiveKitSessions(ctx, workspace))
+  const period = parsePeriodParameters(req)
+  const cursor = parseLiveKitSessionsCursorParameters(req)
+
+  if (req.query.sortBy === 'minutes') {
+    res.status(200).json(await db.listLiveKitSessionsByMinutes(ctx, workspace, period, cursor))
+  } else if (req.query.sortBy === 'bandwidth') {
+    res.status(200).json(await db.listLiveKitSessionsByBandwidth(ctx, workspace, period, cursor))
+  } else {
+    res.status(200).json(await db.listLiveKitSessions(ctx, workspace, period, cursor))
+  }
 }
 
 export async function handleListLiveKitEgress (
@@ -40,7 +56,14 @@ export async function handleListLiveKitEgress (
   res: Response
 ): Promise<void> {
   const workspace = getWorkspaceUuid(req)
-  res.status(200).json(await db.listLiveKitEgress(ctx, workspace))
+  const period = parsePeriodParameters(req)
+  const cursor = parseLiveKitEgressCursorParameters(req)
+
+  if (req.query.sortBy === 'duration') {
+    res.status(200).json(await db.listLiveKitEgressByDuration(ctx, workspace, period, cursor))
+  } else {
+    res.status(200).json(await db.listLiveKitEgress(ctx, workspace, period, cursor))
+  }
 }
 
 export async function handleSetLiveKitSessions (
@@ -75,8 +98,8 @@ export async function handleGetStats (
   res: Response
 ): Promise<void> {
   const workspace = getWorkspaceUuid(req)
-  const { fromDate, toDate } = parseDateParameters(req)
-  const liveKitStats = await db.getLiveKitStats(ctx, workspace, fromDate, toDate)
+  const period = parsePeriodParameters(req)
+  const liveKitStats = await db.getLiveKitStats(ctx, workspace, period)
   const datalakeStats = await collectDatalakeStats(ctx, workspace, storageConfigs)
   res.status(200).json({ liveKitStats, datalakeStats })
 }
@@ -89,8 +112,8 @@ export async function handleGetLiveKitStats (
   res: Response
 ): Promise<void> {
   const workspace = getWorkspaceUuid(req)
-  const { fromDate, toDate } = parseDateParameters(req)
-  res.status(200).json(await db.getLiveKitStats(ctx, workspace, fromDate, toDate))
+  const period = parsePeriodParameters(req)
+  res.status(200).json(await db.getLiveKitStats(ctx, workspace, period))
 }
 
 export async function handleGetDatalakeStats (
@@ -137,20 +160,39 @@ function getWorkspaceUuid (req: Request): WorkspaceUuid {
   throw new Error('Unknown workspace')
 }
 
-function parseDateParameters (req: Request): { fromDate: Date, toDate: Date } {
-  let fromDate: Date
+function parseLiveKitSessionsCursorParameters (req: Request): LiveKitSessionCursor {
+  return {
+    limit: req.query.limit !== undefined ? parseInt(req.query.limit as string) : 100,
+    sessionId: req.query.cursorSessionId as string,
+    sessionStart: typeof req.query.cursorSessionStart === 'string' ? new Date(Date.parse(req.query.cursorSessionStart)) : undefined,
+    minutes: req.query.cursorMinutes !== undefined ? parseInt(req.query.cursorMinutes as string) : undefined,
+    bandwidth: req.query.cursorBandwidth !== undefined ? parseInt(req.query.cursorBandwidth as string) : undefined
+  }
+}
+
+function parseLiveKitEgressCursorParameters (req: Request): LiveKitEgressCursor {
+  return {
+    limit: req.query.limit !== undefined ? parseInt(req.query.limit as string) : 100,
+    egressId: req.query.cursorEgressId as string,
+    egressStart: typeof req.query.cursorEgressStart === 'string' ? new Date(Date.parse(req.query.cursorEgressStart)) : undefined,
+    duration: req.query.cursorDuration !== undefined ? parseInt(req.query.cursorDuration as string) : undefined
+  }
+}
+
+function parsePeriodParameters (req: Request): BillingPeriod {
+  let start: Date
   if (typeof req.query.fromDate === 'string') {
-    fromDate = new Date(Date.parse(req.query.fromDate))
+    start = new Date(Date.parse(req.query.fromDate))
   } else {
-    fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
   }
 
-  let toDate: Date
+  let end: Date
   if (typeof req.query.toDate === 'string') {
-    toDate = new Date(Date.parse(req.query.toDate))
+    end = new Date(Date.parse(req.query.toDate))
   } else {
-    toDate = new Date(Date.now())
+    end = new Date(Date.now())
   }
 
-  return { fromDate, toDate }
+  return { start, end }
 }

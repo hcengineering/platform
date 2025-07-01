@@ -19,7 +19,7 @@ import {
   LiveKitUsageData,
   BillingDB,
   LiveKitSessionsUsageData,
-  LiveKitEgressUsageData
+  LiveKitEgressUsageData, LiveKitSessionCursor, LiveKitEgressCursor, BillingPeriod
 } from '../types'
 import postgres, { type Row, Sql } from 'postgres'
 import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
@@ -97,20 +97,18 @@ export class PostgresDB implements BillingDB {
   async getLiveKitStats (
     ctx: MeasureContext,
     workspace: WorkspaceUuid,
-    start: Date,
-    end: Date
+    period: BillingPeriod
   ): Promise<LiveKitUsageData> {
     return {
-      sessions: await this.getDailySessionTotals(ctx, workspace, start, end),
-      egress: await this.getDailyEgressTotals(ctx, workspace, start, end)
+      sessions: await this.getDailySessionTotals(ctx, workspace, period),
+      egress: await this.getDailyEgressTotals(ctx, workspace, period)
     }
   }
 
   async getDailySessionTotals (
     ctx: MeasureContext,
     workspace: WorkspaceUuid,
-    start: Date,
-    end: Date
+    period: BillingPeriod
   ): Promise<LiveKitSessionsUsageData[]> {
     const query = `
       SELECT
@@ -126,7 +124,7 @@ export class PostgresDB implements BillingDB {
       ORDER BY day;
     `
 
-    const params = [workspace, start, end]
+    const params = [workspace, period.start, period.end]
 
     const sessionTotals = await this.execute<{ day: string, bandwidth: string, minutes: string }[]>(query, params)
     return sessionTotals.map((s) => {
@@ -137,8 +135,7 @@ export class PostgresDB implements BillingDB {
   async getDailyEgressTotals (
     ctx: MeasureContext,
     workspace: WorkspaceUuid,
-    start: Date,
-    end: Date
+    period: BillingPeriod
   ): Promise<LiveKitEgressUsageData[]> {
     const query = `
       SELECT
@@ -153,7 +150,7 @@ export class PostgresDB implements BillingDB {
       ORDER BY day;
     `
 
-    const params = [workspace, start, end]
+    const params = [workspace, period.start, period.end]
 
     const egressTotals = await this.execute<{ day: string, minutes: string }[]>(query, params)
 
@@ -162,24 +159,191 @@ export class PostgresDB implements BillingDB {
     })
   }
 
-  async listLiveKitSessions (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<LiveKitSessionData[] | null> {
-    const query = `
+  async listLiveKitSessionsByMinutes (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitSessionCursor): Promise<LiveKitSessionData[] | null> {
+    const { minutes, sessionId, limit } = cursor
+
+    if (minutes === undefined || sessionId === undefined) {
+      const query = `
         SELECT workspace, session_id, session_start, session_end, room, bandwidth, minutes
         FROM billing.livekit_session
-        WHERE workspace = $1
+        WHERE 
+          workspace = $1
+          AND session_start >= $2
+          AND session_start <= $3
+        ORDER BY minutes DESC, session_id DESC
+        LIMIT $4
       `
-    const params = [workspace]
 
+      const params = [workspace, period.start, period.end, limit]
+      return await this.execute<LiveKitSessionData[]>(query, params)
+    }
+
+    const query = `
+      SELECT workspace, session_id, session_start, session_end, room, bandwidth, minutes
+      FROM billing.livekit_session
+      WHERE
+        workspace = $1
+        AND session_start >= $2
+        AND session_start <= $3
+        AND (
+        minutes < $4
+          OR (minutes = $4 AND session_id < $5)
+        )
+      ORDER BY minutes DESC, session_id DESC
+        LIMIT $6
+    `
+
+    const params = [workspace, period.start, period.end, minutes, sessionId, limit]
     return await this.execute<LiveKitSessionData[]>(query, params)
   }
 
-  async listLiveKitEgress (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<LiveKitEgressData[] | null> {
+  async listLiveKitSessionsByBandwidth (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitSessionCursor): Promise<LiveKitSessionData[] | null> {
+    const { bandwidth, sessionId, limit } = cursor
+
+    if (bandwidth === undefined || sessionId === undefined) {
+      const query = `
+        SELECT workspace, session_id, session_start, session_end, room, bandwidth, minutes
+        FROM billing.livekit_session
+        WHERE
+          workspace = $1
+          AND session_start >= $2
+          AND session_start <= $3
+        ORDER BY bandwidth DESC, session_id DESC
+          LIMIT $4
+      `
+
+      const params = [workspace, period.start, period.end, limit]
+      return await this.execute<LiveKitSessionData[]>(query, params)
+    }
+
     const query = `
+      SELECT workspace, session_id, session_start, session_end, room, bandwidth, minutes
+      FROM billing.livekit_session
+      WHERE
+        workspace = $1
+        AND session_start >= $2
+        AND session_start <= $3
+        AND (
+        bandwidth < $4
+          OR (bandwidth = $4 AND session_id < $5)
+        )
+      ORDER BY bandwidth DESC, session_id DESC
+        LIMIT $6
+    `
+
+    const params = [workspace, period.start, period.end, bandwidth, sessionId, limit]
+    return await this.execute<LiveKitSessionData[]>(query, params)
+  }
+
+  async listLiveKitSessions (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitSessionCursor): Promise<LiveKitSessionData[] | null> {
+    const { sessionStart, sessionId, limit } = cursor
+
+    if (sessionStart === undefined || sessionId === undefined) {
+      const query = `
+        SELECT workspace, session_id, session_start, session_end, room, bandwidth, minutes
+        FROM billing.livekit_session
+        WHERE 
+          workspace = $1
+          AND session_start >= $2
+          AND session_start <= $3
+        ORDER BY session_start DESC, session_id DESC
+        LIMIT $4
+      `
+      const params = [workspace, period.start, period.end, limit]
+      return await this.execute<LiveKitSessionData[]>(query, params)
+    }
+
+    const query = `
+      SELECT workspace, session_id, session_start, session_end, room, bandwidth, minutes
+      FROM billing.livekit_session
+      WHERE
+        workspace = $1
+        AND session_start >= $2
+        AND session_start <= $3
+        AND (
+        session_start < $4
+          OR (session_start = $4 AND session_id < $5)
+        )
+      ORDER BY session_start DESC, session_id DESC
+        LIMIT $6
+    `
+
+    const params = [workspace, period.start, period.end, sessionStart, sessionId, limit]
+    return await this.execute<LiveKitSessionData[]>(query, params)
+  }
+
+  async listLiveKitEgressByDuration (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitEgressCursor): Promise<LiveKitEgressData[] | null> {
+    const { duration, egressId, limit } = cursor
+
+    if (duration === undefined || egressId === undefined) {
+      const query = `
         SELECT workspace, egress_id, egress_start, egress_end, room, duration
         FROM billing.livekit_egress
-        WHERE workspace = $1
+        WHERE 
+          workspace = $1
+          AND egress_start >= $2
+          AND egress_start <= $3
+        ORDER BY duration DESC, session_id DESC
+        LIMIT $4
       `
-    const params = [workspace]
+
+      const params = [workspace, period.start, period.end, limit]
+      return await this.execute<LiveKitEgressData[]>(query, params)
+    }
+
+    const query = `
+      SELECT workspace, egress_id, egress_start, egress_end, room, duration
+      FROM billing.livekit_egress
+      WHERE
+        workspace = $1
+        AND egress_start >= $2
+        AND egress_start <= $3
+        AND (
+        duration < $4
+          OR (duration = $4 AND egress_id < $5)
+        )
+      ORDER BY duration DESC, egress_id DESC
+        LIMIT $6
+    `
+
+    const params = [workspace, period.start, period.end, duration, egressId, limit]
+    return await this.execute<LiveKitEgressData[]>(query, params)
+  }
+
+  async listLiveKitEgress (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitEgressCursor): Promise<LiveKitEgressData[] | null> {
+    const { egressStart, egressId, limit } = cursor
+
+    if (egressStart === undefined || egressId === undefined) {
+      const query = `
+        SELECT workspace, egress_id, egress_start, egress_end, room, duration
+        FROM billing.livekit_egress
+        WHERE 
+          workspace = $1
+          AND egress_start >= $2
+          AND egress_start <= $3
+        ORDER BY egress_start DESC, egress_id DESC
+        LIMIT $4
+      `
+      const params = [workspace, period.start, period.end, limit]
+      return await this.execute<LiveKitEgressData[]>(query, params)
+    }
+
+    const query = `
+      SELECT workspace, egress_id, egress_start, egress_end, room, duration
+      FROM billing.livekit_egress
+      WHERE
+        workspace = $1
+        AND egress_start >= $2
+        AND egress_start <= $3
+        AND (
+        egress_start < $4
+          OR (egress_start = $4 AND egress_id < $5)
+        )
+      ORDER BY egress_start DESC, egress_id DESC
+        LIMIT $6
+    `
+
+    const params = [workspace, period.start, period.end, egressStart, egressId, limit]
     return await this.execute<LiveKitEgressData[]>(query, params)
   }
 

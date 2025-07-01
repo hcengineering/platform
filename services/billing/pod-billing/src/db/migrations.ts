@@ -14,7 +14,7 @@
 //
 
 export function getMigrations (): [string, string][] {
-  return [migrationV1()]
+  return [migrationV1(), migrationV2()]
 }
 
 function migrationV1 (): [string, string] {
@@ -49,4 +49,16 @@ function migrationV1 (): [string, string] {
     CREATE INDEX IF NOT EXISTS idx_livekit_egress_room ON billing.livekit_egress (room);
   `
   return ['init_tables_01', sql]
+}
+
+function migrationV2 (): [string, string] {
+  const sql = `
+    CREATE INDEX IF NOT EXISTS idx_livekit_session_start_workspace ON billing.livekit_session (workspace, session_start DESC, session_id DESC);
+    CREATE INDEX IF NOT EXISTS idx_livekit_session_minutes_workspace ON billing.livekit_session (workspace, minutes DESC, session_id DESC);
+    CREATE INDEX IF NOT EXISTS idx_livekit_session_bandwidth_workspace ON billing.livekit_session (workspace, bandwidth DESC, session_id DESC);
+
+    CREATE INDEX IF NOT EXISTS idx_livekit_egress_start_workspace ON billing.livekit_egress (workspace, egress_start DESC, egress_id DESC);
+    CREATE INDEX IF NOT EXISTS idx_livekit_egress_duration_workspace ON billing.livekit_egress (workspace, duration DESC, egress_id DESC);
+  `
+  return ['add_indices_02', sql]
 }

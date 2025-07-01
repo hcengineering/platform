@@ -15,6 +15,11 @@
 
 import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 
+export interface BillingPeriod {
+  start: Date
+  end: Date
+}
+
 export interface LiveKitSessionsUsageData {
   day: string
   bandwidth: number
@@ -50,10 +55,28 @@ export interface LiveKitEgressData {
   duration: number
 }
 
+export interface LiveKitSessionCursor {
+  limit: number
+  sessionId: string | undefined
+  sessionStart: Date | undefined
+  minutes: number | undefined
+  bandwidth: number | undefined
+}
+
+export interface LiveKitEgressCursor {
+  limit: number
+  egressId: string | undefined
+  egressStart: Date | undefined
+  duration: number | undefined
+}
+
 export interface BillingDB {
-  getLiveKitStats: (ctx: MeasureContext, workspace: WorkspaceUuid, start: Date, end: Date) => Promise<LiveKitUsageData>
-  listLiveKitSessions: (ctx: MeasureContext, workspace: WorkspaceUuid) => Promise<LiveKitSessionData[] | null>
-  listLiveKitEgress: (ctx: MeasureContext, workspace: WorkspaceUuid) => Promise<LiveKitEgressData[] | null>
+  getLiveKitStats: (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod) => Promise<LiveKitUsageData>
+  listLiveKitSessionsByMinutes: (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitSessionCursor) => Promise<LiveKitSessionData[] | null>
+  listLiveKitSessionsByBandwidth: (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitSessionCursor) => Promise<LiveKitSessionData[] | null>
+  listLiveKitSessions: (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitSessionCursor) => Promise<LiveKitSessionData[] | null>
+  listLiveKitEgress: (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitEgressCursor) => Promise<LiveKitEgressData[] | null>
+  listLiveKitEgressByDuration: (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitEgressCursor) => Promise<LiveKitEgressData[] | null>
   setLiveKitSessions: (ctx: MeasureContext, data: LiveKitSessionData[]) => Promise<void>
   setLiveKitEgress: (ctx: MeasureContext, data: LiveKitEgressData[]) => Promise<void>
 }

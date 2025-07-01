@@ -14,7 +14,14 @@
 //
 
 import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
-import { BillingDB, LiveKitEgressData, LiveKitSessionData, LiveKitUsageData } from '../types'
+import {
+  BillingDB, BillingPeriod,
+  LiveKitEgressCursor,
+  LiveKitEgressData,
+  LiveKitSessionCursor,
+  LiveKitSessionData,
+  LiveKitUsageData
+} from '../types'
 
 export class LoggedDB implements BillingDB {
   constructor (
@@ -25,18 +32,29 @@ export class LoggedDB implements BillingDB {
   async getLiveKitStats (
     ctx: MeasureContext,
     workspace: WorkspaceUuid,
-    start: Date,
-    end: Date
+    period: BillingPeriod
   ): Promise<LiveKitUsageData> {
-    return await ctx.with('db.getLiveKitUsage', {}, () => this.db.getLiveKitStats(this.ctx, workspace, start, end))
+    return await ctx.with('db.getLiveKitUsage', {}, () => this.db.getLiveKitStats(this.ctx, workspace, period))
   }
 
-  async listLiveKitSessions (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<LiveKitSessionData[] | null> {
-    return await ctx.with('db.listLiveKitSessions', {}, () => this.db.listLiveKitSessions(this.ctx, workspace))
+  async listLiveKitSessionsByMinutes (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitSessionCursor): Promise<LiveKitSessionData[] | null> {
+    return await ctx.with('db.listLiveKitSessionsByMinutes', {}, () => this.db.listLiveKitSessionsByMinutes(this.ctx, workspace, period, cursor))
   }
 
-  async listLiveKitEgress (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<LiveKitEgressData[] | null> {
-    return await ctx.with('db.listLiveKitEgress', {}, () => this.db.listLiveKitEgress(this.ctx, workspace))
+  async listLiveKitSessionsByBandwidth (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitSessionCursor): Promise<LiveKitSessionData[] | null> {
+    return await ctx.with('db.listLiveKitSessionsByBandwidth', {}, () => this.db.listLiveKitSessionsByBandwidth(this.ctx, workspace, period, cursor))
+  }
+
+  async listLiveKitSessions (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitSessionCursor): Promise<LiveKitSessionData[] | null> {
+    return await ctx.with('db.listLiveKitSessions', {}, () => this.db.listLiveKitSessions(this.ctx, workspace, period, cursor))
+  }
+
+  async listLiveKitEgressByDuration (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitEgressCursor): Promise<LiveKitEgressData[] | null> {
+    return await ctx.with('db.listLiveKitEgressByDuration', {}, () => this.db.listLiveKitEgressByDuration(this.ctx, workspace, period, cursor))
+  }
+
+  async listLiveKitEgress (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitEgressCursor): Promise<LiveKitEgressData[] | null> {
+    return await ctx.with('db.listLiveKitEgress', {}, () => this.db.listLiveKitEgress(this.ctx, workspace, period, cursor))
   }
 
   async setLiveKitSessions (ctx: MeasureContext, data: LiveKitSessionData[]): Promise<void> {

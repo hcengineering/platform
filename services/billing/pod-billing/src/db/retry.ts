@@ -14,7 +14,14 @@
 //
 
 import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
-import { BillingDB, LiveKitEgressData, LiveKitSessionData, LiveKitUsageData } from '../types'
+import {
+  BillingDB, BillingPeriod,
+  LiveKitEgressCursor,
+  LiveKitEgressData,
+  LiveKitSessionCursor,
+  LiveKitSessionData,
+  LiveKitUsageData
+} from '../types'
 
 interface RetryOptions {
   retries: number
@@ -46,18 +53,29 @@ export class RetryDB implements BillingDB {
   async getLiveKitStats (
     ctx: MeasureContext,
     workspace: WorkspaceUuid,
-    start: Date,
-    end: Date
+    period: BillingPeriod
   ): Promise<LiveKitUsageData> {
-    return await retry(() => this.db.getLiveKitStats(ctx, workspace, start, end), this.options)
+    return await retry(() => this.db.getLiveKitStats(ctx, workspace, period), this.options)
   }
 
-  async listLiveKitSessions (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<LiveKitSessionData[] | null> {
-    return await retry(() => this.db.listLiveKitSessions(ctx, workspace), this.options)
+  async listLiveKitSessionsByMinutes (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitSessionCursor): Promise<LiveKitSessionData[] | null> {
+    return await retry(() => this.db.listLiveKitSessionsByMinutes(ctx, workspace, period, cursor), this.options)
   }
 
-  async listLiveKitEgress (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<LiveKitEgressData[] | null> {
-    return await retry(() => this.db.listLiveKitEgress(ctx, workspace), this.options)
+  async listLiveKitSessionsByBandwidth (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitSessionCursor): Promise<LiveKitSessionData[] | null> {
+    return await retry(() => this.db.listLiveKitSessionsByBandwidth(ctx, workspace, period, cursor), this.options)
+  }
+
+  async listLiveKitSessions (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitSessionCursor): Promise<LiveKitSessionData[] | null> {
+    return await retry(() => this.db.listLiveKitSessions(ctx, workspace, period, cursor), this.options)
+  }
+
+  async listLiveKitEgressByDuration (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitEgressCursor): Promise<LiveKitEgressData[] | null> {
+    return await retry(() => this.db.listLiveKitEgressByDuration(ctx, workspace, period, cursor), this.options)
+  }
+
+  async listLiveKitEgress (ctx: MeasureContext, workspace: WorkspaceUuid, period: BillingPeriod, cursor: LiveKitEgressCursor): Promise<LiveKitEgressData[] | null> {
+    return await retry(() => this.db.listLiveKitEgress(ctx, workspace, period, cursor), this.options)
   }
 
   async setLiveKitSessions (ctx: MeasureContext, data: LiveKitSessionData[]): Promise<void> {
