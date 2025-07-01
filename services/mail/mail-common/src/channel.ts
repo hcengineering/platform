@@ -19,7 +19,7 @@ import chat from '@hcengineering/chat'
 import mail from '@hcengineering/mail'
 import { PersonSpace } from '@hcengineering/contact'
 import { SyncMutex } from './mutex'
-import { normalizeEmail } from './utils'
+import { MessageTimeShift, normalizeEmail } from './utils'
 
 const createMutex = new SyncMutex()
 
@@ -144,7 +144,7 @@ export class ChannelCache {
           modifiedBy: personId
         },
         generateId(),
-        Date.now(),
+        Date.now() + MessageTimeShift.Channel,
         personId
       )
 
@@ -155,7 +155,7 @@ export class ChannelCache {
         space,
         mail.tag.MailChannel,
         {},
-        Date.now(),
+        Date.now() + MessageTimeShift.MailTag,
         personId
       )
 
