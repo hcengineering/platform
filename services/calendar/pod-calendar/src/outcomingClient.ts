@@ -305,7 +305,7 @@ export class OutcomingClient {
       })
       event.start = newStart
     }
-    const currentEnd = parseEventDate(event.start)
+    const currentEnd = parseEventDate(event.end)
     if (currentEnd !== current.dueDate) {
       res = true
       const newEnd = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))

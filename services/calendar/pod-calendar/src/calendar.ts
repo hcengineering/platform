@@ -300,7 +300,7 @@ export class CalendarClient {
         calendarId: current.calendar,
         eventId: current.eventId,
         user: this.user.email,
-        workspace: this.workspace,
+        workspace: this.user.workspace,
         event: current._id,
         prev: event.summary,
         current: current.title
@@ -316,7 +316,7 @@ export class CalendarClient {
           calendarId: current.calendar,
           eventId: current.eventId,
           user: this.user.email,
-          workspace: this.workspace,
+          workspace: this.user.workspace,
           event: current._id,
           prev: event.visibility,
           current: newVisibility
@@ -344,7 +344,7 @@ export class CalendarClient {
         calendarId: current.calendar,
         eventId: current.eventId,
         user: this.user.email,
-        workspace: this.workspace,
+        workspace: this.user.workspace,
         event: current._id,
         prev: event.description,
         current: description
@@ -357,7 +357,7 @@ export class CalendarClient {
         calendarId: current.calendar,
         eventId: current.eventId,
         user: this.user.email,
-        workspace: this.workspace,
+        workspace: this.user.workspace,
         event: current._id,
         prev: event.location,
         current: current.location
@@ -373,7 +373,7 @@ export class CalendarClient {
             calendarId: current.calendar,
             eventId: current.eventId,
             user: this.user.email,
-            workspace: this.workspace,
+            workspace: this.user.workspace,
             event: current._id,
             prev: event.attendees,
             current: attendee
@@ -390,14 +390,14 @@ export class CalendarClient {
         calendarId: current.calendar,
         eventId: current.eventId,
         user: this.user.email,
-        workspace: this.workspace,
+        workspace: this.user.workspace,
         event: current._id,
         prev: event.start,
         current: newStart
       })
       event.start = newStart
     }
-    const currentEnd = parseEventDate(event.start)
+    const currentEnd = parseEventDate(event.end)
     if (currentEnd !== current.dueDate) {
       res = true
       const newEnd = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))
@@ -405,7 +405,7 @@ export class CalendarClient {
         calendarId: current.calendar,
         eventId: current.eventId,
         user: this.user.email,
-        workspace: this.workspace,
+        workspace: this.user.workspace,
         event: current._id,
         prev: event.end,
         current: newEnd
@@ -421,7 +421,7 @@ export class CalendarClient {
           calendarId: current.calendar,
           eventId: current.eventId,
           user: this.user.email,
-          workspace: this.workspace,
+          workspace: this.user.workspace,
           event: current._id,
           prev: event.recurrence,
           current: newRec
