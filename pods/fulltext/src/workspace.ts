@@ -38,7 +38,7 @@ import {
 import { FullTextIndexPipeline } from '@hcengineering/server-indexer'
 import { getConfig } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
-import { createRestClient as createCommunicationClient } from '@hcengineering/communication-rest-client'
+import { Api as CommunicationApi } from '@hcengineering/communication-server'
 
 import { fulltextModelFilter } from './utils'
 
@@ -99,10 +99,12 @@ export class WorkspaceIndexer {
 
     const token = generateToken(systemAccountUuid, workspace.uuid, { service: 'fulltext' })
     const transactorEndpoint = await endpointProvider(token)
-    const communicationClient =
-      transactorEndpoint !== undefined
-        ? createCommunicationClient(transactorEndpoint, workspace.uuid, token)
-        : undefined
+
+    const communicationApi = await CommunicationApi.create(ctx, workspace.uuid, dbURL, {
+      broadcast: () => {},
+      enqueue: () => {},
+      registerAsyncRequest: () => {}
+    })
 
     result.fulltext = new FullTextIndexPipeline(
       ftadapter,
@@ -142,7 +144,7 @@ export class WorkspaceIndexer {
           })
         }
       },
-      communicationClient,
+      communicationApi,
       listener
     )
     return result

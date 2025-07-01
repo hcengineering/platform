@@ -61,21 +61,23 @@ import type {
 import { RateLimiter, SessionDataImpl } from '@hcengineering/server-core'
 import { jsonToText, markupToJSON, markupToText } from '@hcengineering/text'
 import card, { type Card } from '@hcengineering/card'
-import { type RestClient as CommunicationClient } from '@hcengineering/communication-rest-client'
 import { findSearchPresenter, updateDocWithPresenter } from '../mapper'
 import { type FullTextPipeline } from './types'
 import { createIndexedDoc, createIndexedDocFromMessage, getContent } from './utils'
-import { type Markdown, type CardID } from '@hcengineering/communication-types'
-import { parseYaml } from '@hcengineering/communication-yaml'
-import { applyPatches } from '@hcengineering/communication-shared'
-import { markdownToMarkup } from '@hcengineering/text-markdown'
 import {
+  type ServerApi as CommunicationApi,
+  type SessionData as CommunicationSession
+  ,
   type CreateMessageEvent,
   type UpdatePatchEvent,
   type RemovePatchEvent,
   MessageEventType,
   type Event
 } from '@hcengineering/communication-sdk-types'
+import { type Markdown, type CardID } from '@hcengineering/communication-types'
+import { parseYaml } from '@hcengineering/communication-yaml'
+import { applyPatches } from '@hcengineering/communication-shared'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 
 export * from './types'
 export * from './utils'
@@ -182,6 +184,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   contexts: Map<Ref<Class<Doc>>, FullTextSearchContext>
 
+  communicationSession: CommunicationSession
+
   constructor (
     readonly fulltextAdapter: FullTextAdapter,
     private readonly storage: DbAdapter,
@@ -192,10 +196,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     readonly storageAdapter: StorageAdapter,
     readonly contentAdapter: ContentTextAdapter,
     readonly broadcastUpdate: (ctx: MeasureContext, classes: Ref<Class<Doc>>[]) => void,
-    readonly communicationClient?: CommunicationClient,
+    readonly communicationApi: CommunicationApi,
     readonly listener?: FulltextListener
   ) {
     this.contexts = new Map(model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it]))
+    this.communicationSession = { account: systemAccount, asyncData: [] }
   }
 
   async getIndexClassess (): Promise<{ domain: Domain, classes: Ref<Class<Doc>>[] }[]> {
@@ -497,100 +502,104 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     docs: Card[],
     pushQueue: ElasticPushQueue
   ): Promise<number> {
-    const communicationClient = this.communicationClient
-    if (communicationClient === undefined) {
-      return 0
-    }
     let processed = 0
+    const rateLimit = new RateLimiter(10)
     for (const doc of docs) {
       if (this.cancelling) {
         return processed
       }
-      await ctx.with('process-communication', { _class: doc._class }, async (ctx) => {
-        let groups = await communicationClient.findMessagesGroups({
-          card: doc._id as CardID,
-          limit: 100,
-          order: SortingOrder.Ascending
-        })
-        while (groups.length > 0) {
-          for (const group of groups) {
-            if (this.cancelling) {
-              return processed
-            }
-            const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
-            const messagesFile = Buffer.concat(blob as any).toString()
-            const messagesParsedFile = parseYaml(messagesFile)
-            let patchedMessages
-            if (group.patches !== undefined && group.patches.length > 0) {
-              const patchesByMessage = groupByArray(group.patches, (it) => it.messageId)
-              patchedMessages = messagesParsedFile.messages.map((message) => {
-                const patches = patchesByMessage.get(message.id) ?? []
-                if (patches.length === 0) {
-                  return message
+      await rateLimit.exec(async () => {
+        await ctx.with('process-communication', { _class: doc._class, _id: doc._id }, async (ctx) => {
+          try {
+            let groups = await this.communicationApi.findMessagesGroups(this.communicationSession, {
+              card: doc._id as CardID,
+              limit: 100,
+              order: SortingOrder.Ascending
+            })
+            while (groups.length > 0) {
+              for (const group of groups) {
+                if (this.cancelling) {
+                  return processed
+                }
+                const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
+                const messagesFile = Buffer.concat(blob as any).toString()
+                const messagesParsedFile = parseYaml(messagesFile)
+                let patchedMessages
+                if (group.patches !== undefined && group.patches.length > 0) {
+                  const patchesByMessage = groupByArray(group.patches, (it) => it.messageId)
+                  patchedMessages = messagesParsedFile.messages.map((message) => {
+                    const patches = patchesByMessage.get(message.id) ?? []
+                    if (patches.length === 0) {
+                      return message
+                    } else {
+                      return applyPatches(message, patches)
+                    }
+                  })
                 } else {
-                  return applyPatches(message, patches)
+                  patchedMessages = messagesParsedFile.messages
+                }
+                for (const message of patchedMessages) {
+                  if (message.removed) {
+                    continue
+                  }
+                  const indexedDoc = createIndexedDocFromMessage(doc._id, doc.space, doc._class, message)
+                  await this.processCommunicationMessage(ctx, message.content, indexedDoc)
+                  if (this.listener?.onIndexing !== undefined) {
+                    await this.listener.onIndexing(indexedDoc)
+                  }
+                  await pushQueue.push(indexedDoc)
+                  processed += 1
+                }
+              }
+              if (this.cancelling) {
+                return processed
+              }
+              groups = await this.communicationApi.findMessagesGroups(this.communicationSession, {
+                card: doc._id as CardID,
+                limit: 100,
+                order: SortingOrder.Ascending,
+                fromDate: {
+                  greater: groups[groups.length - 1].toDate
                 }
               })
-            } else {
-              patchedMessages = messagesParsedFile.messages
             }
-            for (const message of patchedMessages) {
-              if (message.removed) {
-                continue
+            let messages = await this.communicationApi.findMessages(this.communicationSession, {
+              card: doc._id as CardID,
+              limit: 100,
+              order: SortingOrder.Ascending
+            })
+            while (messages.length > 0) {
+              for (const message of messages) {
+                if (this.cancelling) {
+                  return processed
+                }
+                const indexedDoc = createIndexedDocFromMessage(doc._id, doc.space, doc._class, message)
+                await this.processCommunicationMessage(ctx, message.content, indexedDoc)
+                if (this.listener?.onIndexing !== undefined) {
+                  await this.listener.onIndexing(indexedDoc)
+                }
+                await pushQueue.push(indexedDoc)
+                processed += 1
               }
-              const indexedDoc = createIndexedDocFromMessage(doc._id, doc.space, doc._class, message)
-              await this.processCommunicationMessage(ctx, message.content, indexedDoc)
-              if (this.listener?.onIndexing !== undefined) {
-                await this.listener.onIndexing(indexedDoc)
-              }
-              await pushQueue.push(indexedDoc)
-              processed += 1
+              messages = await this.communicationApi.findMessages(this.communicationSession, {
+                card: doc._id as CardID,
+                limit: 100,
+                order: SortingOrder.Ascending,
+                created: {
+                  greater: messages[messages.length - 1].created
+                }
+              })
             }
-          }
-          if (this.cancelling) {
-            return processed
-          }
-          groups = await communicationClient.findMessagesGroups({
-            card: doc._id as CardID,
-            limit: 100,
-            order: SortingOrder.Ascending,
-            fromDate: {
-              greater: groups[groups.length - 1].toDate
-            }
-          })
-        }
-        let messages = await communicationClient.findMessages({
-          card: doc._id as CardID,
-          limit: 100,
-          order: SortingOrder.Ascending
-        })
-        while (messages.length > 0) {
-          for (const message of messages) {
             if (this.cancelling) {
               return processed
             }
-            const indexedDoc = createIndexedDocFromMessage(doc._id, doc.space, doc._class, message)
-            await this.processCommunicationMessage(ctx, message.content, indexedDoc)
-            if (this.listener?.onIndexing !== undefined) {
-              await this.listener.onIndexing(indexedDoc)
-            }
-            await pushQueue.push(indexedDoc)
-            processed += 1
+          } catch (error: any) {
+            ctx.error('Failed to process communication messages', { error })
           }
-          messages = await communicationClient.findMessages({
-            card: doc._id as CardID,
-            limit: 100,
-            order: SortingOrder.Ascending,
-            created: {
-              greater: messages[messages.length - 1].created
-            }
-          })
-        }
-        if (this.cancelling) {
-          return processed
-        }
+        })
       })
     }
+    await rateLimit.waitProcessing()
     return processed
   }
 
@@ -672,7 +681,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           }
           await pushQueue.push(indexedDoc)
         } else if (tx.event.type === MessageEventType.UpdatePatch) {
-          const event = tx.event as UpdatePatchEvent
+          const event = tx.event
           const message = {
             id: event.messageId,
             cardId: event.cardId,
