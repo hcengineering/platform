@@ -13,7 +13,14 @@
 // limitations under the License.
 //
 
-import core, { type Blob, type Doc, type MeasureContext, type TxCUD, type TxCreateDoc } from '@hcengineering/core'
+import core, {
+  type Blob,
+  type Doc,
+  type MeasureContext,
+  type TxCUD,
+  type TxCreateDoc,
+  type WorkspaceUuid
+} from '@hcengineering/core'
 import { PlatformQueueProducer } from '@hcengineering/server-core'
 import { VideoTranscodeRequest, VideoTranscodeResult } from './types'
 
@@ -28,7 +35,7 @@ function shouldTranscode (contentType: string): boolean {
 
 export async function handleTx (
   ctx: MeasureContext,
-  workspaceUuid: string,
+  workspaceUuid: WorkspaceUuid,
   tx: TxCUD<Doc>,
   producer: PlatformQueueProducer<VideoTranscodeRequest>
 ): Promise<void> {
