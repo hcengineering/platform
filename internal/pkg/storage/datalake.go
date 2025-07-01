@@ -84,7 +84,7 @@ func getObjectKeyFromPath(s string) string {
 }
 
 // PutFile uploads file to the datalake
-func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string) error {
+func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string, options PutOptions) error {
 	// #nosec
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -127,6 +127,9 @@ func (d *DatalakeStorage) PutFile(ctx context.Context, fileName string) error {
 	req.Header.SetMethod(fasthttp.MethodPost)
 	req.Header.Add("Authorization", "Bearer "+d.token)
 	req.Header.SetContentType(writer.FormDataContentType())
+	if options.NoCache {
+		req.Header.Add("Cache-Control", "max-age=0, must-revalidate")
+	}
 	req.SetBody(body.Bytes())
 
 	if err := d.client.Do(req, res); err != nil {

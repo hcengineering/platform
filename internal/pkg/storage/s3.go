@@ -84,7 +84,7 @@ func (u *S3Storage) DeleteFile(ctx context.Context, fileName string) error {
 }
 
 // PutFile uploads file to the s3 storage
-func (u *S3Storage) PutFile(ctx context.Context, fileName string) error {
+func (u *S3Storage) PutFile(ctx context.Context, fileName string, options PutOptions) error {
 	var _, objectKey = filepath.Split(fileName)
 	var logger = u.logger.With(zap.String("upload", u.bucketName), zap.String("fileName", fileName))
 

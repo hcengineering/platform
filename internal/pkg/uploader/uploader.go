@@ -316,7 +316,10 @@ func (u *uploaderImpl) uploadAndDelete(f string) {
 	for attempt := range u.options.RetryCount {
 		logger = logger.With(zap.Int("attempt", attempt))
 		var putCtx, putCancel = context.WithTimeout(u.uploadCtx, u.options.Timeout)
-		var err = u.storage.PutFile(putCtx, f)
+		var putOptions = storage.PutOptions{
+			NoCache: u.shouldDeleteOnStop(f),
+		}
+		var err = u.storage.PutFile(putCtx, f, putOptions)
 		putCancel()
 
 		if err != nil {
