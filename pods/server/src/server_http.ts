@@ -201,7 +201,7 @@ export function startHttpServer (
       res.end()
     }
   })
-  app.put('/api/v1/manage', async (req, res) => {
+  app.put('/api/v1/manage', (req, res) => {
     try {
       const token = (req.query.token as string) ?? (req.headers.authorization ?? '').split(' ')[1]
       const payload = decodeToken(token)
@@ -217,12 +217,13 @@ export function startHttpServer (
 
       switch (operation) {
         case 'maintenance': {
-          const message: string | undefined = await retrieveJson(req)
-          const timeMinutes = parseInt((req.query.timeout as string) ?? '5')
-          sessions.scheduleMaintenance(timeMinutes, message)
+          void retrieveJson(req).then((message) => {
+            const timeMinutes = parseInt((req.query.timeout as string) ?? '5')
+            sessions.scheduleMaintenance(timeMinutes, message)
 
-          res.writeHead(200)
-          res.end()
+            res.writeHead(200)
+            res.end()
+          })
           return
         }
         case 'wipe-statistics': {
