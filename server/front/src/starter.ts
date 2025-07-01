@@ -121,6 +121,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   const billingUrl = process.env.BILLING_URL
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
+  setMetadata(serverToken.metadata.Service, 'front')
 
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
   const storageAdapter = buildStorageFromConfig(storageConfig)

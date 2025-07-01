@@ -45,6 +45,7 @@ async function main (): Promise<void> {
   })
 
   setMetadata(serverToken.metadata.Secret, config.secret)
+  setMetadata(serverToken.metadata.Service, 'inbound-mail')
 
   initQueue(ctx, 'inbound-mail', baseConfig)
 

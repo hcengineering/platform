@@ -30,6 +30,7 @@ import { getAccountUuid } from './utils/account'
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
+  setMetadata(serverToken.metadata.Service, 'ai-bot-service')
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
 

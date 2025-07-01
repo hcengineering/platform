@@ -105,6 +105,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   setMetadata(account.metadata.WsLivenessDays, wsLivenessDays)
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
+  setMetadata(serverToken.metadata.Service, 'account')
 
   const hasSignUp = process.env.DISABLE_SIGNUP !== 'true'
   const methods = getMethods(hasSignUp)

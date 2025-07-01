@@ -187,6 +187,7 @@ export function devTool (
   setMetadata(accountPlugin.metadata.Transactors, transactorUrl)
   setMetadata(serverClientPlugin.metadata.Endpoint, accountsUrl)
   setMetadata(serverToken.metadata.Secret, serverSecret)
+  setMetadata(serverToken.metadata.Service, 'tool')
 
   async function withAccountDatabase (
     f: (db: AccountDB) => Promise<any>,

@@ -104,6 +104,7 @@ export function serveWorkspaceAccount (
   const waitTimeout = parseInt(process.env.WAIT_TIMEOUT ?? '5000')
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
+  setMetadata(serverToken.metadata.Service, 'workspace')
 
   const initWS = process.env.INIT_WORKSPACE
   if (initWS !== undefined) {
