@@ -16,7 +16,7 @@
 import { AccountClient } from '@hcengineering/account-client'
 import calendar, { Event, ExternalCalendar, ReccuringEvent, ReccuringInstance } from '@hcengineering/calendar'
 import { Client, MeasureContext, Ref, TxOperations } from '@hcengineering/core'
-import { areEqualMarkups, isEmptyMarkup, jsonToHTML, markupToJSON } from '@hcengineering/text'
+import { areEqualMarkups, htmlToMarkup, isEmptyMarkup, jsonToHTML, markupToJSON } from '@hcengineering/text'
 import { deepEqual } from 'fast-equals'
 import { OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
@@ -334,9 +334,10 @@ export class CalendarClient {
       }
     }
     const description = jsonToHTML(markupToJSON(current.description))
+    const originMarkup = htmlToMarkup(event.description ?? '')
     if (
-      isEmptyMarkup(description) !== isEmptyMarkup(event.description ?? '') &&
-      !areEqualMarkups(current.description, event.description ?? '')
+      isEmptyMarkup(description) !== isEmptyMarkup(originMarkup) &&
+      !areEqualMarkups(current.description, originMarkup)
     ) {
       res = true
       this.ctx.info('Update event diff: description', {
