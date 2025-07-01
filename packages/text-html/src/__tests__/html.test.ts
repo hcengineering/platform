@@ -512,6 +512,39 @@ const tests: Array<{ name: string, markup: object, html: string }> = [
       ]
     },
     html: '<p>hello <a href="http://localhost/embed%3Chtml%3E" data-type="embed">http://localhost/embed&lt;html&gt;</a></p>'
+  },
+  {
+    name: 'link-with-class',
+    markup: {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          attrs: {
+            textAlign: null
+          },
+          content: [
+            {
+              type: 'text',
+              text: 'https://example.com',
+              marks: [
+                {
+                  type: 'link',
+                  attrs: {
+                    href: 'https://example.com',
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                    class: 'cursor-pointer',
+                    title: undefined
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    html: '<p><a target="_blank" rel="noopener noreferrer" class="cursor-pointer" href="https://example.com">https://example.com</a></p>'
   }
 ]
 

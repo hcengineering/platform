@@ -113,7 +113,13 @@ function addMark (builder: NodeBuilder, mark?: MarkupMark, next?: () => void): v
       next?.()
       builder.closeTag('em')
     } else if (mark.type === MarkupMarkType.link) {
-      builder.openTag('a', { href: attrs.href, target: attrs.target })
+      builder.openTag('a', {
+        target: attrs.target,
+        rel: attrs.rel,
+        class: attrs.class,
+        href: attrs.href,
+        title: attrs.title
+      })
       next?.()
       builder.closeTag('a')
     } else if (mark.type === MarkupMarkType.strike) {

@@ -416,6 +416,9 @@ const specialRules: Record<string, HtmlSpecialRule> = {
         })
       } else {
         state.openMark(MarkupMarkType.link, {
+          rel: attributes.rel,
+          target: attributes.target,
+          class: attributes.class,
           href: attributes.href,
           title: attributes.title
         })
