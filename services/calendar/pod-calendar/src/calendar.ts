@@ -16,7 +16,7 @@
 import { AccountClient } from '@hcengineering/account-client'
 import calendar, { Event, ExternalCalendar, ReccuringEvent, ReccuringInstance } from '@hcengineering/calendar'
 import { Client, MeasureContext, Ref, TxOperations } from '@hcengineering/core'
-import { jsonToHTML, markupToJSON } from '@hcengineering/text'
+import { areEqualMarkups, htmlToMarkup, isEmptyMarkup, jsonToHTML, markupToJSON } from '@hcengineering/text'
 import { deepEqual } from 'fast-equals'
 import { OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
@@ -29,6 +29,8 @@ import {
   getGoogleClient,
   getMixinFields,
   getTimezone,
+  parseEventDate,
+  parseRecurrenceStrings,
   removeIntegrationSecret,
   setCredentials
 } from './utils'
@@ -209,6 +211,9 @@ export class CalendarClient {
         const current = await this.calendar.events.get({ calendarId, eventId: event.eventId })
         if (current !== undefined && current.data.status !== 'cancelled') {
           const ev = this.applyUpdate(current.data, event)
+          if (ev === undefined) {
+            return true // No changes to apply
+          }
           await this.rateLimiter.take(1)
           await this.calendar.events.update({
             calendarId,
@@ -292,6 +297,15 @@ export class CalendarClient {
   private applyUpdate (event: calendar_v3.Schema$Event, current: Event): calendar_v3.Schema$Event | undefined {
     let res: boolean = false
     if (current.title !== event.summary) {
+      this.ctx.info('Update event diff: title', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.user.workspace,
+        event: current._id,
+        prev: event.summary,
+        current: current.title
+      })
       event.summary = current.title
       res = true
     }
@@ -299,6 +313,15 @@ export class CalendarClient {
       const newVisibility = current.visibility === 'public' ? 'public' : 'private'
       if (newVisibility !== event.visibility) {
         event.visibility = newVisibility
+        this.ctx.info('Update event diff: visibility', {
+          calendarId: current.calendar,
+          eventId: current.eventId,
+          user: this.user.email,
+          workspace: this.user.workspace,
+          event: current._id,
+          prev: event.visibility,
+          current: newVisibility
+        })
         res = true
       }
       if (current.visibility === 'freeBusy' && event?.extendedProperties?.private?.visibility !== 'freeBusy') {
@@ -312,12 +335,34 @@ export class CalendarClient {
       }
     }
     const description = jsonToHTML(markupToJSON(current.description))
-    if ((event.description ?? '') !== description) {
+    const originMarkup = htmlToMarkup(event.description ?? '')
+    if (
+      isEmptyMarkup(description) !== isEmptyMarkup(originMarkup) &&
+      !areEqualMarkups(current.description, originMarkup)
+    ) {
       res = true
+      this.ctx.info('Update event diff: description', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.user.workspace,
+        event: current._id,
+        prev: event.description,
+        current: description
+      })
       event.description = description
     }
     if (current.location !== event.location) {
       res = true
+      this.ctx.info('Update event diff: location', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.user.workspace,
+        event: current._id,
+        prev: event.location,
+        current: current.location
+      })
       event.location = current.location
     }
     const attendees = this.getAttendees(current)
@@ -325,25 +370,68 @@ export class CalendarClient {
       for (const attendee of attendees) {
         if (event.attendees.findIndex((p) => p.email === attendee) === -1) {
           res = true
+          this.ctx.info('Update event diff: attendees', {
+            calendarId: current.calendar,
+            eventId: current.eventId,
+            user: this.user.email,
+            workspace: this.user.workspace,
+            event: current._id,
+            prev: event.attendees,
+            current: attendee
+          })
           event.attendees.push({ email: attendee })
         }
       }
     }
-    const newStart = convertDate(current.date, event.start?.date !== undefined, getTimezone(current))
-    if (!deepEqual(newStart, event.start)) {
+    const currentStart = parseEventDate(event.start)
+    if (currentStart !== current.date) {
+      const newStart = convertDate(current.date, event.start?.date !== undefined, getTimezone(current))
       res = true
+      this.ctx.info('Update event diff: start', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.user.workspace,
+        event: current._id,
+        prev: event.start,
+        current: newStart
+      })
       event.start = newStart
     }
-    const newEnd = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))
-    if (!deepEqual(newEnd, event.end)) {
+    const currentEnd = parseEventDate(event.end)
+    if (currentEnd !== current.dueDate) {
       res = true
+      const newEnd = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))
+      this.ctx.info('Update event diff: end', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.user.workspace,
+        event: current._id,
+        prev: event.end,
+        current: newEnd
+      })
       event.end = newEnd
     }
     if (current._class === calendar.class.ReccuringEvent) {
       const rec = current as ReccuringEvent
-      const newRec = encodeReccuring(rec.rules, rec.rdate, rec.exdate)
-      if (!deepEqual(newRec, event.recurrence)) {
+      const parsed = parseRecurrenceStrings(event.recurrence ?? [])
+      if (
+        !deepEqual(rec.rules, parsed.rules) ||
+        !deepEqual(rec.rdate, parsed.rdate) ||
+        !deepEqual(rec.exdate, parsed.exdate)
+      ) {
         res = true
+        const newRec = encodeReccuring(rec.rules, rec.rdate, rec.exdate)
+        this.ctx.info('Update event diff: recurrence', {
+          calendarId: current.calendar,
+          eventId: current.eventId,
+          user: this.user.email,
+          workspace: this.user.workspace,
+          event: current._id,
+          prev: event.recurrence,
+          current: newRec
+        })
         event.recurrence = newRec
       }
     }
