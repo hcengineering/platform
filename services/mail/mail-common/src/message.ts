@@ -44,7 +44,7 @@ import { generateMessageId } from '@hcengineering/communication-shared'
 
 import { BaseConfig, SyncOptions, type Attachment } from './types'
 import { EmailMessage, MailRecipient, MessageData } from './types'
-import { getBlobMetadata, getMdContent } from './utils'
+import { getBlobMetadata, getMdContent, MessageTimeShift } from './utils'
 import { PersonCacheFactory } from './person'
 import { PersonSpacesCacheFactory } from './personSpaces'
 import { ChannelCache, ChannelCacheFactory } from './channel'
@@ -229,10 +229,10 @@ async function saveMessageToSpaces (
             createdBy: modifiedBy,
             modifiedBy,
             parent: channel,
-            createdOn: createdDate - 4 // Add a small shift to ensure correct ordering
+            createdOn: createdDate + MessageTimeShift.ThreadCard // Add a small shift to ensure correct ordering
           },
           generateId(),
-          createdDate - 4,
+          createdDate + MessageTimeShift.ThreadCard,
           modifiedBy
         )
         threadId = newThreadId as Ref<Card>
@@ -281,7 +281,7 @@ async function createMailThread (
     cardType: chat.masterTag.Thread,
     content: data.subject,
     socialId: data.modifiedBy,
-    date: new Date(data.created.getTime() - 1),
+    date: new Date(data.created.getTime() + MessageTimeShift.Subject),
     messageId: subjectId,
     options: {
       noNotify: options?.noNotify
@@ -300,7 +300,7 @@ async function createMailThread (
       threadType: chat.masterTag.Thread
     },
     socialId: data.modifiedBy,
-    date: new Date(data.created.getTime() - 3)
+    date: new Date(data.created.getTime() + MessageTimeShift.Thread)
   }
   const thread = Buffer.from(JSON.stringify(threadEvent))
   await sendToCommunicationTopic(producer, config, data, thread)
@@ -392,7 +392,7 @@ async function addCollaborators (
     cardType: chat.masterTag.Thread,
     collaborators: [data.recipient.uuid as AccountUuid],
     socialId: data.modifiedBy,
-    date: new Date(data.created.getTime() - 2)
+    date: new Date(data.created.getTime() + MessageTimeShift.Collaborator)
   }
   const createMessageData = Buffer.from(JSON.stringify(addCollaboratorsEvent))
   await sendToCommunicationTopic(producer, config, data, createMessageData)
