@@ -16,6 +16,7 @@
 import core, {
   Doc,
   PersonId,
+  Ref,
   systemAccountUuid,
   Tx,
   TxCreateDoc,
@@ -30,6 +31,7 @@ import { aiBotEmailSocialKey, AIEventRequest } from '@hcengineering/ai-bot'
 import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
 import { type SocialIdentity } from '@hcengineering/contact'
+import { extractReferences, markupToJSON } from '@hcengineering/text-core'
 
 import { createAccountRequest, hasAiEndpoint, sendAIEvents } from './utils'
 
@@ -157,9 +159,16 @@ async function isAiBotShouldReply (
   const isDirect =
     messageDoc._class === chunter.class.DirectMessage && (await isDirectAvailable(messageDoc as DirectMessage, control))
   const isAiBotPersonalChat = messageDoc._id === aiBotPersonId
-  const isAiBotMentioned = message.message.includes(aiBotPersonId)
+  const isAiBotMentioned = isDocMentioned(aiBotPersonId, message.message)
 
   return isDirect || isAiBotPersonalChat || isAiBotMentioned
+}
+
+export function isDocMentioned (doc: Ref<Doc>, content: string): boolean {
+  const node = markupToJSON(content)
+  const references = extractReferences(node)
+
+  return references.some((ref) => ref.objectId === doc)
 }
 
 function getMessageData (doc: Doc, message: ChatMessage): AIEventRequest {
