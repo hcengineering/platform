@@ -16,7 +16,6 @@ package token
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -24,21 +23,19 @@ import (
 
 // Token represents Claims for the platform token
 type Token struct {
-	jwt.RegisteredClaims
-	Account   string                 `json:"account"`
-	Workspace string                 `json:"workspace,omitempty"`
-	Extra     map[string]interface{} `json:"extra,omitempty"`
+	jwt.MapClaims
+	Account   string         `json:"account"`
+	Workspace string         `json:"workspace,omitempty"`
+	Extra     map[string]any `json:"extra,omitempty"`
 }
 
 // NewToken creates a new platform token
-func NewToken(serverSecret, workspace, issuer, audience string) (string, error) {
+func NewToken(serverSecret, workspace, service string) (string, error) {
 	var res = Token{
 		Account:   uuid.NewString(),
 		Workspace: workspace,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    issuer,
-			Audience:  jwt.ClaimStrings{audience},
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 12)),
+		Extra: map[string]any{
+			"service": service,
 		},
 	}
 	return res.Encode(serverSecret)
@@ -58,7 +55,7 @@ func (t *Token) Encode(serverSecret string) (string, error) {
 
 // Decode decodes a token by a passed configuration
 func Decode(secretKey, tokenString string) (*Token, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Token{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Token{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -73,5 +70,5 @@ func Decode(secretKey, tokenString string) (*Token, error) {
 		return claims, nil
 	}
 
-	return nil, fmt.Errorf("invalid token: can't parse claims")
+	return nil, fmt.Errorf("invalid token")
 }
