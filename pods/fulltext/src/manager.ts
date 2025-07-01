@@ -143,7 +143,7 @@ export class WorkspaceManager {
 
   private async processDocuments (msg: ConsumerMessage<TxCUD<Doc<Space>>>[], control: ConsumerControl): Promise<void> {
     for (const m of msg) {
-      const ws = m.id as WorkspaceUuid
+      const ws = m.workspace
 
       let token: string
       try {
@@ -164,7 +164,7 @@ export class WorkspaceManager {
     control: ConsumerControl
   ): Promise<void> {
     for (const m of msg) {
-      const ws = m.id as WorkspaceUuid
+      const ws = m.workspace
 
       for (const mm of m.value) {
         this.ctx.info('workspace event', { type: mm.type, workspace: ws, restoring: Array.from(this.restoring) })
@@ -218,7 +218,7 @@ export class WorkspaceManager {
     control: ConsumerControl
   ): Promise<void> {
     for (const m of msg) {
-      const ws = m.id as WorkspaceUuid
+      const ws = m.workspace
 
       for (const mm of m.value) {
         this.ctx.info('fulltext event', { type: mm.type, workspace: ws, restoring: Array.from(this.restoring) })

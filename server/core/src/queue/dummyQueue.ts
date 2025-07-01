@@ -39,7 +39,7 @@ export class DummyQueue implements PlatformQueue {
     topic: QueueTopic | string,
     groupId: string,
     onMessage: (
-      msg: { id: WorkspaceUuid | string, value: T }[],
+      msg: { workspace: WorkspaceUuid, value: T }[],
       queue: {
         pause: () => void
         heartbeat: () => Promise<void>

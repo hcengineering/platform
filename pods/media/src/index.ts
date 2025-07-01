@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
-import { Doc, MeasureMetricsContext, TxCUD, WorkspaceUuid, newMetrics } from '@hcengineering/core'
+import { Doc, MeasureMetricsContext, TxCUD, newMetrics } from '@hcengineering/core'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext, QueueTopic } from '@hcengineering/server-core'
@@ -70,7 +70,7 @@ async function main (): Promise<void> {
 
   queue.createConsumer<TxCUD<Doc>>(ctx, QueueTopic.Tx, queue.getClientId(), async (msgs) => {
     for (const msg of msgs) {
-      const workspaceUuid = msg.id as WorkspaceUuid
+      const workspaceUuid = msg.workspace
       for (const tx of msg.value) {
         await handleTx(ctx, workspaceUuid, tx, transcodeProducer)
       }

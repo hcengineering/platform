@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
 import { type Readable } from 'stream'
 import { S3Bucket } from '../s3'
 import { WorkspaceStatsResult } from './db'
@@ -51,27 +51,32 @@ export interface BlobStorage {
 export interface Datalake {
   list: (
     ctx: MeasureContext,
-    workspace: string,
+    workspace: WorkspaceUuid,
     options: { cursor?: string, limit?: number, derived?: boolean }
   ) => Promise<BlobList>
-  head: (ctx: MeasureContext, workspace: string, name: string) => Promise<BlobHead | null>
-  get: (ctx: MeasureContext, workspace: string, name: string, options: { range?: string }) => Promise<BlobBody | null>
-  delete: (ctx: MeasureContext, workspace: string, name: string | string[]) => Promise<void>
+  head: (ctx: MeasureContext, workspace: WorkspaceUuid, name: string) => Promise<BlobHead | null>
+  get: (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    name: string,
+    options: { range?: string }
+  ) => Promise<BlobBody | null>
+  delete: (ctx: MeasureContext, workspace: WorkspaceUuid, name: string | string[]) => Promise<void>
   put: (
     ctx: MeasureContext,
-    workspace: string,
+    workspace: WorkspaceUuid,
     name: string,
     sha256: string,
     body: Buffer | Readable,
     options: Omit<BlobHead, 'name' | 'etag'>
   ) => Promise<BlobHead>
-  create: (ctx: MeasureContext, workspace: string, name: string, filename: string) => Promise<BlobHead | null>
+  create: (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, filename: string) => Promise<BlobHead | null>
 
-  getMeta: (ctx: MeasureContext, workspace: string, name: string) => Promise<Record<string, any> | null>
-  setMeta: (ctx: MeasureContext, workspace: string, name: string, meta: Record<string, any>) => Promise<void>
+  getMeta: (ctx: MeasureContext, workspace: WorkspaceUuid, name: string) => Promise<Record<string, any> | null>
+  setMeta: (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, meta: Record<string, any>) => Promise<void>
 
-  setParent: (ctx: MeasureContext, workspace: string, name: string, parent: string | null) => Promise<void>
-  selectStorage: (ctx: MeasureContext, workspace: string) => Promise<BlobStorage>
+  setParent: (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, parent: string | null) => Promise<void>
+  selectStorage: (ctx: MeasureContext, workspace: WorkspaceUuid) => Promise<BlobStorage>
 
-  getWorkspaceStats: (ctx: MeasureContext, workspace: string) => Promise<WorkspaceStatsResult>
+  getWorkspaceStats: (ctx: MeasureContext, workspace: WorkspaceUuid) => Promise<WorkspaceStatsResult>
 }

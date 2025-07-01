@@ -183,7 +183,7 @@ class PlatformQueueProducerImpl implements PlatformQueueProducer<any> {
     return this.queue
   }
 
-  async send (id: WorkspaceUuid | string, msgs: any[]): Promise<void> {
+  async send (workspace: WorkspaceUuid, msgs: any[], partitionKey?: string): Promise<void> {
     if (this.connected !== undefined) {
       await this.connected
       this.connected = undefined
@@ -192,8 +192,11 @@ class PlatformQueueProducerImpl implements PlatformQueueProducer<any> {
       this.txProducer.send({
         topic: this.topic,
         messages: msgs.map((m) => ({
-          key: Buffer.from(`${id}`),
-          value: Buffer.from(JSON.stringify(m))
+          key: Buffer.from(`${partitionKey ?? workspace}`),
+          value: Buffer.from(JSON.stringify(m)),
+          headers: {
+            workspace
+          }
         }))
       })
     )
@@ -241,13 +244,15 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
       eachMessage: async ({ topic, message, pause, heartbeat }) => {
         const msgKey = message.key?.toString() ?? ''
         const msgData = JSON.parse(message.value?.toString() ?? '{}')
+        const workspace = (message.headers?.workspace?.toString() ?? msgKey) as WorkspaceUuid
+
         let to = 1
         while (true) {
           try {
-            await this.onMessage([{ id: msgKey, value: [msgData] }], { heartbeat, pause })
+            await this.onMessage([{ workspace, value: [msgData] }], { heartbeat, pause })
             break
           } catch (err: any) {
-            this.ctx.error('failed to process message', { err, msgKey, msgData })
+            this.ctx.error('failed to process message', { err, msgKey, msgData, workspace })
             await heartbeat()
             await new Promise((resolve) => setTimeout(resolve, to * 1000))
             if (to < 10) {
