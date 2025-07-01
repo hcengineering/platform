@@ -66,11 +66,11 @@ window.addEventListener('DOMContentLoaded', () => {
     navigate(parseLocation(urlObject))
   })
 
-  ipcMain.handleNotificationNavigation(() => {
+  ipcMain.handleNotificationNavigation((application) => {
     // For now navigate only to Inbox
     const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
     const location = getCurrentResolvedLocation()
-    const urlString = `${frontUrl}/${workbenchId}/${location.path[1]}/${notificationId}`
+    const urlString = `${frontUrl}/${workbenchId}/${location.path[1]}/${application ?? notificationId}`
     const urlObject = new URL(urlString)
     navigate(parseLocation(urlObject))
   })
