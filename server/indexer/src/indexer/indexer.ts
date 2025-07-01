@@ -60,14 +60,13 @@ import type {
 } from '@hcengineering/server-core'
 import { RateLimiter, SessionDataImpl } from '@hcengineering/server-core'
 import { jsonToText, markupToJSON, markupToText } from '@hcengineering/text'
-import card, { type Card } from '@hcengineering/card'
+import card from '@hcengineering/card'
 import { findSearchPresenter, updateDocWithPresenter } from '../mapper'
 import { type FullTextPipeline } from './types'
 import { createIndexedDoc, createIndexedDocFromMessage, getContent } from './utils'
 import {
   type ServerApi as CommunicationApi,
-  type SessionData as CommunicationSession
-  ,
+  type SessionData as CommunicationSession,
   type CreateMessageEvent,
   type UpdatePatchEvent,
   type RemovePatchEvent,
@@ -239,6 +238,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
     let processed = 0
     let processedCommunication = 0
+    let hasCards = false
     await ctx.with('reindex-domain', { domain }, async (ctx) => {
       // Iterate over all domain documents and add appropriate entries
       const allDocs = this.storage.rawFind(ctx, domain)
@@ -260,16 +260,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               // Skip non indexable classes
               continue
             }
+            if (!hasCards && this.hierarchy.isDerived(v, card.class.Card)) {
+              hasCards = true
+            }
 
             await this.indexDocuments(ctx, v, values, pushQueue)
-            if (this.hierarchy.isDerived(v, card.class.Card)) {
-              processedCommunication += await this.indexCommunication(
-                ctx,
-                v as Ref<Class<Card>>,
-                values as Card[],
-                pushQueue
-              )
-            }
             await control?.heartbeat()
           }
 
@@ -281,7 +276,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
           const now = platformNow()
           if (now - lastPrint > 2500) {
-            ctx.info('processed', { processed, processedCommunication, elapsed: Math.round(now - lastPrint), domain })
+            ctx.info('processed', { processed, elapsed: Math.round(now - lastPrint), domain })
             lastPrint = now
           }
         }
@@ -291,8 +286,19 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       } finally {
         await allDocs.close()
       }
+      if (hasCards) {
+        await ctx.with('reindex-communication', {}, async (ctx) => {
+          try {
+            const pushQueue = new ElasticPushQueue(this.fulltextAdapter, this.workspace, ctx, control)
+            processedCommunication = await this.indexCommunication(ctx, control, pushQueue)
+            await pushQueue.waitProcessing()
+          } catch (err: any) {
+            ctx.error('failed to restore index state', { err })
+          }
+        })
+      }
     })
-    ctx.warn('reinex done', { domain, processed })
+    ctx.info('reindex done', { domain, processed, processedCommunication })
   }
 
   async dropWorkspace (control?: ConsumerControl): Promise<void> {
@@ -498,107 +504,130 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   async indexCommunication (
     ctx: MeasureContext,
-    _class: Ref<Class<Card>>,
-    docs: Card[],
+    control: ConsumerControl | undefined,
     pushQueue: ElasticPushQueue
   ): Promise<number> {
     let processed = 0
+    const cardsInfo = new Map<CardID, { space: Ref<Space>, _class: Ref<Class<Doc>> }>()
     const rateLimit = new RateLimiter(10)
-    for (const doc of docs) {
-      if (this.cancelling) {
-        return processed
-      }
-      await rateLimit.exec(async () => {
-        await ctx.with('process-communication', { _class: doc._class, _id: doc._id }, async (ctx) => {
-          try {
-            let groups = await this.communicationApi.findMessagesGroups(this.communicationSession, {
-              card: doc._id as CardID,
-              limit: 100,
-              order: SortingOrder.Ascending
+    let lastPrint = 0
+    await ctx.with('process-message-groups', {}, async (ctx) => {
+      let groups = await this.communicationApi.findMessagesGroups(this.communicationSession, {
+        limit: 100,
+        order: SortingOrder.Ascending
+      })
+      while (groups.length > 0) {
+        if (this.cancelling) {
+          return processed
+        }
+        for (const group of groups) {
+          if (control !== undefined) {
+            await control.heartbeat()
+          }
+          let cardInfo = cardsInfo.get(group.cardId)
+          if (cardInfo === undefined) {
+            const cardDoc = await this.storage.findAll(ctx, card.class.Card, { _id: group.cardId }, { limit: 1 })
+            if (cardDoc.length !== 1) {
+              continue
+            }
+            cardInfo = { space: cardDoc[0].space, _class: cardDoc[0]._class }
+            cardsInfo.set(group.cardId, cardInfo)
+          }
+          const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
+          const messagesFile = Buffer.concat(blob as any).toString()
+          const messagesParsedFile = parseYaml(messagesFile)
+          let patchedMessages
+          if (group.patches !== undefined && group.patches.length > 0) {
+            const patchesByMessage = groupByArray(group.patches, (it) => it.messageId)
+            patchedMessages = messagesParsedFile.messages.map((message) => {
+              const patches = patchesByMessage.get(message.id) ?? []
+              if (patches.length === 0) {
+                return message
+              } else {
+                return applyPatches(message, patches)
+              }
             })
-            while (groups.length > 0) {
-              for (const group of groups) {
-                if (this.cancelling) {
-                  return processed
-                }
-                const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
-                const messagesFile = Buffer.concat(blob as any).toString()
-                const messagesParsedFile = parseYaml(messagesFile)
-                let patchedMessages
-                if (group.patches !== undefined && group.patches.length > 0) {
-                  const patchesByMessage = groupByArray(group.patches, (it) => it.messageId)
-                  patchedMessages = messagesParsedFile.messages.map((message) => {
-                    const patches = patchesByMessage.get(message.id) ?? []
-                    if (patches.length === 0) {
-                      return message
-                    } else {
-                      return applyPatches(message, patches)
-                    }
-                  })
-                } else {
-                  patchedMessages = messagesParsedFile.messages
-                }
-                for (const message of patchedMessages) {
-                  if (message.removed) {
-                    continue
-                  }
-                  const indexedDoc = createIndexedDocFromMessage(doc._id, doc.space, doc._class, message)
-                  await this.processCommunicationMessage(ctx, message.content, indexedDoc)
-                  if (this.listener?.onIndexing !== undefined) {
-                    await this.listener.onIndexing(indexedDoc)
-                  }
-                  await pushQueue.push(indexedDoc)
-                  processed += 1
-                }
-              }
-              if (this.cancelling) {
-                return processed
-              }
-              groups = await this.communicationApi.findMessagesGroups(this.communicationSession, {
-                card: doc._id as CardID,
-                limit: 100,
-                order: SortingOrder.Ascending,
-                fromDate: {
-                  greater: groups[groups.length - 1].toDate
-                }
-              })
+          } else {
+            patchedMessages = messagesParsedFile.messages
+          }
+          for (const message of patchedMessages) {
+            if (message.removed) {
+              continue
             }
-            let messages = await this.communicationApi.findMessages(this.communicationSession, {
-              card: doc._id as CardID,
-              limit: 100,
-              order: SortingOrder.Ascending
+            await rateLimit.exec(async () => {
+              const indexedDoc = createIndexedDocFromMessage(group.cardId, cardInfo.space, cardInfo._class, message)
+              await this.processCommunicationMessage(ctx, message.content, indexedDoc)
+              if (this.listener?.onIndexing !== undefined) {
+                await this.listener.onIndexing(indexedDoc)
+              }
+              await pushQueue.push(indexedDoc)
             })
-            while (messages.length > 0) {
-              for (const message of messages) {
-                if (this.cancelling) {
-                  return processed
-                }
-                const indexedDoc = createIndexedDocFromMessage(doc._id, doc.space, doc._class, message)
-                await this.processCommunicationMessage(ctx, message.content, indexedDoc)
-                if (this.listener?.onIndexing !== undefined) {
-                  await this.listener.onIndexing(indexedDoc)
-                }
-                await pushQueue.push(indexedDoc)
-                processed += 1
-              }
-              messages = await this.communicationApi.findMessages(this.communicationSession, {
-                card: doc._id as CardID,
-                limit: 100,
-                order: SortingOrder.Ascending,
-                created: {
-                  greater: messages[messages.length - 1].created
-                }
-              })
+            processed += 1
+            const now = platformNow()
+            if (now - lastPrint > 2500) {
+              ctx.info('processed', { processedCommunication: processed, elapsed: Math.round(now - lastPrint) })
+              lastPrint = now
             }
-            if (this.cancelling) {
-              return processed
-            }
-          } catch (error: any) {
-            ctx.error('Failed to process communication messages', { error })
+          }
+        }
+        if (this.cancelling) {
+          return processed
+        }
+        groups = await this.communicationApi.findMessagesGroups(this.communicationSession, {
+          limit: 100,
+          order: SortingOrder.Ascending,
+          fromDate: {
+            greater: groups[groups.length - 1].toDate
           }
         })
+      }
+    })
+    await ctx.with('process-messages', {}, async (ctx) => {
+      let messages = await this.communicationApi.findMessages(this.communicationSession, {
+        limit: 100,
+        order: SortingOrder.Ascending
       })
-    }
+      while (messages.length > 0) {
+        for (const message of messages) {
+          if (control !== undefined) {
+            await control.heartbeat()
+          }
+          let cardInfo = cardsInfo.get(message.cardId)
+          if (cardInfo === undefined) {
+            const cardDoc = await this.storage.findAll(ctx, card.class.Card, { _id: message.cardId }, { limit: 1 })
+            if (cardDoc.length !== 1) {
+              continue
+            }
+            cardInfo = { space: cardDoc[0].space, _class: cardDoc[0]._class }
+            cardsInfo.set(message.cardId, cardInfo)
+          }
+          if (this.cancelling) {
+            return processed
+          }
+          await rateLimit.exec(async () => {
+            const indexedDoc = createIndexedDocFromMessage(message.cardId, cardInfo.space, cardInfo._class, message)
+            await this.processCommunicationMessage(ctx, message.content, indexedDoc)
+            if (this.listener?.onIndexing !== undefined) {
+              await this.listener.onIndexing(indexedDoc)
+            }
+            await pushQueue.push(indexedDoc)
+          })
+          processed += 1
+          const now = platformNow()
+          if (now - lastPrint > 2500) {
+            ctx.info('processed', { processedCommunication: processed, elapsed: Math.round(now - lastPrint) })
+            lastPrint = now
+          }
+        }
+        messages = await this.communicationApi.findMessages(this.communicationSession, {
+          limit: 100,
+          order: SortingOrder.Ascending,
+          created: {
+            greater: messages[messages.length - 1].created
+          }
+        })
+      }
+    })
     await rateLimit.waitProcessing()
     return processed
   }
