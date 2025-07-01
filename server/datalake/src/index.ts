@@ -79,7 +79,7 @@ export class DatalakeService implements StorageAdapter {
     if (secret === undefined) {
       console.warn('Server secret not set, datalake storage adapter initialized with default secret')
     }
-    const token = generateToken(systemAccountUuid, undefined, { service: 'datalake' })
+    const token = generateToken(systemAccountUuid, undefined)
     this.client = createDatalakeClient(cfg, token)
     this.retryCount = options.retryCount ?? 5
     this.retryInterval = options.retryInterval ?? 50

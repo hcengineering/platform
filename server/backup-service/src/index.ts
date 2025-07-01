@@ -40,6 +40,7 @@ export function startBackup (
 ): void {
   const config = _config()
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'backup')
   setMetadata(serverClientPlugin.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClientPlugin.metadata.UserAgent, config.ServiceID)
 
@@ -97,6 +98,7 @@ export async function backupWorkspace (
 ): Promise<boolean> {
   const config = _config()
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'backup')
   setMetadata(serverClientPlugin.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClientPlugin.metadata.UserAgent, config.ServiceID)
 

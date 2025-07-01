@@ -48,6 +48,7 @@ export const startServer = async (): Promise<void> => {
   const app = express()
 
   setMetadata(serverToken.metadata.Secret, process.env.SECRET)
+  setMetadata(serverToken.metadata.Service, 'rekoni')
   const ctx = initStatisticsContext('rekoni', {
     factory: () =>
       new MeasureMetricsContext(

@@ -15,6 +15,7 @@ import serverToken from '@hcengineering/server-token'
 // Load and inc startID, to have easy logs.
 
 setMetadata(serverToken.metadata.Secret, config.ServerSecret)
+setMetadata(serverToken.metadata.Service, 'github')
 
 const metricsContext = initStatisticsContext('github', {
   factory: () =>

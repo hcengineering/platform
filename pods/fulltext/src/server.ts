@@ -99,6 +99,7 @@ export async function startIndexer (
   })
 
   setMetadata(serverToken.metadata.Secret, opt.serverSecret)
+  setMetadata(serverToken.metadata.Service, 'fulltext')
   setMetadata(serverCore.metadata.ElasticIndexName, opt.elasticIndexName)
   setMetadata(serverClientPlugin.metadata.Endpoint, opt.accountsUrl)
 

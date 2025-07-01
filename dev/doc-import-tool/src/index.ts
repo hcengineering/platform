@@ -62,6 +62,7 @@ export function docImportTool (): void {
 
   setMetadata(serverClientPlugin.metadata.Endpoint, accountUrl)
   setMetadata(serverToken.metadata.Secret, serverSecret)
+  setMetadata(serverToken.metadata.Service, process.env.SERVICE_ID ?? 'doc-import-tool')
 
   async function withStorage (f: (storageAdapter: StorageAdapter) => Promise<any>): Promise<void> {
     const adapter = buildStorageFromConfig(storageConfigFromEnv())

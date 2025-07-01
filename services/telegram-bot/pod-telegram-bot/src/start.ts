@@ -49,6 +49,7 @@ Analytics.setTag('application', 'telegram-bot-service')
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'telegram-bot-service')
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceId)
   registerLoaders()

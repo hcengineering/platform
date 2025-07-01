@@ -43,6 +43,11 @@ export function generateToken (
     throw new TokenError(`Invalid workspace uuid: "${workspaceUuid}"`)
   }
 
+  const service = getMetadata(serverPlugin.metadata.Service)
+  if (service !== undefined) {
+    extra = { service, ...extra }
+  }
+
   return encode(
     { ...(extra !== undefined ? { extra } : {}), account: accountUuid, workspace: workspaceUuid },
     secret ?? getSecret()
