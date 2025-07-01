@@ -250,13 +250,18 @@ export class TSessionManager implements SessionManager {
       }
 
       // Wait some time for new client to appear before closing workspace.
-      if (workspace.sessions.size === 0 && workspace.closing === undefined && workspace.workspaceInitCompleted) {
+      if (
+        !workspace.maintenance &&
+        workspace.sessions.size === 0 &&
+        workspace.closing === undefined &&
+        workspace.workspaceInitCompleted
+      ) {
         workspace.softShutdown--
         if (workspace.softShutdown <= 0) {
           this.ctx.warn('closing workspace, no users', {
             workspace: workspace.wsId.url,
             wsId,
-            upgrade: workspace.upgrade
+            upgrade: workspace.maintenance
           })
           workspace.closing = this.performWorkspaceCloseCheck(workspace)
         }
@@ -474,7 +479,7 @@ export class TSessionManager implements SessionManager {
     }
 
     if (token.extra?.model === 'upgrade') {
-      if (workspace.upgrade) {
+      if (workspace.maintenance) {
         ctx.warn('reconnect workspace in upgrade', {
           account: token.account,
           workspace: workspaceUuid,
@@ -491,7 +496,7 @@ export class TSessionManager implements SessionManager {
         await this.switchToUpgradeSession(token, ctx.parent ?? ctx, workspace, ws)
       }
     } else {
-      if (workspace.upgrade) {
+      if (workspace.maintenance || this.maintenanceWorkspaces.has(workspace.wsId.uuid)) {
         ctx.warn('connect during upgrade', {
           account: token.account,
           workspace: workspace.wsId.url,
@@ -511,6 +516,8 @@ export class TSessionManager implements SessionManager {
     workspaces: {},
     socialIds: []
   }
+
+  maintenanceWorkspaces = new Set<WorkspaceUuid>()
 
   async addSession (
     ctx: MeasureContext,
@@ -624,7 +631,7 @@ export class TSessionManager implements SessionManager {
     }
 
     // Mark as upgrade, to prevent any new clients to connect during close
-    workspace.upgrade = true
+    workspace.maintenance = true
     // If upgrade client is used.
     // Drop all existing clients
     await this.doCloseAll(workspace, 0, 'upgrade', ws)
@@ -644,7 +651,7 @@ export class TSessionManager implements SessionManager {
   }
 
   doBroadcast (ws: Workspace, tx: Tx[], target?: AccountUuid | AccountUuid[], exclude?: AccountUuid[]): void {
-    if (ws.upgrade) {
+    if (ws.maintenance) {
       return
     }
     if (target !== undefined && !Array.isArray(target)) {
@@ -725,7 +732,7 @@ export class TSessionManager implements SessionManager {
       })
       return
     }
-    if (workspace?.upgrade ?? false) {
+    if (workspace?.maintenance ?? false) {
       return
     }
 
@@ -789,7 +796,7 @@ export class TSessionManager implements SessionManager {
       workspaceIds,
       branding
     )
-    workspace.upgrade = upgrade
+    workspace.maintenance = upgrade
     this.workspaces.set(token.workspace, workspace)
 
     return workspace
@@ -895,7 +902,7 @@ export class TSessionManager implements SessionManager {
               const user = sessionRef.session.getUser()
               if (workspace !== undefined) {
                 const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
-                if (another === -1 && !workspace.upgrade) {
+                if (another === -1 && !workspace.maintenance) {
                   void workspace.with(async (pipeline) => {
                     await pipeline.closeSession(ctx, sessionRef.session.sessionId)
                     // await communicationApi.closeSession(sessionRef.session.sessionId)
@@ -924,11 +931,22 @@ export class TSessionManager implements SessionManager {
     }
   }
 
+  async forceMaintenance (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
+    const workspace = this.workspaces.get(workspaceId)
+    this.maintenanceWorkspaces.add(workspaceId)
+    if (workspace !== undefined) {
+      workspace.maintenance = true
+      ctx.info('force-maintenance', { workspaceId })
+      await this.doCloseAll(workspace, 99, 'force-close')
+    }
+  }
+
   async forceClose (wsId: WorkspaceUuid, ignoreSocket?: ConnectionSocket): Promise<void> {
     const ws = this.workspaces.get(wsId)
+    this.maintenanceWorkspaces.delete(wsId)
     if (ws !== undefined) {
       this.ctx.warn('force-close', { name: ws.wsId.url })
-      ws.upgrade = true // We need to similare upgrade to refresh all clients.
+      ws.maintenance = true // We need to similare upgrade to refresh all clients.
       ws.closing = this.doCloseAll(ws, 99, 'force-close', ignoreSocket)
       this.workspaces.delete(wsId)
       await ws.closing
@@ -1194,7 +1212,7 @@ export class TSessionManager implements SessionManager {
         // TODO: we chould allow this only for admin or system accounts
         let done = false
         const wsRef = this.workspaces.get(workspaceId)
-        if (wsRef?.upgrade ?? false) {
+        if (wsRef?.maintenance ?? false) {
           done = true
           this.ctx.warn('FORCE CLOSE', { workspace: workspaceId })
           // In case of upgrade, we need to force close workspace not in interval handler

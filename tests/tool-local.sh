@@ -1,7 +1,5 @@
 export MODEL_VERSION=$(node ../common/scripts/show_version.js)
-export MINIO_ACCESS_KEY=minioadmin
-export MINIO_SECRET_KEY=minioadmin
-export MINIO_ENDPOINT=localhost:9000
+export STORAGE_CONFIG="datalake|http://localhost:4030"
 export MONGO_URL=mongodb://localhost:27017
 export DB_URL=postgresql://root@localhost:26257/defaultdb?sslmode=disable
 export ACCOUNT_DB_URL=postgresql://root@localhost:26257/defaultdb?sslmode=disable

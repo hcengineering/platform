@@ -132,6 +132,7 @@
     "BackupFileDownload": "Download File",
     "BackupFiles": "Backup Files",
     "BackupNoBackup": "No backups are currently available.",
+    "NonBackupedBlobs": "Non Backed up blobs",
     "Calendar": "Calendar",
     "StartOfTheWeek": "Start of the week",
     "SystemSetupString": "System Setup ({day})",

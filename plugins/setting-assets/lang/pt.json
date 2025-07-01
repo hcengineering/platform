@@ -123,6 +123,7 @@
     "BackupFileDownload": "Baixar Arquivo",
     "BackupFiles": "Arquivos de Backup",
     "BackupNoBackup": "Não há backups disponíveis no momento.",
+    "NonBackupedBlobs": "Non Backed up blobs",
     "Calendar": "Calendário",
     "StartOfTheWeek": "Início da semana",
     "SystemSetupString": "Configuração do sistema ({day})",
