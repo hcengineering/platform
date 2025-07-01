@@ -30,6 +30,15 @@
 
   const dispatch = createEventDispatcher()
 
+  let isServerUrlCopied = false
+  let serverUrlCopyTimeout: ReturnType<typeof setTimeout> | undefined
+
+  let isAccountCopied = false
+  let accountCopyTimeout: ReturnType<typeof setTimeout> | undefined
+
+  let isPasswordCopied = false
+  let passwordCopyTimeout: ReturnType<typeof setTimeout> | undefined
+
   $: wasAccessEnabled = integrationGlobal !== null && integrationWs !== null
   $: canSave = !!(
     !loading &&
@@ -150,14 +159,29 @@
 
   async function copyServer (): Promise<void> {
     await copyTextToClipboard(serverUrl ?? '')
+    isServerUrlCopied = true
+    clearTimeout(serverUrlCopyTimeout)
+    serverUrlCopyTimeout = setTimeout(() => {
+      isServerUrlCopied = false
+    }, 2000)
   }
 
   async function copyAccount (): Promise<void> {
     await copyTextToClipboard(selectedSocialId?.value ?? '')
+    isAccountCopied = true
+    clearTimeout(accountCopyTimeout)
+    accountCopyTimeout = setTimeout(() => {
+      isAccountCopied = false
+    }, 2000)
   }
 
   async function copyPassword (): Promise<void> {
     await copyTextToClipboard(password)
+    isPasswordCopied = true
+    clearTimeout(passwordCopyTimeout)
+    passwordCopyTimeout = setTimeout(() => {
+      isPasswordCopied = false
+    }, 2000)
   }
 </script>
 
@@ -202,7 +226,7 @@
           size="small"
           kind="ghost"
           disabled={!accessEnabled}
-          showTooltip={{ label: presentation.string.Copy }}
+          showTooltip={{ label: isServerUrlCopied ? presentation.string.DocumentUrlCopied : presentation.string.Copy }}
           on:click={copyServer}
         />
       </div>
@@ -216,7 +240,7 @@
           icon={IconCopy}
           size="small"
           kind="ghost"
-          showTooltip={{ label: presentation.string.Copy }}
+          showTooltip={{ label: isServerUrlCopied ? presentation.string.DocumentUrlCopied : presentation.string.Copy }}
           disabled={!accessEnabled}
           on:click={copyAccount}
         />
@@ -237,7 +261,9 @@
             size="small"
             kind="ghost"
             disabled={!accessEnabled}
-            showTooltip={{ label: presentation.string.Copy }}
+            showTooltip={{
+              label: isServerUrlCopied ? presentation.string.DocumentUrlCopied : presentation.string.Copy
+            }}
             on:click={copyPassword}
           />
         </div>

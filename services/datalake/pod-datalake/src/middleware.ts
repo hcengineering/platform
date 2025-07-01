@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
+import { systemAccountUuid } from '@hcengineering/core'
 import { extractToken } from '@hcengineering/server-client'
+import { Token } from '@hcengineering/server-token'
 import { type Response, type Request, type NextFunction, RequestHandler } from 'express'
 import { ApiError } from './error'
-import { Token } from '@hcengineering/server-token'
-import { systemAccountUuid } from '@hcengineering/core'
 
 export interface KeepAliveOptions {
   timeout: number
@@ -105,4 +105,13 @@ export const withBlob = (req: RequestWithAuth, res: Response, next: NextFunction
   }
 
   next()
+}
+
+export const withReadonly = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    next()
+    return
+  }
+
+  next(new ApiError(403, 'Service is in read-only mode'))
 }

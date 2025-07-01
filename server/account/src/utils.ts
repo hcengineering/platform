@@ -835,13 +835,14 @@ export async function createWorkspaceRecord (
   workspaceName: string,
   account: PersonUuid,
   region: string = '',
-  initMode: WorkspaceMode = 'pending-creation'
+  initMode: WorkspaceMode = 'pending-creation',
+  dataId?: WorkspaceDataId
 ): Promise<CreateWorkspaceRecordResult> {
   const brandingKey = branding?.key ?? 'huly'
   const regionInfo = getRegions().find((it) => it.region === region)
 
   if (regionInfo === undefined) {
-    ctx.error('Region not found', { region })
+    ctx.error('Region not found', { region, regions: getRegions() })
 
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.InternalServerError, {
@@ -871,6 +872,7 @@ export async function createWorkspaceRecord (
         {
           name: workspaceName,
           url: workspaceUrl,
+          dataId,
           branding: brandingKey,
           createdBy: account,
           billingAccount: account,

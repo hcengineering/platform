@@ -162,7 +162,7 @@
       },
       {
         icon: setting.icon.Signout,
-        label: setting.string.Signout,
+        label: hasAccountRole(account, AccountRole.DocGuest) ? setting.string.Signout : login.string.LogIn,
         action: async () => {
           await logOut()
           navigate({ path: [loginId] })

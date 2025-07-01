@@ -348,62 +348,70 @@ export function devTool (
     .description('create workspace')
     .option('-i, --init <ws>', 'Init from workspace')
     .option('-r, --region <region>', 'Region')
+    .option('-d, --dataId <dataId>', 'DataId for workspace')
     .option('-b, --branding <key>', 'Branding key')
-    .action(async (name, socialString, cmd: { account: string, init?: string, branding?: string, region?: string }) => {
-      const { txes, version, migrateOperations } = prepareTools()
-      await withAccountDatabase(async (db) => {
-        const measureCtx = new MeasureMetricsContext('create-workspace', {})
-        const brandingObj =
-          cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
-        const socialId = await db.socialId.findOne({ key: socialString as PersonId })
-        if (socialId == null) {
-          throw new Error(`Social id ${socialString} not found`)
-        }
+    .action(
+      async (
+        name,
+        socialString,
+        cmd: { account: string, init?: string, branding?: string, region?: string, dataId?: string }
+      ) => {
+        const { txes, version, migrateOperations } = prepareTools()
+        await withAccountDatabase(async (db) => {
+          const measureCtx = new MeasureMetricsContext('create-workspace', {})
+          const brandingObj =
+            cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
+          const socialId = await db.socialId.findOne({ key: socialString as PersonId })
+          if (socialId == null) {
+            throw new Error(`Social id ${socialString} not found`)
+          }
 
-        const res = await createWorkspaceRecord(
-          measureCtx,
-          db,
-          brandingObj,
-          name,
-          socialId.personUuid,
-          cmd.region,
-          'manual-creation'
-        )
-        const wsInfo = await getWorkspaceInfoWithStatusById(db, res.workspaceUuid)
+          const res = await createWorkspaceRecord(
+            measureCtx,
+            db,
+            brandingObj,
+            name,
+            socialId.personUuid,
+            cmd.region,
+            'manual-creation',
+            cmd.dataId as WorkspaceDataId
+          )
+          const wsInfo = await getWorkspaceInfoWithStatusById(db, res.workspaceUuid)
 
-        if (wsInfo == null) {
-          throw new Error(`Created workspace record ${res.workspaceUuid} not found`)
-        }
-        const coreWsInfo = flattenStatus(wsInfo)
-        const accountClient = getAccountClient(getToolToken())
+          if (wsInfo == null) {
+            throw new Error(`Created workspace record ${res.workspaceUuid} not found`)
+          }
+          const coreWsInfo = flattenStatus(wsInfo)
+          const accountClient = getAccountClient(getToolToken())
 
-        const queue = getPlatformQueue('tool', cmd.region)
-        const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
+          const queue = getPlatformQueue('tool', cmd.region)
+          const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
 
-        await createWorkspace(
-          measureCtx,
-          version,
-          brandingObj,
-          coreWsInfo,
-          txes,
-          migrateOperations,
-          accountClient,
-          wsProducer,
-          undefined,
-          true
-        )
-        await updateWorkspaceInfo(measureCtx, db, brandingObj, getToolToken(), {
-          workspaceUuid: res.workspaceUuid,
-          event: 'create-done',
-          version,
-          progress: 100
+          await createWorkspace(
+            measureCtx,
+            version,
+            brandingObj,
+            coreWsInfo,
+            txes,
+            migrateOperations,
+            accountClient,
+            wsProducer,
+            undefined,
+            true
+          )
+          await updateWorkspaceInfo(measureCtx, db, brandingObj, getToolToken(), {
+            workspaceUuid: res.workspaceUuid,
+            event: 'create-done',
+            version,
+            progress: 100
+          })
+
+          await wsProducer.send(res.workspaceUuid, [workspaceEvents.created()])
+          await queue.shutdown()
+          console.log(queue)
         })
-
-        await wsProducer.send(res.workspaceUuid, [workspaceEvents.created()])
-        await queue.shutdown()
-        console.log(queue)
-      })
-    })
+      }
+    )
 
   program
     .command('set-user-role <email> <workspace> <role>')

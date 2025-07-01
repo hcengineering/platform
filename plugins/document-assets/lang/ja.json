@@ -37,6 +37,7 @@
     "Untitled": "無題",
     "Description": "説明",
     "CopyDocumentUrl": "ドキュメントのURLをクリップボードにコピー",
+    "DocumentUrlCopied": "コピーしました",
     "ViewMode": "表示",
     "EditMode": "編集",
     "SuggestMode": "提案",

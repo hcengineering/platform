@@ -14,7 +14,7 @@
 //
 
 import { AccountClient } from '@hcengineering/account-client'
-import { isActiveMode, MeasureContext, TxOperations } from '@hcengineering/core'
+import { MeasureContext, TxOperations } from '@hcengineering/core'
 import { getClient } from './client'
 import { getUserByEmail, removeUserByEmail } from './kvsUtils'
 import { IncomingSyncManager } from './sync'
@@ -65,16 +65,7 @@ export class PushHandler {
   async push (email: GoogleEmail, mode: 'events' | 'calendar', calendarId?: string): Promise<void> {
     const tokens = await getUserByEmail(email)
     this.ctx.info('push', { email, mode, calendarId, tokens: tokens.length })
-    const workspaces = [...new Set(tokens.map((p) => p.workspace))]
-    const infos = await this.accountClient.getWorkspacesInfo(workspaces)
     for (const token of tokens) {
-      const info = infos.find((p) => p.uuid === token.workspace)
-      if (info === undefined) {
-        continue
-      }
-      if (!isActiveMode(info.mode)) {
-        continue
-      }
       await this.sync(token, mode === 'events' ? calendarId ?? null : null)
     }
   }

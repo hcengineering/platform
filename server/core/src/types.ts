@@ -521,6 +521,7 @@ export interface StorageConfig {
   kind: string
   endpoint: string
   port?: number
+  readonly?: string
 }
 
 export class NoSuchKeyError extends Error {

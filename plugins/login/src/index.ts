@@ -68,6 +68,7 @@ export default plugin(loginId, {
     InviteWorkspace: '' as Asset
   },
   string: {
+    LogIn: '' as IntlString,
     LinkValidHours: '' as IntlString,
     EmailMask: '' as IntlString,
     NoLimit: '' as IntlString,
