@@ -111,7 +111,7 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	defer logger.Debug("finished")
 
 	logger.Debug("phase 1: get a token")
-	var tokenString, err = token.NewToken(p.cfg.ServerSecret, task.Workspace, "stream", "datalake")
+	var tokenString, err = token.NewToken(p.cfg.ServerSecret, task.Workspace, "stream")
 	if err != nil {
 		logger.Error("can not create token", zap.Error(err))
 		return

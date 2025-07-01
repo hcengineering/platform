@@ -15,26 +15,22 @@ package token_test
 
 import (
 	"testing"
-	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/hcengineering/stream/internal/pkg/token"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_GenerateSimpleServiceToken(t *testing.T) {
-	var _, err = token.NewToken("secret", "ws", "issuer", "aud")
+	var _, err = token.NewToken("secret", "ws", "stream")
 	require.NoError(t, err)
 }
 
 func Test_ParseSimpleServiceToken(t *testing.T) {
 	const secret = "secret"
-	tokenString, err := token.NewToken(secret, "ws", "issuer", "aud")
+	tokenString, err := token.NewToken(secret, "ws", "stream")
 	require.NoError(t, err)
 	tok, err := token.Decode(secret, tokenString)
 	require.NoError(t, err)
-	require.Equal(t, tok.Issuer, "issuer")
-	require.Equal(t, tok.Audience, jwt.ClaimStrings{"aud"})
-	require.Equal(t, tok.Workspace, "ws")
-	require.True(t, tok.ExpiresAt.After(time.Now()))
+	require.Equal(t, "ws", tok.Workspace)
+	require.Equal(t, "stream", tok.Extra["service"])
 }
