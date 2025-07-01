@@ -443,23 +443,7 @@ export function buildModel (
   hierarchy: Hierarchy,
   model: ModelDb
 ): void {
-  const systemTx: Tx[] = []
-  const userTx: Tx[] = []
-
-  const atxes = transactions
-
-  ctx.withSync('split txes', {}, () => {
-    atxes.forEach((tx) =>
-      ((tx.modifiedBy === core.account.ConfigUser || tx.modifiedBy === core.account.System) && !isPersonAccount(tx)
-        ? systemTx
-        : userTx
-      ).push(tx)
-    )
-  })
-
-  userTx.sort(compareTxes)
-
-  let txes = systemTx.concat(userTx)
+  let txes = transactions
   if (modelFilter !== undefined) {
     txes = modelFilter(txes)
   }
