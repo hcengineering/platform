@@ -236,6 +236,9 @@ class BackupWorker {
               const totalTime = Date.now() - st
               this.allBackupTime += totalTime
               this.processed++
+            } else {
+              this.workspacesToBackup.set(ws.uuid, ws) // If failed, put back to queue
+              ctx.error('Backup failed, put back to queue', { workspace: ws.uuid, url: ws.url })
             }
           } catch (err: any) {
             ctx.error('Backup failed', { err })
