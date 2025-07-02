@@ -132,6 +132,7 @@
     "BackupFileDownload": "ファイルをダウンロード",
     "BackupFiles": "バックアップファイル",
     "BackupNoBackup": "現在、利用可能なバックアップはありません。",
+    "NonBackupedBlobs": "バックアップされていないブロブ",
     "Calendar": "カレンダー",
     "StartOfTheWeek": "週の開始",
     "SystemSetupString": "システム設定 ({day})",

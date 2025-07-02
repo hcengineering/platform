@@ -35,8 +35,7 @@ import core, {
   Ref,
   SocialIdType,
   TxOperations,
-  TxProcessor,
-  WorkspaceUuid
+  TxProcessor
 } from '@hcengineering/core'
 import setting from '@hcengineering/setting'
 import { htmlToMarkup } from '@hcengineering/text'
@@ -50,45 +49,18 @@ import {
   setCalendarsSyncHistory,
   setEventHistory
 } from './kvsUtils'
+import { lock } from './mutex'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
 import { CALENDAR_INTEGRATION, GoogleEmail, Token, User } from './types'
 import {
   getGoogleClient,
   getWorkspaceToken,
+  parseEventDate,
   parseRecurrenceStrings,
   removeIntegrationSecret,
   setCredentials
 } from './utils'
 import { WatchController } from './watch'
-
-export const synced = new Set<WorkspaceUuid>()
-
-const locks = new Map<string, Promise<void>>()
-
-export async function lock (key: string): Promise<() => void> {
-  // Wait for any existing lock to be released
-  const currentLock = locks.get(key)
-  if (currentLock != null) {
-    await currentLock
-  }
-
-  // Create a new lock
-  let releaseFn!: () => void
-  const newLock = new Promise<void>((resolve) => {
-    releaseFn = resolve
-  })
-
-  // Store the lock
-  locks.set(key, newLock)
-
-  // Return the release function
-  return () => {
-    if (locks.get(key) === newLock) {
-      locks.delete(key)
-    }
-    releaseFn()
-  }
-}
 
 export class IncomingSyncManager {
   private readonly rateLimiter: RateLimiter
@@ -346,7 +318,7 @@ export class IncomingSyncManager {
         {
           ...data,
           recurringEventId: event.recurringEventId as Ref<ReccuringEvent>,
-          originalStartTime: parseDate(event.originalStartTime),
+          originalStartTime: parseEventDate(event.originalStartTime),
           isCancelled: event.status === 'cancelled'
         },
         current as ReccuringInstance
@@ -431,8 +403,8 @@ export class IncomingSyncManager {
   ): Promise<AttachedData<Event>> {
     const participants = await this.getParticipants(event)
     const res: AttachedData<Event> = {
-      date: parseDate(event.start),
-      dueDate: parseDate(event.end),
+      date: parseEventDate(event.start),
+      dueDate: parseEventDate(event.end),
       allDay: event.start?.date != null,
       description: htmlToMarkup(event.description ?? ''),
       title: event.summary ?? '',
@@ -531,10 +503,10 @@ export class IncomingSyncManager {
       res.title = event.summary
     }
     if (event.start != null) {
-      res.date = parseDate(event.start)
+      res.date = parseEventDate(event.start)
     }
     if (event.end != null) {
-      res.dueDate = parseDate(event.end)
+      res.dueDate = parseEventDate(event.end)
     }
     if (event.visibility != null && event.visibility !== 'default') {
       res.visibility =
@@ -566,7 +538,7 @@ export class IncomingSyncManager {
         {
           ...data,
           recurringEventId: event.recurringEventId,
-          originalStartTime: parseDate(event.originalStartTime),
+          originalStartTime: parseEventDate(event.originalStartTime),
           isCancelled: event.status === 'cancelled',
           rules: parseRule.rules,
           exdate: parseRule.exdate,
@@ -740,14 +712,4 @@ export class IncomingSyncManager {
       }
     }
   }
-}
-
-function parseDate (date: calendar_v3.Schema$EventDateTime | undefined): number {
-  if (date?.dateTime != null) {
-    return new Date(date.dateTime).getTime()
-  }
-  if (date?.date != null) {
-    return new Date(date.date).getTime()
-  }
-  return 0
 }

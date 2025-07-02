@@ -105,6 +105,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   setMetadata(account.metadata.WsLivenessDays, wsLivenessDays)
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
+  setMetadata(serverToken.metadata.Service, 'account')
 
   const hasSignUp = process.env.DISABLE_SIGNUP !== 'true'
   const methods = getMethods(hasSignUp)
@@ -311,8 +312,13 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
           const transactors = getAllTransactors(EndpointKind.Internal)
           for (const tr of transactors) {
             const serverEndpoint = tr.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+            const jsonBody = JSON.stringify(req.request.body as any)
             await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=maintenance&timeout=${timeMinutes}`, {
-              method: 'PUT'
+              method: 'PUT',
+              body: jsonBody,
+              headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+              }
             })
           }
 

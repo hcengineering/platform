@@ -833,6 +833,85 @@ Lorem ipsum dolor sit amet.
           }
         ]
       }
+    },
+    {
+      name: 'multiline image alt',
+      markdown: '![line0\\\n\\\nline1](http://example.com/image.png)',
+      markup: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'image',
+                attrs: { src: 'http://example.com/image.png', alt: 'line0\n\nline1' },
+                content: []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      name: 'image in a table cell',
+      markdown:
+        '<table><tbody><tr><td><p>Some text</p><p> <img src="files/image_1.png" alt="image-alt"/></p></td></tr></tbody></table>',
+      markup: {
+        type: 'doc',
+        content: [
+          {
+            type: 'table',
+            content: [
+              {
+                type: 'tableRow',
+                content: [
+                  {
+                    type: 'tableCell',
+                    attrs: {
+                      colspan: undefined,
+                      rowspan: undefined,
+                      colwidth: undefined
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        content: [
+                          {
+                            type: 'text',
+                            text: 'Some text'
+                          }
+                        ]
+                      },
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          textAlign: null
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: ' '
+                          },
+                          {
+                            type: 'image',
+                            attrs: {
+                              src: 'files/image_1.png',
+                              alt: 'image-alt',
+                              'file-id': null,
+                              title: null
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 
@@ -955,9 +1034,18 @@ describe('markdownToMarkup -> markupToMarkdown', () => {
       markdown: '<img width="320" height="160" src="http://example.com/image" alt="image">'
     },
     {
+      name: 'Image with multiline alt',
+      markdown: '![link0\\\n\\\nline1](http://example.com/image.png)'
+    },
+    {
       name: 'Table',
       markdown:
         '<table><tbody><tr><th><p>Header 1</p></th><th><p>Header 2</p></th></tr><tr><td><p>Cell 1</p></td><td><p>Cell 2</p></td></tr><tr><td><p>Cell 3</p></td><td><p>Cell 4</p></td></tr></tbody></table>'
+    },
+    {
+      name: 'Complex table',
+      markdown:
+        '<table><tbody><tr><td colspan="2" colwidth="320"><p>Header</p></td></tr><tr><td rowspan="2"><p>Cell 1</p></td><td><p>Cell 2</p></td></tr><tr><td><p>Cell 3</p></td></tr></tbody></table>'
     },
     {
       name: 'Sub',

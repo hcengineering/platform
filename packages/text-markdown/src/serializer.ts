@@ -779,6 +779,7 @@ export class MarkdownState implements IState {
     if (startOfLine) {
       str = str.replace(/^[:#\-*+]/, '\\$&').replace(/^(\d+)\./, '$1\\.')
     }
+    str = str.replace(/\r?\n/g, '\\\n')
     return str
   }
 

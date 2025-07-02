@@ -42,7 +42,7 @@ import type {
   TxResult,
   WithLookup
 } from './storage'
-import { type Tx, type TxCUD, type TxWorkspaceEvent, WorkspaceEvent } from './tx'
+import { type Tx, type TxWorkspaceEvent, WorkspaceEvent } from './tx'
 import { platformNow, platformNowDiff, toFindResult } from './utils'
 
 /**
@@ -371,18 +371,6 @@ export async function createClient (
   return client
 }
 
-// Ignore Employee accounts.
-// We may still have them in transactions in old workspaces even with global accounts.
-function isPersonAccount (tx: Tx): boolean {
-  return (
-    (tx._class === core.class.TxCreateDoc ||
-      tx._class === core.class.TxUpdateDoc ||
-      tx._class === core.class.TxRemoveDoc) &&
-    ((tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount' ||
-      (tx as TxCUD<Doc>).objectClass === 'core:class:Account')
-  )
-}
-
 async function loadModel (
   ctx: MeasureContext,
   conn: ClientConnection,
@@ -443,23 +431,7 @@ export function buildModel (
   hierarchy: Hierarchy,
   model: ModelDb
 ): void {
-  const systemTx: Tx[] = []
-  const userTx: Tx[] = []
-
-  const atxes = transactions
-
-  ctx.withSync('split txes', {}, () => {
-    atxes.forEach((tx) =>
-      ((tx.modifiedBy === core.account.ConfigUser || tx.modifiedBy === core.account.System) && !isPersonAccount(tx)
-        ? systemTx
-        : userTx
-      ).push(tx)
-    )
-  })
-
-  userTx.sort(compareTxes)
-
-  let txes = systemTx.concat(userTx)
+  let txes = transactions
   if (modelFilter !== undefined) {
     txes = modelFilter(txes)
   }
@@ -490,20 +462,4 @@ function getLastTxTime (txes: Tx[]): number {
     }
   }
   return lastTxTime
-}
-
-function compareTxes (a: Tx, b: Tx): number {
-  const result = a.modifiedOn - b.modifiedOn
-  if (result !== 0) {
-    return result
-  }
-  if (a._class !== b._class) {
-    if (a._class === core.class.TxCreateDoc) {
-      return -1
-    }
-    if (b._class === core.class.TxCreateDoc) {
-      return 1
-    }
-  }
-  return a._id.localeCompare(b._id)
 }

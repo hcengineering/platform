@@ -24,7 +24,7 @@ export interface KeepAliveOptions {
   max: number
 }
 
-interface RequestWithAuth extends Request {
+export interface RequestWithAuth extends Request {
   token?: Token
 }
 

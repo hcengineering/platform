@@ -19,7 +19,7 @@ import { PlatformQueue, QueueTopic, getCPUInfo, getMemoryInfo } from '@hcenginee
 import { decodeToken, TokenError } from '@hcengineering/server-token'
 
 import cors from 'cors'
-import express, { type Express, type NextFunction, type Request, type Response } from 'express'
+import express, { type Express, type NextFunction, type Response } from 'express'
 import fileUpload from 'express-fileupload'
 import { type Server } from 'http'
 import morgan from 'morgan'
@@ -29,6 +29,7 @@ import { cacheControl } from './const'
 import { createDb } from './datalake/db'
 import { ApiError } from './error'
 import {
+  type RequestWithAuth,
   keepAlive,
   withAdminAuthorization,
   withAuthorization,
@@ -69,7 +70,7 @@ const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-ag
 
 type AsyncRequestHandler = (
   ctx: MeasureContext,
-  req: Request,
+  req: RequestWithAuth,
   res: Response,
   datalake: Datalake,
   tempDir: TemporaryDir
@@ -81,12 +82,13 @@ const handleRequest = async (
   datalake: Datalake,
   tempDir: TemporaryDir,
   fn: AsyncRequestHandler,
-  req: Request,
+  req: RequestWithAuth,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    await ctx.with(name, {}, (ctx) => {
+    const source = req.token?.extra?.service ?? '🤦‍♂️user'
+    await ctx.with(name, { source }, (ctx) => {
       onHeaders(res, () => {
         const measurements = ctx.metrics?.measurements
         if (measurements !== undefined) {
@@ -152,7 +154,7 @@ export async function createServer (
 
   const wrapRequest =
     (ctx: MeasureContext, name: string, fn: AsyncRequestHandler) =>
-      (req: Request, res: Response, next: NextFunction) => {
+      (req: RequestWithAuth, res: Response, next: NextFunction) => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
         handleRequest(ctx, name, datalake, tempDir, fn, req, res, next)
       }

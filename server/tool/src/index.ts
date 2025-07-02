@@ -32,7 +32,6 @@ import core, {
   platformNow,
   platformNowDiff,
   type Ref,
-  systemAccountUuid,
   type Tx,
   type TxOperations,
   type WithLookup,
@@ -59,13 +58,14 @@ import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
-import { generateToken } from '@hcengineering/server-token'
 import fs from 'fs'
 import * as yaml from 'js-yaml'
 import path from 'path'
+import { sendTransactorEvent } from './utils'
 
 export * from './connect'
 export * from './plugin'
+export * from './utils'
 export { toolPlugin as default }
 
 export class FileModelLogger implements ModelLogger {
@@ -384,16 +384,8 @@ export async function upgradeModel (
 
   // We need to send reboot for workspace
   ctx.info('send force close', { workspace: wsIds, transactorUrl })
-  const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
-  const token = generateToken(systemAccountUuid, wsIds.uuid, { service: 'tool', admin: 'true' })
 
-  try {
-    await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close`, {
-      method: 'PUT'
-    })
-  } catch (err: any) {
-    // Ignore error if transactor is not yet ready
-  }
+  await sendTransactorEvent(wsIds.uuid, 'force-close')
   return model
 }
 

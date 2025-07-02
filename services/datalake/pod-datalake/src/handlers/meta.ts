@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 
 import { type Datalake } from '../datalake'
@@ -24,7 +24,8 @@ export async function handleMetaGet (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace, name } = req.params
+  const { name } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   const meta = await datalake.getMeta(ctx, workspace, name)
   if (meta == null) {
@@ -41,7 +42,8 @@ export async function handleMetaPut (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace, name } = req.params
+  const { name } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   const meta = req.body
   if (typeof meta !== 'object') {
@@ -67,7 +69,8 @@ export async function handleMetaPatch (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace, name } = req.params
+  const { name } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   if (typeof req.body !== 'object') {
     res.status(400).send()

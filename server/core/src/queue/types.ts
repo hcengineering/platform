@@ -25,7 +25,7 @@ export interface ConsumerHandle {
 }
 
 export interface ConsumerMessage<T> {
-  id: WorkspaceUuid | string
+  workspace: WorkspaceUuid
   value: T[]
 }
 
@@ -68,7 +68,7 @@ export interface PlatformQueue {
  * Create a producer for a topic.
  */
 export interface PlatformQueueProducer<T> {
-  send: (id: WorkspaceUuid | string, msgs: T[]) => Promise<void>
+  send: (workspace: WorkspaceUuid, msgs: T[], partitionKey?: string) => Promise<void>
   close: () => Promise<void>
 
   getQueue: () => PlatformQueue

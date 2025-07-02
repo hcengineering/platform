@@ -26,6 +26,7 @@ import { createServer, listen } from './server'
 
 const setupMetadata = (): void => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'backup-api')
 }
 
 export const main = async (): Promise<void> => {

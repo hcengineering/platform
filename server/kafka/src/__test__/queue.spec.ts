@@ -1,4 +1,4 @@
-import { generateId, MeasureMetricsContext } from '@hcengineering/core'
+import { generateId, MeasureMetricsContext, type WorkspaceUuid } from '@hcengineering/core'
 import { createPlatformQueue, parseQueueConfig } from '..'
 
 jest.setTimeout(120000)
@@ -26,7 +26,7 @@ describe('queue', () => {
 
       const producer = queue.getProducer<string>(testCtx, 'qtest')
       for (let i = 0; i < docsCount; i++) {
-        await producer.send(genId, ['msg' + i])
+        await producer.send(genId as any as WorkspaceUuid, ['msg' + i])
       }
 
       await p1
@@ -55,7 +55,7 @@ describe('queue', () => {
       })
 
       const producer = queue.getProducer<string>(testCtx, 'test')
-      await producer.send(genId, ['msg'])
+      await producer.send(genId as any as WorkspaceUuid, ['msg'])
 
       await p
     } finally {

@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { createReadStream, createWriteStream } from 'fs'
 import sharp from 'sharp'
@@ -105,7 +105,8 @@ export async function handleImageGet (
   datalake: Datalake,
   tempDir: TemporaryDir
 ): Promise<void> {
-  const { workspace, name, transform } = req.params
+  const { name, transform } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   const accept = req.headers.accept ?? 'image/*'
   const { format, width, height, fit } = getImageTransformParams(accept, transform)

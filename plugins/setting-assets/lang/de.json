@@ -132,6 +132,7 @@
     "BackupFileDownload": "Datei herunterladen",
     "BackupFiles": "Sicherungsdateien",
     "BackupNoBackup": "Derzeit sind keine Sicherungen verfügbar.",
+    "NonBackupedBlobs": "Nicht gesicherte Blobs",
     "Calendar": "Kalender",
     "StartOfTheWeek": "Wochenstart",
     "SystemSetupString": "Systemkonfiguration ({day})",
