@@ -73,19 +73,19 @@ function toText (text: string, display: 'normal' | 'bold' | 'code' = 'normal'): 
 }
 
 async function formatCustomEvent (event: AnalyticEvent, client: TxOperations): Promise<string | undefined> {
-  const text = event.params.event as string | undefined
+  const text = event.properties.event as string | undefined
 
   if (text === undefined || text === '') return
-  if (eventsToSkip.includes(event.params.event)) return
+  if (eventsToSkip.includes(event.properties.event)) return
   if (sidebarEvents.includes(text)) {
-    return await formatSidebarEvent(text, event.params, client)
+    return await formatSidebarEvent(text, event.properties, client)
   }
 
   const paramsTexts = []
 
-  for (const key in event.params) {
+  for (const key in event.properties) {
     if (key !== 'event') {
-      paramsTexts.push(`${key}: ${event.params[key]}`)
+      paramsTexts.push(`${key}: ${event.properties[key]}`)
     }
   }
 
@@ -131,7 +131,7 @@ async function formatSidebarEvent (
 }
 
 async function formatErrorEvent (event: AnalyticEvent): Promise<string | undefined> {
-  const error = event.params.error
+  const error = event.properties.error
 
   if (error === undefined || (typeof error === 'object' && Object.keys(error).length === 0)) {
     return
@@ -143,11 +143,11 @@ async function formatErrorEvent (event: AnalyticEvent): Promise<string | undefin
 }
 
 async function formatSetTagEvent (event: AnalyticEvent): Promise<string | undefined> {
-  const key = event.params.key
+  const key = event.properties.key
 
   if (key === undefined || key === '' || key === 'workspace') return
 
-  const value = event.params.value
+  const value = event.properties.value
   const setLabel = await translate(analyticsCollector.string.Set, {})
   const toLabel = await translate(analyticsCollector.string.To, {})
 
@@ -155,7 +155,7 @@ async function formatSetTagEvent (event: AnalyticEvent): Promise<string | undefi
 }
 
 async function formatNavigationEvent (event: AnalyticEvent, hierarchy: Hierarchy): Promise<string | undefined> {
-  const path = event.params.path as string | undefined
+  const path = event.properties.path as string | undefined
 
   if (path === undefined || path === '') return
   const location = parseLocation(new URL('http://localhost:8080' + path))

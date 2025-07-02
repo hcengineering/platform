@@ -385,8 +385,19 @@ export async function connect (title: string): Promise<Client | undefined> {
     await setPlatformStatus(new Status(Severity.INFO, platform.status.SystemAccount, {}))
   }
 
-  Analytics.setUser(account)
-  Analytics.setTag('workspace', wsUrl)
+  const email = me.fullSocialIds.find((si) => si.type === 'email')?.value ?? me.fullSocialIds.find((si) => si._id === me.primarySocialId)?.value
+  // Analytics.handleEvent('workbench.Connect', { email: email ?? account, ok: true })
+  // Analytics.setTag('barnding', workspace.branding ?? 'unknown')
+
+  const data: Record<string, any> = {
+    email: email ?? account,
+    account_uuid: account,
+    workspace: workspace.name,
+    workspace_uuid: workspace.uuid
+  }
+
+  Analytics.setUser(email ?? account, data)
+  Analytics.setWorkspace(workspace.name)
   console.log('Logged in with account: ', me)
   setCurrentAccount(me)
 

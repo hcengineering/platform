@@ -17,12 +17,13 @@ import { AnalyticEvent } from '@hcengineering/analytics-collector'
 import { AccountRole, MeasureContext, isWorkspaceCreating, WorkspaceUuid, PersonUuid } from '@hcengineering/core'
 import { Person } from '@hcengineering/contact'
 import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
-import { Db, Collection } from 'mongodb'
+// import { Db, Collection } from 'mongodb'
 
 import { WorkspaceClient } from './workspaceClient'
 import config from './config'
 import { SupportWsClient } from './supportWsClient'
-import { OnboardingMessage } from './types'
+// import { OnboardingMessage } from './types'
+// import { AnalyticsDB } from './db/postgres'
 
 const closeWorkspaceTimeout = 10 * 60 * 1000 // 10 minutes
 
@@ -31,7 +32,7 @@ export class Collector {
   private readonly closeWorkspaceTimeouts: Map<WorkspaceUuid, NodeJS.Timeout> = new Map<WorkspaceUuid, NodeJS.Timeout>()
   private readonly createdWorkspaces: Set<WorkspaceUuid> = new Set<WorkspaceUuid>()
 
-  private readonly onboardingMessagesCollection: Collection<OnboardingMessage>
+  // private readonly onboardingMessagesCollection: Collection<OnboardingMessage>
 
   supportClient: SupportWsClient | undefined = undefined
 
@@ -39,10 +40,10 @@ export class Collector {
   persons = new Map<string, Person>()
 
   constructor (
-    private readonly ctx: MeasureContext,
-    private readonly db: Db
+    private readonly ctx: MeasureContext
+    // private readonly db: AnalyticsDB
   ) {
-    this.onboardingMessagesCollection = this.db.collection<OnboardingMessage>('messages')
+    // this.onboardingMessagesCollection = this.db.collection<OnboardingMessage>('messages')
     // this.supportClient = this.getSupportWorkspaceClient() // TODO: FIXME
   }
 
@@ -123,7 +124,7 @@ export class Collector {
       return
     }
 
-    void this.pushEventsToSupport(events, token)
+    // void this.pushEventsToSupport(events, token)
   }
 
   async isWorkspaceCreated (token: Token): Promise<boolean> {
@@ -196,7 +197,7 @@ export class Collector {
 
     const client = this.getSupportWorkspaceClient()
 
-    await client.pushEvents(events, token.workspace, person, this.onboardingMessagesCollection)
+    await client.pushEvents(events, token.workspace, person)
   }
 
   async close (): Promise<void> {
@@ -212,4 +213,13 @@ export class Collector {
       this.supportClient = undefined
     }
   }
+
+  // async saveOnboardingMessage (message: OnboardingMessage): Promise<void> {
+  //   // await this.db.saveOnboardingMessage(message)
+  // }
+
+  // async getOnboardingMessages (channelId: string): Promise<OnboardingMessage[]> {
+  //   // return this.db.getOnboardingMessages(channelId)
+  //   return []
+  // }
 }

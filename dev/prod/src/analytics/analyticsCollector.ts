@@ -17,97 +17,232 @@ import { type AnalyticProvider } from '@hcengineering/analytics'
 import presentation  from '@hcengineering/presentation'
 import { getMetadata } from '@hcengineering/platform'
 import { type AnalyticEvent, AnalyticEventType } from '@hcengineering/analytics-collector'
-
 import { type Config } from '../platform'
+import { collectEventMetadata } from './utils'
+
+interface QueuedEvent extends AnalyticEvent {
+  retryCount?: number
+}
 
 export class AnalyticsCollectorProvider implements AnalyticProvider {
-  private readonly collectIntervalMs =  5000
-
-  private readonly events: AnalyticEvent[] = []
-
+  private readonly collectIntervalMs = 5000
+  private readonly maxRetries = 3
+  private readonly events: QueuedEvent[] = []
+  private collectTimer: NodeJS.Timeout | null = null
   private url: string = ''
+  private email: string | undefined = undefined
+  private anonymousId: string = ''
+  private isAuthenticated: boolean = false
+  private data: Record<string, any> | null = null
 
   init(config: Config): boolean {
     this.url = config.ANALYTICS_COLLECTOR_URL
     if (this.url !== undefined && this.url !== '' && this.url !== null) {
-      setInterval(() => {
-        void this.sendEvents()
-      }, this.collectIntervalMs)
+      this.initializeAnonymousId()
+      this.startCollectionTimer()
       return true
     }
     return false
   }
 
-  async sendEvents(): Promise<void> {
-    const data = this.events.splice(0, this.events.length)
+  private initializeAnonymousId(): void {
+    this.anonymousId = this.generateAnonymousId()
+  }
 
-    if(data.length === 0) {
-      return
+  private generateAnonymousId(): string {
+    return 'anon_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15)
+  }
+
+  private startCollectionTimer(): void {
+    if (this.collectTimer) clearInterval(this.collectTimer)
+    this.collectTimer = setInterval(() => void this.sendEvents(), this.collectIntervalMs)
+  }
+
+  private stopCollectionTimer(): void {
+    if (this.collectTimer) {
+      clearInterval(this.collectTimer)
+      this.collectTimer = null
     }
+  }
+
+  async sendEvents(): Promise<void> {
+    if (this.events.length === 0) return
 
     const token = getMetadata(presentation.metadata.Token) ?? ''
+    if (token === '') return
 
-    if (token === '') {
-      return
-    }
+    const eventsToSend = this.events.splice(0, this.events.length)
 
     try {
-      await fetch(`${this.url}/collect`, {
+      const response = await fetch(`${this.url}/collect`, {
         method: 'POST',
         headers: {
           Authorization: 'Bearer ' + token,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(eventsToSend)
       })
-    }catch(err) {
-      console.error('Failed to send events', err)
+
+      if (!response.ok) {
+        this.handleFailedEvents(eventsToSend)
+      }
+    } catch (err) {
+      this.handleFailedEvents(eventsToSend)
     }
   }
 
-  setUser(email: string): void {
-    this.events.push({
-      event: AnalyticEventType.SetUser,
-      params: { email },
-      timestamp: Date.now()
+  private handleFailedEvents(failedEvents: QueuedEvent[]): void {
+    const eventsToRetry: QueuedEvent[] = []
+    
+    failedEvents.forEach(event => {
+      event.retryCount = (event.retryCount || 0) + 1
+      if (event.retryCount <= this.maxRetries) {
+        eventsToRetry.push(event)
+      }
     })
+    
+    this.events.unshift(...eventsToRetry)
   }
 
-  setTag(key: string, value: string): void {
-    this.events.push({
-      event: AnalyticEventType.SetTag,
-      params: { key, value },
-      timestamp: Date.now()
-    })
+  addEvent(eventType: AnalyticEventType, properties: Record<string, any> = {}, eventName: string, overrideDistinctId?: string): void {
+    const currentId = overrideDistinctId ?? (this.isAuthenticated && this.email ? this.email : this.anonymousId)
+    
+    const baseProperties = {
+      ...properties,
+      analyticsCollector: true,
+      $anonymous_id: this.anonymousId,
+      $is_authenticated: this.isAuthenticated
+    }
+    
+    const eventMetadata = collectEventMetadata(baseProperties, eventName)
+    
+    const finalProperties: Record<string, any> = { ...eventMetadata.properties }
+    
+    if (eventType === AnalyticEventType.CustomEvent && eventName) {
+      finalProperties.event = eventName
+    }
+    
+    if (this.data != null) {
+      for (const [key, value] of Object.entries(this.data)) {
+        finalProperties[key] = value
+      }
+    }
+    
+    const event: QueuedEvent = {
+      event: eventType,
+      properties: finalProperties,
+      timestamp: Date.now(),
+      distinct_id: currentId,
+    }
+
+    this.events.push(event)
+  }
+
+  private cleanUserData(data: Record<string, any>): Record<string, any> {
+    const cleanedData: Record<string, any> = {}
+    for (const [key, value] of Object.entries(data)) {
+      if (Array.isArray(value)) {
+        cleanedData[key] = value.join(', ')
+      } else {
+        cleanedData[key] = value
+      }
+    }
+    return cleanedData
+  }
+
+  setUser(email: string, data: Record<string, any>): void {
+    if (typeof data === 'string') {
+      return this.setUser(email, { userString: data })
+    }
+    
+    const wasAuthenticated = this.isAuthenticated
+    const previousId = this.anonymousId
+    
+    const cleanedData = this.cleanUserData(data)
+    
+    this.email = email
+    this.data = cleanedData
+    this.isAuthenticated = true
+
+    if (!wasAuthenticated && previousId) {
+      this.addEvent(AnalyticEventType.SetAlias, {
+        alias: email,
+        previous_id: previousId,
+        $anonymous_id: previousId
+      }, '$create_alias', previousId)
+    }
+
+    const setData: Record<string, any> = { email, ...cleanedData }
+    
+    this.addEvent(AnalyticEventType.SetUser, {
+      $set: setData,
+      $set_once: { 
+        initial_url: window.location.pathname,
+        first_seen: new Date().toISOString()
+      },
+    }, '$identify')
+  }
+
+  setAlias(distinctId: string, alias: string): void {
+    this.addEvent(AnalyticEventType.SetAlias, { 
+      alias,
+      previous_id: distinctId 
+    }, '$create_alias')
+  }
+
+  setTag(key: string, value: string | number): void {
+    this.addEvent(AnalyticEventType.SetTag, {
+      $set: { [key]: value },
+      $set_once: { initial_url: window.location.pathname },
+    }, '$set')
   }
 
   setWorkspace(ws: string): void {
-    this.setTag('workspace', ws)
+    this.addEvent(AnalyticEventType.SetGroup, {
+      $group_0: ws,
+      $group_key: ws,
+      $group_set: { 
+        name: ws,
+        joined_at: new Date().toISOString()
+      },
+      $group_type: 'workspace',
+      $groups: { workspace: ws }
+    }, '$groupidentify')
   }
 
   handleEvent(event: string, params: Record<string, string>): void {
-    this.events.push({
-      event: AnalyticEventType.CustomEvent,
-      params: { ...params, event },
-      timestamp: Date.now()
-    })
+    this.addEvent(AnalyticEventType.CustomEvent, { event, ...params }, event)
   }
 
   handleError(error: Error): void {
-    this.events.push({
-      event: AnalyticEventType.Error,
-      params: { error },
-      timestamp: Date.now()
-    })
+    const currentId = this.isAuthenticated && this.email ? this.email : this.anonymousId
+    this.addEvent(AnalyticEventType.Error, {
+      error_message: error.message ?? 'Unknown error',
+      error_type: error.name ?? 'Error',
+      error_stack: error.stack ?? ''
+    }, '$exception', currentId)
   }
 
   navigate(path: string): void {
-    this.events.push({
-      event: AnalyticEventType.Navigation,
-      params: { path },
-      timestamp: Date.now()
-    })
+    this.addEvent(AnalyticEventType.Navigation, { path }, '$pageview')
   }
 
-  logout(): void {}
+  logout(): void {
+    void this.sendEvents()
+
+    this.email = undefined
+    this.isAuthenticated = false
+    this.data = null
+
+    this.anonymousId = this.generateAnonymousId()
+  }
+
+  destroy(): void {
+    this.stopCollectionTimer()
+    void this.sendEvents()
+  }
+
+  flush(): Promise<void> {
+    return this.sendEvents()
+  }
 }

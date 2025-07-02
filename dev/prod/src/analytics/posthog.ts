@@ -20,7 +20,10 @@ export class PosthogAnalyticProvider implements AnalyticProvider {
       posthog.identify(email, { email: email })
     }
   }
-  setTag(key: string, value: string): void {
+  setAlias(distinctId: string, alias: string): void {
+    posthog.alias(alias, distinctId)
+  }
+  setTag(key: string, value: string | number): void {
     posthog.setPersonProperties({ [key]: value })
   }
   setWorkspace(ws: string): void {
@@ -30,7 +33,7 @@ export class PosthogAnalyticProvider implements AnalyticProvider {
     })
   }
   logout(): void {
-    posthog.reset()
+    posthog.reset(true)
   }
   handleEvent(event: string, params: Record<string, any>): void {
     posthog.capture(event, params)

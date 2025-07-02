@@ -15,13 +15,16 @@
 
 export interface Config {
   Port: number
-  MongoUrl: string
-  MongoDb: string
+  DbUrl: string
+  // MongoUrl: string
+  // MongoDb: string
   Secret: string
   ServiceID: string
   SupportWorkspace: string
   AccountsUrl: string
   SentryDSN?: string
+  PostHogAPI?: string
+  PostHogHost?: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -29,12 +32,15 @@ const parseNumber = (str: string | undefined): number | undefined => (str !== un
 const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4007,
-    MongoUrl: process.env.MONGO_URL,
-    MongoDb: process.env.MONGO_DB ?? '%analytics-collector',
+    DbUrl: process.env.DB_URL,
+    // MongoUrl: process.env.MONGO_URL,
+    // MongoDb: process.env.MONGO_DB ?? '%analytics-collector',
     Secret: process.env.SECRET,
     ServiceID: process.env.SERVICE_ID ?? 'analytics-collector-service',
     AccountsUrl: process.env.ACCOUNTS_URL,
-    SentryDSN: process.env.SENTRY_DSN ?? ''
+    SentryDSN: process.env.SENTRY_DSN ?? '',
+    PostHogAPI: process.env.POSTHOG_API_KEY ?? '',
+    PostHogHost: process.env.POSTHOG_HOST ?? ''
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

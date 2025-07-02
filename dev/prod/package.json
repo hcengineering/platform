@@ -281,6 +281,7 @@
     "@sentry/svelte": "^9.22.0",
     "posthog-js": "^1.246.0",
     "readable-stream": "^4.7.0",
-    "svelte": "^4.2.19"
+    "svelte": "^4.2.19",
+    "ua-parser-js": "^2.0.4"
   }
 }

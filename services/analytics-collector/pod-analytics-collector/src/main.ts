@@ -13,6 +13,11 @@
 // limitations under the License.
 //
 
+import { setMetadata } from '@hcengineering/platform'
+import serverToken from '@hcengineering/server-token'
+import serverClient from '@hcengineering/server-client'
+import { registerLoaders } from './loaders'
+
 import { Analytics } from '@hcengineering/analytics'
 import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
 import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
@@ -20,6 +25,9 @@ import { join } from 'path'
 
 import config from './config'
 import { initStatisticsContext } from '@hcengineering/server-core'
+import { createServer, listen } from './server'
+import { Collector } from './collector'
+// import { createAnalyticsDb } from './db'
 
 const ctx = initStatisticsContext('analytics-collector', {
   factory: () =>
@@ -40,35 +48,36 @@ Analytics.setTag('application', 'analytics-collector-service')
 
 export const main = async (): Promise<void> => {
   ctx.info('Analytics collector service is not implemented yet')
-  process.exit()
-  // setMetadata(serverToken.metadata.Secret, config.Secret)
-  // setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
-  // setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
-  //
-  // ctx.info('Analytics service started', {
-  //   accountsUrl: config.AccountsUrl
-  // })
-  //
-  // registerLoaders()
-  //
-  // const db = await getDB()
+  // process.exit()
+  setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
+  setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
+
+  ctx.info('Analytics service started', {
+    accountsUrl: config.AccountsUrl
+  })
+
+  registerLoaders()
+
+  // const db = await createAnalyticsDb(config.DbUrl)
   // const collector = new Collector(ctx, db)
-  //
-  // const app = createServer(collector)
-  // const server = listen(app, config.Port)
-  //
-  // const shutdown = (): void => {
-  //   void collector.close()
-  //   void closeDB()
-  //   server.close(() => process.exit())
-  // }
-  //
-  // process.on('SIGINT', shutdown)
-  // process.on('SIGTERM', shutdown)
-  // process.on('uncaughtException', (e) => {
-  //   console.error(e)
-  // })
-  // process.on('unhandledRejection', (e) => {
-  //   console.error(e)
-  // })
+  const collector = new Collector(ctx)
+
+  const app = createServer(collector)
+  const server = listen(app, config.Port)
+
+  const shutdown = (): void => {
+    void collector.close()
+    // void closeDB()
+    server.close(() => process.exit())
+  }
+
+  process.on('SIGINT', shutdown)
+  process.on('SIGTERM', shutdown)
+  process.on('uncaughtException', (e) => {
+    console.error(e)
+  })
+  process.on('unhandledRejection', (e) => {
+    console.error(e)
+  })
 }

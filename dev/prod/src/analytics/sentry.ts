@@ -30,12 +30,14 @@ export class SentryAnalyticProvider implements AnalyticProvider {
   setUser(email: string): void {
     Sentry.setUser({ email })
   }
+  setAlias(distinctId: string, alias: string): void {}
   logout(): void {
     Sentry.setUser(null)
   }
-  setTag(key: string, value: string): void {
+  setTag(key: string, value: string | number): void {
     Sentry.setTag(key, value)
   }
+  setGroup(ws: string): void {}
   setWorkspace(ws: string): void {
     this.setTag('workspace', ws)
   }

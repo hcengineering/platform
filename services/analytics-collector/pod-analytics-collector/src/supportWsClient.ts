@@ -163,7 +163,7 @@ export class SupportWsClient extends WorkspaceClient {
     events: AnalyticEvent[],
     workspace: WorkspaceUuid,
     person: Person,
-    onboardingMessages: Collection<OnboardingMessage>
+    onboardingMessages?: Collection<OnboardingMessage>
   ): Promise<void> {
     const client = await this.opClient
     const op = client.apply(undefined, 'processEvents')
@@ -196,7 +196,7 @@ export class SupportWsClient extends WorkspaceClient {
         messageId
       )
 
-      await onboardingMessages.insertOne({ messageId, channelId })
+      // await onboardingMessages.insertOne({ messageId, channelId })
     }
 
     const hierarchy = client.getHierarchy()
@@ -227,7 +227,7 @@ export class SupportWsClient extends WorkspaceClient {
     events: AnalyticEvent[],
     workspace: WorkspaceUuid,
     person: Person,
-    onboardingMessages: Collection<OnboardingMessage>
+    onboardingMessages?: Collection<OnboardingMessage>
   ): Promise<void> {
     const channelKey = `${person._id}-${workspace}`
 

@@ -83,7 +83,7 @@ export async function doLogin (email: string, password: string): Promise<[Status
     const loginInfo = await accountClient.login(email, password)
 
     Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: true })
-    Analytics.setUser(email)
+    Analytics.setUser(email, loginInfo.account)
 
     return [OK, loginInfo]
   } catch (err: any) {
@@ -108,7 +108,7 @@ export async function doLoginAsGuest (): Promise<[Status, LoginInfo | null]> {
     const loginInfo = await accountClient.loginAsGuest()
 
     /* Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: true })
-    Analytics.setUser(email) */
+    Analytics.setUser(email, loginInfo.account) */
 
     return [OK, loginInfo]
   } catch (err: any) {
@@ -136,7 +136,7 @@ export async function signUp (
     const otpInfo = await getAccountClient(null).signUp(email, password, first, last)
 
     Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: true })
-    Analytics.setUser(email)
+    Analytics.setUser(email, otpInfo.account)
 
     return [OK, otpInfo]
   } catch (err: any) {
@@ -158,8 +158,8 @@ export async function signUpOtp (email: string, first: string, last: string): Pr
   try {
     const otpInfo = await getAccountClient(null).signUpOtp(email, first, last)
 
-    Analytics.handleEvent('signUpOtp')
-    Analytics.setUser(email)
+    Analytics.handleEvent('signUpOtp', { email, ok: true })
+    Analytics.setUser(email, { email })
 
     return [OK, otpInfo]
   } catch (err: any) {
@@ -431,7 +431,7 @@ export async function fetchWorkspace (): Promise<[Status, WorkspaceInfoWithStatu
     const workspaceWithStatus = await getAccountClient(token).getWorkspaceInfo(true)
 
     Analytics.handleEvent('Fetch workspace')
-    Analytics.setWorkspace(workspaceWithStatus.url)
+    // Analytics.setWorkspace(workspaceWithStatus.url)
 
     return [OK, workspaceWithStatus]
   } catch (err: any) {
@@ -623,16 +623,18 @@ export async function join (
   try {
     const workspaceLoginInfo = await getAccountClient().join(email, password, inviteId)
 
-    Analytics.handleEvent('Join')
-    Analytics.setUser(email)
+    Analytics.handleEvent('Join', { email, ok: true })
+    Analytics.setUser(email, workspaceLoginInfo.account)
 
     return [OK, workspaceLoginInfo]
   } catch (err: any) {
     if (err instanceof PlatformError) {
+      Analytics.handleEvent('Join', { email, ok: false })
       await handleStatusError('Join error', err.status)
 
       return [err.status, null]
     } else {
+      Analytics.handleEvent('Join', { email, ok: false })
       Analytics.handleError(err)
 
       return [unknownError(err), null]
@@ -650,16 +652,18 @@ export async function signUpJoin (
   try {
     const workspaceLoginInfo = await getAccountClient().signUpJoin(email, password, first, last, inviteId)
 
-    Analytics.handleEvent('Signup Join')
-    Analytics.setUser(email)
+    Analytics.handleEvent('Signup Join', { email, ok: true })
+    Analytics.setUser(email, workspaceLoginInfo.account)
 
     return [OK, workspaceLoginInfo]
   } catch (err: any) {
     if (err instanceof PlatformError) {
+      Analytics.handleEvent('Signup Join', { email, ok: false })
       await handleStatusError('Sign up join error', err.status)
 
       return [err.status, null]
     } else {
+      Analytics.handleEvent('Signup Join', { email, ok: false })
       Analytics.handleError(err)
 
       return [unknownError(err), null]
@@ -894,17 +898,19 @@ export async function loginOtp (email: string): Promise<[Status, OtpInfo | null]
   try {
     const otpInfo = await getAccountClient(null).loginOtp(email)
 
-    Analytics.handleEvent('sendOtp')
-    Analytics.setUser(email)
+    Analytics.handleEvent('sendOtp', { email, ok: true })
+    Analytics.setUser(email, { email })
 
     return [OK, otpInfo]
   } catch (err: any) {
     if (err instanceof PlatformError) {
+      Analytics.handleEvent('sendOtp', { email, ok: false })
       await handleStatusError('Send otp error', err.status)
 
       return [err.status, null]
     } else {
       console.error('Send otp error', err)
+      Analytics.handleEvent('sendOtp', { email, ok: false })
       Analytics.handleError(err)
 
       return [unknownError(err), null]
@@ -923,7 +929,7 @@ export async function doValidateOtp (
     const loginInfo = await getAccountClient(null).validateOtp(email, code, password)
 
     Analytics.handleEvent(telemetryEvent, { email, ok: true })
-    Analytics.setUser(email)
+    Analytics.setUser(email, loginInfo.account)
 
     return [OK, loginInfo]
   } catch (err: any) {

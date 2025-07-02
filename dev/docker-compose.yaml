@@ -385,6 +385,24 @@ services:
   #     - STATS_URL=http://huly.local:4900
   # #      - LOVE_ENDPOINT=http://huly.local:8096
   # #      - OPENAI_API_KEY=token
+  analytics:
+    image: hardcoreeng/analytics-collector
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    restart: unless-stopped
+    links:
+      - cockroach
+    ports:
+      - 4017:4017
+    environment:
+      - SECRET=secret
+      - PORT=4017
+      - DB_URL=${DB_CR_URL}
+      - SERVICE_ID=analytics-collector-service
+      - ACCOUNTS_URL=http://huly.local:3000
+      - STATS_URL=http://huly.local:4900
+      - POSTHOG_HOST=https://app.posthog.com
+      - POSTHOG_API_KEY=phc_zHBQ0eGNnNW571rcUwMdrMo1yJUTvtOts1OGBdxNpbD
   msg2file:
     image: hardcoreeng/msg2file
     ports:
