@@ -827,7 +827,7 @@ export function generateClassNotificationTypes (
       defaultEnabled: false,
       templates: {
         textTemplate: '{body}',
-        htmlTemplate: '<p>{body}</p>',
+        htmlTemplate: '<p>{body}</p><p>{link}</p>',
         subjectTemplate: '{doc} updated'
       },
       label: attribute.label
