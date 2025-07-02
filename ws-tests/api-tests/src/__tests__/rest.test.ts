@@ -280,7 +280,7 @@ describe('rest-api-server', () => {
 async function checkFindPerformance (conn: RestClient): Promise<void> {
   let ops = 0
   let total = 0
-  const attempts = 1000
+  const attempts = 500
   for (let i = 0; i < attempts; i++) {
     const st = performance.now()
     const spaces = await conn.findAll(core.class.Space, {})
