@@ -10,7 +10,7 @@
   import guest, { PublicLink, createPublicLink } from '@hcengineering/guest'
   import view from '@hcengineering/view'
   import { Location } from '@hcengineering/ui'
-  import { getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { getDocTitle, getObjectLinkFragment } from '@hcengineering/view-resources'
   import { printToPDF } from '@hcengineering/print'
   import { signPDF } from '@hcengineering/sign'
   import { getMetadata } from '@hcengineering/platform'
@@ -24,6 +24,7 @@
   let isLinkLoading = true
   let link: PublicLink | undefined = undefined
   let file: Ref<Blob> | undefined = undefined
+  let title = ''
 
   $: objId = object?._id
 
@@ -96,6 +97,13 @@
       await createPublicLink(client, obj, location)
     }
   }
+
+  async function updateDocTitle (obj: Doc): Promise<void> {
+    const value = (await getDocTitle(client, obj._id, obj._class, obj)) ?? ''
+    title = value !== '' ? value + '.pdf' : ''
+  }
+
+  $: void updateDocTitle(object)
 </script>
 
-<PDFViewer {file} name="PDF print preview" contentType="application/pdf" {isLoading} on:close on:fullsize />
+<PDFViewer {file} name={title} contentType="application/pdf" showIcon={false} {isLoading} on:close on:fullsize />
