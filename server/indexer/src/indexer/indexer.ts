@@ -81,7 +81,12 @@ import { markdownToMarkup } from '@hcengineering/text-markdown'
 export * from './types'
 export * from './utils'
 
+const printThresholdMs = 2500
+
 const textLimit = 500 * 1024
+
+const messageGroupsLimit = 100
+const messagesLimit = 1000
 
 // Global Memory management configuration
 
@@ -275,7 +280,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           // Find the next threshold to print
 
           const now = platformNow()
-          if (now - lastPrint > 2500) {
+          if (now - lastPrint > printThresholdMs) {
             ctx.info('processed', { processed, elapsed: Math.round(now - lastPrint), domain })
             lastPrint = now
           }
@@ -513,7 +518,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     let lastPrint = 0
     await ctx.with('process-message-groups', {}, async (ctx) => {
       let groups = await this.communicationApi.findMessagesGroups(this.communicationSession, {
-        limit: 100,
+        limit: messageGroupsLimit,
         order: SortingOrder.Ascending
       })
       while (groups.length > 0) {
@@ -524,57 +529,66 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           if (control !== undefined) {
             await control.heartbeat()
           }
-          let cardInfo = cardsInfo.get(group.cardId)
-          if (cardInfo === undefined) {
-            const cardDoc = await this.storage.findAll(ctx, card.class.Card, { _id: group.cardId }, { limit: 1 })
-            if (cardDoc.length !== 1) {
-              continue
-            }
-            cardInfo = { space: cardDoc[0].space, _class: cardDoc[0]._class }
-            cardsInfo.set(group.cardId, cardInfo)
-          }
-          const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
-          const messagesFile = Buffer.concat(blob as any).toString()
-          const messagesParsedFile = parseYaml(messagesFile)
-          let patchedMessages
-          if (group.patches !== undefined && group.patches.length > 0) {
-            const patchesByMessage = groupByArray(group.patches, (it) => it.messageId)
-            patchedMessages = messagesParsedFile.messages.map((message) => {
-              const patches = patchesByMessage.get(message.id) ?? []
-              if (patches.length === 0) {
-                return message
-              } else {
-                return applyPatches(message, patches)
+          try {
+            let cardInfo = cardsInfo.get(group.cardId)
+            if (cardInfo === undefined) {
+              const cardDoc = await this.storage.findAll(ctx, card.class.Card, { _id: group.cardId }, { limit: 1 })
+              if (cardDoc.length !== 1) {
+                continue
               }
-            })
-          } else {
-            patchedMessages = messagesParsedFile.messages
-          }
-          for (const message of patchedMessages) {
-            if (message.removed) {
-              continue
+              cardInfo = { space: cardDoc[0].space, _class: cardDoc[0]._class }
+              cardsInfo.set(group.cardId, cardInfo)
             }
-            await rateLimit.exec(async () => {
-              const indexedDoc = createIndexedDocFromMessage(group.cardId, cardInfo.space, cardInfo._class, message)
-              await this.processCommunicationMessage(ctx, message.content, indexedDoc)
-              if (this.listener?.onIndexing !== undefined) {
-                await this.listener.onIndexing(indexedDoc)
+            const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
+            const messagesFile = Buffer.concat(blob as any).toString()
+            const messagesParsedFile = parseYaml(messagesFile)
+            let patchedMessages
+            if (group.patches !== undefined && group.patches.length > 0) {
+              const patchesByMessage = groupByArray(group.patches, (it) => it.messageId)
+              patchedMessages = messagesParsedFile.messages.map((message) => {
+                const patches = patchesByMessage.get(message.id) ?? []
+                if (patches.length === 0) {
+                  return message
+                } else {
+                  return applyPatches(message, patches)
+                }
+              })
+            } else {
+              patchedMessages = messagesParsedFile.messages
+            }
+            for (const message of patchedMessages) {
+              if (message.removed) {
+                continue
               }
-              await pushQueue.push(indexedDoc)
-            })
-            processed += 1
-            const now = platformNow()
-            if (now - lastPrint > 2500) {
-              ctx.info('processed', { processedCommunication: processed, elapsed: Math.round(now - lastPrint) })
-              lastPrint = now
+              await rateLimit.exec(async () => {
+                const indexedDoc = createIndexedDocFromMessage(group.cardId, cardInfo.space, cardInfo._class, message)
+                await this.processCommunicationMessage(ctx, message.content, indexedDoc)
+                if (this.listener?.onIndexing !== undefined) {
+                  await this.listener.onIndexing(indexedDoc)
+                }
+                await pushQueue.push(indexedDoc)
+              })
+              processed += 1
+              const now = platformNow()
+              if (now - lastPrint > printThresholdMs) {
+                ctx.info('processed', { processedCommunication: processed, elapsed: Math.round(now - lastPrint) })
+                lastPrint = now
+              }
             }
+          } catch (err: any) {
+            ctx.error('Failed to process message group', {
+              cardId: group.cardId,
+              blobId: group.blobId,
+              error: err
+            })
+            Analytics.handleError(err)
           }
         }
         if (this.cancelling) {
           return processed
         }
         groups = await this.communicationApi.findMessagesGroups(this.communicationSession, {
-          limit: 100,
+          limit: messageGroupsLimit,
           order: SortingOrder.Ascending,
           fromDate: {
             greater: groups[groups.length - 1].toDate
@@ -584,7 +598,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     })
     await ctx.with('process-messages', {}, async (ctx) => {
       let messages = await this.communicationApi.findMessages(this.communicationSession, {
-        limit: 100,
+        limit: messagesLimit,
         order: SortingOrder.Ascending
       })
       while (messages.length > 0) {
@@ -592,35 +606,43 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           if (control !== undefined) {
             await control.heartbeat()
           }
-          let cardInfo = cardsInfo.get(message.cardId)
-          if (cardInfo === undefined) {
-            const cardDoc = await this.storage.findAll(ctx, card.class.Card, { _id: message.cardId }, { limit: 1 })
-            if (cardDoc.length !== 1) {
-              continue
+          try {
+            let cardInfo = cardsInfo.get(message.cardId)
+            if (cardInfo === undefined) {
+              const cardDoc = await this.storage.findAll(ctx, card.class.Card, { _id: message.cardId }, { limit: 1 })
+              if (cardDoc.length !== 1) {
+                continue
+              }
+              cardInfo = { space: cardDoc[0].space, _class: cardDoc[0]._class }
+              cardsInfo.set(message.cardId, cardInfo)
             }
-            cardInfo = { space: cardDoc[0].space, _class: cardDoc[0]._class }
-            cardsInfo.set(message.cardId, cardInfo)
-          }
-          if (this.cancelling) {
-            return processed
-          }
-          await rateLimit.exec(async () => {
-            const indexedDoc = createIndexedDocFromMessage(message.cardId, cardInfo.space, cardInfo._class, message)
-            await this.processCommunicationMessage(ctx, message.content, indexedDoc)
-            if (this.listener?.onIndexing !== undefined) {
-              await this.listener.onIndexing(indexedDoc)
+            if (this.cancelling) {
+              return processed
             }
-            await pushQueue.push(indexedDoc)
-          })
+            await rateLimit.exec(async () => {
+              const indexedDoc = createIndexedDocFromMessage(message.cardId, cardInfo.space, cardInfo._class, message)
+              await this.processCommunicationMessage(ctx, message.content, indexedDoc)
+              if (this.listener?.onIndexing !== undefined) {
+                await this.listener.onIndexing(indexedDoc)
+              }
+              await pushQueue.push(indexedDoc)
+            })
+          } catch (err: any) {
+            ctx.error('Failed to processed message', {
+              cardId: message.cardId,
+              id: message.id,
+              error: err
+            })
+          }
           processed += 1
           const now = platformNow()
-          if (now - lastPrint > 2500) {
+          if (now - lastPrint > printThresholdMs) {
             ctx.info('processed', { processedCommunication: processed, elapsed: Math.round(now - lastPrint) })
             lastPrint = now
           }
         }
         messages = await this.communicationApi.findMessages(this.communicationSession, {
-          limit: 100,
+          limit: messagesLimit,
           order: SortingOrder.Ascending,
           created: {
             greater: messages[messages.length - 1].created
