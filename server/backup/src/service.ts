@@ -224,6 +224,21 @@ class BackupWorker {
       }
       this.workspacesToBackup.delete(ws.uuid)
       this.activeWorkspaces.add(ws.uuid)
+      const handleFailedBackup = (ws: WorkspaceInfoWithStatus): void => {
+        const f = this.failedWorkspaces.get(ws.uuid)
+        if (f === undefined) {
+          this.failedWorkspaces.set(ws.uuid, {
+            info: ws,
+            counter: 1
+          })
+        } else {
+          f.counter++
+        }
+        if ((f?.counter ?? 1) < 5) {
+          this.workspacesToBackup.set(ws.uuid, ws)
+        }
+      }
+
       await this.rateLimiter.add(
         async () => {
           try {
@@ -236,21 +251,13 @@ class BackupWorker {
               const totalTime = Date.now() - st
               this.allBackupTime += totalTime
               this.processed++
+            } else {
+              handleFailedBackup(ws)
+              ctx.error('Backup failed, put back to queue', { workspace: ws.uuid, url: ws.url })
             }
           } catch (err: any) {
             ctx.error('Backup failed', { err })
-            const f = this.failedWorkspaces.get(ws.uuid)
-            if (f === undefined) {
-              this.failedWorkspaces.set(ws.uuid, {
-                info: ws,
-                counter: 1
-              })
-            } else {
-              f.counter++
-            }
-            if ((f?.counter ?? 1) < 5) {
-              this.workspacesToBackup.set(ws.uuid, ws)
-            }
+            handleFailedBackup(ws)
           } finally {
             this.activeWorkspaces.delete(ws.uuid)
           }
@@ -324,6 +331,10 @@ class BackupWorker {
             fullVerify: this.fullCheck,
             progress: (progress) => {
               return notify?.(progress) ?? Promise.resolve()
+            },
+            msg: {
+              workspaceUrl: ws.url,
+              workspaceUuid: ws.uuid
             }
           }),
         { workspace: ws.uuid, url: ws.url }

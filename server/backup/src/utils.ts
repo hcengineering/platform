@@ -335,6 +335,7 @@ export async function compactBackup (
   opt?: {
     blobLimit?: number
     skipContentTypes?: string[]
+    msg?: Record<string, any>
   },
   recalculateDigest: boolean = false
 ): Promise<void> {
@@ -352,16 +353,16 @@ export async function compactBackup (
     if (await storage.exists(infoFile)) {
       backupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
     } else {
-      console.log('No backup found')
+      ctx.info('No backup found', { ...(opt?.msg ?? {}) })
       return
     }
     if (backupInfo.version !== '0.6.2') {
-      console.log('Invalid backup version')
+      ctx.info('Invalid backup version', { ...(opt?.msg ?? {}) })
       return
     }
 
     if (backupInfo.snapshots.length < 1 && !force) {
-      console.log('No need to compact')
+      ctx.info('No need to compact', { ...(opt?.msg ?? {}) })
       return
     }
 
@@ -406,7 +407,7 @@ export async function compactBackup (
     }
 
     for (const domain of domains) {
-      console.log('compacting domain...', domain)
+      ctx.info('compacting domain...', { domain, ...(opt?.msg ?? {}) })
 
       const processedChanges: Snapshot = {
         added: new Map(),
@@ -427,10 +428,10 @@ export async function compactBackup (
 
       // Cumulative digest
       // Documents modified in compacting snapshots in case of restart
-      const untouchedDigest = await loadDigest(ctx, storage, [snapshot], domain)
+      const untouchedDigest = await loadDigest(ctx, storage, [snapshot], domain, undefined, opt?.msg)
 
       // We need to load snapshots from removed ones and
-      const digest = await loadDigest(ctx, storage, snapshotsToClean, domain)
+      const digest = await loadDigest(ctx, storage, snapshotsToClean, domain, undefined, opt?.msg)
 
       // We remove all items we have in last part
       Array.from(untouchedDigest.keys()).forEach((it) => digest.delete(it))
@@ -493,7 +494,7 @@ export async function compactBackup (
             backupIndex,
             `${domain}-data-${snapshot.date}-${extendZero(snapshot.stIndex)}.tar.gz`
           )
-          console.log('storing from domain', domain, storageFile)
+          ctx.info('storing from domain', { domain, storageFile, ...(opt?.msg ?? {}) })
           domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
 
           const tmpFile = join(tmpRoot, basename(storageFile) + '.tmp')
@@ -518,7 +519,7 @@ export async function compactBackup (
           storageZip.pipe(sizePass)
 
           _packClose = async () => {
-            ctx.info('finalize pack', { storageFile, size: sz })
+            ctx.info('finalize pack(compact)', { storageFile, size: sz, ...(opt?.msg ?? {}) })
             await new Promise<void>((resolve) => {
               tempFile.on('close', () => {
                 resolve()
@@ -526,7 +527,7 @@ export async function compactBackup (
               _pack?.finalize()
             })
             // We need to upload file to storage
-            ctx.info('>>>> upload pack', { storageFile, size: sz })
+            ctx.info('>>>> upload pack(compact)', { storageFile, size: sz, ...(opt?.msg ?? {}) })
             await storage.writeFile(storageFile, createReadStream(tmpFile))
             await rm(tmpFile)
 
@@ -574,7 +575,11 @@ export async function compactBackup (
               const newSkipPrint = Math.round(skipSize / (1024 * 1024 * 100))
               if (newSkipPrint !== lastSkipPrint) {
                 lastSkipPrint = newSkipPrint
-                console.log('skipping blobs', skipBlobs, Math.round(skipSize / (1024 * 1024)))
+                ctx.info('skipping blobs', {
+                  skipBlobs,
+                  size: Math.round(skipSize / (1024 * 1024)),
+                  ...(opt?.msg ?? {})
+                })
               }
               const bsize = blob.size == null || Number.isNaN(blob.size) || !Number.isInteger(blob.size) ? 0 : blob.size
 
@@ -606,18 +611,18 @@ export async function compactBackup (
         const d = s.domains[domain]
 
         if (d !== undefined && digest.size > 0) {
-          ctx.info('checking-domain', { domain, name: s.date })
+          ctx.info('checking-domain', { domain, name: s.date, ...(opt?.msg ?? {}) })
           const sDigest = await loadDigest(ctx, storage, [s], domain)
           const requiredDocs = new Map(Array.from(sDigest.entries()).filter(([it]) => digest.has(it)))
           if (requiredDocs.size > 0) {
-            console.log('updating', domain, requiredDocs.size)
+            ctx.info('updating', { domain, requiredDocs: requiredDocs.size, ...(opt?.msg ?? {}) })
             // We have required documents here.
             for (const sf of d.storage ?? []) {
               if (digest.size === 0) {
                 break
               }
               try {
-                console.log('processing', sf, processed)
+                ctx.info('processing', { sf, processed, ...(opt?.msg ?? {}) })
 
                 const readStream = await storage.load(sf)
                 const ex = extract()
@@ -718,11 +723,11 @@ export async function compactBackup (
                     resolve(null)
                   })
                   readStream.on('error', (err) => {
-                    ctx.error('error during processing', { snapshot, err })
+                    ctx.error('error during processing', { snapshot, err, ...(opt?.msg ?? {}) })
                     reject(err)
                   })
                   unzip.on('error', (err) => {
-                    ctx.error('error during processing', { snapshot, err })
+                    ctx.error('error during processing', { snapshot, err, ...(opt?.msg ?? {}) })
                     reject(err)
                   })
                 })
@@ -739,17 +744,17 @@ export async function compactBackup (
               }
             }
           } else {
-            console.log('domain had no changes', domain)
+            ctx.info('domain had no changes', { domain, ...(opt?.msg ?? {}) })
           }
         }
         if (d !== undefined) {
           for (const sf of d.storage ?? []) {
-            console.log('removing', sf)
+            ctx.info('removing', { sf, ...(opt?.msg ?? {}) })
             dirsToClean.add(dirname(sf))
             filesToClean.add(sf)
           }
           for (const sf of d.snapshots ?? []) {
-            console.log('removing', sf)
+            ctx.info('removing', { sf, ...(opt?.msg ?? {}) })
             dirsToClean.add(dirname(sf))
             filesToClean.add(sf)
           }
@@ -807,10 +812,10 @@ export async function compactBackup (
       await rebuildSizeInfo(storage, [], ctx, result, backupInfo, infoFile)
     }
   } catch (err: any) {
-    console.error(err)
+    ctx.error(err, { ...(opt?.msg ?? {}) })
   } finally {
     await rm(tmpRoot, { recursive: true })
-    console.log('end compacting')
+    ctx.info('end compacting', { ...(opt?.msg ?? {}) })
   }
 }
 
@@ -833,8 +838,12 @@ export function migradeBlobData (blob: Blob, etag: string): string {
  * Will check backup integrity, and in case of some missing resources, will update digest files, so next backup will backup all missing parts.
  * @public
  */
-export async function checkBackupIntegrity (ctx: MeasureContext, storage: BackupStorage): Promise<void> {
-  console.log('check backup integrity')
+export async function checkBackupIntegrity (
+  ctx: MeasureContext,
+  storage: BackupStorage,
+  msg?: Record<string, any>
+): Promise<void> {
+  ctx.info('check backup integrity', { ...(msg ?? {}) })
   try {
     let backupInfo: BackupInfo
 
@@ -845,11 +854,11 @@ export async function checkBackupIntegrity (ctx: MeasureContext, storage: Backup
     if (await storage.exists(infoFile)) {
       backupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
     } else {
-      console.log('No backup found')
+      ctx.info('No backup found', { ...(msg ?? {}) })
       return
     }
     if (backupInfo.version !== '0.6.2') {
-      console.log('Invalid backup version')
+      ctx.info('Invalid backup version', { ...(msg ?? {}) })
       return
     }
 
@@ -866,7 +875,7 @@ export async function checkBackupIntegrity (ctx: MeasureContext, storage: Backup
     let modified = false
 
     for (const domain of domains) {
-      console.log('checking domain...', domain)
+      ctx.info('checking domain...', { domain, ...(msg ?? {}) })
       const { modified: mm, modifiedFiles } = await verifyDigest(ctx, storage, backupInfo.snapshots, domain)
       if (mm) {
         recheckSizes.push(...modifiedFiles)
@@ -892,9 +901,9 @@ export async function checkBackupIntegrity (ctx: MeasureContext, storage: Backup
     }
     await rebuildSizeInfo(storage, recheckSizes, ctx, bresult, backupInfo, infoFile)
   } catch (err: any) {
-    console.error(err)
+    ctx.error(err, { ...(msg ?? {}) })
   } finally {
-    console.log('end compacting')
+    ctx.info('end checking integrity', { ...(msg ?? {}) })
   }
 }
 
@@ -913,7 +922,8 @@ export async function loadDigest (
   storage: BackupStorage,
   snapshots: BackupSnapshot[],
   domain: Domain,
-  date?: number
+  date?: number,
+  msg?: Record<string, any>
 ): Promise<Map<Ref<Doc>, string>> {
   const result = new Map<Ref<Doc>, string>()
   for (const s of snapshots) {
@@ -935,7 +945,7 @@ export async function loadDigest (
           result.delete(d)
         }
       } catch (err: any) {
-        ctx.warn('failed to load digest', { snapshot: d.snapshot })
+        ctx.warn('failed to load digest', { snapshot: d.snapshot, ...(msg ?? {}) })
       }
     }
     for (const snapshot of d?.snapshots ?? []) {
@@ -963,7 +973,7 @@ export async function loadDigest (
           result.delete(k as Ref<Doc>)
         }
       } catch (err: any) {
-        ctx.warn('digest is broken', { domain, err: err.message, snapshot })
+        ctx.warn('digest is broken', { domain, err: err.message, snapshot, ...(msg ?? {}) })
       }
     }
     // Stop if stop date is matched and provided
