@@ -1081,11 +1081,8 @@ export async function createMeetingSchedule (
   store: Record<string, any>,
   phase: DocCreatePhase
 ): Promise<void> {
-  console.log('createMeetingSchedule-0', _id)
   if (phase === 'post') {
-    console.log('createMeetingSchedule-1', _id)
     const schedule = await client.findOne(calendar.class.Schedule, { _id })
-    console.log('createMeetingSchedule-2', schedule)
     if (schedule === undefined) return
     await client.createMixin<Schedule, MeetingSchedule>(
       schedule._id,

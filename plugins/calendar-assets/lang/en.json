@@ -108,6 +108,8 @@
     "CalDavAccessPasswordWarning": "You will not be able to see this password again. Please save it in a secure place.",
     "MeetingScheduledNotification": "Meeting scheduled",
     "MeetingRescheduledNotification": "Meeting time changed",
-    "MeetingCanceledNotification": "Meeting canceled: {title}"
+    "MeetingCanceledNotification": "Meeting canceled: {title}",
+    "PrimaryCalendar": "Primary calendar",
+    "Hidden": "Hidden"
   }
 }

@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { createEventDispatcher, afterUpdate, onDestroy } from 'svelte'
-  import calendar, { Calendar, generateEventId } from '@hcengineering/calendar'
+  import calendar, { AccessLevel, Calendar, generateEventId, getPrimaryCalendar } from '@hcengineering/calendar'
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
@@ -25,7 +25,7 @@
   import PlanningCalendar from './PlanningCalendar.svelte'
   import ToDosNavigator from './ToDosNavigator.svelte'
   import ToDos from './ToDos.svelte'
-  import { timeSeparators } from '../utils'
+  import { findPrimaryCalendar, timeSeparators } from '../utils'
   import { dragging } from '../dragging'
   import time from '../plugin'
   import { Analytics } from '@hcengineering/analytics'
@@ -49,12 +49,7 @@
     const doc = dragItem
     const date = e.detail.date.getTime()
     const currentAccount = getCurrentAccount()
-    const extCalendar = await client.findOne(calendar.class.ExternalCalendar, {
-      createdBy: currentAccount.primarySocialId,
-      hidden: false,
-      default: true
-    })
-    const _calendar = extCalendar ? extCalendar._id : (`${currentAccount.uuid}_calendar` as Ref<Calendar>)
+    const _calendar = await findPrimaryCalendar()
     const dueDate = date + defaultDuration
     await client.addCollection(time.class.WorkSlot, calendar.space.Calendar, doc._id, doc._class, 'workslots', {
       calendar: _calendar,
@@ -66,7 +61,7 @@
       title: doc.title,
       allDay: false,
       blockTime: true,
-      access: 'owner',
+      access: AccessLevel.Owner,
       visibility: doc.visibility === 'public' ? 'public' : 'freeBusy',
       reminders: [],
       user: currentAccount.primarySocialId

@@ -108,6 +108,8 @@
     "CalDavAccessPasswordWarning": "您将无法再次看到此密码。请将其保存在安全的地方。",
     "MeetingScheduledNotification": "会议已安排",
     "MeetingRescheduledNotification": "会议时间已更改",
-    "MeetingCanceledNotification": "会议已取消: {title}"
+    "MeetingCanceledNotification": "会议已取消: {title}",
+    "PrimaryCalendar": "主日历",
+    "Hidden": "隐藏"
   }
 }

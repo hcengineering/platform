@@ -108,6 +108,8 @@
     "CalDavAccessPasswordWarning": "Вы не сможете увидеть этот пароль снова. Пожалуйста, сохраните его в безопасном месте.",
     "MeetingScheduledNotification": "Встреча запланирована",
     "MeetingRescheduledNotification": "Время встречи изменено",
-    "MeetingCanceledNotification": "Встреча отменена: {title}"
+    "MeetingCanceledNotification": "Встреча отменена: {title}",
+    "PrimaryCalendar": "Основной календарь",
+    "Hidden": "Скрыт"
   }
 }
