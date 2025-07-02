@@ -39,7 +39,6 @@ import { WorkspaceClient } from './workspaceClient'
 
 import { AuthProvider } from './gmail/auth'
 import { AccountClient } from '@hcengineering/account-client'
-import { count } from 'console'
 
 export class GmailController {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
@@ -175,7 +174,10 @@ export class GmailController {
       }
     }
     if (inactiveWorkspaceCount > 0 || archivedWorkspaceCount > 0) {
-      this.ctx.info('Skip archived and inactive workspaces', { inactive: inactiveWorkspaceCount, archived: archivedWorkspaceCount })
+      this.ctx.info('Skip archived and inactive workspaces', {
+        inactive: inactiveWorkspaceCount,
+        archived: archivedWorkspaceCount
+      })
     }
 
     await limiter.waitProcessing()
