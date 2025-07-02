@@ -19,14 +19,16 @@ import { type Card } from '@hcengineering/card'
 import { MessageID, MessageType } from '@hcengineering/communication-types'
 import chat from '@hcengineering/chat'
 import { PersonSpace } from '@hcengineering/contact'
-import {
+import core, {
   type Blob,
   type MeasureContext,
   type PersonId,
   type Ref,
+  type TxDomainEvent,
   type TxOperations,
   AccountUuid,
   generateId,
+  OperationDomain,
   RateLimiter
 } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
@@ -49,6 +51,8 @@ import { PersonCacheFactory } from './person'
 import { PersonSpacesCacheFactory } from './personSpaces'
 import { ChannelCache, ChannelCacheFactory } from './channel'
 import { ThreadLookupService } from './thread'
+
+const COMMUNICATION_DOMAIN = 'communication' as OperationDomain
 
 /**
  * Creates mail messages in the platform
@@ -287,7 +291,7 @@ async function createMailThread (
       noNotify: options?.noNotify
     }
   }
-  const createSubjectData = Buffer.from(JSON.stringify(createSubjectEvent))
+  const createSubjectData = toEventBuffer(createSubjectEvent)
   await sendToCommunicationTopic(producer, config, data, createSubjectData)
 
   const threadEvent: ThreadPatchEvent = {
@@ -302,7 +306,7 @@ async function createMailThread (
     socialId: data.modifiedBy,
     date: new Date(data.created.getTime() + MessageTimeShift.Thread)
   }
-  const thread = Buffer.from(JSON.stringify(threadEvent))
+  const thread = toEventBuffer(threadEvent)
   await sendToCommunicationTopic(producer, config, data, thread)
 }
 
@@ -327,7 +331,7 @@ async function createMailMessage (
       noNotify: options?.noNotify
     }
   }
-  const createMessageData = Buffer.from(JSON.stringify(createMessageEvent))
+  const createMessageData = toEventBuffer(createMessageEvent)
   await sendToCommunicationTopic(producer, config, data, createMessageData)
   return messageId
 }
@@ -362,7 +366,7 @@ async function createFiles (
         }
       ]
     }
-    return Buffer.from(JSON.stringify(attachBlobEvent))
+    return toEventBuffer(attachBlobEvent)
   })
   const fileEvents = fileData.map((data) => ({
     key: Buffer.from(messageData.channel ?? messageData.spaceId),
@@ -394,7 +398,7 @@ async function addCollaborators (
     socialId: data.modifiedBy,
     date: new Date(data.created.getTime() + MessageTimeShift.Collaborator)
   }
-  const createMessageData = Buffer.from(JSON.stringify(addCollaboratorsEvent))
+  const createMessageData = toEventBuffer(addCollaboratorsEvent)
   await sendToCommunicationTopic(producer, config, data, createMessageData)
 }
 
@@ -416,4 +420,21 @@ async function sendToCommunicationTopic (
       }
     ]
   })
+}
+
+function toEventBuffer (data: Record<string, any>): Buffer {
+  return Buffer.from(JSON.stringify(wrapToTx(data)))
+}
+
+function wrapToTx (data: Record<string, any>): TxDomainEvent {
+  return {
+    _id: generateId(),
+    space: core.space.Tx,
+    objectSpace: core.space.Domain,
+    _class: core.class.TxDomainEvent,
+    domain: COMMUNICATION_DOMAIN,
+    event: data,
+    modifiedOn: Date.now(),
+    modifiedBy: data.socialId
+  }
 }
