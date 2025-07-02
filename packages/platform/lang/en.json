@@ -5,6 +5,7 @@
     "InvalidId": "Invalid Id: {id}",
     "BadRequest": "Bad request",
     "Forbidden": "Forbidden",
+    "Conflict": "Conflict",
     "ExpiredLink": "This invite link is expired",
     "Unauthorized": "Unauthorized",
     "UnknownMethod": "Unknown method: {method}",
@@ -22,6 +23,7 @@
     "InviteNotFound": "Invitation with email:{email} not found.",
     "WorkspaceLimitReached": "You have reached the workspace limit. Please contact us...",
     "ReadOnlyAccount": "Guest Demo",
-    "SystemAccount": "System account"
+    "SystemAccount": "System account",
+    "SocialIdAlreadyExists": "Social ID already exists"
   }
 }

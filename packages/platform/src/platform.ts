@@ -139,8 +139,9 @@ export default plugin(platformId, {
     NoLoaderForStrings: '' as StatusCode<{ plugin: Plugin }>,
 
     BadRequest: '' as StatusCode,
-    Forbidden: '' as StatusCode,
-    Unauthorized: '' as StatusCode,
+    Forbidden: '' as StatusCode, // 403
+    Unauthorized: '' as StatusCode, // 401
+    Conflict: '' as StatusCode, // 409
     ExpiredLink: '' as StatusCode,
     UnknownMethod: '' as StatusCode<{ method: string }>,
     InternalServerError: '' as StatusCode,
@@ -155,6 +156,7 @@ export default plugin(platformId, {
     SocialIdNotFound: '' as StatusCode<{ value?: string, type?: string, _id?: string }>,
     SocialIdNotConfirmed: '' as StatusCode<{ socialId: string, type: string }>,
     SocialIdAlreadyConfirmed: '' as StatusCode<{ socialId: string, type: string }>,
+    IntegrationExists: '' as StatusCode,
     IntegrationAlreadyExists: '' as StatusCode,
     IntegrationNotFound: '' as StatusCode,
     IntegrationSecretAlreadyExists: '' as StatusCode,

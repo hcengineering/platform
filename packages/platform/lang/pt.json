@@ -5,6 +5,7 @@
     "InvalidId": "Id inválido: {id}",
     "BadRequest": "Pedido inválido",
     "Forbidden": "Proibido",
+    "Conflict": "Conflito",
     "ExpiredLink": "Este link de convite expirou",
     "Unauthorized": "Não autorizado",
     "UnknownMethod": "Método desconhecido: {method}",
@@ -23,6 +24,7 @@
     "InviteNotFound": "Convite com email:{email} não encontrado.",
     "WorkspaceLimitReached": "Você atingiu o limite de espaço de trabalho. Entre em contato conosco...",
     "ReadOnlyAccount": "Demonstração para Convidados",
-    "SystemAccount": "Conta do sistema"
+    "SystemAccount": "Conta do sistema",
+    "SocialIdAlreadyExists": "ID social já existe"
   }
 }

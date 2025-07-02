@@ -64,7 +64,7 @@ import {
   getWorkspaceInvite,
   loginOrSignUpWithProvider,
   sendEmail,
-  addSocialId,
+  addSocialIdBase,
   doReleaseSocialId
 } from '../utils'
 // eslint-disable-next-line import/no-named-default
@@ -1983,7 +1983,7 @@ describe('account utils', () => {
       ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({})
       ;(mockDb.socialId.insertOne as jest.Mock).mockResolvedValue(newPersonId)
 
-      const result = await addSocialId(mockDb, person, type, value, confirmed)
+      const result = await addSocialIdBase(mockDb, person, type, value, confirmed)
 
       expect(mockDb.socialId.insertOne).toHaveBeenCalledWith({
         type,
@@ -2010,7 +2010,7 @@ describe('account utils', () => {
       ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({})
       ;(mockDb.socialId.insertOne as jest.Mock).mockResolvedValue(newPersonId)
 
-      const result = await addSocialId(mockDb, person, type, value, confirmed)
+      const result = await addSocialIdBase(mockDb, person, type, value, confirmed)
 
       expect(mockDb.socialId.insertOne).toHaveBeenCalledWith({
         type,
@@ -2028,7 +2028,7 @@ describe('account utils', () => {
 
       ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(null)
 
-      await expect(addSocialId(mockDb, person, type, value, false)).rejects.toThrow(
+      await expect(addSocialIdBase(mockDb, person, type, value, false)).rejects.toThrow(
         new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person }))
       )
     })
@@ -2046,7 +2046,7 @@ describe('account utils', () => {
       ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({})
       ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(existingSocialId)
 
-      await expect(addSocialId(mockDb, person, type, value, false)).rejects.toThrow(
+      await expect(addSocialIdBase(mockDb, person, type, value, false)).rejects.toThrow(
         new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, {}))
       )
     })
@@ -2062,7 +2062,7 @@ describe('account utils', () => {
       ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
       ;(mockDb.socialId.insertOne as jest.Mock).mockResolvedValue(newPersonId)
 
-      const result = await addSocialId(mockDb, person, type, value, false)
+      const result = await addSocialIdBase(mockDb, person, type, value, false)
 
       expect(mockDb.socialId.insertOne).toHaveBeenCalledWith(expect.objectContaining({ value: normalizedValue }))
       expect(result).toBe(newPersonId)
@@ -2078,6 +2078,7 @@ describe('account utils', () => {
       const mockDb = {
         socialId: {
           find: jest.fn(),
+          findOne: jest.fn(),
           update: jest.fn()
         },
         account: {
@@ -2085,6 +2086,13 @@ describe('account utils', () => {
         },
         accountEvent: {
           insertOne: jest.fn()
+        },
+        integration: {
+          find: jest.fn(),
+          deleteMany: jest.fn()
+        },
+        integrationSecret: {
+          deleteMany: jest.fn()
         }
       } as unknown as AccountDB
 
@@ -2099,16 +2107,15 @@ describe('account utils', () => {
         const releasedBy = 'github'
         const socialIdId = 'test-social-id' as PersonId
 
-        const mockSocialIds = [
-          {
-            _id: socialIdId,
-            value
-          }
-        ]
+        const mockSocialId = {
+          _id: socialIdId,
+          value
+        }
         const mockAccount = { uuid: personUuid }
 
-        ;(mockDb.socialId.find as jest.Mock).mockResolvedValue(mockSocialIds)
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(mockSocialId)
         ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+        ;(mockDb.integration.find as jest.Mock).mockResolvedValue([])
 
         await doReleaseSocialId(mockDb, personUuid, type, value, releasedBy)
 
@@ -2127,14 +2134,55 @@ describe('account utils', () => {
         })
       })
 
+      test('should delete integrations when deleteIntegrations=true', async () => {
+        const personUuid = 'test-person' as PersonUuid
+        const type = SocialIdType.GITHUB
+        const value = 'test-value'
+        const socialIdId = 'test-social-id' as PersonId
+
+        const mockSocialId = { _id: socialIdId, value }
+        const mockIntegrations = [{ _id: 'integration1' }]
+
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(mockSocialId)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue({ uuid: personUuid })
+        ;(mockDb.integration.find as jest.Mock).mockResolvedValue(mockIntegrations)
+
+        await doReleaseSocialId(mockDb, personUuid, type, value, '', true)
+
+        expect(mockDb.integrationSecret.deleteMany).toHaveBeenCalledWith({ socialId: socialIdId })
+        expect(mockDb.integration.deleteMany).toHaveBeenCalledWith({ socialId: socialIdId })
+        expect(mockDb.socialId.update).toHaveBeenCalled()
+      })
+
+      test('should throw error when integrations exist and deleteIntegrations=false', async () => {
+        const personUuid = 'test-person' as PersonUuid
+        const type = SocialIdType.GITHUB
+        const value = 'test-value'
+        const socialIdId = 'test-social-id' as PersonId
+
+        const mockSocialId = { _id: socialIdId, value }
+        const mockIntegrations = [{ _id: 'integration1' }]
+
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(mockSocialId)
+        ;(mockDb.integration.find as jest.Mock).mockResolvedValue(mockIntegrations)
+
+        await expect(doReleaseSocialId(mockDb, personUuid, type, value, '')).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationExists, {}))
+        )
+
+        expect(mockDb.integrationSecret.deleteMany).not.toHaveBeenCalled()
+        expect(mockDb.integration.deleteMany).not.toHaveBeenCalled()
+        expect(mockDb.socialId.update).not.toHaveBeenCalled()
+      })
+
       test('should handle missing account', async () => {
         const personUuid = 'test-person' as PersonUuid
         const type = SocialIdType.GITHUB
         const value = 'test-value'
-        const socialIds = [{ _id: 'id1' as PersonId, value }]
 
-        ;(mockDb.socialId.find as jest.Mock).mockResolvedValue(socialIds)
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: 'id1' as PersonId, value })
         ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
+        ;(mockDb.integration.find as jest.Mock).mockResolvedValue([])
 
         await doReleaseSocialId(mockDb, personUuid, type, value, '')
 
@@ -2147,7 +2195,7 @@ describe('account utils', () => {
         const type = SocialIdType.GITHUB
         const value = 'test-value'
 
-        ;(mockDb.socialId.find as jest.Mock).mockResolvedValue([])
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
 
         await expect(doReleaseSocialId(mockDb, personUuid, type, value, '')).rejects.toThrow(
           new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdNotFound, {}))

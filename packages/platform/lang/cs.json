@@ -5,6 +5,7 @@
     "InvalidId": "Neplatné ID: {id}",
     "BadRequest": "Špatný požadavek",
     "Forbidden": "Zakázáno",
+    "Conflict": "Konflikt",
     "ExpiredLink": "Tento odkaz na pozvánku vypršel",
     "Unauthorized": "Neoprávněný přístup",
     "UnknownMethod": "Neznámá metoda: {method}",
@@ -23,6 +24,7 @@
     "InviteNotFound": "Pozvánka s email:{email} nebyla nalezena.",
     "WorkspaceLimitReached": "Dosáhli jste limitu pracovních prostorů. Kontaktujte nás...",
     "ReadOnlyAccount": "Ukázka pro hosty",
-    "SystemAccount": "Systémový účet"
+    "SystemAccount": "Systémový účet",
+    "SocialIdAlreadyExists": "Sociální ID již existuje"
   }
 }

@@ -942,13 +942,16 @@ export function parseSocialIdString (id: string): SocialKey {
 }
 
 export function pickPrimarySocialId (socialIds: SocialId[]): SocialId {
-  if (socialIds.length === 0) {
-    throw new Error('No social ids provided')
+  const activeSocialIds = socialIds.filter((si) => si.isDeleted !== true)
+  if (activeSocialIds.length === 0) {
+    throw new Error('No active social ids provided')
   }
-  const hulySocialIds = socialIds.filter((si) => si.type === SocialIdType.HULY)
+  const hulySocialIds = activeSocialIds.filter((si) => si.type === SocialIdType.HULY)
 
-  return hulySocialIds[0] ?? socialIds[0]
+  return hulySocialIds[0] ?? activeSocialIds[0]
 }
+
+export const loginSocialTypes = [SocialIdType.EMAIL, SocialIdType.GOOGLE, SocialIdType.GITHUB]
 
 export function notEmpty<T> (id: T | undefined | null): id is T {
   return id !== undefined && id !== null && id !== ''

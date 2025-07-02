@@ -16,6 +16,7 @@
     "Saving": "Ukládání...",
     "Saved": "Uloženo",
     "Add": "Přidat",
+    "AddNew": "Přidat {type}",
     "Value": "Hodnota",
     "EnterCurrentPassword": "Zadejte aktuální heslo",
     "EnterNewPassword": "Zadejte nové heslo",
@@ -138,6 +139,12 @@
     "SystemSetupString": "Nastavení systému ({day})",
     "DefaultString": "Výchozí ({day})",
     "AddAttribute": "Přidat atribut",
+    "Proceed": "Pokračovat",
+    "NewEmail": "Nový email",
+    "SendConfirmation": "Odeslat potvrzovací kód",
+    "CodeSent": "Kód byl odeslán. Zadejte jej prosím do pole níže.",
+    "SendAgain": "Odeslat znovu",
+    "SendAgainIn": "Odeslat znovu lze za",
     "WorkspaceNamePattern": "Název musí být 40 znaků nebo méně, není prázdný a nesmí obsahovat speciální znaky (<, >, /)",
     "Mailboxes": "Poštovní schránky",
     "CreateMailbox": "Vytvořit poštovní schránku",
@@ -161,6 +168,12 @@
     "EmailIsUsed": "E-mailová adresa je již použita jiným účtem",
     "Customize": "Přizpůsobit",
     "GuestAccess": "Anonymní hosté",
-    "GuestAccessDescription": "Umožňuje anonymním uživatelům prohlížet pracovní prostor v režimu pouze pro čtení"
+    "GuestAccessDescription": "Umožňuje anonymním uživatelům prohlížet pracovní prostor v režimu pouze pro čtení",
+    "ManageIdentities": "Spravovat identity",
+    "Release": "Uvolnění",
+    "ReleaseSocialId": "Uvolnit sociální ID",
+    "ReleaseSocialIdConfirm": "Opravdu chcete uvolnit toto sociální ID: {socialId}? Tím ho odeberete ze svého účtu a nebudete ho již moci používat k přihlášení. Také budou odstraněny všechny související integrace.",
+    "ReleasePrimarySocialId": "Uvolnit primární sociální ID",
+    "ReleasePrimarySocialIdConfirm": "Uvolnění vašeho současného primárního sociálního ID bude vyžadovat obnovení stránky. Opravdu chcete pokračovat?"
   }
 }

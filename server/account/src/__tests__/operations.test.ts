@@ -13,12 +13,27 @@
 // limitations under the License.
 //
 
-import { AccountRole, type MeasureContext, type PersonUuid, type WorkspaceUuid } from '@hcengineering/core'
+import {
+  AccountRole,
+  type PersonId,
+  SocialIdType,
+  type MeasureContext,
+  type PersonUuid,
+  type WorkspaceUuid
+} from '@hcengineering/core'
 import platform, { PlatformError, Status, Severity, getMetadata } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
 
+import * as utils from '../utils'
 import { type AccountDB } from '../types'
-import { createInvite, createInviteLink, sendInvite, resendInvite, getLoginInfoByToken } from '../operations'
+import {
+  createInvite,
+  createInviteLink,
+  sendInvite,
+  resendInvite,
+  getLoginInfoByToken,
+  releaseSocialId
+} from '../operations'
 import { accountPlugin } from '../plugin'
 
 // Mock platform
@@ -634,6 +649,101 @@ describe('invite operations', () => {
           new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: mockWorkspace.uuid })
         )
       )
+    })
+  })
+
+  describe('releaseSocialId', () => {
+    const mockCtx = {
+      error: jest.fn()
+    } as unknown as MeasureContext
+
+    const mockDb = {} as unknown as AccountDB
+    const mockBranding = null
+    const mockToken = 'test-token'
+
+    const mockReleasedSocialId = {
+      _id: 'released-id' as PersonId,
+      type: SocialIdType.GITHUB,
+      value: 'test-value#released-id',
+      personUuid: 'test-person' as PersonUuid,
+      isDeleted: true,
+      key: 'github:test-value#released-id'
+    }
+
+    // Create spy on doReleaseSocialId
+    const doReleaseSocialIdSpy = jest
+      .spyOn(utils, 'doReleaseSocialId')
+      .mockImplementation(async () => mockReleasedSocialId)
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    afterAll(() => {
+      doReleaseSocialIdSpy.mockRestore()
+    })
+
+    test('should allow github service to release social id', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        extra: { service: 'github' }
+      })
+
+      const params = {
+        personUuid: 'test-person' as PersonUuid,
+        type: SocialIdType.GITHUB,
+        value: 'test-value'
+      }
+
+      const result = await releaseSocialId(mockCtx, mockDb, mockBranding, mockToken, params)
+
+      expect(doReleaseSocialIdSpy).toHaveBeenCalledWith(
+        mockDb,
+        params.personUuid,
+        params.type,
+        params.value,
+        'github',
+        undefined
+      )
+      expect(result).toBe(mockReleasedSocialId)
+    })
+
+    test('should throw error for unauthorized service', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        extra: { service: 'unauthorized' }
+      })
+
+      const params = {
+        personUuid: 'test-person' as PersonUuid,
+        type: SocialIdType.GITHUB,
+        value: 'test-value'
+      }
+
+      await expect(releaseSocialId(mockCtx, mockDb, mockBranding, mockToken, params)).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      )
+
+      expect(doReleaseSocialIdSpy).not.toHaveBeenCalled()
+    })
+
+    test('should throw error for invalid parameters', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        extra: { service: 'github' }
+      })
+
+      const invalidParams = [
+        { type: SocialIdType.GITHUB, value: 'test' }, // missing personUuid
+        { personUuid: 'test' as PersonUuid, value: 'test' }, // missing type
+        { personUuid: 'test' as PersonUuid, type: SocialIdType.GITHUB }, // missing value
+        { personUuid: 'test' as PersonUuid, type: 'invalid' as SocialIdType, value: 'test' } // invalid type
+      ]
+
+      for (const params of invalidParams) {
+        await expect(releaseSocialId(mockCtx, mockDb, mockBranding, mockToken, params as any)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+        )
+      }
+
+      expect(doReleaseSocialIdSpy).not.toHaveBeenCalled()
     })
   })
 })

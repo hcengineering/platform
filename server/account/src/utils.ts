@@ -1492,7 +1492,7 @@ export async function getInviteEmail (
   }
 }
 
-export async function addSocialId (
+export async function addSocialIdBase (
   db: AccountDB,
   personUuid: PersonUuid,
   type: SocialIdType,
@@ -1535,30 +1535,49 @@ export async function doReleaseSocialId (
   personUuid: PersonUuid,
   type: SocialIdType,
   value: string,
-  releasedBy: string
-): Promise<void> {
-  const socialIds = await db.socialId.find({ personUuid, type, value })
+  releasedBy: string,
+  deleteIntegrations = false
+): Promise<SocialId> {
+  const socialId = await db.socialId.findOne({ personUuid, type, value, isDeleted: { $ne: true } })
 
-  if (socialIds.length === 0) {
+  if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdNotFound, {}))
   }
 
   const account = await db.account.findOne({ uuid: personUuid as AccountUuid })
 
-  for (const socialId of socialIds) {
-    await db.socialId.update({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}`, isDeleted: true })
-    if (account != null) {
-      await db.accountEvent.insertOne({
-        accountUuid: account.uuid,
-        eventType: AccountEventType.SOCIAL_ID_RELEASED,
-        time: Date.now(),
-        data: {
-          socialId: socialId._id,
-          releasedBy: releasedBy ?? ''
-        }
-      })
-    }
+  const integrations = await db.integration.find({ socialId: socialId._id })
+  if (!deleteIntegrations && integrations.length > 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationExists, {}))
   }
+
+  // Delete all integrations for this socialId
+  // TODO: Send to pipe? to notify integration services somehow so they can clean up if needed
+  await db.integrationSecret.deleteMany({ socialId: socialId._id })
+  await db.integration.deleteMany({ socialId: socialId._id })
+
+  // Release socialId
+  await db.socialId.update({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}`, isDeleted: true })
+  if (account != null) {
+    await db.accountEvent.insertOne({
+      accountUuid: account.uuid,
+      eventType: AccountEventType.SOCIAL_ID_RELEASED,
+      time: Date.now(),
+      data: {
+        socialId: socialId._id,
+        releasedBy: releasedBy ?? ''
+      }
+    })
+  }
+
+  // read updated id (to avoid generating updated key manually)
+  const deletedSocialId = await db.socialId.findOne({ _id: socialId._id })
+
+  if (deletedSocialId == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
+  return deletedSocialId
 }
 
 export async function getWorkspaceRole (
@@ -1657,7 +1676,8 @@ export async function findExistingIntegration (
 export async function doMergePersons (
   db: AccountDB,
   primaryPerson: PersonUuid,
-  secondaryPerson: PersonUuid
+  secondaryPerson: PersonUuid,
+  mergeVerified = false
 ): Promise<void> {
   if (primaryPerson === secondaryPerson) {
     // Nothing to do
@@ -1674,9 +1694,14 @@ export async function doMergePersons (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: secondaryPerson }))
   }
 
-  // Merge social ids. Re-wire the secondary account social ids to the primary account.
+  // Merge social ids. Re-wire the secondary person social ids to the primary person.
   // Keep their ids. This way all PersonIds inside the workspaces will remain the same.
   const secondarySocialIds = await db.socialId.find({ personUuid: secondaryPerson })
+
+  if (!mergeVerified && secondarySocialIds.some((si) => si.verifiedOn != null)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Conflict, {}))
+  }
+
   for (const secondarySocialId of secondarySocialIds) {
     await db.socialId.update({ _id: secondarySocialId._id, personUuid: secondaryPerson }, { personUuid: primaryPerson })
   }
@@ -1704,7 +1729,7 @@ export async function doMergeAccounts (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: secondaryAccount }))
   }
 
-  await doMergePersons(db, primaryAccount, secondaryAccount)
+  await doMergePersons(db, primaryAccount, secondaryAccount, true)
 
   // Workspace assignments. Assign primary account to all workspaces of the secondary account.
   const secondaryWorkspacesRoles = await db.getWorkspaceRoles(secondaryAccount)

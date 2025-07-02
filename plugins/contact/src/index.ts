@@ -30,7 +30,8 @@ import {
   type MarkupBlobRef,
   type Data,
   type WithLookup,
-  AccountUuid
+  AccountUuid,
+  type SocialIdType
 } from '@hcengineering/core'
 import type { Asset, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -56,6 +57,11 @@ export interface ChannelProvider extends Doc, UXObject {
 
   // Integration type
   integrationType?: Ref<Doc>
+}
+
+export interface SocialIdentityProvider extends Doc, UXObject {
+  type: SocialIdType
+  creator?: AnyComponent // Component to verify the social identity
 }
 
 export interface SocialIdentity extends SocialId, AttachedDoc {
@@ -209,6 +215,7 @@ export const contactPlugin = plugin(contactId, {
   class: {
     AvatarProvider: '' as Ref<Class<AvatarProvider>>,
     ChannelProvider: '' as Ref<Class<ChannelProvider>>,
+    SocialIdentityProvider: '' as Ref<Class<SocialIdentityProvider>>,
     Channel: '' as Ref<Class<Channel>>,
     Contact: '' as Ref<Class<Contact>>,
     Person: '' as Ref<Class<Person>>,
@@ -261,6 +268,14 @@ export const contactPlugin = plugin(contactId, {
     Profile: '' as Ref<ChannelProvider>,
     Viber: '' as Ref<ChannelProvider>
   },
+  socialIdentityProvider: {
+    Huly: '' as Ref<SocialIdentityProvider>,
+    Email: '' as Ref<SocialIdentityProvider>,
+    Phone: '' as Ref<SocialIdentityProvider>,
+    Google: '' as Ref<SocialIdentityProvider>,
+    GitHub: '' as Ref<SocialIdentityProvider>,
+    Telegram: '' as Ref<SocialIdentityProvider>
+  },
   avatarProvider: {
     Color: '' as Ref<AvatarProvider>,
     Image: '' as Ref<AvatarProvider>,
@@ -276,11 +291,13 @@ export const contactPlugin = plugin(contactId, {
     ContactApplication: '' as Asset,
     Phone: '' as Asset,
     Email: '' as Asset,
+    Huly: '' as Asset,
     Discord: '' as Asset,
     Facebook: '' as Asset,
     Instagram: '' as Asset,
     LinkedIn: '' as Asset,
     Telegram: '' as Asset,
+    Google: '' as Asset,
     Twitter: '' as Asset,
     VK: '' as Asset,
     WhatsApp: '' as Asset,
@@ -347,7 +364,9 @@ export const contactPlugin = plugin(contactId, {
     Here: '' as IntlString,
     EveryoneDescription: '' as IntlString,
     HereDescription: '' as IntlString,
-    Guest: '' as IntlString
+    Guest: '' as IntlString,
+    Deleted: '' as IntlString,
+    Email: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,

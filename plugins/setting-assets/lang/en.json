@@ -16,6 +16,13 @@
     "Saving": "Saving...",
     "Saved": "Saved",
     "Add": "Add",
+    "AddNew": "Add {type}",
+    "Proceed": "Proceed",
+    "NewEmail": "New email",
+    "SendConfirmation": "Send confirmation code",
+    "CodeSent": "Code has been sent. Please input it in the field below.",
+    "SendAgain": "Send again",
+    "SendAgainIn": "Can send again in",
     "Value": "Value",
     "EnterCurrentPassword": "Enter current password",
     "EnterNewPassword": "Enter new password",
@@ -161,6 +168,14 @@
     "EmailIsUsed": "Email address is already used by another account",
     "Customize": "Customize",
     "GuestAccess": "Anonymous guests",
-    "GuestAccessDescription": "Allows anonymous users to visit your workspace in read-only mode"
+    "GuestAccessDescription": "Allows anonymous users to visit your workspace in read-only mode",
+    "ManageIdentities": "Manage identities",
+    "Release": "Release",
+    "ReleaseSocialId": "Release social ID",
+    "ReleaseSocialIdConfirm": "Are you sure you want to release this social ID: {socialId}? This will remove it from your account and you will no longer be able to use it to log in. Also, all associated integrations will be removed.",
+    "ReleasePrimarySocialId": "Release primary social ID",
+    "ReleasePrimarySocialIdConfirm": "Releasing your current primary social id will require the page to be reloaded. Are you sure you want to proceed?",
+    "Login": "Login",
+    "Primary": "Primary"
   }
 }

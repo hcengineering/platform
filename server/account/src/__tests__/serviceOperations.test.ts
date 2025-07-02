@@ -41,7 +41,6 @@ import {
   getIntegrationSecret,
   listIntegrations,
   listIntegrationsSecrets,
-  releaseSocialId,
   updateIntegration,
   updateIntegrationSecret
 } from '../serviceOperations'
@@ -73,7 +72,7 @@ describe('addSocialIdToPerson', () => {
   const mockToken = 'test-token'
 
   // Create spy only for this test suite
-  const addSocialIdSpy = jest.spyOn(utils, 'addSocialId')
+  const addSocialIdSpy = jest.spyOn(utils, 'addSocialIdBase')
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -1400,82 +1399,6 @@ describe('integration methods', () => {
       )
 
       expect(mockDb.integrationSecret.find).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('releaseSocialId', () => {
-    const mockCtx = {
-      error: jest.fn()
-    } as unknown as MeasureContext
-
-    const mockDb = {} as unknown as AccountDB
-    const mockBranding = null
-    const mockToken = 'test-token'
-
-    // Create spy on doReleaseSocialId
-    const doReleaseSocialIdSpy = jest.spyOn(utils, 'doReleaseSocialId').mockImplementation(async () => {})
-
-    beforeEach(() => {
-      jest.clearAllMocks()
-    })
-
-    afterAll(() => {
-      doReleaseSocialIdSpy.mockRestore()
-    })
-
-    test('should allow github service to release social id', async () => {
-      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-        extra: { service: 'github' }
-      })
-
-      const params = {
-        personUuid: 'test-person' as PersonUuid,
-        type: SocialIdType.GITHUB,
-        value: 'test-value'
-      }
-
-      await releaseSocialId(mockCtx, mockDb, mockBranding, mockToken, params)
-
-      expect(doReleaseSocialIdSpy).toHaveBeenCalledWith(mockDb, params.personUuid, params.type, params.value, 'github')
-    })
-
-    test('should throw error for unauthorized service', async () => {
-      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-        extra: { service: 'unauthorized' }
-      })
-
-      const params = {
-        personUuid: 'test-person' as PersonUuid,
-        type: SocialIdType.GITHUB,
-        value: 'test-value'
-      }
-
-      await expect(releaseSocialId(mockCtx, mockDb, mockBranding, mockToken, params)).rejects.toThrow(
-        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-      )
-
-      expect(doReleaseSocialIdSpy).not.toHaveBeenCalled()
-    })
-
-    test('should throw error for invalid parameters', async () => {
-      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-        extra: { service: 'github' }
-      })
-
-      const invalidParams = [
-        { type: SocialIdType.GITHUB, value: 'test' }, // missing personUuid
-        { personUuid: 'test' as PersonUuid, value: 'test' }, // missing type
-        { personUuid: 'test' as PersonUuid, type: SocialIdType.GITHUB }, // missing value
-        { personUuid: 'test' as PersonUuid, type: 'invalid' as SocialIdType, value: 'test' } // invalid type
-      ]
-
-      for (const params of invalidParams) {
-        await expect(releaseSocialId(mockCtx, mockDb, mockBranding, mockToken, params as any)).rejects.toThrow(
-          new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-        )
-      }
-
-      expect(doReleaseSocialIdSpy).not.toHaveBeenCalled()
     })
   })
 })

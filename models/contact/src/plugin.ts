@@ -77,6 +77,8 @@ export default mergeIds(contactId, contact, {
     FacebookPlaceholder: '' as IntlString,
     HomepagePlaceholder: '' as IntlString,
     Twitter: '' as IntlString,
+    Google: '' as IntlString,
+    Telegram: '' as IntlString,
     GitHub: '' as IntlString,
     Facebook: '' as IntlString,
     TypeLabel: '' as IntlString,
