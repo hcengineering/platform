@@ -85,6 +85,7 @@ export async function backup (
     token?: string
     fullVerify?: boolean
     keepSnapshots: number
+    msg?: Record<string, any>
   } = {
     force: false,
     timeout: 0,
@@ -128,7 +129,7 @@ export async function backup (
 
   const tmpRoot = mkdtempSync('huly')
 
-  const forcedFullCheck = '2'
+  const forcedFullCheck = '3'
 
   try {
     let backupInfo: BackupInfo = {
@@ -202,7 +203,8 @@ export async function backup (
       ctx.warn('Compacting backup')
       await compactBackup(ctx, storage, true, {
         blobLimit: options.blobDownloadLimit,
-        skipContentTypes: options.skipBlobContentTypes
+        skipContentTypes: options.skipBlobContentTypes,
+        msg: { workspaceId, url: wsIds.url }
       })
       backupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
 
@@ -253,7 +255,7 @@ export async function backup (
         )
     ]
 
-    ctx.info('domains for dump', { domains: domains.length })
+    ctx.info('domains for dump', { domains: domains.length, workspace: workspaceId, url: wsIds.url })
 
     backupInfo.lastTxId = '' // Clear until full backup will be complete
 
@@ -289,7 +291,9 @@ export async function backup (
         ctx.info('downloaded', {
           msg,
           written: newDownloadedMb,
-          pending
+          pending,
+          workspace: workspaceId,
+          url: wsIds.url
         })
       }
     }
@@ -357,7 +361,8 @@ export async function backup (
                 processed,
                 digest: digest.size,
                 time: Date.now() - st,
-                workspace: workspaceId
+                workspace: workspaceId,
+                url: wsIds.url
               })
               st = Date.now()
             }
@@ -408,7 +413,8 @@ export async function backup (
               processed,
               digest: digest.size,
               time: Date.now() - st,
-              workspace: workspaceId
+              workspace: workspaceId,
+              url: wsIds.url
             })
             await ctx.with('closeChunk', {}, async () => {
               await connection.closeChunk(ctx, idx as number)
@@ -461,11 +467,13 @@ export async function backup (
 
       const dHash = await connection.getDomainHash(ctx, domain)
       if (backupInfo.domainHashes[domain] === dHash && !fullCheck) {
-        ctx.info('no changes in domain', { domain })
+        ctx.info('no changes in domain', { domain, workspaceId, url: wsIds.url })
         return
       }
       // Cumulative digest
-      const digest = await ctx.with('load-digest', {}, (ctx) => loadDigest(ctx, storage, backupInfo.snapshots, domain))
+      const digest = await ctx.with('load-digest', {}, (ctx) =>
+        loadDigest(ctx, storage, backupInfo.snapshots, domain, undefined, options.msg)
+      )
       const same = new Map<Ref<Doc>, string>()
 
       let _pack: Pack | undefined
@@ -578,6 +586,7 @@ export async function backup (
           needRetrieve: needRetrieveChunks.reduce((v, docs) => v + docs.size, 0),
           toLoad: needRetrieve.size,
           workspace: workspaceId,
+          url: wsIds.url,
           lastSize: Math.round((lastSize * 100) / (1024 * 1024)) / 100
         })
         let docs: Doc[] = []
@@ -695,7 +704,7 @@ export async function backup (
               })
 
               // We need to upload file to storage
-              ctx.info('>>>> upload pack', { storageFile, size: sz, workspace: wsIds.url })
+              ctx.info('>>>> upload pack', { storageFile, size: sz, url: wsIds.url, workspace: workspaceId })
               await storage.writeFile(storageFile, createReadStream(tmpFile))
               await rm(tmpFile)
 
@@ -734,7 +743,9 @@ export async function backup (
                 blob: blob._id,
                 provider: blob.provider,
                 size: Math.round(blob.size / (1024 * 1024)),
-                limit: options.blobDownloadLimit
+                limit: options.blobDownloadLimit,
+                workspace: workspaceId,
+                url: wsIds.url
               })
               processChanges(d, true)
               if (progress !== undefined) {
@@ -868,7 +879,7 @@ export async function backup (
         current: Math.round(process.memoryUsage().heapUsed / (1024 * 1024))
       }
       if (mm.old > mm.current + mm.current / 10) {
-        ctx.info('memory-stats', mm)
+        ctx.info('memory-stats', { ...mm, workspace: workspaceId })
       }
       await ctx.with('process-domain', { domain }, async (ctx) => {
         await processDomain(

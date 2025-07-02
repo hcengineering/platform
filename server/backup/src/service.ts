@@ -324,6 +324,10 @@ class BackupWorker {
             fullVerify: this.fullCheck,
             progress: (progress) => {
               return notify?.(progress) ?? Promise.resolve()
+            },
+            msg: {
+              workspaceUrl: ws.url,
+              workspaceUuid: ws.uuid
             }
           }),
         { workspace: ws.uuid, url: ws.url }
