@@ -33,12 +33,13 @@ import config from './config'
 import { type GmailClient } from './gmail'
 import { getIntegrations } from './integrations'
 import { getWorkspaceTokens } from './tokens'
-import { type ProjectCredentials, type Token, type User } from './types'
+import { type ProjectCredentials, type Token, type User, type WorkspaceStateInfo } from './types'
 import { serviceToken } from './utils'
 import { WorkspaceClient } from './workspaceClient'
 
 import { AuthProvider } from './gmail/auth'
 import { AccountClient } from '@hcengineering/account-client'
+import { count } from 'console'
 
 export class GmailController {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
@@ -136,11 +137,18 @@ export class GmailController {
     const workspaceWithInfo = await sysClient.getWorkspacesInfo(Array.from(unprocessedWorkspaces))
 
     const allTokens = await getWorkspaceTokens(sysClient)
+    let inactiveWorkspaceCount = 0
+    let archivedWorkspaceCount = 0
 
     for (const info of workspaceWithInfo) {
       const workspace = info.uuid
       try {
-        const { needSync, needRecheck } = this.checkWorkspace(info)
+        const { needSync, needRecheck, archived, inactive } = this.checkWorkspace(info)
+        if (archived === true) {
+          archivedWorkspaceCount++
+        } else if (inactive === true) {
+          inactiveWorkspaceCount++
+        }
         if (!needSync) {
           if (!needRecheck) unprocessedWorkspaces.delete(workspace)
           continue
@@ -166,25 +174,25 @@ export class GmailController {
         this.ctx.error('Failed to create workspace client', { workspaceUuid: workspace, error: err.message })
       }
     }
+    if (inactiveWorkspaceCount > 0 || archivedWorkspaceCount > 0) {
+      this.ctx.info('Skip archived and inactive workspaces', { inactive: inactiveWorkspaceCount, archived: archivedWorkspaceCount })
+    }
 
     await limiter.waitProcessing()
     return unprocessedWorkspaces
   }
 
-  checkWorkspace (info: WorkspaceInfoWithStatus): { needSync: boolean, needRecheck: boolean } {
+  checkWorkspace (info: WorkspaceInfoWithStatus): WorkspaceStateInfo {
     if (isArchivingMode(info.mode) || isDeletingMode(info.mode)) {
-      this.ctx.info('workspace is in archiving or deleting mode, skipping', { workspaceUuid: info.uuid })
-      return { needSync: false, needRecheck: false }
+      return { needSync: false, needRecheck: false, archived: true }
     }
     if (!isActiveMode(info.mode)) {
-      this.ctx.info('workspace is not active, skipping for now.', { workspaceUuid: info.uuid })
-      return { needSync: false, needRecheck: true }
+      return { needSync: false, needRecheck: true, inactive: true }
     }
     const lastVisit = (Date.now() - (info.lastVisit ?? 0)) / (3600 * 24 * 1000) // In days
 
     if (lastVisit > config.WorkspaceInactivityInterval) {
-      this.ctx.warn('workspace is inactive for too long, skipping for now.', { workspaceUuid: info.uuid })
-      return { needSync: false, needRecheck: true }
+      return { needSync: false, needRecheck: true, inactive: true }
     }
     return { needSync: true, needRecheck: false }
   }
