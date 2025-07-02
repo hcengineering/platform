@@ -300,8 +300,8 @@ async function getRelationValue (
     return context.direction === 'A' ? it.docA : it.docB
   })
   const target = await control.findAll(control.ctx, targetClass, { _id: { $in: ids } })
-  const attr = control.hierarchy.findAttribute(targetClass, context.key)
-  if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, { attr: name })
+  if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, { attr: context.name })
+  const attr = context.key !== '' ? control.hierarchy.findAttribute(targetClass, context.key) : undefined
   if (context.sourceFunction !== undefined) {
     const transform = control.modelDb.findObject(context.sourceFunction)
     if (transform === undefined) {
@@ -313,22 +313,22 @@ async function getRelationValue (
     const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
     const reduced = await f(target, {}, control, execution)
-    const val = getObjectValue(context.key, reduced)
+    const val = context.key !== '' ? getObjectValue(context.key, reduced) : reduced
     if (val == null) {
       throw processError(
         process.error.EmptyRelatedObjectValue,
         { parent: name },
-        { attr: attr?.label ?? getEmbeddedLabel(context.key) }
+        { attr: attr?.label ?? getEmbeddedLabel(context.name) }
       )
     }
     return val
   }
-  const val = getObjectValue(context.key, target[0])
+  const val = context.key !== '' ? getObjectValue(context.key, target[0]) : target
   if (val == null) {
     throw processError(
       process.error.EmptyRelatedObjectValue,
       { parent: name },
-      { attr: attr?.label ?? getEmbeddedLabel(context.key) }
+      { attr: attr?.label ?? getEmbeddedLabel(context.name) }
     )
   }
   return val
