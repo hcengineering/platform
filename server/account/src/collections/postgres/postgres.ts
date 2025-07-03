@@ -44,7 +44,8 @@ import type {
   Mailbox,
   MailboxSecret,
   Integration,
-  IntegrationSecret
+  IntegrationSecret,
+  AccountAggregatedInfo
 } from '../../types'
 
 function toSnakeCase (str: string): string {
@@ -479,6 +480,16 @@ export class AccountPostgresDbCollection
     if (Object.keys(query).some((k) => this.passwordKeys.includes(k))) {
       throw new Error('Passwords are not allowed in delete query')
     }
+
+    const [whereClause, whereValues] = this.buildWhereClause(query)
+
+    // Delete passwords first
+    const passwordsSql = `
+      DELETE FROM ${this.getPasswordsTableName()}
+      WHERE account_uuid IN (
+        SELECT uuid FROM ${this.getTableName()} ${whereClause}
+      )`
+    await this.unsafe(passwordsSql, whereValues, client)
 
     await super.deleteMany(query, client)
   }
@@ -988,6 +999,153 @@ export class PostgresAccountDB implements AccountDB {
       async (rTx) =>
         await rTx`DELETE FROM ${this.client(this.account.getPasswordsTableName())} WHERE account_uuid = ${accountUuid}`
     )
+  }
+
+  async deleteAccount (accountUuid: AccountUuid): Promise<void> {
+    await this.withRetry(async (rTx) => {
+      const socialIds = await this.socialId.find({ personUuid: accountUuid }, undefined, undefined, rTx)
+
+      for (const socialIdObj of socialIds) {
+        await this.integrationSecret.deleteMany({ socialId: socialIdObj._id }, rTx)
+        await this.integration.deleteMany({ socialId: socialIdObj._id }, rTx)
+      }
+
+      const mailboxes = await this.mailbox.find({ accountUuid }, undefined, undefined, rTx)
+
+      for (const mailboxObj of mailboxes) {
+        await this.mailboxSecret.deleteMany({ mailbox: mailboxObj.mailbox }, rTx)
+      }
+
+      await this.mailbox.deleteMany({ accountUuid }, rTx)
+
+      await this.socialId.update({ personUuid: accountUuid }, { verifiedOn: undefined }, rTx)
+
+      // Unassign from all workspaces
+      await rTx`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE account_uuid = ${accountUuid}`
+
+      // This removes the account along with the password if any
+      await this.account.deleteMany({ uuid: accountUuid }, rTx)
+    })
+  }
+
+  async listAccounts (search?: string, skip?: number, limit?: number): Promise<AccountAggregatedInfo[]> {
+    const sqlChunks: string[] = [
+      `
+      WITH account_data AS (
+        SELECT 
+          a.uuid,
+          a.timezone,
+          a.locale,
+          a.automatic,
+          a.max_workspaces,
+          p.first_name,
+          p.last_name,
+          p.country,
+          p.city,
+          p.migrated_to,
+          (
+            SELECT jsonb_agg(jsonb_build_object(
+              'socialId', i.social_id,
+              'kind', i.kind,
+              'workspaceUuid', i.workspace_uuid
+            )) 
+            FROM ${this.integration.getTableName()} i 
+            WHERE i.social_id IN (SELECT _id FROM ${this.socialId.getTableName()} s WHERE s.person_uuid = a.uuid)
+          ) as integrations,
+          (
+            SELECT jsonb_agg(jsonb_build_object(
+              '_id', s._id,
+              'type', s.type,
+              'value', s.value,
+              'personUuid', s.person_uuid,
+              'createdOn', s.created_on,
+              'verifiedOn', s.verified_on,
+              'displayValue', s.display_value
+            ))
+            FROM ${this.socialId.getTableName()} s
+            WHERE s.person_uuid = a.uuid AND s.is_deleted = FALSE
+          ) as social_ids,
+          (
+            SELECT jsonb_agg(jsonb_build_object(
+              'uuid', w.uuid,
+              'name', w.name,
+              'url', w.url,
+              'dataId', w.data_id,
+              'branding', w.branding,
+              'region', w.region,
+              'createdBy', w.created_by,
+              'createdOn', w.created_on,
+              'billingAccount', w.billing_account
+            ))
+            FROM ${this.workspace.getTableName()} w
+            INNER JOIN ${this.getWsMembersTableName()} m ON m.workspace_uuid = w.uuid
+            WHERE m.account_uuid = a.uuid
+          ) as workspaces
+        FROM ${this.account.getTableName()} a
+        INNER JOIN ${this.ns}.person p ON p.uuid = a.uuid
+    `
+    ]
+
+    const values: any[] = []
+    let paramIndex = 1
+
+    if (search !== undefined && search !== '') {
+      sqlChunks.push(`
+        WHERE 
+          p.first_name ILIKE $${paramIndex} OR 
+          p.last_name ILIKE $${paramIndex} OR
+          EXISTS (
+            SELECT 1 FROM ${this.socialId.getTableName()} s 
+            WHERE s.person_uuid = a.uuid AND s.value ILIKE $${paramIndex}
+          )
+      `)
+      values.push(`%${search}%`)
+      paramIndex++
+    }
+
+    sqlChunks.push('ORDER BY p.first_name')
+
+    if (limit !== undefined) {
+      sqlChunks.push(`LIMIT $${paramIndex}`)
+      values.push(limit)
+      paramIndex++
+    }
+
+    if (skip !== undefined) {
+      sqlChunks.push(`OFFSET $${paramIndex}`)
+      values.push(skip)
+    }
+
+    sqlChunks.push(') SELECT * FROM account_data')
+
+    return await this.withRetry(async (rTx) => {
+      const result = await rTx.unsafe(sqlChunks.join(' '), values)
+
+      return result.map((row: any) => {
+        // Handle null arrays
+        row.integrations = row.integrations ?? []
+        row.social_ids = row.social_ids ?? []
+        row.workspaces = row.workspaces ?? []
+
+        const converted = convertKeysToCamelCase(row)
+
+        // Convert timestamp fields
+        if (converted.workspaces != null) {
+          for (const ws of converted.workspaces) {
+            ws.createdOn = convertTimestamp(ws.createdOn)
+          }
+        }
+
+        if (converted.socialIds != null) {
+          for (const sid of converted.socialIds) {
+            sid.createdOn = convertTimestamp(sid.createdOn)
+            sid.verifiedOn = convertTimestamp(sid.verifiedOn)
+          }
+        }
+
+        return converted as AccountAggregatedInfo
+      })
+    })
   }
 
   protected getMigrations (): [string, string][] {

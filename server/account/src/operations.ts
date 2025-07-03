@@ -39,20 +39,21 @@ import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 import { isAdminEmail } from './admin'
 import { accountPlugin } from './plugin'
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
-import type {
-  AccountDB,
-  AccountMethodHandler,
-  LoginInfo,
-  LoginInfoWithWorkspaces,
-  Mailbox,
-  MailboxOptions,
-  Meta,
-  OtpInfo,
-  RegionInfo,
-  SocialId,
-  WorkspaceInfoWithStatus,
-  WorkspaceInviteInfo,
-  WorkspaceLoginInfo
+import {
+  AccountEventType,
+  type AccountDB,
+  type AccountMethodHandler,
+  type LoginInfo,
+  type LoginInfoWithWorkspaces,
+  type Mailbox,
+  type MailboxOptions,
+  type Meta,
+  type OtpInfo,
+  type RegionInfo,
+  type SocialId,
+  type WorkspaceInfoWithStatus,
+  type WorkspaceInviteInfo,
+  type WorkspaceLoginInfo
 } from './types'
 import {
   addSocialIdBase,
@@ -2135,6 +2136,35 @@ export async function releaseSocialId (
   return await doReleaseSocialId(db, personUuid, type, value, extra?.service ?? account, deleteIntegrations)
 }
 
+export async function deleteAccount (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { uuid?: AccountUuid }
+): Promise<void> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+
+  const isAdmin = extra?.admin === 'true'
+
+  if (!isAdmin) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const { uuid } = params
+
+  if (uuid == null || uuid === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  await db.deleteAccount(uuid)
+  await db.accountEvent.insertOne({
+    accountUuid: uuid,
+    eventType: AccountEventType.ACCOUNT_DELETED,
+    time: Date.now()
+  })
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -2185,6 +2215,7 @@ export type AccountMethods =
   | 'isReadOnlyGuest'
   | 'addEmailSocialId'
   | 'releaseSocialId'
+  | 'deleteAccount'
 
 /**
  * @public
@@ -2225,6 +2256,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     exchangeGuestToken: wrap(exchangeGuestToken),
     addEmailSocialId: wrap(addEmailSocialId),
     releaseSocialId: wrap(releaseSocialId),
+    deleteAccount: wrap(deleteAccount),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
