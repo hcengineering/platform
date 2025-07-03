@@ -28,7 +28,7 @@
   import ActivityExtensionComponent from './ActivityExtension.svelte'
   import ActivityFilter from './ActivityFilter.svelte'
   import { combineActivityMessages, sortActivityMessages } from '../activityMessagesUtils'
-  import { canGroupMessages, getMessageFromLoc, getSpace } from '../utils'
+  import { canGroupMessages, getMessageFromLoc, getSpace, getActivityNewestFirst } from '../utils'
   import ActivityMessagePresenter from './activity-message/ActivityMessagePresenter.svelte'
   import { messageInFocus } from '../activity'
 
@@ -169,7 +169,7 @@
     prevContainerWidth = container.clientWidth
   }
 
-  let isNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
+  let isNewestFirst = getActivityNewestFirst()
 
   $: extensions = getExtensions(object._class)
 

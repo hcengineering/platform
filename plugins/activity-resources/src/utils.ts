@@ -174,3 +174,23 @@ export function shouldScrollToActivity (): boolean {
 export function getSpace (doc: Doc): Ref<Space> {
   return isSpace(doc) ? doc._id : doc.space
 }
+
+const activityNewestFirstLocalStorageKey = 'activity-newest-first_v1'
+
+export function getActivityNewestFirst (): boolean {
+  try {
+    const value = JSON.parse(localStorage.getItem(activityNewestFirstLocalStorageKey) ?? 'true')
+
+    if (typeof value !== 'boolean') {
+      return true
+    }
+
+    return value
+  } catch (err) {
+    return true
+  }
+}
+
+export function setActivityNewestFirst (value: boolean): void {
+  localStorage.setItem(activityNewestFirstLocalStorageKey, JSON.stringify(value))
+}
