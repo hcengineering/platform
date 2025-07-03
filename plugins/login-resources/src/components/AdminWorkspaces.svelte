@@ -375,7 +375,7 @@
             {/each}
           </div>
         </div>
-        <div class="fs-title p-3 flex-no-shrink">
+        <div class="fs-title p-3 flex-no-shrink" data-testid="workspace-search-container">
           <SearchEdit bind:value={search} width={'100%'} />
         </div>
 
