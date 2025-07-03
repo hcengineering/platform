@@ -16,11 +16,8 @@
 export interface Config {
   Port: number
   DbUrl: string
-  // MongoUrl: string
-  // MongoDb: string
   Secret: string
   ServiceID: string
-  SupportWorkspace: string
   AccountsUrl: string
   SentryDSN?: string
   PostHogAPI?: string
@@ -33,8 +30,6 @@ const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4007,
     DbUrl: process.env.DB_URL,
-    // MongoUrl: process.env.MONGO_URL,
-    // MongoDb: process.env.MONGO_DB ?? '%analytics-collector',
     Secret: process.env.SECRET,
     ServiceID: process.env.SERVICE_ID ?? 'analytics-collector-service',
     AccountsUrl: process.env.ACCOUNTS_URL,

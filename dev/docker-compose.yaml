@@ -401,8 +401,8 @@ services:
       - SERVICE_ID=analytics-collector-service
       - ACCOUNTS_URL=http://huly.local:3000
       - STATS_URL=http://huly.local:4900
-      - POSTHOG_HOST=https://app.posthog.com
-      - POSTHOG_API_KEY=phc_zHBQ0eGNnNW571rcUwMdrMo1yJUTvtOts1OGBdxNpbD
+      - POSTHOG_HOST=${POSTHOG_HOST}
+      - POSTHOG_API_KEY=${POSTHOG_API_KEY}
   msg2file:
     image: hardcoreeng/msg2file
     ports:

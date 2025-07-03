@@ -37,7 +37,6 @@ export class SentryAnalyticProvider implements AnalyticProvider {
   setTag(key: string, value: string | number): void {
     Sentry.setTag(key, value)
   }
-  setGroup(ws: string): void {}
   setWorkspace(ws: string): void {
     this.setTag('workspace', ws)
   }

@@ -17,7 +17,7 @@ export class PosthogAnalyticProvider implements AnalyticProvider {
 
   setUser(email: string): void {
     if (!posthog._isIdentified()) {
-      posthog.identify(email, { email: email })
+      posthog.identify(email, { email })
     }
   }
   setAlias(distinctId: string, alias: string): void {

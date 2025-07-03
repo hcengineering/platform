@@ -24,8 +24,8 @@ export class SentryAnalyticProvider implements AnalyticProvider {
     return true
   }
 
-  setUser (email: string): void {
-    Sentry.setUser({ email })
+  setUser (socialId: string): void {
+    Sentry.setUser({ email: socialId })
   }
 
   setAlias (distinctId: string, alias: string): void {

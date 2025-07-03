@@ -1,4 +1,7 @@
 import { UAParser } from 'ua-parser-js'
+import { getMetadata } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
+import { desktopPlatform } from '@hcengineering/ui'
 
 const parser = UAParser()
 
@@ -41,14 +44,14 @@ function getSearchEngine (referrer: string) {
   return null
 }
 
-function getDeviceType (type: string) {
+function getDeviceType (type: string | undefined): string {
   if (!type) return 'Desktop'
   if (type === 'mobile') return 'Mobile'
   if (type === 'tablet') return 'Tablet'
   return 'Desktop'
 }
 
-export function collectEventMetadata (properties: Record<string, any> = {}, eventName?: string) {
+export function collectEventMetadata (properties: Record<string, any> = {}) {
   const trackingParams = getUrlTrackingParams()
   const referrer = document.referrer === '' ? '$direct' : document.referrer
   const referringDomain = referrer !== '$direct' ? new URL(referrer).hostname : '$direct'
@@ -58,32 +61,29 @@ export function collectEventMetadata (properties: Record<string, any> = {}, even
   const timezoneOffset = -now.getTimezoneOffset()
 
   return {
-    event: eventName,
-    properties: {
-      ...properties,
-      $timestamp: new Date().toISOString(),
-      $os: parser.os.name || 'Unknown OS',
-      $os_version: parser.os.version || '',
-      $browser: parser.browser.name || 'Unknown Browser',
-      $browser_version: parseInt(parser.browser.major ?? '0', 10),
-      $device_type: getDeviceType(parser.device.type),
-      $current_url: window.location.href,
-      $host: window.location.hostname,
-      $pathname: window.location.pathname,
-      $screen_height: window.screen.height,
-      $screen_width: window.screen.width,
-      $viewport_height: window.innerHeight,
-      $viewport_width: window.innerWidth,
-      $lib: 'web',
-      $lib_version: '1.31.0',
-      $search_engine: getSearchEngine(referrer),
-      $referrer: referrer,
-      $referring_domain: referringDomain,
-      $raw_user_agent: navigator.userAgent,
-      title: document.title,
-      $timezone: timezone,
-      $timezone_offset: timezoneOffset,
-      ...trackingParams
-    }
+    ...properties,
+    $timestamp: new Date().toISOString(),
+    $os: parser.os.name || 'Unknown OS',
+    $os_version: parser.os.version || '',
+    $browser: parser.browser.name || 'Unknown Browser',
+    $browser_version: parseInt(parser.browser.major ?? '0', 10),
+    $device_type: getDeviceType(parser.device.type),
+    $current_url: window.location.href,
+    $host: window.location.hostname,
+    $pathname: window.location.pathname,
+    $screen_height: window.screen.height,
+    $screen_width: window.screen.width,
+    $viewport_height: window.innerHeight,
+    $viewport_width: window.innerWidth,
+    $lib: desktopPlatform ? 'app' : 'web',
+    $lib_version: getMetadata(presentation.metadata.FrontVersion) || '0.0.0',
+    $search_engine: getSearchEngine(referrer),
+    $referrer: referrer,
+    $referring_domain: referringDomain,
+    $raw_user_agent: navigator.userAgent,
+    title: document.title,
+    $timezone: timezone,
+    $timezone_offset: timezoneOffset,
+    ...trackingParams
   }
 }

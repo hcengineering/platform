@@ -83,7 +83,6 @@ export async function doLogin (email: string, password: string): Promise<[Status
     const loginInfo = await accountClient.login(email, password)
 
     Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: true })
-    Analytics.setUser(email, loginInfo.account)
 
     return [OK, loginInfo]
   } catch (err: any) {
@@ -136,7 +135,6 @@ export async function signUp (
     const otpInfo = await getAccountClient(null).signUp(email, password, first, last)
 
     Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: true })
-    Analytics.setUser(email, otpInfo.account)
 
     return [OK, otpInfo]
   } catch (err: any) {
@@ -159,7 +157,6 @@ export async function signUpOtp (email: string, first: string, last: string): Pr
     const otpInfo = await getAccountClient(null).signUpOtp(email, first, last)
 
     Analytics.handleEvent('signUpOtp', { email, ok: true })
-    Analytics.setUser(email, { email })
 
     return [OK, otpInfo]
   } catch (err: any) {
@@ -624,7 +621,6 @@ export async function join (
     const workspaceLoginInfo = await getAccountClient().join(email, password, inviteId)
 
     Analytics.handleEvent('Join', { email, ok: true })
-    Analytics.setUser(email, workspaceLoginInfo.account)
 
     return [OK, workspaceLoginInfo]
   } catch (err: any) {
@@ -653,7 +649,6 @@ export async function signUpJoin (
     const workspaceLoginInfo = await getAccountClient().signUpJoin(email, password, first, last, inviteId)
 
     Analytics.handleEvent('Signup Join', { email, ok: true })
-    Analytics.setUser(email, workspaceLoginInfo.account)
 
     return [OK, workspaceLoginInfo]
   } catch (err: any) {
@@ -899,7 +894,6 @@ export async function loginOtp (email: string): Promise<[Status, OtpInfo | null]
     const otpInfo = await getAccountClient(null).loginOtp(email)
 
     Analytics.handleEvent('sendOtp', { email, ok: true })
-    Analytics.setUser(email, { email })
 
     return [OK, otpInfo]
   } catch (err: any) {
@@ -929,7 +923,6 @@ export async function doValidateOtp (
     const loginInfo = await getAccountClient(null).validateOtp(email, code, password)
 
     Analytics.handleEvent(telemetryEvent, { email, ok: true })
-    Analytics.setUser(email, loginInfo.account)
 
     return [OK, loginInfo]
   } catch (err: any) {

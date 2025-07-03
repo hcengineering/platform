@@ -21,7 +21,6 @@ import { AnalyticEvent, AnalyticEventType } from '@hcengineering/analytics-colle
 import { extractToken } from '@hcengineering/server-client'
 import config from './config'
 import { ApiError } from './error'
-import { Collector } from './collector'
 
 type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
 
@@ -32,7 +31,18 @@ function isValidKey (key: string): boolean {
   if (/^\d+$/.test(key)) {
     return false
   }
-  const errorFields = ['error', 'message', '$error', '$message', 'error_message', 'exception', '$exception', 'stack', 'stackTrace', 'error_stack']
+  const errorFields = [
+    'error',
+    'message',
+    '$error',
+    '$message',
+    'error_message',
+    'exception',
+    '$exception',
+    'stack',
+    'stackTrace',
+    'error_stack'
+  ]
   return !errorFields.includes(key)
 }
 
@@ -69,18 +79,9 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
 
 function isContentValid (body: any[]): boolean {
   return !body.some((it) => {
-    if (it == null) {
-      return true
-    }
-
-    if (!('event' in it)) {
-      return true
-    }
-
-    if (!('properties' in it)) {
-      return true
-    }
-
+    if (it == null) return true
+    if (!('event' in it)) return true
+    if (!('properties' in it)) return true
     return !('timestamp' in it)
   })
 }
@@ -120,15 +121,14 @@ function getRecordsByType (event: AnalyticEvent): Record<string, any> {
       }
     case AnalyticEventType.CustomEvent:
       return {
-        event: (typeof event.properties.event === 'string' && event.properties.event.length > 0)
-          ? event.properties.event
-          : 'custom_event'
+        event:
+          typeof event.properties.event === 'string' && event.properties.event.length > 0
+            ? event.properties.event
+            : 'custom_event'
       }
     default:
       return {
-        event: (typeof event.event === 'string' && event.event.length > 0)
-          ? event.event
-          : 'unknown_event'
+        event: typeof event.event === 'string' && event.event.length > 0 ? event.event : 'unknown_event'
       }
   }
 }
@@ -233,16 +233,18 @@ function preparePostHogEvent (event: AnalyticEvent, req: Request): Record<string
   }
   regularEventForPostHog.properties = filterProperties(regularEventForPostHog.properties)
 
-  if (typeof event.properties.$anonymous_id === 'string' &&
-      event.properties.$anonymous_id !== event.distinct_id &&
-      event.distinct_id !== event.properties.$anonymous_id) {
+  if (
+    typeof event.properties.$anonymous_id === 'string' &&
+    event.properties.$anonymous_id !== event.distinct_id &&
+    event.distinct_id !== event.properties.$anonymous_id
+  ) {
     regularEventForPostHog.properties.$anon_distinct_id = event.properties.$anonymous_id
   }
 
   return regularEventForPostHog
 }
 
-export function createServer (collector: Collector): Express {
+export function createServer (): Express {
   const app = express()
   app.use(cors())
   app.use(express.json())
@@ -259,8 +261,6 @@ export function createServer (collector: Collector): Express {
       }
 
       const events: AnalyticEvent[] = req.body
-
-      collector.collect(events, token)
 
       const posthogEvents = events.map((event) => {
         return preparePostHogEvent(event, req)

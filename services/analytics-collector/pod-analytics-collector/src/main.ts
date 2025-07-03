@@ -23,11 +23,9 @@ import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-servic
 import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { join } from 'path'
 
-import config from './config'
+import config, { Config } from './config'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import { createServer, listen } from './server'
-import { Collector } from './collector'
-// import { createAnalyticsDb } from './db'
 
 const ctx = initStatisticsContext('analytics-collector', {
   factory: () =>
@@ -47,8 +45,13 @@ configureAnalytics(config.SentryDSN, config)
 Analytics.setTag('application', 'analytics-collector-service')
 
 export const main = async (): Promise<void> => {
-  ctx.info('Analytics collector service is not implemented yet')
-  // process.exit()
+  const requiredKeys: Array<keyof Config> = ['PostHogAPI', 'PostHogHost']
+  const wrongConfig = requiredKeys.some((key) => config[key] == null || config[key] === '')
+  if (wrongConfig) {
+    ctx.error('Invalid config, specify PostHogAPI and PostHogHost')
+    process.exit()
+  }
+
   setMetadata(serverToken.metadata.Secret, config.Secret)
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
@@ -59,16 +62,10 @@ export const main = async (): Promise<void> => {
 
   registerLoaders()
 
-  // const db = await createAnalyticsDb(config.DbUrl)
-  // const collector = new Collector(ctx, db)
-  const collector = new Collector(ctx)
-
-  const app = createServer(collector)
+  const app = createServer()
   const server = listen(app, config.Port)
 
   const shutdown = (): void => {
-    void collector.close()
-    // void closeDB()
     server.close(() => process.exit())
   }
 

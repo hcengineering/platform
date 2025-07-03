@@ -53,6 +53,7 @@ import { get, writable } from 'svelte/store'
 
 import plugin from './plugin'
 import { logOut, workspaceCreating } from './utils'
+import { WorkbenchEvents } from '@hcengineering/workbench'
 
 export const versionError = writable<string | undefined>(undefined)
 const versionStorageKey = 'last_server_version'
@@ -385,19 +386,20 @@ export async function connect (title: string): Promise<Client | undefined> {
     await setPlatformStatus(new Status(Severity.INFO, platform.status.SystemAccount, {}))
   }
 
-  const email = me.fullSocialIds.find((si) => si.type === 'email')?.value ?? me.fullSocialIds.find((si) => si._id === me.primarySocialId)?.value
-  // Analytics.handleEvent('workbench.Connect', { email: email ?? account, ok: true })
-  // Analytics.setTag('barnding', workspace.branding ?? 'unknown')
+  const socialId = me.fullSocialIds.find((si) => si._id === me.primarySocialId)?.value
+  const email = me.fullSocialIds.find((si) => si.type === 'email')?.value ?? socialId
 
   const data: Record<string, any> = {
-    email: email ?? account,
+    social_id: socialId ?? account,
     account_uuid: account,
     workspace: workspace.name,
-    workspace_uuid: workspace.uuid
+    workspace_uuid: workspace.uuid,
+    branding: workspace.branding ?? 'unknown'
   }
 
   Analytics.setUser(email ?? account, data)
   Analytics.setWorkspace(workspace.name)
+  Analytics.handleEvent(WorkbenchEvents.Connect)
   console.log('Logged in with account: ', me)
   setCurrentAccount(me)
 

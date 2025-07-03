@@ -36,6 +36,7 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
   private data: Record<string, any> | null = null
 
   init(config: Config): boolean {
+    if (config.ANALYTICS_COLLECTOR_URL == null) return false
     this.url = config.ANALYTICS_COLLECTOR_URL
     if (this.url !== undefined && this.url !== '' && this.url !== null) {
       this.initializeAnonymousId()
@@ -107,38 +108,33 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
   addEvent(eventType: AnalyticEventType, properties: Record<string, any> = {}, eventName: string, overrideDistinctId?: string): void {
     const currentId = overrideDistinctId ?? (this.isAuthenticated && this.email ? this.email : this.anonymousId)
     
-    const baseProperties = {
+    const baseProperties: Record<string, any> = {
       ...properties,
-      analyticsCollector: true,
+      analytics_collector: true,
       $anonymous_id: this.anonymousId,
-      $is_authenticated: this.isAuthenticated
+      $is_identified: this.isAuthenticated
     }
-    
-    const eventMetadata = collectEventMetadata(baseProperties, eventName)
-    
-    const finalProperties: Record<string, any> = { ...eventMetadata.properties }
-    
+
+    const eventMetadata: Record<string, any> = collectEventMetadata(baseProperties)
     if (eventType === AnalyticEventType.CustomEvent && eventName) {
-      finalProperties.event = eventName
+      eventMetadata.event = eventName
     }
-    
     if (this.data != null) {
       for (const [key, value] of Object.entries(this.data)) {
-        finalProperties[key] = value
+        eventMetadata[key] = value
       }
     }
-    
+
     const event: QueuedEvent = {
       event: eventType,
-      properties: finalProperties,
+      properties: eventMetadata,
       timestamp: Date.now(),
       distinct_id: currentId,
     }
-
     this.events.push(event)
   }
 
-  private cleanUserData(data: Record<string, any>): Record<string, any> {
+  private normalizeUserData(data: Record<string, any>): Record<string, any> {
     const cleanedData: Record<string, any> = {}
     for (const [key, value] of Object.entries(data)) {
       if (Array.isArray(value)) {
@@ -151,29 +147,24 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
   }
 
   setUser(email: string, data: Record<string, any>): void {
-    if (typeof data === 'string') {
-      return this.setUser(email, { userString: data })
-    }
-    
     const wasAuthenticated = this.isAuthenticated
     const previousId = this.anonymousId
-    
-    const cleanedData = this.cleanUserData(data)
+    const normalizedData = this.normalizeUserData(data)
     
     this.email = email
-    this.data = cleanedData
+    this.data = normalizedData
     this.isAuthenticated = true
 
     if (!wasAuthenticated && previousId) {
       this.addEvent(AnalyticEventType.SetAlias, {
-        alias: email,
+        alias: previousId,
+        distinct_id: email,
         previous_id: previousId,
         $anonymous_id: previousId
       }, '$create_alias', previousId)
     }
 
-    const setData: Record<string, any> = { email, ...cleanedData }
-    
+    const setData: Record<string, any> = { email, ...normalizedData }
     this.addEvent(AnalyticEventType.SetUser, {
       $set: setData,
       $set_once: { 
