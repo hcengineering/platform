@@ -36,14 +36,16 @@ type TranscodeRequest struct {
 	BlobID        string
 	WorkspaceUUID string
 	ContentType   string
+	Source        map[string]any
 }
 
 // TranscodeResult represents transcode result.
 type TranscodeResult struct {
-	BlobID        string `json:"blobId"`
-	WorkspaceUUID string `json:"workspaceUuid"`
-	Playlist      string `json:"playlist"`
-	Thumbnail     string `json:"thumbnail"`
+	BlobID        string         `json:"blobId"`
+	WorkspaceUUID string         `json:"workspaceUuid"`
+	Source        map[string]any `json:"source"`
+	Playlist      string         `json:"playlist"`
+	Thumbnail     string         `json:"thumbnail"`
 }
 
 // ConsumerOptions represents options for the consumer
