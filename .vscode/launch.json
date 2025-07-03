@@ -826,7 +826,9 @@
       "request": "launch",
       "args": ["src/index.ts"],
       "env": {
+        "ACCOUNTS_URL": "http://huly.local:3000",
         "SECRET": "secret",
+        "REGION": "cockroach",
         "QUEUE_CONFIG": "localhost:19092"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],

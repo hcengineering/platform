@@ -9,8 +9,10 @@ services:
       - STREAM_INSECURE=true
       - STREAM_SERVER_SECRET=secret
       - STREAM_MAX_PARALLEL_SCALING_COUNT=6
+      - STREAM_LOG_LEVEL=debug
       - AWS_ACCESS_KEY_ID=minioadmin
       - AWS_SECRET_ACCESS_KEY=minioadmin
+      - STREAM_REGION=cockroach
       - STREAM_QUEUE_CONFIG=${QUEUE_CONFIG}
     ports:
       - 1080:1080
@@ -21,7 +23,9 @@ services:
       - 'huly.local:host-gateway'
     container_name: media
     environment:
+      - ACCOUNTS_URL=http://huly.local:3000
       - SECRET=secret
+      - REGION=cockroach
       - QUEUE_CONFIG=${QUEUE_CONFIG}
     restart: unless-stopped
   cockroach:
@@ -333,6 +337,7 @@ services:
       - 4005:4005
     environment:
       - SECRET=secret
+      - REGION=cockroach
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - STATS_URL=http://huly.local:4900
@@ -350,6 +355,7 @@ services:
     environment:
       - SECRET=secret
       - MINIO_ENDPOINT=minio
+      - REGION=cockroach
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - MINIO_ACCESS_KEY=minioadmin
       - ACCOUNTS_URL=http://huly.local:3000
@@ -432,6 +438,7 @@ services:
       - STATS_URL=http://huly.local:4900
       - DB_URL=${DB_CR_URL}
       - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
+      - REGION=cockroach
       - QUEUE_CONFIG=${QUEUE_CONFIG}
     restart: unless-stopped
   hulykvs:
