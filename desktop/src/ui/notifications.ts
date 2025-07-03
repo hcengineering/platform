@@ -130,11 +130,12 @@ export function configureNotifications (): void {
 
     const inboxClient = InboxNotificationsClientImpl.getClient()
     const notificationsQuery = createNotificationsQuery(true)
+    const notificationsCountQuery = createNotificationsQuery(true)
 
     const isCommunicationEnabled = getMetadata(communication.metadata.Enabled) ?? false
 
     if (isCommunicationEnabled) {
-      notificationsQuery.query({ read: false, limit: 1000 }, res => {
+      notificationsCountQuery.query({ read: false, limit: 1000 }, res => {
         newUnreadNotifications = res.getResult().length
 
         if (preferences.showUnreadCounter) {
@@ -160,7 +161,8 @@ export function configureNotifications (): void {
       }, (res) => {
         if (!preferences.showNotifications) return
         const notification = res.getResult()[0]
-        if (notification !== undefined) {
+        if (notification !== undefined && !notificationHistory.has(notification.id)) {
+          notificationHistory.set(notification.id, notification.created.getTime())
           electronAPI.sendNotification({
             silent: !preferences.playSound,
             application: inboxId,
