@@ -13,16 +13,25 @@
 // limitations under the License.
 //
 
+import attachment, { type Attachment } from '@hcengineering/attachment'
+import { Event, MessageEventType } from '@hcengineering/communication-sdk-types'
+import drive, { type FileVersion } from '@hcengineering/drive'
 import core, {
   type Blob,
   type Doc,
   type MeasureContext,
-  type TxCUD,
+  type Ref,
+  type Tx,
   type TxCreateDoc,
-  type WorkspaceUuid
+  type TxDomainEvent,
+  type WorkspaceUuid,
+  OperationDomain
 } from '@hcengineering/core'
 import { PlatformQueueProducer } from '@hcengineering/server-core'
-import { VideoTranscodeRequest, VideoTranscodeResult } from './types'
+import { BlobSource, BlobSourceType, VideoTranscodeRequest, VideoTranscodeResult } from './types'
+import { WorkspaceClient } from './client'
+
+const COMMUNICATION = 'communication' as OperationDomain
 
 const transcodeIgnoredContentTypes = [
   'video/x-mpegurl', // HLS playlist
@@ -36,26 +45,92 @@ function shouldTranscode (contentType: string): boolean {
 export async function handleTx (
   ctx: MeasureContext,
   workspaceUuid: WorkspaceUuid,
-  tx: TxCUD<Doc>,
+  tx: Tx,
   producer: PlatformQueueProducer<VideoTranscodeRequest>
 ): Promise<void> {
-  if (tx.objectClass !== core.class.Blob) return
-  if (tx._class !== core.class.TxCreateDoc) return
+  if (tx._class === core.class.TxCreateDoc) {
+    await handleCreateDocTx(ctx, workspaceUuid, tx as TxCreateDoc<Doc>, producer)
+  } else if (tx._class === core.class.TxDomainEvent) {
+    await handleCommunicationTx(ctx, workspaceUuid, tx as TxDomainEvent<Event>, producer)
+  }
+}
 
-  const createTx = tx as TxCreateDoc<Blob>
-  if (shouldTranscode(createTx.attributes.contentType)) {
-    const msg: VideoTranscodeRequest = {
-      workspaceUuid,
-      blobId: createTx.objectId,
-      contentType: createTx.attributes.contentType
+async function handleCreateDocTx (
+  ctx: MeasureContext,
+  workspaceUuid: WorkspaceUuid,
+  tx: TxCreateDoc<Doc>,
+  producer: PlatformQueueProducer<VideoTranscodeRequest>
+): Promise<void> {
+  let blobId: Ref<Blob>
+  let contentType: string
+
+  if (tx.objectClass === attachment.class.Attachment || tx.objectClass === attachment.class.Embedding) {
+    const createTx = tx as TxCreateDoc<Attachment>
+    blobId = createTx.attributes.file
+    contentType = createTx.attributes.type
+  } else if (tx.objectClass === drive.class.FileVersion) {
+    const createTx = tx as TxCreateDoc<FileVersion>
+    blobId = createTx.attributes.file
+    contentType = createTx.attributes.type
+  } else {
+    return
+  }
+
+  if (shouldTranscode(contentType)) {
+    const source: BlobSource = {
+      source: BlobSourceType.Doc,
+      objectClass: tx.objectClass,
+      objectId: tx.objectId
     }
-
-    ctx.info('Transcode request', { workspaceUuid, msg })
+    const msg: VideoTranscodeRequest = { workspaceUuid, blobId, contentType, source }
+    ctx.info('transcode request', { workspaceUuid, msg })
     await producer.send(workspaceUuid, [msg])
   }
 }
 
-export async function handleTranscodeResult (ctx: MeasureContext, msg: VideoTranscodeResult): Promise<void> {
-  // TODO Handle transcode result
-  ctx.info('Transcode result', { msg })
+async function handleCommunicationTx (
+  ctx: MeasureContext,
+  workspaceUuid: WorkspaceUuid,
+  tx: TxDomainEvent<Event>,
+  producer: PlatformQueueProducer<VideoTranscodeRequest>
+): Promise<void> {
+  if (tx.domain === COMMUNICATION && tx.event.type === MessageEventType.BlobPatch) {
+    const event = tx.event
+    const source: BlobSource = {
+      source: BlobSourceType.Message,
+      cardId: event.cardId,
+      messageId: event.messageId
+    }
+    const blobs = event.operations
+      .filter((it) => it.opcode === 'attach' || it.opcode === 'set')
+      .flatMap((it) => it.blobs)
+    const messages: VideoTranscodeRequest[] = blobs.map(({ blobId, mimeType }) => ({
+      workspaceUuid,
+      blobId,
+      contentType: mimeType,
+      source
+    }))
+    if (messages.length > 0) {
+      await producer.send(workspaceUuid, messages)
+    }
+  }
+}
+
+export async function handleTranscodeResult (
+  ctx: MeasureContext,
+  workspaceUuid: WorkspaceUuid,
+  msg: VideoTranscodeResult
+): Promise<void> {
+  ctx.info('transcode result', { workspaceUuid, msg })
+  const metadata = {
+    hls: {
+      source: msg.playlist,
+      thumbnail: msg.thumbnail
+    }
+  }
+
+  if (msg.source !== undefined && msg.source.source === BlobSourceType.Doc) {
+    const client = await WorkspaceClient.create(workspaceUuid)
+    await client.updateBlobMetadata(ctx, msg, metadata)
+  }
 }
