@@ -167,14 +167,7 @@
 </script>
 
 <!-- svelte-ignore a11y-media-has-caption -->
-<video
-  bind:this={video}
-  width="100%"
-  height="100%"
-  preload={preload ? 'auto' : 'none'}
-  controls
-  disablepictureinpicture
-/>
+<video bind:this={video} width="100%" height="100%" preload={preload ? 'auto' : 'none'} disablepictureinpicture />
 
 <style lang="scss">
   video {
@@ -195,5 +188,12 @@
     min-width: 10rem;
     --plyr-control-spacing: 0.5rem;
     --plyr-control-icon-size: 1rem;
+  }
+
+  // Hide controls when video is stopped and not hovered
+  :global(.plyr.plyr--stopped:not(:hover) .plyr__controls) {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(100%);
   }
 </style>
