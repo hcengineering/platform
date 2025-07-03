@@ -217,6 +217,11 @@ export class WorkspaceClient {
   private async prepareAndSendMessage (doc: NewMessage): Promise<void> {
     const client = this.getGmailClient(doc.from ?? doc.createdBy ?? doc.modifiedBy)
     if (client === undefined) {
+      this.ctx.warn('Cannot send message without client', {
+        workspaceUuid: this.workspace,
+        messageId: doc._id,
+        from: doc.from ?? doc.createdBy ?? doc.modifiedBy
+      })
       return
     }
     await client.createMessage(doc)
