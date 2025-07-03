@@ -13,11 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import Plyr from 'plyr'
+  import { onDestroy } from 'svelte'
+
   export let src: string
   export let name: string | undefined = undefined
   export let preload = true
 
   let video: HTMLVideoElement
+  let player: Plyr | null = null
+
+  const options: Plyr.Options = {
+    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen']
+  }
+
+  $: if (video != null) {
+    player?.destroy()
+    player = new Plyr(video, options)
+  }
+
+  onDestroy(() => {
+    player?.destroy()
+    player = null
+  })
 </script>
 
 <video bind:this={video} {src} width="100%" height="100%" preload={preload ? 'auto' : 'none'} controls>
@@ -36,5 +54,19 @@
 
   video::-webkit-media-controls-enclosure {
     visibility: visible;
+  }
+
+  @import 'plyr/dist/plyr.css';
+  :global(.plyr) {
+    min-width: 10rem;
+    --plyr-control-spacing: 0.5rem;
+    --plyr-control-icon-size: 1rem;
+  }
+
+  // Hide controls when video is stopped and not hovered
+  :global(.plyr.plyr--stopped:not(:hover) .plyr__controls) {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(100%);
   }
 </style>

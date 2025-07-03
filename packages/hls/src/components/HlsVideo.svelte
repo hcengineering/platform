@@ -196,4 +196,11 @@
     --plyr-control-spacing: 0.5rem;
     --plyr-control-icon-size: 1rem;
   }
+
+  // Hide controls when video is stopped and not hovered
+  :global(.plyr.plyr--stopped:not(:hover) .plyr__controls) {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(100%);
+  }
 </style>
