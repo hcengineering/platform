@@ -43,20 +43,30 @@ async function fetchEmojis (locale: Locale, options?: FetchEmojisOptions & { com
 
 async function fetchEmojis (locale: Locale, options: FetchEmojisExpandedOptions = {}): Promise<unknown[]> {
   const { compact = false, shortcodes: presets = [] } = options
-  const emojis = (await import(`emojibase-data/${locale}/${compact ? 'compact' : 'data'}.json`)).default as Emoji[]
-  const shortcodes: ShortcodesDataset[] = []
+  try {
+    const emojis = (await import(`emojibase-data/${locale}/${compact ? 'compact' : 'data'}.json`)).default as Emoji[]
+    const shortcodes: ShortcodesDataset[] = []
 
-  for (const preset of presets) {
-    const shortcodeData = (await import(`emojibase-data/${locale}/shortcodes/${preset}.json`))
-      .default as ShortcodesDataset
-    shortcodes.push(shortcodeData)
+    for (const preset of presets) {
+      const shortcodeData = (await import(`emojibase-data/${locale}/shortcodes/${preset}.json`))
+        .default as ShortcodesDataset
+      shortcodes.push(shortcodeData)
+    }
+
+    return joinShortcodes(emojis, shortcodes)
+  } catch (e) {
+    return compact
+      ? await fetchEmojis('en', { ...options, compact: true })
+      : await fetchEmojis('en', { ...options, compact: false })
   }
-
-  return joinShortcodes(emojis, shortcodes)
 }
 
 async function fetchMessages (locale: Locale, options?: FetchFromCDNOptions): Promise<MessagesDataset> {
-  return (await import(`emojibase-data/${locale}/messages.json`)).default as MessagesDataset
+  try {
+    return (await import(`emojibase-data/${locale}/messages.json`)).default as MessagesDataset
+  } catch (e) {
+    return await fetchMessages('en', options)
+  }
 }
 
 export { fetchEmojis, fetchMessages, type Locale }
