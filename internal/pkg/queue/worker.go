@@ -115,6 +115,7 @@ func (w *Worker) processMessage(ctx context.Context, msg kafka.Message, logger *
 		result := TranscodeResult{
 			BlobID:        req.BlobID,
 			WorkspaceUUID: req.WorkspaceUUID,
+			Source:        req.Source,
 			Playlist:      res.Playlist,
 			Thumbnail:     res.Thumbnail,
 		}
