@@ -167,13 +167,7 @@
 </script>
 
 <!-- svelte-ignore a11y-media-has-caption -->
-<video
-  bind:this={video}
-  width="100%"
-  height="100%"
-  preload={preload ? 'auto' : 'none'}
-  disablepictureinpicture
-/>
+<video bind:this={video} width="100%" height="100%" preload={preload ? 'auto' : 'none'} disablepictureinpicture />
 
 <style lang="scss">
   video {
