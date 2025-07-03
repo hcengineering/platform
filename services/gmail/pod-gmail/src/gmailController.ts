@@ -275,6 +275,29 @@ export class GmailController {
     return this.authProvider
   }
 
+  getClientStatistics (): {
+    totalClients: number
+    activeWorkspaces: number
+    connections: Array<{ workspace: WorkspaceUuid, socialId: PersonId }>
+  } {
+    let totalClients = 0
+    const connections: Array<{ workspace: WorkspaceUuid, socialId: PersonId }> = []
+
+    for (const [socialId, userClients] of this.clients.entries()) {
+      totalClients += userClients.size
+
+      for (const workspace of userClients.keys()) {
+        connections.push({ workspace, socialId })
+      }
+    }
+
+    return {
+      totalClients,
+      activeWorkspaces: this.workspaces.size,
+      connections
+    }
+  }
+
   async signout (workspace: WorkspaceUuid, account: AccountUuid): Promise<void> {
     const workspaceClient = await this.getWorkspaceClient(workspace)
     const clients = await workspaceClient.signoutByAccountId(account)

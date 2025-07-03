@@ -32,6 +32,7 @@ import config from './config'
 import { GmailController } from './gmailController'
 import { createServer, listen } from './server'
 import { IntegrationVersion, type Endpoint, type State } from './types'
+import * as v8 from 'v8'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
   try {
@@ -181,6 +182,7 @@ export const main = async (): Promise<void> => {
   }
 
   const shutdown = (): void => {
+    ctx.info('Received shutdown signal, closing server and resources...')
     server.close(() => {
       void asyncClose().then(() => process.exit())
     })
@@ -193,5 +195,34 @@ export const main = async (): Promise<void> => {
   })
   process.on('unhandledRejection', (e) => {
     console.error(e)
+  })
+  // Add SIGUSR1 signal handler for debug info
+  process.on('SIGUSR1', () => {
+    ctx.info('Received SIGUSR1, dumping debug info...', {
+      pid: process.pid,
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      timestamp: Date.now(),
+      clients: gmailController.getClientStatistics()
+    })
+  })
+  // Add SIGUSR2 signal handler for heap dumps
+  process.on('SIGUSR2', () => {
+    const timestamp = Date.now()
+    const filename = `/tmp/gmail-heap-${timestamp}.heapsnapshot`
+
+    ctx.info('Received SIGUSR2, generating heap snapshot...', {
+      filename,
+      pid: process.pid,
+      uptime: process.uptime(),
+      memory: process.memoryUsage()
+    })
+
+    try {
+      v8.writeHeapSnapshot(filename)
+      ctx.info('Heap snapshot created successfully', { filename })
+    } catch (error) {
+      ctx.error('Failed to create heap snapshot', { error, filename })
+    }
   })
 }
