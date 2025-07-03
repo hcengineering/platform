@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
+  import { AccessLevel, Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
   import { getCurrentEmployee } from '@hcengineering/contact'
   import {
     Class,
@@ -255,7 +255,7 @@
           eventId: generateEventId(),
           title: '',
           description: '',
-          access: 'owner',
+          access: AccessLevel.Owner,
           attachedTo: dragItem._id,
           attachedToClass: dragItem._class,
           _class: dragEventClass,

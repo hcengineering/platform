@@ -5,6 +5,7 @@
     "InvalidId": "Id non valido: {id}",
     "BadRequest": "Richiesta non valida",
     "Forbidden": "Proibito",
+    "Conflict": "Conflitto",
     "ExpiredLink": "Questo link di invito è scaduto",
     "Unauthorized": "Non autorizzato",
     "UnknownMethod": "Metodo sconosciuto: {method}",
@@ -23,6 +24,7 @@
     "InviteNotFound": "Invito con email:{email} non trovato.",
     "WorkspaceLimitReached": "Hai raggiunto il limite di spazi di lavoro. Contattaci...",
     "ReadOnlyAccount": "Demo Ospite",
-    "SystemAccount": "Account di sistema"
+    "SystemAccount": "Account di sistema",
+    "SocialIdAlreadyExists": "L'ID social esiste già"
   }
 }

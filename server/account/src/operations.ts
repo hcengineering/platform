@@ -23,6 +23,7 @@ import {
   isActiveMode,
   isDeletingMode,
   isWorkspaceCreating,
+  loginSocialTypes,
   type MeasureContext,
   type Person,
   type PersonId,
@@ -54,7 +55,7 @@ import type {
   WorkspaceLoginInfo
 } from './types'
 import {
-  addSocialId,
+  addSocialIdBase,
   checkInvite,
   cleanEmail,
   confirmEmail,
@@ -101,7 +102,8 @@ import {
   READONLY_GUEST_ACCOUNT,
   getWorkspaceByDataId,
   assignableRoles,
-  getWorkspacesInfoWithStatusByIds
+  getWorkspacesInfoWithStatusByIds,
+  doMergePersons
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -324,6 +326,9 @@ export async function signUpOtp (
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
 
+/**
+ * Validates email OTP for login/sign up/new social id
+ */
 export async function validateOtp (
   ctx: MeasureContext,
   db: AccountDB,
@@ -333,9 +338,10 @@ export async function validateOtp (
     email: string
     code: string
     password?: string
+    action?: 'verify'
   }
 ): Promise<LoginInfo> {
-  const { email, code, password } = params
+  const { email, code, password, action } = params
 
   if (email == null || code == null || email === '' || code === '') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
@@ -356,27 +362,87 @@ export async function validateOtp (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
     }
 
-    await db.otp.deleteMany({ socialId: emailSocialId._id })
+    let callerAccountUuid: AccountUuid | null = null
 
-    if (emailSocialId.verifiedOn == null) {
-      await db.socialId.update({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
+    if (action === 'verify') {
+      callerAccountUuid = decodeTokenVerbose(ctx, token).account
+      const callerAccount = await db.account.findOne({ uuid: callerAccountUuid })
+
+      if (callerAccount == null) {
+        throw new PlatformError(
+          new Status(Severity.ERROR, platform.status.AccountNotFound, { account: callerAccountUuid })
+        )
+      }
     }
 
-    // This method handles both login and signup
-    const account = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
+    await db.otp.deleteMany({ socialId: emailSocialId._id })
 
-    if (account == null) {
-      // This is a signup
-      await createAccount(db, emailSocialId.personUuid, true)
-      if (password != null) {
-        await setPassword(ctx, db, branding, emailSocialId.personUuid as AccountUuid, password)
+    const targetAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
+
+    if (action !== 'verify') {
+      // login/sign up
+      if (emailSocialId.verifiedOn == null) {
+        await db.socialId.update({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
       }
 
-      ctx.info('OTP signup success', emailSocialId)
-    } else {
-      await confirmHulyIds(ctx, db, account.uuid)
+      if (targetAccount == null) {
+        // This is a signup
+        await createAccount(db, emailSocialId.personUuid, true)
+        if (password != null) {
+          await setPassword(ctx, db, branding, emailSocialId.personUuid as AccountUuid, password)
+        }
 
-      ctx.info('OTP login success', emailSocialId)
+        ctx.info('OTP signup success', emailSocialId)
+      } else {
+        await confirmHulyIds(ctx, db, targetAccount.uuid)
+
+        ctx.info('OTP login/verification success', emailSocialId)
+      }
+    } else {
+      if (callerAccountUuid == null) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+      }
+
+      if (targetAccount == null) {
+        // only person exists means there's no verified social id associated with it -> merge it to the current account
+        // doMergePersons will fail if there's a verified social id
+
+        await doMergePersons(db, callerAccountUuid, emailSocialId.personUuid)
+
+        // what happens to local persons referencing this person in various workspaces?
+        // there can be some persons but no Employees because there's no account
+        // we know where the person is migrated to so can update later as needed
+
+        if (emailSocialId.verifiedOn == null) {
+          await db.socialId.update({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
+        } else {
+          // Normally, it should not be the case
+          ctx.error("Verifying new social id belonging to person w/o account but it's already verified", {
+            emailSocialId,
+            callerAccountUuid
+          })
+        }
+      } else {
+        if (callerAccountUuid === targetAccount.uuid) {
+          if (emailSocialId.verifiedOn == null) {
+            await db.socialId.update({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
+          }
+        } else {
+          if (emailSocialId.verifiedOn == null) {
+            // Move the target social id to current account, we can easily do this because it was not verified
+            await db.socialId.update(
+              { _id: emailSocialId._id },
+              { personUuid: callerAccountUuid, verifiedOn: Date.now() }
+            )
+          } else {
+            // Throw for now. Should probably be another workflow to merge accounts.
+            // Alternatively, we can allow the same workflow as with not verfied here just to move
+            // the social id to the current account, but need to add extra checks like there's at least one more
+            // login method for the target account
+            throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
+          }
+        }
+      }
     }
 
     const person = await db.person.findOne({ uuid: emailSocialId.personUuid })
@@ -394,7 +460,7 @@ export async function validateOtp (
     }
   } catch (err: any) {
     Analytics.handleError(err)
-    ctx.error('OTP login error', { email, err })
+    ctx.error(action === 'verify' ? 'OTP verification error' : 'OTP login/sign up error', { email, err })
     throw err
   }
 }
@@ -422,7 +488,7 @@ export async function createWorkspace (
   ctx.info('Creating workspace record', { workspaceName, account, region })
 
   // Any confirmed social ID will do
-  const socialId = (await getSocialIds(ctx, db, branding, token, { confirmed: true }))[0]
+  const socialId = (await getSocialIds(ctx, db, branding, token, { confirmed: true, includeDeleted: false }))[0]
 
   if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, {}))
@@ -1459,7 +1525,7 @@ export async function getLoginInfoByToken (
 
   if (!isDocGuest && !isSystem) {
     // Any confirmed social ID will do
-    socialId = (await getSocialIds(ctx, db, branding, token, { confirmed: true }))[0]
+    socialId = (await getSocialIds(ctx, db, branding, token, { confirmed: true, includeDeleted: false }))[0]
     if (socialId == null) {
       return {
         account: accountUuid
@@ -1649,9 +1715,9 @@ export async function getSocialIds (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { confirmed: boolean }
+  params: { confirmed: boolean, includeDeleted: boolean }
 ): Promise<SocialId[]> {
-  const { confirmed = true } = params
+  const { confirmed = true, includeDeleted = false } = params
   const { account } = decodeTokenVerbose(ctx, token)
 
   // do not expose not-confirmed social ids for now
@@ -1661,7 +1727,7 @@ export async function getSocialIds (
 
   const socialIds = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
 
-  return socialIds.filter((si) => si.isDeleted !== true)
+  return includeDeleted ? socialIds : socialIds.filter((si) => si.isDeleted !== true)
 }
 
 export async function isReadOnlyGuest (
@@ -1689,36 +1755,6 @@ export async function getPerson (
   }
 
   return person
-}
-
-export async function findPersonBySocialKey (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { socialString: string, requireAccount?: boolean }
-): Promise<PersonUuid | undefined> {
-  const { socialString } = params
-
-  if (socialString == null || socialString === '') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-  }
-
-  decodeTokenVerbose(ctx, token)
-
-  const socialId = await db.socialId.findOne({ key: socialString })
-
-  if (socialId == null) {
-    return
-  }
-
-  if (params.requireAccount === true) {
-    const account = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
-
-    return account?.uuid
-  }
-
-  return socialId.personUuid
 }
 
 export async function findPersonBySocialId (
@@ -1927,7 +1963,7 @@ async function createMailbox (
 
   await db.mailbox.insertOne({ accountUuid: account, mailbox })
   await db.mailboxSecret.insertOne({ mailbox, secret: generatePassword() })
-  const socialId = await addSocialId(db, account, SocialIdType.EMAIL, mailbox, true)
+  const socialId = await addSocialIdBase(db, account, SocialIdType.EMAIL, mailbox, true)
   ctx.info('Mailbox created', { mailbox, account, socialId })
   return { mailbox, socialId }
 }
@@ -1967,7 +2003,7 @@ async function deleteMailbox (
 
   await db.mailboxSecret.deleteMany({ mailbox })
   await db.mailbox.deleteMany({ mailbox })
-  await doReleaseSocialId(db, account, SocialIdType.EMAIL, mailbox, 'deleteMailbox')
+  await doReleaseSocialId(db, account, SocialIdType.EMAIL, mailbox, `deleteMailbox@${account}`)
   ctx.info('Mailbox deleted', { mailbox, account })
 }
 
@@ -1999,6 +2035,104 @@ async function exchangeGuestToken (
   }
 
   return token
+}
+
+async function addEmailSocialId (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    email: string
+  }
+): Promise<OtpInfo> {
+  const { email } = params
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  if (email == null || email === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
+  }
+
+  const normalizedEmail = normalizeValue(email)
+  const existing = await db.socialId.findOne({ type: SocialIdType.EMAIL, value: normalizedEmail })
+
+  // This schema should be applied to all types in general, they should only differ by the verification process.
+  // If none exists, create a new one and proceed to verification
+  // If exists only for person without account - will be able to merge person to the account, proceed to verification
+  // If exists for this account but not verified - proceed to verification right away
+  // If exists for this account and verified - throw an error (already exists)
+  // If exists for another account and not verified - will move only this id to the current account, proceed to verification
+  // If exists for another account and verified - throw an error for now, support merge accounts later, maybe through a different procedure
+  let targetSocialId: SocialId
+  if (existing != null) {
+    if (existing.verifiedOn != null) {
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, { value: email, type: SocialIdType.EMAIL })
+      )
+    }
+    targetSocialId = existing
+  } else {
+    const newSocialId = {
+      type: SocialIdType.EMAIL,
+      value: normalizedEmail,
+      personUuid: account
+    }
+    const _id = await db.socialId.insertOne(newSocialId)
+    targetSocialId = { ...newSocialId, _id, key: buildSocialIdString(newSocialId) }
+  }
+
+  return await sendOtp(ctx, db, branding, targetSocialId)
+}
+
+export async function releaseSocialId (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { personUuid?: PersonUuid, type: SocialIdType, value: string, deleteIntegrations?: boolean }
+): Promise<SocialId> {
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  let { personUuid } = params
+  const { type, value, deleteIntegrations } = params
+
+  if (!Object.values(SocialIdType).includes(type) || value == null || value === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const allowedService = verifyAllowedServices(['github', 'tool', 'workspace'], extra, false)
+
+  if (!allowedService) {
+    if (personUuid != null && personUuid !== account) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    } else {
+      personUuid = account
+    }
+  }
+
+  if (personUuid == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  if (!allowedService) {
+    // User should always have at least one Huly and one "login" social id
+    // so do not allow releasing last ones
+    const socialIds = await db.socialId.find({ personUuid, verifiedOn: { $gt: 0 }, isDeleted: { $ne: true } })
+    const afterRemoval = socialIds.filter((it) => it.type !== type || it.value !== value)
+
+    if (afterRemoval.filter((it) => it.type === SocialIdType.HULY).length === 0) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+
+    if (afterRemoval.filter((it) => loginSocialTypes.includes(it.type)).length === 0) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
+  return await doReleaseSocialId(db, personUuid, type, value, extra?.service ?? account, deleteIntegrations)
 }
 
 export type AccountMethods =
@@ -2039,7 +2173,6 @@ export type AccountMethods =
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
   | 'updateAllowReadOnlyGuests'
-  | 'findPersonBySocialKey'
   | 'findPersonBySocialId'
   | 'findSocialIdBySocialKey'
   | 'ensurePerson'
@@ -2048,10 +2181,10 @@ export type AccountMethods =
   | 'createMailbox'
   | 'getMailboxes'
   | 'deleteMailbox'
-  | 'addSocialIdToPerson'
-  | 'updateSocialId'
   | 'getAccountInfo'
   | 'isReadOnlyGuest'
+  | 'addEmailSocialId'
+  | 'releaseSocialId'
 
 /**
  * @public
@@ -2090,6 +2223,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     deleteMailbox: wrap(deleteMailbox),
     ensurePerson: wrap(ensurePerson),
     exchangeGuestToken: wrap(exchangeGuestToken),
+    addEmailSocialId: wrap(addEmailSocialId),
+    releaseSocialId: wrap(releaseSocialId),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
@@ -2101,7 +2236,6 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getLoginWithWorkspaceInfo: wrap(getLoginWithWorkspaceInfo),
     getSocialIds: wrap(getSocialIds),
     getPerson: wrap(getPerson),
-    findPersonBySocialKey: wrap(findPersonBySocialKey),
     findPersonBySocialId: wrap(findPersonBySocialId),
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),
     getWorkspaceMembers: wrap(getWorkspaceMembers),

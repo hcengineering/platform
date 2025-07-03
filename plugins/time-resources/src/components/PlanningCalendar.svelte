@@ -1,5 +1,5 @@
 <script lang="ts">
-  import calendar, { Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
+  import calendar, { AccessLevel, Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
   import { DayCalendar, calendarByIdStore, hidePrivateEvents } from '@hcengineering/calendar-resources'
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { Ref, SortingOrder, Timestamp, getCurrentAccount } from '@hcengineering/core'
@@ -121,7 +121,7 @@
           eventId: generateEventId(),
           title: '',
           description: '',
-          access: 'owner',
+          access: AccessLevel.Owner,
           attachedTo: dragItem._id,
           attachedToClass: dragItem._class,
           _class: time.class.WorkSlot,

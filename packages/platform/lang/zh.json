@@ -5,6 +5,7 @@
     "InvalidId": "无效的 Id: {id}",
     "BadRequest": "错误的请求",
     "Forbidden": "禁止访问",
+    "Conflict": "冲突",
     "ExpiredLink": "此邀请链接已过期",
     "Unauthorized": "未授权",
     "UnknownMethod": "未知方法: {method}",
@@ -22,6 +23,7 @@
     "InvalidOtp": "无效的代码",
     "InviteNotFound": "未找到 id 为 {email} 的邀请。",
     "WorkspaceLimitReached": "您已达到工作区限制。请联系我们...",
-    "ReadOnlyAccount": "访客演示"
+    "ReadOnlyAccount": "访客演示",
+    "SocialIdAlreadyExists": "社交ID已存在"
   }
 }

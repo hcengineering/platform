@@ -272,6 +272,9 @@ export async function handleUploadFormData (
           const metadata = await datalake.put(ctx, workspace, name, sha256, data, {
             size,
             contentType,
+            cacheControl: Array.isArray(req.headers['cache-control'])
+              ? req.headers['cache-control'].join(', ')
+              : req.headers['cache-control'],
             lastModified: Date.now()
           })
 

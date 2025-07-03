@@ -83,7 +83,7 @@
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
         "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
         // "GREEN_URL": "http://huly.local:6767?token=secret",
-        "SERVER_PORT": "3334",
+        "SERVER_PORT": "3332",
         "APM_SERVER_URL2": "http://localhost:8200",
         "METRICS_CONSOLE": "false",
         "METRICS_FILE": "${workspaceRoot}/metrics.txt", // Show metrics in console evert 30 seconds.,
@@ -97,7 +97,7 @@
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER": "ws",
-        "MODEL_VERSION": "0.7.153",
+        "MODEL_VERSION": "0.7.167",
         // "VERSION": "0.6.289",
         "COMMUNICATION_API_ENABLED": "true",
         "ELASTIC_INDEX_NAME": "local_storage_index",

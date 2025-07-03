@@ -5,6 +5,7 @@
     "InvalidId": "Некорректный Id: {id}",
     "BadRequest": "Некорректный запрос",
     "Forbidden": "Запрещено",
+    "Conflict": "Конфликт",
     "ExpiredLink": "Ссылка истекла",
     "Unauthorized": "Неавторизован",
     "UnknownMethod": "Неизвестный метод: {method}",
@@ -23,6 +24,7 @@
     "InviteNotFound": "Приглашение с email:{email} не найдено.",
     "WorkspaceLimitReached": "Вы достигли лимита рабочих пространств. Свяжитесь с нами...",
     "ReadOnlyAccount": "Гостевое демо",
-    "SystemAccount": "Системный аккаунт"
+    "SystemAccount": "Системный аккаунт",
+    "SocialIdAlreadyExists": "Социальный ID уже существует"
   }
 }

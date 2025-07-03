@@ -36,6 +36,8 @@
     "LinkedIn": "LinkedIn",
     "GitHub": "GitHub",
     "Twitter": "Twitter",
+    "Google": "Google",
+    "Telegram": "Telegram",
     "PhonePlaceholder": "+1 555 333 7777",
     "LinkedInPlaceholder": "https://linkedin.com/in/jappleseed",
     "AtPlaceHolder": "@appleseed",
@@ -120,6 +122,7 @@
     "Here": "Ici",
     "EveryoneDescription": "Notifier tout le monde dans ce {title}",
     "HereDescription": "Notifier tout le monde dans ce {title}",
-    "Guest": "Invité"
+    "Guest": "Invité",
+    "Deleted": "Supprimé"
   }
 }

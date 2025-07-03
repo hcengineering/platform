@@ -29,7 +29,8 @@ export default mergeIds(settingId, setting, {
     ManageSpaceTypes: '' as AnyComponent,
     ManageSpaceTypesTools: '' as AnyComponent,
     ManageSpaceTypeContent: '' as AnyComponent,
-    Spaces: '' as AnyComponent
+    Spaces: '' as AnyComponent,
+    AddSocialId: '' as AnyComponent
   },
   string: {
     IntegrationDisabled: '' as IntlString,
@@ -126,6 +127,15 @@ export default mergeIds(settingId, setting, {
     EnablePermissionsConfirmation: '' as IntlString,
     BetaWarning: '' as IntlString,
     GuestAccess: '' as IntlString,
-    GuestAccessDescription: '' as IntlString
+    GuestAccessDescription: '' as IntlString,
+    ManageIdentities: '' as IntlString,
+    AddNew: '' as IntlString,
+    Release: '' as IntlString,
+    ReleaseSocialId: '' as IntlString,
+    ReleaseSocialIdConfirm: '' as IntlString,
+    ReleasePrimarySocialId: '' as IntlString,
+    ReleasePrimarySocialIdConfirm: '' as IntlString,
+    Login: '' as IntlString,
+    Primary: '' as IntlString
   }
 })

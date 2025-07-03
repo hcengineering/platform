@@ -72,3 +72,10 @@ export enum IntegrationVersion {
   V1 = 'v1', // Save messages in legacy format using gmail.class.Message
   V2 = 'v2' // Save messages as thread cards and communication messages
 }
+
+export interface WorkspaceStateInfo {
+  needSync: boolean
+  needRecheck: boolean
+  archived?: boolean
+  inactive?: boolean
+}

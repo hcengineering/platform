@@ -108,6 +108,8 @@
     "CalDavAccessPasswordWarning": "Tohle heslo už nebudete moci znovu vidět. Uložte si ho na bezpečné místo.",
     "MeetingScheduledNotification": "Naplánována schůzka",
     "MeetingRescheduledNotification": "Čas schůzky změněn",
-    "MeetingCanceledNotification": "Schůzka zrušena: {title}"
+    "MeetingCanceledNotification": "Schůzka zrušena: {title}",
+    "PrimaryCalendar": "Hlavní kalendář",
+    "Hidden": "Skrytý"
   }
 }

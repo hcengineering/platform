@@ -108,6 +108,8 @@
     "CalDavAccessPasswordWarning": "No podrá ver esta contraseña nuevamente. Guárdela en un lugar seguro.",
     "MeetingScheduledNotification": "Reunión programada",
     "MeetingRescheduledNotification": "Se modificó la hora de la reunión",
-    "MeetingCanceledNotification": "Reunión cancelada: {title}"
+    "MeetingCanceledNotification": "Reunión cancelada: {title}",
+    "PrimaryCalendar": "Calendario principal",
+    "Hidden": "Oculto"
   }
 }

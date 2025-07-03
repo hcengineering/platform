@@ -33,6 +33,12 @@
     formData[field] = formData[field].trim()
   }
 
+  export function clear (): void {
+    Object.keys(formData).forEach((key) => {
+      formData[key] = ''
+    })
+  }
+
   async function validateCode (): Promise<void> {
     const code = Object.values(formData).join('')
 

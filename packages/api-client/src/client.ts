@@ -61,7 +61,7 @@ export async function connect (url: string, options: ConnectOptions): Promise<Pl
 
   const { endpoint, token } = await getWorkspaceToken(url, options, config)
   const accountClient = getAccountClient(config.ACCOUNTS_URL, token)
-  const socialIds = await accountClient.getSocialIds()
+  const socialIds = await accountClient.getSocialIds(true)
   const wsLoginInfo = await accountClient.selectWorkspace(options.workspace)
 
   if (wsLoginInfo === undefined) {

@@ -16,6 +16,13 @@
     "Saving": "Guardando...",
     "Saved": "Guardado",
     "Add": "Añadir",
+    "AddNew": "Añadir {type}",
+    "Proceed": "Continuar",
+    "NewEmail": "Nuevo correo electrónico",
+    "SendConfirmation": "Enviar código de confirmación",
+    "CodeSent": "El código ha sido enviado. Por favor, introdúcelo en el campo de abajo.",
+    "SendAgain": "Enviar de nuevo",
+    "SendAgainIn": "Se puede enviar de nuevo en",
     "Value": "Valor",
     "EnterCurrentPassword": "Introduce la contraseña actual",
     "EnterNewPassword": "Introduce la nueva contraseña",
@@ -152,6 +159,14 @@
     "EmailIsUsed": "El correo electrónico ya está en uso",
     "Customize": "Personalizar",
     "GuestAccess": "Invitados anónimos",
-    "GuestAccessDescription": "Permite a usuarios anónimos visitar el espacio de trabajo en modo de solo lectura"
+    "GuestAccessDescription": "Permite a usuarios anónimos visitar el espacio de trabajo en modo de solo lectura",
+    "ManageIdentities": "Gestionar identidades",
+    "Release": "Liberar",
+    "ReleaseSocialId": "Liberar ID social",
+    "ReleaseSocialIdConfirm": "¿Estás seguro de que quieres liberar este ID social: {socialId}? Esto lo eliminará de tu cuenta y ya no podrás usarlo para iniciar sesión. Además, todas las integraciones asociadas serán eliminadas.",
+    "ReleasePrimarySocialId": "Liberar ID social primario",
+    "ReleasePrimarySocialIdConfirm": "Liberar tu ID social primario actual requerirá que se recargue la página. ¿Estás seguro de que quieres continuar?",
+    "Login": "Iniciar sesión",
+    "Primary": "Primario"
   }
 }

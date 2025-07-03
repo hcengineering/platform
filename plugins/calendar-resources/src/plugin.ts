@@ -66,10 +66,12 @@ export default mergeIds(calendarId, calendar, {
     Times: '' as IntlString,
     AddParticipants: '' as IntlString,
     Sync: '' as IntlString,
+    Hidden: '' as IntlString,
     AddReminder: '' as IntlString,
     SeeAllNumberParticipants: '' as IntlString,
     SeeAllNumberReminders: '' as IntlString,
     DefaultVisibility: '' as IntlString,
-    GooglePrivacy: '' as IntlString
+    GooglePrivacy: '' as IntlString,
+    PrimaryCalendar: '' as IntlString
   }
 })

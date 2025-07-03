@@ -108,6 +108,8 @@
     "CalDavAccessPasswordWarning": "Vous ne pourrez plus voir ce mot de passe. Veuillez le conserver dans un endroit sûr.",
     "MeetingScheduledNotification": "Réunion planifiée",
     "MeetingRescheduledNotification": "Heure de la réunion modifiée",
-    "MeetingCanceledNotification": "Réunion annulée: {title}"
+    "MeetingCanceledNotification": "Réunion annulée: {title}",
+    "PrimaryCalendar": "Calendrier principal",
+    "Hidden": "Caché"
   }
 }
