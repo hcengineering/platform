@@ -20,6 +20,7 @@
   import { createEventDispatcher } from 'svelte'
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
   import { getAttributeEditor, getClient } from '../utils'
+  import view from '@hcengineering/view'
 
   export let key: KeyedAttribute | string
   export let object: Doc | Record<string, any>
@@ -77,17 +78,17 @@
       class="labelOnPanel"
       use:tooltip={{
         component: Label,
-        props: { label: attribute.label }
+        props: { label: attribute.automationOnly ? view.string.AutomationOnly : attribute.label }
       }}
     >
-      {#if withIcon && icon}
-        <div class="flex flex-gap-1 items-center">
+      <div class="flex flex-gap-1 items-center">
+        {#if attribute.automationOnly}
+          <Icon icon={view.icon.Setting} size="small" />
+        {:else if withIcon && icon}
           <Icon {icon} size="small" />
-          <Label label={attribute.label} />
-        </div>
-      {:else}
+        {/if}
         <Label label={attribute.label} />
-      {/if}
+      </div>
     </span>
     <div class="flex flex-grow min-w-0">
       <svelte:component

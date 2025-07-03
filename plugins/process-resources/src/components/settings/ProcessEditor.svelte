@@ -23,23 +23,20 @@
     EditBox,
     getCurrentLocation,
     IconDelete,
-    IconDescription,
     IconDetails,
     IconSettings,
     navigate,
-    NavItem,
     Scroller,
     secondNavSeparators,
-    Separator,
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import process from '../../plugin'
   import ContextEditor from './ContextEditor.svelte'
+  import Navigator from './Navigator.svelte'
   import ProcesssSetting from './ProcesssSetting.svelte'
   import StatesInlineEditor from './StatesInlineEditor.svelte'
-  import TransitionPresenter from './TransitionPresenter.svelte'
   import TransitionsInlineEditor from './TransitionsInlineEditor.svelte'
 
   export let _id: Ref<Process>
@@ -124,39 +121,10 @@
   function handleSettings (): void {
     showPopup(ProcesssSetting, { value })
   }
-
-  function handleSelect (id: Ref<State | Transition>): void {
-    const loc = getCurrentLocation()
-    loc.path[5] = process.component.TransitionEditor
-    loc.path[6] = id
-    navigate(loc, true)
-  }
 </script>
 
 <div class="hulyComponent-content__container columns">
-  {#if visibleSecondNav}
-    <div class="hulyComponent-content__column">
-      <div class="hulyComponent-content__navHeader">
-        <div class="hulyComponent-content__navHeader-menu">
-          <ButtonIcon kind="tertiary" icon={IconDescription} size="small" inheritColor />
-        </div>
-      </div>
-      {#each states as state (state._id)}
-        <NavItem type="type-anchor-link" title={state.title} />
-      {/each}
-      {#each transitions as transition (transition._id)}
-        <NavItem
-          type="type-anchor-link"
-          on:click={() => {
-            handleSelect(transition._id)
-          }}
-        >
-          <TransitionPresenter {transition} />
-        </NavItem>
-      {/each}
-    </div>
-    <Separator name="spaceTypeEditor" index={0} color="transparent" />
-  {/if}
+  <Navigator {visibleSecondNav} {states} {transitions} />
   <div class="hulyComponent-content__column content">
     {#if value}
       <Scroller align="center" padding="var(--spacing-3)" bottomPadding="var(--spacing-3)">
@@ -192,8 +160,11 @@
 </div>
 
 <style lang="scss">
-  .header {
-    font-size: 2rem;
-    padding-bottom: 1rem;
+  .state {
+    font-weight: 500;
+    color: var(--global-tertiary-TextColor);
+    padding: 0 var(--spacing-1_5) 0 var(--spacing-1_25);
+    min-height: 1.75rem;
+    margin: 0 0.75rem;
   }
 </style>
