@@ -38,7 +38,7 @@
   })
 </script>
 
-<video bind:this={video} {src} width="100%" height="100%" preload={preload ? 'auto' : 'none'} controls>
+<video bind:this={video} {src} width="100%" height="100%" preload={preload ? 'auto' : 'none'} disablepictureinpicture>
   <track kind="captions" label={name ?? ''} />
 </video>
 

@@ -172,7 +172,6 @@
   width="100%"
   height="100%"
   preload={preload ? 'auto' : 'none'}
-  controls
   disablepictureinpicture
 />
 
