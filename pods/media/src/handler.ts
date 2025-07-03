@@ -14,7 +14,7 @@
 //
 
 import attachment, { type Attachment } from '@hcengineering/attachment'
-import { Event, BlobPatchEvent, MessageEventType } from '@hcengineering/communication-sdk-types'
+import { Event, MessageEventType } from '@hcengineering/communication-sdk-types'
 import drive, { type FileVersion } from '@hcengineering/drive'
 import core, {
   type Blob,
@@ -95,7 +95,7 @@ async function handleCommunicationTx (
   producer: PlatformQueueProducer<VideoTranscodeRequest>
 ): Promise<void> {
   if (tx.domain === COMMUNICATION && tx.event.type === MessageEventType.BlobPatch) {
-    const event = tx.event as BlobPatchEvent
+    const event = tx.event
     const source: BlobSource = {
       source: BlobSourceType.Message,
       cardId: event.cardId,
