@@ -38,6 +38,7 @@ import type {
   Account,
   AccountDB,
   AccountEvent,
+  AccountAggregatedInfo,
   DbCollection,
   Integration,
   IntegrationSecret,
@@ -788,5 +789,30 @@ export class MongoAccountDB implements AccountDB {
 
   async resetPassword (accountId: AccountUuid): Promise<void> {
     await this.account.update({ uuid: accountId }, { hash: null, salt: null })
+  }
+
+  async deleteAccount (accountUuid: AccountUuid): Promise<void> {
+    const socialIds = await this.socialId.find({ personUuid: accountUuid })
+
+    for (const socialIdObj of socialIds) {
+      await this.integrationSecret.deleteMany({ socialId: socialIdObj._id })
+      await this.integration.deleteMany({ socialId: socialIdObj._id })
+    }
+
+    const mailboxes = await this.mailbox.find({ accountUuid })
+
+    for (const mailboxObj of mailboxes) {
+      await this.mailboxSecret.deleteMany({ mailbox: mailboxObj.mailbox })
+    }
+
+    await this.mailbox.deleteMany({ accountUuid })
+
+    await this.socialId.update({ personUuid: accountUuid }, { verifiedOn: undefined })
+    await this.workspaceMembers.deleteMany({ accountUuid })
+    await this.account.deleteMany({ uuid: accountUuid })
+  }
+
+  async listAccounts (search?: string, skip?: number, limit?: number): Promise<AccountAggregatedInfo[]> {
+    throw new Error('Not implemented')
   }
 }

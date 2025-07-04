@@ -33,6 +33,7 @@ import { decodeTokenVerbose } from '@hcengineering/server-token'
 
 import { accountPlugin } from './plugin'
 import type {
+  AccountAggregatedInfo,
   AccountDB,
   AccountMethodHandler,
   Integration,
@@ -95,6 +96,25 @@ export async function listWorkspaces (
   }
 
   return await getWorkspaces(db, false, region, mode)
+}
+
+export async function listAccounts (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { search?: string, skip?: number, limit?: number }
+): Promise<AccountAggregatedInfo[]> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+  const isAdmin = extra?.admin === 'true'
+
+  if (!isAdmin) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const { skip, limit, search } = params
+
+  return await db.listAccounts(search, skip, limit)
 }
 
 export async function performWorkspaceOperation (
@@ -988,6 +1008,7 @@ export type AccountServiceMethods =
   | 'mergeSpecifiedPersons'
   | 'mergeSpecifiedAccounts'
   | 'findPersonBySocialKey'
+  | 'listAccounts'
 
 /**
  * @public
@@ -1018,6 +1039,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     findFullSocialIdBySocialKey: wrap(findFullSocialIdBySocialKey),
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
     mergeSpecifiedAccounts: wrap(mergeSpecifiedAccounts),
-    findPersonBySocialKey: wrap(findPersonBySocialKey)
+    findPersonBySocialKey: wrap(findPersonBySocialKey),
+    listAccounts: wrap(listAccounts)
   }
 }

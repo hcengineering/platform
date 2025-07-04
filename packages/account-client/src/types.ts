@@ -7,7 +7,10 @@ import {
   type Timestamp,
   type SocialId as SocialIdBase,
   PersonUuid,
-  type WorkspaceMode
+  type WorkspaceMode,
+  Person,
+  WorkspaceInfo,
+  AccountInfo
 } from '@hcengineering/core'
 
 export interface LoginInfo {
@@ -113,4 +116,11 @@ export type IntegrationSecretKey = Omit<IntegrationSecret, 'secret'>
 export interface ProviderInfo {
   name: string
   displayName?: string
+}
+
+export interface AccountAggregatedInfo extends AccountInfo, Person {
+  uuid: AccountUuid
+  integrations: Omit<Integration, 'data'>[]
+  socialIds: SocialId[]
+  workspaces: Omit<WorkspaceInfo, 'allowReadOnlyGuest'>[]
 }

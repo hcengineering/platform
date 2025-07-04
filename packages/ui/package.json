@@ -50,7 +50,8 @@
     "emojibase": "^16.0.0",
     "emojibase-regex": "^16.0.0",
     "fast-equals": "^5.2.2",
-    "svelte": "^4.2.19"
+    "svelte": "^4.2.19",
+    "plyr": "^3.7.8"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

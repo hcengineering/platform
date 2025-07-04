@@ -13,15 +13,39 @@
 // limitations under the License.
 //
 
+import type { Class, Doc, Ref } from '@hcengineering/core'
+import type { CardID, MessageID } from '@hcengineering/communication-types'
+
+export enum BlobSourceType {
+  Doc = 'doc',
+  Message = 'message'
+}
+
+export interface BlobSourceDoc {
+  source: BlobSourceType.Doc
+  objectClass: Ref<Class<Doc>>
+  objectId: string
+}
+
+export interface BlobSourceMessage {
+  source: BlobSourceType.Message
+  cardId: CardID
+  messageId: MessageID
+}
+
+export type BlobSource = BlobSourceDoc | BlobSourceMessage
+
 export interface VideoTranscodeRequest {
   blobId: string
   workspaceUuid: string
   contentType: string
+  source: BlobSource
 }
 
 export interface VideoTranscodeResult {
   blobId: string
   workspaceUuid: string
+  source: BlobSource
 
   thumbnail?: string
   playlist?: string

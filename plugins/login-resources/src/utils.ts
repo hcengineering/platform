@@ -64,7 +64,9 @@ import login from './plugin'
  * Constructs an account client.
  * @param token - The token to use for authentication. If not provided, the token from the metadata will be used. If null, no token will be used.
  */
-function getAccountClient (token: string | undefined | null = getMetadata(presentation.metadata.Token)): AccountClient {
+export function getAccountClient (
+  token: string | undefined | null = getMetadata(presentation.metadata.Token)
+): AccountClient {
   // TODO: make clients cache?
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 

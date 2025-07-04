@@ -28,7 +28,8 @@ import {
   type PersonUuid,
   type SocialId as SocialIdBase,
   type WorkspaceDataId,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type WorkspaceInfo
 } from '@hcengineering/core'
 import type { EndpointInfo } from './utils'
 
@@ -73,7 +74,8 @@ export interface AccountEvent {
 
 export enum AccountEventType {
   ACCOUNT_CREATED = 'account_created',
-  SOCIAL_ID_RELEASED = 'social_id_released'
+  SOCIAL_ID_RELEASED = 'social_id_released',
+  ACCOUNT_DELETED = 'account_deleted'
 }
 
 export interface Member {
@@ -218,6 +220,8 @@ export interface AccountDB {
   ) => Promise<WorkspaceInfoWithStatus | undefined>
   setPassword: (accountId: AccountUuid, passwordHash: Buffer, salt: Buffer) => Promise<void>
   resetPassword: (accountId: AccountUuid) => Promise<void>
+  deleteAccount: (accountId: AccountUuid) => Promise<void>
+  listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
 }
 
 export interface DbCollection<T> {
@@ -343,4 +347,11 @@ export type ClientNetworkPosition = 'internal' | 'external'
 export interface Meta {
   timezone?: string
   clientNetworkPosition?: ClientNetworkPosition
+}
+
+export interface AccountAggregatedInfo extends Omit<Account, 'hash' | 'salt'>, Person {
+  uuid: AccountUuid
+  integrations: Omit<Integration, 'data'>[]
+  socialIds: SocialId[]
+  workspaces: Omit<WorkspaceInfo, 'allowReadOnlyGuest'>[]
 }
