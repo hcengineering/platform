@@ -21,7 +21,7 @@
   import chunter, { ChatMessage } from '@hcengineering/chunter'
   import { closeTooltip, Label, Lazy, Spinner, resizeObserver, MiniToggle } from '@hcengineering/ui'
   import { ObjectPresenter, DocNavLink } from '@hcengineering/view-resources'
-  import { canGroupMessages } from '@hcengineering/activity-resources'
+  import { canGroupMessages, getActivityNewestFirst, setActivityNewestFirst } from '@hcengineering/activity-resources'
 
   import ChatMessageInput from './ChatMessageInput.svelte'
   import ChatMessagePresenter from './ChatMessagePresenter.svelte'
@@ -37,8 +37,8 @@
   let loading = true
   let messages: ChatMessage[] = []
 
-  let activityOrderNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
-  $: localStorage.setItem('activity-newest-first', JSON.stringify(activityOrderNewestFirst))
+  let activityOrderNewestFirst = getActivityNewestFirst()
+  $: setActivityNewestFirst(activityOrderNewestFirst)
   $: query.query(
     chunter.class.ChatMessage,
     { attachedTo: objectId, space: getChannelSpace(object._class, object._id, object.space) },
