@@ -106,7 +106,7 @@
         const fltr = await getResource(filter.filter)
         filterActions.push(fltr)
       }
-      filtered = messages.filter((message) => filterActions.some((f) => f(message, object._class)))
+      filtered = sortedMessages.filter((message) => filterActions.some((f) => f(message, object._class)))
       dispatch('update', filtered)
     }
   }

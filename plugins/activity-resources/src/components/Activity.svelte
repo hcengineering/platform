@@ -287,7 +287,7 @@
     >
       {#if filteredMessages.length}
         <Grid column={1} rowGap={0}>
-          {#each filteredMessages as message, index}
+          {#each filteredMessages as message, index (message._id)}
             {@const canGroup = canGroupMessages(message, filteredMessages[index - 1])}
             {#if selectedMessageId}
               <ActivityMessagePresenter
