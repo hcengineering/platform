@@ -79,7 +79,7 @@
             : loginSocialTypes.includes(socialId.type)
               ? !onlyLogin
               : true}
-        {#if socialIdProvider}
+        {#if socialIdProvider != null && socialId.type !== SocialIdType.HULY}
           <div class="item">
             <SocialIdPresenter {socialId} {socialIdProvider} {canRelease} on:released={handleAccountUpdated} />
           </div>

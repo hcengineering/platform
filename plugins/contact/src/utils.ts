@@ -33,7 +33,8 @@ import {
   Ref,
   SocialId,
   toIdMap,
-  TxFactory
+  TxFactory,
+  DocumentUpdate
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
@@ -459,7 +460,7 @@ export async function ensureEmployeeForPerson (
   for (const socialId of socialIds) {
     const existing = existingIdentifiers.get(socialId._id as SocialIdentityRef)
 
-    if (existing === undefined) {
+    if (existing == null) {
       await ctx.with('create-social-identity', {}, async () => {
         if (personRef === undefined) {
           // something went wrong
@@ -491,41 +492,45 @@ export async function ensureEmployeeForPerson (
         await client.tx(createSocialIdTx)
       })
     } else {
-      // This social identity must be attached to the correct person. If it's not the case, something is wrong.
-      // personRef must be readonly after creation and must NEVER be changed.
-      if (existing.attachedTo !== personRef) {
-        throw new Error('Social identity is attached to the wrong person')
+      // If not confirmed locally can be attached to a different person (persons merge scenario)
+      // Confirmed social identity should not be attached to a different person for now
+      // It will change with accounts merge function
+      if (existing.verifiedOn != null && existing.attachedTo !== personRef) {
+        throw new Error('Confirmed social identity is attached to the wrong person')
       }
 
       // Check and update if needed. It can:
-      // 1. Become verified (changes verifiedOn)
-      if (existing.verifiedOn == null) {
-        const updateSocialIdentityTx = txFactory.createTxUpdateDoc(
-          contact.class.SocialIdentity,
-          contact.space.Contacts,
-          existing._id,
-          {
-            verifiedOn: socialId.verifiedOn,
-            value: socialId.value,
-            key: socialId.key,
-            isDeleted: socialId.isDeleted
-          }
-        )
+      // 1. Become verified (maybe with persons merge) (changes verifiedOn, attachedTo)
+      const sidUpdate: DocumentUpdate<SocialIdentity> = {}
+      let needUpdate = false
 
-        await client.tx(updateSocialIdentityTx)
+      // become verified
+      if (existing.verifiedOn == null) {
+        sidUpdate.verifiedOn = socialId.verifiedOn
+        needUpdate = true
       }
 
-      // 2. Become deleted (changes value/key/isDeleted)
+      // merged from another person
+      if (existing.attachedTo !== personRef) {
+        sidUpdate.attachedTo = personRef
+        // Bump collection in Person?
+        needUpdate = true
+      }
+
+      // become deleted
       if (existing.isDeleted !== socialId.isDeleted && socialId.isDeleted === true) {
+        sidUpdate.value = socialId.value
+        sidUpdate.key = socialId.key
+        sidUpdate.isDeleted = socialId.isDeleted
+        needUpdate = true
+      }
+
+      if (needUpdate) {
         const updateSocialIdentityTx = txFactory.createTxUpdateDoc(
           contact.class.SocialIdentity,
           contact.space.Contacts,
           existing._id,
-          {
-            value: socialId.value,
-            key: socialId.key,
-            isDeleted: socialId.isDeleted
-          }
+          sidUpdate
         )
 
         await client.tx(updateSocialIdentityTx)
