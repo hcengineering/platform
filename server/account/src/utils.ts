@@ -52,6 +52,7 @@ import {
   type Integration,
   type LoginInfo,
   type Meta,
+  type Operations,
   type OtpInfo,
   type RegionInfo,
   type SocialId,
@@ -1513,7 +1514,42 @@ export async function addSocialIdBase (
 
   const socialId = await db.socialId.findOne({ type, value: normalizedValue })
   if (socialId != null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, {}))
+    const update: Operations<SocialId> = {}
+    let needUpdate = false
+
+    if (socialId.personUuid !== personUuid) {
+      if (socialId.verifiedOn != null) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, {}))
+      } else {
+        // Was not verified.
+        const accountFromSocialId = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
+
+        if (accountFromSocialId == null && confirmed) {
+          // If attached to a person w/o account and adding verifiedOn - merge this person into the current account.
+          await doMergePersons(db, personUuid, socialId.personUuid)
+        } else {
+          // Re-wire this social id into the current account
+          update.personUuid = personUuid
+          needUpdate = true
+        }
+      }
+    }
+
+    if (confirmed && socialId.verifiedOn == null) {
+      update.verifiedOn = Date.now()
+      needUpdate = true
+    }
+
+    if (displayValue !== socialId.displayValue) {
+      update.displayValue = displayValue
+      needUpdate = true
+    }
+
+    if (needUpdate) {
+      await db.socialId.update({ _id: socialId._id }, update)
+    }
+
+    return socialId._id
   }
 
   const newSocialId: Omit<SocialId, '_id' | 'key'> = {
