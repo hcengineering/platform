@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import core, { AccountUuid, Client, MeasureContext, SocialId, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import core, {
+  AccountUuid,
+  Client,
+  MeasureContext,
+  SocialId,
+  SocialIdType,
+  TxOperations,
+  WorkspaceUuid
+} from '@hcengineering/core'
 import gmail, { type NewMessage } from '@hcengineering/gmail'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
@@ -170,7 +178,8 @@ export class GmailClient {
     if (email === undefined) {
       throw new Error('Cannot retrieve user email')
     }
-    const socialId = user.socialId ?? (await getOrCreateSocialId(user.userId, email))
+    const isActualSocialId = user.socialId?.type === SocialIdType.EMAIL && user.socialId?.value === email
+    const socialId = isActualSocialId ? user.socialId : await getOrCreateSocialId(user.userId, email)
     if (socialId?._id == null) {
       throw new Error(`Cannot create gmail client without social id: ${user.userId}, ${workspaceId}`)
     }
