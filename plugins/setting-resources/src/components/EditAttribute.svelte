@@ -27,7 +27,8 @@
     Modal,
     ModernEditbox,
     showPopup,
-    themeStore
+    themeStore,
+    Toggle
   } from '@hcengineering/ui'
   import { IconPicker } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
@@ -45,6 +46,7 @@
   let index: IndexKind | undefined = attribute.index
   let defaultValue: any | undefined = attribute.defaultValue
   let icon: Asset | undefined = attribute.icon
+  let automationOnly = attribute.automationOnly ?? false
   let is: AnyComponent | undefined
 
   const client = getClient()
@@ -77,6 +79,10 @@
       if (type !== attribute.type) {
         update.type = type
       }
+    }
+    if (automationOnly !== attribute.automationOnly) {
+      update.readonly = automationOnly
+      update.automationOnly = automationOnly
     }
     await client.updateDoc(attribute._class, attribute.space, attribute._id, update)
     clearSettingsStore()
@@ -212,6 +218,10 @@
         on:change={handleChange}
       />
     {/if}
+    <span class="label">
+      <Label label={view.string.AutomationOnly} />
+    </span>
+    <Toggle bind:on={automationOnly} />
   </div>
 </Modal>
 

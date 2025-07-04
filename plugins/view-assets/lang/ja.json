@@ -134,6 +134,7 @@
     "ReadOnlyWarningMessage": "閲覧モードです。Hulyでどんなプロジェクトも管理しませんか？ タスク、期限、チーム — 完全アクセスには登録してください！",
     "ReadOnlySignUp": "サインアップ \uD83D\uDE80",
     "Icon": "アイコン",
-    "Color": "色"
+    "Color": "色",
+    "AutomationOnly": "自動化のみ"
   }
 }

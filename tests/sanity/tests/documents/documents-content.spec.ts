@@ -201,11 +201,10 @@ test.describe('Content in the Documents tests', () => {
       await test.step('User can open image on current page', async () => {
         await documentContentPage.clickImageFullscreenButton()
         await expect(documentContentPage.imageInPopup()).toBeVisible()
-        await documentContentPage.fullscreenButton().click()
-        await expect(documentContentPage.fullscreenImage()).toBeVisible()
+        await expect(documentContentPage.image()).toBeVisible()
         await expect(async () => {
           await documentContentPage.page.keyboard.press('Escape')
-          await expect(documentContentPage.fullscreenImage()).toBeHidden()
+          await expect(documentContentPage.image()).toBeHidden()
           await expect(documentContentPage.imageInPopup()).toBeHidden()
         }).toPass(retryOptions)
       })

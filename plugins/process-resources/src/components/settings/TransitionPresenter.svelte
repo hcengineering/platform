@@ -29,8 +29,8 @@
     to = client.getModel().findObject(transition.to)
   })
 
-  let from = transition.from && client.getModel().findObject(transition.from)
-  let to = client.getModel().findObject(transition.to)
+  $: from = transition.from && client.getModel().findObject(transition.from)
+  $: to = client.getModel().findObject(transition.to)
 </script>
 
 <span>

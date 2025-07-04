@@ -814,7 +814,7 @@ export function createModel (builder: Builder): void {
     process.class.Trigger,
     core.space.Model,
     {
-      label: process.string.OnToDoClose,
+      label: process.string.OnToDoDone,
       icon: process.icon.ToDo,
       editor: process.component.ToDoCloseEditor,
       requiredParams: ['_id'],
@@ -828,7 +828,7 @@ export function createModel (builder: Builder): void {
     process.class.Trigger,
     core.space.Model,
     {
-      label: process.string.OnToDoRemove,
+      label: process.string.OnToDoCancelled,
       icon: process.icon.ToDoRemove,
       editor: process.component.ToDoRemoveEditor,
       requiredParams: ['_id'],

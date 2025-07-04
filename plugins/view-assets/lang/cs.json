@@ -139,6 +139,7 @@
     "ReadOnlyWarningMessage": "Jste v režimu prohlížení. Chcete spravovat jakékoli projekty v Huly? Úkoly, termíny, tým — zaregistrujte se pro plný přístup!",
     "ReadOnlySignUp": "Zaregistrovat se \uD83D\uDE80",
     "Icon": "Ikona",
-    "Color": "Barva"
+    "Color": "Barva",
+    "AutomationOnly": "Pouze automatizace"
   }
 }

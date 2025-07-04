@@ -24,6 +24,8 @@
   let player: Plyr | null = null
 
   const options: Plyr.Options = {
+    tooltips: { controls: true, seek: true },
+    keyboard: { focused: true, global: true },
     controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen']
   }
 
@@ -44,6 +46,7 @@
 
 <style lang="scss">
   video {
+    background: inherit;
     border-radius: inherit;
     object-fit: contain;
   }
@@ -58,9 +61,11 @@
 
   @import 'plyr/dist/plyr.css';
   :global(.plyr) {
+    flex: 1;
     min-width: 10rem;
     --plyr-control-spacing: 0.5rem;
     --plyr-control-icon-size: 1rem;
+    --plyr-video-background: transparent;
   }
 
   // Hide controls when video is stopped and not hovered

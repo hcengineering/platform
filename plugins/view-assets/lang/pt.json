@@ -134,6 +134,7 @@
     "ReadOnlyWarningMessage": "Você está no modo de visualização. Quer gerenciar qualquer projeto no Huly? Tarefas, prazos, equipe — cadastre-se para acesso total!",
     "ReadOnlySignUp": "Registar \uD83D\uDE80",
     "Icon": "Ícone",
-    "Color": "Cor"
+    "Color": "Cor",
+    "AutomationOnly": "Apenas automação"
   }
 }

@@ -22,6 +22,7 @@ export class DocumentContentPage extends CommonPage {
   readonly firstImageInDocument = (): Locator => this.page.locator('.textInput .text-editor-image-container img')
   readonly tooltipImageTools = (): Locator => this.page.locator('.tippy-box')
 
+  readonly image = (): Locator => this.page.locator('.popup img')
   readonly fullscreenImage = (): Locator => this.page.locator('.popup.fullsize img')
   readonly fullscreenButton = (): Locator => this.page.locator('.popup #btnDialogFullScreen')
   readonly imageInPopup = (): Locator => this.page.locator('.popup img')

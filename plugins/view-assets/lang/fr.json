@@ -134,6 +134,7 @@
     "ReadOnlyWarningMessage": "Vous êtes en mode consultation. Voulez-vous gérer tous types de projets dans Huly ? Tâches, délais, équipe — inscrivez-vous pour un accès complet !",
     "ReadOnlySignUp": "Inscription \uD83D\uDE80",
     "Icon": "Icône",
-    "Color": "Couleur"
+    "Color": "Couleur",
+    "AutomationOnly": "Automatisation uniquement"
   }
 }
