@@ -30,6 +30,7 @@
   export let canSave: boolean = false
   export let okLabel: IntlString = ui.string.Ok
   export let padding: string | undefined = undefined
+  export let bottomPadding: string | undefined = undefined
   export let hidden: boolean = false
   export let noTopIndent: boolean = false
   export let hideFooter: boolean = false
@@ -89,7 +90,7 @@
     {#if scrollableContent}
       <Scroller
         padding={padding ?? typePadding}
-        bottomPadding={type === 'type-popup'
+        bottomPadding={bottomPadding ?? type === 'type-popup'
           ? undefined
           : type === 'type-aside'
             ? 'var(--spacing-2)'
