@@ -16,11 +16,19 @@
   import { MasterTag, Tag } from '@hcengineering/card'
   import { AnyAttribute, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Context, ContextId, Process, ProcessContext, ProcessFunction, SelectedContext } from '@hcengineering/process'
+  import {
+    Context,
+    ContextId,
+    Process,
+    ProcessContext,
+    ProcessFunction,
+    RelatedContext,
+    SelectedContext
+  } from '@hcengineering/process'
   import { Label, resizeObserver, Scroller, Submenu } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import { generateContextId, getValueReduceFunc, isTypeEqual } from '../../utils'
+  import { generateContextId, getRelationObjectReduceFunc, getValueReduceFunc, isTypeEqual } from '../../utils'
   import ExecutionContextPresenter from './ExecutionContextPresenter.svelte'
 
   export let process: Process
@@ -95,6 +103,21 @@
     const client = getClient()
     const f = client.getModel().getObject(func)
     return f
+  }
+
+  function onRelation (val: RelatedContext): void {
+    const client = getClient()
+    const reduceFunc = getRelationObjectReduceFunc(client, val.association, val.direction, attribute)
+    onSelect({
+      type: 'relation',
+      key: '',
+      association: val.association,
+      direction: val.direction,
+      name: val.name,
+      functions: [],
+      sourceFunction: reduceFunc
+    })
+    dispatch('close')
   }
 </script>
 
@@ -187,16 +210,29 @@
     {/if}
     {#if relations.length > 0}
       {#each relations as object}
-        <Submenu
-          text={object[0]}
-          props={{
-            context: object[1],
-            onSelect: onClick,
-            target: attribute
-          }}
-          options={{ component: plugin.component.RelatedContextSelector }}
-          withHover
-        />
+        {#if object[1].attributes.length === 0}
+          <button
+            on:click={() => {
+              onRelation(object[1])
+            }}
+            class="menu-item"
+          >
+            <span class="overflow-label pr-1">
+              {object[1].name}
+            </span>
+          </button>
+        {:else}
+          <Submenu
+            text={object[1].name}
+            props={{
+              context: object[1],
+              onSelect: onClick,
+              target: attribute
+            }}
+            options={{ component: plugin.component.RelatedContextSelector }}
+            withHover
+          />
+        {/if}
       {/each}
       <div class="menu-separator" />
     {/if}

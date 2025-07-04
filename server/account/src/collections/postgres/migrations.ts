@@ -29,7 +29,9 @@ export function getMigrations (ns: string): [string, string][] {
     getV9Migration(ns),
     getV10Migration1(ns),
     getV10Migration2(ns),
-    getV11Migration(ns)
+    getV11Migration(ns),
+    getV12Migration(ns),
+    getV13Migration(ns)
   ]
 }
 
@@ -375,6 +377,40 @@ function getV11Migration (ns: string): [string, string] {
     
     INSERT INTO ${ns}._pending_workspace_lock (id) VALUES (1)
       ON CONFLICT (id) DO NOTHING;
+    `
+  ]
+}
+
+function getV12Migration (ns: string): [string, string] {
+  return [
+    'account_db_v12_update_account_events_fk',
+    `
+    -- Drop existing foreign key constraint
+    ALTER TABLE ${ns}.account_events
+    DROP CONSTRAINT IF EXISTS account_events_account_fk;
+
+    -- Add new foreign key constraint referencing person table
+    ALTER TABLE ${ns}.account_events
+    ADD CONSTRAINT account_events_person_fk FOREIGN KEY (account_uuid) REFERENCES ${ns}.person(uuid);
+    `
+  ]
+}
+
+function getV13Migration (ns: string): [string, string] {
+  return [
+    'account_db_v13_update_workspace_fk_to_person',
+    `
+    -- Drop existing foreign key constraints
+    ALTER TABLE ${ns}.workspace
+    DROP CONSTRAINT IF EXISTS workspace_created_by_fk,
+    DROP CONSTRAINT IF EXISTS workspace_billing_account_fk;
+
+    -- Add new foreign key constraints referencing person table
+    ALTER TABLE ${ns}.workspace
+    ADD CONSTRAINT workspace_created_by_person_fk 
+      FOREIGN KEY (created_by) REFERENCES ${ns}.person(uuid),
+    ADD CONSTRAINT workspace_billing_account_person_fk 
+      FOREIGN KEY (billing_account) REFERENCES ${ns}.person(uuid);
     `
   ]
 }

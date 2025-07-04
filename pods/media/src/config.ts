@@ -17,13 +17,17 @@ import { config as dotenvConfig } from 'dotenv'
 dotenvConfig()
 
 export interface Config {
+  AccountsUrl: string
   Secret: string
+  ServiceID: string
   Partitions: number
 }
 
 const config: Config = (() => {
   const params: Partial<Config> = {
+    AccountsUrl: process.env.ACCOUNTS_URL,
     Secret: process.env.SECRET,
+    ServiceID: process.env.SERVICE_ID ?? 'media',
     Partitions: parseNumber(process.env.PARTITIONS) ?? 1
   }
 

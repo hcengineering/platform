@@ -35,10 +35,22 @@
 <div class="flex-row-center flex-gap-2">
   <Label label={method.label} />
   {#if step.params.title}
-    {#if contextValue}
-      - <ContextValuePresenter {contextValue} {context} {process} />
-    {:else}
-      - {step.params.title}
-    {/if}
+    :
+    <div class="title">
+      {#if contextValue}
+        <ContextValuePresenter {contextValue} {context} {process} />
+      {:else}
+        {step.params.title}
+      {/if}
+    </div>
   {/if}
 </div>
+
+<style lang="scss">
+  .title {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--theme-caption-color);
+  }
+</style>

@@ -3999,7 +3999,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/calendar@file:projects/calendar.tgz':
-    resolution: {integrity: sha512-7rnBah1PxbEkQ0FZGpjkC88Sp69IXws4e2X/ABjgvjWTo78xNol5l+qGRFpNqYYB5f/ougD8zCeXKEdG6A9cJA==, tarball: file:projects/calendar.tgz}
+    resolution: {integrity: sha512-a9Gp6OpBF3mTgS+GVg24hsi3iS7W/rR3c54SQBAvXOjm9MqmI7Yrg5PlfVzM9A586LdE/KR149b/qWGMGX0Jbw==, tarball: file:projects/calendar.tgz}
     version: 0.0.0
 
   '@rush-temp/card-assets@file:projects/card-assets.tgz':
@@ -4155,7 +4155,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-ImVkzGo/qJ0L7GhN54QDVNGv19r98j4uHMDQ87wS3gdwIH5GwfVYlYyC/BD5+z9yg2op1kXWjsvuvvl418Gi2w==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-H/3xisvxZroeb0bnkSMA7ERuUuAdDLJD7hXa0o+g5Z91wufU4XAn3rZ8+rQ53Adm3/bJynAjPLSWq8Atm+Ml4g==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4447,7 +4447,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-calendar@file:projects/model-calendar.tgz':
-    resolution: {integrity: sha512-VcNoFT1BVg9JGIidf9F1yf13Be8kO5D0uUoaJeMPHooL84Sai3iHB1kN3m58LIr0bSDUP66gJFNUSVKBNybnOg==, tarball: file:projects/model-calendar.tgz}
+    resolution: {integrity: sha512-l8TwhdtRIzqh1WbwCwDjP8Jae2RFGBN/5U3plqiugIAgpCJfNIRYIe0x8clOqbidUZ4lDzZdL7kbTFgjVt5OlA==, tarball: file:projects/model-calendar.tgz}
     version: 0.0.0
 
   '@rush-temp/model-card@file:projects/model-card.tgz':
@@ -4891,7 +4891,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-media@file:projects/pod-media.tgz':
-    resolution: {integrity: sha512-ofWL7P24lILBgkuwK6nIDCM73vkISUZyLm9qiJKXHcGSe8wZVK3jgfli8YbeyhShcwNx595FFkKfkEFfV9DBCw==, tarball: file:projects/pod-media.tgz}
+    resolution: {integrity: sha512-Hs0uxssWRvXJjxSjpg8HA+i412/QDzOjq29YLmGnkOuSRlxZTPH6hYelFIjEH2SSzbgZf2I8T4vBuBZToHySZA==, tarball: file:projects/pod-media.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-msg2file@file:projects/pod-msg2file.tgz':
@@ -4931,11 +4931,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/postgres-base@file:projects/postgres-base.tgz':
-    resolution: {integrity: sha512-kyX1UpbrAJtR8AvnYMxcsx8Dt9Yk78mCoe3CB8iqHsqfch4qfOvH1Z0kxvzjkFVFvKgRGUqQUfuN3gVeEjuF0A==, tarball: file:projects/postgres-base.tgz}
+    resolution: {integrity: sha512-kYL6r5Fy6JA9Sr6GQbFtZ+fRqTRfOlea6uw0bsXyCpmYfpgE+fYX973W7vcQijPzNgLdjseAqgVoy/IIN0mrVA==, tarball: file:projects/postgres-base.tgz}
     version: 0.0.0
 
   '@rush-temp/postgres@file:projects/postgres.tgz':
-    resolution: {integrity: sha512-qYzUM38pKeU84/AeMFejxqKsJOOcNB+oZUJ+/rfT4tLi8Ccr4/uKIF3ZfhSwKt2d3ztHwEZj3jdWNuTzEgWyHg==, tarball: file:projects/postgres.tgz}
+    resolution: {integrity: sha512-Tr2Xo8ZrvqajOnk3M1XItkMjsO6a3bMyGoFvKn5ViTEe3wxpMBGHOf3xw4TO2ojNy3NVeV+QFdSOMwxtfADK+A==, tarball: file:projects/postgres.tgz}
     version: 0.0.0
 
   '@rush-temp/preference-assets@file:projects/preference-assets.tgz':
@@ -5387,7 +5387,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/setting-resources@file:projects/setting-resources.tgz':
-    resolution: {integrity: sha512-45J453y3z6IPYYCzXdhG3RfZW4PGwQK2rNoKFxlW1Eo2MY1aVdGoks670Inz1cuxP87EWO5XVfnLBCrcHiM3HQ==, tarball: file:projects/setting-resources.tgz}
+    resolution: {integrity: sha512-V1fxm4+9HCGwPWJLZ8x0yEwISALxBPsaRyOOf59hbn2hls6U15CrmDuC96uHngv0jBmA6sTfPtwQh7x6iKS05Q==, tarball: file:projects/setting-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/setting@file:projects/setting.tgz':
@@ -5571,7 +5571,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/ui@file:projects/ui.tgz':
-    resolution: {integrity: sha512-HO9f4TYDYocn0YrLZtb1iNFqlYHsuIFoSVaqV5WKBcDkI1vsq5KT79qrMjbOvATOFInMRVR+N19Mlfmp2PVTjw==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-iGJVYhTpkK5rTm+K+Qlnwg/6A+spZqjxNIDODNpmdUPjMO8lIvnYj4BaX2dvUZuLmXy4L2VErS4mgok+cjNrbw==, tarball: file:projects/ui.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader-assets@file:projects/uploader-assets.tgz':
@@ -27854,6 +27854,7 @@ snapshots:
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       fast-equals: 5.2.2
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      plyr: 3.7.8
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1

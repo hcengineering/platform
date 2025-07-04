@@ -139,6 +139,7 @@
     "ReadOnlyWarningMessage": "You're in view-only mode. Want to manage any project in Huly? Tasks, deadlines, team — sign up for full access!",
     "ReadOnlySignUp": "Sign up \uD83D\uDE80",
     "Icon": "Icon",
-    "Color": "Color"
+    "Color": "Color",
+    "AutomationOnly": "Automation only"
   }
 }

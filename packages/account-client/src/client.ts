@@ -33,6 +33,7 @@ import {
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import type {
+  AccountAggregatedInfo,
   Integration,
   IntegrationKey,
   IntegrationSecret,
@@ -125,8 +126,9 @@ export interface AccountClient {
   createMailbox: (name: string, domain: string) => Promise<{ mailbox: string, socialId: PersonId }>
   getMailboxes: () => Promise<MailboxInfo[]>
   deleteMailbox: (mailbox: string) => Promise<void>
+  listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
+  deleteAccount: (uuid: AccountUuid) => Promise<void>
 
-  // Service methods
   workerHandshake: (region: string, version: Data<Version>, operation: WorkspaceOperation) => Promise<void>
   getPendingWorkspace: (
     region: string,
@@ -852,6 +854,24 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'deleteMailbox' as const,
       params: { mailbox }
+    }
+
+    await this.rpc(request)
+  }
+
+  async listAccounts (search?: string, skip?: number, limit?: number): Promise<AccountAggregatedInfo[]> {
+    const request = {
+      method: 'listAccounts' as const,
+      params: { search, skip, limit }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async deleteAccount (uuid: AccountUuid): Promise<void> {
+    const request = {
+      method: 'deleteAccount' as const,
+      params: { uuid }
     }
 
     await this.rpc(request)

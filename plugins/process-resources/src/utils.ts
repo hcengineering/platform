@@ -189,24 +189,40 @@ export function getContext (
   const relationsA = allRelations.filter((it) => descendants.has(it.classA))
   for (const rel of relationsA) {
     const refAttributes = getClassAttributes(client, rel.classB, target, 'attribute')
-    if (refAttributes.length === 0) continue
-    relations[rel.nameB] = {
-      name: rel.nameB,
-      association: rel._id,
-      direction: 'B',
-      attributes: refAttributes
+    if (refAttributes.length > 0) {
+      relations[rel.nameB] = {
+        name: rel.nameB,
+        association: rel._id,
+        direction: 'B',
+        attributes: refAttributes
+      }
+    } else if (category === 'object' && client.getHierarchy().isDerived(rel.classB, target)) {
+      relations[rel.nameB] = {
+        name: rel.nameB,
+        association: rel._id,
+        direction: 'B',
+        attributes: []
+      }
     }
   }
 
   const relationsB = allRelations.filter((it) => descendants.has(it.classB))
   for (const rel of relationsB) {
     const refAttributes = getClassAttributes(client, rel.classA, target, 'attribute')
-    if (refAttributes.length === 0) continue
-    relations[rel.nameA] = {
-      name: rel.nameA,
-      association: rel._id,
-      direction: 'A',
-      attributes: refAttributes
+    if (refAttributes.length > 0) {
+      relations[rel.nameA] = {
+        name: rel.nameA,
+        association: rel._id,
+        direction: 'A',
+        attributes: refAttributes
+      }
+    } else if (category === 'object' && client.getHierarchy().isDerived(rel.classA, target)) {
+      relations[rel.nameA] = {
+        name: rel.nameA,
+        association: rel._id,
+        direction: 'A',
+        attributes: []
+      }
     }
   }
 
@@ -307,6 +323,20 @@ function getClassAttributes (
     }
   }
   return matchedAttributes
+}
+
+export function getRelationObjectReduceFunc (
+  client: Client,
+  association: Ref<Association>,
+  direction: 'A' | 'B',
+  target: AnyAttribute
+): Ref<ProcessFunction> | undefined {
+  const assoc = client.getModel().findObject(association)
+  if (assoc === undefined) return undefined
+  if (assoc.type === '1:1') return undefined
+  if (assoc.type === '1:N' && direction === 'B') return undefined
+  if (target.type._class === core.class.ArrOf) return undefined
+  return process.function.FirstValue
 }
 
 export function getRelationReduceFunc (

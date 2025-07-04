@@ -21,6 +21,7 @@ import {
   type CreateMessageEvent,
   type CreateMessageResult,
   type DetachBlobsOperation,
+  type UpdateBlobsOperation,
   type DetachLinkPreviewsOperation,
   type Event,
   type EventResult,
@@ -63,7 +64,8 @@ import {
   MessageType,
   type Notification,
   type NotificationContext,
-  type SocialID
+  type SocialID,
+  type BlobUpdateData
 } from '@hcengineering/communication-types'
 import core, {
   generateId,
@@ -222,9 +224,10 @@ class Client {
       attach?: BlobData[]
       detach?: BlobID[]
       set?: BlobData[]
+      update?: BlobUpdateData[]
     }
   ): Promise<void> {
-    const operations: Array<AttachBlobsOperation | DetachBlobsOperation | SetBlobsOperation> = []
+    const operations: Array<AttachBlobsOperation | DetachBlobsOperation | SetBlobsOperation | UpdateBlobsOperation> = []
 
     if (ops.attach != null && ops.attach.length > 0) {
       operations.push({
@@ -244,6 +247,13 @@ class Client {
       operations.push({
         opcode: 'set',
         blobs: ops.set
+      })
+    }
+
+    if (ops.update != null && ops.update.length > 0) {
+      operations.push({
+        opcode: 'update',
+        blobs: ops.update
       })
     }
 
