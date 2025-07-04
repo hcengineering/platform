@@ -134,6 +134,7 @@
     "ReadOnlyWarningMessage": "Sei in modalità di sola lettura. Vuoi gestire qualsiasi progetto su Huly? Task, scadenze, team — registrati per l'accesso completo!",
     "ReadOnlySignUp": "Registrati \uD83D\uDE80",
     "Icon": "Icona",
-    "Color": "Colore"
+    "Color": "Colore",
+    "AutomationOnly": "Solo automazione"
   }
 }

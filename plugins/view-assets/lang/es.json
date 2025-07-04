@@ -134,6 +134,7 @@
     "ReadOnlyWarningMessage": "Estás en modo de solo lectura. ¿Quieres gestionar cualquier proyecto en Huly? Tareas, plazos, equipo — ¡regístrate para acceso completo!",
     "ReadOnlySignUp": "Registrarse \uD83D\uDE80",
     "Icon": "Icono",
-    "Color": "Color"
+    "Color": "Color",
+    "AutomationOnly": "Solo automatización"
   }
 }

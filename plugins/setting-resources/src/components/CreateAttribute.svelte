@@ -28,23 +28,23 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
+    ButtonIcon,
     Component,
     DropdownLabelsIntl,
-    ModernEditbox,
+    IconCopy,
+    IconDelete,
     Label,
     Modal,
-    ButtonIcon,
-    IconDelete,
-    IconCopy,
-    showPopup
+    ModernEditbox,
+    showPopup,
+    Toggle
   } from '@hcengineering/ui'
   import { DropdownIntlItem } from '@hcengineering/ui/src/types'
-  import setting from '../plugin'
   import view from '@hcengineering/view'
-  import { clearSettingsStore } from '../store'
   import { IconPicker } from '@hcengineering/view-resources'
+  import setting from '../plugin'
+  import { clearSettingsStore } from '../store'
 
-  export let _id: Ref<Class<Type<PropertyType>>> | undefined = undefined
   export let _class: Ref<Class<Doc>>
   export let isCard: boolean = false
 
@@ -54,6 +54,7 @@
   let index: IndexKind | undefined
   let defaultValue: any | undefined
   let is: AnyComponent | undefined
+  let readonly: boolean = false
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -67,7 +68,9 @@
       icon,
       isCustom: true,
       type,
-      defaultValue
+      defaultValue,
+      readonly,
+      automationOnly: readonly
     }
     if (index !== undefined) {
       data.index = index
@@ -177,6 +180,10 @@
         on:change={handleChange}
       />
     {/if}
+    <span class="label">
+      <Label label={view.string.AutomationOnly} />
+    </span>
+    <Toggle bind:on={readonly} />
   </div>
 </Modal>
 

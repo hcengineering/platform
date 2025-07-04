@@ -26,12 +26,9 @@
     getEventPositionElement,
     IconAdd,
     IconDelete,
-    IconDescription,
     Label,
     navigate,
-    NavItem,
     Scroller,
-    Separator,
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
@@ -41,6 +38,7 @@
   import ActionPresenter from './ActionPresenter.svelte'
   import AsideStepEditor from './AsideStepEditor.svelte'
   import AsideTransitionEditor from './AsideTransitionEditor.svelte'
+  import Navigator from './Navigator.svelte'
   import TransitionPresenter from './TransitionPresenter.svelte'
   import TriggerPresenter from './TriggerPresenter.svelte'
 
@@ -109,13 +107,6 @@
     $settingsStore = { id: value._id, component: AsideStepEditor, props: { process, step, _id: value._id } }
   }
 
-  function handleSelect (id: Ref<State | Transition>): void {
-    const loc = getCurrentLocation()
-    loc.path[5] = plugin.component.TransitionEditor
-    loc.path[6] = id
-    navigate(loc, true)
-  }
-
   let states: State[] = []
   let transitions: Transition[] = []
   const statesQuery = createQuery()
@@ -148,29 +139,7 @@
 </script>
 
 <div class="hulyComponent-content__container columns">
-  {#if visibleSecondNav}
-    <div class="hulyComponent-content__column">
-      <div class="hulyComponent-content__navHeader">
-        <div class="hulyComponent-content__navHeader-menu">
-          <ButtonIcon kind="tertiary" icon={IconDescription} size="small" inheritColor />
-        </div>
-      </div>
-      {#each states as state (state._id)}
-        <NavItem type="type-anchor-link" title={state.title} />
-      {/each}
-      {#each transitions as transition (transition._id)}
-        <NavItem
-          type="type-anchor-link"
-          on:click={() => {
-            handleSelect(transition._id)
-          }}
-        >
-          <TransitionPresenter {transition} />
-        </NavItem>
-      {/each}
-    </div>
-    <Separator name="spaceTypeEditor" index={0} color="transparent" />
-  {/if}
+  <Navigator {visibleSecondNav} {states} {transitions} />
   <div class="hulyComponent-content__column content">
     {#if value && process}
       <Scroller align="center" padding="var(--spacing-3)" bottomPadding="var(--spacing-3)">

@@ -207,6 +207,7 @@ export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   shortLabel?: IntlString
   isCustom?: boolean
   defaultValue?: any
+  automationOnly?: boolean
 
   // Extra customization properties
   [key: string]: any
