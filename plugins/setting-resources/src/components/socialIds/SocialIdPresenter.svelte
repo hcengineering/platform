@@ -44,7 +44,11 @@
 
   async function doRelease (): Promise<void> {
     try {
-      const currSocialIds = currAcc.fullSocialIds
+      // Important to always get current account in the callback to avoid race conditions
+      // with the account from the reactive variable
+      // W/o it it was bringing back previously deleted social id if two are deleted in a row
+      const currentAccount = getCurrentAccount()
+      const currSocialIds = currentAccount.fullSocialIds
 
       const deletedSocialId = await accountClient.releaseSocialId(undefined, socialId.type, socialId.value, true)
 
@@ -65,12 +69,14 @@
       }
       const newPrimarySocialId = pickPrimarySocialId(newSocialIds)._id
 
-      setCurrentAccount({
-        ...currAcc,
+      // Don't need to update social ids because deleted social id retains its' _id
+      const updatedAccount = {
+        ...currentAccount,
         fullSocialIds: newSocialIds,
         primarySocialId: newPrimarySocialId
-      })
-      currAcc = getCurrentAccount()
+      }
+      setCurrentAccount(updatedAccount)
+      currAcc = updatedAccount
       dispatch('released')
     } catch (err: any) {
       console.error(err)
@@ -108,7 +114,7 @@
   <div class="icon"><Icon size="full" {icon} /></div>
 
   <div class="flex-col flex-gap-0-5">
-    <div>{socialId.value}</div>
+    <div>{socialId.displayValue ?? socialId.value}</div>
     <div class="type"><Label label={socialIdProvider.label} /></div>
   </div>
 

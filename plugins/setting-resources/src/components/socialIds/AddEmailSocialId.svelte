@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import contact, { SocialIdentityProvider } from '@hcengineering/contact'
+  import contact, { getCurrentEmployee, SocialIdentityProvider, SocialIdentityRef } from '@hcengineering/contact'
   import { EditBox, Label, Button, CodeForm, TimeLeft, Status as StatusControl } from '@hcengineering/ui'
   import { OtpInfo } from '@hcengineering/account-client'
-  import { getCurrentAccount, setCurrentAccount, SocialId, Timestamp } from '@hcengineering/core'
+  import { buildSocialIdString, getCurrentAccount, setCurrentAccount, SocialId, Timestamp } from '@hcengineering/core'
   import { OK, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
 
   import AddSocialId from './AddSocialId.svelte'
   import setting from '../../plugin'
@@ -31,6 +32,7 @@
   let otpInfo: OtpInfo | null = null
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
   const accountClient = getAccountClient()
   const codeFields = [
     { id: 'code-1', name: 'code-1', optional: false },
@@ -89,6 +91,7 @@
 
     try {
       const newSocialIdLoginInfo = await accountClient.validateOtp(email, code, undefined, 'verify')
+      const currPerson = getCurrentEmployee()
       const currAcc = getCurrentAccount()
       const socialIds = await accountClient.getSocialIds()
 
@@ -96,6 +99,36 @@
       if (newSocialId == null) {
         console.error(`New social id ${newSocialIdLoginInfo.socialId} not found in the updated social ids list`)
         return
+      }
+
+      // Create/update new social identity in the workspace
+      const existing = await client.findOne(contact.class.SocialIdentity, {
+        _id: newSocialIdLoginInfo.socialId as SocialIdentityRef
+      })
+      if (existing != null) {
+        // It can only exist if it were attached to an existing person and now this person was merged into the current account
+        if (existing.attachedTo !== currPerson) {
+          await client.updateDoc(contact.class.SocialIdentity, contact.space.Contacts, existing._id, {
+            attachedTo: currPerson,
+            verifiedOn: newSocialId.verifiedOn
+          })
+        }
+      } else {
+        await client.addCollection(
+          contact.class.SocialIdentity,
+          contact.space.Contacts,
+          currPerson,
+          contact.class.Person,
+          'socialIds',
+          {
+            type: newSocialId.type,
+            value: newSocialId.value,
+            key: buildSocialIdString(newSocialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
+            verifiedOn: newSocialId.verifiedOn,
+            isDeleted: newSocialId.isDeleted
+          },
+          newSocialId._id as SocialIdentityRef
+        )
       }
 
       setCurrentAccount({
