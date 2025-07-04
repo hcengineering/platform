@@ -81,14 +81,14 @@
         props: { label: attribute.automationOnly ? view.string.AutomationOnly : attribute.label }
       }}
     >
-      <div class="flex flex-gap-1 items-center">
-        {#if attribute.automationOnly}
-          <Icon icon={view.icon.Setting} size="small" />
-        {:else if withIcon && icon}
-          <Icon {icon} size="small" />
-        {/if}
+      {#if attribute.automationOnly || icon && withIcon}
+        <div class="flex flex-gap-1 items-center">
+          <Icon icon={icon ?? view.icon.Setting} size="small" />
+          <Label label={attribute.label} />
+        </div>
+      {:else}
         <Label label={attribute.label} />
-      </div>
+      {/if}
     </span>
     <div class="flex flex-grow min-w-0">
       <svelte:component
