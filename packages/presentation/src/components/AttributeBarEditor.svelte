@@ -81,7 +81,7 @@
         props: { label: attribute.automationOnly ? view.string.AutomationOnly : attribute.label }
       }}
     >
-      {#if attribute.automationOnly || icon && withIcon}
+      {#if attribute.automationOnly || (icon && withIcon)}
         <div class="flex flex-gap-1 items-center">
           <Icon icon={icon ?? view.icon.Setting} size="small" />
           <Label label={attribute.label} />
