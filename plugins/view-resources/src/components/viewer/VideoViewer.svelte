@@ -33,7 +33,8 @@
 </script>
 
 <div
-  style:aspect-ratio={aspectRatio}
+  class="flex justify-center w-full"
+  style:aspect-ratio={fit ? undefined : aspectRatio}
   style:max-width={fit ? '100%' : maxWidth}
   style:max-height={fit ? '100%' : maxHeight}
 >

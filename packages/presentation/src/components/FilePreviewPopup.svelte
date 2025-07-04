@@ -69,9 +69,6 @@
   }
 
   onMount(() => {
-    if (fullSize) {
-      dispatch('fullsize')
-    }
     if (props.drawingAvailable === true) {
       if (props.createDrawing !== undefined) {
         createDrawing = props.createDrawing
@@ -126,11 +123,11 @@
 
 <ActionContext context={{ mode: 'browser' }} />
 <Dialog
-  isFullSize
   on:fullsize
   on:close={() => {
     dispatch('close')
   }}
+  padding="0.5rem"
 >
   <svelte:fragment slot="title">
     <div class="antiTitle icon-wrapper">
