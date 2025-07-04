@@ -1956,14 +1956,20 @@ describe('account utils', () => {
     })
   })
 
-  describe('addSocialId', () => {
+  describe('addSocialIdBase', () => {
     const mockDb = {
       person: {
-        findOne: jest.fn()
+        findOne: jest.fn(),
+        update: jest.fn()
       },
       socialId: {
         findOne: jest.fn(),
-        insertOne: jest.fn()
+        find: jest.fn(),
+        insertOne: jest.fn(),
+        update: jest.fn()
+      },
+      account: {
+        findOne: jest.fn()
       }
     } as unknown as AccountDB
 
@@ -2033,22 +2039,140 @@ describe('account utils', () => {
       )
     })
 
-    test('should throw error if social id already exists', async () => {
-      const value = 'test@example.com'
-      const type = SocialIdType.EMAIL
+    describe('existing socialId cases', () => {
       const person = 'test-person-uuid' as PersonUuid
-      const existingSocialId = {
-        type,
-        value,
-        personUuid: 'other-person-uuid' as PersonUuid
-      }
+      const otherPerson = 'other-person-uuid' as PersonUuid
+      const existingSocialIdId = 'existing-id' as PersonId
 
-      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({})
-      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(existingSocialId)
+      beforeEach(() => {
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({})
+      })
 
-      await expect(addSocialIdBase(mockDb, person, type, value, false)).rejects.toThrow(
-        new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, {}))
-      )
+      test('should throw error if socialId exists with different person and is verified', async () => {
+        const existingSocialId = {
+          _id: existingSocialIdId,
+          type: SocialIdType.EMAIL,
+          value: 'test@example.com',
+          personUuid: otherPerson,
+          verifiedOn: Date.now()
+        }
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(existingSocialId)
+
+        await expect(addSocialIdBase(mockDb, person, SocialIdType.EMAIL, 'test@example.com', true)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, {}))
+        )
+      })
+
+      test('should update personUuid if socialId exists with different person and is not verified', async () => {
+        const existingSocialId = {
+          _id: existingSocialIdId,
+          type: SocialIdType.EMAIL,
+          value: 'test@example.com',
+          personUuid: otherPerson,
+          verifiedOn: null
+        }
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(existingSocialId)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue({ uuid: otherPerson })
+
+        const result = await addSocialIdBase(mockDb, person, SocialIdType.EMAIL, 'test@example.com', true)
+
+        expect(result).toBe(existingSocialIdId)
+        expect(mockDb.socialId.update).toHaveBeenCalledWith(
+          { _id: existingSocialIdId },
+          {
+            personUuid: person,
+            verifiedOn: expect.any(Number)
+          }
+        )
+      })
+
+      test('should merge persons if socialId exists with different person, no account, and confirmed=true', async () => {
+        const existingSocialId = {
+          _id: existingSocialIdId,
+          type: SocialIdType.EMAIL,
+          value: 'test@example.com',
+          personUuid: otherPerson,
+          verifiedOn: null
+        }
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(existingSocialId)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
+        ;(mockDb.socialId.find as jest.Mock).mockResolvedValue([existingSocialId])
+
+        const result = await addSocialIdBase(mockDb, person, SocialIdType.EMAIL, 'test@example.com', true)
+
+        expect(result).toBe(existingSocialIdId)
+        expect(mockDb.socialId.update).toHaveBeenCalledWith(
+          { _id: existingSocialIdId },
+          { verifiedOn: expect.any(Number) }
+        )
+        expect(mockDb.socialId.update).toHaveBeenCalledWith(
+          { _id: existingSocialIdId, personUuid: otherPerson },
+          { personUuid: person }
+        )
+        expect(mockDb.person.update).toHaveBeenCalledWith({ uuid: otherPerson }, { migratedTo: person })
+      })
+
+      test('should update verifiedOn if socialId exists for same person and confirmed=true', async () => {
+        const existingSocialId = {
+          _id: existingSocialIdId,
+          type: SocialIdType.EMAIL,
+          value: 'test@example.com',
+          personUuid: person,
+          verifiedOn: null
+        }
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(existingSocialId)
+
+        const result = await addSocialIdBase(mockDb, person, SocialIdType.EMAIL, 'test@example.com', true)
+
+        expect(result).toBe(existingSocialIdId)
+        expect(mockDb.socialId.update).toHaveBeenCalledWith(
+          { _id: existingSocialIdId },
+          { verifiedOn: expect.any(Number) }
+        )
+      })
+
+      test('should update displayValue if different from existing', async () => {
+        const existingSocialId = {
+          _id: existingSocialIdId,
+          type: SocialIdType.EMAIL,
+          value: 'test@example.com',
+          personUuid: person,
+          displayValue: 'old display'
+        }
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(existingSocialId)
+
+        const result = await addSocialIdBase(
+          mockDb,
+          person,
+          SocialIdType.EMAIL,
+          'test@example.com',
+          false,
+          'new display'
+        )
+
+        expect(result).toBe(existingSocialIdId)
+        expect(mockDb.socialId.update).toHaveBeenCalledWith(
+          { _id: existingSocialIdId },
+          { displayValue: 'new display' }
+        )
+      })
+
+      test('should not update anything if no changes needed', async () => {
+        const existingSocialId = {
+          _id: existingSocialIdId,
+          type: SocialIdType.EMAIL,
+          value: 'test@example.com',
+          personUuid: person,
+          verifiedOn: Date.now(),
+          displayValue: 'display'
+        }
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(existingSocialId)
+
+        const result = await addSocialIdBase(mockDb, person, SocialIdType.EMAIL, 'test@example.com', false, 'display')
+
+        expect(result).toBe(existingSocialIdId)
+        expect(mockDb.socialId.update).not.toHaveBeenCalled()
+      })
     })
 
     test('should normalize value', async () => {

@@ -21,7 +21,15 @@
     setCurrentAccount,
     SocialId
   } from '@hcengineering/core'
-  import { Button, Icon, Label, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    getPlatformColorDef,
+    Icon,
+    Label,
+    PaletteColorIndexes,
+    showPopup,
+    themeStore
+  } from '@hcengineering/ui'
   import contact, { SocialIdentityProvider, SocialIdentityRef } from '@hcengineering/contact'
   import { getClient, MessageBox } from '@hcengineering/presentation'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -121,13 +129,15 @@
   <div class="flex-grow" />
 
   {#if isLogin}
-    <div class="tag flex-center">
+    {@const color = getPlatformColorDef(PaletteColorIndexes.Turquoise, $themeStore.dark)}
+    <div class="tag flex-center" style:background={color.background} style:border-color={color.color}>
       <Label label={setting.string.Login} />
     </div>
   {/if}
 
   {#if isPrimary}
-    <div class="tag flex-center">
+    {@const color = getPlatformColorDef(PaletteColorIndexes.Ocean, $themeStore.dark)}
+    <div class="tag flex-center" style:background={color.background} style:border-color={color.color}>
       <Label label={setting.string.Primary} />
     </div>
   {/if}
