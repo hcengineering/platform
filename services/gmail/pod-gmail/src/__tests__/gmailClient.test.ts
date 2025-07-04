@@ -52,7 +52,10 @@ jest.mock('@hcengineering/core', () => {
       remove: jest.fn().mockResolvedValue({}),
       updateDoc: jest.fn().mockResolvedValue({}),
       tx: jest.fn().mockResolvedValue({})
-    }))
+    })),
+    SocialIdType: {
+      Email: 'email'
+    }
   }
 })
 
