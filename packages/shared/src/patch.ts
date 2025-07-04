@@ -28,7 +28,8 @@ import {
   PatchType,
   ReactionPatch,
   SocialID,
-  ThreadPatch
+  ThreadPatch,
+  BlobUpdateData
 } from '@hcengineering/communication-types'
 
 export function applyPatches (message: Message, patches: Patch[], allowedPatchTypes: PatchType[] = []): Message {
@@ -85,6 +86,8 @@ function patchBlobs (message: Message, patch: BlobPatch): Message {
     return detachBlobs(message, patch.data.blobIds)
   } else if (patch.data.operation === 'set') {
     return setBlobs(message, patch.data.blobs, patch.created, patch.creator)
+  } else if (patch.data.operation === 'update') {
+    return updateBlobs(message, patch.data.blobs)
   }
   return message
 }
@@ -146,6 +149,27 @@ function attachBlobs (message: Message, data: BlobData[], created: Date, creator
   return {
     ...message,
     blobs: [...message.blobs, ...newBlobs]
+  }
+}
+
+function updateBlobs (message: Message, updates: BlobUpdateData[]): Message {
+  if (updates.length === 0) return message
+  const updatedBlobs = []
+  for (const blob of message.blobs) {
+    const update = updates.find((it) => it.blobId === blob.blobId)
+    if (update === undefined) {
+      updatedBlobs.push(blob)
+    } else {
+      updatedBlobs.push({
+        ...blob,
+        ...update
+      })
+    }
+  }
+
+  return {
+    ...message,
+    blobs: updatedBlobs
   }
 }
 

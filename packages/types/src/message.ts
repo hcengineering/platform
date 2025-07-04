@@ -151,7 +151,7 @@ export interface RemoveReactionPatchData {
 
 export interface BlobPatch extends BasePatch {
   type: PatchType.blob
-  data: AttachBlobsPatchData | DetachBlobsPatchData | SetBlobsPatchData
+  data: AttachBlobsPatchData | DetachBlobsPatchData | SetBlobsPatchData | UpdateBlobsPatchData
 }
 
 export interface AttachBlobsPatchData {
@@ -167,6 +167,11 @@ export interface DetachBlobsPatchData {
 export interface SetBlobsPatchData {
   operation: 'set'
   blobs: BlobData[]
+}
+
+export interface UpdateBlobsPatchData {
+  operation: 'update'
+  blobs: BlobUpdateData[]
 }
 
 export interface LinkPreviewPatch extends BasePatch {
@@ -232,6 +237,8 @@ export interface BlobData {
   size: number
   metadata?: BlobMetadata
 }
+
+export type BlobUpdateData = { blobId: BlobID } & Partial<BlobData>
 
 export interface AttachedBlob extends BlobData {
   creator: SocialID

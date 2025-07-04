@@ -167,6 +167,14 @@ const BlobDataSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional()
 })
 
+const UpdateBlobDataSchema = z.object({
+  blobId: BlobIDSchema,
+  mimeType: z.string().optional(),
+  fileName: z.string().optional(),
+  size: z.number().optional(),
+  metadata: z.record(z.string(), z.any()).optional()
+})
+
 const LinkPreviewDataSchema = z
   .object({
     previewId: LinkPreviewIDSchema,
@@ -329,7 +337,8 @@ const ReactionPatchEventSchema = BaseEventSchema.extend({
 const BlobOperationSchema = z.union([
   z.object({ opcode: z.literal('attach'), blobs: z.array(BlobDataSchema).nonempty() }),
   z.object({ opcode: z.literal('detach'), blobIds: z.array(BlobIDSchema).nonempty() }),
-  z.object({ opcode: z.literal('set'), blobs: z.array(BlobDataSchema).nonempty() })
+  z.object({ opcode: z.literal('set'), blobs: z.array(BlobDataSchema).nonempty() }),
+  z.object({ opcode: z.literal('update'), blobs: z.array(UpdateBlobDataSchema).nonempty() })
 ])
 
 const BlobPatchEventSchema = BaseEventSchema.extend({

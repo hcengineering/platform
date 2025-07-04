@@ -20,6 +20,7 @@ import {
   AttachThreadPatchData,
   type BlobData,
   type BlobID,
+  BlobUpdateData,
   type CardID,
   type CardType,
   DetachBlobsPatchData,
@@ -40,6 +41,7 @@ import {
   type SocialID,
   SortingOrder,
   type Thread,
+  UpdateBlobsPatchData,
   UpdateThreadPatchData
 } from '@hcengineering/communication-types'
 import type { ThreadUpdates, ThreadQuery } from '@hcengineering/communication-sdk-types'
@@ -296,6 +298,65 @@ export class MessagesDb extends BaseDb {
 
       return true
     })
+  }
+
+  async updateBlobs (
+    cardId: CardID,
+    messageId: MessageID,
+    blobs: BlobUpdateData[],
+    socialId: SocialID,
+    date: Date
+  ): Promise<void> {
+    if (blobs.length === 0) return
+
+    const colMap = {
+      mimeType: { col: 'type', cast: '::varchar' },
+      fileName: { col: 'filename', cast: '::varchar' },
+      size: { col: 'size', cast: '::int8' },
+      metadata: { col: 'meta', cast: '::jsonb' }
+    } as const
+    type UpdateKey = keyof typeof colMap
+    const updateKeys = Object.keys(colMap) as UpdateKey[]
+
+    const params: any[] = [this.workspace, cardId, messageId]
+
+    const rowLen = 1 + updateKeys.length
+
+    const tuples = blobs.map((blob, i) => {
+      params.push(blob.blobId)
+      updateKeys.forEach((k) => params.push(blob[k] ?? null))
+
+      const offset = 3 + i * rowLen
+      const casts = ['::uuid', ...updateKeys.map((k) => colMap[k].cast)]
+      const placeholders = casts.map((cast, idx) => `$${offset + idx + 1}${cast}`)
+      return `(${placeholders.join(', ')})`
+    })
+
+    const setClauses = updateKeys.map((k) => {
+      const col = colMap[k].col
+      return `${col} = COALESCE(v.${col}, f.${col})`
+    })
+
+    const updateSql = `
+        UPDATE ${TableName.File} AS f
+        SET ${setClauses.join(',\n  ')}
+        FROM (VALUES ${tuples.join(',\n    ')}) AS v(blob_id, ${updateKeys.map((k) => colMap[k].col).join(', ')})
+        WHERE f.workspace_id = $1::uuid
+          AND f.card_id = $2::varchar
+          AND f.message_id = $3::varchar
+          AND f.blob_id = v.blob_id;
+    `
+
+    const inDb = await this.isMessageInDb(cardId, messageId)
+    if (!inDb) {
+      await this.getRowClient().begin(async (txn) => {
+        await this.execute(updateSql, params, 'update blobs', txn)
+        const data: UpdateBlobsPatchData = { operation: 'update', blobs }
+        await this.createPatch(cardId, messageId, PatchType.blob, data, socialId, date, txn)
+      })
+    } else {
+      await this.execute(updateSql, params, 'update blobs')
+    }
   }
 
   async attachLinkPreviews (

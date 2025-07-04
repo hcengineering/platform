@@ -44,7 +44,7 @@ import {
   NotificationType,
   BlobData,
   LinkPreviewData,
-  LinkPreviewID
+  LinkPreviewID, BlobUpdateData
 } from '@hcengineering/communication-types'
 
 export interface DbAdapter {
@@ -76,6 +76,7 @@ export interface DbAdapter {
   attachBlobs: (cardId: CardID, messageId: MessageID, data: BlobData[], socialId: SocialID, date: Date) => Promise<void>
   detachBlobs: (card: CardID, messageId: MessageID, blobId: BlobID[], socialId: SocialID, date: Date) => Promise<void>
   setBlobs: (cardId: CardID, messageId: MessageID, data: BlobData[], socialId: SocialID, date: Date) => Promise<void>
+  updateBlobs: (cardId: CardID, messageId: MessageID, data: BlobUpdateData[], socialId: SocialID, date: Date) => Promise<void>
 
   attachLinkPreviews: (
     cardId: CardID,

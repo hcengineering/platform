@@ -27,6 +27,7 @@ import {
   PatchType,
   SetBlobsPatchData,
   SetLinkPreviewsPatchData,
+  UpdateBlobsPatchData,
   UpdateThreadPatchData
 } from '@hcengineering/communication-types'
 import {
@@ -43,6 +44,7 @@ import {
   RemoveNotificationContextEvent,
   SetBlobsOperation,
   SetLinkPreviewsOperation,
+  UpdateBlobsOperation,
   UpdateNotificationContextEvent,
   UpdateThreadOperation
 } from '@hcengineering/communication-sdk-types'
@@ -216,8 +218,8 @@ export class NotificationProcessor {
 }
 
 function blobOperationToPatchData (
-  operation: AttachBlobsOperation | DetachBlobsOperation | SetBlobsOperation
-): AttachBlobsPatchData | DetachBlobsPatchData | SetBlobsPatchData | undefined {
+  operation: AttachBlobsOperation | DetachBlobsOperation | SetBlobsOperation | UpdateBlobsOperation
+): AttachBlobsPatchData | DetachBlobsPatchData | SetBlobsPatchData | UpdateBlobsPatchData | undefined {
   if (operation.opcode === 'attach') {
     return {
       operation: 'attach',
@@ -231,6 +233,11 @@ function blobOperationToPatchData (
   } else if (operation.opcode === 'set') {
     return {
       operation: 'set',
+      blobs: operation.blobs
+    }
+  } else if (operation.opcode === 'update') {
+    return {
+      operation: 'update',
       blobs: operation.blobs
     }
   }

@@ -10,7 +10,8 @@ import type {
   MessagesGroup,
   MessageExtra,
   BlobData,
-  LinkPreviewData
+  LinkPreviewData,
+  BlobUpdateData
 } from '@hcengineering/communication-types'
 
 import type { BaseEvent } from './common'
@@ -134,6 +135,11 @@ export interface SetBlobsOperation {
   blobs: BlobData[]
 }
 
+export interface UpdateBlobsOperation {
+  opcode: 'update'
+  blobs: BlobUpdateData[]
+}
+
 // For system and message author
 export interface BlobPatchEvent extends BaseEvent {
   type: MessageEventType.BlobPatch
@@ -141,7 +147,7 @@ export interface BlobPatchEvent extends BaseEvent {
   cardId: CardID
   messageId: MessageID
 
-  operations: (AttachBlobsOperation | DetachBlobsOperation | SetBlobsOperation)[]
+  operations: (AttachBlobsOperation | DetachBlobsOperation | SetBlobsOperation | UpdateBlobsOperation)[]
 
   socialId: SocialID
   date?: Date

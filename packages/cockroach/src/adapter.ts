@@ -45,7 +45,7 @@ import {
   type LinkPreviewData,
   type LinkPreviewID,
   type MessageExtra,
-  type BlobData
+  type BlobData, BlobUpdateData
 } from '@hcengineering/communication-types'
 import type {
   DbAdapter,
@@ -160,6 +160,16 @@ export class CockroachAdapter implements DbAdapter {
     date: Date
   ): Promise<void> {
     await this.message.setBlobs(cardId, messageId, blobs, socialId, date)
+  }
+
+  async updateBlobs (
+    cardId: CardID,
+    messageId: MessageID,
+    blobs: BlobUpdateData[],
+    socialId: SocialID,
+    date: Date
+  ): Promise<void> {
+    await this.message.updateBlobs(cardId, messageId, blobs, socialId, date)
   }
 
   async attachLinkPreviews (

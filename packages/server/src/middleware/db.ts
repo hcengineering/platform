@@ -271,6 +271,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         await this.db.detachBlobs(event.cardId, event.messageId, operation.blobIds, event.socialId, event.date)
       } else if (operation.opcode === 'set') {
         await this.db.setBlobs(event.cardId, event.messageId, operation.blobs, event.socialId, event.date)
+      } else if (operation.opcode === 'update') {
+        await this.db.updateBlobs(event.cardId, event.messageId, operation.blobs, event.socialId, event.date)
       }
     }
 
