@@ -122,9 +122,9 @@
       new ResizeObserver(() => {
         if (!isScrollInitialized) return
         const diff = node.clientHeight - prev
-        if (diff < 0) return
-
         prev = node.clientHeight
+        if (diff < 0 || position !== MessagesNavigationAnchors.LatestMessages) return
+
         if (atBottom || bottomOffset - diff < 30) {
           dispatch('action', { id: 'hideScrollBar' })
           if (!$isAppFocusedStore) {
