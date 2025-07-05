@@ -16,7 +16,18 @@
   import { Analytics } from '@hcengineering/analytics'
   import { BlobMetadata, SortingOrder, type Blob, type Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Button, Dialog, IconHistory, IconScribble, showPopup, tooltip } from '@hcengineering/ui'
+  import {
+    Button,
+    Modal,
+    IconHistory,
+    IconScribble,
+    showPopup,
+    tooltip,
+    ButtonIcon,
+    IconMaximize,
+    IconMinimize,
+    IconClose
+  } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
 
   import ActionContext from './ActionContext.svelte'
@@ -122,13 +133,39 @@
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
-<Dialog
+<Modal
+  type={'type-component'}
+  padding={'0.5rem'}
+  bottomPadding={'0'}
   on:fullsize
   on:close={() => {
     dispatch('close')
   }}
-  padding="0.5rem"
 >
+  <svelte:fragment slot="beforeTitle">
+    <ButtonIcon
+      icon={IconClose}
+      kind={'tertiary'}
+      size={'small'}
+      noPrint
+      on:click={() => {
+        dispatch('close')
+      }}
+    />
+    <div class="hulyHeader-divider short no-line no-print" />
+    <ButtonIcon
+      icon={!fullSize ? IconMaximize : IconMinimize}
+      kind={'tertiary'}
+      size={'small'}
+      noPrint
+      on:click={() => {
+        fullSize = !fullSize
+        dispatch('fullsize', fullSize)
+      }}
+    />
+    <div class="hulyHeader-divider short no-print" />
+  </svelte:fragment>
+
   <svelte:fragment slot="title">
     <div class="antiTitle icon-wrapper">
       {#if showIcon}
@@ -140,7 +177,7 @@
     </div>
   </svelte:fragment>
 
-  <svelte:fragment slot="utils">
+  <svelte:fragment slot="actions">
     {#if props.drawingAvailable === true}
       {#if props.drawings !== undefined && props.drawings.length > 0}
         <Button
@@ -176,4 +213,4 @@
   {#if file}
     <FilePreview {file} {contentType} {name} {metadata} {props} fit />
   {/if}
-</Dialog>
+</Modal>
