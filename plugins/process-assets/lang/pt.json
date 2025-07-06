@@ -86,7 +86,8 @@
     "Round": "Arredondar",
     "Floor": "Arredondar para baixo",
     "Ceil": "Arredondar para cima",
-    "Absolute": "Valor absoluto"
+    "Absolute": "Valor absoluto",
+    "LogAction": "Evento"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

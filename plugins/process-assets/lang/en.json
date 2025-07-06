@@ -86,7 +86,8 @@
     "Round": "Round",
     "Absolute": "Absolute",
     "Ceil": "Ceil",
-    "Floor": "Floor"
+    "Floor": "Floor",
+    "LogAction": "Event"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

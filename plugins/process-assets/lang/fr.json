@@ -86,7 +86,8 @@
     "Round": "Arrondir",
     "Floor": "Arrondir vers le bas",
     "Ceil": "Arrondir vers le haut",
-    "Absolute": "Valeur absolue"
+    "Absolute": "Valeur absolue",
+    "LogAction": "Événement"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

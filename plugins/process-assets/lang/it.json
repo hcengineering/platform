@@ -86,7 +86,8 @@
     "Round": "Arrotondare",
     "Floor": "Arrotondare per difetto",
     "Ceil": "Arrotondare per eccesso",
-    "Absolute": "Valore assoluto"
+    "Absolute": "Valore assoluto",
+    "LogAction": "Evento"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",
