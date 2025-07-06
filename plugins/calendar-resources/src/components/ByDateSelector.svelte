@@ -44,7 +44,9 @@
         >
           <Button
             width={'100%'}
-            on:click={() => { onSelect(value) }}
+            on:click={() => {
+              onSelect(value)
+            }}
             {disabled}
             padding={'0'}
             size={'inline'}

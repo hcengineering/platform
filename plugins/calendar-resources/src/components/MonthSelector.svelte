@@ -36,7 +36,15 @@
       class:top-border={month < 4}
       class:left-border={month % 4 === 0}
     >
-      <Button width={'100%'} on:click={() => { onSelect(value) }} padding={'0'} size={'inline'} kind={'ghost'}>
+      <Button
+        width={'100%'}
+        on:click={() => {
+          onSelect(value)
+        }}
+        padding={'0'}
+        size={'inline'}
+        kind={'ghost'}
+      >
         <svelte:fragment slot="content">
           {new Date(new Date().setMonth(month)).toLocaleString('default', { month: 'short' })}
         </svelte:fragment>
