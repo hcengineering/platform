@@ -110,6 +110,17 @@
     "MeetingRescheduledNotification": "Besprechungszeit geändert",
     "MeetingCanceledNotification": "Besprechung abgesagt: {title}",
     "PrimaryCalendar": "Primärer Kalender",
-    "Hidden": "Versteckt"
+    "Hidden": "Versteckt",
+    "Each": "Jeder",
+    "OnThe": "Am",
+    "First": "Erster",
+    "Second": "Zweiter",
+    "Third": "Dritter",
+    "Fourth": "Vierter",
+    "Fifth": "Fünfter",
+    "NextToLast": "Vorletzter",
+    "Last": "Letzter",
+    "Weekday": "Wochentag",
+    "WeekendDay": "Wochenendtag"
   }
 }

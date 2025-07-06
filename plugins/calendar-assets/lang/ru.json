@@ -110,6 +110,17 @@
     "MeetingRescheduledNotification": "Время встречи изменено",
     "MeetingCanceledNotification": "Встреча отменена: {title}",
     "PrimaryCalendar": "Основной календарь",
-    "Hidden": "Скрыт"
+    "Hidden": "Скрыт",
+    "Each": "Каждый",
+    "OnThe": "В",
+    "First": "Первый",
+    "Second": "Второй",
+    "Third": "Третий",
+    "Fourth": "Четвертый",
+    "Fifth": "Пятый",
+    "NextToLast": "Предпоследний",
+    "Last": "Последний",
+    "Weekday": "Будний день",
+    "WeekendDay": "Выходной день"
   }
 }
