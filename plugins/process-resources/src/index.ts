@@ -50,6 +50,8 @@ import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
 import SplitEditor from './components/transformEditors/SplitEditor.svelte'
 import { ProcessMiddleware } from './middleware'
 import { continueExecution, showDoneQuery, todoTranstionCheck } from './utils'
+import LogActionPresenter from './components/LogActionPresenter.svelte'
+import TransitionRefPresenter from './components/settings/TransitionRefPresenter.svelte'
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
@@ -84,7 +86,9 @@ export default async (): Promise<Resources> => ({
     ToDoRemoveEditor: ToDoRemoveParamsEditor,
     ToDoCloseEditor: ToDoParamsEditor,
     ProcessesCardSection,
-    TransitionEditor
+    TransitionEditor,
+    TransitionRefPresenter,
+    LogActionPresenter
   },
   transformEditor: {
     DateOffsetEditor,

@@ -37,6 +37,8 @@ import {
   type Execution,
   type ExecutionContext,
   type ExecutionError,
+  type ExecutionLog,
+  type ExecutionLogAction,
   type ExecutionStatus,
   type Method,
   type Process,
@@ -55,6 +57,7 @@ import { type AttributeCategory } from '@hcengineering/view'
 import process from './plugin'
 
 const DOMAIN_PROCESS = 'process' as Domain
+const DOMAIN_PROCESS_LOG = 'process-log' as Domain
 
 @Model(process.class.Process, core.class.Doc, DOMAIN_MODEL)
 export class TProcess extends TDoc implements Process {
@@ -112,6 +115,18 @@ export class TTransition extends TDoc implements Transition {
     trigger!: Ref<Trigger>
 
   triggerParams!: Record<string, any>
+}
+
+@Model(process.class.ExecutionLog, core.class.Doc, DOMAIN_PROCESS_LOG)
+export class TExecutionLog extends TDoc implements ExecutionLog {
+  @Prop(TypeRef(process.class.Execution), process.string.Execution)
+    execution!: Ref<Execution>
+
+  @Prop(TypeRef(process.class.Transition), process.string.Transition)
+    transition?: Ref<Transition>
+
+  @Prop(TypeAny(process.component.LogActionPresenter, process.string.LogAction), process.string.LogAction)
+    action!: ExecutionLogAction
 }
 
 @Model(process.class.Execution, core.class.Doc, DOMAIN_PROCESS)
@@ -189,7 +204,17 @@ export class TProcessFunction extends TDoc implements ProcessFunction {
 export * from './migration'
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TProcess, TExecution, TProcessToDo, TMethod, TState, TProcessFunction, TTransition, TTrigger)
+  builder.createModel(
+    TProcess,
+    TExecution,
+    TProcessToDo,
+    TMethod,
+    TState,
+    TProcessFunction,
+    TTransition,
+    TTrigger,
+    TExecutionLog
+  )
 
   createAction(builder, {
     action: view.actionImpl.Delete,
@@ -618,7 +643,7 @@ export function createModel (builder: Builder): void {
         baseMenuClass: process.class.Execution
       },
       viewOptions: {
-        groupBy: ['process', 'currentState', 'card'],
+        groupBy: ['process', 'currentState'],
         orderBy: [
           ['modifiedOn', SortingOrder.Descending],
           ['createdOn', SortingOrder.Descending]
@@ -632,7 +657,8 @@ export function createModel (builder: Builder): void {
             action: process.function.ShowDoneQuery,
             label: process.string.ShowDone
           }
-        ]
+        ],
+        groupDepth: 1
       },
       configOptions: {
         strict: true,
@@ -675,7 +701,7 @@ export function createModel (builder: Builder): void {
         baseMenuClass: process.class.Execution
       },
       viewOptions: {
-        groupBy: ['process', 'done'],
+        groupBy: ['process', 'status', 'card'],
         orderBy: [
           ['modifiedOn', SortingOrder.Descending],
           ['createdOn', SortingOrder.Descending]
@@ -724,6 +750,62 @@ export function createModel (builder: Builder): void {
       ]
     },
     process.viewlet.ExecutionsList
+  )
+
+  builder.mixin(process.class.Transition, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: process.component.TransitionRefPresenter
+  })
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: process.class.ExecutionLog,
+      descriptor: view.viewlet.List,
+      props: {
+        baseMenuClass: process.class.ExecutionLog
+      },
+      viewOptions: {
+        groupBy: ['transition', 'action'],
+        orderBy: [
+          ['modifiedOn', SortingOrder.Descending],
+          ['createdOn', SortingOrder.Descending]
+        ],
+        other: [],
+        groupDepth: 1
+      },
+      configOptions: {
+        strict: true,
+        hiddenKeys: []
+      },
+      config: [
+        {
+          key: 'action',
+          presenter: process.component.LogActionPresenter,
+          displayProps: { key: 'action', fixed: 'left' }
+        },
+        {
+          key: 'transition',
+          label: process.string.Transition,
+          presenter: process.component.TransitionRefPresenter,
+          displayProps: { key: 'transition', fixed: 'left' }
+        },
+        {
+          key: '',
+          presenter: view.component.GrowPresenter,
+          displayProps: { grow: true }
+        },
+        {
+          key: 'createdBy',
+          displayProps: { fixed: 'right' }
+        },
+        {
+          key: 'createdOn',
+          displayProps: { fixed: 'right' }
+        }
+      ]
+    },
+    process.viewlet.ExecutionLogList
   )
 
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {

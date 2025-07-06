@@ -65,6 +65,18 @@ export interface Transition extends Doc {
   triggerParams: Record<string, any>
 }
 
+export interface ExecutionLog extends Doc {
+  execution: Ref<Execution>
+  transition?: Ref<Transition>
+  action: ExecutionLogAction
+}
+
+export enum ExecutionLogAction {
+  Started = 'started',
+  Transition = 'transition',
+  Rollback = 'rollback'
+}
+
 export type CheckFunc = (params: Record<string, any>, doc: Doc) => Promise<boolean>
 
 export enum ExecutionStatus {
@@ -157,7 +169,8 @@ export default plugin(processId, {
     State: '' as Ref<Class<State>>,
     ProcessFunction: '' as Ref<Class<ProcessFunction>>,
     Transition: '' as Ref<Class<Transition>>,
-    Trigger: '' as Ref<Class<Trigger>>
+    Trigger: '' as Ref<Class<Trigger>>,
+    ExecutionLog: '' as Ref<Class<ExecutionLog>>
   },
   method: {
     RunSubProcess: '' as Ref<Method<Process>>,

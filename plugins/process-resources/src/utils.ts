@@ -366,9 +366,9 @@ export function getContextFunctionReduce (
   return process.function.FirstValue
 }
 
-export function showDoneQuery (value: any, query: DocumentQuery<Doc>): DocumentQuery<Doc> {
+export function showDoneQuery (value: any, query: DocumentQuery<Execution>): DocumentQuery<Execution> {
   if (value === false) {
-    return { ...query, done: false }
+    return { ...query, status: ExecutionStatus.Active }
   }
   return query
 }

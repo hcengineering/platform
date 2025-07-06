@@ -35,6 +35,7 @@ import process, {
   Execution,
   ExecutionContext,
   ExecutionError,
+  ExecutionLogAction,
   ExecutionStatus,
   MethodParams,
   parseContext,
@@ -171,6 +172,13 @@ async function executeTransition (
       context: execution.context,
       currentState: state._id,
       status: isDone ? ExecutionStatus.Done : ExecutionStatus.Active
+    })
+  )
+  res.push(
+    control.txFactory.createTxCreateDoc(process.class.ExecutionLog, execution.space, {
+      execution: execution._id,
+      transition: transition._id,
+      action: ExecutionLogAction.Transition
     })
   )
   if (errors.length === 0) {
@@ -468,6 +476,13 @@ async function initState (execution: Execution, control: TriggerControl): Promis
       status: ExecutionStatus.Active
     })
   )
+  res.push(
+    control.txFactory.createTxCreateDoc(process.class.ExecutionLog, execution.space, {
+      execution: execution._id,
+      transition: transition._id,
+      action: ExecutionLogAction.Started
+    })
+  )
   if (errors.length === 0) {
     return res
   } else {
@@ -528,6 +543,12 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
         for (const rollbackTx of rollback) {
           res.push(rollbackTx)
         }
+        res.push(
+          control.txFactory.createTxCreateDoc(process.class.ExecutionLog, execution.space, {
+            execution: execution._id,
+            action: ExecutionLogAction.Rollback
+          })
+        )
       }
     } else {
       const transitions = control.modelDb.findAllSync(process.class.Transition, {
