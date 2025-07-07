@@ -383,6 +383,12 @@ export interface FullTextAdapter {
 
   clean: (ctx: MeasureContext, workspace: WorkspaceUuid) => Promise<void>
   updateMany: (ctx: MeasureContext, workspace: WorkspaceUuid, docs: IndexedDoc[]) => Promise<TxResult[]>
+  updateByQuery: (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    query: DocumentQuery<Doc>,
+    update: Record<string, any>
+  ) => Promise<TxResult[]>
   load: (ctx: MeasureContext, workspace: WorkspaceUuid, docs: Ref<Doc>[]) => Promise<IndexedDoc[]>
   searchString: (
     ctx: MeasureContext,

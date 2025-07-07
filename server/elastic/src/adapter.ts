@@ -421,6 +421,64 @@ class ElasticAdapter implements FullTextAdapter {
     return []
   }
 
+  async updateByQuery (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceUuid,
+    query: DocumentQuery<Doc>,
+    update: Record<string, any>
+  ): Promise<TxResult[]> {
+    const elasticQuery: any = {
+      bool: {
+        must: [
+          {
+            term: {
+              workspaceId
+            }
+          }
+        ]
+      }
+    }
+
+    for (const [q, v] of Object.entries(query)) {
+      if (!q.startsWith('$')) {
+        if (typeof v === 'object') {
+          if (v.$in !== undefined) {
+            elasticQuery.bool.must.push({
+              terms: {
+                [mappingFields.has(q) ? q : `${q}.keyword`]: v.$in
+              }
+            })
+          }
+        } else {
+          elasticQuery.bool.must.push({
+            term: {
+              [mappingFields.has(q) ? q : `${q}.keyword`]: {
+                value: v
+              }
+            }
+          })
+        }
+      }
+    }
+
+    await this.client.updateByQuery({
+      type: '_doc',
+      index: this.indexName,
+      body: {
+        query: elasticQuery,
+        script: {
+          source:
+            'for(int i = 0; i < params.updateFields.size(); i++) { ctx._source[params.updateFields[i].key] = params.updateFields[i].value }',
+          params: {
+            updateFields: Object.entries(update).map(([key, value]) => ({ key, value }))
+          },
+          lang: 'painless'
+        }
+      }
+    })
+    return []
+  }
+
   async remove (ctx: MeasureContext, workspaceId: WorkspaceUuid, docs: Ref<Doc>[]): Promise<void> {
     try {
       while (docs.length > 0) {
