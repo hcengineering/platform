@@ -380,6 +380,7 @@ export interface FullTextAdapter {
     update: Record<string, any>
   ) => Promise<TxResult>
   remove: (ctx: MeasureContext, workspace: WorkspaceUuid, id: Ref<Doc>[]) => Promise<void>
+  removeByQuery: (ctx: MeasureContext, workspace: WorkspaceUuid, query: DocumentQuery<Doc>) => Promise<void>
 
   clean: (ctx: MeasureContext, workspace: WorkspaceUuid) => Promise<void>
   updateMany: (ctx: MeasureContext, workspace: WorkspaceUuid, docs: IndexedDoc[]) => Promise<TxResult[]>

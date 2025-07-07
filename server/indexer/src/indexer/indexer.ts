@@ -865,6 +865,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           { _class: `${card.class.Card}%message` as any, attachedTo: event.cardId },
           { attachedToClass: event.cardType }
         )
+      } else if (tx.event.type === CardEventType.RemoveCard) {
+        const event = tx.event
+        await this.fulltextAdapter.removeByQuery(ctx, this.workspace.uuid, {
+          _class: `${card.class.Card}%message` as any,
+          attachedTo: event.cardId
+        })
       }
     }
   }

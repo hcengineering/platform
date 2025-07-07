@@ -519,6 +519,56 @@ class ElasticAdapter implements FullTextAdapter {
     }
   }
 
+  async removeByQuery (ctx: MeasureContext, workspaceId: WorkspaceUuid, query: DocumentQuery<Doc>): Promise<void> {
+    const elasticQuery: any = {
+      bool: {
+        must: [
+          {
+            term: {
+              workspaceId
+            }
+          }
+        ]
+      }
+    }
+
+    for (const [q, v] of Object.entries(query)) {
+      if (!q.startsWith('$')) {
+        if (typeof v === 'object') {
+          if (v.$in !== undefined) {
+            elasticQuery.bool.must.push({
+              terms: {
+                [mappingFields.has(q) ? q : `${q}.keyword`]: v.$in
+              }
+            })
+          }
+        } else {
+          elasticQuery.bool.must.push({
+            term: {
+              [mappingFields.has(q) ? q : `${q}.keyword`]: {
+                value: v
+              }
+            }
+          })
+        }
+      }
+    }
+    try {
+      await this.client.deleteByQuery({
+        type: '_doc',
+        index: this.indexName,
+        body: {
+          query: elasticQuery
+        }
+      })
+    } catch (e: any) {
+      if (e instanceof esErr.ResponseError && e.meta.statusCode === 404) {
+        return
+      }
+      throw e
+    }
+  }
+
   async clean (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
     try {
       await this.client.deleteByQuery(
