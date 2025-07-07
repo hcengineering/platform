@@ -32,7 +32,6 @@ import 'prosemirror-codemark/dist/codemark.css'
 
 import Collaboration from '@tiptap/extension-collaboration'
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
-import ListKeymap from '@tiptap/extension-list-keymap'
 import Placeholder from '@tiptap/extension-placeholder'
 import { CodeBlockHighlighExtension, codeBlockHighlightOptions } from '../components/extension/codeSnippets/codeblock'
 import { MermaidExtension, mermaidOptions } from '../components/extension/codeSnippets/mermaid'
@@ -65,6 +64,7 @@ import { Table, TableCell, TableRow } from '../components/extension/table'
 import { ToCExtension } from '../components/extension/toc'
 import { TodoItemExtension, TodoListExtension } from '../components/extension/todo/todo'
 import { ToolbarExtension } from '../components/extension/toolbar/toolbar'
+import { ListKeymapExtension } from '../components/extension/shortcuts/listKeymap'
 
 export interface EditorKitContext {
   mode?: 'full' | 'compact'
@@ -81,6 +81,8 @@ const StaticEditorKit = extensionKit(
   (e, context: EditorKitContext) =>
     ({
       ...CommonKitFactory(e),
+
+      shortcuts: e(subKits.shortcuts, context), // needs to be loaded as early as possible to override the default behavior
 
       // ===========================================================================================
       // Extensions and kits with separate / shortened implementations in the server-side editor kit
@@ -120,7 +122,6 @@ const StaticEditorKit = extensionKit(
       placeholder: e(Placeholder, false),
 
       collaboration: e(subKits.collaboration, false),
-      shortcuts: e(subKits.shortcuts, context),
       hooks: e(subKits.hooks), // Semi-deprecated, should be removed in the future
       qms: e(subKits.qms, false) // Semi-deprecated, should be removed in the future
     }) as const
@@ -179,7 +180,7 @@ const subKits = {
         smartPaste: e(SmartPasteExtension),
         paragraphKeymap: e(ParagraphKeymapExtension, context.mode === 'compact'),
         linkKeymap: e(LinkKeymapExtension),
-        listKeymap: e(ListKeymap, {
+        listKeymap: e(ListKeymapExtension, {
           listTypes: [
             { itemName: 'listItem', wrapperNames: ['bulletList', 'orderedList'] },
             { itemName: 'taskItem', wrapperNames: ['taskList'] },
