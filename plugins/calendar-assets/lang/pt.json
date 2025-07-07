@@ -110,6 +110,17 @@
     "MeetingRescheduledNotification": "Horário da reunião alterado",
     "MeetingCanceledNotification": "Reunião cancelada: {title}",
     "PrimaryCalendar": "Calendário principal",
-    "Hidden": "Oculto"
+    "Hidden": "Oculto",
+    "Each": "Cada",
+    "OnThe": "No dia",
+    "First": "Primeiro",
+    "Second": "Segundo",
+    "Third": "Terceiro",
+    "Fourth": "Quarto",
+    "Fifth": "Quinto",
+    "NextToLast": "Penúltimo",
+    "Last": "Último",
+    "Weekday": "Dia da semana",
+    "WeekendDay": "Folga"
   }
 }
