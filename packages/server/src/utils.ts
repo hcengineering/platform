@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { AccountID, MessageID, SocialID } from '@hcengineering/communication-types'
+import type { AccountID, SocialID } from '@hcengineering/communication-types'
 import { generateToken } from '@hcengineering/server-token'
 import { systemAccountUuid } from '@hcengineering/core'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
@@ -46,12 +46,4 @@ export async function findAccount (ctx: TriggerCtx, socialString: SocialID): Pro
   } catch (err: any) {
     ctx.ctx.warn('Cannot find account', { socialString, err })
   }
-}
-
-export function isExternalMessageId (messageId: MessageID): boolean {
-  return messageId.startsWith('e')
-}
-
-export function parseMessageIdDate (messageId: MessageID): Date | undefined {
-  return isExternalMessageId(messageId) ? undefined : new Date(Number(messageId))
 }

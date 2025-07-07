@@ -1027,33 +1027,53 @@ export class MessagesDb extends BaseDb {
 
   // Find messages groups
   async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    const select = `
-        SELECT mg.card_id,
-               mg.blob_id,
-               mg.from_date,
-               mg.to_date,
-               mg.count,
-               patches
-        FROM ${TableName.MessagesGroup} mg
-                 CROSS JOIN LATERAL (
-            SELECT jsonb_agg(jsonb_build_object(
-                                     'message_id', p.message_id::text,
-                                     'type', p.type,
-                                     'data', p.data,
-                                     'creator', p.creator,
-                                     'created', p.created
-                             ) ORDER BY p.created) AS patches
-            FROM ${TableName.Patch} p
-            WHERE p.workspace_id = mg.workspace_id
-              AND p.card_id = mg.card_id
-              AND p.message_created BETWEEN mg.from_date AND mg.to_date
-            ) sub`
+    const useMessageIdCte = params.messageId != null
+    const values: any[] = [this.workspace]
+    if (useMessageIdCte) values.push(params.messageId)
 
-    const { where, values } = this.buildMessagesGroupWhere(params)
+    const cte = useMessageIdCte
+      ? `
+      WITH msg_created AS (
+        SELECT card_id, created
+        FROM ${TableName.MessageCreated}
+        WHERE workspace_id = $1::uuid
+          AND message_id = $2::varchar
+      )
+    `
+      : ''
+
+    const select = `
+    ${cte}
+    SELECT mg.card_id,
+           mg.blob_id,
+           mg.from_date,
+           mg.to_date,
+           mg.count,
+           patches
+    FROM ${TableName.MessagesGroup} mg
+    ${useMessageIdCte ? 'JOIN msg_created mc ON mg.card_id = mc.card_id AND mc.created BETWEEN mg.from_date AND mg.to_date' : ''}
+    CROSS JOIN LATERAL (
+      SELECT jsonb_agg(jsonb_build_object(
+        'message_id', p.message_id::varchar,
+        'type', p.type,
+        'data', p.data,
+        'creator', p.creator,
+        'created', p.created
+      )) AS patches
+      FROM ${TableName.Patch} p
+      WHERE p.workspace_id = mg.workspace_id
+        AND p.card_id = mg.card_id
+        AND p.message_created BETWEEN mg.from_date AND mg.to_date
+    ) sub
+  `
+
+    const { where, values: additionalValues } = this.buildMessagesGroupWhere(params, values.length + 1)
+    values.push(...additionalValues)
+
     const orderBy =
       params.orderBy === 'toDate'
-        ? `ORDER BY mg.to_date ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}`
-        : `ORDER BY mg.from_date ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}`
+        ? `ORDER BY mg.to_date ${params.order === SortingOrder.Descending ? 'DESC' : 'ASC'}`
+        : `ORDER BY mg.from_date ${params.order === SortingOrder.Descending ? 'DESC' : 'ASC'}`
     const limit = params.limit != null ? ` LIMIT ${params.limit}` : ''
 
     const sql = [select, where, orderBy, limit].join(' ')
@@ -1062,14 +1082,17 @@ export class MessagesDb extends BaseDb {
     return result.map((it: any) => toMessagesGroup(it))
   }
 
-  buildMessagesGroupWhere (params: FindMessagesGroupsParams): {
-    where: string
-    values: any[]
-  } {
+  buildMessagesGroupWhere (
+    params: FindMessagesGroupsParams,
+    startIndex = 1
+  ): {
+      where: string
+      values: any[]
+    } {
     const where: string[] = ['mg.workspace_id = $1::uuid']
-    const values: any[] = [this.workspace]
+    const values: any[] = []
 
-    let index = 2
+    let index = startIndex
 
     if (params.card != null) {
       where.push(`mg.card_id = $${index++}::varchar`)
@@ -1099,7 +1122,10 @@ export class MessagesDb extends BaseDb {
       where.push('sub.patches IS NOT NULL')
     }
 
-    return { where: `WHERE ${where.join(' AND ')}`, values }
+    return {
+      where: where.length > 0 ? `WHERE ${where.join(' AND ')}` : '',
+      values
+    }
   }
 
   public async isMessageInDb (cardId: CardID, messageId: MessageID): Promise<boolean> {

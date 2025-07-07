@@ -318,7 +318,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       return
     }
 
-    await this.addContext(context)
+    this.addContext(context, this.result)
     void this.notify()
   }
 
@@ -457,7 +457,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
         await this.find({ id: notification.contextId, notifications: this.params.notifications, limit: 1 })
       )[0]
       if (newContext !== undefined) {
-        await this.addContext(newContext)
+        this.addContext(newContext, this.result)
         void this.notify()
       }
     }
@@ -550,13 +550,11 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       }
       this.result.update(updated)
     }
+
     if (event.updates.lastNotify != null) {
-      this.result.sort((a, b) =>
-        this.params.order === SortingOrder.Descending
-          ? (b.lastNotify?.getTime() ?? 0) - (a.lastNotify?.getTime() ?? 0)
-          : (a.lastNotify?.getTime() ?? 0) - (b.lastNotify?.getTime() ?? 0)
-      )
+      this.sort(this.result)
     }
+
     void this.notify()
   }
 
@@ -601,20 +599,29 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     return notifications.filter((it) => it.read === read)
   }
 
-  private async addContext (context: NotificationContext): Promise<void> {
-    if (this.result instanceof Promise) this.result = await this.result
-    if (this.result.get(context.id) !== undefined) return
-    if (this.result.isTail()) {
+  private addContext (context: NotificationContext, result: QueryResult<NotificationContext>): void {
+    if (result.get(context.id) !== undefined) return
+    if (result.isTail()) {
       if (this.params.order === SortingOrder.Ascending) {
-        this.result.push(context)
+        result.push(context)
       } else {
-        this.result.unshift(context)
+        result.unshift(context)
       }
     }
 
-    if (this.params.limit != null && this.result.length > this.params.limit) {
-      this.result.pop()
+    if (this.params.limit != null && result.length > this.params.limit) {
+      result.pop()
     }
+
+    this.sort(result)
+  }
+
+  private sort (result: QueryResult<NotificationContext>): void {
+    result.sort((a, b) =>
+      this.params.order === SortingOrder.Descending
+        ? (b.lastNotify?.getTime() ?? 0) - (a.lastNotify?.getTime() ?? 0)
+        : (a.lastNotify?.getTime() ?? 0) - (b.lastNotify?.getTime() ?? 0)
+    )
   }
 
   private match (context: NotificationContext): boolean {

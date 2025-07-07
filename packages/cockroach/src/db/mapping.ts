@@ -165,13 +165,21 @@ export function toLinkPreview (raw: LinkPreviewDb): LinkPreview {
 }
 
 export function toMessagesGroup (raw: MessagesGroupDb): MessagesGroup {
+  const patches =
+    raw.patches == null
+      ? []
+      : raw.patches
+        .filter((it: any) => it.message_id != null)
+        .map(toPatch)
+        .sort((a, b) => a.created.getTime() - b.created.getTime())
+
   return {
     cardId: raw.card_id,
     blobId: raw.blob_id,
     fromDate: raw.from_date,
     toDate: raw.to_date,
     count: Number(raw.count),
-    patches: raw.patches == null ? [] : raw.patches.filter((it: any) => it.message_id != null).map(toPatch)
+    patches
   }
 }
 

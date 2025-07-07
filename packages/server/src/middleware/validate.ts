@@ -216,6 +216,7 @@ const FindMessagesParamsSchema = FindParamsSchema.extend({
 }).strict()
 
 const FindMessagesGroupsParamsSchema = FindParamsSchema.extend({
+  messageId: MessageIDSchema.optional(),
   card: CardIDSchema.optional(),
   blobId: BlobIDSchema.optional(),
   patches: z.boolean().optional(),

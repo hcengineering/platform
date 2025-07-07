@@ -52,6 +52,7 @@ export interface FindMessagesParams extends FindParams {
 }
 
 export interface FindMessagesGroupsParams extends FindParams {
+  messageId?: MessageID
   card?: CardID
   blobId?: BlobID
   patches?: boolean
