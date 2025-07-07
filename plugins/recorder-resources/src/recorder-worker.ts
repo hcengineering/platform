@@ -89,3 +89,23 @@ function updateFps (newFps: number | undefined): void {
     targetFrameTime = 1000 / fps
   }
 }
+
+self.addEventListener('error', (e: ErrorEvent) => {
+  console.error('Worker error:', e.message)
+  self.postMessage({
+    type: 'error',
+    error: {
+      message: e.error.message,
+      stack: e.error.stack,
+      filename: e.filename,
+      lineno: e.lineno
+    }
+  })
+})
+
+self.addEventListener('unhandledrejection', (event) => {
+  self.postMessage({
+    type: 'unhandledRejection',
+    reason: event.reason
+  })
+})
