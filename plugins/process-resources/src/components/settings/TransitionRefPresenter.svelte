@@ -13,20 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ExecutionError } from '@hcengineering/process'
-  import { ButtonIcon, IconError } from '@hcengineering/ui'
-  import ErrorTooltip from './ErrorTooltip.svelte'
+  import { Transition } from '@hcengineering/process'
+  import TransitionPresenter from './TransitionPresenter.svelte'
+  import { getClient } from '@hcengineering/presentation'
+  import { Ref } from '@hcengineering/core'
 
-  export let value: ExecutionError[] | null | undefined
+  export let value: Ref<Transition>
+
+  const client = getClient()
+
+  $: transition = client.getModel().findObject(value) as Transition
 </script>
 
-{#if value}
-  <ButtonIcon
-    icon={IconError}
-    size="small"
-    iconSize="medium"
-    kind={'tertiary'}
-    tooltip={{ component: ErrorTooltip, props: { value } }}
-    on:click
-  />
+{#if transition}
+  <TransitionPresenter {transition} />
 {/if}

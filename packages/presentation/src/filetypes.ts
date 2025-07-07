@@ -95,9 +95,9 @@ export async function getPreviewType (
  */
 export function getPreviewAlignment (contentType: string): PopupAlignment {
   if (contentType.startsWith('image/')) {
-    return 'full-centered'
+    return 'centered'
   } else if (contentType.startsWith('video/')) {
-    return 'full-centered'
+    return 'centered'
   } else {
     return 'float'
   }

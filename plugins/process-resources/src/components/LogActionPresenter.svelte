@@ -13,20 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ExecutionError } from '@hcengineering/process'
-  import { ButtonIcon, IconError } from '@hcengineering/ui'
-  import ErrorTooltip from './ErrorTooltip.svelte'
+  import { ExecutionLogAction } from '@hcengineering/process'
+  import { Icon } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
-  export let value: ExecutionError[] | null | undefined
+  export let value: ExecutionLogAction
 </script>
 
-{#if value}
-  <ButtonIcon
-    icon={IconError}
-    size="small"
-    iconSize="medium"
-    kind={'tertiary'}
-    tooltip={{ component: ErrorTooltip, props: { value } }}
-    on:click
-  />
+{#if value === ExecutionLogAction.Started}
+  <Icon icon={view.icon.Circle} size={'small'} />
+{:else if value === ExecutionLogAction.Transition}
+  <Icon icon={view.icon.ArrowRight} size={'small'} />
+{:else}
+  <Icon icon={view.icon.Undo} size={'small'} />
 {/if}
