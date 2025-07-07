@@ -14,318 +14,260 @@
 //
 import { type Class, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { getBlobRef, getClient } from '@hcengineering/presentation'
+import { getClient } from '@hcengineering/presentation'
 import {
-  BackgroundColor,
   CodeExtension,
   codeOptions,
   CommentNode,
-  type ImageOptions,
-  InlineCommentMark,
-  MarkdownNode,
-  TextColor,
-  TextStyle
+  CommonKitFactory,
+  CommonListKitFactory,
+  extensionKit,
+  mergeKitOptions,
+  TextColorStylingKit
 } from '@hcengineering/text'
-import textEditor, { type ActionContext, type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
-import { type AnyExtension, type Editor, Extension } from '@tiptap/core'
-import { type Level } from '@tiptap/extension-heading'
+import textEditor, { type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
+import { type AnyExtension, Extension } from '@tiptap/core'
 import TableHeader from '@tiptap/extension-table-header'
 import 'prosemirror-codemark/dist/codemark.css'
 
-import TextAlign, { type TextAlignOptions } from '@tiptap/extension-text-align'
-import { CodeBlockHighlighExtension, codeBlockHighlightOptions } from '../components/extension/codeblock'
-import { DrawingBoardExtension, type DrawingBoardOptions } from '../components/extension/drawingBoard'
-import { EditableExtension } from '../components/extension/editable'
-import { EmbedNode, type EmbedNodeOptions } from '../components/extension/embed/embed'
+import Collaboration from '@tiptap/extension-collaboration'
+import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
+import ListKeymap from '@tiptap/extension-list-keymap'
+import Placeholder from '@tiptap/extension-placeholder'
+import { CodeBlockHighlighExtension, codeBlockHighlightOptions } from '../components/extension/codeSnippets/codeblock'
+import { MermaidExtension, mermaidOptions } from '../components/extension/codeSnippets/mermaid'
+import { DrawingBoardExtension } from '../components/extension/drawingBoard'
+import { EmbedNode } from '../components/extension/embed/embed'
 import { defaultDriveEmbedOptions, DriveEmbedProvider } from '../components/extension/embed/providers/drive'
 import { defaultYoutubeEmbedUrlOptions, YoutubeEmbedProvider } from '../components/extension/embed/providers/youtube'
-import { FileExtension, type FileOptions } from '../components/extension/fileExt'
+import { EmojiExtension } from '../components/extension/emoji'
+import { FileExtension } from '../components/extension/fileExt'
 import { HardBreakExtension } from '../components/extension/hardBreak'
+import { EditableExtension } from '../components/extension/hooks/editable'
+import { FocusExtension } from '../components/extension/hooks/focus'
+import { IsEmptyContentExtension } from '../components/extension/hooks/isEmptyContent'
 import { ImageExtension } from '../components/extension/imageExt'
-import { type IndendOptions, IndentExtension, indentExtensionOptions } from '../components/extension/indent'
-import { LinkUtilsExtension } from '../components/extension/link'
-import { ListKeymapExtension } from '../components/extension/listkeymap'
-import { MermaidExtension, type MermaidOptions, mermaidOptions } from '../components/extension/mermaid'
-import { NodeUuidExtension } from '../components/extension/nodeUuid'
-import { NoteExtension, type NoteOptions } from '../components/extension/note'
-import { ParagraphExtension } from '../components/extension/paragraph'
-import { TransformPastedContentExtension } from '../components/extension/paste'
-import { SubmitExtension, type SubmitOptions } from '../components/extension/submit'
+import { InlineCommandsExtension } from '../components/extension/inlineCommands'
+import { InlineCommentCollaborationExtension } from '../components/extension/inlineComment'
+import { LeftMenuExtension } from '../components/extension/leftMenu'
+import { NoteExtension } from '../components/extension/note'
+import { QMSInlineCommentExtension } from '../components/extension/qms/qmsInlineComment'
+import { QMSInlineCommentMark } from '../components/extension/qms/qmsInlineCommentMark'
+import { referenceConfig, ReferenceExtension } from '../components/extension/reference'
+import { FileUploadExtension } from '../components/extension/shortcuts/fileUpload'
+import { ImageUploadExtension } from '../components/extension/shortcuts/imageUpload'
+import { IndentExtension, indentExtensionOptions } from '../components/extension/shortcuts/indent'
+import { LinkKeymapExtension } from '../components/extension/shortcuts/linkKeymap'
+import { ParagraphKeymapExtension } from '../components/extension/shortcuts/paragraphKeymap'
+import { SmartPasteExtension } from '../components/extension/shortcuts/smartPaste'
+import { HandleSubmitExtension } from '../components/extension/shortcuts/handleSubmit'
 import { Table, TableCell, TableRow } from '../components/extension/table'
-import { ToolbarExtension, type ToolbarOptions } from '../components/extension/toolbar/toolbar'
-import { DefaultKit, type DefaultKitOptions } from './default-kit'
+import { ToCExtension } from '../components/extension/toc'
+import { TodoItemExtension, TodoListExtension } from '../components/extension/todo'
+import { ToolbarExtension } from '../components/extension/toolbar/toolbar'
 
-export interface EditorKitOptions extends DefaultKitOptions {
-  history?: false
-  file?: Partial<FileOptions> | false
-  image?:
-  | (Partial<ImageOptions> & {
-    toolbar?: {
-      element: HTMLElement
-      boundary?: HTMLElement
-      appendTo?: HTMLElement | (() => HTMLElement)
-      isHidden?: () => boolean
-    }
-  })
-  | false
-  drawingBoard?: DrawingBoardOptions | false
-  mermaid?: MermaidOptions | false
-  indent?: IndendOptions | false
-  textAlign?: TextAlignOptions | false
+export interface EditorKitContext {
   mode?: 'full' | 'compact'
-  note?: NoteOptions | false
-  submit?: SubmitOptions | false
+
   objectId?: Ref<Doc>
   objectClass?: Ref<Class<Doc>>
   objectSpace?: Ref<Space>
-  toolbar?: Partial<ToolbarOptions> | false
-  embed?: Partial<EmbedNodeOptions> | false
 }
 
-const headingLevels: Level[] = [1, 2, 3]
+export type EditorKitOptions = EditorKitContext & (typeof StaticEditorKit)['options']
 
-export const tableKitExtensions: KitExtension[] = [
-  [
-    10,
-    Table.configure({
-      resizable: true,
-      HTMLAttributes: {
-        class: 'proseTable'
-      }
-    })
-  ],
-  [20, TableRow.configure({})],
-  [30, TableHeader.configure({})],
-  [40, TableCell.configure({})]
-]
+const StaticEditorKit = extensionKit(
+  'static-kit',
+  (e, context: EditorKitContext) =>
+    ({
+      ...CommonKitFactory(e),
 
-/**
- * KitExtensionCreator is a tuple of an index and an ExtensionCreator.
- */
-export type KitExtensionCreator = [number, ExtensionCreator]
-export type KitExtension = [number, AnyExtension]
+      // ===========================================================================================
+      // Extensions and kits with separate / shortened implementations in the server-side editor kit
+      // See file://./../../../../packages/text/src/kits/server-kit.ts
+      // =============================================================
 
-async function getKitExtensionCreators (): Promise<KitExtensionCreator[]> {
+      lists: e(subKits.lists),
+      tables: e(subKits.tables),
+      codeSnippets: e(subKits.codeSnippets),
+      textColorStyling: e(TextColorStylingKit, context.mode === 'full'),
+      hardBreak: e(HardBreakExtension, { shortcuts: context.mode }),
+      reference: e(ReferenceExtension, referenceConfig),
+      file: e(FileExtension, { inline: true }),
+      image: e(ImageExtension),
+      emoji: e(EmojiExtension),
+      drawingBoard: e(DrawingBoardExtension),
+      embed: e(
+        EmbedNode,
+        context.mode === 'full' && {
+          providers: [YoutubeEmbedProvider(defaultYoutubeEmbedUrlOptions), DriveEmbedProvider(defaultDriveEmbedOptions)]
+        }
+      ),
+      inlineNote: e(NoteExtension, context.mode === 'full'), // Semi-deprecated, should be removed in the future
+      commentNode: e(CommentNode, false),
+
+      // =====================================================
+      // Extensions and kits designed for client-side use only
+      // =====================================================
+
+      toolbar: e(ToolbarExtension, {
+        providers: [],
+        context: {
+          mode: context.mode ?? 'compact',
+          objectId: context.objectId,
+          objectClass: context.objectClass,
+          objectSpace: context.objectSpace
+        }
+      }),
+      toc: e(ToCExtension, false),
+      leftMenu: e(LeftMenuExtension, false),
+      inlineCommands: e(InlineCommandsExtension, false),
+      placeholder: e(Placeholder, false),
+
+      collaboration: e(subKits.collaboration, false),
+      shortcuts: e(subKits.shortcuts, context),
+      hooks: e(subKits.hooks), // Semi-deprecated, should be removed in the future
+      qms: e(subKits.qms, false) // Semi-deprecated, should be removed in the future
+    }) as const
+)
+
+const subKits = {
+  lists: extensionKit(
+    'list-kit',
+    (e, context: EditorKitContext) =>
+      ({
+        ...CommonListKitFactory(e),
+        todoItem: e(TodoItemExtension, context.mode === 'full'),
+        todoList: e(TodoListExtension, context.mode === 'full')
+      }) as const
+  ),
+
+  tables: extensionKit(
+    'table-kit',
+    (e) =>
+      ({
+        table: e(Table, { resizable: true, HTMLAttributes: { class: 'proseTable' } }),
+        tableRow: e(TableRow),
+        tableHeader: e(TableHeader),
+        tableCell: e(TableCell)
+      }) as const
+  ),
+
+  codeSnippets: extensionKit(
+    'code-snippets-kit',
+    (e) =>
+      ({
+        codeBlock: e(CodeBlockHighlighExtension, codeBlockHighlightOptions),
+        codeInline: e(CodeExtension, codeOptions),
+        codeBlockMermaid: e(MermaidExtension, mermaidOptions)
+      }) as const
+  ),
+
+  collaboration: extensionKit(
+    'collaboration-kit',
+    (e) =>
+      ({
+        collaboration: e(Collaboration),
+        collaborationCursor: e(CollaborationCursor),
+        inlineComments: e(InlineCommentCollaborationExtension)
+      }) as const
+  ),
+
+  shortcuts: extensionKit(
+    'shortcuts-kit',
+    (e, context: EditorKitContext) =>
+      ({
+        fileUpload: e(FileUploadExtension, false),
+        imageUpload: e(ImageUploadExtension, false),
+        submit: e(HandleSubmitExtension, { useModKey: context.mode === 'full' }),
+        indent: e(IndentExtension, indentExtensionOptions),
+        smartPaste: e(SmartPasteExtension),
+        paragraphKeymap: e(ParagraphKeymapExtension, context.mode === 'compact'),
+        linkKeymap: e(LinkKeymapExtension),
+        listKeymap: e(ListKeymap, {
+          listTypes: [
+            { itemName: 'listItem', wrapperNames: ['bulletList', 'orderedList'] },
+            { itemName: 'taskItem', wrapperNames: ['taskList'] },
+            { itemName: 'todoItem', wrapperNames: ['todoList'] }
+          ]
+        })
+      }) as const
+  ),
+
+  // Semi-deprecated, should be removed in the future
+  hooks: extensionKit(
+    'hooks-kit',
+    (e) =>
+      ({
+        emptyContent: e(IsEmptyContentExtension, false),
+        focus: e(FocusExtension, false),
+        editable: e(EditableExtension)
+      }) as const
+  ),
+
+  // Semi-deprecated, should be removed in the future
+  qms: extensionKit(
+    'qms-kit',
+    (e) =>
+      ({
+        qmsInlineCommentMark: e(QMSInlineCommentMark),
+        qmsInlineComment: e(QMSInlineCommentExtension)
+      }) as const
+  )
+}
+
+async function getModelKitFactories (): Promise<ExtensionCreator[]> {
   const client = getClient()
   const extensionFactories = client.getModel().findAllSync(textEditor.class.TextEditorExtensionFactory, {})
 
-  return await Promise.all(
+  const factories = await Promise.all(
     extensionFactories.map(async ({ index, create }) => {
-      return [index, await getResource(create)]
+      return [index, await getResource(create)] as const
     })
   )
+
+  return factories.sort((a, b) => a[0] - b[0]).map(([_, ext]) => ext)
+}
+
+async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
+  const modelKitFactories = await getModelKitFactories()
+
+  return Extension.create<EditorKitOptions>({
+    name: 'editorKit',
+
+    addExtensions () {
+      const mode: TextEditorMode = this.options.mode ?? 'full'
+      const modelKit: AnyExtension[] = modelKitFactories
+        .map((factory) =>
+          factory(mode, {
+            objectId: this.options.objectId,
+            objectClass: this.options.objectClass,
+            objectSpace: this.options.objectSpace
+          })
+        )
+        .filter((e) => e != null)
+
+      const extensions = [StaticEditorKit.configure(this.options), ...modelKit]
+      return extensions
+    }
+  })
 }
 
 let editorKitPromise: Promise<Extension<EditorKitOptions, any>>
 
-export async function getEditorKit (): Promise<Extension<EditorKitOptions, any>> {
+export async function getEditorKit (
+  ...options: Array<Partial<EditorKitOptions>>
+): Promise<Extension<EditorKitOptions, any>> {
   if (editorKitPromise === undefined) {
     editorKitPromise = buildEditorKit()
   }
 
-  return await editorKitPromise
-}
+  const kit = await editorKitPromise
+  if ((options ?? []).length < 1) return kit
 
-async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
-  return await new Promise<Extension<EditorKitOptions, any>>((resolve, reject) => {
-    getKitExtensionCreators()
-      .then((kitExtensionCreators) => {
-        resolve(
-          Extension.create<EditorKitOptions>({
-            name: 'editorKit',
-
-            addExtensions () {
-              const mode: TextEditorMode = this.options.mode ?? 'full'
-              const modelKitExtensions: KitExtension[] = kitExtensionCreators
-                .map(
-                  ([idx, createExtension]) =>
-                    [
-                      idx,
-                      createExtension(mode, {
-                        objectId: this.options.objectId,
-                        objectClass: this.options.objectClass,
-                        objectSpace: this.options.objectSpace
-                      })
-                    ] as KitExtension
-                )
-                .filter(([_, ext]) => ext != null)
-
-              const staticKitExtensions: KitExtension[] = [
-                [
-                  100,
-                  DefaultKit.configure({
-                    ...this.options,
-                    code: false,
-                    codeBlock: false,
-                    hardBreak: false,
-                    heading: {
-                      levels: headingLevels
-                    }
-                  })
-                ],
-                [110, EditableExtension],
-                [150, InlineCommentMark.configure({})],
-                [200, CodeBlockHighlighExtension.configure(codeBlockHighlightOptions)],
-                [210, CodeExtension.configure(codeOptions)],
-                [220, HardBreakExtension.configure({ shortcuts: mode })],
-                [230, CommentNode],
-                [
-                  240,
-                  MarkdownNode.configure({
-                    HTMLAttributes: {
-                      class: 'proseCodeBlock'
-                    }
-                  })
-                ]
-              ]
-
-              if (this.options.submit !== false) {
-                staticKitExtensions.push([
-                  300,
-                  SubmitExtension.configure({
-                    useModKey: mode === 'full',
-                    ...this.options.submit
-                  })
-                ])
-              }
-              if (this.options.toolbar !== false) {
-                staticKitExtensions.push([
-                  310,
-                  ToolbarExtension.configure({
-                    providers: [],
-                    context: {
-                      mode,
-                      objectId: this.options.objectId,
-                      objectClass: this.options.objectClass,
-                      objectSpace: this.options.objectSpace
-                    },
-                    ...this.options.toolbar
-                  })
-                ])
-              }
-
-              if (mode === 'compact') {
-                staticKitExtensions.push([400, ParagraphExtension.configure()])
-              }
-
-              if (mode === 'full') {
-                staticKitExtensions.push([410, TextStyle.configure({})])
-                staticKitExtensions.push([420, TextColor.configure({})])
-                staticKitExtensions.push([430, BackgroundColor.configure({ types: ['tableCell'] })])
-              }
-
-              if (mode === 'full' && this.options.embed !== false) {
-                staticKitExtensions.push([
-                  450,
-                  EmbedNode.configure({
-                    providers: [
-                      YoutubeEmbedProvider(defaultYoutubeEmbedUrlOptions),
-                      DriveEmbedProvider(defaultDriveEmbedOptions)
-                    ],
-                    ...this.options.embed
-                  })
-                ])
-              }
-
-              staticKitExtensions.push([
-                500,
-                ListKeymapExtension.configure({
-                  listTypes: [
-                    {
-                      itemName: 'listItem',
-                      wrapperNames: ['bulletList', 'orderedList']
-                    },
-                    {
-                      itemName: 'taskItem',
-                      wrapperNames: ['taskList']
-                    },
-                    {
-                      itemName: 'todoItem',
-                      wrapperNames: ['todoList']
-                    }
-                  ]
-                })
-              ])
-
-              staticKitExtensions.push([600, NodeUuidExtension])
-
-              if (this.options.file !== false) {
-                staticKitExtensions.push([
-                  700,
-                  FileExtension.configure({
-                    inline: true,
-                    ...this.options.file
-                  })
-                ])
-              }
-
-              if (this.options.image !== false) {
-                const imageOptions: ImageOptions = {
-                  inline: true,
-                  loadingImgSrc:
-                    'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjxzdmcgd2lkdGg9IjMycHgiIGhlaWdodD0iMzJweCIgdmlld0JveD0iMCAwIDE2IDE2IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPg0KICAgIDxwYXRoIGQ9Im0gNCAxIGMgLTEuNjQ0NTMxIDAgLTMgMS4zNTU0NjkgLTMgMyB2IDEgaCAxIHYgLTEgYyAwIC0xLjEwOTM3NSAwLjg5MDYyNSAtMiAyIC0yIGggMSB2IC0xIHogbSAyIDAgdiAxIGggNCB2IC0xIHogbSA1IDAgdiAxIGggMSBjIDEuMTA5Mzc1IDAgMiAwLjg5MDYyNSAyIDIgdiAxIGggMSB2IC0xIGMgMCAtMS42NDQ1MzEgLTEuMzU1NDY5IC0zIC0zIC0zIHogbSAtNSA0IGMgLTAuNTUwNzgxIDAgLTEgMC40NDkyMTkgLTEgMSBzIDAuNDQ5MjE5IDEgMSAxIHMgMSAtMC40NDkyMTkgMSAtMSBzIC0wLjQ0OTIxOSAtMSAtMSAtMSB6IG0gLTUgMSB2IDQgaCAxIHYgLTQgeiBtIDEzIDAgdiA0IGggMSB2IC00IHogbSAtNC41IDIgbCAtMiAyIGwgLTEuNSAtMSBsIC0yIDIgdiAwLjUgYyAwIDAuNSAwLjUgMC41IDAuNSAwLjUgaCA3IHMgMC40NzI2NTYgLTAuMDM1MTU2IDAuNSAtMC41IHYgLTEgeiBtIC04LjUgMyB2IDEgYyAwIDEuNjQ0NTMxIDEuMzU1NDY5IDMgMyAzIGggMSB2IC0xIGggLTEgYyAtMS4xMDkzNzUgMCAtMiAtMC44OTA2MjUgLTIgLTIgdiAtMSB6IG0gMTMgMCB2IDEgYyAwIDEuMTA5Mzc1IC0wLjg5MDYyNSAyIC0yIDIgaCAtMSB2IDEgaCAxIGMgMS42NDQ1MzEgMCAzIC0xLjM1NTQ2OSAzIC0zIHYgLTEgeiBtIC04IDMgdiAxIGggNCB2IC0xIHogbSAwIDAiIGZpbGw9IiMyZTM0MzQiIGZpbGwtb3BhY2l0eT0iMC4zNDkwMiIvPg0KPC9zdmc+DQo=',
-                  getBlobRef: async (file, name, size) => await getBlobRef(file, name, size),
-                  HTMLAttributes: this.options.image?.HTMLAttributes ?? {},
-                  ...this.options.image
-                }
-
-                staticKitExtensions.push([800, ImageExtension.configure(imageOptions)])
-              }
-
-              if (this.options.drawingBoard !== false) {
-                staticKitExtensions.push([840, DrawingBoardExtension.configure(this.options.drawingBoard)])
-              }
-
-              if (this.options.mermaid !== false) {
-                staticKitExtensions.push([850, MermaidExtension.configure(this.options.mermaid ?? mermaidOptions)])
-              }
-
-              if (this.options.indent !== false) {
-                staticKitExtensions.push([
-                  860,
-                  IndentExtension.configure(this.options.indent ?? indentExtensionOptions)
-                ])
-              }
-
-              if (this.options.textAlign !== false) {
-                staticKitExtensions.push([
-                  870,
-                  TextAlign.configure(
-                    this.options.textAlign ?? {
-                      types: ['heading', 'paragraph'],
-                      alignments: ['left', 'center', 'right'],
-                      defaultAlignment: null
-                    }
-                  )
-                ])
-              }
-              staticKitExtensions.push([950, LinkUtilsExtension.configure({})])
-
-              if (mode !== 'compact' && this.options.note !== false) {
-                staticKitExtensions.push([1000, NoteExtension.configure(this.options.note ?? {})])
-              }
-
-              staticKitExtensions.push([1100, TransformPastedContentExtension.configure({})])
-
-              const allKitExtensions = [...tableKitExtensions, ...modelKitExtensions, ...staticKitExtensions]
-
-              allKitExtensions.sort((a, b) => a[0] - b[0])
-
-              return allKitExtensions.map(([_, ext]) => ext)
-            }
-          })
-        )
-      })
-      .catch((err) => {
-        reject(err)
-      })
-  })
-}
-
-export async function isEditable (editor: Editor): Promise<boolean> {
-  return editor.isEditable
-}
-
-export async function isHeadingVisible (editor: Editor, ctx: ActionContext): Promise<boolean> {
-  return (await isEditable(editor)) && ctx.mode === 'full'
+  let newOptions: Partial<EditorKitOptions> = {}
+  for (const e of options) {
+    newOptions = mergeKitOptions(newOptions, e)
+  }
+  return kit.configure(newOptions)
 }

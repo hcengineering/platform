@@ -20,7 +20,6 @@
   import { getClient } from '@hcengineering/presentation'
   import { Heading } from '@hcengineering/text-editor'
   import { TableOfContents } from '@hcengineering/text-editor-resources'
-  import { openDoc } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   import ContentEditor from './ContentEditor.svelte'
@@ -101,12 +100,6 @@
       on:headings={(evt) => {
         headings = evt.detail
         dispatch('headings', headings)
-      }}
-      on:open-document={async (event) => {
-        const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
-        if (doc != null) {
-          await openDoc(client.getHierarchy(), doc)
-        }
       }}
       bind:this={editor}
       on:loaded

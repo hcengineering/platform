@@ -18,13 +18,13 @@ import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { type EditorView } from '@tiptap/pm/view'
 
-import { type FileAttachFunction } from './types'
+import { type FileAttachFunction } from '../types'
 import type { Blob, Ref } from '@hcengineering/core'
 
 /**
  * @public
  */
-export interface ImageUploadOptions {
+export interface ImageUploadExtensionOptions {
   attachFile?: FileAttachFunction
   getFileUrl: (fileId: Ref<Blob>) => string
 }
@@ -40,7 +40,7 @@ function getType (type: string): 'image' | 'other' {
 /**
  * @public
  */
-export const ImageUploadExtension = Extension.create<ImageUploadOptions>({
+export const ImageUploadExtension = Extension.create<ImageUploadExtensionOptions>({
   name: 'image-upload',
 
   addOptions () {

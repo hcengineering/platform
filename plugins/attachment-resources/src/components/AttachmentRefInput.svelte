@@ -493,8 +493,6 @@
       loading={loading || progress}
       {boundary}
       {docClass}
-      canEmbedFiles={false}
-      canEmbedImages={false}
       extraActions={[
         ...extraActions,
         {
@@ -516,6 +514,10 @@
       on:update={onUpdate}
       onPaste={pasteAction}
       {placeholder}
+      kitOptions={{
+        file: false,
+        image: false
+      }}
     >
       <div slot="header">
         {#if attachments.size > 0 || progress}

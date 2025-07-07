@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,107 +13,43 @@
 // limitations under the License.
 //
 
-import { Extension } from '@tiptap/core'
-import { Level } from '@tiptap/extension-heading'
-import Table from '@tiptap/extension-table'
-import TableCell from '@tiptap/extension-table-cell'
-import TableHeader from '@tiptap/extension-table-header'
-import TableRow from '@tiptap/extension-table-row'
-import TaskItem from '@tiptap/extension-task-item'
-import TaskList from '@tiptap/extension-task-list'
-import TextAlign from '@tiptap/extension-text-align'
-import TextStyle from '@tiptap/extension-text-style'
-
-import { CodeExtension, codeOptions } from '../marks/code'
-import { BackgroundColor, TextColor } from '../marks/colors'
-import { InlineCommentMark } from '../marks/inlineComment'
 import { NoteBaseExtension } from '../marks/noteBase'
-import { NodeUuid } from '../marks/nodeUuid'
+import { QMSInlineCommentMark } from '../marks/qmsInlineCommentMark'
 
-import { CodeBlockExtension, codeBlockOptions } from '../nodes'
-import { CommentNode } from '../nodes/comment'
-import { FileNode, FileOptions } from '../nodes/file'
-import { ImageNode, ImageOptions } from '../nodes/image'
-import { MarkdownNode } from '../nodes/markdown'
-import { MermaidExtension, mermaidOptions } from '../nodes/mermaid'
-import { ReferenceNode } from '../nodes/reference'
 import { EmojiNode } from '../nodes/emoji'
-import { TodoItemNode, TodoListNode } from '../nodes/todo'
+import { FileNode } from '../nodes/file'
+import { ImageNode } from '../nodes/image'
+import { ReferenceNode } from '../nodes/reference'
 
-import { DefaultKit, DefaultKitOptions } from './default-kit'
 import { EmbedNode } from '../nodes/embed'
 
-const headingLevels: Level[] = [1, 2, 3, 4, 5, 6]
+import { ExtensionFactory, extensionKit } from '../kit'
+import { HardBreak } from '../tiptapExtensions'
+import { CodeSnippetsKit, CommonKitFactory, ListKit, TableKit, TextColorStylingKit } from './common-kit'
 
-const tableExtensions = [
-  Table.configure({
-    resizable: false,
-    HTMLAttributes: {
-      class: 'proseTable'
-    }
-  }),
-  TableRow.configure({}),
-  TableHeader.configure({}),
-  TableCell.configure({})
-]
+export const ServerKitFactory = (e: ExtensionFactory) =>
+  ({
+    ...CommonKitFactory(e),
 
-const taskListExtensions = [
-  TaskList,
-  TaskItem.configure({
-    nested: true,
-    HTMLAttributes: {
-      class: 'flex flex-grow gap-1 checkbox_style'
-    }
-  })
-]
+    // ==========================================================================================
+    // Extensions and kits with separate / extended implementations in the client-side editor kit
+    // See file://./../../../../plugins/text-editor-resources/src/kits/editor-kit.ts
+    // =============================================================================
 
-export interface ServerKitOptions extends DefaultKitOptions {
-  file: Partial<FileOptions> | false
-  image: Partial<ImageOptions> | false
-}
+    lists: e(ListKit),
+    codeSnippets: e(CodeSnippetsKit),
+    tables: e(TableKit),
+    textColorStyling: e(TextColorStylingKit),
 
-export const ServerKit = Extension.create<ServerKitOptions>({
-  name: 'serverKit',
+    hardBreak: e(HardBreak),
+    reference: e(ReferenceNode),
+    file: e(FileNode),
+    image: e(ImageNode),
+    embed: e(EmbedNode),
+    emoji: e(EmojiNode),
 
-  addExtensions () {
-    const fileExtensions = this.options.file !== false ? [FileNode.configure(this.options.file)] : []
+    inlineNote: e(NoteBaseExtension), // Semi-deprecated, should be removed in the future
+    qmsInlineCommentMark: e(QMSInlineCommentMark) // Semi-deprecated, should be removed in the future
+  }) as const
 
-    const imageExtensions = this.options.image !== false ? [ImageNode.configure(this.options.image)] : []
-
-    return [
-      DefaultKit.configure({
-        ...this.options,
-        codeBlock: false,
-        code: false,
-        heading: {
-          levels: headingLevels
-        }
-      }),
-      InlineCommentMark.configure({}),
-      CodeBlockExtension.configure(codeBlockOptions),
-      CodeExtension.configure(codeOptions),
-      MermaidExtension.configure(mermaidOptions),
-      ...tableExtensions,
-      ...taskListExtensions,
-      ...fileExtensions,
-      ...imageExtensions,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-        alignments: ['left', 'center', 'right'],
-        defaultAlignment: null
-      }),
-      TodoItemNode,
-      TodoListNode,
-      ReferenceNode,
-      EmojiNode,
-      CommentNode,
-      MarkdownNode,
-      NodeUuid,
-      NoteBaseExtension,
-      TextStyle.configure({}),
-      TextColor.configure({}),
-      BackgroundColor.configure({ types: ['tableCell'] }),
-      EmbedNode.configure({})
-    ]
-  }
-})
+export const ServerKit = extensionKit('server-kit', ServerKitFactory)

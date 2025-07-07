@@ -121,7 +121,9 @@ export default plugin(timeId, {
   component: {
     Me: '' as AnyComponent,
     Team: '' as AnyComponent,
-    EditToDo: '' as AnyComponent
+    EditToDo: '' as AnyComponent,
+    ToDoItemNodeView: '' as AnyComponent,
+    ToDoListNodeView: '' as AnyComponent
   },
   class: {
     WorkSlot: '' as Ref<Class<WorkSlot>>,

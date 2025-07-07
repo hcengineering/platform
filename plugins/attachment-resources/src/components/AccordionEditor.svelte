@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { Doc, Ref, Space, Class } from '@hcengineering/core'
-  import { Button, Label, IconDownOutline, tooltip } from '@hcengineering/ui'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import textEditorPlugin from '@hcengineering/text-editor'
-  import { IsEmptyContentExtension, TextEditor } from '@hcengineering/text-editor-resources'
+  import { TextEditor } from '@hcengineering/text-editor-resources'
+  import { Button, IconDownOutline, Label, tooltip } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
   import type { AccordionItem } from '..'
   import AttachmentStyledBox from './AttachmentStyledBox.svelte'
@@ -95,7 +95,13 @@
             <TextEditor
               bind:content={item.content}
               bind:this={edits[i]}
-              extensions={[IsEmptyContentExtension.configure({ onChange: (value) => (isEmpty[i] = value) })]}
+              kitOptions={{
+                hooks: {
+                  emptyContent: {
+                    onChange: (a) => (isEmpty[i] = a)
+                  }
+                }
+              }}
               on:value={(ev) => {
                 dispatch('update', { item, value: ev.detail })
               }}

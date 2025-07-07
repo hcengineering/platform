@@ -5,7 +5,7 @@ const NAME = 'node-uuid'
 /**
  * @public
  */
-export const NodeUuid = Mark.create({
+export const QMSInlineCommentMark = Mark.create({
   name: NAME,
   inline: true,
 

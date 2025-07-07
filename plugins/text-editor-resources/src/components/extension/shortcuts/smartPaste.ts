@@ -19,7 +19,7 @@ import { Extension } from '@tiptap/core'
 import { Node, type Schema } from '@tiptap/pm/model'
 import { Plugin } from '@tiptap/pm/state'
 
-export const TransformPastedContentExtension = Extension.create({
+export const SmartPasteExtension = Extension.create({
   name: 'transformPastedContent',
 
   addProseMirrorPlugins () {

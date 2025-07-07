@@ -148,6 +148,7 @@ import {
   canLeaveSpace,
   isClipboardAvailable
 } from './visibilityTester'
+import { openDocFromRef } from './utils'
 export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 export { getActions, getContextActions, invokeAction, showMenu } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
@@ -370,6 +371,7 @@ export default async (): Promise<Resources> => ({
     CanLeaveSpace: canLeaveSpace,
     IsClipboardAvailable: isClipboardAvailable,
     BlobImageMetadata: blobImageMetadata,
-    BlobVideoMetadata: blobVideoMetadata
+    BlobVideoMetadata: blobVideoMetadata,
+    OpenDocument: openDocFromRef
   }
 })

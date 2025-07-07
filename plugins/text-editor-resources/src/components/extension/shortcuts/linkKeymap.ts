@@ -17,9 +17,9 @@ import { showPopup } from '@hcengineering/ui'
 import { Extension } from '@tiptap/core'
 import { type MarkType } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
-import LinkPopup from '../LinkPopup.svelte'
+import LinkPopup from '../../LinkPopup.svelte'
 
-export const LinkUtilsExtension = Extension.create<any>({
+export const LinkKeymapExtension = Extension.create<any>({
   name: 'linkUtils',
 
   addKeyboardShortcuts () {
@@ -48,11 +48,11 @@ export const LinkUtilsExtension = Extension.create<any>({
   }
 })
 
-interface LinkClickHandlerOptions {
+interface LinkClickHandlerPluginOptions {
   type: MarkType
 }
 
-export function LinkClickHandlerPlugin (options: LinkClickHandlerOptions): Plugin {
+export function LinkClickHandlerPlugin (options: LinkClickHandlerPluginOptions): Plugin {
   return new Plugin({
     key: new PluginKey('handleClickLink'),
     props: {

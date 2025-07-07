@@ -27,7 +27,9 @@ import EditToDo from './components/EditToDo.svelte'
 import CreateToDoPopup from './components/CreateToDoPopup.svelte'
 import NotificationToDoPresenter from './components/NotificationToDoPresenter.svelte'
 import PriorityEditor from './components/PriorityEditor.svelte'
-import { ToDoTitleProvider, createTodoItemExtension, createTodoListExtension } from './utils'
+import { ToDoTitleProvider } from './utils'
+import ToDoItemNodeView from './components/text-editor/node-view/ToDoItemNodeView.svelte'
+import ToDoListNodeView from './components/text-editor/node-view/ToDoListNodeView.svelte'
 
 export type ToDosMode = 'unplanned' | 'planned' | 'all' | 'tag' | 'date'
 
@@ -45,11 +47,11 @@ export default async (): Promise<Resources> => ({
     CreateToDoPopup,
     EditToDo,
     NotificationToDoPresenter,
-    PriorityEditor
+    PriorityEditor,
+    ToDoItemNodeView,
+    ToDoListNodeView
   },
   function: {
-    ToDoTitleProvider,
-    CreateTodoItemExtension: createTodoItemExtension,
-    CreateTodoListExtension: createTodoListExtension
+    ToDoTitleProvider
   }
 })

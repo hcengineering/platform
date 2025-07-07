@@ -22,7 +22,8 @@ export * from './marks/colors'
 export * from './marks/noteBase'
 export * from './marks/inlineComment'
 
-export * from './kits/default-kit'
+export * from './kits/common-kit'
 export * from './kits/server-kit'
+export * from './kit'
 
-export { TextStyle, type TextStyleOptions } from '@tiptap/extension-text-style'
+export * from './tiptapExtensions'
