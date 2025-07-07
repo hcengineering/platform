@@ -193,8 +193,8 @@ function generateYearlyValues (rule: RecurringRule, currentDate: Date, from: Tim
   let i = 0
 
   while (true) {
-    const next = new Date(currentDate).setFullYear(currentDate.getFullYear() + (interval ?? 1), 1, 1)
-    const end = new Date(new Date(currentDate).setFullYear(currentDate.getFullYear() + 1, 1, 1))
+    const next = new Date(currentDate).setFullYear(currentDate.getFullYear() + (interval ?? 1), 0, 1)
+    const end = new Date(new Date(currentDate).setFullYear(currentDate.getFullYear() + 1, 0, 1))
     let date = currentDate
     const candidates: Date[] = []
     while (date < end) {

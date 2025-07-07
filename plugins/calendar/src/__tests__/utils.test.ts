@@ -1,3 +1,4 @@
+import { RecurringRule } from '..'
 import { generateRecurringValues } from '../utils'
 
 describe('generateRecurringValues', () => {
@@ -6,11 +7,11 @@ describe('generateRecurringValues', () => {
   const to = new Date('2024-01-10T00:00:00Z').getTime()
 
   it('generates daily recurring values', () => {
-    const rule = {
+    const rule: RecurringRule = {
       freq: 'DAILY',
       interval: 1
     }
-    const result = generateRecurringValues(rule as any, baseDate, from, to)
+    const result = generateRecurringValues(rule, baseDate, from, to)
     // Should include each day from Jan 1 to Jan 10
     expect(result.length).toBe(10)
     expect(result[0]).toBe(baseDate)
@@ -19,7 +20,7 @@ describe('generateRecurringValues', () => {
 
   it('supports bySetPos (positive) for monthly frequency', () => {
     // 1st Monday of each month in the range
-    const rule = {
+    const rule: RecurringRule = {
       freq: 'MONTHLY',
       interval: 1,
       byDay: ['MO'],
@@ -28,7 +29,7 @@ describe('generateRecurringValues', () => {
     const from = new Date('2024-01-01T00:00:00Z').getTime()
     const to = new Date('2024-03-31T00:00:00Z').getTime()
     const baseDate = from
-    const result = generateRecurringValues(rule as any, baseDate, from, to)
+    const result = generateRecurringValues(rule, baseDate, from, to)
     // 1st Monday of Jan, Feb, Mar 2024
     expect(result.length).toBe(3)
     expect(new Date(result[0]).toISOString().slice(0, 10)).toBe('2024-01-01') // Jan 1, 2024 is Monday
@@ -38,7 +39,7 @@ describe('generateRecurringValues', () => {
 
   it('supports bySetPos (negative) for monthly frequency', () => {
     // Last Friday of each month in the range
-    const rule = {
+    const rule: RecurringRule = {
       freq: 'MONTHLY',
       interval: 1,
       byDay: ['FR'],
@@ -47,7 +48,7 @@ describe('generateRecurringValues', () => {
     const from = new Date('2024-01-01T00:00:00Z').getTime()
     const to = new Date('2024-03-31T00:00:00Z').getTime()
     const baseDate = from
-    const result = generateRecurringValues(rule as any, baseDate, from, to)
+    const result = generateRecurringValues(rule, baseDate, from, to)
     // Last Friday of Jan, Feb, Mar 2024
     expect(result.length).toBe(3)
     expect(new Date(result[0]).toISOString().slice(0, 10)).toBe('2024-01-26')
@@ -57,7 +58,7 @@ describe('generateRecurringValues', () => {
 
   it('supports bySetPos (positive) for yearly frequency', () => {
     // 1st Sunday of January for each year in range
-    const rule = {
+    const rule: RecurringRule = {
       freq: 'YEARLY',
       interval: 1,
       byMonth: [0], // January
@@ -67,7 +68,7 @@ describe('generateRecurringValues', () => {
     const from = new Date('2024-01-01T00:00:00Z').getTime()
     const to = new Date('2026-12-31T00:00:00Z').getTime()
     const baseDate = from
-    const result = generateRecurringValues(rule as any, baseDate, from, to)
+    const result = generateRecurringValues(rule, baseDate, from, to)
     // 1st Sunday of Jan 2024, 2025, 2026
     expect(result.length).toBe(3)
     expect(new Date(result[0]).toISOString().slice(0, 10)).toBe('2024-01-07')
@@ -77,7 +78,7 @@ describe('generateRecurringValues', () => {
 
   it('supports bySetPos (negative) for yearly frequency', () => {
     // Last Wednesday of December for each year in range
-    const rule = {
+    const rule: RecurringRule = {
       freq: 'YEARLY',
       interval: 1,
       byMonth: [11], // December
@@ -87,7 +88,7 @@ describe('generateRecurringValues', () => {
     const from = new Date('2024-01-01T00:00:00Z').getTime()
     const to = new Date('2026-12-31T00:00:00Z').getTime()
     const baseDate = from
-    const result = generateRecurringValues(rule as any, baseDate, from, to)
+    const result = generateRecurringValues(rule, baseDate, from, to)
     // Last Wednesday of Dec 2024, 2025, 2026
     expect(result.length).toBe(3)
     expect(new Date(result[0]).toISOString().slice(0, 10)).toBe('2024-12-25')
@@ -96,12 +97,12 @@ describe('generateRecurringValues', () => {
   })
 
   it('generates weekly recurring values', () => {
-    const rule = {
+    const rule: RecurringRule = {
       freq: 'WEEKLY',
       interval: 1,
       byDay: ['TU'] // Only Tuesdays
     }
-    const result = generateRecurringValues(rule as any, baseDate, from, to)
+    const result = generateRecurringValues(rule, baseDate, from, to)
     // Jan 2 and Jan 9 are Tuesdays in 2024
     expect(result.length).toBe(2)
     expect(new Date(result[0]).getUTCDay()).toBe(2)
@@ -109,47 +110,47 @@ describe('generateRecurringValues', () => {
   })
 
   it('generates monthly recurring values', () => {
-    const rule = {
+    const rule: RecurringRule = {
       freq: 'MONTHLY',
       interval: 1,
       byMonthDay: [1]
     }
-    const result = generateRecurringValues(rule as any, baseDate, from, to)
+    const result = generateRecurringValues(rule, baseDate, from, to)
     // Only Jan 1 falls in the range
     expect(result.length).toBe(1)
     expect(result[0]).toBe(baseDate)
   })
 
   it('generates yearly recurring values', () => {
-    const rule = {
+    const rule: RecurringRule = {
       freq: 'YEARLY',
       interval: 1,
       byMonth: [0], // January
       byMonthDay: [1]
     }
-    const result = generateRecurringValues(rule as any, baseDate, from, to)
+    const result = generateRecurringValues(rule, baseDate, from, to)
     // Only Jan 1, 2024
     expect(result.length).toBe(1)
     expect(result[0]).toBe(baseDate)
   })
 
   it('respects count limit', () => {
-    const rule = {
+    const rule: RecurringRule = {
       freq: 'DAILY',
       interval: 1,
       count: 3
     }
-    const result = generateRecurringValues(rule as any, baseDate, from, to)
+    const result = generateRecurringValues(rule, baseDate, from, to)
     expect(result.length).toBe(3)
   })
 
   it('respects endDate limit', () => {
-    const rule = {
+    const rule: RecurringRule = {
       freq: 'DAILY',
       interval: 1,
       endDate: new Date('2024-01-03T00:00:00Z').getTime()
     }
-    const result = generateRecurringValues(rule as any, baseDate, from, to)
+    const result = generateRecurringValues(rule, baseDate, from, to)
     expect(result.length).toBe(3)
     expect(result[2]).toBe(new Date('2024-01-03T00:00:00Z').getTime())
   })
