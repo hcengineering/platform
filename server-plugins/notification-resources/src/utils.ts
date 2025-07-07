@@ -47,7 +47,6 @@ import core, {
   TxUpdateDoc
 } from '@hcengineering/core'
 import notification, {
-  Collaborators,
   NotificationContent,
   notificationId,
   NotificationProvider,
@@ -56,6 +55,7 @@ import notification, {
   type NotificationTypeSetting
 } from '@hcengineering/notification'
 import { getMetadata, getResource, IntlString, translate } from '@hcengineering/platform'
+import { getPersonSpaces } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   HTMLPresenter,
@@ -65,10 +65,9 @@ import serverNotification, {
   TextPresenter
 } from '@hcengineering/server-notification'
 import serverView from '@hcengineering/server-view'
+import { extractReferences, markupToJSON, Reference } from '@hcengineering/text-core'
 import { encodeObjectURI } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
-import { extractReferences, markupToJSON, Reference } from '@hcengineering/text-core'
-import { getPersonSpaces } from '@hcengineering/server-contact'
 
 import { NotifyResult } from './types'
 
@@ -222,7 +221,6 @@ export async function isShouldNotifyTx (
   notificationControl: NotificationProviderControl,
   docUpdateMessage?: DocUpdateMessage
 ): Promise<NotifyResult> {
-  if (receiver.role === 'GUEST') return new Map<Ref<NotificationProvider>, NotificationType[]>()
   const types = getMatchedTypes(control, tx, isOwn, isSpace, docUpdateMessage?.attributeUpdates?.attrKey)
   const modifiedByPersonId = tx.modifiedBy
   const result = new Map<Ref<NotificationProvider>, NotificationType[]>()
@@ -535,7 +533,7 @@ export async function getSenderInfo (
   control: TriggerControl
 ): Promise<SenderInfo> {
   const controlAccount = control.ctx.contextData.account
-  let account: AccountUuid | undefined = control.ctx.contextData.socialStringsToUsers.get(socialId)
+  let account: AccountUuid | undefined = control.ctx.contextData.socialStringsToUsers.get(socialId)?.accontUuid
 
   if (account == null && controlAccount.socialIds.includes(socialId)) {
     account = controlAccount.uuid
@@ -565,35 +563,6 @@ export async function getSenderInfo (
     socialId,
     person: (await control.findAll(ctx, contact.class.Person, { _id: socialIdentity.attachedTo }))[0]
   }
-}
-
-export function createPushCollaboratorsTx (
-  control: TriggerControl,
-  objectId: Ref<Doc>,
-  objectClass: Ref<Class<Doc>>,
-  space: Ref<Space>,
-  collaborators: AccountUuid[]
-): TxMixin<Doc, Collaborators> {
-  return control.txFactory.createTxMixin(objectId, objectClass, space, notification.mixin.Collaborators, {
-    $push: {
-      collaborators: {
-        $each: collaborators,
-        $position: 0
-      }
-    }
-  })
-}
-
-export function createPullCollaboratorsTx (
-  control: TriggerControl,
-  objectId: Ref<Doc>,
-  objectClass: Ref<Class<Doc>>,
-  space: Ref<Space>,
-  collaborators: AccountUuid[]
-): TxMixin<Doc, Collaborators> {
-  return control.txFactory.createTxMixin(objectId, objectClass, space, notification.mixin.Collaborators, {
-    $pull: { collaborators: { $in: collaborators } }
-  })
 }
 
 export async function getNotificationLink (

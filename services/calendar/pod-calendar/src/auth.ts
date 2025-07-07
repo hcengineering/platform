@@ -15,18 +15,28 @@
 
 import { AccountClient, IntegrationSecret } from '@hcengineering/account-client'
 import calendar, { calendarIntegrationKind } from '@hcengineering/calendar'
-import contact, { getPrimarySocialId } from '@hcengineering/contact'
-import core, { AccountUuid, MeasureContext, PersonId, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import contact, { Employee, getPrimarySocialId, SocialIdentityRef } from '@hcengineering/contact'
+import core, {
+  AccountUuid,
+  buildSocialIdString,
+  MeasureContext,
+  PersonId,
+  Ref,
+  SocialIdType,
+  TxOperations,
+  WorkspaceUuid
+} from '@hcengineering/core'
 import setting from '@hcengineering/setting'
 import { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3, google } from 'googleapis'
 import { encode64 } from './base64'
 import { getClient } from './client'
-import { addUserByEmail, removeUserByEmail } from './kvsUtils'
-import { IncomingSyncManager, lock } from './sync'
+import { addUserByEmail, removeUserByEmail, setSyncHistory } from './kvsUtils'
+import { IncomingSyncManager } from './sync'
 import { GoogleEmail, SCOPES, State, Token, User } from './types'
 import { getGoogleClient, getWorkspaceToken, removeIntegrationSecret } from './utils'
 import { WatchController } from './watch'
+import { lock } from './mutex'
 
 interface AuthResult {
   success: boolean
@@ -122,16 +132,17 @@ export class AuthController {
     const secret = await this.accountClient.getIntegrationSecret(data)
     if (secret == null) return
     const token = JSON.parse(secret.secret)
+    await removeIntegrationSecret(this.ctx, this.accountClient, data)
     const watchController = WatchController.get(this.ctx, this.accountClient)
     await watchController.unsubscribe(token)
-    await removeIntegrationSecret(this.ctx, this.accountClient, data)
   }
 
   private async process (code: string): Promise<void> {
     const authRes = await this.authorize(code)
     await this.setWorkspaceIntegration(authRes)
     if (authRes.success) {
-      void IncomingSyncManager.sync(
+      await setSyncHistory(this.user.workspace, Date.now())
+      void IncomingSyncManager.initSync(
         this.ctx,
         this.accountClient,
         this.client,
@@ -214,6 +225,7 @@ export class AuthController {
             })
           }
         }
+        await this.addSocialId(res.email)
       },
       {
         user: this.user.userId,
@@ -275,6 +287,21 @@ export class AuthController {
     } catch (err) {
       this.ctx.error('update token error', { workspace: this.user.workspace, user: this.user.userId, err })
     }
+  }
+
+  private async addSocialId (email: GoogleEmail): Promise<void> {
+    const socialString = buildSocialIdString({ type: SocialIdType.GOOGLE, value: email })
+    const exists = await this.accountClient.findFullSocialIdBySocialKey(socialString)
+    if (exists !== undefined) {
+      return
+    }
+    const sID = await this.client.findOne(contact.class.SocialIdentity, {
+      _id: this.user.userId as SocialIdentityRef
+    })
+    if (sID === undefined) return
+    const person = await this.client.findOne(contact.mixin.Employee, { _id: sID.attachedTo as Ref<Employee> })
+    if (person?.personUuid === undefined) return
+    await this.accountClient.addSocialIdToPerson(person.personUuid, SocialIdType.GOOGLE, email, true)
   }
 
   static getAuthUrl (redirectURL: string, workspace: WorkspaceUuid, userId: PersonId, token: string): string {

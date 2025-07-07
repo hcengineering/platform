@@ -40,7 +40,6 @@ import { pbkdf2Sync, randomBytes } from 'crypto'
 import otpGenerator from 'otp-generator'
 
 import { Analytics } from '@hcengineering/analytics'
-import { sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import { decodeTokenVerbose, generateToken, TokenError } from '@hcengineering/server-token'
 import { MongoAccountDB } from './collections/mongo'
 import { PostgresAccountDB } from './collections/postgres/postgres'
@@ -53,6 +52,7 @@ import {
   type Integration,
   type LoginInfo,
   type Meta,
+  type Operations,
   type OtpInfo,
   type RegionInfo,
   type SocialId,
@@ -93,7 +93,7 @@ export async function getAccountDB (
         application_name: appName
       }
     })
-    const client = getDBClient(sharedPipelineContextVars, uri)
+    const client = getDBClient(uri)
     const pgClient = await client.getClient()
     const pgAccount = new PostgresAccountDB(pgClient, dbNs ?? 'global_account')
 
@@ -617,18 +617,21 @@ export async function selectWorkspace (
     }
   }
 
-  if (accountUuid === systemAccountUuid || extra?.admin === 'true') {
+  if (accountUuid === systemAccountUuid) {
     return {
       account: accountUuid,
       token: generateToken(accountUuid, workspace.uuid, extra),
       endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
       workspace: workspace.uuid,
       workspaceUrl: workspace.url,
-      role: AccountRole.Owner
+      role: AccountRole.Admin
     }
   }
 
   let role = await db.getWorkspaceRole(accountUuid, workspace.uuid)
+  if (role == null && extra?.admin === 'true') {
+    role = AccountRole.Admin
+  }
   let account = await db.account.findOne({ uuid: accountUuid })
 
   if ((role == null || account == null) && workspace.allowReadOnlyGuest) {
@@ -833,13 +836,14 @@ export async function createWorkspaceRecord (
   workspaceName: string,
   account: PersonUuid,
   region: string = '',
-  initMode: WorkspaceMode = 'pending-creation'
+  initMode: WorkspaceMode = 'pending-creation',
+  dataId?: WorkspaceDataId
 ): Promise<CreateWorkspaceRecordResult> {
   const brandingKey = branding?.key ?? 'huly'
   const regionInfo = getRegions().find((it) => it.region === region)
 
   if (regionInfo === undefined) {
-    ctx.error('Region not found', { region })
+    ctx.error('Region not found', { region, regions: getRegions() })
 
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.InternalServerError, {
@@ -869,6 +873,7 @@ export async function createWorkspaceRecord (
         {
           name: workspaceName,
           url: workspaceUrl,
+          dataId,
           branding: brandingKey,
           createdBy: account,
           billingAccount: account,
@@ -1341,7 +1346,12 @@ export function flattenStatus (ws: WorkspaceInfoWithStatus): WorkspaceInfoWithSt
   }
 
   const status = ws.status
-  const result: WorkspaceInfoWithStatusCore = { ...ws, ...status, createdOn: ws.createdOn as number }
+  const result: WorkspaceInfoWithStatusCore = {
+    ...ws,
+    ...status,
+    createdOn: ws.createdOn as number,
+    processingAttemps: status.processingAttempts ?? 0
+  }
   delete (result as any).status
 
   return result
@@ -1483,7 +1493,7 @@ export async function getInviteEmail (
   }
 }
 
-export async function addSocialId (
+export async function addSocialIdBase (
   db: AccountDB,
   personUuid: PersonUuid,
   type: SocialIdType,
@@ -1504,7 +1514,42 @@ export async function addSocialId (
 
   const socialId = await db.socialId.findOne({ type, value: normalizedValue })
   if (socialId != null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, {}))
+    const update: Operations<SocialId> = {}
+    let needUpdate = false
+
+    if (socialId.personUuid !== personUuid) {
+      if (socialId.verifiedOn != null) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, {}))
+      } else {
+        // Was not verified.
+        const accountFromSocialId = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
+
+        if (accountFromSocialId == null && confirmed) {
+          // If attached to a person w/o account and adding verifiedOn - merge this person into the current account.
+          await doMergePersons(db, personUuid, socialId.personUuid)
+        } else {
+          // Re-wire this social id into the current account
+          update.personUuid = personUuid
+          needUpdate = true
+        }
+      }
+    }
+
+    if (confirmed && socialId.verifiedOn == null) {
+      update.verifiedOn = Date.now()
+      needUpdate = true
+    }
+
+    if (displayValue !== socialId.displayValue) {
+      update.displayValue = displayValue
+      needUpdate = true
+    }
+
+    if (needUpdate) {
+      await db.socialId.update({ _id: socialId._id }, update)
+    }
+
+    return socialId._id
   }
 
   const newSocialId: Omit<SocialId, '_id' | 'key'> = {
@@ -1526,30 +1571,49 @@ export async function doReleaseSocialId (
   personUuid: PersonUuid,
   type: SocialIdType,
   value: string,
-  releasedBy: string
-): Promise<void> {
-  const socialIds = await db.socialId.find({ personUuid, type, value })
+  releasedBy: string,
+  deleteIntegrations = false
+): Promise<SocialId> {
+  const socialId = await db.socialId.findOne({ personUuid, type, value, isDeleted: { $ne: true } })
 
-  if (socialIds.length === 0) {
+  if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdNotFound, {}))
   }
 
   const account = await db.account.findOne({ uuid: personUuid as AccountUuid })
 
-  for (const socialId of socialIds) {
-    await db.socialId.update({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}`, isDeleted: true })
-    if (account != null) {
-      await db.accountEvent.insertOne({
-        accountUuid: account.uuid,
-        eventType: AccountEventType.SOCIAL_ID_RELEASED,
-        time: Date.now(),
-        data: {
-          socialId: socialId._id,
-          releasedBy: releasedBy ?? ''
-        }
-      })
-    }
+  const integrations = await db.integration.find({ socialId: socialId._id })
+  if (!deleteIntegrations && integrations.length > 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationExists, {}))
   }
+
+  // Delete all integrations for this socialId
+  // TODO: Send to pipe? to notify integration services somehow so they can clean up if needed
+  await db.integrationSecret.deleteMany({ socialId: socialId._id })
+  await db.integration.deleteMany({ socialId: socialId._id })
+
+  // Release socialId
+  await db.socialId.update({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}`, isDeleted: true })
+  if (account != null) {
+    await db.accountEvent.insertOne({
+      accountUuid: account.uuid,
+      eventType: AccountEventType.SOCIAL_ID_RELEASED,
+      time: Date.now(),
+      data: {
+        socialId: socialId._id,
+        releasedBy: releasedBy ?? ''
+      }
+    })
+  }
+
+  // read updated id (to avoid generating updated key manually)
+  const deletedSocialId = await db.socialId.findOne({ _id: socialId._id })
+
+  if (deletedSocialId == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
+  return deletedSocialId
 }
 
 export async function getWorkspaceRole (
@@ -1648,7 +1712,8 @@ export async function findExistingIntegration (
 export async function doMergePersons (
   db: AccountDB,
   primaryPerson: PersonUuid,
-  secondaryPerson: PersonUuid
+  secondaryPerson: PersonUuid,
+  mergeVerified = false
 ): Promise<void> {
   if (primaryPerson === secondaryPerson) {
     // Nothing to do
@@ -1665,9 +1730,14 @@ export async function doMergePersons (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: secondaryPerson }))
   }
 
-  // Merge social ids. Re-wire the secondary account social ids to the primary account.
+  // Merge social ids. Re-wire the secondary person social ids to the primary person.
   // Keep their ids. This way all PersonIds inside the workspaces will remain the same.
   const secondarySocialIds = await db.socialId.find({ personUuid: secondaryPerson })
+
+  if (!mergeVerified && secondarySocialIds.some((si) => si.verifiedOn != null)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Conflict, {}))
+  }
+
   for (const secondarySocialId of secondarySocialIds) {
     await db.socialId.update({ _id: secondarySocialId._id, personUuid: secondaryPerson }, { personUuid: primaryPerson })
   }
@@ -1695,7 +1765,7 @@ export async function doMergeAccounts (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: secondaryAccount }))
   }
 
-  await doMergePersons(db, primaryAccount, secondaryAccount)
+  await doMergePersons(db, primaryAccount, secondaryAccount, true)
 
   // Workspace assignments. Assign primary account to all workspaces of the secondary account.
   const secondaryWorkspacesRoles = await db.getWorkspaceRoles(secondaryAccount)

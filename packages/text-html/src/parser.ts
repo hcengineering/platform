@@ -72,7 +72,7 @@ class HtmlParseState {
 
   addText (text: string): void {
     const top = this.top()
-    if (top === undefined || text.length === 0) {
+    if (top === undefined || text.length === 0 || top.type === MarkupNodeType.doc) {
       return
     }
 
@@ -89,7 +89,7 @@ class HtmlParseState {
   }
 
   closeMark (mark: MarkupMarkType): void {
-    if (this.marks[this.marks.length - 1].type === mark) {
+    if (this.marks[this.marks.length - 1]?.type === mark) {
       this.marks.pop()
     }
   }
@@ -121,6 +121,8 @@ class HtmlParseState {
 }
 
 function nodeHandler ({ node, getAttrs, wrapContent, wrapNode }: HtmlNodeRule): HtmlTagHandler {
+  const wrapStack: boolean[] = []
+
   return {
     handleOpenTag: (state: HtmlParseState, tag: string, attributes: Record<string, string>) => {
       const attrs =
@@ -130,9 +132,12 @@ function nodeHandler ({ node, getAttrs, wrapContent, wrapNode }: HtmlNodeRule): 
             ? { ...getAttrs }
             : undefined
 
-      if (wrapNode === true) {
+      const shouldWrapNode = wrapNode === true && state.top()?.type !== MarkupNodeType.paragraph
+
+      if (shouldWrapNode) {
         state.openNode(MarkupNodeType.paragraph)
       }
+      wrapStack.push(shouldWrapNode)
 
       state.openNode(node, attrs)
 
@@ -146,8 +151,7 @@ function nodeHandler ({ node, getAttrs, wrapContent, wrapNode }: HtmlNodeRule): 
       }
 
       state.closeNode(node)
-
-      if (wrapNode === true) {
+      if (wrapStack.pop() === true) {
         state.closeNode(MarkupNodeType.paragraph)
       }
     }
@@ -416,6 +420,9 @@ const specialRules: Record<string, HtmlSpecialRule> = {
         })
       } else {
         state.openMark(MarkupMarkType.link, {
+          rel: attributes.rel,
+          target: attributes.target,
+          class: attributes.class,
           href: attributes.href,
           title: attributes.title
         })

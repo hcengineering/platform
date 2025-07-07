@@ -46,7 +46,8 @@ import core, {
   shouldShowArchived,
   systemAccountUuid,
   toFindResult,
-  type SessionData
+  type SessionData,
+  type Collaborator
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import {
@@ -185,6 +186,36 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     this.publicSpaces.delete(_id)
   }
 
+  private async handeCollaborator (ctx: MeasureContext<SessionData>, tx: TxCUD<Collaborator>): Promise<void> {
+    if (!this.context.hierarchy.isDerived(tx.objectClass, core.class.Collaborator)) return
+    if (tx._class === core.class.TxCreateDoc) {
+      const collab = TxProcessor.createDoc2Doc<Collaborator>(tx as TxCreateDoc<Collaborator>)
+      this.handleChangeCollaborator(ctx, collab)
+    } else if (tx._class === core.class.TxRemoveDoc) {
+      const collab = (await this.next?.findAll(ctx, core.class.Collaborator, {
+        _id: tx.objectId
+      })) as Collaborator[]
+      if (collab.length === 0) return
+      this.handleChangeCollaborator(ctx, collab[0])
+    }
+  }
+
+  private handleChangeCollaborator (ctx: MeasureContext<SessionData>, collab: Collaborator): void {
+    const collabSec = this.context.modelDb.findAllSync(core.class.ClassCollaborators, {
+      attachedTo: collab.attachedToClass
+    })[0]
+    if (collabSec?.provideSecurity === true) {
+      for (const val of ctx.contextData.socialStringsToUsers.values()) {
+        if (
+          val.accontUuid === collab.collaborator &&
+          [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(val.role)
+        ) {
+          this.brodcastEvent(ctx, [val.accontUuid])
+        }
+      }
+    }
+  }
+
   private handleCreate (tx: TxCUD<Space>): void {
     const createTx = tx as TxCreateDoc<Space>
     if (!this.context.hierarchy.isDerived(createTx.objectClass, core.class.Space)) return
@@ -266,10 +297,12 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       params: null
     }
     ctx.contextData.broadcast.txes.push(tx)
-    ctx.contextData.broadcast.targets['security' + tx._id] = (it) => {
+    ctx.contextData.broadcast.targets['security' + tx._id] = async (it) => {
       // TODO: I'm not sure it is called
       if (it._id === tx._id) {
-        return targets
+        return {
+          target: targets
+        }
       }
     }
   }
@@ -282,7 +315,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
   private broadcastAll (ctx: MeasureContext<SessionData>, space: SpaceWithMembers): void {
     const { socialStringsToUsers } = ctx.contextData
-    const accounts = Array.from(new Set(socialStringsToUsers.values()))
+    const accounts = Array.from(new Set(Array.from(socialStringsToUsers.values()).map((v) => v.accontUuid)))
 
     this.brodcastEvent(ctx, accounts, space._id)
   }
@@ -343,7 +376,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  getTargets (accounts: AccountUuid[]): string[] {
+  getTargets (accounts: AccountUuid[]): AccountUuid[] {
     const res = Array.from(new Set(accounts))
     // We need to add system account for targets for integrations to work properly
     res.push(systemAccountUuid)
@@ -401,6 +434,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
           }
         }
         await this.handleTx(ctx, cudTx as TxCUD<Space>)
+      } else {
+        await this.handeCollaborator(ctx, cudTx as TxCUD<Collaborator>)
       }
       await this.processTxSpaceDomain(ctx, tx as TxCUD<Doc>)
     } else if (tx._class === core.class.TxWorkspaceEvent) {
@@ -447,12 +482,35 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       }
     }
 
-    ctx.contextData.broadcast.targets.spaceSec = (tx) => {
+    ctx.contextData.broadcast.targets.spaceSec = async (tx) => {
+      if (this.systemSpaces.has(tx.objectSpace) || this.mainSpaces.has(tx.objectSpace)) {
+        const cud = tx as TxCUD<Doc>
+        if (cud.objectClass === undefined) return undefined
+        const collabSec = this.context.modelDb.findAllSync(core.class.ClassCollaborators, {
+          attachedTo: cud.objectClass
+        })[0]
+        if (collabSec?.provideSecurity === true) {
+          const guests = new Set<AccountUuid>()
+          for (const val of ctx.contextData.socialStringsToUsers.values()) {
+            if ([AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(val.role)) {
+              guests.add(val.accontUuid)
+            }
+          }
+          const collabs = (await this.next?.findAll(ctx, core.class.Collaborator, {
+            attachedTo: cud.objectId
+          })) as Collaborator[]
+          for (const collab of collabs) {
+            guests.delete(collab.collaborator)
+          }
+          return { exclude: Array.from(guests) }
+        }
+        return undefined
+      }
+
       const space = this.spacesMap.get(tx.objectSpace)
       if (space === undefined) return undefined
-      if (this.systemSpaces.has(space._id) || this.mainSpaces.has(space._id)) return undefined
 
-      return space.members.length === 0 ? undefined : this.getTargets(space?.members)
+      return space.members.length === 0 ? undefined : { target: this.getTargets(space?.members) }
     }
 
     await this.next?.handleBroadcast(ctx)

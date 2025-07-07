@@ -59,6 +59,7 @@ export function serveStats (ctx: MeasureContext, onClose?: () => void): void {
   }
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
+  setMetadata(serverToken.metadata.Service, 'stats')
 
   const statistics = new Map<string, ServiceStatisticsEx>()
   const timeouts = new Map<string, number>()

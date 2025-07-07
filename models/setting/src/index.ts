@@ -15,13 +15,23 @@
 
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
-import { AccountRole, DOMAIN_MODEL, type Blob, type Domain, type Ref, type AccountUuid, type IntegrationKind } from '@hcengineering/core'
-import { Mixin, Model, type Builder, UX } from '@hcengineering/model'
+import {
+  AccountRole,
+  DOMAIN_MODEL,
+  type AccountUuid,
+  type Blob,
+  type ClassCollaborators,
+  type Ref,
+  type IntegrationKind
+} from '@hcengineering/core'
+import exportPlugin from '@hcengineering/export'
+import { Mixin, Model, UX, type Builder } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import {
+  DOMAIN_SETTING,
   settingId,
   type Editable,
   type Handler,
@@ -36,7 +46,6 @@ import {
   type WorkspaceSetting
 } from '@hcengineering/setting'
 import templates from '@hcengineering/templates'
-import exportPlugin from '@hcengineering/export'
 import setting from './plugin'
 
 import workbench, { WidgetType } from '@hcengineering/model-workbench'
@@ -45,8 +54,6 @@ import { type AnyComponent } from '@hcengineering/ui/src/types'
 export { settingId } from '@hcengineering/setting'
 export { settingOperation } from './migration'
 export { default } from './plugin'
-
-export const DOMAIN_SETTING = 'setting' as Domain
 
 @Model(setting.class.Integration, core.class.Doc, DOMAIN_SETTING)
 @UX(setting.string.Integrations)
@@ -148,7 +155,8 @@ export function createModel (builder: Builder): void {
     setting.ids.SettingsWidget
   )
 
-  builder.mixin(setting.class.Integration, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Integration>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: setting.class.Integration,
     fields: ['modifiedBy']
   })
 

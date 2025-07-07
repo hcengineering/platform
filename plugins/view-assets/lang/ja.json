@@ -130,7 +130,11 @@
     "Document": "ドキュメント",
     "Loading": "読み込み中...",
     "NoRelations": "関係なし",
-    "ReadOnlyWarningTitle": "読み取り専用モード",
-    "ReadOnlyWarningMessage": "ワークスペースへのフルアクセス権を取得するには管理者に連絡してください。"
+    "ReadOnlyWarningTitle": "✨ ゲストデモ",
+    "ReadOnlyWarningMessage": "閲覧モードです。Hulyでどんなプロジェクトも管理しませんか？ タスク、期限、チーム — 完全アクセスには登録してください！",
+    "ReadOnlySignUp": "サインアップ \uD83D\uDE80",
+    "Icon": "アイコン",
+    "Color": "色",
+    "AutomationOnly": "自動化のみ"
   }
 }

@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import core, { AccountUuid, Client, MeasureContext, SocialId, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import core, {
+  AccountUuid,
+  Client,
+  MeasureContext,
+  SocialId,
+  SocialIdType,
+  TxOperations,
+  WorkspaceUuid
+} from '@hcengineering/core'
 import gmail, { type NewMessage } from '@hcengineering/gmail'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
@@ -26,7 +34,7 @@ import {
   isWorkspaceLoginInfo,
   AccountClient
 } from '@hcengineering/account-client'
-import { MailRecipient } from '@hcengineering/mail-common'
+import { MailRecipient, type SyncOptions } from '@hcengineering/mail-common'
 
 import { encode64 } from './base64'
 import config from './config'
@@ -170,7 +178,8 @@ export class GmailClient {
     if (email === undefined) {
       throw new Error('Cannot retrieve user email')
     }
-    const socialId = user.socialId ?? (await getOrCreateSocialId(user.userId, email))
+    const isActualSocialId = user.socialId?.type === SocialIdType.EMAIL && user.socialId?.value === email
+    const socialId = isActualSocialId ? user.socialId : await getOrCreateSocialId(user.userId, email)
     if (socialId?._id == null) {
       throw new Error(`Cannot create gmail client without social id: ${user.userId}, ${workspaceId}`)
     }
@@ -347,7 +356,7 @@ export class GmailClient {
 
   async startSync (): Promise<void> {
     this.ctx.info('Start sync', { workspaceUuid: this.user.workspace, userId: this.user.userId, email: this.email })
-    await this.syncManager.sync(this.socialId._id, this.email)
+    await this.syncManager.sync(this.socialId._id, { noNotify: true }, this.email)
     await this.watch()
     // recall every 24 hours https://developers.google.com/gmail/api/guides/push
     this.watchTimer = setInterval(() => {
@@ -355,9 +364,9 @@ export class GmailClient {
     }, 86400000)
   }
 
-  async sync (): Promise<void> {
+  async sync (options: SyncOptions): Promise<void> {
     this.ctx.info('Sync', { workspaceUuid: this.user.workspace, userId: this.user.userId })
-    await this.syncManager.sync(this.socialId._id, this.email)
+    await this.syncManager.sync(this.socialId._id, options, this.email)
   }
 
   async newChannel (value: string): Promise<void> {

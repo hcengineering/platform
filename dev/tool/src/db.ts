@@ -37,7 +37,6 @@ import {
 } from '@hcengineering/postgres'
 import { type DBDoc } from '@hcengineering/postgres/types/utils'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
-import { sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import { type MongoClient } from 'mongodb'
@@ -57,7 +56,7 @@ export async function moveFromMongoToPG (
   }
   const client = getMongoClient(mongoUrl)
   const mongo = await client.getClient()
-  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
   for (let index = 0; index < workspaces.length; index++) {
@@ -181,7 +180,7 @@ export async function moveWorkspaceFromMongoToPG (
   }
   const client = getMongoClient(mongoUrl)
   const mongo = await client.getClient()
-  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
   await moveWorkspace(accountDb, mongo, pgClient, ws, region, include, force)
@@ -489,215 +488,6 @@ export async function moveAccountDbFromMongoToPG (
 export async function migrateCreatedModifiedBy (
   ctx: MeasureMetricsContext,
   dbUrl: string,
-  domains?: string[],
-  maxLifetimeSec?: number,
-  batchSize?: number
-): Promise<void> {
-  if (!dbUrl.startsWith('postgresql')) {
-    throw new Error('Only CockroachDB is supported')
-  }
-
-  const MAX_RECONNECTS = 30
-
-  if (maxLifetimeSec !== undefined) {
-    setDBExtraOptions({ max_lifetime: maxLifetimeSec })
-  }
-
-  let progressMade = false
-  let connectsCount = 0
-  let done = false
-
-  while (!done && (connectsCount === 0 || progressMade) && connectsCount < MAX_RECONNECTS) {
-    if (connectsCount > 0) {
-      ctx.info('Reconnecting...')
-    }
-    progressMade = false
-    connectsCount++
-
-    const pg = getDBClient(sharedPipelineContextVars, dbUrl)
-    const pgClient = await pg.getClient()
-
-    try {
-      ctx.info('Creating/ensuring account to person id mapping table...')
-      // Create schema
-      await pgClient`CREATE SCHEMA IF NOT EXISTS temp_data`
-
-      // Create mapping table
-      await pgClient`
-        CREATE TABLE IF NOT EXISTS temp_data.account_personid_mapping (
-            old_account_id text NOT NULL PRIMARY KEY,
-            new_person_id text
-        )
-      `
-
-      // Populate mapping table
-      await pgClient`
-        INSERT INTO temp_data.account_personid_mapping
-        WITH account_data AS (
-            SELECT 
-                tx."objectId" as old_account_id,
-                CASE 
-                    WHEN tx.data->'attributes'->>'email' LIKE 'github:%' THEN lower(tx.data->'attributes'->>'email')
-                    WHEN tx.data->'attributes'->>'email' LIKE 'openid:%' THEN 'oidc:' || lower(substring(tx.data->'attributes'->>'email' from 8))
-                    ELSE 'email:' || lower(tx.data->'attributes'->>'email')
-                END as social_key
-            FROM model_tx tx
-            WHERE tx."_class" = 'core:class:TxCreateDoc'
-            AND tx.data->>'objectClass' = 'contact:class:PersonAccount'
-            AND tx.data->'attributes'->>'email' IS NOT NULL
-        )
-        SELECT 
-            ad.old_account_id,
-            si."_id" as new_person_id
-        FROM account_data ad
-        JOIN global_account.social_id si ON si."key" = ad.social_key
-        WHERE ad.old_account_id NOT IN ('core:account:System', 'core:account:ConfigUser')
-        ON CONFLICT (old_account_id) DO NOTHING
-      `
-
-      // Get list of tables to process
-      const tables = await pgClient`
-        SELECT table_name
-        FROM information_schema.columns 
-        WHERE table_schema = 'public'
-        AND column_name IN ('createdBy', 'modifiedBy')
-        GROUP BY table_name
-      `
-      const filteredTables =
-        domains == null || domains.length === 0 ? tables : tables.filter((t) => domains.includes(t.table_name))
-      ctx.info(`Found ${filteredTables.length} tables to process`, { domains: filteredTables.map((t) => t.table_name) })
-
-      // Process each table
-      for (const table of filteredTables) {
-        const tableName = table.table_name
-        ctx.info(`Processing table: ${tableName}`)
-
-        // Get counts for logging
-        const [createdByCount] = await pgClient`
-          SELECT COUNT(*) 
-          FROM ${pgClient(tableName)} t
-          JOIN temp_data.account_personid_mapping m ON t."createdBy" = m.old_account_id
-        `
-
-        const [modifiedByCount] = await pgClient`
-          SELECT COUNT(*) 
-          FROM ${pgClient(tableName)} t
-          JOIN temp_data.account_personid_mapping m ON t."modifiedBy" = m.old_account_id
-        `
-
-        ctx.info(
-          `Table ${tableName}: ${createdByCount.count} createdBy and ${modifiedByCount.count} modifiedBy records need updating`
-        )
-
-        if (createdByCount.count > 0) {
-          ctx.info(`Updating createdBy for ${tableName}...`)
-          const startTime = Date.now()
-
-          if (batchSize == null || batchSize > createdByCount.count) {
-            ctx.info(`Processing the whole table ${tableName}...`)
-            await pgClient`
-              UPDATE ${pgClient(tableName)}
-              SET "createdBy" = m.new_person_id::text
-              FROM temp_data.account_personid_mapping m
-              WHERE ${pgClient(tableName)}."createdBy" = m.old_account_id
-            `
-            progressMade = true
-          } else {
-            ctx.info(`Processing the table ${tableName} in batches of ${batchSize}...`)
-            let processed = 0
-            while (true) {
-              const res = await pgClient`
-                UPDATE ${pgClient(tableName)}
-                SET "createdBy" = m.new_person_id::text
-                FROM temp_data.account_personid_mapping m
-                WHERE ${pgClient(tableName)}."createdBy" = m.old_account_id
-                LIMIT ${batchSize}
-              `
-              progressMade = true
-              if (res.count === 0) {
-                break
-              }
-              processed += res.count
-              const duration = (Date.now() - startTime) / 1000
-              const rate = Math.round(processed / duration)
-              ctx.info(`Processing createdBy for ${tableName}: ${processed} rows in ${duration}s (${rate} rows/sec)`)
-            }
-          }
-
-          const duration = (Date.now() - startTime) / 1000
-          const rate = Math.round(createdByCount.count / duration)
-          ctx.info(
-            `Updated createdBy for ${tableName}: ${createdByCount.count} rows in ${duration}s (${rate} rows/sec)`
-          )
-        }
-
-        if (modifiedByCount.count > 0) {
-          ctx.info(`Updating modifiedBy for ${tableName}...`)
-          const startTime = Date.now()
-
-          if (batchSize == null || batchSize > modifiedByCount.count) {
-            ctx.info(`Processing the whole table ${tableName}...`)
-            await pgClient`
-              UPDATE ${pgClient(tableName)}
-              SET "modifiedBy" = m.new_person_id::text
-              FROM temp_data.account_personid_mapping m
-              WHERE ${pgClient(tableName)}."modifiedBy" = m.old_account_id
-            `
-            progressMade = true
-          } else {
-            ctx.info(`Processing the table ${tableName} in batches of ${batchSize}...`)
-            let processed = 0
-            while (true) {
-              const res = await pgClient`
-                UPDATE ${pgClient(tableName)}
-                SET "modifiedBy" = m.new_person_id::text
-                FROM temp_data.account_personid_mapping m
-                WHERE ${pgClient(tableName)}."modifiedBy" = m.old_account_id
-                LIMIT ${batchSize}
-              `
-              progressMade = true
-              if (res.count === 0) {
-                break
-              }
-              processed += res.count
-              const duration = (Date.now() - startTime) / 1000
-              const rate = Math.round(processed / duration)
-              ctx.info(`Processing modifiedBy for ${tableName}: ${processed} rows in ${duration}s (${rate} rows/sec)`)
-            }
-          }
-
-          const duration = (Date.now() - startTime) / 1000
-          const rate = Math.round(modifiedByCount.count / duration)
-          ctx.info(
-            `Updated modifiedBy for ${tableName}: ${modifiedByCount.count} rows in ${duration}s (${rate} rows/sec)`
-          )
-        }
-      }
-
-      done = true
-      ctx.info('Migration of created/modified completed successfully')
-    } catch (err: any) {
-      if (err.code !== 'CONNECTION_CLOSED') {
-        throw err
-      }
-      ctx.info('Connection closed...')
-      if (connectsCount === MAX_RECONNECTS) {
-        ctx.error('Failed to migrate created/modified by', { err })
-        throw err
-      }
-    } finally {
-      pg.close()
-    }
-  }
-
-  if (!done) {
-    ctx.error('Failed to migrate created/modified by')
-  }
-}
-
-export async function migrateCreatedModifiedByFixed (
-  ctx: MeasureMetricsContext,
-  dbUrl: string,
   workspace: Workspace,
   includeDomains?: string[],
   excludeDomains?: string[],
@@ -739,17 +529,79 @@ export async function migrateCreatedModifiedByFixed (
         progressMade = false
         connectsCount++
 
-        pg = getDBClient(sharedPipelineContextVars, dbUrl)
+        pg = getDBClient(dbUrl)
         pgClient = await pg.getClient()
 
         // Expect temp table with mapping to be created manually
+        // Create mapping table
+        await pgClient`
+          CREATE TABLE IF NOT EXISTS temp_data.account_personid_mapping_v2 (
+              workspace_id uuid,
+              old_account_id text,
+              new_person_id text,
+              CONSTRAINT account_personid_mapping_v2_pk PRIMARY KEY (workspace_id, old_account_id)
+          )
+        `
+
+        const [res] = await pgClient`SELECT COUNT(*) FROM temp_data.account_personid_mapping_v2`
+
+        if (res.count === '0') {
+          // Populate mapping table
+          await pgClient`
+            INSERT INTO temp_data.account_personid_mapping_v2
+            WITH accounts as (
+              SELECT 
+                  tx."workspaceId" as workspace_id,
+                  tx."objectId" as old_account_id,
+                  COALESCE(
+                      -- Get the latest email from updates
+                      (
+                          SELECT tx2.data->'operations'->>'email'
+                          FROM model_tx tx2
+                          WHERE tx2."objectId" = tx."objectId"
+                              AND tx2."workspaceId" = tx."workspaceId"
+                              AND tx2.data->>'objectClass' = 'contact:class:PersonAccount'
+                              AND tx2.data->'operations'->>'email' IS NOT NULL
+                          ORDER BY tx2."createdOn" DESC
+                          LIMIT 1
+                      ),
+                      -- If no updates with email, get from create transaction
+                      tx.data->'attributes'->>'email'
+                  ) as latest_email
+              FROM model_tx tx
+              WHERE tx."_class" = 'core:class:TxCreateDoc'
+              AND tx.data->>'objectClass' = 'contact:class:PersonAccount'
+              AND tx.data->'attributes'->>'email' IS NOT null
+            ),
+            account_data as (
+              SELECT
+                workspace_id,
+                old_account_id,
+                CASE 
+                    WHEN latest_email LIKE 'github:%' THEN lower(latest_email)
+                    WHEN latest_email LIKE 'openid:%' THEN 'oidc:' || lower(substring(latest_email from 8))
+                    ELSE 'email:' || lower(latest_email)
+                END as social_key
+              FROM accounts
+              WHERE latest_email IS NOT NULL AND latest_email != ''
+            )
+            SELECT
+              ad.workspace_id,
+              ad.old_account_id,
+              si."_id" as new_person_id
+            FROM account_data ad
+            JOIN global_account.social_id si ON si."key" = ad.social_key
+            WHERE ad.old_account_id NOT IN ('core:account:System', 'core:account:ConfigUser')
+            `
+        }
+
         // Create progress table
         await pgClient`
-          CREATE TABLE IF NOT EXISTS temp_data.account_personid_mapping_fixed_progress (
+          CREATE TABLE IF NOT EXISTS temp_data.account_personid_mapping_v2_progress (
               workspace_id text,
               domain text,
               field text,
-              CONSTRAINT account_personid_mapping_fixed_progress_pk PRIMARY KEY (workspace_id, domain, field)
+              CONSTRAINT account_personid_mapping_v2_progress_pk PRIMARY KEY (workspace_id, domain, field)
           )
         `
       }
@@ -793,7 +645,7 @@ export async function migrateCreatedModifiedByFixed (
 
         const progress = await pgClient`
           SELECT field 
-          FROM temp_data.account_personid_mapping_fixed_progress
+          FROM temp_data.account_personid_mapping_v2_progress
           WHERE workspace_id = ${wsUuid} AND domain = ${tableName}
         `
 
@@ -805,7 +657,7 @@ export async function migrateCreatedModifiedByFixed (
           ? await pgClient`
           SELECT COUNT(*) 
           FROM ${pgClient(tableName)} t
-          JOIN temp_data.account_personid_mapping_fixed m ON t."workspaceId" = m.workspace_id AND t."createdBy" = m.current_person_id
+          JOIN temp_data.account_personid_mapping_v2 m ON t."workspaceId" = m.workspace_id AND t."createdBy" = m.old_account_id
           WHERE t."workspaceId" = ${wsUuid}
         `
           : [{ count: 0 }]
@@ -814,7 +666,7 @@ export async function migrateCreatedModifiedByFixed (
           ? await pgClient`
           SELECT COUNT(*) 
           FROM ${pgClient(tableName)} t
-          JOIN temp_data.account_personid_mapping_fixed m ON t."workspaceId" = m.workspace_id AND t."modifiedBy" = m.current_person_id
+          JOIN temp_data.account_personid_mapping_v2 m ON t."workspaceId" = m.workspace_id AND t."modifiedBy" = m.old_account_id
           WHERE t."workspaceId" = ${wsUuid}
         `
           : [{ count: 0 }]
@@ -831,9 +683,9 @@ export async function migrateCreatedModifiedByFixed (
             ctx.info(`      Processing the whole table ${tableName}...`)
             await pgClient`
               UPDATE ${pgClient(tableName)}
-              SET "createdBy" = m.correct_person_id::text
-              FROM temp_data.account_personid_mapping_fixed m
-              WHERE ${pgClient(tableName)}."workspaceId" = ${wsUuid} AND ${pgClient(tableName)}."workspaceId" = m.workspace_id AND ${pgClient(tableName)}."createdBy" = m.current_person_id
+              SET "createdBy" = m.new_person_id::text
+              FROM temp_data.account_personid_mapping_v2 m
+              WHERE ${pgClient(tableName)}."workspaceId" = ${wsUuid} AND ${pgClient(tableName)}."workspaceId" = m.workspace_id AND ${pgClient(tableName)}."createdBy" = m.old_account_id
             `
             progressMade = true
           } else {
@@ -842,9 +694,9 @@ export async function migrateCreatedModifiedByFixed (
             while (true) {
               const res = await pgClient`
                 UPDATE ${pgClient(tableName)}
-                SET "createdBy" = m.correct_person_id::text
-                FROM temp_data.account_personid_mapping_fixed m
-                WHERE ${pgClient(tableName)}."workspaceId" = ${wsUuid} AND ${pgClient(tableName)}."workspaceId" = m.workspace_id AND ${pgClient(tableName)}."createdBy" = m.current_person_id
+                SET "createdBy" = m.new_person_id::text
+                FROM temp_data.account_personid_mapping_v2 m
+                WHERE ${pgClient(tableName)}."workspaceId" = ${wsUuid} AND ${pgClient(tableName)}."workspaceId" = m.workspace_id AND ${pgClient(tableName)}."createdBy" = m.old_account_id
                 LIMIT ${batchSize}
               `
               progressMade = true
@@ -860,7 +712,7 @@ export async function migrateCreatedModifiedByFixed (
             }
           }
 
-          await pgClient`INSERT INTO temp_data.account_personid_mapping_fixed_progress (workspace_id, domain, field) VALUES (${wsUuid}, ${tableName}, 'createdBy') ON CONFLICT DO NOTHING`
+          await pgClient`INSERT INTO temp_data.account_personid_mapping_v2_progress (workspace_id, domain, field) VALUES (${wsUuid}, ${tableName}, 'createdBy') ON CONFLICT DO NOTHING`
 
           const duration = (Date.now() - startTime) / 1000
           const rate = Math.round(createdByCount.count / duration)
@@ -871,7 +723,7 @@ export async function migrateCreatedModifiedByFixed (
           if (createdDone) {
             ctx.info('    Skipping createdBy for table. Already done', { tableName })
           } else {
-            await pgClient`INSERT INTO temp_data.account_personid_mapping_fixed_progress (workspace_id, domain, field) VALUES (${wsUuid}, ${tableName}, 'createdBy') ON CONFLICT DO NOTHING`
+            await pgClient`INSERT INTO temp_data.account_personid_mapping_v2_progress (workspace_id, domain, field) VALUES (${wsUuid}, ${tableName}, 'createdBy') ON CONFLICT DO NOTHING`
           }
         }
 
@@ -883,9 +735,9 @@ export async function migrateCreatedModifiedByFixed (
             ctx.info(`    Processing the whole table ${tableName}...`)
             await pgClient`
               UPDATE ${pgClient(tableName)}
-              SET "modifiedBy" = m.correct_person_id::text
-              FROM temp_data.account_personid_mapping_fixed m
-              WHERE ${pgClient(tableName)}."workspaceId" = ${wsUuid} AND ${pgClient(tableName)}."workspaceId" = m.workspace_id AND ${pgClient(tableName)}."modifiedBy" = m.current_person_id
+              SET "modifiedBy" = m.new_person_id::text
+              FROM temp_data.account_personid_mapping_v2 m
+              WHERE ${pgClient(tableName)}."workspaceId" = ${wsUuid} AND ${pgClient(tableName)}."workspaceId" = m.workspace_id AND ${pgClient(tableName)}."modifiedBy" = m.old_account_id
             `
             progressMade = true
           } else {
@@ -894,9 +746,9 @@ export async function migrateCreatedModifiedByFixed (
             while (true) {
               const res = await pgClient`
                 UPDATE ${pgClient(tableName)}
-                SET "modifiedBy" = m.correct_person_id::text
-                FROM temp_data.account_personid_mapping_fixed m
-                WHERE ${pgClient(tableName)}."workspaceId" = ${wsUuid} AND ${pgClient(tableName)}."workspaceId" = m.workspace_id AND ${pgClient(tableName)}."modifiedBy" = m.current_person_id
+                SET "modifiedBy" = m.new_person_id::text
+                FROM temp_data.account_personid_mapping_v2 m
+                WHERE ${pgClient(tableName)}."workspaceId" = ${wsUuid} AND ${pgClient(tableName)}."workspaceId" = m.workspace_id AND ${pgClient(tableName)}."modifiedBy" = m.old_account_id
                 LIMIT ${batchSize}
               `
               progressMade = true
@@ -912,7 +764,7 @@ export async function migrateCreatedModifiedByFixed (
             }
           }
 
-          await pgClient`INSERT INTO temp_data.account_personid_mapping_fixed_progress (workspace_id, domain, field) VALUES (${wsUuid}, ${tableName}, 'modifiedBy') ON CONFLICT DO NOTHING`
+          await pgClient`INSERT INTO temp_data.account_personid_mapping_v2_progress (workspace_id, domain, field) VALUES (${wsUuid}, ${tableName}, 'modifiedBy') ON CONFLICT DO NOTHING`
 
           const duration = (Date.now() - startTime) / 1000
           const rate = Math.round(modifiedByCount.count / duration)
@@ -923,7 +775,7 @@ export async function migrateCreatedModifiedByFixed (
           if (modifiedDone) {
             ctx.info('    Skipping modifiedBy for table. Already done', { tableName })
           } else {
-            await pgClient`INSERT INTO temp_data.account_personid_mapping_fixed_progress (workspace_id, domain, field) VALUES (${wsUuid}, ${tableName}, 'modifiedBy') ON CONFLICT DO NOTHING`
+            await pgClient`INSERT INTO temp_data.account_personid_mapping_v2_progress (workspace_id, domain, field) VALUES (${wsUuid}, ${tableName}, 'modifiedBy') ON CONFLICT DO NOTHING`
           }
         }
       }
@@ -1054,7 +906,7 @@ export async function migrateMergedAccounts (
     throw new Error('Only CockroachDB is supported')
   }
 
-  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
   const token = getToolToken()
 
@@ -1167,7 +1019,7 @@ export async function filterMergedAccountsInMembers (
     throw new Error('Only CockroachDB is supported')
   }
 
-  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
   try {
@@ -1230,7 +1082,7 @@ export async function ensureGlobalPersonsForLocalAccounts (
     throw new Error('Only CockroachDB is supported')
   }
 
-  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
   const token = getToolToken()
 

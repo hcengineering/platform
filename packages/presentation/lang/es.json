@@ -41,6 +41,7 @@
     "ColorRemove": "Eliminar el ajuste preestablecido de color",
     "ColorReset": "Restablecer ajustes preestablecidos de color",
     "Copy": "Copiar",
+    "DocumentUrlCopied": "¡Copiado!",
     "CopyLink": "Copiar enlace",
     "AccessDenied": "El objeto no existe o no tienes permiso para acceder a él.",
     "UnableToFollowMention": "No se puede abrir el objeto mencionado"

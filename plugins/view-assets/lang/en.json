@@ -135,7 +135,11 @@
     "Document": "Document",
     "Loading": "Loading...",
     "NoRelations": "No relations",
-    "ReadOnlyWarningTitle": "Read only mode",
-    "ReadOnlyWarningMessage": "Contact the administrator to gain full access to this workspace."
+    "ReadOnlyWarningTitle": "✨ Guest Demo",
+    "ReadOnlyWarningMessage": "You're in view-only mode. Want to manage any project in Huly? Tasks, deadlines, team — sign up for full access!",
+    "ReadOnlySignUp": "Sign up \uD83D\uDE80",
+    "Icon": "Icon",
+    "Color": "Color",
+    "AutomationOnly": "Automation only"
   }
 }

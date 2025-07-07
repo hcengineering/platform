@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { formatName } from '@hcengineering/contact'
+  import contact, { formatName, getCurrentEmployee } from '@hcengineering/contact'
   import { myEmployeeStore } from '@hcengineering/contact-resources'
-  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import core, { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
@@ -162,7 +162,7 @@
       },
       {
         icon: setting.icon.Signout,
-        label: setting.string.Signout,
+        label: hasAccountRole(account, AccountRole.DocGuest) ? setting.string.Signout : login.string.LogIn,
         action: async () => {
           await logOut()
           navigate({ path: [loginId] })
@@ -188,18 +188,24 @@
         editProfile(items)
       }}
     >
-      {#if person}
-        <Component is={contact.component.Avatar} props={{ person, size: 'medium', name: person.name }} />
-      {/if}
-      <div class="ml-2 flex-col">
+      {#if getCurrentEmployee() === core.employee.System}
+        <div class="ml-2 flex-col">
+          <div class="overflow-label fs-bold">System</div>
+        </div>
+      {:else}
         {#if person}
-          <div class="overflow-label fs-bold caption-color">
-            {formatName(person.name)}
-          </div>
-          <!-- TODO: Show current primary social id? -->
-          <!-- <div class="overflow-label text-sm content-dark-color">{account.email}</div> -->
+          <Component is={contact.component.Avatar} props={{ person, size: 'medium', name: person.name }} />
         {/if}
-      </div>
+        <div class="ml-2 flex-col">
+          {#if person}
+            <div class="overflow-label fs-bold caption-color">
+              {formatName(person.name)}
+            </div>
+            <!-- TODO: Show current primary social id? -->
+            <!-- <div class="overflow-label text-sm content-dark-color">{account.email}</div> -->
+          {/if}
+        </div>
+      {/if}
     </div>
     <div class="ap-menuItem separator" />
   </svelte:fragment>

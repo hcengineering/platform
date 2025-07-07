@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
 # Restore workspace contents in mongo/elastic
-./tool.sh backup-restore ./sanity-ws sanity-ws
-
-./tool.sh upgrade-workspace sanity-ws --indexes --force
+./tool.sh backup-restore ./sanity-ws sanity-ws --upgrade
 
 # Re-assign user to workspace.
 ./tool.sh assign-workspace user1 sanity-ws

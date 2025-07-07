@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Calendar, generateEventId } from '@hcengineering/calendar'
+  import { AccessLevel, Calendar, generateEventId } from '@hcengineering/calendar'
   import { Employee, getCurrentEmployee } from '@hcengineering/contact'
   import { UserBoxList } from '@hcengineering/contact-resources'
   import { Class, DateRangeMode, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
@@ -56,7 +56,7 @@
       allDay: false,
       blockTime: false,
       reminders: [0],
-      access: 'owner',
+      access: AccessLevel.Owner,
       user: getCurrentAccount().primarySocialId
     })
   }

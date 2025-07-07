@@ -519,6 +519,7 @@ export class PlatformWorker {
               const sysAccountClient = getAccountClient(config.AccountsURL, sysToken)
               const userAccountClient = getAccountClient(config.AccountsURL, userToken)
 
+              // We only want not-deleted social ids here
               const ids = await userAccountClient.getSocialIds()
 
               let githubSocialId: PersonId | undefined = ids.find(

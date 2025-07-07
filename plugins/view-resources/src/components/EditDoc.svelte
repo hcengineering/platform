@@ -114,7 +114,7 @@
 
   let ignoreKeys: string[] = []
   let activityOptions = { enabled: true, showInput: true }
-  let allowedCollections: string[] = []
+  let allowedCollections: string[] = ['collaborators']
   let collectionArrays: string[] = []
   let inplaceAttributes: string[] = []
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
@@ -218,7 +218,7 @@
     ignoreKeys = ev.detail.ignoreKeys
     activityOptions = ev.detail.activityOptions ?? activityOptions
     ignoreMixins = new Set(ev.detail.ignoreMixins)
-    allowedCollections = ev.detail.allowedCollections ?? []
+    allowedCollections = [...(ev.detail.allowedCollections ?? []), 'collaborators']
     collectionArrays = ev.detail.collectionArrays ?? []
     title = ev.detail.title
     mixins = getDocMixins(object, showAllMixins, ignoreMixins, realObjectClass)

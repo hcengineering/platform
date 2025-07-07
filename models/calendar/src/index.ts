@@ -15,6 +15,9 @@
 
 import activity from '@hcengineering/activity'
 import {
+  type AccessLevel,
+  calendarId,
+  type PrimaryCalendar,
   type Calendar,
   type CalendarEventPresenter,
   type Event,
@@ -35,7 +38,9 @@ import {
   type Markup,
   type Ref,
   type Timestamp,
-  type PersonId
+  type PersonId,
+  type ClassCollaborators,
+  AccountRole
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -63,6 +68,7 @@ import setting from '@hcengineering/setting'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import workbench from '@hcengineering/model-workbench'
 import { WidgetType } from '@hcengineering/workbench'
+import preference, { TPreference } from '@hcengineering/model-preference'
 import { calendarIntegrationKind } from '@hcengineering/calendar'
 
 import calendar from './plugin'
@@ -80,6 +86,8 @@ export class TCalendar extends TDoc implements Calendar {
   name!: string
   hidden!: boolean
   visibility!: Visibility
+  user!: PersonId
+  access!: AccessLevel
 }
 
 @Model(calendar.class.ExternalCalendar, calendar.class.Calendar)
@@ -134,7 +142,7 @@ export class TEvent extends TAttachedDoc implements Event {
   @Prop(ArrOf(TypeString()), calendar.string.ExternalParticipants)
     externalParticipants?: string[]
 
-  access!: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
+  access!: AccessLevel
 
   visibility?: Visibility
 
@@ -143,6 +151,11 @@ export class TEvent extends TAttachedDoc implements Event {
   user!: PersonId
 
   blockTime!: boolean
+}
+
+@Model(calendar.class.PrimaryCalendar, preference.class.Preference)
+export class TPrimaryCalendar extends TPreference implements PrimaryCalendar {
+  declare attachedTo: Ref<Calendar>
 }
 
 @Model(calendar.class.ReccuringEvent, calendar.class.Event)
@@ -166,6 +179,7 @@ export class TReccuringInstance extends TReccuringEvent implements ReccuringInst
 @Model(calendar.class.Schedule, core.class.Doc, DOMAIN_CALENDAR)
 @UX(calendar.string.Schedule, calendar.icon.Calendar)
 export class TSchedule extends TDoc implements Schedule {
+  calendar?: Ref<Calendar>
   owner!: Ref<Employee>
   title!: string
   description?: string
@@ -188,7 +202,8 @@ export function createModel (builder: Builder): void {
     TReccuringInstance,
     TEvent,
     TSchedule,
-    TCalendarEventPresenter
+    TCalendarEventPresenter,
+    TPrimaryCalendar
   )
 
   builder.createDoc(
@@ -249,7 +264,8 @@ export function createModel (builder: Builder): void {
     calendar.ids.CalendarNotificationGroup
   )
 
-  builder.mixin(calendar.class.Event, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Event>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: calendar.class.Event,
     fields: ['participants']
   })
 
@@ -366,6 +382,21 @@ export function createModel (builder: Builder): void {
   builder.mixin(calendar.class.Event, core.class.Class, view.mixin.ObjectTitle, {
     titleProvider: calendar.function.EventTitleProvider
   })
+
+  builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
+      name: calendarId,
+      label: calendar.string.Calendar,
+      icon: calendar.icon.Calendar,
+      component: calendar.component.CalendarSettings,
+      group: 'settings-account',
+      role: AccountRole.User,
+      order: 1600
+    },
+    calendar.ids.Settings
+  )
 }
 
 export default calendar

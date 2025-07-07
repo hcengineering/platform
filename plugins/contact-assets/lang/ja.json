@@ -36,6 +36,8 @@
     "LinkedIn": "LinkedIn",
     "GitHub": "GitHub",
     "Twitter": "Twitter",
+    "Google": "Google",
+    "Telegram": "Telegram",
     "PhonePlaceholder": "+1 555 333 7777",
     "LinkedInPlaceholder": "https://linkedin.com/in/jappleseed",
     "AtPlaceHolder": "@appleseed",
@@ -120,6 +122,7 @@
     "Here": "ここ",
     "EveryoneDescription": "この{title}のすべてに通知する",
     "HereDescription": "この{title}のすべてに通知する",
-    "Guest": "ゲスト"
+    "Guest": "ゲスト",
+    "Deleted": "削除済み"
   }
 }

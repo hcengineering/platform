@@ -24,7 +24,9 @@ import {
   type Timestamp,
   DOMAIN_TRANSIENT,
   DateRangeMode,
-  IndexKind
+  IndexKind,
+  type ClassCollaborators,
+  type AccountUuid
 } from '@hcengineering/core'
 import {
   type DevicesPreference,
@@ -157,6 +159,8 @@ export class TParticipantInfo extends TDoc implements ParticipantInfo {
   y!: number
 
   sessionId!: string | null
+
+  account!: AccountUuid | null
 }
 
 @Model(love.class.JoinRequest, core.class.Doc, DOMAIN_TRANSIENT)
@@ -281,7 +285,6 @@ export function createModel (builder: Builder): void {
     workbench.class.Application,
     core.space.Model,
     {
-      accessLevel: AccountRole.DocGuest,
       label: love.string.Office,
       icon: love.icon.Love,
       alias: loveId,
@@ -663,8 +666,10 @@ export function createModel (builder: Builder): void {
     enabledTypes: [love.ids.MeetingMinutesChatNotification]
   })
 
-  builder.mixin(love.class.MeetingMinutes, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['createdBy']
+  builder.createDoc<ClassCollaborators<MeetingMinutes>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: love.class.MeetingMinutes,
+    fields: ['createdBy'],
+    provideSecurity: true
   })
 
   builder.mixin(love.class.Room, core.class.Class, core.mixin.IndexConfiguration, {

@@ -36,6 +36,8 @@
     "LinkedIn": "LinkedIn",
     "GitHub": "GitHub",
     "Twitter": "Twitter",
+    "Google": "Google",
+    "Telegram": "Telegram",
     "PhonePlaceholder": "+39 333 2213456",
     "LinkedInPlaceholder": "https://linkedin.com/in/username",
     "AtPlaceHolder": "@username",
@@ -120,6 +122,7 @@
     "Here": "Qui",
     "EveryoneDescription": "Notifica tutti in questo {title}",
     "HereDescription": "Notifica tutti in questo {title}",
-    "Guest": "Ospite"
+    "Guest": "Ospite",
+    "Deleted": "Eliminato"
   }
 }

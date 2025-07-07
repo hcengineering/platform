@@ -108,6 +108,19 @@
     "CalDavAccessPasswordWarning": "Sie können dieses Passwort nicht erneut anzeigen. Bitte speichern Sie es an einem sicheren Ort.",
     "MeetingScheduledNotification": "Besprechung geplant",
     "MeetingRescheduledNotification": "Besprechungszeit geändert",
-    "MeetingCanceledNotification": "Besprechung abgesagt: {title}"
+    "MeetingCanceledNotification": "Besprechung abgesagt: {title}",
+    "PrimaryCalendar": "Primärer Kalender",
+    "Hidden": "Versteckt",
+    "Each": "Jeder",
+    "OnThe": "Am",
+    "First": "Erster",
+    "Second": "Zweiter",
+    "Third": "Dritter",
+    "Fourth": "Vierter",
+    "Fifth": "Fünfter",
+    "NextToLast": "Vorletzter",
+    "Last": "Letzter",
+    "Weekday": "Wochentag",
+    "WeekendDay": "Wochenendtag"
   }
 }

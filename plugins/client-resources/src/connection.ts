@@ -28,17 +28,20 @@ import core, {
   ClientConnectEvent,
   ClientConnection,
   clone,
-  Handler,
   Doc,
   DocChunk,
   DocumentQuery,
   Domain,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
   FindOptions,
   FindResult,
   generateId,
   LoadModelResponse,
   type MeasureContext,
   MeasureMetricsContext,
+  type OperationDomain,
   type PersonUuid,
   Ref,
   SearchOptions,
@@ -60,22 +63,8 @@ import platform, {
   Status,
   UNAUTHORIZED
 } from '@hcengineering/platform'
+import { HelloRequest, HelloResponse, type RateLimitInfo, ReqId, type Response, RPCHandler } from '@hcengineering/rpc'
 import { uncompress } from 'snappyjs'
-import { HelloRequest, HelloResponse, ReqId, type Response, RPCHandler, type RateLimitInfo } from '@hcengineering/rpc'
-import { EventResult } from '@hcengineering/communication-sdk-types'
-import {
-  FindLabelsParams,
-  FindMessagesGroupsParams,
-  FindMessagesParams,
-  FindNotificationContextParams,
-  FindNotificationsParams,
-  FindCollaboratorsParams,
-  Label,
-  Message,
-  MessagesGroup,
-  NotificationContext,
-  Collaborator
-} from '@hcengineering/communication-types'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
@@ -142,7 +131,7 @@ class Connection implements ClientConnection {
 
   lastHash?: string
 
-  handlers: Handler[] = []
+  handlers: TxHandler[] = []
 
   constructor (
     private readonly ctx: MeasureContext,
@@ -177,7 +166,7 @@ class Connection implements ClientConnection {
     this.scheduleOpen(this.ctx, false)
   }
 
-  pushHandler (handler: Handler): void {
+  pushHandler (handler: TxHandler): void {
     this.handlers.push(handler)
   }
 
@@ -908,43 +897,18 @@ class Connection implements ClientConnection {
     return this.sendRequest({ method: 'searchFulltext', params: [query, options] })
   }
 
+  domainRequest (domain: OperationDomain, params: DomainParams, options?: DomainRequestOptions): Promise<DomainResult> {
+    return this.sendRequest({
+      method: 'domainRequest',
+      params: [domain, params],
+      retry: async () => {
+        return options?.retry ?? false
+      }
+    })
+  }
+
   sendForceClose (): Promise<void> {
     return this.sendRequest({ method: 'forceClose', params: [], allowReconnect: false, overrideId: -2, once: true })
-  }
-
-  async sendEvent (event: Event): Promise<EventResult> {
-    return await this.sendRequest({ method: 'event', params: [event] })
-  }
-
-  async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
-    return await this.sendRequest({ method: 'findMessages', params: [params, queryId] })
-  }
-
-  async findLabels (params: FindLabelsParams): Promise<Label[]> {
-    return await this.sendRequest({ method: 'findLabels', params: [params] })
-  }
-
-  async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    return await this.sendRequest({ method: 'findMessagesGroups', params: [params] })
-  }
-
-  async findNotificationContexts (
-    params: FindNotificationContextParams,
-    queryId?: number
-  ): Promise<NotificationContext[]> {
-    return await this.sendRequest({ method: 'findNotificationContexts', params: [params, queryId] })
-  }
-
-  async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<Notification[]> {
-    return await this.sendRequest({ method: 'findNotifications', params: [params, queryId] })
-  }
-
-  async findCollaborators (params: FindCollaboratorsParams): Promise<Collaborator[]> {
-    return await this.sendRequest({ method: 'findCollaborators', params: [params] })
-  }
-
-  async unsubscribeQuery (id: number): Promise<void> {
-    await this.sendRequest({ method: 'unsubscribeQuery', params: [id] })
   }
 }
 

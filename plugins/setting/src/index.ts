@@ -22,6 +22,7 @@ import type {
   Mixin,
   Ref,
   AccountUuid,
+  Domain,
   IntegrationKind
 } from '@hcengineering/core'
 import type { Metadata, Plugin } from '@hcengineering/platform'
@@ -34,6 +35,8 @@ import { SpaceTypeCreator, SpaceTypeEditor } from './spaceTypeEditor'
 export * from './spaceTypeEditor'
 export * from './utils'
 export * from './analytics'
+
+export const DOMAIN_SETTING = 'setting' as Domain
 
 /**
  * @public
@@ -193,7 +196,8 @@ export default plugin(settingId, {
     CreateAttributePopup: '' as AnyComponent,
     CreateRelation: '' as AnyComponent,
     EditRelation: '' as AnyComponent,
-    Mailboxes: '' as AnyComponent
+    Mailboxes: '' as AnyComponent,
+    AddEmailSocialId: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -208,6 +212,9 @@ export default plugin(settingId, {
     Delete: '' as IntlString,
     Disconnect: '' as IntlString,
     Add: '' as IntlString,
+    Proceed: '' as IntlString,
+    SendConfirmation: '' as IntlString,
+    NewEmail: '' as IntlString,
     AccountSettings: '' as IntlString,
     ChangePassword: '' as IntlString,
     CurrentPassword: '' as IntlString,
@@ -245,6 +252,7 @@ export default plugin(settingId, {
     BackupFileDownload: '' as IntlString,
     BackupFiles: '' as IntlString,
     BackupNoBackup: '' as IntlString,
+    NonBackupedBlobs: '' as IntlString,
     AddAttribute: '' as IntlString,
     Mailboxes: '' as IntlString,
     CreateMailbox: '' as IntlString,
@@ -261,7 +269,10 @@ export default plugin(settingId, {
     IntegrationFailed: '' as IntlString,
     IntegrationError: '' as IntlString,
     EmailIsUsed: '' as IntlString,
-    Customize: '' as IntlString
+    Customize: '' as IntlString,
+    CodeSent: '' as IntlString,
+    SendAgain: '' as IntlString,
+    SendAgainIn: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

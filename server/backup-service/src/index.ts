@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 import {
-  type MeasureContext,
   systemAccountUuid,
   type Branding,
+  type MeasureContext,
   type WorkspaceIds,
   type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
@@ -36,11 +36,11 @@ export function startBackup (
     workspace: WorkspaceIds,
     branding: Branding | null,
     externalStorage: StorageAdapter
-  ) => DbConfiguration,
-  contextVars: Record<string, any>
+  ) => DbConfiguration
 ): void {
   const config = _config()
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'backup')
   setMetadata(serverClientPlugin.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClientPlugin.metadata.UserAgent, config.ServiceID)
 
@@ -62,12 +62,10 @@ export function startBackup (
     storageAdapter,
     { ...config, Token: token },
     pipelineFactory,
-    workspaceStorageAdapter,
     (ctx, workspace, branding, externalStorage) => {
       return getConfig(ctx, mainDbUrl, workspace, branding, externalStorage)
     },
-    config.Region,
-    contextVars
+    config.Region
   )
 
   process.on('SIGINT', shutdown)
@@ -99,6 +97,7 @@ export async function backupWorkspace (
 ): Promise<boolean> {
   const config = _config()
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'backup')
   setMetadata(serverClientPlugin.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClientPlugin.metadata.UserAgent, config.ServiceID)
 
@@ -122,14 +121,12 @@ export async function backupWorkspace (
       storageAdapter,
       { ...config, Token: token },
       pipelineFactory,
-      workspaceStorageAdapter,
       (ctx, workspace, branding, externalStorage) => {
         return getConfig(ctx, mainDbUrl, workspace, branding, externalStorage)
       },
       region,
       downloadLimit,
       [],
-      contextVars,
       fullCheck
     )
     if (result && onFinish !== undefined) {

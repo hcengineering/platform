@@ -83,8 +83,8 @@ test.describe('Workspace Migration tests', () => {
 
       await page2.getByRole('button', { name: 'America', exact: true }).first().click()
       await page2.getByRole('button', { name: 'europe' }).first().click()
-      await page2.getByPlaceholder('Search').click()
-      await page2.getByPlaceholder('Search').fill(workspaceInfo.workspace)
+      await page2.locator('[data-testid="workspace-search-container"] input').click()
+      await page2.locator('[data-testid="workspace-search-container"] input').fill(workspaceInfo.workspace)
       await page2.locator(`[id="${workspaceInfo.workspace}"]`).getByRole('button', { name: 'Migrate' }).click()
 
       await page2.getByRole('button', { name: 'Ok' }).click()

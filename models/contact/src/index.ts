@@ -32,13 +32,16 @@ import {
   type Person,
   type PersonSpace,
   type SocialIdentity,
-  type Status
+  type Status,
+  type SocialIdentityProvider
 } from '@hcengineering/contact'
 import {
   AccountRole,
+  type ClassCollaborators,
   DOMAIN_MODEL,
   DateRangeMode,
   IndexKind,
+  SocialIdType,
   type AccountUuid,
   type Blob,
   type Class,
@@ -48,7 +51,6 @@ import {
   type PersonId,
   type PersonUuid,
   type Ref,
-  type SocialIdType,
   type Timestamp
 } from '@hcengineering/core'
 import { createSystemType } from '@hcengineering/model-card'
@@ -109,6 +111,14 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
   icon?: Asset
   action?: Ref<Action>
   placeholder!: IntlString
+}
+
+@Model(contact.class.SocialIdentityProvider, core.class.Doc, DOMAIN_MODEL)
+export class TSocialIdentityProvider extends TDoc implements SocialIdentityProvider {
+  label!: IntlString
+  icon?: Asset
+  type!: SocialIdType
+  creator?: AnyComponent
 }
 
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
@@ -190,6 +200,9 @@ export class TSocialIdentity extends TAttachedDoc implements SocialIdentity {
   @Prop(TypeNumber(), contact.string.Confirmed)
   @ReadOnly()
     verifiedOn?: number
+
+  @Prop(TypeBoolean(), contact.string.Deleted)
+    isDeleted?: boolean
 }
 
 @Model(contact.class.Person, contact.class.Contact)
@@ -285,6 +298,7 @@ export function createModel (builder: Builder): void {
   builder.createModel(
     TAvatarProvider,
     TChannelProvider,
+    TSocialIdentityProvider,
     TContact,
     TPerson,
     TSocialIdentity,
@@ -615,7 +629,8 @@ export function createModel (builder: Builder): void {
     inlineEditor: contact.component.ContactArrayEditor
   })
 
-  builder.mixin(contact.class.Contact, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Contact>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: contact.class.Contact,
     fields: []
   })
 
@@ -623,7 +638,8 @@ export function createModel (builder: Builder): void {
     component: contact.component.ChannelPanel
   })
 
-  builder.mixin(contact.class.Channel, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Channel>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: contact.class.Channel,
     fields: ['modifiedBy']
   })
 
@@ -821,6 +837,73 @@ export function createModel (builder: Builder): void {
       getUrl: contact.function.GetExternalUrl
     },
     contact.avatarProvider.Color
+  )
+
+  builder.createDoc(
+    contact.class.SocialIdentityProvider,
+    core.space.Model,
+    {
+      label: contact.string.Email,
+      icon: contact.icon.Email,
+      type: SocialIdType.EMAIL,
+      creator: setting.component.AddEmailSocialId
+    },
+    contact.socialIdentityProvider.Email
+  )
+
+  builder.createDoc(
+    contact.class.SocialIdentityProvider,
+    core.space.Model,
+    {
+      label: getEmbeddedLabel('Huly'),
+      icon: contact.icon.Huly,
+      type: SocialIdType.HULY
+    },
+    contact.socialIdentityProvider.Huly
+  )
+
+  builder.createDoc(
+    contact.class.SocialIdentityProvider,
+    core.space.Model,
+    {
+      label: contact.string.Phone,
+      icon: contact.icon.Phone,
+      type: SocialIdType.PHONE
+    },
+    contact.socialIdentityProvider.Phone
+  )
+
+  builder.createDoc(
+    contact.class.SocialIdentityProvider,
+    core.space.Model,
+    {
+      label: contact.string.Google,
+      icon: contact.icon.Google,
+      type: SocialIdType.GOOGLE
+    },
+    contact.socialIdentityProvider.Google
+  )
+
+  builder.createDoc(
+    contact.class.SocialIdentityProvider,
+    core.space.Model,
+    {
+      label: contact.string.GitHub,
+      icon: contact.icon.GitHub,
+      type: SocialIdType.GITHUB
+    },
+    contact.socialIdentityProvider.GitHub
+  )
+
+  builder.createDoc(
+    contact.class.SocialIdentityProvider,
+    core.space.Model,
+    {
+      label: contact.string.Telegram,
+      icon: contact.icon.Telegram,
+      type: SocialIdType.TELEGRAM
+    },
+    contact.socialIdentityProvider.Telegram
   )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectPresenter, {

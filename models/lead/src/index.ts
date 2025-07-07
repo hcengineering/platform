@@ -15,7 +15,7 @@
 
 // To help typescript locate view plugin properly
 import activity from '@hcengineering/activity'
-import { AccountRole, SortingOrder, type FindOptions } from '@hcengineering/core'
+import { AccountRole, type ClassCollaborators, SortingOrder, type FindOptions } from '@hcengineering/core'
 import { leadId, type Lead } from '@hcengineering/lead'
 import { type Builder } from '@hcengineering/model'
 import chunter from '@hcengineering/model-chunter'
@@ -455,7 +455,7 @@ export function createModel (builder: Builder): void {
       defaultEnabled: false,
       templates: {
         textTemplate: '{body}',
-        htmlTemplate: '<p>{body}</p>',
+        htmlTemplate: '<p>{body}</p><p>{link}</p>',
         subjectTemplate: '{title}'
       }
     },
@@ -539,7 +539,8 @@ export function createModel (builder: Builder): void {
     filters: ['attachedTo']
   })
 
-  builder.mixin(lead.class.Lead, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Lead>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: lead.class.Lead,
     fields: ['createdBy', 'assignee']
   })
 

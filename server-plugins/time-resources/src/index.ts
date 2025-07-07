@@ -241,15 +241,6 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
       continue
     }
 
-    const mixin = hierarchy.classHierarchyMixin(
-      createTx.objectClass as Ref<Class<Doc>>,
-      notification.mixin.ClassCollaborators
-    )
-
-    if (mixin === undefined) {
-      continue
-    }
-
     const todo = TxProcessor.createDoc2Doc(createTx)
     const object = (await control.findAll(control.ctx, todo.attachedToClass, { _id: todo.attachedTo }))[0]
     if (object === undefined) {
@@ -338,9 +329,9 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
     await control.apply(control.ctx, txes)
 
     const ids = txes.map((it) => it._id)
-    control.ctx.contextData.broadcast.targets.notifications = (it) => {
+    control.ctx.contextData.broadcast.targets.notifications = async (it) => {
       if (ids.includes(it._id)) {
-        return [receiverInfo.account]
+        return { target: [receiverInfo.account] }
       }
     }
   }

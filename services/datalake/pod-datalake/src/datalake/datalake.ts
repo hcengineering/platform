@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type Tx } from '@hcengineering/core'
+import { type MeasureContext, type Tx, WorkspaceUuid } from '@hcengineering/core'
 import { PlatformQueueProducer } from '@hcengineering/server-core'
 import { Readable } from 'stream'
 
-import { type BlobDB } from './db'
+import { type BlobDB, WorkspaceStatsResult } from './db'
 import { digestToUUID, stringToUUID } from './encodings'
 import { type BlobHead, type BlobBody, type BlobList, type BlobStorage, type Datalake, type Location } from './types'
 import { type S3Bucket } from '../s3'
@@ -35,7 +35,7 @@ export class DatalakeImpl implements Datalake {
 
   async list (
     ctx: MeasureContext,
-    workspace: string,
+    workspace: WorkspaceUuid,
     options: { cursor?: string, limit?: number, derived?: boolean }
   ): Promise<BlobList> {
     const blobs = await this.db.listBlobs(ctx, workspace, options)
@@ -49,7 +49,7 @@ export class DatalakeImpl implements Datalake {
     }
   }
 
-  async head (ctx: MeasureContext, workspace: string, name: string): Promise<BlobHead | null> {
+  async head (ctx: MeasureContext, workspace: WorkspaceUuid, name: string): Promise<BlobHead | null> {
     const blob = await this.db.getBlob(ctx, { workspace, name })
     if (blob === null) {
       return null
@@ -73,7 +73,7 @@ export class DatalakeImpl implements Datalake {
 
   async get (
     ctx: MeasureContext,
-    workspace: string,
+    workspace: WorkspaceUuid,
     name: string,
     options: { range?: string }
   ): Promise<BlobBody | null> {
@@ -104,7 +104,7 @@ export class DatalakeImpl implements Datalake {
     }
   }
 
-  async delete (ctx: MeasureContext, workspace: string, name: string | string[]): Promise<void> {
+  async delete (ctx: MeasureContext, workspace: WorkspaceUuid, name: string | string[]): Promise<void> {
     if (Array.isArray(name)) {
       await this.db.deleteBlobList(ctx, { workspace, names: name })
     } else {
@@ -121,7 +121,7 @@ export class DatalakeImpl implements Datalake {
 
   async put (
     ctx: MeasureContext,
-    workspace: string,
+    workspace: WorkspaceUuid,
     name: string,
     sha256: string,
     body: Buffer | Readable,
@@ -183,7 +183,12 @@ export class DatalakeImpl implements Datalake {
     }
   }
 
-  async create (ctx: MeasureContext, workspace: string, name: string, filename: string): Promise<BlobHead | null> {
+  async create (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    name: string,
+    filename: string
+  ): Promise<BlobHead | null> {
     const { location, bucket } = await this.selectStorage(ctx, workspace)
 
     const head = await bucket.head(ctx, filename)
@@ -203,22 +208,32 @@ export class DatalakeImpl implements Datalake {
       await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
     }
 
+    try {
+      const event =
+        data != null
+          ? blobEvents.updated(name, { contentType, lastModified, size, etag: hash })
+          : blobEvents.created(name, { contentType, lastModified, size, etag: hash })
+      await this.producer.send(workspace, [event])
+    } catch (err) {
+      ctx.error('failed to send blob created event', { err })
+    }
+
     return { name, size, contentType, lastModified, etag: hash }
   }
 
-  async getMeta (ctx: MeasureContext, workspace: string, name: string): Promise<Record<string, any> | null> {
+  async getMeta (ctx: MeasureContext, workspace: WorkspaceUuid, name: string): Promise<Record<string, any> | null> {
     return await this.db.getMeta(ctx, { workspace, name })
   }
 
-  async setMeta (ctx: MeasureContext, workspace: string, name: string, meta: Record<string, any>): Promise<void> {
+  async setMeta (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, meta: Record<string, any>): Promise<void> {
     await this.db.setMeta(ctx, { workspace, name }, meta)
   }
 
-  async setParent (ctx: MeasureContext, workspace: string, name: string, parent: string | null): Promise<void> {
+  async setParent (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, parent: string | null): Promise<void> {
     await this.db.setParent(ctx, { workspace, name }, parent !== null ? { workspace, name: parent } : null)
   }
 
-  async selectStorage (ctx: MeasureContext, workspace: string, location?: Location): Promise<BlobStorage> {
+  async selectStorage (ctx: MeasureContext, workspace: WorkspaceUuid, location?: Location): Promise<BlobStorage> {
     location ??= this.selectLocation(workspace)
 
     const bucket = this.buckets.find((b) => b.location === location)?.bucket
@@ -226,6 +241,10 @@ export class DatalakeImpl implements Datalake {
       throw new Error(`Unsupported location: ${location}`)
     }
     return { location, bucket }
+  }
+
+  async getWorkspaceStats (ctx: MeasureContext, workspace: string): Promise<WorkspaceStatsResult> {
+    return await this.db.getWorkspaceStats(ctx, workspace)
   }
 
   selectLocation (workspace: string): Location {

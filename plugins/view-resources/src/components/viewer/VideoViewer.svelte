@@ -33,13 +33,14 @@
 </script>
 
 <div
-  style:aspect-ratio={aspectRatio}
+  class="flex justify-center w-full"
+  style:aspect-ratio={fit ? undefined : aspectRatio}
   style:max-width={fit ? '100%' : maxWidth}
   style:max-height={fit ? '100%' : maxHeight}
 >
   {#if contentType.toLowerCase().endsWith('x-mpegurl')}
     {@const src = getFileUrl(value, '')}
-    <HlsVideo {src} hlsSrc={src} preload={true} />
+    <HlsVideo {src} hlsSrc={src} preload />
   {:else}
     {#await getVideoMeta(value, name) then meta}
       {#if meta?.hls?.source !== undefined}
@@ -47,7 +48,7 @@
         <HlsVideo {src} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
       {:else}
         {@const src = getFileUrl(value, '')}
-        <Video {src} {name} />
+        <Video {src} {name} preload />
       {/if}
     {/await}
   {/if}

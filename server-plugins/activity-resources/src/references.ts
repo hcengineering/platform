@@ -16,39 +16,42 @@
 import activity, { type ActivityMessage, type ActivityReference, type UserMentionInfo } from '@hcengineering/activity'
 import contact, { type Employee, type Person } from '@hcengineering/contact'
 import core, {
-  type PersonId,
+  type AccountUuid,
   type Blob,
   type Class,
   type Data,
   type Doc,
   type Hierarchy,
   type Markup,
+  type MeasureContext,
+  type ModelDb,
+  type PersonId,
   type Ref,
   type Space,
   type Tx,
   type TxCreateDoc,
   type TxCUD,
   TxFactory,
-  type TxMixin,
   TxProcessor,
   type TxRemoveDoc,
   type TxUpdateDoc,
-  type Type,
-  type MeasureContext,
-  type AccountUuid
+  type Type
 } from '@hcengineering/core'
-import notification, { type MentionInboxNotification, type NotificationType } from '@hcengineering/notification'
+import notification, {
+  getClassCollaborators,
+  type MentionInboxNotification,
+  type NotificationType
+} from '@hcengineering/notification'
 import { getPerson } from '@hcengineering/server-contact'
 import { type StorageAdapter, type TriggerControl } from '@hcengineering/server-core'
 import {
+  getAllowedProviders,
   getCommonNotificationTxes,
   getNotificationProviderControl,
-  getPushCollaboratorTx,
-  getAllowedProviders,
+  getReceiversInfo,
   type NotificationProviderControl
 } from '@hcengineering/server-notification-resources'
 import { areEqualJson, extractReferences, jsonToMarkup, markupToJSON } from '@hcengineering/text-core'
-import { getReceiversInfo } from '@hcengineering/server-notification-resources'
 
 export function isDocMentioned (doc: Ref<Doc>, content: string): boolean {
   const references = []
@@ -102,12 +105,12 @@ export async function getPersonNotificationTxes (
   const docSpace = (await control.findAll<Space>(control.ctx, core.class.Space, { _id: space }, { limit: 1 }))[0]
   if (docSpace === undefined) return res
 
-  const senderAccount = control.ctx.contextData.socialStringsToUsers.get(senderId)
+  const senderAccount = control.ctx.contextData.socialStringsToUsers.get(senderId)?.accontUuid
 
   let collaborators: AccountUuid[] = []
 
   if ([contact.mention.Everyone, contact.mention.Here].includes(reference.attachedTo as Ref<Employee>)) {
-    collaborators = await getMultipleMentionCollaborators(reference, control, doc)
+    collaborators = await getMultipleMentionCollaborators(ctx, reference, control, doc)
   } else {
     const employee = (
       await control.findAll(ctx, contact.mixin.Employee, { _id: reference.attachedTo as Ref<Employee> })
@@ -196,16 +199,22 @@ function getUpdateMentionInfoTx (
 }
 
 async function getMultipleMentionCollaborators (
+  ctx: MeasureContext,
   reference: Data<ActivityReference>,
   control: TriggerControl,
   doc: Doc
 ): Promise<AccountUuid[]> {
-  const { hierarchy } = control
+  const { hierarchy, modelDb } = control
   const personRef = reference.attachedTo as Ref<Person>
 
-  const mixin = hierarchy.classHierarchyMixin(doc._class, notification.mixin.ClassCollaborators)
-  if (mixin === undefined) return []
-  const collaborators = hierarchy.as(doc, notification.mixin.Collaborators).collaborators
+  const classCollaborators = getClassCollaborators(modelDb, hierarchy, doc._class)
+
+  if (classCollaborators === undefined) return []
+  const collaborators = (
+    await control.findAll(ctx, core.class.Collaborator, {
+      attachedTo: doc._id
+    })
+  ).map((it) => it.collaborator)
 
   if (collaborators.length === 0) return []
   const statuses = Array.from(control.userStatusMap.values())
@@ -229,16 +238,18 @@ function checkSpace (account: AccountUuid, space: Space, control: TriggerControl
   return true
 }
 
-function getCollaboratorsTxes (control: TriggerControl, receiver: AccountUuid, object?: Doc): TxMixin<Doc, Doc>[] {
-  const res: TxMixin<Doc, Doc>[] = []
+function getCollaboratorsTxes (control: TriggerControl, receiver: AccountUuid, object?: Doc): Tx[] {
+  const res: Tx[] = []
 
   if (object !== undefined) {
-    // Add user to collaborators of object where user is mentioned
-    const objectTx = getPushCollaboratorTx(control, receiver, object)
+    const tx = control.txFactory.createTxCreateDoc(core.class.Collaborator, object.space, {
+      attachedTo: object._id,
+      collaborator: receiver,
+      attachedToClass: object._class,
+      collection: 'collaborators'
+    })
 
-    if (objectTx !== undefined) {
-      res.push(objectTx)
-    }
+    res.push(tx)
   }
 
   return res
@@ -553,6 +564,7 @@ async function getRemoveActivityReferenceTxes (
 }
 
 function guessReferenceObj (
+  modelDb: ModelDb,
   hierarchy: Hierarchy,
   tx: TxCUD<Doc>
 ): {
@@ -568,7 +580,7 @@ function guessReferenceObj (
       }
     }
 
-    const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
+    const mixin = getClassCollaborators(modelDb, hierarchy, tx.objectClass)
     return mixin !== undefined
       ? {
           objectId: tx.objectId,
@@ -595,7 +607,7 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl)
   const txFactory = new TxFactory(control.txFactory.account)
 
   const doc = TxProcessor.createDoc2Doc(ctx)
-  const target = guessReferenceObj(control.hierarchy, tx)
+  const target = guessReferenceObj(control.modelDb, control.hierarchy, tx)
 
   const txes: Tx[] = await getCreateReferencesTxes(
     control.ctx,
@@ -643,7 +655,7 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, control: TriggerControl)
 
   const txFactory = new TxFactory(control.txFactory.account)
   const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
-  const target = guessReferenceObj(control.hierarchy, tx)
+  const target = guessReferenceObj(control.modelDb, control.hierarchy, tx)
 
   const txes: Tx[] = await getUpdateReferencesTxes(
     control.ctx,

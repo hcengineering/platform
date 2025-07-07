@@ -28,7 +28,13 @@
     showPopup
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
-  import { List, ListSelectionProvider, SelectDirection, ViewletsSettingButton } from '@hcengineering/view-resources'
+  import {
+    List,
+    ListSelectionProvider,
+    noCategory,
+    SelectDirection,
+    ViewletsSettingButton
+  } from '@hcengineering/view-resources'
   import process from '../plugin'
   import RunProcessPopup from './RunProcessPopup.svelte'
   import { createEventDispatcher } from 'svelte'
@@ -132,7 +138,7 @@
           {options}
           compactMode={listWidth <= 600}
           flatHeaders={true}
-          disableHeader={true}
+          disableHeader={viewOptions.groupBy?.length === 0 || viewOptions.groupBy[0] === noCategory}
           {listProvider}
           selectedObjectIds={$selection ?? []}
           on:row-focus={(event) => {

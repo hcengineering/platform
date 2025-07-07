@@ -25,6 +25,7 @@
   import FilterPopup from './FilterPopup.svelte'
   import IconClose from './icons/Close.svelte'
   import { sortActivityMessages } from '../activityMessagesUtils'
+  import { setActivityNewestFirst } from '../utils'
 
   export let messages: ActivityMessage[]
   export let object: Doc
@@ -45,7 +46,7 @@
   let selectedFilters: ActivityMessagesFilter[] = []
 
   $: localStorage.setItem('activity-filter', JSON.stringify(selectedFiltersRefs))
-  $: localStorage.setItem('activity-newest-first', JSON.stringify(isNewestFirst))
+  $: setActivityNewestFirst(isNewestFirst)
 
   void client.findAll(activity.class.ActivityMessagesFilter, {}).then((res) => {
     filters = res
@@ -105,7 +106,7 @@
         const fltr = await getResource(filter.filter)
         filterActions.push(fltr)
       }
-      filtered = messages.filter((message) => filterActions.some((f) => f(message, object._class)))
+      filtered = sortedMessages.filter((message) => filterActions.some((f) => f(message, object._class)))
       dispatch('update', filtered)
     }
   }

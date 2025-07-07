@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { Calendar, generateEventId } from '@hcengineering/calendar'
+  import { AccessLevel, Calendar, generateEventId } from '@hcengineering/calendar'
   import { VisibilityEditor } from '@hcengineering/calendar-resources'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
   import { getCurrentEmployee } from '@hcengineering/contact'
@@ -100,7 +100,7 @@
         blockTime: true,
         title: todo.title,
         allDay: false,
-        access: 'owner',
+        access: AccessLevel.Owner,
         visibility: todo.visibility === 'public' ? 'public' : 'freeBusy',
         reminders: [],
         user: myAccount.primarySocialId
@@ -117,15 +117,11 @@
   let _calendar: Ref<Calendar> = `${myAccount.uuid}_calendar` as Ref<Calendar>
 
   const q = createQuery()
-  q.query(
-    calendar.class.ExternalCalendar,
-    { default: true, hidden: false, createdBy: { $in: myAccount.socialIds } },
-    (res) => {
-      if (res.length > 0) {
-        _calendar = res[0]._id
-      }
+  q.query(calendar.class.ExternalCalendar, { default: true, hidden: false, user: myAccount.primarySocialId }, (res) => {
+    if (res.length > 0) {
+      _calendar = res[0]._id
     }
-  )
+  })
 
   let slots: WorkSlot[] = []
 
@@ -151,7 +147,7 @@
       title: todo.title,
       allDay: false,
       blockTime: true,
-      access: 'owner',
+      access: AccessLevel.Owner,
       visibility: todo.visibility,
       reminders: [],
       calendar: _calendar,
@@ -194,7 +190,7 @@
   <div class="header flex-between">
     <EditBox
       bind:value={todo.title}
-      kind={'ghost-large'}
+      kind={'large-style'}
       placeholder={time.string.AddTitle}
       fullSize
       focusable

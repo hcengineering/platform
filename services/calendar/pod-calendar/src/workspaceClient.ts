@@ -14,7 +14,8 @@
 //
 
 import { AccountClient } from '@hcengineering/account-client'
-import calendar, { Event, ExternalCalendar, calendarIntegrationKind } from '@hcengineering/calendar'
+import calendar, { ExternalCalendar } from '@hcengineering/calendar'
+import contact, { getPersonRefsBySocialIds, Person } from '@hcengineering/contact'
 import core, {
   MeasureContext,
   RateLimiter,
@@ -23,22 +24,23 @@ import core, {
   WorkspaceUuid,
   type Ref
 } from '@hcengineering/core'
-import contact, { getPersonRefsBySocialIds, Person } from '@hcengineering/contact'
-import setting from '@hcengineering/setting'
 
 import { CalendarClient } from './calendar'
 import { getClient } from './client'
 import config from './config'
 import { addUserByEmail, getSyncHistory, setSyncHistory } from './kvsUtils'
+import { IncomingSyncManager } from './sync'
 import { getWorkspaceTokens } from './tokens'
 import { GoogleEmail, Token } from './types'
 import { getWorkspaceToken } from './utils'
+import { synced } from './mutex'
 
 export class WorkspaceClient {
   private readonly clients = new Map<GoogleEmail, CalendarClient>()
   private readonly calendarsByExternal = new Map<string, ExternalCalendar>()
   readonly calendarsById = new Map<Ref<ExternalCalendar>, ExternalCalendar>()
   readonly participants = new Map<Ref<Person>, string>()
+  private lastSync: number = 0
 
   private constructor (
     private readonly ctx: MeasureContext,
@@ -70,10 +72,8 @@ export class WorkspaceClient {
 
   private async fillParticipants (): Promise<void> {
     const personsBySocialId = await getPersonRefsBySocialIds(this.client)
-    const emailSocialIds = await this.client.findAll(contact.class.SocialIdentity, { type: SocialIdType.EMAIL })
-    const emails = await this.client.findAll(contact.class.Channel, { provider: contact.channelProvider.Email })
-    const integrations = await this.client.findAll(setting.class.Integration, {
-      type: calendar.integrationType.Calendar
+    const emailSocialIds = await this.client.findAll(contact.class.SocialIdentity, {
+      type: { $in: [SocialIdType.GOOGLE, SocialIdType.EMAIL] }
     })
     this.participants.clear()
 
@@ -84,37 +84,25 @@ export class WorkspaceClient {
         this.participants.set(pers, sID.value)
       }
     }
-
-    for (const channel of emails) {
-      if (channel.value === '') continue
-      const pers = channel.attachedTo as Ref<Person>
-      if (this.participants.has(pers)) continue
-      this.participants.set(pers, channel.value)
-    }
-
-    for (const integration of integrations) {
-      if (integration.value === '') continue
-      const pers = personsBySocialId[integration.createdBy ?? integration.modifiedBy]
-      if (pers != null) {
-        this.participants.set(pers, integration.value)
-      }
-    }
   }
 
   async startAll (): Promise<void> {
     const tokens = await getWorkspaceTokens(this.accountClient, this.workspace)
     for (const token of tokens) {
       if (token.workspaceUuid === null) continue
-      await addUserByEmail(JSON.parse(token.secret), token.key as GoogleEmail)
-      await this.createCalendarClient(JSON.parse(token.secret))
+      const parsedToken = JSON.parse(token.secret)
+      await addUserByEmail(parsedToken, token.key as GoogleEmail)
+      await this.createCalendarClient(parsedToken)
     }
-    await this.getNewEvents()
     const limiter = new RateLimiter(config.InitLimit)
-    for (const client of this.clients.values()) {
+    for (const token of tokens) {
       await limiter.add(async () => {
-        await client.startSync()
+        const parsedToken = JSON.parse(token.secret)
+        await IncomingSyncManager.sync(this.ctx, this.accountClient, parsedToken, parsedToken.email)
       })
     }
+    await limiter.waitProcessing()
+    await this.getNewEvents()
   }
 
   private async createCalendarClient (user: Token): Promise<CalendarClient | undefined> {
@@ -137,62 +125,49 @@ export class WorkspaceClient {
 
   // #region Events
 
-  static async push (
-    ctx: MeasureContext,
-    accountClient: AccountClient,
-    workspace: WorkspaceUuid,
-    event: Event,
-    type: 'create' | 'update' | 'delete'
-  ): Promise<void> {
-    const client = await getClient(getWorkspaceToken(workspace))
-    const txOp = new TxOperations(client, core.account.System)
-    const token = await getTokenByEvent(accountClient, txOp, event, workspace)
-    if (token != null) {
-      const instance = new WorkspaceClient(ctx, accountClient, txOp, workspace)
-      await instance.pushEvent(token, event, type)
-      await instance.close()
-      return
+  private async updateSyncHistory (): Promise<void> {
+    try {
+      await setSyncHistory(this.workspace, this.lastSync)
+    } catch (err) {
+      this.ctx.error('Failed to update sync history', {
+        workspace: this.workspace,
+        error: err instanceof Error ? err.message : String(err)
+      })
     }
-    await txOp.close()
-  }
-
-  async pushEvent (user: Token, event: Event, type: 'create' | 'update' | 'delete'): Promise<void> {
-    const client =
-      this.getCalendarClientByCalendar(event.calendar as Ref<ExternalCalendar>) ??
-      (await this.createCalendarClient(user))
-    if (client === undefined) {
-      console.warn('Client not found', event.calendar, this.workspace)
-      return
-    }
-    if (type === 'delete') {
-      await client.removeEvent(event)
-    } else {
-      await client.syncMyEvent(event)
-    }
-    await this.updateSyncTime()
-  }
-
-  private async getSyncTime (): Promise<number | undefined> {
-    return (await getSyncHistory(this.workspace)) ?? undefined
-  }
-
-  private async updateSyncTime (): Promise<void> {
-    await setSyncHistory(this.workspace)
   }
 
   private async getNewEvents (): Promise<void> {
-    const lastSync = await this.getSyncTime()
-    const query = lastSync !== undefined ? { modifiedOn: { $gt: lastSync } } : {}
-    const newEvents = await this.client.findAll(calendar.class.Event, query)
-    for (const newEvent of newEvents) {
-      const client = this.getCalendarClientByCalendar(newEvent.calendar as Ref<ExternalCalendar>)
-      if (client === undefined) {
-        this.ctx.warn('Client not found', { calendar: newEvent.calendar, workspace: this.workspace })
-        continue
-      }
-      await client.syncMyEvent(newEvent)
-      await this.updateSyncTime()
+    const lastSync = await getSyncHistory(this.workspace)
+    if (lastSync === undefined || Date.now() - lastSync > 7 * 24 * 60 * 60 * 1000) {
+      await setSyncHistory(this.workspace, Date.now())
+      return
     }
+    this.lastSync = lastSync ?? 0
+    const query = { modifiedOn: { $gt: lastSync }, calendar: { $in: Array.from(this.calendarsById.keys()) } }
+    const newEvents = await this.client.findAll(calendar.class.Event, query, { sort: { modifiedOn: 1 } })
+    const interval = setInterval(() => {
+      void this.updateSyncHistory()
+    }, 5000)
+    for (const newEvent of newEvents) {
+      try {
+        const client = this.getCalendarClientByCalendar(newEvent.calendar as Ref<ExternalCalendar>)
+        if (client === undefined) {
+          this.ctx.warn('Client not found', { calendar: newEvent.calendar, workspace: this.workspace })
+          continue
+        }
+        await client.syncMyEvent(newEvent)
+        this.lastSync = newEvent.modifiedOn
+      } catch (err) {
+        this.ctx.error('Failed to sync event', {
+          event: newEvent._id,
+          workspace: this.workspace,
+          error: err instanceof Error ? err.message : String(err)
+        })
+      }
+    }
+    clearInterval(interval)
+    await setSyncHistory(this.workspace, Date.now())
+    synced.add(this.workspace)
     this.ctx.info('all outcoming messages synced', { workspace: this.workspace })
   }
 
@@ -205,24 +180,4 @@ export class WorkspaceClient {
     return this.clients.get(calendar.externalUser as GoogleEmail)
   }
   // #endregion
-}
-
-async function getTokenByEvent (
-  accountClient: AccountClient,
-  txOp: TxOperations,
-  event: Event,
-  workspace: WorkspaceUuid
-): Promise<Token | undefined> {
-  const _calendar = await txOp.findOne(calendar.class.ExternalCalendar, {
-    _id: event.calendar as Ref<ExternalCalendar>
-  })
-  if (_calendar === undefined) return
-  const res = await accountClient.getIntegrationSecret({
-    socialId: event.user,
-    kind: calendarIntegrationKind,
-    workspaceUuid: workspace,
-    key: _calendar.externalUser
-  })
-  if (res == null) return
-  return JSON.parse(res.secret)
 }

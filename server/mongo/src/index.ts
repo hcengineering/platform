@@ -22,7 +22,7 @@ export * from './utils'
 
 export function createMongoDestroyAdapter (url: string): WorkspaceDestroyAdapter {
   return {
-    deleteWorkspace: async (ctx, contextVars, workspace, dataId): Promise<void> => {
+    deleteWorkspace: async (ctx, workspace, dataId): Promise<void> => {
       const client = getMongoClient(url)
       try {
         await ctx.with('delete-workspace', {}, async () => {

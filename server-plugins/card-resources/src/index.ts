@@ -22,9 +22,9 @@ import core, {
   fillDefaults,
   getDiffUpdate,
   Mixin,
+  OperationDomain,
   Ref,
   splitMixinUpdate,
-  systemAccount,
   Tx,
   TxCreateDoc,
   TxMixin,
@@ -35,7 +35,13 @@ import core, {
 import { TriggerControl } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
 import view from '@hcengineering/view'
-import { CardRequestEventType, NotificationRequestEventType } from '@hcengineering/communication-sdk-types'
+import {
+  AddCollaboratorsEvent,
+  CardEventType,
+  NotificationEventType,
+  RemoveCardEvent,
+  UpdateCardTypeEvent
+} from '@hcengineering/communication-sdk-types'
 import { getEmployee, getPersonSpaces } from '@hcengineering/server-contact'
 import contact from '@hcengineering/contact'
 
@@ -276,16 +282,21 @@ async function OnCardRemove (ctx: TxRemoveDoc<Card>[], control: TriggerControl):
       })
     )
   }
+  const favorites = await control.findAll(control.ctx, card.class.FavoriteCard, { attachedTo: removedCard._id })
+  for (const favorite of favorites) {
+    res.push(control.txFactory.createTxRemoveDoc(favorite._class, favorite.space, favorite._id))
+  }
 
-  void control.communicationApi?.event(
-    { account: systemAccount },
-    {
-      type: CardRequestEventType.RemoveCard,
-      cardId: removedCard._id,
-      date: new Date(removeTx.createdOn ?? removeTx.modifiedOn),
-      socialId: removedCard.modifiedBy
-    }
-  )
+  const event: RemoveCardEvent = {
+    type: CardEventType.RemoveCard,
+    cardId: removedCard._id,
+    date: new Date(removeTx.createdOn ?? removeTx.modifiedOn),
+    socialId: removedCard.modifiedBy
+  }
+
+  await control.domainRequest(control.ctx, 'communication' as OperationDomain, {
+    event
+  })
 
   return res
 }
@@ -348,16 +359,16 @@ async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl):
     res.push(...(await updateParentInfoName(control, doc._id, updateTx.operations.title, doc._id)))
   }
   if ((updateTx.operations as any)._class !== undefined) {
-    void control.communicationApi?.event(
-      { account: systemAccount as any },
-      {
-        type: CardRequestEventType.UpdateCardType,
-        cardId: doc._id,
-        cardType: (updateTx.operations as any)._class,
-        socialId: updateTx.createdBy ?? updateTx.modifiedBy,
-        date: new Date(updateTx.createdOn ?? updateTx.modifiedOn)
-      }
-    )
+    const event: UpdateCardTypeEvent = {
+      type: CardEventType.UpdateCardType,
+      cardId: doc._id,
+      cardType: (updateTx.operations as any)._class,
+      socialId: updateTx.createdBy ?? updateTx.modifiedBy,
+      date: new Date(updateTx.createdOn ?? updateTx.modifiedOn)
+    }
+    await control.domainRequest(control.ctx, 'communication' as OperationDomain, {
+      event
+    })
   }
 
   return res
@@ -427,9 +438,6 @@ async function OnCardCreate (ctx: TxCreateDoc<Card>[], control: TriggerControl):
 }
 
 async function updateCollaborators (control: TriggerControl, ctx: TxCreateDoc<Card>[]): Promise<void> {
-  const { communicationApi } = control
-  if (communicationApi == null) return
-
   for (const tx of ctx) {
     const modifier = await getEmployee(control, tx.modifiedBy)
     const collaborators: AccountUuid[] = []
@@ -448,17 +456,17 @@ async function updateCollaborators (control: TriggerControl, ctx: TxCreateDoc<Ca
     }
 
     if (collaborators.length === 0) continue
-    void communicationApi.event(
-      { account: systemAccount as any },
-      {
-        type: NotificationRequestEventType.AddCollaborators,
-        cardId: tx.objectId,
-        cardType: tx.objectClass,
-        collaborators,
-        socialId: tx.createdBy ?? tx.modifiedBy,
-        date: new Date(tx.createdOn ?? tx.modifiedOn)
-      }
-    )
+    const event: AddCollaboratorsEvent = {
+      type: NotificationEventType.AddCollaborators,
+      cardId: tx.objectId,
+      cardType: tx.objectClass,
+      collaborators,
+      socialId: tx.createdBy ?? tx.modifiedBy,
+      date: new Date((tx.createdOn ?? tx.modifiedOn) + 1)
+    }
+    await control.domainRequest(control.ctx, 'communication' as OperationDomain, {
+      event
+    })
   }
 }
 

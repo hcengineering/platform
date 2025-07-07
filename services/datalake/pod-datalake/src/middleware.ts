@@ -13,18 +13,18 @@
 // limitations under the License.
 //
 
+import { systemAccountUuid } from '@hcengineering/core'
 import { extractToken } from '@hcengineering/server-client'
+import { Token } from '@hcengineering/server-token'
 import { type Response, type Request, type NextFunction, RequestHandler } from 'express'
 import { ApiError } from './error'
-import { Token } from '@hcengineering/server-token'
-import { systemAccountUuid } from '@hcengineering/core'
 
 export interface KeepAliveOptions {
   timeout: number
   max: number
 }
 
-interface RequestWithAuth extends Request {
+export interface RequestWithAuth extends Request {
   token?: Token
 }
 
@@ -54,7 +54,7 @@ export const withAdminAuthorization = (req: RequestWithAuth, res: Response, next
 export const withAuthorization = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
   try {
     const token = extractToken(req.headers)
-    if (token == null || token.extra?.guest === 'true') {
+    if (token == null || token.extra?.guest === 'true' || token.extra?.readonly === 'true') {
       throw new ApiError(401, 'Unauthorized')
     }
     req.token = token
@@ -105,4 +105,13 @@ export const withBlob = (req: RequestWithAuth, res: Response, next: NextFunction
   }
 
   next()
+}
+
+export const withReadonly = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    next()
+    return
+  }
+
+  next(new ApiError(403, 'Service is in read-only mode'))
 }

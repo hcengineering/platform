@@ -1,7 +1,7 @@
 import aiBot from '@hcengineering/ai-bot'
 import { connectMeeting, disconnectMeeting } from '@hcengineering/ai-bot-resources'
 import { Analytics } from '@hcengineering/analytics'
-import calendar, { type Event, type Schedule, getAllEvents } from '@hcengineering/calendar'
+import calendar, { type Event, getAllEvents, type Schedule } from '@hcengineering/calendar'
 import chunter from '@hcengineering/chunter'
 import contact, { getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
 import core, {
@@ -11,7 +11,6 @@ import core, {
   type Data,
   type Doc,
   type DocumentQuery,
-  generateId,
   getCurrentAccount,
   type Hierarchy,
   type Ref,
@@ -79,30 +78,30 @@ import {
   type LocalTrack,
   type LocalTrackPublication,
   LocalVideoTrack,
+  type Participant,
   type RemoteParticipant,
   type RemoteTrack,
   type RemoteTrackPublication,
   RoomEvent,
+  type ScreenShareCaptureOptions,
   Track,
-  type VideoCaptureOptions,
-  type Participant,
-  type ScreenShareCaptureOptions
+  type VideoCaptureOptions
 } from 'livekit-client'
 import { get, writable } from 'svelte/store'
 
+import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { sendMessage } from './broadcast'
+import MeetingMinutesSearchItem from './components/MeetingMinutesSearchItem.svelte'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 import love from './plugin'
 import {
   $myPreferences,
   currentMeetingMinutes,
-  currentSession,
   currentRoom,
+  currentSession,
   myOffice,
   selectedRoomPlace
 } from './stores'
-import MeetingMinutesSearchItem from './components/MeetingMinutesSearchItem.svelte'
-import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 
 export async function getToken (
   roomName: string,
@@ -114,9 +113,11 @@ export async function getToken (
   if (endpoint === undefined) {
     throw new Error('Love service endpoint not found')
   }
+  const token = getPlatformToken()
   const res = await fetch(concatLink(endpoint, '/getToken'), {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({ roomName: getTokenRoomName(roomName, roomId), _id: userId, participantName })
@@ -356,9 +357,9 @@ export async function updateBlurRadius (value: number): Promise<void> {
   if ($myPreferences !== undefined) {
     await client.update($myPreferences, { blurRadius: value })
   } else {
-    const space = getCurrentEmployee() as string as Ref<Space>
-    await client.createDoc(love.class.DevicesPreference, space, {
-      attachedTo: space,
+    const acc = getCurrentAccount().uuid
+    await client.createDoc(love.class.DevicesPreference, core.space.Workspace, {
+      attachedTo: acc,
       noiseCancellation: true,
       camEnabled: true,
       micEnabled: true,
@@ -554,7 +555,7 @@ async function withRetries (fn: () => Promise<void>, retries: number, delay: num
 
 async function connect (name: string, room: Room, _id: string): Promise<void> {
   const wsURL = getMetadata(love.metadata.WebSocketURL)
-  if (wsURL === undefined) {
+  if (wsURL === undefined || getCurrentAccount().role === AccountRole.ReadOnlyGuest) {
     return
   }
 
@@ -753,6 +754,7 @@ async function moveToRoom (
       room: room._id,
       person: currentPerson._id,
       name: currentPerson.name,
+      account: getCurrentAccount().uuid,
       sessionId
     })
   }
@@ -787,43 +789,7 @@ async function initMeetingMinutes (room: Room): Promise<void> {
     status: MeetingStatus.Active
   })
 
-  if (doc === undefined) {
-    const date = new Date()
-      .toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })
-      .replace(',', ' at')
-    const _id = generateId<MeetingMinutes>()
-    const newDoc: MeetingMinutes = {
-      _id,
-      _class: love.class.MeetingMinutes,
-      attachedTo: room._id,
-      attachedToClass: room._class,
-      collection: 'meetings',
-      space: core.space.Workspace,
-      title: `${await getRoomName(room)} ${date}`,
-      description: null,
-      status: MeetingStatus.Active,
-      modifiedBy: getCurrentAccount().primarySocialId,
-      modifiedOn: Date.now()
-    }
-    await client.addCollection(
-      love.class.MeetingMinutes,
-      core.space.Workspace,
-      room._id,
-      room._class,
-      'meetings',
-      { title: newDoc.title, description: newDoc.description, status: newDoc.status },
-      _id
-    )
-    currentMeetingMinutes.set(newDoc)
-    const loc = getCurrentLocation()
-    if (loc.path[2] === loveId || room.type === RoomType.Video) {
-      await navigateToOfficeDoc(client.getHierarchy(), newDoc)
-    }
-  } else {
+  if (doc !== undefined) {
     currentMeetingMinutes.set(doc)
     const loc = getCurrentLocation()
     if (loc.path[2] === loveId || room.type === RoomType.Video) {
@@ -952,7 +918,7 @@ export async function tryConnect (
     await client.update(invite, { status: invite.room === room._id ? RequestStatus.Approved : RequestStatus.Rejected })
   }
 
-  const isGuest = client.getHierarchy().as(currentPerson, contact.mixin.Employee).role === AccountRole.Guest
+  const isGuest = getCurrentAccount().role === AccountRole.Guest
   if ((room.access === RoomAccess.Knock || isGuest) && (!isOffice(room) || room.person !== currentPerson._id)) {
     const _id = await client.createDoc(love.class.JoinRequest, core.space.Workspace, {
       person: currentPerson._id,
@@ -1117,11 +1083,8 @@ export async function createMeetingSchedule (
   store: Record<string, any>,
   phase: DocCreatePhase
 ): Promise<void> {
-  console.log('createMeetingSchedule-0', _id)
   if (phase === 'post') {
-    console.log('createMeetingSchedule-1', _id)
     const schedule = await client.findOne(calendar.class.Schedule, { _id })
-    console.log('createMeetingSchedule-2', schedule)
     if (schedule === undefined) return
     await client.createMixin<Schedule, MeetingSchedule>(
       schedule._id,

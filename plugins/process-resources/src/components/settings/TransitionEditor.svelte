@@ -13,84 +13,208 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Process, Transition } from '@hcengineering/process'
-  import { settingsStore } from '@hcengineering/setting-resources'
-  import { Button, Icon } from '@hcengineering/ui'
+  import { Process, State, Step, Transition } from '@hcengineering/process'
+  import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
+  import {
+    Button,
+    ButtonIcon,
+    DropdownIntlItem,
+    DropdownLabelsPopupIntl,
+    getCurrentLocation,
+    getEventPositionElement,
+    IconAdd,
+    IconDelete,
+    Label,
+    navigate,
+    Scroller,
+    showPopup
+  } from '@hcengineering/ui'
+  import view from '@hcengineering/view-resources/src/plugin'
+  import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
+  import { initState } from '../../utils'
+  import ActionPresenter from './ActionPresenter.svelte'
+  import AsideStepEditor from './AsideStepEditor.svelte'
   import AsideTransitionEditor from './AsideTransitionEditor.svelte'
+  import Navigator from './Navigator.svelte'
   import TransitionPresenter from './TransitionPresenter.svelte'
   import TriggerPresenter from './TriggerPresenter.svelte'
 
-  export let transition: Transition
-  export let process: Process
-  export let direction: 'from' | 'to'
-  export let readonly: boolean = false
+  export let _id: Ref<Transition>
+  export let visibleSecondNav: boolean = true
+
+  let value: Transition | undefined = undefined
+  let process: Process | undefined = undefined
+
+  const dispatch = createEventDispatcher()
+  const query = createQuery()
+  $: query.query(plugin.class.Transition, { _id }, (res) => {
+    value = res[0]
+    if (value === undefined) {
+      return
+    }
+    process = client.getModel().findAllSync(plugin.class.Process, { _id: value.process })[0]
+    const title = getTitle(value)
+    dispatch('change', [
+      {
+        title: process.name,
+        id: process._id,
+        editor: plugin.component.ProcessEditor
+      },
+      {
+        title,
+        id: value._id,
+        editor: plugin.component.TransitionEditor
+      }
+    ])
+  })
+
+  function getTitle (transition: Transition): string {
+    const to = client.getModel().findAllSync(plugin.class.State, { _id: transition.to })[0]
+    if (transition.from == null) {
+      return `⦳ → ${to.title}`
+    }
+    const from = client.getModel().findAllSync(plugin.class.State, { _id: transition.from })[0]
+    return `${from.title} → ${to.title}`
+  }
 
   const client = getClient()
 
-  let from = client.getModel().findObject(transition.from)
-  let to = transition.to === null ? null : client.getModel().findObject(transition.to)
+  function addAction (e: MouseEvent): void {
+    const items: DropdownIntlItem[] = client
+      .getModel()
+      .findAllSync(plugin.class.Method, {})
+      .map((x) => ({
+        id: x._id,
+        label: x.label
+      }))
 
-  const query = createQuery()
-  query.query(plugin.class.State, {}, () => {
-    from = client.getModel().findObject(transition.from)
-    to = transition.to === null ? null : client.getModel().findObject(transition.to)
-  })
+    showPopup(DropdownLabelsPopupIntl, { items }, getEventPositionElement(e), async (res) => {
+      if (res !== undefined && value !== undefined) {
+        const step = await initState(res)
+        value.actions.push(step)
+        await client.update(value, { actions: value.actions })
+        value.actions = value.actions
+        editAction(step)
+      }
+    })
+  }
+
+  function editAction (step: Step<Doc>): void {
+    if (value === undefined) return
+    $settingsStore = { id: value._id, component: AsideStepEditor, props: { process, step, _id: value._id } }
+  }
+
+  let states: State[] = []
+  let transitions: Transition[] = []
+  const statesQuery = createQuery()
+  const transitionsQ = createQuery()
+
+  $: process &&
+    statesQuery.query(plugin.class.State, { process: process?._id }, (res) => {
+      states = res
+    })
+
+  $: process &&
+    transitionsQ.query(plugin.class.Transition, { process: process?._id }, (res) => {
+      transitions = res
+    })
+
+  async function handleDelete (): Promise<void> {
+    if (value === undefined) return
+    // to do handle on server trigger
+    await client.remove(value)
+    const loc = getCurrentLocation()
+    loc.path[5] = plugin.component.ProcessEditor
+    loc.path[6] = value.process
+    clearSettingsStore()
+    navigate(loc)
+  }
 
   function edit (): void {
-    $settingsStore = { id: transition._id, component: AsideTransitionEditor, props: { readonly, process, transition } }
+    $settingsStore = { id: _id, component: AsideTransitionEditor, props: { process, transition: value } }
   }
 </script>
 
-<div class="w-full container">
-  <div class="innerContainer">
-    <Button on:click={edit} kind="ghost" width={'100%'} padding={'0'} size="small">
-      <div class="flex-between w-full" slot="content">
-        <div class="flex-row-center flex-gap-2">
-          <TriggerPresenter {process} value={transition.trigger} params={transition.triggerParams} />
-          <TransitionPresenter {transition} {direction} />
+<div class="hulyComponent-content__container columns">
+  <Navigator {visibleSecondNav} {states} {transitions} />
+  <div class="hulyComponent-content__column content">
+    {#if value && process}
+      <Scroller align="center" padding="var(--spacing-3)" bottomPadding="var(--spacing-3)">
+        <div class="hulyComponent-content gap">
+          <div class="header flex-between">
+            <TransitionPresenter transition={value} />
+            <ButtonIcon
+              icon={IconDelete}
+              tooltip={{ label: view.string.Delete, direction: 'bottom' }}
+              size="small"
+              kind="secondary"
+              on:click={handleDelete}
+            />
+          </div>
+          <div class="hulyComponent-content flex-col-center flex-gap-4">
+            <div class="hulyTableAttr-container flex-col-center box">
+              <div class="label w-full p-4">
+                <Label label={plugin.string.Trigger} />
+              </div>
+              <Button justify="left" kind="ghost" width="100%" on:click={edit}>
+                <svelte:fragment slot="content">
+                  <TriggerPresenter value={value.trigger} params={value.triggerParams} {process} withLabel />
+                </svelte:fragment>
+              </Button>
+            </div>
+            <div class="hulyTableAttr-container flex-col-center box">
+              <div class="label w-full p-4">
+                <Label label={plugin.string.Actions} />
+              </div>
+              {#each value.actions as action}
+                <Button
+                  justify="left"
+                  kind="ghost"
+                  width="100%"
+                  on:click={() => {
+                    editAction(action)
+                  }}
+                >
+                  <svelte:fragment slot="content">
+                    <ActionPresenter {action} {process} readonly={false} />
+                  </svelte:fragment>
+                </Button>
+              {/each}
+              <Button
+                kind={'ghost'}
+                width={'100%'}
+                icon={IconAdd}
+                label={plugin.string.AddAction}
+                on:click={addAction}
+              />
+            </div>
+          </div>
         </div>
-        <div class="flex-row-center">
-          {#if transition.to !== null}
-            <Icon icon={plugin.icon.Process} size="small" />
-            {transition.actions.length}
-          {/if}
-        </div>
-      </div>
-    </Button>
+      </Scroller>
+    {/if}
   </div>
 </div>
 
 <style lang="scss">
-  .container {
-    padding: 0 0.25rem;
+  .box {
+    width: 32rem;
+    align-self: center;
 
-    &:hover {
-      .tool {
-        display: flex;
-      }
-    }
-
-    &.hovered {
-      .tool {
-        display: flex;
-      }
-    }
-
-    .tool {
-      display: none;
+    .label {
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--theme-caption-color);
+      user-select: none;
+      border-bottom: 1px solid var(--theme-divider-color);
     }
   }
 
-  .innerContainer {
-    padding: 0.25rem 0.5rem;
-
-    &.expand {
-      box-sizing: border-box;
-      border: 1px solid var(--theme-editbox-focus-border);
-      border-radius: 0.5rem;
-      padding-bottom: 0.25rem;
-    }
+  .header {
+    font-size: 2rem;
+    color: var(--theme-caption-color);
+    padding-bottom: 1rem;
   }
 </style>

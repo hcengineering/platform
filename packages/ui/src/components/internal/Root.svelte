@@ -95,15 +95,22 @@
 
   let status = OK
   let readonlyAccount = false
+  let systemAccount = false
   let maintenanceTime = -1
+  let maintenanceMessage: string | undefined
 
   addEventListener(PlatformEvent, async (_event, _status: Status) => {
     if (_status.code === platform.status.MaintenanceWarning) {
       maintenanceTime = _status.params.time
+      maintenanceMessage = _status.params.message
     } else {
       if (readonlyAccount) return
       if (_status.code === platform.status.ReadOnlyAccount) {
         readonlyAccount = true
+      }
+      if (_status.code === platform.status.SystemAccount) {
+        systemAccount = true
+        return
       }
       status = _status
     }
@@ -237,10 +244,20 @@
         >
           {#if maintenanceTime > 0}
             <div class="flex-grow flex-center flex-row-center" class:maintenanceScheduled={maintenanceTime > 0}>
-              <Label label={platform.status.MaintenanceWarning} params={{ time: maintenanceTime }} />
+              {#if maintenanceMessage !== undefined && maintenanceMessage.trim() !== ''}
+                {maintenanceMessage}
+              {:else}
+                <Label label={platform.status.MaintenanceWarning} />
+              {/if}
+              <Label label={platform.status.MaintenanceWarningTime} params={{ time: maintenanceTime }} />
             </div>
           {:else if status.severity !== Severity.OK}
             <StatusComponent {status} />
+          {/if}
+          {#if systemAccount}
+            <div class="flex-row-center maintenanceScheduled">
+              <Label label={platform.status.SystemAccount} />
+            </div>
           {/if}
         </div>
         <div class="flex-row-reverse flex-gap-0-5" style:-webkit-app-region={'no-drag'}>

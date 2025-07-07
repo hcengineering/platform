@@ -108,6 +108,19 @@
     "CalDavAccessPasswordWarning": "Non potrai vedere di nuovo questa password. Conservala in un luogo sicuro.",
     "MeetingScheduledNotification": "Riunione pianificata",
     "MeetingRescheduledNotification": "Orario della riunione modificato",
-    "MeetingCanceledNotification": "Riunione annullata: {title}"
+    "MeetingCanceledNotification": "Riunione annullata: {title}",
+    "PrimaryCalendar": "Calendario principale",
+    "Hidden": "Nascosto",
+    "Each": "Ogni",
+    "OnThe": "Il",
+    "First": "Primo",
+    "Second": "Secondo",
+    "Third": "Terzo",
+    "Fourth": "Quarto",
+    "Fifth": "Quinto",
+    "NextToLast": "Penultimo",
+    "Last": "Ultimo",
+    "Weekday": "Giorno lavorativo",
+    "WeekendDay": "Giorno libero"
   }
 }

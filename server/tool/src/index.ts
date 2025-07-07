@@ -16,6 +16,7 @@
 import { type AccountClient } from '@hcengineering/account-client'
 import core, {
   type Branding,
+  type Client,
   coreId,
   DOMAIN_BENCHMARK,
   DOMAIN_MIGRATION,
@@ -27,45 +28,44 @@ import core, {
   type MeasureContext,
   type MigrationState,
   ModelDb,
+  type PersonInfo,
   platformNow,
   platformNowDiff,
-  systemAccountUuid,
+  type Ref,
   type Tx,
   type TxOperations,
+  type WithLookup,
   type WorkspaceIds,
-  type WorkspaceUuid,
-  type Client,
-  type PersonInfo,
-  type Ref,
-  type WithLookup
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import {
   consoleModelLogger,
+  type MigrateMode,
   type MigrateOperation,
   type ModelLogger,
-  tryMigrate,
-  type MigrateMode
+  tryMigrate
 } from '@hcengineering/model'
 import {
+  type DbAdapter,
   DomainIndexHelperImpl,
   type Pipeline,
-  type StorageAdapter,
-  type DbAdapter,
   type PlatformQueueProducer,
-  type QueueWorkspaceMessage
+  type QueueWorkspaceMessage,
+  type StorageAdapter
 } from '@hcengineering/server-core'
 import { type InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
-import { generateToken } from '@hcengineering/server-token'
 import fs from 'fs'
 import * as yaml from 'js-yaml'
 import path from 'path'
+import { sendTransactorEvent } from './utils'
 
 export * from './connect'
 export * from './plugin'
+export * from './utils'
 export { toolPlugin as default }
 
 export class FileModelLogger implements ModelLogger {
@@ -384,16 +384,8 @@ export async function upgradeModel (
 
   // We need to send reboot for workspace
   ctx.info('send force close', { workspace: wsIds, transactorUrl })
-  const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
-  const token = generateToken(systemAccountUuid, wsIds.uuid, { service: 'tool', admin: 'true' })
 
-  try {
-    await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close`, {
-      method: 'PUT'
-    })
-  } catch (err: any) {
-    // Ignore error if transactor is not yet ready
-  }
+  await sendTransactorEvent(wsIds.uuid, 'force-close')
   return model
 }
 

@@ -112,7 +112,8 @@ export default async () => {
                 if (event.event === WorkspaceEvent.MaintenanceNotification) {
                   void setPlatformStatus(
                     new Status(Severity.WARNING, platform.status.MaintenanceWarning, {
-                      time: event.params.timeMinutes
+                      time: event.params.timeMinutes,
+                      message: event.params.message ?? ''
                     })
                   )
                 }

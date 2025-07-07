@@ -13,8 +13,10 @@
 // limitations under the License.
 //
 
+import { setMetadata } from '@hcengineering/platform'
 import type { PersonUuid, WorkspaceUuid } from '@hcengineering/core'
-import { generateToken } from '../token'
+import { decodeToken, generateToken } from '../token'
+import plugin from '../plugin'
 
 export function decodeTokenPayload (token: string): any {
   try {
@@ -26,6 +28,11 @@ export function decodeTokenPayload (token: string): any {
 }
 
 describe('generateToken', () => {
+  beforeEach(() => {
+    setMetadata(plugin.metadata.Secret, undefined)
+    setMetadata(plugin.metadata.Service, undefined)
+  })
+
   it('throws TokenError for invalid account uuid', () => {
     expect(() => {
       generateToken('invalid-uuid' as PersonUuid, '' as WorkspaceUuid, {}, 'secret')
@@ -72,6 +79,36 @@ describe('generateToken', () => {
     const decodedPayload = decodeTokenPayload(token)
     expect(decodedPayload).toEqual({
       extra,
+      account: '123e4567-e89b-12d3-a456-426614174000',
+      workspace: '123e4567-e89b-12d3-a456-426614174001'
+    })
+  })
+
+  it('should generate token with default secret', () => {
+    const token = generateToken(
+      '123e4567-e89b-12d3-a456-426614174000' as PersonUuid,
+      '123e4567-e89b-12d3-a456-426614174001' as WorkspaceUuid,
+      undefined,
+      'test'
+    )
+    const decodedPayload = decodeTokenPayload(token)
+    expect(decodedPayload).toEqual({
+      account: '123e4567-e89b-12d3-a456-426614174000',
+      workspace: '123e4567-e89b-12d3-a456-426614174001'
+    })
+  })
+
+  it('should generate token with default service in extra', () => {
+    setMetadata(plugin.metadata.Service, 'test')
+    const token = generateToken(
+      '123e4567-e89b-12d3-a456-426614174000' as PersonUuid,
+      '123e4567-e89b-12d3-a456-426614174001' as WorkspaceUuid,
+      undefined,
+      'secret'
+    )
+    const decodedPayload = decodeToken(token, false, 'test')
+    expect(decodedPayload).toEqual({
+      extra: { service: 'test' },
       account: '123e4567-e89b-12d3-a456-426614174000',
       workspace: '123e4567-e89b-12d3-a456-426614174001'
     })

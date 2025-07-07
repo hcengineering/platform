@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, WorkspaceUuid, newMetrics } from '@hcengineering/core'
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, QueueTopic } from '@hcengineering/server-core'
@@ -49,6 +49,7 @@ Analytics.setTag('application', 'telegram-bot-service')
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'telegram-bot-service')
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceId)
   registerLoaders()
@@ -92,15 +93,15 @@ export const start = async (): Promise<void> => {
     queue.getClientId(),
     async (messages) => {
       for (const message of messages) {
-        const id = message.id as WorkspaceUuid
+        const workspace = message.workspace
         const records = message.value
         for (const record of records) {
           switch (record.type) {
             case TelegramQueueMessageType.Notification:
-              await worker.processNotification(id, record, bot)
+              await worker.processNotification(workspace, record, bot)
               break
             case TelegramQueueMessageType.WorkspaceSubscription:
-              await worker.processWorkspaceSubscription(id, record)
+              await worker.processWorkspaceSubscription(workspace, record)
               break
           }
         }

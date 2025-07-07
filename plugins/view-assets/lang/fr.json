@@ -130,7 +130,11 @@
     "Document": "Document",
     "Loading": "Chargement...",
     "NoRelations": "Aucune relation",
-    "ReadOnlyWarningTitle": "Mode lecture seule",
-    "ReadOnlyWarningMessage": "Contactez l'administrateur pour obtenir un accès complet à cet espace de travail."
+    "ReadOnlyWarningTitle": "✨ Démo Invité",
+    "ReadOnlyWarningMessage": "Vous êtes en mode consultation. Voulez-vous gérer tous types de projets dans Huly ? Tâches, délais, équipe — inscrivez-vous pour un accès complet !",
+    "ReadOnlySignUp": "Inscription \uD83D\uDE80",
+    "Icon": "Icône",
+    "Color": "Couleur",
+    "AutomationOnly": "Automatisation uniquement"
   }
 }

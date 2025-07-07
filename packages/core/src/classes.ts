@@ -207,6 +207,7 @@ export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   shortLabel?: IntlString
   isCustom?: boolean
   defaultValue?: any
+  automationOnly?: boolean
 
   // Extra customization properties
   [key: string]: any
@@ -237,6 +238,11 @@ export interface Classifier extends Doc, UXObject {
  * @public
  */
 export type Domain = string & { __domain: true }
+
+/**
+ * @public
+ */
+export type OperationDomain = string & { __domain: true }
 
 /**
  * @public
@@ -414,6 +420,11 @@ export const DOMAIN_RELATION = 'relation' as Domain
 /**
  * @public
  */
+export const DOMAIN_COLLABORATOR = 'collaborator' as Domain
+
+/**
+ * @public
+ */
 export interface TransientConfiguration extends Class<Doc> {
   // If set will not store transient objects into memdb
   broadcastOnly: boolean
@@ -522,7 +533,8 @@ export enum AccountRole {
   Guest = 'GUEST',
   User = 'USER',
   Maintainer = 'MAINTAINER',
-  Owner = 'OWNER'
+  Owner = 'OWNER',
+  Admin = 'ADMIN'
 }
 
 /**
@@ -534,7 +546,8 @@ export const roleOrder: Record<AccountRole, number> = {
   [AccountRole.Guest]: 20,
   [AccountRole.User]: 30,
   [AccountRole.Maintainer]: 40,
-  [AccountRole.Owner]: 50
+  [AccountRole.Owner]: 50,
+  [AccountRole.Admin]: 100
 }
 
 /**
@@ -834,6 +847,7 @@ export interface WorkspaceInfoWithStatus extends WorkspaceInfo {
   mode: WorkspaceMode
   processingProgress?: number
   backupInfo?: BackupStatus
+  processingAttemps: number
 }
 
 export interface WorkspaceMemberInfo {
@@ -862,6 +876,8 @@ export interface SocialId {
 
   displayValue?: string
   verifiedOn?: number
+
+  isDeleted?: boolean // Social ids are soft-deleted so all objects created with them can still be properly displayed.
 }
 
 export interface AccountInfo {
@@ -870,6 +886,16 @@ export interface AccountInfo {
 }
 
 export type SocialKey = Pick<SocialId, 'type' | 'value'>
+
+export interface ClassCollaborators<T extends Doc> extends Doc {
+  attachedTo: Ref<Class<T>>
+  fields: (keyof T)[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
+  provideSecurity?: boolean // If true, will provide security for collaborators
+}
+
+export interface Collaborator extends AttachedDoc {
+  collaborator: AccountUuid
+}
 
 /**
  * @public

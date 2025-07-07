@@ -150,3 +150,13 @@ export function getBlobMetadata (ctx: MeasureContext, attachment: Attachment): B
     return undefined
   }
 }
+
+// Define different time shifts for objects to ensure correct ordering
+export enum MessageTimeShift {
+  Channel = -6,
+  MailTag = -5,
+  ThreadCard = -4,
+  Thread = -3,
+  Collaborator = -2,
+  Subject = -1
+}

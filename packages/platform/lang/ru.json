@@ -5,11 +5,13 @@
     "InvalidId": "Некорректный Id: {id}",
     "BadRequest": "Некорректный запрос",
     "Forbidden": "Запрещено",
+    "Conflict": "Конфликт",
     "ExpiredLink": "Ссылка истекла",
     "Unauthorized": "Неавторизован",
     "UnknownMethod": "Неизвестный метод: {method}",
     "InternalServerError": "Внутренняя ошибка сервера",
-    "MaintenanceWarning": "Серверные работы запланированы через {time, plural, one {# минуту} few {# минуты} other {# минут}}",
+    "MaintenanceWarning": "Серверные работы запланированы через",
+    "MaintenanceWarningTime": "{time, plural, one {# минуту} few {# минуты} other {# минут}}",
     "AccountNotFound": "Аккаунт не найден",
     "AccountNotConfirmed": "Аккаунт не подтвержден",
     "WorkspaceNotFound": "Рабочее пространство не найдено",
@@ -21,6 +23,8 @@
     "InvalidOtp": "Неверный код",
     "InviteNotFound": "Приглашение с email:{email} не найдено.",
     "WorkspaceLimitReached": "Вы достигли лимита рабочих пространств. Свяжитесь с нами...",
-    "ReadOnlyAccount": "Режим только для чтения"
+    "ReadOnlyAccount": "Гостевое демо",
+    "SystemAccount": "Системный аккаунт",
+    "SocialIdAlreadyExists": "Социальный ID уже существует"
   }
 }

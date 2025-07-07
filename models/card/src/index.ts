@@ -44,11 +44,13 @@ import core, {
 import {
   type Builder,
   Collection,
+  Hidden,
   Index,
   Mixin,
   Model,
   Prop,
   TypeCollaborativeDoc,
+  TypeNumber,
   TypeRef,
   TypeString,
   UX
@@ -59,7 +61,7 @@ import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
 import view, { createAction, type Viewlet } from '@hcengineering/model-view'
 import workbench, { WidgetType } from '@hcengineering/model-workbench'
-import { type Asset, getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
+import { type Asset, getEmbeddedLabel, type IntlString, type Resource } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type BuildModelKey } from '@hcengineering/view'
@@ -108,6 +110,16 @@ export class TCard extends TDoc implements Card {
   @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
     todos?: CollectionSize<ToDo>
 
+  @Prop(TypeString(), view.string.Icon)
+  @Hidden()
+  @Index(IndexKind.FullText)
+    icon?: Asset
+
+  @Prop(TypeNumber(), view.string.Color)
+  @Hidden()
+  @Index(IndexKind.FullText)
+    color?: number
+
   children?: number
 
   parentInfo!: ParentInfo[]
@@ -132,6 +144,7 @@ export class TCardSection extends TDoc implements CardSection {
   component!: AnyComponent
   order!: number
   navigation!: CardNavigation[]
+  checkVisibility?: Resource<(doc: Card) => Promise<boolean>>
 }
 
 @Mixin(card.mixin.CardViewDefaults, card.class.MasterTag)
@@ -319,6 +332,10 @@ export function createModel (builder: Builder): void {
 
   defineTabs(builder)
 
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectIcon, {
+    component: card.component.CardIcon
+  })
+
   createSystemType(
     builder,
     card.types.File,
@@ -391,7 +408,6 @@ export function createModel (builder: Builder): void {
     {
       label: card.string.CardApplication,
       icon: card.icon.Card,
-      accessLevel: AccountRole.User,
       alias: cardId,
       hidden: false,
       locationResolver: card.resolver.Location,
@@ -400,7 +416,6 @@ export function createModel (builder: Builder): void {
         specials: [
           {
             id: 'browser',
-            accessLevel: AccountRole.User,
             label: core.string.Spaces,
             icon: view.icon.List,
             component: workbench.component.SpecialView,
@@ -902,7 +917,8 @@ function defineTabs (builder: Builder): void {
       label: core.string.Relations,
       component: card.sectionComponent.RelationsSection,
       order: 500,
-      navigation: []
+      navigation: [],
+      checkVisibility: card.function.CheckRelationsSectionVisibility
     },
     card.section.Relations
   )

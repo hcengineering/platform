@@ -80,7 +80,7 @@
 
 {#if kind === 'inline'}
   <Button
-    icon={withoutIcon ? undefined : calendar.icon.Hidden}
+    icon={withoutIcon ? undefined : selected?.icon ?? calendar.icon.Hidden}
     label={selected?.label}
     kind="ghost"
     justify="left"
@@ -94,7 +94,7 @@
   />
 {:else}
   <ButtonMenu
-    icon={withoutIcon ? undefined : calendar.icon.Hidden}
+    icon={withoutIcon ? undefined : selected?.icon ?? calendar.icon.Hidden}
     label={selected?.label}
     selected={selected?.id}
     {items}

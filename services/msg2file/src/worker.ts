@@ -27,7 +27,7 @@ import {
 import cardPlugin, { type Card } from '@hcengineering/card'
 import yaml from 'js-yaml'
 import { v4 as uuid } from 'uuid'
-import { MessageRequestEventType } from '@hcengineering/communication-sdk-types'
+import { MessageEventType } from '@hcengineering/communication-sdk-types'
 import { applyPatches, retry } from '@hcengineering/communication-shared'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { deserializeMessage } from '@hcengineering/communication-yaml'
@@ -387,18 +387,21 @@ async function createGroup (
 ): Promise<void> {
   await retry(
     async () =>
-      await client.event({
-        type: MessageRequestEventType.CreateMessagesGroup,
-        group: {
-          cardId,
-          blobId,
-          fromDate,
-          toDate,
-          count
+      await client.event(
+        {
+          type: MessageEventType.CreateMessagesGroup,
+          group: {
+            cardId,
+            blobId,
+            fromDate,
+            toDate,
+            count
+          },
+          socialId: core.account.System,
+          date: new Date()
         },
-        socialId: core.account.System,
-        date: new Date()
-      }),
+        core.account.System
+      ),
     { retries: 3 }
   )
 }
@@ -406,13 +409,16 @@ async function createGroup (
 async function removeGroup (client: CommunicationRestClient, cardId: CardID, blobId: Ref<Blob>): Promise<void> {
   await retry(
     async () =>
-      await client.event({
-        type: MessageRequestEventType.RemoveMessagesGroup,
-        cardId,
-        blobId,
-        socialId: core.account.System,
-        date: new Date()
-      }),
+      await client.event(
+        {
+          type: MessageEventType.RemoveMessagesGroup,
+          cardId,
+          blobId,
+          socialId: core.account.System,
+          date: new Date()
+        },
+        core.account.System
+      ),
     { retries: 3 }
   )
 }

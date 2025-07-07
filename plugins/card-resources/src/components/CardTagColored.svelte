@@ -31,10 +31,6 @@
 
   const dispatch = createEventDispatcher()
 
-  function getColorDefinition (color: number | undefined): ColorDefinition {
-    return getPlatformColorDef(color ?? 0, $themeStore.dark)
-  }
-
   function getTagStyle (color: ColorDefinition): string {
     return `
     background: ${color.color + '33'};
@@ -48,7 +44,7 @@
 <div
   class="tag"
   class:removable
-  style={`${getTagStyle(getColorDefinition(color))}`}
+  style={`${getTagStyle(getPlatformColorDef(color ?? 0, $themeStore.dark))}`}
   on:click
   on:keydown
   use:tooltip={{

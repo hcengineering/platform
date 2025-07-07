@@ -15,9 +15,10 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
-import { Doc, MeasureMetricsContext, TxCUD, WorkspaceUuid, newMetrics } from '@hcengineering/core'
+import { Doc, MeasureMetricsContext, TxCUD, newMetrics } from '@hcengineering/core'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
+import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, QueueTopic } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
 import { join } from 'path'
@@ -32,6 +33,9 @@ const topicTranscodeResult = 'stream.transcode.result'
 
 const setupMetadata = (): void => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverToken.metadata.Service, 'media')
+  setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
+  setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
 }
 
 async function main (): Promise<void> {
@@ -62,14 +66,14 @@ async function main (): Promise<void> {
   queue.createConsumer<VideoTranscodeResult>(ctx, topicTranscodeResult, application, async (msgs) => {
     for (const msg of msgs) {
       for (const res of msg.value) {
-        await handleTranscodeResult(ctx, res)
+        await handleTranscodeResult(ctx, msg.workspace, res)
       }
     }
   })
 
   queue.createConsumer<TxCUD<Doc>>(ctx, QueueTopic.Tx, queue.getClientId(), async (msgs) => {
     for (const msg of msgs) {
-      const workspaceUuid = msg.id as WorkspaceUuid
+      const workspaceUuid = msg.workspace
       for (const tx of msg.value) {
         await handleTx(ctx, workspaceUuid, tx, transcodeProducer)
       }

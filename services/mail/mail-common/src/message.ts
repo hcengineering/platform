@@ -19,14 +19,16 @@ import { type Card } from '@hcengineering/card'
 import { MessageID, MessageType } from '@hcengineering/communication-types'
 import chat from '@hcengineering/chat'
 import { PersonSpace } from '@hcengineering/contact'
-import {
+import core, {
   type Blob,
   type MeasureContext,
   type PersonId,
   type Ref,
+  type TxDomainEvent,
   type TxOperations,
   AccountUuid,
   generateId,
+  OperationDomain,
   RateLimiter
 } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
@@ -34,21 +36,23 @@ import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import {
   AddCollaboratorsEvent,
-  MessageRequestEventType,
-  AttachBlobEvent,
+  BlobPatchEvent,
   CreateMessageEvent,
-  AttachThreadEvent,
-  NotificationRequestEventType
+  MessageEventType,
+  NotificationEventType,
+  ThreadPatchEvent
 } from '@hcengineering/communication-sdk-types'
 import { generateMessageId } from '@hcengineering/communication-shared'
 
-import { BaseConfig, type Attachment } from './types'
+import { BaseConfig, SyncOptions, type Attachment } from './types'
 import { EmailMessage, MailRecipient, MessageData } from './types'
-import { getBlobMetadata, getMdContent } from './utils'
+import { getBlobMetadata, getMdContent, MessageTimeShift } from './utils'
 import { PersonCacheFactory } from './person'
 import { PersonSpacesCacheFactory } from './personSpaces'
 import { ChannelCache, ChannelCacheFactory } from './channel'
 import { ThreadLookupService } from './thread'
+
+const COMMUNICATION_DOMAIN = 'communication' as OperationDomain
 
 /**
  * Creates mail messages in the platform
@@ -86,7 +90,8 @@ export async function createMessages (
   wsInfo: WorkspaceLoginInfo,
   message: EmailMessage,
   attachments: Attachment[],
-  recipients?: MailRecipient[]
+  recipients?: MailRecipient[],
+  options?: SyncOptions
 ): Promise<void> {
   const { mailId, from, subject, replyTo } = message
   const tos = [...(message.to ?? []), ...(message.copy ?? [])]
@@ -169,7 +174,8 @@ export async function createMessages (
           person,
           message.sendOn,
           channelCache,
-          replyTo
+          replyTo,
+          options
         )
       }
     } catch (error) {
@@ -195,7 +201,8 @@ async function saveMessageToSpaces (
   recipient: MailRecipient,
   createdDate: number,
   channelCache: ChannelCache,
-  inReplyTo?: string
+  inReplyTo?: string,
+  options?: SyncOptions
 ): Promise<void> {
   const rateLimiter = new RateLimiter(10)
   for (const space of spaces) {
@@ -226,10 +233,10 @@ async function saveMessageToSpaces (
             createdBy: modifiedBy,
             modifiedBy,
             parent: channel,
-            createdOn: createdDate
+            createdOn: createdDate + MessageTimeShift.ThreadCard // Add a small shift to ensure correct ordering
           },
           generateId(),
-          createdDate,
+          createdDate + MessageTimeShift.ThreadCard,
           modifiedBy
         )
         threadId = newThreadId as Ref<Card>
@@ -251,12 +258,12 @@ async function saveMessageToSpaces (
         isReply
       }
 
-      const messageId = await createMailMessage(producer, config, messageData, threadId)
-      await createFiles(ctx, producer, config, attachments, messageData, threadId, messageId)
       if (!isReply) {
         await addCollaborators(producer, config, messageData, threadId)
-        await createMailThread(producer, config, messageData, messageId)
+        await createMailThread(producer, config, messageData, options)
       }
+      const messageId = await createMailMessage(producer, config, messageData, threadId, options)
+      await createFiles(ctx, producer, config, attachments, messageData, threadId, messageId)
 
       await threadLookup.setThreadId(mailId, space._id, threadId)
     })
@@ -268,17 +275,38 @@ async function createMailThread (
   producer: Producer,
   config: BaseConfig,
   data: MessageData,
-  messageId: MessageID
+  options?: SyncOptions
 ): Promise<void> {
-  const threadEvent: AttachThreadEvent = {
-    type: MessageRequestEventType.AttachThread,
+  const subjectId = generateMessageId()
+  const createSubjectEvent: CreateMessageEvent = {
+    type: MessageEventType.CreateMessage,
+    messageType: MessageType.Message,
     cardId: data.channel,
-    messageId,
-    threadId: data.threadId,
-    threadType: chat.masterTag.Thread,
-    socialId: data.modifiedBy
+    cardType: chat.masterTag.Thread,
+    content: data.subject,
+    socialId: data.modifiedBy,
+    date: new Date(data.created.getTime() + MessageTimeShift.Subject),
+    messageId: subjectId,
+    options: {
+      noNotify: options?.noNotify
+    }
   }
-  const thread = Buffer.from(JSON.stringify(threadEvent))
+  const createSubjectData = toEventBuffer(createSubjectEvent)
+  await sendToCommunicationTopic(producer, config, data, createSubjectData)
+
+  const threadEvent: ThreadPatchEvent = {
+    type: MessageEventType.ThreadPatch,
+    cardId: data.channel,
+    messageId: subjectId,
+    operation: {
+      opcode: 'attach',
+      threadId: data.threadId,
+      threadType: chat.masterTag.Thread
+    },
+    socialId: data.modifiedBy,
+    date: new Date(data.created.getTime() + MessageTimeShift.Thread)
+  }
+  const thread = toEventBuffer(threadEvent)
   await sendToCommunicationTopic(producer, config, data, thread)
 }
 
@@ -286,20 +314,24 @@ async function createMailMessage (
   producer: Producer,
   config: BaseConfig,
   data: MessageData,
-  threadId: Ref<Card>
+  threadId: Ref<Card>,
+  options?: SyncOptions
 ): Promise<MessageID> {
   const messageId = generateMessageId()
   const createMessageEvent: CreateMessageEvent = {
-    type: MessageRequestEventType.CreateMessage,
+    type: MessageEventType.CreateMessage,
     messageType: MessageType.Message,
-    cardId: data.isReply ? threadId : data.channel,
+    cardId: threadId,
     cardType: chat.masterTag.Thread,
     content: data.content,
     socialId: data.modifiedBy,
     date: data.created,
-    messageId
+    messageId,
+    options: {
+      noNotify: options?.noNotify
+    }
   }
-  const createMessageData = Buffer.from(JSON.stringify(createMessageEvent))
+  const createMessageData = toEventBuffer(createMessageEvent)
   await sendToCommunicationTopic(producer, config, data, createMessageData)
   return messageId
 }
@@ -314,20 +346,27 @@ async function createFiles (
   messageId: MessageID
 ): Promise<void> {
   const fileData: Buffer[] = attachments.map((a) => {
-    const attachBlobEvent: AttachBlobEvent = {
-      type: MessageRequestEventType.AttachBlob,
-      cardId: messageData.isReply ? threadId : messageData.channel,
+    const attachBlobEvent: BlobPatchEvent = {
+      type: MessageEventType.BlobPatch,
+      cardId: threadId,
       messageId,
       socialId: messageData.modifiedBy,
-      blobData: {
-        blobId: a.id as Ref<Blob>,
-        contentType: a.contentType,
-        fileName: a.name,
-        size: a.data.length,
-        metadata: getBlobMetadata(ctx, a)
-      }
+      operations: [
+        {
+          opcode: 'attach',
+          blobs: [
+            {
+              blobId: a.id as Ref<Blob>,
+              mimeType: a.contentType,
+              fileName: a.name,
+              size: a.data.length,
+              metadata: getBlobMetadata(ctx, a)
+            }
+          ]
+        }
+      ]
     }
-    return Buffer.from(JSON.stringify(attachBlobEvent))
+    return toEventBuffer(attachBlobEvent)
   })
   const fileEvents = fileData.map((data) => ({
     key: Buffer.from(messageData.channel ?? messageData.spaceId),
@@ -352,14 +391,14 @@ async function addCollaborators (
     return // Message author should be automatically added as a collaborator
   }
   const addCollaboratorsEvent: AddCollaboratorsEvent = {
-    type: NotificationRequestEventType.AddCollaborators,
+    type: NotificationEventType.AddCollaborators,
     cardId: threadId,
     cardType: chat.masterTag.Thread,
     collaborators: [data.recipient.uuid as AccountUuid],
     socialId: data.modifiedBy,
-    date: new Date(data.created.getTime() - 1)
+    date: new Date(data.created.getTime() + MessageTimeShift.Collaborator)
   }
-  const createMessageData = Buffer.from(JSON.stringify(addCollaboratorsEvent))
+  const createMessageData = toEventBuffer(addCollaboratorsEvent)
   await sendToCommunicationTopic(producer, config, data, createMessageData)
 }
 
@@ -381,4 +420,21 @@ async function sendToCommunicationTopic (
       }
     ]
   })
+}
+
+function toEventBuffer (data: Record<string, any>): Buffer {
+  return Buffer.from(JSON.stringify(wrapToTx(data)))
+}
+
+function wrapToTx (data: Record<string, any>): TxDomainEvent {
+  return {
+    _id: generateId(),
+    space: core.space.Tx,
+    objectSpace: core.space.Domain,
+    _class: core.class.TxDomainEvent,
+    domain: COMMUNICATION_DOMAIN,
+    event: data,
+    modifiedOn: Date.now(),
+    modifiedBy: data.socialId
+  }
 }

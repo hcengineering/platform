@@ -1,12 +1,12 @@
 import { AccountClient } from '@hcengineering/account-client'
-import { generateId, isActiveMode, MeasureContext, PersonId, WorkspaceUuid } from '@hcengineering/core'
+import { generateId, MeasureContext } from '@hcengineering/core'
 import { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
 import { calendarIntegrationKind } from '@hcengineering/calendar'
 import config from './config'
 import { getKvsClient } from './kvsUtils'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
-import { EventWatch, GoogleEmail, Token, User, Watch, WatchBase } from './types'
+import { EventWatch, GoogleEmail, Token, User, Watch } from './types'
 import { getGoogleClient } from './utils'
 
 export class WatchClient {
@@ -15,7 +15,11 @@ export class WatchClient {
   private readonly user: Token
   readonly rateLimiter: RateLimiter
 
-  private constructor (token: Token) {
+  private constructor (
+    private readonly ctx: MeasureContext,
+    token: Token,
+    private readonly accountClient: AccountClient
+  ) {
     this.user = token
     this.rateLimiter = getRateLimitter(this.user.email)
 
@@ -24,15 +28,15 @@ export class WatchClient {
     this.oAuth2Client = res.auth
   }
 
-  static async Create (token: Token): Promise<WatchClient> {
-    const watchClient = new WatchClient(token)
+  static async Create (ctx: MeasureContext, token: Token, accountClient: AccountClient): Promise<WatchClient> {
+    const watchClient = new WatchClient(ctx, token, accountClient)
     await watchClient.setToken(token)
     return watchClient
   }
 
   private async getWatches (): Promise<Record<string, Watch>> {
     const client = getKvsClient()
-    const key = `${calendarIntegrationKind}:watch:${this.user.workspace}:${this.user.userId}:${this.user.email}`
+    const key = `${calendarIntegrationKind}:watch:${this.user.email}`
     const watches = await client.listKeys<Watch>(key)
     return watches ?? {}
   }
@@ -49,10 +53,22 @@ export class WatchClient {
 
   async checkError (err: any): Promise<void> {
     if (err?.response?.data?.error === 'invalid_grant') {
-      const watches = await this.getWatches()
-      const client = getKvsClient()
-      for (const key in watches) {
-        await client.deleteKey(key)
+      await this.accountClient.deleteIntegrationSecret({
+        socialId: this.user.userId,
+        kind: calendarIntegrationKind,
+        workspaceUuid: this.user.workspace,
+        key: this.user.email
+      })
+      const active = await this.accountClient.listIntegrationsSecrets({
+        kind: calendarIntegrationKind,
+        key: this.user.email
+      })
+      if (active.length === 0) {
+        const watches = await this.getWatches()
+        const client = getKvsClient()
+        for (const key in watches) {
+          await client.deleteKey(key)
+        }
       }
     }
   }
@@ -83,32 +99,38 @@ export class WatchClient {
   private async watchCalendars (current: Watch): Promise<void> {
     try {
       await this.unsubscribeWatch(current)
-      await watchCalendars(this.user, this.user.email, this.calendar)
+    } catch (err: any) {
+      this.ctx.error('Calendars watch unsubscribe error', { message: err.message })
+    }
+    try {
+      await watchCalendars(this.user.email, this.calendar)
     } catch (err) {
-      console.error('Calendar watch error', err)
+      this.ctx.error('Calendars watch error', { message: (err as any).message })
     }
   }
 
   private async watchCalendar (current: EventWatch): Promise<void> {
     try {
       await this.unsubscribeWatch(current)
-      await watchCalendar(this.user, this.user.email, current.calendarId, this.calendar)
     } catch (err: any) {
-      await this.checkError(err)
+      this.ctx.error('Calendar watch unsubscribe error', { message: err.message })
+    }
+    try {
+      await watchCalendar(this.user.email, current.calendarId, this.calendar)
+    } catch (err: any) {
+      this.ctx.error('Calendar watch error', { message: err.message, calendarId: current.calendarId })
     }
   }
 }
 
-async function watchCalendars (user: User, email: GoogleEmail, googleClient: calendar_v3.Calendar): Promise<void> {
+async function watchCalendars (email: GoogleEmail, googleClient: calendar_v3.Calendar): Promise<void> {
   const channelId = generateId()
   const body = { id: channelId, address: config.WATCH_URL, type: 'webhook', token: `user=${email}&mode=calendar` }
   const res = await googleClient.calendarList.watch({ requestBody: body })
   if (res.data.expiration != null && res.data.resourceId !== null) {
     const client = getKvsClient()
-    const key = `${calendarIntegrationKind}:watch:${user.workspace}:${user.userId}:${email}:null`
+    const key = `${calendarIntegrationKind}:watch:${email}:null`
     await client.setValue<Watch>(key, {
-      userId: user.userId,
-      workspace: user.workspace,
       email,
       calendarId: null,
       channelId,
@@ -119,7 +141,6 @@ async function watchCalendars (user: User, email: GoogleEmail, googleClient: cal
 }
 
 async function watchCalendar (
-  user: User,
   email: GoogleEmail,
   calendarId: string,
   googleClient: calendar_v3.Calendar
@@ -134,10 +155,8 @@ async function watchCalendar (
   const res = await googleClient.events.watch({ calendarId, requestBody: body })
   if (res.data.expiration != null && res.data.resourceId != null) {
     const client = getKvsClient()
-    const key = `${calendarIntegrationKind}:watch:${user.workspace}:${user.userId}:${email}:${calendarId}`
+    const key = `${calendarIntegrationKind}:watch:${email}:${calendarId}`
     await client.setValue<Watch>(key, {
-      userId: user.userId,
-      workspace: user.workspace,
       email,
       calendarId,
       channelId,
@@ -160,33 +179,33 @@ export class WatchController {
   }
 
   static get (ctx: MeasureContext, accountClient: AccountClient): WatchController {
-    if (WatchController._instance !== undefined) {
-      return WatchController._instance
+    if (WatchController._instance === undefined) {
+      WatchController._instance = new WatchController(ctx, accountClient)
     }
-    return new WatchController(ctx, accountClient)
+    return WatchController._instance
   }
 
-  private async getUserWatches (userId: PersonId, workspace: WorkspaceUuid): Promise<Record<string, Watch>> {
+  private async getUserWatches (email: GoogleEmail): Promise<Record<string, Watch>> {
     const client = getKvsClient()
-    const key = `${calendarIntegrationKind}:watch:${workspace}:${userId}`
+    const key = `${calendarIntegrationKind}:watch:${email}`
     return (await client.listKeys<Watch>(key)) ?? {}
   }
 
   async unsubscribe (user: Token): Promise<void> {
-    const client = getKvsClient()
-    const watches = await this.getUserWatches(user.userId, user.workspace)
-    for (const key in watches) {
-      await client.deleteKey(key)
-    }
-    const token = await this.accountClient.getIntegrationSecret({
-      socialId: user.userId,
+    const active = await this.accountClient.listIntegrationsSecrets({
       kind: calendarIntegrationKind,
-      workspaceUuid: user.workspace,
       key: user.email
     })
-    if (token == null) return
-    const watchClient = await WatchClient.Create(user)
-    await watchClient.unsubscribe(Object.values(watches))
+    if (active.length === 0) {
+      const client = getKvsClient()
+      const watches = await this.getUserWatches(user.email)
+      for (const key in watches) {
+        await client.deleteKey(key)
+      }
+
+      const watchClient = await WatchClient.Create(this.ctx, user, this.accountClient)
+      await watchClient.unsubscribe(Object.values(watches))
+    }
   }
 
   stop (): void {
@@ -219,45 +238,27 @@ export class WatchController {
     }
     this.ctx.info('watch, found for update', { count: toRefresh.length })
     if (toRefresh.length === 0) return
-    const groups = new Map<string, WatchBase[]>()
-    const workspaces = new Set<WorkspaceUuid>()
+    const groups = new Map<GoogleEmail, Watch[]>()
     for (const watch of toRefresh) {
-      workspaces.add(watch.workspace)
-      const key = `${watch.userId}:${watch.workspace}`
-      const group = groups.get(key)
-      if (group !== undefined) {
-        group.push(watch)
-      } else {
-        groups.set(key, [watch])
-      }
+      const curr = groups.get(watch.email) ?? []
+      curr.push(watch)
+      groups.set(watch.email, curr)
     }
-    const ids = [...workspaces]
-    if (ids.length === 0) return
-    const infos = await this.accountClient.getWorkspacesInfo(ids)
-    const tokens = await this.accountClient.listIntegrationsSecrets({ kind: calendarIntegrationKind })
-    for (const group of groups.values()) {
-      try {
-        const userId = group[0].userId
-        const workspace = group[0].workspace
-        const token = tokens.find((p) => p.workspaceUuid === workspace && p.socialId === userId)
-        if (token === undefined) {
-          const toRemove = await this.getUserWatches(userId, workspace)
-          for (const key in toRemove) {
-            await client.deleteKey(key)
-          }
-          continue
-        }
-        const info = infos.find((p) => p.uuid === workspace)
-        if (info === undefined || !isActiveMode(info.mode)) {
-          const toRemove = await this.getUserWatches(userId, workspace)
-          for (const key in toRemove) {
-            await client.deleteKey(key)
-          }
-          continue
-        }
-        const watchClient = await WatchClient.Create(JSON.parse(token.secret))
-        await watchClient.subscribe(group)
-      } catch {}
+    for (const group of groups) {
+      const secrets = await this.accountClient.listIntegrationsSecrets({
+        kind: calendarIntegrationKind,
+        key: group[0]
+      })
+      for (const val of group[1]) {
+        await client.deleteKey(`${calendarIntegrationKind}:watch:${group[0]}:${val.calendarId ?? 'null'}`)
+      }
+      for (const secret of secrets) {
+        try {
+          const watchClient = await WatchClient.Create(this.ctx, JSON.parse(secret.secret), this.accountClient)
+          await watchClient.subscribe(group[1])
+          break
+        } catch {}
+      }
     }
     this.ctx.info('watch check done')
   }
@@ -266,23 +267,30 @@ export class WatchController {
     user: User,
     email: GoogleEmail,
     calendarId: string | null,
-    googleClient: calendar_v3.Calendar,
-    force: boolean = false
+    googleClient: calendar_v3.Calendar
   ): Promise<void> {
-    if (!force) {
-      const client = getKvsClient()
-      const key = `${calendarIntegrationKind}:watch:${user.workspace}:${user.userId}:${email}:${calendarId ?? 'null'}`
-      const exists = await client.getValue<Watch>(key)
-      if (exists != null) {
-        return
-      }
+    const client = getKvsClient()
+    const key = `${calendarIntegrationKind}:watch:${email}:${calendarId ?? 'null'}`
+    const exists = await client.getValue<Watch>(key)
+    if (exists != null) {
+      this.ctx.info('Watch already exists', {
+        workspace: user.workspace,
+        user: user.userId,
+        calendar: calendarId
+      })
+      return
     }
     try {
       if (calendarId != null) {
-        await watchCalendar(user, email, calendarId, googleClient)
+        await watchCalendar(email, calendarId, googleClient)
       } else {
-        await watchCalendars(user, email, googleClient)
+        await watchCalendars(email, googleClient)
       }
+      this.ctx.info('Watch added', {
+        workspace: user.workspace,
+        user: user.userId,
+        calendar: calendarId
+      })
     } catch (err: any) {
       this.ctx.error('Watch add error', {
         workspace: user.workspace,

@@ -135,7 +135,11 @@
     "Document": "Dokument",
     "Loading": "Laden...",
     "NoRelations": "Keine Beziehungen",
-    "ReadOnlyWarningTitle": "Nur-Lese-Modus",
-    "ReadOnlyWarningMessage": "Wenden Sie sich an den Administrator, um vollen Zugriff auf diesen Arbeitsbereich zu erhalten."
+    "ReadOnlyWarningTitle": "✨ Gast-Demo",
+    "ReadOnlyWarningMessage": "Sie sind im Ansichtsmodus. Möchten Sie beliebige Projekte in Huly verwalten? Aufgaben, Fristen, Team — registrieren Sie sich für vollen Zugriff!",
+    "ReadOnlySignUp": "Registrieren \uD83D\uDE80",
+    "Icon": "Symbol",
+    "Color": "Farbe",
+    "AutomationOnly": "Nur Automatisierung"
   }
 }

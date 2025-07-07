@@ -19,7 +19,7 @@ import { PlatformQueue, QueueTopic, getCPUInfo, getMemoryInfo } from '@hcenginee
 import { decodeToken, TokenError } from '@hcengineering/server-token'
 
 import cors from 'cors'
-import express, { type Express, type NextFunction, type Request, type Response } from 'express'
+import express, { type Express, type NextFunction, type Response } from 'express'
 import fileUpload from 'express-fileupload'
 import { type Server } from 'http'
 import morgan from 'morgan'
@@ -28,7 +28,15 @@ import onHeaders from 'on-headers'
 import { cacheControl } from './const'
 import { createDb } from './datalake/db'
 import { ApiError } from './error'
-import { keepAlive, withAdminAuthorization, withAuthorization, withBlob, withWorkspace } from './middleware'
+import {
+  type RequestWithAuth,
+  keepAlive,
+  withAdminAuthorization,
+  withAuthorization,
+  withBlob,
+  withWorkspace,
+  withReadonly
+} from './middleware'
 import {
   handleBlobDelete,
   handleBlobDeleteList,
@@ -46,7 +54,8 @@ import {
   handleS3CreateBlob,
   handleS3CreateBlobParams,
   handleUploadFormData,
-  handleBlobSetParent
+  handleBlobSetParent,
+  handleWorkspaceStats
 } from './handlers'
 import { Datalake, Location } from './datalake'
 import { DatalakeImpl } from './datalake/datalake'
@@ -61,7 +70,7 @@ const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-ag
 
 type AsyncRequestHandler = (
   ctx: MeasureContext,
-  req: Request,
+  req: RequestWithAuth,
   res: Response,
   datalake: Datalake,
   tempDir: TemporaryDir
@@ -73,12 +82,13 @@ const handleRequest = async (
   datalake: Datalake,
   tempDir: TemporaryDir,
   fn: AsyncRequestHandler,
-  req: Request,
+  req: RequestWithAuth,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    await ctx.with(name, {}, (ctx) => {
+    const source = req.token?.extra?.service ?? '🤦‍♂️user'
+    await ctx.with(name, { source }, (ctx) => {
       onHeaders(res, () => {
         const measurements = ctx.metrics?.measurements
         if (measurements !== undefined) {
@@ -144,12 +154,23 @@ export async function createServer (
 
   const wrapRequest =
     (ctx: MeasureContext, name: string, fn: AsyncRequestHandler) =>
-      (req: Request, res: Response, next: NextFunction) => {
+      (req: RequestWithAuth, res: Response, next: NextFunction) => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
         handleRequest(ctx, name, datalake, tempDir, fn, req, res, next)
       }
 
   app.use(morgan('short', { stream: new LogStream() }))
+
+  if (config.Readonly) {
+    app.use(withReadonly)
+  }
+
+  app.get(
+    '/stats/:workspace',
+    withAdminAuthorization,
+    withWorkspace,
+    wrapRequest(ctx, 'workspaceStats', handleWorkspaceStats)
+  )
 
   app.get('/blob/:workspace', withAdminAuthorization, withWorkspace, wrapRequest(ctx, 'listBlobs', handleBlobList))
 

@@ -16,6 +16,13 @@
     "Saving": "Wird gespeichert...",
     "Saved": "Gespeichert",
     "Add": "Hinzufügen",
+    "AddNew": "Hinzufügen {type}",
+    "Proceed": "Fortfahren",
+    "NewEmail": "Neue E-Mail",
+    "SendConfirmation": "Bestätigungscode senden",
+    "CodeSent": "Code wurde gesendet. Bitte geben Sie ihn in das Feld unten ein.",
+    "SendAgain": "Erneut senden",
+    "SendAgainIn": "Kann in erneut gesendet werden",
     "Value": "Wert",
     "EnterCurrentPassword": "Aktuelles Passwort eingeben",
     "EnterNewPassword": "Neues Passwort eingeben",
@@ -132,6 +139,7 @@
     "BackupFileDownload": "Datei herunterladen",
     "BackupFiles": "Sicherungsdateien",
     "BackupNoBackup": "Derzeit sind keine Sicherungen verfügbar.",
+    "NonBackupedBlobs": "Nicht gesicherte Blobs",
     "Calendar": "Kalender",
     "StartOfTheWeek": "Wochenstart",
     "SystemSetupString": "Systemkonfiguration ({day})",
@@ -160,6 +168,14 @@
     "EmailIsUsed": "E-Mail-Adresse wird in einem anderen Konto verwendet",
     "Customize": "Anpassen",
     "GuestAccess": "Anonyme Gäste",
-    "GuestAccessDescription": "Ermöglicht anonymen Benutzern den schreibgeschützten Zugriff auf den Arbeitsbereich"
+    "GuestAccessDescription": "Ermöglicht anonymen Benutzern den schreibgeschützten Zugriff auf den Arbeitsbereich",
+    "ManageIdentities": "Identitäten verwalten",
+    "Release": "Freigeben",
+    "ReleaseSocialId": "Social ID freigeben",
+    "ReleaseSocialIdConfirm": "Sind Sie sicher, dass Sie diese Social ID freigeben möchten: {socialId}? Dies entfernt sie aus Ihrem Konto und Sie können sie nicht mehr zur Anmeldung verwenden. Außerdem werden alle zugehörigen Integrationen entfernt.",
+    "ReleasePrimarySocialId": "Primäre Social ID freigeben",
+    "ReleasePrimarySocialIdConfirm": "Die Freigabe Ihrer aktuellen primären Social ID erfordert ein Neuladen der Seite. Sind Sie sicher, dass Sie fortfahren möchten?",
+    "Login": "Anmelden",
+    "Primary": "Primär"
   }
 }

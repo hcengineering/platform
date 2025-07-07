@@ -57,9 +57,15 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/kafka": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/api-client": "^0.6.0",
+    "@hcengineering/server-client": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
+    "@hcengineering/attachment": "^0.6.14",
+    "@hcengineering/drive": "^0.6.0",
+    "@hcengineering/communication-types": "^0.1.0",
+    "@hcengineering/communication-sdk-types": "^0.1.0",
     "dotenv": "~16.0.0",
     "kafkajs": "^2.2.4"
   }

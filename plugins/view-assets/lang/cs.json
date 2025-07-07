@@ -135,7 +135,11 @@
     "Document": "Dokument",
     "Loading": "Načítání...",
     "NoRelations": "Žádné vztahy",
-    "ReadOnlyWarningTitle": "Režim pouze pro čtení",
-    "ReadOnlyWarningMessage": "Pro úplný přístup k tomuto pracovnímu prostoru kontaktujte administrátora."
+    "ReadOnlyWarningTitle": "✨ Ukázka pro hosty",
+    "ReadOnlyWarningMessage": "Jste v režimu prohlížení. Chcete spravovat jakékoli projekty v Huly? Úkoly, termíny, tým — zaregistrujte se pro plný přístup!",
+    "ReadOnlySignUp": "Zaregistrovat se \uD83D\uDE80",
+    "Icon": "Ikona",
+    "Color": "Barva",
+    "AutomationOnly": "Pouze automatizace"
   }
 }

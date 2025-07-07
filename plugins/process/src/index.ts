@@ -29,7 +29,6 @@ export interface Process extends Doc {
   masterTag: Ref<MasterTag | Tag>
   name: string
   description: string
-  initState: Ref<State>
   parallelExecutionForbidden?: boolean
   autoStart?: boolean
   context: Record<ContextId, ProcessContext>
@@ -40,7 +39,7 @@ export interface ProcessContext {
   name: string
   _class: Ref<Class<Doc>>
   action: StepId
-  producer: Ref<Transition | State>
+  producer: Ref<Transition>
   isResult?: boolean
   type?: Type<any>
   value: SelectedExecutonContext
@@ -54,15 +53,28 @@ export interface Trigger extends Doc {
   requiredParams: string[]
   editor?: AnyComponent
   checkFunction?: Resource<CheckFunc>
+  init: boolean
 }
 
 export interface Transition extends Doc {
   process: Ref<Process>
-  from: Ref<State>
-  to: Ref<State> | null
+  from: Ref<State> | null
+  to: Ref<State>
   actions: Step<Doc>[]
   trigger: Ref<Trigger>
   triggerParams: Record<string, any>
+}
+
+export interface ExecutionLog extends Doc {
+  execution: Ref<Execution>
+  transition?: Ref<Transition>
+  action: ExecutionLogAction
+}
+
+export enum ExecutionLogAction {
+  Started = 'started',
+  Transition = 'transition',
+  Rollback = 'rollback'
 }
 
 export type CheckFunc = (params: Record<string, any>, doc: Doc) => Promise<boolean>
@@ -91,13 +103,13 @@ export interface ExecutionError {
   error: IntlString
   props: Record<string, any>
   intlProps: Record<string, IntlString>
-  transition: Ref<Transition> | null
+  transition: Ref<Transition>
 }
 
 export interface ProcessToDo extends ToDo {
   execution: Ref<Execution>
-  // state which created todo
-  state: Ref<State>
+
+  withRollback: boolean
 }
 
 export type MethodParams<T extends Doc> = {
@@ -107,7 +119,6 @@ export type MethodParams<T extends Doc> = {
 export interface State extends Doc {
   process: Ref<Process>
   title: string
-  actions: Step<Doc>[]
 }
 
 export type StepId = string & { __stepId: true }
@@ -158,7 +169,8 @@ export default plugin(processId, {
     State: '' as Ref<Class<State>>,
     ProcessFunction: '' as Ref<Class<ProcessFunction>>,
     Transition: '' as Ref<Class<Transition>>,
-    Trigger: '' as Ref<Class<Trigger>>
+    Trigger: '' as Ref<Class<Trigger>>,
+    ExecutionLog: '' as Ref<Class<ExecutionLog>>
   },
   method: {
     RunSubProcess: '' as Ref<Method<Process>>,
@@ -168,7 +180,8 @@ export default plugin(processId, {
   trigger: {
     OnSubProcessesDone: '' as Ref<Trigger>,
     OnToDoClose: '' as Ref<Trigger>,
-    OnToDoRemove: '' as Ref<Trigger>
+    OnToDoRemove: '' as Ref<Trigger>,
+    OnExecutionStart: '' as Ref<Trigger>
   },
   triggerCheck: {
     ToDo: '' as Resource<CheckFunc>
@@ -213,8 +226,22 @@ export default plugin(processId, {
     UpperCase: '' as Ref<ProcessFunction>,
     LowerCase: '' as Ref<ProcessFunction>,
     Trim: '' as Ref<ProcessFunction>,
+    Prepend: '' as Ref<ProcessFunction>,
+    Append: '' as Ref<ProcessFunction>,
+    Replace: '' as Ref<ProcessFunction>,
+    ReplaceAll: '' as Ref<ProcessFunction>,
+    Split: '' as Ref<ProcessFunction>,
+    Cut: '' as Ref<ProcessFunction>,
     Add: '' as Ref<ProcessFunction>,
     Subtract: '' as Ref<ProcessFunction>,
+    Multiply: '' as Ref<ProcessFunction>,
+    Divide: '' as Ref<ProcessFunction>,
+    Modulo: '' as Ref<ProcessFunction>,
+    Power: '' as Ref<ProcessFunction>,
+    Round: '' as Ref<ProcessFunction>,
+    Absolute: '' as Ref<ProcessFunction>,
+    Ceil: '' as Ref<ProcessFunction>,
+    Floor: '' as Ref<ProcessFunction>,
     Offset: '' as Ref<ProcessFunction>,
     FirstWorkingDayAfter: '' as Ref<ProcessFunction>,
     RoleContext: '' as Ref<ProcessFunction>

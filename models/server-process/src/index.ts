@@ -15,7 +15,7 @@ import core, { type Doc } from '@hcengineering/core'
 import { Mixin, type Builder } from '@hcengineering/model'
 import { TMethod, TProcessFunction, TTrigger } from '@hcengineering/model-process'
 import type { Resource } from '@hcengineering/platform'
-import process, { type CheckFunc, ExecutionStatus } from '@hcengineering/process'
+import process, { ExecutionStatus, type CheckFunc } from '@hcengineering/process'
 import serverCore from '@hcengineering/server-core'
 import serverProcess, {
   type ExecuteFunc,
@@ -89,12 +89,68 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.Trim
   })
 
+  builder.mixin(process.function.Prepend, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Prepend
+  })
+
+  builder.mixin(process.function.Append, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Append
+  })
+
+  builder.mixin(process.function.Replace, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Replace
+  })
+
+  builder.mixin(process.function.ReplaceAll, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.ReplaceAll
+  })
+
+  builder.mixin(process.function.Split, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Split
+  })
+
+  builder.mixin(process.function.Cut, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Cut
+  })
+
   builder.mixin(process.function.Add, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Add
   })
 
   builder.mixin(process.function.Subtract, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Subtract
+  })
+
+  builder.mixin(process.function.Multiply, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Multiply
+  })
+
+  builder.mixin(process.function.Divide, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Divide
+  })
+
+  builder.mixin(process.function.Modulo, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Modulo
+  })
+
+  builder.mixin(process.function.Power, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Power
+  })
+
+  builder.mixin(process.function.Round, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Round
+  })
+
+  builder.mixin(process.function.Absolute, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Absolute
+  })
+
+  builder.mixin(process.function.Ceil, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Ceil
+  })
+
+  builder.mixin(process.function.Floor, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Floor
   })
 
   builder.mixin(process.function.Offset, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {

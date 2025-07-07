@@ -17,7 +17,7 @@ import { gmail_v1 } from 'googleapis'
 
 import { type MeasureContext, PersonId } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
-import { SyncMutex } from '@hcengineering/mail-common'
+import { SyncMutex, type SyncOptions } from '@hcengineering/mail-common'
 
 import { RateLimiter } from '../rateLimiter'
 import { IMessageManager } from './types'
@@ -40,7 +40,12 @@ export class SyncManager {
     this.stateManager = new SyncStateManager(keyValueClient, workspace, config.Version)
   }
 
-  private async partSync (userId: PersonId, userEmail: string | undefined, historyId: string): Promise<void> {
+  private async partSync (
+    userId: PersonId,
+    userEmail: string | undefined,
+    historyId: string,
+    options: SyncOptions
+  ): Promise<void> {
     if (userEmail === undefined) {
       throw new Error('Cannot sync without user email')
     }
@@ -58,7 +63,7 @@ export class SyncManager {
       } catch (err: any) {
         this.ctx.error('Part sync get history error', { workspaceUuid: this.workspace, userId, error: err.message })
         await this.stateManager.clearHistory(userId)
-        void this.sync(userId)
+        void this.sync(userId, options)
         return
       }
       const nextPageToken = histories.data.nextPageToken
@@ -185,7 +190,7 @@ export class SyncManager {
     })
   }
 
-  async sync (userId: PersonId, userEmail?: string): Promise<void> {
+  async sync (userId: PersonId, options: SyncOptions, userEmail?: string): Promise<void> {
     const mutexKey = `${this.workspace}:${userId}`
     const releaseLock = await this.syncMutex.lock(mutexKey)
 
@@ -195,7 +200,7 @@ export class SyncManager {
       const history = await this.stateManager.getHistory(userId)
       if (history?.historyId != null && history?.historyId !== '') {
         this.ctx.info('Start part sync', { workspaceUuid: this.workspace, userId, historyId: history.historyId })
-        await this.partSync(userId, userEmail, history.historyId)
+        await this.partSync(userId, userEmail, history.historyId, options)
       } else {
         this.ctx.info('Start full sync', { workspaceUuid: this.workspace, userId })
         await this.fullSync(userId, userEmail)

@@ -33,7 +33,8 @@
     ModernEditbox,
     Label,
     showPopup,
-    ButtonIcon
+    ButtonIcon,
+    Toggle
   } from '@hcengineering/ui'
   import { DropdownIntlItem } from '@hcengineering/ui/src/types'
   import setting from '../plugin'
@@ -52,6 +53,7 @@
   let index: IndexKind | undefined
   let defaultValue: any | undefined
   let is: AnyComponent | undefined
+  let readonly: boolean = false
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -67,7 +69,9 @@
       isCustom: true,
       icon,
       type,
-      defaultValue
+      defaultValue,
+      readonly,
+      automationOnly: readonly
     }
     if (index !== undefined) {
       data.index = index
@@ -121,7 +125,7 @@
   }
 </script>
 
-\<Card
+<Card
   label={setting.string.CreatingAttribute}
   okLabel={presentation.string.Create}
   okAction={save}
@@ -167,6 +171,10 @@
           on:change={handleChange}
         />
       {/if}
+      <span class="label">
+        <Label label={view.string.AutomationOnly} />
+      </span>
+      <Toggle bind:on={readonly} />
     </div>
   </div>
 </Card>

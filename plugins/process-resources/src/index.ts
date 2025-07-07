@@ -15,9 +15,9 @@ import { type Resources } from '@hcengineering/platform'
 import FunctionSelector from './components/attributeEditors/FunctionSelector.svelte'
 import NestedContextSelector from './components/attributeEditors/NestedContextSelector.svelte'
 import RelatedContextSelector from './components/attributeEditors/RelatedContextSelector.svelte'
-import DateOffsetEditor from './components/contextEditors/DateOffsetEditor.svelte'
-import NumberOffsetEditor from './components/contextEditors/NumberOffsetEditor.svelte'
 import RequestUserInput from './components/contextEditors/RequestUserInput.svelte'
+import ResultInput from './components/contextEditors/ResultInput.svelte'
+import RoleEditor from './components/contextEditors/RoleEditor.svelte'
 import ErrorPresenter from './components/ErrorPresenter.svelte'
 import ExecutonPresenter from './components/ExecutonPresenter.svelte'
 import ExecutonProgressPresenter from './components/ExecutonProgressPresenter.svelte'
@@ -25,25 +25,33 @@ import Main from './components/Main.svelte'
 import SubProcessPresenter from './components/presenters/SubProcessPresenter.svelte'
 import ToDoPresenter from './components/presenters/ToDoPresenter.svelte'
 import UpdateCardPresenter from './components/presenters/UpdateCardPresenter.svelte'
-import ProcessEditor from './components/settings/ProcessEditor.svelte'
+import ProcessesCardSection from './components/ProcessesCardSection.svelte'
 import ProcessesExtension from './components/ProcessesExtension.svelte'
 import ProcessesSettingSection from './components/ProcessesSection.svelte'
 import ProcessPresenter from './components/ProcessPresenter.svelte'
 import RunProcessCardPopup from './components/RunProcessCardPopup.svelte'
 import RunProcessPopup from './components/RunProcessPopup.svelte'
+import ActionsPresenter from './components/settings/ActionsPresenter.svelte'
+import ProcessEditor from './components/settings/ProcessEditor.svelte'
+import StatePresenter from './components/settings/StatePresenter.svelte'
 import SubProcessEditor from './components/settings/SubProcessEditor.svelte'
 import ToDoEditor from './components/settings/ToDoEditor.svelte'
-import UpdateCardEditor from './components/settings/UpdateCardEditor.svelte'
-import ResultInput from './components/contextEditors/ResultInput.svelte'
-import RoleEditor from './components/contextEditors/RoleEditor.svelte'
-import StatePresenter from './components/settings/StatePresenter.svelte'
-import TriggerPresenter from './components/settings/TriggerPresenter.svelte'
-import ActionsPresenter from './components/settings/ActionsPresenter.svelte'
 import ToDoParamsEditor from './components/settings/ToDoParamsEditor.svelte'
-import ProcessesCardSection from './components/ProcessesCardSection.svelte'
+import ToDoRemoveParamsEditor from './components/settings/ToDoRemoveParamsEditor.svelte'
+import TransitionEditor from './components/settings/TransitionEditor.svelte'
+import TriggerPresenter from './components/settings/TriggerPresenter.svelte'
+import UpdateCardEditor from './components/settings/UpdateCardEditor.svelte'
+import DateOffsetEditor from './components/transformEditors/DateOffsetEditor.svelte'
+import NumberEditor from './components/transformEditors/NumberEditor.svelte'
 
-import { continueExecution, showDoneQuery, todoTranstionCheck } from './utils'
+import AppendEditor from './components/transformEditors/AppendEditor.svelte'
+import CutEditor from './components/transformEditors/CutEditor.svelte'
+import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
+import SplitEditor from './components/transformEditors/SplitEditor.svelte'
 import { ProcessMiddleware } from './middleware'
+import { continueExecution, showDoneQuery, todoTranstionCheck } from './utils'
+import LogActionPresenter from './components/LogActionPresenter.svelte'
+import TransitionRefPresenter from './components/settings/TransitionRefPresenter.svelte'
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
@@ -68,8 +76,6 @@ export default async (): Promise<Resources> => ({
     FunctionSelector,
     Main,
     RunProcessCardPopup,
-    DateOffsetEditor,
-    NumberOffsetEditor,
     ErrorPresenter,
     RequestUserInput,
     ResultInput,
@@ -77,9 +83,20 @@ export default async (): Promise<Resources> => ({
     ActionsPresenter,
     StatePresenter,
     TriggerPresenter,
-    ToDoRemoveEditor: ToDoParamsEditor,
+    ToDoRemoveEditor: ToDoRemoveParamsEditor,
     ToDoCloseEditor: ToDoParamsEditor,
-    ProcessesCardSection
+    ProcessesCardSection,
+    TransitionEditor,
+    TransitionRefPresenter,
+    LogActionPresenter
+  },
+  transformEditor: {
+    DateOffsetEditor,
+    NumberEditor,
+    AppendEditor,
+    ReplaceEditor,
+    SplitEditor,
+    CutEditor
   },
   triggerCheck: {
     ToDo: todoTranstionCheck

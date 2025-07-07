@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { UploadedFile } from 'express-fileupload'
 import fs from 'fs'
@@ -33,13 +33,24 @@ interface DeleteBlobsRequest {
   names: string[]
 }
 
-export async function handleBlobList (
+export async function handleWorkspaceStats (
   ctx: MeasureContext,
   req: Request,
   res: Response,
   datalake: Datalake
 ): Promise<void> {
   const { workspace } = req.params
+  const stats = await datalake.getWorkspaceStats(ctx, workspace as WorkspaceUuid)
+  res.status(200).json(stats)
+}
+
+export async function handleBlobList (
+  ctx: MeasureContext,
+  req: Request,
+  res: Response,
+  datalake: Datalake
+): Promise<void> {
+  const workspace = req.params.workspace as WorkspaceUuid
   const cursor = req.query.cursor as string
   const limit = extractIntParam(req.query.limit as string)
   const derived = req.query.derived === 'true'
@@ -54,7 +65,8 @@ export async function handleBlobGet (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace, name, filename } = req.params
+  const { name, filename } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   const range = req.headers.range
 
@@ -110,7 +122,8 @@ export async function handleBlobHead (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace, name, filename } = req.params
+  const { name, filename } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   const head = await datalake.head(ctx, workspace, name)
   if (head == null) {
@@ -142,7 +155,7 @@ export async function handleBlobDelete (
   const { workspace, name } = req.params
 
   try {
-    await datalake.delete(ctx, workspace, name)
+    await datalake.delete(ctx, workspace as WorkspaceUuid, name)
     ctx.info('deleted', { workspace, name })
 
     res.status(204).send()
@@ -163,7 +176,7 @@ export async function handleBlobDeleteList (
   const body = req.body.names as DeleteBlobsRequest
 
   try {
-    await datalake.delete(ctx, workspace, body.names)
+    await datalake.delete(ctx, workspace as WorkspaceUuid, body.names)
     ctx.info('deleted', { workspace, names: body.names })
 
     res.status(204).send()
@@ -180,7 +193,8 @@ export async function handleBlobSetParent (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace, name } = req.params
+  const { name } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
   const { parent } = (await req.body) as BlobParentRequest
 
   if (parent != null) {
@@ -222,7 +236,7 @@ export async function handleUploadFormData (
   datalake: Datalake,
   tempDir: TemporaryDir
 ): Promise<void> {
-  const { workspace } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   if (req.files == null) {
     res.status(400).send('missing files')
@@ -258,6 +272,9 @@ export async function handleUploadFormData (
           const metadata = await datalake.put(ctx, workspace, name, sha256, data, {
             size,
             contentType,
+            cacheControl: Array.isArray(req.headers['cache-control'])
+              ? req.headers['cache-control'].join(', ')
+              : req.headers['cache-control'],
             lastModified: Date.now()
           })
 

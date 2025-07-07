@@ -14,7 +14,6 @@
 //
 
 import { AccountClient, Integration } from '@hcengineering/account-client'
-import { Event } from '@hcengineering/calendar'
 import {
   MeasureContext,
   RateLimiter,
@@ -26,6 +25,7 @@ import {
 import config from './config'
 import { getIntegrations } from './integrations'
 import { WorkspaceClient } from './workspaceClient'
+import { cleanUserByEmail } from './kvsUtils'
 
 export class CalendarController {
   protected static _instance: CalendarController
@@ -60,24 +60,37 @@ export class CalendarController {
           groups.set(int.workspaceUuid, group)
         }
       }
-
-      const ids = [...groups.keys()]
-      if (ids.length === 0) return
-      const limiter = new RateLimiter(config.InitLimit)
-      const infos = await this.accountClient.getWorkspacesInfo(ids)
-      for (const info of infos) {
-        const integrations = groups.get(info.uuid) ?? []
-        if (await this.checkWorkspace(info, integrations)) {
-          await limiter.add(async () => {
-            this.ctx.info('start workspace', { workspace: info.uuid })
-            await WorkspaceClient.run(this.ctx, this.accountClient, info.uuid)
-          })
-        }
-      }
-      await limiter.waitProcessing()
+      void this.runAll(groups)
     } catch (err: any) {
       this.ctx.error('Failed to start existing integrations', err)
     }
+  }
+
+  private async runAll (groups: Map<WorkspaceUuid, Integration[]>): Promise<void> {
+    await cleanUserByEmail()
+    const ids = [...groups.keys()]
+    if (ids.length === 0) return
+    const limiter = new RateLimiter(config.InitLimit)
+    const infos = await this.accountClient.getWorkspacesInfo(ids)
+    for (let index = 0; index < infos.length; index++) {
+      const info = infos[index]
+      const integrations = groups.get(info.uuid) ?? []
+      if (await this.checkWorkspace(info, integrations)) {
+        await limiter.add(async () => {
+          try {
+            this.ctx.info('start workspace', { workspace: info.uuid })
+            await WorkspaceClient.run(this.ctx, this.accountClient, info.uuid)
+          } catch (err) {
+            this.ctx.error('Failed to start workspace', { workspace: info.uuid, error: err })
+          }
+        })
+      }
+      if (index % 10 === 0) {
+        this.ctx.info('starting progress', { value: index + 1, total: infos.length })
+      }
+    }
+    await limiter.waitProcessing()
+    this.ctx.info('Started all workspaces', { count: infos.length })
   }
 
   private async checkWorkspace (info: WorkspaceInfoWithStatus, integrations: Integration[]): Promise<boolean> {
@@ -94,11 +107,5 @@ export class CalendarController {
       return false
     }
     return true
-  }
-
-  async pushEvent (workspace: WorkspaceUuid, event: Event, type: 'create' | 'update' | 'delete'): Promise<void> {
-    if (event.access === 'owner' || event.access === 'writer') {
-      await WorkspaceClient.push(this.ctx, this.accountClient, workspace, event, type)
-    }
   }
 }

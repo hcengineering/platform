@@ -58,7 +58,11 @@ import core, {
   platformNow,
   reduceCalls,
   shouldShowArchived,
-  toFindResult
+  toFindResult,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
+  type OperationDomain
 } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
@@ -228,6 +232,14 @@ export class LiveQuery implements WithTx, Client {
       q.result.clean()
     }
     return toFindResult(q.result.getClone(), q.total)
+  }
+
+  async domainRequest<T>(
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ): Promise<DomainResult<T>> {
+    return await this.client.domainRequest(domain, params, options)
   }
 
   searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {

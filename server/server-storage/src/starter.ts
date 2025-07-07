@@ -3,6 +3,7 @@ import { CONFIG_KIND as MINIO_CONFIG_KIND, MinioConfig, MinioService, addMinioFa
 import { CONFIG_KIND as S3_CONFIG_KIND, S3Service, type S3Config } from '@hcengineering/s3'
 import { StorageAdapter, StorageConfiguration, type StorageConfig } from '@hcengineering/server-core'
 import { FallbackStorageAdapter, buildStorage } from './fallback'
+import { ReadonlyStorageAdapter } from './readonly'
 
 /*
 
@@ -76,28 +77,35 @@ export function parseStorageEnv (storageEnv: string, storageConfig: StorageConfi
 }
 
 export function createStorageFromConfig (config: StorageConfig): StorageAdapter {
+  let adapter: StorageAdapter
   const kind = config.kind
   if (kind === MINIO_CONFIG_KIND) {
     const c = config as MinioConfig
     if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
       throw new Error('One of endpoint/accessKey/secretKey values are not specified')
     }
-    return new MinioService(c)
+    adapter = new MinioService(c)
   } else if (kind === S3_CONFIG_KIND) {
     const c = config as S3Config
     if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
       throw new Error('One of endpoint/accessKey/secretKey values are not specified')
     }
-    return new S3Service(c)
+    adapter = new S3Service(c)
   } else if (kind === DATALAKE_CONFIG_KIND) {
     const c = config as DatalakeConfig
     if (c.endpoint == null) {
       throw new Error('Endpoint value is not specified')
     }
-    return new DatalakeService(c)
+    adapter = new DatalakeService(c)
   } else {
     throw new Error('Unsupported storage kind:' + kind)
   }
+
+  if (config.readonly === 'true') {
+    adapter = new ReadonlyStorageAdapter(adapter)
+  }
+
+  return adapter
 }
 
 export function buildStorageFromConfig (config: StorageConfiguration): FallbackStorageAdapter {

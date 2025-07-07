@@ -139,12 +139,14 @@ export default plugin(platformId, {
     NoLoaderForStrings: '' as StatusCode<{ plugin: Plugin }>,
 
     BadRequest: '' as StatusCode,
-    Forbidden: '' as StatusCode,
-    Unauthorized: '' as StatusCode,
+    Forbidden: '' as StatusCode, // 403
+    Unauthorized: '' as StatusCode, // 401
+    Conflict: '' as StatusCode, // 409
     ExpiredLink: '' as StatusCode,
     UnknownMethod: '' as StatusCode<{ method: string }>,
     InternalServerError: '' as StatusCode,
-    MaintenanceWarning: '' as StatusCode<{ time: number }>,
+    MaintenanceWarning: '' as StatusCode<{ time: number, message?: string }>,
+    MaintenanceWarningTime: '' as IntlString,
     AccountNotFound: '' as StatusCode<{ account?: string }>,
     AccountMismatch: '' as StatusCode<{ account?: string, requiredAccount?: string }>,
     AccountNotConfirmed: '' as StatusCode,
@@ -154,6 +156,7 @@ export default plugin(platformId, {
     SocialIdNotFound: '' as StatusCode<{ value?: string, type?: string, _id?: string }>,
     SocialIdNotConfirmed: '' as StatusCode<{ socialId: string, type: string }>,
     SocialIdAlreadyConfirmed: '' as StatusCode<{ socialId: string, type: string }>,
+    IntegrationExists: '' as StatusCode,
     IntegrationAlreadyExists: '' as StatusCode,
     IntegrationNotFound: '' as StatusCode,
     IntegrationSecretAlreadyExists: '' as StatusCode,
@@ -168,7 +171,8 @@ export default plugin(platformId, {
     InviteNotFound: '' as StatusCode<{ email: string }>,
     MailboxError: '' as StatusCode<{ reason: string }>,
     SocialIdAlreadyExists: '' as StatusCode,
-    ReadOnlyAccount: '' as StatusCode
+    ReadOnlyAccount: '' as StatusCode,
+    SystemAccount: '' as StatusCode
   },
   metadata: {
     locale: '' as Metadata<string>,

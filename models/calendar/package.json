@@ -45,6 +45,7 @@
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/workbench": "^0.6.16",
+    "@hcengineering/model-preference": "^0.6.0",
     "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/model-contact": "^0.6.1",
     "@hcengineering/contact": "^0.6.24"

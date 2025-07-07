@@ -15,7 +15,9 @@
 //
 -->
 <script lang="ts">
-  import core, { Data, generateId, generateUuid, Ref, Space } from '@hcengineering/core'
+  import type { Schedule, ScheduleAvailability } from '@hcengineering/calendar'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import core, { Data, generateId, Space } from '@hcengineering/core'
   import {
     ComponentExtensions,
     createQuery,
@@ -23,12 +25,19 @@
     DocCreateExtensionManager,
     getClient
   } from '@hcengineering/presentation'
-  import type { Schedule, ScheduleAvailability } from '@hcengineering/calendar'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import ui, {
     Button,
     ButtonIcon,
+    capitalizeFirstLetter,
+    createFocusManager,
+    deviceOptionsStore as deviceInfo,
     EditBox,
+    eventToHTMLElement,
     FocusHandler,
+    formatDuration,
+    getUserTimezone,
+    getWeekDayName,
     Icon,
     IconCircleAdd,
     IconClose,
@@ -37,22 +46,14 @@
     Label,
     Scroller,
     SelectPopup,
-    TimeInputBox,
-    capitalizeFirstLetter,
-    createFocusManager,
-    deviceOptionsStore as deviceInfo,
-    eventToHTMLElement,
-    formatDuration,
-    getUserTimezone,
-    getWeekDayName,
     showPopup,
-    themeStore
+    themeStore,
+    TimeInputBox
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
-  import { getCurrentEmployee } from '@hcengineering/contact'
-  import { StyledTextBox } from '@hcengineering/text-editor-resources'
+  import CalendarSelector from './CalendarSelector.svelte'
   import TimeZoneSelector from './TimeZoneSelector.svelte'
 
   export let schedule: Schedule | undefined
@@ -80,6 +81,7 @@
   const availability: EditableAvailability = {}
   let availabilityEditOffset = 0
   let timeZone = schedule?.timeZone ?? getUserTimezone()
+  let _calendar = schedule?.calendar
 
   const durationVariants: { msec: number, text: string }[] = []
   const intervalVariants: { msec: number, text: string }[] = []
@@ -198,7 +200,8 @@
         meetingDuration,
         meetingInterval,
         availability: getStorableAvailability(),
-        timeZone
+        timeZone,
+        calendar: _calendar
       }
       await client.createDoc(calendar.class.Schedule, calendar.space.Calendar, data, _id)
       if (space !== undefined) {
@@ -345,6 +348,10 @@
       <div class="flex-row-center flex-gap-1-5">
         <Icon icon={calendar.icon.Globe} size={'small'} />
         <TimeZoneSelector bind:timeZone flex="1" />
+      </div>
+      <div class="flex-row-center flex-gap-1-5">
+        <Icon icon={calendar.icon.Calendar} size={'small'} />
+        <CalendarSelector bind:value={_calendar} />
       </div>
     </div>
     <div class="block">

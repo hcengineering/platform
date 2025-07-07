@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Transition } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
   import plugin from '../../plugin'
@@ -23,15 +23,21 @@
 
   const client = getClient()
 
-  const from = client.getModel().findObject(transition.from)
-  const to = transition.to === null ? null : client.getModel().findObject(transition.to)
+  const query = createQuery()
+  $: query.query(plugin.class.State, { process: transition.process }, () => {
+    from = transition.from && client.getModel().findObject(transition.from)
+    to = client.getModel().findObject(transition.to)
+  })
+
+  $: from = transition.from && client.getModel().findObject(transition.from)
+  $: to = client.getModel().findObject(transition.to)
 </script>
 
 <span>
   {#if transition.to === null}
     <Label label={plugin.string.Rollback} />
   {:else}
-    {#if direction !== 'from'}{from?.title}{/if}
+    {#if direction !== 'from'}{from === null ? '⦳' : from?.title}{/if}
     →
     {#if direction !== 'to'}{to?.title}{/if}
   {/if}

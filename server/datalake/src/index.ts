@@ -33,10 +33,10 @@ import {
 } from '@hcengineering/server-core'
 import serverToken, { generateToken } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
-import { type UploadObjectParams, DatalakeClient } from './client'
+import { type UploadObjectParams, DatalakeClient, type WorkspaceStats } from './client'
 import { NotFoundError } from './error'
 
-export { DatalakeClient }
+export { DatalakeClient, type WorkspaceStats }
 
 /**
  * @public
@@ -79,7 +79,7 @@ export class DatalakeService implements StorageAdapter {
     if (secret === undefined) {
       console.warn('Server secret not set, datalake storage adapter initialized with default secret')
     }
-    const token = generateToken(systemAccountUuid, undefined, { service: 'datalake' })
+    const token = generateToken(systemAccountUuid, undefined)
     this.client = createDatalakeClient(cfg, token)
     this.retryCount = options.retryCount ?? 5
     this.retryInterval = options.retryInterval ?? 50

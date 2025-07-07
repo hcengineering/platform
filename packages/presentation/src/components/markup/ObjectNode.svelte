@@ -33,7 +33,7 @@
 
   let doc: Doc | undefined = undefined
   let broken: boolean = false
-  const withoutDoc = [contact.mention.Here, contact.mention.Everyone]
+  const withoutDoc: Ref<Doc>[] = [contact.mention.Here, contact.mention.Everyone]
 
   $: icon =
     _class !== undefined && hierarchy.hasClass(_class) && !withoutDoc.includes(_id as any)
@@ -48,7 +48,7 @@
   }
 
   function onBrokenLinkClick (event: MouseEvent): void {
-    if (withoutDoc) return
+    if (_id !== undefined && withoutDoc.includes(_id)) return
     showPopup(MessageBox, {
       label: presentation.string.UnableToFollowMention,
       message: presentation.string.AccessDenied,

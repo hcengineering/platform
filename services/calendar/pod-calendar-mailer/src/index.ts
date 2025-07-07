@@ -16,7 +16,7 @@
 import { join } from 'path'
 import { Analytics } from '@hcengineering/analytics'
 import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics, WorkspaceUuid } from '@hcengineering/core'
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext, QueueTopic } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
@@ -41,8 +41,9 @@ async function main (): Promise<void> {
   })
 
   configureAnalytics(config.sentryDSN, config)
-  Analytics.setTag('application', 'telegram-bot-service')
+  Analytics.setTag('application', 'calendar-mailer')
   setMetadata(serverToken.metadata.Secret, config.secret)
+  setMetadata(serverToken.metadata.Service, 'calendar-mailer')
 
   const queue = getPlatformQueue('calendarMailerService', config.queueRegion)
 
@@ -52,7 +53,7 @@ async function main (): Promise<void> {
     queue.getClientId(),
     async (messages) => {
       for (const message of messages) {
-        const ws = message.id as WorkspaceUuid
+        const ws = message.workspace
         const records = message.value
         for (const record of records) {
           ctx.info('Processing event', {

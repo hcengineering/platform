@@ -22,7 +22,7 @@
   import { getResource } from '@hcengineering/platform'
 
   import ReactionsList from '../ReactionsList.svelte'
-  import MessageReplies from './MessageReplies.svelte'
+  import MessageThread from '../thread/Thread.svelte'
   import { toggleReaction } from '../../utils'
 
   export let message: Message
@@ -54,19 +54,21 @@
   }
 
   async function removeLinkPreview (id: LinkPreviewID): Promise<void> {
-    await communicationClient.removeLinkPreview(message.cardId, message.id, id)
+    await communicationClient.linkPreviewPatch(message.cardId, message.id, {
+      detach: [id]
+    })
   }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-{#if message.blobs.length > 0}
+{#if message.blobs.length > 0 && !message.removed}
   <div class="message__files">
     {#each message.blobs as blob (blob.blobId)}
       <AttachmentPreview
         value={{
           file: blob.blobId,
-          type: blob.contentType,
+          type: blob.mimeType,
           name: blob.fileName,
           size: blob.size,
           metadata: blob.metadata
@@ -76,7 +78,7 @@
     {/each}
   </div>
 {/if}
-{#if (message.linkPreviews ?? []).length > 0}
+{#if (message.linkPreviews ?? []).length > 0 && !message.removed}
   <div class="message__links">
     {#each message.linkPreviews as link (link.id)}
       <LinkPreview
@@ -99,19 +101,14 @@
     {/each}
   </div>
 {/if}
-{#if message.reactions.length > 0}
+{#if message.reactions.length > 0 && !message.removed}
   <div class="message__reactions">
     <ReactionsList reactions={message.reactions} on:click={handleReaction} />
   </div>
 {/if}
 {#if message.thread && message.thread.threadId}
   <div class="message__replies overflow-label">
-    <MessageReplies
-      thread={message.thread}
-      count={message.thread.repliesCount}
-      lastReply={message.thread.lastReply}
-      on:click={handleReply}
-    />
+    <MessageThread thread={message.thread} on:click={handleReply} />
   </div>
 {/if}
 

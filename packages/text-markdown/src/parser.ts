@@ -539,9 +539,7 @@ const tokensNode: Record<string, ParsingNodeRule> = {
     node: MarkupNodeType.image,
     getAttrs: (tok: Token, state) => {
       const result = tokToAttrs(tok, 'src', 'title', 'alt', 'data')
-      if (tok.content !== '' && (result.alt === '' || result.alt == null)) {
-        result.alt = tok.content
-      }
+      result.alt = convertStringLikeToken(tok, result.alt)
       if (result.src.startsWith(state.imageUrl)) {
         const url = new URL(result.src)
         result['data-type'] = 'image'
@@ -832,4 +830,24 @@ function isTodoListItem (tokens: Token[], pos: number): boolean {
     isInlineToken(tokens[pos + 2]) &&
     startsWithTodoMarkdown(tokens[pos + 2])
   )
+}
+
+function convertStringLikeToken (tok: Token, attrValue?: string): string {
+  if (typeof attrValue === 'string' && attrValue !== '') {
+    return attrValue
+  }
+  const children = tok.children ?? []
+  let out = ''
+  for (const child of children) {
+    switch (child.type) {
+      case 'text':
+        out += child.content
+        break
+      case 'hardbreak':
+        out += '\n'
+        break
+    }
+  }
+
+  return out
 }

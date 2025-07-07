@@ -58,7 +58,9 @@
   }
 
   const options: Plyr.Options = {
-    controls: ['play-large', 'play', 'progress', 'current-time', 'volume', 'settings', 'fullscreen']
+    tooltips: { controls: true, seek: true },
+    keyboard: { focused: true, global: true },
+    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen']
   }
 
   function initialize (src: string): void {
@@ -167,17 +169,11 @@
 </script>
 
 <!-- svelte-ignore a11y-media-has-caption -->
-<video
-  bind:this={video}
-  width="100%"
-  height="100%"
-  preload={preload ? 'auto' : 'none'}
-  controls
-  disablepictureinpicture
-/>
+<video bind:this={video} width="100%" height="100%" preload={preload ? 'auto' : 'none'} disablepictureinpicture />
 
 <style lang="scss">
   video {
+    background: inherit;
     border-radius: inherit;
     object-fit: contain;
   }
@@ -192,6 +188,17 @@
 
   @import 'plyr/dist/plyr.css';
   :global(.plyr) {
+    flex: 1;
     min-width: 10rem;
+    --plyr-control-spacing: 0.5rem;
+    --plyr-control-icon-size: 1rem;
+    --plyr-video-background: transparent;
+  }
+
+  // Hide controls when video is stopped and not hovered
+  :global(.plyr.plyr--stopped:not(:hover) .plyr__controls) {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(100%);
   }
 </style>

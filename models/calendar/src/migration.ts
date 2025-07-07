@@ -13,8 +13,24 @@
 // limitations under the License.
 //
 
-import { type Calendar, calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
-import core, { type AccountUuid, type Doc, type Ref, type Space, toIdMap } from '@hcengineering/core'
+import {
+  AccessLevel,
+  type Calendar,
+  calendarId,
+  type Event,
+  type ExternalCalendar,
+  type ReccuringEvent
+} from '@hcengineering/calendar'
+import core, {
+  type AccountUuid,
+  type Doc,
+  type PersonId,
+  pickPrimarySocialId,
+  type Ref,
+  SocialIdType,
+  type Space,
+  toIdMap
+} from '@hcengineering/core'
 import {
   createDefaultSpace,
   type MigrateOperation,
@@ -26,6 +42,7 @@ import {
   tryUpgrade
 } from '@hcengineering/model'
 import { DOMAIN_SPACE, getAccountUuidBySocialKey, getSocialKeyByOldAccount } from '@hcengineering/model-core'
+import setting, { DOMAIN_SETTING, type Integration } from '@hcengineering/setting'
 import { DOMAIN_CALENDAR, DOMAIN_EVENT } from '.'
 import calendar from './plugin'
 
@@ -364,6 +381,16 @@ export const calendarOperation: MigrateOperation = {
         state: 'fill-block-time',
         mode: 'upgrade',
         func: fillBlockTime
+      },
+      {
+        state: 'fill_social-ids',
+        mode: 'upgrade',
+        func: fillSocialIdsFromIntegrations
+      },
+      {
+        state: 'fill-calendar-user-and-access',
+        mode: 'upgrade',
+        func: fillCalendarUserAndAccess
       }
     ])
   },
@@ -376,4 +403,72 @@ export const calendarOperation: MigrateOperation = {
       }
     ])
   }
+}
+
+async function fillSocialIdsFromIntegrations (client: MigrationClient): Promise<void> {
+  const integrations = await client.find<Integration>(DOMAIN_SETTING, {
+    _class: setting.class.Integration,
+    type: calendar.integrationType.Calendar
+  })
+  for (const integration of integrations) {
+    try {
+      const val = integration.value.trim().toLowerCase()
+      if (val === '') continue
+      const person = await client.accountClient.findPersonBySocialId(
+        integration.createdBy ?? integration.modifiedBy,
+        true
+      )
+      if (person === undefined) continue
+      await client.accountClient.addSocialIdToPerson(person, SocialIdType.GOOGLE, val, true)
+    } catch {}
+  }
+}
+
+async function fillCalendarUserAndAccess (client: MigrationClient): Promise<void> {
+  const calendars = await client.find<Calendar>(DOMAIN_CALENDAR, { user: { $exists: false } })
+  const userMap = new Map<PersonId, PersonId>()
+  for (const _calendar of calendars) {
+    try {
+      const user = _calendar.createdBy ?? _calendar.modifiedBy
+      if (user === undefined) continue
+      let resUser = user
+      if (!userMap.has(user)) {
+        const person = await client.accountClient.findPersonBySocialId(user, true)
+        if (person === undefined) continue
+        const info = await client.accountClient.getPersonInfo(person)
+        if (info === undefined) continue
+        const primarySocialId = pickPrimarySocialId(info.socialIds)
+        resUser = primarySocialId._id
+      }
+      userMap.set(user, resUser)
+
+      const update: MigrateUpdate<Calendar> = {
+        user: resUser,
+        access: getCalendarAccess(_calendar)
+      }
+      if (_calendar._class === calendar.class.Calendar) {
+        update.name = 'HULY'
+      }
+
+      await client.update(DOMAIN_CALENDAR, { _id: _calendar._id }, update)
+    } catch (e) {
+      client.logger.error('Error while filling calendar user and access', { calendar: _calendar._id, error: e })
+      continue
+    }
+  }
+}
+
+function getCalendarAccess (_calendar: Calendar): AccessLevel {
+  if (_calendar._class === calendar.class.Calendar) {
+    return AccessLevel.Owner
+  }
+  const ext = _calendar as ExternalCalendar
+  if (ext.externalUser === ext.externalId) return AccessLevel.Owner
+  if (
+    ext.externalId === 'addressbook#contacts@group.v.calendar.google.com' ||
+    ext.externalId.includes('holiday@group.v.calendar.google.com')
+  ) {
+    return AccessLevel.Reader
+  }
+  return AccessLevel.Writer
 }

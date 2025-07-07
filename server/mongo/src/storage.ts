@@ -1767,7 +1767,6 @@ function translateLikeQuery (pattern: string): { $regex: string, $options: strin
  */
 export async function createMongoAdapter (
   ctx: MeasureContext,
-  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceIds,
@@ -1786,7 +1785,6 @@ export async function createMongoAdapter (
  */
 export async function createMongoTxAdapter (
   ctx: MeasureContext,
-  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceIds,

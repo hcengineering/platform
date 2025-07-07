@@ -12,6 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { initLiveQueries } from '@hcengineering/communication-client-query'
+import {
+  type AddCollaboratorsEvent,
+  type AttachBlobsOperation,
+  type AttachLinkPreviewsOperation,
+  type BlobPatchEvent,
+  type CreateMessageEvent,
+  type CreateMessageResult,
+  type DetachBlobsOperation,
+  type UpdateBlobsOperation,
+  type DetachLinkPreviewsOperation,
+  type Event,
+  type EventResult,
+  type LinkPreviewPatchEvent,
+  MessageEventType,
+  NotificationEventType,
+  type ReactionPatchEvent,
+  type RemoveCollaboratorsEvent,
+  type RemoveNotificationContextEvent,
+  type RemovePatchEvent,
+  type SetBlobsOperation,
+  type SetLinkPreviewsOperation,
+  type ThreadPatchEvent,
+  type UpdateNotificationContextEvent,
+  type UpdateNotificationEvent,
+  type UpdateNotificationQuery,
+  type UpdatePatchEvent
+} from '@hcengineering/communication-sdk-types'
 import {
   type AccountID,
   type BlobData,
@@ -36,41 +64,25 @@ import {
   MessageType,
   type Notification,
   type NotificationContext,
-  PatchType,
-  type SocialID
+  type SocialID,
+  type BlobUpdateData
 } from '@hcengineering/communication-types'
-import {
-  type AddCollaboratorsEvent,
-  type AttachBlobEvent,
-  type AttachThreadEvent,
-  type CreateLinkPreviewEvent,
-  type CreateMessageEvent,
-  type CreateMessageResult,
-  type CreatePatchEvent,
-  type DetachBlobEvent,
-  type EventResult,
-  MessageRequestEventType,
-  NotificationRequestEventType,
-  type RemoveCollaboratorsEvent,
-  type RemoveLinkPreviewEvent,
-  type RemoveNotificationContextEvent,
-  type RemoveReactionEvent,
-  type RequestEvent,
-  type ResponseEvent,
-  type SetReactionEvent,
-  type UpdateNotificationContextEvent,
-  type UpdateNotificationEvent,
-  type UpdateNotificationQuery
-} from '@hcengineering/communication-sdk-types'
-import {
-  type Client as PlatformClient,
-  type ClientConnection as PlatformConnection,
+import core, {
   generateId,
   getCurrentAccount,
-  SocialIdType
+  type OperationDomain,
+  type Client as PlatformClient,
+  SocialIdType,
+  type Tx,
+  type TxDomainEvent
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
-import {
+
+import { generateLinkPreviewId } from '@hcengineering/communication-shared'
+import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
+import { addTxListener, removeTxListener, type TxListener } from './utils'
+
+export {
   createCollaboratorsQuery,
   createLabelsQuery,
   createMessagesQuery,
@@ -79,28 +91,6 @@ import {
   initLiveQueries,
   type MessageQueryParams
 } from '@hcengineering/communication-client-query'
-
-import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
-
-export {
-  createMessagesQuery,
-  createNotificationsQuery,
-  createNotificationContextsQuery,
-  createLabelsQuery,
-  createCollaboratorsQuery
-}
-export type { MessageQueryParams }
-
-interface Connection extends PlatformConnection {
-  findMessages: (params: FindMessagesParams, queryId?: number) => Promise<Message[]>
-  findMessagesGroups: (params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
-  findNotificationContexts: (params: FindNotificationContextParams, queryId?: number) => Promise<NotificationContext[]>
-  findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<Notification[]>
-  findLabels: (params: FindLabelsParams) => Promise<Label[]>
-  findCollaborators: (params: FindCollaboratorsParams, queryId?: number) => Promise<Collaborator[]>
-  sendEvent: (event: RequestEvent) => Promise<EventResult>
-  unsubscribeQuery: (id: number) => Promise<void>
-}
 
 let client: CommunicationClient
 
@@ -111,35 +101,48 @@ export function getCommunicationClient (): CommunicationClient {
 }
 
 export async function setCommunicationClient (platformClient: PlatformClient): Promise<void> {
-  const connection = platformClient.getConnection?.()
-  if (connection === undefined) {
-    return
+  if (client !== undefined) {
+    client.close()
   }
-  client = new Client(connection as unknown as Connection)
-  initLiveQueries(client, getCurrentWorkspaceUuid(), getFilesUrl(), onDestroy)
+  const _client = new Client(platformClient)
+  initLiveQueries(_client, getCurrentWorkspaceUuid(), getFilesUrl(), onDestroy)
+  client = _client
+  onClientListeners.forEach((fn) => {
+    fn()
+  })
 }
 
+const COMMUNICATION = 'communication' as OperationDomain
+
 class Client {
-  constructor (private readonly connection: Connection) {
-    connection.pushHandler((...events: any[]) => {
-      for (const event of events) {
-        if (event != null && 'type' in event) {
-          this.onEvent(event as ResponseEvent)
-        }
-      }
-    })
+  txHandler: TxListener
+  constructor (private readonly connection: PlatformClient) {
+    this.txHandler = this.doHandleEvents.bind(this)
+    addTxListener(this.txHandler)
   }
 
-  onEvent: (event: ResponseEvent) => void = () => {}
-  onRequest: (event: RequestEvent, eventPromise: Promise<EventResult>) => void = () => {}
+  doHandleEvents (events: Tx[]): void {
+    for (const event of events) {
+      if (event._class === core.class.TxDomainEvent && (event as TxDomainEvent).domain === COMMUNICATION) {
+        const evt = event as TxDomainEvent<Event>
+        this.onEvent(evt.event)
+      }
+    }
+  }
+
+  onEvent: (event: Event) => void = () => {}
+  onRequest: (event: Event, eventPromise: Promise<EventResult>) => void = () => {}
 
   async attachThread (cardId: CardID, messageId: MessageID, threadId: CardID, threadType: CardType): Promise<void> {
-    const event: AttachThreadEvent = {
-      type: MessageRequestEventType.AttachThread,
+    const event: ThreadPatchEvent = {
+      type: MessageEventType.ThreadPatch,
       cardId,
       messageId,
-      threadId,
-      threadType,
+      operation: {
+        opcode: 'attach',
+        threadId,
+        threadType
+      },
       socialId: this.getSocialId()
     }
 
@@ -148,7 +151,7 @@ class Client {
 
   async createMessage (cardId: CardID, cardType: CardType, content: Markdown): Promise<CreateMessageResult> {
     const event: CreateMessageEvent = {
-      type: MessageRequestEventType.CreateMessage,
+      type: MessageEventType.CreateMessage,
       messageType: MessageType.Message,
       cardId,
       cardType,
@@ -163,12 +166,11 @@ class Client {
   }
 
   async updateMessage (cardId: CardID, messageId: MessageID, content: Markdown): Promise<void> {
-    const event: CreatePatchEvent = {
-      type: MessageRequestEventType.CreatePatch,
-      patchType: PatchType.update,
+    const event: UpdatePatchEvent = {
+      type: MessageEventType.UpdatePatch,
       cardId,
       messageId,
-      data: { content },
+      content,
       socialId: this.getSocialId(),
       options: {
         skipLinkPreviewsUpdate: true
@@ -178,34 +180,140 @@ class Client {
   }
 
   async removeMessage (cardId: CardID, messageId: MessageID): Promise<void> {
-    const event: CreatePatchEvent = {
-      type: MessageRequestEventType.CreatePatch,
-      patchType: PatchType.remove,
+    const event: RemovePatchEvent = {
+      type: MessageEventType.RemovePatch,
       cardId,
       messageId,
-      data: {},
       socialId: this.getSocialId()
     }
     await this.sendEvent(event)
   }
 
-  async setReaction (cardId: CardID, messageId: MessageID, reaction: string): Promise<void> {
-    const event: SetReactionEvent = {
-      type: MessageRequestEventType.SetReaction,
+  async addReaction (cardId: CardID, messageId: MessageID, reaction: string): Promise<void> {
+    const event: ReactionPatchEvent = {
+      type: MessageEventType.ReactionPatch,
       cardId,
       messageId,
-      reaction,
+      operation: {
+        opcode: 'add',
+        reaction
+      },
       socialId: this.getSocialId()
     }
     await this.sendEvent(event)
   }
 
   async removeReaction (cardId: CardID, messageId: MessageID, reaction: string): Promise<void> {
-    const event: RemoveReactionEvent = {
-      type: MessageRequestEventType.RemoveReaction,
+    const event: ReactionPatchEvent = {
+      type: MessageEventType.ReactionPatch,
       cardId,
       messageId,
-      reaction,
+      operation: {
+        opcode: 'remove',
+        reaction
+      },
+      socialId: this.getSocialId()
+    }
+    await this.sendEvent(event)
+  }
+
+  async blobPatch (
+    cardId: CardID,
+    messageId: MessageID,
+    ops: {
+      attach?: BlobData[]
+      detach?: BlobID[]
+      set?: BlobData[]
+      update?: BlobUpdateData[]
+    }
+  ): Promise<void> {
+    const operations: Array<AttachBlobsOperation | DetachBlobsOperation | SetBlobsOperation | UpdateBlobsOperation> = []
+
+    if (ops.attach != null && ops.attach.length > 0) {
+      operations.push({
+        opcode: 'attach',
+        blobs: ops.attach
+      })
+    }
+
+    if (ops.detach != null && ops.detach.length > 0) {
+      operations.push({
+        opcode: 'detach',
+        blobIds: ops.detach
+      })
+    }
+
+    if (ops.set != null && ops.set.length > 0) {
+      operations.push({
+        opcode: 'set',
+        blobs: ops.set
+      })
+    }
+
+    if (ops.update != null && ops.update.length > 0) {
+      operations.push({
+        opcode: 'update',
+        blobs: ops.update
+      })
+    }
+
+    if (operations.length === 0) return
+
+    const event: BlobPatchEvent = {
+      type: MessageEventType.BlobPatch,
+      cardId,
+      messageId,
+      operations,
+      socialId: this.getSocialId()
+    }
+    await this.sendEvent(event)
+  }
+
+  async linkPreviewPatch (
+    cardId: CardID,
+    messageId: MessageID,
+    ops: {
+      attach?: LinkPreviewData[]
+      detach?: LinkPreviewID[]
+      set?: LinkPreviewData[]
+    }
+  ): Promise<void> {
+    const operations: Array<AttachLinkPreviewsOperation | DetachLinkPreviewsOperation | SetLinkPreviewsOperation> = []
+
+    if (ops.attach != null && ops.attach.length > 0) {
+      operations.push({
+        opcode: 'attach',
+        previews: ops.attach.map((it) => ({
+          ...it,
+          previewId: generateLinkPreviewId()
+        }))
+      })
+    }
+
+    if (ops.detach != null && ops.detach.length > 0) {
+      operations.push({
+        opcode: 'detach',
+        previewIds: ops.detach
+      })
+    }
+
+    if (ops.set != null && ops.set.length > 0) {
+      operations.push({
+        opcode: 'set',
+        previews: ops.set.map((it) => ({
+          ...it,
+          previewId: generateLinkPreviewId()
+        }))
+      })
+    }
+
+    if (operations.length === 0) return
+
+    const event: LinkPreviewPatchEvent = {
+      type: MessageEventType.LinkPreviewPatch,
+      cardId,
+      messageId,
+      operations,
       socialId: this.getSocialId()
     }
     await this.sendEvent(event)
@@ -213,7 +321,7 @@ class Client {
 
   async addCollaborators (cardId: CardID, cardType: CardType, collaborators: AccountID[]): Promise<void> {
     const event: AddCollaboratorsEvent = {
-      type: NotificationRequestEventType.AddCollaborators,
+      type: NotificationEventType.AddCollaborators,
       cardId,
       cardType,
       collaborators,
@@ -224,7 +332,7 @@ class Client {
 
   async removeCollaborators (cardId: CardID, cardType: CardType, collaborators: AccountID[]): Promise<void> {
     const event: RemoveCollaboratorsEvent = {
-      type: NotificationRequestEventType.RemoveCollaborators,
+      type: NotificationEventType.RemoveCollaborators,
       cardId,
       cardType,
       collaborators,
@@ -233,53 +341,9 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async attachBlob (cardId: CardID, messageId: MessageID, blobData: BlobData): Promise<void> {
-    const event: AttachBlobEvent = {
-      type: MessageRequestEventType.AttachBlob,
-      cardId,
-      messageId,
-      blobData,
-      socialId: this.getSocialId()
-    }
-    await this.sendEvent(event)
-  }
-
-  async detachBlob (cardId: CardID, messageId: MessageID, blobId: BlobID): Promise<void> {
-    const event: DetachBlobEvent = {
-      type: MessageRequestEventType.DetachBlob,
-      cardId,
-      messageId,
-      blobId,
-      socialId: this.getSocialId()
-    }
-    await this.sendEvent(event)
-  }
-
-  async createLinkPreview (cardId: CardID, messageId: MessageID, previewData: LinkPreviewData): Promise<void> {
-    const event: CreateLinkPreviewEvent = {
-      type: MessageRequestEventType.CreateLinkPreview,
-      cardId,
-      messageId,
-      previewData,
-      socialId: this.getSocialId()
-    }
-    await this.sendEvent(event)
-  }
-
-  async removeLinkPreview (cardId: CardID, messageId: MessageID, previewId: LinkPreviewID): Promise<void> {
-    const event: RemoveLinkPreviewEvent = {
-      type: MessageRequestEventType.RemoveLinkPreview,
-      cardId,
-      messageId,
-      previewId,
-      socialId: this.getSocialId()
-    }
-    await this.sendEvent(event)
-  }
-
   async updateNotificationContext (contextId: ContextID, lastView: Date): Promise<void> {
     const event: UpdateNotificationContextEvent = {
-      type: NotificationRequestEventType.UpdateNotificationContext,
+      type: NotificationEventType.UpdateNotificationContext,
       contextId,
       account: this.getAccount(),
       updates: {
@@ -291,25 +355,19 @@ class Client {
 
   async removeNotificationContext (contextId: ContextID): Promise<void> {
     const event: RemoveNotificationContextEvent = {
-      type: NotificationRequestEventType.RemoveNotificationContext,
+      type: NotificationEventType.RemoveNotificationContext,
       contextId,
       account: this.getAccount()
     }
     await this.sendEvent(event)
   }
 
-  async updateNotifications (
-    context: ContextID,
-    query: Omit<UpdateNotificationQuery, 'context' | 'account'>,
-    read: boolean
-  ): Promise<void> {
+  async updateNotifications (contextId: ContextID, query: UpdateNotificationQuery, read: boolean): Promise<void> {
     const event: UpdateNotificationEvent = {
-      type: NotificationRequestEventType.UpdateNotification,
-      query: {
-        ...query,
-        context,
-        account: this.getAccount()
-      },
+      type: NotificationEventType.UpdateNotification,
+      contextId,
+      account: this.getAccount(),
+      query,
       updates: {
         read
       }
@@ -318,43 +376,74 @@ class Client {
   }
 
   async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
-    return await this.connection.findMessages(params, queryId)
+    return (
+      await this.connection.domainRequest<Message[]>(COMMUNICATION, {
+        findMessages: { params, queryId }
+      })
+    ).value
   }
 
   async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    return await this.connection.findMessagesGroups(params)
+    return (
+      await this.connection.domainRequest<MessagesGroup[]>(COMMUNICATION, {
+        findMessagesGroups: { params }
+      })
+    ).value
   }
 
   async findNotificationContexts (
     params: FindNotificationContextParams,
     queryId?: number
   ): Promise<NotificationContext[]> {
-    return await this.connection.findNotificationContexts(params, queryId)
+    return (
+      await this.connection.domainRequest<NotificationContext[]>(COMMUNICATION, {
+        findNotificationContexts: { params, queryId }
+      })
+    ).value
   }
 
   async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<Notification[]> {
-    return await this.connection.findNotifications(params, queryId)
+    return (
+      await this.connection.domainRequest<Notification[]>(COMMUNICATION, {
+        findNotifications: { params, queryId }
+      })
+    ).value
   }
 
   async findLabels (params: FindLabelsParams): Promise<Label[]> {
-    return await this.connection.findLabels(params)
+    return (
+      await this.connection.domainRequest<Label[]>(COMMUNICATION, {
+        findLabels: { params }
+      })
+    ).value
   }
 
-  async findCollaborators (params: FindCollaboratorsParams, queryId?: number): Promise<Collaborator[]> {
-    return await this.connection.findCollaborators(params, queryId)
+  async findCollaborators (params: FindCollaboratorsParams): Promise<Collaborator[]> {
+    return (
+      await this.connection.domainRequest<Collaborator[]>(COMMUNICATION, {
+        findCollaborators: { params }
+      })
+    ).value
   }
 
   async unsubscribeQuery (id: number): Promise<void> {
-    await this.connection.unsubscribeQuery(id)
+    await this.connection.domainRequest<Message[]>(COMMUNICATION, {
+      unsubscribeQuery: id
+    })
   }
 
   close (): void {
-    // do nothing
+    removeTxListener(this.txHandler)
   }
 
-  private async sendEvent (event: RequestEvent): Promise<EventResult> {
-    const ev: RequestEvent = { ...event, _id: generateId() }
-    const eventPromise = this.connection.sendEvent(ev)
+  private async sendEvent (event: Event): Promise<EventResult> {
+    const ev: Event = { ...event, _id: generateId() }
+
+    const eventPromise: Promise<EventResult> = this.connection
+      .domainRequest<EventResult>(COMMUNICATION, {
+      event: ev
+    })
+      .then((result) => result.value)
     this.onRequest(ev, eventPromise)
     return await eventPromise
   }
@@ -371,5 +460,16 @@ class Client {
 
   private getAccount (): AccountID {
     return getCurrentAccount().uuid
+  }
+}
+
+const onClientListeners: Array<() => void> = []
+
+export function onCommunicationClient (fn: () => void): void {
+  onClientListeners.push(fn)
+  if (client !== undefined) {
+    setTimeout(() => {
+      fn()
+    })
   }
 }

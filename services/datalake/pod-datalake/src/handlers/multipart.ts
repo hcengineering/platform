@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { cacheControl } from '../const'
 import { Datalake } from '../datalake'
@@ -38,7 +38,7 @@ export async function handleMultipartUploadStart (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   const { bucket } = await datalake.selectStorage(ctx, workspace)
 
@@ -63,7 +63,7 @@ export async function handleMultipartUploadPart (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
   const partNumber = req.query.partNumber as string
 
   let uuid: string
@@ -100,7 +100,8 @@ export async function handleMultipartUploadComplete (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace, name } = req.params
+  const { name } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
   const { bucket } = await datalake.selectStorage(ctx, workspace)
 
   let uuid: string
@@ -129,7 +130,8 @@ export async function handleMultipartUploadAbort (
   res: Response,
   datalake: Datalake
 ): Promise<void> {
-  const { workspace, name } = req.params
+  const { name } = req.params
+  const workspace = req.params.workspace as WorkspaceUuid
 
   let uuid: string
   let uploadId: string

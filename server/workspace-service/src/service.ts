@@ -38,8 +38,8 @@ import {
 } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { FileModelLogger, prepareTools } from '@hcengineering/server-tool'
-import path from 'path'
 import { randomUUID } from 'crypto'
+import path from 'path'
 
 import { Analytics } from '@hcengineering/analytics'
 import {
@@ -72,8 +72,7 @@ import {
   registerServerPlugins,
   registerStringLoaders,
   registerTxAdapterFactory,
-  setAdapterSecurity,
-  sharedPipelineContextVars
+  setAdapterSecurity
 } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { createWorkspace, upgradeWorkspace } from './ws-operations'
@@ -95,10 +94,10 @@ export interface WorkspaceOptions {
 
 // Register close on process exit.
 process.on('exit', () => {
-  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+  shutdownPostgres().catch((err) => {
     console.error(err)
   })
-  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+  shutdownMongo().catch((err) => {
     console.error(err)
   })
 })
@@ -422,7 +421,7 @@ export class WorkspaceWorker {
   async doCleanup (ctx: MeasureContext, workspace: WorkspaceInfoWithStatus, cleanIndexes: boolean): Promise<void> {
     const { dbUrl } = prepareTools([])
     const adapter = getWorkspaceDestroyAdapter(dbUrl)
-    await adapter.deleteWorkspace(ctx, sharedPipelineContextVars, workspace.uuid, workspace.dataId)
+    await adapter.deleteWorkspace(ctx, workspace.uuid, workspace.dataId)
 
     await this.workspaceQueue.send(workspace.uuid, [workspaceEvents.clearIndex()])
   }
@@ -543,6 +542,9 @@ export class WorkspaceWorker {
         if (await this.doRestore(ctx, workspace, opt)) {
           // We should reindex fulltext
           await sendEvent('restore-done', 100)
+
+          workspace.mode = 'active'
+          await this._upgradeWorkspace(ctx, workspace, opt)
           await this.workspaceQueue.send(workspace.uuid, [workspaceEvents.restored()])
         }
         break
@@ -614,7 +616,6 @@ export class WorkspaceWorker {
           KeepSnapshots: 7 * 12
         },
         pipelineFactory,
-        workspaceStorageAdapter,
         (ctx, workspace, branding, externalStorage) => {
           return getConfig(ctx, dbUrl, ctx, {
             externalStorage,
@@ -624,7 +625,6 @@ export class WorkspaceWorker {
         this.region,
         50000,
         ['blob'],
-        sharedPipelineContextVars,
         doFullCheck, // Do full check based on config, do not do for migration, it is to slow, will perform before migration.
         (_p: number) => {
           if (progress !== Math.round(_p)) {
@@ -701,7 +701,6 @@ export class WorkspaceWorker {
         opt.backup.backupStorage,
         opt.backup.bucketName,
         pipelineFactory,
-        workspaceStorageAdapter,
         [DOMAIN_BLOB],
         true,
         (_p: number) => {
@@ -715,6 +714,9 @@ export class WorkspaceWorker {
       if (result) {
         ctx.info('restore completed')
         return true
+      } else {
+        // Restore failed
+        await opt.errorHandler(workspace, new Error('Restore failed'))
       }
     } finally {
       clearInterval(notifyInt)

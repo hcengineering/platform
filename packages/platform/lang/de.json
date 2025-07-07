@@ -5,11 +5,13 @@
     "InvalidId": "Ungültige ID: {id}",
     "BadRequest": "Fehlerhafte Anfrage",
     "Forbidden": "Zugriff verweigert",
+    "Conflict": "Konflikt",
     "ExpiredLink": "Dieser Einladungslink ist abgelaufen",
     "Unauthorized": "Nicht autorisiert",
     "UnknownMethod": "Unbekannte Methode: {method}",
     "InternalServerError": "Interner Serverfehler",
-    "MaintenanceWarning": "Wartung geplant in {time, plural, =1 {weniger als einer Minute} other {# Minuten}}",
+    "MaintenanceWarning": "Wartung geplant in",
+    "MaintenanceWarningTime": "{time, plural, =1 {weniger als einer Minute} other {# Minuten}}",
     "AccountNotFound": "Konto nicht gefunden",
     "AccountNotConfirmed": "Konto nicht bestätigt",
     "WorkspaceNotFound": "Arbeitsbereich nicht gefunden",
@@ -21,6 +23,8 @@
     "InvalidOtp": "Ungültiger Code",
     "InviteNotFound": "Einladung mit E-Mail: {email} nicht gefunden.",
     "WorkspaceLimitReached": "Sie haben das Arbeitsbereichslimit erreicht. Bitte kontaktieren Sie uns...",
-    "ReadOnlyAccount": "Nur-Lese-Modus"
+    "ReadOnlyAccount": "Gast-Demo",
+    "SystemAccount": "Systemkonto",
+    "SocialIdAlreadyExists": "Social ID existiert bereits"
   }
 }

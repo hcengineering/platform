@@ -29,6 +29,7 @@ export interface Config {
   DbUrl: string
   Buckets: BucketConfig[]
   CleanupInterval: number
+  Readonly: boolean
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -77,7 +78,8 @@ const config: Config = (() => {
     Secret: process.env.SECRET,
     AccountsUrl: process.env.ACCOUNTS_URL,
     DbUrl: process.env.DB_URL,
-    Buckets: parseBucketsConfig(process.env.BUCKETS)
+    Buckets: parseBucketsConfig(process.env.BUCKETS),
+    Readonly: process.env.READONLY === 'true'
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

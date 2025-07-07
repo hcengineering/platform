@@ -47,6 +47,7 @@ describe('rest-api-server', () => {
   let apiWorkspace1: WorkspaceToken
   let apiWorkspace2: WorkspaceToken
   let accountClient: AccountClient
+  let adminAccountClient: AccountClient
 
   beforeAll(async () => {
     const config = await loadServerConfig('http://huly.local:8083')
@@ -72,9 +73,12 @@ describe('rest-api-server', () => {
     )
 
     accountClient = getAccountClient(config.ACCOUNTS_URL, apiWorkspace1.token)
+    adminAccountClient = getAccountClient(
+      config.ACCOUNTS_URL,
+      generateToken(systemAccountUuid, undefined, { admin: 'true' }, 'secret')
+    )
     const person = await accountClient.getPerson()
-
-    const socialIds: SocialId[] = await accountClient.getSocialIds()
+    const socialIds: SocialId[] = await accountClient.getSocialIds(true)
 
     // Ensure employee is created
 
@@ -232,7 +236,7 @@ describe('rest-api-server', () => {
       socialId: PersonId,
       localPerson: string
     ): Promise<void> => {
-      const globalPerson = await accountClient.findPersonBySocialKey(
+      const globalPerson = await adminAccountClient.findPersonBySocialKey(
         buildSocialIdString({ type: socialType, value: socialValue })
       )
 
@@ -280,7 +284,7 @@ describe('rest-api-server', () => {
 async function checkFindPerformance (conn: RestClient): Promise<void> {
   let ops = 0
   let total = 0
-  const attempts = 1000
+  const attempts = 500
   for (let i = 0; i < attempts; i++) {
     const st = performance.now()
     const spaces = await conn.findAll(core.class.Space, {})

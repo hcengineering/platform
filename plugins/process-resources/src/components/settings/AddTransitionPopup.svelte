@@ -15,20 +15,20 @@
 <script lang="ts">
   import core, { Ref } from '@hcengineering/core'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { State, Trigger } from '@hcengineering/process'
-  import { Dropdown, DropdownIntlItem, DropdownLabelsIntl, Grid, Label, ListItem, Toggle } from '@hcengineering/ui'
+  import { Process, State, Trigger } from '@hcengineering/process'
+  import { Component, Dropdown, DropdownIntlItem, DropdownLabelsIntl, Grid, Label, ListItem } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 
-  export let state: State
-  export let direction: 'from' | 'to'
+  export let process: Process
+
   const dispatch = createEventDispatcher()
-  let target: Ref<State> | null | undefined = undefined
+  let to: Ref<State> | undefined = undefined
   let states: State[] = []
 
   const query = createQuery()
-  query.query(plugin.class.State, { process: state.process }, (res) => {
-    states = res.filter((s) => s._id !== state._id)
+  query.query(plugin.class.State, { process: process._id }, (res) => {
+    states = res
   })
 
   let statesItems: ListItem[] = []
@@ -37,35 +37,45 @@
 
   let selectedState: ListItem | undefined
 
-  $: target = selectedState?._id === 'rollback' ? null : (selectedState?._id as Ref<State>)
+  $: to = selectedState?._id as Ref<State>
+
+  let fromState: ListItem | undefined
+
+  $: from = fromState?._id as Ref<State>
 
   const client = getClient()
-  const triggers = client.getModel().findAllSync(plugin.class.Trigger, {})
+  const triggers = client.getModel().findAllSync(plugin.class.Trigger, { init: false })
   let trigger: Ref<Trigger> = triggers[0]._id
+
+  $: triggerValue = triggers.find((t) => t._id === trigger)
+
+  let params: Record<string, any> = {}
 
   const triggersItems: DropdownIntlItem[] = triggers.map((p) => ({ label: p.label, id: p._id, icon: p.icon }))
 
   async function save (): Promise<void> {
-    if (target === undefined || trigger === undefined) {
+    if (to === undefined || trigger === undefined) {
       return
     }
-    const from = direction === 'from' ? state._id : (target as Ref<State>)
-    const to = direction === 'from' ? target : state._id
     await client.createDoc(plugin.class.Transition, core.space.Model, {
       from,
       to,
       trigger,
-      triggerParams: {},
-      process: state.process,
+      triggerParams: params,
+      process: process._id,
       actions: []
     })
     dispatch('close')
+  }
+
+  function change (e: CustomEvent<Record<string, any>>): void {
+    params = e.detail
   }
 </script>
 
 <Card
   okAction={save}
-  canSave={target !== undefined && trigger !== undefined}
+  canSave={to !== undefined && trigger !== undefined && to !== from}
   label={plugin.string.AddTransition}
   width={'medium'}
   on:close
@@ -78,29 +88,28 @@
       label={plugin.string.Trigger}
       justify={'left'}
       width={'100%'}
-      kind={'regular'}
+      kind={'no-border'}
     />
-    <Label label={plugin.string.Rollback} />
-    <Toggle
-      on={target === null}
-      on:change={(e) => {
-        if (e.detail) {
-          target = null
-        } else {
-          target = undefined
-        }
-      }}
-    />
-    {#if target !== null}
-      <Label label={direction === 'from' ? plugin.string.From : plugin.string.To} />
-      <Dropdown
-        items={statesItems}
-        bind:selected={selectedState}
-        placeholder={direction === 'from' ? plugin.string.From : plugin.string.To}
-        justify={'left'}
-        width={'100%'}
-        kind={'regular'}
-      />
+    {#if triggerValue?.editor}
+      <Component is={triggerValue.editor} props={{ process, params }} on:change={change} />
     {/if}
+    <Label label={plugin.string.From} />
+    <Dropdown
+      items={statesItems}
+      bind:selected={fromState}
+      placeholder={plugin.string.From}
+      justify={'left'}
+      width={'100%'}
+      kind={'no-border'}
+    />
+    <Label label={plugin.string.To} />
+    <Dropdown
+      items={statesItems}
+      bind:selected={selectedState}
+      placeholder={plugin.string.To}
+      justify={'left'}
+      width={'100%'}
+      kind={'no-border'}
+    />
   </Grid>
 </Card>

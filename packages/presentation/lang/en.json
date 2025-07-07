@@ -41,6 +41,7 @@
     "ColorRemove": "Remove color preset",
     "ColorReset": "Reset color presets",
     "Copy": "Copy",
+    "DocumentUrlCopied": "Copied!",
     "CopyLink": "Copy link",
     "AccessDenied": "Object doesn't exist or you are not permitted to access it.",
     "UnableToFollowMention": "Unable to open mentioned object"

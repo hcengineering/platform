@@ -108,6 +108,19 @@
     "CalDavAccessPasswordWarning": "Tohle heslo už nebudete moci znovu vidět. Uložte si ho na bezpečné místo.",
     "MeetingScheduledNotification": "Naplánována schůzka",
     "MeetingRescheduledNotification": "Čas schůzky změněn",
-    "MeetingCanceledNotification": "Schůzka zrušena: {title}"
+    "MeetingCanceledNotification": "Schůzka zrušena: {title}",
+    "PrimaryCalendar": "Hlavní kalendář",
+    "Hidden": "Skrytý",
+    "Each": "Každý",
+    "OnThe": "V",
+    "First": "První",
+    "Second": "Druhý",
+    "Third": "Třetí",
+    "Fourth": "Čtvrtý",
+    "Fifth": "Pátý",
+    "NextToLast": "Předposlední",
+    "Last": "Poslední",
+    "Weekday": "Všední den",
+    "WeekendDay": "Víkendový den"
   }
 }

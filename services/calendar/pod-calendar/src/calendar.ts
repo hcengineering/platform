@@ -14,18 +14,33 @@
 //
 
 import { AccountClient } from '@hcengineering/account-client'
-import calendar, { Event, ExternalCalendar, ReccuringEvent, ReccuringInstance, calendarIntegrationKind } from '@hcengineering/calendar'
-import { Client, Doc, MeasureContext, Mixin, Ref, TxOperations } from '@hcengineering/core'
-import { htmlToMarkup, jsonToHTML, markupToJSON } from '@hcengineering/text'
+import calendar, {
+  Event,
+  ExternalCalendar,
+  ReccuringEvent,
+  ReccuringInstance,
+  calendarIntegrationKind
+} from '@hcengineering/calendar'
+import { Client, MeasureContext, Ref, TxOperations } from '@hcengineering/core'
+import { areEqualMarkups, htmlToMarkup, isEmptyMarkup, jsonToHTML, markupToJSON } from '@hcengineering/text'
 import { deepEqual } from 'fast-equals'
 import { OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
-import { getRateLimitter, RateLimiter } from './rateLimiter'
-import { IncomingSyncManager } from './sync'
-import { type Token } from './types'
-import { encodeReccuring, getGoogleClient, removeIntegrationSecret, setCredentials } from './utils'
-import type { WorkspaceClient } from './workspaceClient'
 import { removeUserByEmail } from './kvsUtils'
+import { getRateLimitter, RateLimiter } from './rateLimiter'
+import { type Token } from './types'
+import {
+  convertDate,
+  encodeReccuring,
+  getGoogleClient,
+  getMixinFields,
+  getTimezone,
+  parseEventDate,
+  parseRecurrenceStrings,
+  removeIntegrationSecret,
+  setCredentials
+} from './utils'
+import type { WorkspaceClient } from './workspaceClient'
 
 export class CalendarClient {
   private readonly calendar: calendar_v3.Calendar
@@ -67,21 +82,6 @@ export class CalendarClient {
       return
     }
     return calendarClient
-  }
-
-  async startSync (): Promise<void> {
-    try {
-      await IncomingSyncManager.sync(
-        this.ctx,
-        this.accountClient,
-        this.client,
-        this.user,
-        this.user.email,
-        this.calendar
-      )
-    } catch (err) {
-      this.ctx.error('Start sync error', { workspace: this.user.workspace, user: this.user.userId, err })
-    }
   }
 
   private areDatesEqual (first: calendar_v3.Schema$EventDateTime, second: calendar_v3.Schema$EventDateTime): boolean {
@@ -182,17 +182,6 @@ export class CalendarClient {
     }
   }
 
-  async removeEvent (event: Event): Promise<void> {
-    try {
-      const _calendar = this.workspace.calendarsById.get(event.calendar as Ref<ExternalCalendar>)
-      if (_calendar !== undefined) {
-        await this.remove(event.eventId, _calendar.externalId)
-      }
-    } catch (err) {
-      console.error('Remove event error', this.user.workspace, this.user.userId, err)
-    }
-  }
-
   async syncMyEvent (event: Event): Promise<void> {
     if (event.access === 'owner' || event.access === 'writer') {
       try {
@@ -228,6 +217,9 @@ export class CalendarClient {
         const current = await this.calendar.events.get({ calendarId, eventId: event.eventId })
         if (current !== undefined && current.data.status !== 'cancelled') {
           const ev = this.applyUpdate(current.data, event)
+          if (ev === undefined) {
+            return true // No changes to apply
+          }
           await this.rateLimiter.take(1)
           await this.calendar.events.update({
             calendarId,
@@ -245,24 +237,6 @@ export class CalendarClient {
       }
     }
     return false
-  }
-
-  private getMixinFields (event: Event): Record<string, any> {
-    const res = {}
-    const h = this.client.getHierarchy()
-    for (const [k, v] of Object.entries(event)) {
-      if (typeof v === 'object' && h.isMixin(k as Ref<Mixin<Doc>>)) {
-        for (const [key, value] of Object.entries(v)) {
-          if (value !== undefined) {
-            const obj = (res as any)[k] ?? {}
-            obj[key] = value
-            ;(res as any)[k] = obj
-          }
-        }
-      }
-    }
-
-    return res
   }
 
   private convertBody (event: Event): calendar_v3.Schema$Event {
@@ -286,7 +260,7 @@ export class CalendarClient {
         }
       }
     }
-    const mixin = this.getMixinFields(event)
+    const mixin = getMixinFields(this.client.getHierarchy(), event)
     if (Object.keys(mixin).length > 0) {
       res.extendedProperties = {
         ...res.extendedProperties,
@@ -329,6 +303,15 @@ export class CalendarClient {
   private applyUpdate (event: calendar_v3.Schema$Event, current: Event): calendar_v3.Schema$Event | undefined {
     let res: boolean = false
     if (current.title !== event.summary) {
+      this.ctx.info('Update event diff: title', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.user.workspace,
+        event: current._id,
+        prev: event.summary,
+        current: current.title
+      })
       event.summary = current.title
       res = true
     }
@@ -336,6 +319,15 @@ export class CalendarClient {
       const newVisibility = current.visibility === 'public' ? 'public' : 'private'
       if (newVisibility !== event.visibility) {
         event.visibility = newVisibility
+        this.ctx.info('Update event diff: visibility', {
+          calendarId: current.calendar,
+          eventId: current.eventId,
+          user: this.user.email,
+          workspace: this.user.workspace,
+          event: current._id,
+          prev: event.visibility,
+          current: newVisibility
+        })
         res = true
       }
       if (current.visibility === 'freeBusy' && event?.extendedProperties?.private?.visibility !== 'freeBusy') {
@@ -348,13 +340,35 @@ export class CalendarClient {
         res = true
       }
     }
-    const description = htmlToMarkup(event.description ?? '')
-    if (current.description !== description) {
+    const description = jsonToHTML(markupToJSON(current.description))
+    const originMarkup = htmlToMarkup(event.description ?? '')
+    if (
+      isEmptyMarkup(description) !== isEmptyMarkup(originMarkup) &&
+      !areEqualMarkups(current.description, originMarkup)
+    ) {
       res = true
+      this.ctx.info('Update event diff: description', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.user.workspace,
+        event: current._id,
+        prev: event.description,
+        current: description
+      })
       event.description = description
     }
     if (current.location !== event.location) {
       res = true
+      this.ctx.info('Update event diff: location', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.user.workspace,
+        event: current._id,
+        prev: event.location,
+        current: current.location
+      })
       event.location = current.location
     }
     const attendees = this.getAttendees(current)
@@ -362,25 +376,68 @@ export class CalendarClient {
       for (const attendee of attendees) {
         if (event.attendees.findIndex((p) => p.email === attendee) === -1) {
           res = true
+          this.ctx.info('Update event diff: attendees', {
+            calendarId: current.calendar,
+            eventId: current.eventId,
+            user: this.user.email,
+            workspace: this.user.workspace,
+            event: current._id,
+            prev: event.attendees,
+            current: attendee
+          })
           event.attendees.push({ email: attendee })
         }
       }
     }
-    const newStart = convertDate(current.date, event.start?.date !== undefined, getTimezone(current))
-    if (!deepEqual(newStart, event.start)) {
+    const currentStart = parseEventDate(event.start)
+    if (currentStart !== current.date) {
+      const newStart = convertDate(current.date, event.start?.date !== undefined, getTimezone(current))
       res = true
+      this.ctx.info('Update event diff: start', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.user.workspace,
+        event: current._id,
+        prev: event.start,
+        current: newStart
+      })
       event.start = newStart
     }
-    const newEnd = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))
-    if (!deepEqual(newEnd, event.end)) {
+    const currentEnd = parseEventDate(event.end)
+    if (currentEnd !== current.dueDate) {
       res = true
+      const newEnd = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))
+      this.ctx.info('Update event diff: end', {
+        calendarId: current.calendar,
+        eventId: current.eventId,
+        user: this.user.email,
+        workspace: this.user.workspace,
+        event: current._id,
+        prev: event.end,
+        current: newEnd
+      })
       event.end = newEnd
     }
     if (current._class === calendar.class.ReccuringEvent) {
       const rec = current as ReccuringEvent
-      const newRec = encodeReccuring(rec.rules, rec.rdate, rec.exdate)
-      if (!deepEqual(newRec, event.recurrence)) {
+      const parsed = parseRecurrenceStrings(event.recurrence ?? [])
+      if (
+        !deepEqual(rec.rules, parsed.rules) ||
+        !deepEqual(rec.rdate, parsed.rdate) ||
+        !deepEqual(rec.exdate, parsed.exdate)
+      ) {
         res = true
+        const newRec = encodeReccuring(rec.rules, rec.rdate, rec.exdate)
+        this.ctx.info('Update event diff: recurrence', {
+          calendarId: current.calendar,
+          eventId: current.eventId,
+          user: this.user.email,
+          workspace: this.user.workspace,
+          event: current._id,
+          prev: event.recurrence,
+          current: newRec
+        })
         event.recurrence = newRec
       }
     }
@@ -400,14 +457,4 @@ export class CalendarClient {
     }
     return Array.from(res)
   }
-}
-
-function convertDate (value: number, allDay: boolean, timeZone: string | undefined): calendar_v3.Schema$EventDateTime {
-  return allDay
-    ? { date: new Date(value).toISOString().split('T')[0] }
-    : { dateTime: new Date(value).toISOString(), timeZone: timeZone ?? 'Etc/GMT' }
-}
-
-function getTimezone (event: Event): string | undefined {
-  return event.timeZone
 }

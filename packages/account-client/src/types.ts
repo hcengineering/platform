@@ -8,6 +8,9 @@ import {
   type SocialId as SocialIdBase,
   PersonUuid,
   type WorkspaceMode,
+  Person,
+  WorkspaceInfo,
+  AccountInfo,
   IntegrationKind
 } from '@hcengineering/core'
 
@@ -115,4 +118,11 @@ export type IntegrationSecretKey = Omit<IntegrationSecret, 'secret'>
 export interface ProviderInfo {
   name: string
   displayName?: string
+}
+
+export interface AccountAggregatedInfo extends AccountInfo, Person {
+  uuid: AccountUuid
+  integrations: Omit<Integration, 'data'>[]
+  socialIds: SocialId[]
+  workspaces: Omit<WorkspaceInfo, 'allowReadOnlyGuest'>[]
 }

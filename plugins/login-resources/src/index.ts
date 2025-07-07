@@ -17,6 +17,7 @@
 import { type IntlString } from '@hcengineering/platform'
 import InviteLink from './components/InviteLink.svelte'
 import LoginApp from './components/LoginApp.svelte'
+import LoginOtpForm from './components/LoginOtpForm.svelte'
 import {
   changePassword,
   fetchWorkspace,
@@ -42,6 +43,7 @@ export { pages, type Pages }
 export default async () => ({
   component: {
     LoginApp,
+    LoginOtpForm,
     InviteLink
   },
   function: {

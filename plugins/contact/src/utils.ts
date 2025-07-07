@@ -33,7 +33,8 @@ import {
   Ref,
   SocialId,
   toIdMap,
-  TxFactory
+  TxFactory,
+  DocumentUpdate
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
@@ -233,7 +234,7 @@ const SEP = ','
  * @public
  */
 export function combineName (first: string, last: string): string {
-  return last + SEP + first
+  return (last ?? '') + SEP + (first ?? '')
 }
 
 /**
@@ -414,6 +415,7 @@ export async function ensureEmployeeForPerson (
   const txFactory = new TxFactory(me.primarySocialId)
   const personByUuid = await client.findOne(contact.class.Person, { personUuid: person.uuid })
   let personRef: Ref<Person> | undefined = personByUuid?._id
+
   if (personRef === undefined) {
     const socialIdentity = await client.findOne(contact.class.SocialIdentity, {
       _id: { $in: person.socialIds as SocialIdentityRef[] }
@@ -424,6 +426,8 @@ export async function ensureEmployeeForPerson (
   }
 
   if (personRef === undefined) {
+    // Local person not found: neither by personUuid nor by a local social identity
+    // Creating a new local person
     await ctx.with('create-person', {}, async () => {
       if (globalPerson === undefined) {
         console.error('Cannot get global person')
@@ -442,6 +446,7 @@ export async function ensureEmployeeForPerson (
       await client.tx(createPersonTx)
     })
   } else if (personByUuid === undefined) {
+    // Local person found only by social identity, need to set personUuid
     const updatePersonTx = txFactory.createTxUpdateDoc(contact.class.Person, contact.space.Contacts, personRef, {
       personUuid: person.uuid
     })
@@ -455,7 +460,7 @@ export async function ensureEmployeeForPerson (
   for (const socialId of socialIds) {
     const existing = existingIdentifiers.get(socialId._id as SocialIdentityRef)
 
-    if (existing === undefined) {
+    if (existing == null) {
       await ctx.with('create-social-identity', {}, async () => {
         if (personRef === undefined) {
           // something went wrong
@@ -478,7 +483,8 @@ export async function ensureEmployeeForPerson (
               type: socialId.type,
               value: socialId.value,
               key: buildSocialIdString(socialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
-              verifiedOn: socialId.verifiedOn
+              verifiedOn: socialId.verifiedOn,
+              isDeleted: socialId.isDeleted
             },
             socialId._id as SocialIdentityRef
           )
@@ -486,22 +492,47 @@ export async function ensureEmployeeForPerson (
         await client.tx(createSocialIdTx)
       })
     } else {
-      // This social identity must be attached to the correct person. If it's not the case, something is wrong.
-      // personRef must be readonly after creation and must NEVER be changed.
-      if (existing.attachedTo !== personRef) {
-        throw new Error('Social identity is attached to the wrong person')
+      // If not confirmed locally can be attached to a different person (persons merge scenario)
+      // Confirmed social identity should not be attached to a different person for now
+      // It will change with accounts merge function
+      if (existing.verifiedOn != null && existing.attachedTo !== personRef) {
+        throw new Error('Confirmed social identity is attached to the wrong person')
       }
 
-      // Check and update if needed
+      // Check and update if needed. It can:
+      // 1. Become verified (maybe with persons merge) (changes verifiedOn, attachedTo)
+      const sidUpdate: DocumentUpdate<SocialIdentity> = {}
+      let needUpdate = false
+
+      // become verified
       if (existing.verifiedOn == null) {
+        sidUpdate.verifiedOn = socialId.verifiedOn
+        needUpdate = true
+      }
+
+      // merged from another person
+      if (existing.attachedTo !== personRef) {
+        sidUpdate.attachedTo = personRef
+        // Bump collection in Person?
+        needUpdate = true
+      }
+
+      // become deleted
+      if (existing.isDeleted !== socialId.isDeleted && socialId.isDeleted === true) {
+        sidUpdate.value = socialId.value
+        sidUpdate.key = socialId.key
+        sidUpdate.isDeleted = socialId.isDeleted
+        needUpdate = true
+      }
+
+      if (needUpdate) {
         const updateSocialIdentityTx = txFactory.createTxUpdateDoc(
           contact.class.SocialIdentity,
           contact.space.Contacts,
           existing._id,
-          {
-            verifiedOn: socialId.verifiedOn
-          }
+          sidUpdate
         )
+
         await client.tx(updateSocialIdentityTx)
       }
     }

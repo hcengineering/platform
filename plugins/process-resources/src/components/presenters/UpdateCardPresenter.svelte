@@ -16,17 +16,18 @@
   import { Card } from '@hcengineering/card'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Process, Step } from '@hcengineering/process'
+  import { MethodParams, Process, Step } from '@hcengineering/process'
   import { Icon, IconError, Label, tooltip } from '@hcengineering/ui'
   import plugin from '../../plugin'
 
   export let step: Step<Card>
   export let process: Process
+  export let params: MethodParams<Card>
 
   const client = getClient()
   $: method = client.getModel().findAllSync(plugin.class.Method, { _id: step.methodId })[0]
 
-  $: attributes = getAttributes(step.params, process)
+  $: attributes = getAttributes(params, process)
 
   function getAttributes (params: Record<string, any>, process: Process): IntlString[] {
     const res: IntlString[] = []
@@ -50,10 +51,20 @@
 <div class="flex-row-center flex-gap-1">
   <Label label={method.label} />
   {#if attributes.length > 0}
+    :
     {#each attributes as attr}
-      <div>
+      <div class="title">
         <Label label={attr} />
       </div>
     {/each}
   {/if}
 </div>
+
+<style lang="scss">
+  .title {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--theme-caption-color);
+  }
+</style>

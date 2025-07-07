@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import calendar, { Calendar, Event, ExternalCalendar } from '@hcengineering/calendar'
+import calendar, { AccessLevel, Calendar, Event, getPrimaryCalendar } from '@hcengineering/calendar'
 import contactPlugin, { Employee, Person } from '@hcengineering/contact'
 import core, {
+  AccountUuid,
   Class,
   concatLink,
   Data,
@@ -24,6 +25,7 @@ import core, {
   FindResult,
   Hierarchy,
   PersonId,
+  pickPrimarySocialId,
   Ref,
   systemAccountUuid,
   Tx,
@@ -32,14 +34,12 @@ import core, {
   TxMixin,
   TxProcessor,
   TxRemoveDoc,
-  TxUpdateDoc,
-  AccountUuid,
-  pickPrimarySocialId
+  TxUpdateDoc
 } from '@hcengineering/core'
-import serverCalendar from '@hcengineering/server-calendar'
 import { getMetadata, getResource } from '@hcengineering/platform'
+import serverCalendar from '@hcengineering/server-calendar'
+import { getAccountBySocialId, getPerson, getSocialIds, getSocialStrings } from '@hcengineering/server-contact'
 import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
-import { getPerson, getSocialStrings, getSocialIds } from '@hcengineering/server-contact'
 import { getHTMLPresenter, getTextPresenter } from '@hcengineering/server-notification-resources'
 import { generateToken } from '@hcengineering/server-token'
 
@@ -114,7 +114,7 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
       continue
     }
 
-    result.push(...(await createCalendar(control, employee.personUuid, socialId, socialId)))
+    result.push(await createCalendar(control, employee.personUuid, socialId))
   }
 
   return result
@@ -132,32 +132,22 @@ async function checkCalendarsExist (control: TriggerControl, person: Ref<Person>
   return calendars.length > 0
 }
 
-async function createCalendar (
-  control: TriggerControl,
-  account: AccountUuid,
-  socialId: PersonId,
-  name: string
-): Promise<Tx[]> {
+async function createCalendar (control: TriggerControl, account: AccountUuid, socialId: PersonId): Promise<Tx> {
   const res: TxCreateDoc<Calendar> = control.txFactory.createTxCreateDoc(
     calendar.class.Calendar,
     calendar.space.Calendar,
     {
-      name,
+      name: 'HULY',
       hidden: false,
-      visibility: 'public'
+      visibility: 'public',
+      user: socialId,
+      access: AccessLevel.Owner
     },
     `${account}_calendar` as Ref<Calendar>,
     undefined,
     socialId
   )
-  return [res]
-}
-
-function getCalendar (calendars: Calendar[], person: PersonId[]): Ref<Calendar> | undefined {
-  const filtered = calendars.filter((c) => person.includes(c.createdBy ?? c.modifiedBy))
-  const defaultExternal = filtered.find((c) => (c as ExternalCalendar).default)
-  if (defaultExternal !== undefined) return defaultExternal._id
-  return filtered[0]?._id
+  return res
 }
 
 async function getEventPerson (
@@ -266,7 +256,7 @@ async function eventForNewParticipants (
   control: TriggerControl
 ): Promise<Tx[]> {
   const res: Tx[] = []
-  const access = 'reader'
+  const access = AccessLevel.Reader
   const { _class, space, attachedTo, attachedToClass, collection, ...attr } = event
   const data = attr as any as Data<Event>
   for (const part of newParticipants) {
@@ -277,8 +267,10 @@ async function eventForNewParticipants (
 
     const primarySocialString = pickPrimarySocialId(socialIds)._id
     const user = primarySocialString
-    const calendar = getCalendar(calendars, socialStrings)
-    if (calendar === undefined) continue
+    const filtered = calendars.filter((c) => c.user === primarySocialString)
+    const acc = await getAccountBySocialId(control, primarySocialString)
+    if (acc == null) continue
+    const calendar = getPrimaryCalendar(filtered, undefined, acc)
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
       space,
@@ -369,10 +361,11 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
   void putEventToQueue(control, 'create', event, ctx.modifiedBy)
   if (event.access !== 'owner') return []
   const res: Tx[] = []
-  const { _class, space, attachedTo, attachedToClass, collection, ...attr } = event
+  const { _class, space, ...attr } = event
   const data = attr as any as Data<Event>
   const calendars = await control.findAll(control.ctx, calendar.class.Calendar, { hidden: false })
-  const access = 'reader'
+  const events = await control.findAll(control.ctx, calendar.class.Event, { eventId: event.eventId })
+  const access = AccessLevel.Reader
   for (const part of event.participants) {
     const socialIds = await getSocialIds(control, part as Ref<Person>)
     if (socialIds.length === 0) continue
@@ -380,8 +373,11 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
     if (socialStrings.includes(event.user ?? event.createdBy ?? event.modifiedBy)) continue
     const primarySocialString = pickPrimarySocialId(socialIds)._id
     const user = primarySocialString
-    const calendar = getCalendar(calendars, socialStrings)
-    if (calendar === undefined) continue
+    const filtered = calendars.filter((c) => c.user === primarySocialString)
+    const acc = await getAccountBySocialId(control, primarySocialString)
+    if (acc == null) continue
+    const calendar = getPrimaryCalendar(filtered, undefined, acc)
+    if (events.find((p) => p.user === user) !== undefined) continue
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
       space,
@@ -390,16 +386,7 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
       undefined,
       ctx.modifiedBy
     )
-    const outerTx = control.txFactory.createTxCollectionCUD(
-      attachedToClass,
-      attachedTo,
-      space,
-      collection,
-      innerTx,
-      undefined,
-      ctx.modifiedBy
-    )
-    res.push(outerTx)
+    res.push(innerTx)
   }
   return res
 }

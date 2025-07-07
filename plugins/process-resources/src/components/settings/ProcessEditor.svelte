@@ -13,35 +13,31 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
+  import { Ref } from '@hcengineering/core'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
-  import { Process, SelectedExecutonContext, State } from '@hcengineering/process'
+  import { Process, State, Transition } from '@hcengineering/process'
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
   import {
-    Button,
     ButtonIcon,
     defineSeparators,
     EditBox,
     getCurrentLocation,
-    IconAdd,
     IconDelete,
-    IconDescription,
     IconDetails,
+    IconSettings,
     navigate,
-    NavItem,
     Scroller,
     secondNavSeparators,
-    Separator,
-    showPopup,
-    ToggleWithLabel
+    showPopup
   } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import process from '../../plugin'
-  import { getToDoEndAction } from '../../utils'
-  import AsideStepEditor from './AsideStepEditor.svelte'
-  import StateEditor from './StateEditor.svelte'
   import ContextEditor from './ContextEditor.svelte'
+  import Navigator from './Navigator.svelte'
+  import ProcesssSetting from './ProcesssSetting.svelte'
+  import StatesInlineEditor from './StatesInlineEditor.svelte'
+  import TransitionsInlineEditor from './TransitionsInlineEditor.svelte'
 
   export let _id: Ref<Process>
   export let visibleSecondNav: boolean = true
@@ -51,86 +47,38 @@
   const client = getClient()
   const query = createQuery()
   const statesQuery = createQuery()
+  const transitionsQ = createQuery()
 
   const dispatch = createEventDispatcher()
 
   let value: Process | undefined
   let states: State[] = []
+  let transitions: Transition[] = []
 
-  query.query(process.class.Process, { _id }, (res) => {
+  $: query.query(process.class.Process, { _id }, (res) => {
     value = res[0]
     if (value !== undefined) {
-      dispatch('change', value.name)
+      dispatch('change', [
+        {
+          title: value.name,
+          id: value._id,
+          editor: process.component.ProcessEditor
+        }
+      ])
     }
   })
 
-  statesQuery.query(process.class.State, { process: _id }, (res) => {
+  $: statesQuery.query(process.class.State, { process: _id }, (res) => {
     states = res
+  })
+
+  $: transitionsQ.query(process.class.Transition, { process: _id }, (res) => {
+    transitions = res
   })
 
   async function saveName (): Promise<void> {
     if (value !== undefined) {
       await client.update(value, { name: value.name })
-    }
-  }
-
-  async function saveRestriction (e: CustomEvent<boolean>): Promise<void> {
-    if (value !== undefined) {
-      await client.update(value, { parallelExecutionForbidden: e.detail })
-    }
-  }
-
-  async function saveAutoStart (e: CustomEvent<boolean>): Promise<void> {
-    if (value !== undefined) {
-      await client.update(value, { autoStart: e.detail })
-    }
-  }
-
-  async function addState (): Promise<void> {
-    if (value === undefined) return
-    const prevState = states[states.length - 1]
-    const _id = await client.createDoc(process.class.State, core.space.Model, {
-      actions: [],
-      process: value._id,
-      title: await translate(process.string.NewState, {})
-    })
-
-    if (prevState !== undefined) {
-      const endAction = getToDoEndAction(prevState)
-      prevState.actions.push(endAction)
-      await client.update(prevState, { actions: prevState.actions })
-      if (endAction.contextId != null) {
-        const ctx: SelectedExecutonContext = {
-          type: 'context',
-          id: endAction.contextId,
-          key: ''
-        }
-        await client.createDoc(process.class.Transition, core.space.Model, {
-          trigger: process.trigger.OnToDoClose,
-          from: prevState._id,
-          to: _id,
-          actions: [],
-          triggerParams: {
-            _id: '$' + JSON.stringify(ctx)
-          },
-          process: value._id
-        })
-        await client.createDoc(process.class.Transition, core.space.Model, {
-          trigger: process.trigger.OnToDoRemove,
-          from: prevState._id,
-          to: null,
-          actions: [],
-          triggerParams: {
-            _id: '$' + JSON.stringify(ctx)
-          },
-          process: value._id
-        })
-      }
-      $settingsStore = {
-        id: value._id,
-        component: AsideStepEditor,
-        props: { readonly, process: value, step: endAction, _id: prevState._id }
-      }
     }
   }
 
@@ -160,8 +108,6 @@
     }
   }
 
-  const sectionRefs: Record<string, HTMLElement | undefined> = {}
-
   defineSeparators('spaceTypeEditor', secondNavSeparators)
 
   function handleContext (): void {
@@ -171,28 +117,14 @@
       props: { readonly, process: value }
     }
   }
+
+  function handleSettings (): void {
+    showPopup(ProcesssSetting, { value })
+  }
 </script>
 
 <div class="hulyComponent-content__container columns">
-  {#if visibleSecondNav}
-    <div class="hulyComponent-content__column">
-      <div class="hulyComponent-content__navHeader">
-        <div class="hulyComponent-content__navHeader-menu">
-          <ButtonIcon kind="tertiary" icon={IconDescription} size="small" inheritColor />
-        </div>
-      </div>
-      {#each states as navItem (navItem._id)}
-        <NavItem
-          type="type-anchor-link"
-          title={navItem.title}
-          on:click={() => {
-            sectionRefs[navItem._id]?.scrollIntoView()
-          }}
-        />
-      {/each}
-    </div>
-    <Separator name="spaceTypeEditor" index={0} color="transparent" />
-  {/if}
+  <Navigator {visibleSecondNav} {states} {transitions} />
   <div class="hulyComponent-content__column content">
     {#if value}
       <Scroller align="center" padding="var(--spacing-3)" bottomPadding="var(--spacing-3)">
@@ -200,46 +132,26 @@
           <div class="header flex-between">
             <EditBox bind:value={value.name} on:change={saveName} placeholder={process.string.Untitled} />
             <div class="flex-row-center flex-gap-2">
+              <ButtonIcon icon={IconSettings} size="small" kind="secondary" on:click={handleSettings} />
               <ButtonIcon
                 icon={IconDetails}
-                tooltip={{ label: process.string.Data }}
+                tooltip={{ label: process.string.Data, direction: 'bottom' }}
                 size="small"
                 kind="secondary"
                 on:click={handleContext}
               />
-              <ButtonIcon icon={IconDelete} size="small" kind="secondary" on:click={handleDelete} />
-            </div>
-          </div>
-          <div>
-            <ToggleWithLabel
-              on={value.parallelExecutionForbidden ?? false}
-              on:change={saveRestriction}
-              label={process.string.ParallelExecutionForbidden}
-            />
-          </div>
-          <div>
-            <ToggleWithLabel
-              on={value.autoStart ?? false}
-              on:change={saveAutoStart}
-              label={process.string.StartAutomatically}
-            />
-          </div>
-          <div class="hulyComponent-content flex-col-center">
-            <div class="flex-col-center states">
-              {#each states as state (state._id)}
-                <div bind:this={sectionRefs[state._id]}>
-                  <StateEditor process={value} value={state} {readonly} />
-                </div>
-              {/each}
-              <Button
-                kind={'primary'}
-                width={'32rem'}
-                size={'large'}
-                icon={IconAdd}
-                label={process.string.AddState}
-                on:click={addState}
+              <ButtonIcon
+                icon={IconDelete}
+                tooltip={{ label: view.string.Delete, direction: 'bottom' }}
+                size="small"
+                kind="secondary"
+                on:click={handleDelete}
               />
             </div>
+          </div>
+          <div class="hulyComponent-content flex-col-center flex-gap-4">
+            <StatesInlineEditor {states} {readonly} process={value} />
+            <TransitionsInlineEditor {transitions} {readonly} process={value} />
           </div>
         </div>
       </Scroller>
@@ -248,12 +160,11 @@
 </div>
 
 <style lang="scss">
-  .header {
-    font-size: 2rem;
-    padding-bottom: 1rem;
-  }
-
-  .states {
-    gap: 2rem;
+  .state {
+    font-weight: 500;
+    color: var(--global-tertiary-TextColor);
+    padding: 0 var(--spacing-1_5) 0 var(--spacing-1_25);
+    min-height: 1.75rem;
+    margin: 0 0.75rem;
   }
 </style>

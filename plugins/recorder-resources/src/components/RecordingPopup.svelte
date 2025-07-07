@@ -85,8 +85,7 @@
   let cameraStream: MediaStream | null = null
   let screenStream: MediaStream | null = null
   let micStream: MediaStream | null = null
-  let cameraStreamPromise: Promise<void> | null = null
-  let micStreamPromise: Promise<void> | null = null
+  let streamPromise: Promise<void> | null = null
 
   let camEnabled = true
   let micEnabled = true
@@ -95,75 +94,98 @@
   $: mainStream = screenStream ?? cameraStream
   $: mirrored = screenStream === null
 
-  $: cameraStreamPromise = updateCameraStream(camEnabled, camDeviceId, videoRes, screenStream)
-  $: micStreamPromise = updateMicStream(micEnabled, micDeviceId)
+  $: streamPromise = updateMediaStreams(camEnabled, micEnabled, camDeviceId, micDeviceId, videoRes, screenStream)
 
-  $: hasCamAccess = $camAccess.state === 'granted'
-  $: hasMicAccess = $micAccess.state === 'granted'
+  $: hasCamAccess = $camAccess.state !== 'denied'
+  $: hasMicAccess = $micAccess.state !== 'denied'
 
   $: if (state !== null && state.state === 'stopped') {
     dispatch('close')
     recording.set(null)
   }
 
-  async function updateCameraStream (
+  async function updateMediaStreams (
     camEnabled: boolean,
+    micEnabled: boolean,
     camDeviceId: string | undefined,
+    micDeviceId: string | undefined,
     videoRes: number,
     screenStream: MediaStream | null
   ): Promise<void> {
-    if (cameraStreamPromise != null) {
-      await cameraStreamPromise
+    if (streamPromise != null) {
+      await streamPromise
     }
 
-    if (!camEnabled) {
-      await releaseStream(cameraStream)
-      cameraStreamPromise = null
-      cameraStream = null
-      return
+    const oldCameraStream = cameraStream
+    const oldMicStream = micStream
+
+    try {
+      if (camEnabled || micEnabled) {
+        const { videoStream, audioStream } = await getCombinedStream(
+          camEnabled,
+          micEnabled,
+          camDeviceId,
+          micDeviceId,
+          videoRes,
+          screenStream
+        )
+
+        cameraStream = videoStream
+        micStream = audioStream
+      } else {
+        cameraStream = null
+        micStream = null
+      }
+
+      // Release old streams
+      await Promise.all([releaseStream(oldCameraStream), releaseStream(oldMicStream)])
+    } catch (err) {
+      console.error('Failed to update media streams:', err)
+      // Restore old streams on error
+      cameraStream = oldCameraStream
+      micStream = oldMicStream
+    }
+  }
+
+  async function getCombinedStream (
+    camEnabled: boolean,
+    micEnabled: boolean,
+    camDeviceId: string | undefined,
+    micDeviceId: string | undefined,
+    videoRes: number,
+    screenStream: MediaStream | null
+  ): Promise<{ videoStream: MediaStream | null, audioStream: MediaStream | null }> {
+    if (!camEnabled && !micEnabled) {
+      return { videoStream: null, audioStream: null }
     }
 
     const constraints = {
       video: camEnabled
         ? {
+            deviceId: camDeviceId != null ? { exact: camDeviceId } : undefined,
             facingMode: 'user',
             aspectRatio: { ideal: 16 / 9 },
-            // request a specific resolution if not sharing the screen
             height: screenStream === null ? { ideal: videoRes } : undefined
           }
         : false,
-      audio: false
+      audio: micEnabled
+        ? {
+            deviceId: micDeviceId != null ? { exact: micDeviceId } : undefined
+          }
+        : false
     }
-
-    const oldStream = cameraStream
 
     try {
-      cameraStream = await getMediaStream(camDeviceId, micDeviceId, constraints)
-      await releaseStream(oldStream)
+      const combinedStream = await navigator.mediaDevices.getUserMedia(constraints)
+
+      // Split the combined stream into separate video and audio streams
+      const videoStream = camEnabled ? new MediaStream(combinedStream.getVideoTracks()) : null
+      const audioStream = micEnabled ? new MediaStream(combinedStream.getAudioTracks()) : null
+
+      return { videoStream, audioStream }
     } catch (err) {
-      console.warn(err)
-    }
-  }
-
-  async function updateMicStream (micEnabled: boolean, micDeviceId: string | undefined): Promise<void> {
-    if (micStreamPromise != null) {
-      await micStreamPromise
-    }
-
-    if (!micEnabled) {
-      await releaseStream(micStream)
-      micStreamPromise = null
-      micStream = null
-      return
-    }
-
-    const oldStream = micStream
-
-    try {
-      micStream = await getMicrophoneStream(micDeviceId)
-      await releaseStream(oldStream)
-    } catch (err) {
-      console.warn(err)
+      console.error('Error getting media stream:', err)
+      throw err
     }
   }
 
@@ -197,8 +219,7 @@
 
   onDestroy(async () => {
     await Promise.all([
-      cameraStreamPromise ?? Promise.resolve(),
-      micStreamPromise ?? Promise.resolve(),
+      streamPromise ?? Promise.resolve(),
       releaseStream(cameraStream),
       releaseStream(screenStream),
       releaseStream(micStream)
@@ -233,11 +254,8 @@
       return
     }
 
-    if (cameraStreamPromise !== null) {
-      await cameraStreamPromise
-    }
-    if (micStreamPromise !== null) {
-      await micStreamPromise
+    if (streamPromise !== null) {
+      await streamPromise
     }
 
     const name = await formatRecordingName(
@@ -463,7 +481,7 @@
       <!-- Maybe show recording result -->
     {:else if mainStream === null}
       <div class="placeholder flex-col-center justify-center">
-        {#if cameraStreamPromise === null}
+        {#if streamPromise === null}
           <Label label={plugin.string.SelectVideoToRecord} />
         {/if}
       </div>
@@ -481,13 +499,13 @@
           style:transform-origin="0 0"
         >
           <RecordingCanvas
+            bind:canvas
+            bind:canvasWidth
+            bind:canvasHeight
             {screenStream}
             {cameraStream}
             {cameraSize}
             {cameraPos}
-            bind:canvas
-            bind:canvasWidth
-            bind:canvasHeight
           />
         </div>
       </div>

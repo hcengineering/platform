@@ -65,6 +65,8 @@ import ClassHierarchy from './components/ClassHierarchy.svelte'
 import CreateAttributePopup from './components/CreateAttributePopup.svelte'
 import CreateRelation from './components/CreateRelation.svelte'
 import EditRelation from './components/EditRelation.svelte'
+import AddSocialId from './components/socialIds/AddSocialId.svelte'
+import AddEmailSocialId from './components/socialIds/AddEmailSocialId.svelte'
 import Mailboxes from './components/Mailboxes.svelte'
 import NewIntegrations from './components/integrations/NewIntegrations.svelte'
 import setting from './plugin'
@@ -147,7 +149,9 @@ export default async (): Promise<Resources> => ({
     CreateAttributePopup,
     CreateRelation,
     EditRelation,
-    Mailboxes
+    Mailboxes,
+    AddSocialId,
+    AddEmailSocialId
   },
   actionImpl: {
     DeleteMixin

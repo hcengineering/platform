@@ -267,7 +267,7 @@ ipcMain.on('send-notification', (event, notificationParams: NotificationParams) 
 
     notification.on('click', () => {
       mainWindow?.show()
-      mainWindow?.webContents.send('handle-notification-navigation')
+      mainWindow?.webContents.send('handle-notification-navigation', notificationParams.application)
     })
 
     notification.show()

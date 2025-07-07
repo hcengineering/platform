@@ -127,6 +127,8 @@
         func.editor,
         {
           func,
+          process,
+          masterTag,
           context,
           attribute
         },
@@ -185,6 +187,7 @@
       {
         func,
         masterTag,
+        process,
         context,
         attribute,
         props: val?.props ?? {}

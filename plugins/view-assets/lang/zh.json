@@ -135,7 +135,11 @@
     "Document": "文档",
     "Loading": "加载中...",
     "NoRelations": "无关系",
-    "ReadOnlyWarningTitle": "只读模式",
-    "ReadOnlyWarningMessage": "请联系管理员获取此工作区的完全访问权限。"
+    "ReadOnlyWarningTitle": "✨ 访客演示",
+    "ReadOnlyWarningMessage": "您处于只读模式。想在Huly管理任何项目吗？任务、截止日期、团队 — 立即注册获取完整权限！",
+    "ReadOnlySignUp": "注册 \uD83D\uDE80",
+    "Icon": "图标",
+    "Color": "颜色",
+    "AutomationOnly": "仅限自动化"
   }
 }

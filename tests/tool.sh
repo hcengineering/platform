@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
 export MODEL_VERSION=$(node ../common/scripts/show_version.js)
-export MINIO_ACCESS_KEY=minioadmin
-export MINIO_SECRET_KEY=minioadmin
-export MINIO_ENDPOINT=localhost:9002
+export STORAGE_CONFIG="datalake|http://localhost:4031"
 export ACCOUNTS_URL=http://localhost:3003
 export TRANSACTOR_URL=ws://localhost:3334
 export ACCOUNT_DB_URL=mongodb://localhost:27018

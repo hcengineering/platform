@@ -20,42 +20,42 @@ import {
   yDocCopyXmlField,
   yDocFromBuffer
 } from '@hcengineering/collaboration'
-import { withRetry } from '@hcengineering/retry'
+import documents from '@hcengineering/controlled-documents'
 import core, {
+  type AnyAttribute,
   type Blob,
+  type Class,
+  DOMAIN_TX,
   type Doc,
+  type Domain,
   type Hierarchy,
+  type LowLevelStorage,
   type MeasureContext,
+  MeasureMetricsContext,
+  RateLimiter,
   type Ref,
+  SortingOrder,
   type Tx,
   type TxCreateDoc,
   type TxUpdateDoc,
-  DOMAIN_TX,
-  SortingOrder,
   type WorkspaceIds,
+  type WorkspaceUuid,
+  groupByArray,
+  isArchivingMode,
+  isDeletingMode,
   makeCollabId,
   makeCollabYdocId,
   makeDocCollabId,
-  MeasureMetricsContext,
-  systemAccountUuid,
-  isArchivingMode,
-  isDeletingMode,
-  type Domain,
-  type AnyAttribute,
-  type LowLevelStorage,
-  type Class,
-  RateLimiter,
-  type WorkspaceUuid,
-  groupByArray
+  systemAccountUuid
 } from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
-import documents from '@hcengineering/controlled-documents'
-import { DOMAIN_DOCUMENT } from '@hcengineering/model-document'
 import { DOMAIN_DOCUMENTS } from '@hcengineering/model-controlled-documents'
+import { DOMAIN_DOCUMENT } from '@hcengineering/model-document'
 import { getDBClient } from '@hcengineering/postgres'
-import { type PipelineFactory, type StorageAdapter, createDummyStorageAdapter } from '@hcengineering/server-core'
+import { withRetry } from '@hcengineering/retry'
 import { getAccountClient } from '@hcengineering/server-client'
-import { createBackupPipeline, sharedPipelineContextVars } from '@hcengineering/server-pipeline'
+import { type PipelineFactory, type StorageAdapter, createDummyStorageAdapter } from '@hcengineering/server-core'
+import { createBackupPipeline, createEmptyBroadcastOps } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
 import { isEmptyMarkup } from '@hcengineering/text-core'
 
@@ -392,7 +392,7 @@ export async function restoreMarkupRefs (
     usePassedCtx: true
   })
 
-  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
+  const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
   try {
@@ -424,7 +424,7 @@ export async function restoreMarkupRefs (
       ctx.info('processing workspace', { uuid, name, url, region, classes })
 
       try {
-        const pipeline = await factory(ctx, workspace, (): void => {}, null, null)
+        const pipeline = await factory(ctx, workspace, createEmptyBroadcastOps(), null)
 
         try {
           const { hierarchy, lowLevelStorage } = pipeline.context

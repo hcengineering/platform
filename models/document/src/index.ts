@@ -14,7 +14,16 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { CollectionSize, MarkupBlobRef, Domain, Rank, Ref, Role, RolesAssignment } from '@hcengineering/core'
+import type {
+  CollectionSize,
+  MarkupBlobRef,
+  Domain,
+  Rank,
+  Ref,
+  Role,
+  RolesAssignment,
+  ClassCollaborators
+} from '@hcengineering/core'
 import { AccountUuid, AccountRole, IndexKind } from '@hcengineering/core'
 import {
   type Document,
@@ -423,7 +432,8 @@ function defineDocument (builder: Builder): void {
 
   builder.mixin(document.class.Document, core.class.Class, activity.mixin.ActivityDoc, {})
 
-  builder.mixin(document.class.Document, core.class.Class, notification.mixin.ClassCollaborators, {
+  builder.createDoc<ClassCollaborators<Document>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: document.class.Document,
     fields: ['createdBy', 'modifiedBy']
   })
 

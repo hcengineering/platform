@@ -17,14 +17,16 @@ export function getKvsClient (): KeyValueClient {
 export async function getSyncHistory (workspace: WorkspaceUuid): Promise<number | undefined> {
   const client = getKvsClient()
   const key = `${calendarIntegrationKind}:calendarSync:${workspace}`
-  const res = await client.getValue<number>(key)
-  return res ?? undefined
+  try {
+    const res = await client.getValue<number>(key)
+    return res ?? undefined
+  } catch {}
 }
 
-export async function setSyncHistory (workspace: WorkspaceUuid): Promise<void> {
+export async function setSyncHistory (workspace: WorkspaceUuid, value: number): Promise<void> {
   const client = getKvsClient()
   const key = `${calendarIntegrationKind}:calendarSync:${workspace}`
-  await client.setValue(key, Date.now())
+  await client.setValue(key, value)
 }
 
 function calendarsHistoryKey (user: User, email: GoogleEmail): string {
@@ -87,5 +89,14 @@ export async function removeUserByEmail (user: User, email: GoogleEmail): Promis
     await client.deleteKey(key)
   } else {
     await client.setValue<User[]>(key, newCurr)
+  }
+}
+
+export async function cleanUserByEmail (): Promise<void> {
+  const client = getKvsClient()
+  const keys = await client.listKeys<User>(`${calendarIntegrationKind}:users:`)
+  if (keys == null) return
+  for (const key in keys) {
+    await client.deleteKey(key)
   }
 }

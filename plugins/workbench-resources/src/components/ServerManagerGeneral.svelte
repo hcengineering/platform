@@ -139,27 +139,38 @@
   }
 
   $: update($ticker)
+
+  let maintenanceMessage = 'A new version is planned to be installed in'
 </script>
 
 {#if isAdminUser()}
   <div class="flex flex-col">
     <div class="flex-row-center p-1">
       <div class="p-3">1.</div>
-      <Button
-        icon={IconArrowRight}
-        label={getEmbeddedLabel('Set maintenance warning')}
-        on:click={() => {
-          const endpoint = getMetadata(login.metadata.AccountsUrl) ?? ''
-          if (endpoint !== '') {
-            void fetch(
-              concatLink(endpoint, `/api/v1/manage?token=${token}&operation=maintenance&timeout=${warningTimeout}`),
-              {
-                method: 'PUT'
-              }
-            )
-          }
-        }}
-      />
+      <div class="flex p-1 flex-row-center">
+        <div class="flex-row-center flex-grow">
+          <EditBox bind:value={maintenanceMessage}></EditBox>
+        </div>
+        <Button
+          icon={IconArrowRight}
+          label={getEmbeddedLabel('Set maintenance warning')}
+          on:click={() => {
+            const endpoint = getMetadata(login.metadata.AccountsUrl) ?? ''
+            if (endpoint !== '') {
+              void fetch(
+                concatLink(endpoint, `/api/v1/manage?token=${token}&operation=maintenance&timeout=${warningTimeout}`),
+                {
+                  method: 'PUT',
+                  body: JSON.stringify({ message: maintenanceMessage }),
+                  headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                  }
+                }
+              )
+            }
+          }}
+        />
+      </div>
       <div class="flex-col p-1">
         <div class="flex-row-center p-1">
           <EditBox kind={'underline'} format={'number'} bind:value={warningTimeout} /> min

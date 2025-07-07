@@ -1,5 +1,13 @@
-import { Timestamp, generateId } from '@hcengineering/core'
-import calendar, { Event, ReccuringEvent, ReccuringInstance, RecurringRule } from '.'
+import { AccountUuid, Ref, Timestamp, generateId } from '@hcengineering/core'
+import calendar, {
+  Calendar,
+  PrimaryCalendar,
+  Event,
+  ExternalCalendar,
+  ReccuringEvent,
+  ReccuringInstance,
+  RecurringRule
+} from '.'
 
 function getInstance (event: ReccuringEvent, date: Timestamp): ReccuringInstance {
   const diff = event.dueDate - event.date
@@ -16,40 +24,29 @@ function getInstance (event: ReccuringEvent, date: Timestamp): ReccuringInstance
   }
 }
 
-function generateRecurringValues (
+export function generateRecurringValues (
   rule: RecurringRule,
   startDate: Timestamp,
   from: Timestamp,
   to: Timestamp
 ): Timestamp[] {
-  const values: Timestamp[] = []
   const currentDate = new Date(startDate)
   switch (rule.freq) {
     case 'DAILY':
-      generateDailyValues(rule, currentDate, values, from, to)
-      break
+      return generateDailyValues(rule, currentDate, from, to)
     case 'WEEKLY':
-      generateWeeklyValues(rule, currentDate, values, from, to)
-      break
+      return generateWeeklyValues(rule, currentDate, from, to)
     case 'MONTHLY':
-      generateMonthlyValues(rule, currentDate, values, from, to)
-      break
+      return generateMonthlyValues(rule, currentDate, from, to)
     case 'YEARLY':
-      generateYearlyValues(rule, currentDate, values, from, to)
-      break
+      return generateYearlyValues(rule, currentDate, from, to)
     default:
       throw new Error('Invalid recurring rule frequency')
   }
-  return values
 }
 
-function generateDailyValues (
-  rule: RecurringRule,
-  currentDate: Date,
-  values: Timestamp[],
-  from: Timestamp,
-  to: Timestamp
-): void {
+function generateDailyValues (rule: RecurringRule, currentDate: Date, from: Timestamp, to: Timestamp): Timestamp[] {
+  const values: Timestamp[] = []
   const { count, endDate, interval } = rule
   const { bySetPos } = rule
   let i = 0
@@ -68,15 +65,11 @@ function generateDailyValues (
     currentDate.setDate(currentDate.getDate() + (interval ?? 1))
     if (count !== undefined && i === count) break
   }
+  return values
 }
 
-function generateWeeklyValues (
-  rule: RecurringRule,
-  currentDate: Date,
-  values: Timestamp[],
-  from: Timestamp,
-  to: Timestamp
-): void {
+function generateWeeklyValues (rule: RecurringRule, currentDate: Date, from: Timestamp, to: Timestamp): Timestamp[] {
+  const values: Timestamp[] = []
   const { count, endDate, interval } = rule
   let { byDay, bySetPos } = rule
   let i = 0
@@ -90,8 +83,8 @@ function generateWeeklyValues (
     const end = new Date(new Date(currentDate).setDate(currentDate.getDate() + 7))
     let date = currentDate
     while (date < end) {
-      if (endDate != null && date.getTime() > endDate) return
-      if (date.getTime() > to) return
+      if (endDate != null && date.getTime() > endDate) return values
+      if (date.getTime() > to) return values
       if ((byDay == null || matchesByDay(date, byDay)) && (bySetPos == null || bySetPos.includes(getSetPos(date)))) {
         const res = date.getTime()
         if (res >= from && res <= to) {
@@ -100,7 +93,7 @@ function generateWeeklyValues (
         i++
       }
       date = new Date(date.setDate(date.getDate() + 1))
-      if (count !== undefined && i === count) return
+      if (count !== undefined && i === count) return values
     }
 
     currentDate = new Date(next)
@@ -146,13 +139,8 @@ function getNegativePosition (date: Date, weekday: string, pos: number): number 
   throw new Error(`Unable to calculate negative position ${pos}`)
 }
 
-function generateMonthlyValues (
-  rule: RecurringRule,
-  currentDate: Date,
-  values: Timestamp[],
-  from: Timestamp,
-  to: Timestamp
-): void {
+function generateMonthlyValues (rule: RecurringRule, currentDate: Date, from: Timestamp, to: Timestamp): Timestamp[] {
+  const values: Timestamp[] = []
   const { count, endDate, interval } = rule
   let { byDay, byMonthDay, bySetPos } = rule
   let i = 0
@@ -162,82 +150,91 @@ function generateMonthlyValues (
   }
 
   while (true) {
-    const next = new Date(currentDate).setMonth(currentDate.getMonth() + (interval ?? 1))
-    const end = new Date(new Date(currentDate).setMonth(currentDate.getMonth() + 1))
+    const next = new Date(currentDate).setMonth(currentDate.getMonth() + (interval ?? 1), 1)
+    const end = new Date(new Date(currentDate).setMonth(currentDate.getMonth() + 1, 1))
     let date = currentDate
+    const candidates: Date[] = []
     while (date < end) {
-      if (endDate != null && date.getTime() > endDate) return
-      if (date.getTime() >= to) return
-      if (
-        (byDay == null || matchesByDay(date, byDay)) &&
-        (byMonthDay == null || byMonthDay.includes(new Date(currentDate).getDate())) &&
-        (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
-      ) {
-        const res = currentDate.getTime()
-        if (res >= from && res <= to) {
-          values.push(res)
-        }
-        i++
+      if ((byDay == null || matchesByDay(date, byDay)) && (byMonthDay == null || byMonthDay.includes(date.getDate()))) {
+        candidates.push(new Date(date))
       }
       date = new Date(date.setDate(date.getDate() + 1))
-
-      if (count !== undefined && i === count) return
     }
+
+    let filtered: Date[] = candidates
+    if (bySetPos != null) {
+      filtered = bySetPos
+        .map((pos) => {
+          if (pos === 0) return null // invalid
+          const index = pos > 0 ? pos - 1 : candidates.length + pos
+          return candidates[index] ?? null
+        })
+        .filter((d): d is Date => d != null)
+    }
+
+    for (const d of filtered) {
+      const res = d.getTime()
+      if (res >= from && res <= to) {
+        values.push(res)
+        i++
+        if (count !== undefined && i === count) return values
+      }
+    }
+    if (endDate != null && next > endDate) return values
+    if (next >= to) return values
     currentDate = new Date(next)
   }
 }
 
-function generateYearlyValues (
-  rule: RecurringRule,
-  currentDate: Date,
-  values: Timestamp[],
-  from: Timestamp,
-  to: Timestamp
-): void {
+function generateYearlyValues (rule: RecurringRule, currentDate: Date, from: Timestamp, to: Timestamp): Timestamp[] {
+  const values: Timestamp[] = []
   const { count, endDate, interval } = rule
   const { byDay, byMonthDay, byYearDay, byWeekNo, byMonth, bySetPos } = rule
   let i = 0
 
   while (true) {
-    const next = new Date(currentDate).setFullYear(currentDate.getFullYear() + (interval ?? 1))
-    const end = new Date(new Date(currentDate).setFullYear(currentDate.getFullYear() + 1))
+    const next = new Date(currentDate).setFullYear(currentDate.getFullYear() + (interval ?? 1), 0, 1)
+    const end = new Date(new Date(currentDate).setFullYear(currentDate.getFullYear() + 1, 0, 1))
     let date = currentDate
+    const candidates: Date[] = []
     while (date < end) {
-      if (endDate != null && date.getTime() > endDate) return
-      if (date.getTime() > to) return
       if (
-        byDay == null &&
-        byMonthDay == null &&
-        byYearDay == null &&
-        byWeekNo == null &&
-        byMonth == null &&
-        bySetPos == null
+        (byDay == null || matchesByDay(date, byDay)) &&
+        (byMonthDay == null || byMonthDay.includes(date.getDate())) &&
+        (byYearDay == null || byYearDay.includes(getYearDay(date))) &&
+        (byWeekNo == null || byWeekNo.includes(getWeekNumber(date))) &&
+        (byMonth == null || byMonth.includes(date.getMonth()))
       ) {
-        date = new Date(next)
-        const res = currentDate.getTime()
+        const res = date.getTime()
         if (res >= from && res <= to) {
-          values.push(res)
+          candidates.push(new Date(res))
         }
         i++
-      } else {
-        if (
-          (byDay == null || matchesByDay(date, byDay)) &&
-          (byMonthDay == null || byMonthDay.includes(currentDate.getDate())) &&
-          (byYearDay == null || byYearDay.includes(getYearDay(currentDate))) &&
-          (byWeekNo == null || byWeekNo.includes(getWeekNumber(currentDate))) &&
-          (byMonth == null || byMonth.includes(currentDate.getMonth())) &&
-          (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
-        ) {
-          const res = currentDate.getTime()
-          if (res >= from && res <= to) {
-            values.push(res)
-          }
-          i++
-        }
-        date = new Date(date.setDate(date.getDate() + 1))
       }
-      if (count !== undefined && i === count) return
+      date = new Date(date.setDate(date.getDate() + 1))
     }
+
+    let filtered: Date[] = candidates
+    if (bySetPos != null) {
+      filtered = bySetPos
+        .map((pos) => {
+          if (pos === 0) return null // invalid
+          const index = pos > 0 ? pos - 1 : candidates.length + pos
+          return candidates[index] ?? null
+        })
+        .filter((d): d is Date => d != null)
+    }
+
+    for (const d of filtered) {
+      const res = d.getTime()
+      if (res >= from && res <= to) {
+        values.push(res)
+        i++
+        if (count !== undefined && i === count) return values
+      }
+    }
+    if (endDate != null && next > endDate) return values
+    if (next >= to) return values
     currentDate = new Date(next)
   }
 }
@@ -379,4 +376,25 @@ function encodeToBase32Hex (input: string): string {
   }
 
   return result
+}
+
+export function getPrimaryCalendar (
+  calendars: Calendar[],
+  preference: PrimaryCalendar | undefined,
+  acc: AccountUuid
+): Ref<Calendar> {
+  if (preference?.attachedTo !== undefined) {
+    const pref = calendars.find((p) => p._id === preference.attachedTo && p)
+    if (pref !== undefined) return pref._id
+  }
+  for (const _calendar of calendars) {
+    if (
+      _calendar._class === calendar.class.ExternalCalendar &&
+      !_calendar.hidden &&
+      (_calendar as ExternalCalendar).default
+    ) {
+      return _calendar._id
+    }
+  }
+  return `${acc}_calendar` as Ref<Calendar>
 }

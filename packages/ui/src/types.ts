@@ -465,6 +465,7 @@ export interface CalendarItem {
   date: Timestamp
   dueDate: Timestamp
   day: number
+  blockTime: boolean
   access: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
 }
 

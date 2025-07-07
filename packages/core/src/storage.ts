@@ -16,7 +16,7 @@
 import type { Asset, Resource } from '@hcengineering/platform'
 
 import type { KeysByType } from 'simplytyped'
-import type { Association, AttachedDoc, Class, Doc, Ref, Space } from './classes'
+import type { Association, AttachedDoc, Class, Doc, Domain, Ref, Space } from './classes'
 import type { Tx } from './tx'
 
 /**
@@ -203,6 +203,13 @@ export type WithLookup<T extends Doc> = T & {
 export type FindResult<T extends Doc> = WithLookup<T>[] & {
   total: number
   lookupMap?: Record<string, Doc>
+}
+
+export type DomainParams = Record<string, any>
+
+export interface DomainResult<T = any> {
+  domain: Domain
+  value: T
 }
 
 /**

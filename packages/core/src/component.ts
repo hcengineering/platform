@@ -60,7 +60,9 @@ import type {
   TypedSpace,
   UserStatus,
   Version,
-  AccountUuid
+  AccountUuid,
+  ClassCollaborators,
+  Collaborator
 } from './classes'
 import { type Status, type StatusCategory } from './status'
 import type {
@@ -68,6 +70,7 @@ import type {
   TxApplyIf,
   TxCUD,
   TxCreateDoc,
+  TxDomainEvent,
   TxMixin,
   TxModelUpgrade,
   TxRemoveDoc,
@@ -109,6 +112,7 @@ export default plugin(coreId, {
     Tx: '' as Ref<Class<Tx>>,
     TxModelUpgrade: '' as Ref<Class<TxModelUpgrade>>,
     TxWorkspaceEvent: '' as Ref<Class<TxWorkspaceEvent>>,
+    TxDomainEvent: '' as Ref<Class<TxDomainEvent>>,
     TxApplyIf: '' as Ref<Class<TxApplyIf>>,
     TxCUD: '' as Ref<Class<TxCUD<Doc>>>,
     TxCreateDoc: '' as Ref<Class<TxCreateDoc<Doc>>>,
@@ -148,6 +152,7 @@ export default plugin(coreId, {
     Version: '' as Ref<Class<Version>>,
     PluginConfiguration: '' as Ref<Class<PluginConfiguration>>,
     UserStatus: '' as Ref<Class<UserStatus>>,
+
     TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>,
     DomainIndexConfiguration: '' as Ref<Class<DomainIndexConfiguration>>,
 
@@ -161,7 +166,9 @@ export default plugin(coreId, {
     FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
     Association: '' as Ref<Class<Association>>,
     Relation: '' as Ref<Class<Relation>>,
-    Sequence: '' as Ref<Class<Sequence>>
+    Sequence: '' as Ref<Class<Sequence>>,
+    ClassCollaborators: '' as Ref<Class<ClassCollaborators<Doc>>>,
+    Collaborator: '' as Ref<Class<Collaborator>>
   },
   icon: {
     TypeString: '' as Asset,
@@ -190,7 +197,11 @@ export default plugin(coreId, {
     Model: '' as Ref<Space>,
     Space: '' as Ref<TypedSpace>,
     Configuration: '' as Ref<Space>,
-    Workspace: '' as Ref<Space>
+    Workspace: '' as Ref<Space>,
+    Domain: '' as Ref<Space>
+  },
+  employee: {
+    System: '' as Ref<any> // An system employee reference.
   },
   account: {
     System: '' as PersonId,

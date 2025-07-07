@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { type Client } from '..'
-import type { Class, Doc, Obj, Ref } from '../classes'
+import { type Client, type DomainParams, type DomainRequestOptions, type DomainResult } from '..'
+import type { Class, Doc, Obj, OperationDomain, Ref } from '../classes'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
@@ -22,11 +22,11 @@ import { TxOperations } from '../operations'
 import {
   type DocumentQuery,
   type FindOptions,
-  SortingOrder,
-  type WithLookup,
-  type SearchQuery,
   type SearchOptions,
-  type SearchResult
+  type SearchQuery,
+  type SearchResult,
+  SortingOrder,
+  type WithLookup
 } from '../storage'
 import { type Tx } from '../tx'
 import { genMinModel, test, type TestMixin } from './minmodel'
@@ -54,6 +54,14 @@ class ClientModel extends ModelDb implements Client {
 
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return { docs: [] }
+  }
+
+  async domainRequest<T>(
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ): Promise<DomainResult<T>> {
+    return { domain, value: null as any }
   }
 
   async close (): Promise<void> {}

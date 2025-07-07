@@ -39,6 +39,7 @@
     "Description": "Popis",
 
     "CopyDocumentUrl": "Kopírovat URL dokumentu do schránky",
+    "DocumentUrlCopied": "Zkopírováno!",
 
     "ViewMode": "Zobrazit",
     "EditMode": "Upravit",

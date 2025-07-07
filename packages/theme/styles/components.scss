@@ -477,8 +477,14 @@
     height: var(--spacing-4);
     background-color: var(--theme-divider-color); // var(--global-surface-02-BorderColor);
     
+    &.no-line {
+      width: 0;
+      background-color: transparent;
+    }
     &.short {
       margin: 0 var(--spacing-1);
+
+      &.no-line { margin: 0 var(--spacing-0_125); }
     }
   }
   .hulyHeader-titleGroup,
