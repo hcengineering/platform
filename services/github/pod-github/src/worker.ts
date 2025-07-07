@@ -1551,7 +1551,11 @@ export class GithubWorker implements IntegrationManager {
   }
 
   performFullSync = reduceCalls(async () => {
-    await this._performFullSync()
+    try {
+      await this._performFullSync()
+    } catch (err: any) {
+      this.ctx.error('Failed to perform full sync', { error: err })
+    }
   })
 
   async _performFullSync (): Promise<void> {
