@@ -71,9 +71,15 @@ import {
   type UpdatePatchEvent,
   type RemovePatchEvent,
   MessageEventType,
-  type Event
+  type Event,
+  CardEventType,
+  type UpdateCardTypeEvent,
+  type EventType,
+  type BlobPatchEvent,
+  type LinkPreviewPatchEvent,
+  type RemoveCardEvent
 } from '@hcengineering/communication-sdk-types'
-import { type Markdown, type CardID } from '@hcengineering/communication-types'
+import { type CardID, type Message, type MessageID } from '@hcengineering/communication-types'
 import { parseYaml } from '@hcengineering/communication-yaml'
 import { applyPatches } from '@hcengineering/communication-shared'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
@@ -87,6 +93,14 @@ const textLimit = 500 * 1024
 
 const messageGroupsLimit = 100
 const messagesLimit = 1000
+type IndexableCommunicationEvent =
+  | CreateMessageEvent
+  | UpdatePatchEvent
+  | BlobPatchEvent
+  | LinkPreviewPatchEvent
+  | RemovePatchEvent
+  | UpdateCardTypeEvent
+  | RemoveCardEvent
 
 // Global Memory management configuration
 
@@ -562,7 +576,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               }
               await rateLimit.exec(async () => {
                 const indexedDoc = createIndexedDocFromMessage(group.cardId, cardInfo.space, cardInfo._class, message)
-                await this.processCommunicationMessage(ctx, message.content, indexedDoc)
+                await this.processCommunicationMessage(ctx, message, indexedDoc)
                 if (this.listener?.onIndexing !== undefined) {
                   await this.listener.onIndexing(indexedDoc)
                 }
@@ -621,7 +635,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             }
             await rateLimit.exec(async () => {
               const indexedDoc = createIndexedDocFromMessage(message.cardId, cardInfo.space, cardInfo._class, message)
-              await this.processCommunicationMessage(ctx, message.content, indexedDoc)
+              await this.processCommunicationMessage(ctx, message, indexedDoc)
               if (this.listener?.onIndexing !== undefined) {
                 await this.listener.onIndexing(indexedDoc)
               }
@@ -661,19 +675,26 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   ): Promise<void> {
     const contextData = this.createContextData()
     ctx.contextData = contextData
-    // Find documents matching query
 
-    // We need to update hierarchy and local model if required.
+    const indexableCommunicationEventTypes: Array<EventType> = [
+      MessageEventType.CreateMessage,
+      MessageEventType.UpdatePatch,
+      MessageEventType.BlobPatch,
+      MessageEventType.LinkPreviewPatch,
+      MessageEventType.RemovePatch,
+      CardEventType.UpdateCardType,
+      CardEventType.RemoveCard
+    ]
 
     const docEvents = result.filter((tx) => tx._class !== core.class.TxDomainEvent) as TxCUD<Doc>[]
     const messageEvents = result.filter(
       (tx) =>
         tx._class === core.class.TxDomainEvent &&
         (tx as TxDomainEvent<any>).domain === 'communication' &&
-        ((tx as TxDomainEvent<Event>).event.type === MessageEventType.CreateMessage ||
-          (tx as TxDomainEvent<Event>).event.type === MessageEventType.UpdatePatch ||
-          (tx as TxDomainEvent<Event>).event.type === MessageEventType.RemovePatch)
-    ) as TxDomainEvent<CreateMessageEvent | UpdatePatchEvent | RemovePatchEvent>[]
+        indexableCommunicationEventTypes.includes((tx as TxDomainEvent<Event>).event.type)
+    ) as TxDomainEvent<IndexableCommunicationEvent>[]
+
+    // We need to update hierarchy and local model if required.
     for (const tx of docEvents) {
       try {
         this.hierarchy.tx(tx)
@@ -712,45 +733,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
     const messagesByCardId = groupByArray(messageEvents, (e) => e.event.cardId)
     for (const [cardId, txes] of messagesByCardId) {
-      const cardDoc = (await this.storage.findAll(ctx, card.class.Card, { _id: cardId }))[0]
-      for (const tx of txes) {
-        if (tx.event.type === MessageEventType.CreateMessage) {
-          const event = tx.event
-          if (event.messageId === undefined) {
-            continue
-          }
-          const message = {
-            id: event.messageId,
-            cardId: event.cardId,
-            creator: event.socialId,
-            created: new Date(Date.parse(event.date as any))
-          }
-          const indexedDoc = createIndexedDocFromMessage(cardDoc._id, cardDoc.space, cardDoc._class, message)
-          await this.processCommunicationMessage(ctx, event.content, indexedDoc)
-          if (this.listener?.onIndexing !== undefined) {
-            await this.listener.onIndexing(indexedDoc)
-          }
-          await pushQueue.push(indexedDoc)
-        } else if (tx.event.type === MessageEventType.UpdatePatch) {
-          const event = tx.event
-          const message = {
-            id: event.messageId,
-            cardId: event.cardId,
-            creator: event.socialId,
-            created: new Date(Date.parse(event.date as any))
-          }
-          const indexedDoc = createIndexedDocFromMessage(cardDoc._id, cardDoc.space, cardDoc._class, message)
-          if (event.content != null) {
-            await this.processCommunicationMessage(ctx, event.content, indexedDoc)
-          }
-          if (this.listener?.onIndexing !== undefined) {
-            await this.listener.onIndexing(indexedDoc)
-          }
-          await pushQueue.push(indexedDoc)
-        } else if (tx.event.type === MessageEventType.RemovePatch) {
-          const event = tx.event
-          toRemove.push({ _id: event.messageId as any, _class: `${card.class.Card}%message` as Ref<Class<Doc>> })
-        }
+      try {
+        await this.processCommunicationEvents(ctx, pushQueue, cardId, txes, toRemove)
+      } catch (err: any) {
+        ctx.error('failed to index communication', { err, cardId })
+        Analytics.handleError(err)
       }
     }
 
@@ -772,6 +759,114 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
     await pushQueue.waitProcessing()
     this.scheduleBroadcast()
+  }
+
+  private async processCommunicationEvents (
+    ctx: MeasureContext,
+    pushQueue: IndexPushQueue,
+    cardId: CardID,
+    txes: TxDomainEvent<IndexableCommunicationEvent>[],
+    toRemove: { _id: Ref<Doc>, _class: Ref<Class<Doc>> }[]
+  ): Promise<void> {
+    const getMessage = async (cardId: CardID, msgId: MessageID): Promise<Message | undefined> => {
+      // Not yet supported groups
+      const messages = await this.communicationApi.findMessages(this.communicationSession, { card: cardId, id: msgId })
+      if (messages.length !== 1) {
+        return
+      }
+      return messages[0]
+    }
+    const cardDoc = (await this.storage.findAll(ctx, card.class.Card, { _id: cardId }))[0]
+    const messagesUpdated = new Set<MessageID>()
+    for (const tx of txes) {
+      if (tx.event.type === MessageEventType.CreateMessage) {
+        const event = tx.event
+        if (event.messageId === undefined) {
+          continue
+        }
+        if (messagesUpdated.has(event.messageId)) {
+          continue
+        }
+        const message = await getMessage(cardId, event.messageId)
+        if (message === undefined) {
+          continue
+        }
+        const indexedDoc = createIndexedDocFromMessage(cardDoc._id, cardDoc.space, cardDoc._class, message)
+        await this.processCommunicationMessage(
+          ctx,
+          { content: event.content, extra: event.extra, blobs: [], thread: undefined, linkPreviews: [] },
+          indexedDoc
+        )
+        messagesUpdated.add(event.messageId)
+        if (this.listener?.onIndexing !== undefined) {
+          await this.listener.onIndexing(indexedDoc)
+        }
+        await pushQueue.push(indexedDoc)
+      } else if (tx.event.type === MessageEventType.UpdatePatch) {
+        const event = tx.event
+        if (messagesUpdated.has(event.messageId)) {
+          continue
+        }
+        const message = await getMessage(cardId, event.messageId)
+        if (message === undefined) {
+          continue
+        }
+        const indexedDoc = createIndexedDocFromMessage(cardDoc._id, cardDoc.space, cardDoc._class, message)
+        await this.processCommunicationMessage(ctx, message, indexedDoc)
+        messagesUpdated.add(event.messageId)
+        if (this.listener?.onIndexing !== undefined) {
+          await this.listener.onIndexing(indexedDoc)
+        }
+        await pushQueue.push(indexedDoc)
+      } else if (tx.event.type === MessageEventType.BlobPatch) {
+        const event = tx.event
+        if (messagesUpdated.has(event.messageId)) {
+          continue
+        }
+        const message = await getMessage(cardId, event.messageId)
+        if (message === undefined) {
+          continue
+        }
+        const indexedDoc = createIndexedDocFromMessage(cardDoc._id, cardDoc.space, cardDoc._class, message)
+        await this.processCommunicationMessage(ctx, message, indexedDoc)
+        messagesUpdated.add(event.messageId)
+        if (this.listener?.onIndexing !== undefined) {
+          await this.listener.onIndexing(indexedDoc)
+        }
+        await pushQueue.push(indexedDoc)
+      } else if (tx.event.type === MessageEventType.LinkPreviewPatch) {
+        const event = tx.event
+        if (messagesUpdated.has(event.messageId)) {
+          continue
+        }
+        const message = await getMessage(cardId, event.messageId)
+        if (message === undefined) {
+          continue
+        }
+        const indexedDoc = createIndexedDocFromMessage(cardDoc._id, cardDoc.space, cardDoc._class, message)
+        await this.processCommunicationMessage(ctx, message, indexedDoc)
+        messagesUpdated.add(event.messageId)
+        if (this.listener?.onIndexing !== undefined) {
+          await this.listener.onIndexing(indexedDoc)
+        }
+        await pushQueue.push(indexedDoc)
+      } else if (tx.event.type === MessageEventType.RemovePatch) {
+        const event = tx.event
+        messagesUpdated.add(event.messageId)
+        toRemove.push({
+          _id: `${event.cardId}%${event.messageId}` as any,
+          _class: `${card.class.Card}%message` as Ref<Class<Doc>>
+        })
+      } else if (tx.event.type === CardEventType.UpdateCardType) {
+        const event = tx.event
+        await this.fulltextAdapter.updateByQuery(
+          ctx,
+          this.workspace.uuid,
+          { _class: `${card.class.Card}%message` as any, attachedTo: event.cardId },
+          { attachedToClass: event.cardType }
+        )
+      }
+    }
   }
 
   private async loadDocsFromTx (
@@ -910,10 +1005,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   @withContext('process-communication-message')
   private async processCommunicationMessage (
     ctx: MeasureContext<any>,
-    messageContent: Markdown,
+    message: Pick<Message, 'content' | 'extra' | 'blobs' | 'thread' | 'linkPreviews'>,
     indexedDoc: IndexedDoc
   ): Promise<void> {
-    const markup = markdownToMarkup(messageContent)
+    const markup = markdownToMarkup(message.content)
     let textContent = jsonToText(markup)
     textContent = textContent
       .split(/ +|\t+|\f+/)
@@ -922,6 +1017,33 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       .split(/\n\n+/)
       .join('\n')
     indexedDoc.fulltextSummary = textContent
+    for (const blob of message.blobs) {
+      indexedDoc.fulltextSummary += '\n' + blob.fileName
+      const blobInfo = await this.storageAdapter.stat(ctx, this.workspace, blob.blobId)
+      if (blobInfo !== undefined && blobInfo.size < 30 * 1024 * 1024) {
+        const contentType = (blobInfo.contentType ?? blob.mimeType).split(';')[0]
+
+        if (
+          (contentType.includes('text/') && contentType !== 'text/rtf') ||
+          contentType.includes('application/vnd.github.VERSION.diff')
+        ) {
+          await this.handleTextBlob(ctx, blobInfo, indexedDoc)
+        } else if (isBlobAllowed(contentType)) {
+          await this.handleBlob(ctx, blobInfo, indexedDoc)
+        }
+      }
+    }
+    for (const linkPreview of message.linkPreviews) {
+      if (linkPreview.title !== undefined) {
+        indexedDoc.fulltextSummary += '\n' + linkPreview.title
+      }
+      if (linkPreview.siteName !== undefined) {
+        indexedDoc.fulltextSummary += '\n' + linkPreview.siteName
+      }
+      if (linkPreview.description !== undefined) {
+        indexedDoc.fulltextSummary += '\n' + linkPreview.description
+      }
+    }
   }
 
   private async handleBlob (ctx: MeasureContext<any>, docInfo: Blob | undefined, indexedDoc: IndexedDoc): Promise<void> {
