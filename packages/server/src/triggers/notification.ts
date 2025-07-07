@@ -22,7 +22,9 @@ import {
   UpdateNotificationContextEvent,
   RemoveNotificationContextEvent,
   RemovePatchEvent,
-  RemoveCollaboratorsEvent
+  RemoveCollaboratorsEvent,
+  RemoveMessagesGroupEvent,
+  CreateMessagesGroupEvent
 } from '@hcengineering/communication-sdk-types'
 import {
   type ActivityCollaboratorsUpdate,
@@ -202,6 +204,19 @@ async function onMessagesRemoved (ctx: TriggerCtx, event: RemovePatchEvent): Pro
   return result
 }
 
+async function onMessagesGroupCreated (ctx: TriggerCtx, event: CreateMessagesGroupEvent): Promise<Event[]> {
+  const { group } = event
+  await ctx.db.updateNotificationsBlobId(group.cardId, group.blobId, group.fromDate, group.toDate)
+
+  return []
+}
+
+async function onMessagesGroupRemoved (ctx: TriggerCtx, event: RemoveMessagesGroupEvent): Promise<Event[]> {
+  await ctx.db.removeNotificationsBlobId(event.cardId, event.blobId)
+
+  return []
+}
+
 const triggers: Triggers = [
   [
     'on_notification_context_updated',
@@ -215,7 +230,17 @@ const triggers: Triggers = [
   ],
   ['on_added_collaborators', NotificationEventType.AddCollaborators, onAddedCollaborators as TriggerFn],
   ['on_removed_collaborators', NotificationEventType.RemoveCollaborators, onRemovedCollaborators as TriggerFn],
-  ['remove_notifications_on_messages_removed', MessageEventType.RemovePatch, onMessagesRemoved as TriggerFn]
+  ['remove_notifications_on_messages_removed', MessageEventType.RemovePatch, onMessagesRemoved as TriggerFn],
+  [
+    'update_notifications_on_messages_group_created',
+    MessageEventType.CreateMessagesGroup,
+    onMessagesGroupCreated as TriggerFn
+  ],
+  [
+    'update_notifications_on_messages_group_removed',
+    MessageEventType.RemoveMessagesGroup,
+    onMessagesGroupRemoved as TriggerFn
+  ]
 ]
 
 export default triggers

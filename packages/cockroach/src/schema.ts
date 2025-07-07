@@ -145,6 +145,7 @@ export interface NotificationDb {
   read: boolean
   message_id: MessageID | null
   message_created: Date
+  blob_id?: BlobID
   context_id: ContextID
   created: Date
   content: NotificationContent
@@ -156,7 +157,7 @@ export interface ContextDb {
   account: AccountID
   last_update: Date
   last_view: Date
-  last_notify?: Date
+  last_notify: Date
 }
 
 export interface CollaboratorDb {

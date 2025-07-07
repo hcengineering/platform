@@ -90,10 +90,10 @@ async function removeReactionNotification (
   socialId: SocialID
 ): Promise<Event[]> {
   const result: Event[] = []
-  const msg = await findMessage(ctx.db, ctx.metadata.filesUrl, ctx.workspace, cardId, messageId)
-  if (msg === undefined) return result
+  const { message } = await findMessage(ctx.db, ctx.metadata.filesUrl, ctx.workspace, cardId, messageId)
+  if (message === undefined) return result
 
-  const messageAccount = await findAccount(ctx, msg.creator)
+  const messageAccount = await findAccount(ctx, message.creator)
   if (messageAccount == null) return result
 
   const notifications = await ctx.db.findNotifications({
@@ -155,7 +155,7 @@ async function notifyReaction (
 ): Promise<Event[]> {
   const result: Event[] = []
 
-  const message = await findMessage(ctx.db, ctx.metadata.filesUrl, ctx.workspace, cardId, messageId)
+  const { message, blobId } = await findMessage(ctx.db, ctx.metadata.filesUrl, ctx.workspace, cardId, messageId)
   if (message == null) return result
 
   const messageAccount = await findAccount(ctx, message.creator)
@@ -168,7 +168,7 @@ async function notifyReaction (
   let contextId: ContextID | undefined = context?.id
 
   if (context == null) {
-    contextId = await createContext(ctx, messageAccount, cardId, new Date(), new Date())
+    contextId = await createContext(ctx, messageAccount, cardId, date, undefined, date)
   }
 
   if (contextId == null) return result
@@ -188,12 +188,13 @@ async function notifyReaction (
     contextId,
     messageId,
     messageCreated: message.created,
+    blobId,
     date,
     content,
     read: false
   })
 
-  if ((context?.lastNotify?.getTime() ?? 0) < date.getTime()) {
+  if ((context?.lastNotify?.getTime() ?? date.getTime()) < date.getTime()) {
     result.push({
       type: NotificationEventType.UpdateNotificationContext,
       contextId,
@@ -324,14 +325,7 @@ async function createOrUpdateContext (
     events: Event[]
   }> {
   if (context == null) {
-    const contextId = await createContext(
-      ctx,
-      collaborator,
-      cardId,
-      date,
-      isOwn ? date : undefined,
-      isOwn ? undefined : date
-    )
+    const contextId = await createContext(ctx, collaborator, cardId, date, isOwn ? date : undefined, date)
 
     return {
       contextId,
@@ -365,8 +359,8 @@ async function createContext (
   account: AccountID,
   cardId: CardID,
   lastUpdate: Date,
-  lastView?: Date,
-  lastNotify?: Date
+  lastView: Date | undefined,
+  lastNotify: Date
 ): Promise<ContextID | undefined> {
   try {
     const result = (await ctx.execute({

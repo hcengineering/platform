@@ -276,12 +276,20 @@ export class CockroachAdapter implements DbAdapter {
     return await this.notification.removeNotifications(contextId, account, ids)
   }
 
+  async removeNotificationsBlobId (cardId: CardID, blobId: string): Promise<void> {
+    await this.notification.removeNotificationsBlobId(cardId, blobId)
+  }
+
+  async updateNotificationsBlobId (cardId: CardID, blobId: string, from: Date, to: Date): Promise<void> {
+    await this.notification.updateNotificationsBlobId(cardId, blobId, from, to)
+  }
+
   async createContext (
     account: AccountID,
     card: CardID,
     lastUpdate: Date,
     lastView: Date,
-    lastNotify?: Date
+    lastNotify: Date
   ): Promise<ContextID> {
     return await this.notification.createContext(account, card, lastUpdate, lastView, lastNotify)
   }

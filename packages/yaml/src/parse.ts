@@ -14,22 +14,16 @@
 //
 
 import { retry, type RetryOptions } from '@hcengineering/communication-shared'
-import type {
-  FileMessage,
-  FileMetadata,
-  MessagesGroup,
-  ParsedFile,
-  WorkspaceID
-} from '@hcengineering/communication-types'
+import type { BlobID, FileMessage, FileMetadata, ParsedFile, WorkspaceID } from '@hcengineering/communication-types'
 import yaml from 'js-yaml'
 
 export async function loadGroupFile (
   workspace: WorkspaceID,
   filesUrl: string,
-  group: MessagesGroup,
+  blobId: BlobID,
   options: RetryOptions
 ): Promise<ParsedFile> {
-  const url = getFileUrl(workspace, filesUrl, group.blobId)
+  const url = getFileUrl(workspace, filesUrl, blobId)
 
   const file = await retry(() => fetchFile(url), options)
   return parseYaml(file)

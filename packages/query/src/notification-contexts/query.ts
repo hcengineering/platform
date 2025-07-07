@@ -14,6 +14,7 @@
 //
 
 import {
+  BlobID,
   type CardID,
   type FindNotificationContextParams,
   FindNotificationsParams,
@@ -22,6 +23,7 @@ import {
   type Notification,
   type NotificationContext,
   NotificationType,
+  ParsedFile,
   PatchType,
   SortingOrder,
   type WorkspaceID
@@ -88,8 +90,8 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       const findPromise = this.find(findParams)
       this.result = findPromise.then((res) => {
         const allLoaded = limit == null || res.length < limit
-        const isTail = allLoaded || (params.lastUpdate == null && params.order === SortingOrder.Descending)
-        const isHead = allLoaded || (params.lastUpdate == null && params.order === SortingOrder.Ascending)
+        const isTail = allLoaded || (params.lastNotify == null && params.order === SortingOrder.Descending)
+        const isHead = allLoaded || (params.lastNotify == null && params.order === SortingOrder.Ascending)
 
         if (limit != null && res.length >= limit) {
           res.pop()
@@ -170,8 +172,8 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     const limit = this.params.limit ?? defaultQueryParams.limit
     const findParams: FindNotificationContextParams = {
       ...this.params,
-      lastUpdate: {
-        greater: last.lastUpdate
+      lastNotify: {
+        greater: last.lastNotify
       },
       limit: limit + 1,
       order: SortingOrder.Ascending
@@ -210,8 +212,8 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     const limit = this.params.limit ?? defaultQueryParams.limit
     const findParams: FindNotificationContextParams = {
       ...this.params,
-      lastUpdate: {
-        less: first.lastUpdate
+      lastNotify: {
+        less: first.lastNotify
       },
       limit: limit + 1,
       order: SortingOrder.Descending
@@ -256,24 +258,25 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     return this.result.copy()
   }
 
-  private async find (params: FindNotificationContextParams): Promise<NotificationContext[]> {
-    const contexts = await this.client.findNotificationContexts(params, this.id)
-    if (params.notifications?.message !== true) return contexts
-
-    await Promise.all(
+  async loadGroups (contexts: NotificationContext[]): Promise<NotificationContext[]> {
+    const cache = new Map<BlobID, Promise<ParsedFile>>()
+    const newContexts = await Promise.all(
       contexts.map(async (context) => {
         const notifications = context.notifications ?? []
 
         context.notifications = await Promise.all(
           notifications.map(async (notification) => {
-            if (notification.message != null || notification.messageId == null) return notification
-
+            if (notification.message != null || notification.messageId == null || notification.blobId == null) {
+              return notification
+            }
+            const { blobId } = notification
             const message = await loadMessageFromGroup(
               notification.messageId,
               this.workspace,
               this.filesUrl,
-              notification.messageGroup,
-              notification.patches
+              blobId,
+              notification.patches,
+              cache
             )
             if (message !== undefined) {
               return {
@@ -288,8 +291,15 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
         return context
       })
     )
+    cache.clear()
+    return newContexts
+  }
 
-    return contexts
+  private async find (params: FindNotificationContextParams): Promise<NotificationContext[]> {
+    const contexts = await this.client.findNotificationContexts(params, this.id)
+    if (params.notifications?.message !== true) return contexts
+
+    return await this.loadGroups(contexts)
   }
 
   private async onCreateNotificationContextEvent (event: CreateNotificationContextEvent): Promise<void> {
@@ -476,9 +486,9 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     if (this.result instanceof Promise) this.result = await this.result
     this.result = this.find({ ...this.params, limit: limit + 1 }).then((res) => {
       const isTail =
-        res.length <= limit || (this.params.order === SortingOrder.Descending && this.params.lastUpdate == null)
+        res.length <= limit || (this.params.order === SortingOrder.Descending && this.params.lastNotify == null)
       const isHead =
-        res.length <= limit || (this.params.order === SortingOrder.Ascending && this.params.lastUpdate == null)
+        res.length <= limit || (this.params.order === SortingOrder.Ascending && this.params.lastNotify == null)
       if (res.length > limit) {
         res.pop()
       }
@@ -617,37 +627,37 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       return false
     }
 
-    if (this.params.lastUpdate !== undefined) {
+    if (this.params.lastNotify !== undefined) {
       if (
-        'greater' in this.params.lastUpdate &&
-        this.params.lastUpdate.greater != null &&
-        context.lastUpdate <= this.params.lastUpdate.greater
+        'greater' in this.params.lastNotify &&
+        this.params.lastNotify.greater != null &&
+        (context.lastNotify?.getTime() ?? 0) <= this.params.lastNotify.greater.getTime()
       ) {
         return false
       }
       if (
-        'less' in this.params.lastUpdate &&
-        this.params.lastUpdate.less != null &&
-        context.lastUpdate >= this.params.lastUpdate.less
+        'less' in this.params.lastNotify &&
+        this.params.lastNotify.less != null &&
+        (context.lastNotify?.getTime() ?? 0) >= this.params.lastNotify.less.getTime()
       ) {
         return false
       }
       if (
-        'greaterOrEqual' in this.params.lastUpdate &&
-        this.params.lastUpdate.greaterOrEqual != null &&
-        context.lastUpdate < this.params.lastUpdate.greaterOrEqual
+        'greaterOrEqual' in this.params.lastNotify &&
+        this.params.lastNotify.greaterOrEqual != null &&
+        (context.lastNotify?.getTime() ?? 0) < this.params.lastNotify.greaterOrEqual.getTime()
       ) {
         return false
       }
       if (
-        'lessOrEqual' in this.params.lastUpdate &&
-        this.params.lastUpdate.lessOrEqual != null &&
-        context.lastUpdate > this.params.lastUpdate.lessOrEqual
+        'lessOrEqual' in this.params.lastNotify &&
+        this.params.lastNotify.lessOrEqual != null &&
+        (context.lastNotify?.getTime() ?? 0) > this.params.lastNotify.lessOrEqual.getTime()
       ) {
         return false
       }
 
-      if (this.params.lastUpdate instanceof Date && this.params.lastUpdate !== context.lastUpdate) {
+      if (this.params.lastNotify instanceof Date && this.params.lastNotify !== context.lastNotify) {
         return false
       }
     }

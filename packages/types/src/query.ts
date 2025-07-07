@@ -63,7 +63,7 @@ export interface FindMessagesGroupsParams extends FindParams {
 export interface FindNotificationContextParams extends FindParams {
   id?: ContextID
   card?: CardID | CardID[]
-  lastUpdate?: Partial<Record<ComparisonOperator, Date>> | Date
+  lastNotify?: Partial<Record<ComparisonOperator, Date>> | Date
   account?: AccountID | AccountID[]
   notifications?: {
     type?: NotificationType

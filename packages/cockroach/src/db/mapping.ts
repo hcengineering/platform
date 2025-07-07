@@ -74,10 +74,6 @@ interface RawNotification extends NotificationDb {
   message_content?: Markdown
   message_creator?: SocialID
   message_data?: MessageExtra
-  message_group_blob_id?: BlobID
-  message_group_from_date?: Date
-  message_group_to_date?: Date
-  message_group_count?: number
   message_patches?: {
     type: PatchType
     data: Record<string, any>
@@ -219,16 +215,18 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
   const created = new Date(raw.created)
   let message: Message | undefined
 
-  const patches = (raw.message_patches ?? []).map((it) =>
-    toPatch({
-      card_id: card,
-      message_id: raw.message_id,
-      type: it.type,
-      data: it.data,
-      creator: it.creator,
-      created: new Date(it.created)
-    })
-  )
+  const patches = (raw.message_patches ?? [])
+    .map((it) =>
+      toPatch({
+        card_id: card,
+        message_id: raw.message_id,
+        type: it.type,
+        data: it.data,
+        creator: it.creator,
+        created: new Date(it.created)
+      })
+    )
+    .sort((a, b) => a.created.getTime() - b.created.getTime())
 
   if (
     raw.message_content != null &&
@@ -236,13 +234,15 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
     raw.message_created != null &&
     raw.message_type != null
   ) {
-    const messageBlobs = raw.message_files?.map((it) =>
-      toBlob({
-        card_id: card,
-        message_id: raw.message_id,
-        ...it
-      })
-    )
+    const messageBlobs = raw.message_files
+      ?.map((it) =>
+        toBlob({
+          card_id: card,
+          message_id: raw.message_id,
+          ...it
+        })
+      )
+      .sort((a, b) => a.created.getTime() - b.created.getTime())
 
     message = {
       id: String(raw.message_id) as MessageID,
@@ -280,19 +280,6 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
     }
   }
 
-  let messageGroup: MessagesGroup | undefined
-
-  if (raw.message_group_blob_id != null && raw.message_group_from_date != null && raw.message_group_to_date != null) {
-    messageGroup = {
-      cardId: card,
-      blobId: raw.message_group_blob_id,
-      fromDate: new Date(raw.message_group_from_date),
-      toDate: new Date(raw.message_group_to_date),
-      count: raw.message_group_count ?? 0,
-      patches
-    }
-  }
-
   return {
     id: String(raw.id) as NotificationID,
     cardId: card,
@@ -303,8 +290,9 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
     messageCreated: new Date(raw.message_created),
     created,
     contextId: String(id) as ContextID,
-    messageGroup,
-    content: raw.content
+    content: raw.content,
+    blobId: raw.blob_id ?? undefined,
+    patches
   }
 }
 

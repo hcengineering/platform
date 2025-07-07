@@ -15,12 +15,13 @@
 
 import { applyPatches } from '@hcengineering/communication-shared'
 import {
+  BlobID,
   type CardID,
   type FindNotificationsParams,
   type Message,
   type MessageID,
-  type MessagesGroup,
   type Notification,
+  ParsedFile,
   type Patch,
   SortingOrder,
   type WorkspaceID
@@ -74,7 +75,7 @@ export async function findMessageInFiles (
   }
 
   try {
-    const parsedFile = await loadGroupFile(workspace, filesUrl, group, { retries: 3 })
+    const parsedFile = await loadGroupFile(workspace, filesUrl, group.blobId, { retries: 3 })
     const messageFromFile = parsedFile.messages.find((it) => it.id === id)
     if (messageFromFile === undefined) {
       return undefined
@@ -93,12 +94,23 @@ export async function loadMessageFromGroup (
   id: MessageID,
   workspace: WorkspaceID,
   filesUrl: string,
-  group?: MessagesGroup,
-  patches: Patch[] = []
+  blobId: BlobID,
+  patches: Patch[] = [],
+  cache?: Map<BlobID, Promise<ParsedFile>>
 ): Promise<Message | undefined> {
-  if (group == null) return
+  if (cache != null && cache.has(blobId)) {
+    const parsedFile = await cache.get(blobId)
+    if (parsedFile == null) return
+    const message = parsedFile.messages.find((it) => it.id === id)
+    if (message == null) return
+    return applyPatches(message, patches)
+  }
 
-  const parsedFile = await loadGroupFile(workspace, filesUrl, group, { retries: 5 })
+  const parsedFilePromise = loadGroupFile(workspace, filesUrl, blobId, { retries: 3 })
+  if (cache != null) {
+    cache.set(blobId, parsedFilePromise)
+  }
+  const parsedFile = await parsedFilePromise
 
   const message = parsedFile.messages.find((it) => it.id === id)
   if (message == null) return

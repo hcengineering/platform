@@ -124,7 +124,10 @@ function getMigrations (): [string, string][] {
     migrationV6_5(),
     migrationV6_6(),
     migrationV6_7(),
-    migrationV6_8()
+    migrationV6_8(),
+    migrationV7_1(),
+    migrationV7_2(),
+    migrationV7_3()
   ]
 }
 
@@ -603,4 +606,40 @@ function migrationV6_8 (): [string, string] {
           DROP COLUMN IF EXISTS message_id_old;
   `
   return ['drop_old_message_id_columns-v6_8', sql]
+}
+
+function migrationV7_1 (): [string, string] {
+  const sql = `
+      ALTER TABLE communication.notifications
+          ADD COLUMN IF NOT EXISTS blob_id UUID;
+  `
+  return ['add_blobId_to_notifications-v7_1', sql]
+}
+
+function migrationV7_2 (): [string, string] {
+  const sql = `
+      UPDATE communication.notifications AS n
+      SET blob_id = mg.blob_id
+      FROM communication.notification_context AS nc
+               JOIN communication.messages_groups AS mg
+                    ON mg.workspace_id = nc.workspace_id
+                        AND mg.card_id      = nc.card_id
+      WHERE
+          n.context_id = nc.id
+        AND n.message_created BETWEEN mg.from_date AND mg.to_date
+        AND n.blob_id IS NULL;
+  `
+  return ['fill_blobId_on_notifications-v7_2', sql]
+}
+
+function migrationV7_3 (): [string, string] {
+  const sql = `
+    UPDATE communication.notification_context
+    SET last_notify = last_update
+    WHERE last_notify IS NULL;
+
+    ALTER TABLE communication.notification_context
+      ALTER COLUMN last_notify SET NOT NULL;
+  `
+  return ['make_last_notify_not_null-v7_3', sql]
 }

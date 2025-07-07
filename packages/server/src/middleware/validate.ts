@@ -226,7 +226,7 @@ const FindMessagesGroupsParamsSchema = FindParamsSchema.extend({
 const FindNotificationContextParamsSchema = FindParamsSchema.extend({
   id: ContextIDSchema.optional(),
   card: z.union([CardIDSchema, z.array(CardIDSchema)]).optional(),
-  lastUpdate: dateOrRecordSchema.optional(),
+  lastNotify: dateOrRecordSchema.optional(),
   account: z.union([AccountIDSchema, z.array(AccountIDSchema)]).optional(),
   notifications: z
     .object({

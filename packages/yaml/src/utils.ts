@@ -46,7 +46,7 @@ export async function findMessage (
 
   const group = await findGroupByDate(client, card, created)
   if (group === undefined) return undefined
-  const parsedFile = await loadGroupFile(workspace, filesUrl, group, { retries: 5 })
+  const parsedFile = await loadGroupFile(workspace, filesUrl, group.blobId, { retries: 5 })
 
   return parsedFile.messages.find((it) => it.id === id)
 }

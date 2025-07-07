@@ -21,7 +21,8 @@ import {
   type Markdown,
   type SocialID,
   SortingOrder,
-  type WorkspaceID
+  type WorkspaceID,
+  BlobID
 } from '@hcengineering/communication-types'
 import { loadGroupFile } from '@hcengineering/communication-yaml'
 import { applyPatches } from '@hcengineering/communication-shared'
@@ -42,10 +43,13 @@ export async function findMessage (
     links?: boolean
     reactions?: boolean
   }
-): Promise<Message | undefined> {
+): Promise<{
+    message?: Message
+    blobId?: BlobID
+  }> {
   const message = (await db.findMessages({ card, id, limit: 1, ...ops }))[0]
   if (message !== undefined) {
-    return message
+    return { message }
   }
   return await findMessageInFiles(db, filesUrl, workspace, card, id)
 }
@@ -56,14 +60,17 @@ export async function findMessageInFiles (
   workspace: WorkspaceID,
   cardId: CardID,
   messageId: MessageID
-): Promise<Message | undefined> {
+): Promise<{
+    message?: Message
+    blobId?: BlobID
+  }> {
   if (filesUrl === '') {
-    return undefined
+    return {}
   }
 
   const created = await db.getMessageCreated(cardId, messageId)
 
-  if (created == null) return undefined
+  if (created == null) return {}
   const group = (
     await db.findMessagesGroups({
       card: cardId,
@@ -76,23 +83,26 @@ export async function findMessageInFiles (
   )[0]
 
   if (group === undefined) {
-    return undefined
+    return {}
   }
 
   try {
-    const parsedFile = await loadGroupFile(workspace, filesUrl, group, { retries: 3 })
+    const parsedFile = await loadGroupFile(workspace, filesUrl, group.blobId, { retries: 3 })
     const messageFromFile = parsedFile.messages.find((it) => it.id === messageId)
     if (messageFromFile === undefined) {
-      return undefined
+      return {}
     }
 
     const patches = (group.patches ?? []).filter((it) => it.messageId === messageId)
+    const message = patches.length > 0 ? applyPatches(messageFromFile, patches) : messageFromFile
 
-    return patches.length > 0 ? applyPatches(messageFromFile, patches) : messageFromFile
+    return { message, blobId: group.blobId }
   } catch (e) {
     console.error('Failed to find message in files', { card: cardId, id: messageId, created })
     console.error('Error:', { error: e })
   }
+
+  return {}
 }
 
 export async function getNameBySocialID (ctx: TriggerCtx, id: SocialID): Promise<string> {

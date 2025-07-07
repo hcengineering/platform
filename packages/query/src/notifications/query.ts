@@ -195,12 +195,12 @@ export class NotificationQuery implements PagedQuery<Notification, NotificationQ
 
     return await Promise.all(
       notifications.map(async (notification) => {
-        if (notification.message != null) return notification
+        if (notification.message != null || notification.blobId == null) return notification
         const message = await loadMessageFromGroup(
           notification.messageId,
           this.workspace,
           this.filesUrl,
-          notification.messageGroup,
+          notification.blobId,
           notification.patches
         )
         return message != null ? { ...notification, message } : notification

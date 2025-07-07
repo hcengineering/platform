@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { AccountID, CardID, CardType, ID, SocialID } from './core'
-import type { Message, MessageID, MessagesGroup, Patch } from './message'
+import type { AccountID, BlobID, CardID, CardType, ID, SocialID } from './core'
+import type { Message, MessageID, Patch } from './message'
 
 export type ContextID = ID & { context: true }
 export type NotificationID = ID & { notification: true }
@@ -38,7 +38,7 @@ export interface Notification {
   messageCreated: Date
 
   message?: Message
-  messageGroup?: MessagesGroup
+  blobId?: BlobID
   patches?: Patch[]
 }
 

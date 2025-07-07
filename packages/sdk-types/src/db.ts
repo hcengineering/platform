@@ -114,13 +114,15 @@ export interface DbAdapter {
   ) => Promise<NotificationID>
   updateNotification: (context: ContextID, account: AccountID, query: UpdateNotificationQuery, updates: NotificationUpdates) => Promise<void>
   removeNotifications: (contextId: ContextID, account: AccountID, ids: NotificationID[]) => Promise<NotificationID[]>
+  removeNotificationsBlobId: (cardId: CardID, blobId: string) => Promise<void>
+  updateNotificationsBlobId: (cardId: CardID, blobId: string, from: Date, to: Date) => Promise<void>
 
   createContext: (
     account: AccountID,
     cardId: CardID,
     lastUpdate: Date,
     lastView: Date,
-    lastNotify?: Date
+    lastNotify: Date
   ) => Promise<ContextID>
   updateContext: (contextId: ContextID, account: AccountID, updates: NotificationContextUpdates) => Promise<void>
   removeContext: (id: ContextID, account: AccountID) => Promise<ContextID | undefined>

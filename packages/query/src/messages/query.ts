@@ -633,7 +633,7 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   }
 
   private async loadMessagesFromFiles (group: MessagesGroup): Promise<ParsedFile> {
-    const parsedFile = await loadGroupFile(this.workspace, this.filesUrl, group, { retries: 5 })
+    const parsedFile = await loadGroupFile(this.workspace, this.filesUrl, group.blobId, { retries: 5 })
     const patches = group.patches ?? []
 
     const patchesMap = new Map<MessageID, Patch[]>()

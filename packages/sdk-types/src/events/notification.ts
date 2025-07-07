@@ -22,7 +22,8 @@ import {
   NotificationType,
   NotificationContent,
   NotificationID,
-  SocialID
+  SocialID,
+  BlobID
 } from '@hcengineering/communication-types'
 import type { BaseEvent } from './common'
 
@@ -59,6 +60,7 @@ export interface CreateNotificationEvent extends BaseEvent {
   contextId: ContextID
   messageId: MessageID
   messageCreated: Date
+  blobId?: BlobID
   account: AccountID
 
   date?: Date
@@ -97,7 +99,7 @@ export interface CreateNotificationContextEvent extends BaseEvent {
 
   lastView: Date
   lastUpdate: Date
-  lastNotify?: Date
+  lastNotify: Date
 
   date?: Date
 }

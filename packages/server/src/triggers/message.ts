@@ -23,7 +23,7 @@ import {
   RemovePatchEvent,
   ThreadPatchEvent
 } from '@hcengineering/communication-sdk-types'
-import { type CardID, type Message, MessageType } from '@hcengineering/communication-types'
+import { type CardID, MessageType } from '@hcengineering/communication-types'
 import { generateToken } from '@hcengineering/server-token'
 import { type AccountUuid, concatLink, systemAccountUuid } from '@hcengineering/core'
 import { extractReferences } from '@hcengineering/text-core'
@@ -151,16 +151,9 @@ async function addThreadReply (ctx: TriggerCtx, event: Enriched<CreateMessageEve
 
 async function onThreadAttached (ctx: TriggerCtx, event: Enriched<ThreadPatchEvent>): Promise<Event[]> {
   if (event.operation.opcode !== 'attach') return []
-  const message: Message | undefined = await findMessage(
-    ctx.db,
-    ctx.metadata.filesUrl,
-    ctx.workspace,
-    event.cardId,
-    event.messageId,
-    {
-      files: true
-    }
-  )
+  const { message } = await findMessage(ctx.db, ctx.metadata.filesUrl, ctx.workspace, event.cardId, event.messageId, {
+    files: true
+  })
 
   if (message === undefined) return []
 
