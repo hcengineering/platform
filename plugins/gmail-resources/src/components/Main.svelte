@@ -104,8 +104,8 @@
     (res) => {
       allIntegrations = res.filter((p) => !p.disabled && p.value !== '')
       const account = getCurrentAccount()
-      const emailSocialIds = getCurrentAccount()
-        .fullSocialIds.filter((s) => s.type === SocialIdType.EMAIL && s.value !== '')
+      const emailSocialIds = account.fullSocialIds
+        .filter((s) => s.type === SocialIdType.EMAIL && s.value !== '')
         .map((s) => s._id)
       const isAvailable = (p: Integration): boolean => {
         const isOwner = p.createdBy !== undefined && emailSocialIds.includes(p.createdBy)
