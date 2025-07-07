@@ -252,7 +252,9 @@ export const contactPlugin = plugin(contactId, {
     SpaceMembersEditor: '' as AnyComponent,
     ContactNamePresenter: '' as AnyComponent,
     PersonFilterValuePresenter: '' as AnyComponent,
-    PersonIdFilter: '' as AnyComponent
+    PersonIdFilter: '' as AnyComponent,
+    AssigneePopup: '' as AnyComponent,
+    EmployeePresenter: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,

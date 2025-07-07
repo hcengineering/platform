@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { NodeViewContent, NodeViewWrapper } from '@hcengineering/text-editor-resources'
+  import NodeViewContent from '../../node-view/NodeViewContent.svelte'
+  import NodeViewWrapper from '../../node-view/NodeViewWrapper.svelte'
 </script>
 
 <NodeViewWrapper data-drag-handle="">

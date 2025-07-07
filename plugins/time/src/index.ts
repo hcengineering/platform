@@ -121,9 +121,7 @@ export default plugin(timeId, {
   component: {
     Me: '' as AnyComponent,
     Team: '' as AnyComponent,
-    EditToDo: '' as AnyComponent,
-    ToDoItemNodeView: '' as AnyComponent,
-    ToDoListNodeView: '' as AnyComponent
+    EditToDo: '' as AnyComponent
   },
   class: {
     WorkSlot: '' as Ref<Class<WorkSlot>>,
@@ -163,6 +161,10 @@ export default plugin(timeId, {
     AddToDo: '' as IntlString,
     NewToDoDetails: '' as IntlString,
     ToDo: '' as IntlString,
-    NewToDo: '' as IntlString
+    NewToDo: '' as IntlString,
+    UnassignToDo: '' as IntlString,
+    UnassignToDoConfirm: '' as IntlString,
+    ReassignToDo: '' as IntlString,
+    ReassignToDoConfirm: '' as IntlString
   }
 })

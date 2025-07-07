@@ -38,7 +38,7 @@ import {
 import { formatLink, isEditable, isHeadingVisible } from './utils'
 export { SmartPasteExtension as TransformPastedContentExtension } from './components/extension/shortcuts/smartPaste'
 export { getReferenceFromUrl, getReferenceLabel, getTargetObjectFromUrl } from './components/extension/reference'
-export { TodoItemExtension, TodoListExtension } from './components/extension/todo'
+export { TodoItemExtension, TodoListExtension } from './components/extension/todo/todo'
 
 export * from '@hcengineering/presentation/src/types'
 export { default as Collaboration } from './components/Collaboration.svelte'

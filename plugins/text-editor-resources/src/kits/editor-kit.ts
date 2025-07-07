@@ -25,7 +25,7 @@ import {
   mergeKitOptions,
   TextColorStylingKit
 } from '@hcengineering/text'
-import textEditor, { type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
+import textEditor, { type ActionContext, type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
 import { type AnyExtension, Extension } from '@tiptap/core'
 import TableHeader from '@tiptap/extension-table-header'
 import 'prosemirror-codemark/dist/codemark.css'
@@ -63,7 +63,7 @@ import { SmartPasteExtension } from '../components/extension/shortcuts/smartPast
 import { HandleSubmitExtension } from '../components/extension/shortcuts/handleSubmit'
 import { Table, TableCell, TableRow } from '../components/extension/table'
 import { ToCExtension } from '../components/extension/toc'
-import { TodoItemExtension, TodoListExtension } from '../components/extension/todo'
+import { TodoItemExtension, TodoListExtension } from '../components/extension/todo/todo'
 import { ToolbarExtension } from '../components/extension/toolbar/toolbar'
 
 export interface EditorKitContext {
@@ -87,7 +87,7 @@ const StaticEditorKit = extensionKit(
       // See file://./../../../../packages/text/src/kits/server-kit.ts
       // =============================================================
 
-      lists: e(subKits.lists),
+      lists: e(subKits.lists, context),
       tables: e(subKits.tables),
       codeSnippets: e(subKits.codeSnippets),
       textColorStyling: e(TextColorStylingKit, context.mode === 'full'),
@@ -112,12 +112,7 @@ const StaticEditorKit = extensionKit(
 
       toolbar: e(ToolbarExtension, {
         providers: [],
-        context: {
-          mode: context.mode ?? 'compact',
-          objectId: context.objectId,
-          objectClass: context.objectClass,
-          objectSpace: context.objectSpace
-        }
+        context: getActionContext(context)
       }),
       toc: e(ToCExtension, false),
       leftMenu: e(LeftMenuExtension, false),
@@ -137,7 +132,7 @@ const subKits = {
     (e, context: EditorKitContext) =>
       ({
         ...CommonListKitFactory(e),
-        todoItem: e(TodoItemExtension, context.mode === 'full'),
+        todoItem: e(TodoItemExtension, context.mode === 'full' && { context: getActionContext(context) }),
         todoList: e(TodoListExtension, context.mode === 'full')
       }) as const
   ),
@@ -265,9 +260,20 @@ export async function getEditorKit (
   const kit = await editorKitPromise
   if ((options ?? []).length < 1) return kit
 
-  let newOptions: Partial<EditorKitOptions> = {}
+  let newOptions: Partial<EditorKitOptions> = {
+    mode: 'full'
+  }
   for (const e of options) {
     newOptions = mergeKitOptions(newOptions, e)
   }
   return kit.configure(newOptions)
+}
+
+function getActionContext (context: EditorKitContext): ActionContext {
+  return {
+    mode: context.mode ?? 'full',
+    objectId: context.objectId,
+    objectClass: context.objectClass,
+    objectSpace: context.objectSpace
+  }
 }

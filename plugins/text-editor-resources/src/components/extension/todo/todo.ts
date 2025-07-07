@@ -15,6 +15,7 @@
 
 import core, { type Class, type Doc, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
+import { type ActionContext } from '@hcengineering/text-editor'
 import { findParentNode, getNodeType, InputRule, isList, type RawCommands } from '@tiptap/core'
 import TaskItem, { type TaskItemOptions } from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
@@ -22,10 +23,10 @@ import { Fragment, NodeRange, Slice, type NodeType } from '@tiptap/pm/model'
 import { Plugin, type Command, type EditorState, type Selection, type Transaction } from '@tiptap/pm/state'
 import { canJoin, findWrapping, liftTarget, ReplaceAroundStep } from '@tiptap/pm/transform'
 import { type EditorView } from '@tiptap/pm/view'
-import { getDataAttribute } from '../../utils'
-import { SvelteNodeViewRenderer } from '../node-view'
-import { type ActionContext } from '@hcengineering/text-editor'
-import time from '@hcengineering/time'
+import { getDataAttribute } from '../../../utils'
+import { SvelteNodeViewRenderer } from '../../node-view'
+import ToDoItemNodeView from './ToDoItemNodeView.svelte'
+import ToDoListNodeView from './ToDoListNodeView.svelte'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -90,7 +91,7 @@ export const TodoItemExtension = TaskItem.extend<TodoItemExtensionOptions>({
 
   addNodeView () {
     const { objectId, objectClass, objectSpace } = this.options.context ?? {}
-    return SvelteNodeViewRenderer(time.component.ToDoItemNodeView, {
+    return SvelteNodeViewRenderer(ToDoItemNodeView, {
       contentAs: 'li',
       contentClass: 'todo-item',
       componentProps: objectClass != null && isTodoableClass(objectClass) ? { objectId, objectClass, objectSpace } : {}
@@ -111,7 +112,7 @@ export const TodoListExtension = TaskList.extend({
   },
 
   addNodeView () {
-    return SvelteNodeViewRenderer(time.component.ToDoListNodeView, {})
+    return SvelteNodeViewRenderer(ToDoListNodeView, {})
   }
 })
 
