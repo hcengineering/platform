@@ -62,6 +62,22 @@ const expose: IPCMainExposed = {
     ipcRenderer.send('send-notification', notificationParams)
   },
 
+  minimizeWindow: () => {
+    ipcRenderer.invoke('window-minimize')
+  },
+  
+  maximizeWindow: () => {
+    ipcRenderer.invoke('window-maximize')
+  },
+  
+  closeWindow: () => {
+    ipcRenderer.invoke('window-close')
+  },
+
+  onWindowStateChange: (callback) => {
+    ipcRenderer.on('window-state-changed', callback)
+  },
+
   config: async () => {
     if (configPromise === undefined) {
       configPromise = new Promise((resolve, reject) => {

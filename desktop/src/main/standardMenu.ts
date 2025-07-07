@@ -18,7 +18,7 @@ import { Menu, MenuItemConstructorOptions, type BrowserWindow } from 'electron'
 const isMac = process.platform === 'darwin'
 const isLinux = process.platform === 'linux'
 
-export const addMenus = (getWindow: () => BrowserWindow, sendCommand: (cmd: string, ...args: any[]) => void): void => {
+export const addMenus = (sendCommand: (cmd: string, ...args: any[]) => void): void => {
   const template: MenuItemConstructorOptions[] = [
     {
       label: 'File',

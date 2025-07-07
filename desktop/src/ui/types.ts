@@ -1,5 +1,6 @@
 import { ScreenSource } from '@hcengineering/love'
 import { Plugin } from '@hcengineering/platform'
+import { IpcRendererEvent } from 'electron'
 
 /**
  * @public
@@ -100,4 +101,13 @@ export interface IPCMainExposed {
 
   cancelBackup: () => void
   startBackup: (token: string, endpoint: string, workspace: string) => void
+
+  minimizeWindow: () => void
+  maximizeWindow: () => void
+  closeWindow: () => void
+  onWindowStateChange: (callback: (event: IpcRendererEvent, newState: string) => void) => void
+}
+
+export function ipcMainExposed(): IPCMainExposed {
+  return (window as any).electron as IPCMainExposed
 }

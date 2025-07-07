@@ -19,18 +19,31 @@ import { workbenchId, logOut } from '@hcengineering/workbench'
 
 import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
+import { setupTitleBarMenu } from './titleBarMenu'
 import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
-import { IPCMainExposed } from './types'
+import { IPCMainExposed, ipcMainExposed } from './types'
 
 defineScreenShare()
 defineGetDisplayMedia()
 
-void configurePlatform().then(() => {
-  createApp(document.body)
-})
-
 window.addEventListener('DOMContentLoaded', () => {
-  const ipcMain = (window as any).electron as IPCMainExposed
+  
+  void configurePlatform().then((parameters) => {
+    const windowTitle = document.getElementById('application-title-bar-caption')
+    if (windowTitle != null) {
+      windowTitle.textContent = parameters.getBranding().getTitle()
+    }
+
+    if ((window as any).windowsPlatform === true) {
+      setupTitleBarMenu()
+    }
+
+    const applicationArea = document.getElementById('application-area')
+    const targetElement = applicationArea ?? document.body
+    createApp(targetElement)
+  })
+  
+  const ipcMain = ipcMainExposed()
 
   ipcMain.on('open-settings', () => {
     closePopup()

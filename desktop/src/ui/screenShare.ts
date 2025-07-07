@@ -4,7 +4,7 @@ import { setCustomCreateScreenTracks } from '@hcengineering/love-resources'
 import { showPopup } from '@hcengineering/ui'
 import { Track, LocalTrack, LocalAudioTrack, LocalVideoTrack, ParticipantEvent, TrackInvalidError, ScreenShareCaptureOptions, DeviceUnsupportedError, ScreenSharePresets } from 'livekit-client'
 
-import { IPCMainExposed } from './types'
+import { ipcMainExposed } from './types'
 
 export function defineGetDisplayMedia (): void {
   if (navigator?.mediaDevices === undefined) {
@@ -21,7 +21,7 @@ export function defineGetDisplayMedia (): void {
       throw new Error('opts must be provided')
     }
 
-    const ipcMain = (window as any).electron as IPCMainExposed
+    const ipcMain = ipcMainExposed()
     const sources = await ipcMain.getScreenSources()
 
     const hasAccess = await ipcMain.getScreenAccess()
@@ -59,7 +59,7 @@ export function defineGetDisplayMedia (): void {
 
 export function defineScreenShare (): void {
   setCustomCreateScreenTracks(async function electronCreateScreenTracks (options?: ScreenShareCaptureOptions) {
-    const ipcMain = (window as any).electron as IPCMainExposed
+    const ipcMain = ipcMainExposed()
     const sources = await ipcMain.getScreenSources()
 
     const hasAccess = await ipcMain.getScreenAccess()

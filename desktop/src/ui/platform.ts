@@ -134,7 +134,7 @@ import textEditor, { textEditorId } from '@hcengineering/text-editor'
 
 import { initThemeStore, setDefaultLanguage } from '@hcengineering/theme'
 import { configureNotifications } from './notifications'
-import { Branding, Config, IPCMainExposed } from './types'
+import { Branding, Config, ipcMainExposed } from './types'
 
 import github, { githubId } from '@hcengineering/github'
 import '@hcengineering/github-assets'
@@ -240,10 +240,26 @@ function configureI18n (): void {
   addStringsLoader(billingId, async (lang: string) => await import(`@hcengineering/billing-assets/lang/${lang}.json`))
 }
 
-export async function configurePlatform (): Promise<void> {
+export class PlatformBranding {
+  constructor(private title: string) {
+  }
+  public getTitle(): string {
+    return this.title;
+  }
+}
+
+export class PlatformParameters {
+  constructor(private branding: PlatformBranding) {
+  }
+  public getBranding(): PlatformBranding {
+    return this.branding;
+  }
+}
+
+export async function configurePlatform (): Promise<PlatformParameters> {
   configureI18n()
 
-  const ipcMain = (window as any).electron as IPCMainExposed
+  const ipcMain = ipcMainExposed()
   const config: Config = await ipcMain.config()
   const myBranding: Branding = await ipcMain.branding()
   // await (await fetch(devConfig? '/config-dev.json' : '/config.json')).json()
@@ -251,6 +267,13 @@ export async function configurePlatform (): Promise<void> {
   console.log('loaded branding', myBranding)
 
   const title = myBranding.title ?? 'Huly Desktop'
+  const windowTitle = document.getElementById('application-title-bar-caption')
+  if (windowTitle != null) {
+    console.info('Window title is here')
+    windowTitle.textContent = title
+  } else {
+    console.info('Window title is null :(')
+  }
   ipcMain.setTitle(title)
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
@@ -439,4 +462,6 @@ export async function configurePlatform (): Promise<void> {
   }
 
   console.log('Initial location is: ', getCurrentLocation())
+
+  return new PlatformParameters(new PlatformBranding(title))
 }

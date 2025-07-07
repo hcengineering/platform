@@ -24,7 +24,7 @@ import * as path from 'path'
 
 import { Config, NotificationParams } from '../ui/types'
 import { getOptions } from './args'
-import { addMenus } from './menu'
+import { addMenus } from './standardMenu'
 import { addPermissionHandlers } from './permissions'
 import autoUpdater from './updater'
 
@@ -37,6 +37,7 @@ const isDev = process.env.NODE_ENV === 'development'
 
 const sessionPartition = !isDev ? 'persist:huly' : 'persist:huly_dev'
 const iconKey = path.join(app.getAppPath(), 'dist', 'ui', 'public', 'AppIcon.png')
+const preloadScriptPath = path.join(app.getAppPath(), 'dist', 'main', 'preload.js')
 
 const defaultWidth = 1440
 const defaultHeight = 960
@@ -47,6 +48,9 @@ dotenvConfig({
   path: envPath
 })
 const options = getOptions()
+
+const containerPageFileName = isWindows ? 'index.windows.html' : 'index.html'
+const containerPagePath = path.join('dist', 'ui', containerPageFileName)
 
 // Note: using electron-store here as local storage is not available in the main process
 // before the window is created
@@ -85,6 +89,15 @@ const disabledFeatures = [
 
 app.commandLine.appendSwitch('disable-features', disabledFeatures.join(','))
 
+function setupWindowTitleBar(windowOptions: Electron.BrowserWindowConstructorOptions): void {
+ if (isWindows) {
+    // on Windows we use frameless window with custom hand-made title bar
+    windowOptions.frame = false
+  } else {
+    windowOptions.titleBarStyle = isMac ? 'hidden' : 'default'
+  }
+}
+
 function hookOpenWindow (window: BrowserWindow): void {
   window.webContents.setWindowOpenHandler(({ url }) => {
     console.log('opening window', url)
@@ -102,12 +115,11 @@ function hookOpenWindow (window: BrowserWindow): void {
     } else {
       void (async (): Promise<void> => {
         const bounds = mainWindow?.getBounds()
-        const childWindow = new BrowserWindow({
+        const windowOptions: Electron.BrowserWindowConstructorOptions = {
           width: bounds?.width ?? defaultWidth,
           height: bounds?.height ?? defaultHeight,
           x: (bounds?.x ?? 0) + 25,
           y: (bounds?.y ?? 0) + 25,
-          titleBarStyle: isMac ? 'hidden' : 'default',
           trafficLightPosition: { x: 10, y: 10 },
           icon: nativeImage.createFromPath(iconKey),
           webPreferences: {
@@ -115,7 +127,7 @@ function hookOpenWindow (window: BrowserWindow): void {
             sandbox: false,
             partition: sessionPartition,
             nodeIntegration: true,
-            preload: path.join(app.getAppPath(), 'dist', 'main', 'preload.js'),
+            preload: preloadScriptPath,
             additionalArguments: [
               `--open=${encodeURI(
                 new URL(url).pathname
@@ -125,8 +137,10 @@ function hookOpenWindow (window: BrowserWindow): void {
               )}`
             ]
           }
-        })
-        await childWindow.loadFile(path.join('dist', 'ui', 'index.html'))
+        }
+        setupWindowTitleBar(windowOptions)
+        const childWindow = new BrowserWindow(windowOptions)
+        await childWindow.loadFile(containerPagePath)
         hookOpenWindow(childWindow)
       })()
     }
@@ -175,7 +189,7 @@ function handleAuthRedirects (window: BrowserWindow): void {
       event.preventDefault()
 
       void (async (): Promise<void> => {
-        await window.loadFile(path.join('dist', 'ui', 'index.html'))
+        await window.loadFile(containerPagePath)
         window.webContents.send('handle-auth', urlObj.searchParams.get('token'))
       })()
     }
@@ -185,12 +199,11 @@ function handleAuthRedirects (window: BrowserWindow): void {
 const createWindow = async (): Promise<void> => {
   // Restore window position if available
   const restoredBounds: any = settings.get('windowBounds')
-  mainWindow = new BrowserWindow({
+  const windowOptions: Electron.BrowserWindowConstructorOptions = {
     width: restoredBounds?.width ?? defaultWidth,
     height: restoredBounds?.height ?? defaultHeight,
     x: restoredBounds?.x ?? undefined,
     y: restoredBounds?.y ?? undefined,
-    titleBarStyle: isMac ? 'hidden' : 'default',
     trafficLightPosition: { x: 10, y: 10 },
     roundedCorners: true,
     icon: nativeImage.createFromPath(iconKey),
@@ -200,15 +213,17 @@ const createWindow = async (): Promise<void> => {
       nodeIntegration: true,
       // backgroundThrottling: false,
       partition: sessionPartition,
-      preload: path.join(app.getAppPath(), 'dist', 'main', 'preload.js')
+      preload: preloadScriptPath
     }
-  })
+  }
+  setupWindowTitleBar(windowOptions)
+  mainWindow = new BrowserWindow(windowOptions)
   app.dock?.setIcon(nativeImage.createFromPath(iconKey))
   // await mainWindow.webContents.openDevTools()
   if (isDev) {
     mainWindow.webContents.openDevTools()
   }
-  await mainWindow.loadFile(path.join('dist', 'ui', 'index.html'))
+  await mainWindow.loadFile(containerPagePath)
   addPermissionHandlers(mainWindow.webContents.session)
   handleAuthRedirects(mainWindow)
 
@@ -224,6 +239,14 @@ const createWindow = async (): Promise<void> => {
     }
   })
 
+  mainWindow.on('maximize', () => {
+    mainWindow?.webContents.send('window-state-changed', 'maximized');
+  });
+
+  mainWindow.on('unmaximize', () => {
+    mainWindow?.webContents.send('window-state-changed', 'unmaximized');
+  });
+
   if (isMac) {
     mainWindow.on('close', (event) => {
       // Prevent the default behavior (which would quit the app)
@@ -238,9 +261,11 @@ const createWindow = async (): Promise<void> => {
   }
 }
 
-addMenus(() => mainWindow as BrowserWindow, (cmd: string, ...args: any[]) => {
-  mainWindow?.webContents.send(cmd, ...args)
-})
+if (false == isWindows) {
+  addMenus((cmd: string, ...args: any[]) => {
+    mainWindow?.webContents.send(cmd, ...args)
+  })
+}
 
 contextMenu({
   showSaveImageAs: false,
@@ -276,8 +301,8 @@ ipcMain.on('send-notification', (event, notificationParams: NotificationParams) 
 
 ipcMain.on('set-title', (event, title) => {
   const webContents = event.sender
-  const win = BrowserWindow.fromWebContents(webContents)
-  win?.setTitle(title)
+  const window = BrowserWindow.fromWebContents(webContents)
+  window?.setTitle(title)
 })
 
 ipcMain.on('set-combined-config', (event, config: Config) => {
@@ -325,6 +350,24 @@ ipcMain.on('set-front-cookie', function (event, host: string, name: string, valu
   }
   void win?.webContents?.session.cookies.set(cv)
 })
+
+ipcMain.handle('window-minimize', () => {
+  mainWindow?.minimize();
+});
+
+ipcMain.handle('window-maximize', () => {
+  if (mainWindow) {
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow.maximize();
+    }
+  }
+});
+
+ipcMain.handle('window-close', () => {
+  mainWindow?.close();
+});
 
 const gotTheLock = app.requestSingleInstanceLock()
 
@@ -413,8 +456,9 @@ autoUpdater.on('download-progress', (progressObj: ProgressInfo) => {
 })
 
 function setDownloadProgress (percent: number): void {
-  if (mainWindow === undefined) return
-
+  if (mainWindow === undefined) {
+    return
+  }
   mainWindow.setProgressBar(percent / 100)
   mainWindow.webContents.send('handle-update-download-progress', percent)
 }
