@@ -59,16 +59,23 @@
   export let selectableStates: Status[] = []
   export let readonly: boolean = true
 
-  $: _taskType = $taskTypeStore.get(taskType._id) as TaskType
-  $: _type = $typeStore.get(type._id) as ProjectType
-
   value = status?.name ?? valuePattern ?? ''
 
   const client = getClient()
 
-  let description: string | undefined = status?.description
+  let description: string | undefined
 
+  $: _taskType = $taskTypeStore.get(taskType._id) as TaskType
+  $: _typeId = type._id
+  $: _type = $typeStore.get(_typeId) as ProjectType
+  $: projectStatus = _type.statuses.find((s) => s._id === status?._id)
+  $: finalColor = projectStatus?.color ?? status?.color
+  $: finalDescription = projectStatus?.description ?? status?.description
   $: allowEditCategory = status === undefined
+
+  $: if (_typeId !== undefined) {
+    description = finalDescription
+  }
 
   let total: number = 0
 
@@ -91,8 +98,8 @@
   $: needUpdate =
     (status === undefined ||
       status.name.trim() !== value.trim() ||
-      description !== status?.description ||
-      color !== status.color) &&
+      description !== finalDescription ||
+      color !== finalColor) &&
     value.trim() !== '' &&
     !selectableStates.some((it) => it.name === value)
 
@@ -164,6 +171,7 @@
         if (status._id === _id) {
           status.color = color
           status.icon = icon as any // Fix me
+          status.description = description
           found = true
         }
       }
