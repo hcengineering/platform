@@ -16,7 +16,7 @@
 <script lang="ts">
   /* eslint-disable @typescript-eslint/no-unused-vars */
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Ref, SocialIdType, getCurrentAccount } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
@@ -104,14 +104,17 @@
     (res) => {
       allIntegrations = res.filter((p) => !p.disabled && p.value !== '')
       const account = getCurrentAccount()
-      const socialIds = getCurrentAccount().socialIds
+      const emailSocialIds = getCurrentAccount()
+        .fullSocialIds.filter((s) => s.type === SocialIdType.EMAIL && s.value !== '')
+        .map((s) => s._id)
       const isAvailable = (p: Integration): boolean => {
-        const isOwner = p.createdBy !== undefined && socialIds.includes(p.createdBy)
+        const isOwner = p.createdBy !== undefined && emailSocialIds.includes(p.createdBy)
         const shared = p.shared?.includes(account.uuid) ?? false
         return isOwner || shared
       }
       integrations = allIntegrations.filter(isAvailable)
-      selectedIntegration = integrations.find((p) => p.createdBy === account.primarySocialId) ?? integrations[0]
+      selectedIntegration =
+        integrations.find((p) => p.createdBy !== undefined && emailSocialIds.includes(p.createdBy)) ?? integrations[0]
     }
   )
 
