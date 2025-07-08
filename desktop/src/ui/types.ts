@@ -1,3 +1,4 @@
+import { DownloadItem } from '@hcengineering/desktop-downloads'
 import { ScreenSource } from '@hcengineering/love'
 import { Plugin } from '@hcengineering/platform'
 
@@ -97,6 +98,7 @@ export interface IPCMainExposed {
   getScreenAccess: () => Promise<boolean>
   getScreenSources: () => Promise<ScreenSource[]>
   handleAuth: (callback: (token: string) => void) => void
+  handleDownloadItem: (callback: (item: DownloadItem) => void) => void
 
   cancelBackup: () => void
   startBackup: (token: string, endpoint: string, workspace: string) => void
