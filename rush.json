@@ -2139,6 +2139,26 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/desktop-downloads",
+      "projectFolder": "plugins/desktop-downloads",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/desktop-downloads-assets",
+      "projectFolder": "plugins/desktop-downloads-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/desktop-downloads-resources",
+      "projectFolder": "plugins/desktop-downloads-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-desktop-downloads",
+      "projectFolder": "models/desktop-downloads",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-notification",
       "projectFolder": "services/notification/pod-notification",
       "shouldPublish": false

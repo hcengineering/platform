@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Downloads": "Stahování",
+    "Completed": "Dokončeno",
+    "Cancelled": "Zrušeno",
+    "Interrupted": "Přerušeno",
+    "Paused": "Pozastaveno",
+    "Progressing": "Probíhá"
+  }
+}
