@@ -493,27 +493,27 @@ services:
       - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
       - WORKSPACE_STORAGE=${STORAGE_CONFIG}
     restart: unless-stopped
-  # backup-api:
-  #   image: hardcoreeng/backup-api
-  #   extra_hosts:
-  #     - 'huly.local:host-gateway'
-  #   depends_on:
-  #     minio:
-  #       condition: service_healthy
-  #     stats:
-  #       condition: service_started
-  #     account:
-  #       condition: service_started
-  #   ports:
-  #     - 4039:4039
-  #   environment:
-  #     - PORT=4039
-  #     - SECRET=secret
-  #     - ACCOUNTS_URL=http://huly.local:3000
-  #     - STATS_URL=http://huly.local:4900
-  #     - BUCKET_NAME=backups
-  #     - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
-  #   restart: unless-stopped
+  backup-api:
+    image: hardcoreeng/backup-api
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      minio:
+        condition: service_healthy
+      stats:
+        condition: service_started
+      account:
+        condition: service_started
+    ports:
+      - 4039:4039
+    environment:
+      - PORT=4039
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - STATS_URL=http://huly.local:4900
+      - BUCKET_NAME=backups
+      - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
+    restart: unless-stopped
 volumes:
   db:
   dbpg:

@@ -146,7 +146,7 @@ export async function backup (
       backupSize: 0
     }
 
-    let blobInfo: Record<string, [string, number]> = {}
+    const blobInfo: Record<string, [string, number]> = {}
 
     // Version 0.6.2, format of digest file is changed to
 
@@ -161,10 +161,6 @@ export async function backup (
 
     if (backupInfo.migrations == null) {
       backupInfo.migrations = {}
-    }
-
-    if (await storage.exists(blobInfoFile)) {
-      blobInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(blobInfoFile))).toString())
     }
 
     // Apply verification to backup, since we know it should have broken blobs
@@ -903,11 +899,12 @@ export async function backup (
       backupInfo.backupSize = result.backupSize
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
 
-      await rebuildSizeInfo(storage, recheckSizes, ctx, result, backupInfo, infoFile)
+      await storage.writeFile(blobInfoFile, gzipSync(JSON.stringify(blobInfo), { level: defaultLevel }))
+
+      await rebuildSizeInfo(storage, recheckSizes, ctx, result, backupInfo, infoFile, blobInfoFile)
 
       // Same one more time with recalculated sizes
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
-      await storage.writeFile(blobInfoFile, gzipSync(JSON.stringify(blobInfo), { level: defaultLevel }))
     }
 
     return result

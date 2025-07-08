@@ -349,6 +349,7 @@ export async function compactBackup (
     // Version 0.6.2, format of digest file is changed to
 
     const infoFile = 'backup.json.gz'
+    const blobInfoFile = 'blob-info.json.gz'
 
     if (await storage.exists(infoFile)) {
       backupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
@@ -809,7 +810,7 @@ export async function compactBackup (
       backupSize: 0
     }
     if (recalculateDigest) {
-      await rebuildSizeInfo(storage, [], ctx, result, backupInfo, infoFile)
+      await rebuildSizeInfo(storage, [], ctx, result, backupInfo, infoFile, blobInfoFile)
     }
   } catch (err: any) {
     ctx.error(err, { ...(opt?.msg ?? {}) })
@@ -850,6 +851,7 @@ export async function checkBackupIntegrity (
     // Version 0.6.2, format of digest file is changed to
 
     const infoFile = 'backup.json.gz'
+    const blobInfoFile = 'blob-info.json.gz'
 
     if (await storage.exists(infoFile)) {
       backupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
@@ -899,7 +901,7 @@ export async function checkBackupIntegrity (
       dataSize: 0,
       result: true
     }
-    await rebuildSizeInfo(storage, recheckSizes, ctx, bresult, backupInfo, infoFile)
+    await rebuildSizeInfo(storage, recheckSizes, ctx, bresult, backupInfo, infoFile, blobInfoFile)
   } catch (err: any) {
     ctx.error(err, { ...(msg ?? {}) })
   } finally {
@@ -1355,7 +1357,8 @@ export async function rebuildSizeInfo (
   ctx: MeasureContext<any>,
   result: BackupResult,
   backupInfo: BackupInfo,
-  infoFile: string
+  infoFile: string,
+  blobInfoFile: string
 ): Promise<void> {
   const sizeFile = 'backup.size.gz'
 
@@ -1371,11 +1374,11 @@ export async function rebuildSizeInfo (
     delete sizeInfo[file]
   }
 
-  const addFileSize = async (file: string | undefined | null): Promise<void> => {
+  const addFileSize = async (file: string | undefined | null, force: boolean = false): Promise<void> => {
     if (file != null) {
       try {
         const sz = sizeInfo[file]
-        const fileSize = sz ?? (await storage.stat(file))
+        const fileSize = force ? await storage.stat(file) : sz ?? (await storage.stat(file))
         if (sz === undefined) {
           sizeInfo[file] = fileSize
           processed++
@@ -1402,7 +1405,8 @@ export async function rebuildSizeInfo (
       }
     }
   }
-  await addFileSize(infoFile)
+  await addFileSize(infoFile, true)
+  await addFileSize(blobInfoFile, true)
 
   await storage.writeFile(sizeFile, gzipSync(JSON.stringify(sizeInfo, undefined, 2), { level: defaultLevel }))
 }
