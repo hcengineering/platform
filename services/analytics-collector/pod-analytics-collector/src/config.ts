@@ -19,9 +19,9 @@ export interface Config {
   Secret: string
   ServiceID: string
   AccountsUrl: string
+  PostHogHost: string
+  PostHogAPI: string
   SentryDSN?: string
-  PostHogAPI?: string
-  PostHogHost?: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -33,9 +33,9 @@ const config: Config = (() => {
     Secret: process.env.SECRET,
     ServiceID: process.env.SERVICE_ID ?? 'analytics-collector-service',
     AccountsUrl: process.env.ACCOUNTS_URL,
-    SentryDSN: process.env.SENTRY_DSN ?? '',
-    PostHogAPI: process.env.POSTHOG_API_KEY ?? '',
-    PostHogHost: process.env.POSTHOG_HOST ?? ''
+    PostHogHost: process.env.POSTHOG_HOST,
+    PostHogAPI: process.env.POSTHOG_API_KEY,
+    SentryDSN: process.env.SENTRY_DSN ?? ''
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

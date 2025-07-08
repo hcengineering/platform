@@ -26,11 +26,3 @@ export interface AnalyticsConfig {
 export interface QueuedEvent extends AnalyticEvent {
   retryCount?: number
 }
-
-// export interface QueuedEvent {
-//   event: string
-//   properties: Record<string, any>
-//   timestamp: number
-//   distinct_id: string
-//   retryCount?: number
-// }

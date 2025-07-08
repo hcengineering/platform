@@ -24,38 +24,6 @@ import { ApiError } from './error'
 
 type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
 
-function isValidKey (key: string): boolean {
-  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key)) {
-    return false
-  }
-  if (/^\d+$/.test(key)) {
-    return false
-  }
-  const errorFields = [
-    'error',
-    'message',
-    '$error',
-    '$message',
-    'error_message',
-    'exception',
-    '$exception',
-    'stack',
-    'stackTrace',
-    'error_stack'
-  ]
-  return !errorFields.includes(key)
-}
-
-function filterProperties (properties: Record<string, any>): Record<string, any> {
-  const filtered: Record<string, any> = {}
-  for (const [key, value] of Object.entries(properties)) {
-    if (isValidKey(key)) {
-      filtered[key] = value
-    }
-  }
-  return filtered
-}
-
 const handleRequest = async (
   fn: AsyncRequestHandler,
   req: Request,
@@ -155,7 +123,7 @@ function preparePostHogEvent (event: AnalyticEvent, req: Request): Record<string
     }
   }
 
-  const baseEvent: Record<string, any> = filterProperties(event.properties)
+  const baseEvent: Record<string, any> = event.properties
   const recordsByType = getRecordsByType(event)
   for (const [key, value] of Object.entries(recordsByType)) {
     baseEvent[key] = value
@@ -181,8 +149,6 @@ function preparePostHogEvent (event: AnalyticEvent, req: Request): Record<string
       aliasEvent.properties.$original_event_type = aliasEvent.properties.event
       delete aliasEvent.properties.event
     }
-    const cleanedAliasProperties = filterProperties(aliasEvent.properties)
-    aliasEvent.properties = cleanedAliasProperties
 
     return aliasEvent
   }
@@ -231,7 +197,6 @@ function preparePostHogEvent (event: AnalyticEvent, req: Request): Record<string
     regularEventForPostHog.properties.$original_event_type = regularEventForPostHog.properties.event
     delete regularEventForPostHog.properties.event
   }
-  regularEventForPostHog.properties = filterProperties(regularEventForPostHog.properties)
 
   if (
     typeof event.properties.$anonymous_id === 'string' &&

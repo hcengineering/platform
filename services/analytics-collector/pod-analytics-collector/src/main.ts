@@ -16,14 +16,13 @@
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import serverClient from '@hcengineering/server-client'
-import { registerLoaders } from './loaders'
 
 import { Analytics } from '@hcengineering/analytics'
 import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
 import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { join } from 'path'
 
-import config, { Config } from './config'
+import config from './config'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import { createServer, listen } from './server'
 
@@ -45,13 +44,6 @@ configureAnalytics(config.SentryDSN, config)
 Analytics.setTag('application', 'analytics-collector-service')
 
 export const main = async (): Promise<void> => {
-  const requiredKeys: Array<keyof Config> = ['PostHogAPI', 'PostHogHost']
-  const wrongConfig = requiredKeys.some((key) => config[key] == null || config[key] === '')
-  if (wrongConfig) {
-    ctx.error('Invalid config, specify PostHogAPI and PostHogHost')
-    process.exit()
-  }
-
   setMetadata(serverToken.metadata.Secret, config.Secret)
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
@@ -59,8 +51,6 @@ export const main = async (): Promise<void> => {
   ctx.info('Analytics service started', {
     accountsUrl: config.AccountsUrl
   })
-
-  registerLoaders()
 
   const app = createServer()
   const server = listen(app, config.Port)
