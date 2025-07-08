@@ -43,7 +43,11 @@ import {
   TypeRef,
   TypeString,
   UX,
-  type Builder
+  type Builder,
+  TypeDate,
+  Hidden,
+  Index,
+  TypeMarkup
 } from '@hcengineering/model'
 import { TEvent } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TClass, TDoc, TType } from '@hcengineering/model-core'
@@ -102,6 +106,7 @@ export class TToDo extends TAttachedDoc implements ToDo {
     dueDate?: number | null | undefined
 
   @Prop(TypeToDoPriority(), time.string.Priority)
+  @Index(IndexKind.Indexed)
     priority!: ToDoPriority
 
   visibility!: Visibility
@@ -110,14 +115,17 @@ export class TToDo extends TAttachedDoc implements ToDo {
     attachedSpace?: Ref<Space> | undefined
 
   @Prop(TypeString(), calendarPlugin.string.Title)
+  @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeString(), calendarPlugin.string.Description)
+  @Prop(TypeMarkup(), calendarPlugin.string.Description)
+  @Index(IndexKind.FullText)
     description!: Markup
 
   doneOn?: Timestamp | null
 
   @Prop(TypeRef(contactPlugin.mixin.Employee), contactPlugin.string.Employee)
+  @Index(IndexKind.Indexed)
     user!: Ref<Employee>
 
   @Prop(Collection(time.class.WorkSlot, time.string.WorkSlot), time.string.WorkSlot)

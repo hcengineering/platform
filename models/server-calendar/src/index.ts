@@ -33,6 +33,10 @@ export function createModel (builder: Builder): void {
     presenter: serverCalendar.function.ReminderTextPresenter
   })
 
+  builder.mixin(calendar.class.Event, core.class.Class, serverCore.mixin.SearchPresenter, {
+    title: [['title']]
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverCalendar.trigger.OnEmployee,
     txMatch: {
