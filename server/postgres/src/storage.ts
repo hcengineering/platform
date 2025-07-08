@@ -945,7 +945,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
     joins: JoinProps[]
   ): string {
     const res: string[] = []
-    for (const key in sort) {
+    for (const _key in sort) {
+      const key = escape(_key)
       const val = sort[key]
       if (val === undefined) {
         continue
