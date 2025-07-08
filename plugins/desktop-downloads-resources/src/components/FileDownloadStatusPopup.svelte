@@ -42,7 +42,7 @@
   <Scroller>
     <div class="upload-popup__content flex-col flex-no-shrink flex-gap-4">
       {#each $downloads as item}
-        {@const progress = item.totalBytes > 0 ? Math.ceil(item.receivedBytes / item.totalBytes * 100) : 0}
+        {@const progress = item.totalBytes > 0 ? Math.ceil((item.receivedBytes / item.totalBytes) * 100) : 0}
         <div class="upload-file-row flex-row-center justify-start flex-gap-4">
           <div class="upload-file-row__status w-4">
             {#if item.state === 'completed'}
@@ -53,7 +53,9 @@
           </div>
 
           <div class="upload-file-row__content flex-col flex-gap-1">
-            <div class="label overflow-label font-medium-14" use:tooltip={{ label: getEmbeddedLabel(item.fileName) }}>{item.fileName}</div>
+            <div class="label overflow-label font-medium-14" use:tooltip={{ label: getEmbeddedLabel(item.fileName) }}>
+              {item.fileName}
+            </div>
             <div class="flex-row-center flex-gap-2 text-sm">
               <span>{humanReadableFileSize(item.receivedBytes)}</span>
               {#if item.totalBytes > 0 && item.totalBytes !== item.receivedBytes}

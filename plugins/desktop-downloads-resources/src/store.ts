@@ -19,30 +19,24 @@ import { derived, writable } from 'svelte/store'
 const downloadsByKey = writable(new Map<string, DownloadItem>())
 
 /** @public */
-export const downloads = derived(
-  downloadsByKey,
-  $downloadsByKey => Array.from($downloadsByKey.values())
-)
+export const downloads = derived(downloadsByKey, ($downloadsByKey) => Array.from($downloadsByKey.values()))
 
 /** @public */
-export const progress = derived(
-  downloads,
-  $downloads => {
-    const items = $downloads
-      .filter((p) => p.state === 'progressing' || p.state === 'paused')
-      .filter((p) => p.totalBytes > 0 && p.receivedBytes < p.totalBytes)
+export const progress = derived(downloads, ($downloads) => {
+  const items = $downloads
+    .filter((p) => p.state === 'progressing' || p.state === 'paused')
+    .filter((p) => p.totalBytes > 0 && p.receivedBytes < p.totalBytes)
 
-    const totalReceivedBytes = items.reduce((sum, item) => sum + item.receivedBytes, 0)
-    const totalBytes = items.reduce((sum, item) => sum + item.totalBytes, 0)
+  const totalReceivedBytes = items.reduce((sum, item) => sum + item.receivedBytes, 0)
+  const totalBytes = items.reduce((sum, item) => sum + item.totalBytes, 0)
 
-    if (totalBytes === 0) {
-      return 0
-    }
-
-    const percentage = (totalReceivedBytes / totalBytes) * 100
-    return Math.min(100, Math.max(0, percentage))
+  if (totalBytes === 0) {
+    return 0
   }
-)
+
+  const percentage = (totalReceivedBytes / totalBytes) * 100
+  return Math.min(100, Math.max(0, percentage))
+})
 
 /** @public */
 export function updateDownloadItem (item: DownloadItem): void {

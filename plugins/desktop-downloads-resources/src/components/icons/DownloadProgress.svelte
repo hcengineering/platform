@@ -22,22 +22,9 @@
   $: strokeDashoffset = circumference * (1 - progress / 100)
 </script>
 
-<svg 
-  class="svg-{size}"
-  {fill}
-  viewBox="0 0 24 24"
-  xmlns="http://www.w3.org/2000/svg"
->
+<svg class="svg-{size}" {fill} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
   <!-- Background circle (optional, for visual reference) -->
-  <circle
-    cx="12"
-    cy="12"
-    r="10"
-    fill="none"
-    stroke={fill}
-    stroke-width="2.5"
-    opacity="0.2"
-  />
+  <circle cx="12" cy="12" r="10" fill="none" stroke={fill} stroke-width="2.5" opacity="0.2" />
 
   <!-- Progress circle -->
   <circle
@@ -57,12 +44,7 @@
   <!-- Download arrow icon -->
   <g transform="translate(12, 12)">
     <!-- Vertical line -->
-    <path
-      d="M 0 -5 L 0 3"
-      stroke={fill}
-      stroke-width="2"
-      stroke-linecap="round"
-    />
+    <path d="M 0 -5 L 0 3" stroke={fill} stroke-width="2" stroke-linecap="round" />
 
     <!-- Arrow head (chevron style) -->
     <path

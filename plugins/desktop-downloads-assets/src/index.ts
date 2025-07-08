@@ -17,4 +17,4 @@ import { loadMetadata } from '@hcengineering/platform'
 import desktopDownloads from '@hcengineering/desktop-downloads'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
-// loadMetadata(desktopDownloads.icon, {})
+loadMetadata(desktopDownloads.icon, {})
