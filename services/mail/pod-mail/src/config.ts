@@ -19,7 +19,7 @@ dotenvConfig()
 export interface Config {
   port: number
   source?: string
-  replyTo?: string,
+  replyTo?: string
   sesConfig?: SesConfig
   smtpConfig?: SmtpConfig
 }

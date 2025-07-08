@@ -11,6 +11,8 @@ Environment variables should be set to configure the Mail Service:
 - `PORT`: The port on which the mail service listens for incoming HTTP requests.
 - `API_KEY`: An API key that clients must pass. The parameter is optional, should be provided when external access to the service is allowed.
 - `SENTRY_DSN`: (optional) The Data Source Name for Sentry error tracking. This is optional and should be set if you wish to enable error tracking with Sentry.
+- `SOURCE`: The sender source (fallback for when emails emit from the system).
+- `REPLY_TO`: (optional) Email to use for replies (useful for uni-directional STMP setups where emails are only emitted, but not received).
 
 Settings for SMTP or SES email service should be specified, simultaneous use of both protocols is not supported
 
