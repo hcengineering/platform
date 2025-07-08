@@ -841,15 +841,15 @@ abstract class PostgresAdapterBase implements DbAdapter {
   ): void {
     const baseDomain = parentAlias ?? translateDomain(this.hierarchy.getDomain(clazz))
     for (const _key in lookup) {
-      const key = escape(_key)
-      if (key === '_id') {
+      if (_key === '_id') {
         this.getReverseLookupValue(baseDomain, lookup, res, parentKey)
         continue
       }
-      const value = (lookup as any)[key]
+      const value = (lookup as any)[_key]
       const _class = Array.isArray(value) ? value[0] : value
       const nested = Array.isArray(value) ? value[1] : undefined
       const domain = translateDomain(this.hierarchy.getDomain(_class))
+      const key = escape(_key)
       if (this.isArrayLookup(clazz, key)) {
         this.getArrayLookup(baseDomain, key, _class, res, domain, parentKey)
         continue
@@ -946,13 +946,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
   ): string {
     const res: string[] = []
     for (const _key in sort) {
-      const key = escape(_key)
-      const val = sort[key]
+      const val = sort[_key]
       if (val === undefined) {
         continue
       }
       if (typeof val === 'number') {
-        const attr = this.hierarchy.findAttribute(_class, key)
+        const attr = this.hierarchy.findAttribute(_class, _key)
+        const key = escape(_key)
         if (attr !== undefined && NumericTypes.includes(attr.type._class)) {
           res.push(`(${this.getKey(_class, baseDomain, key, joins)})::numeric ${val === 1 ? 'ASC' : 'DESC'}`)
         } else {
@@ -984,15 +984,15 @@ abstract class PostgresAdapterBase implements DbAdapter {
       query._class = this.fillClass(_class, query) as any
     }
     for (const _key in query) {
-      const key = escape(_key)
-      if (options?.skipSpace === true && key === 'space') {
+      if (options?.skipSpace === true && _key === 'space') {
         continue
       }
-      if (options?.skipClass === true && key === '_class') {
+      if (options?.skipClass === true && _key === '_class') {
         continue
       }
-      const value = query[key]
+      const value = query[_key]
       if (value === undefined) continue
+      const key = escape(_key)
       const valueType = this.getValueType(_class, key)
       const tkey = this.getKey(_class, baseDomain, key, joins, valueType === 'dataArray')
       const translated = this.translateQueryValue(vars, tkey, value, valueType)
