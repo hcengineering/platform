@@ -44,9 +44,6 @@ import {
   TypeString,
   UX,
   type Builder,
-  TypeDate,
-  Hidden,
-  Index,
   TypeMarkup
 } from '@hcengineering/model'
 import { TEvent } from '@hcengineering/model-calendar'
