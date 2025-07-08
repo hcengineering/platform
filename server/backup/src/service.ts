@@ -85,75 +85,79 @@ class BackupWorker {
   }
 
   recheckWorkspaces = reduceCalls(async (ctx: MeasureContext) => {
-    const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
-    const now = Date.now()
-    const allWorkspaces = await this.getWorkspacesList()
+    try {
+      const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
+      const now = Date.now()
+      const allWorkspaces = await this.getWorkspacesList()
 
-    let skipped = 0
-    const workspaces = allWorkspaces.filter((it) => {
-      if (this.workspacesToBackup.has(it.uuid) || this.activeWorkspaces.has(it.uuid)) {
-        // We already had ws in set
-        return false
+      let skipped = 0
+      const workspaces = allWorkspaces.filter((it) => {
+        if (this.workspacesToBackup.has(it.uuid) || this.activeWorkspaces.has(it.uuid)) {
+          // We already had ws in set
+          return false
+        }
+        if (!isActiveMode(it.mode)) {
+          // We should backup only active workspaces
+          skipped++
+          return false
+        }
+
+        const createdOn = Math.floor((now - it.createdOn) / 1000)
+        if (createdOn <= 2) {
+          // Skip if we created is less 2 days
+          return false
+        }
+
+        const lastBackup = it.backupInfo?.lastBackup ?? 0
+        if ((now - lastBackup) / 1000 < this.config.Interval && this.config.Interval !== 0) {
+          // No backup required, interval not elapsed
+          skipped++
+          return false
+        }
+
+        if (it.lastVisit == null) {
+          skipped++
+          return false
+        }
+
+        const lastVisitSec = Math.floor((now - it.lastVisit) / 1000)
+        if (lastVisitSec > this.config.Interval) {
+          // No backup required, interval not elapsed
+          skipped++
+          return false
+        }
+        return !workspacesIgnore.has(it.uuid)
+      })
+
+      workspaces.sort((a, b) => {
+        return (a.backupInfo?.lastBackup ?? 0) - (b.backupInfo?.lastBackup ?? 0)
+      })
+
+      // Shift new with existing ones.
+      const existingNew = groupByArray(workspaces, (it) => it.backupInfo != null)
+
+      const existing = existingNew.get(true) ?? []
+      const newOnes = existingNew.get(false) ?? []
+      const mixedBackupSorting: WorkspaceInfoWithStatus[] = []
+
+      while (existing.length > 0 || newOnes.length > 0) {
+        const e = existing.shift()
+        const n = newOnes.shift()
+        if (e != null) {
+          mixedBackupSorting.push(e)
+        }
+        if (n != null) {
+          mixedBackupSorting.push(n)
+        }
       }
-      if (!isActiveMode(it.mode)) {
-        // We should backup only active workspaces
-        skipped++
-        return false
+
+      for (const ws of mixedBackupSorting) {
+        this.workspacesToBackup.set(ws.uuid, ws)
       }
-
-      const createdOn = Math.floor((now - it.createdOn) / 1000)
-      if (createdOn <= 2) {
-        // Skip if we created is less 2 days
-        return false
-      }
-
-      const lastBackup = it.backupInfo?.lastBackup ?? 0
-      if ((now - lastBackup) / 1000 < this.config.Interval && this.config.Interval !== 0) {
-        // No backup required, interval not elapsed
-        skipped++
-        return false
-      }
-
-      if (it.lastVisit == null) {
-        skipped++
-        return false
-      }
-
-      const lastVisitSec = Math.floor((now - it.lastVisit) / 1000)
-      if (lastVisitSec > this.config.Interval) {
-        // No backup required, interval not elapsed
-        skipped++
-        return false
-      }
-      return !workspacesIgnore.has(it.uuid)
-    })
-
-    workspaces.sort((a, b) => {
-      return (a.backupInfo?.lastBackup ?? 0) - (b.backupInfo?.lastBackup ?? 0)
-    })
-
-    // Shift new with existing ones.
-    const existingNew = groupByArray(workspaces, (it) => it.backupInfo != null)
-
-    const existing = existingNew.get(true) ?? []
-    const newOnes = existingNew.get(false) ?? []
-    const mixedBackupSorting: WorkspaceInfoWithStatus[] = []
-
-    while (existing.length > 0 || newOnes.length > 0) {
-      const e = existing.shift()
-      const n = newOnes.shift()
-      if (e != null) {
-        mixedBackupSorting.push(e)
-      }
-      if (n != null) {
-        mixedBackupSorting.push(n)
-      }
+      ctx.info('skipped workspaces', { skipped, workspaces: this.workspacesToBackup.size, workspacesIgnore })
+    } catch (err: any) {
+      ctx.error('Error in recheckWorkspaces', { error: err })
     }
-
-    for (const ws of mixedBackupSorting) {
-      this.workspacesToBackup.set(ws.uuid, ws)
-    }
-    ctx.info('skipped workspaces', { skipped, workspaces: this.workspacesToBackup.size, workspacesIgnore })
   })
 
   async schedule (ctx: MeasureContext): Promise<void> {
