@@ -251,7 +251,7 @@ async function migrateCollaborators (client: MigrationClient): Promise<void> {
     if ([DOMAIN_TX, DOMAIN_TRANSIENT].includes(domain)) continue
     client.logger.log('processing domain ', { domain })
     let processed = 0
-    const iterator = await client.traverse(domain, {})
+    const iterator = await client.traverse(domain, { 'notification:mixin:Collaborators': { $exists: true } })
 
     try {
       while (true) {
