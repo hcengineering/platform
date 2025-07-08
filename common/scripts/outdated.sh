@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Get the absolute path for the base directory
 BASE_DIR=$(pwd)
