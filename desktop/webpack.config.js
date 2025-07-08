@@ -148,7 +148,8 @@ module.exports = [
     output: {
       path: path.join(__dirname, '/dist/ui/'),
       filename: 'bundle.js',
-      publicPath: '',
+      chunkFilename: '[name].js',
+      publicPath: './',
       chunkFormat: false,
       clean: true
     },

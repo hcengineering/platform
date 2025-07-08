@@ -3,7 +3,6 @@ import love from '@hcengineering/love'
 import { setCustomCreateScreenTracks } from '@hcengineering/love-resources'
 import { showPopup } from '@hcengineering/ui'
 import { Track, LocalTrack, LocalAudioTrack, LocalVideoTrack, ParticipantEvent, TrackInvalidError, ScreenShareCaptureOptions, DeviceUnsupportedError, ScreenSharePresets } from 'livekit-client'
-
 import { IPCMainExposed } from './types'
 
 export function defineGetDisplayMedia (): void {
@@ -31,6 +30,8 @@ export function defineGetDisplayMedia (): void {
     }
 
     return await new Promise<MediaStream>((resolve, reject) => {
+      let wasSelected = false
+
       showPopup(
         love.component.SelectScreenSourcePopup,
         {
@@ -38,10 +39,13 @@ export function defineGetDisplayMedia (): void {
         },
         'top',
         () => {
-          reject(new Error('No source selected'))
+          if (!wasSelected) {
+            reject(new Error('No source selected'))
+          }
         },
         (val) => {
           if (val != null) {
+            wasSelected = true
             opts.video = {
               mandatory: {
                 ...(typeof opts.video === 'boolean' ? {} : opts.video),
@@ -49,7 +53,9 @@ export function defineGetDisplayMedia (): void {
                 chromeMediaSourceId: val
               }
             } as any
-            resolve(window.navigator.mediaDevices.getUserMedia(opts))
+            void window.navigator.mediaDevices.getUserMedia(opts).then((stream) => {
+              resolve(stream)
+            })
           }
         }
       )

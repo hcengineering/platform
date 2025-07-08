@@ -749,12 +749,16 @@ export function reduceCalls<T extends (...args: ReduceParameters<T>) => Promise<
     currentCall = nextCall
     nextCall = undefined
     if (currentCall !== undefined) {
-      void currentCall.op()
+      void currentCall.op().catch()
     }
   }
   return async function (...args: ReduceParameters<T>): Promise<void> {
     const myOp = async (): Promise<void> => {
-      await operation(...args)
+      try {
+        await operation(...args)
+      } catch (err: any) {
+        console.error('Error occurred in reduceCalls:', err)
+      }
       next()
     }
 

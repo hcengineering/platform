@@ -28,7 +28,16 @@
   export let cameraSize: CameraSize = 'medium'
   export let cameraPos: CameraPosition = 'bottom-left'
 
-  const worker = new Worker(new URL('../worker.ts', import.meta.url))
+  const worker = createWorker()
+
+  function createWorker (): Worker {
+    try {
+      return new Worker(/* webpackChunkName: "recorder-worker" */ new URL('../recorder-worker.ts', import.meta.url))
+    } catch (error) {
+      // Fallback to direct path if needed
+      return new Worker('./recorder-worker.js')
+    }
+  }
 
   function getCameraSize (size: CameraSize): number {
     switch (size) {
@@ -149,7 +158,14 @@
   function handleWorkerMessage (e: MessageEvent): void {
     if (e.data.type === 'frame' && running) {
       drawFrame()
+    } else if (e.data.type === 'error') {
+      console.error('Worker error:', e.data.error)
     }
+  }
+
+  function handleWorkerError (e: ErrorEvent): void {
+    console.log('Worker error:', e.message)
+    e.preventDefault()
   }
 
   function startDrawing (): void {
@@ -175,6 +191,7 @@
     ctx.imageSmoothingQuality = 'high'
 
     worker.addEventListener('message', handleWorkerMessage)
+    worker.addEventListener('error', handleWorkerError)
     worker.postMessage({ type: 'start', fps })
   }
 
@@ -183,6 +200,7 @@
 
     worker.postMessage({ type: 'stop' })
     worker.removeEventListener('message', handleWorkerMessage)
+    worker.removeEventListener('error', handleWorkerError)
 
     if (cameraVideo !== null) {
       cameraVideo.pause()

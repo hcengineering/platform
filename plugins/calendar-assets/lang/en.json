@@ -110,6 +110,17 @@
     "MeetingRescheduledNotification": "Meeting time changed",
     "MeetingCanceledNotification": "Meeting canceled: {title}",
     "PrimaryCalendar": "Primary calendar",
-    "Hidden": "Hidden"
+    "Hidden": "Hidden",
+    "Each": "Each",
+    "OnThe": "On the",
+    "First": "First",
+    "Second": "Second",
+    "Third": "Third",
+    "Fourth": "Fourth",
+    "Fifth": "Fifth",
+    "NextToLast": "Next to last",
+    "Last": "Last",
+    "Weekday": "Weekday",
+    "WeekendDay": "Weekend day"
   }
 }
