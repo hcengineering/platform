@@ -210,8 +210,8 @@ func (p *Transcoder) Transcode(ctx context.Context, task *Task) (*TaskResult, er
 	var result = TaskResult{
 		Width:     videoStream.Width,
 		Height:    videoStream.Height,
-		Playlist:  task.ID + "_master.m3u8",
-		Thumbnail: task.ID + ".jpg",
+		Playlist:  manifest.MasterPlaylistFileName(task.ID),
+		Thumbnail: manifest.ThumbnailFileName(task.ID),
 	}
 
 	if metaProvider, ok := remoteStorage.(storage.MetaProvider); ok {

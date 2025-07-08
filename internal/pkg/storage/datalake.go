@@ -349,6 +349,11 @@ func (d *DatalakeStorage) SetParent(ctx context.Context, filename, parent string
 	var objectKey = getObjectKeyFromPath(filename)
 	var parentKey = getObjectKeyFromPath(parent)
 
+	if objectKey == parentKey {
+		// no need to set parent for itself
+		return nil
+	}
+
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 	req.SetRequestURI(d.baseURL + "/blob/" + d.workspace + "/" + objectKey + "/parent")

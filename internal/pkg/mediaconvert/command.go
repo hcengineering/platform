@@ -27,6 +27,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/hcengineering/stream/internal/pkg/log"
+	"github.com/hcengineering/stream/internal/pkg/manifest"
 	"github.com/hcengineering/stream/internal/pkg/profile"
 	"go.uber.org/zap"
 )
@@ -164,7 +165,7 @@ func BuildVideoCommand(opts *Options) []string {
 	for _, profile := range opts.Profiles {
 		command = append(command, buildVideoCommand(profile)...)
 		command = append(command, buildHLSCommand(profile, opts)...)
-		command = append(command, filepath.Join(opts.OutputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, profile.Name)))
+		command = append(command, filepath.Join(opts.OutputDir, opts.UploadID, manifest.PlaylistFileName(opts.UploadID, profile.Name)))
 	}
 	return command
 }
