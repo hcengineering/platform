@@ -177,6 +177,8 @@ async function executeTransition (
   res.push(
     control.txFactory.createTxCreateDoc(process.class.ExecutionLog, execution.space, {
       execution: execution._id,
+      process: execution.process,
+      card: execution.card,
       transition: transition._id,
       action: ExecutionLogAction.Transition
     })
@@ -479,6 +481,8 @@ async function initState (execution: Execution, control: TriggerControl): Promis
   res.push(
     control.txFactory.createTxCreateDoc(process.class.ExecutionLog, execution.space, {
       execution: execution._id,
+      process: execution.process,
+      card: execution.card,
       transition: transition._id,
       action: ExecutionLogAction.Started
     })
@@ -546,6 +550,8 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
         res.push(
           control.txFactory.createTxCreateDoc(process.class.ExecutionLog, execution.space, {
             execution: execution._id,
+            process: execution.process,
+            card: execution.card,
             action: ExecutionLogAction.Rollback
           })
         )

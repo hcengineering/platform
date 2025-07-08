@@ -118,12 +118,6 @@
   }}
 />
 
-<!-- <Card
-  label={process.string.Execution}
-  okAction={() => { dispatch('close') }}
-  width={'large'}
-  on:close
-> -->
 <Modal
   type={'type-popup'}
   width={'large'}
@@ -168,4 +162,3 @@
     />
   {/if}
 </Modal>
-<!-- </Card> -->

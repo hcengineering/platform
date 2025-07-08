@@ -87,7 +87,8 @@
     "Floor": "向下取整",
     "Ceil": "向上取整",
     "Absolute": "绝对值",
-    "LogAction": "事件"
+    "LogAction": "事件",
+    "Started": "已启动"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

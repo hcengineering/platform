@@ -87,7 +87,8 @@
     "Floor": "Округлить вниз",
     "Ceil": "Округлить вверх",
     "Absolute": "Абсолютное значение",
-    "LogAction": "Событие"
+    "LogAction": "Событие",
+    "Started": "Начат"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
