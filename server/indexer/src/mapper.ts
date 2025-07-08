@@ -150,17 +150,15 @@ export function mapSearchResultDoc (hierarchy: Hierarchy, raw: IndexedDoc): Sear
 
   function toProps (comp: FieldTemplateComponent, values: any[]): Record<string, any> {
     const result: Record<string, any> = {}
-    if (!Array.isArray(comp)) {
-      let pos = 0
-      for (const f of comp.fields ?? []) {
-        if (f.length === 1) {
-          result[f[0]] = values[pos]
-          pos++
-        }
-        if (f.length === 2) {
-          result[f[0] + fUpper(f[1])] = values[pos]
-          pos++
-        }
+    let pos = 0
+    for (const f of comp.fields ?? []) {
+      if (f.length === 1) {
+        result[f[0]] = values[pos]
+        pos++
+      }
+      if (f.length === 2) {
+        result[f[0] + fUpper(f[1])] = values[pos]
+        pos++
       }
     }
     return result
