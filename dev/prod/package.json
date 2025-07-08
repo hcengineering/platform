@@ -63,6 +63,7 @@
     "@hcengineering/ai-bot": "^0.6.0",
     "@hcengineering/ai-bot-resources": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
+    "@hcengineering/analytics-providers": "^0.6.0",
     "@hcengineering/analytics-collector": "^0.6.0",
     "@hcengineering/analytics-collector-assets": "^0.6.0",
     "@hcengineering/analytics-collector-resources": "^0.6.0",
@@ -281,7 +282,6 @@
     "@sentry/svelte": "^9.22.0",
     "posthog-js": "^1.246.0",
     "readable-stream": "^4.7.0",
-    "svelte": "^4.2.19",
-    "ua-parser-js": "^2.0.4"
+    "svelte": "^4.2.19"
   }
 }

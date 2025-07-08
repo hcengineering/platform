@@ -213,6 +213,7 @@
     "@hcengineering/process": "^0.6.0",
     "@hcengineering/process-assets": "^0.6.0",
     "@hcengineering/process-resources": "^0.6.0",
+    "@hcengineering/analytics-providers": "^0.6.0",
     "@hcengineering/analytics-collector": "^0.6.0",
     "@hcengineering/analytics-collector-assets": "^0.6.0",
     "@hcengineering/analytics-collector-resources": "^0.6.0",
@@ -262,8 +263,7 @@
     "livekit-client": "^2.13.3",
     "@hcengineering/server-backup": "^0.6.0",
     "@hcengineering/communication-types": "^0.1.0",
-    "ws": "^8.18.2",
-    "@hcengineering/prod": "^1.0.1"
+    "ws": "^8.18.2"
   },
   "productName": "Huly Desktop",
   "description": "Huly Desktop experience",

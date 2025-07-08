@@ -136,7 +136,7 @@ import textEditor, { textEditorId } from '@hcengineering/text-editor'
 
 import { initThemeStore, setDefaultLanguage } from '@hcengineering/theme'
 import { configureNotifications } from './notifications'
-import { configureAnalytics } from '@hcengineering/prod/src/analytics'
+import { configureAnalyticsProviders } from '@hcengineering/analytics-providers'
 import { Branding, Config, IPCMainExposed } from './types'
 
 import github, { githubId } from '@hcengineering/github'
@@ -260,7 +260,7 @@ export async function configurePlatform (): Promise<void> {
   const title = myBranding.title ?? 'Huly Desktop'
   ipcMain.setTitle(title)
 
-  configureAnalytics(config)
+  configureAnalyticsProviders(config)
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
