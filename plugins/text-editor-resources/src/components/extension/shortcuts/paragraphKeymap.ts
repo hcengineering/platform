@@ -1,6 +1,7 @@
 import { Extension } from '@tiptap/core'
 
-export const ParagraphExtension = Extension.create({
+export const ParagraphKeymapExtension = Extension.create({
+  name: 'paragraphKeymap',
   addKeyboardShortcuts () {
     return {
       'Shift-Enter': () => {

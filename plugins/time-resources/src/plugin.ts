@@ -60,11 +60,6 @@ export default mergeIds(timeId, time, {
     MyWork: '' as IntlString,
     WorkSchedule: '' as IntlString,
     SummaryDuration: '' as IntlString,
-    TeamPlanner: '' as IntlString,
-
-    UnassignToDo: '' as IntlString,
-    UnassignToDoConfirm: '' as IntlString,
-    ReassignToDo: '' as IntlString,
-    ReassignToDoConfirm: '' as IntlString
+    TeamPlanner: '' as IntlString
   }
 })

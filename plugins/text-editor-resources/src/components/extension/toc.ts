@@ -20,16 +20,16 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import slugify from 'slugify'
 import { type Heading } from '@hcengineering/text-editor'
 
-export interface HeadingsOptions {
+export interface ToCExtensionOptions {
   prefixId?: string
   onChange?: (headings: Heading[]) => void
 }
 
-export interface HeadingsStorage {
+export interface ToCExtensionStorage {
   headings: Heading[]
 }
 
-export const HeadingsExtension: Extension<HeadingsOptions, HeadingsStorage> = Extension.create<HeadingsOptions>({
+export const ToCExtension: Extension<ToCExtensionOptions, ToCExtensionStorage> = Extension.create<ToCExtensionOptions>({
   name: 'headings-extension',
 
   addStorage () {

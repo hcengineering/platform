@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Markup, Ref, Blob } from '@hcengineering/core'
+  import { Blob, Class, Doc, Markup, Ref } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { EmptyMarkup, isEmptyMarkup, mergeKitOptions } from '@hcengineering/text'
   import textEditor, { RefAction, TextEditorHandler } from '@hcengineering/text-editor'
   import {
     AnySvelteComponent,
@@ -34,10 +34,8 @@
   import view from '@hcengineering/view'
   import TextEditor from './TextEditor.svelte'
   import { defaultRefActions, getModelRefActions } from './editor/actions'
-  import { EmojiExtension } from './extension/emoji'
-  import { IsEmptyContentExtension } from './extension/isEmptyContent'
-  import { referenceConfig, ReferenceExtension } from './extension/reference'
   import Send from './icons/Send.svelte'
+  import { EditorKitOptions } from '../kits/editor-kit'
 
   export let content: Markup = EmptyMarkup
   export let showHeader = false
@@ -57,11 +55,10 @@
   export let noborder: boolean = false
   export let boundary: HTMLElement | undefined = undefined
   export let autofocus: FocusPosition = false
-  export let canEmbedFiles = true
-  export let canEmbedImages = true
   export let onPaste: ((view: EditorView, event: ClipboardEvent) => boolean) | undefined = undefined
   export let onCancel: (() => void) | undefined = undefined
   export let docClass: Ref<Class<Doc>> | undefined = undefined
+  export let kitOptions: Partial<EditorKitOptions> = {}
 
   const dispatch = createEventDispatcher()
   const buttonSize = 'medium'
@@ -150,14 +147,6 @@
       focusManager?.setFocus(idx)
     }
   }
-  const completionPlugin = ReferenceExtension.configure({
-    ...referenceConfig,
-    docClass,
-    multipleMentions: true,
-    showDoc (event: MouseEvent, _id: string, _class: string) {
-      dispatch('open-document', { event, _id, _class })
-    }
-  })
 </script>
 
 <div class="ref-container" class:focusable class:noborder>
@@ -172,9 +161,6 @@
       bind:this={editor}
       {autofocus}
       {boundary}
-      {canEmbedFiles}
-      {canEmbedImages}
-      dropcursor={false}
       on:content={(ev) => {
         if (canSubmit) {
           dispatch('message', ev.detail)
@@ -191,13 +177,24 @@
         updateFocus()
         dispatch('focus')
       }}
-      extensions={[
-        completionPlugin,
-        EmojiExtension.configure(),
-        IsEmptyContentExtension.configure({ onChange: (value) => (isEmpty = value) })
-      ]}
       {onPaste}
       on:update
+      kitOptions={mergeKitOptions(
+        {
+          emoji: true,
+          dropcursor: false,
+          reference: {
+            docClass,
+            multipleMentions: true
+          },
+          hooks: {
+            emptyContent: {
+              onChange: (a) => (isEmpty = a)
+            }
+          }
+        },
+        kitOptions
+      )}
       placeholder={placeholder ?? textEditor.string.EditorPlaceholder}
     />
   </div>

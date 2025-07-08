@@ -18,30 +18,26 @@
   import { type Blob, Markup, type Ref } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { EmptyMarkup, getMarkup, markupToJSON } from '@hcengineering/text'
-  import { themeStore } from '@hcengineering/ui'
   import textEditor from '@hcengineering/text-editor'
-  import { AnyExtension, Content, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
-  import Placeholder from '@tiptap/extension-placeholder'
+  import { themeStore } from '@hcengineering/ui'
+  import { Content, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import { ParseOptions } from '@tiptap/pm/model'
   import { EditorView } from '@tiptap/pm/view'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
+  import { EditorKitOptions, getEditorKit } from '../../src/kits/editor-kit'
   import { deleteAttachment } from '../command/deleteAttachment'
   import { defaultEditorAttributes } from './editor/editorProps'
-  import { getEditorKit } from '../../src/kits/editor-kit'
 
   export let content: Markup = EmptyMarkup
   export let placeholder: IntlString = textEditor.string.EditorPlaceholder
   export let placeholderParams: Record<string, any> = {}
-  export let extensions: AnyExtension[] = []
   export let supportSubmit = true
   export let editorAttributes: Record<string, string> = {}
   export let boundary: HTMLElement | undefined = undefined
   export let autofocus: FocusPosition = false
-  export let canEmbedFiles = true
-  export let canEmbedImages = true
-  export let dropcursor: false | undefined = undefined
   export let onPaste: ((view: EditorView, event: ClipboardEvent) => boolean) | undefined = undefined
+  export let kitOptions: Partial<EditorKitOptions> = {}
 
   let element: HTMLElement
   let editor: Editor
@@ -154,54 +150,58 @@
     needFocus = false
   }
 
-  onMount(() => {
-    void ph.then(async () => {
-      editor = new Editor({
-        enableContentCheck: true,
-        element,
-        editorProps: {
-          attributes: mergeAttributes(defaultEditorAttributes, editorAttributes),
-          handlePaste: onPaste
-        },
-        content: markupToJSON(content),
-        autofocus,
-        extensions: [
-          (await getEditorKit()).configure({
-            mode: 'compact',
-            file: canEmbedFiles ? {} : false,
-            dropcursor,
-            image: canEmbedImages ? {} : false,
-            drawingBoard: false,
-            textAlign: false,
-            submit: supportSubmit ? { submit } : false
-          }),
-          Placeholder.configure({ placeholder: placeHolderStr }),
-          ...extensions
-        ],
-        parseOptions: {
-          preserveWhitespace: 'full'
-        },
-        onTransaction: () => {
-          // force re-render so `editor.isActive` works as expected
-          editor = editor
-        },
-        onBlur: () => {
-          focused = false
-          dispatch('blur')
-        },
-        onFocus: () => {
-          focused = true
-          dispatch('focus')
-        },
-        onUpdate: () => {
-          content = getContent()
-          dispatch('value', content)
-          dispatch('update', content)
-        },
-        onContentError: ({ error }) => {
-          Analytics.handleError(error)
+  onMount(async () => {
+    await ph
+
+    const kit = await getEditorKit(
+      {
+        mode: 'compact',
+
+        drawingBoard: false,
+        textAlign: false,
+        reference: false,
+        emoji: false,
+        placeholder: { placeholder: placeHolderStr },
+        shortcuts: {
+          submit: supportSubmit ? { submit } : false
         }
-      })
+      },
+      kitOptions
+    )
+
+    editor = new Editor({
+      enableContentCheck: true,
+      element,
+      editorProps: {
+        attributes: mergeAttributes(defaultEditorAttributes, editorAttributes),
+        handlePaste: onPaste
+      },
+      content: markupToJSON(content),
+      autofocus,
+      extensions: [kit],
+      parseOptions: {
+        preserveWhitespace: 'full'
+      },
+      onTransaction: () => {
+        // force re-render so `editor.isActive` works as expected
+        editor = editor
+      },
+      onBlur: () => {
+        focused = false
+        dispatch('blur')
+      },
+      onFocus: () => {
+        focused = true
+        dispatch('focus')
+      },
+      onUpdate: () => {
+        content = getContent()
+        dispatch('value', content)
+        dispatch('update', content)
+      },
+      onContentError: ({ error }) => {
+        Analytics.handleError(error)
+      }
     })
   })
 

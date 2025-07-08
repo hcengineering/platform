@@ -19,7 +19,7 @@ import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { NodeSelection, Plugin, PluginKey, TextSelection, type Transaction } from '@tiptap/pm/state'
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
 import { createLowlight } from 'lowlight'
-import { isChangeEditable } from './editable'
+import { isChangeEditable } from '../hooks/editable'
 import type { MermaidConfig } from 'mermaid'
 import { getCurrentTheme, isThemeDark, themeStore } from '@hcengineering/theme'
 

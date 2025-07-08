@@ -1,12 +1,12 @@
 import { Extension, type KeyboardShortcutCommand } from '@tiptap/core'
 
-export interface SubmitOptions {
+export interface HandleSubmitExtensionOptions {
   submit: () => void
   useModKey?: boolean
 }
 
-export const SubmitExtension = Extension.create<SubmitOptions>({
-  name: 'submit',
+export const HandleSubmitExtension = Extension.create<HandleSubmitExtensionOptions>({
+  name: 'handleSubmit',
   addKeyboardShortcuts () {
     const shortcuts: Record<string, KeyboardShortcutCommand> = {
       Space: () => {

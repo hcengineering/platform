@@ -261,7 +261,7 @@ export class DocumentContentPage extends CommonPage {
   }
 
   async changeCodeBlockLanguage (text: string, oldLang: string, lang: string): Promise<void> {
-    await this.codeBlock(text).locator('button.antiButton', { hasText: oldLang }).nth(1).click()
+    await this.codeBlock(text).locator('button.antiButton', { hasText: oldLang }).click()
     await this.selectMenuItem(this.page, lang, true)
   }
 

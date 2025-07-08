@@ -13,14 +13,20 @@
 // limitations under the License.
 //
 
+import core, { type Class, type Doc, type Ref } from '@hcengineering/core'
+import { getClient } from '@hcengineering/presentation'
+import { type ActionContext } from '@hcengineering/text-editor'
 import { findParentNode, getNodeType, InputRule, isList, type RawCommands } from '@tiptap/core'
-import TaskItem from '@tiptap/extension-task-item'
+import TaskItem, { type TaskItemOptions } from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 import { Fragment, NodeRange, Slice, type NodeType } from '@tiptap/pm/model'
 import { Plugin, type Command, type EditorState, type Selection, type Transaction } from '@tiptap/pm/state'
 import { canJoin, findWrapping, liftTarget, ReplaceAroundStep } from '@tiptap/pm/transform'
 import { type EditorView } from '@tiptap/pm/view'
-import { getDataAttribute } from '../../utils'
+import { getDataAttribute } from '../../../utils'
+import { SvelteNodeViewRenderer } from '../../node-view'
+import ToDoItemNodeView from './ToDoItemNodeView.svelte'
+import ToDoListNodeView from './ToDoListNodeView.svelte'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -30,14 +36,20 @@ declare module '@tiptap/core' {
   }
 }
 
-export const TodoItemExtension = TaskItem.extend({
+export interface TodoItemExtensionOptions extends TaskItemOptions {
+  context?: ActionContext
+}
+
+export const TodoItemExtension = TaskItem.extend<TodoItemExtensionOptions>({
   name: 'todoItem',
   group: 'listItems',
 
   addOptions () {
     return {
       nested: true,
-      HTMLAttributes: {},
+      HTMLAttributes: {
+        class: 'todo-item'
+      },
       taskListTypeName: 'todoList'
     }
   },
@@ -75,6 +87,15 @@ export const TodoItemExtension = TaskItem.extend({
 
   addProseMirrorPlugins () {
     return [...(this.parent?.() ?? []), TodoItemDowncastPlugin()]
+  },
+
+  addNodeView () {
+    const { objectId, objectClass, objectSpace } = this.options.context ?? {}
+    return SvelteNodeViewRenderer(ToDoItemNodeView, {
+      contentAs: 'li',
+      contentClass: 'todo-item',
+      componentProps: objectClass != null && isTodoableClass(objectClass) ? { objectId, objectClass, objectSpace } : {}
+    })
   }
 })
 
@@ -84,8 +105,14 @@ export const TodoListExtension = TaskList.extend({
   addOptions () {
     return {
       itemTypeName: 'todoItem',
-      HTMLAttributes: {}
+      HTMLAttributes: {
+        class: 'todo-list'
+      }
     }
+  },
+
+  addNodeView () {
+    return SvelteNodeViewRenderer(ToDoListNodeView, {})
   }
 })
 
@@ -497,5 +524,16 @@ export function sinkListItem (itemType: NodeType, group: string): Command {
       )
     }
     return true
+  }
+}
+
+function isTodoableClass (objectClass: Ref<Class<Doc>>): boolean {
+  const hierarchy = getClient().getHierarchy()
+
+  try {
+    const todosCollection = hierarchy.getAttribute(objectClass, 'todos')
+    return todosCollection !== undefined && todosCollection.type._class === core.class.Collection
+  } catch (e) {
+    return false
   }
 }

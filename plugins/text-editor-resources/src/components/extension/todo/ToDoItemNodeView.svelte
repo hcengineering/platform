@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { Employee, Person } from '@hcengineering/contact'
-  import { AssigneePopup, EmployeePresenter } from '@hcengineering/contact-resources'
+  import contact, { Employee, Person } from '@hcengineering/contact'
   import { type Class, type Doc, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import { makeRank } from '@hcengineering/rank'
-  import { NodeViewContent, NodeViewProps, NodeViewWrapper } from '@hcengineering/text-editor-resources'
   import time, { ToDo, ToDoPriority } from '@hcengineering/time'
   import { CheckBox, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
-
-  import timeRes from '../../../plugin'
+  import { NodeViewProps } from '../../node-view'
+  import NodeViewWrapper from '../../node-view/NodeViewWrapper.svelte'
+  import NodeViewContent from '../../node-view/NodeViewContent.svelte'
+  import Component from '@hcengineering/ui/src/components/Component.svelte'
 
   export let node: NodeViewProps['node']
   export let editor: NodeViewProps['editor']
@@ -148,8 +148,8 @@
     showPopup(
       MessageBox,
       {
-        label: timeRes.string.ReassignToDo,
-        message: timeRes.string.ReassignToDoConfirm,
+        label: time.string.ReassignToDo,
+        message: time.string.ReassignToDoConfirm,
         action: async () => {
           await assignTodo(user)
         }
@@ -162,8 +162,8 @@
     showPopup(
       MessageBox,
       {
-        label: timeRes.string.UnassignToDo,
-        message: timeRes.string.UnassignToDoConfirm,
+        label: time.string.UnassignToDo,
+        message: time.string.UnassignToDoConfirm,
         action: async () => {
           await unassignTodo()
         }
@@ -189,7 +189,7 @@
 
     hovered = true
     showPopup(
-      AssigneePopup,
+      contact.component.AssigneePopup,
       {
         selected: userId
       },
@@ -215,13 +215,16 @@
   >
     {#if todoable}
       <div class="flex-center assignee" contenteditable="false">
-        <EmployeePresenter
-          value={userId}
-          disabled={readonly}
-          avatarSize={'card'}
-          shouldShowName={false}
-          shouldShowPlaceholder
-          onEmployeeEdit={handleAssigneeEdit}
+        <Component
+          is={contact.component.EmployeePresenter}
+          props={{
+            value: userId,
+            disabled: readonly,
+            avatarSize: 'card',
+            shouldShowName: false,
+            shouldShowPlaceholder: true,
+            onEmployeeEdit: handleAssigneeEdit
+          }}
         />
       </div>
     {/if}

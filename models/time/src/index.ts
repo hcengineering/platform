@@ -18,60 +18,59 @@ import board from '@hcengineering/board'
 import calendarPlugin, { type Visibility } from '@hcengineering/calendar'
 import contactPlugin, { type Employee } from '@hcengineering/contact'
 import {
+  AccountRole,
   DOMAIN_MODEL,
+  DateRangeMode,
+  IndexKind,
   type Class,
+  type ClassCollaborators,
   type Domain,
   type Markup,
   type Ref,
   type Space,
   type Timestamp,
-  type Type,
-  DateRangeMode,
-  IndexKind,
-  AccountRole,
-  type ClassCollaborators
+  type Type
 } from '@hcengineering/core'
 import lead from '@hcengineering/lead'
 import {
   Collection,
+  Hidden,
+  Index,
   Mixin,
   Model,
   Prop,
+  TypeDate,
   TypeRef,
   TypeString,
   UX,
   type Builder,
-  TypeDate,
-  Hidden,
-  Index,
   TypeMarkup
 } from '@hcengineering/model'
-import textEditor from '@hcengineering/text-editor'
 import { TEvent } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TClass, TDoc, TType } from '@hcengineering/model-core'
-import tracker from '@hcengineering/model-tracker'
 import document from '@hcengineering/model-document'
+import tracker from '@hcengineering/model-tracker'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import recruit from '@hcengineering/recruit'
 import tags from '@hcengineering/tags'
-import { type AnyComponent } from '@hcengineering/ui/src/types'
 import {
-  type TodoDoneTester,
   timeId,
   type ItemPresenter,
   type ProjectToDo,
   type ToDo,
   type ToDoPriority,
   type TodoAutomationHelper,
+  type TodoDoneTester,
   type WorkSlot
 } from '@hcengineering/time'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 import type { Resource } from '@hcengineering/platform'
 import type { Rank } from '@hcengineering/task'
-import time from './plugin'
 import task from '@hcengineering/task'
+import time from './plugin'
 
 export { timeId } from '@hcengineering/time'
 export { default } from './plugin'
@@ -415,16 +414,6 @@ export function createModel (builder: Builder): void {
       { createdOn: -1 },
       { modifiedOn: 1 }
     ]
-  })
-
-  builder.createDoc(textEditor.class.TextEditorExtensionFactory, core.space.Model, {
-    index: 510,
-    create: time.function.CreateTodoItemExtension
-  })
-
-  builder.createDoc(textEditor.class.TextEditorExtensionFactory, core.space.Model, {
-    index: 520,
-    create: time.function.CreateTodoListExtension
   })
 }
 

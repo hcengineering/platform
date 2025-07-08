@@ -37,7 +37,7 @@
   } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement } from '@hcengineering/ui'
   import { uploadFiles, type FileUploadCallbackParams } from '@hcengineering/uploader'
-  import { getCollaborationUser, getObjectId, openDoc } from '@hcengineering/view-resources'
+  import { getCollaborationUser, getObjectId } from '@hcengineering/view-resources'
 
   import AttachmentsGrid from './AttachmentsGrid.svelte'
 
@@ -320,12 +320,6 @@
       {refActions}
       {readonly}
       {attachFile}
-      on:open-document={async (event) => {
-        const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
-        if (doc != null) {
-          await openDoc(client.getHierarchy(), doc)
-        }
-      }}
       on:focus
       on:blur
       on:update

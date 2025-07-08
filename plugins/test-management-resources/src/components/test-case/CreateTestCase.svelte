@@ -154,7 +154,7 @@
     placeholder={core.string.Description}
     kind="indented"
     isScrollable={false}
-    enableBackReferences={true}
+    kitOptions={{ reference: true }}
     enableAttachments={false}
     on:attachments={(ev) => {
       if (ev.detail.size > 0) attachments = ev.detail.values

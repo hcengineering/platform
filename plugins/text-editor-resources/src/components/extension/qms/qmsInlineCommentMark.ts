@@ -1,3 +1,18 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import {
   type CommandProps,
   type Editor,
@@ -10,10 +25,10 @@ import {
 import { type Node, type Mark as ProseMirrorMark } from '@tiptap/pm/model'
 import { type EditorState, Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
 
-export const nodeUuidName = 'node-uuid'
-export const nodeElementQuerySelector = (nodeUuid: string): string => `span[${nodeUuidName}='${nodeUuid}']`
+export const qmsInlineCommentMarkName = 'node-uuid'
+export const nodeElementQuerySelector = (nodeUuid: string): string => `span[${qmsInlineCommentMarkName}='${nodeUuid}']`
 
-export interface NodeUuidOptions {
+export interface QMSInlineCommentMarkOptions {
   HTMLAttributes: Record<string, any>
   onNodeSelected?: (uuid: string | null) => void
   onNodeClicked?: (uuid: string) => void
@@ -21,24 +36,18 @@ export interface NodeUuidOptions {
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
-    [nodeUuidName]: {
-      /**
-       * Add uuid mark
-       */
-      setNodeUuid: (uuid: string) => ReturnType
-      /**
-       * Unset uuid mark
-       */
-      unsetNodeUuid: () => ReturnType
+    [qmsInlineCommentMarkName]: {
+      setQMSInlineCommentMark: (uuid: string) => ReturnType
+      unsetQMSInlineCommentMark: () => ReturnType
     }
   }
 }
 
-export interface NodeUuidStorage {
-  activeNodeUuid: string | null
+export interface QMSInlineCommentMarkStorage {
+  activeQMSInlineComment: string | null
 }
 
-const findSelectionNodeUuidMark = (state: EditorState): ProseMirrorMark | undefined => {
+const findSelectionQMSInlineCommentMark = (state: EditorState): ProseMirrorMark | undefined => {
   const { doc, selection } = state
 
   if (selection === null || selection === undefined) {
@@ -52,7 +61,7 @@ const findSelectionNodeUuidMark = (state: EditorState): ProseMirrorMark | undefi
         if (nodeUuidMark !== undefined) {
           return false
         }
-        nodeUuidMark = findNodeUuidMark(node)
+        nodeUuidMark = findQMSInlineCommentMark(node)
       })
     }
   }
@@ -60,12 +69,12 @@ const findSelectionNodeUuidMark = (state: EditorState): ProseMirrorMark | undefi
   return nodeUuidMark
 }
 
-export const findNodeUuidMark = (node: Node): ProseMirrorMark | undefined => {
+export const findQMSInlineCommentMark = (node: Node): ProseMirrorMark | undefined => {
   if (node === null || node === undefined) {
     return
   }
 
-  return node.marks.find((mark) => mark.type.name === nodeUuidName && mark.attrs[nodeUuidName])
+  return node.marks.find((mark) => mark.type.name === qmsInlineCommentMarkName && mark.attrs[qmsInlineCommentMarkName])
 }
 
 export function getNodeElement (editor: Editor, uuid: string): Element | null {
@@ -89,7 +98,7 @@ export function selectNode (editor: Editor, uuid: string): void {
     }
 
     const nodeUuidMark = node.marks.find(
-      (mark) => mark.type.name === NodeUuidExtension.name && mark.attrs[NodeUuidExtension.name] === uuid
+      (mark) => mark.type.name === QMSInlineCommentMark.name && mark.attrs[QMSInlineCommentMark.name] === uuid
     )
 
     if (nodeUuidMark === undefined) {
@@ -99,7 +108,7 @@ export function selectNode (editor: Editor, uuid: string): void {
     foundNode = true
 
     // the first pos does not contain the mark, so we need to add 1 (pos + 1) to get the correct range
-    const range = getMarkRange(doc.resolve(pos + 1), schema.marks[NodeUuidExtension.name])
+    const range = getMarkRange(doc.resolve(pos + 1), schema.marks[QMSInlineCommentMark.name])
 
     if (range == null || typeof range !== 'object') {
       return false
@@ -111,12 +120,8 @@ export function selectNode (editor: Editor, uuid: string): void {
   })
 }
 
-/**
- * This extension allows to add node uuid to the selected text
- * Creates span node with attribute node-uuid
- */
-export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
-  name: nodeUuidName,
+export const QMSInlineCommentMark = Mark.create<QMSInlineCommentMarkOptions, QMSInlineCommentMarkStorage>({
+  name: qmsInlineCommentMarkName,
   exitable: true,
   inclusive: false,
   addOptions () {
@@ -127,9 +132,9 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
 
   addAttributes () {
     return {
-      [nodeUuidName]: {
+      [qmsInlineCommentMarkName]: {
         default: null,
-        parseHTML: (el) => (el as HTMLSpanElement).getAttribute(nodeUuidName)
+        parseHTML: (el) => (el as HTMLSpanElement).getAttribute(qmsInlineCommentMarkName)
       }
     }
   },
@@ -137,9 +142,9 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
   parseHTML () {
     return [
       {
-        tag: `span[${nodeUuidName}]`,
+        tag: `span[${qmsInlineCommentMarkName}]`,
         getAttrs: (el) => {
-          const value = (el as HTMLSpanElement).getAttribute(nodeUuidName)?.trim()
+          const value = (el as HTMLSpanElement).getAttribute(qmsInlineCommentMarkName)?.trim()
           if (value === null || value === undefined || value.length === 0) {
             return false
           }
@@ -156,32 +161,33 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
 
   addProseMirrorPlugins () {
     const options = this.options
-    const storage: NodeUuidStorage = this.storage
+    const storage: QMSInlineCommentMarkStorage = this.storage
     const plugins = [
       ...(this.parent?.() ?? []),
       new Plugin({
-        key: new PluginKey('handle-node-uuid-click-plugin'),
+        key: new PluginKey('handle-qms-inline-comment-click-plugin'),
         props: {
           handleClick (view, pos) {
             const from = Math.max(0, pos - 1)
             const to = Math.min(view.state.doc.content.size, pos + 1)
             const markRanges =
               getMarksBetween(from, to, view.state.doc)?.filter(
-                (markRange) => markRange.mark.type.name === nodeUuidName && markRange.from <= pos && markRange.to >= pos
+                (markRange) =>
+                  markRange.mark.type.name === qmsInlineCommentMarkName && markRange.from <= pos && markRange.to >= pos
               ) ?? []
             let nodeUuid: string | null = null
 
             if (markRanges.length > 0) {
-              nodeUuid = markRanges[0].mark.attrs[nodeUuidName]
+              nodeUuid = markRanges[0].mark.attrs[qmsInlineCommentMarkName]
             }
 
             if (nodeUuid !== null) {
               options.onNodeClicked?.(nodeUuid)
             }
 
-            if (storage.activeNodeUuid !== nodeUuid) {
-              storage.activeNodeUuid = nodeUuid
-              options.onNodeSelected?.(storage.activeNodeUuid)
+            if (storage.activeQMSInlineComment !== nodeUuid) {
+              storage.activeQMSInlineComment = nodeUuid
+              options.onNodeSelected?.(storage.activeQMSInlineComment)
             }
           }
         }
@@ -193,20 +199,20 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
 
   addCommands () {
     return {
-      setNodeUuid:
+      setQMSInlineCommentMark:
         (uuid: string) =>
           ({ commands, state }: CommandProps) => {
             const { doc, selection } = state
             if (selection.empty) {
               return false
             }
-            if (doc.rangeHasMark(selection.from, selection.to, getMarkType(nodeUuidName, state.schema))) {
+            if (doc.rangeHasMark(selection.from, selection.to, getMarkType(qmsInlineCommentMarkName, state.schema))) {
               return false
             }
 
-            return commands.setMark(this.name, { [nodeUuidName]: uuid })
+            return commands.setMark(this.name, { [qmsInlineCommentMarkName]: uuid })
           },
-      unsetNodeUuid:
+      unsetQMSInlineCommentMark:
         () =>
           ({ commands }: CommandProps) =>
             commands.unsetMark(this.name)
@@ -215,18 +221,20 @@ export const NodeUuidExtension = Mark.create<NodeUuidOptions, NodeUuidStorage>({
 
   addStorage () {
     return {
-      activeNodeUuid: null
+      activeQMSInlineComment: null
     }
   },
 
   onSelectionUpdate () {
-    const activeNodeUuidMark = findSelectionNodeUuidMark(this.editor.state)
-    const activeNodeUuid =
-      activeNodeUuidMark !== null && activeNodeUuidMark !== undefined ? activeNodeUuidMark.attrs[nodeUuidName] : null
+    const activeQMSInlineCommentMark = findSelectionQMSInlineCommentMark(this.editor.state)
+    const activeQMSInlineComment =
+      activeQMSInlineCommentMark !== null && activeQMSInlineCommentMark !== undefined
+        ? activeQMSInlineCommentMark.attrs[qmsInlineCommentMarkName]
+        : null
 
-    if (this.storage.activeNodeUuid !== activeNodeUuid) {
-      this.storage.activeNodeUuid = activeNodeUuid
-      this.options.onNodeSelected?.(this.storage.activeNodeUuid)
+    if (this.storage.activeQMSInlineComment !== activeQMSInlineComment) {
+      this.storage.activeQMSInlineComment = activeQMSInlineComment
+      this.options.onNodeSelected?.(this.storage.activeQMSInlineComment)
     }
   }
 })

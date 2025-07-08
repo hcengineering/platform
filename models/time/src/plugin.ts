@@ -15,13 +15,12 @@
 
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import { type Application } from '@hcengineering/model-workbench'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui/src/types'
-import { type Action, type ActionCategory } from '@hcengineering/view'
 import { timeId } from '@hcengineering/time'
 import time from '@hcengineering/time-resources/src/plugin'
-import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
-import { type ExtensionCreator } from '@hcengineering/text-editor'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
+import { type Action, type ActionCategory } from '@hcengineering/view'
 
 export default mergeIds(timeId, time, {
   action: {
@@ -61,8 +60,6 @@ export default mergeIds(timeId, time, {
     ToDoCreated: '' as Ref<NotificationType>
   },
   function: {
-    ToDoTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
-    CreateTodoItemExtension: '' as Resource<ExtensionCreator>,
-    CreateTodoListExtension: '' as Resource<ExtensionCreator>
+    ToDoTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })

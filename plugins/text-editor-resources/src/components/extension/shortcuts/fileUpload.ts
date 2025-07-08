@@ -16,19 +16,19 @@ import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { type EditorView } from '@tiptap/pm/view'
 
-import { type FileAttachFunction } from './types'
+import { type FileAttachFunction } from '../types'
 
 /**
  * @public
  */
-export interface FileUploadOptions {
+export interface FileUploadExtensionOptions {
   attachFile?: FileAttachFunction
 }
 
 /**
  * @public
  */
-export const FileUploadExtension = Extension.create<FileUploadOptions>({
+export const FileUploadExtension = Extension.create<FileUploadExtensionOptions>({
   name: 'file-upload-ext',
 
   addProseMirrorPlugins () {
