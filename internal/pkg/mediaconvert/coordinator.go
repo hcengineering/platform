@@ -31,6 +31,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hcengineering/stream/internal/pkg/config"
 	"github.com/hcengineering/stream/internal/pkg/log"
+	"github.com/hcengineering/stream/internal/pkg/manifest"
 	"github.com/hcengineering/stream/internal/pkg/sharedpipe"
 	"github.com/hcengineering/stream/internal/pkg/storage"
 	"github.com/hcengineering/stream/internal/pkg/uploader"
@@ -133,6 +134,7 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 		// setup content uploader for transcoded outputs
 		var opts = s.uploadOptions
 		opts.Dir = filepath.Join(opts.Dir, info.ID)
+		opts.Source = manifest.MasterPlaylistFileName(info.ID)
 
 		// create storage backend
 		var stg, err = storage.NewStorageByURL(s.mainContext, s.conf.Endpoint(), s.conf.EndpointURL.Scheme, info.MetaData["token"], info.MetaData["workspace"])

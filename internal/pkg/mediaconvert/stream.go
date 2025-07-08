@@ -180,8 +180,8 @@ func (w *Stream) FinishUpload(ctx context.Context) error {
 					w.info.ID,
 					&storage.Metadata{
 						"hls": map[string]any{
-							"source":    w.info.ID + "_master.m3u8",
-							"thumbnail": w.info.ID + ".jpg",
+							"source":    manifest.MasterPlaylistFileName(w.info.ID),
+							"thumbnail": manifest.ThumbnailFileName(w.info.ID),
 						},
 					},
 				)

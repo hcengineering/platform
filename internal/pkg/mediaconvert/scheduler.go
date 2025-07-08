@@ -267,8 +267,8 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		var result = TaskResult{
 			Width:     videoStream.Width,
 			Height:    videoStream.Height,
-			Playlist:  task.ID + "_master.m3u8",
-			Thumbnail: task.ID + ".jpg",
+			Playlist:  manifest.MasterPlaylistFileName(task.ID),
+			Thumbnail: manifest.ThumbnailFileName(task.ID),
 		}
 
 		logger.Debug(

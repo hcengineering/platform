@@ -39,7 +39,7 @@ func TestGenerateHLSPlaylist(t *testing.T) {
 	err := manifest.GenerateHLSPlaylist(profiles, "", uploadID)
 	require.NoError(t, err)
 
-	outputPath := filepath.Join(uploadID, uploadID+"_master.m3u8")
+	outputPath := filepath.Join(uploadID, manifest.MasterPlaylistFileName(uploadID))
 
 	_, err = os.Stat(outputPath)
 	require.NoError(t, err, "Master playlist file should exist")
@@ -53,7 +53,22 @@ func TestGenerateHLSPlaylist(t *testing.T) {
 	require.Contains(t, playlistContent, "#EXTM3U", "File must start with #EXTM3U")
 
 	for _, prof := range profiles {
-		expectedLine := uploadID + "_" + prof.Name + "_master.m3u8"
+		expectedLine := manifest.PlaylistFileName(uploadID, prof.Name)
 		require.Contains(t, playlistContent, expectedLine, "Missing expected reference: "+expectedLine)
 	}
+}
+
+func TestMasterPlaylistFileName(t *testing.T) {
+	filename := manifest.MasterPlaylistFileName("example")
+	require.Equal(t, "example_master.m3u8", filename)
+}
+
+func TestPlaylistFileName(t *testing.T) {
+	filename := manifest.PlaylistFileName("example", "720p")
+	require.Equal(t, "example_720p.m3u8", filename)
+}
+
+func TestThumbnailFileName(t *testing.T) {
+	filename := manifest.ThumbnailFileName("example")
+	require.Equal(t, "example.jpg", filename)
 }

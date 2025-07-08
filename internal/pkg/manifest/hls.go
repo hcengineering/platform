@@ -24,7 +24,7 @@ import (
 
 // GenerateHLSPlaylist generates master file for master files for resolution levels
 func GenerateHLSPlaylist(profiles []profile.VideoProfile, outputPath, uploadID string) error {
-	p := filepath.Join(outputPath, uploadID, fmt.Sprintf("%v_master.m3u8", uploadID))
+	p := filepath.Join(outputPath, uploadID, MasterPlaylistFileName(uploadID))
 	d := filepath.Dir(p)
 	_ = os.MkdirAll(d, os.ModePerm)
 	// #nosec
@@ -48,11 +48,26 @@ func GenerateHLSPlaylist(profiles []profile.VideoProfile, outputPath, uploadID s
 			return err
 		}
 
-		_, err = file.WriteString(fmt.Sprintf("%s_%s_master.m3u8\n", uploadID, profile.Name))
+		_, err = file.WriteString(PlaylistFileName(uploadID, profile.Name) + "\n")
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// MasterPlaylistFileName generates master playlist file name
+func MasterPlaylistFileName(source string) string {
+	return fmt.Sprintf("%s_master.m3u8", source)
+}
+
+// PlaylistFileName generates profile playlist file name
+func PlaylistFileName(source, profile string) string {
+	return fmt.Sprintf("%s_%s.m3u8", source, profile)
+}
+
+// ThumbnailFileName generates thumbnail file name
+func ThumbnailFileName(source string) string {
+	return fmt.Sprintf("%s.jpg", source)
 }

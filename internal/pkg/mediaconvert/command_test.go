@@ -52,7 +52,7 @@ func Test_BuildVideoCommand_Scaling(t *testing.T) {
 		Profiles:  profiles,
 	})
 
-	const expected = `-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -map 0:v:0 -map 0:a? -c:a aac -c:v libx264 -preset veryfast -crf 25 -g 60 -vf scale=-2:720 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_720p.ts test/1/1_720p_master.m3u8 -map 0:v:0 -map 0:a? -c:a aac -c:v libx264 -preset veryfast -crf 27 -g 60 -vf scale=-2:480 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
+	const expected = `-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -map 0:v:0 -map 0:a? -c:a aac -c:v libx264 -preset veryfast -crf 25 -g 60 -vf scale=-2:720 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_720p.ts test/1/1_720p.m3u8 -map 0:v:0 -map 0:a? -c:a aac -c:v libx264 -preset veryfast -crf 27 -g 60 -vf scale=-2:480 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p.m3u8`
 
 	require.Contains(t, expected, strings.Join(scaleCommand, " "))
 }
@@ -71,7 +71,7 @@ func Test_BuildVideoCommand_Original(t *testing.T) {
 		Profiles:  profiles,
 	})
 
-	const expected = `-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -map 0:v:0 -map 0:a? -c:a copy -c:v copy -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_orig.ts test/1/1_orig_master.m3u8`
+	const expected = `-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -map 0:v:0 -map 0:a? -c:a copy -c:v copy -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_orig.ts test/1/1_orig.m3u8`
 
 	require.Contains(t, expected, strings.Join(rawCommand, " "))
 }
@@ -90,7 +90,7 @@ func Test_BuildVideoCommand_OriginalT(t *testing.T) {
 		Profiles:  profiles,
 	})
 
-	const expected = `-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -map 0:v:0 -map 0:a? -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_orig.ts test/1/1_orig_master.m3u8`
+	const expected = `-y -v debug -err_detect ignore_err -fflags +discardcorrupt -threads 4 -i pipe:0 -map 0:v:0 -map 0:a? -c:a aac -c:v libx264 -preset veryfast -crf 23 -g 60 -f hls -hls_time 5 -hls_flags split_by_time+temp_file -hls_list_size 0 -hls_segment_filename test/1/1_%03d_orig.ts test/1/1_orig.m3u8`
 
 	require.Contains(t, expected, strings.Join(rawCommand, " "))
 }
