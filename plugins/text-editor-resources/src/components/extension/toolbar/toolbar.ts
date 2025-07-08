@@ -206,7 +206,7 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
         placement: viewOptions?.placement,
         hideOnClick: 'toggle',
         appendTo: viewOptions?.floating !== true ? options.popupContainer ?? document.body : document.body,
-        zIndex: 10000,
+        zIndex: 9998,
         offset: viewOptions?.offset,
         popperOptions: {
           modifiers: [
