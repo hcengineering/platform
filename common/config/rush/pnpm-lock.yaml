@@ -111,7 +111,7 @@ importers:
         version: file:projects/analytics-collector-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/analytics-providers':
         specifier: file:./projects/analytics-providers.tgz
-        version: file:projects/analytics-providers.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(esbuild@0.24.2)(svelte@4.2.19)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+        version: file:projects/analytics-providers.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(svelte@4.2.19)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/analytics-service':
         specifier: file:./projects/analytics-service.tgz
         version: file:projects/analytics-service.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
@@ -3956,7 +3956,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/analytics-providers@file:projects/analytics-providers.tgz':
-    resolution: {integrity: sha512-1QDeOTOdLdZ32WRb26JePE0cK5FcN9ftHAAmS6fDA0C7raKZS6p72bFax48EX9E5ScvvpZ03HJQvos042v8vZA==, tarball: file:projects/analytics-providers.tgz}
+    resolution: {integrity: sha512-lxtnwgE6v5e/x0DTmAyMeOapNOwL4m91+KOgTIe5DWDUJigxi8c6jUFkvTVvgcWP7Jd+Dfmb2t6GhsBMlMBJPg==, tarball: file:projects/analytics-providers.tgz}
     version: 0.0.0
 
   '@rush-temp/analytics-service@file:projects/analytics-service.tgz':
@@ -16528,12 +16528,15 @@ snapshots:
       - svelte
       - ts-node
 
-  '@rush-temp/analytics-providers@file:projects/analytics-providers.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(esbuild@0.24.2)(svelte@4.2.19)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
+  '@rush-temp/analytics-providers@file:projects/analytics-providers.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(svelte@4.2.19)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
       '@sentry/svelte': 9.22.0(svelte@4.2.19)
       '@types/jest': 29.5.12
+      '@types/node': 22.15.29
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
+      cross-env: 7.0.3
+      esbuild: 0.24.2
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.8.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
@@ -16542,7 +16545,6 @@ snapshots:
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       posthog-js: 1.246.0
       prettier: 3.2.5
-      simplytyped: 3.3.0(typescript@5.8.3)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
       ua-parser-js: 2.0.4(encoding@0.1.13)
@@ -16550,11 +16552,9 @@ snapshots:
       - '@babel/core'
       - '@jest/types'
       - '@rrweb/types'
-      - '@types/node'
       - babel-jest
       - babel-plugin-macros
       - encoding
-      - esbuild
       - node-notifier
       - rrweb-snapshot
       - supports-color
