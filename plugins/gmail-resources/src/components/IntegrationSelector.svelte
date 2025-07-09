@@ -25,7 +25,7 @@
 
   $: ids = Array.from(new Set(integrations.map((p) => p.createdBy))).filter(notEmpty)
 
-  function change (e: CustomEvent<PersonId | null>) {
+  function change (e: CustomEvent<PersonId | null>): void {
     if (e.detail === null) {
       selected = undefined
     } else {
@@ -37,4 +37,4 @@
   }
 </script>
 
-<AccountBox value={selected?.createdBy} {kind} {size} include={ids} on:change={change} />
+<AccountBox value={selected?.createdBy} {kind} {size} include={ids} on:change={change} mapToPrimarySocialId={false} />
