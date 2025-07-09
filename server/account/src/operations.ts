@@ -30,6 +30,7 @@ import {
   type PersonUuid,
   SocialIdType,
   systemAccountUuid,
+  readOnlyGuestAccountUuid,
   type WorkspaceMemberInfo,
   type WorkspaceUuid
 } from '@hcengineering/core'
@@ -100,7 +101,6 @@ import {
   verifyPassword,
   wrap,
   updateAllowReadOnlyGuests,
-  READONLY_GUEST_ACCOUNT,
   getWorkspaceByDataId,
   assignableRoles,
   getWorkspacesInfoWithStatusByIds,
@@ -127,7 +127,7 @@ export async function loginAsGuest (
   branding: Branding | null,
   token: string
 ): Promise<LoginInfo> {
-  const guestPerson = await db.person.findOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid })
+  const guestPerson = await db.person.findOne({ uuid: readOnlyGuestAccountUuid as PersonUuid })
   if (guestPerson == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
@@ -1738,7 +1738,7 @@ export async function isReadOnlyGuest (
   token: string
 ): Promise<boolean> {
   const { account } = decodeTokenVerbose(ctx, token)
-  return account === READONLY_GUEST_ACCOUNT
+  return account === readOnlyGuestAccountUuid
 }
 
 export async function getPerson (

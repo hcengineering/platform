@@ -26,7 +26,8 @@ import {
   type PersonId,
   type PersonUuid,
   type WorkspaceUuid,
-  type AccountUuid
+  type AccountUuid,
+  readOnlyGuestAccountUuid
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
@@ -67,7 +68,6 @@ import {
   getPersonName,
   doMergeAccounts,
   doMergePersons,
-  READONLY_GUEST_ACCOUNT,
   assignableRoles
 } from './utils'
 
@@ -636,7 +636,7 @@ export async function createIntegration (
   const { socialId, kind, workspaceUuid, data } = params
   const social = await db.socialId.findOne({ _id: socialId })
 
-  if (social?.personUuid === READONLY_GUEST_ACCOUNT) {
+  if (social?.personUuid === readOnlyGuestAccountUuid) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 

@@ -19,7 +19,8 @@
     AccountUuid,
     Configuration,
     getCurrentAccount,
-    pickPrimarySocialId
+    pickPrimarySocialId,
+    readOnlyGuestAccountUuid
   } from '@hcengineering/core'
   import {
     Breadcrumb,
@@ -49,7 +50,7 @@
   import { translateCB } from '@hcengineering/platform'
   import { createQuery, getClient, MessageBox, uiContext } from '@hcengineering/presentation'
   import { WorkspaceSetting } from '@hcengineering/setting'
-  import { AvatarType, ensureEmployeeForPerson } from '@hcengineering/contact'
+  import contact, { AvatarType, ensureEmployeeForPerson } from '@hcengineering/contact'
   import settingsRes from '../plugin'
 
   let loading = true
@@ -172,6 +173,11 @@
         guestUserInfo.guestSocialIds,
         guestUserInfo.guestPerson
       )
+    } else {
+      const readonlyEmployee = await client.findOne(contact.mixin.Employee, { personUuid: readOnlyGuestAccountUuid })
+      if (readonlyEmployee !== undefined) {
+        await client.update(readonlyEmployee, { active: false })
+      }
     }
   }
 
