@@ -769,12 +769,31 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     toRemove: { _id: Ref<Doc>, _class: Ref<Class<Doc>> }[]
   ): Promise<void> {
     const getMessage = async (cardId: CardID, msgId: MessageID): Promise<Message | undefined> => {
-      // Not yet supported groups
       const messages = await this.communicationApi.findMessages(this.communicationSession, { card: cardId, id: msgId })
-      if (messages.length !== 1) {
-        return
+      if (messages.length === 1) {
+        return messages[0]
       }
-      return messages[0]
+      const messagesGroups = await this.communicationApi.findMessagesGroups(this.communicationSession, {
+        card: cardId,
+        messageId: msgId
+      })
+      if (messagesGroups.length !== 1) {
+        return undefined
+      }
+      const group = messagesGroups[0]
+      const blob = await this.storageAdapter.get(ctx, this.workspace, group.blobId)
+      const messagesFile = Buffer.concat(blob as any).toString()
+      const messagesParsedFile = parseYaml(messagesFile)
+      const message = messagesParsedFile.messages.find((m) => m.id === msgId)
+      if (group.patches === undefined || message === undefined) {
+        return message
+      }
+      const relevantPatches = group.patches.filter((p) => p.messageId === msgId)
+      if (relevantPatches.length === 0) {
+        return message
+      } else {
+        return applyPatches(message, relevantPatches)
+      }
     }
     const cardDoc = (await this.storage.findAll(ctx, card.class.Card, { _id: cardId }))[0]
     const messagesUpdated = new Set<MessageID>()
