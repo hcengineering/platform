@@ -15,7 +15,6 @@
 
 export interface Config {
   Port: number
-  DbUrl: string
   Secret: string
   ServiceID: string
   AccountsUrl: string
@@ -29,7 +28,6 @@ const parseNumber = (str: string | undefined): number | undefined => (str !== un
 const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4007,
-    DbUrl: process.env.DB_URL,
     Secret: process.env.SECRET,
     ServiceID: process.env.SERVICE_ID ?? 'analytics-collector-service',
     AccountsUrl: process.env.ACCOUNTS_URL,

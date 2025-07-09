@@ -397,7 +397,6 @@ services:
     environment:
       - SECRET=secret
       - PORT=4017
-      - DB_URL=${DB_CR_URL}
       - SERVICE_ID=analytics-collector-service
       - ACCOUNTS_URL=http://huly.local:3000
       - STATS_URL=http://huly.local:4900
