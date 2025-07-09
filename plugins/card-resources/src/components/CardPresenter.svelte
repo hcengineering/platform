@@ -53,7 +53,7 @@
     cardObj = await client.findOne(card.class.Card, { _id: ref })
   }
 
-  $: _class = cardObj && client.getHierarchy().getClass(cardObj?._class) as MasterTag
+  $: _class = cardObj && (client.getHierarchy().getClass(cardObj?._class) as MasterTag)
   $: icon = _class && _class.icon
 </script>
 
@@ -77,7 +77,11 @@
         >
           {#if shouldShowAvatar}
             <div class="icon" use:tooltip={{ label: _class?.label ?? card.string.Card }}>
-              <Icon icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? card.icon.Card} iconProps={{ icon: _class?.color }} size={'small'} />
+              <Icon
+                icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? card.icon.Card}
+                iconProps={{ icon: _class?.color }}
+                size={'small'}
+              />
             </div>
           {/if}
           <span class="overflow-label">
@@ -101,7 +105,11 @@
       >
         {#if shouldShowAvatar}
           <div class="icon" use:tooltip={{ label: _class?.label ?? card.string.Card }}>
-            <Icon icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? card.icon.Card} iconProps={{ icon: _class?.color }} size={'small'} />
+            <Icon
+              icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? card.icon.Card}
+              iconProps={{ icon: _class?.color }}
+              size={'small'}
+            />
           </div>
         {/if}
         <span class="overflow-label cropped-text-presenter">

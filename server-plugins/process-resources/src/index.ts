@@ -324,7 +324,9 @@ async function getRelationValue (
     const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
     const reduced = await f(target, {}, control, execution)
-    const val = Array.isArray(reduced) ? reduced.map((v) => getObjectValue(context.key, v)) : getObjectValue(context.key, reduced)
+    const val = Array.isArray(reduced)
+      ? reduced.map((v) => getObjectValue(context.key, v))
+      : getObjectValue(context.key, reduced)
     if (val == null) {
       throw processError(
         process.error.EmptyRelatedObjectValue,
@@ -334,7 +336,10 @@ async function getRelationValue (
     }
     return val
   }
-  const val = Array.isArray(target) && target.length > 1 ? target.map((v) => getObjectValue(context.key, v)) : getObjectValue(context.key, target[0])
+  const val =
+    Array.isArray(target) && target.length > 1
+      ? target.map((v) => getObjectValue(context.key, v))
+      : getObjectValue(context.key, target[0])
   if (val == null) {
     throw processError(
       process.error.EmptyRelatedObjectValue,
