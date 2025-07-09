@@ -88,7 +88,8 @@
     "Ceil": "Округлить вверх",
     "Absolute": "Абсолютное значение",
     "LogAction": "Событие",
-    "Started": "Начат"
+    "Started": "Начат",
+    "Each": "Каждый"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

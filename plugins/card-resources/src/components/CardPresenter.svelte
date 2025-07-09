@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
+  import { Card, MasterTag } from '@hcengineering/card'
   import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
   import { AnySvelteComponent, Icon, tooltip } from '@hcengineering/ui'
-  import { ObjectPresenterType } from '@hcengineering/view'
+  import view, { ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, IconWithEmoji } from '@hcengineering/presentation'
   import { Ref } from '@hcengineering/core'
 
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
@@ -52,6 +52,9 @@
   async function readCard (ref: Ref<Card>): Promise<void> {
     cardObj = await client.findOne(card.class.Card, { _id: ref })
   }
+
+  $: _class = cardObj && client.getHierarchy().getClass(cardObj?._class) as MasterTag
+  $: icon = _class && _class.icon
 </script>
 
 {#if inline && cardObj}
@@ -73,8 +76,8 @@
           title={cardObj?.title}
         >
           {#if shouldShowAvatar}
-            <div class="icon" use:tooltip={{ label: card.string.Card }}>
-              <Icon icon={icon ?? card.icon.Card} size={'small'} />
+            <div class="icon" use:tooltip={{ label: _class?.label ?? card.string.Card }}>
+              <Icon icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? card.icon.Card} iconProps={{ icon: _class?.color }} size={'small'} />
             </div>
           {/if}
           <span class="overflow-label">
@@ -97,8 +100,8 @@
         title={cardObj?.title}
       >
         {#if shouldShowAvatar}
-          <div class="icon" use:tooltip={{ label: card.string.Card }}>
-            <Icon icon={icon ?? card.icon.Card} size={'small'} />
+          <div class="icon" use:tooltip={{ label: _class?.label ?? card.string.Card }}>
+            <Icon icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? card.icon.Card} iconProps={{ icon: _class?.color }} size={'small'} />
           </div>
         {/if}
         <span class="overflow-label cropped-text-presenter">

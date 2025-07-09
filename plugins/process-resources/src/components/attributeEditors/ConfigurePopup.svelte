@@ -43,6 +43,7 @@
   export let attrClass: Ref<Class<Doc>>
   export let category: AttributeCategory
   export let onChange: (contextValue: SelectedContext) => void
+  export let allowArray: boolean = false
 
   const client = getClient()
 
@@ -67,6 +68,7 @@
   const reduceFuncs = client
     .getModel()
     .findAllSync(plugin.class.ProcessFunction, { type: 'reduce' })
+    .filter((p) => p.category === undefined || (allowArray && p.category === 'array'))
     .map((it) => it._id)
 
   $: availableFunctions = getAvailableFunctions(context, contextValue.functions, attrClass, category)

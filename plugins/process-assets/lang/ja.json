@@ -87,7 +87,8 @@
     "Ceil": "切り上げ",
     "Absolute": "絶対値",
     "LogAction": "イベント",
-    "Started": "開始"
+    "Started": "開始",
+    "Each": "各"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
