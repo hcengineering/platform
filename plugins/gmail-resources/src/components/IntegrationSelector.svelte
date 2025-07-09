@@ -30,8 +30,11 @@
       selected = undefined
     } else {
       selected = integrations.find((p) => p.createdBy === e.detail)
+      if (selected === undefined) {
+        console.warn('Integration not found for selected person', e.detail)
+      }
     }
   }
 </script>
 
-<AccountBox value={selected?.modifiedBy} {kind} {size} include={ids} on:change={change} />
+<AccountBox value={selected?.createdBy} {kind} {size} include={ids} on:change={change} />
