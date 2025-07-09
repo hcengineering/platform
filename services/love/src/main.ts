@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { SplitLogger } from '@hcengineering/analytics-service'
 import { MeasureContext, MeasureMetricsContext, newMetrics, Ref, WorkspaceIds } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
@@ -36,12 +37,12 @@ import {
   S3Upload,
   WebhookReceiver
 } from 'livekit-server-sdk'
+import { join } from 'path'
 import config from './config'
 import { saveLiveKitEgressBilling, updateLiveKitSessions } from './billing'
+import { getRecordingPreset } from './preset'
 import { getS3UploadParams, saveFile } from './storage'
 import { WorkspaceClient } from './workspaceClient'
-import { join } from 'path'
-import { SplitLogger } from '@hcengineering/analytics-service'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
   try {
@@ -112,8 +113,9 @@ export const main = async (): Promise<void> => {
           if (data !== undefined && storageConfig !== undefined) {
             const storedBlob = await saveFile(ctx, data.wsIds, storageConfig, s3storageConfig, res.filename)
             if (storedBlob !== undefined) {
+              const preset = getRecordingPreset(config.RecordingPreset)
               const client = await WorkspaceClient.create(data.wsIds.uuid, ctx)
-              await client.saveFile(storedBlob._id, data.name, storedBlob, data.meetingMinutes)
+              await client.saveFile(storedBlob._id, data.name, storedBlob, preset, data.meetingMinutes)
               await client.close()
             }
             dataByUUID.delete(res.filename)
@@ -363,8 +365,9 @@ const startRecord = async (
       })
     }
   })
+  const { preset } = getRecordingPreset(config.RecordingPreset)
   await updateMetadata(roomClient, roomName, { recording: true })
-  await egressClient.startRoomCompositeEgress(roomName, { file: output }, { layout: 'grid' })
+  await egressClient.startRoomCompositeEgress(roomName, { file: output }, { layout: 'grid', encodingOptions: preset })
   return filepath
 }
 
