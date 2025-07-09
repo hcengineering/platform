@@ -42,13 +42,15 @@ import core, {
   type Space,
   SpaceType,
   systemAccountUuid,
+  readOnlyGuestAccountUuid,
   Tx,
   TxCreateDoc,
   TxCUD,
   TxMixin,
   TxRemoveDoc,
   TxUpdateDoc,
-  TypedSpace
+  TypedSpace,
+  TxFactory
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { makeRank } from '@hcengineering/rank'
@@ -92,6 +94,9 @@ export async function OnSpaceTypeMembers (txes: Tx[], control: TriggerControl): 
 
 export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
+
+  const systemTxFactory = new TxFactory(core.account.System, false)
+
   for (const tx of _txes) {
     const mixinTx = tx as TxMixin<Person, Employee>
     if (mixinTx.attributes.active !== true) continue
@@ -104,7 +109,39 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
     result.push(...txes)
 
     const emp = control.hierarchy.as(person, contact.mixin.Employee)
-    if (emp.role === 'GUEST') continue
+    if (emp.role === 'GUEST') {
+      const readonlyEmployees = await control.findAll(control.ctx, contact.mixin.Employee, { personUuid: readOnlyGuestAccountUuid })
+      if (readonlyEmployees.length === 0) continue
+
+      const readonlyEmployee = readonlyEmployees[0]
+      if (!readonlyEmployee.active) continue
+
+      const spaces = await control.findAll(control.ctx, core.class.Space, { members: readOnlyGuestAccountUuid })
+      for (const space of spaces) {
+        if (space._class === contact.class.PersonSpace || space.members.includes(account)) continue
+
+        const pushTx = systemTxFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+          $push: {
+            members: account
+          }
+        })
+        result.push(pushTx)
+      }
+
+      const collabs = await control.findAll(control.ctx, core.class.Collaborator, { collaborator: readOnlyGuestAccountUuid })
+
+      for (const collab of collabs) {
+        const pushTx = systemTxFactory.createTxCreateDoc(core.class.Collaborator, collab.space, {
+          attachedTo: collab.attachedTo,
+          collaborator: account,
+          attachedToClass: collab.attachedToClass,
+          collection: 'collaborators'
+        })
+        result.push(pushTx)
+      }
+
+      continue
+    }
 
     const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
     for (const space of spaces) {
