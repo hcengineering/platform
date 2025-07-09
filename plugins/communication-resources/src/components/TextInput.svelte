@@ -161,6 +161,7 @@
         file: false,
         image: false,
         emoji: true,
+        reference: true,
         hooks: {
           emptyContent: {
             onChange: (a) => (isEmpty = a)
