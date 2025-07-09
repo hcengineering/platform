@@ -87,7 +87,8 @@
     "Floor": "Arrotondare per difetto",
     "Ceil": "Arrotondare per eccesso",
     "Absolute": "Valore assoluto",
-    "LogAction": "Evento"
+    "LogAction": "Evento",
+    "Started": "Avviato"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",
