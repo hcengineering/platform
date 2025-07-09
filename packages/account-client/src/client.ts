@@ -89,9 +89,10 @@ export interface AccountClient {
     password: string,
     first: string,
     last: string,
-    inviteId: string
+    inviteId: string,
+    workspaceUrl: string
   ) => Promise<WorkspaceLoginInfo>
-  join: (email: string, password: string, inviteId: string) => Promise<WorkspaceLoginInfo>
+  join: (email: string, password: string, inviteId: string, workspaceUrl: string) => Promise<WorkspaceLoginInfo>
   createInvite: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
   checkJoin: (inviteId: string) => Promise<WorkspaceLoginInfo>
   checkAutoJoin: (inviteId: string, firstName?: string, lastName?: string) => Promise<WorkspaceLoginInfo>
@@ -442,20 +443,21 @@ class AccountClientImpl implements AccountClient {
     password: string,
     first: string,
     last: string,
-    inviteId: string
+    inviteId: string,
+    workspaceUrl: string
   ): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'signUpJoin' as const,
-      params: { email, password, first, last, inviteId }
+      params: { email, password, first, last, inviteId, workspaceUrl }
     }
 
     return await this.rpc(request)
   }
 
-  async join (email: string, password: string, inviteId: string): Promise<WorkspaceLoginInfo> {
+  async join (email: string, password: string, inviteId: string, workspaceUrl: string): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'join' as const,
-      params: { email, password, inviteId }
+      params: { email, password, inviteId, workspaceUrl }
     }
 
     return await this.rpc(request)

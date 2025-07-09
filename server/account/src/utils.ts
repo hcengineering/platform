@@ -24,15 +24,15 @@ import {
   type Person,
   type PersonId,
   type PersonUuid,
+  readOnlyGuestAccountUuid,
   roleOrder,
   SocialIdType,
   type SocialKey,
   systemAccountUuid,
-  readOnlyGuestAccountUuid,
+  type WorkspaceDataId,
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   type WorkspaceMode,
-  type WorkspaceUuid,
-  type WorkspaceDataId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -1164,20 +1164,27 @@ export async function doJoinByInvite (
   token: string,
   account: AccountUuid,
   workspace: Workspace,
-  invite: WorkspaceInvite
+  invite: WorkspaceInvite | null | undefined
 ): Promise<WorkspaceLoginInfo> {
   const role = await db.getWorkspaceRole(account, workspace.uuid)
 
-  // TODO: should we re-join kicked users? How are they marked as inactive?
-  if (role == null) {
-    await db.assignWorkspace(account, workspace.uuid, invite.role)
-  } else if (getRolePower(role) < getRolePower(invite.role)) {
-    await db.updateWorkspaceRole(account, workspace.uuid, invite.role)
+  if (invite !== undefined && invite != null) {
+    // TODO: should we re-join kicked users? How are they marked as inactive?
+    if (role == null) {
+      await db.assignWorkspace(account, workspace.uuid, invite.role)
+    } else if (getRolePower(role) < getRolePower(invite.role)) {
+      await db.updateWorkspaceRole(account, workspace.uuid, invite.role)
+    }
+    await useInvite(db, invite.id)
+  } else if (workspace.allowReadOnlyGuest) {
+    if (role == null) {
+      await db.assignWorkspace(account, workspace.uuid, AccountRole.Guest)
+    } else {
+      await db.updateWorkspaceRole(account, workspace.uuid, AccountRole.Guest)
+    }
   }
 
   const result = await selectWorkspace(ctx, db, branding, token, { workspaceUrl: workspace.url, kind: 'external' })
-
-  await useInvite(db, invite.id)
 
   ctx.info('Successfully joined a workspace using invite', {
     account,

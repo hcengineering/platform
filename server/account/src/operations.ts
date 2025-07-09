@@ -54,7 +54,7 @@ import {
   type SocialId,
   type WorkspaceInfoWithStatus,
   type WorkspaceInviteInfo,
-  type WorkspaceLoginInfo
+  type WorkspaceLoginInfo, WorkspaceJoinInfo
 } from './types'
 import {
   addSocialIdBase,
@@ -104,7 +104,8 @@ import {
   getWorkspaceByDataId,
   assignableRoles,
   getWorkspacesInfoWithStatusByIds,
-  doMergePersons
+  doMergePersons,
+  getWorkspaceByUrl
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -806,31 +807,20 @@ export async function join (
     email: string
     password: string
     inviteId: string
+    workspaceUrl: string
   },
   meta?: Meta
 ): Promise<WorkspaceLoginInfo | LoginInfo> {
-  const { email, password, inviteId } = params
+  const { email, password, inviteId, workspaceUrl } = params
 
-  if (email == null || email === '' || password == null || password === '' || inviteId == null || inviteId === '') {
+  if (password == null || password === '') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const normalizedEmail = cleanEmail(email)
-  const invite = await getWorkspaceInvite(db, inviteId)
-  if (invite == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  const workspaceJoinInfo = await getWorkspaceJoinInfo(ctx, db, email, inviteId, workspaceUrl)
+  ctx.info('Joining a workspace using invite', { email, normalizedEmail: workspaceJoinInfo.email, ...workspaceJoinInfo.invite })
 
-  const workspaceUuid = await checkInvite(ctx, invite, normalizedEmail)
-  const workspace = await getWorkspaceById(db, workspaceUuid)
-
-  if (workspace == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
-  }
-
-  ctx.info('Joining a workspace using invite', { email, normalizedEmail, ...invite })
-
-  const { token, account } = await login(ctx, db, branding, _token, { email: normalizedEmail, password })
+  const { token, account } = await login(ctx, db, branding, _token, { email: workspaceJoinInfo.email, password })
 
   if (token == null) {
     return {
@@ -838,7 +828,7 @@ export async function join (
     }
   }
 
-  return await doJoinByInvite(ctx, db, branding, token, account, workspace, invite)
+  return await doJoinByInvite(ctx, db, branding, token, account, workspaceJoinInfo.workspace, workspaceJoinInfo.invite)
 }
 
 /**
@@ -1017,43 +1007,62 @@ export async function signUpJoin (
     first: string
     last?: string
     inviteId: string
+    workspaceUrl: string
   },
   meta?: Meta
 ): Promise<WorkspaceLoginInfo> {
-  const { email, password, first, last, inviteId } = params
+  const { email, password, first, last, inviteId, workspaceUrl } = params
 
   if (
-    email == null ||
-    email === '' ||
     password == null ||
     password === '' ||
     first == null ||
-    first === '' ||
-    inviteId == null ||
-    inviteId === ''
+    first === ''
   ) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const normalizedEmail = cleanEmail(email)
-  ctx.info('Signing up and joining a workspace using invite', { email, normalizedEmail, first, last, inviteId })
-
-  const invite = await getWorkspaceInvite(db, inviteId)
-  if (invite == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  const workspaceUuid = await checkInvite(ctx, invite, normalizedEmail)
-  const workspace = await getWorkspaceById(db, workspaceUuid)
-
-  if (workspace == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
-  }
+  const workspaceJoinInfo = await getWorkspaceJoinInfo(ctx, db, email, inviteId, workspaceUrl)
+  ctx.info('Signing up and joining a workspace using invite', { email, normalizedEmail: workspaceJoinInfo.email, first, last, inviteId })
 
   const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last ?? '', true)
   void setTimezoneIfNotDefined(ctx, db, account, null, meta)
 
-  return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
+  return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceJoinInfo.workspace?.uuid), account, workspaceJoinInfo.workspace, workspaceJoinInfo.invite)
+}
+
+async function getWorkspaceJoinInfo (ctx: MeasureContext, db: AccountDB, email: string, inviteId: string, workspaceUrl: string): Promise<WorkspaceJoinInfo> {
+  if (email === undefined || email === '' || email === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+  const normalizedEmail = cleanEmail(email)
+  if (inviteId !== undefined && inviteId !== '' && inviteId !== null) {
+    const invite = await getWorkspaceInvite(db, inviteId)
+    if (invite == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+    const workspaceUuid = await checkInvite(ctx, invite, normalizedEmail)
+    const workspace = await getWorkspaceById(db, workspaceUuid)
+    if (workspace == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
+    }
+    return {
+      email,
+      invite,
+      workspace
+    }
+  }
+  if (workspaceUrl !== undefined && workspaceUrl !== '' && workspaceUrl !== null) {
+    const workspace = await getWorkspaceByUrl(db, workspaceUrl)
+    if (workspace == null || !workspace.allowReadOnlyGuest) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+    return {
+      email,
+      workspace
+    }
+  }
+  throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
 }
 
 export async function confirm (

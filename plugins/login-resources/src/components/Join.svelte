@@ -66,13 +66,14 @@
 
       const [loginStatus, result] =
         page === 'login'
-          ? await join(object.username, object.password, location.query?.inviteId ?? '')
+          ? await join(object.username, object.password, location.query?.inviteId ?? '', location.query?.workspace ?? '')
           : await signUpJoin(
             object.username,
             object.password,
             object.first,
             object.last,
-            location.query?.inviteId ?? ''
+            location.query?.inviteId ?? '',
+            location.query?.workspace ?? ''
           )
       status = loginStatus
 
