@@ -223,7 +223,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   reserveContext (id: string): () => void {
-    this.mgr.getConnection(id, true)
+    this.mgr.getConnection(id, this.mgrId, true)
     return () => {
       this.mgr.release(id) // We need to release first
     }
@@ -282,7 +282,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   ): Promise<void>
 
   async close (): Promise<void> {
-    this.mgr.close()
+    this.mgr.close(this.mgrId)
     this.refClient.close()
   }
 
@@ -299,7 +299,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
       sqlChunks.push(`LIMIT ${options.limit}`)
     }
     const finalSql: string = [select, ...sqlChunks].join(' ')
-    const result: DBDoc[] = await this.mgr.retry(undefined, (client) => client.execute(finalSql, vars.getValues()))
+    const result: DBDoc[] = await this.mgr.retry(undefined, this.mgrId, (client) =>
+      client.execute(finalSql, vars.getValues())
+    )
     return result.map((p) => parseDocWithProjection(p, domain, options?.projection))
   }
 
@@ -358,7 +360,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
     const schemaFields = getSchemaAndFields(domain)
     if (isOps) {
-      await this.mgr.write(undefined, async (client) => {
+      await this.mgr.write(undefined, this.mgrId, async (client) => {
         const res = await client.execute(
           `SELECT * FROM ${translateDomain(domain)} WHERE ${translatedQuery} FOR UPDATE`,
           vars.getValues()
@@ -426,7 +428,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (dataUpdated) {
       updates.push(`data = ${from}`)
     }
-    await this.mgr.retry(undefined, async (client) => {
+    await this.mgr.retry(undefined, this.mgrId, async (client) => {
       await client.execute(
         `UPDATE ${translateDomain(domain)} SET ${updates.join(', ')} WHERE ${translatedQuery};`,
         vars.getValues()
@@ -437,7 +439,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   async rawDeleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
     const vars = new ValuesVariables()
     const translatedQuery = this.buildRawQuery(vars, domain, query)
-    await this.mgr.retry(undefined, async (client) => {
+    await this.mgr.retry(undefined, this.mgrId, async (client) => {
       await client.execute(`DELETE FROM ${translateDomain(domain)} WHERE ${translatedQuery}`, vars.getValues())
     })
   }
@@ -482,7 +484,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             sqlChunks.push(`LIMIT ${escape(options.limit)}`)
           }
 
-          return (await this.mgr.retry(ctx.id, async (connection) => {
+          return (await this.mgr.retry(ctx.id, this.mgrId, async (connection) => {
             let total = options?.total === true ? 0 : -1
             if (options?.total === true) {
               const pvars = new ValuesVariables()
@@ -1529,7 +1531,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         return []
       }
 
-      return await this.mgr.retry('', async (client) => {
+      return await this.mgr.retry('', this.mgrId, async (client) => {
         const res = await client.execute(
           `SELECT * 
           FROM ${translateDomain(domain)}
@@ -1578,7 +1580,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           const query = `INSERT INTO ${tdomain} ("workspaceId", ${insertStr}) VALUES ${vals} ${
             handleConflicts ? `ON CONFLICT ("workspaceId", _id) DO UPDATE SET ${onConflictStr}` : ''
           };`
-          await this.mgr.retry(ctx.id, async (client) => await client.execute(query, values.getValues()))
+          await this.mgr.retry(ctx.id, this.mgrId, async (client) => await client.execute(query, values.getValues()))
         }
       } catch (err: any) {
         ctx.error('failed to upload', { err })
@@ -1596,7 +1598,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const part = docs.slice(i, i + batchSize)
       await ctx.with('clean', {}, () => {
         const params = [this.workspaceId, part]
-        return this.mgr.retry(ctx.id, (client) => client.execute(query, params))
+        return this.mgr.retry(ctx.id, this.mgrId, (client) => client.execute(query, params))
       })
     }
   }
@@ -1618,7 +1620,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           `GROUP BY _${field}`
         ]
         const finalSql = sqlChunks.join(' ')
-        return await this.mgr.retry(ctx.id, async (connection) => {
+        return await this.mgr.retry(ctx.id, this.mgrId, async (connection) => {
           const result = await connection.execute(finalSql, vars.getValues())
           return new Map(
             result.map((r) => [r[`_${field.toLowerCase()}`], typeof r.count === 'string' ? parseInt(r.count) : r.count])
@@ -1714,7 +1716,7 @@ export class PostgresAdapter extends PostgresAdapterBase {
 
   private async txMixin (ctx: MeasureContext, tx: TxMixin<Doc, Doc>, schemaFields: SchemaAndFields): Promise<TxResult> {
     await ctx.with('tx-mixin', { _class: tx.objectClass, mixin: tx.mixin }, async (ctx) => {
-      await this.mgr.write(ctx.id, async (client) => {
+      await this.mgr.write(ctx.id, this.mgrId, async (client) => {
         const doc = await this.findDoc(ctx, client, tx.objectClass, tx.objectId, true)
         if (doc === undefined) return
         TxProcessor.updateMixin4Doc(doc, tx)
@@ -1814,7 +1816,7 @@ export class PostgresAdapter extends PostgresAdapterBase {
       const ops: any = { '%hash%': this.curHash(), ...tx.operations }
       result.push(
         await ctx.with('tx-update-doc', { _class: tx.objectClass }, async (ctx) => {
-          await this.mgr.write(ctx.id, async (client) => {
+          await this.mgr.write(ctx.id, this.mgrId, async (client) => {
             doc = await this.findDoc(ctx, client, tx.objectClass, tx.objectId, true)
             if (doc === undefined) return {}
             ops.modifiedBy = tx.modifiedBy
@@ -1930,12 +1932,14 @@ export class PostgresAdapter extends PostgresAdapterBase {
             FROM (values ${indexes.join(',')}) AS update_data(__id, ${part[0].fields.map((it) => `"_${it}"`).join(',')})
             WHERE "workspaceId" = $1::uuid AND "_id" = update_data.__id`
 
-            await this.mgr.retry(ctx.id, (client) => ctx.with('bulk-update', {}, () => client.execute(op, data)))
+            await this.mgr.retry(ctx.id, this.mgrId, (client) =>
+              ctx.with('bulk-update', {}, () => client.execute(op, data))
+            )
           }
         }
         const toRetrieve = operations.filter((it) => it.retrieve)
         if (toRetrieve.length > 0) {
-          await this.mgr.retry(ctx.id, async (client) => {
+          await this.mgr.retry(ctx.id, this.mgrId, async (client) => {
             for (const op of toRetrieve) {
               const object = await this.findDoc(_ctx, client, op.objectClass, op.objectId)
               result.push({ object })
@@ -2012,7 +2016,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
   }
 
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
-    const res: DBDoc[] = await this.mgr.retry(undefined, (client) => {
+    const res: DBDoc[] = await this.mgr.retry(undefined, this.mgrId, (client) => {
       const query = `
         SELECT * 
         FROM "${translateDomain(DOMAIN_MODEL_TX)}" 

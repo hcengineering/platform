@@ -133,6 +133,7 @@ class PostgresClientReferenceImpl {
         this.count = 0
       }
       void (async () => {
+        this.mgr.close()
         this.onclose()
         const cl = this.client
         await cl.end({ timeout: 1 })
@@ -244,7 +245,8 @@ class ConnectionInfo {
   constructor (
     readonly connectionId: string,
     protected readonly client: DBClient,
-    readonly managed: boolean
+    readonly managed: boolean,
+    readonly mgrId: string
   ) {}
 
   async withReserve (action: (reservedClient: DBClient) => Promise<any>, forced: boolean = false): Promise<any> {
@@ -294,14 +296,14 @@ export class ConnectionMgr {
   private readonly connections = new Map<string, ConnectionInfo>()
   constructor (protected readonly client: DBClient) {}
 
-  async write (id: string | undefined, fn: (client: DBClient) => Promise<any>): Promise<void> {
+  async write (id: string | undefined, mgrId: string, fn: (client: DBClient) => Promise<any>): Promise<void> {
     const backoffInterval = 25 // millis
     const maxTries = 5
     let tries = 0
 
     const realId = id ?? `${++clId}`
 
-    const connection = this.getConnection(realId, false)
+    const connection = this.getConnection(realId, mgrId, false)
 
     try {
       while (true) {
@@ -343,14 +345,14 @@ export class ConnectionMgr {
     }
   }
 
-  async retry (id: string | undefined, fn: (client: DBClient) => Promise<any>): Promise<any> {
+  async retry (id: string | undefined, mgrId: string, fn: (client: DBClient) => Promise<any>): Promise<any> {
     const backoffInterval = 25 // millis
     const maxTries = 5
     let tries = 0
 
     const realId = id ?? `${++clId}`
     // Will reuse reserved if had and use new one if not
-    const connection = this.getConnection(realId, false)
+    const connection = this.getConnection(realId, mgrId, false)
 
     try {
       while (true) {
@@ -397,9 +399,12 @@ export class ConnectionMgr {
     }
   }
 
-  close (): void {
+  close (mgrId?: string): void {
     const cnts = this.connections
     for (const [k, conn] of Array.from(cnts.entries())) {
+      if (mgrId !== undefined && conn.mgrId !== mgrId) {
+        continue
+      }
       cnts.delete(k)
       try {
         conn.release()
@@ -409,10 +414,10 @@ export class ConnectionMgr {
     }
   }
 
-  getConnection (id: string, managed: boolean = true): ConnectionInfo {
+  getConnection (id: string, mgrId: string, managed: boolean = true): ConnectionInfo {
     let conn = this.connections.get(id)
     if (conn === undefined) {
-      conn = new ConnectionInfo(id, this.client, managed)
+      conn = new ConnectionInfo(id, this.client, managed, mgrId)
     }
     if (managed) {
       this.connections.set(id, conn)
