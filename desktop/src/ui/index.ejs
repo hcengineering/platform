@@ -25,18 +25,6 @@
         }
 
         :root {
-            --bg-secondary: #323233;
-            --bg-tertiary: #252526;
-            --bg-hover: #2a2d2e;
-            --bg-separator: #454545;
-            --text-primary: #cccccc;
-            --text-secondary: #888888;
-            --border-color: #2d2d30;
-            --accent-color: #007acc;
-            --close-hover: #c42b1c;
-        }
-
-        [data-theme="light"] {
             --bg-secondary: #f3f3f3;
             --bg-tertiary: #ffffff;
             --bg-hover: #e8e8e8;
@@ -46,6 +34,18 @@
             --border-color: #e5e5e5;
             --accent-color: #0078d4;
             --close-hover: #e81123;
+        }
+
+        [data-theme="dark"] {
+            --bg-secondary: #323233;
+            --bg-tertiary: #252526;
+            --bg-hover: #2a2d2e;
+            --bg-separator: #454545;
+            --text-primary: #cccccc;
+            --text-secondary: #888888;
+            --border-color: #2d2d30;
+            --accent-color: #007acc;
+            --close-hover: #c42b1c;
         }
 
         .desktop-app-titlebar {
@@ -117,11 +117,11 @@
             min-width: 180px;
             display: none;
             z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        [data-theme="light"] .desktop-app-dropdown-menu {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        [data-theme="dark"] .desktop-app-dropdown-menu {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .desktop-app-dropdown-item {
@@ -205,25 +205,6 @@
             color: white;
         }
 
-        .content-area {
-            padding: 20px;
-        }
-
-        .theme-toggle-button {
-            background: var(--bg-secondary);
-            border: 1px solid var(--bg-separator);
-            color: var(--text-primary);
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            margin-top: 10px;
-        }
-
-        .theme-toggle-button:hover {
-            background-color: var(--bg-hover);
-        }
-
     </style>
   <% } %>
 
@@ -232,21 +213,22 @@
 <body style="margin: 0; overflow: hidden;">
 
   <% if (typeof isWindows !== 'undefined' && isWindows) { %>
-    <div class="desktop-app-titlebar">
-        <div class="desktop-app-menu-container">
+    <div id="desktop-app-titlebar-root">
+        <div class="desktop-app-titlebar">
+            <div class="desktop-app-menu-container">
+            </div>
+
+            <div class="desktop-app-window-title" id="application-title-bar-caption">Huly Desktop</div>
+
+            <div class="desktop-app-window-controls">
+                <button class="desktop-app-control-button desktop-app-minimize" id="minimize-button">─</button>
+                <button class="desktop-app-control-button desktop-app-maximize" id="maximize-button">□</button>
+                <button class="desktop-app-control-button desktop-app-close" id="close-button">✕</button>
+            </div>
         </div>
-
-        <div class="desktop-app-window-title" id="application-title-bar-caption">Huly Desktop</div>
-
-        <div class="desktop-app-window-controls">
-            <button class="desktop-app-control-button desktop-app-minimize" id="minimize-button">─</button>
-            <button class="desktop-app-control-button desktop-app-maximize" id="maximize-button">□</button>
-            <button class="desktop-app-control-button desktop-app-close" id="close-button">✕</button>
-        </div>
-
     </div>
 
-    <div id="application-area">
+    <div id="application-area" style="margin: 0; overflow: hidden;">
     </div>
   <% } %> 
 

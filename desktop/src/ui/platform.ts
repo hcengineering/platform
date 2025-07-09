@@ -267,13 +267,6 @@ export async function configurePlatform (): Promise<PlatformParameters> {
   console.log('loaded branding', myBranding)
 
   const title = myBranding.title ?? 'Huly Desktop'
-  const windowTitle = document.getElementById('application-title-bar-caption')
-  if (windowTitle != null) {
-    console.info('Window title is here')
-    windowTitle.textContent = title
-  } else {
-    console.info('Window title is null :(')
-  }
   ipcMain.setTitle(title)
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)

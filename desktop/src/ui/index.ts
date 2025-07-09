@@ -21,31 +21,46 @@ import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
 import { setupTitleBarMenu } from './titleBarMenu'
 import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
-import { IPCMainExposed, ipcMainExposed } from './types'
+import { ipcMainExposed, StandardMenuCommandLogout, StandardMenuCommandSelectWorkspace, StandardMenuCommandOpenSettings } from './types'
+import { themeStore } from '@hcengineering/theme'
 
 defineScreenShare()
 defineGetDisplayMedia()
 
 window.addEventListener('DOMContentLoaded', () => {
   
+  const ipcMain = ipcMainExposed()
+  
+  if ((window as any).windowsPlatform === true) {
+    const titleBarRoot = document.getElementById('desktop-app-titlebar-root')
+    if (titleBarRoot) {
+      const menuBar = setupTitleBarMenu(ipcMain, titleBarRoot)
+
+      themeStore.subscribe((themeOptions) => {
+        if (themeOptions != null) {
+          const isDarkTheme = themeOptions.dark
+          menuBar.setTheme(isDarkTheme ? 'dark' : 'light')
+        }
+      })
+
+      void ipcMain.isOsUsingDarkTheme().then((isDarkTheme) => {
+        menuBar.setTheme(isDarkTheme ? 'dark' : 'light')
+      }).catch(() => {
+        menuBar.setTheme('light'); // fallback
+      })
+    }
+  }
+
   void configurePlatform().then((parameters) => {
     const windowTitle = document.getElementById('application-title-bar-caption')
-    if (windowTitle != null) {
+    if (windowTitle) {
       windowTitle.textContent = parameters.getBranding().getTitle()
     }
 
-    if ((window as any).windowsPlatform === true) {
-      setupTitleBarMenu()
-    }
-
-    const applicationArea = document.getElementById('application-area')
-    const targetElement = applicationArea ?? document.body
-    createApp(targetElement)
+    createApp(document.getElementById('application-area') ?? document.body)
   })
-  
-  const ipcMain = ipcMainExposed()
 
-  ipcMain.on('open-settings', () => {
+  ipcMain.on(StandardMenuCommandOpenSettings, () => {
     closePopup()
     closePanel()
     const loc = getCurrentResolvedLocation()
@@ -56,7 +71,7 @@ window.addEventListener('DOMContentLoaded', () => {
     navigate(loc)
   })
 
-  ipcMain.on('select-workspace', () => {
+  ipcMain.on(StandardMenuCommandSelectWorkspace, () => {
     closePopup()
     closePanel()
     const loc = getCurrentResolvedLocation()
@@ -68,7 +83,7 @@ window.addEventListener('DOMContentLoaded', () => {
     navigate(loc)
   })
 
-  ipcMain.on('logout', () => {
+  ipcMain.on(StandardMenuCommandLogout, () => {
     void logOut().then(() => {
       navigate({ path: [loginId] })
     })

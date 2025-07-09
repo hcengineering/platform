@@ -320,7 +320,7 @@ sudo npm install -g @microsoft/rush
 
 #### WSL Configuration
 
-Edit the `/etc/wsl.conf` file in WSL (e.g., `sudo nano /etc/wsl.conf`) and add the following content if it doesn't exist:
+If the source code is located on a Windows NTFS drive, then edit the `/etc/wsl.conf` file in WSL (e.g., `sudo nano /etc/wsl.conf`) and add the following content if it doesn't exist:
 
 ```ini
 [automount]
@@ -331,6 +331,8 @@ options = "metadata,umask=22,fmask=11"
 [interop]
 appendWindowsPath = false
 ```
+
+However, we recommend storing the repository on a WSL disk, as this dramatically improves build and maintenance operations.
 
 ### Running the Application
 

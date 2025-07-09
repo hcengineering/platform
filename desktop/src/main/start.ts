@@ -14,7 +14,7 @@
 //
 
 import { config as dotenvConfig } from 'dotenv'
-import { BrowserWindow, CookiesSetDetails, Notification, app, desktopCapturer, dialog, ipcMain, nativeImage, session, shell, systemPreferences } from 'electron'
+import { BrowserWindow, CookiesSetDetails, Notification, app, desktopCapturer, dialog, ipcMain, nativeImage, session, shell, systemPreferences, nativeTheme } from 'electron'
 import contextMenu from 'electron-context-menu'
 import log from 'electron-log'
 import Store from 'electron-store'
@@ -22,7 +22,7 @@ import { ProgressInfo, UpdateInfo } from 'electron-updater'
 import WinBadge from 'electron-windows-badge'
 import * as path from 'path'
 
-import { Config, NotificationParams } from '../ui/types'
+import { Config, MenuBarAction, NotificationParams, StandardMenuCommandLogout, StandardMenuCommandSelectWorkspace, StandardMenuCommandOpenSettings } from '../ui/types'
 import { getOptions } from './args'
 import { addMenus } from './standardMenu'
 import { addPermissionHandlers } from './permissions'
@@ -368,6 +368,82 @@ ipcMain.handle('window-maximize', () => {
 ipcMain.handle('window-close', () => {
   mainWindow?.close();
 });
+
+ipcMain.handle('get-is-os-using-dark-theme', () => {
+  return nativeTheme.shouldUseDarkColors;
+});
+
+ipcMain.handle('menu-action', async (_event: any, action: MenuBarAction) => {
+    if (mainWindow == null) {
+      return
+    }
+    function performZoom(increment: number): void {
+      if  (mainWindow == null) {
+        return
+      }
+      const currentZoom = mainWindow.webContents.getZoomFactor();
+      mainWindow.webContents.setZoomFactor(currentZoom + increment);
+    }
+    
+    switch (action) {
+      case 'settings':
+        mainWindow.webContents.send(StandardMenuCommandOpenSettings)
+        break;
+      case 'select-workspace':
+        mainWindow.webContents.send(StandardMenuCommandSelectWorkspace)
+        break;
+      case 'logout':
+        mainWindow.webContents.send(StandardMenuCommandLogout)
+        break;
+      case 'exit':
+        app.quit();
+        break;
+      case 'undo':
+        mainWindow.webContents.undo();
+        break;
+      case 'redo':
+        mainWindow.webContents.redo();
+        break;
+      case 'cut':
+        mainWindow.webContents.cut();
+        break;
+      case 'copy':
+        mainWindow.webContents.copy();
+        break;
+      case 'paste':
+        mainWindow.webContents.paste();
+        break;
+      case 'delete':
+        mainWindow.webContents.delete();
+        break;
+      case 'select-all':
+        mainWindow.webContents.selectAll();
+        break;
+      case 'reload':
+        mainWindow?.reload();
+        break;
+      case 'force-reload':
+        mainWindow.webContents.reloadIgnoringCache();
+        break;
+      case 'toggle-devtools':
+        mainWindow.webContents.toggleDevTools();
+        break;
+      case 'zoom-in':
+        performZoom(+0.1);
+        break;
+      case 'zoom-out':
+        performZoom(-0.1);
+        break;
+      case 'restore-size':
+        mainWindow.webContents.setZoomFactor(1.0);
+        break;
+      case 'toggle-fullscreen':
+        mainWindow.setFullScreen(!mainWindow.isFullScreen()); 
+        break;
+      default:
+        console.log('unknown menu action:', action);
+    }
+  });
 
 const gotTheLock = app.requestSingleInstanceLock()
 
