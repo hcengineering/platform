@@ -44,7 +44,7 @@ export interface ReplyRecord {
 
 export interface OtpRecord {
   telegramId: number
-  telegramUsername?: string
+  telegramUsername: string
   code: string
   expires: Date
   createdAt: Date

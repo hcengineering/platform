@@ -11,21 +11,15 @@
 <!-- See the License for the specific language governing permissions and -->
 <!-- limitations under the License. -->
 <script lang="ts">
-  import { Markup, type Ref, type Blob } from '@hcengineering/core'
+  import { Markup, type Blob, type Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { EmptyMarkup, isEmptyMarkup, areEqualMarkups } from '@hcengineering/text'
+  import { areEqualMarkups, EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { TextEditorHandler } from '@hcengineering/text-editor'
-  import { Button, ButtonIcon, handler, IconComponent, registerFocus, IconSend } from '@hcengineering/ui'
+  import { TextEditor } from '@hcengineering/text-editor-resources'
+  import { Button, ButtonIcon, handler, IconComponent, IconSend, registerFocus } from '@hcengineering/ui'
   import { FocusPosition } from '@tiptap/core'
-  import { createEventDispatcher } from 'svelte'
   import { EditorView } from '@tiptap/pm/view'
-  import {
-    EmojiExtension,
-    IsEmptyContentExtension,
-    referenceConfig,
-    ReferenceExtension,
-    TextEditor
-  } from '@hcengineering/text-editor-resources'
+  import { createEventDispatcher } from 'svelte'
 
   import communication from '../plugin'
   import { TextInputAction } from '../types'
@@ -129,12 +123,6 @@
       focusManager?.setFocus(idx)
     }
   }
-  const completionPlugin = ReferenceExtension.configure({
-    ...referenceConfig,
-    showDoc (event: MouseEvent, _id: string, _class: string) {
-      dispatch('open-document', { event, _id, _class })
-    }
-  })
 </script>
 
 <div class="text-input">
@@ -149,9 +137,6 @@
       bind:this={editor}
       {autofocus}
       {boundary}
-      canEmbedFiles={false}
-      canEmbedImages={false}
-      dropcursor={false}
       {placeholder}
       {placeholderParams}
       {onPaste}
@@ -171,11 +156,17 @@
         updateFocus()
         dispatch('focus')
       }}
-      extensions={[
-        completionPlugin,
-        EmojiExtension.configure(),
-        IsEmptyContentExtension.configure({ onChange: (value) => (isEmpty = value) })
-      ]}
+      kitOptions={{
+        dropcursor: false,
+        file: false,
+        image: false,
+        emoji: true,
+        hooks: {
+          emptyContent: {
+            onChange: (a) => (isEmpty = a)
+          }
+        }
+      }}
       on:update
     />
   </div>

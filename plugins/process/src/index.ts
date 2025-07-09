@@ -67,6 +67,8 @@ export interface Transition extends Doc {
 
 export interface ExecutionLog extends Doc {
   execution: Ref<Execution>
+  card: Ref<Card>
+  process: Ref<Process>
   transition?: Ref<Transition>
   action: ExecutionLogAction
 }
@@ -217,7 +219,8 @@ export default plugin(processId, {
     States: '' as Asset,
     ToDo: '' as Asset,
     WaitSubprocesses: '' as Asset,
-    ToDoRemove: '' as Asset
+    ToDoRemove: '' as Asset,
+    Start: '' as Asset
   },
   function: {
     FirstValue: '' as Ref<ProcessFunction>,

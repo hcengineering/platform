@@ -1206,6 +1206,16 @@ export async function openDoc (hierarchy: Hierarchy, object: Doc): Promise<void>
   navigate(loc)
 }
 
+export async function openDocFromRef<T extends Doc = Doc> (_class: Ref<Class<T>>, _id: Ref<T>): Promise<boolean> {
+  const client = getClient()
+  const doc = await client.findOne<Doc>(_class, { _id })
+  if (doc?._id !== undefined) {
+    await openDoc(client.getHierarchy(), doc)
+    return true
+  }
+  return false
+}
+
 /**
  * @public
  */

@@ -161,6 +161,10 @@ export default plugin(timeId, {
     AddToDo: '' as IntlString,
     NewToDoDetails: '' as IntlString,
     ToDo: '' as IntlString,
-    NewToDo: '' as IntlString
+    NewToDo: '' as IntlString,
+    UnassignToDo: '' as IntlString,
+    UnassignToDoConfirm: '' as IntlString,
+    ReassignToDo: '' as IntlString,
+    ReassignToDoConfirm: '' as IntlString
   }
 })

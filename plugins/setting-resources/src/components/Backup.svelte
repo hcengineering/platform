@@ -35,6 +35,7 @@
   | {
     files: { name: string, size: number }[]
     extraBlobs: { name: string, size: number, contentType: string }[]
+    extraBlobsTotal?: number
     error?: string
     info?: BackupInfo
   }
@@ -161,7 +162,7 @@
 
   $: snapshorsr = [...(backupInfo?.info?.snapshots ?? [])].reverse()
 
-  $: blobs = (backupInfo?.extraBlobs ?? []).sort((a, b) => b.size - a.size)
+  $: blobs = (backupInfo?.extraBlobs ?? []).sort((a, b) => b.size - a.size).slice(0, 100)
 </script>
 
 <div class="hulyComponent flex-no-shrink">
@@ -219,6 +220,17 @@
               </span>
               <div class="file-actions">
                 <Button label={setting.string.BackupFileDownload} on:click={() => downloadFile('backup.json.gz')} />
+              </div>
+            </div>
+          </div>
+          <div class="file-item">
+            <div class="file-name">{'blob-info.json.gz'}</div>
+            <div class="file-info">
+              <span class="file-size">
+                {getSize(fileSizes.get('blob-info.json.gz') ?? 0)}
+              </span>
+              <div class="file-actions">
+                <Button label={setting.string.BackupFileDownload} on:click={() => downloadFile('blob-info.json.gz')} />
               </div>
             </div>
           </div>
@@ -340,6 +352,25 @@
               }}
             />
           </div>
+          <div class="flex-row-center mt-2 flex-between">
+            <div class="wrap">
+              <Label label={setting.string.BackupLinkInfo} />
+              <div class="select-text anti-component p-3 border-b-1 border-divider-color">
+                {getFileUrl('blob.uuid', 'filename.blob')}
+              </div>
+            </div>
+            <Button
+              label={copied ? view.string.Copied : view.string.CopyToClipboard}
+              on:click={() => {
+                void navigator.clipboard.writeText(getFileUrl('blob.uuid', 'filename.blob')).then(() => {
+                  copied = true
+                  setTimeout(() => {
+                    copied = false
+                  }, 2500)
+                })
+              }}
+            />
+          </div>
           <div class="mt-2 flex-row-center flex-between">
             <Label label={setting.string.BackupBearerTokenInfo} />
 
@@ -361,18 +392,29 @@
         <svelte:fragment slot="title">
           <div class="p-1">
             <Label label={setting.string.NonBackupedBlobs} />
-            {blobs.length}
+            {blobs.length}/{backupInfo?.extraBlobsTotal ?? blobs.length}
           </div>
         </svelte:fragment>
         <div class="p-1">
           {#each blobs as file}
             <div class="file-item">
-              <div class="file-name">{file.name}</div>
+              <div class="file-name select-text">{file.name}</div>
               <div class="file-info">
                 <span class="file-size">{getSize(file.size)}</span>
                 <span class="file-content-type">{file.contentType}</span>
                 <div class="file-actions">
                   <Button label={setting.string.BackupFileDownload} on:click={() => downloadBlobFile(file.name)} />
+                  <Button
+                    label={copied2 ? view.string.Copied : view.string.CopyToClipboard}
+                    on:click={() => {
+                      void navigator.clipboard.writeText(file.name).then(() => {
+                        copied2 = true
+                        setTimeout(() => {
+                          copied2 = false
+                        }, 2500)
+                      })
+                    }}
+                  />
                 </div>
               </div>
             </div>

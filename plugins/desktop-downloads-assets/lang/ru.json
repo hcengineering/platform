@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Downloads": "Загрузки",
+    "Completed": "Завершено",
+    "Cancelled": "Отменено",
+    "Interrupted": "Прервано",
+    "Paused": "Приостановлено",
+    "Progressing": "В процессе"
+  }
+}

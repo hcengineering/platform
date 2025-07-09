@@ -19,7 +19,7 @@
   import { AnySvelteComponent, Icon, IconProps } from '../..'
 
   export let icon: Asset | AnySvelteComponent | ComponentType
-  export let iconProps: IconProps = {}
+  export let iconProps: Record<string, any> = {}
   export let pressed: boolean = false
 
   export let id: string | undefined = undefined

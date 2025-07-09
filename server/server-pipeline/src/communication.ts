@@ -103,6 +103,10 @@ export class CommunicationMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
+  async close (): Promise<void> {
+    await this.communicationApi.close()
+  }
+
   async handleCommand (_ctx: MeasureContext<SessionData>, args: DomainParams): Promise<any> {
     const ctx = this.getCommunicationCtx(_ctx)
     if (args.findMessages !== undefined) {
