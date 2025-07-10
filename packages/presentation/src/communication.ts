@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { initLiveQueries } from '@hcengineering/communication-client-query'
+import { initLiveQueries, refreshLiveQueries } from '@hcengineering/communication-client-query'
 import {
   type AddCollaboratorsEvent,
   type AttachBlobsOperation,
@@ -77,8 +77,8 @@ import core, {
   type TxDomainEvent
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
-
 import { generateLinkPreviewId } from '@hcengineering/communication-shared'
+
 import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
 import { addTxListener, removeTxListener, type TxListener } from './utils'
 
@@ -472,4 +472,8 @@ export function onCommunicationClient (fn: () => void): void {
       fn()
     })
   }
+}
+
+export async function refreshCommunicationClient (): Promise<void> {
+  await refreshLiveQueries()
 }
