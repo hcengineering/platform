@@ -11,7 +11,7 @@ import core, {
   type MeasureContext,
   type SessionData,
   type Space,
-  type Tx,
+  type Tx, type TxApplyIf,
   type TxCUD,
   TxProcessor,
   type TxUpdateDoc
@@ -38,15 +38,21 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
     }
 
     for (const tx of txes) {
-      await this.processTx(ctx, tx)
+      this.processTx(ctx, tx)
     }
 
     return await this.provideTx(ctx, txes)
   }
 
-  private async processTx (ctx: MeasureContext<SessionData>, tx: Tx): Promise<void> {
+  private processTx (ctx: MeasureContext<SessionData>, tx: Tx): void {
     const h = this.context.hierarchy
-    console.log(tx)
+    if (tx._class === core.class.TxApplyIf) {
+      const applyTx = tx as TxApplyIf
+      for (const t of applyTx.txes) {
+        this.processTx(ctx, t)
+      }
+      return
+    }
     if (TxProcessor.isExtendsCUD(tx._class)) {
       const cudTx = tx as TxCUD<Doc>
       const isTrigger = ctx.contextData.isTriggerCtx
