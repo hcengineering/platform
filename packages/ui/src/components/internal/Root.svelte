@@ -312,11 +312,11 @@
       font-size: 0.75rem;
       line-height: 150%;
       background-color: var(--theme-statusbar-color);
-      // border-bottom: 1px solid var(--theme-navpanel-divider);
+      z-index: 1;
 
       .history-box {
         -webkit-app-region: no-drag;
-        margin-left: 4.625rem;
+        margin-left: var(--history-box-padding, 4.625rem);
       }
       .maintenanceScheduled {
         padding: 0 0.5rem;
@@ -342,17 +342,6 @@
         display: none;
       }
 
-      @media (max-width: 480px) {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        padding: 2px 0;
-        width: 100%;
-
-        .second-row {
-          display: flex;
-        }
-      }
       @media print {
         display: none;
       }
@@ -375,5 +364,19 @@
 
   .left-items {
     overflow-x: auto;
+  }
+
+  @media (max-width: 480px) {
+    #ui-root:has(.workbench-container) .antiStatusBar {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 2px 0;
+      width: 100%;
+
+      .second-row {
+        display: flex;
+      }
+    }
   }
 </style>
