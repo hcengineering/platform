@@ -643,6 +643,7 @@ export class HulyFormatImporter {
       class: documents.class.OrgSpace,
       title: data.title,
       private: data.private ?? false,
+      autoJoin: data.autoJoin ?? false,
       archived: data.archived ?? false,
       description: data.description,
       owners: data.owners?.map((name) => this.findAccountByName(name)) ?? [],

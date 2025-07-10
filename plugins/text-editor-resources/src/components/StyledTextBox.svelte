@@ -2,7 +2,7 @@
   import { Markup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import presentation, { MessageViewer, getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
-  import { EmptyMarkup } from '@hcengineering/text'
+  import { EmptyMarkup, mergeKitOptions } from '@hcengineering/text'
   import textEditor, { RefAction } from '@hcengineering/text-editor'
   import {
     ActionIcon,
@@ -280,25 +280,28 @@
       {isScrollable}
       {extraActions}
       {boundary}
-      kitOptions={{
-        emoji: true,
-        hooks: {
-          focus: {
-            onCanBlur: (value) => (canBlur = value),
-            onFocus: handleFocus
-          }
+      kitOptions={mergeKitOptions(
+        {
+          emoji: true,
+          hooks: {
+            focus: {
+              onCanBlur: (value) => (canBlur = value),
+              onFocus: handleFocus
+            }
+          },
+          shortcuts: {
+            imageUpload: {
+              attachFile,
+              getFileUrl
+            }
+          },
+          inlineCommands: inlineCommandsConfig(
+            handleCommandSelected,
+            attachFile == null ? ['drawing-board', 'todo-list', 'image'] : ['drawing-board', 'todo-list']
+          )
         },
-        shortcuts: {
-          imageUpload: {
-            attachFile,
-            getFileUrl
-          }
-        },
-        inlineCommands: inlineCommandsConfig(
-          handleCommandSelected,
-          attachFile == null ? ['drawing-board', 'todo-list', 'image'] : ['drawing-board', 'todo-list']
-        )
-      }}
+        kitOptions
+      )}
       bind:content={rawValue}
       bind:this={editor}
       on:value={(evt) => {

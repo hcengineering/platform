@@ -150,6 +150,7 @@ export default mergeIds(processId, process, {
     Separator: '' as IntlString,
     Start: '' as IntlString,
     End: '' as IntlString,
-    Started: '' as IntlString
+    Started: '' as IntlString,
+    Each: '' as IntlString
   }
 })

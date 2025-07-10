@@ -88,7 +88,8 @@
     "Ceil": "Redondear hacia arriba",
     "Absolute": "Valor absoluto",
     "LogAction": "Evento",
-    "Started": "Iniciado"
+    "Started": "Iniciado",
+    "Each": "Cada"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",

@@ -44,6 +44,7 @@ export default plugin(serverProcessId, {
     FirstValue: '' as Resource<TransformFunc>,
     LastValue: '' as Resource<TransformFunc>,
     Random: '' as Resource<TransformFunc>,
+    All: '' as Resource<TransformFunc>,
     UpperCase: '' as Resource<TransformFunc>,
     LowerCase: '' as Resource<TransformFunc>,
     Trim: '' as Resource<TransformFunc>,
