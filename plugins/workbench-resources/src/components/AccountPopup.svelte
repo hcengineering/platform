@@ -34,6 +34,7 @@
   import workbench from '../plugin'
   import { logOut } from '../utils'
   import HelpAndSupport from './HelpAndSupport.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   let items: SettingsCategory[] = []
 
@@ -166,6 +167,8 @@
         action: async () => {
           await logOut()
           navigate({ path: [loginId] })
+          Analytics.handleEvent('workbench.SignOut')
+          Analytics.logout()
         },
         group: 'end'
       }

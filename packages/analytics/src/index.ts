@@ -7,7 +7,8 @@ import { addEventListener, PlatformEvent, Severity, Status, translate } from '@h
 export const providers: AnalyticProvider[] = []
 export interface AnalyticProvider {
   init: (config: Record<string, any>) => boolean
-  setUser: (email: string) => void
+  setUser: (email: string, data: any) => void
+  setAlias: (distinctId: string, alias: string) => void
   setTag: (key: string, value: string) => void
   setWorkspace: (ws: string) => void
   handleEvent: (event: string, params: Record<string, string>) => void
@@ -17,6 +18,8 @@ export interface AnalyticProvider {
 }
 
 export const Analytics = {
+  data: {},
+
   init (provider: AnalyticProvider, config: Record<string, any>): void {
     const res = provider.init(config)
     if (res) {
@@ -24,9 +27,15 @@ export const Analytics = {
     }
   },
 
-  setUser (email: string): void {
+  setUser (email: string, data: any): void {
     providers.forEach((provider) => {
-      provider.setUser(email)
+      provider.setUser(email, data)
+    })
+  },
+
+  setAlias (distinctId: string, alias: string): void {
+    providers.forEach((provider) => {
+      provider.setAlias(distinctId, alias)
     })
   },
 
@@ -44,7 +53,7 @@ export const Analytics = {
 
   handleEvent (event: string, params: Record<string, any> = {}): void {
     providers.forEach((provider) => {
-      provider.handleEvent(event, params)
+      provider.handleEvent(event, { ...this.data, ...params })
     })
   },
 

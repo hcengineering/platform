@@ -48,10 +48,10 @@ export async function connect (title: string): Promise<Client | undefined> {
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
   const workspaceLoginInfo = (await selectWorkspace(wsUrl, exchangedToken))[1]
   if (workspaceLoginInfo == null) {
-    console.error(
-      `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
-    )
+    const err = `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
+    console.error(err)
     // something went wrong with selecting workspace with the selected token
+    Analytics.handleError(new Error(err))
     await logOut()
     invalidError.set(true)
     return
@@ -179,7 +179,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   })
   console.log('logging in as guest')
   Analytics.handleEvent('GUEST LOGIN')
-  Analytics.setWorkspace(wsUrl)
+  // Analytics.setWorkspace(wsUrl)
 
   const account = workspaceLoginInfo.account
 
@@ -192,7 +192,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   if (me !== undefined) {
-    Analytics.setUser(account)
+    Analytics.setUser(account, { account })
     Analytics.setWorkspace(wsUrl)
     console.log('login: employee account', me)
     setCurrentAccount(me)
