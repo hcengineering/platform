@@ -32,8 +32,7 @@ import core, {
   type TypedSpace,
   type MeasureContext,
   type SessionData,
-  type AccountUuid,
-  AccountRole
+  type AccountUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { type Middleware, type TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'

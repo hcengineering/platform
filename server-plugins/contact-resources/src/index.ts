@@ -110,7 +110,9 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
 
     const emp = control.hierarchy.as(person, contact.mixin.Employee)
     if (emp.role === 'GUEST') {
-      const readonlyEmployees = await control.findAll(control.ctx, contact.mixin.Employee, { personUuid: readOnlyGuestAccountUuid })
+      const readonlyEmployees = await control.findAll(control.ctx, contact.mixin.Employee, {
+        personUuid: readOnlyGuestAccountUuid
+      })
       if (readonlyEmployees.length === 0) continue
 
       const readonlyEmployee = readonlyEmployees[0]
@@ -128,7 +130,9 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
         result.push(pushTx)
       }
 
-      const collabs = await control.findAll(control.ctx, core.class.Collaborator, { collaborator: readOnlyGuestAccountUuid })
+      const collabs = await control.findAll(control.ctx, core.class.Collaborator, {
+        collaborator: readOnlyGuestAccountUuid
+      })
 
       for (const collab of collabs) {
         const pushTx = systemTxFactory.createTxCreateDoc(core.class.Collaborator, collab.space, {

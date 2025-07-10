@@ -17,7 +17,7 @@ import {
   DOMAIN_MODEL,
   DOMAIN_SPACE,
   IndexKind,
-  AccountRole,
+  type AccountRole,
   type Class,
   type CollectionSize,
   type Permission,

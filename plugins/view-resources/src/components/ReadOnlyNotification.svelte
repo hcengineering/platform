@@ -9,7 +9,6 @@
   function joinWorkspace (e: MouseEvent): void {
     navigate({ path: ['login', 'join'], query: { workspace: getCurrentWorkspaceUrl() } })
   }
-
 </script>
 
 <NotificationToast title={notification.title} severity={notification.severity} onClose={onRemove}>

@@ -715,7 +715,11 @@ export async function updateAllowReadOnlyGuests (
 
   let guestPerson = await db.person.findOne({ uuid: readOnlyGuestAccountUuid as PersonUuid })
   if (guestPerson == null) {
-    await db.person.insertOne({ uuid: readOnlyGuestAccountUuid as PersonUuid, firstName: 'Anonymous', lastName: 'Guest' })
+    await db.person.insertOne({
+      uuid: readOnlyGuestAccountUuid as PersonUuid,
+      firstName: 'Anonymous',
+      lastName: 'Guest'
+    })
     await createAccount(db, readOnlyGuestAccountUuid as PersonUuid, true)
     guestPerson = await db.person.findOne({ uuid: readOnlyGuestAccountUuid as PersonUuid })
   }

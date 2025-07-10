@@ -54,7 +54,8 @@ import {
   type SocialId,
   type WorkspaceInfoWithStatus,
   type WorkspaceInviteInfo,
-  type WorkspaceLoginInfo, WorkspaceJoinInfo
+  type WorkspaceLoginInfo,
+  type WorkspaceJoinInfo
 } from './types'
 import {
   addSocialIdBase,
@@ -818,7 +819,11 @@ export async function join (
   }
 
   const workspaceJoinInfo = await getWorkspaceJoinInfo(ctx, db, email, inviteId, workspaceUrl)
-  ctx.info('Joining a workspace using invite', { email, normalizedEmail: workspaceJoinInfo.email, ...workspaceJoinInfo.invite })
+  ctx.info('Joining a workspace using invite', {
+    email,
+    normalizedEmail: workspaceJoinInfo.email,
+    ...workspaceJoinInfo.invite
+  })
 
   const { token, account } = await login(ctx, db, branding, _token, { email: workspaceJoinInfo.email, password })
 
@@ -1013,25 +1018,40 @@ export async function signUpJoin (
 ): Promise<WorkspaceLoginInfo> {
   const { email, password, first, last, inviteId, workspaceUrl } = params
 
-  if (
-    password == null ||
-    password === '' ||
-    first == null ||
-    first === ''
-  ) {
+  if (password == null || password === '' || first == null || first === '') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
   const workspaceJoinInfo = await getWorkspaceJoinInfo(ctx, db, email, inviteId, workspaceUrl)
-  ctx.info('Signing up and joining a workspace using invite', { email, normalizedEmail: workspaceJoinInfo.email, first, last, inviteId })
+  ctx.info('Signing up and joining a workspace using invite', {
+    email,
+    normalizedEmail: workspaceJoinInfo.email,
+    first,
+    last,
+    inviteId
+  })
 
   const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last ?? '', true)
   void setTimezoneIfNotDefined(ctx, db, account, null, meta)
 
-  return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceJoinInfo.workspace?.uuid), account, workspaceJoinInfo.workspace, workspaceJoinInfo.invite)
+  return await doJoinByInvite(
+    ctx,
+    db,
+    branding,
+    generateToken(account, workspaceJoinInfo.workspace?.uuid),
+    account,
+    workspaceJoinInfo.workspace,
+    workspaceJoinInfo.invite
+  )
 }
 
-async function getWorkspaceJoinInfo (ctx: MeasureContext, db: AccountDB, email: string, inviteId: string, workspaceUrl: string): Promise<WorkspaceJoinInfo> {
+async function getWorkspaceJoinInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  email: string,
+  inviteId: string,
+  workspaceUrl: string
+): Promise<WorkspaceJoinInfo> {
   if (email === undefined || email === '' || email === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
