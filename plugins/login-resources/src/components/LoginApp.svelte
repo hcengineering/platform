@@ -142,7 +142,7 @@
       <div
         style:position="fixed"
         style:left={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.75rem'}
-        style:top={'3rem'}
+        style:top={'calc(3rem + var(--huly-top-indent, 0rem))'}
         class="flex-row-center"
       >
         <LoginIcon /><span class="fs-title ml-2">{getMetadata(workbench.metadata.PlatformTitle)}</span>

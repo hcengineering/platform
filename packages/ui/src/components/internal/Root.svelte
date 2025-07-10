@@ -299,8 +299,8 @@
     display: flex;
     flex-direction: column;
     // height: 100vh;
-    height: 100%;
-    height: 100dvh;
+    height: calc(100% - var(--huly-top-indent, 0rem));
+    height: calc(100dvh - var(--huly-top-indent, 0rem));
     // height: var(--app-height);
 
     .antiStatusBar {
@@ -316,7 +316,7 @@
 
       .history-box {
         -webkit-app-region: no-drag;
-        margin-left: var(--history-box-padding, 4.625rem);
+        margin-left: var(--huly-history-box-left-indent, 4.625rem);
       }
       .maintenanceScheduled {
         padding: 0 0.5rem;

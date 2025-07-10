@@ -31,7 +31,7 @@ window.addEventListener('DOMContentLoaded', () => {
   
   const ipcMain = ipcMainExposed()
   
-  // if ((window as any).windowsPlatform === true) {
+  if ((window as any).windowsPlatform === true) {
     const titleBarRoot = document.getElementById('desktop-app-titlebar-root')
     if (titleBarRoot) {
       const menuBar = setupTitleBarMenu(ipcMain, titleBarRoot)
@@ -49,7 +49,7 @@ window.addEventListener('DOMContentLoaded', () => {
         menuBar.setTheme('light'); // fallback
       })
     }
-  // }
+  }
 
   void configurePlatform().then((parameters) => {
     const windowTitle = document.getElementById('application-title-bar-caption')
