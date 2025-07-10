@@ -115,9 +115,7 @@
       },
       (res) => {
         const result = res.getResult()
-        reactionNotifications = result.filter(
-          (notification) => notification.type === NotificationType.Reaction
-        )
+        reactionNotifications = result.filter((notification) => notification.type === NotificationType.Reaction)
         notifications = result.filter((notification) => notification.type !== NotificationType.Reaction)
         if (reactionNotifications.length > 0) {
           readViewport($isAppFocusedStore)
