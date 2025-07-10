@@ -69,7 +69,7 @@
           {noSelect}
           inline
           component={card.component.EditCard}
-          shrink={kind === 'list' || shrink ? 1 : 0}
+          shrink={1}
           title={cardObj?.title}
         >
           {#if shouldShowAvatar}
@@ -93,7 +93,7 @@
         {noSelect}
         inline
         component={card.component.EditCard}
-        shrink={kind === 'list' || shrink ? 1 : 0}
+        shrink={1}
         title={cardObj?.title}
       >
         {#if shouldShowAvatar}
