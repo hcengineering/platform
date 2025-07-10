@@ -62,6 +62,7 @@ import { isError } from './errors'
 import {
   Absolute,
   Add,
+  All,
   Append,
   Ceil,
   Cut,
@@ -323,7 +324,9 @@ async function getRelationValue (
     const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
     const reduced = await f(target, {}, control, execution)
-    const val = context.key !== '' ? getObjectValue(context.key, reduced) : reduced
+    const val = Array.isArray(reduced)
+      ? reduced.map((v) => getObjectValue(context.key, v))
+      : getObjectValue(context.key, reduced)
     if (val == null) {
       throw processError(
         process.error.EmptyRelatedObjectValue,
@@ -333,7 +336,10 @@ async function getRelationValue (
     }
     return val
   }
-  const val = context.key !== '' ? getObjectValue(context.key, target[0]) : target
+  const val =
+    Array.isArray(target) && target.length > 1
+      ? target.map((v) => getObjectValue(context.key, v))
+      : getObjectValue(context.key, target[0])
   if (val == null) {
     throw processError(
       process.error.EmptyRelatedObjectValue,
@@ -645,32 +651,34 @@ export async function RunSubProcess (
   const processId = params._id as Ref<Process>
   const target = control.modelDb.findObject(processId)
   if (target === undefined) return
-  if (target.parallelExecutionForbidden === true) {
-    const currentExecution = await control.findAll(control.ctx, process.class.Execution, {
-      process: target._id,
-      card,
-      done: false
-    })
-    if (currentExecution.length > 0) {
-      // todo, show erro after merge another pr
-      return
-    }
-  }
-  const initTransition = control.modelDb.findAllSync(process.class.Transition, { process: target._id, from: null })[0]
   const res: Tx[] = []
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const emptyContext = {} as ExecutionContext
-  res.push(
-    control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
-      process: processId,
-      currentState: initTransition.to,
-      card,
-      context: emptyContext,
-      status: ExecutionStatus.Active,
-      rollback: [],
-      parentId: execution._id
-    })
-  )
+  for (const _card of Array.isArray(card) ? card : [card]) {
+    if (target.parallelExecutionForbidden === true) {
+      const currentExecution = await control.findAll(control.ctx, process.class.Execution, {
+        process: target._id,
+        card: _card,
+        done: false
+      })
+      if (currentExecution.length > 0) {
+        // todo, show erro after merge another pr
+        continue
+      }
+    }
+    const initTransition = control.modelDb.findAllSync(process.class.Transition, { process: target._id, from: null })[0]
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const emptyContext = {} as ExecutionContext
+    res.push(
+      control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
+        process: processId,
+        currentState: initTransition.to,
+        card: _card,
+        context: emptyContext,
+        status: ExecutionStatus.Active,
+        rollback: [],
+        parentId: execution._id
+      })
+    )
+  }
   return { txes: res, rollback: undefined }
 }
 
@@ -869,6 +877,7 @@ export default async () => ({
     FirstValue,
     LastValue,
     Random,
+    All,
     UpperCase,
     LowerCase,
     Trim,

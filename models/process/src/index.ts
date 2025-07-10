@@ -456,6 +456,18 @@ export function createModel (builder: Builder): void {
     process.class.ProcessFunction,
     core.space.Model,
     {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.Each,
+      type: 'reduce'
+    },
+    process.function.All
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
       of: core.class.TypeNumber,
       type: 'transform',
       category: 'attribute',

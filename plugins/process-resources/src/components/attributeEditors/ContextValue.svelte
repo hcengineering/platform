@@ -29,6 +29,7 @@
   export let attribute: AnyAttribute
   export let attrClass: Ref<Class<Doc>>
   export let category: AttributeCategory
+  export let allowArray: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -49,7 +50,7 @@
     }
     showPopup(
       ConfigurePopup,
-      { contextValue, attrClass, masterTag, category, attribute, context, onChange },
+      { contextValue, attrClass, masterTag, category, attribute, context, onChange, allowArray },
       eventToHTMLElement(e)
     )
   }

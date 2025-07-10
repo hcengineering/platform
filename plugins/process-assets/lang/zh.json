@@ -88,7 +88,8 @@
     "Ceil": "向上取整",
     "Absolute": "绝对值",
     "LogAction": "事件",
-    "Started": "已启动"
+    "Started": "已启动",
+    "Each": "每个"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

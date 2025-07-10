@@ -77,6 +77,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.Random
   })
 
+  builder.mixin(process.function.All, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.All
+  })
+
   builder.mixin(process.function.UpperCase, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.UpperCase
   })

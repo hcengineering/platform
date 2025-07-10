@@ -110,7 +110,7 @@
     const reduceFunc = getRelationObjectReduceFunc(client, val.association, val.direction, attribute)
     onSelect({
       type: 'relation',
-      key: '',
+      key: '_id',
       association: val.association,
       direction: val.direction,
       name: val.name,

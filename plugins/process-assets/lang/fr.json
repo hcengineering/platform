@@ -88,7 +88,8 @@
     "Ceil": "Arrondir vers le haut",
     "Absolute": "Valeur absolue",
     "LogAction": "Événement",
-    "Started": "Démarré"
+    "Started": "Démarré",
+    "Each": "Chaque"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

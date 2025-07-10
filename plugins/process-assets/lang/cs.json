@@ -88,7 +88,8 @@
     "Ceil": "Zaokrouhlit nahoru",
     "Absolute": "Absolutní hodnota",
     "LogAction": "Událost",
-    "Started": "Spuštěno"
+    "Started": "Spuštěno",
+    "Each": "Každý"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

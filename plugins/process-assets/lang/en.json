@@ -88,7 +88,8 @@
     "Ceil": "Ceil",
     "Floor": "Floor",
     "LogAction": "Event",
-    "Started": "Started"
+    "Started": "Started",
+    "Each": "Each"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

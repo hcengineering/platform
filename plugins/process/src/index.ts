@@ -247,6 +247,7 @@ export default plugin(processId, {
     Floor: '' as Ref<ProcessFunction>,
     Offset: '' as Ref<ProcessFunction>,
     FirstWorkingDayAfter: '' as Ref<ProcessFunction>,
-    RoleContext: '' as Ref<ProcessFunction>
+    RoleContext: '' as Ref<ProcessFunction>,
+    All: '' as Ref<ProcessFunction>
   }
 })
