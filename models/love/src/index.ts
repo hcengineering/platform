@@ -517,6 +517,10 @@ export function createModel (builder: Builder): void {
     removeAccessLevel: AccountRole.Guest
   })
 
+  builder.mixin(love.class.ParticipantInfo, core.class.Class, core.mixin.TxAccessLevel, {
+    updateAccessLevel: AccountRole.Guest
+  })
+
   builder.mixin(love.class.MeetingMinutes, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.mixin(love.class.Room, core.class.Class, activity.mixin.ActivityDoc, {})
