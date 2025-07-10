@@ -1,0 +1,115 @@
+import {
+  BaseMiddleware,
+  type Middleware,
+  type PipelineContext,
+  type TxMiddlewareResult
+} from '@hcengineering/server-core'
+import core, {
+  AccountRole,
+  type Doc,
+  hasAccountRole,
+  type MeasureContext,
+  type SessionData,
+  type Space,
+  type Tx,
+  type TxCUD,
+  TxProcessor,
+  type TxUpdateDoc
+} from '@hcengineering/core'
+import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
+
+export class GuestPermissionsMiddleware extends BaseMiddleware implements Middleware {
+  static async create (
+    ctx: MeasureContext,
+    context: PipelineContext,
+    next: Middleware | undefined
+  ): Promise<GuestPermissionsMiddleware> {
+    return new GuestPermissionsMiddleware(context, next)
+  }
+
+  async tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
+    const account = ctx.contextData.account
+    if (hasAccountRole(account, AccountRole.User)) {
+      return await this.provideTx(ctx, txes)
+    }
+
+    if (account.role === AccountRole.DocGuest || account.role === AccountRole.ReadOnlyGuest) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+
+    for (const tx of txes) {
+      await this.processTx(ctx, tx)
+    }
+
+    return await this.provideTx(ctx, txes)
+  }
+
+  private async processTx (ctx: MeasureContext<SessionData>, tx: Tx): Promise<void> {
+    const h = this.context.hierarchy
+    console.log(tx)
+    if (TxProcessor.isExtendsCUD(tx._class)) {
+      const cudTx = tx as TxCUD<Doc>
+      const isTrigger = ctx.contextData.isTriggerCtx
+      const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
+      if (isSpace) {
+        if (this.isForbiddenSpaceTx(cudTx as TxCUD<Space>, isTrigger)) {
+          throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+        }
+      } else if (cudTx.space !== core.space.DerivedTx && this.isForbiddenTx(cudTx, isTrigger)) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      }
+    }
+  }
+
+  private isForbiddenTx (tx: TxCUD<Doc>, isTrigger: boolean | undefined): boolean {
+    if (tx._class === core.class.TxCreateDoc) return false
+    if (tx._class === core.class.TxMixin) return false
+    return !this.hasMixinAccessLevel(tx)
+  }
+
+  private isForbiddenSpaceTx (tx: TxCUD<Space>, isTrigger: boolean | undefined): boolean {
+    if (tx._class === core.class.TxRemoveDoc) return true
+    if (tx._class === core.class.TxCreateDoc) {
+      return !this.hasMixinAccessLevel(tx)
+    }
+    if (tx._class === core.class.TxUpdateDoc) {
+      const updateTx = tx as TxUpdateDoc<Space>
+      const ops = updateTx.operations
+      if (
+        isTrigger === true &&
+        ops.$pull === undefined &&
+        ops.$push?.members !== undefined &&
+        Object.keys(ops.$push).length === 1
+      ) {
+        return false
+      }
+      const keys = ['members', 'private', 'archived', 'owners', 'autoJoin']
+      if (keys.some((key) => (ops as any)[key] !== undefined)) {
+        return true
+      }
+      if ((ops as any).members !== undefined && isTrigger !== true) {
+        return true
+      }
+      if (ops.$push !== undefined || ops.$pull !== undefined) {
+        return true
+      }
+    }
+    return false
+  }
+
+  private hasMixinAccessLevel (tx: TxCUD<Doc>): boolean {
+    const h = this.context.hierarchy
+    const accessLevelMixin = h.classHierarchyMixin(tx.objectClass, core.mixin.TxAccessLevel)
+    if (accessLevelMixin === undefined) return false
+    if (tx._class === core.class.TxCreateDoc) {
+      return accessLevelMixin.createAccessLevel === AccountRole.Guest
+    }
+    if (tx._class === core.class.TxRemoveDoc) {
+      return accessLevelMixin.removeAccessLevel === AccountRole.Guest
+    }
+    if (tx._class === core.class.TxUpdateDoc) {
+      return accessLevelMixin.updateAccessLevel === AccountRole.Guest
+    }
+    return false
+  }
+}

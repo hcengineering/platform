@@ -18,11 +18,14 @@ import core, {
   type AccountUuid,
   type AttachedDoc,
   type Class,
-  DOMAIN_MODEL,
+  clone,
+  type Collaborator,
   type Doc,
   type DocumentQuery,
   type Domain,
+  DOMAIN_MODEL,
   type FindResult,
+  generateId,
   type LookupData,
   type MeasureContext,
   type ObjQueryType,
@@ -32,32 +35,30 @@ import core, {
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
+  type SessionData,
+  shouldShowArchived,
   type Space,
+  systemAccountUuid,
+  toFindResult,
   type Tx,
-  type TxCUD,
   type TxCreateDoc,
+  type TxCUD,
   TxProcessor,
   type TxRemoveDoc,
   type TxUpdateDoc,
   type TxWorkspaceEvent,
-  WorkspaceEvent,
-  clone,
-  generateId,
-  shouldShowArchived,
-  systemAccountUuid,
-  toFindResult,
-  type SessionData,
-  type Collaborator
+  WorkspaceEvent
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import {
   BaseMiddleware,
   type Middleware,
+  type PipelineContext,
   type ServerFindOptions,
-  type TxMiddlewareResult,
-  type PipelineContext
+  type TxMiddlewareResult
 } from '@hcengineering/server-core'
 import { isOwner, isSystem } from './utils'
+
 type SpaceWithMembers = Pick<Space, '_id' | 'members' | 'private' | '_class' | 'archived'>
 
 /**
@@ -404,35 +405,12 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
   }
 
-  private isForbiddenGuestTx (tx: TxCUD<Space>): boolean {
-    if (tx._class === core.class.TxRemoveDoc) return true
-    if (tx._class === core.class.TxCreateDoc) return false
-    if (tx._class === core.class.TxUpdateDoc) {
-      const updateTx = tx as TxUpdateDoc<Space>
-      const ops = updateTx.operations
-      const keys = ['members', 'private', 'archived', 'owners', 'autoJoin']
-      if (keys.some((key) => (ops as any)[key] !== undefined)) {
-        return true
-      }
-      if (ops.$push !== undefined || ops.$pull !== undefined) {
-        return true
-      }
-    }
-    return false
-  }
-
   private async processTx (ctx: MeasureContext<SessionData>, tx: Tx): Promise<void> {
     const h = this.context.hierarchy
     if (TxProcessor.isExtendsCUD(tx._class)) {
       const cudTx = tx as TxCUD<Doc>
       const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
       if (isSpace) {
-        const account = ctx.contextData.account
-        if (account.role === AccountRole.Guest) {
-          if (this.isForbiddenGuestTx(cudTx as TxCUD<Space>)) {
-            throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-          }
-        }
         await this.handleTx(ctx, cudTx as TxCUD<Space>)
       } else {
         await this.handeCollaborator(ctx, cudTx as TxCUD<Collaborator>)
@@ -448,10 +426,6 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
   async tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     await this.init(ctx)
-    const account = ctx.contextData.account
-    if (account.role === AccountRole.DocGuest) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-    }
     const processed = new Set<Ref<Tx>>()
     ctx.contextData.contextCache.set('processed', processed)
     for (const tx of txes) {
