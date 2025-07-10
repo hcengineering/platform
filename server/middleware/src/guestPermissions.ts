@@ -11,7 +11,8 @@ import core, {
   type MeasureContext,
   type SessionData,
   type Space,
-  type Tx, type TxApplyIf,
+  type Tx,
+  type TxApplyIf,
   type TxCUD,
   TxProcessor,
   type TxUpdateDoc
