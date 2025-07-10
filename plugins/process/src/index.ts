@@ -116,7 +116,8 @@ export interface ProcessToDo extends ToDo {
 
 export type MethodParams<T extends Doc> = {
   [P in keyof T]?: ObjQueryType<T[P]> | string
-} & DocumentUpdate<T> & Record<string, any>
+} & DocumentUpdate<T> &
+Record<string, any>
 
 export interface State extends Doc {
   process: Ref<Process>

@@ -112,7 +112,7 @@
     const oldParams = { ...params }
     params = {}
     for (const attr of allAttrs) {
-      const key = attr.name as keyof MethodParams<Card>
+      const key = attr.name
       if (oldParams[key] !== undefined) {
         ;(params as any)[key] = oldParams[key]
       }
