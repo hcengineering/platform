@@ -99,6 +99,10 @@ export class ChannelPage extends CommonPage {
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
     await this.buttonSendMessage().click()
+    // since we use immediate messages delivery with async processing behind the scenes
+    // let's give it some time to get processed on the backend before proceeding
+    // so it won't interfere with the next steps
+    await this.page.waitForTimeout(500)
   }
 
   async sendMention (message: string, categoryName?: string): Promise<void> {
@@ -197,7 +201,8 @@ export class ChannelPage extends CommonPage {
   }
 
   async clickChooseChannel (channel: string): Promise<void> {
-    await this.chooseChannel(channel).click({ force: true })
+    await expect(this.chooseChannel(channel)).toBeVisible()
+    await this.chooseChannel(channel).click()
   }
 
   async addEmoji (textMessage: string, emoji: string): Promise<void> {
