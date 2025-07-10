@@ -139,6 +139,8 @@
     "ReadOnlyWarningMessage": "Jste v režimu prohlížení. Chcete spravovat jakékoli projekty v Huly? Úkoly, termíny, tým — připojte se k tomuto prostoru pro spolupráci nebo si vytvořte vlastní!",
     "ReadOnlyJoinWorkspace": "Připojit se k prostoru 👥",
     "ReadOnlySignUp": "Vytvořit účet 🚀",
+    "PermissionWarningTitle": "✨ Zvyšte svůj přístup!",
+    "PermissionWarningMessage": "Vaše současná role má omezená oprávnění. Chcete-li odemknout tuto a další pokročilé funkce, požádejte správce svého pracovního prostoru o zvýšení úrovně přístupu!",
     "Icon": "Ikona",
     "Color": "Barva",
     "AutomationOnly": "Pouze automatizace"

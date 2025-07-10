@@ -139,6 +139,8 @@
     "ReadOnlyWarningMessage": "您处于只读模式。想在Huly管理任何项目吗？任务、截止日期、团队 — 加入此工作区协作或创建您自己的空间！",
     "ReadOnlyJoinWorkspace": "加入工作区 👥",
     "ReadOnlySignUp": "创建账户 🚀",
+    "PermissionWarningTitle": "✨ 提升您的访问权限！",
+    "PermissionWarningMessage": "您当前角色的权限有限。要解锁此功能和其他高级功能，请让您的工作区管理员升级您的访问权限！",
     "Icon": "图标",
     "Color": "颜色",
     "AutomationOnly": "仅限自动化"

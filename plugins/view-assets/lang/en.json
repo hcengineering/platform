@@ -139,6 +139,8 @@
     "ReadOnlyWarningMessage": "You're in view-only mode. Want to manage any project in Huly? Tasks, deadlines, team — join this workspace to collaborate or create your own space!",
     "ReadOnlyJoinWorkspace": "Join workspace 👥",
     "ReadOnlySignUp": "Create account 🚀",
+    "PermissionWarningTitle": "✨ Level up your access!",
+    "PermissionWarningMessage": "Your current role has limited permissions. To unlock this and other advanced features, ask your workspace admin to upgrade your access level!",
     "Icon": "Icon",
     "Color": "Color",
     "AutomationOnly": "Automation only"

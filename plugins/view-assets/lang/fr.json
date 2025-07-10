@@ -134,6 +134,8 @@
     "ReadOnlyWarningMessage": "Vous êtes en mode consultation. Voulez-vous gérer tous types de projets dans Huly ? Tâches, délais, équipe — rejoignez cet espace pour collaborer ou créez le vôtre !",
     "ReadOnlyJoinWorkspace": "Rejoindre l'espace 👥",
     "ReadOnlySignUp": "Créer un compte 🚀",
+    "PermissionWarningTitle": "✨ Améliorez votre accès !",
+    "PermissionWarningMessage": "Votre rôle actuel a des autorisations limitées. Pour débloquer cette fonctionnalité et d'autres fonctionnalités avancées, demandez à l'administrateur de votre espace de travail de mettre à jour votre niveau d'accès !",
     "Icon": "Icône",
     "Color": "Couleur",
     "AutomationOnly": "Automatisation uniquement"
