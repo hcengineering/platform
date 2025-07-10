@@ -20,10 +20,10 @@
   export let context: Context
 
   $: relation = context.relations[contextValue.name]
-  $: attr = contextValue.key !== '' && relation?.attributes?.find((p) => p.name === contextValue.key)
+  $: attr = contextValue.key !== '_id' && relation?.attributes?.find((p) => p.name === contextValue.key)
 </script>
 
-{#if contextValue.key === ''}
+{#if contextValue.key === '_id'}
   {relation.name}
 {:else if relation !== undefined && attr}
   {relation.name} > <Label label={attr.label} />

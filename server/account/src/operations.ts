@@ -353,7 +353,7 @@ export async function validateOtp (
   // Note: can support OTP based on any other social logins later
   const normalizedEmail = cleanEmail(email)
   try {
-    const emailSocialId = await getEmailSocialId(db, normalizedEmail)
+    let emailSocialId = await getEmailSocialId(db, normalizedEmail)
 
     if (emailSocialId == null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
@@ -445,6 +445,11 @@ export async function validateOtp (
             throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
           }
         }
+      }
+
+      emailSocialId = await db.socialId.findOne({ _id: emailSocialId._id })
+      if (emailSocialId == null) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
       }
     }
 
@@ -1096,7 +1101,7 @@ export async function confirm (
   const email = extra?.confirmEmail
   if (email === undefined) {
     ctx.error('Email not provided for confirmation', { account, extra })
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
   const socialId = await confirmEmail(ctx, db, account, email)
@@ -1105,7 +1110,7 @@ export async function confirm (
 
   const person = await db.person.findOne({ uuid: account })
   if (person == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: account }))
   }
 
   const result = {
@@ -1246,7 +1251,7 @@ export async function restorePassword (
   const email = extra?.restoreEmail
   if (email === undefined) {
     ctx.error('Email not provided for restoration', { account, extra })
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
   const emailSocialId = await getEmailSocialId(db, email)

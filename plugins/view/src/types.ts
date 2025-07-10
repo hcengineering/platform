@@ -489,6 +489,11 @@ export type ViewActionAvailabilityFunction<T extends Doc = Doc> = (doc: T | T[] 
 /**
  * @public
  */
+export type OpenDocumentFunction<T extends Doc = Doc> = (_class: Ref<Class<T>>, _id: Ref<T>) => Promise<boolean>
+
+/**
+ * @public
+ */
 export type ViewAction<P = Record<string, any>> = Resource<ViewActionFunction<Doc, P>>
 
 /**

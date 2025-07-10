@@ -40,7 +40,6 @@ export default mergeIds(contactId, contact, {
     Contacts: '' as AnyComponent,
     ContactsTabs: '' as AnyComponent,
     OrganizationEditor: '' as AnyComponent,
-    EmployeePresenter: '' as AnyComponent,
     EmployeeRefPresenter: '' as AnyComponent,
     PersonRefPresenter: '' as AnyComponent,
     PersonEditor: '' as AnyComponent,

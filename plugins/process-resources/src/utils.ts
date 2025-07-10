@@ -68,29 +68,33 @@ export function generateContextId (): ContextId {
   return generateId() as string as ContextId
 }
 
-export function getContextAttribute (
+export function getContextMasterTag (
   client: Client,
   context: SelectedContext | undefined,
   masterTag: Ref<MasterTag>
-): AnyAttribute | undefined {
+): Ref<MasterTag> | undefined {
   if (context === undefined) return
   const h = client.getHierarchy()
   const model = client.getModel()
   if (context.type === 'attribute') {
-    return h.findAttribute(masterTag, context.key)
+    const attr = h.findAttribute(masterTag, context.key)
+    return (attr?.type as RefTo<Doc>)?.to
   }
   if (context.type === 'nested') {
     const attr = h.findAttribute(masterTag, context.path)
     if (attr === undefined) return
     const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
     const targetClass = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
-    return h.findAttribute(targetClass, context.key)
+    const nested = h.findAttribute(targetClass, context.key)
+    return (nested?.type as RefTo<Doc>)?.to
   }
   if (context.type === 'relation') {
     const assoc = model.findObject(context.association)
     if (assoc === undefined) return
     const targetClass = context.direction === 'A' ? assoc.classA : assoc.classB
-    return h.findAttribute(targetClass, context.key)
+    if (context.key === '_id') return targetClass as Ref<MasterTag>
+    const nested = h.findAttribute(targetClass, context.key)
+    return (nested?.type as RefTo<Doc>)?.to
   }
 }
 
@@ -334,7 +338,7 @@ export function getRelationObjectReduceFunc (
   const assoc = client.getModel().findObject(association)
   if (assoc === undefined) return undefined
   if (assoc.type === '1:1') return undefined
-  if (assoc.type === '1:N' && direction === 'B') return undefined
+  if (assoc.type === '1:N' && direction === 'A') return undefined
   if (target.type._class === core.class.ArrOf) return undefined
   return process.function.FirstValue
 }
@@ -347,7 +351,7 @@ export function getRelationReduceFunc (
   const assoc = client.getModel().findObject(association)
   if (assoc === undefined) return undefined
   if (assoc.type === '1:1') return undefined
-  if (assoc.type === '1:N' && direction === 'B') return undefined
+  if (assoc.type === '1:N' && direction === 'A') return undefined
   return process.function.FirstValue
 }
 

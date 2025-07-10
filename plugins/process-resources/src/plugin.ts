@@ -55,7 +55,8 @@ export default mergeIds(processId, process, {
     TransitionEditor: '' as AnyComponent,
     StateEditor: '' as AnyComponent,
     TransitionRefPresenter: '' as AnyComponent,
-    LogActionPresenter: '' as AnyComponent
+    LogActionPresenter: '' as AnyComponent,
+    NotifierExtension: '' as AnyComponent
   },
   transformEditor: {
     DateOffsetEditor: '' as AnyComponent,
@@ -148,6 +149,8 @@ export default mergeIds(processId, process, {
     Search: '' as IntlString,
     Separator: '' as IntlString,
     Start: '' as IntlString,
-    End: '' as IntlString
+    End: '' as IntlString,
+    Started: '' as IntlString,
+    Each: '' as IntlString
   }
 })

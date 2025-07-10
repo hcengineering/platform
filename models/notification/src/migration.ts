@@ -26,7 +26,8 @@ import core, {
   type AccountUuid,
   DOMAIN_COLLABORATOR,
   type Collaborator,
-  generateId
+  generateId,
+  DOMAIN_TRANSIENT
 } from '@hcengineering/core'
 import {
   migrateSpace,
@@ -244,18 +245,13 @@ export async function migrateDuplicateContexts (client: MigrationClient): Promis
 }
 
 async function migrateCollaborators (client: MigrationClient): Promise<void> {
-  const alreadyMigrated = await client.find<Collaborator>(DOMAIN_COLLABORATOR, {}, { limit: 1 })
-  if (alreadyMigrated.length > 0) {
-    client.logger.log('collaborators already migrated, skipping', {})
-    return
-  }
   const hierarchy = client.hierarchy
   client.logger.log('processing extract collaborators ', {})
   for (const domain of client.hierarchy.domains()) {
-    if (['tx'].includes(domain)) continue
+    if ([DOMAIN_TX, DOMAIN_TRANSIENT].includes(domain)) continue
     client.logger.log('processing domain ', { domain })
     let processed = 0
-    const iterator = await client.traverse(domain, {})
+    const iterator = await client.traverse(domain, { 'notification:mixin:Collaborators': { $exists: true } })
 
     try {
       while (true) {
@@ -846,7 +842,7 @@ export const notificationOperation: MigrateOperation = {
         func: migrateAccounts
       },
       {
-        state: 'migrate-collaborators',
+        state: 'migrate-collaborators-v2',
         mode: 'upgrade',
         func: migrateCollaborators
       }

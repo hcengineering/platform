@@ -136,36 +136,14 @@ export async function getAnyIntegrationByAccount (
   }
 }
 
-export async function getOrCreateSocialId (
+export async function addSocialIdToPerson (
   account: AccountUuid,
   telegramId: number,
   username?: string
 ): Promise<PersonId> {
   const accountClient = getAccountClient(serviceToken())
-  const socialId = await accountClient.findFullSocialIdBySocialKey(
-    buildSocialIdString({ type: SocialIdType.TELEGRAM, value: telegramId.toString() })
-  )
-  if (socialId == null) {
-    return await accountClient.addSocialIdToPerson(
-      account,
-      SocialIdType.TELEGRAM,
-      telegramId.toString(),
-      true,
-      username
-    )
-  }
 
-  // TODO: proper handle if connected to other account
-  if (socialId.personUuid !== account) {
-    console.error('Social id connected to another account', socialId, account)
-    throw new Error('Social id connected to another account')
-  }
-
-  if (socialId.displayValue !== username) {
-    await accountClient.updateSocialId(socialId._id, username ?? '')
-  }
-
-  return socialId._id
+  return await accountClient.addSocialIdToPerson(account, SocialIdType.TELEGRAM, telegramId.toString(), true, username)
 }
 
 export async function createIntegration (socialId: PersonId, workspace: WorkspaceUuid): Promise<Integration> {

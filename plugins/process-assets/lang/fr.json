@@ -87,7 +87,9 @@
     "Floor": "Arrondir vers le bas",
     "Ceil": "Arrondir vers le haut",
     "Absolute": "Valeur absolue",
-    "LogAction": "Événement"
+    "LogAction": "Événement",
+    "Started": "Démarré",
+    "Each": "Chaque"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

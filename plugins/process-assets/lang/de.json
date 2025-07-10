@@ -87,7 +87,9 @@
     "Floor": "Abrunden",
     "Ceil": "Aufrunden",
     "Absolute": "Absolutwert",
-    "LogAction": "Ereignis"
+    "LogAction": "Ereignis",
+    "Started": "Gestartet",
+    "Each": "Jeder"
   },  
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

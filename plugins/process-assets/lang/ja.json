@@ -86,7 +86,9 @@
     "Floor": "切り捨て",
     "Ceil": "切り上げ",
     "Absolute": "絶対値",
-    "LogAction": "イベント"
+    "LogAction": "イベント",
+    "Started": "開始",
+    "Each": "各"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

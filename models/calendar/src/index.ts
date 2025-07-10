@@ -139,6 +139,7 @@ export class TEvent extends TAttachedDoc implements Event {
     reminders?: number[]
 
   @Prop(ArrOf(TypeString()), calendar.string.ExternalParticipants)
+  @Index(IndexKind.Indexed)
     externalParticipants?: string[]
 
   access!: AccessLevel
@@ -147,7 +148,8 @@ export class TEvent extends TAttachedDoc implements Event {
 
   timeZone?: string
 
-  user!: PersonId
+  @Index(IndexKind.Indexed)
+    user!: PersonId
 
   blockTime!: boolean
 }

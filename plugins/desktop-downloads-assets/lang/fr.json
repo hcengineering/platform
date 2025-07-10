@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Downloads": "Téléchargements",
+    "Completed": "Terminé",
+    "Cancelled": "Annulé",
+    "Interrupted": "Interrompu",
+    "Paused": "En pause",
+    "Progressing": "En cours"
+  }
+}

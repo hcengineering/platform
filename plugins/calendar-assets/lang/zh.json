@@ -110,6 +110,17 @@
     "MeetingRescheduledNotification": "会议时间已更改",
     "MeetingCanceledNotification": "会议已取消: {title}",
     "PrimaryCalendar": "主日历",
-    "Hidden": "隐藏"
+    "Hidden": "隐藏",
+    "Each": "每个",
+    "OnThe": "在",
+    "First": "第一个",
+    "Second": "第二个",
+    "Third": "第三个",
+    "Fourth": "第四个",
+    "Fifth": "第五个",
+    "NextToLast": "倒数第二个",
+    "Last": "最后一个",
+    "Weekday": "工作日",
+    "WeekendDay": "周末日"
   }
 }

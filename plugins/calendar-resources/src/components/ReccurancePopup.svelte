@@ -14,21 +14,26 @@
 -->
 <script lang="ts">
   import { RecurringRule, getWeekday } from '@hcengineering/calendar'
+  import { Timestamp } from '@hcengineering/core'
   import ui, {
     Button,
+    CheckBox,
     CircleButton,
     DropdownIntlItem,
     DropdownLabelsIntl,
     Grid,
-    Row,
     Label,
     NumberInput,
-    RadioButton
+    RadioButton,
+    Row
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
+  import { SetPosRules } from '../types'
+  import ByDateSelector from './ByDateSelector.svelte'
   import DateEditor from './DateEditor.svelte'
-  import { Timestamp } from '@hcengineering/core'
+  import SetPosSelector from './SetPosSelector.svelte'
+  import MonthSelector from './MonthSelector.svelte'
 
   export let rules: RecurringRule[]
   export let startDate: Timestamp
@@ -37,7 +42,17 @@
   let periodType: Freq = (rules[0]?.freq as Freq) ?? 'WEEKLY'
   let interval: number = rules[0]?.interval ?? 1
 
+  let isByMonthDay: boolean = rules[0] === undefined || rules[0]?.byMonthDay !== undefined
+  let byMonthDay = rules[0]?.byMonthDay ?? [new Date(startDate).getDate()]
+  let isYearBySetPos = rules[0]?.bySetPos !== undefined
+  let byMonth = rules[0]?.byMonth ?? [new Date(startDate).getMonth()]
+
   const dispatch = createEventDispatcher()
+
+  let setPos: SetPosRules = {
+    bySetPos: rules[0]?.bySetPos ?? [1],
+    byDay: rules[0]?.byDay ?? ['SU,MO,TU,WE,TH,FR,SA']
+  }
 
   let selected = rules[0]?.endDate !== undefined ? 'on' : rules[0]?.count ? 'after' : 'never'
 
@@ -72,6 +87,21 @@
     }
     if (periodType === 'WEEKLY') {
       res.byDay = selectedWeekdays
+    }
+    if (periodType === 'MONTHLY') {
+      if (isByMonthDay) {
+        res.byMonthDay = byMonthDay
+      } else {
+        res.bySetPos = setPos.bySetPos
+        res.byDay = setPos.byDay
+      }
+    }
+    if (periodType === 'YEARLY') {
+      res.byMonth = byMonth
+      if (isYearBySetPos) {
+        res.bySetPos = setPos.bySetPos
+        res.byDay = setPos.byDay
+      }
     }
     rules = [res]
     dispatch('close', rules)
@@ -112,7 +142,7 @@
   <div class="header">
     <Label label={calendar.string.Repeat} />
   </div>
-  <div class="content flex-col">
+  <div class="content flex-col flex-gap-2">
     <div class="flex-row-center gap-1-5">
       <span class="min-w-12"><Label label={calendar.string.Every} /></span>
       <NumberInput bind:value={interval} maxWidth={'4rem'} maxDigitsAfterPoint={0} minValue={1} />
@@ -141,7 +171,34 @@
         </div>
       </div>
     {/if}
-    <div class="flex-row-center mt-3 mb-3 min-h-8">
+    {#if periodType === 'MONTHLY'}
+      <RadioButton
+        group={isByMonthDay}
+        value={true}
+        labelIntl={calendar.string.Each}
+        action={() => {
+          isByMonthDay = true
+        }}
+      />
+      <ByDateSelector bind:selected={byMonthDay} disabled={!isByMonthDay} />
+      <RadioButton
+        group={isByMonthDay}
+        value={false}
+        labelIntl={calendar.string.OnThe}
+        action={() => {
+          isByMonthDay = false
+        }}
+      />
+      <SetPosSelector bind:setPos disabled={isByMonthDay} />
+    {:else if periodType === 'YEARLY'}
+      <MonthSelector bind:selected={byMonth} />
+      <div class="flex-row-center flex-gap-1">
+        <CheckBox bind:checked={isYearBySetPos} />
+        <Label label={calendar.string.OnThe} />
+      </div>
+      <SetPosSelector bind:setPos disabled={!isYearBySetPos} />
+    {/if}
+    <div class="flex-row-center min-h-8">
       <Label label={calendar.string.Ends} />
     </div>
     <Grid columnGap={0.375} rowGap={0.75} equalHeight>

@@ -63,7 +63,8 @@ import {
   ViewletDescriptor,
   ViewletPreference,
   LinkIdProvider,
-  CustomObjectLinkProvider
+  CustomObjectLinkProvider,
+  OpenDocumentFunction
 } from './types'
 
 export * from './types'
@@ -327,6 +328,9 @@ const view = plugin(viewId, {
   },
   popup: {
     PositionElementAlignment: '' as Resource<(e?: Event) => PopupAlignment | undefined>
+  },
+  function: {
+    OpenDocument: '' as Resource<OpenDocumentFunction>
   },
   actionImpl: {
     CopyTextToClipboard: '' as ViewAction<{

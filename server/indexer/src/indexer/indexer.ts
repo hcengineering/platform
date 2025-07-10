@@ -642,7 +642,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         // We have blob, we need to decode it to string.
         const contentType = (docInfo.contentType ?? '').split(';')[0]
 
-        if (contentType.includes('text/') || contentType.includes('application/vnd.github.VERSION.diff')) {
+        if (
+          (contentType.includes('text/') && contentType !== 'text/rtf') ||
+          contentType.includes('application/vnd.github.VERSION.diff')
+        ) {
           await this.handleTextBlob(ctx, docInfo, indexedDoc)
         } else if (isBlobAllowed(contentType)) {
           await this.handleBlob(ctx, docInfo, indexedDoc)
@@ -710,6 +713,8 @@ function isBlobAllowed (contentType: string): boolean {
     !contentType.includes('image/') &&
     !contentType.includes('video/') &&
     !contentType.includes('binary/octet-stream') &&
-    !contentType.includes('application/octet-stream')
+    !contentType.includes('application/octet-stream') &&
+    !contentType.includes('application/zip') &&
+    !contentType.includes('application/x-zip-compressed')
   )
 }

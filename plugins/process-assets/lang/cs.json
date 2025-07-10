@@ -87,7 +87,9 @@
     "Floor": "Zaokrouhlit dolů",
     "Ceil": "Zaokrouhlit nahoru",
     "Absolute": "Absolutní hodnota",
-    "LogAction": "Událost"
+    "LogAction": "Událost",
+    "Started": "Spuštěno",
+    "Each": "Každý"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

@@ -45,7 +45,6 @@
     IconPicker,
     ParentsNavigator,
     RelationsEditor,
-    openDoc,
     restrictionStore,
     showMenu
   } from '@hcengineering/view-resources'
@@ -395,12 +394,6 @@
             }}
             on:headings={(evt) => {
               headings = evt.detail
-            }}
-            on:open-document={async (event) => {
-              const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
-              if (doc != null) {
-                await openDoc(client.getHierarchy(), doc)
-              }
             }}
             on:loaded={() => {
               loadedDocumentContent = true

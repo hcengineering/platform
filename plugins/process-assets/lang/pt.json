@@ -87,7 +87,9 @@
     "Floor": "Arredondar para baixo",
     "Ceil": "Arredondar para cima",
     "Absolute": "Valor absoluto",
-    "LogAction": "Evento"
+    "LogAction": "Evento",
+    "Started": "Iniciado",
+    "Each": "Cada"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

@@ -87,7 +87,9 @@
     "Absolute": "Absolute",
     "Ceil": "Ceil",
     "Floor": "Floor",
-    "LogAction": "Event"
+    "LogAction": "Event",
+    "Started": "Started",
+    "Each": "Each"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

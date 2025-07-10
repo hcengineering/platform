@@ -122,6 +122,12 @@ export class TExecutionLog extends TDoc implements ExecutionLog {
   @Prop(TypeRef(process.class.Execution), process.string.Execution)
     execution!: Ref<Execution>
 
+  @Prop(TypeRef(process.class.Process), process.string.Process)
+    process!: Ref<Process>
+
+  @Prop(TypeRef(card.class.Card), card.string.Card)
+    card!: Ref<Card>
+
   @Prop(TypeRef(process.class.Transition), process.string.Transition)
     transition?: Ref<Transition>
 
@@ -444,6 +450,18 @@ export function createModel (builder: Builder): void {
       label: process.string.Random
     },
     process.function.Random
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.Each,
+      type: 'reduce'
+    },
+    process.function.All
   )
 
   builder.createDoc(
@@ -924,6 +942,11 @@ export function createModel (builder: Builder): void {
     id: 'processes',
     label: process.string.Processes,
     component: process.component.ProcessesSettingSection
+  })
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: workbench.extensions.WorkbenchExtensions,
+    component: process.component.NotifierExtension
   })
 }
 

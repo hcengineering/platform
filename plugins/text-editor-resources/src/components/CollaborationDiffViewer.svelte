@@ -21,13 +21,12 @@
   import { Doc as Ydoc } from 'yjs'
 
   import { Editor, Extension, mergeAttributes } from '@tiptap/core'
-  import Collaboration from '@tiptap/extension-collaboration'
   import { Plugin, PluginKey } from '@tiptap/pm/state'
   import { DecorationSet } from '@tiptap/pm/view'
 
+  import { getEditorKit } from '../../src/kits/editor-kit'
   import { calculateDecorations, createYdocDocument } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
-  import { getEditorKit } from '../../src/kits/editor-kit'
 
   export let ydoc: Ydoc
   export let field: string | undefined = undefined
@@ -77,11 +76,19 @@
   }
 
   onMount(async () => {
+    const kit = await getEditorKit({
+      collaboration: {
+        collaboration: { document: ydoc, field },
+        collaborationCursor: false,
+        inlineComments: false
+      }
+    })
+
     editor = new Editor({
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, { class: 'flex-grow' }) },
       element,
       editable: false,
-      extensions: [await getEditorKit(), DecorationExtension, Collaboration.configure({ document: ydoc, field })],
+      extensions: [kit, DecorationExtension],
       onContentError: ({ error, disableCollaboration }) => {
         disableCollaboration()
         Analytics.handleError(error)

@@ -18,13 +18,13 @@
   import { type Doc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { KeyedAttribute } from '@hcengineering/presentation'
-  import { AnySvelteComponent, IconSize, registerFocus } from '@hcengineering/ui'
-  import { AnyExtension, FocusPosition } from '@tiptap/core'
   import textEditor, { CollaborationUser, TextEditorCommandHandler } from '@hcengineering/text-editor'
+  import { AnySvelteComponent, IconSize, registerFocus } from '@hcengineering/ui'
+  import { FocusPosition } from '@tiptap/core'
 
+  import { EditorKitOptions } from '../kits/editor-kit'
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
   import { FileAttachFunction } from './extension/types'
-  import { EditorKitOptions } from '../kits/editor-kit'
 
   export let object: Doc
   export let attribute: KeyedAttribute
@@ -39,14 +39,11 @@
 
   export let overflow: 'auto' | 'none' = 'auto'
   export let editorAttributes: Record<string, string> = {}
-  export let onExtensions: () => AnyExtension[] = () => []
   export let boundary: HTMLElement | undefined = undefined
 
   export let attachFile: FileAttachFunction | undefined = undefined
-  export let canShowPopups = true
   export let kitOptions: Partial<EditorKitOptions> = {}
   export let requestSideSpace: ((width: number) => void) | undefined = undefined
-  export let enableInlineComments: boolean = true
 
   let collaborativeEditor: CollaborativeTextEditor
 
@@ -95,15 +92,11 @@
     {overflow}
     {boundary}
     {attachFile}
-    extensions={[...onExtensions()]}
-    {canShowPopups}
     {editorAttributes}
     {kitOptions}
     {requestSideSpace}
-    {enableInlineComments}
     on:editor
     on:update
-    on:open-document
     on:blur
     on:loaded
     on:focus={handleFocus}

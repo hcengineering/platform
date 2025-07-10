@@ -26,7 +26,10 @@
       ObjectBoxPopup,
       {
         _class,
-        docQuery: { _id: { $nin: docs.map((p) => p._id) } }
+        docQuery: { _id: { $nin: docs.map((p) => p._id) } },
+        docProps: {
+          shouldShowAvatar: true
+        }
       },
       'top',
       async (result) => {

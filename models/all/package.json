@@ -81,6 +81,7 @@
     "@hcengineering/model-time": "^0.6.0",
     "@hcengineering/model-server-time": "^0.6.0",
     "@hcengineering/model-desktop-preferences": "^0.6.0",
+    "@hcengineering/model-desktop-downloads": "^0.6.0",
     "@hcengineering/model-preference": "^0.6.0",
     "@hcengineering/model-hr": "^0.6.0",
     "@hcengineering/model-server-hr": "^0.6.0",

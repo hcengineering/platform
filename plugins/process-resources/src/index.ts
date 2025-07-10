@@ -52,6 +52,7 @@ import { ProcessMiddleware } from './middleware'
 import { continueExecution, showDoneQuery, todoTranstionCheck } from './utils'
 import LogActionPresenter from './components/LogActionPresenter.svelte'
 import TransitionRefPresenter from './components/settings/TransitionRefPresenter.svelte'
+import NotifierExtension from './components/NotifierExtension.svelte'
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
@@ -88,7 +89,8 @@ export default async (): Promise<Resources> => ({
     ProcessesCardSection,
     TransitionEditor,
     TransitionRefPresenter,
-    LogActionPresenter
+    LogActionPresenter,
+    NotifierExtension
   },
   transformEditor: {
     DateOffsetEditor,

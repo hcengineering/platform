@@ -43,6 +43,7 @@
   export let editor: AnySvelteComponent | undefined
   export let allowRemove: boolean = false
   export let forbidValue: boolean = false
+  export let allowArray: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -89,6 +90,7 @@
         {contextValue}
         {context}
         {attribute}
+        {allowArray}
         category={presenterClass.category}
         attrClass={presenterClass.attrClass}
         on:update={(e) => {

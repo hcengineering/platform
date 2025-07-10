@@ -27,6 +27,7 @@ import drive, { createFile } from '@hcengineering/drive'
 import love, { MeetingMinutes } from '@hcengineering/love'
 import { generateToken } from '@hcengineering/server-token'
 import { getClient } from './client'
+import { RecordingPreset } from './preset'
 
 export class WorkspaceClient {
   private client!: TxOperations
@@ -53,7 +54,13 @@ export class WorkspaceClient {
     return this.client
   }
 
-  async saveFile (uuid: string, name: string, blob: Blob, meetingMinutes?: Ref<MeetingMinutes>): Promise<void> {
+  async saveFile (
+    uuid: string,
+    name: string,
+    blob: Blob,
+    preset: RecordingPreset,
+    meetingMinutes?: Ref<MeetingMinutes>
+  ): Promise<void> {
     this.ctx.info('Save recording', { workspace: this.workspace, meetingMinutes })
     const current = await this.client.findOne(drive.class.Drive, { _id: love.space.Drive })
     if (current === undefined) {
@@ -80,8 +87,8 @@ export class WorkspaceClient {
       // hardcoded values from preset we use
       // https://docs.livekit.io/realtime/egress/overview/#EncodingOptionsPreset
       metadata: {
-        originalHeight: 720,
-        originalWidth: 1280
+        originalHeight: preset.height,
+        originalWidth: preset.width
       }
     }
     await createFile(this.client, love.space.Drive, drive.ids.Root, { ...data, title: name })

@@ -129,17 +129,14 @@ export class TContact extends TDoc implements Contact {
     name!: string
 
   @Prop(TypeString(), contact.string.Avatar)
-  @Index(IndexKind.FullText)
   @Hidden()
     avatarType!: AvatarType
 
   @Prop(TypeBlob(), contact.string.Avatar)
-  @Index(IndexKind.FullText)
   @Hidden()
     avatar!: Ref<Blob> | null | undefined
 
   @Prop(TypeRecord(), contact.string.Avatar)
-  @Index(IndexKind.FullText)
   @Hidden()
     avatarProps?: {
     color?: string

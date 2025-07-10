@@ -80,6 +80,7 @@ import view, { viewId, createModel as viewModel } from '@hcengineering/model-vie
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
 import card, { cardId, createModel as cardModel } from '@hcengineering/model-card'
 import { desktopPreferencesId, createModel as desktopPreferencesModel } from '@hcengineering/model-desktop-preferences'
+import { desktopDownloadsId, createModel as desktopDownloadsModel } from '@hcengineering/model-desktop-downloads'
 
 import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
 import { serverDocumentId, createModel as serverDocumentModel } from '@hcengineering/model-server-document'
@@ -362,6 +363,7 @@ export default function buildModel (): Builder {
     [timeModel, timeId],
     [supportModel, supportId],
     [desktopPreferencesModel, desktopPreferencesId],
+    [desktopDownloadsModel, desktopDownloadsId],
 
     [
       githubModel,

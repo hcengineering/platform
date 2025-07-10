@@ -288,7 +288,7 @@
       showButtons={false}
       kind={'indented'}
       maxHeight="limited"
-      enableBackReferences={true}
+      kitOptions={{ reference: true }}
       enableAttachments={false}
       bind:content={object.fullDescription}
       placeholder={core.string.Description}

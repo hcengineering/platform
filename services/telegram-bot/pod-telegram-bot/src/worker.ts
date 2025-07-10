@@ -48,7 +48,7 @@ import {
   addWorkspace,
   createIntegration,
   listIntegrationsByAccount,
-  getOrCreateSocialId,
+  addSocialIdToPerson,
   disableIntegration,
   getAnyIntegrationByTelegramId,
   enableIntegration
@@ -327,11 +327,11 @@ export class PlatformWorker {
 
     await this.db.removeOtp(code)
 
-    const socialId = await getOrCreateSocialId(account, otpData.telegramId, otpData.telegramUsername)
+    const socialId = await addSocialIdToPerson(account, otpData.telegramId, otpData.telegramUsername)
     return await this.addIntegration(otpData.telegramId, account, workspace, socialId, otpData.telegramUsername)
   }
 
-  async generateCode (telegramId: number, telegramUsername?: string): Promise<string> {
+  async generateCode (telegramId: number, telegramUsername: string): Promise<string> {
     const now = new Date()
     const otpData = await this.db.getOtpByTelegramId(telegramId)
     const retryDelay = config.OtpRetryDelaySec * 1000

@@ -72,6 +72,17 @@ export default mergeIds(calendarId, calendar, {
     SeeAllNumberReminders: '' as IntlString,
     DefaultVisibility: '' as IntlString,
     GooglePrivacy: '' as IntlString,
-    PrimaryCalendar: '' as IntlString
+    PrimaryCalendar: '' as IntlString,
+    Each: '' as IntlString,
+    OnThe: '' as IntlString,
+    First: '' as IntlString,
+    Second: '' as IntlString,
+    Third: '' as IntlString,
+    Fourth: '' as IntlString,
+    Fifth: '' as IntlString,
+    NextToLast: '' as IntlString,
+    Last: '' as IntlString,
+    Weekday: '' as IntlString,
+    WeekendDay: '' as IntlString
   }
 })
