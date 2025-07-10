@@ -15,15 +15,15 @@
 
 import type { AccountID, Collaborator, FindCollaboratorsParams, WorkspaceID } from '@hcengineering/communication-types'
 import {
+  AddCollaboratorsEvent,
+  CardEventType,
+  type Event,
   type EventResult,
   type FindClient,
-  type QueryCallback,
-  type Event,
   NotificationEventType,
-  CardEventType,
-  AddCollaboratorsEvent,
-  RemoveCollaboratorsEvent,
-  RemoveCardEvent
+  type QueryCallback,
+  RemoveCardEvent,
+  RemoveCollaboratorsEvent
 } from '@hcengineering/communication-sdk-types'
 
 import { QueryResult } from '../result'
@@ -47,6 +47,9 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
       void this.notify()
     } else {
       this.result = this.initResult()
+      void this.result.then(() => {
+        void this.notify()
+      })
     }
   }
 
@@ -123,10 +126,7 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
   private async initResult (): Promise<QueryResult<Collaborator>> {
     try {
       const res = await this.find(this.params)
-      const result = new QueryResult(res, (c) => c.account)
-
-      void this.notify()
-      return result
+      return new QueryResult(res, (c) => c.account)
     } catch (error) {
       console.error('Failed to initialize query:', error)
       return new QueryResult([] as Collaborator[], (c) => c.account)
@@ -174,5 +174,10 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
       }
     }
     return true
+  }
+
+  public async refresh (): Promise<void> {
+    this.result = new QueryResult([] as Collaborator[], (c) => c.account)
+    await this.initResult()
   }
 }

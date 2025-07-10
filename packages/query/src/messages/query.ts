@@ -57,7 +57,7 @@ const GROUPS_LIMIT = 4
 export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   private result: Promise<QueryResult<Message>> | QueryResult<Message>
 
-  private readonly groupsBuffer: MessagesGroup[] = []
+  private groupsBuffer: MessagesGroup[] = []
 
   private firstGroup?: MessagesGroup
   private lastGroup?: MessagesGroup
@@ -68,6 +68,9 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
 
   private readonly limit: number
   private initialized = false
+
+  nexLoadedPagesCount = 0
+  prevLoadedPagesCount = 0
 
   private readonly next = {
     hasMessages: true,
@@ -250,33 +253,37 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     await this.client.unsubscribeQuery(this.id)
   }
 
-  async requestLoadNextPage (): Promise<void> {
-    if (this.isCardRemoved) return
+  async requestLoadNextPage (notify = true): Promise<{ isDone: boolean }> {
+    if (this.isCardRemoved) return { isDone: true }
     if (this.result instanceof Promise) this.result = await this.result
 
-    if (!this.result.isTail()) {
-      this.result = this.loadPage(Direction.Forward, this.result)
-      void this.result
-        .then(() => this.notify())
-        .catch((error) => {
-          console.error('Failed to load messages', error)
-          void this.notify()
-        })
+    if (this.result.isTail()) return { isDone: true }
+
+    const pagePromise = this.loadPage(Direction.Forward, this.result)
+    this.nexLoadedPagesCount++
+    this.result = pagePromise
+
+    const r = await pagePromise
+    if (notify) {
+      await this.notify()
     }
+    return { isDone: r.isTail() }
   }
 
-  async requestLoadPrevPage (): Promise<void> {
-    if (this.isCardRemoved) return
+  async requestLoadPrevPage (notify = true): Promise<{ isDone: boolean }> {
+    if (this.isCardRemoved) return { isDone: true }
     if (this.result instanceof Promise) this.result = await this.result
-    if (!this.result.isHead()) {
-      this.result = this.loadPage(Direction.Backward, this.result)
-      void this.result
-        .then(() => this.notify())
-        .catch((error) => {
-          console.error('Failed to load messages', error)
-          void this.notify()
-        })
+    if (this.result.isHead()) return { isDone: true }
+
+    const pagePromise = this.loadPage(Direction.Backward, this.result)
+    this.prevLoadedPagesCount++
+    this.result = pagePromise
+    const r = await pagePromise
+
+    if (notify) {
+      await this.notify()
     }
+    return { isDone: r.isHead() }
   }
 
   removeCallback (): void {
@@ -844,5 +851,51 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     }
 
     return result
+  }
+
+  async refresh (): Promise<void> {
+    const nextPagesCount = this.nexLoadedPagesCount
+    const prevPagesCount = this.prevLoadedPagesCount
+
+    this.nexLoadedPagesCount = 0
+    this.prevLoadedPagesCount = 0
+
+    this.groupsBuffer = []
+    this.firstGroup = undefined
+    this.lastGroup = undefined
+
+    this.firstLoadedGroup = undefined
+    this.lastLoadedGroup = undefined
+
+    this.lastGroupsDirection = undefined
+
+    this.next.hasMessages = true
+    this.next.hasGroups = true
+    this.next.buffer = []
+    this.prev.hasMessages = true
+    this.prev.hasGroups = true
+    this.prev.buffer = []
+
+    this.createdPatches.clear()
+    this.tmpMessages.clear()
+
+    this.result = new QueryResult([] as Message[], (x) => x.id)
+    this.result.setTail(this.params.from == null)
+    this.result.setHead(this.params.from == null)
+    this.initialized = false
+
+    for (let i = 0; i < nextPagesCount; i++) {
+      const { isDone } = await this.requestLoadNextPage(false)
+      this.initialized = true
+      if (!isDone) break
+    }
+
+    for (let i = 0; i < prevPagesCount; i++) {
+      const { isDone } = await this.requestLoadPrevPage(false)
+      this.initialized = true
+      if (!isDone) break
+    }
+
+    await this.notify()
   }
 }

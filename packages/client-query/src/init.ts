@@ -46,3 +46,9 @@ export function initLiveQueries (
 
   lq = new LiveQueries(client, workspace, filesUrl)
 }
+
+export async function refreshLiveQueries (): Promise<void> {
+  if (lq != null) {
+    await lq.refresh()
+  }
+}

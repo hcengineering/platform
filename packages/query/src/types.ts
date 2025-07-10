@@ -51,13 +51,18 @@ interface BaseQuery<R = any, P = FindParams> {
   removeCallback: () => void
   setCallback: (callback: (result: any) => void) => void
   copyResult: () => QueryResult<R> | undefined
+
+  refresh: () => Promise<void>
 }
+
 export interface PagedQuery<R = any, P = FindParams> extends BaseQuery<R, P> {
   readonly id: QueryId
   readonly params: P
+  nexLoadedPagesCount: number
+  prevLoadedPagesCount: number
 
-  requestLoadNextPage: () => Promise<void>
-  requestLoadPrevPage: () => Promise<void>
+  requestLoadNextPage: (notify?: boolean) => Promise<{ isDone: boolean }>
+  requestLoadPrevPage: (notify?: boolean) => Promise<{ isDone: boolean }>
   setCallback: (callback: (window: Window<R>) => void) => void
 }
 

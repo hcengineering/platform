@@ -221,4 +221,19 @@ export class LiveQueries {
     this.queries.clear()
     this.unsubscribed.clear()
   }
+
+  async refresh (): Promise<void> {
+    for (const [id, query] of this.queries.entries()) {
+      if (this.unsubscribed.has(id)) {
+        this.unsubscribe(id)
+        continue
+      }
+
+      try {
+        await query.refresh()
+      } catch (e) {
+        console.error('Failed to refresh live query', e, query.id, query.params)
+      }
+    }
+  }
 }

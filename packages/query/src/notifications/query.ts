@@ -25,19 +25,19 @@ import {
   type WorkspaceID
 } from '@hcengineering/communication-types'
 import {
-  type FindClient,
-  type PagedQueryCallback,
-  type Event,
-  NotificationEventType,
-  MessageEventType,
   CardEventType,
   CreateNotificationEvent,
-  UpdateNotificationContextEvent,
-  UpdateNotificationEvent,
-  RemoveNotificationsEvent,
-  RemoveNotificationContextEvent,
+  type Event,
+  type FindClient,
+  MessageEventType,
+  NotificationEventType,
+  type PagedQueryCallback,
+  PatchEvent,
   RemoveCardEvent,
-  PatchEvent
+  RemoveNotificationContextEvent,
+  RemoveNotificationsEvent,
+  UpdateNotificationContextEvent,
+  UpdateNotificationEvent
 } from '@hcengineering/communication-sdk-types'
 import { applyPatches, MessageProcessor, NotificationProcessor } from '@hcengineering/communication-shared'
 
@@ -51,6 +51,9 @@ const allowedPatchTypes = [PatchType.update, PatchType.remove, PatchType.blob]
 export class NotificationQuery implements PagedQuery<Notification, NotificationQueryParams> {
   private result: QueryResult<Notification> | Promise<QueryResult<Notification>>
 
+  nexLoadedPagesCount = 0
+  prevLoadedPagesCount = 0
+
   constructor (
     private readonly client: FindClient,
     private readonly workspace: WorkspaceID,
@@ -60,33 +63,39 @@ export class NotificationQuery implements PagedQuery<Notification, NotificationQ
     private callback?: PagedQueryCallback<Notification>,
     initialResult?: QueryResult<Notification>
   ) {
-    const limit = this.params.limit ?? defaultQueryParams.limit
-    const findParams: FindNotificationsParams = {
-      ...this.params,
-      order: this.params.order ?? defaultQueryParams.order,
-      limit: this.params.strict === true ? limit : limit + 1
-    }
-
     if (initialResult !== undefined) {
       this.result = initialResult
       void this.notify()
     } else {
-      this.result = this.initResult(findParams, limit)
+      this.result = this.initResult()
+      void this.result.then(() => {
+        void this.notify()
+      })
     }
   }
 
-  private async initResult (findParams: FindNotificationsParams, limit: number): Promise<QueryResult<Notification>> {
+  private async rawInitResult (): Promise<QueryResult<Notification>> {
+    const limit = this.params.limit != null ? this.params.limit + 1 : undefined
+    const findParams: FindNotificationsParams = {
+      ...this.params,
+      order: this.params.order ?? defaultQueryParams.order,
+      limit: this.params.strict === true ? this.params.limit : limit
+    }
+
+    const res = await this.find(findParams)
+    const isComplete = this.params.limit == null || this.params.strict === true || res.length < this.params.limit
+    if (!isComplete) res.pop()
+
+    const result = new QueryResult(res, (it) => it.id)
+    result.setTail(isComplete)
+    result.setHead(isComplete)
+
+    return result
+  }
+
+  private async initResult (): Promise<QueryResult<Notification>> {
     try {
-      const res = await this.find(findParams)
-      const isComplete = res.length <= limit
-      if (!isComplete) res.pop()
-
-      const result = new QueryResult(res, (it) => it.id)
-      result.setTail(isComplete)
-      result.setHead(isComplete)
-
-      void this.notify()
-      return result
+      return await this.rawInitResult()
     } catch (error) {
       console.error('Failed to initialize query:', error)
       return new QueryResult([] as Notification[], (it) => it.id)
@@ -131,24 +140,33 @@ export class NotificationQuery implements PagedQuery<Notification, NotificationQ
     await this.client.unsubscribeQuery(this.id)
   }
 
-  async requestLoadNextPage (): Promise<void> {
-    if (this.params.strict === true) return
+  async requestLoadNextPage (notify = true): Promise<{ isDone: boolean }> {
+    if (this.params.strict === true) return { isDone: true }
     if (this.result instanceof Promise) this.result = await this.result
+    if (this.result.isTail()) return { isDone: true }
 
-    await this.loadPage(SortingOrder.Ascending, this.result.getLast()?.created)
+    const result = await this.loadPage(SortingOrder.Ascending, this.result.getLast()?.created, notify)
+    this.nexLoadedPagesCount++
+
+    return result
   }
 
-  async requestLoadPrevPage (): Promise<void> {
-    if (this.params.strict === true) return
+  async requestLoadPrevPage (notify = true): Promise<{ isDone: boolean }> {
+    if (this.params.strict === true) return { isDone: true }
     if (this.result instanceof Promise) this.result = await this.result
-    await this.loadPage(SortingOrder.Descending, this.result.getFirst()?.created)
+    if (this.result.isHead()) return { isDone: true }
+    const result = await this.loadPage(SortingOrder.Descending, this.result.getFirst()?.created, notify)
+    this.prevLoadedPagesCount++
+
+    return result
   }
 
-  private async loadPage (order: SortingOrder, created?: Date): Promise<void> {
-    if (created == null) return
+  private async loadPage (order: SortingOrder, created?: Date, notify = true): Promise<{ isDone: boolean }> {
+    if (created == null) return { isDone: false }
+    if (this.params.limit == null) return { isDone: true }
     if (this.result instanceof Promise) this.result = await this.result
 
-    const limit = this.getLimit()
+    const limit = this.params.limit
     const findParams: FindNotificationsParams = {
       ...this.params,
       created: order === SortingOrder.Ascending ? { greater: created } : { less: created },
@@ -158,21 +176,27 @@ export class NotificationQuery implements PagedQuery<Notification, NotificationQ
 
     try {
       const res = await this.find(findParams)
-      const isComplete = res.length <= limit
-      if (!isComplete) res.pop()
+      const isDone = res.length <= limit
+      if (!isDone) res.pop()
 
       if (order === SortingOrder.Ascending) {
         this.result.append(res)
-        this.result.setTail(isComplete)
+        this.result.setTail(isDone)
       } else {
         this.result.prepend(res)
-        this.result.setHead(isComplete)
+        this.result.setHead(isDone)
       }
 
-      await this.notify()
+      if (notify) {
+        await this.notify()
+      }
+
+      return { isDone }
     } catch (error) {
       console.error(`Failed to load ${order === SortingOrder.Ascending ? 'next' : 'previous'} page:`, error)
     }
+
+    return { isDone: false }
   }
 
   removeCallback (): void {
@@ -278,8 +302,9 @@ export class NotificationQuery implements PagedQuery<Notification, NotificationQ
     }
 
     const newLength = result.length
+    const { limit } = this.params
 
-    if (currentLength !== newLength && currentLength >= this.getLimit() && newLength < this.getLimit()) {
+    if (limit != null && currentLength !== newLength && currentLength >= limit && newLength < limit) {
       await this.reinit(currentLength)
     } else {
       void this.notify()
@@ -312,8 +337,9 @@ export class NotificationQuery implements PagedQuery<Notification, NotificationQ
     }
 
     const newLength = this.result.length
+    const { limit } = this.params
 
-    if (currentLength >= this.getLimit() && newLength < this.getLimit()) {
+    if (limit != null && currentLength >= limit && newLength < limit) {
       void this.reinit(currentLength)
     } else if (isDeleted) {
       void this.notify()
@@ -339,7 +365,8 @@ export class NotificationQuery implements PagedQuery<Notification, NotificationQ
         this.result.delete(notification.id)
       }
 
-      if (length >= this.getLimit() && this.result.length < this.getLimit()) {
+      const { limit } = this.params
+      if (limit != null && length >= limit && this.result.length < limit) {
         void this.reinit(this.result.length)
       } else {
         void this.notify()
@@ -378,10 +405,6 @@ export class NotificationQuery implements PagedQuery<Notification, NotificationQ
 
     const window = new WindowImpl(this.result.getResult(), this.result.isTail(), this.result.isHead(), this)
     this.callback(window)
-  }
-
-  private getLimit (): number {
-    return this.params.limit ?? defaultQueryParams.limit
   }
 
   private async reinit (limit: number): Promise<void> {
@@ -428,5 +451,28 @@ export class NotificationQuery implements PagedQuery<Notification, NotificationQ
     }
 
     return isUpdated
+  }
+
+  async refresh (): Promise<void> {
+    const nextPagesCount = this.nexLoadedPagesCount
+    const prevPagesCount = this.prevLoadedPagesCount
+
+    this.result = new QueryResult([] as Notification[], (it) => it.id)
+    this.nexLoadedPagesCount = 0
+    this.prevLoadedPagesCount = 0
+
+    this.result = await this.rawInitResult()
+
+    for (let i = 0; i < nextPagesCount; i++) {
+      const { isDone } = await this.requestLoadNextPage(false)
+      if (!isDone) break
+    }
+
+    for (let i = 0; i < prevPagesCount; i++) {
+      const { isDone } = await this.requestLoadPrevPage(false)
+      if (!isDone) break
+    }
+
+    await this.notify()
   }
 }

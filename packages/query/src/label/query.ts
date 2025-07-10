@@ -15,16 +15,16 @@
 
 import type { FindLabelsParams, Label, WorkspaceID } from '@hcengineering/communication-types'
 import {
-  type EventResult,
-  type FindClient,
-  type QueryCallback,
-  type Event,
-  LabelEventType,
   CardEventType,
   CreateLabelEvent,
+  type Event,
+  type EventResult,
+  type FindClient,
+  LabelEventType,
+  type QueryCallback,
+  RemoveCardEvent,
   RemoveLabelEvent,
-  UpdateCardTypeEvent,
-  RemoveCardEvent
+  UpdateCardTypeEvent
 } from '@hcengineering/communication-sdk-types'
 
 import { QueryResult } from '../result'
@@ -52,6 +52,9 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
       void this.notify()
     } else {
       this.result = this.initResult()
+      void this.result.then(() => {
+        void this.notify()
+      })
     }
   }
 
@@ -186,10 +189,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
   private async initResult (): Promise<QueryResult<Label>> {
     try {
       const res = await this.find(this.params)
-      const result = new QueryResult(res, getId)
-
-      void this.notify()
-      return result
+      return new QueryResult(res, getId)
     } catch (error) {
       console.error('Failed to initialize query:', error)
       return new QueryResult([] as Label[], getId)
@@ -250,5 +250,10 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
       }
     }
     return true
+  }
+
+  async refresh (): Promise<void> {
+    this.result = new QueryResult([] as Label[], getId)
+    await this.initResult()
   }
 }
