@@ -763,7 +763,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   private async processCommunicationEvents (
     ctx: MeasureContext,
-    pushQueue: IndexPushQueue,
+    pushQueue: ElasticPushQueue,
     cardId: CardID,
     txes: TxDomainEvent<IndexableCommunicationEvent>[],
     toRemove: { _id: Ref<Doc>, _class: Ref<Class<Doc>> }[]
@@ -873,7 +873,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         const event = tx.event
         messagesUpdated.add(event.messageId)
         toRemove.push({
-          _id: `${event.cardId}%${event.messageId}` as any,
+          _id: `${event.messageId}@${event.cardId}` as any,
           _class: `${card.class.Card}%message` as Ref<Class<Doc>>
         })
       } else if (tx.event.type === CardEventType.UpdateCardType) {

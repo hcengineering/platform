@@ -119,7 +119,7 @@ export function createIndexedDocFromMessage (
   const modifiedDate = message.edited ?? message.created
   const modifiedOn = modifiedDate.getTime()
   const indexedDoc = {
-    id: `${cardId}%${message.id}` as any,
+    id: `${message.id}@${cardId}` as any,
     _class: [`${cardPlugin.class.Card}%message` as Ref<Class<Doc>>],
     space: cardSpace,
     [docKey('createdOn', core.class.Doc)]: message.created.getTime(),
