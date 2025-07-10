@@ -136,8 +136,9 @@
     "Loading": "加载中...",
     "NoRelations": "无关系",
     "ReadOnlyWarningTitle": "✨ 访客演示",
-    "ReadOnlyWarningMessage": "您处于只读模式。想在Huly管理任何项目吗？任务、截止日期、团队 — 立即注册获取完整权限！",
-    "ReadOnlySignUp": "注册 \uD83D\uDE80",
+    "ReadOnlyWarningMessage": "您处于只读模式。想在Huly管理任何项目吗？任务、截止日期、团队 — 加入此工作区协作或创建您自己的空间！",
+    "ReadOnlyJoinWorkspace": "加入工作区 👥",
+    "ReadOnlySignUp": "创建账户 🚀",
     "Icon": "图标",
     "Color": "颜色",
     "AutomationOnly": "仅限自动化"

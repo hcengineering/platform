@@ -131,8 +131,9 @@
     "Loading": "Chargement...",
     "NoRelations": "Aucune relation",
     "ReadOnlyWarningTitle": "✨ Démo Invité",
-    "ReadOnlyWarningMessage": "Vous êtes en mode consultation. Voulez-vous gérer tous types de projets dans Huly ? Tâches, délais, équipe — inscrivez-vous pour un accès complet !",
-    "ReadOnlySignUp": "Inscription \uD83D\uDE80",
+    "ReadOnlyWarningMessage": "Vous êtes en mode consultation. Voulez-vous gérer tous types de projets dans Huly ? Tâches, délais, équipe — rejoignez cet espace pour collaborer ou créez le vôtre !",
+    "ReadOnlyJoinWorkspace": "Rejoindre l'espace 👥",
+    "ReadOnlySignUp": "Créer un compte 🚀",
     "Icon": "Icône",
     "Color": "Couleur",
     "AutomationOnly": "Automatisation uniquement"

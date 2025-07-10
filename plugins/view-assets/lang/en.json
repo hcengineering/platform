@@ -136,8 +136,9 @@
     "Loading": "Loading...",
     "NoRelations": "No relations",
     "ReadOnlyWarningTitle": "✨ Guest Demo",
-    "ReadOnlyWarningMessage": "You're in view-only mode. Want to manage any project in Huly? Tasks, deadlines, team — sign up for full access!",
-    "ReadOnlySignUp": "Sign up \uD83D\uDE80",
+    "ReadOnlyWarningMessage": "You're in view-only mode. Want to manage any project in Huly? Tasks, deadlines, team — join this workspace to collaborate or create your own space!",
+    "ReadOnlyJoinWorkspace": "Join workspace 👥",
+    "ReadOnlySignUp": "Create account 🚀",
     "Icon": "Icon",
     "Color": "Color",
     "AutomationOnly": "Automation only"

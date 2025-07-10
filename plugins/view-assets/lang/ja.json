@@ -131,8 +131,9 @@
     "Loading": "読み込み中...",
     "NoRelations": "関係なし",
     "ReadOnlyWarningTitle": "✨ ゲストデモ",
-    "ReadOnlyWarningMessage": "閲覧モードです。Hulyでどんなプロジェクトも管理しませんか？ タスク、期限、チーム — 完全アクセスには登録してください！",
-    "ReadOnlySignUp": "サインアップ \uD83D\uDE80",
+    "ReadOnlyWarningMessage": "閲覧モードです。Hulyでどんなプロジェクトも管理しませんか？ タスク、期限、チーム — このワークスペースに参加して共同作業するか、自分自身のスペースを作成しましょう！",
+    "ReadOnlyJoinWorkspace": "ワークスペースに参加 👥",
+    "ReadOnlySignUp": "アカウント作成 🚀",
     "Icon": "アイコン",
     "Color": "色",
     "AutomationOnly": "自動化のみ"

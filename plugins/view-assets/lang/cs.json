@@ -136,8 +136,9 @@
     "Loading": "Načítání...",
     "NoRelations": "Žádné vztahy",
     "ReadOnlyWarningTitle": "✨ Ukázka pro hosty",
-    "ReadOnlyWarningMessage": "Jste v režimu prohlížení. Chcete spravovat jakékoli projekty v Huly? Úkoly, termíny, tým — zaregistrujte se pro plný přístup!",
-    "ReadOnlySignUp": "Zaregistrovat se \uD83D\uDE80",
+    "ReadOnlyWarningMessage": "Jste v režimu prohlížení. Chcete spravovat jakékoli projekty v Huly? Úkoly, termíny, tým — připojte se k tomuto prostoru pro spolupráci nebo si vytvořte vlastní!",
+    "ReadOnlyJoinWorkspace": "Připojit se k prostoru 👥",
+    "ReadOnlySignUp": "Vytvořit účet 🚀",
     "Icon": "Ikona",
     "Color": "Barva",
     "AutomationOnly": "Pouze automatizace"

@@ -131,8 +131,9 @@
     "Loading": "Carregando...",
     "NoRelations": "Sem relações",
     "ReadOnlyWarningTitle": "✨ Demonstração para Convidados",
-    "ReadOnlyWarningMessage": "Você está no modo de visualização. Quer gerenciar qualquer projeto no Huly? Tarefas, prazos, equipe — cadastre-se para acesso total!",
-    "ReadOnlySignUp": "Registar \uD83D\uDE80",
+    "ReadOnlyWarningMessage": "Você está no modo de visualização. Quer gerenciar qualquer projeto no Huly? Tarefas, prazos, equipe — junte-se a este espaço para colaborar ou crie o seu!",
+    "ReadOnlyJoinWorkspace": "Entrar no espaço 👥",
+    "ReadOnlySignUp": "Criar conta 🚀",
     "Icon": "Ícone",
     "Color": "Cor",
     "AutomationOnly": "Apenas automação"
