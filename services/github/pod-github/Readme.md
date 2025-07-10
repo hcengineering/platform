@@ -99,3 +99,5 @@ _Note: PK value format: "-----BEGIN RSA PRIVATE KEY-----\n {ACTUAL_KEY_WO_LINE_B
     * On the first tab authorise your GitHub
     * On the second tab of the dialog install the application, select a GH repo and connect to an existing/create a new connected repo in the tracker.
 * Enjoy!
+
+_Note: If the application is already installed in GitHub, make any change e.g. switch between "All repositories" and "Only select repositories" and click "Save"._
