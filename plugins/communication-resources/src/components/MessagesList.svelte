@@ -15,21 +15,21 @@
   import { Card } from '@hcengineering/card'
   import {
     type Message,
+    Notification,
     NotificationContext,
-    Window,
     NotificationType,
-    Notification
+    Window
   } from '@hcengineering/communication-types'
   import {
     createMessagesQuery,
+    createNotificationsQuery,
     getCommunicationClient,
-    type MessageQueryParams,
-    createNotificationsQuery
+    type MessageQueryParams
   } from '@hcengineering/presentation'
   import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
   import { MessagesNavigationAnchors } from '@hcengineering/communication'
-  import { isAppFocusedStore } from '@hcengineering/ui'
+  import { isAppFocusedStore, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   import { createMessagesObserver, getGroupDay, groupMessagesByDay, MessagesGroup } from '../messages'
   import MessagesGroupPresenter from './message/MessagesGroupPresenter.svelte'
@@ -59,6 +59,7 @@
 
   let messages: Message[] = []
   let reactionNotifications: Notification[] = []
+  let notifications: Notification[] = []
   let groups: MessagesGroup[] = []
   let window: Window<Message> | undefined = undefined
   let isLoading = true
@@ -74,9 +75,18 @@
   let bottomOffset: number = 0
   let topOffset: number = 0
 
-  const limit = 50
+  const limit = $deviceInfo.isMobile ? 25 : 50
   const unread = initialLastView != null && initialLastUpdate != null && initialLastUpdate > initialLastView
   let queryDef = getBaseQuery()
+
+  $: if (
+    (context?.lastView?.getTime() ?? 0) >= (context?.lastUpdate?.getTime() ?? 0) &&
+    (notifications?.length ?? 0) > 0 &&
+    atBottom &&
+    $isAppFocusedStore
+  ) {
+    readNotifications(new Date())
+  }
 
   $: reinit(position)
 
@@ -101,12 +111,15 @@
     void notificationsQuery.query(
       {
         context: context.id,
-        read: false,
-        type: NotificationType.Reaction
+        read: false
       },
       (res) => {
-        reactionNotifications = res.getResult()
-        readViewport($isAppFocusedStore)
+        const result = res.getResult()
+        reactionNotifications = result.filter((notification) => notification.type === NotificationType.Reaction)
+        notifications = result.filter((notification) => notification.type !== NotificationType.Reaction)
+        if (reactionNotifications.length > 0) {
+          readViewport($isAppFocusedStore)
+        }
       }
     )
   } else {
@@ -350,7 +363,7 @@
     const message = messages.find((it) => it.id === visible[0].id)
     if (message == null) return
 
-    readMessage(message.created)
+    readNotifications(message.created)
 
     for (const item of visible) {
       const reaction = reactionNotifications.find((it) => it.messageId === item.id)
@@ -403,7 +416,7 @@
       return
     }
     if (bottomOffset < 10) {
-      readMessage(new Date())
+      readNotifications(new Date())
     }
   }
 
@@ -427,15 +440,15 @@
 
   let newLastView: Date | undefined = context?.lastView
   let separatorDate: Date | undefined = undefined
-  let readMessagesTimer: any | undefined = undefined
+  let readNotificationsTimer: any | undefined = undefined
   let unsubscribeObserver: (() => void) | undefined = undefined
 
-  function readMessage (date: Date): void {
-    if (readMessagesTimer != null) {
-      clearTimeout(readMessagesTimer)
-      readMessagesTimer = undefined
+  function readNotifications (date: Date): void {
+    if (readNotificationsTimer != null) {
+      clearTimeout(readNotificationsTimer)
+      readNotificationsTimer = undefined
     }
-    readMessagesTimer = setTimeout(() => {
+    readNotificationsTimer = setTimeout(() => {
       if (context == null || context.lastView >= date) return
       void communicationClient.updateNotificationContext(context.id, date)
     }, 500)
@@ -461,7 +474,7 @@
 
       if (shouldRead) {
         newLastView = message.created
-        readMessage(message.created)
+        readNotifications(message.created)
       }
 
       if (reactionsToRead.length > 0) {

@@ -35,6 +35,7 @@ import presentation, {
   loadServerConfig,
   purgeClient,
   refreshClient,
+  refreshCommunicationClient,
   setClient,
   setCommunicationClient,
   setPresentationCookie,
@@ -280,6 +281,7 @@ export async function connect (title: string): Promise<Client | undefined> {
             if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
               void ctx.with('refresh client', {}, async () => {
                 await refreshClient(tokenChanged)
+                await refreshCommunicationClient()
               })
               tokenChanged = false
             }
