@@ -54,8 +54,7 @@ import {
   type SocialId,
   type WorkspaceInfoWithStatus,
   type WorkspaceInviteInfo,
-  type WorkspaceLoginInfo,
-  type WorkspaceJoinInfo
+  type WorkspaceLoginInfo
 } from './types'
 import {
   addSocialIdBase,
@@ -106,7 +105,7 @@ import {
   assignableRoles,
   getWorkspacesInfoWithStatusByIds,
   doMergePersons,
-  getWorkspaceByUrl
+  getWorkspaceJoinInfo
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -1048,46 +1047,6 @@ export async function signUpJoin (
     workspaceJoinInfo.workspace,
     workspaceJoinInfo.invite
   )
-}
-
-async function getWorkspaceJoinInfo (
-  ctx: MeasureContext,
-  db: AccountDB,
-  email: string,
-  inviteId: string,
-  workspaceUrl: string
-): Promise<WorkspaceJoinInfo> {
-  if (email === undefined || email === '' || email === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-  }
-  const normalizedEmail = cleanEmail(email)
-  if (inviteId !== undefined && inviteId !== '' && inviteId !== null) {
-    const invite = await getWorkspaceInvite(db, inviteId)
-    if (invite == null) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-    }
-    const workspaceUuid = await checkInvite(ctx, invite, normalizedEmail)
-    const workspace = await getWorkspaceById(db, workspaceUuid)
-    if (workspace == null) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
-    }
-    return {
-      email,
-      invite,
-      workspace
-    }
-  }
-  if (workspaceUrl !== undefined && workspaceUrl !== '' && workspaceUrl !== null) {
-    const workspace = await getWorkspaceByUrl(db, workspaceUrl)
-    if (workspace == null || !workspace.allowReadOnlyGuest) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-    }
-    return {
-      email,
-      workspace
-    }
-  }
-  throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
 }
 
 export async function confirm (
