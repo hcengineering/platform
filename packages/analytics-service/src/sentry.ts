@@ -24,8 +24,13 @@ export class SentryAnalyticProvider implements AnalyticProvider {
     return true
   }
 
-  setUser (email: string): void {
-    Sentry.setUser({ email })
+  setUser (socialId: string): void {
+    Sentry.setUser({ email: socialId })
+  }
+
+  setAlias (distinctId: string, alias: string): void {
+    // Sentry does not support aliasing like PostHog or Mixpanel
+    // This method is left empty intentionally
   }
 
   setTag (key: string, value: string): void {

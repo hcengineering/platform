@@ -433,6 +433,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/analytics-providers",
+      "projectFolder": "packages/analytics-providers",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/analytics-service",
       "projectFolder": "packages/analytics-service",
       "shouldPublish": false

@@ -63,6 +63,7 @@
     "@hcengineering/ai-bot": "^0.6.0",
     "@hcengineering/ai-bot-resources": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
+    "@hcengineering/analytics-providers": "^0.6.0",
     "@hcengineering/analytics-collector": "^0.6.0",
     "@hcengineering/analytics-collector-assets": "^0.6.0",
     "@hcengineering/analytics-collector-resources": "^0.6.0",

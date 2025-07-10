@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,24 +13,16 @@
 // limitations under the License.
 //
 
-import { MongoClientReference, getMongoClient } from '@hcengineering/mongo'
-import { MongoClient } from 'mongodb'
+import { type AnalyticEvent } from '@hcengineering/analytics-collector'
 
-import config from './config'
+export interface AnalyticsConfig {
+  ANALYTICS_COLLECTOR_URL?: string
+  SENTRY_DSN?: string
+  POSTHOG_API?: string
+  POSTHOG_HOST?: string
+  [key: string]: any
+}
 
-const clientRef: MongoClientReference = getMongoClient(config.MongoUrl)
-let client: MongoClient | undefined
-
-export const getDB = (() => {
-  return async () => {
-    if (client === undefined) {
-      client = await clientRef.getClient()
-    }
-
-    return client.db(config.MongoDb)
-  }
-})()
-
-export const closeDB: () => Promise<void> = async () => {
-  clientRef.close()
+export interface QueuedEvent extends AnalyticEvent {
+  retryCount?: number
 }
