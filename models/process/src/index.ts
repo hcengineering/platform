@@ -899,6 +899,34 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.CreateCard,
+      objectClass: card.class.Card,
+      editor: process.component.CreateCardEditor,
+      presenter: process.component.CreateCardPresenter,
+      contextClass: card.class.Card,
+      requiredParams: ['title', '_class']
+    },
+    process.method.CreateCard
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: core.string.AddRelation,
+      objectClass: core.class.Relation,
+      editor: process.component.AddRelationEditor,
+      presenter: process.component.AddRelationPresenter,
+      contextClass: core.class.Relation,
+      requiredParams: ['association', 'direction', '_id']
+    },
+    process.method.AddRelation
+  )
+
+  builder.createDoc(
     process.class.Trigger,
     core.space.Model,
     {

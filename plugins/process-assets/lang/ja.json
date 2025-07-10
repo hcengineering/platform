@@ -88,7 +88,8 @@
     "Absolute": "絶対値",
     "LogAction": "イベント",
     "Started": "開始",
-    "Each": "各"
+    "Each": "各",
+    "CreateCard": "カードを作成"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
@@ -101,6 +102,7 @@
     "EmptyRelatedObjectValue": "関連オブジェクト {parent} の値が空です: {attr}",
     "InternalServerError": "内部サーバーエラー。サポートにお問い合わせください。エラーID: {errorId}",
     "EmptyFunctionResult": "関数結果が空です {func}",
-    "ContextValueNotProvided": "コンテキスト値が提供されていません: {name}"
+    "ContextValueNotProvided": "コンテキスト値が提供されていません: {name}",
+    "RequiredParamsNotProvided": "必須パラメータが提供されていません: {params}"
   }
 }

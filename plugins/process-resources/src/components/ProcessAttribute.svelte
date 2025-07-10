@@ -13,8 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { MasterTag, Tag } from '@hcengineering/card'
   import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
-  import { Context, parseContext, SelectedContext, Process } from '@hcengineering/process'
+  import { Context, parseContext, Process, SelectedContext } from '@hcengineering/process'
   import {
     AnySvelteComponent,
     Button,
@@ -29,7 +30,6 @@
   import { createEventDispatcher } from 'svelte'
   import ContextSelectorPopup from './attributeEditors/ContextSelectorPopup.svelte'
   import ContextValue from './attributeEditors/ContextValue.svelte'
-  import { MasterTag, Tag } from '@hcengineering/card'
 
   export let process: Process
   export let masterTag: Ref<MasterTag | Tag>
@@ -61,6 +61,7 @@
         masterTag,
         context,
         attribute,
+        forbidValue,
         onSelect
       },
       eventToHTMLElement(e)
@@ -73,69 +74,68 @@
   }
 </script>
 
-{#if editor}
-  <span
-    class="labelOnPanel"
-    use:tooltip={{
-      props: { label: attribute.label }
-    }}
-  >
-    <Label label={attribute.label} />
-  </span>
-  <div class="text-input" class:context={contextValue}>
-    {#if contextValue}
-      <ContextValue
-        {process}
-        {masterTag}
-        {contextValue}
-        {context}
-        {attribute}
-        {allowArray}
-        category={presenterClass.category}
-        attrClass={presenterClass.attrClass}
-        on:update={(e) => {
-          onSelect(e.detail)
-        }}
-      />
-    {:else}
-      <div class="w-full">
-        {#if !forbidValue}
-          <svelte:component
-            this={editor}
-            label={attribute?.label}
-            placeholder={attribute?.label}
-            kind={'ghost'}
-            size={'large'}
-            width={'100%'}
-            justify={'left'}
-            type={attribute?.type}
-            {value}
-            {onChange}
-            {focus}
-          />
-        {/if}
-      </div>
-    {/if}
-    <div class="button flex-row-center">
-      <Button
-        icon={IconAdd}
-        kind="ghost"
-        on:click={(e) => {
-          selectContext(e)
-        }}
-      />
-      {#if allowRemove}
-        <Button
-          icon={IconClose}
-          kind="ghost"
-          on:click={() => {
-            dispatch('remove', { key: attribute.name })
-          }}
+<span
+  class="labelOnPanel"
+  use:tooltip={{
+    props: { label: attribute.label }
+  }}
+>
+  <Label label={attribute.label} />
+</span>
+<div class="text-input" class:context={contextValue}>
+  {#if contextValue}
+    <ContextValue
+      {process}
+      {masterTag}
+      {contextValue}
+      {context}
+      {attribute}
+      {allowArray}
+      category={presenterClass.category}
+      attrClass={presenterClass.attrClass}
+      {forbidValue}
+      on:update={(e) => {
+        onSelect(e.detail)
+      }}
+    />
+  {:else}
+    <div class="w-full">
+      {#if !forbidValue && editor}
+        <svelte:component
+          this={editor}
+          label={attribute?.label}
+          placeholder={attribute?.label}
+          kind={'ghost'}
+          size={'large'}
+          width={'100%'}
+          justify={'left'}
+          type={attribute?.type}
+          {value}
+          {onChange}
+          {focus}
         />
       {/if}
     </div>
+  {/if}
+  <div class="button flex-row-center">
+    <Button
+      icon={IconAdd}
+      kind="ghost"
+      on:click={(e) => {
+        selectContext(e)
+      }}
+    />
+    {#if allowRemove}
+      <Button
+        icon={IconClose}
+        kind="ghost"
+        on:click={() => {
+          dispatch('remove', { key: attribute.name })
+        }}
+      />
+    {/if}
   </div>
-{/if}
+</div>
 
 <style lang="scss">
   .text-input {

@@ -13,15 +13,18 @@
 // limitations under the License.
 //
 
-import card, { Card } from '@hcengineering/card'
+import card, { Card, MasterTag } from '@hcengineering/card'
 import contact, { Employee } from '@hcengineering/contact'
 import core, {
   ArrOf,
+  Association,
+  Data,
   Doc,
   generateId,
   getObjectValue,
   Ref,
   RefTo,
+  Relation,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -205,11 +208,8 @@ async function executeAction<T extends Doc> (
     const params = await fillParams(action.params, execution, control)
     const f = await getResource(impl.func)
     const res = await f(params, execution, control)
-    if (action.contextId != null && !isError(res)) {
-      const resId = (res.txes[0] as TxCUD<Doc>)?.objectId
-      if (resId !== undefined) {
-        execution.context[action.contextId] = resId
-      }
+    if (!isError(res) && action.context?._id != null && res.context != null) {
+      execution.context[action.context._id] = res.context
     }
     return res
   } catch (err) {
@@ -593,6 +593,12 @@ export async function CreateToDo (
   execution: Execution,
   control: TriggerControl
 ): Promise<ExecuteResult | undefined> {
+  for (const key in { user: params.user, title: params.title }) {
+    const val = (params as any)[key]
+    if (isEmpty(val)) {
+      throw processError(process.error.RequiredParamsNotProvided, { params: key })
+    }
+  }
   if (params.user === undefined || params.title === undefined) return
   const res: Tx[] = []
   const rollback: Tx[] = []
@@ -619,7 +625,59 @@ export async function CreateToDo (
       id
     )
   )
-  return { txes: res, rollback }
+  return { txes: res, rollback, context: id }
+}
+
+export async function CreateCard (
+  params: MethodParams<Card>,
+  execution: Execution,
+  control: TriggerControl
+): Promise<ExecuteResult | undefined> {
+  const { _class, title, ...attrs } = params
+  for (const key in { _class, title }) {
+    const val = (params as any)[key]
+    if (isEmpty(val)) {
+      throw processError(process.error.RequiredParamsNotProvided, { params: key })
+    }
+  }
+  const _id = generateId<Card>()
+  const data = {
+    title,
+    ...attrs
+  } as any
+  const res: Tx[] = [control.txFactory.createTxCreateDoc(_class as Ref<MasterTag>, execution.space, data, _id)]
+  const rollback: Tx[] = [control.txFactory.createTxRemoveDoc(_class as Ref<MasterTag>, execution.space, _id)]
+  return { txes: res, rollback, context: _id }
+}
+
+export async function AddRelation (
+  params: MethodParams<Relation>,
+  execution: Execution,
+  control: TriggerControl
+): Promise<ExecuteResult | undefined> {
+  const _id = generateId<Relation>()
+  const association = params.association as Ref<Association>
+  if (isEmpty(association)) {
+    throw processError(process.error.RequiredParamsNotProvided, { params: 'association' })
+  }
+  if (isEmpty(params._id)) {
+    throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
+  }
+  if (isEmpty(params.direction)) {
+    throw processError(process.error.RequiredParamsNotProvided, { params: 'direction' })
+  }
+  const targetId = params._id as Ref<Doc>
+  const direction = params.direction as 'A' | 'B'
+  const docA = direction === 'A' ? targetId : execution.card
+  const docB = direction === 'A' ? execution.card : targetId
+  const data: Data<Relation> = {
+    association,
+    docA,
+    docB
+  }
+  const res: Tx[] = [control.txFactory.createTxCreateDoc(core.class.Relation, core.space.Workspace, data, _id)]
+  const rollback: Tx[] = [control.txFactory.createTxRemoveDoc(core.class.Relation, core.space.Workspace, _id)]
+  return { txes: res, rollback, context: _id }
 }
 
 export async function UpdateCard (
@@ -638,7 +696,7 @@ export async function UpdateCard (
   }
   const res: Tx[] = [control.txFactory.createTxUpdateDoc(target._class, target.space, target._id, update)]
   const rollback: Tx[] = [control.txFactory.createTxUpdateDoc(target._class, target.space, target._id, prevValue)]
-  return { txes: res, rollback }
+  return { txes: res, rollback, context: null }
 }
 
 export async function RunSubProcess (
@@ -652,6 +710,7 @@ export async function RunSubProcess (
   const target = control.modelDb.findObject(processId)
   if (target === undefined) return
   const res: Tx[] = []
+  const context: Ref<Execution>[] = []
   for (const _card of Array.isArray(card) ? card : [card]) {
     if (target.parallelExecutionForbidden === true) {
       const currentExecution = await control.findAll(control.ctx, process.class.Execution, {
@@ -667,19 +726,26 @@ export async function RunSubProcess (
     const initTransition = control.modelDb.findAllSync(process.class.Transition, { process: target._id, from: null })[0]
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const emptyContext = {} as ExecutionContext
+    const id = generateId<Execution>()
     res.push(
-      control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
-        process: processId,
-        currentState: initTransition.to,
-        card: _card,
-        context: emptyContext,
-        status: ExecutionStatus.Active,
-        rollback: [],
-        parentId: execution._id
-      })
+      control.txFactory.createTxCreateDoc(
+        process.class.Execution,
+        core.space.Workspace,
+        {
+          process: processId,
+          currentState: initTransition.to,
+          card: _card,
+          context: emptyContext,
+          status: ExecutionStatus.Active,
+          rollback: [],
+          parentId: execution._id
+        },
+        id
+      )
     )
+    context.push(id)
   }
-  return { txes: res, rollback: undefined }
+  return { txes: res, rollback: undefined, context }
 }
 
 export async function RoleContext (
@@ -763,24 +829,6 @@ export function CheckToDo (params: Record<string, any>, doc: Doc): boolean {
   return doc._id === params._id
 }
 
-export async function OnStateActionsUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
-  for (const tx of txes) {
-    if (!control.hierarchy.isDerived(tx._class, core.class.TxCUD)) continue
-    const cudTx = tx as TxUpdateDoc<State>
-    if (!control.hierarchy.isDerived(cudTx.objectClass, process.class.State)) continue
-    const state = control.modelDb.findObject(cudTx.objectId)
-    if (state === undefined) continue
-    const _process = control.modelDb.findObject(state.process)
-    if (_process === undefined) continue
-    const syncTx = await syncContext(control, _process)
-    if (syncTx !== undefined) {
-      res.push(syncTx)
-    }
-  }
-  return res
-}
-
 export async function OnTransition (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   for (const tx of txes) {
@@ -806,25 +854,22 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
   let changed = false
   for (const transition of transitions) {
     for (const action of transition.actions) {
-      if (action.contextId != null) {
-        exists.add(action.contextId)
-        const context = _process.context[action.contextId]
-        if (context === undefined) {
-          const method = control.modelDb.findObject(action.methodId)
-          if (method?.contextClass != null) {
-            changed = true
-            const ctx: SelectedExecutonContext = {
-              type: 'context',
-              id: action.contextId,
-              key: ''
-            }
-            _process.context[action.contextId] = {
-              name: '',
-              _class: method.contextClass,
-              action: action._id,
-              producer: transition._id,
-              value: ctx
-            }
+      if (action.context != null) {
+        exists.add(action.context._id)
+        const method = control.modelDb.findObject(action.methodId)
+        if (method?.contextClass != null) {
+          changed = true
+          const ctx: SelectedExecutonContext = {
+            type: 'context',
+            id: action.context._id,
+            key: ''
+          }
+          _process.context[action.context._id] = {
+            name: '',
+            _class: action.context._class ?? method.contextClass,
+            action: action._id,
+            producer: transition._id,
+            value: ctx
           }
         }
       }
@@ -865,12 +910,18 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
   }
 }
 
+function isEmpty (value: any): boolean {
+  return value === undefined || value === null || (typeof value === 'string' && value.trim() === '')
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   func: {
     RunSubProcess,
     CreateToDo,
     UpdateCard,
+    CreateCard,
+    AddRelation,
     CheckToDo
   },
   transform: {
@@ -904,7 +955,6 @@ export default async () => ({
   trigger: {
     OnProcessRemove,
     OnStateRemove,
-    OnStateActionsUpdate,
     OnTransition,
     OnExecutionCreate,
     OnProcessToDoClose,

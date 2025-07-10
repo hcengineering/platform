@@ -72,6 +72,8 @@ export { default as CardIcon } from './components/CardIcon.svelte'
 export { default as Navigator } from './components/navigator-next/Navigator.svelte'
 export { default as Favorites } from './components/Favorites.svelte'
 export { default as CardPresenter } from './components/CardPresenter.svelte'
+export { default as TypeSelector } from './components/TypeSelector.svelte'
+export { default as AssociationsSelect } from './components/settings/view/AssociationsSelect.svelte'
 
 export * from './types'
 export { getCardIconInfo } from './utils'

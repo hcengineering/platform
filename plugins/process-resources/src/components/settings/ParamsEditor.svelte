@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { MethodParams, Process, State } from '@hcengineering/process'
+  import { MethodParams, Process } from '@hcengineering/process'
   import { createEventDispatcher } from 'svelte'
   import ProcessAttributeEditor from './ProcessAttributeEditor.svelte'
 

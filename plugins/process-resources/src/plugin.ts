@@ -56,7 +56,11 @@ export default mergeIds(processId, process, {
     StateEditor: '' as AnyComponent,
     TransitionRefPresenter: '' as AnyComponent,
     LogActionPresenter: '' as AnyComponent,
-    NotifierExtension: '' as AnyComponent
+    NotifierExtension: '' as AnyComponent,
+    CreateCardEditor: '' as AnyComponent,
+    CreateCardPresenter: '' as AnyComponent,
+    AddRelationEditor: '' as AnyComponent,
+    AddRelationPresenter: '' as AnyComponent
   },
   transformEditor: {
     DateOffsetEditor: '' as AnyComponent,
@@ -151,6 +155,7 @@ export default mergeIds(processId, process, {
     Start: '' as IntlString,
     End: '' as IntlString,
     Started: '' as IntlString,
-    Each: '' as IntlString
+    Each: '' as IntlString,
+    CreateCard: '' as IntlString
   }
 })
