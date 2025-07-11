@@ -42,6 +42,10 @@ function getIndexVersion (): string {
   return getMetadata(serverCore.metadata.ElasticIndexVersion) ?? 'v1'
 }
 
+const mappingFields = new Set([
+  'workspaceId'
+])
+
 class ElasticAdapter implements FullTextAdapter {
   private readonly getFulltextDocId: (workspaceId: WorkspaceUuid, doc: Ref<Doc>) => Ref<Doc>
   private readonly getDocId: (workspaceId: WorkspaceUuid, fulltext: Ref<Doc>) => Ref<Doc>
@@ -185,12 +189,12 @@ class ElasticAdapter implements FullTextAdapter {
 
       if (query.spaces !== undefined) {
         filter.push({
-          terms: { 'space.keyword': query.spaces }
+          terms: this.getTerms(query.spaces, 'space')
         })
       }
       if (query.classes !== undefined) {
         filter.push({
-          terms: { '_class.keyword': query.classes }
+          terms: this.getTerms(query.classes, '_class')
         })
       }
 
@@ -200,9 +204,10 @@ class ElasticAdapter implements FullTextAdapter {
 
       if (options.scoring !== undefined) {
         const scoringTerms: any[] = options.scoring.map((scoringOption): any => {
+          const field = mappingFields.has(scoringOption.attr) ? scoringOption.attr : `${scoringOption.attr}.keyword`
           return {
             term: {
-              [`${scoringOption.attr}.keyword`]: {
+              [field]: {
                 value: scoringOption.value,
                 boost: scoringOption.boost
               }
@@ -279,11 +284,12 @@ class ElasticAdapter implements FullTextAdapter {
 
     for (const [q, v] of Object.entries(query)) {
       if (!q.startsWith('$')) {
+        const field = mappingFields.has(q) ? q : `${q}.keyword`
         if (typeof v === 'object') {
           if (v.$in !== undefined) {
             request.bool.should.push({
               terms: {
-                [q]: v.$in,
+                [field]: v.$in,
                 boost: 100.0
               }
             })
@@ -291,7 +297,7 @@ class ElasticAdapter implements FullTextAdapter {
         } else {
           request.bool.should.push({
             term: {
-              [q]: {
+              [field]: {
                 value: v,
                 boost: 100.0,
                 case_insensitive: true
@@ -335,9 +341,9 @@ class ElasticAdapter implements FullTextAdapter {
     }
   }
 
-  private getTerms (_classes: Ref<Class<Doc>>[], field: string, extra: any = {}): any {
+  private getTerms (values: string[], field: string, extra: any = {}): any {
     return {
-      [field]: _classes.map((c) => c.toLowerCase()),
+      [(mappingFields.has(field) ? field : `${field}.keyword`)]: values,
       ...extra
     }
   }
