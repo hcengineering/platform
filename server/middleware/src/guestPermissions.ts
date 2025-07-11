@@ -56,25 +56,24 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
     }
     if (TxProcessor.isExtendsCUD(tx._class)) {
       const cudTx = tx as TxCUD<Doc>
-      const isTrigger = ctx.contextData.isTriggerCtx
       const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
       if (isSpace) {
-        if (this.isForbiddenSpaceTx(cudTx as TxCUD<Space>, isTrigger)) {
+        if (this.isForbiddenSpaceTx(cudTx as TxCUD<Space>)) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
-      } else if (cudTx.space !== core.space.DerivedTx && this.isForbiddenTx(cudTx, isTrigger)) {
+      } else if (cudTx.space !== core.space.DerivedTx && this.isForbiddenTx(cudTx)) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       }
     }
   }
 
-  private isForbiddenTx (tx: TxCUD<Doc>, isTrigger: boolean | undefined): boolean {
+  private isForbiddenTx (tx: TxCUD<Doc>): boolean {
     if (tx._class === core.class.TxCreateDoc) return false
     if (tx._class === core.class.TxMixin) return false
     return !this.hasMixinAccessLevel(tx)
   }
 
-  private isForbiddenSpaceTx (tx: TxCUD<Space>, isTrigger: boolean | undefined): boolean {
+  private isForbiddenSpaceTx (tx: TxCUD<Space>): boolean {
     if (tx._class === core.class.TxRemoveDoc) return true
     if (tx._class === core.class.TxCreateDoc) {
       return !this.hasMixinAccessLevel(tx)
@@ -82,19 +81,8 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
     if (tx._class === core.class.TxUpdateDoc) {
       const updateTx = tx as TxUpdateDoc<Space>
       const ops = updateTx.operations
-      if (
-        isTrigger === true &&
-        ops.$pull === undefined &&
-        ops.$push?.members !== undefined &&
-        Object.keys(ops.$push).length === 1
-      ) {
-        return false
-      }
       const keys = ['members', 'private', 'archived', 'owners', 'autoJoin']
       if (keys.some((key) => (ops as any)[key] !== undefined)) {
-        return true
-      }
-      if ((ops as any).members !== undefined && isTrigger !== true) {
         return true
       }
       if (ops.$push !== undefined || ops.$pull !== undefined) {

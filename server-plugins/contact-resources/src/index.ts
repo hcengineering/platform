@@ -96,6 +96,7 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
   const result: Tx[] = []
 
   const systemTxFactory = new TxFactory(core.account.System, false)
+  const systemTxes: Tx[] = []
 
   for (const tx of _txes) {
     const mixinTx = tx as TxMixin<Person, Employee>
@@ -127,7 +128,7 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
             members: account
           }
         })
-        result.push(pushTx)
+        systemTxes.push(pushTx)
       }
 
       const collabs = await control.findAll(control.ctx, core.class.Collaborator, {
@@ -141,7 +142,7 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
           attachedToClass: collab.attachedToClass,
           collection: 'collaborators'
         })
-        result.push(pushTx)
+        systemTxes.push(pushTx)
       }
 
       continue
@@ -151,14 +152,16 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
     for (const space of spaces) {
       if (space.members.includes(account)) continue
 
-      const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+      const pushTx = systemTxFactory.createTxUpdateDoc(space._class, space.space, space._id, {
         $push: {
           members: account
         }
       })
-      result.push(pushTx)
+      systemTxes.push(pushTx)
     }
   }
+
+  await control.apply(control.ctx, systemTxes)
 
   const account = control.ctx.contextData.account
   if (account.role !== AccountRole.Owner) return result
