@@ -163,11 +163,11 @@ class ElasticAdapter implements FullTextAdapter {
                 format: 'epoch_millis',
                 index: true
               },
-              'modifiedBy': {
+              modifiedBy: {
                 type: 'keyword',
                 index: true
               },
-              'modifiedOn': {
+              modifiedOn: {
                 type: 'date',
                 format: 'epoch_millis',
                 index: true
@@ -401,7 +401,7 @@ class ElasticAdapter implements FullTextAdapter {
 
   private getTerms (values: string[], field: string, extra: any = {}): any {
     return {
-      [(mappingFields.has(field) ? field : `${field}.keyword`)]: values,
+      [mappingFields.has(field) ? field : `${field}.keyword`]: values,
       ...extra
     }
   }

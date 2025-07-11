@@ -30,7 +30,7 @@ import {
   type QueueWorkspaceReindexMessage,
   type StorageAdapter
 } from '@hcengineering/server-core'
-import { QueueSourced, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
+import { type QueueSourced, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
 import { generateToken } from '@hcengineering/server-token'
 import { type Event } from '@hcengineering/communication-sdk-types'
 

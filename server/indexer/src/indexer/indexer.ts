@@ -817,8 +817,15 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     // If message was already fully replaced, other transactions can skip the message
     const messagesUpdated = new Set<MessageID>()
     for (const tx of txes) {
-      if ([MessageEventType.CreateMessage, MessageEventType.UpdatePatch, MessageEventType.LinkPreviewPatch].includes(tx.event.type as any)) {
-        const event = tx.event as QueueSourced<CreateMessageEvent> | QueueSourced<UpdatePatchEvent> | QueueSourced<LinkPreviewPatchEvent>
+      if (
+        [MessageEventType.CreateMessage, MessageEventType.UpdatePatch, MessageEventType.LinkPreviewPatch].includes(
+          tx.event.type as any
+        )
+      ) {
+        const event = tx.event as
+          | QueueSourced<CreateMessageEvent>
+          | QueueSourced<UpdatePatchEvent>
+          | QueueSourced<LinkPreviewPatchEvent>
         if (event.messageId === undefined) {
           continue
         }
@@ -839,7 +846,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         for (const operation of event.operations) {
           if (operation.opcode === 'attach' || operation.opcode === 'set' || operation.opcode === 'update') {
             for (const blobData of operation.blobs) {
-              const attachedBlob = Object.assign(blobData, { creator: event.socialId, created: new Date(Date.parse(event.date)) })
+              const attachedBlob = Object.assign(blobData, {
+                creator: event.socialId,
+                created: new Date(Date.parse(event.date))
+              })
               await this.processCommunicationBlob(
                 ctx,
                 pushQueue,
