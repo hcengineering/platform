@@ -555,6 +555,10 @@ export function createModel (builder: Builder): void {
     presenter: notification.component.MentionInboxNotificationPresenter
   })
 
+  builder.mixin(notification.class.BrowserNotification, core.class.Class, core.mixin.TxAccessLevel, {
+    removeAccessLevel: AccountRole.Guest
+  })
+
   builder.createDoc(
     notification.class.NotificationType,
     core.space.Model,

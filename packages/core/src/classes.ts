@@ -550,6 +550,12 @@ export const roleOrder: Record<AccountRole, number> = {
   [AccountRole.Admin]: 100
 }
 
+export interface TxAccessLevel extends Class<Doc> {
+  createAccessLevel?: AccountRole
+  removeAccessLevel?: AccountRole
+  updateAccessLevel?: AccountRole
+}
+
 /**
  * @public
  */

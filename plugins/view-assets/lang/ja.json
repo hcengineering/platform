@@ -131,8 +131,11 @@
     "Loading": "読み込み中...",
     "NoRelations": "関係なし",
     "ReadOnlyWarningTitle": "✨ ゲストデモ",
-    "ReadOnlyWarningMessage": "閲覧モードです。Hulyでどんなプロジェクトも管理しませんか？ タスク、期限、チーム — 完全アクセスには登録してください！",
-    "ReadOnlySignUp": "サインアップ \uD83D\uDE80",
+    "ReadOnlyWarningMessage": "閲覧モードです。Hulyでどんなプロジェクトも管理しませんか？ タスク、期限、チーム — このワークスペースに参加して共同作業するか、自分自身のスペースを作成しましょう！",
+    "ReadOnlyJoinWorkspace": "ワークスペースに参加 👥",
+    "ReadOnlySignUp": "アカウント作成 🚀",
+    "PermissionWarningTitle": "✨ アクセスレベルを上げましょう！",
+    "PermissionWarningMessage": "現在のロールの権限は制限されています。この機能や他の高度な機能を利用するには、ワークスペース管理者にアクセスレベルのアップグレードを依頼してください！",
     "Icon": "アイコン",
     "Color": "色",
     "AutomationOnly": "自動化のみ"

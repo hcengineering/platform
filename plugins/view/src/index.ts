@@ -238,6 +238,9 @@ const view = plugin(viewId, {
     ReadOnlyWarningTitle: '' as IntlString,
     ReadOnlyWarningMessage: '' as IntlString,
     ReadOnlySignUp: '' as IntlString,
+    ReadOnlyJoinWorkspace: '' as IntlString,
+    PermissionWarningTitle: '' as IntlString,
+    PermissionWarningMessage: '' as IntlString,
     Icon: '' as IntlString,
     Color: '' as IntlString,
     AutomationOnly: '' as IntlString

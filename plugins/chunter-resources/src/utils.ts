@@ -26,11 +26,13 @@ import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage 
 import contact, { type Employee, getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
 import { employeeByAccountStore, employeeByIdStore, PersonIcon } from '@hcengineering/contact-resources'
 import core, {
+  AccountRole,
   type AccountUuid,
   type Class,
   type Client,
   type Doc,
   getCurrentAccount,
+  hasAccountRole,
   notEmpty,
   type Ref,
   type Space,
@@ -119,6 +121,10 @@ export async function canDeleteMessage (doc?: ChatMessage): Promise<boolean> {
   }
 
   const me = getCurrentAccount()
+
+  if (hasAccountRole(me, AccountRole.Maintainer)) {
+    return true
+  }
 
   return doc.createdBy !== undefined && me.socialIds.includes(doc.createdBy)
 }

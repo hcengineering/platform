@@ -309,6 +309,18 @@ export function createModel (builder: Builder): void {
     TUserRole
   )
 
+  builder.mixin(contact.class.PersonSpace, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
+  })
+
+  builder.mixin(contact.class.SocialIdentity, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
+  })
+
   builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.mixin(contact.class.Person, core.class.Class, activity.mixin.ActivityDoc, {

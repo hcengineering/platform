@@ -407,6 +407,8 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   if (me.role === AccountRole.ReadOnlyGuest) {
     await broadcastEvent(PlatformEvent, new Status(Severity.INFO, platform.status.ReadOnlyAccount, {}))
+  } else {
+    await broadcastEvent(PlatformEvent, new Status(Severity.INFO, platform.status.RegularAccount, {}))
   }
 
   try {

@@ -513,6 +513,14 @@ export function createModel (builder: Builder): void {
     components: { input: { component: chunter.component.ChatMessageInput, props: { collection: 'messages' } } }
   })
 
+  builder.mixin(love.class.JoinRequest, core.class.Class, core.mixin.TxAccessLevel, {
+    removeAccessLevel: AccountRole.Guest
+  })
+
+  builder.mixin(love.class.ParticipantInfo, core.class.Class, core.mixin.TxAccessLevel, {
+    updateAccessLevel: AccountRole.Guest
+  })
+
   builder.mixin(love.class.MeetingMinutes, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.mixin(love.class.Room, core.class.Class, activity.mixin.ActivityDoc, {})

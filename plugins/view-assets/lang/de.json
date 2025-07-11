@@ -136,8 +136,11 @@
     "Loading": "Laden...",
     "NoRelations": "Keine Beziehungen",
     "ReadOnlyWarningTitle": "✨ Gast-Demo",
-    "ReadOnlyWarningMessage": "Sie sind im Ansichtsmodus. Möchten Sie beliebige Projekte in Huly verwalten? Aufgaben, Fristen, Team — registrieren Sie sich für vollen Zugriff!",
-    "ReadOnlySignUp": "Registrieren \uD83D\uDE80",
+    "ReadOnlyWarningMessage": "Sie sind im Ansichtsmodus. Möchten Sie beliebige Projekte in Huly verwalten? Aufgaben, Fristen, Team — treten Sie diesem Arbeitsbereich bei oder erstellen Sie Ihren eigenen!",
+    "ReadOnlyJoinWorkspace": "Arbeitsbereich beitreten 👥",
+    "ReadOnlySignUp": "Konto erstellen 🚀",
+    "PermissionWarningTitle": "✨ Erweitern Sie Ihren Zugriff!",
+    "PermissionWarningMessage": "Ihre aktuelle Rolle hat eingeschränkte Berechtigungen. Um diese und andere erweiterte Funktionen freizuschalten, bitten Sie Ihren Arbeitsbereich-Administrator, Ihr Zugriffslevel zu erhöhen!",
     "Icon": "Symbol",
     "Color": "Farbe",
     "AutomationOnly": "Nur Automatisierung"
