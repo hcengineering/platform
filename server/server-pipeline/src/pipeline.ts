@@ -39,7 +39,8 @@ import {
   SpaceSecurityMiddleware,
   TriggersMiddleware,
   TxMiddleware,
-  UserStatusMiddleware
+  UserStatusMiddleware,
+  GuestPermissionsMiddleware
 } from '@hcengineering/middleware'
 import {
   createBenchmarkAdapter,
@@ -125,6 +126,7 @@ export function createServerPipeline (
       (ctx: MeasureContext, context: PipelineContext, next?: Middleware) =>
         SpaceSecurityMiddleware.create(opt.adapterSecurity ?? false, ctx, context, next),
       SpacePermissionsMiddleware.create,
+      GuestPermissionsMiddleware.create,
       ConfigurationMiddleware.create,
       ContextNameMiddleware.create,
       MarkDerivedEntryMiddleware.create,

@@ -14,6 +14,7 @@
 //
 
 import {
+  readOnlyGuestAccountUuid,
   AccountRole,
   type PersonId,
   SocialIdType,
@@ -965,7 +966,7 @@ describe('invite operations', () => {
     describe('loginAsGuest', () => {
       test('should successfully login as readonly guest', async () => {
         const mockGuestPerson = {
-          uuid: utils.READONLY_GUEST_ACCOUNT
+          uuid: readOnlyGuestAccountUuid
         }
 
         ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockGuestPerson)
@@ -973,7 +974,7 @@ describe('invite operations', () => {
         const result = await loginAsGuest(mockCtx, mockDb, mockBranding, mockToken)
 
         expect(result).toEqual({
-          account: utils.READONLY_GUEST_ACCOUNT,
+          account: readOnlyGuestAccountUuid,
           token: expect.any(String)
         })
       })

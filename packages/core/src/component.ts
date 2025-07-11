@@ -15,7 +15,7 @@
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { BenchmarkDoc } from './benchmark'
-import { AccountRole } from './classes'
+import { AccountRole, TxAccessLevel } from './classes'
 import type {
   Account,
   AnyAttribute,
@@ -98,6 +98,8 @@ export const systemAccount: Account = {
 }
 
 export const configUserAccountUuid = '0d94731c-0787-4bcd-aefe-304efc3706b1' as AccountUuid
+
+export const readOnlyGuestAccountUuid = '83bbed9a-0867-4851-be32-31d49d1d42ce' as AccountUuid
 
 export default plugin(coreId, {
   class: {
@@ -189,7 +191,8 @@ export default plugin(coreId, {
     ConfigurationElement: '' as Ref<Mixin<ConfigurationElement>>,
     IndexConfiguration: '' as Ref<Mixin<IndexingConfiguration<Doc>>>,
     SpacesTypeData: '' as Ref<Mixin<Space>>,
-    TransientConfiguration: '' as Ref<Mixin<TransientConfiguration>>
+    TransientConfiguration: '' as Ref<Mixin<TransientConfiguration>>,
+    TxAccessLevel: '' as Ref<Mixin<TxAccessLevel>>
   },
   space: {
     Tx: '' as Ref<Space>,

@@ -615,10 +615,11 @@ export async function getInviteLinkId (
 export async function join (
   email: string,
   password: string,
-  inviteId: string
+  inviteId: string,
+  workspace: string
 ): Promise<[Status, WorkspaceLoginInfo | null]> {
   try {
-    const workspaceLoginInfo = await getAccountClient().join(email, password, inviteId)
+    const workspaceLoginInfo = await getAccountClient().join(email, password, inviteId, workspace)
 
     Analytics.handleEvent('Join', { email, ok: true })
 
@@ -643,10 +644,11 @@ export async function signUpJoin (
   password: string,
   first: string,
   last: string,
-  inviteId: string
+  inviteId: string,
+  workspace: string
 ): Promise<[Status, WorkspaceLoginInfo | null]> {
   try {
-    const workspaceLoginInfo = await getAccountClient().signUpJoin(email, password, first, last, inviteId)
+    const workspaceLoginInfo = await getAccountClient().signUpJoin(email, password, first, last, inviteId, workspace)
 
     Analytics.handleEvent('Signup Join', { email, ok: true })
 
