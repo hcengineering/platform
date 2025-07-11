@@ -799,7 +799,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         return undefined
       }
       const group = messagesGroups[0]
-      const blob = await this.storageAdapter.get(ctx, this.workspace, group.blobId)
+      const blob = await this.storageAdapter.read(ctx, this.workspace, group.blobId)
       const messagesFile = Buffer.concat(blob as any).toString()
       const messagesParsedFile = parseYaml(messagesFile)
       const message = messagesParsedFile.messages.find((m) => m.id === msgId)
