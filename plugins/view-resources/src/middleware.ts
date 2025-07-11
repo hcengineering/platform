@@ -358,7 +358,8 @@ export class ReadOnlyAccessMiddleware extends BasePresentationMiddleware impleme
         await translate(view.string.ReadOnlyWarningMessage, {}, getCurrentLanguage()),
         ReadOnlyNotification,
         undefined,
-        NotificationSeverity.Info
+        NotificationSeverity.Info,
+        'readOnlyNotification'
       )
       return {}
     }
