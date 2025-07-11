@@ -14,6 +14,7 @@
 //
 
 import { IPCMainExposed, MenuBarAction, isMenuBarAction } from './types'
+import { TitleBarMenuState } from './titleBarMenuState'
 
 export function setupTitleBarMenu(ipcMain: IPCMainExposed, root: HTMLElement): MenuBar {
     const themeManager = new ThemeManager('light')
@@ -243,15 +244,11 @@ export class MenuBuilder {
 }
 
 class MenuBarManager {
-    private altModeActive: boolean = false
-    private expandedTopMenu: HTMLElement | null = null
-    private selectedTopMenuIndex: number | null = null
-    private selectedItemIndex: number = -1
-
+    private state: TitleBarMenuState
+    
     private readonly TopMenuStyle = '.desktop-app-top-menu-button'
     private readonly DropdownMenuStyle = '.desktop-app-dropdown-menu'
     private readonly DropdownItemStyle = '.desktop-app-dropdown-item'
-    private readonly DropdownItemsSeparatorStyle = 'desktop-app-dropdown-separator'
     private readonly MenuItemStyle = '.desktop-app-menu-item'
 
     private readonly StateStyleAltMode = 'desktop-app-alt-mode'
@@ -259,7 +256,14 @@ class MenuBarManager {
     private readonly StateStyleAltModeActive = 'desktop-app-alt-active'
 
     constructor(ipcMain: IPCMainExposed, private readonly root: HTMLElement) {
-        
+        this.state = new TitleBarMenuState(
+            () => this.topLevelMenus().length,
+            (topLevelMenuIndex: number) => {
+                const children = this.childrenOfTopLevelMenu(topLevelMenuIndex)
+                return children.length
+            }
+        )
+
         const menuBar = buildHulyApplicationMenu()
         
         const menuContainer = this.root.querySelector('.desktop-app-menu-container')
@@ -285,34 +289,35 @@ class MenuBarManager {
         })
     }
 
+    private topLevelMenus() {
+        return this.root.querySelectorAll<HTMLButtonElement>(this.TopMenuStyle)
+    }
+
+    private onButtonClick(id: string, callback: () => void): void {
+        const button = this.root.querySelector(`#${id}`)
+        if (button) {
+            button.addEventListener('click', callback)
+        }
+    }
+
     private initializeEventListeners(ipcMain: IPCMainExposed): void {
-        const minimizeButton = this.root.querySelector('#minimize-button')
-        const maximizeButton = this.root.querySelector('#maximize-button')
-        const closeButton = this.root.querySelector('#close-button')
+        this.onButtonClick('minimize-button', () => {
+            ipcMain.minimizeWindow()
+        })
+        
+        this.onButtonClick('maximize-button', () => {
+            ipcMain.maximizeWindow()
+        })
 
-        if (minimizeButton) {
-            minimizeButton.addEventListener('click', () => {
-                ipcMain.minimizeWindow()
-            })
-        }
-
-        if (maximizeButton) {
-            maximizeButton.addEventListener('click', () => {
-                ipcMain.maximizeWindow()
-            })
-        }
-
-        if (closeButton) {
-            closeButton.addEventListener('click', () => {
-                ipcMain.closeWindow()
-            })
-        }
+        this.onButtonClick('close-button', () => {
+            ipcMain.closeWindow()
+        })
 
         document.addEventListener('keydown', (e) => this.handleKeyDown(ipcMain, e))
         document.addEventListener('keyup', (e) => this.handleKeyUp(e))
 
-        this.root.querySelectorAll<HTMLButtonElement>(this.TopMenuStyle).forEach((button, index) => {
-            button.addEventListener('click', (e) => this.handleMenuButtonClick(e, index))
+        this.topLevelMenus().forEach((button, index) => {
+            button.addEventListener('click', (e) => this.handleTopLevelMenuButtonClick(e, index))
         })
 
         document.addEventListener('click', (e) => this.handleDocumentClick(e))
@@ -324,88 +329,66 @@ class MenuBarManager {
                     if (isMenuBarAction(action)) {
                         await this.executeMenuAction(ipcMain, action)
                     }
-                    this.setAltMode(false)
-                    this.closeAllMenus()
+                    this.state.closeAll()
+                    this.renderState()
                 }
             })
         })
     }
 
-    private setAltMode(active: boolean): void {
-        this.altModeActive = active
-        
-        if (active) {
+    private renderState() {
+        if (this.state.isAltModeActive) {
             this.root.classList.add(this.StateStyleAltModeActive)
-            if (this.selectedTopMenuIndex === null) {
-                this.setTopMenuSelection(0)
-            }
         } else {
             this.root.classList.remove(this.StateStyleAltModeActive)
-            this.closeAllMenus()
-            this.clearMenuSelection()
         }
-    }
 
-    private clearMenuSelection(): void {
-        const menuButtons = this.root.querySelectorAll<HTMLButtonElement>(this.TopMenuStyle)
-        menuButtons.forEach(button => {
-            button.classList.remove(this.StateStyleAltMode)
-        })
-        this.setTopMenuSelection(null)
-        this.selectedItemIndex = -1
-    }
-
-    private closeAllMenus(): void {
         this.root.querySelectorAll<HTMLElement>(this.DropdownMenuStyle).forEach(menu => {
             menu.style.display = 'none'
         })
-        this.expandedTopMenu = null
-    }
 
-    private setTopMenuSelection(newSelectionIndex: number | null): void {
-        this.selectedTopMenuIndex = newSelectionIndex
-        const menuButtons = this.root.querySelectorAll<HTMLButtonElement>(this.TopMenuStyle)
-        menuButtons.forEach((button, index) => {
-            if (index === this.selectedTopMenuIndex) {
+        const topLevelMenus = this.topLevelMenus()
+        
+        topLevelMenus.forEach((button, index) => {
+            button.classList.remove(this.StateStyleAltMode)
+
+            if (index === this.state.FocusedTopLevelMenuIndex) {
                 button.classList.add(this.StateStyleAltMode)
                 button.focus()
+
+                if (this.state.isTopLevelMenuExpanded && button.dataset.menu) {
+                    const menuType = button.dataset.menu
+                    const dropdown = this.root.querySelector(`#${menuType}-menu`) as HTMLElement | null
+                    if (dropdown) {
+                        dropdown.style.display = 'block'
+                    }
+                }
             } else {
-                button.classList.remove(this.StateStyleAltMode)
                 button.blur()
             }
         })
+
+        if (this.state.FocusedTopLevelMenuIndex != null && this.state.isTopLevelMenuExpanded) {
+            const candidates = this.childrenOfTopLevelMenu(this.state.FocusedTopLevelMenuIndex)
+            candidates.forEach((menu, index) => {
+                if (index === this.state.FocusedChildMenuIndex) {
+                    menu.classList.add(this.StateStyleKeyboardSelected)
+                } else {
+                    menu.classList.remove(this.StateStyleKeyboardSelected)
+                }
+            })
+        }
     }
 
-    private openMenu(menuIndex: number): void {
-        this.closeAllMenus()
-        const menuButtons = this.root.querySelectorAll<HTMLButtonElement>(this.TopMenuStyle)
-        const menuButton = menuButtons[menuIndex]
-        if (!menuButton || !menuButton.dataset.menu) return
-        
+    private childrenOfTopLevelMenu(index: number): NodeListOf<HTMLElement> {
+        const topLevelMenus = this.topLevelMenus()
+        const menuButton = topLevelMenus[index]
         const menuType = menuButton.dataset.menu
         const dropdown = this.root.querySelector(`#${menuType}-menu`) as HTMLElement | null
-        
         if (dropdown) {
-            dropdown.style.display = 'block'
-            this.expandedTopMenu = dropdown
-            this.selectedItemIndex = 0
-            this.updateDropdownSelection()
+            return dropdown.querySelectorAll<HTMLElement>(this.DropdownItemStyle)
         }
-    }
-
-    private updateDropdownSelection(): void {
-        if (!this.expandedTopMenu) {
-            return
-        }
-        
-        const candidates = this.expandedTopMenu.querySelectorAll<HTMLElement>(this.DropdownItemStyle)
-        candidates.forEach((item, index) => {
-            if (index === this.selectedItemIndex) {
-                item.classList.add(this.StateStyleKeyboardSelected)
-            } else {
-                item.classList.remove(this.StateStyleKeyboardSelected)
-            }
-        })
+        return document.createDocumentFragment().querySelectorAll<HTMLElement>('*')
     }
 
     private async executeMenuAction(ipcMain: IPCMainExposed, action: MenuBarAction): Promise<void> {
@@ -416,151 +399,121 @@ class MenuBarManager {
         }
     }
 
-    private moveMenuSelectionHorizontal(increment: number): void {
-        if (this.selectedTopMenuIndex !== null) {
-            const menuButtons = this.root.querySelectorAll<HTMLButtonElement>(this.TopMenuStyle)
-            this.setTopMenuSelection((menuButtons.length + this.selectedTopMenuIndex + increment) % menuButtons.length)
-            if (this.expandedTopMenu) {
-                this.selectedItemIndex = 0
-                this.openMenu(this.selectedTopMenuIndex)
-            }
-        }
-    }
-
-    private moveMenuSelectionVertical(increment: number): void {
-        if (!this.expandedTopMenu) return
-        
-        const items = this.expandedTopMenu.querySelectorAll<HTMLElement>(this.DropdownItemStyle)
-        let nextIndex = this.selectedItemIndex
-        // skip dividers
-        do {
-            nextIndex = (nextIndex + increment + items.length) % items.length
-        } while (items[nextIndex].classList.contains(this.DropdownItemsSeparatorStyle))
-        this.selectedItemIndex = nextIndex
-        this.updateDropdownSelection()
-    }
-
     private handleKeyDown(ipcMain: IPCMainExposed, e: KeyboardEvent): void {
-        if (e.altKey && !this.altModeActive) {
-            this.setAltMode(true)
-            return
+        if (e.altKey) {
+            if (this.state.isAltModeActive) {
+                if (this.state.FocusedTopLevelMenuIndex != null) {
+                    this.state.closeAll()
+                    this.renderState()
+                    return
+                }
+            } else {
+                this.state.enterAltMode(null)
+                this.renderState()
+            }
         }
 
         switch (e.key) {         
             case 'ArrowLeft':
-                this.moveMenuSelectionHorizontal(-1)
+                this.state.moveFocusHorizontal(-1)
+                this.renderState()
                 break
                 
             case 'ArrowRight':
-                this.moveMenuSelectionHorizontal(+1)
+                this.state.moveFocusHorizontal(+1)
+                this.renderState()
                 break
 
             case 'ArrowDown':
-                if (!this.expandedTopMenu && this.selectedTopMenuIndex !== null && this.selectedTopMenuIndex >= 0) {
-                    this.openMenu(this.selectedTopMenuIndex)
-                } else if (this.expandedTopMenu) {
-                    this.moveMenuSelectionVertical(1)
-                }
+                this.state.moveFocusVertical(+1)
+                this.renderState()
                 break
 
             case 'ArrowUp':
-                if (this.expandedTopMenu) {
-                    this.moveMenuSelectionVertical(-1)
-                }
+                this.state.moveFocusVertical(-1)
+                this.renderState()
                 break
         }
 
-        if (this.altModeActive) {
-            switch (e.key) {
-                case 'Escape':
-                    this.setAltMode(false)
-                    break
-            
-                case 'Enter':
-                case ' ':
-                    if (this.expandedTopMenu && this.selectedItemIndex >= 0) {
-                        const items = this.expandedTopMenu.querySelectorAll<HTMLButtonElement>(this.DropdownItemStyle)
-                        const selectedItem = items[this.selectedItemIndex]
-                        if (selectedItem && selectedItem.dataset.action) {
-                            if (isMenuBarAction(selectedItem.dataset.action)) {
-                                this.executeMenuAction(ipcMain, selectedItem.dataset.action)
+        switch (e.key) {
+            case 'Escape':
+                this.state.defocus()
+                this.renderState()
+                break
+        
+            case 'Enter':
+            case ' ':
+                if (this.state.FocusedTopLevelMenuIndex != null){
+                    if (this.state.isTopLevelMenuExpanded) {
+                        if (this.state.FocusedChildMenuIndex != null) {
+                            const children = this.childrenOfTopLevelMenu(this.state.FocusedTopLevelMenuIndex)
+                            const focused = children[this.state.FocusedChildMenuIndex]
+                            this.state.closeAll()
+                            this.renderState()
+                            if (focused.dataset.action && isMenuBarAction(focused.dataset.action)) {
+                                this.executeMenuAction(ipcMain, focused.dataset.action)
                             }
-                            this.setAltMode(false)
+                            this.renderState()
                         }
-                    } else if (this.selectedTopMenuIndex !== null && this.selectedTopMenuIndex >= 0) {
-                        this.openMenu(this.selectedTopMenuIndex)
                     }
-                    break
-                    
-                default:
-                    const key = e.key.toLowerCase()
-                    
-                    if (this.expandedTopMenu) {
-                        const items = this.expandedTopMenu.querySelectorAll<HTMLButtonElement>(this.DropdownItemStyle + '[data-accelerator]')
-                        for (let i = 0; i < items.length; i++) {
-                            if (items[i].dataset.accelerator === key) {
-                                const action = items[i].dataset.action
-                                if (action) {
-                                    if (isMenuBarAction(action)) {
-                                        this.executeMenuAction(ipcMain, action)
-                                    }
-                                    this.setAltMode(false)
-                                    return
+                }
+                break
+                
+            default:
+                const key = e.key.toLowerCase()
+                if (false == this.state.isAltModeActive) {
+                    return
+                }
+
+                if (this.state.isTopLevelMenuExpanded && this.state.FocusedTopLevelMenuIndex != null) {
+                    const children = this.childrenOfTopLevelMenu(this.state.FocusedTopLevelMenuIndex)
+                    for (let i = 0; i < children.length; i++) {
+                        if (children[i].dataset.accelerator === key) {
+                            const action = children[i].dataset.action
+                            if (action) {
+                                if (isMenuBarAction(action)) {
+                                    this.executeMenuAction(ipcMain, action)
                                 }
+                                this.state.closeAll()
+                                this.renderState()
+                                return
                             }
                         }
-                    } 
-                    
-                    const menuButtons = this.root.querySelectorAll<HTMLButtonElement>(this.TopMenuStyle + '[data-accelerator]')
-                    for (let i = 0; i < menuButtons.length; i++) {
-                        if (menuButtons[i].dataset.accelerator === key) {
-                            this.setTopMenuSelection(i)
-                            this.openMenu(this.selectedTopMenuIndex!)
-                            return
-                        }
                     }
-                    break
-            }
+                } 
+                
+                const menuButtons = this.root.querySelectorAll<HTMLButtonElement>(this.TopMenuStyle + '[data-accelerator]')
+                for (let i = 0; i < menuButtons.length; i++) {
+                    if (menuButtons[i].dataset.accelerator === key) {
+                        this.state.expandTopLevelMenu(i)
+                        this.state.focusChildMenu()
+                        this.renderState()
+                        return
+                    }
+                }
+                break
         }
     }
 
     private handleKeyUp(e: KeyboardEvent): void {
-        if (e.key === 'Alt' && this.altModeActive && !this.expandedTopMenu) {
-            this.setAltMode(false)
+        if (e.key === 'Alt') {
+            if (this.state.FocusedTopLevelMenuIndex == null) {
+                this.state.enterAltMode(0)
+                this.renderState()
+            } 
         }
     }
 
-    private handleMenuButtonClick(e: Event, index: number): void {
-        const button = e.target as HTMLButtonElement
-        if (!button.dataset.menu) return
-        
-        if (this.altModeActive) {
-            this.setTopMenuSelection(index)
-            if (this.expandedTopMenu && this.expandedTopMenu.id === `${button.dataset.menu}-menu`) {
-                this.setAltMode(false)
-            } else {
-                this.openMenu(this.selectedTopMenuIndex!)
-            }
-        } else {
-            const menuType = button.dataset.menu
-            const dropdown = this.root.querySelector(`#${menuType}-menu`) as HTMLElement | null
-            
-            const isCurrentMenuExpanded = dropdown && dropdown.style.display === 'block'
-
-            this.closeAllMenus()
-            
-            if (!isCurrentMenuExpanded && dropdown) {
-                dropdown.style.display = 'block'
-                this.expandedTopMenu = dropdown
-                this.setTopMenuSelection(index)
-            }
-        }
+    private handleTopLevelMenuButtonClick(e: Event, index: number): void {
+        this.state.expandTopLevelMenu(index)
+        this.renderState()
     }
 
     private handleDocumentClick(e: Event): void {
         const target = e.target as HTMLElement
-        if (!target.closest(this.MenuItemStyle) && this.expandedTopMenu && !this.altModeActive) {
-            this.closeAllMenus()
+        if (!target.closest(this.MenuItemStyle)) {
+            this.state.closeAll()
+            this.renderState()
         }
     }
 }
