@@ -89,7 +89,8 @@
     "Floor": "Floor",
     "LogAction": "Event",
     "Started": "Started",
-    "Each": "Each"
+    "Each": "Each",
+    "CreateCard": "Create card"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",
@@ -103,6 +104,7 @@
     "InternalServerError": "Internal server error, contact support, error id: {errorId}",
     "ResultNotProvided": "Result not provided",
     "EmptyFunctionResult": "Empty function result {func}",
-    "ContextValueNotProvided": "Context value not provided: {name}"
+    "ContextValueNotProvided": "Context value not provided: {name}",
+    "RequiredParamsNotProvided": "Required parameters not provided: {params}"
   }
 }

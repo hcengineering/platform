@@ -14,15 +14,16 @@
 -->
 <script lang="ts">
   import { Card, MasterTag } from '@hcengineering/card'
-  import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
-  import { AnySvelteComponent, Icon, tooltip } from '@hcengineering/ui'
-  import view, { ObjectPresenterType } from '@hcengineering/view'
-  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
-  import { getClient, IconWithEmoji } from '@hcengineering/presentation'
   import { Ref } from '@hcengineering/core'
+  import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { AnySvelteComponent, tooltip } from '@hcengineering/ui'
+  import { ObjectPresenterType } from '@hcengineering/view'
+  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
-  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import card from '../plugin'
+  import CardIcon from './CardIcon.svelte'
+  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
 
   export let value: Card | Ref<Card> | undefined
   export let disabled: boolean = false
@@ -77,11 +78,7 @@
         >
           {#if shouldShowAvatar}
             <div class="icon" use:tooltip={{ label: _class?.label ?? card.string.Card }}>
-              <Icon
-                icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? card.icon.Card}
-                iconProps={{ icon: _class?.color }}
-                size={'small'}
-              />
+              <CardIcon value={cardObj} />
             </div>
           {/if}
           <span class="overflow-label">
@@ -105,11 +102,7 @@
       >
         {#if shouldShowAvatar}
           <div class="icon" use:tooltip={{ label: _class?.label ?? card.string.Card }}>
-            <Icon
-              icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? card.icon.Card}
-              iconProps={{ icon: _class?.color }}
-              size={'small'}
-            />
+            <CardIcon value={cardObj} />
           </div>
         {/if}
         <span class="overflow-label cropped-text-presenter">

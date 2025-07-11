@@ -89,7 +89,8 @@
     "Absolute": "Абсолютное значение",
     "LogAction": "Событие",
     "Started": "Начат",
-    "Each": "Каждый"
+    "Each": "Каждый",
+    "CreateCard": "Создать карточку"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
@@ -103,6 +104,7 @@
     "AttributeNotExists": "Атрибут не существует: {key}",
     "ResultNotProvided": "Результат не предоставлен",
     "EmptyFunctionResult": "Отсутствуют результат функции {func}",
-    "ContextValueNotProvided": "Значение контекста не предоставлено: {name}"
+    "ContextValueNotProvided": "Значение контекста не предоставлено: {name}",
+    "RequiredParamsNotProvided": "Отсутствуют обязательные параметры: {params}"
   }
 }

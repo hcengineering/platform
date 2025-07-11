@@ -17,7 +17,7 @@
   import { createEventDispatcher } from 'svelte'
   import ui from '../plugin'
   import { showPopup } from '../popups'
-  import type { DropdownIntlItem } from '../types'
+  import type { ButtonKind, DropdownIntlItem } from '../types'
   import Button from './Button.svelte'
   import DropdownIcon from './icons/Dropdown.svelte'
   import NestedMenu from './NestedMenu.svelte'
@@ -27,6 +27,9 @@
   export let label: IntlString = ui.string.DropdownDefaultLabel
   export let disabled: boolean = false
   export let selected: DropdownIntlItem | undefined = undefined
+
+  export let width: string | undefined = undefined
+  export let kind: ButtonKind = 'regular'
 
   let container: HTMLElement
   let opened: boolean = false
@@ -48,7 +51,7 @@
 </script>
 
 <div bind:this={container}>
-  <Button width={'min-content'} {disabled} on:click={openPopup}>
+  <Button width={width ?? 'min-content'} {kind} {disabled} on:click={openPopup}>
     <span slot="content" class="overflow-label disabled flex-grow text-left mr-2">
       <Label label={selected !== undefined ? selected.label : label} />
     </span>

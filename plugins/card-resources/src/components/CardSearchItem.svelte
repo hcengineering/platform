@@ -14,16 +14,16 @@
 //
 -->
 <script lang="ts">
+  import { Card } from '@hcengineering/card'
   import { WithLookup } from '@hcengineering/core'
-  import card, { Card } from '@hcengineering/card'
-  import { Icon } from '@hcengineering/ui'
+  import CardIcon from './CardIcon.svelte'
 
   export let value: WithLookup<Card>
 </script>
 
 <div class="flex-row-center">
   <div class="flex-center p-1 content-dark-color flex-no-shrink mr-2-5">
-    <Icon icon={card.icon.Card} size={'medium'} />
+    <CardIcon {value} size={'medium'} />
   </div>
   <span class="overflow-label">
     {value.title}
