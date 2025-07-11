@@ -107,6 +107,9 @@ export function createIndexedDoc (doc: Doc, mixins: Ref<Class<Doc>>[] | undefine
   return indexedDoc
 }
 
+export const messagePseudoClass = `${cardPlugin.class.Card}%message` as Ref<Class<Doc>>
+export const blobPseudoClass = `${cardPlugin.class.Card}%blob` as Ref<Class<Doc>>
+
 /**
  * @public
  */
@@ -120,7 +123,7 @@ export function createIndexedDocFromMessage (
   const modifiedOn = modifiedDate.getTime()
   const indexedDoc = {
     id: `${message.id}@${cardId}` as any,
-    _class: [`${cardPlugin.class.Card}%message` as Ref<Class<Doc>>],
+    _class: [messagePseudoClass],
     space: cardSpace,
     [docKey('createdOn', core.class.Doc)]: message.created.getTime(),
     [docKey('createdBy', core.class.Doc)]: message.creator,
