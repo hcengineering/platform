@@ -277,20 +277,10 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   })
 
   router.delete('/cookie', async (ctx) => {
-    const token = extractToken(ctx.request.headers)
-    if (token === undefined) {
-      ctx.body = JSON.stringify({
-        error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
-      })
-      ctx.res.writeHead(401)
-      ctx.res.end()
-      return
-    }
-
     const cookieOpts = { ...getCookieOptions(ctx), maxAge: 0 }
 
     ctx.cookies.set(AUTH_TOKEN_COOKIE, '', cookieOpts)
-    ctx.res.writeHead(201)
+    ctx.res.writeHead(204)
     ctx.res.end()
   })
 
