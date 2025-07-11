@@ -1224,9 +1224,9 @@ export async function doJoinByInvite (
   } else if (workspace.allowReadOnlyGuest) {
     if (role == null) {
       await db.assignWorkspace(account, workspace.uuid, AccountRole.Guest)
-    } else {
-      await db.updateWorkspaceRole(account, workspace.uuid, AccountRole.Guest)
     }
+  } else {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
   const result = await selectWorkspace(ctx, db, branding, token, { workspaceUrl: workspace.url, kind: 'external' })
