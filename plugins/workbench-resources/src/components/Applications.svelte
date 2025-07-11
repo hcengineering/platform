@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import core, { type Ref } from '@hcengineering/core'
+  import core, { AccountRole, getCurrentAccount, type Ref } from '@hcengineering/core'
   import { createNotificationsQuery, createQuery } from '@hcengineering/presentation'
   import { Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
   import { inboxId } from '@hcengineering/inbox'
+  import { getMetadata } from '@hcengineering/platform'
 
   import AppItem from './AppItem.svelte'
 
@@ -32,6 +33,8 @@
 
   let loaded: boolean = false
   let hiddenAppsIds: Array<Ref<Application>> = []
+  let excludedApps: string[] = []
+
   const hiddenAppsIdsQuery = createQuery()
   hiddenAppsIdsQuery.query(
     workbench.class.HiddenApplication,
@@ -51,9 +54,31 @@
     hasNewInboxNotifications = res.getResult().length > 0
   })
 
-  $: topApps = apps.filter((it) => it.position === 'top')
-  $: midApps = apps.filter((it) => !hiddenAppsIds.includes(it._id) && it.position !== 'top' && it.position !== 'bottom')
-  $: bottomApps = apps.filter((it) => it.position === 'bottom')
+  function updateExcludedApps (): void {
+    const me = getCurrentAccount()
+
+    if (me.role === AccountRole.ReadOnlyGuest) {
+      excludedApps = getMetadata(workbench.metadata.ExcludedApplicationsForAnonymous) ?? []
+    } else {
+      excludedApps = []
+    }
+  }
+
+  updateExcludedApps()
+
+  $: topApps = apps
+    .filter((it) => it.position === 'top' && !hiddenAppsIds.includes(it._id) && !excludedApps.includes(it.alias))
+    .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
+  $: midApps = apps.filter(
+    (it) =>
+      !hiddenAppsIds.includes(it._id) &&
+      !excludedApps.includes(it.alias) &&
+      it.position !== 'top' &&
+      it.position !== 'bottom'
+  )
+  $: bottomApps = apps.filter(
+    (it) => it.position === 'bottom' && !hiddenAppsIds.includes(it._id) && !excludedApps.includes(it.alias)
+  )
 </script>
 
 <div class="flex-{direction === 'horizontal' ? 'row-center' : 'col-center'} clear-mins apps-{direction} relative">

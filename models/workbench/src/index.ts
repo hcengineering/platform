@@ -51,6 +51,7 @@ export class TApplication extends TDoc implements Application {
   position?: 'top' | 'mid'
   hidden!: boolean
   accessLevel?: AccountRole
+  order?: number
 }
 
 @Model(workbench.class.ApplicationNavModel, core.class.Doc, DOMAIN_MODEL)

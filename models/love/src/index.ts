@@ -290,7 +290,8 @@ export function createModel (builder: Builder): void {
       alias: loveId,
       hidden: false,
       position: 'top',
-      component: love.component.Main
+      component: love.component.Main,
+      order: 400
     },
     love.app.Love
   )
