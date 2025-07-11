@@ -109,6 +109,10 @@ export async function handleSendMail (
     subject,
     text
   }
+  // When sending system message, ensure we enable replying to a different domain as needed
+  if (config.replyTo !== undefined && fromAddress === config.source) {
+    message.replyTo = config.replyTo
+  }
   if (html !== undefined) {
     message.html = html
   }

@@ -19,6 +19,7 @@ dotenvConfig()
 export interface Config {
   port: number
   source?: string
+  replyTo?: string
   sesConfig?: SesConfig
   smtpConfig?: SmtpConfig
 }
@@ -69,6 +70,7 @@ export function getTlsSettings (config: SmtpConfig): TlsSettings {
 const envMap = {
   Port: 'PORT',
   Source: 'SOURCE',
+  ReplyTo: 'REPLY_TO',
   DefaultProtocol: 'DEFAULT_PROTOCOL',
   SesAccessKey: 'SES_ACCESS_KEY',
   SesSecretKey: 'SES_SECRET_KEY',
@@ -157,6 +159,7 @@ const config: Config = (() => {
   const params: Config = {
     port,
     source: process.env[envMap.Source],
+    replyTo: process.env[envMap.ReplyTo],
     sesConfig: isSesConfig ? buildSesConfig() : undefined,
     smtpConfig: isSmtpConfig ? buildSmtpConfig() : undefined
   }
