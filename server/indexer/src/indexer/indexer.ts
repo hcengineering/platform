@@ -93,14 +93,19 @@ const textLimit = 500 * 1024
 
 const messageGroupsLimit = 100
 const messagesLimit = 1000
+
+// Inner presentation in message queue differs from sdk-types,
+// also date is always filled at the output queue
+export type QueueSourced<T extends Event> = Omit<T, 'date'> & { date: string }
+
 type IndexableCommunicationEvent =
-  | CreateMessageEvent
-  | UpdatePatchEvent
-  | BlobPatchEvent
-  | LinkPreviewPatchEvent
-  | RemovePatchEvent
-  | UpdateCardTypeEvent
-  | RemoveCardEvent
+  | QueueSourced<CreateMessageEvent>
+  | QueueSourced<UpdatePatchEvent>
+  | QueueSourced<BlobPatchEvent>
+  | QueueSourced<LinkPreviewPatchEvent>
+  | QueueSourced<RemovePatchEvent>
+  | QueueSourced<UpdateCardTypeEvent>
+  | QueueSourced<RemoveCardEvent>
 
 // Global Memory management configuration
 
@@ -670,7 +675,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   public async processTransactions (
     ctx: MeasureContext,
-    result: (TxCUD<Doc> | TxDomainEvent<Event>)[],
+    result: (TxCUD<Doc> | TxDomainEvent<QueueSourced<Event>>)[],
     control: ConsumerControl
   ): Promise<void> {
     const contextData = this.createContextData()
@@ -691,8 +696,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       (tx) =>
         tx._class === core.class.TxDomainEvent &&
         (tx as TxDomainEvent<any>).domain === 'communication' &&
-        indexableCommunicationEventTypes.includes((tx as TxDomainEvent<Event>).event.type)
-    ) as TxDomainEvent<IndexableCommunicationEvent>[]
+        indexableCommunicationEventTypes.includes((tx as TxDomainEvent<QueueSourced<Event>>).event.type)
+    ) as any as TxDomainEvent<IndexableCommunicationEvent>[]
 
     // We need to update hierarchy and local model if required.
     for (const tx of docEvents) {

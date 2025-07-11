@@ -30,7 +30,7 @@ import {
   type QueueWorkspaceReindexMessage,
   type StorageAdapter
 } from '@hcengineering/server-core'
-import { type FulltextDBConfiguration } from '@hcengineering/server-indexer'
+import { QueueSourced, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
 import { generateToken } from '@hcengineering/server-token'
 import { type Event } from '@hcengineering/communication-sdk-types'
 
@@ -125,7 +125,7 @@ export class WorkspaceManager {
     )
 
     let txMessages: number = 0
-    this.txConsumer = this.opt.queue.createConsumer<TxCUD<Doc> | TxDomainEvent<Event>>(
+    this.txConsumer = this.opt.queue.createConsumer<TxCUD<Doc> | TxDomainEvent<QueueSourced<Event>>>(
       this.ctx,
       QueueTopic.Tx,
       this.opt.queue.getClientId(),
@@ -144,7 +144,7 @@ export class WorkspaceManager {
   }
 
   private async processTransactions (
-    msg: ConsumerMessage<TxCUD<Doc<Space>> | TxDomainEvent<Event>>[],
+    msg: ConsumerMessage<TxCUD<Doc<Space>> | TxDomainEvent<QueueSourced<Event>>>[],
     control: ConsumerControl
   ): Promise<void> {
     for (const m of msg) {
