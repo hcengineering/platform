@@ -21,7 +21,7 @@ import {
   NotificationEventType,
   type SessionData
 } from '@hcengineering/communication-sdk-types'
-import { systemAccountUuid } from '@hcengineering/core'
+import { AccountRole, systemAccountUuid } from '@hcengineering/core'
 import type { AccountID, SocialID } from '@hcengineering/communication-types'
 
 import { ApiError } from '../error'
@@ -39,6 +39,8 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
 
   async event (session: SessionData, event: Enriched<Event>, derived: boolean): Promise<EventResult> {
     if (derived) return await this.provideEvent(session, event, derived)
+
+    this.notAnonymousAccount(session)
 
     switch (event.type) {
       case MessageEventType.CreateMessage:
@@ -96,8 +98,19 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
     }
   }
 
+  private notAnonymousAccount (session: SessionData): void {
+    if (this.isAnonymousAccount(session)) {
+      throw ApiError.forbidden('anonymous account is not allowed')
+    }
+  }
+
   private isSystemAccount (session: SessionData): boolean {
     const account = session.account
     return systemAccountUuid === account.uuid
+  }
+
+  private isAnonymousAccount (session: SessionData): boolean {
+    const account = session.account
+    return account.role === AccountRole.ReadOnlyGuest
   }
 }

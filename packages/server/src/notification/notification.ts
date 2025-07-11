@@ -34,14 +34,16 @@ import {
   type SocialID,
   SortingOrder
 } from '@hcengineering/communication-types'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
+import { jsonToMarkup, markupToText } from '@hcengineering/text-core'
+import { readOnlyGuestAccountUuid } from '@hcengineering/core'
 
 import type { Enriched, TriggerCtx } from '../types'
 import { findAccount } from '../utils'
 import { findMessage, getNameBySocialID } from '../triggers/utils'
-import { markdownToMarkup } from '@hcengineering/text-markdown'
-import { jsonToMarkup, markupToText } from '@hcengineering/text-core'
 
 const BATCH_SIZE = 500
+const maxDate = new Date('9999-12-31T23:59:59Z')
 
 export async function notify (ctx: TriggerCtx, event: Enriched<Event>): Promise<Event[]> {
   switch (event.type) {
@@ -191,7 +193,7 @@ async function notifyReaction (
     blobId,
     date,
     content,
-    read: false
+    read: messageAccount === readOnlyGuestAccountUuid
   })
 
   if ((context?.lastNotify?.getTime() ?? date.getTime()) < date.getTime()) {
@@ -294,6 +296,7 @@ async function processCollaborator (
 
   const text = markupToText(jsonToMarkup(markdownToMarkup(markdown)))
   const shortText = text.slice(0, 100)
+  const isRead = collaborator === readOnlyGuestAccountUuid
   result.push({
     type: NotificationEventType.CreateNotification,
     notificationType: NotificationType.Message,
@@ -308,7 +311,7 @@ async function processCollaborator (
       title: cardTitle,
       shortText: shortText.length < text.length ? shortText + '...' : text
     },
-    read: date.getTime() < (context?.lastView?.getTime() ?? 0)
+    read: isRead || date.getTime() < (context?.lastView?.getTime() ?? 0)
   })
   return result
 }
@@ -325,7 +328,8 @@ async function createOrUpdateContext (
     events: Event[]
   }> {
   if (context == null) {
-    const contextId = await createContext(ctx, collaborator, cardId, date, isOwn ? date : undefined, date)
+    const lastView = collaborator === readOnlyGuestAccountUuid ? maxDate : isOwn ? date : undefined
+    const contextId = await createContext(ctx, collaborator, cardId, date, lastView, date)
 
     return {
       contextId,
@@ -334,7 +338,8 @@ async function createOrUpdateContext (
   }
 
   const lastUpdate = context.lastUpdate == null || date > context.lastUpdate ? date : context.lastUpdate
-  const lastView = isOwn && isContextRead(context) ? date : undefined
+  const lastView =
+    collaborator === readOnlyGuestAccountUuid ? maxDate : isOwn && isContextRead(context) ? date : undefined
 
   return {
     contextId: context.id,
