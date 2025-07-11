@@ -105,7 +105,7 @@ export async function attachCardToMessage (
     type
   )
   const apply = client.apply('create thread', undefined, true)
-  await apply.createDoc(type, cardPlugin.space.Default, data, threadCardID)
+  await apply.createDoc(type, parentCard.space, data, threadCardID)
   await apply.commit()
 
   if (author?.active === true && author?.personUuid !== undefined) {
