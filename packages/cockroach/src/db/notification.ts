@@ -652,7 +652,7 @@ export class NotificationsDb extends BaseDb {
         WHERE
             n.context_id = nc.id
           AND nc.workspace_id = $1::uuid
-          AND nc.card_id      = $2::uuid
+          AND nc.card_id      = $2::varchar
           AND n.message_created BETWEEN $4::timestamptz AND $5::timestamptz
           AND n.blob_id IS NULL
     `
@@ -667,7 +667,7 @@ export class NotificationsDb extends BaseDb {
         WHERE
             n.context_id    = nc.id
           AND nc.workspace_id = $1::uuid
-          AND nc.card_id      = $2::uuid
+          AND nc.card_id      = $2::varchar
           AND n.blob_id       = $3::uuid;
     `
     await this.execute(sql, [this.workspace, cardId, blobId])
