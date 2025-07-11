@@ -17,6 +17,7 @@ import {
   DOMAIN_MODEL,
   DOMAIN_SPACE,
   IndexKind,
+  type AccountRole,
   type Class,
   type CollectionSize,
   type Permission,
@@ -27,7 +28,8 @@ import {
   type SpaceType,
   type SpaceTypeDescriptor,
   type TypedSpace,
-  type AccountUuid
+  type AccountUuid,
+  type TxAccessLevel
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -45,8 +47,7 @@ import {
 } from '@hcengineering/model'
 import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
 import core from './component'
-import { TAttachedDoc, TDoc } from './core'
-
+import { TAttachedDoc, TDoc, TClass } from './core'
 // S P A C E
 
 @Model(core.class.Space, core.class.Doc, DOMAIN_SPACE)
@@ -162,4 +163,11 @@ export class TPermission extends TDoc implements Permission {
 @UX(getEmbeddedLabel("All spaces' type")) // TODO: add icon?
 export class TSpacesTypeData extends TSpace implements RolesAssignment {
   [key: Ref<Role>]: AccountUuid[]
+}
+
+@Mixin(core.mixin.TxAccessLevel, core.class.Class)
+export class TTxAccessLevel extends TClass implements TxAccessLevel {
+  createAccessLevel?: AccountRole
+  removeAccessLevel?: AccountRole
+  updateAccessLevel?: AccountRole
 }

@@ -65,6 +65,14 @@ export function createModel (builder: Builder): void {
     func: serverProcess.func.UpdateCard
   })
 
+  builder.mixin(process.method.CreateCard, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.CreateCard
+  })
+
+  builder.mixin(process.method.AddRelation, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.AddRelation
+  })
+
   builder.mixin(process.function.FirstValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.FirstValue
   })
@@ -75,6 +83,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(process.function.Random, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Random
+  })
+
+  builder.mixin(process.function.All, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.All
   })
 
   builder.mixin(process.function.UpperCase, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
@@ -214,14 +226,6 @@ export function createModel (builder: Builder): void {
     trigger: serverProcess.trigger.OnStateRemove,
     txMatch: {
       _class: core.class.TxRemoveDoc,
-      objectClass: process.class.State
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverProcess.trigger.OnStateActionsUpdate,
-    txMatch: {
-      _class: core.class.TxUpdateDoc,
       objectClass: process.class.State
     }
   })

@@ -44,6 +44,13 @@ import UpdateCardEditor from './components/settings/UpdateCardEditor.svelte'
 import DateOffsetEditor from './components/transformEditors/DateOffsetEditor.svelte'
 import NumberEditor from './components/transformEditors/NumberEditor.svelte'
 
+import LogActionPresenter from './components/LogActionPresenter.svelte'
+import NotifierExtension from './components/NotifierExtension.svelte'
+import AddRelationPresenter from './components/presenters/AddRelationPresenter.svelte'
+import CreateCardPresenter from './components/presenters/CreateCardPresenter.svelte'
+import AddRelationEditor from './components/settings/AddRelationEditor.svelte'
+import CreateCardEditor from './components/settings/CreateCardEditor.svelte'
+import TransitionRefPresenter from './components/settings/TransitionRefPresenter.svelte'
 import AppendEditor from './components/transformEditors/AppendEditor.svelte'
 import CutEditor from './components/transformEditors/CutEditor.svelte'
 import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
@@ -84,7 +91,14 @@ export default async (): Promise<Resources> => ({
     ToDoRemoveEditor: ToDoRemoveParamsEditor,
     ToDoCloseEditor: ToDoParamsEditor,
     ProcessesCardSection,
-    TransitionEditor
+    TransitionEditor,
+    TransitionRefPresenter,
+    LogActionPresenter,
+    NotifierExtension,
+    CreateCardEditor,
+    CreateCardPresenter,
+    AddRelationEditor,
+    AddRelationPresenter
   },
   transformEditor: {
     DateOffsetEditor,

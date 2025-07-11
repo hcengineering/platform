@@ -49,7 +49,7 @@
     "Continue": "Continuer",
     "RequestFromUser": "Demander à partir de l'utilisateur",
     "EnterValue": "Saisir une valeur",
-    "OnToDoClose": "Au fermeture de la tâche",
+    "OnToDoDone": "Lors de l'exécution d'une tâche",
     "OnSubProcessesDone": "Au fin des sous-processus",
     "Result": "Résultat",
     "RequestResult": "Demander le résultat",
@@ -59,7 +59,7 @@
     "Trigger": "Déclencheur",
     "Actions": "Actions",
     "Transition": "Transition",
-    "OnToDoRemove": "Lors de la suppression de la tâche",
+    "OnToDoCancelled": "Si la tâche est annulée",
     "DeleteTransition": "Supprimer la transition",
     "DeleteTransitionConfirm": "Voulez-vous supprimer la transition ?",
     "AddTransition": "Ajouter une transition",
@@ -86,7 +86,11 @@
     "Round": "Arrondir",
     "Floor": "Arrondir vers le bas",
     "Ceil": "Arrondir vers le haut",
-    "Absolute": "Valeur absolue"
+    "Absolute": "Valeur absolue",
+    "LogAction": "Événement",
+    "Started": "Démarré",
+    "Each": "Chaque",
+    "CreateCard": "Créer une carte"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",
@@ -100,6 +104,7 @@
     "InternalServerError": "Erreur interne du serveur, contactez le support, id d'erreur : {errorId}",
     "ResultNotProvided": "Résultat non fourni",
     "EmptyFunctionResult": "Résultat de fonction vide {func}",
-    "ContextValueNotProvided": "Valeur de contexte non fournie : {name}"
+    "ContextValueNotProvided": "Valeur de contexte non fournie : {name}",
+    "RequiredParamsNotProvided": "Paramètres requis non fournis : {params}"
   }
 }

@@ -25,8 +25,6 @@ import {
   openTableOptions,
   selectTable
 } from './components/extension/table/table'
-import { formatLink } from './kits/default-kit'
-import { isEditable, isHeadingVisible } from './kits/editor-kit'
 import {
   convertToEmbedPreviewAction,
   convertToEmbedPreviewActionIsActive,
@@ -37,9 +35,10 @@ import {
   shouldShowCopyPreviewLinkAction,
   copyPreviewLinkAction
 } from './components/extension/embed/embed'
-export { TransformPastedContentExtension } from './components/extension/paste'
+import { formatLink, isEditable, isHeadingVisible } from './utils'
+export { SmartPasteExtension as TransformPastedContentExtension } from './components/extension/shortcuts/smartPaste'
 export { getReferenceFromUrl, getReferenceLabel, getTargetObjectFromUrl } from './components/extension/reference'
-export { TodoItemExtension, TodoListExtension } from './components/extension/todo'
+export { TodoItemExtension, TodoListExtension } from './components/extension/todo/todo'
 
 export * from '@hcengineering/presentation/src/types'
 export { default as Collaboration } from './components/Collaboration.svelte'
@@ -68,29 +67,36 @@ export * from './utils'
 
 export * from './command/deleteAttachment'
 export { EmojiExtension } from './components/extension/emoji'
-export { FocusExtension, type FocusOptions, type FocusStorage } from './components/extension/focus'
-export { HeadingsExtension, type HeadingsOptions, type HeadingsStorage } from './components/extension/headings'
+export { FocusExtension, type FocusOptions, type FocusStorage } from './components/extension/hooks/focus'
+export {
+  ToCExtension as HeadingsExtension,
+  type ToCExtensionOptions as HeadingsOptions,
+  type ToCExtensionStorage as HeadingsStorage
+} from './components/extension/toc'
 export { ImageExtension } from './components/extension/imageExt'
-export { ImageUploadExtension, type ImageUploadOptions } from './components/extension/imageUploadExt'
+export {
+  ImageUploadExtension,
+  type ImageUploadExtensionOptions as ImageUploadOptions
+} from './components/extension/shortcuts/imageUpload'
 export {
   IsEmptyContentExtension,
   type IsEmptyContentOptions,
   type IsEmptyContentStorage
-} from './components/extension/isEmptyContent'
+} from './components/extension/hooks/isEmptyContent'
 export {
   highlightUpdateCommand,
-  NodeHighlightExtension,
-  NodeHighlightType,
-  type NodeHighlightExtensionOptions
-} from './components/extension/nodeHighlight'
+  QMSInlineCommentExtension as NodeHighlightExtension,
+  CommentHighlightType as NodeHighlightType,
+  type QMSInlineCommentExtensionOptions as NodeHighlightExtensionOptions
+} from './components/extension/qms/qmsInlineComment'
 export {
   getNodeElement,
-  NodeUuidExtension,
-  nodeUuidName,
+  QMSInlineCommentMark as NodeUuidExtension,
+  qmsInlineCommentMarkName as nodeUuidName,
   selectNode,
-  type NodeUuidOptions,
-  type NodeUuidStorage
-} from './components/extension/nodeUuid'
+  type QMSInlineCommentMarkOptions as NodeUuidOptions,
+  type QMSInlineCommentMarkStorage as NodeUuidStorage
+} from './components/extension/qms/qmsInlineCommentMark'
 export { referenceConfig, ReferenceExtension } from './components/extension/reference'
 export { type Provider } from './provider/types'
 export { createTiptapCollaborationData } from './provider/utils'

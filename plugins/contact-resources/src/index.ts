@@ -396,7 +396,8 @@ export default async (): Promise<Resources> => ({
     ChannelIcon,
     SpaceMembersEditor,
     ContactNamePresenter,
-    PersonIdFilter
+    PersonIdFilter,
+    AssigneePopup
   },
   completion: {
     EmployeeQuery: async (

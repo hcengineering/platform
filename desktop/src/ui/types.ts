@@ -1,3 +1,4 @@
+import { DownloadItem } from '@hcengineering/desktop-downloads'
 import { ScreenSource } from '@hcengineering/love'
 import { Plugin } from '@hcengineering/platform'
 import { IpcRendererEvent } from 'electron'
@@ -6,6 +7,9 @@ export interface Config {
   ACCOUNTS_URL: string
   AI_URL?: string
   ANALYTICS_COLLECTOR_URL?: string
+  POSTHOG_API_KEY?: string
+  POSTHOG_HOST?: string
+  SENTRY_DSN?: string
   BRANDING_URL?: string
   CALENDAR_URL: string
   COLLABORATOR?: string
@@ -25,9 +29,9 @@ export interface Config {
   LINK_PREVIEW_URL?: string
   LIVEKIT_WS?: string
   LOVE_ENDPOINT?: string
-  MODEL_VERSION?: string
+  MODEL_VERSION: string
   PRESENCE_URL?: string
-  PREVIEW_CONFIG: string
+  PREVIEW_CONFIG?: string
   PRINT_URL?: string
   PUSH_PUBLIC_KEY: string
   REKONI_URL: string
@@ -37,7 +41,7 @@ export interface Config {
   TELEGRAM_URL: string
   UPLOAD_CONFIG: string
   UPLOAD_URL: string
-  VERSION?: string
+  VERSION: string
   STREAM_URL?: string
   BACKUP_URL?: string
   PUBLIC_SCHEDULE_URL?: string
@@ -46,6 +50,7 @@ export interface Config {
   MAIL_URL?: string
   COMMUNICATION_API_ENABLED?: string
   BILLING_URL?: string
+  PASSWORD_STRICTNESS?: 'very_strict' | 'strict' | 'normal' | 'none'
 }
 
 export interface Branding {
@@ -103,6 +108,7 @@ export interface IPCMainExposed {
   getScreenAccess: () => Promise<boolean>
   getScreenSources: () => Promise<ScreenSource[]>
   handleAuth: (callback: (token: string) => void) => void
+  handleDownloadItem: (callback: (item: DownloadItem) => void) => void
 
   cancelBackup: () => void
   startBackup: (token: string, endpoint: string, workspace: string) => void

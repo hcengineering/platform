@@ -329,10 +329,12 @@ export class GithubWorker implements IntegrationManager {
       .reverse()
       .join(',') // TODO: Convert first, last name
 
-    const infos = await this.liveQuery.findOne(github.class.GithubUserInfo, { login: userInfo.login })
+    const normalizedLogin = userInfo.login.toLowerCase()
+    const infos = await this.liveQuery.findOne(github.class.GithubUserInfo, { login: normalizedLogin })
     if (infos === undefined) {
       await this._client.createDoc(github.class.GithubUserInfo, contact.space.Contacts, {
-        ...userInfo
+        ...userInfo,
+        login: normalizedLogin
       })
     }
 
@@ -542,15 +544,15 @@ export class GithubWorker implements IntegrationManager {
         }
       )
       const infoData = response.user
+      const normalizedInfoData: Data<GithubUserInfo> = {
+        ...infoData,
+        login: infoData.login?.toLowerCase()
+      }
       if (info == null) {
-        await this._client.createDoc(
-          github.class.GithubUserInfo,
-          contact.space.Contacts,
-          infoData as Data<GithubUserInfo>
-        )
+        await this._client.createDoc(github.class.GithubUserInfo, contact.space.Contacts, normalizedInfoData)
       } else {
         await this._client.diffUpdate(info, {
-          ...infoData
+          ...normalizedInfoData
         })
       }
     }
@@ -1551,7 +1553,11 @@ export class GithubWorker implements IntegrationManager {
   }
 
   performFullSync = reduceCalls(async () => {
-    await this._performFullSync()
+    try {
+      await this._performFullSync()
+    } catch (err: any) {
+      this.ctx.error('Failed to perform full sync', { error: err })
+    }
   })
 
   async _performFullSync (): Promise<void> {

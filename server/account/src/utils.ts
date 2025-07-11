@@ -24,14 +24,15 @@ import {
   type Person,
   type PersonId,
   type PersonUuid,
+  readOnlyGuestAccountUuid,
   roleOrder,
   SocialIdType,
   type SocialKey,
   systemAccountUuid,
+  type WorkspaceDataId,
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   type WorkspaceMode,
-  type WorkspaceUuid,
-  type WorkspaceDataId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -52,19 +53,20 @@ import {
   type Integration,
   type LoginInfo,
   type Meta,
+  type Operations,
   type OtpInfo,
   type RegionInfo,
   type SocialId,
   type Workspace,
   type WorkspaceInfoWithStatus,
   type WorkspaceInvite,
+  type WorkspaceJoinInfo,
   type WorkspaceLoginInfo,
   type WorkspaceStatus
 } from './types'
 import { isAdminEmail } from './admin'
 
 export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
-export const READONLY_GUEST_ACCOUNT = '83bbed9a-0867-4851-be32-31d49d1d42ce'
 
 export async function getAccountDB (
   uri: string,
@@ -573,7 +575,7 @@ export async function selectWorkspace (
     extra = decodedToken.extra
   } catch (e) {
     if (workspace?.allowReadOnlyGuest === true) {
-      accountUuid = READONLY_GUEST_ACCOUNT as AccountUuid
+      accountUuid = readOnlyGuestAccountUuid
     } else {
       throw e
     }
@@ -634,7 +636,7 @@ export async function selectWorkspace (
   let account = await db.account.findOne({ uuid: accountUuid })
 
   if ((role == null || account == null) && workspace.allowReadOnlyGuest) {
-    accountUuid = READONLY_GUEST_ACCOUNT as AccountUuid
+    accountUuid = readOnlyGuestAccountUuid
     role = await db.getWorkspaceRole(accountUuid, workspace.uuid)
     account = await db.account.findOne({ uuid: accountUuid })
   }
@@ -708,27 +710,31 @@ export async function updateAllowReadOnlyGuests (
 
   await db.updateAllowReadOnlyGuests(workspace, readOnlyGuestsAllowed)
   if (!readOnlyGuestsAllowed) {
-    await db.unassignWorkspace(READONLY_GUEST_ACCOUNT as AccountUuid, workspace)
+    await db.unassignWorkspace(readOnlyGuestAccountUuid, workspace)
     return undefined
   }
 
-  let guestPerson = await db.person.findOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid })
+  let guestPerson = await db.person.findOne({ uuid: readOnlyGuestAccountUuid as PersonUuid })
   if (guestPerson == null) {
-    await db.person.insertOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid, firstName: 'Anonymous', lastName: 'Guest' })
-    await createAccount(db, READONLY_GUEST_ACCOUNT as PersonUuid, true)
-    guestPerson = await db.person.findOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid })
+    await db.person.insertOne({
+      uuid: readOnlyGuestAccountUuid as PersonUuid,
+      firstName: 'Anonymous',
+      lastName: 'Guest'
+    })
+    await createAccount(db, readOnlyGuestAccountUuid as PersonUuid, true)
+    guestPerson = await db.person.findOne({ uuid: readOnlyGuestAccountUuid as PersonUuid })
   }
-  const roleInWorkspace = await db.getWorkspaceRole(READONLY_GUEST_ACCOUNT as AccountUuid, workspace)
+  const roleInWorkspace = await db.getWorkspaceRole(readOnlyGuestAccountUuid, workspace)
   if (roleInWorkspace == null) {
-    await db.assignWorkspace(READONLY_GUEST_ACCOUNT as AccountUuid, workspace, AccountRole.ReadOnlyGuest)
+    await db.assignWorkspace(readOnlyGuestAccountUuid, workspace, AccountRole.ReadOnlyGuest)
   }
 
-  const guestAccount = await db.account.findOne({ uuid: READONLY_GUEST_ACCOUNT as AccountUuid })
+  const guestAccount = await db.account.findOne({ uuid: readOnlyGuestAccountUuid })
   if (guestPerson === null || guestAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
   const guestSocialIds = await db.socialId.find({
-    personUuid: READONLY_GUEST_ACCOUNT as PersonUuid,
+    personUuid: readOnlyGuestAccountUuid as PersonUuid,
     verifiedOn: { $gt: 0 }
   })
 
@@ -747,7 +753,7 @@ export async function updateWorkspaceRole (
 ): Promise<void> {
   const { targetAccount, targetRole } = params
 
-  if (targetAccount === READONLY_GUEST_ACCOUNT) {
+  if (targetAccount === readOnlyGuestAccountUuid) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
@@ -1156,6 +1162,46 @@ export async function updateArchiveInfo (
   )
 }
 
+export async function getWorkspaceJoinInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  email: string,
+  inviteId: string,
+  workspaceUrl: string
+): Promise<WorkspaceJoinInfo> {
+  if (email === undefined || email === '' || email === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+  const normalizedEmail = cleanEmail(email)
+  if (inviteId !== undefined && inviteId !== '' && inviteId !== null) {
+    const invite = await getWorkspaceInvite(db, inviteId)
+    if (invite == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+    const workspaceUuid = await checkInvite(ctx, invite, normalizedEmail)
+    const workspace = await getWorkspaceById(db, workspaceUuid)
+    if (workspace == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
+    }
+    return {
+      email,
+      invite,
+      workspace
+    }
+  }
+  if (workspaceUrl !== undefined && workspaceUrl !== '' && workspaceUrl !== null) {
+    const workspace = await getWorkspaceByUrl(db, workspaceUrl)
+    if (workspace == null || !workspace.allowReadOnlyGuest) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+    return {
+      email,
+      workspace
+    }
+  }
+  throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+}
+
 export async function doJoinByInvite (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1163,20 +1209,27 @@ export async function doJoinByInvite (
   token: string,
   account: AccountUuid,
   workspace: Workspace,
-  invite: WorkspaceInvite
+  invite: WorkspaceInvite | null | undefined
 ): Promise<WorkspaceLoginInfo> {
   const role = await db.getWorkspaceRole(account, workspace.uuid)
 
-  // TODO: should we re-join kicked users? How are they marked as inactive?
-  if (role == null) {
-    await db.assignWorkspace(account, workspace.uuid, invite.role)
-  } else if (getRolePower(role) < getRolePower(invite.role)) {
-    await db.updateWorkspaceRole(account, workspace.uuid, invite.role)
+  if (invite !== undefined && invite != null) {
+    // TODO: should we re-join kicked users? How are they marked as inactive?
+    if (role == null) {
+      await db.assignWorkspace(account, workspace.uuid, invite.role)
+    } else if (getRolePower(role) < getRolePower(invite.role)) {
+      await db.updateWorkspaceRole(account, workspace.uuid, invite.role)
+    }
+    await useInvite(db, invite.id)
+  } else if (workspace.allowReadOnlyGuest) {
+    if (role == null) {
+      await db.assignWorkspace(account, workspace.uuid, AccountRole.Guest)
+    }
+  } else {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
   const result = await selectWorkspace(ctx, db, branding, token, { workspaceUrl: workspace.url, kind: 'external' })
-
-  await useInvite(db, invite.id)
 
   ctx.info('Successfully joined a workspace using invite', {
     account,
@@ -1513,7 +1566,42 @@ export async function addSocialIdBase (
 
   const socialId = await db.socialId.findOne({ type, value: normalizedValue })
   if (socialId != null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, {}))
+    const update: Operations<SocialId> = {}
+    let needUpdate = false
+
+    if (socialId.personUuid !== personUuid) {
+      if (socialId.verifiedOn != null) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, {}))
+      } else {
+        // Was not verified.
+        const accountFromSocialId = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
+
+        if (accountFromSocialId == null && confirmed) {
+          // If attached to a person w/o account and adding verifiedOn - merge this person into the current account.
+          await doMergePersons(db, personUuid, socialId.personUuid)
+        } else {
+          // Re-wire this social id into the current account
+          update.personUuid = personUuid
+          needUpdate = true
+        }
+      }
+    }
+
+    if (confirmed && socialId.verifiedOn == null) {
+      update.verifiedOn = Date.now()
+      needUpdate = true
+    }
+
+    if (displayValue !== socialId.displayValue) {
+      update.displayValue = displayValue
+      needUpdate = true
+    }
+
+    if (needUpdate) {
+      await db.socialId.update({ _id: socialId._id }, update)
+    }
+
+    return socialId._id
   }
 
   const newSocialId: Omit<SocialId, '_id' | 'key'> = {

@@ -250,11 +250,13 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
       const jsonData: {
         files: { name: string, size?: number }[]
         extraBlobs: { name: string, size: number, contentType: string }[]
+        extraBlobsTotal: number
         error?: string
         info?: BackupInfo
       } = {
         files: [],
-        extraBlobs: []
+        extraBlobs: [],
+        extraBlobsTotal: 0
       }
 
       try {
@@ -267,7 +269,14 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
           },
           (info) => {
             for (const [name, [contentType, size]] of Object.entries(info)) {
-              jsonData.extraBlobs.push({ name, size, contentType })
+              jsonData.extraBlobsTotal += 1
+              if (contentType !== undefined && !contentType.includes('video/mp2t')) {
+                jsonData.extraBlobs.push({ name, size, contentType })
+                if (jsonData.extraBlobs.length > 11000) {
+                  jsonData.extraBlobs.sort((a, b) => b.size - a.size)
+                  jsonData.extraBlobs = jsonData.extraBlobs.slice(0, 10000)
+                }
+              }
             }
           }
         )

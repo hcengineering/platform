@@ -35,6 +35,10 @@ export function Random (value: Doc[]): Doc {
   return value[Math.floor(Math.random() * value.length)]
 }
 
+export function All (value: Doc[]): Doc[] {
+  return value
+}
+
 // #endregion
 
 // #region String

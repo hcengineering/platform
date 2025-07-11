@@ -54,7 +54,7 @@ export const withAdminAuthorization = (req: RequestWithAuth, res: Response, next
 export const withAuthorization = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
   try {
     const token = extractToken(req.headers)
-    if (token == null || token.extra?.guest === 'true') {
+    if (token == null || token.extra?.guest === 'true' || token.extra?.readonly === 'true') {
       throw new ApiError(401, 'Unauthorized')
     }
     req.token = token

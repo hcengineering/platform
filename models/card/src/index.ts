@@ -112,13 +112,14 @@ export class TCard extends TDoc implements Card {
 
   @Prop(TypeString(), view.string.Icon)
   @Hidden()
-  @Index(IndexKind.FullText)
     icon?: Asset
 
   @Prop(TypeNumber(), view.string.Color)
   @Hidden()
-  @Index(IndexKind.FullText)
     color?: number
+
+  @Hidden()
+    readonly?: boolean
 
   children?: number
 

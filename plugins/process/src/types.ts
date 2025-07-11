@@ -1,11 +1,12 @@
 import { Class, Doc, type AnyAttribute, type Association, type Ref } from '@hcengineering/core'
-import { ContextId, ProcessFunction } from '.'
+import { ContextId, ProcessContext, ProcessFunction } from '.'
 
 export interface Context {
   functions: Ref<ProcessFunction>[]
   attributes: AnyAttribute[]
   nested: Record<string, NestedContext>
   relations: Record<string, RelatedContext>
+  executionContext: Record<ContextId, ProcessContext>
 }
 
 export interface NestedContext {

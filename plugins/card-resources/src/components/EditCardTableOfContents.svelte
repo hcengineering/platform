@@ -241,7 +241,9 @@
     >
       <div class="hulyComponent-content gap withoutMaxWidth">
         {#each sections as section, i}
-          {@const isLoadingBefore = sections.slice(0, i).some((section) => sectionLoaded[section._id] === undefined)}
+          <!--NOTE: experimental - do not wait loading of previous sections-->
+          <!--{@const isLoadingBefore = sections.slice(0, i).some((section) => sectionLoaded[section._id] === undefined)}-->
+          {@const isLoadingBefore = false}
           <div id={section._id} bind:this={sectionElement[section._id]} class="section">
             <Component
               is={section.component}

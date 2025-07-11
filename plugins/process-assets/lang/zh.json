@@ -49,7 +49,7 @@
     "Continue": "继续",
     "RequestFromUser": "从用户请求",
     "EnterValue": "输入值",
-    "OnToDoClose": "关闭待办事项",
+    "OnToDoDone": "完成任务时",
     "OnSubProcessesDone": "子进程完成时",
     "Result": "结果",
     "RequestResult": "请求结果",
@@ -59,7 +59,7 @@
     "Trigger": "触发器",
     "Actions": "操作",
     "Transition": "转换",
-    "OnToDoRemove": "删除待办事项时",
+    "OnToDoCancelled": "当任务被取消时",
     "DeleteTransition": "删除转换",
     "DeleteTransitionConfirm": "您确定要删除转换吗？",
     "AddTransition": "添加转换",
@@ -86,7 +86,11 @@
     "Round": "四舍五入",
     "Floor": "向下取整",
     "Ceil": "向上取整",
-    "Absolute": "绝对值"
+    "Absolute": "绝对值",
+    "LogAction": "事件",
+    "Started": "已启动",
+    "Each": "每个",
+    "CreateCard": "创建卡片"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",
@@ -100,6 +104,7 @@
     "InternalServerError": "内部服务器错误，请联系支持，错误 ID：{errorId}",
     "ResultNotProvided": "未提供结果",
     "EmptyFunctionResult": "空函数结果 {func}",
-    "ContextValueNotProvided": "未提供上下文值：{name}"
+    "ContextValueNotProvided": "未提供上下文值：{name}",
+    "RequiredParamsNotProvided": "未提供必需的参数：{params}"
   }
 }

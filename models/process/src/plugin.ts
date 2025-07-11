@@ -42,6 +42,7 @@ export default mergeIds(processId, process, {
   string: {
     Done: '' as IntlString,
     ConfigLabel: '' as IntlString,
-    ConfigDescription: '' as IntlString
+    ConfigDescription: '' as IntlString,
+    LogAction: '' as IntlString
   }
 })

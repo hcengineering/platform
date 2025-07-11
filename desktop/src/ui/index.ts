@@ -13,7 +13,7 @@ import {
   removeRootBarComponent,
   showPopup
 } from '@hcengineering/ui'
-
+import { handleDownloadItem } from '@hcengineering/desktop-downloads'
 import { notificationId } from '@hcengineering/notification'
 import { workbenchId, logOut } from '@hcengineering/workbench'
 
@@ -114,6 +114,10 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     navigate(authLoc)
+  })
+
+  ipcMain.handleDownloadItem((item) => {
+    void handleDownloadItem(item)
   })
 
   ipcMain.on('start-backup', () => {

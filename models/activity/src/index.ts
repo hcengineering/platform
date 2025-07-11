@@ -48,7 +48,8 @@ import core, {
   type Blob,
   type Timestamp,
   type Tx,
-  type TxCUD
+  type TxCUD,
+  AccountRole
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -276,6 +277,10 @@ export function createModel (builder: Builder): void {
     TReplyProvider,
     TUserMentionInfo
   )
+
+  builder.mixin(activity.class.Reaction, core.class.Class, core.mixin.TxAccessLevel, {
+    removeAccessLevel: AccountRole.Guest
+  })
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: activity.component.DocUpdateMessagePresenter

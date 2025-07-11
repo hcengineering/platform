@@ -40,6 +40,7 @@ import {
   type Method,
   type NestedContext,
   type Process,
+  type ProcessContext,
   type ProcessFunction,
   type RelatedContext,
   type SelectedContext,
@@ -68,29 +69,33 @@ export function generateContextId (): ContextId {
   return generateId() as string as ContextId
 }
 
-export function getContextAttribute (
+export function getContextMasterTag (
   client: Client,
   context: SelectedContext | undefined,
   masterTag: Ref<MasterTag>
-): AnyAttribute | undefined {
+): Ref<MasterTag> | undefined {
   if (context === undefined) return
   const h = client.getHierarchy()
   const model = client.getModel()
   if (context.type === 'attribute') {
-    return h.findAttribute(masterTag, context.key)
+    const attr = h.findAttribute(masterTag, context.key)
+    return (attr?.type as RefTo<Doc>)?.to
   }
   if (context.type === 'nested') {
     const attr = h.findAttribute(masterTag, context.path)
     if (attr === undefined) return
     const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
     const targetClass = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
-    return h.findAttribute(targetClass, context.key)
+    const nested = h.findAttribute(targetClass, context.key)
+    return (nested?.type as RefTo<Doc>)?.to
   }
   if (context.type === 'relation') {
     const assoc = model.findObject(context.association)
     if (assoc === undefined) return
     const targetClass = context.direction === 'A' ? assoc.classA : assoc.classB
-    return h.findAttribute(targetClass, context.key)
+    if (context.key === '_id') return targetClass as Ref<MasterTag>
+    const nested = h.findAttribute(targetClass, context.key)
+    return (nested?.type as RefTo<Doc>)?.to
   }
 }
 
@@ -136,7 +141,13 @@ export async function initState<T extends Doc> (methodId: Ref<Method<T>>): Promi
   }
   const step: Step<T> = {
     _id: generateId() as string as StepId,
-    contextId: method.contextClass !== null ? generateContextId() : null,
+    context:
+      method.contextClass !== null
+        ? {
+            _id: generateContextId(),
+            _class: method.contextClass
+          }
+        : null,
     methodId,
     params: {}
   }
@@ -160,6 +171,7 @@ export function getContext (
   const functions = getContextFunctions(client, process.masterTag, target, category)
   const nested: Record<string, NestedContext> = {}
   const relations: Record<string, RelatedContext> = {}
+  const executionContext: Record<string, ProcessContext> = {}
 
   const refs = getClassAttributes(client, process.masterTag, core.class.RefTo, 'attribute')
   for (const ref of refs) {
@@ -226,11 +238,21 @@ export function getContext (
     }
   }
 
+  if (category === 'object') {
+    for (const key in process.context) {
+      const value = process.context[key as ContextId]
+      if (client.getHierarchy().isDerived(value._class, target)) {
+        executionContext[key] = value
+      }
+    }
+  }
+
   return {
     functions,
     attributes,
     nested,
-    relations
+    relations,
+    executionContext
   }
 }
 
@@ -334,7 +356,7 @@ export function getRelationObjectReduceFunc (
   const assoc = client.getModel().findObject(association)
   if (assoc === undefined) return undefined
   if (assoc.type === '1:1') return undefined
-  if (assoc.type === '1:N' && direction === 'B') return undefined
+  if (assoc.type === '1:N' && direction === 'A') return undefined
   if (target.type._class === core.class.ArrOf) return undefined
   return process.function.FirstValue
 }
@@ -347,7 +369,7 @@ export function getRelationReduceFunc (
   const assoc = client.getModel().findObject(association)
   if (assoc === undefined) return undefined
   if (assoc.type === '1:1') return undefined
-  if (assoc.type === '1:N' && direction === 'B') return undefined
+  if (assoc.type === '1:N' && direction === 'A') return undefined
   return process.function.FirstValue
 }
 
@@ -366,9 +388,9 @@ export function getContextFunctionReduce (
   return process.function.FirstValue
 }
 
-export function showDoneQuery (value: any, query: DocumentQuery<Doc>): DocumentQuery<Doc> {
+export function showDoneQuery (value: any, query: DocumentQuery<Execution>): DocumentQuery<Execution> {
   if (value === false) {
-    return { ...query, done: false }
+    return { ...query, status: ExecutionStatus.Active }
   }
   return query
 }
@@ -439,8 +461,8 @@ export async function getSubProcessesUserInput (
     if (processId === undefined) continue
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const res = await newExecutionUserInput(processId, {} as ExecutionContext)
-    if (action.contextId == null) continue
-    userContext[action.contextId] = res
+    if (action.context == null) continue
+    userContext[action.context._id] = res
   }
   return userContext
 }
@@ -497,11 +519,13 @@ export function getToDoEndAction (prevState: State): Step<Doc> {
     key: 'user',
     _class: process.class.ProcessToDo
   }
-  const endAction = {
+  const endAction: Step<Doc> = {
     _id: generateId() as string as StepId,
-    contextId: generateContextId(),
+    context: {
+      _id: context.id,
+      _class: process.class.ProcessToDo
+    },
     methodId: process.method.CreateToDo,
-    system: true,
     params: {
       state: prevState._id,
       title: prevState.title,

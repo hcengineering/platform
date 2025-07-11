@@ -246,7 +246,7 @@ services:
       - GITHUB_URL=http://huly.local:3500
       - PRINT_URL=http://huly.local:4005
       - SIGN_URL=http://huly.local:4006
-      - ANALYTICS_COLLECTOR_URL=http://huly.local:4017
+#      - ANALYTICS_COLLECTOR_URL=http://huly.local:4017
       - DESKTOP_UPDATES_URL=https://dist.huly.io
       - DESKTOP_UPDATES_CHANNEL=dev
       - BRANDING_URL=http://huly.local:8087/branding.json
@@ -385,6 +385,21 @@ services:
   #     - STATS_URL=http://huly.local:4900
   # #      - LOVE_ENDPOINT=http://huly.local:8096
   # #      - OPENAI_API_KEY=token
+  # analytics:
+  #   image: hardcoreeng/analytics-collector
+  #   extra_hosts:
+  #     - 'huly.local:host-gateway'
+  #   restart: unless-stopped
+  #   ports:
+  #     - 4017:4017
+  #   environment:
+  #     - SECRET=secret
+  #     - PORT=4017
+  #     - SERVICE_ID=analytics-collector-service
+  #     - ACCOUNTS_URL=http://huly.local:3000
+  #     - STATS_URL=http://huly.local:4900
+  #     - POSTHOG_HOST=${POSTHOG_HOST}
+  #     - POSTHOG_API_KEY=${POSTHOG_API_KEY}
   msg2file:
     image: hardcoreeng/msg2file
     ports:
@@ -493,27 +508,27 @@ services:
       - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
       - WORKSPACE_STORAGE=${STORAGE_CONFIG}
     restart: unless-stopped
-  # backup-api:
-  #   image: hardcoreeng/backup-api
-  #   extra_hosts:
-  #     - 'huly.local:host-gateway'
-  #   depends_on:
-  #     minio:
-  #       condition: service_healthy
-  #     stats:
-  #       condition: service_started
-  #     account:
-  #       condition: service_started
-  #   ports:
-  #     - 4039:4039
-  #   environment:
-  #     - PORT=4039
-  #     - SECRET=secret
-  #     - ACCOUNTS_URL=http://huly.local:3000
-  #     - STATS_URL=http://huly.local:4900
-  #     - BUCKET_NAME=backups
-  #     - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
-  #   restart: unless-stopped
+  backup-api:
+    image: hardcoreeng/backup-api
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      minio:
+        condition: service_healthy
+      stats:
+        condition: service_started
+      account:
+        condition: service_started
+    ports:
+      - 4039:4039
+    environment:
+      - PORT=4039
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - STATS_URL=http://huly.local:4900
+      - BUCKET_NAME=backups
+      - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
+    restart: unless-stopped
 volumes:
   db:
   dbpg:

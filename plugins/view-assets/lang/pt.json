@@ -131,9 +131,13 @@
     "Loading": "Carregando...",
     "NoRelations": "Sem relações",
     "ReadOnlyWarningTitle": "✨ Demonstração para Convidados",
-    "ReadOnlyWarningMessage": "Você está no modo de visualização. Quer gerenciar qualquer projeto no Huly? Tarefas, prazos, equipe — cadastre-se para acesso total!",
-    "ReadOnlySignUp": "Registar \uD83D\uDE80",
+    "ReadOnlyWarningMessage": "Você está no modo de visualização. Quer gerenciar qualquer projeto no Huly? Tarefas, prazos, equipe — junte-se a este espaço para colaborar ou crie o seu!",
+    "ReadOnlyJoinWorkspace": "Entrar no espaço 👥",
+    "ReadOnlySignUp": "Criar conta 🚀",
+    "PermissionWarningTitle": "✨ Melhore seu acesso!",
+    "PermissionWarningMessage": "Seu cargo atual tem permissões limitadas. Para desbloquear este e outros recursos avançados, peça ao administrador do seu espaço de trabalho para atualizar seu nível de acesso!",
     "Icon": "Ícone",
-    "Color": "Cor"
+    "Color": "Cor",
+    "AutomationOnly": "Apenas automação"
   }
 }

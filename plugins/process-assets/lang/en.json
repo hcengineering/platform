@@ -49,7 +49,7 @@
     "Continue": "Continue",
     "RequestFromUser": "Request from user",
     "EnterValue": "Enter value",
-    "OnToDoClose": "On ToDo close",
+    "OnToDoDone": "When completing ToDo",
     "OnSubProcessesDone": "On sub processes done",
     "Result": "Result",
     "RequestResult": "Request result",
@@ -59,7 +59,7 @@
     "Trigger": "Trigger",
     "Actions": "Actions",
     "Transition": "Transition",
-    "OnToDoRemove": "On ToDo remove",
+    "OnToDoCancelled": "When ToDo cancelling",
     "DeleteTransition": "Delete transition",
     "DeleteTransitionConfirm": "Do you want to delete transition?",
     "AddTransition": "Add transition",
@@ -86,7 +86,11 @@
     "Round": "Round",
     "Absolute": "Absolute",
     "Ceil": "Ceil",
-    "Floor": "Floor"
+    "Floor": "Floor",
+    "LogAction": "Event",
+    "Started": "Started",
+    "Each": "Each",
+    "CreateCard": "Create card"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",
@@ -100,6 +104,7 @@
     "InternalServerError": "Internal server error, contact support, error id: {errorId}",
     "ResultNotProvided": "Result not provided",
     "EmptyFunctionResult": "Empty function result {func}",
-    "ContextValueNotProvided": "Context value not provided: {name}"
+    "ContextValueNotProvided": "Context value not provided: {name}",
+    "RequiredParamsNotProvided": "Required parameters not provided: {params}"
   }
 }

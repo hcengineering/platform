@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { initLiveQueries } from '@hcengineering/communication-client-query'
+import { initLiveQueries, refreshLiveQueries } from '@hcengineering/communication-client-query'
 import {
   type AddCollaboratorsEvent,
   type AttachBlobsOperation,
@@ -21,6 +21,7 @@ import {
   type CreateMessageEvent,
   type CreateMessageResult,
   type DetachBlobsOperation,
+  type UpdateBlobsOperation,
   type DetachLinkPreviewsOperation,
   type Event,
   type EventResult,
@@ -63,7 +64,8 @@ import {
   MessageType,
   type Notification,
   type NotificationContext,
-  type SocialID
+  type SocialID,
+  type BlobUpdateData
 } from '@hcengineering/communication-types'
 import core, {
   generateId,
@@ -75,8 +77,8 @@ import core, {
   type TxDomainEvent
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
-
 import { generateLinkPreviewId } from '@hcengineering/communication-shared'
+
 import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
 import { addTxListener, removeTxListener, type TxListener } from './utils'
 
@@ -222,9 +224,10 @@ class Client {
       attach?: BlobData[]
       detach?: BlobID[]
       set?: BlobData[]
+      update?: BlobUpdateData[]
     }
   ): Promise<void> {
-    const operations: Array<AttachBlobsOperation | DetachBlobsOperation | SetBlobsOperation> = []
+    const operations: Array<AttachBlobsOperation | DetachBlobsOperation | SetBlobsOperation | UpdateBlobsOperation> = []
 
     if (ops.attach != null && ops.attach.length > 0) {
       operations.push({
@@ -244,6 +247,13 @@ class Client {
       operations.push({
         opcode: 'set',
         blobs: ops.set
+      })
+    }
+
+    if (ops.update != null && ops.update.length > 0) {
+      operations.push({
+        opcode: 'update',
+        blobs: ops.update
       })
     }
 
@@ -462,4 +472,8 @@ export function onCommunicationClient (fn: () => void): void {
       fn()
     })
   }
+}
+
+export async function refreshCommunicationClient (): Promise<void> {
+  await refreshLiveQueries()
 }

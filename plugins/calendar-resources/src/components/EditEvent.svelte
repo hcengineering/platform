@@ -193,7 +193,7 @@
         on:repeat={setRecurrance}
         {readOnly}
         on:allday={allDayChangeHandler}
-        noRepeat
+        noRepeat={object._class !== calendar.class.ReccuringInstance}
       />
     </div>
     <div class="block rightCropPadding">

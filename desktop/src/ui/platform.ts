@@ -24,6 +24,7 @@ import client, { clientId } from '@hcengineering/client'
 import contactPlugin, { contactId } from '@hcengineering/contact'
 import { documentsId } from '@hcengineering/controlled-documents'
 import { desktopPreferencesId } from '@hcengineering/desktop-preferences'
+import { desktopDownloadsId } from '@hcengineering/desktop-downloads'
 import { diffviewId } from '@hcengineering/diffview'
 import { documentId } from '@hcengineering/document'
 import { driveId } from '@hcengineering/drive'
@@ -80,6 +81,7 @@ import '@hcengineering/chunter-assets'
 import '@hcengineering/contact-assets'
 import '@hcengineering/controlled-documents-assets'
 import '@hcengineering/desktop-preferences-assets'
+import '@hcengineering/desktop-downloads-assets'
 import '@hcengineering/diffview-assets'
 import '@hcengineering/document-assets'
 import '@hcengineering/drive-assets'
@@ -134,6 +136,7 @@ import textEditor, { textEditorId } from '@hcengineering/text-editor'
 
 import { initThemeStore, setDefaultLanguage } from '@hcengineering/theme'
 import { configureNotifications } from './notifications'
+import { configureAnalyticsProviders } from '@hcengineering/analytics-providers'
 import { Branding, Config, ipcMainExposed } from './types'
 
 import github, { githubId } from '@hcengineering/github'
@@ -214,6 +217,10 @@ function configureI18n (): void {
     desktopPreferencesId,
     async (lang: string) => await import(`@hcengineering/desktop-preferences-assets/lang/${lang}.json`)
   )
+  addStringsLoader(
+    desktopDownloadsId,
+    async (lang: string) => await import(`@hcengineering/desktop-downloads-assets/lang/${lang}.json`)
+  )
   addStringsLoader(diffviewId, async (lang: string) => await import(`@hcengineering/diffview-assets/lang/${lang}.json`))
   addStringsLoader(documentId, async (lang: string) => await import(`@hcengineering/document-assets/lang/${lang}.json`))
   addStringsLoader(timeId, async (lang: string) => await import(`@hcengineering/time-assets/lang/${lang}.json`))
@@ -268,6 +275,8 @@ export async function configurePlatform (): Promise<PlatformParameters> {
 
   const title = myBranding.title ?? 'Huly Desktop'
   ipcMain.setTitle(title)
+
+  configureAnalyticsProviders(config)
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.DisableSignUp, config.DISABLE_SIGNUP === 'true')
@@ -385,6 +394,10 @@ export async function configurePlatform (): Promise<PlatformParameters> {
   addLocation(
     desktopPreferencesId,
     async () => await import(/* webpackChunkName: "desktop-preferences" */ '@hcengineering/desktop-preferences-resources')
+  )
+  addLocation(
+    desktopDownloadsId,
+    async () => await import(/* webpackChunkName: "desktop-downloads" */ '@hcengineering/desktop-downloads-resources')
   )
   addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
   addLocation(loveId, () => import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))

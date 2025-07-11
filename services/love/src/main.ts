@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { SplitLogger } from '@hcengineering/analytics-service'
 import { MeasureContext, MeasureMetricsContext, newMetrics, Ref, WorkspaceIds } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
-import serverToken, { decodeToken } from '@hcengineering/server-token'
+import serverToken, { decodeToken, Token } from '@hcengineering/server-token'
 import {
   getClient as getAccountClientRaw,
   isWorkspaceLoginInfo,
@@ -25,7 +26,7 @@ import {
 } from '@hcengineering/account-client'
 import { RoomMetadata, TranscriptionStatus, MeetingMinutes } from '@hcengineering/love'
 import cors from 'cors'
-import express from 'express'
+import express, { type Request } from 'express'
 import { IncomingHttpHeaders } from 'http'
 import {
   AccessToken,
@@ -36,12 +37,12 @@ import {
   S3Upload,
   WebhookReceiver
 } from 'livekit-server-sdk'
+import { join } from 'path'
 import config from './config'
 import { saveLiveKitEgressBilling, updateLiveKitSessions } from './billing'
+import { getRecordingPreset } from './preset'
 import { getS3UploadParams, saveFile } from './storage'
 import { WorkspaceClient } from './workspaceClient'
-import { join } from 'path'
-import { SplitLogger } from '@hcengineering/analytics-service'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
   try {
@@ -112,8 +113,9 @@ export const main = async (): Promise<void> => {
           if (data !== undefined && storageConfig !== undefined) {
             const storedBlob = await saveFile(ctx, data.wsIds, storageConfig, s3storageConfig, res.filename)
             if (storedBlob !== undefined) {
+              const preset = getRecordingPreset(config.RecordingPreset)
               const client = await WorkspaceClient.create(data.wsIds.uuid, ctx)
-              await client.saveFile(storedBlob._id, data.name, storedBlob, data.meetingMinutes)
+              await client.saveFile(storedBlob._id, data.name, storedBlob, preset, data.meetingMinutes)
               await client.close()
             }
             dataByUUID.delete(res.filename)
@@ -151,6 +153,15 @@ export const main = async (): Promise<void> => {
     const roomName = req.body.roomName
     const _id = req.body._id
     const participantName = req.body.participantName
+
+    if (typeof roomName !== 'string') {
+      res.status(400).send()
+      return
+    }
+    if (!hasWorkspaceAccess(roomName, req)) {
+      res.status(401).send()
+      return
+    }
     res.send(await createToken(roomName, _id, participantName))
   })
 
@@ -161,18 +172,21 @@ export const main = async (): Promise<void> => {
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/startRecord', async (req, res) => {
-    const token = extractToken(req.headers)
-
-    if (token === undefined) {
-      res.status(401).send()
-      return
-    }
-
     const roomName = req.body.roomName
     const room = req.body.room
     const meetingMinutes = req.body.meetingMinutes
 
+    if (typeof roomName !== 'string') {
+      res.status(400).send()
+      return
+    }
+    if (!hasWorkspaceAccess(roomName, req)) {
+      res.status(401).send()
+      return
+    }
+
     try {
+      const token = extractToken(req.headers)
       const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
       if (!isWorkspaceLoginInfo(wsLoginInfo)) {
         console.error('No workspace found for the token')
@@ -194,36 +208,34 @@ export const main = async (): Promise<void> => {
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/stopRecord', async (req, res) => {
-    const token = extractToken(req.headers)
-
-    if (token === undefined) {
+    const roomName = req.body.roomName
+    if (typeof roomName !== 'string') {
+      res.status(400).send()
+      return
+    }
+    if (!hasWorkspaceAccess(roomName, req)) {
       res.status(401).send()
       return
     }
-    // just check token
-    decodeToken(token)
-    await updateMetadata(roomClient, req.body.roomName, { recording: false })
-    void stopEgress(egressClient, req.body.roomName)
+
+    await updateMetadata(roomClient, roomName, { recording: false })
+    void stopEgress(egressClient, roomName)
     res.send()
   })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/transcription', async (req, res) => {
-    const token = extractToken(req.headers)
-
-    if (token === undefined) {
-      res.status(401).send()
-      return
-    }
-    // just check token
-    decodeToken(token)
-
     const roomName = req.body.roomName
     const language = req.body.language
     const transcription = req.body.transcription as TranscriptionStatus
 
-    if (roomName == null) {
+    if (typeof roomName !== 'string') {
       res.status(400).send()
+      return
+    }
+
+    if (!hasWorkspaceAccess(roomName, req)) {
+      res.status(401).send()
       return
     }
 
@@ -239,21 +251,19 @@ export const main = async (): Promise<void> => {
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/language', async (req, res) => {
-    const token = extractToken(req.headers)
-
-    if (token === undefined) {
-      res.status(401).send()
-      return
-    }
-    // just check token
-    decodeToken(token)
-
     const roomName = req.body.roomName
     const language = req.body.language
-    if (roomName == null || language == null) {
+
+    if (typeof roomName !== 'string' || language == null) {
       res.status(400).send()
       return
     }
+
+    if (!hasWorkspaceAccess(roomName, req)) {
+      res.status(401).send()
+      return
+    }
+
     try {
       await updateMetadata(roomClient, roomName, { language })
       res.send()
@@ -355,9 +365,33 @@ const startRecord = async (
       })
     }
   })
+  const { preset } = getRecordingPreset(config.RecordingPreset)
   await updateMetadata(roomClient, roomName, { recording: true })
-  await egressClient.startRoomCompositeEgress(roomName, { file: output }, { layout: 'grid' })
+  await egressClient.startRoomCompositeEgress(roomName, { file: output }, { layout: 'grid', encodingOptions: preset })
   return filepath
+}
+
+function hasWorkspaceAccess (roomName: string, req: Request): boolean {
+  const workspace = roomName.split('_')[0]
+  const token = extractToken(req.headers)
+  if (token === undefined) {
+    return false
+  }
+
+  let decodedToken: Token | undefined
+  try {
+    decodedToken = decodeToken(token)
+  } catch (e) {}
+
+  if (
+    decodedToken === undefined ||
+    decodedToken.workspace !== workspace ||
+    decodedToken.extra?.readonly === 'true' ||
+    decodedToken.extra?.guest === 'true'
+  ) {
+    return false
+  }
+  return true
 }
 
 function parseMetadata (metadata?: string | null): RoomMetadata {

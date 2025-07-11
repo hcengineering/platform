@@ -207,6 +207,7 @@ export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   shortLabel?: IntlString
   isCustom?: boolean
   defaultValue?: any
+  automationOnly?: boolean
 
   // Extra customization properties
   [key: string]: any
@@ -547,6 +548,12 @@ export const roleOrder: Record<AccountRole, number> = {
   [AccountRole.Maintainer]: 40,
   [AccountRole.Owner]: 50,
   [AccountRole.Admin]: 100
+}
+
+export interface TxAccessLevel extends Class<Doc> {
+  createAccessLevel?: AccountRole
+  removeAccessLevel?: AccountRole
+  updateAccessLevel?: AccountRole
 }
 
 /**

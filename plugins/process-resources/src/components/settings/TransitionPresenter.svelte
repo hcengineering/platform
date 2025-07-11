@@ -24,13 +24,13 @@
   const client = getClient()
 
   const query = createQuery()
+  $: from = transition.from && client.getModel().findObject(transition.from)
+  $: to = client.getModel().findObject(transition.to)
+
   $: query.query(plugin.class.State, { process: transition.process }, () => {
     from = transition.from && client.getModel().findObject(transition.from)
     to = client.getModel().findObject(transition.to)
   })
-
-  let from = transition.from && client.getModel().findObject(transition.from)
-  let to = client.getModel().findObject(transition.to)
 </script>
 
 <span>

@@ -49,7 +49,7 @@
     "Continue": "Continuar",
     "RequestFromUser": "Solicitar do usuário",
     "EnterValue": "Insira valor",
-    "OnToDoClose": "Ao fechar Tarefa",
+    "OnToDoDone": "Ao completar a tarefa",
     "OnSubProcessesDone": "Ao concluir processos sub",
     "Result": "Resultado",
     "RequestResult": "Solicitar resultado",
@@ -59,7 +59,7 @@
     "Trigger": "Gatilho",
     "Actions": "Ações",
     "Transition": "Transição",
-    "OnToDoRemove": "Ao remover Tarefa",
+    "OnToDoCancelled": "Quando uma tarefa é cancelada",
     "DeleteTransition": "Excluir transição",
     "DeleteTransitionConfirm": "Você deseja excluir a transição?",
     "AddTransition": "Adicionar transição",
@@ -86,7 +86,11 @@
     "Round": "Arredondar",
     "Floor": "Arredondar para baixo",
     "Ceil": "Arredondar para cima",
-    "Absolute": "Valor absoluto"
+    "Absolute": "Valor absoluto",
+    "LogAction": "Evento",
+    "Started": "Iniciado",
+    "Each": "Cada",
+    "CreateCard": "Criar Cartão"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",
@@ -100,6 +104,7 @@
     "InternalServerError": "Erro interno do servidor, contate o suporte, id de erro: {errorId}",
     "ResultNotProvided": "Resultado não fornecido",
     "EmptyFunctionResult": "Resultado da função vazio {func}",
-    "ContextValueNotProvided": "Valor de contexto não fornecido: {name}"
+    "ContextValueNotProvided": "Valor de contexto não fornecido: {name}",
+    "RequiredParamsNotProvided": "Parâmetros obrigatórios não fornecidos: {params}"
   }
 }

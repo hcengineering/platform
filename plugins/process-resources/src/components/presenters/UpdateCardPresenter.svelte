@@ -51,10 +51,20 @@
 <div class="flex-row-center flex-gap-1">
   <Label label={method.label} />
   {#if attributes.length > 0}
+    :
     {#each attributes as attr}
-      <div>
+      <div class="title">
         <Label label={attr} />
       </div>
     {/each}
   {/if}
 </div>
+
+<style lang="scss">
+  .title {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--theme-caption-color);
+  }
+</style>

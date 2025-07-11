@@ -136,6 +136,12 @@ export interface WorkspaceInvite {
   autoJoin?: boolean
 }
 
+export interface WorkspaceJoinInfo {
+  email: string
+  workspace: Workspace
+  invite?: WorkspaceInvite | null
+}
+
 export interface Mailbox {
   accountUuid: PersonUuid
   mailbox: string

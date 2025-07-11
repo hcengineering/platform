@@ -30,6 +30,7 @@ import {
   type PersonUuid,
   SocialIdType,
   systemAccountUuid,
+  readOnlyGuestAccountUuid,
   type WorkspaceMemberInfo,
   type WorkspaceUuid
 } from '@hcengineering/core'
@@ -100,11 +101,11 @@ import {
   verifyPassword,
   wrap,
   updateAllowReadOnlyGuests,
-  READONLY_GUEST_ACCOUNT,
   getWorkspaceByDataId,
   assignableRoles,
   getWorkspacesInfoWithStatusByIds,
-  doMergePersons
+  doMergePersons,
+  getWorkspaceJoinInfo
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -127,7 +128,7 @@ export async function loginAsGuest (
   branding: Branding | null,
   token: string
 ): Promise<LoginInfo> {
-  const guestPerson = await db.person.findOne({ uuid: READONLY_GUEST_ACCOUNT as PersonUuid })
+  const guestPerson = await db.person.findOne({ uuid: readOnlyGuestAccountUuid as PersonUuid })
   if (guestPerson == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
@@ -351,7 +352,7 @@ export async function validateOtp (
   // Note: can support OTP based on any other social logins later
   const normalizedEmail = cleanEmail(email)
   try {
-    const emailSocialId = await getEmailSocialId(db, normalizedEmail)
+    let emailSocialId = await getEmailSocialId(db, normalizedEmail)
 
     if (emailSocialId == null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
@@ -443,6 +444,11 @@ export async function validateOtp (
             throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
           }
         }
+      }
+
+      emailSocialId = await db.socialId.findOne({ _id: emailSocialId._id })
+      if (emailSocialId == null) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
       }
     }
 
@@ -806,31 +812,24 @@ export async function join (
     email: string
     password: string
     inviteId: string
+    workspaceUrl: string
   },
   meta?: Meta
 ): Promise<WorkspaceLoginInfo | LoginInfo> {
-  const { email, password, inviteId } = params
+  const { email, password, inviteId, workspaceUrl } = params
 
-  if (email == null || email === '' || password == null || password === '' || inviteId == null || inviteId === '') {
+  if (password == null || password === '') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const normalizedEmail = cleanEmail(email)
-  const invite = await getWorkspaceInvite(db, inviteId)
-  if (invite == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  const workspaceJoinInfo = await getWorkspaceJoinInfo(ctx, db, email, inviteId, workspaceUrl)
+  ctx.info('Joining a workspace using invite', {
+    email,
+    normalizedEmail: workspaceJoinInfo.email,
+    ...workspaceJoinInfo.invite
+  })
 
-  const workspaceUuid = await checkInvite(ctx, invite, normalizedEmail)
-  const workspace = await getWorkspaceById(db, workspaceUuid)
-
-  if (workspace == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
-  }
-
-  ctx.info('Joining a workspace using invite', { email, normalizedEmail, ...invite })
-
-  const { token, account } = await login(ctx, db, branding, _token, { email: normalizedEmail, password })
+  const { token, account } = await login(ctx, db, branding, _token, { email: workspaceJoinInfo.email, password })
 
   if (token == null) {
     return {
@@ -838,7 +837,7 @@ export async function join (
     }
   }
 
-  return await doJoinByInvite(ctx, db, branding, token, account, workspace, invite)
+  return await doJoinByInvite(ctx, db, branding, token, account, workspaceJoinInfo.workspace, workspaceJoinInfo.invite)
 }
 
 /**
@@ -1017,43 +1016,37 @@ export async function signUpJoin (
     first: string
     last?: string
     inviteId: string
+    workspaceUrl: string
   },
   meta?: Meta
 ): Promise<WorkspaceLoginInfo> {
-  const { email, password, first, last, inviteId } = params
+  const { email, password, first, last, inviteId, workspaceUrl } = params
 
-  if (
-    email == null ||
-    email === '' ||
-    password == null ||
-    password === '' ||
-    first == null ||
-    first === '' ||
-    inviteId == null ||
-    inviteId === ''
-  ) {
+  if (password == null || password === '' || first == null || first === '') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const normalizedEmail = cleanEmail(email)
-  ctx.info('Signing up and joining a workspace using invite', { email, normalizedEmail, first, last, inviteId })
-
-  const invite = await getWorkspaceInvite(db, inviteId)
-  if (invite == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  const workspaceUuid = await checkInvite(ctx, invite, normalizedEmail)
-  const workspace = await getWorkspaceById(db, workspaceUuid)
-
-  if (workspace == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
-  }
+  const workspaceJoinInfo = await getWorkspaceJoinInfo(ctx, db, email, inviteId, workspaceUrl)
+  ctx.info('Signing up and joining a workspace using invite', {
+    email,
+    normalizedEmail: workspaceJoinInfo.email,
+    first,
+    last,
+    inviteId
+  })
 
   const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last ?? '', true)
   void setTimezoneIfNotDefined(ctx, db, account, null, meta)
 
-  return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
+  return await doJoinByInvite(
+    ctx,
+    db,
+    branding,
+    generateToken(account, workspaceJoinInfo.workspace?.uuid),
+    account,
+    workspaceJoinInfo.workspace,
+    workspaceJoinInfo.invite
+  )
 }
 
 export async function confirm (
@@ -1067,7 +1060,7 @@ export async function confirm (
   const email = extra?.confirmEmail
   if (email === undefined) {
     ctx.error('Email not provided for confirmation', { account, extra })
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
   const socialId = await confirmEmail(ctx, db, account, email)
@@ -1076,7 +1069,7 @@ export async function confirm (
 
   const person = await db.person.findOne({ uuid: account })
   if (person == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: account }))
   }
 
   const result = {
@@ -1217,7 +1210,7 @@ export async function restorePassword (
   const email = extra?.restoreEmail
   if (email === undefined) {
     ctx.error('Email not provided for restoration', { account, extra })
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
   const emailSocialId = await getEmailSocialId(db, email)
@@ -1738,7 +1731,7 @@ export async function isReadOnlyGuest (
   token: string
 ): Promise<boolean> {
   const { account } = decodeTokenVerbose(ctx, token)
-  return account === READONLY_GUEST_ACCOUNT
+  return account === readOnlyGuestAccountUuid
 }
 
 export async function getPerson (

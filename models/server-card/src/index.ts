@@ -104,7 +104,10 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(card.class.Card, core.class.Class, serverCore.mixin.SearchPresenter, {
-    searchIcon: card.icon.Card,
+    iconConfig: {
+      component: card.component.CardIcon,
+      fields: [['_id']]
+    },
     title: [['title']]
   })
 }

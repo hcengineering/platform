@@ -22,6 +22,7 @@ export class DocumentContentPage extends CommonPage {
   readonly firstImageInDocument = (): Locator => this.page.locator('.textInput .text-editor-image-container img')
   readonly tooltipImageTools = (): Locator => this.page.locator('.tippy-box')
 
+  readonly image = (): Locator => this.page.locator('.popup img')
   readonly fullscreenImage = (): Locator => this.page.locator('.popup.fullsize img')
   readonly fullscreenButton = (): Locator => this.page.locator('.popup #btnDialogFullScreen')
   readonly imageInPopup = (): Locator => this.page.locator('.popup img')
@@ -260,7 +261,7 @@ export class DocumentContentPage extends CommonPage {
   }
 
   async changeCodeBlockLanguage (text: string, oldLang: string, lang: string): Promise<void> {
-    await this.codeBlock(text).locator('button.antiButton', { hasText: oldLang }).nth(1).click()
+    await this.codeBlock(text).locator('button.antiButton', { hasText: oldLang }).click()
     await this.selectMenuItem(this.page, lang, true)
   }
 

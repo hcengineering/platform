@@ -27,6 +27,8 @@ import { getOptions } from './args'
 import { addMenus } from './standardMenu'
 import { addPermissionHandlers } from './permissions'
 import autoUpdater from './updater'
+import { generateId } from '@hcengineering/core'
+import { DownloadItem } from '@hcengineering/desktop-downloads'
 
 let mainWindow: BrowserWindow | undefined
 let winBadge: any
@@ -196,6 +198,30 @@ function handleAuthRedirects (window: BrowserWindow): void {
   })
 }
 
+function handleWillDownload (window: BrowserWindow): void {
+  window.webContents.session.on('will-download', (event, item) => {
+    const key = generateId()
+
+    const notifyDownloadUpdated = (): void => {
+      const download: DownloadItem = {
+        key,
+        state: item.isPaused() ? 'paused' : item.getState(),
+        fileName: item.getFilename(),
+        receivedBytes: item.getReceivedBytes(),
+        totalBytes: item.getTotalBytes(),
+        url: item.getURL(),
+        savePath: item.getSavePath()
+      }
+      window.webContents.send('handle-download-item', download)
+    }
+
+    notifyDownloadUpdated()
+
+    item.on('updated', notifyDownloadUpdated)
+    item.on('done', notifyDownloadUpdated)
+  })
+}
+
 const createWindow = async (): Promise<void> => {
   // Restore window position if available
   const restoredBounds: any = settings.get('windowBounds')
@@ -226,6 +252,7 @@ const createWindow = async (): Promise<void> => {
   await mainWindow.loadFile(containerPagePath)
   addPermissionHandlers(mainWindow.webContents.session)
   handleAuthRedirects(mainWindow)
+  handleWillDownload(mainWindow)
 
   // In this example, only windows with the `about:blank` url will be created.
   // All other urls will be blocked.

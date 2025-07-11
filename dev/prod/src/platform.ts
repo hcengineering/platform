@@ -229,7 +229,7 @@ const configs: Record<string, string> = {
   'dev-worker-local': '/config-worker-local.json'
 }
 
-const PASSWORD_REQUIREMENTS: Record<Config['PASSWORD_STRICTNESS'], Record<string, number>> = {
+const PASSWORD_REQUIREMENTS: Record<NonNullable<Config['PASSWORD_STRICTNESS']>, Record<string, number>> = {
   very_strict: {
     MinDigits: 4,
     MinLength: 32,
@@ -389,7 +389,7 @@ export async function configurePlatform() {
   })
   configureI18n()
 
-  const config: Config = await loadServerConfig(configs[clientType] ?? '/config.json')
+  const config: Config = await loadServerConfig(configs[clientType ?? ''] ?? '/config.json')
   const branding: BrandingMap =
     config.BRANDING_URL !== undefined ? await (await fetch(config.BRANDING_URL, { keepalive: true })).json() : {}
   const myBranding = branding[window.location.host] ?? {}
@@ -440,7 +440,7 @@ export async function configurePlatform() {
 
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
-  setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
+  setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG ?? '', config.UPLOAD_URL))
   setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
   setMetadata(presentation.metadata.LinkPreviewUrl, config.LINK_PREVIEW_URL)
   setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)

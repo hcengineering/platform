@@ -16,8 +16,9 @@
   import core, { AnyAttribute, ArrOf, Doc, EnumOf, RefTo, Type } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, Icon, IconMoreV2, Label, IconOpenedArrow } from '@hcengineering/ui'
+  import { AnySvelteComponent, Icon, IconMoreV2, Label, IconOpenedArrow, tooltip } from '@hcengineering/ui'
   import settings from '../plugin'
+  import view from '@hcengineering/view'
 
   export let attribute: AnyAttribute
   export let attributeType: IntlString | undefined = undefined
@@ -53,6 +54,11 @@
   <button class="hulyTableAttr-content__row-dragMenu" on:click|stopPropagation={clickMore}>
     <IconMoreV2 size={'small'} />
   </button>
+  {#if attribute.automationOnly === true}
+    <div class="hulyTableAttr-content__row-icon" use:tooltip={{ label: view.string.AutomationOnly }}>
+      <Icon icon={view.icon.Setting} size={'small'} />
+    </div>
+  {/if}
   {#if attribute.icon !== undefined && attribute.icon !== null}
     <div class="hulyTableAttr-content__row-icon">
       <Icon icon={attribute.icon} size={'small'} />

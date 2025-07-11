@@ -21,7 +21,15 @@
     setCurrentAccount,
     SocialId
   } from '@hcengineering/core'
-  import { Button, Icon, Label, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    getPlatformColorDef,
+    Icon,
+    Label,
+    PaletteColorIndexes,
+    showPopup,
+    themeStore
+  } from '@hcengineering/ui'
   import contact, { SocialIdentityProvider, SocialIdentityRef } from '@hcengineering/contact'
   import { getClient, MessageBox } from '@hcengineering/presentation'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -44,7 +52,11 @@
 
   async function doRelease (): Promise<void> {
     try {
-      const currSocialIds = currAcc.fullSocialIds
+      // Important to always get current account in the callback to avoid race conditions
+      // with the account from the reactive variable
+      // W/o it it was bringing back previously deleted social id if two are deleted in a row
+      const currentAccount = getCurrentAccount()
+      const currSocialIds = currentAccount.fullSocialIds
 
       const deletedSocialId = await accountClient.releaseSocialId(undefined, socialId.type, socialId.value, true)
 
@@ -65,12 +77,14 @@
       }
       const newPrimarySocialId = pickPrimarySocialId(newSocialIds)._id
 
-      setCurrentAccount({
-        ...currAcc,
+      // Don't need to update social ids because deleted social id retains its' _id
+      const updatedAccount = {
+        ...currentAccount,
         fullSocialIds: newSocialIds,
         primarySocialId: newPrimarySocialId
-      })
-      currAcc = getCurrentAccount()
+      }
+      setCurrentAccount(updatedAccount)
+      currAcc = updatedAccount
       dispatch('released')
     } catch (err: any) {
       console.error(err)
@@ -108,20 +122,22 @@
   <div class="icon"><Icon size="full" {icon} /></div>
 
   <div class="flex-col flex-gap-0-5">
-    <div>{socialId.value}</div>
+    <div>{socialId.displayValue ?? socialId.value}</div>
     <div class="type"><Label label={socialIdProvider.label} /></div>
   </div>
 
   <div class="flex-grow" />
 
   {#if isLogin}
-    <div class="tag flex-center">
+    {@const color = getPlatformColorDef(PaletteColorIndexes.Turquoise, $themeStore.dark)}
+    <div class="tag flex-center" style:background={color.background} style:border-color={color.color}>
       <Label label={setting.string.Login} />
     </div>
   {/if}
 
   {#if isPrimary}
-    <div class="tag flex-center">
+    {@const color = getPlatformColorDef(PaletteColorIndexes.Ocean, $themeStore.dark)}
+    <div class="tag flex-center" style:background={color.background} style:border-color={color.color}>
       <Label label={setting.string.Primary} />
     </div>
   {/if}

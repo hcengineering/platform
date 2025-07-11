@@ -31,6 +31,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let readonly = false
+  export let mapToPrimarySocialId = true
 
   $: docQuery =
     include.length === 0
@@ -41,6 +42,17 @@
           }
         }
   $: selectedEmp = value != null ? $employeeByPersonIdStore.get(value)?._id : value
+  let employeeToPersonIdMap = new Map<Ref<Employee>, PersonId>()
+  $: employeeToPersonIdMap = mapToPrimarySocialId
+    ? employeeToPersonIdMap
+    : new Map(
+      include
+        .map((personId) => {
+          const employee = $employeeByPersonIdStore.get(personId)
+          return employee !== undefined ? ([employee._id, personId] as const) : null
+        })
+        .filter(notEmpty)
+    )
 
   const dispatch = createEventDispatcher()
 
@@ -48,7 +60,17 @@
     if (e.detail === null) {
       dispatch('change', null)
     } else {
-      const socialString = $primarySocialIdByEmployeeRefStore.get(e.detail)
+      let socialString: PersonId | undefined
+
+      if (mapToPrimarySocialId) {
+        socialString = $primarySocialIdByEmployeeRefStore.get(e.detail)
+      } else {
+        socialString = employeeToPersonIdMap.get(e.detail)
+        if (socialString === undefined) {
+          socialString = $primarySocialIdByEmployeeRefStore.get(e.detail)
+          console.warn('PersonId not found in provided social id list, falling back to primary social ID:', e.detail)
+        }
+      }
       if (socialString === undefined) {
         console.error('Social id not found for person', e.detail)
         return

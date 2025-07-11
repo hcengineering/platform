@@ -103,9 +103,10 @@
     navigate(loc)
   }
   function signOut (): void {
-    Analytics.handleEvent(SettingsEvents.SignOut)
     void logOut()
     navigate({ path: [loginId] })
+    Analytics.handleEvent(SettingsEvents.SignOut)
+    Analytics.logout()
   }
   function selectWorkspace (): void {
     Analytics.handleEvent(SettingsEvents.SelectWorkspace)

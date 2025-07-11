@@ -127,13 +127,13 @@ async function canAddDocumentComments (doc: ControlledDocument, mode: EditorMode
   return false
 }
 
-function markNodeWithUuid (editor: Editor): string | undefined {
+function setQMSInlineCommentMark (editor: Editor): string | undefined {
   if (editor === undefined) {
     return
   }
 
   const nodeId = generateId()
-  editor.commands.setNodeUuid(nodeId)
+  editor.commands.setQMSInlineCommentMark(nodeId)
 
   return nodeId
 }
@@ -147,7 +147,7 @@ export async function comment (editor: Editor, event: MouseEvent, ctx: ActionCon
   let selectedNodeId = editor.extensionStorage[nodeUuidName].activeNodeUuid
 
   if (selectedNodeId == null) {
-    selectedNodeId = markNodeWithUuid(editor)
+    selectedNodeId = setQMSInlineCommentMark(editor)
   }
 
   if (selectedNodeId == null) {

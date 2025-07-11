@@ -37,6 +37,8 @@ export default plugin(serverProcessId, {
     RunSubProcess: '' as Resource<ExecuteFunc>,
     CreateToDo: '' as Resource<ExecuteFunc>,
     UpdateCard: '' as Resource<ExecuteFunc>,
+    CreateCard: '' as Resource<ExecuteFunc>,
+    AddRelation: '' as Resource<ExecuteFunc>,
     WaitSubProcess: '' as Resource<ExecuteFunc>,
     CheckToDo: '' as Resource<CheckFunc>
   },
@@ -44,6 +46,7 @@ export default plugin(serverProcessId, {
     FirstValue: '' as Resource<TransformFunc>,
     LastValue: '' as Resource<TransformFunc>,
     Random: '' as Resource<TransformFunc>,
+    All: '' as Resource<TransformFunc>,
     UpperCase: '' as Resource<TransformFunc>,
     LowerCase: '' as Resource<TransformFunc>,
     Trim: '' as Resource<TransformFunc>,
@@ -68,7 +71,6 @@ export default plugin(serverProcessId, {
     RoleContext: '' as Resource<TransformFunc>
   },
   trigger: {
-    OnStateActionsUpdate: '' as Resource<TriggerFunc>,
     OnTransition: '' as Resource<TriggerFunc>,
     OnProcessRemove: '' as Resource<TriggerFunc>,
     OnStateRemove: '' as Resource<TriggerFunc>,

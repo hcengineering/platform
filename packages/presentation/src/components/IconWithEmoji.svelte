@@ -55,6 +55,10 @@
     align-items: center;
     justify-content: center;
     color: black;
+
+    img {
+      margin: 0;
+    }
   }
   .emoji-inline {
     width: 1em;

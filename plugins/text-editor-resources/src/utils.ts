@@ -13,10 +13,12 @@
 // limitations under the License.
 //
 
-import { type Attribute } from '@tiptap/core'
-import { showPopup, SelectPopup, type PopupAlignment } from '@hcengineering/ui'
+import { SelectPopup, showPopup, type PopupAlignment } from '@hcengineering/ui'
+import { type Editor, type Attribute } from '@tiptap/core'
 
+import { type ActionContext } from '@hcengineering/text-editor'
 import { mInsertTable } from './components/extensions'
+import LinkPopup from './components/LinkPopup.svelte'
 
 export function getDataAttribute (
   name: string,
@@ -64,4 +66,26 @@ export async function addTableHandler (
       }
     }
   )
+}
+
+export async function isEditable (editor: Editor): Promise<boolean> {
+  return editor.isEditable
+}
+export async function isHeadingVisible (editor: Editor, ctx: ActionContext): Promise<boolean> {
+  return (await isEditable(editor)) && ctx.mode === 'full'
+}
+
+export async function formatLink (editor: Editor): Promise<void> {
+  const link = editor.getAttributes('link').href
+
+  // give editor some time to handle blur event
+  setTimeout(() => {
+    showPopup(LinkPopup, { link }, undefined, undefined, (newLink) => {
+      if (newLink === '') {
+        editor.chain().focus().extendMarkRange('link').unsetLink().run()
+      } else {
+        editor.chain().focus().extendMarkRange('link').setLink({ href: newLink }).run()
+      }
+    })
+  })
 }

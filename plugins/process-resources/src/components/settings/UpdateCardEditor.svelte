@@ -16,10 +16,10 @@
   import { Card, MasterTag } from '@hcengineering/card'
   import core, { AnyAttribute, Class, Ref } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { Process, State, Step } from '@hcengineering/process'
+  import { Process, Step } from '@hcengineering/process'
+  import { Button, eventToHTMLElement, SelectPopup, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import ParamsEditor from './ParamsEditor.svelte'
-  import { Button, eventToHTMLElement, SelectPopup, showPopup } from '@hcengineering/ui'
 
   export let process: Process
   export let step: Step<Card>

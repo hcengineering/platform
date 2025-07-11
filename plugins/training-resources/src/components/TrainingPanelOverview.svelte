@@ -50,7 +50,7 @@
         showButtons={false}
         content={object.description}
         placeholder={core.string.Description}
-        enableBackReferences
+        kitOptions={{ reference: true }}
         on:blur={onDescriptionChange}
       />
     {:else}

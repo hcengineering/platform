@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Downloads": "ダウンロード",
+    "Completed": "完了",
+    "Cancelled": "キャンセル",
+    "Interrupted": "中断",
+    "Paused": "一時停止",
+    "Progressing": "進行中"
+  }
+}

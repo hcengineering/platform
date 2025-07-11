@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SelectedContext, Context, Process } from '@hcengineering/process'
+  import { MasterTag, Tag } from '@hcengineering/card'
+  import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
+  import { Context, Process, SelectedContext } from '@hcengineering/process'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import ConfigurePopup from './ConfigurePopup.svelte'
-  import { Ref, Class, Doc, AnyAttribute } from '@hcengineering/core'
-  import ContextValuePresenter from './ContextValuePresenter.svelte'
   import { AttributeCategory } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { MasterTag, Tag } from '@hcengineering/card'
+  import ConfigurePopup from './ConfigurePopup.svelte'
+  import ContextValuePresenter from './ContextValuePresenter.svelte'
 
   export let process: Process
   export let masterTag: Ref<MasterTag | Tag>
@@ -29,6 +29,8 @@
   export let attribute: AnyAttribute
   export let attrClass: Ref<Class<Doc>>
   export let category: AttributeCategory
+  export let allowArray: boolean = false
+  export let forbidValue: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -49,7 +51,7 @@
     }
     showPopup(
       ConfigurePopup,
-      { contextValue, attrClass, masterTag, category, attribute, context, onChange },
+      { contextValue, attrClass, masterTag, category, attribute, context, onChange, allowArray, forbidValue },
       eventToHTMLElement(e)
     )
   }

@@ -224,6 +224,7 @@ export class TAttribute extends TDoc implements AnyAttribute {
   label!: IntlString
   isCustom?: boolean
   defaultValue?: any
+  automationOnly?: boolean
 }
 
 @Model(core.class.Type, core.class.Obj, DOMAIN_MODEL)

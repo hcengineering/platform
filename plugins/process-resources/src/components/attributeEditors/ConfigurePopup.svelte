@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { MasterTag, Tag } from '@hcengineering/card'
   import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Context, Func, Process, ProcessFunction, SelectedContext } from '@hcengineering/process'
@@ -33,7 +34,6 @@
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import FallbackEditor from '../contextEditors/FallbackEditor.svelte'
-  import { MasterTag, Tag } from '@hcengineering/card'
 
   export let process: Process
   export let masterTag: Ref<MasterTag | Tag>
@@ -43,6 +43,8 @@
   export let attrClass: Ref<Class<Doc>>
   export let category: AttributeCategory
   export let onChange: (contextValue: SelectedContext) => void
+  export let allowArray: boolean = false
+  export let forbidValue: boolean = false
 
   const client = getClient()
 
@@ -67,6 +69,7 @@
   const reduceFuncs = client
     .getModel()
     .findAllSync(plugin.class.ProcessFunction, { type: 'reduce' })
+    .filter((p) => p.category === undefined || (allowArray && p.category === 'array'))
     .map((it) => it._id)
 
   $: availableFunctions = getAvailableFunctions(context, contextValue.functions, attrClass, category)
@@ -319,50 +322,52 @@
       {/if}
       <div class="menu-separator" />
     {/if}
-    <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-    <button
-      bind:this={elements[functionButtonIndex + 1]}
-      on:keydown={(event) => {
-        keyDown(event, functionButtonIndex + 1)
-      }}
-      on:mouseover={() => {
-        elements[functionButtonIndex + 1]?.focus()
-      }}
-      on:click={onFallbackChange}
-      class="menu-item flex-gap-2 fallback"
-    >
-      <div>
-        <div class="label">
-          <Label label={plugin.string.Required} />
-        </div>
-        <div class="text-sm">
-          <Label label={plugin.string.FallbackValueError} />
-        </div>
-      </div>
-      <CheckBox
-        on:click={onFallbackChange}
-        checked={contextValue.fallbackValue === undefined}
-        size={'medium'}
-        kind={'primary'}
-      />
-    </button>
-    {#if contextValue.fallbackValue !== undefined}
+    {#if !forbidValue}
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
       <button
-        bind:this={elements[functionButtonIndex + 2]}
+        bind:this={elements[functionButtonIndex + 1]}
         on:keydown={(event) => {
-          keyDown(event, functionButtonIndex + 2)
+          keyDown(event, functionButtonIndex + 1)
         }}
         on:mouseover={() => {
-          elements[functionButtonIndex + 2]?.focus()
+          elements[functionButtonIndex + 1]?.focus()
         }}
-        on:click={onFallback}
-        class="menu-item"
+        on:click={onFallbackChange}
+        class="menu-item flex-gap-2 fallback"
       >
-        <span class="overflow-label pr-1">
-          <Label label={plugin.string.FallbackValue} />
-        </span>
+        <div>
+          <div class="label">
+            <Label label={plugin.string.Required} />
+          </div>
+          <div class="text-sm">
+            <Label label={plugin.string.FallbackValueError} />
+          </div>
+        </div>
+        <CheckBox
+          on:click={onFallbackChange}
+          checked={contextValue.fallbackValue === undefined}
+          size={'medium'}
+          kind={'primary'}
+        />
       </button>
+      {#if contextValue.fallbackValue !== undefined}
+        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+        <button
+          bind:this={elements[functionButtonIndex + 2]}
+          on:keydown={(event) => {
+            keyDown(event, functionButtonIndex + 2)
+          }}
+          on:mouseover={() => {
+            elements[functionButtonIndex + 2]?.focus()
+          }}
+          on:click={onFallback}
+          class="menu-item"
+        >
+          <span class="overflow-label pr-1">
+            <Label label={plugin.string.FallbackValue} />
+          </span>
+        </button>
+      {/if}
     {/if}
   </Scroller>
   <div class="menu-space" />

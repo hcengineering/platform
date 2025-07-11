@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
   import { Process, Transition } from '@hcengineering/process'
   import { Button, getCurrentLocation, IconAdd, Label, navigate, showPopup } from '@hcengineering/ui'
   import plugin from '../../plugin'
@@ -24,8 +23,6 @@
   export let process: Process
   export let transitions: Transition[]
   export let readonly: boolean
-
-  const client = getClient()
 
   function addTransition (): void {
     showPopup(AddTransitionPopup, { process }, 'top')

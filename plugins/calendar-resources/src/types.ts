@@ -42,3 +42,8 @@ export interface CalendarCell {
   hourOfDay: number
   minutes: number
 }
+
+export interface SetPosRules {
+  bySetPos: number[]
+  byDay: string[]
+}
