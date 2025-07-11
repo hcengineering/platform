@@ -251,7 +251,7 @@ describe('MenuBuilder', () => {
             systemUnderTest
                 .addTopLevelMenu('File', 'f')
                 .addMenuItem(0, 'New', 'paste', 'Ctrl+N')
-                .addMenuItem(0, 'Open', 'cut', 'Ctrl+O', 'p'); // Custom accelerator
+                .addMenuItem(0, 'Open', 'cut', 'Ctrl+O', 'p');
 
             const builtMenu = systemUnderTest.build();
 
@@ -331,8 +331,6 @@ describe('MenuBuilder', () => {
             systemUnderTest
                 .addTopLevelMenu('File', 'F') // uppercase F
                 .addMenuItem(0, 'New', 'paste', 'Ctrl+N', 'N'); // uppercase N
-
-            debugger;
 
             const builtMenu = systemUnderTest.build();
             

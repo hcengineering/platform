@@ -19,13 +19,38 @@ import { TitleBarMenuState } from './titleBarMenuState'
 export function setupTitleBarMenu(ipcMain: IPCMainExposed, root: HTMLElement): MenuBar {
     const themeManager = new ThemeManager('light')
     const menuManager = new MenuBarManager(ipcMain, root)
-    return new MenuBar(menuManager, themeManager)
+
+    const menuBar = menuManager.getView();
+
+    const menuContainer = root.querySelector('.desktop-app-menu-container')
+    if (menuContainer) {
+        const existingMenuBar = menuContainer.querySelector('.desktop-app-menu-bar')
+        if (existingMenuBar) {
+            existingMenuBar.remove()
+        }
+        menuContainer.appendChild(menuBar)
+    }
+
+    menuManager.attachEventListeners(ipcMain)
+
+    ipcMain.onWindowStateChange((_event, state) => {
+        const maximizeButton = root.querySelector('#maximize-button')
+        if (maximizeButton) {
+            if (state === 'maximized') {
+                maximizeButton.textContent = '❐'
+            } else {
+                maximizeButton.textContent = '□'
+            }
+        }
+    })
+
+    return new MenuBar(themeManager)
 }
 
 type TitleBarTheme = 'dark' | 'light';
 
 export class MenuBar {
-    constructor(private readonly menu: MenuBarManager, private readonly theme: ThemeManager) {
+    constructor(private readonly theme: ThemeManager) {
     }
 
     public setTheme(theme: TitleBarTheme): void {
@@ -244,7 +269,8 @@ export class MenuBuilder {
 }
 
 class MenuBarManager {
-    private state: TitleBarMenuState
+    private readonly state: TitleBarMenuState
+    private readonly view: HTMLElement
     
     private readonly TopMenuStyle = '.desktop-app-top-menu-button'
     private readonly DropdownMenuStyle = '.desktop-app-dropdown-menu'
@@ -264,29 +290,11 @@ class MenuBarManager {
             }
         )
 
-        const menuBar = buildHulyApplicationMenu()
-        
-        const menuContainer = this.root.querySelector('.desktop-app-menu-container')
-        if (menuContainer) {
-            const existingMenuBar = menuContainer.querySelector('.desktop-app-menu-bar')
-            if (existingMenuBar) {
-                existingMenuBar.remove()
-            }
-            menuContainer.appendChild(menuBar)
-        }
-        
-        this.initializeEventListeners(ipcMain)
+        this.view = buildHulyApplicationMenu()
+    }
 
-        ipcMain.onWindowStateChange((_event, state) => {
-            const maximizeButton = this.root.querySelector('#maximize-button')
-            if (maximizeButton) {
-                if (state === 'maximized') {
-                    maximizeButton.textContent = '❐'
-                } else {
-                    maximizeButton.textContent = '□'
-                }
-            }
-        })
+    public getView(): HTMLElement {
+        return this.view  
     }
 
     private topLevelMenus() {
@@ -300,7 +308,7 @@ class MenuBarManager {
         }
     }
 
-    private initializeEventListeners(ipcMain: IPCMainExposed): void {
+    public attachEventListeners(ipcMain: IPCMainExposed): void {
         this.onButtonClick('minimize-button', () => {
             ipcMain.minimizeWindow()
         })
