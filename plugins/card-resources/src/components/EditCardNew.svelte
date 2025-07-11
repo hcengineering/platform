@@ -93,7 +93,7 @@
     isTitleEditing = false
     const client = getClient()
     const trimmedTitle = title.trim()
-    const canSave = trimmedTitle.length > 0
+    const canSave = trimmedTitle.length > 0 && !_readonly
 
     if (doc === undefined || !canSave) {
       return
@@ -143,6 +143,8 @@
       extraEl = element.querySelector('.hulyHeader-buttonsGroup.extra')
     }
   })
+
+  $: _readonly = (readonly || doc?.readonly) ?? false
 </script>
 
 <FocusHandler {manager} />
@@ -160,7 +162,7 @@
     on:close
   >
     <div class="main-content clear-mins">
-      <EditCardNewContent {_id} {doc} {readonly} {context} {isContextLoaded} />
+      <EditCardNewContent {_id} {doc} readonly={_readonly} {context} {isContextLoaded} />
     </div>
 
     <svelte:fragment slot="title">
@@ -168,15 +170,19 @@
         <ParentsNavigator element={doc} maxWidth={'10rem'} />
       {/if}
       <div class="title flex-row-center">
-        <EditBox
-          focusIndex={1}
-          bind:value={title}
-          placeholder={card.string.Card}
-          on:blur={saveTitle}
-          on:value={() => {
-            isTitleEditing = true
-          }}
-        />
+        {#if !_readonly}
+          <EditBox
+            focusIndex={1}
+            bind:value={title}
+            placeholder={card.string.Card}
+            on:blur={saveTitle}
+            on:value={() => {
+              isTitleEditing = true
+            }}
+          />
+        {:else}
+          {doc.title}
+        {/if}
       </div>
     </svelte:fragment>
 
@@ -204,7 +210,7 @@
         }}
       />
 
-      {#if !readonly}
+      {#if !_readonly}
         <Button
           icon={IconMoreH}
           iconProps={{ size: 'medium' }}
