@@ -823,11 +823,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           continue
         }
         if (messagesUpdated.has(event.messageId)) {
-          return
+          continue
         }
         const message = await getMessage(cardId, event.messageId)
         if (message === undefined) {
-          return
+          continue
         }
         await this.processCommunicationMessage(ctx, pushQueue, cardDoc._id, cardDoc.space, cardDoc._class, message)
         messagesUpdated.add(event.messageId)
