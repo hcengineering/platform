@@ -118,6 +118,9 @@ export class TCard extends TDoc implements Card {
   @Hidden()
     color?: number
 
+  @Hidden()
+    readonly?: boolean
+
   children?: number
 
   parentInfo!: ParentInfo[]
