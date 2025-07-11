@@ -13,10 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Execution } from '@hcengineering/process'
   import { Doc, WithLookup } from '@hcengineering/core'
-  import presentation, { ActionContext, Card, createQuery } from '@hcengineering/presentation'
+  import presentation, { ActionContext, createQuery } from '@hcengineering/presentation'
+  import { Execution } from '@hcengineering/process'
   import { Modal, registerFocus } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import {
     List,
     ListSelectionProvider,
@@ -26,7 +27,6 @@
   } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import process from '../plugin'
-  import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
 
   export let execution: Execution
 
@@ -43,7 +43,7 @@
     }
   )
   let docs: Doc[] = []
-  function select () {
+  function select (): void {
     listProvider.update(docs)
     listProvider.updateFocus(docs[0])
     list?.select(0, undefined)
@@ -68,6 +68,7 @@
   let preference: ViewletPreference | undefined = undefined
 
   const query = createQuery()
+  const viewletId = process.viewlet.ExecutionLogList
 
   $: query.query(
     view.class.Viewlet,
@@ -85,8 +86,6 @@
   )
 
   const preferenceQuery = createQuery()
-
-  const viewletId = process.viewlet.ExecutionLogList
 
   $: if (viewlet != null) {
     preferenceQuery.query(

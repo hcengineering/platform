@@ -18,7 +18,6 @@
   import { getClient } from '@hcengineering/presentation'
   import {
     Context,
-    ContextId,
     Process,
     ProcessContext,
     ProcessFunction,
@@ -28,7 +27,7 @@
   import { Label, resizeObserver, Scroller, Submenu } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import { generateContextId, getRelationObjectReduceFunc, getValueReduceFunc, isTypeEqual } from '../../utils'
+  import { generateContextId, getRelationObjectReduceFunc, getValueReduceFunc } from '../../utils'
   import ExecutionContextPresenter from './ExecutionContextPresenter.svelte'
 
   export let process: Process
@@ -36,6 +35,7 @@
   export let context: Context
   export let attribute: AnyAttribute
   export let onSelect: (val: SelectedContext | null) => void
+  export let forbidValue: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -58,18 +58,7 @@
     })
   }
 
-  $: processContext = getProcessContext(process, attribute)
-
-  function getProcessContext (process: Process, attribute: AnyAttribute): ProcessContext[] {
-    const res: ProcessContext[] = []
-    for (const key in process?.context ?? {}) {
-      const ctx = process.context[key as ContextId]
-      if (ctx._class === attribute.type._class && isTypeEqual(ctx.type, attribute.type)) {
-        res.push(ctx)
-      }
-    }
-    return res
-  }
+  $: processContext = Object.values(context.executionContext)
 
   $: nested = Object.values(context.nested)
   $: relations = Object.entries(context.relations)
@@ -236,17 +225,19 @@
       {/each}
       <div class="menu-separator" />
     {/if}
-    <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-    <button
-      on:click={() => {
-        onCustom()
-      }}
-      class="menu-item"
-    >
-      <span class="overflow-label pr-1">
-        <Label label={plugin.string.CustomValue} />
-      </span>
-    </button>
+    {#if !forbidValue}
+      <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+      <button
+        on:click={() => {
+          onCustom()
+        }}
+        class="menu-item"
+      >
+        <span class="overflow-label pr-1">
+          <Label label={plugin.string.CustomValue} />
+        </span>
+      </button>
+    {/if}
   </Scroller>
   <div class="menu-space" />
 </div>

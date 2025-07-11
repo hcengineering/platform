@@ -27,12 +27,12 @@
 
   const client = getClient()
 
-  async function save () {
+  async function save (): Promise<void> {
     await client.update(process, { context: process.context })
     clearSettingsStore()
   }
 
-  function onNameChange (ev: Event, _id: string, ctx: ProcessContext) {
+  function onNameChange (ev: Event, _id: string, ctx: ProcessContext): void {
     const value = (ev.target as HTMLInputElement).value?.trim()
     ctx.name = value
     process.context[_id as ContextId] = ctx

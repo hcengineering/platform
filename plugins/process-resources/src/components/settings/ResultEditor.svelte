@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Class, Doc, PropertyType, Ref, Type } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { ContextId, Step } from '@hcengineering/process'
+  import { Step } from '@hcengineering/process'
   import setting from '@hcengineering/setting-resources/src/plugin'
   import {
     AnyComponent,

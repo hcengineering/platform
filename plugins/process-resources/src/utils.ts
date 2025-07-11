@@ -40,6 +40,7 @@ import {
   type Method,
   type NestedContext,
   type Process,
+  type ProcessContext,
   type ProcessFunction,
   type RelatedContext,
   type SelectedContext,
@@ -140,7 +141,13 @@ export async function initState<T extends Doc> (methodId: Ref<Method<T>>): Promi
   }
   const step: Step<T> = {
     _id: generateId() as string as StepId,
-    contextId: method.contextClass !== null ? generateContextId() : null,
+    context:
+      method.contextClass !== null
+        ? {
+            _id: generateContextId(),
+            _class: method.contextClass
+          }
+        : null,
     methodId,
     params: {}
   }
@@ -164,6 +171,7 @@ export function getContext (
   const functions = getContextFunctions(client, process.masterTag, target, category)
   const nested: Record<string, NestedContext> = {}
   const relations: Record<string, RelatedContext> = {}
+  const executionContext: Record<string, ProcessContext> = {}
 
   const refs = getClassAttributes(client, process.masterTag, core.class.RefTo, 'attribute')
   for (const ref of refs) {
@@ -230,11 +238,21 @@ export function getContext (
     }
   }
 
+  if (category === 'object') {
+    for (const key in process.context) {
+      const value = process.context[key as ContextId]
+      if (client.getHierarchy().isDerived(value._class, target)) {
+        executionContext[key] = value
+      }
+    }
+  }
+
   return {
     functions,
     attributes,
     nested,
-    relations
+    relations,
+    executionContext
   }
 }
 
@@ -443,8 +461,8 @@ export async function getSubProcessesUserInput (
     if (processId === undefined) continue
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const res = await newExecutionUserInput(processId, {} as ExecutionContext)
-    if (action.contextId == null) continue
-    userContext[action.contextId] = res
+    if (action.context == null) continue
+    userContext[action.context._id] = res
   }
   return userContext
 }
@@ -501,11 +519,13 @@ export function getToDoEndAction (prevState: State): Step<Doc> {
     key: 'user',
     _class: process.class.ProcessToDo
   }
-  const endAction = {
+  const endAction: Step<Doc> = {
     _id: generateId() as string as StepId,
-    contextId: generateContextId(),
+    context: {
+      _id: context.id,
+      _class: process.class.ProcessToDo
+    },
     methodId: process.method.CreateToDo,
-    system: true,
     params: {
       state: prevState._id,
       title: prevState.title,

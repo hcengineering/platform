@@ -44,15 +44,19 @@ import UpdateCardEditor from './components/settings/UpdateCardEditor.svelte'
 import DateOffsetEditor from './components/transformEditors/DateOffsetEditor.svelte'
 import NumberEditor from './components/transformEditors/NumberEditor.svelte'
 
+import LogActionPresenter from './components/LogActionPresenter.svelte'
+import NotifierExtension from './components/NotifierExtension.svelte'
+import AddRelationPresenter from './components/presenters/AddRelationPresenter.svelte'
+import CreateCardPresenter from './components/presenters/CreateCardPresenter.svelte'
+import AddRelationEditor from './components/settings/AddRelationEditor.svelte'
+import CreateCardEditor from './components/settings/CreateCardEditor.svelte'
+import TransitionRefPresenter from './components/settings/TransitionRefPresenter.svelte'
 import AppendEditor from './components/transformEditors/AppendEditor.svelte'
 import CutEditor from './components/transformEditors/CutEditor.svelte'
 import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
 import SplitEditor from './components/transformEditors/SplitEditor.svelte'
 import { ProcessMiddleware } from './middleware'
 import { continueExecution, showDoneQuery, todoTranstionCheck } from './utils'
-import LogActionPresenter from './components/LogActionPresenter.svelte'
-import TransitionRefPresenter from './components/settings/TransitionRefPresenter.svelte'
-import NotifierExtension from './components/NotifierExtension.svelte'
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
@@ -90,7 +94,11 @@ export default async (): Promise<Resources> => ({
     TransitionEditor,
     TransitionRefPresenter,
     LogActionPresenter,
-    NotifierExtension
+    NotifierExtension,
+    CreateCardEditor,
+    CreateCardPresenter,
+    AddRelationEditor,
+    AddRelationPresenter
   },
   transformEditor: {
     DateOffsetEditor,

@@ -89,7 +89,8 @@
     "Absolute": "Valor absoluto",
     "LogAction": "Evento",
     "Started": "Iniciado",
-    "Each": "Cada"
+    "Each": "Cada",
+    "CreateCard": "Crear tarjeta"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",
@@ -103,6 +104,7 @@
     "InternalServerError": "Error interno del servidor, contacte con el soporte, id de error: {errorId}",
     "ResultNotProvided": "Resultado no proporcionado",
     "EmptyFunctionResult": "Resultado de función vacío {func}",
-    "ContextValueNotProvided": "Valor de contexto no proporcionado: {name}"
+    "ContextValueNotProvided": "Valor de contexto no proporcionado: {name}",
+    "RequiredParamsNotProvided": "Faltan parámetros requeridos: {params}"
   }
 }
