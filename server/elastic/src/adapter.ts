@@ -39,11 +39,22 @@ function getIndexName (): string {
 }
 
 function getIndexVersion (): string {
-  return getMetadata(serverCore.metadata.ElasticIndexVersion) ?? 'v1'
+  return getMetadata(serverCore.metadata.ElasticIndexVersion) ?? 'v2'
 }
 
 const mappingFields = new Set([
-  'workspaceId'
+  'workspaceId',
+  'id',
+  '_class',
+  'attachedToClass',
+  'attachedTo',
+  'space',
+  'modifiedBy',
+  'modifiedOn',
+  'core:class:Doc%createdBy',
+  'core:class:Doc%createdOn',
+  'core:class:Doc%modifiedBy',
+  'core:class:Doc%modifiedOn'
 ])
 
 class ElasticAdapter implements FullTextAdapter {
@@ -121,6 +132,53 @@ class ElasticAdapter implements FullTextAdapter {
               },
               workspaceId: {
                 type: 'keyword',
+                index: true
+              },
+              id: {
+                type: 'keyword',
+                index: true
+              },
+              _class: {
+                type: 'keyword',
+                index: true
+              },
+              attachedTo: {
+                type: 'keyword',
+                index: true
+              },
+              attachedToClass: {
+                type: 'keyword',
+                index: true
+              },
+              space: {
+                type: 'keyword',
+                index: true
+              },
+              'core:class:Doc%createdBy': {
+                type: 'keyword',
+                index: true
+              },
+              'core:class:Doc%createdOn': {
+                type: 'date',
+                format: 'epoch_millis',
+                index: true
+              },
+              'modifiedBy': {
+                type: 'keyword',
+                index: true
+              },
+              'modifiedOn': {
+                type: 'date',
+                format: 'epoch_millis',
+                index: true
+              },
+              'core:class:Doc%modifiedBy': {
+                type: 'keyword',
+                index: true
+              },
+              'core:class:Doc%modifiedOn': {
+                type: 'date',
+                format: 'epoch_millis',
                 index: true
               }
             }
