@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { AccountRole } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import workbench from '@hcengineering/model-workbench'
@@ -36,13 +35,13 @@ export function createModel (builder: Builder): void {
       label: chat.string.Chat,
       icon: chat.icon.ChatBubble,
       alias: chatId,
-      accessLevel: AccountRole.User,
       hidden: false,
       component: chat.component.ChatApplication,
       locationResolver: chat.resolver.Location,
       locationDataResolver: chat.resolver.LocationData,
       type: 'cards',
-      position: 'bottom'
+      position: 'top',
+      order: 200
     },
     chat.app.Chat
   )

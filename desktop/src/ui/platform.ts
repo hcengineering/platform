@@ -413,6 +413,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(workbench.metadata.DefaultApplication, myBranding.defaultApplication ?? 'tracker')
   setMetadata(workbench.metadata.DefaultSpace, myBranding.defaultSpace ?? tracker.project.DefaultProject)
   setMetadata(workbench.metadata.DefaultSpecial, myBranding.defaultSpecial ?? 'issues')
+  setMetadata(workbench.metadata.ExcludedApplicationsForAnonymous, config.EXCLUDED_APPLICATIONS_FOR_ANONYMOUS ?? [])
 
   initThemeStore()
 

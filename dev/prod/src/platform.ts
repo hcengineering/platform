@@ -196,7 +196,8 @@ export interface Config {
   EXPORT_URL?: string
   MAIL_URL?: string,
   COMMUNICATION_API_ENABLED?: string
-  BILLING_URL?: string
+  BILLING_URL?: string,
+  EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string[]
 }
 
 export interface Branding {
@@ -601,6 +602,7 @@ export async function configurePlatform() {
   setMetadata(workbench.metadata.DefaultApplication, myBranding.defaultApplication ?? 'tracker')
   setMetadata(workbench.metadata.DefaultSpace, myBranding.defaultSpace ?? tracker.project.DefaultProject)
   setMetadata(workbench.metadata.DefaultSpecial, myBranding.defaultSpecial ?? 'issues')
+    setMetadata(workbench.metadata.ExcludedApplicationsForAnonymous, config.EXCLUDED_APPLICATIONS_FOR_ANONYMOUS ?? [])
 
   setMetadata(setting.metadata.BackupUrl, config.BACKUP_URL ?? '')
 

@@ -203,7 +203,8 @@ export function createModel (builder: Builder): void {
       alias: timeId,
       hidden: false,
       position: 'top',
-      component: time.component.Me
+      component: time.component.Me,
+      order: 300
     },
     time.app.Me
   )
