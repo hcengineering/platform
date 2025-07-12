@@ -309,6 +309,9 @@ services:
     image: hardcoreeng/fulltext
     extra_hosts:
       - 'huly.local:host-gateway'
+    depends_on:
+      elastic:
+        condition: service_healthy
     restart: unless-stopped
     links:
       - elastic
