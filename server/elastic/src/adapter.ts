@@ -42,20 +42,65 @@ function getIndexVersion (): string {
   return getMetadata(serverCore.metadata.ElasticIndexVersion) ?? 'v2'
 }
 
-const mappingFields = new Set([
-  'workspaceId',
-  'id',
-  '_class',
-  'attachedToClass',
-  'attachedTo',
-  'space',
-  'modifiedBy',
-  'modifiedOn',
-  'core:class:Doc%createdBy',
-  'core:class:Doc%createdOn',
-  'core:class:Doc%modifiedBy',
-  'core:class:Doc%modifiedOn'
-])
+const mappings = {
+  properties: {
+    fulltextSummary: {
+      type: 'text',
+      analyzer: 'rebuilt_english'
+    },
+    workspaceId: {
+      type: 'keyword',
+      index: true
+    },
+    id: {
+      type: 'keyword',
+      index: true
+    },
+    _class: {
+      type: 'keyword',
+      index: true
+    },
+    attachedTo: {
+      type: 'keyword',
+      index: true
+    },
+    attachedToClass: {
+      type: 'keyword',
+      index: true
+    },
+    space: {
+      type: 'keyword',
+      index: true
+    },
+    'core:class:Doc%createdBy': {
+      type: 'keyword',
+      index: true
+    },
+    'core:class:Doc%createdOn': {
+      type: 'date',
+      format: 'epoch_millis',
+      index: true
+    },
+    modifiedBy: {
+      type: 'keyword',
+      index: true
+    },
+    modifiedOn: {
+      type: 'date',
+      format: 'epoch_millis',
+      index: true
+    },
+    'core:class:Doc%modifiedBy': {
+      type: 'keyword',
+      index: true
+    },
+    'core:class:Doc%modifiedOn': {
+      type: 'date',
+      format: 'epoch_millis',
+      index: true
+    }
+  }
+}
 
 class ElasticAdapter implements FullTextAdapter {
   private readonly getFulltextDocId: (workspaceId: WorkspaceUuid, doc: Ref<Doc>) => Ref<Doc>
@@ -115,76 +160,19 @@ class ElasticAdapter implements FullTextAdapter {
                     }
                   }
                 }
-              }
+              },
+              mappings
             }
           })
         )
+      } else {
+        await ctx.with('put-mapping', {}, () =>
+          this.client.indices.putMapping({
+            index: indexName,
+            body: mappings
+          })
+        )
       }
-
-      await ctx.with('put-mapping', {}, () =>
-        this.client.indices.putMapping({
-          index: indexName,
-          body: {
-            properties: {
-              fulltextSummary: {
-                type: 'text',
-                analyzer: 'rebuilt_english'
-              },
-              workspaceId: {
-                type: 'keyword',
-                index: true
-              },
-              id: {
-                type: 'keyword',
-                index: true
-              },
-              _class: {
-                type: 'keyword',
-                index: true
-              },
-              attachedTo: {
-                type: 'keyword',
-                index: true
-              },
-              attachedToClass: {
-                type: 'keyword',
-                index: true
-              },
-              space: {
-                type: 'keyword',
-                index: true
-              },
-              'core:class:Doc%createdBy': {
-                type: 'keyword',
-                index: true
-              },
-              'core:class:Doc%createdOn': {
-                type: 'date',
-                format: 'epoch_millis',
-                index: true
-              },
-              modifiedBy: {
-                type: 'keyword',
-                index: true
-              },
-              modifiedOn: {
-                type: 'date',
-                format: 'epoch_millis',
-                index: true
-              },
-              'core:class:Doc%modifiedBy': {
-                type: 'keyword',
-                index: true
-              },
-              'core:class:Doc%modifiedOn': {
-                type: 'date',
-                format: 'epoch_millis',
-                index: true
-              }
-            }
-          }
-        })
-      )
     } catch (err: any) {
       if (err.name !== 'ConnectionError') {
         Analytics.handleError(err)
@@ -262,7 +250,9 @@ class ElasticAdapter implements FullTextAdapter {
 
       if (options.scoring !== undefined) {
         const scoringTerms: any[] = options.scoring.map((scoringOption): any => {
-          const field = mappingFields.has(scoringOption.attr) ? scoringOption.attr : `${scoringOption.attr}.keyword`
+          const field = Object.hasOwn(mappings.properties, scoringOption.attr)
+            ? scoringOption.attr
+            : `${scoringOption.attr}.keyword`
           return {
             term: {
               [field]: {
@@ -342,7 +332,7 @@ class ElasticAdapter implements FullTextAdapter {
 
     for (const [q, v] of Object.entries(query)) {
       if (!q.startsWith('$')) {
-        const field = mappingFields.has(q) ? q : `${q}.keyword`
+        const field = Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`
         if (typeof v === 'object') {
           if (v.$in !== undefined) {
             request.bool.should.push({
@@ -401,7 +391,7 @@ class ElasticAdapter implements FullTextAdapter {
 
   private getTerms (values: string[], field: string, extra: any = {}): any {
     return {
-      [mappingFields.has(field) ? field : `${field}.keyword`]: values,
+      [Object.hasOwn(mappings.properties, field) ? field : `${field}.keyword`]: values,
       ...extra
     }
   }
@@ -503,14 +493,14 @@ class ElasticAdapter implements FullTextAdapter {
           if (v.$in !== undefined) {
             elasticQuery.bool.must.push({
               terms: {
-                [mappingFields.has(q) ? q : `${q}.keyword`]: v.$in
+                [Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`]: v.$in
               }
             })
           }
         } else {
           elasticQuery.bool.must.push({
             term: {
-              [mappingFields.has(q) ? q : `${q}.keyword`]: {
+              [Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`]: {
                 value: v
               }
             }
@@ -596,14 +586,14 @@ class ElasticAdapter implements FullTextAdapter {
           if (v.$in !== undefined) {
             elasticQuery.bool.must.push({
               terms: {
-                [mappingFields.has(q) ? q : `${q}.keyword`]: v.$in
+                [Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`]: v.$in
               }
             })
           }
         } else {
           elasticQuery.bool.must.push({
             term: {
-              [mappingFields.has(q) ? q : `${q}.keyword`]: {
+              [Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`]: {
                 value: v
               }
             }
