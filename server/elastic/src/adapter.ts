@@ -174,10 +174,11 @@ class ElasticAdapter implements FullTextAdapter {
         )
       }
     } catch (err: any) {
-      if (err.name !== 'ConnectionError') {
-        Analytics.handleError(err)
-        ctx.error(err)
+      if (err.name === 'ConnectionError') {
+        ctx.warn('Elastic DB is not available')
       }
+      Analytics.handleError(err)
+      ctx.error(err)
       return false
     }
     return true
