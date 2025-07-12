@@ -14,36 +14,21 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { ProcessContext, State, Transition } from '@hcengineering/process'
+  import { ProcessContext } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
-  import TransitionPresenter from '../settings/TransitionPresenter.svelte'
   import process from '../../plugin'
 
   export let context: ProcessContext
 
   const client = getClient()
-  const model = client.getModel()
+  const hierarchy = client.getHierarchy()
 
-  $: producer = model.findObject(context.producer)
-  $: action = producer?.actions?.find((it) => it._id === context.action)
-  $: method = action && model.findObject(action.methodId)
-
-  function isState (it: State | Transition): it is State {
-    return it._class === process.class.State
-  }
+  $: _class = hierarchy.findClass(context._class)
 </script>
 
 {#if context.isResult}
   <Label label={process.string.Result} />:
 {/if}
-{#if producer !== undefined}
-  {#if isState(producer)}
-    {producer.title}
-  {:else}
-    <TransitionPresenter transition={producer} />
-  {/if}
-{/if}
-{#if method !== undefined}
-  ->
-  <Label label={method.label} />
+{#if _class?.label !== undefined}
+  <Label label={_class.label} />
 {/if}

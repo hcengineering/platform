@@ -46,7 +46,9 @@
 
 <ParamsEditor _class={plugin.class.ProcessToDo} {process} {keys} {params} on:change={changeParams} />
 <div class="divider" />
-<ResultEditor {step} on:chage={changeResult} />
+{#key step._id}
+  <ResultEditor {step} on:chage={changeResult} />
+{/key}
 
 <style lang="scss">
   .divider {
