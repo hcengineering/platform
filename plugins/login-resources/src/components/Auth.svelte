@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Loading } from '@hcengineering/ui'
+  import { Loading, getCurrentLocation } from '@hcengineering/ui'
   import { logIn } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
 
@@ -9,8 +9,24 @@
     getAutoJoinInfo,
     goTo,
     isWorkspaceLoginInfo,
-    navigateToWorkspace
+    navigateToWorkspace,
+    trackOAuthCompletion
   } from '../utils'
+
+  function getProviderFromUrl (): string | null {
+    const location = getCurrentLocation()
+    const referrer = document.referrer
+
+    if (referrer.includes('accounts.google.com')) {
+      return 'google'
+    } else if (referrer.includes('github.com')) {
+      return 'github'
+    } else if (location.query?.provider != null && location.query.provider !== '') {
+      return location.query.provider
+    }
+
+    return null
+  }
 
   onMount(async () => {
     const autoJoinInfo = getAutoJoinInfo()
@@ -20,6 +36,9 @@
     }
 
     const result = await getLoginInfoFromQuery()
+    const provider = getProviderFromUrl()
+
+    trackOAuthCompletion(result, provider)
 
     if (result != null) {
       await logIn(result)

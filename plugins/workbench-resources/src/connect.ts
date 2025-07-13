@@ -389,19 +389,30 @@ export async function connect (title: string): Promise<Client | undefined> {
     await setPlatformStatus(new Status(Severity.INFO, platform.status.SystemAccount, {}))
   }
 
-  const socialId = me.fullSocialIds.find((si) => si._id === me.primarySocialId)?.value
+  const socialId = me.fullSocialIds.find((si) => si._id === me.primarySocialId)?.key
   const email = me.fullSocialIds.find((si) => si.type === 'email')?.value ?? socialId
 
   const data: Record<string, any> = {
     social_id: socialId ?? account,
     account_uuid: account,
-    workspace: workspace.name,
-    workspace_uuid: workspace.uuid,
+    role: workspaceLoginInfo.role,
     branding: workspace.branding ?? 'unknown'
   }
 
+  const guestRole =
+    workspaceLoginInfo.role === AccountRole.ReadOnlyGuest ||
+    workspaceLoginInfo.role === AccountRole.DocGuest ||
+    workspaceLoginInfo.role === AccountRole.Guest
+  if (guestRole) {
+    data.visited_workspace = workspace.url
+    data.visited_workspace_uuid = workspace.uuid
+  } else {
+    data.workspace = workspace.url
+    data.workspace_uuid = workspace.uuid
+  }
+
   Analytics.setUser(email ?? account, data)
-  Analytics.setWorkspace(workspace.name)
+  Analytics.setWorkspace(workspace.name, guestRole)
   Analytics.handleEvent(WorkbenchEvents.Connect)
   console.log('Logged in with account: ', me)
   setCurrentAccount(me)

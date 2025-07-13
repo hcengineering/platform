@@ -214,7 +214,8 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
     )
   }
 
-  setWorkspace (ws: string): void {
+  setWorkspace (ws: string, guest: boolean): void {
+    const prop: string = guest ? 'visited-workspace' : 'workspace'
     this.addEvent(
       AnalyticEventType.SetGroup,
       {
@@ -224,7 +225,7 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
           name: ws,
           joined_at: new Date().toISOString()
         },
-        $group_type: 'workspace',
+        $group_type: prop,
         $groups: { workspace: ws }
       },
       '$groupidentify'

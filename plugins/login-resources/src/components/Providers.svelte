@@ -3,8 +3,10 @@
   import { getMetadata } from '@hcengineering/platform'
   import { type ProviderInfo } from '@hcengineering/account-client'
   import { AnySvelteComponent, Button, Grid, deviceOptionsStore, getCurrentLocation } from '@hcengineering/ui'
+  import { Analytics } from '@hcengineering/analytics'
   import { onMount } from 'svelte'
   import login from '../plugin'
+  import { LoginEvents } from '../analytics'
   import { getProviders } from '../utils'
   import Github from './providers/Github.svelte'
   import Google from './providers/Google.svelte'
@@ -60,13 +62,38 @@
 
     return concatLink(accountsUrl, path)
   }
+
+  function handleProviderClick (provider: Provider): void {
+    const currentPath = location.path[1]
+    const isSignUp = currentPath === 'signup'
+    const isJoin = currentPath === 'join'
+
+    if (provider.name === 'google') {
+      if (isSignUp || isJoin) {
+        Analytics.handleEvent(LoginEvents.SignUpGoogleStarted)
+      } else {
+        Analytics.handleEvent(LoginEvents.LoginGoogleStarted)
+      }
+    } else if (provider.name === 'github') {
+      if (isSignUp || isJoin) {
+        Analytics.handleEvent(LoginEvents.SignUpGithubStarted)
+      } else {
+        Analytics.handleEvent(LoginEvents.LoginGithubStarted)
+      }
+    }
+  }
 </script>
 
 {#if !$deviceOptionsStore.isMobile}
   <div class="container">
     <Grid column={getColumnsCount(enabledProviders.length)} columnGap={1} rowGap={1} alignItems={'center'}>
       {#each enabledProviders as provider}
-        <a href={getLink(provider)}>
+        <a
+          href={getLink(provider)}
+          on:click={() => {
+            handleProviderClick(provider)
+          }}
+        >
           <Button kind={'contrast'} shape={'round2'} size={'x-large'} width="100%" stopPropagation={false}>
             <svelte:fragment slot="content">
               <svelte:component this={provider.component} displayName={provider.displayName} />

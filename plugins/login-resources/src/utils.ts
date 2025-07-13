@@ -102,23 +102,23 @@ export async function doLogin (email: string, password: string): Promise<[Status
 
 export async function doLoginAsGuest (): Promise<[Status, LoginInfo | null]> {
   try {
+    Analytics.handleEvent(LoginEvents.LoginGuestStarted)
     const accountClient = getAccountClient(null)
 
     const loginInfo = await accountClient.loginAsGuest()
 
-    /* Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: true })
-    Analytics.setUser(email, loginInfo.account) */
+    Analytics.handleEvent(LoginEvents.LoginGuestCompleted)
 
     return [OK, loginInfo]
   } catch (err: any) {
     if (err instanceof PlatformError) {
-      // Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: false })
+      Analytics.handleEvent(LoginEvents.LoginGuestError)
       await handleStatusError('Login error', err.status)
 
       return [err.status, null]
     } else {
-      // Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: false })
-      // Analytics.handleError(err)
+      Analytics.handleEvent(LoginEvents.LoginGuestError)
+      Analytics.handleError(err)
 
       return [unknownError(err), null]
     }
@@ -188,7 +188,6 @@ export async function createWorkspace (
     const workspaceLoginInfo = await getAccountClient(token).createWorkspace(workspaceName, region)
 
     Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: true })
-    Analytics.setWorkspace(workspaceName)
 
     return [OK, workspaceLoginInfo]
   } catch (err: any) {
@@ -496,6 +495,10 @@ export function navigateToWorkspace (
   }
 
   setLoginInfo(loginInfo)
+  Analytics.handleEvent(LoginEvents.SelectWorkspace, {
+    workspace: workspaceUrl,
+    workspace_uuid: loginInfo.workspace
+  })
 
   if (navigateUrl != null) {
     try {
@@ -1001,4 +1004,25 @@ export function getAccountDisplayName (loginInfo: LoginInfo | null | undefined):
   }
 
   return loginInfo.account
+}
+
+export function trackOAuthCompletion (result: LoginInfo | WorkspaceLoginInfo | null, provider?: string | null): void {
+  if (provider == null) return
+
+  const location = getCurrentLocation()
+  const isSignUp = location.path[1] === 'signup' || location.query?.signup != null
+
+  if (result != null) {
+    if (provider === 'google') {
+      Analytics.handleEvent(isSignUp ? LoginEvents.SignUpGoogleCompleted : LoginEvents.LoginGoogleCompleted)
+    } else if (provider === 'github') {
+      Analytics.handleEvent(isSignUp ? LoginEvents.SignUpGithubCompleted : LoginEvents.LoginGithubCompleted)
+    }
+  } else {
+    if (provider === 'google') {
+      Analytics.handleEvent(isSignUp ? LoginEvents.SignUpGoogleError : LoginEvents.LoginGoogleError)
+    } else if (provider === 'github') {
+      Analytics.handleEvent(isSignUp ? LoginEvents.SignUpGithubError : LoginEvents.LoginGithubError)
+    }
+  }
 }
