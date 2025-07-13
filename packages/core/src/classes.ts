@@ -832,6 +832,7 @@ export interface WorkspaceInfo {
   createdBy?: PersonUuid // Should always be set for NEW workspaces
   billingAccount?: PersonUuid // Should always be set for NEW workspaces
   allowReadOnlyGuest?: boolean // Should always be set for NEW workspaces
+  allowGuestSignUp?: boolean // Should always be set for NEW workspaces
 }
 
 export interface BackupStatus {

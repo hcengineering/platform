@@ -117,6 +117,7 @@ export interface AccountClient {
   updateAllowReadOnlyGuests: (
     readOnlyGuestsAllowed: boolean
   ) => Promise<{ guestPerson: Person, guestSocialIds: SocialId[] } | undefined>
+  updateAllowGuestSignUp: (guestSignUpAllowed: boolean) => Promise<void>
   updateWorkspaceName: (name: string) => Promise<void>
   deleteWorkspace: () => Promise<void>
   findPersonBySocialKey: (socialKey: string, requireAccount?: boolean) => Promise<PersonUuid | undefined>
@@ -657,6 +658,15 @@ class AccountClientImpl implements AccountClient {
     }
 
     return await this.rpc(request)
+  }
+
+  async updateAllowGuestSignUp (guestSignUpAllowed: boolean): Promise<void> {
+    const request = {
+      method: 'updateAllowGuestSignUp' as const,
+      params: { guestSignUpAllowed }
+    }
+
+    await this.rpc(request)
   }
 
   async getWorkspaceMembers (): Promise<WorkspaceMemberInfo[]> {
