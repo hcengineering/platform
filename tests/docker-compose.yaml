@@ -124,7 +124,7 @@ services:
       - SERVER_SECRET=secret
       - ADMIN_EMAILS=admin,${PLATFORM_ADMIN_EMAILS}
       - WORKSPACE_LIMIT_PER_USER=100
-      - DB_URL=${MONGO_URL}
+      - DB_URL=mongodb://mongodb:27018
       - REGION_INFO=|America
       - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
