@@ -226,7 +226,7 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
           joined_at: new Date().toISOString()
         },
         $group_type: prop,
-        $groups: { workspace: ws }
+        $groups: { [prop]: ws }
       },
       '$groupidentify'
     )
