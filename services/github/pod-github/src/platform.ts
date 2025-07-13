@@ -58,6 +58,10 @@ export interface InstallationRecord {
   suspended: boolean
 }
 
+interface IntegrationDataValue {
+  installationId: number | number[]
+}
+
 export class PlatformWorker {
   private readonly clients = new Map<WorkspaceUuid, GithubWorker>()
 
@@ -123,12 +127,12 @@ export class PlatformWorker {
       if (i.workspaceUuid == null) {
         continue
       }
-      const installationId = i.data?.installationId
+      const installationId = (i.data as IntegrationDataValue)?.installationId
       if (installationId !== undefined) {
         this.integrations.push({
           accountId: i.socialId,
           workspace: i.workspaceUuid,
-          installationId
+          installationId: Array.isArray(installationId) ? installationId : [installationId]
         })
       }
     }
@@ -137,19 +141,32 @@ export class PlatformWorker {
 
     for (const integr of [...this.integrations]) {
       // We need to check and remove integrations without a real integration's
-      if (!this.installations.has(integr.installationId)) {
-        ctx.warn('Installation was deleted during service shutdown', {
-          installationId: integr.installationId,
+      const ids = integr.installationId
+
+      const missing = ids.filter((id) => !this.installations.has(id))
+      if (missing.length > 0) {
+        const has = ids.filter((id) => this.installations.has(id))
+        ctx.warn('Few Installation was deleted during service shutdown', {
+          installationId: missing,
           workspace: integr.workspace
         })
-        await accountsClient.deleteIntegration({
-          kind: 'github',
-          workspaceUuid: integr.workspace,
-          socialId: integr.accountId
-        })
-        this.integrations = this.integrations.filter((it) => it.installationId !== integr.installationId)
+        if (has.length > 0) {
+          await accountsClient.updateIntegration({
+            kind: 'github',
+            workspaceUuid: integr.workspace,
+            socialId: integr.accountId,
+            data: { installationId: has } satisfies IntegrationDataValue
+          })
+        } else {
+          await accountsClient.deleteIntegration({
+            kind: 'github',
+            workspaceUuid: integr.workspace,
+            socialId: integr.accountId
+          })
+        }
       }
     }
+    this.integrations = this.integrations.filter((it) => it.installationId.length > 0)
 
     void this.doSyncWorkspaces().catch((err) => {
       ctx.error('error during sync workspaces', { err })
@@ -227,29 +244,56 @@ export class PlatformWorker {
     const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
     const accountsClient = getAccountClient(config.AccountsURL, sysToken)
 
-    const oldInstallation = this.integrations.find((it) => it.installationId === installationId)
-    if (oldInstallation != null) {
-      ctx.info('update integration', { workspace, installationId, accountId })
+    const oldInstallation = this.integrations.filter((it) => it.installationId.includes(installationId))
+    if (oldInstallation.length > 0) {
+      ctx.info('update integrations', { workspace, installationId, accountId })
       // What to do with installation in different workspace?
       // Let's remove it and sync to new one.
-      if (oldInstallation.workspace !== workspace) {
-        //
-        const oldWorkspace = oldInstallation.workspace
+      const oldWorkspaces = oldInstallation.filter((it) => it.workspace !== workspace)
+      if (oldWorkspaces.length > 0) {
+        const oldWorkspace = oldWorkspaces[0].workspace
 
-        await accountsClient.createIntegration({
-          kind: 'github',
-          workspaceUuid: workspace,
-          socialId: accountId,
-          data: { installationId: oldInstallation.installationId }
-        })
+        for (const oldInstallation of oldWorkspaces) {
+          const has = oldInstallation.installationId.filter((it) => it !== installationId)
+          if (has.length > 0) {
+            oldInstallation.installationId = has
+            await accountsClient.updateIntegration({
+              kind: 'github',
+              workspaceUuid: oldWorkspace,
+              socialId: accountId
+            })
+          } else {
+            await accountsClient.deleteIntegration({
+              kind: 'github',
+              workspaceUuid: oldWorkspace,
+              socialId: accountId
+            })
+          }
+        }
 
-        await accountsClient.deleteIntegration({
-          kind: 'github',
-          workspaceUuid: oldWorkspace,
-          socialId: accountId
-        })
-
-        oldInstallation.workspace = workspace
+        // We need new integeration to be added to new workspace
+        const existingRecord = this.integrations.find((it) => it.workspace === workspace && it.accountId === accountId)
+        if (existingRecord !== undefined) {
+          existingRecord.installationId.push(installationId)
+          await accountsClient.updateIntegration({
+            kind: 'github',
+            workspaceUuid: workspace,
+            socialId: accountId,
+            data: { installationId: existingRecord.installationId } satisfies IntegrationDataValue
+          })
+        } else {
+          await accountsClient.createIntegration({
+            kind: 'github',
+            workspaceUuid: workspace,
+            socialId: accountId,
+            data: { installationId } satisfies IntegrationDataValue
+          })
+          this.integrations.push({
+            workspace,
+            installationId: [installationId],
+            accountId
+          })
+        }
 
         const oldWorker = this.clients.get(oldWorkspace) as GithubWorker
         if (oldWorker !== undefined) {
@@ -276,25 +320,35 @@ export class PlatformWorker {
       this.triggerCheckWorkspaces()
       return
     }
-    const record: GithubIntegrationRecord = {
-      workspace,
-      installationId,
-      accountId
-    }
     ctx.info('add integration', { workspace, installationId, accountId })
 
     await ctx.with(
       'add integration',
       {},
       async (ctx) => {
-        await accountsClient.createIntegration({
-          kind: 'github',
-          workspaceUuid: record.workspace,
-          socialId: record.accountId,
-          data: { installationId: record.installationId }
-        })
-
-        this.integrations.push(record)
+        const existing = this.integrations.find((it) => it.workspace === workspace && it.accountId === accountId)
+        if (existing !== undefined) {
+          existing.installationId.push(installationId)
+          await accountsClient.updateIntegration({
+            kind: 'github',
+            workspaceUuid: existing.workspace,
+            socialId: existing.accountId,
+            data: { installationId: existing.installationId } satisfies IntegrationDataValue
+          })
+        } else {
+          const record: GithubIntegrationRecord = {
+            workspace,
+            installationId: [installationId],
+            accountId
+          }
+          await accountsClient.createIntegration({
+            kind: 'github',
+            workspaceUuid: record.workspace,
+            socialId: record.accountId,
+            data: { installationId: record.installationId }
+          })
+          this.integrations.push(record)
+        }
       },
       { workspace, installationId, accountId }
     )
@@ -782,10 +836,10 @@ export class PlatformWorker {
     this.installations.delete(installId)
     this.ctx.info('handle integration delete', { installId, name: existing?.installationName })
 
-    const interg = this.integrations.find((it) => it.installationId === installId)
+    const interg = this.integrations.filter((it) => it.installationId.includes(installId))
 
     // We already have, worker we need to update it.
-    const worker = this.getWorker(installId) ?? (interg !== undefined ? this.clients.get(interg.workspace) : undefined)
+    const worker = this.getWorker(installId) ?? (interg.length > 0 ? this.clients.get(interg[0].workspace) : undefined)
     if (worker !== undefined) {
       const integeration = worker.integrations.get(installId)
       if (integeration !== undefined) {
@@ -802,16 +856,30 @@ export class PlatformWorker {
       this.ctx.info('No worker for removed installation', { installId, name: existing?.installationName })
       // No worker
     }
-    this.integrations = this.integrations.filter((it) => it.installationId !== installId)
-    if (interg !== undefined) {
+    if (interg.length > 0) {
       const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
       const sysAccountClient = getAccountClient(config.AccountsURL, sysToken)
-      await sysAccountClient.deleteIntegration({
-        kind: 'github',
-        workspaceUuid: interg.workspace,
-        socialId: interg.accountId
-      })
+
+      for (const intgr of interg) {
+        const has = intgr.installationId.filter((it) => it !== installId)
+        if (has.length > 0) {
+          await sysAccountClient.updateIntegration({
+            kind: 'github',
+            workspaceUuid: intgr.workspace,
+            socialId: intgr.accountId,
+            data: { installationId: has } satisfies IntegrationDataValue
+          })
+        } else {
+          intgr.installationId = []
+          await sysAccountClient.deleteIntegration({
+            kind: 'github',
+            workspaceUuid: intgr.workspace,
+            socialId: intgr.accountId
+          })
+        }
+      }
     }
+    this.integrations = this.integrations.filter((it) => it.installationId.length > 0)
     this.triggerCheckWorkspaces()
   }
 
