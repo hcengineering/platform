@@ -219,7 +219,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     readonly storageAdapter: StorageAdapter,
     readonly contentAdapter: ContentTextAdapter,
     readonly broadcastUpdate: (ctx: MeasureContext, classes: Ref<Class<Doc>>[]) => void,
-    readonly communicationApi: CommunicationApi,
+    readonly communicationApi?: CommunicationApi,
     readonly listener?: FulltextListener
   ) {
     this.contexts = new Map(model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it]))
@@ -531,12 +531,16 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     control: ConsumerControl | undefined,
     pushQueue: ElasticPushQueue
   ): Promise<number> {
+    const communicationApi = this.communicationApi
+    if (communicationApi === undefined) {
+      return 0
+    }
     let processed = 0
     const cardsInfo = new Map<CardID, { space: Ref<Space>, _class: Ref<Class<Doc>> }>()
     const rateLimit = new RateLimiter(10)
     let lastPrint = 0
     await ctx.with('process-message-groups', {}, async (ctx) => {
-      let groups = await this.communicationApi.findMessagesGroups(this.communicationSession, {
+      let groups = await communicationApi.findMessagesGroups(this.communicationSession, {
         limit: messageGroupsLimit,
         order: SortingOrder.Ascending
       })
@@ -608,7 +612,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         if (this.cancelling) {
           return processed
         }
-        groups = await this.communicationApi.findMessagesGroups(this.communicationSession, {
+        groups = await communicationApi.findMessagesGroups(this.communicationSession, {
           limit: messageGroupsLimit,
           order: SortingOrder.Ascending,
           fromDate: {
@@ -618,7 +622,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       }
     })
     await ctx.with('process-messages', {}, async (ctx) => {
-      let messages = await this.communicationApi.findMessages(this.communicationSession, {
+      let messages = await communicationApi.findMessages(this.communicationSession, {
         links: true,
         files: true,
         limit: messagesLimit,
@@ -666,7 +670,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             lastPrint = now
           }
         }
-        messages = await this.communicationApi.findMessages(this.communicationSession, {
+        messages = await communicationApi.findMessages(this.communicationSession, {
           links: true,
           files: true,
           limit: messagesLimit,
@@ -781,8 +785,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     txes: TxDomainEvent<IndexableCommunicationEvent>[],
     toRemove: { _id: Ref<Doc>, _class: Ref<Class<Doc>> }[]
   ): Promise<void> {
+    const communicationApi = this.communicationApi
+    if (communicationApi === undefined) {
+      return
+    }
     const getMessage = async (cardId: CardID, msgId: MessageID): Promise<Message | undefined> => {
-      const messages = await this.communicationApi.findMessages(this.communicationSession, {
+      const messages = await communicationApi.findMessages(this.communicationSession, {
         card: cardId,
         id: msgId,
         links: true,
@@ -791,7 +799,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       if (messages.length === 1) {
         return messages[0]
       }
-      const messagesGroups = await this.communicationApi.findMessagesGroups(this.communicationSession, {
+      const messagesGroups = await communicationApi.findMessagesGroups(this.communicationSession, {
         card: cardId,
         messageId: msgId
       })

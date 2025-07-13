@@ -100,11 +100,14 @@ export class WorkspaceIndexer {
     const token = generateToken(systemAccountUuid, workspace.uuid, { service: 'fulltext' })
     const transactorEndpoint = await endpointProvider(token)
 
-    const communicationApi = await CommunicationApi.create(ctx, workspace.uuid, dbURL, {
-      broadcast: () => {},
-      enqueue: () => {},
-      registerAsyncRequest: () => {}
-    })
+    let communicationApi: CommunicationApi | undefined
+    if (process.env.COMMUNICATION_API_ENABLED === 'true') {
+      communicationApi = await CommunicationApi.create(ctx, workspace.uuid, dbURL, {
+        broadcast: () => {},
+        enqueue: () => {},
+        registerAsyncRequest: () => {}
+      })
+    }
 
     result.fulltext = new FullTextIndexPipeline(
       ftadapter,
