@@ -46,51 +46,45 @@
   export let subtitle: string | undefined = undefined
   export let signUpDisabled = false
 
-  let isValidating = false
   const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
     if (ignoreInitialValidation) return true
-    isValidating = true
 
-    try {
-      for (const field of fields) {
-        const v = object[field.name]
-        const f = field
-        if (!f.optional && (!v || v.trim() === '')) {
-          status = new Status(Severity.INFO, login.status.RequiredField, {
-            field: await translate(field.i18n, {}, language)
-          })
-          return false
-        }
-        if (f.id !== undefined) {
-          const sameFields = fields.filter((f) => f.id === field.id)
-          for (const field of sameFields) {
-            const v = object[field.name]
-            if (v !== object[f.name]) {
-              status = new Status(Severity.INFO, login.status.FieldsDoNotMatch, {
-                field: await translate(field.i18n, {}, language),
-                field2: await translate(f.i18n, {}, language)
-              })
-              return false
-            }
-          }
-        }
-        if (f.rules !== undefined) {
-          for (const rule of f.rules) {
-            const isValid =
-              typeof rule.rule === 'function' ? rule.rule(v) !== rule.notMatch : rule.rule.test(v) !== rule.notMatch
-
-            if (!isValid) {
-              status = new Status(Severity.INFO, rule.ruleDescr, rule.ruleDescrParams ?? {})
-              return false
-            }
+    for (const field of fields) {
+      const v = object[field.name]
+      const f = field
+      if (!f.optional && (!v || v.trim() === '')) {
+        status = new Status(Severity.INFO, login.status.RequiredField, {
+          field: await translate(field.i18n, {}, language)
+        })
+        return false
+      }
+      if (f.id !== undefined) {
+        const sameFields = fields.filter((f) => f.id === field.id)
+        for (const field of sameFields) {
+          const v = object[field.name]
+          if (v !== object[f.name]) {
+            status = new Status(Severity.INFO, login.status.FieldsDoNotMatch, {
+              field: await translate(field.i18n, {}, language),
+              field2: await translate(f.i18n, {}, language)
+            })
+            return false
           }
         }
       }
-      status = OK
-      return true
-    } finally {
-      isValidating = false
+      if (f.rules !== undefined) {
+        for (const rule of f.rules) {
+          const isValid =
+            typeof rule.rule === 'function' ? rule.rule(v) !== rule.notMatch : rule.rule.test(v) !== rule.notMatch
+
+          if (!isValid) {
+            status = new Status(Severity.INFO, rule.ruleDescr, rule.ruleDescrParams ?? {})
+            return false
+          }
+        }
+      }
     }
+    status = OK
+    return true
   })
 
   export function invalidate (): void {
@@ -185,10 +179,16 @@
         size={'x-large'}
         width="100%"
         loading={inAction}
-        disabled={isValidating || (status.severity !== Severity.OK && status.severity !== Severity.ERROR)}
+        disabled={status.severity !== Severity.OK && status.severity !== Severity.ERROR}
         on:click={(e) => {
           e.preventDefault()
-          performAction(action)
+          if (!inAction) {
+            void validate($themeStore.language).then((res) => {
+              if (res) {
+                performAction(action)
+              }
+            })
+          }
         }}
       />
     </div>

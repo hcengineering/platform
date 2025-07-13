@@ -12,11 +12,15 @@ export class ChannelPage extends CommonPage {
 
   readonly inputMessage = (): Locator => this.page.locator('div[class~="text-editor-view"]')
   readonly buttonSendMessage = (): Locator => this.page.locator('g#Send')
-  readonly textMessage = (messageText: string): Locator =>
-    this.page.locator('.hulyComponent .activityMessage', { hasText: messageText })
+  readonly textMessage = (messageText: string, strict = false): Locator =>
+    strict
+      ? this.page.locator('.hulyComponent .activityMessage div[data-delivered]', { hasText: messageText })
+      : this.page.locator('.hulyComponent .activityMessage', { hasText: messageText })
 
-  readonly textMessageInSidebar = (messageText: string): Locator =>
-    this.page.locator('#sidebar .activityMessage', { hasText: messageText })
+  readonly textMessageInSidebar = (messageText: string, strict = false): Locator =>
+    strict
+      ? this.page.locator('#sidebar .activityMessage div[data-delivered]', { hasText: messageText })
+      : this.page.locator('#sidebar .activityMessage', { hasText: messageText })
 
   readonly channelName = (channel: string): Locator => this.page.getByText('general random').getByText(channel)
   readonly channelTab = (): Locator => this.page.getByRole('link', { name: 'Channels' }).getByRole('button')
@@ -99,10 +103,6 @@ export class ChannelPage extends CommonPage {
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
     await this.buttonSendMessage().click()
-    // since we use immediate messages delivery with async processing behind the scenes
-    // let's give it some time to get processed on the backend before proceeding
-    // so it won't interfere with the next steps
-    await this.page.waitForTimeout(500)
   }
 
   async sendMention (message: string, categoryName?: string): Promise<void> {
@@ -297,7 +297,7 @@ export class ChannelPage extends CommonPage {
 
   async checkMessageExist (message: string, messageExists: boolean, messageText: string): Promise<void> {
     if (messageExists) {
-      await expect(this.textMessage(messageText)).toBeVisible()
+      await expect(this.textMessage(messageText, true)).toBeVisible()
     } else {
       await expect(this.textMessage(messageText)).toBeHidden()
     }
@@ -305,7 +305,7 @@ export class ChannelPage extends CommonPage {
 
   async checkIfMessageExistInSidebar (messageExists: boolean, messageText: string): Promise<void> {
     if (messageExists) {
-      await expect(this.textMessageInSidebar(messageText)).toBeVisible()
+      await expect(this.textMessageInSidebar(messageText, true)).toBeVisible()
     } else {
       await expect(this.textMessageInSidebar(messageText)).toBeHidden()
     }
