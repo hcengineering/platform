@@ -114,7 +114,6 @@ interface MenuItem {
     action?: MenuBarAction
     shortcut?: string
     acceleratorChar?: string
-    acceleratorPosition?: number
 }
 
 interface TopLevelMenu {
@@ -143,15 +142,13 @@ export class MenuBuilder {
         shortcut?: string, 
         acceleratorChar: string | null = null
     ): this {
-        const acceleratorPosition: number = 0
         if (topLevelMenuIndex >= 0 && topLevelMenuIndex < this.menus.length) {
             const item: MenuItem = {
                 type: 'item',
                 label,
                 action,
                 shortcut,
-                acceleratorChar: (acceleratorChar || label.charAt(acceleratorPosition)).toLowerCase(),
-                acceleratorPosition
+                acceleratorChar: (acceleratorChar || label.charAt(0)).toLowerCase(),
             }
             this.menus[topLevelMenuIndex].subMenus.push(item)
         }

@@ -39,8 +39,8 @@ describe('TitleBarMenuState', () => {
     })
 
     describe('focusChildMenu', () => {
-        test('when top level menu is expanded', () => {
-            systemUnderTest.expandTopLevelMenu(1)
+        test.each([[0],[1]])('when top level menu %i is expanded', (topLevelMenu: number) => {
+            systemUnderTest.expandTopLevelMenu(topLevelMenu)
             systemUnderTest.focusChildMenu()
             
             expect(systemUnderTest.FocusedChildMenuIndex).toBe(0)

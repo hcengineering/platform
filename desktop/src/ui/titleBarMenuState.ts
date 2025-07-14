@@ -31,7 +31,7 @@ export class TitleBarMenuState {
     }
 
     public focusChildMenu() {
-        if (this.focusedTopLevelMenuIndex && this.topLevelMenuExpanded) {
+        if (null != this.focusedTopLevelMenuIndex && this.topLevelMenuExpanded) {
             this.focusedChildMenuIndex = 0
         }
     }
