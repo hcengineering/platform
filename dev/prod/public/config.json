@@ -26,5 +26,5 @@
   "EXPORT_URL": "http://huly.local:4009",
   "COMMUNICATION_API_ENABLED": "true",
   "BACKUP_URL": "http://huly.local:4039/api/backup",
-  "EXCLUDED_APPLICATIONS_FOR_ANONYMOUS": ["chunter", "notification"]
+  "EXCLUDED_APPLICATIONS_FOR_ANONYMOUS": "[\"chunter\", \"notification\"]"
 }

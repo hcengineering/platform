@@ -413,7 +413,13 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(workbench.metadata.DefaultApplication, myBranding.defaultApplication ?? 'tracker')
   setMetadata(workbench.metadata.DefaultSpace, myBranding.defaultSpace ?? tracker.project.DefaultProject)
   setMetadata(workbench.metadata.DefaultSpecial, myBranding.defaultSpecial ?? 'issues')
-  setMetadata(workbench.metadata.ExcludedApplicationsForAnonymous, config.EXCLUDED_APPLICATIONS_FOR_ANONYMOUS ?? [])
+
+  try {
+    const parsed = JSON.parse(config.EXCLUDED_APPLICATIONS_FOR_ANONYMOUS ?? '')
+    setMetadata(workbench.metadata.ExcludedApplicationsForAnonymous, Array.isArray(parsed) ? parsed : [])
+  } catch (err) {
+    setMetadata(workbench.metadata.ExcludedApplicationsForAnonymous, [])
+  }
 
   initThemeStore()
 
