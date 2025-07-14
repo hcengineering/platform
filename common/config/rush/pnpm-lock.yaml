@@ -5046,7 +5046,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/process-resources@file:projects/process-resources.tgz':
-    resolution: {integrity: sha512-kN4FkgsBPt2QvOYkFMj+jHWgvYoo/OpG7S6mjfmn7AqLECF8QcEzwzdYZqj3vcZKZa1alyxUm3Oi3ihnnIsfcg==, tarball: file:projects/process-resources.tgz}
+    resolution: {integrity: sha512-qmAU4OtWNzBtcDAWQU/vVzZjGFPs4ArGRqcsYVNackrc2Wlr+y4KHSAY6lTKXXEWqykCy3y68ew42ioUO6NY1A==, tarball: file:projects/process-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/process@file:projects/process.tgz':
@@ -5674,7 +5674,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/workbench-resources@file:projects/workbench-resources.tgz':
-    resolution: {integrity: sha512-kwRy9f+T34xUH/Ygl0C64RQf4bzbsrT1v392gf6sv1feZgOF5dRbGrwnVcMZcq1dgOzQKVlZrw+nLMpbKuNwUA==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-Uo+XB8AOQnpA2SwPzuv6VgFkH7uZtAh/KiUYLkSepdfD3Dovbh/8tm4aiFBo0nyE2H6UfbHL50cXzyB6Xi1ILQ==, tarball: file:projects/workbench-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/workbench@file:projects/workbench.tgz':
@@ -23816,6 +23816,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      fast-equals: 5.2.2
       jest: 29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)

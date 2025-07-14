@@ -431,6 +431,7 @@ test.describe('Channel tests', () => {
 
       await channelPage.clickChooseChannel(data.channelName)
       await channelPage.sendMessage('Test message')
+      await channelPage.checkMessageExist('Test message', true, 'Test message')
     })
 
     await test.step('Leave channel #1', async () => {

@@ -169,6 +169,7 @@
     "Customize": "Customize",
     "GuestAccess": "Anonymous guests",
     "GuestAccessDescription": "Allows anonymous users to visit your workspace in read-only mode",
+    "GuestSignUpDescription": "Allows anonymous users to join your workspace as guests with limited editing rights",
     "ManageIdentities": "Manage identities",
     "Release": "Release",
     "ReleaseSocialId": "Release social ID",

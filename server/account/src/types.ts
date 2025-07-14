@@ -108,6 +108,7 @@ export interface Workspace {
   name: string
   url: string
   allowReadOnlyGuest: boolean
+  allowGuestSignUp: boolean
   dataId?: WorkspaceDataId // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
   branding?: string
   location?: Location
@@ -209,6 +210,7 @@ export interface AccountDB {
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
   updateAllowReadOnlyGuests: (workspaceId: WorkspaceUuid, readOnlyGuestsAllowed: boolean) => Promise<void>
+  updateAllowGuestSignUp: (workspaceId: WorkspaceUuid, guestSignUpAllowed: boolean) => Promise<void>
   assignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
   batchAssignWorkspace: (data: [AccountUuid, WorkspaceUuid, AccountRole][]) => Promise<void>
   updateWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
@@ -323,6 +325,7 @@ export interface WorkspaceLoginInfo extends LoginInfo {
   workspaceDataId?: WorkspaceDataId
   endpoint: string
   role: AccountRole
+  allowGuestSignUp?: boolean
 }
 
 export interface OtpInfo {
@@ -359,5 +362,5 @@ export interface AccountAggregatedInfo extends Omit<Account, 'hash' | 'salt'>, P
   uuid: AccountUuid
   integrations: Omit<Integration, 'data'>[]
   socialIds: SocialId[]
-  workspaces: Omit<WorkspaceInfo, 'allowReadOnlyGuest'>[]
+  workspaces: Omit<WorkspaceInfo, 'allowReadOnlyGuest' | 'allowGuestSignUp'>[]
 }

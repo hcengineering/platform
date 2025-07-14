@@ -128,6 +128,7 @@ export default mergeIds(settingId, setting, {
     BetaWarning: '' as IntlString,
     GuestAccess: '' as IntlString,
     GuestAccessDescription: '' as IntlString,
+    GuestSignUpDescription: '' as IntlString,
     ManageIdentities: '' as IntlString,
     AddNew: '' as IntlString,
     Release: '' as IntlString,

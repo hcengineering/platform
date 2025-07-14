@@ -24,7 +24,17 @@ import core, {
   type Space,
   type Tx
 } from '@hcengineering/core'
-import { type Builder, Model, Prop, ReadOnly, TypeAny, TypeBoolean, TypeRef, TypeString } from '@hcengineering/model'
+import {
+  type Builder,
+  Model,
+  Prop,
+  ReadOnly,
+  TypeAny,
+  TypeBoolean,
+  TypeRef,
+  TypeString,
+  UX
+} from '@hcengineering/model'
 import { TDoc } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import { TToDo } from '@hcengineering/model-time'
@@ -165,6 +175,7 @@ export class TExecution extends TDoc implements Execution {
 }
 
 @Model(process.class.ProcessToDo, time.class.ToDo)
+@UX(process.string.ToDo)
 export class TProcessToDo extends TToDo implements ProcessToDo {
   execution!: Ref<Execution>
 

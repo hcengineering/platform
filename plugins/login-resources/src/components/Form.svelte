@@ -48,6 +48,7 @@
 
   const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
     if (ignoreInitialValidation) return true
+
     for (const field of fields) {
       const v = object[field.name]
       const f = field
@@ -97,6 +98,8 @@
   let inAction = false
 
   function performAction (action: Action): void {
+    if (inAction) return
+
     for (const field of fields) {
       trim(field.name)
     }
@@ -126,7 +129,7 @@
       evt.stopPropagation()
       if (!inAction) {
         void validate($themeStore.language).then((res) => {
-          if (res != null) {
+          if (res) {
             performAction(action)
           }
         })
@@ -154,7 +157,7 @@
           label={field.i18n}
           name={field.id}
           password={field.password}
-          disabled={field.disabled}
+          disabled={inAction || field.disabled}
           bind:value={object[field.name]}
           on:input={() => validate($themeStore.language)}
           on:blur={() => {
@@ -179,7 +182,13 @@
         disabled={status.severity !== Severity.OK && status.severity !== Severity.ERROR}
         on:click={(e) => {
           e.preventDefault()
-          performAction(action)
+          if (!inAction) {
+            void validate($themeStore.language).then((res) => {
+              if (res) {
+                performAction(action)
+              }
+            })
+          }
         }}
       />
     </div>

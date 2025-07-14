@@ -169,6 +169,7 @@
     "Customize": "Anpassen",
     "GuestAccess": "Anonyme Gäste",
     "GuestAccessDescription": "Ermöglicht anonymen Benutzern den schreibgeschützten Zugriff auf den Arbeitsbereich",
+    "GuestSignUpDescription": "Ermöglicht anonymen Benutzern den Beitritt zu Ihrem Arbeitsbereich als Gäste mit eingeschränkten Bearbeitungsrechten",
     "ManageIdentities": "Identitäten verwalten",
     "Release": "Freigeben",
     "ReleaseSocialId": "Social ID freigeben",
