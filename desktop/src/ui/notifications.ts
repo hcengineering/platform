@@ -16,8 +16,7 @@ import { activePreferences } from '@hcengineering/desktop-preferences-resources'
 import { getDisplayInboxData, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 import { inboxId } from '@hcengineering/inbox'
 import communication from '@hcengineering/communication'
-
-import { ipcMainExposed } from './types'
+import { ipcMainExposed } from './typesUtils'
 
 let client: TxOperations
 

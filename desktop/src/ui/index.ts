@@ -21,7 +21,8 @@ import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
 import { setupTitleBarMenu } from './titleBarMenu'
 import { defineScreenShare, defineGetDisplayMedia } from './screenShare'
-import { ipcMainExposed, StandardMenuCommandLogout, StandardMenuCommandSelectWorkspace, StandardMenuCommandOpenSettings } from './types'
+import { StandardMenuCommandLogout, StandardMenuCommandSelectWorkspace, StandardMenuCommandOpenSettings } from './types'
+import { ipcMainExposed } from './typesUtils'
 import { themeStore } from '@hcengineering/theme'
 
 defineScreenShare()

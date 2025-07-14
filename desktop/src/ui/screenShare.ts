@@ -3,8 +3,7 @@ import love from '@hcengineering/love'
 import { setCustomCreateScreenTracks } from '@hcengineering/love-resources'
 import { showPopup } from '@hcengineering/ui'
 import { Track, LocalTrack, LocalAudioTrack, LocalVideoTrack, ParticipantEvent, TrackInvalidError, ScreenShareCaptureOptions, DeviceUnsupportedError, ScreenSharePresets } from 'livekit-client'
-
-import { ipcMainExposed } from './types'
+import { ipcMainExposed } from './typesUtils'
 
 export function defineGetDisplayMedia (): void {
   if (navigator?.mediaDevices === undefined) {

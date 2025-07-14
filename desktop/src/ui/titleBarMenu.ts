@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { IPCMainExposed, MenuBarAction, isMenuBarAction } from './types'
+import { IPCMainExposed, MenuBarAction } from './types'
+import { isMenuBarAction } from './typesUtils'
 import { TitleBarMenuState } from './titleBarMenuState'
 
 export function setupTitleBarMenu(ipcMain: IPCMainExposed, root: HTMLElement): MenuBar {

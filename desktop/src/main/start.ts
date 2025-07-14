@@ -25,6 +25,7 @@ import * as path from 'path'
 import { Config, MenuBarAction, NotificationParams, StandardMenuCommandLogout, StandardMenuCommandSelectWorkspace, StandardMenuCommandOpenSettings } from '../ui/types'
 import { getOptions } from './args'
 import { addMenus } from './standardMenu'
+import { dipatchMenuBarAction } from './customMenu'
 import { addPermissionHandlers } from './permissions'
 import autoUpdater from './updater'
 import { generateId } from '@hcengineering/core'
@@ -401,76 +402,8 @@ ipcMain.handle('get-is-os-using-dark-theme', () => {
 });
 
 ipcMain.handle('menu-action', async (_event: any, action: MenuBarAction) => {
-    if (mainWindow == null) {
-      return
-    }
-    function performZoom(increment: number): void {
-      if  (mainWindow == null) {
-        return
-      }
-      const currentZoom = mainWindow.webContents.getZoomFactor();
-      mainWindow.webContents.setZoomFactor(currentZoom + increment);
-    }
-    
-    switch (action) {
-      case 'settings':
-        mainWindow.webContents.send(StandardMenuCommandOpenSettings)
-        break;
-      case 'select-workspace':
-        mainWindow.webContents.send(StandardMenuCommandSelectWorkspace)
-        break;
-      case 'logout':
-        mainWindow.webContents.send(StandardMenuCommandLogout)
-        break;
-      case 'exit':
-        app.quit();
-        break;
-      case 'undo':
-        mainWindow.webContents.undo();
-        break;
-      case 'redo':
-        mainWindow.webContents.redo();
-        break;
-      case 'cut':
-        mainWindow.webContents.cut();
-        break;
-      case 'copy':
-        mainWindow.webContents.copy();
-        break;
-      case 'paste':
-        mainWindow.webContents.paste();
-        break;
-      case 'delete':
-        mainWindow.webContents.delete();
-        break;
-      case 'select-all':
-        mainWindow.webContents.selectAll();
-        break;
-      case 'reload':
-        mainWindow?.reload();
-        break;
-      case 'force-reload':
-        mainWindow.webContents.reloadIgnoringCache();
-        break;
-      case 'toggle-devtools':
-        mainWindow.webContents.toggleDevTools();
-        break;
-      case 'zoom-in':
-        performZoom(+0.1);
-        break;
-      case 'zoom-out':
-        performZoom(-0.1);
-        break;
-      case 'restore-size':
-        mainWindow.webContents.setZoomFactor(1.0);
-        break;
-      case 'toggle-fullscreen':
-        mainWindow.setFullScreen(!mainWindow.isFullScreen()); 
-        break;
-      default:
-        console.log('unknown menu action:', action);
-    }
-  });
+  dipatchMenuBarAction(mainWindow, action)
+});
 
 const gotTheLock = app.requestSingleInstanceLock()
 

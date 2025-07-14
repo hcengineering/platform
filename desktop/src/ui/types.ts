@@ -85,14 +85,10 @@ export interface NotificationParams {
   application: Plugin
 }
 
-const MenuBarActions = ['settings', 'select-workspace', 'logout', 'exit', 'undo', 'redo', 'cut', 'copy', 'paste', 'delete', 'select-all', 'reload', 'force-reload', 'toggle-devtools'
+export const MenuBarActions = ['settings', 'select-workspace', 'logout', 'exit', 'undo', 'redo', 'cut', 'copy', 'paste', 'delete', 'select-all', 'reload', 'force-reload', 'toggle-devtools'
   , 'zoom-in', 'zoom-out', 'restore-size', 'toggle-fullscreen'] as const;
 
 export type MenuBarAction = typeof MenuBarActions[number];
-
-export function isMenuBarAction(value: string): value is MenuBarAction {
-  return MenuBarActions.includes(value as MenuBarAction);
-}
 
 export interface IPCMainExposed {
   setBadge: (badge: number) => void
@@ -120,8 +116,4 @@ export interface IPCMainExposed {
   onWindowStateChange: (callback: (event: IpcRendererEvent, newState: string) => void) => void
   isOsUsingDarkTheme: () => Promise<boolean>
   executeMenuBarAction: (action: MenuBarAction) => void
-}
-
-export function ipcMainExposed(): IPCMainExposed {
-  return (window as any).electron as IPCMainExposed
 }
