@@ -94,9 +94,12 @@
     return result
   }
 
-  $: funcs = client
-    .getModel()
-    .findAllSync(plugin.class.ProcessFunction, { _id: { $in: contextValue.functions?.map((it) => it.func) } })
+  $: funcs =
+    (contextValue.functions?.length ?? 0) > 0
+      ? client
+        .getModel()
+        .findAllSync(plugin.class.ProcessFunction, { _id: { $in: contextValue.functions?.map((it) => it.func) } })
+      : []
 
   $: sourceFunc =
     contextValue.sourceFunction !== undefined

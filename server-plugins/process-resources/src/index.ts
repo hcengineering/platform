@@ -852,11 +852,13 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
   const transitions = control.modelDb.findAllSync(process.class.Transition, { process: _process._id })
   const exists = new Set<ContextId>()
   let changed = false
+  let index = 1
   for (const transition of transitions) {
     for (const action of transition.actions) {
       if (action.context != null) {
         exists.add(action.context._id)
         const method = control.modelDb.findObject(action.methodId)
+        const current = _process.context[action.context._id]
         if (method?.contextClass != null) {
           changed = true
           const ctx: SelectedExecutonContext = {
@@ -865,9 +867,10 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
             key: ''
           }
           _process.context[action.context._id] = {
-            name: '',
+            name: current?.name ?? '',
             _class: action.context._class ?? method.contextClass,
             action: action._id,
+            index: index++,
             producer: transition._id,
             value: ctx
           }
@@ -876,7 +879,6 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
       if (action.result?._id != null) {
         exists.add(action.result._id)
         const context = _process.context[action.result._id]
-        if (context !== undefined) continue
         changed = true
         const ctx: SelectedExecutonContext = {
           type: 'context',
@@ -884,11 +886,12 @@ async function syncContext (control: TriggerControl, _process: Process): Promise
           key: ''
         }
         _process.context[action.result._id] = {
-          name: action.result.name,
+          name: context?.name ?? action.result.name,
           isResult: true,
           type: action.result.type,
           _class: action.result.type._class,
           action: action._id,
+          index: index++,
           producer: transition._id,
           value: ctx
         }

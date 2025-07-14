@@ -39,6 +39,7 @@ export interface ProcessContext {
   name: string
   _class: Ref<Class<Doc>>
   action: StepId
+  index: number
   producer: Ref<Transition>
   isResult?: boolean
   type?: Type<any>

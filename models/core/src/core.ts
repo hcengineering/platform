@@ -150,6 +150,7 @@ export class TAssociation extends TDoc implements Association {
 }
 
 @Model(core.class.Relation, core.class.Doc, DOMAIN_RELATION)
+@UX(core.string.Relation)
 export class TRelation extends TDoc implements Relation {
   docA!: Ref<Doc<Space>>
 
