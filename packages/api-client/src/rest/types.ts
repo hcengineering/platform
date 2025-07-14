@@ -14,18 +14,22 @@
 //
 
 import {
-  PersonId,
-  PersonUuid,
-  SocialIdType,
   type Account,
   type Class,
   type Doc,
   type DocumentQuery,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
   type FindOptions,
   type FulltextStorage,
   type Hierarchy,
   type ModelDb,
+  type OperationDomain,
+  type PersonId,
+  type PersonUuid,
   type Ref,
+  type SocialIdType,
   type Storage,
   type WithLookup
 } from '@hcengineering/core'
@@ -40,6 +44,13 @@ export interface RestClient extends Storage, FulltextStorage {
   ) => Promise<WithLookup<T> | undefined>
 
   getModel: () => Promise<{ hierarchy: Hierarchy, model: ModelDb }>
+
+  domainRequest: <T>(
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ) => Promise<DomainResult<T>>
+
   ensurePerson: (
     socialType: SocialIdType,
     socialValue: string,

@@ -20,11 +20,15 @@ import {
   concatLink,
   type Doc,
   type DocumentQuery,
+  type DomainParams,
+  type DomainRequestOptions,
+  type DomainResult,
   type FindOptions,
   type FindResult,
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
+  OperationDomain,
   PersonId,
   PersonUuid,
   type Ref,
@@ -299,6 +303,31 @@ export class RestClientImpl implements RestClient {
       throw new PlatformError(result.error)
     }
     return result
+  }
+
+  async domainRequest<T>(
+    domain: OperationDomain,
+    params: DomainParams,
+    options?: DomainRequestOptions
+  ): Promise<DomainResult<T>> {
+    const requestUrl = concatLink(this.endpoint, `/api/v1/request/${domain}/${this.workspace}`)
+
+    await this.checkRate()
+    return await withRetry(async () => {
+      const response = await fetch(requestUrl, {
+        method: 'POST',
+        headers: this.jsonHeaders(),
+        keepalive: true,
+        body: JSON.stringify(params)
+      })
+      if (!response.ok) {
+        await this.checkRateLimits(response)
+        throw new PlatformError(unknownError(response.statusText))
+      }
+      this.updateRateLimit(response)
+      const value = await extractJson<T>(response)
+      return { domain, value }
+    }, isRLE)
   }
 
   async ensurePerson (
