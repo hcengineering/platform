@@ -125,6 +125,7 @@ services:
       - ADMIN_EMAILS=admin,${PLATFORM_ADMIN_EMAILS}
       - WORKSPACE_LIMIT_PER_USER=100
       - DB_URL=${MONGO_URL}
+      - PROCEED_V7_MONGO=true
       - REGION_INFO=|America
       - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
