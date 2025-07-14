@@ -83,7 +83,7 @@ export class NotificationQuery implements PagedQuery<Notification, NotificationQ
     }
 
     const res = await this.find(findParams)
-    const isComplete = this.params.limit == null || this.params.strict === true || res.length < this.params.limit
+    const isComplete = this.params.limit == null || this.params.strict === true || res.length <= this.params.limit
     if (!isComplete) res.pop()
 
     const result = new QueryResult(res, (it) => it.id)
