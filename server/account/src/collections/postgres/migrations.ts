@@ -31,7 +31,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV10Migration2(ns),
     getV11Migration(ns),
     getV12Migration(ns),
-    getV13Migration(ns)
+    getV13Migration(ns),
+    getV14Migration(ns)
   ]
 }
 
@@ -411,6 +412,16 @@ function getV13Migration (ns: string): [string, string] {
       FOREIGN KEY (created_by) REFERENCES ${ns}.person(uuid),
     ADD CONSTRAINT workspace_billing_account_person_fk 
       FOREIGN KEY (billing_account) REFERENCES ${ns}.person(uuid);
+    `
+  ]
+}
+
+function getV14Migration (ns: string): [string, string] {
+  return [
+    'account_db_v14_add_allow_guest_signup_flag_to_workspace',
+    `
+    ALTER TABLE ${ns}.workspace
+    ADD COLUMN IF NOT EXISTS allow_guest_sign_up BOOL NOT NULL DEFAULT FALSE;
     `
   ]
 }

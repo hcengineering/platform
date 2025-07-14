@@ -101,6 +101,7 @@ import {
   verifyPassword,
   wrap,
   updateAllowReadOnlyGuests,
+  updateAllowGuestSignUp,
   getWorkspaceByDataId,
   assignableRoles,
   getWorkspacesInfoWithStatusByIds,
@@ -2196,6 +2197,7 @@ export type AccountMethods =
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
   | 'updateAllowReadOnlyGuests'
+  | 'updateAllowGuestSignUp'
   | 'findPersonBySocialId'
   | 'findSocialIdBySocialKey'
   | 'ensurePerson'
@@ -2242,6 +2244,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     deleteWorkspace: wrap(deleteWorkspace),
     updateWorkspaceRole: wrap(updateWorkspaceRole),
     updateAllowReadOnlyGuests: wrap(updateAllowReadOnlyGuests),
+    updateAllowGuestSignUp: wrap(updateAllowGuestSignUp),
     createMailbox: wrap(createMailbox),
     getMailboxes: wrap(getMailboxes),
     deleteMailbox: wrap(deleteMailbox),

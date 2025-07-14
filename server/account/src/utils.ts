@@ -683,6 +683,7 @@ export async function selectWorkspace (
     workspace: workspace.uuid,
     workspaceUrl: workspace.url,
     workspaceDataId: workspace.dataId,
+    allowGuestSignUp: workspace.allowReadOnlyGuest && workspace.allowGuestSignUp,
     role
   }
 }
@@ -739,6 +740,30 @@ export async function updateAllowReadOnlyGuests (
   })
 
   return { guestPerson, guestSocialIds: guestSocialIds.filter((si) => si.isDeleted !== true) }
+}
+
+export async function updateAllowGuestSignUp (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    guestSignUpAllowed: boolean
+  }
+): Promise<void> {
+  const { guestSignUpAllowed } = params
+  const { account, workspace } = decodeTokenVerbose(ctx, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  const accRole = account === systemAccountUuid ? AccountRole.Owner : await db.getWorkspaceRole(account, workspace)
+  if (accRole == null || getRolePower(accRole) < getRolePower(AccountRole.Owner)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  await db.updateAllowGuestSignUp(workspace, guestSignUpAllowed)
 }
 
 export async function updateWorkspaceRole (
@@ -883,6 +908,7 @@ export async function createWorkspaceRecord (
           createdBy: account,
           billingAccount: account,
           allowReadOnlyGuest: false,
+          allowGuestSignUp: false,
           region
         },
         {
@@ -1191,7 +1217,7 @@ export async function getWorkspaceJoinInfo (
   }
   if (workspaceUrl !== undefined && workspaceUrl !== '' && workspaceUrl !== null) {
     const workspace = await getWorkspaceByUrl(db, workspaceUrl)
-    if (workspace == null || !workspace.allowReadOnlyGuest) {
+    if (workspace == null || !workspace.allowReadOnlyGuest || !workspace.allowGuestSignUp) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
     }
     return {
@@ -1221,7 +1247,7 @@ export async function doJoinByInvite (
       await db.updateWorkspaceRole(account, workspace.uuid, invite.role)
     }
     await useInvite(db, invite.id)
-  } else if (workspace.allowReadOnlyGuest) {
+  } else if (workspace.allowReadOnlyGuest && workspace.allowGuestSignUp) {
     if (role == null) {
       await db.assignWorkspace(account, workspace.uuid, AccountRole.Guest)
     }
