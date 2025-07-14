@@ -97,7 +97,8 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
       ctx.error('failed to map-installation', {
         workspace: tok.workspace,
         installationid: payloadData.installationId,
-        email: tok?.account
+        email: tok?.account,
+        error: err.message
       })
       res.status(401)
       res.json({ error: err.message })

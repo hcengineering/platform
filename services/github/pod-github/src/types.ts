@@ -188,7 +188,7 @@ export interface DocSyncManager {
  * @public
  */
 export interface GithubIntegrationRecord {
-  installationId: number
+  installationId: number[]
   workspace: WorkspaceUuid
   accountId: PersonId
 }

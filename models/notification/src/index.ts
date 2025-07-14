@@ -390,7 +390,8 @@ export function createModel (builder: Builder): void {
       alias: notificationId,
       hidden: true,
       locationResolver: notification.resolver.Location,
-      component: notification.component.Inbox
+      component: notification.component.Inbox,
+      order: 50
     },
     notification.app.Inbox
   )
