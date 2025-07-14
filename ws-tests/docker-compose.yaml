@@ -137,7 +137,7 @@ services:
       - ADMIN_EMAILS=admin,${PLATFORM_ADMIN_EMAILS}
       - STATS_URL=http://huly.local:4901
       - WORKSPACE_LIMIT_PER_USER=100
-      - DB_URL=${MONGO_URL}
+      - DB_URL=${DB_EU_URL}
       # - REGION_INFO=|America;europe| # Europe without name will not be available for creation of new workspaces.
       - REGION_INFO=|America;europe|Europe
       - TRANSACTOR_URL=ws://huly.local:3334;ws://huly.local:3334,ws://huly.local:3335;ws://huly.local:3335;europe
