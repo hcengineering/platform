@@ -14,7 +14,6 @@
   "LAST_NAME_FIRST": "true",
   "PRINT_URL": "http://huly.local:4005",
   "SIGN_URL": "http://huly.local:4006",
-  "ANALYTICS_COLLECTOR_URL": "http://huly.local:4017",
   "AI_URL": "http://huly.local:4010",
   "BRANDING_URL": "/branding.json",
   "VERSION": null,
@@ -26,5 +25,6 @@
   "CALDAV_SERVER_URL": "http://huly.local:9070",
   "EXPORT_URL": "http://huly.local:4009",
   "COMMUNICATION_API_ENABLED": "true",
-  "BACKUP_URL": "http://huly.local:4039/api/backup"
+  "BACKUP_URL": "http://huly.local:4039/api/backup",
+  "EXCLUDED_APPLICATIONS_FOR_ANONYMOUS": "[\"chunter\", \"notification\"]"
 }

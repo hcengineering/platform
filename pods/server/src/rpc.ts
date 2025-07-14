@@ -345,6 +345,15 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     })
   })
 
+  app.post('/api/v1/request/:domain/:workspaceId', (req, res) => {
+    void withSession(req, res, async (ctx, session) => {
+      const domain = req.params.domain as OperationDomain
+      const params = retrieveJson(req)
+      const { result } = await session.domainRequestRaw(ctx, domain, params)
+      await sendJson(req, res, result.value)
+    })
+  })
+
   app.post('/api/v1/ensure-person/:workspaceId', (req, res) => {
     void withSession(req, res, async (ctx, session, rateLimit, token) => {
       const { socialType, socialValue, firstName, lastName } = (await retrieveJson(req)) ?? {}

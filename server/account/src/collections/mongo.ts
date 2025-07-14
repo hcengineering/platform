@@ -598,6 +598,15 @@ export class MongoAccountDB implements AccountDB {
     )
   }
 
+  async updateAllowGuestSignUp (workspaceId: WorkspaceUuid, guestSignUpAllowed: boolean): Promise<void> {
+    await this.workspace.update(
+      {
+        uuid: workspaceId
+      },
+      { allowGuestSignUp: guestSignUpAllowed }
+    )
+  }
+
   async getPendingWorkspace (
     region: string,
     version: Data<Version>,

@@ -2,6 +2,7 @@
   import { Button, navigate, Notification, NotificationToast } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getCurrentWorkspaceUrl } from '@hcengineering/presentation'
+  import { allowGuestSignUpStore } from '../utils'
 
   export let onRemove: () => void
   export let notification: Notification
@@ -16,7 +17,11 @@
     {notification.subTitle}
   </svelte:fragment>
   <svelte:fragment slot="buttons">
-    <Button label={view.string.ReadOnlyJoinWorkspace} stopPropagation={false} on:click={joinWorkspace} />
+    {#if $allowGuestSignUpStore}
+      <Button label={view.string.ReadOnlyJoinWorkspace} stopPropagation={false} on:click={joinWorkspace} />
+    {:else}
+      <div style="width: auto" />
+    {/if}
     <a href="https://huly.io/signup" target="_blank">
       <Button label={view.string.ReadOnlySignUp} stopPropagation={false} />
     </a>

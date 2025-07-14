@@ -111,6 +111,7 @@ import MasterDetailView from './components/masterDetail/MasterDetailView.svelte'
 import AssociationPresenter from './components/AssociationPresenter.svelte'
 import TreeView from './components/TreeView.svelte'
 import MasterDetailBrowser from './components/masterDetail/MasterDetailBrowser.svelte'
+import ReadOnlyNotification from './components/ReadOnlyNotification.svelte'
 
 import { blobImageMetadata, blobVideoMetadata } from './blob'
 
@@ -329,7 +330,8 @@ export default async (): Promise<Resources> => ({
     MasterDetailView,
     AssociationPresenter,
     TreeView,
-    MasterDetailBrowser
+    MasterDetailBrowser,
+    ReadOnlyNotification
   },
   popup: {
     PositionElementAlignment

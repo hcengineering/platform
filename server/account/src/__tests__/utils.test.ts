@@ -1941,7 +1941,8 @@ describe('account utils', () => {
       uuid: 'test-workspace-uuid' as WorkspaceUuid,
       name: 'Test Workspace',
       url: 'test-workspace',
-      allowReadOnlyGuest: false
+      allowReadOnlyGuest: false,
+      allowGuestSignUp: false
     }
 
     test('should generate invite email content', async () => {

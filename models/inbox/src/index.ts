@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { AccountRole } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import workbench from '@hcengineering/model-workbench'
@@ -33,10 +32,10 @@ export function createModel (builder: Builder): void {
       label: inbox.string.Inbox,
       icon: inbox.icon.Inbox,
       alias: inboxId,
-      accessLevel: AccountRole.User,
       hidden: false,
       component: inbox.component.InboxApplication,
-      position: 'bottom'
+      position: 'top',
+      order: 100
     },
     inbox.app.Inbox
   )

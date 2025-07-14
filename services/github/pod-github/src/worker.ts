@@ -1330,18 +1330,24 @@ export class GithubWorker implements IntegrationManager {
   }
 
   async checkMapping (): Promise<void> {
-    for (const intgr of this.platform.integrations.filter((it) => it.workspace === this.workspace.uuid)) {
+    const installations = new Map<number, PersonId>()
+    for (const integeration of this.platform.integrations.filter((it) => it.workspace === this.workspace.uuid)) {
+      for (const installationId of integeration.installationId) {
+        installations.set(installationId, integeration.accountId)
+      }
+    }
+    for (const [installationId, accountId] of installations.entries()) {
       const integration = await this._client.findOne(github.class.GithubIntegration, {
-        installationId: intgr.installationId
+        installationId
       })
-      const installation = this.installations.get(intgr.installationId) as InstallationRecord
+      const installation = this.installations.get(installationId) as InstallationRecord
       if (integration === undefined && installation !== undefined) {
         await this._client.createDoc(
           github.class.GithubIntegration,
           core.space.Configuration,
           {
             alive: !installation.suspended,
-            installationId: intgr.installationId,
+            installationId,
             clientId: config.ClientID,
             name: installation.installationName,
             nodeId: installation.loginNodeId,
@@ -1349,7 +1355,7 @@ export class GithubWorker implements IntegrationManager {
           },
           generateId(),
           Date.now(),
-          intgr.accountId
+          accountId
         )
         this.triggerUpdate()
       } else if (integration !== undefined) {

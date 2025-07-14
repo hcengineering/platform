@@ -179,7 +179,8 @@ const view = plugin(viewId, {
     FoldersBrowser: '' as AnyComponent,
     PersonIdPresenter: '' as AnyComponent,
     PersonIdFilter: '' as AnyComponent,
-    RolePresenter: '' as AnyComponent
+    RolePresenter: '' as AnyComponent,
+    ReadOnlyNotification: '' as AnyComponent
   },
   ids: {
     IconWithEmoji: '' as Asset

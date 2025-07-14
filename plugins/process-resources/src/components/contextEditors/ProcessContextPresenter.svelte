@@ -19,6 +19,7 @@
   export let context: ProcessContext
 </script>
 
+{context.index} ->
 {#if context.name !== undefined && context.name !== ''}
   {context.name}
 {:else}

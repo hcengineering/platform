@@ -144,7 +144,7 @@
     align-items: center;
     justify-content: space-between;
     min-height: 2.5rem;
-    border: 0.0625rem solid var(--theme-refinput-border);
+    border: 1px solid var(--theme-refinput-border);
     border-radius: 0.375rem;
     max-width: 100%;
     width: 100%;

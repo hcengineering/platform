@@ -74,13 +74,18 @@ import core, {
   type Client as PlatformClient,
   SocialIdType,
   type Tx,
-  type TxDomainEvent
+  type TxDomainEvent,
+  AccountRole
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
 import { generateLinkPreviewId } from '@hcengineering/communication-shared'
+import { addNotification, NotificationSeverity, languageStore } from '@hcengineering/ui'
+import { translate } from '@hcengineering/platform'
+import view from '@hcengineering/view'
 
 import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
 import { addTxListener, removeTxListener, type TxListener } from './utils'
+import { get } from 'svelte/store'
 
 export {
   createCollaboratorsQuery,
@@ -437,6 +442,19 @@ class Client {
   }
 
   private async sendEvent (event: Event): Promise<EventResult> {
+    const lang = get(languageStore)
+    if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) {
+      addNotification(
+        await translate(view.string.ReadOnlyWarningTitle, {}, lang),
+        await translate(view.string.ReadOnlyWarningMessage, {}, lang),
+        view.component.ReadOnlyNotification,
+        undefined,
+        NotificationSeverity.Info,
+        'readOnlyNotification'
+      )
+      return {}
+    }
+
     const ev: Event = { ...event, _id: generateId() }
 
     const eventPromise: Promise<EventResult> = this.connection
