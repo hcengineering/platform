@@ -2,7 +2,7 @@
   "string": {
     "MessageID": "MessageID",
     "IntegrationLabel": "Gmail",
-    "IntegrationDescription": "Integrate with Gmail",
+    "IntegrationDescription": "Connect your Gmail account to send, receive, and manage emails",
     "SharedMessages": "shared emails",
     "To": "To:",
     "From": "From:",

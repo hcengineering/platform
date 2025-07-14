@@ -15,7 +15,7 @@
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 
-import { type MeasureContext, PersonId } from '@hcengineering/core'
+import { type MeasureContext, PersonId, WorkspaceUuid } from '@hcengineering/core'
 import { type KeyValueClient } from '@hcengineering/kvs-client'
 import { SyncMutex, type SyncOptions } from '@hcengineering/mail-common'
 
@@ -33,7 +33,7 @@ export class SyncManager {
     private readonly ctx: MeasureContext,
     private readonly messageManager: IMessageManager,
     private readonly gmail: gmail_v1.Resource$Users,
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceUuid,
     keyValueClient: KeyValueClient,
     private readonly rateLimiter: RateLimiter
   ) {

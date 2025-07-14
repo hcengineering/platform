@@ -59,6 +59,18 @@
     "ConnectTelegramBot": "Telegram-Bot verbinden",
     "DisconnectMessage": "⚠️Sie wurden vom Dienst getrennt. Bitte verbinden Sie Ihr Konto in {app} erneut mit /{command}.",
     "SyncAllChannels": "Alle Kanäle synchronisieren",
-    "SyncStarredChannels": "Markierte Kanäle synchronisieren"
+    "SyncStarredChannels": "Markierte Kanäle synchronisieren",
+    "Public": "Öffentlich",
+    "Private": "Privat",
+    "TotalChannels": "Insgesamt Kanäle",
+    "SyncEnabled": "Synchronisierung aktiviert",
+    "SyncDisabled": "Synchronisierung deaktiviert",
+    "SelectAll": "Alle auswählen",
+    "Selected": "Ausgewählt",
+    "EnableSync": "Synchronisierung aktivieren",
+    "DisableSync": "Synchronisierung deaktivieren",
+    "SelectAccess": "Zugriff auswählen",
+    "ConfigureIntegration": "Integration konfigurieren",
+    "Apply": "Anwenden"
   }
 }

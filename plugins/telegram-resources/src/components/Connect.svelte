@@ -19,6 +19,7 @@
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
   import { command, list, type Integration } from '../api'
+  import ChannelsConfig from './config/ChannelsConfig.svelte'
 
   let phone: string = ''
   let code: string = ''
@@ -32,7 +33,7 @@
   }
 
   interface UIState {
-    mode: 'Loading' | 'WantPhone' | 'WantCode' | 'WantPassword' | 'Authorized' | 'Unauthorized' | 'Error'
+    mode: 'Loading' | 'WantPhone' | 'WantCode' | 'WantPassword' | 'Authorized' | 'Configured' | 'Unauthorized' | 'Error'
     hint?: string
 
     buttons?: {
@@ -155,6 +156,9 @@
   void init()
 </script>
 
+{#if state.mode === 'Authorized'}
+<ChannelsConfig/>
+{:else}
 <div class="card">
   <div class="flex-between header">
     <div class="overflow-label fs-title"><Label label={telegram.string.ConnectFull} /></div>
@@ -209,6 +213,7 @@
     </div>
   </div>
 </div>
+{/if}
 
 <style lang="scss">
   .card {

@@ -28,7 +28,7 @@ import type {
 import type { Metadata, Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, Resource, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
-import { AnyComponent } from '@hcengineering/ui'
+import { Action, AnyComponent } from '@hcengineering/ui'
 
 import { SpaceTypeCreator, SpaceTypeEditor } from './spaceTypeEditor'
 
@@ -58,8 +58,9 @@ export interface IntegrationType extends Doc {
   createComponent?: AnyComponent
   onDisconnect?: Handler
   reconnectComponent?: AnyComponent
-
   configureComponent?: AnyComponent
+
+  getActions?: Resource<(integration?: Integration) => Promise<Action[]>>
 }
 
 /**
@@ -272,7 +273,12 @@ export default plugin(settingId, {
     Customize: '' as IntlString,
     CodeSent: '' as IntlString,
     SendAgain: '' as IntlString,
-    SendAgainIn: '' as IntlString
+    SendAgainIn: '' as IntlString,
+    AllIntegrations: '' as IntlString,
+    ConnectedIntegrations: '' as IntlString,
+    AvailableIntegrations: '' as IntlString,
+    Connect: '' as IntlString,
+    Integrate: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

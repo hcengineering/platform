@@ -176,6 +176,12 @@
     "ReleasePrimarySocialId": "プライマリソーシャルIDをリリース",
     "ReleasePrimarySocialIdConfirm": "現在のプライマリソーシャルIDをリリースするには、ページの再読み込みが必要です。続行してもよろしいですか？",
     "Login": "ログイン",
-    "Primary": "プライマリ"
+    "Primary": "プライマリ",
+    "MyIntegrations": "マイインテグレーション",
+    "AllIntegrations": "すべてのインテグレーション",
+    "ConnectedIntegrations": "接続されたインテグレーション",
+    "AvailableIntegrations": "利用可能なインテグレーション",
+    "Connect": "接続",
+    "Integrate": "統合"
   }
 }

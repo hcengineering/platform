@@ -59,6 +59,18 @@
     "ConnectTelegramBot": "Conectar bot de Telegram",
     "DisconnectMessage": "⚠️Te has desconectado del servicio. Por favor, vuelve a conectar tu cuenta en {app} usando /{command}.",
     "SyncAllChannels": "Sincronizar todos los canales",
-    "SyncStarredChannels": "Sincronizar canales marcados"
+    "SyncStarredChannels": "Sincronizar canales marcados",
+    "Public": "úblico",
+    "Private": "Privado",
+    "TotalChannels": "Total de canales",
+    "SyncEnabled": "Sincronización habilitada",
+    "SyncDisabled": "Sincronización deshabilitada",
+    "SelectAll": "Seleccionar todo",
+    "Selected": "Seleccionado",
+    "EnableSync": "Habilitar sincronización",
+    "DisableSync": "Deshabilitar sincronización",
+    "SelectAccess": "Seleccionar acceso",
+    "ConfigureIntegration": "Configurar integración",
+    "Apply": "Aplicar"
   }
 }

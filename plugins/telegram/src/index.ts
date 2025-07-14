@@ -16,7 +16,7 @@
 import { ChannelItem } from '@hcengineering/contact'
 import { AttachedDoc, Class, Doc, IntegrationKind, Ref, Timestamp } from '@hcengineering/core'
 import { NotificationProvider, NotificationType } from '@hcengineering/notification'
-import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
 import { TemplateField } from '@hcengineering/templates'
@@ -128,5 +128,9 @@ export default plugin(telegramId, {
     TelegramIntegrationDesc2: '' as IntlString,
     ToSetupNotification: '' as IntlString,
     TelegramNotificationPath: '' as IntlString
+  },
+  icon: {
+    Shared: '' as Asset,
+    Locked: '' as Asset
   }
 })

@@ -176,6 +176,12 @@
     "ReleasePrimarySocialId": "Libérer l'ID social principal",
     "ReleasePrimarySocialIdConfirm": "Libérer votre ID social principal actuel nécessitera de recharger la page. Êtes-vous sûr de vouloir continuer ?",
     "Login": "Connexion",
-    "Primary": "Principal"
+    "Primary": "Principal",
+    "MyIntegrations": "Mes intégrations",
+    "AllIntegrations": "Toutes",
+    "ConnectedIntegrations": "Connectées",
+    "AvailableIntegrations": "Disponibles",
+    "Connect": "Connecter",
+    "Integrate": "Intégrer"
   }
 }

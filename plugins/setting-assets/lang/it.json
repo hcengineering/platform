@@ -176,6 +176,12 @@
     "ReleasePrimarySocialId": "Rilascia ID social primario",
     "ReleasePrimarySocialIdConfirm": "Rilasciare il tuo ID social primario attuale richiederà il ricaricamento della pagina. Sei sicuro di voler procedere?",
     "Login": "Accesso",
-    "Primary": "Primario"
+    "Primary": "Primario",
+    "MyIntegrations": "Le mie integrazioni",
+    "AllIntegrations": "Tutte",
+    "ConnectedIntegrations": "Connesse",
+    "AvailableIntegrations": "Disponibili",
+    "Connect": "Connetti",
+    "Integrate": "Integra"
   }
 }

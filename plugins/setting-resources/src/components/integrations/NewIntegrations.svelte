@@ -1,0 +1,179 @@
+<!--
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { onMount } from 'svelte'
+  import { createQuery, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
+  import { type IntegrationType, IntegrationError } from '@hcengineering/setting'
+  import setting from '@hcengineering/setting'
+  import { type Integration } from '@hcengineering/account-client'
+  import { Header, Breadcrumb, NotificationSeverity, addNotification, themeStore, TabItem, Switcher } from '@hcengineering/ui'
+  import { translate } from '@hcengineering/platform'
+
+  import IntegrationCard from './IntegrationCard.svelte'
+  import IntegrationErrorNotification from '../IntegrationErrorNotification.svelte'
+  import { getAccountClient } from '../../utils'
+
+  const typeQuery = createQuery()
+
+  const accountClient = getAccountClient()
+
+  let connections: Integration[] = []
+  let integrations: Integration[] = []
+  let integrationTypes: IntegrationType[] = []
+
+  const viewslist: TabItem[] = [
+    { id: 'all', labelIntl: setting.string.AllIntegrations },
+    { id: 'connected', labelIntl: setting.string.ConnectedIntegrations },
+    { id: 'available', labelIntl: setting.string.AvailableIntegrations }
+  ]
+  let mode: 'all' | 'connected' | 'available' = 'all'
+
+  typeQuery.query(setting.class.IntegrationType, {}, (res) => {
+    integrationTypes = res
+  })
+
+  function getIntegrations (type: IntegrationType, integrations: Integration[]): Integration[] {
+    return integrations.filter((p) => p.kind === type.kind)
+  }
+
+  onMount(async () => {
+    const workspace = getCurrentWorkspaceUuid()
+    connections = await accountClient.listIntegrations({ workspaceUuid: null })
+    integrations = await accountClient.listIntegrations({ workspaceUuid: workspace }) // Do not pass social ID, since method should set all account social IDs by default
+    // Check URL parameters for error message
+    const urlParams = new URLSearchParams(window.location.search)
+    const error = urlParams.get('integrationError')
+
+    if (error != null) {
+      const decodedError = decodeURIComponent(error)
+      console.error('Integration error:', decodedError)
+      await showErrorNotification(decodedError)
+      // Clean up integrationError parameter from the URL
+      urlParams.delete('integrationError')
+      const newParams = urlParams.toString()
+      const newUrl =
+        window.location.pathname + (newParams != null && newParams !== '' ? `?${newParams}` : '') + window.location.hash
+      window.history.replaceState({}, document.title, newUrl)
+    }
+  })
+
+  async function showErrorNotification (error: string): Promise<void> {
+    const errorMessage =
+      error === IntegrationError.EMAIL_IS_ALREADY_USED
+        ? await translate(setting.string.EmailIsUsed, {}, $themeStore.language)
+        : await translate(setting.string.IntegrationError, {}, $themeStore.language)
+    addNotification(
+      await translate(setting.string.IntegrationFailed, {}, $themeStore.language),
+      errorMessage,
+      IntegrationErrorNotification,
+      undefined,
+      NotificationSeverity.Error
+    )
+  }
+
+  interface IntegrationInfo {
+    integrationType?: IntegrationType
+    integration?: Integration
+  }
+
+  function getFilteredIntegrationTypes (mode: string, integrationTypes: IntegrationType[], integrations: Integration[]): IntegrationInfo[] {
+    if (mode === 'available') {
+      return integrationTypes.map(integrationType => ({ integrationType }))
+    }
+
+    if (mode === 'connected') {
+      // Show integration types that have at least one connected integration
+      return integrations.map(integration => {
+        const type = integrationTypes.find(type => type.kind === integration.kind)
+        return {
+          integrationType: type,
+          integration
+        }
+      })
+    }
+    // all integration and types
+    const filteredIntegrations = integrationTypes.flatMap(integrationType => {
+      let allIntegrations = getIntegrations(integrationType, integrations)
+      const availableConnections = connections.filter((connection) => {
+        const type = integrationType.kind === 'telegram-bot' ? 'hulygram' : integrationType.kind // TODO: Fix
+        return connection.kind === type && allIntegrations.every((integration) => integration.socialId !== connection.socialId)
+      })
+      if (availableConnections.length > 0) {
+        allIntegrations = [...allIntegrations, ...availableConnections]
+      }
+      const integrationInfo = allIntegrations.map(integration => ({
+        integrationType,
+        integration
+      }))
+      if (integrationInfo.length === 0 || integrationType.allowMultiple || integrationType.kind === 'telegram-bot') { // TODO: Fix it
+        return [...integrationInfo, { integrationType }]
+      }
+      return integrationInfo
+    })
+    console.log('Filtered Integrations:', filteredIntegrations)
+    return filteredIntegrations
+  }
+
+  // Reactive statement to get filtered integration types
+  $: filteredIntegrationTypes = getFilteredIntegrationTypes(mode, integrationTypes, integrations)
+
+  function getIntegrationKey (integrationInfo: IntegrationInfo): string {
+    const { integration, integrationType } = integrationInfo
+    if (integration === undefined && integrationType !== undefined) {
+      return integrationType._id
+    } else if (integration !== undefined) {
+      return `${integration.kind}-${integration.socialId}-${integration.workspaceUuid}`
+    }
+    return 'unknown'
+  }
+</script>
+
+<div class="hulyComponent">
+  <Header adaptive={'disabled'}>
+    <Breadcrumb icon={setting.icon.Integrations} label={setting.string.Integrations} size={'large'} isCurrent />
+    <svelte:fragment slot="extra">
+      <Switcher
+        name={'integrations-mode-view'}
+        items={viewslist}
+        kind={'subtle'}
+        selected={mode}
+        on:select={(result) => {
+          if (result.detail !== undefined) mode = result.detail.id
+        }}
+      />
+    </svelte:fragment>
+  </Header>
+  <div class="cards_grid">
+    {#each filteredIntegrationTypes as integrationInfo (getIntegrationKey(integrationInfo))}
+      {#if integrationInfo.integrationType !== undefined}
+        <IntegrationCard
+          integration={integrationInfo.integration}
+          integrationType={integrationInfo.integrationType}
+        />
+      {/if}
+    {/each}
+  </div>
+</div>
+
+<style lang="scss">
+  .cards_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    grid-auto-rows: minmax(13.5rem, auto);
+    grid-gap: 1.5rem;
+    padding: 1.5rem;
+    overflow: auto;
+  }
+</style>

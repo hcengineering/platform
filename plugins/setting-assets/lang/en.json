@@ -176,6 +176,12 @@
     "ReleasePrimarySocialId": "Release primary social ID",
     "ReleasePrimarySocialIdConfirm": "Releasing your current primary social id will require the page to be reloaded. Are you sure you want to proceed?",
     "Login": "Login",
-    "Primary": "Primary"
+    "Primary": "Primary",
+    "MyIntegrations": "My integrations",
+    "AllIntegrations": "All",
+    "ConnectedIntegrations": "Integrated",
+    "AvailableIntegrations": "Available",
+    "Connect": "Connect",
+    "Integrate": "Integrate"
   }
 }

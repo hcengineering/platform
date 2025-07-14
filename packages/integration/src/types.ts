@@ -13,11 +13,17 @@
 // limitations under the License.
 //
 
-import { WorkspaceUuid } from '@hcengineering/core'
+import { IntegrationKind, WorkspaceUuid } from '@hcengineering/core'
 
 export type IntegrationStatus = 'active' | 'inactive' | 'connecting' | 'disconnecting' | 'error' | 'unknown'
 
 export type ActionKind = 'connect' | 'disconnect' | 'reconnect' | 'update' | 'delete'
+
+export interface IntegrationData {
+  _id: string | undefined
+  connectionId: string | undefined
+  config: Record<string, any>
+}
 
 export interface ActionRequest {
   /**
@@ -36,37 +42,186 @@ export interface ActionRequest {
   data?: Record<string, any>
 }
 
+export interface ActionResponse {
+  /**
+   * Whether the action was successful
+   */
+  success: boolean
+
+  /**
+   * Action result data, if any
+   */
+  data?: Record<string, any>
+
+  /**
+   * Error message if the action failed
+   */
+  error?: string
+
+  /**
+   * Updated integration status after the action
+   */
+  status?: IntegrationStatus
+}
+
+export interface IntegrationInfo {
+  /**
+   * Unique identifier for the integration
+   */
+  id: string
+
+  /**
+   * Integration kind (gmail, slack, github, etc.)
+   */
+  kind: string
+
+  /**
+   * Current status of the integration
+   */
+  status: IntegrationStatus
+
+  /**
+   * Last sync timestamp
+   */
+  lastSync?: Date
+
+  /**
+   * Error information if status is 'error'
+   */
+  error?: {
+    message: string
+    code?: string
+    timestamp: Date
+  }
+}
+
 /**
- * Client for interacting with different integrations like Gmail, Github, Telegram, etc.
- * @public
+ * Integration-specific configuration
  */
-export interface IntegrationStateClient<T> {
+export type IntegrationConfig = Record<string, any>
+
+export interface IntegrationClient {
   /**
-   * Get the current integration state
-   * @returns Promise that resolves to the current state, or null if no state exists
-   * @throws {Error} If state retrieval fails
+   * Connect to an integration service
+   * @param workspace - The workspace UUID
+   * @param integrationId - The integration identifier
+   * @param config - Optional configuration
+   * @returns Promise that resolves to connection result
+   * @throws {ConnectionError} If connection fails
    */
-  getState: (workspace: WorkspaceUuid, integrationId: string) => Promise<T | null>
+  connect: (workspace: WorkspaceUuid, integrationId: string, config?: IntegrationConfig) => Promise<ActionResponse>
 
   /**
-   * Set the integration state
-   * @param value - The state value to store
-   * @returns Promise that resolves when the state is updated
-   * @throws {ValidationError} If the state value is invalid
+   * Disconnect from an integration service
+   * @param workspace - The workspace UUID
+   * @param integrationId - The integration identifier
+   * @param force - Whether to force disconnect even if cleanup fails
+   * @returns Promise that resolves when disconnected
+   * @throws {DisconnectionError} If disconnection fails
    */
-  setState: (workspace: WorkspaceUuid, integrationId: string, value: T) => Promise<void>
+  disconnect: (workspace: WorkspaceUuid, integrationId: string, force?: boolean) => Promise<ActionResponse>
 
   /**
-   * Update the integration state
-   * @param value - The state value to store
-   * @returns Promise that resolves when the state is updated
-   * @throws {ValidationError} If the state value is invalid
+   * Reconnect to an integration service (disconnect + connect)
+   * @param workspace - The workspace UUID
+   * @param integrationId - The integration identifier
+   * @param credentials - Updated authentication credentials
+   * @returns Promise that resolves to reconnection result
    */
-  updateState: (workspace: WorkspaceUuid, integrationId: string, value: Partial<T>) => Promise<void>
+  reconnect: (workspace: WorkspaceUuid, integrationId: string) => Promise<ActionResponse>
 
   /**
-   * Clear the stored integration state
-   * @returns Promise that resolves when the state is cleared
+   * Update integration configuration
+   * @param workspace - The workspace UUID
+   * @param integrationId - The integration identifier
+   * @param config - Configuration updates
+   * @returns Promise that resolves when configuration is updated
+   * @throws {ConfigurationError} If configuration is invalid
    */
-  clearState: (workspace: WorkspaceUuid, integrationId: string) => Promise<void>
+  configure: (
+    workspace: WorkspaceUuid,
+    integrationId: string,
+    config: Partial<IntegrationConfig>
+  ) => Promise<ActionResponse>
+
+  /**
+   * Test integration connection
+   * @param workspace - The workspace UUID
+   * @param integrationId - The integration identifier
+   * @returns Promise that resolves to test result
+   */
+  test: (workspace: WorkspaceUuid, integrationId: string) => Promise<ActionResponse>
+
+  /**
+   * Get integration information and status
+   * @param workspace - The workspace UUID
+   * @param integrationId - The integration identifier
+   * @returns Promise that resolves to integration info
+   */
+  getInfo: (workspace: WorkspaceUuid, integrationId: string) => Promise<IntegrationInfo | null>
+
+  /**
+   * Delete an integration permanently
+   * @param workspace - The workspace UUID
+   * @param integrationId - The integration identifier
+   * @param cleanup - Whether to cleanup associated data
+   * @returns Promise that resolves when integration is deleted
+   */
+  delete: (workspace: WorkspaceUuid, integrationId: string, cleanup?: boolean) => Promise<ActionResponse>
+
+  /**
+   * Enable or disable an integration
+   * @param workspace - The workspace UUID
+   * @param integrationId - The integration identifier
+   * @param enabled - Whether to enable or disable
+   * @returns Promise that resolves when status is updated
+   */
+  setEnabled: (workspace: WorkspaceUuid, integrationId: string, enabled: boolean) => Promise<ActionResponse>
+
+  /**
+   * Execute a custom action on the integration
+   * @param workspace - The workspace UUID
+   * @param integrationId - The integration identifier
+   * @param action - Custom action to execute
+   * @returns Promise that resolves to action result
+   */
+  executeAction: (workspace: WorkspaceUuid, integrationId: string, action: ActionRequest) => Promise<ActionResponse>
+
+  getIntegrationKind: () => IntegrationKind
+}
+
+/**
+ * Integration-specific error types
+ */
+export class IntegrationError extends Error {
+  constructor (
+    message: string,
+    public code: string,
+    public integrationId: string,
+    public workspace: WorkspaceUuid
+  ) {
+    super(message)
+    this.name = 'IntegrationError'
+  }
+}
+
+export class ConnectionError extends IntegrationError {
+  constructor (message: string, integrationId: string, workspace: WorkspaceUuid) {
+    super(message, 'CONNECTION_ERROR', integrationId, workspace)
+    this.name = 'ConnectionError'
+  }
+}
+
+export class ConfigurationError extends IntegrationError {
+  constructor (message: string, integrationId: string, workspace: WorkspaceUuid) {
+    super(message, 'CONFIGURATION_ERROR', integrationId, workspace)
+    this.name = 'ConfigurationError'
+  }
+}
+
+export class DisconnectionError extends IntegrationError {
+  constructor (message: string, integrationId: string, workspace: WorkspaceUuid) {
+    super(message, 'DISCONNECTION_ERROR', integrationId, workspace)
+    this.name = 'DisconnectionError'
+  }
 }

@@ -19,6 +19,18 @@ import presentation from '@hcengineering/presentation'
 
 export type Integration = { status: 'authorized' | 'wantcode' | 'wantpassword', number: string } | 'Loading' | 'Missing'
 
+export interface TelegramChannel {
+  id: string
+  name: string
+  type: string
+  mode: string
+}
+
+export interface TelegramChannelConfig extends TelegramChannel {
+  access: 'public' | 'private'
+  syncEnabled: boolean
+}
+
 const url = getMetadata(telegram.metadata.TelegramURL) ?? ''
 
 async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?: any): Promise<any> {
@@ -42,6 +54,10 @@ async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?:
 
 export async function list (): Promise<Integration[]> {
   return await request('GET')
+}
+
+export async function listChannels (phone: string): Promise<TelegramChannel[]> {
+  return await request('GET', `${phone}/chats`)
 }
 
 export async function command (

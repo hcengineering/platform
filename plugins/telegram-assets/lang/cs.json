@@ -59,6 +59,18 @@
     "ConnectTelegramBot": "Připojit Telegram bota",
     "DisconnectMessage": "⚠️ Byli jste odpojeni od služby. Znovu připojte svůj účet na {app} pomocí /{command}.",
     "SyncAllChannels": "Synchronizovat všechny kanály",
-    "SyncStarredChannels": "Synchronizovat označené kanály"
+    "SyncStarredChannels": "Synchronizovat označené kanály",
+    "Public": "Veřejný",
+    "Private": "Soukromý",
+    "TotalChannels": "Celkem kanálů",
+    "SyncEnabled": "Synchronizace povolena",
+    "SyncDisabled": "Synchronizace zakázána",
+    "SelectAll": "Vybrat vše",
+    "Selected": "Vybráno",
+    "EnableSync": "Povolit synchronizaci",
+    "DisableSync": "Zakázat synchronizaci",
+    "SelectAccess": "Vybrat přístup",
+    "ConfigureIntegration": "Konfigurovat integraci",
+    "Apply": "Použít"
   }
 }

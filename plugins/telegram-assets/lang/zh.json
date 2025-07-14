@@ -59,6 +59,18 @@
     "ConnectTelegramBot": "连接 Telegram 机器人",
     "DisconnectMessage": "⚠️您已从服务中断开连接。 请使用 /{command} 在 {app} 上重新连接您的帐户。",
     "SyncAllChannels": "同步所有频道",
-    "SyncStarredChannels": "同步标记的频道"
+    "SyncStarredChannels": "同步标记的频道",
+    "Public": "公开",
+    "Private": "私有",
+    "TotalChannels": "频道总数",
+    "SyncEnabled": "同步已启用",
+    "SyncDisabled": "同步已禁用",
+    "SelectAll": "全选",
+    "Selected": "已选择",
+    "EnableSync": "启用同步",
+    "DisableSync": "禁用同步",
+    "SelectAccess": "选择访问权限",
+    "ConfigureIntegration": "配置集成",
+    "Apply": "应用"
   }
 }

@@ -176,6 +176,13 @@
     "ReleasePrimarySocialId": "Освободить основной социальный ID",
     "ReleasePrimarySocialIdConfirm": "Освобождение вашего текущего основного социального ID потребует перезагрузки страницы. Вы уверены, что хотите продолжить?",
     "Login": "Вход",
-    "Primary": "Основной"
+    "Primary": "Основной",
+    "MyIntegrations": "Мои интеграции",
+    "AvailableIntegrations": "Доступные интеграции",
+    "AllIntegrations": "Все",
+    "ConnectedIntegrations": "Подключенные",
+    "SetupIntegrations": "Доступные",
+    "Connect": "Подключить",
+    "Integrate": "Интегрировать"
   }
 }

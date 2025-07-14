@@ -25,9 +25,8 @@
     "NewMessage": "New message",
     "NewIncomingMessage": "Sent you a new message",
     "Telegram": "Telegram",
-    "TelegramIntegrationDesc": "☠\uFE0F Experimental integration with Telegram ☠\uFE0F",
-    "TelegramIntegrationDesc2": "This feature is separate from regular Telegram notifications",
-    "ToSetupNotification": "To set up notifications:",
+    "TelegramIntegrationDesc": "Sync Telegram channels and messages",
+    "ToSetupNotification": "To set up regular Telegram notifications:",
     "TelegramNotificationPath": "Notifications > General > Telegram > Configure",
     "Status": "Status",
     "MessagesSelected": "messages selected",
@@ -59,6 +58,18 @@
     "ConnectTelegramBot": "Connect Telegram Bot",
     "DisconnectMessage": "⚠️You have been disconnected from the service. Please reconnect your account on {app} using /{command}.",
     "SyncAllChannels": "Sync all channels",
-    "SyncStarredChannels": "Sync starred channels"
+    "SyncStarredChannels": "Sync starred channels",
+    "Public": "Public",
+    "Private": "Private",
+    "TotalChannels": "Total cChannels",
+    "SyncEnabled": "Sync enabled",
+    "SyncDisabled": "Sync disabled",
+    "SelectAll": "Select all",
+    "Selected": "Selected",
+    "EnableSync": "Enable sync",
+    "DisableSync": "Disable sync",
+    "SelectAccess": "Select access",
+    "ConfigureIntegration": "Configure integration",
+    "Apply": "Apply"
   }
 }

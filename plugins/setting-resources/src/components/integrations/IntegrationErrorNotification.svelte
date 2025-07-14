@@ -1,5 +1,6 @@
 <!--
-// Copyright © 2024 Hardcore Engineering Inc.
+//
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,22 +12,18 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 -->
 
 <script lang="ts">
-  import { Label } from '@hcengineering/ui'
+  import { Notification, NotificationToast } from '@hcengineering/ui'
 
-  import telegram from '../plugin'
+  export let notification: Notification
+  export let onRemove: () => void
 </script>
 
-<div class="flex-col flex-gap-1 max-w-100">
-  <span class="content-color">
-    <Label label={telegram.string.TelegramIntegrationDesc} />
-  </span>
-  <span class="mt-3 content-color">
-    <Label label={telegram.string.ToSetupNotification} />
-  </span>
-  <span class="fs-bold content-color">
-    <Label label={telegram.string.TelegramNotificationPath} />
-  </span>
-</div>
+<NotificationToast title={notification.title} severity={notification.severity} onClose={onRemove}>
+  <svelte:fragment slot="content">
+    {notification.subTitle}
+  </svelte:fragment>
+</NotificationToast>

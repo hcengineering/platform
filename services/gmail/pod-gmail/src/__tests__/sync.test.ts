@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { MeasureContext, PersonId } from '@hcengineering/core'
+import { MeasureContext, PersonId, WorkspaceUuid } from '@hcengineering/core'
 import { SyncManager } from '../message/sync'
 import { MessageManagerV2 } from '../message/v2/message'
 import { RateLimiter } from '../rateLimiter'
@@ -51,7 +51,7 @@ describe('SyncManager', () => {
   let mockKeyValueClient: MockKeyValueClient
 
   // Test constants
-  const workspace = 'test-workspace'
+  const workspace = 'test-workspace' as WorkspaceUuid
   const userId = 'user1' as PersonId
   const userEmail = 'user1@example.com'
   const historyId = '12345'

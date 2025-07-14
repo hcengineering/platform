@@ -176,6 +176,12 @@
     "ReleasePrimarySocialId": "Primäre Social ID freigeben",
     "ReleasePrimarySocialIdConfirm": "Die Freigabe Ihrer aktuellen primären Social ID erfordert ein Neuladen der Seite. Sind Sie sicher, dass Sie fortfahren möchten?",
     "Login": "Anmelden",
-    "Primary": "Primär"
+    "Primary": "Primär",
+    "MyIntegrations": "Meine Integrationen",
+    "AllIntegrations": "Alle",
+    "ConnectedIntegrations": "Verbunden",
+    "AvailableIntegrations": "Verfügbar",
+    "Connect": "Verbinden",
+    "Integrate": "Integrieren"
   }
 }

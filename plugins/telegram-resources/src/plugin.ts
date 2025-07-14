@@ -44,7 +44,19 @@ export default mergeIds(telegramId, telegram, {
     ConnectBotInfoEnd: '' as IntlString,
     ConnectBotError: '' as IntlString,
     TestConnection: '' as IntlString,
-    Connected: '' as IntlString
+    Connected: '' as IntlString,
+    Public: '' as IntlString,
+    Private: '' as IntlString,
+    TotalChannels: '' as IntlString,
+    SyncEnabled: '' as IntlString,
+    SyncDisabled: '' as IntlString,
+    SelectAll: '' as IntlString,
+    Selected: '' as IntlString,
+    EnableSync: '' as IntlString,
+    DisableSync: '' as IntlString,
+    SelectAccess: '' as IntlString,
+    ConfigureIntegration: '' as IntlString,
+    Apply: '' as IntlString
   },
   component: {
     MessagePresenter: '' as AnyComponent

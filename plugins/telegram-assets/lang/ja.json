@@ -59,6 +59,18 @@
     "ConnectTelegramBot": "Telegramボットを接続",
     "DisconnectMessage": "⚠️サービスから切断されました。/{command} を使用して {app} でアカウントを再接続してください。",
     "SyncAllChannels": "すべてのチャンネルを同期",
-    "SyncStarredChannels": "スター付きチャンネルを同期"
+    "SyncStarredChannels": "スター付きチャンネルを同期",
+    "Public": "公開",
+    "Private": "非公開",
+    "TotalChannels": "総チャンネル数",
+    "SyncEnabled": "同期が有効",
+    "SyncDisabled": "同期が無効",
+    "SelectAll": "すべて選択",
+    "Selected": "選択済み",
+    "EnableSync": "同期を有効にする",
+    "DisableSync": "同期を無効にする",
+    "SelectAccess": "アクセスを選択",
+    "ConfigureIntegration": "統合を構成",
+    "Apply": "適用"
   }
 }

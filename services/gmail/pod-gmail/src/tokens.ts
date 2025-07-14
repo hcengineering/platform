@@ -89,7 +89,7 @@ export async function getWorkspaceTokens (
             kind: gmailIntegrationKind,
             workspaceUuid: workspace
           }
-        : { kind: GMAIL_INTEGRATION }
+        : { kind: gmailIntegrationKind }
     )
   ).filter((it) => it.workspaceUuid != null)
 

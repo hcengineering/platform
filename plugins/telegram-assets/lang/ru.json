@@ -59,6 +59,18 @@
     "ConnectTelegramBot": "Подключить Telegram бота",
     "DisconnectMessage": "⚠️Вы отключены от сервиса. Пожалуйста, подключите свой аккаунт на {app} с помощью /{command}.",
     "SyncAllChannels": "Синхронизировать все каналы",
-    "SyncStarredChannels": "Синхронизировать избранные каналы"
+    "SyncStarredChannels": "Синхронизировать избранные каналы",
+    "Public": "Публичный",
+    "Private": "Приватный",
+    "TotalChannels": "Всего каналов",
+    "SyncEnabled": "Синхронизация включена",
+    "SyncDisabled": "Синхронизация отключена",
+    "SelectAll": "Выбрать все",
+    "Selected": "Выбрано",
+    "EnableSync": "Включить синхронизацию",
+    "DisableSync": "Отключить синхронизацию",
+    "SelectAccess": "Выберите доступ",
+    "ConfigureIntegration": "Настроить интеграцию",
+    "Apply": "Применить"
   }
 }
