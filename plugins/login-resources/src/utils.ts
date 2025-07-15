@@ -610,7 +610,7 @@ export async function getInviteLinkId (
 
   const inviteLink = await getAccountClient(token).createInvite(exp, emailMask, limit, role)
 
-  Analytics.handleEvent('Get invite link')
+  Analytics.handleEvent('Get invite link', { invite_id: inviteLink })
 
   return inviteLink
 }
@@ -1004,25 +1004,4 @@ export function getAccountDisplayName (loginInfo: LoginInfo | null | undefined):
   }
 
   return loginInfo.account
-}
-
-export function trackOAuthCompletion (result: LoginInfo | WorkspaceLoginInfo | null, provider?: string | null): void {
-  if (provider == null) return
-
-  const location = getCurrentLocation()
-  const isSignUp = location.path[1] === 'signup' || location.query?.signup != null
-
-  if (result != null) {
-    if (provider === 'google') {
-      Analytics.handleEvent(isSignUp ? LoginEvents.SignUpGoogleCompleted : LoginEvents.LoginGoogleCompleted)
-    } else if (provider === 'github') {
-      Analytics.handleEvent(isSignUp ? LoginEvents.SignUpGithubCompleted : LoginEvents.LoginGithubCompleted)
-    }
-  } else {
-    if (provider === 'google') {
-      Analytics.handleEvent(isSignUp ? LoginEvents.SignUpGoogleError : LoginEvents.LoginGoogleError)
-    } else if (provider === 'github') {
-      Analytics.handleEvent(isSignUp ? LoginEvents.SignUpGithubError : LoginEvents.LoginGithubError)
-    }
-  }
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Loading, getCurrentLocation } from '@hcengineering/ui'
   import { logIn } from '@hcengineering/workbench'
+  import { trackOAuthCompletion } from '@hcengineering/analytics'
   import { onMount } from 'svelte'
 
   import {
@@ -9,8 +10,7 @@
     getAutoJoinInfo,
     goTo,
     isWorkspaceLoginInfo,
-    navigateToWorkspace,
-    trackOAuthCompletion
+    navigateToWorkspace
   } from '../utils'
 
   function getProviderFromUrl (): string | null {

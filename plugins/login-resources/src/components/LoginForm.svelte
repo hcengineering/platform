@@ -15,6 +15,8 @@
 -->
 <script lang="ts">
   import { type IntlString, Severity, Status } from '@hcengineering/platform'
+  import { signupStore } from '@hcengineering/analytics'
+  import { onMount } from 'svelte'
 
   import { type BottomAction, doLoginAsGuest, doLoginNavigate, LoginMethods } from '../index'
   import LoginPasswordForm from './LoginPasswordForm.svelte'
@@ -32,6 +34,10 @@
   export let onLogin: ((loginInfo: LoginInfo | null, status: Status) => void | Promise<void>) | undefined = undefined
 
   let method: LoginMethods = useOTP ? LoginMethods.Otp : LoginMethods.Password
+
+  onMount(() => {
+    signupStore.setSignUpFlow(false)
+  })
 
   function changeMethod (event: CustomEvent<LoginMethods>): void {
     method = event.detail
@@ -51,7 +57,7 @@
     }
   }
 
-  async function guestLogin () {
+  async function guestLogin (): Promise<void> {
     let status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
     const [loginStatus, result] = await doLoginAsGuest()
     status = loginStatus

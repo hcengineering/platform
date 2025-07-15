@@ -24,21 +24,6 @@ export const LoginEvents = {
   LoginGoogle: 'login.viaGoogle',
   LoginGithub: 'login.viaGitHub',
 
-  LoginGoogleStarted: 'login.google.started',
-  LoginGithubStarted: 'login.github.started',
-  SignUpGoogleStarted: 'signup.google.started',
-  SignUpGithubStarted: 'signup.github.started',
-
-  LoginGoogleCompleted: 'login.google.completed',
-  LoginGithubCompleted: 'login.github.completed',
-  SignUpGoogleCompleted: 'signup.google.completed',
-  SignUpGithubCompleted: 'signup.github.completed',
-
-  LoginGoogleError: 'login.google.error',
-  LoginGithubError: 'login.github.error',
-  SignUpGoogleError: 'signup.google.error',
-  SignUpGithubError: 'signup.github.error',
-
   LoginGuestStarted: 'login.guest.started',
   LoginGuestCompleted: 'login.guest.completed',
   LoginGuestError: 'login.guest.error',

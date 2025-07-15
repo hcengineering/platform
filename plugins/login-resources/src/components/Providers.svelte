@@ -6,7 +6,6 @@
   import { Analytics } from '@hcengineering/analytics'
   import { onMount } from 'svelte'
   import login from '../plugin'
-  import { LoginEvents } from '../analytics'
   import { getProviders } from '../utils'
   import Github from './providers/Github.svelte'
   import Google from './providers/Google.svelte'
@@ -67,20 +66,10 @@
     const currentPath = location.path[1]
     const isSignUp = currentPath === 'signup'
     const isJoin = currentPath === 'join'
+    const eventPrefix = isSignUp || isJoin ? 'signup' : 'login'
+    const eventName: string = `${eventPrefix}.${provider.name}.started`
 
-    if (provider.name === 'google') {
-      if (isSignUp || isJoin) {
-        Analytics.handleEvent(LoginEvents.SignUpGoogleStarted)
-      } else {
-        Analytics.handleEvent(LoginEvents.LoginGoogleStarted)
-      }
-    } else if (provider.name === 'github') {
-      if (isSignUp || isJoin) {
-        Analytics.handleEvent(LoginEvents.SignUpGithubStarted)
-      } else {
-        Analytics.handleEvent(LoginEvents.LoginGithubStarted)
-      }
-    }
+    Analytics.handleEvent(eventName)
   }
 </script>
 

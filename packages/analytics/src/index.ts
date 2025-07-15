@@ -4,6 +4,16 @@
 
 import { addEventListener, PlatformEvent, Severity, Status, translate } from '@hcengineering/platform'
 
+let _isSignUp: boolean = false
+export const signupStore = {
+  setSignUpFlow: (isSignUp: boolean) => {
+    _isSignUp = isSignUp
+  },
+  getSignUpFlow: () => {
+    return _isSignUp
+  }
+}
+
 export const providers: AnalyticProvider[] = []
 export interface AnalyticProvider {
   init: (config: Record<string, any>) => boolean
@@ -74,6 +84,19 @@ export const Analytics = {
       provider.logout()
     })
   }
+}
+
+export function trackOAuthCompletion (result: any, provider?: string | null): void {
+  if (provider == null) return
+
+  const isSignUp = signupStore.getSignUpFlow()
+  const success = result != null
+
+  const eventPrefix = isSignUp ? 'signup' : 'login'
+  const eventSuffix = success ? 'completed' : 'error'
+  const eventName: string = `${eventPrefix}.${provider}.${eventSuffix}`
+
+  Analytics.handleEvent(eventName)
 }
 
 addEventListener(PlatformEvent, async (_event, _status: Status) => {

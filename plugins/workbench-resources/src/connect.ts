@@ -16,7 +16,8 @@ import core, {
   setCurrentAccount,
   type SocialId,
   type Version,
-  versionToString
+  versionToString,
+  SocialIdType
 } from '@hcengineering/core'
 import login, { loginId, type Pages } from '@hcengineering/login'
 import platform, {
@@ -389,11 +390,15 @@ export async function connect (title: string): Promise<Client | undefined> {
     await setPlatformStatus(new Status(Severity.INFO, platform.status.SystemAccount, {}))
   }
 
+  const hasEmail = (si: SocialId): boolean => {
+    return [SocialIdType.EMAIL, SocialIdType.GOOGLE, SocialIdType.GITHUB].some((type) => type === si.type)
+  }
+  const email = me.fullSocialIds.find((si) => hasEmail(si))?.key
   const socialId = me.fullSocialIds.find((si) => si._id === me.primarySocialId)?.key
-  const email = me.fullSocialIds.find((si) => si.type === 'email')?.value ?? socialId
 
   const data: Record<string, any> = {
-    social_id: socialId ?? account,
+    social_id: email ?? socialId ?? account,
+    primary_social_id: socialId,
     account_uuid: account,
     role: workspaceLoginInfo.role,
     branding: workspace.branding ?? 'unknown'
@@ -411,7 +416,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     data.workspace_uuid = workspace.uuid
   }
 
-  Analytics.setUser(email ?? account, data)
+  Analytics.setUser(data.social_id, data)
   Analytics.setWorkspace(workspace.name, guestRole)
   Analytics.handleEvent(WorkbenchEvents.Connect)
   console.log('Logged in with account: ', me)
