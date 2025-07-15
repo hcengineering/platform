@@ -260,13 +260,13 @@ export class PlatformWorker {
             await accountsClient.updateIntegration({
               kind: 'github',
               workspaceUuid: oldWorkspace,
-              socialId: accountId
+              socialId: oldInstallation.accountId
             })
           } else {
             await accountsClient.deleteIntegration({
               kind: 'github',
               workspaceUuid: oldWorkspace,
-              socialId: accountId
+              socialId: oldInstallation.accountId
             })
           }
         }
