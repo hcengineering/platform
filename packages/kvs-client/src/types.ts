@@ -13,6 +13,12 @@
 // limitations under the License.
 //
 
+export interface ListResult {
+  keys: string[]
+  count: number
+  namespace: string
+}
+
 /**
  * Client for interacting with the key-value store API
  * @public
@@ -45,5 +51,5 @@ export interface KeyValueClient {
    * @param prefix - Optional prefix to filter keys by
    * @returns Promise that resolves to an object with keys and their values
    */
-  listKeys: <T>(prefix?: string) => Promise<Record<string, T> | null>
+  listKeys: (prefix?: string) => Promise<ListResult | null>
 }

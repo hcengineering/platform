@@ -139,7 +139,11 @@ describe('KeyValueClient', () => {
 
   describe('listKeys', () => {
     it('should send GET request to namespace endpoint', async () => {
-      const testData = { key1: 'value1', key2: 'value2' }
+      const testData = {
+        count: 2,
+        keys: ['key1', 'key2'],
+        namespace: 'test-ns'
+      }
       fetchMock.mockResponseOnce(JSON.stringify(testData), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }

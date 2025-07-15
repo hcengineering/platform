@@ -2,6 +2,7 @@ services:
   account:
     environment:
       - DB_URL=${DB_PG_URL}
+      - PROCEED_V7_MONGO=false
   transactor:
     environment:
       - DB_URL=${DB_PG_URL}

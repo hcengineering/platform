@@ -92,7 +92,7 @@ export async function removeUserByEmail (user: User, email: GoogleEmail): Promis
 
 export async function cleanUserByEmail (): Promise<void> {
   const client = getKvsClient()
-  const keys = await client.listKeys<User>(`${CALENDAR_INTEGRATION}:users:`)
+  const keys = await client.listKeys(`${CALENDAR_INTEGRATION}:users:`)
   if (keys == null) return
   for (const key in keys) {
     await client.deleteKey(key)

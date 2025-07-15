@@ -33,11 +33,11 @@ export class WatchClient {
     return watchClient
   }
 
-  private async getWatches (): Promise<Record<string, Watch>> {
+  private async getWatches (): Promise<string[]> {
     const client = getKvsClient()
     const key = `${CALENDAR_INTEGRATION}:watch:${this.user.email}`
-    const watches = await client.listKeys<Watch>(key)
-    return watches ?? {}
+    const watches = await client.listKeys(key)
+    return watches?.keys ?? []
   }
 
   private async setToken (token: Credentials): Promise<void> {
@@ -65,7 +65,7 @@ export class WatchClient {
       if (active.length === 0) {
         const watches = await this.getWatches()
         const client = getKvsClient()
-        for (const key in watches) {
+        for (const key of watches) {
           await client.deleteKey(key)
         }
       }
@@ -187,7 +187,15 @@ export class WatchController {
   private async getUserWatches (email: GoogleEmail): Promise<Record<string, Watch>> {
     const client = getKvsClient()
     const key = `${CALENDAR_INTEGRATION}:watch:${email}`
-    return (await client.listKeys<Watch>(key)) ?? {}
+    const keys = (await client.listKeys(key))?.keys ?? []
+    const res: Record<string, Watch> = {}
+    for (const key of keys) {
+      const watch = await client.getValue<Watch>(key)
+      if (watch != null) {
+        res[key] = watch
+      }
+    }
+    return res
   }
 
   async unsubscribe (user: Token): Promise<void> {
@@ -227,10 +235,11 @@ export class WatchController {
     const expired = Date.now() + 24 * 60 * 60 * 1000
     const client = getKvsClient()
     const key = `${CALENDAR_INTEGRATION}:watch:`
-    const watches = (await client.listKeys<Watch>(key)) ?? {}
+    const watches = await client.listKeys(key)
     const toRefresh: Watch[] = []
-    for (const key in watches) {
-      const watch = watches[key]
+    for (const key of watches?.keys ?? []) {
+      const watch = await client.getValue<Watch>(key)
+      if (watch == null) continue
       if (watch.expired < expired) {
         toRefresh.push(watch)
       }
