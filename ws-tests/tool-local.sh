@@ -4,7 +4,7 @@ export MINIO_SECRET_KEY=minioadmin
 export MINIO_ENDPOINT=huly.local:9000
 export MONGO_URL=mongodb://huly.local:27017
 export DB_URL=mongodb://huly.local:27017
-export ACCOUNT_DB_URL=mongodb://huly.local:27017
+export ACCOUNT_DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
 export ACCOUNTS_URL=http://huly.local:3000
 export TRANSACTOR_URL=ws://huly.local:3333
 export ELASTIC_URL=http://huly.local:9200

@@ -49,6 +49,29 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     process.exit(1)
   }
 
+  if (dbUrl.startsWith('mongodb://')) {
+    if (process.env.PROCEED_V7_MONGO !== 'true') {
+      console.error(`
+        ⚠️ IMPORTANT: MongoDB Deprecation Notice
+
+        MongoDB support is deprecated in v7 and will be removed in future versions. Important details:
+
+        1. New features may not be available with MongoDB
+        2. Testing coverage for MongoDB will be limited
+        3. Upgrading to v7 with MongoDB will PERMANENTLY LOCK your deployment to MongoDB-specific types
+        4. Migration to CockroachDB will NOT be possible after upgrading
+
+        ➡️ Recommended Action:
+        Migrate to CockroachDB before upgrading to v7. See migration instructions at:
+        https://github.com/hcengineering/huly-selfhost
+
+        To proceed with MongoDB (despite these limitations):
+        Set environment variable PROCEED_V7_MONGO=true.
+      `)
+      process.exit(1)
+    }
+  }
+
   const oldAccsUrl = process.env.OLD_ACCOUNTS_URL ?? (dbUrl.startsWith('mongodb://') ? dbUrl : undefined)
   const oldAccsNs = process.env.OLD_ACCOUNTS_NS
 

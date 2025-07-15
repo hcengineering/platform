@@ -74,7 +74,6 @@ export interface Workspace {
   endpoint: string
 
   region?: string // Transactor group name
-  targetRegion?: string // Transactor region to move to
 
   backupInfo?: BackupStatus
 
