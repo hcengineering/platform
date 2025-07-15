@@ -26,7 +26,7 @@ import core, {
   type PersonUuid,
   type Ref
 } from '@hcengineering/core'
-import github, { GithubAuthentication, makeQuery, type GithubIntegration } from '@hcengineering/github'
+import github, { GithubAuthentication, githubId, makeQuery, type GithubIntegration } from '@hcengineering/github'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
 import tracker from '@hcengineering/tracker'
@@ -260,13 +260,13 @@ export class PlatformWorker {
             await accountsClient.updateIntegration({
               kind: 'github',
               workspaceUuid: oldWorkspace,
-              socialId: accountId
+              socialId: oldInstallation.accountId
             })
           } else {
             await accountsClient.deleteIntegration({
               kind: 'github',
               workspaceUuid: oldWorkspace,
-              socialId: accountId
+              socialId: oldInstallation.accountId
             })
           }
         }
@@ -371,7 +371,7 @@ export class PlatformWorker {
     }
   }
 
-  async removeInstallation (ctx: MeasureContext, workspace: string, installationId: number): Promise<void> {
+  async removeInstallation (ctx: MeasureContext, workspace: WorkspaceUuid, installationId: number): Promise<void> {
     const installation = this.installations.get(installationId)
     if (installation !== undefined) {
       // Do not wait to github to process it
@@ -387,8 +387,33 @@ export class PlatformWorker {
         })
 
       await this.handleInstallationEventDelete(installationId)
+    } else {
+      await this.removeInstallationNoClient(workspace, ctx, installationId)
     }
     this.triggerCheckWorkspaces()
+  }
+
+  private async removeInstallationNoClient (
+    workspace: WorkspaceUuid,
+    ctx: MeasureContext<any>,
+    installationId: number
+  ): Promise<void> {
+    let client: Client | undefined
+    try {
+      const { client, endpoint } = await createPlatformClient(workspace, 30000)
+      ctx.info('connected to github', { workspace, endpoint })
+
+      const githubEnabled = (await client.findOne(core.class.PluginConfiguration, { pluginId: githubId }))?.enabled
+      if (githubEnabled !== false) {
+        const wsIntegerations = await client.findAll(github.class.GithubIntegration, { installationId })
+        for (const intValue of wsIntegerations) {
+          const ops = new TxOperations(client, core.account.System)
+          await ops.remove<GithubIntegration>(intValue)
+        }
+      }
+    } finally {
+      await client?.close()
+    }
   }
 
   async requestGithubAccessToken (payload: {
@@ -855,6 +880,10 @@ export class PlatformWorker {
     } else {
       this.ctx.info('No worker for removed installation', { installId, name: existing?.installationName })
       // No worker
+      const workspace = interg.length > 0 ? interg[0].workspace : undefined
+      if (workspace !== undefined) {
+        await this.removeInstallationNoClient(workspace, this.ctx, installId)
+      }
     }
     if (interg.length > 0) {
       const sysToken = generateToken(systemAccountUuid, undefined, { service: 'github' })
@@ -954,136 +983,138 @@ export class PlatformWorker {
         this.ctx.info('connecting to workspace', { workspace: c, time: Date.now() - d.time, version: d.version })
       }
     }, 5000)
-
-    const token = generateToken(systemAccountUuid, undefined, { service: 'github', mode: 'github' })
-    const infos = new Map(
-      Array.from(await getAccountClient(config.AccountsURL, token).getWorkspacesInfo(workspaces)).map((it) => [
-        it.uuid,
-        it
-      ])
-    )
-    for (const workspace of workspaces) {
-      const widx = ++idx
-      if (this.clients.has(workspace)) {
-        toDelete.delete(workspace)
-        continue
-      }
-      await rateLimiter.add(async () => {
-        const { workspaceInfo, needRecheck } = await this.checkWorkspaceIsActive(workspace, infos.get(workspace))
-        if (workspaceInfo === undefined) {
-          if (needRecheck) {
-            rechecks.push(workspace)
-          }
-          return
+    try {
+      const token = generateToken(systemAccountUuid, undefined, { service: 'github', mode: 'github' })
+      const infos = new Map(
+        Array.from(await getAccountClient(config.AccountsURL, token).getWorkspacesInfo(workspaces)).map((it) => [
+          it.uuid,
+          it
+        ])
+      )
+      for (const workspace of workspaces) {
+        const widx = ++idx
+        if (this.clients.has(workspace)) {
+          toDelete.delete(workspace)
+          continue
         }
-        try {
-          const branding = Object.values(this.brandingMap).find((b) => b.key === workspaceInfo?.branding) ?? null
-          const workerCtx = this.ctx.newChild('worker', { workspace: workspaceInfo.uuid }, {})
-
-          connecting.set(workspaceInfo.uuid, {
-            time: Date.now(),
-            version: versionToString({
-              major: workspaceInfo.versionMajor,
-              minor: workspaceInfo.versionMinor,
-              patch: workspaceInfo.versionPatch
-            })
-          })
-          workerCtx.info('************************* Register worker ************************* ', {
-            workspaceId: workspaceInfo.uuid,
-            workspaceUrl: workspaceInfo.url,
-            versionMajor: workspaceInfo.versionMajor,
-            versionMinor: workspaceInfo.versionMinor,
-            versionPatch: workspaceInfo.versionPatch,
-            mode: workspaceInfo.mode,
-            index: widx,
-            total: workspaces.length
-          })
-
-          let initialized = false
-          const worker = await GithubWorker.create(
-            this,
-            workerCtx,
-            this.installations,
-            {
-              dataId: workspaceInfo.dataId,
-              url: workspaceInfo.url,
-              uuid: workspaceInfo.uuid
-            },
-            branding,
-            this.app,
-            this.storageAdapter,
-            (workspace, event) => {
-              if (event === ClientConnectEvent.Refresh || event === ClientConnectEvent.Upgraded) {
-                void this.clients
-                  .get(workspace)
-                  ?.refreshClient(event === ClientConnectEvent.Upgraded)
-                  ?.catch((err) => {
-                    workerCtx.error('Failed to refresh', { error: err })
-                  })
-              }
-              if (initialized) {
-                // We need to check if workspace is inactive
-                void this.checkWorkspaceIsActive(workspace, undefined, true)
-                  .then((res) => {
-                    if (res === undefined) {
-                      this.ctx.warn('Workspace is inactive, removing from clients list.', { workspace })
-                      this.clients.delete(workspace)
-                      void worker?.close().catch((err) => {
-                        this.ctx.error('Failed to close workspace', { workspace, error: err })
-                      })
-                    }
-                  })
-                  .catch((err) => {
-                    this.ctx.error('Failed to check workspace is active', { workspace, error: err })
-                  })
-              }
+        await rateLimiter.add(async () => {
+          const { workspaceInfo, needRecheck } = await this.checkWorkspaceIsActive(workspace, infos.get(workspace))
+          if (workspaceInfo === undefined) {
+            if (needRecheck) {
+              rechecks.push(workspace)
             }
-          )
-          if (worker !== undefined) {
-            initialized = true
-            workerCtx.info('************************* Register worker Done ************************* ', {
+            return
+          }
+          try {
+            const branding = Object.values(this.brandingMap).find((b) => b.key === workspaceInfo?.branding) ?? null
+            const workerCtx = this.ctx.newChild('worker', { workspace: workspaceInfo.uuid }, {})
+
+            connecting.set(workspaceInfo.uuid, {
+              time: Date.now(),
+              version: versionToString({
+                major: workspaceInfo.versionMajor,
+                minor: workspaceInfo.versionMinor,
+                patch: workspaceInfo.versionPatch
+              })
+            })
+            workerCtx.info('************************* Register worker ************************* ', {
               workspaceId: workspaceInfo.uuid,
               workspaceUrl: workspaceInfo.url,
+              versionMajor: workspaceInfo.versionMajor,
+              versionMinor: workspaceInfo.versionMinor,
+              versionPatch: workspaceInfo.versionPatch,
+              mode: workspaceInfo.mode,
               index: widx,
               total: workspaces.length
             })
-            // No if no integration, we will try connect one more time in a time period
-            this.clients.set(workspace, worker)
-          } else {
-            workerCtx.info(
-              '************************* Failed Register worker, timeout or integrations removed *************************',
+
+            let initialized = false
+            const worker = await GithubWorker.create(
+              this,
+              workerCtx,
+              this.installations,
               {
-                workspaceId: workspaceInfo.uuid,
-                workspaceUrl: workspaceInfo.url,
-                versionMajor: workspaceInfo.versionMajor,
-                versionMinor: workspaceInfo.versionMinor,
-                versionPatch: workspaceInfo.versionPatch,
-                lastVisit: (Date.now() - (workspaceInfo.lastVisit ?? 0)) / (24 * 60 * 60 * 1000),
-                index: widx,
-                total: workspaces.length
+                dataId: workspaceInfo.dataId,
+                url: workspaceInfo.url,
+                uuid: workspaceInfo.uuid
+              },
+              branding,
+              this.app,
+              this.storageAdapter,
+              (workspace, event) => {
+                if (event === ClientConnectEvent.Refresh || event === ClientConnectEvent.Upgraded) {
+                  void this.clients
+                    .get(workspace)
+                    ?.refreshClient(event === ClientConnectEvent.Upgraded)
+                    ?.catch((err) => {
+                      workerCtx.error('Failed to refresh', { error: err })
+                    })
+                }
+                if (initialized) {
+                  // We need to check if workspace is inactive
+                  void this.checkWorkspaceIsActive(workspace, undefined, true)
+                    .then((res) => {
+                      if (res === undefined) {
+                        this.ctx.warn('Workspace is inactive, removing from clients list.', { workspace })
+                        this.clients.delete(workspace)
+                        void worker?.close().catch((err) => {
+                          this.ctx.error('Failed to close workspace', { workspace, error: err })
+                        })
+                      }
+                    })
+                    .catch((err) => {
+                      this.ctx.error('Failed to check workspace is active', { workspace, error: err })
+                    })
+                }
               }
             )
+            if (worker !== undefined) {
+              initialized = true
+              workerCtx.info('************************* Register worker Done ************************* ', {
+                workspaceId: workspaceInfo.uuid,
+                workspaceUrl: workspaceInfo.url,
+                index: widx,
+                total: workspaces.length
+              })
+              // No if no integration, we will try connect one more time in a time period
+              this.clients.set(workspace, worker)
+            } else {
+              workerCtx.info(
+                '************************* Failed Register worker, timeout or integrations removed *************************',
+                {
+                  workspaceId: workspaceInfo.uuid,
+                  workspaceUrl: workspaceInfo.url,
+                  versionMajor: workspaceInfo.versionMajor,
+                  versionMinor: workspaceInfo.versionMinor,
+                  versionPatch: workspaceInfo.versionPatch,
+                  lastVisit: (Date.now() - (workspaceInfo.lastVisit ?? 0)) / (24 * 60 * 60 * 1000),
+                  index: widx,
+                  total: workspaces.length
+                }
+              )
+              rechecks.push(workspace)
+            }
+          } catch (e: any) {
+            Analytics.handleError(e)
+            this.ctx.info("Couldn't create WS worker", { workspace, error: e })
             rechecks.push(workspace)
+          } finally {
+            connecting.delete(workspaceInfo.uuid)
           }
-        } catch (e: any) {
-          Analytics.handleError(e)
-          this.ctx.info("Couldn't create WS worker", { workspace, error: e })
-          rechecks.push(workspace)
-        } finally {
-          connecting.delete(workspaceInfo.uuid)
-        }
+        })
+      }
+      this.ctx.info('************************* Waiting To complete Workspace processing ************************* ', {
+        workspaces: this.clients.size,
+        rateLimiter: rateLimiter.processingQueue.size
       })
+      try {
+        await rateLimiter.waitProcessing()
+      } catch (e: any) {
+        Analytics.handleError(e)
+      }
+    } finally {
+      clearInterval(connectingInfo)
     }
-    this.ctx.info('************************* Waiting To complete Workspace processing ************************* ', {
-      workspaces: this.clients.size,
-      rateLimiter: rateLimiter.processingQueue.size
-    })
-    try {
-      await rateLimiter.waitProcessing()
-    } catch (e: any) {
-      Analytics.handleError(e)
-    }
-    clearInterval(connectingInfo)
 
     this.ctx.info('************************* Check close deleted ************************* ', {
       workspaces: this.clients.size,
