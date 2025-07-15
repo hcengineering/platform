@@ -32,7 +32,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV11Migration(ns),
     getV12Migration(ns),
     getV13Migration(ns),
-    getV14Migration(ns)
+    getV14Migration(ns),
+    getV15Migration(ns)
   ]
 }
 
@@ -422,6 +423,16 @@ function getV14Migration (ns: string): [string, string] {
     `
     ALTER TABLE ${ns}.workspace
     ADD COLUMN IF NOT EXISTS allow_guest_sign_up BOOL NOT NULL DEFAULT FALSE;
+    `
+  ]
+}
+
+function getV15Migration (ns: string): [string, string] {
+  return [
+    'account_db_v15_add_target_region_to_workspace_status',
+    `
+    ALTER TABLE ${ns}.workspace_status
+    ADD COLUMN IF NOT EXISTS target_region STRING;
     `
   ]
 }
