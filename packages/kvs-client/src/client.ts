@@ -14,7 +14,7 @@
 //
 import { concatLink } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
-import { KeyValueClient } from './types'
+import { KeyValueClient, ListResult } from './types'
 
 /**
  * Get a KeyValueClient instance
@@ -92,12 +92,12 @@ class KeyValueClientImpl implements KeyValueClient {
     })
   }
 
-  async listKeys<T>(prefix?: string): Promise<Record<string, T> | null> {
+  async listKeys (prefix?: string): Promise<ListResult | null> {
     let url = this.buildUrl()
     if (prefix !== undefined) {
       url += `?prefix=${encodeURIComponent(prefix)}`
     }
-    return await this.sendRequest<Record<string, T>>(url, {
+    return await this.sendRequest<ListResult>(url, {
       method: 'GET',
       errorMessage: 'Failed to list keys'
     })
