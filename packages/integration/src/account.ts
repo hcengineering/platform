@@ -17,7 +17,18 @@ import { AccountUuid, IntegrationKind, PersonId, SocialId, WorkspaceUuid } from 
 import { generateToken } from '@hcengineering/server-token'
 import { v4 as uuid } from 'uuid'
 
-export class IntegrationClient {
+import { IntegrationClient } from './types'
+import { isConnection } from './utils'
+
+export function getIntegrationClient (
+  accountsUrl: string,
+  token: string,
+  integrationKind: IntegrationKind,
+  serviceName: string
+): IntegrationClient {
+  return new IntegrationClientImpl(accountsUrl, token, integrationKind, serviceName)
+}
+export class IntegrationClientImpl implements IntegrationClient {
   private readonly client: AccountClient
 
   constructor (
@@ -51,16 +62,28 @@ export class IntegrationClient {
     return null
   }
 
-  async integrate (socialId: PersonId, workspace: WorkspaceUuid, data: Record<string, any> = {}, connection?: Integration): Promise<Integration> {
-    const integrationConnection = connection ?? await this.connect(socialId)
+  async getConnection (integration: Integration): Promise<Integration | null> {
+    if (isConnection(integration)) {
+      return integration
+    }
+    const connectionKey = {
+      socialId: integration.socialId,
+      kind: integration.kind,
+      workspaceUuid: null
+    }
+    return await this.client.getIntegration(connectionKey)
+  }
+
+  async integrate (connection: Integration, workspace: WorkspaceUuid, data?: Record<string, any>): Promise<Integration> {
+    const existingData = data ?? connection.data ?? {}
     const integration = {
-      socialId,
-      kind: this.integrationKind,
+      socialId: connection.socialId,
+      kind: connection.kind ?? this.integrationKind,
       workspaceUuid: workspace,
       data: {
+        ...existingData,
         _id: uuid(),
-        connectionId: integrationConnection.data?._id,
-        ...data
+        connectionId: connection.data?._id
       }
     }
     const existingIntegration = await this.client.getIntegration(integration)

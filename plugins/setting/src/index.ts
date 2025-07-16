@@ -41,7 +41,7 @@ export const DOMAIN_SETTING = 'setting' as Domain
 /**
  * @public
  */
-export type Handler = Resource<(value: string) => Promise<void>>
+export type Handler = Resource<(integration: Integration) => Promise<void>>
 
 /**
  * @public

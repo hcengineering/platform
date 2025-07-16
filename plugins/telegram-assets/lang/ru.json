@@ -71,6 +71,8 @@
     "DisableSync": "Отключить синхронизацию",
     "SelectAccess": "Выберите доступ",
     "ConfigureIntegration": "Настроить интеграцию",
-    "Apply": "Применить"
+    "Apply": "Применить",
+    "SyncedChannels": "Синхронизированные каналы",
+    "NotConnectedIntegration": "Аккаунт {phone} не интегрирован с пространством"
   }
 }

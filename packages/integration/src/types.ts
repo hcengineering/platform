@@ -13,11 +13,59 @@
 // limitations under the License.
 //
 
-import { IntegrationKind, WorkspaceUuid } from '@hcengineering/core'
+import { Integration, IntegrationKey } from '@hcengineering/account-client'
+import { AccountUuid, IntegrationKind, PersonId, WorkspaceUuid } from '@hcengineering/core'
 
 export type IntegrationStatus = 'active' | 'inactive' | 'connecting' | 'disconnecting' | 'error' | 'unknown'
 
 export type ActionKind = 'connect' | 'disconnect' | 'reconnect' | 'update' | 'delete'
+
+export interface IntegrationClient {
+  /**
+   * Get integrations for a specific account and optional workspace
+   */
+  getIntegrationsByAccount: (
+    account: AccountUuid,
+    workspaceUuid?: WorkspaceUuid
+  ) => Promise<Integration | null>
+
+  /**
+   * Get the connection details for a specific integration
+   */
+  getConnection: (
+    integration: Integration
+  ) => Promise<Integration | null>
+
+  /**
+   * Integrate a social ID with a workspace
+   */
+  integrate: (
+    connection: Integration,
+    workspace: WorkspaceUuid,
+    data?: Record<string, any>
+  ) => Promise<Integration>
+
+  /**
+   * Create a connection for a social ID (without workspace integration)
+   */
+  connect: (socialId: PersonId) => Promise<Integration>
+
+  /**
+   * Update configuration for an existing integration
+   */
+  updateConfig: (
+    integrationKey: IntegrationKey,
+    config: Record<string, any>
+  ) => Promise<void>
+
+  /**
+   * Remove integration for a social ID and workspace
+   */
+  removeIntegration: (
+    socialId: PersonId | undefined | null,
+    workspaceUuid: WorkspaceUuid
+  ) => Promise<void>
+}
 
 export interface IntegrationData {
   _id: string | undefined
@@ -100,7 +148,7 @@ export interface IntegrationInfo {
  */
 export type IntegrationConfig = Record<string, any>
 
-export interface IntegrationClient {
+export interface ServiceClient {
   /**
    * Connect to an integration service
    * @param workspace - The workspace UUID

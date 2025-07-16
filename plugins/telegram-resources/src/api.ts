@@ -16,6 +16,9 @@ import { concatLink } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import telegram from './plugin'
 import presentation from '@hcengineering/presentation'
+import login from '@hcengineering/login'
+import { telegramIntegrationKind } from '@hcengineering/telegram'
+import { getIntegrationClient as getIntegrationClientRaw, type IntegrationClient } from '@hcengineering/integration'
 
 export type Integration = { status: 'authorized' | 'wantcode' | 'wantpassword', number: string } | 'Loading' | 'Missing'
 
@@ -47,13 +50,19 @@ async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?:
 
   if (response.status === 200) {
     return await response.json()
+  } else if (response.status === 202) {
+    return undefined
   } else {
     throw new Error(`Unexpected response: ${response.status}`)
   }
 }
 
-export async function list (): Promise<Integration[]> {
-  return await request('GET')
+export async function getState (phone: string): Promise<Integration> {
+  return await request('GET', phone)
+}
+
+export async function restart (phone: string): Promise<Integration> {
+  return await request('POST', `${phone}/restart`)
 }
 
 export async function listChannels (phone: string): Promise<TelegramChannel[]> {
@@ -62,8 +71,22 @@ export async function listChannels (phone: string): Promise<TelegramChannel[]> {
 
 export async function command (
   phone: string,
-  command: 'start' | 'next' | 'cancel',
+  command: 'start' | 'next' | 'disconnect',
   input?: string
 ): Promise<Integration> {
   return await request('POST', phone, { command, input })
+}
+
+export async function getIntegrationClient (): Promise<IntegrationClient> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  const token = getMetadata(presentation.metadata.Token)
+  if (accountsUrl === undefined || token === undefined) {
+    throw new Error('Accounts URL or token is not defined')
+  }
+  return getIntegrationClientRaw(
+    accountsUrl,
+    token,
+    telegramIntegrationKind,
+    'hulygram'
+  )
 }

@@ -4319,7 +4319,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/integration@file:projects/integration.tgz':
-    resolution: {integrity: sha512-c/auQfXj/ZTQ55GTVOSi7/M8wxQ1dcVAx8ipWcCVWoSw4xqQJBZQuKoEEp4+hBopg/OGWANlkQykfBKqHe/jvQ==, tarball: file:projects/integration.tgz}
+    resolution: {integrity: sha512-9IPMZpNsI2XCs1VE3fnHighB4/KMMqjkzDa7Xj8KdpO0A7VqtpAyg4aXTrk4oLLFFhQYs6u4adsqqV7qBTYHxA==, tarball: file:projects/integration.tgz}
     version: 0.0.0
 
   '@rush-temp/inventory-assets@file:projects/inventory-assets.tgz':
@@ -4879,7 +4879,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
-    resolution: {integrity: sha512-ZLnW1O8HTDfGRQLJGyMs1GO63xr5jnqZOZ36/0AjopTYWrT0xzP77bRh/J6XmjOUhDza7oGHisztULcWkyMHQg==, tarball: file:projects/pod-gmail.tgz}
+    resolution: {integrity: sha512-Goqn/50VaRx1ZZJ7nUaVxvDu4tHpV18Rbr/n7ttinZILqcucYslZAcP5j/qCyoIZQxFa2G7WovS3TpLLMQ/D/Q==, tarball: file:projects/pod-gmail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
@@ -4895,7 +4895,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-media@file:projects/pod-media.tgz':
-    resolution: {integrity: sha512-Hs0uxssWRvXJjxSjpg8HA+i412/QDzOjq29YLmGnkOuSRlxZTPH6hYelFIjEH2SSzbgZf2I8T4vBuBZToHySZA==, tarball: file:projects/pod-media.tgz}
+    resolution: {integrity: sha512-JQpemCeuwf6zJoUbXQtS8RR7pZT5oCCR3BQ5nZsZeWrBARAgaLplX29mBLTXmE56nEG+cq6SQJEuJENSB8lavw==, tarball: file:projects/pod-media.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-msg2file@file:projects/pod-msg2file.tgz':
@@ -5391,7 +5391,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/setting-resources@file:projects/setting-resources.tgz':
-    resolution: {integrity: sha512-V1fxm4+9HCGwPWJLZ8x0yEwISALxBPsaRyOOf59hbn2hls6U15CrmDuC96uHngv0jBmA6sTfPtwQh7x6iKS05Q==, tarball: file:projects/setting-resources.tgz}
+    resolution: {integrity: sha512-/qbe18xseHtct6fHvQHpTgJYgnq2LeDo5yahEBcFtcrjx0ljTbK2bLEOAkjbtZ7bJhgE1IaPf7LmLq+x/pN9QA==, tarball: file:projects/setting-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/setting@file:projects/setting.tgz':
@@ -5459,7 +5459,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/telegram-resources@file:projects/telegram-resources.tgz':
-    resolution: {integrity: sha512-AfBy+LDwX0PQwsO8zX0oY5lwb4VhN/KMduePtl13BpiTpHRfJH+/9CQ+zOnu/2t6UEP9yMqrr+trSIGCwX/OMg==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-MjU1BcazNCAtARtTDiDwsae5frHcC9XxlP3AwKJXRkOP0ehjbbny8jkZJUUNfLzU7bmRbEnY3ZK3OPM2VmHX8A==, tarball: file:projects/telegram-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/telegram@file:projects/telegram.tgz':
@@ -19622,6 +19622,7 @@ snapshots:
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 22.15.29
+      '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.8.3))(eslint@8.56.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.8.3)
       cross-env: 7.0.3
@@ -19636,6 +19637,7 @@ snapshots:
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@22.15.29)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(typescript@5.8.3)
       typescript: 5.8.3
+      uuid: 8.3.2
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'

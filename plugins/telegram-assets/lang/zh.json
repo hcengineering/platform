@@ -71,6 +71,8 @@
     "DisableSync": "禁用同步",
     "SelectAccess": "选择访问权限",
     "ConfigureIntegration": "配置集成",
-    "Apply": "应用"
+    "Apply": "应用",
+    "SyncedChannels": "已同步的频道",
+    "NotConnectedIntegration": "帐户 {phone} 未与工作区集成"
   }
 }

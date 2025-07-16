@@ -71,6 +71,8 @@
     "DisableSync": "Disabilita sincronizzazione",
     "SelectAccess": "Seleziona accesso",
     "ConfigureIntegration": "Configura integrazione",
-    "Apply": "Applica"
+    "Apply": "Applica",
+    "SyncedChannels": "Canali sincronizzati",
+    "NotConnectedIntegration": "L'account {phone} non è integrato con lo spazio di lavoro"
   }
 }

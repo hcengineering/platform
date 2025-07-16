@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
+  import { fade } from 'svelte/transition'
   import { createQuery, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { type IntegrationType, IntegrationError } from '@hcengineering/setting'
   import setting from '@hcengineering/setting'
   import { type Integration } from '@hcengineering/account-client'
-  import { Header, Breadcrumb, NotificationSeverity, addNotification, themeStore, TabItem, Switcher } from '@hcengineering/ui'
+  import { Header, Breadcrumb, NotificationSeverity, addNotification, themeStore, TabItem, Switcher, Loading } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
 
   import IntegrationCard from './IntegrationCard.svelte'
@@ -32,6 +33,7 @@
   let connections: Integration[] = []
   let integrations: Integration[] = []
   let integrationTypes: IntegrationType[] = []
+  let isLoading = true
 
   const viewslist: TabItem[] = [
     { id: 'all', labelIntl: setting.string.AllIntegrations },
@@ -49,23 +51,30 @@
   }
 
   onMount(async () => {
-    const workspace = getCurrentWorkspaceUuid()
-    connections = await accountClient.listIntegrations({ workspaceUuid: null })
-    integrations = await accountClient.listIntegrations({ workspaceUuid: workspace }) // Do not pass social ID, since method should set all account social IDs by default
-    // Check URL parameters for error message
-    const urlParams = new URLSearchParams(window.location.search)
-    const error = urlParams.get('integrationError')
+    try {
+      const workspace = getCurrentWorkspaceUuid()
+      connections = await accountClient.listIntegrations({ workspaceUuid: null })
+      integrations = await accountClient.listIntegrations({ workspaceUuid: workspace }) // Do not pass social ID, since method should set all account social IDs by default
+      // Check URL parameters for error message
+      const urlParams = new URLSearchParams(window.location.search)
+      const error = urlParams.get('integrationError')
 
-    if (error != null) {
-      const decodedError = decodeURIComponent(error)
-      console.error('Integration error:', decodedError)
-      await showErrorNotification(decodedError)
-      // Clean up integrationError parameter from the URL
-      urlParams.delete('integrationError')
-      const newParams = urlParams.toString()
-      const newUrl =
-        window.location.pathname + (newParams != null && newParams !== '' ? `?${newParams}` : '') + window.location.hash
-      window.history.replaceState({}, document.title, newUrl)
+      if (error != null) {
+        const decodedError = decodeURIComponent(error)
+        console.error('Integration error:', decodedError)
+        await showErrorNotification(decodedError)
+        // Clean up integrationError parameter from the URL
+        urlParams.delete('integrationError')
+        const newParams = urlParams.toString()
+        const newUrl =
+          window.location.pathname + (newParams != null && newParams !== '' ? `?${newParams}` : '') + window.location.hash
+        window.history.replaceState({}, document.title, newUrl)
+      }
+    } catch (err) {
+      console.error('Error loading integrations:', err)
+      await showErrorNotification('Failed to load integrations')
+    } finally {
+      isLoading = false
     }
   })
 
@@ -107,8 +116,9 @@
     const filteredIntegrations = integrationTypes.flatMap(integrationType => {
       let allIntegrations = getIntegrations(integrationType, integrations)
       const availableConnections = connections.filter((connection) => {
-        const type = integrationType.kind === 'telegram-bot' ? 'hulygram' : integrationType.kind // TODO: Fix
-        return connection.kind === type && allIntegrations.every((integration) => integration.socialId !== connection.socialId)
+        return connection.kind === integrationType.kind && allIntegrations
+          .filter((integration) => integration.kind === connection.kind)
+          .every((integration) => integration.socialId !== connection.socialId)
       })
       if (availableConnections.length > 0) {
         allIntegrations = [...allIntegrations, ...availableConnections]
@@ -141,30 +151,36 @@
 </script>
 
 <div class="hulyComponent">
-  <Header adaptive={'disabled'}>
-    <Breadcrumb icon={setting.icon.Integrations} label={setting.string.Integrations} size={'large'} isCurrent />
-    <svelte:fragment slot="extra">
-      <Switcher
-        name={'integrations-mode-view'}
-        items={viewslist}
-        kind={'subtle'}
-        selected={mode}
-        on:select={(result) => {
-          if (result.detail !== undefined) mode = result.detail.id
-        }}
-      />
-    </svelte:fragment>
-  </Header>
-  <div class="cards_grid">
-    {#each filteredIntegrationTypes as integrationInfo (getIntegrationKey(integrationInfo))}
-      {#if integrationInfo.integrationType !== undefined}
-        <IntegrationCard
-          integration={integrationInfo.integration}
-          integrationType={integrationInfo.integrationType}
+    <Header adaptive={'disabled'}>
+      <Breadcrumb icon={setting.icon.Integrations} label={setting.string.Integrations} size={'large'} isCurrent />
+      <svelte:fragment slot="extra">
+        <Switcher
+          name={'integrations-mode-view'}
+          items={viewslist}
+          kind={'subtle'}
+          selected={mode}
+          on:select={(result) => {
+            if (result.detail !== undefined) mode = result.detail.id
+          }}
         />
-      {/if}
-    {/each}
-  </div>
+      </svelte:fragment>
+    </Header>
+    {#if isLoading}
+      <div class="loading-container">
+        <Loading/>
+      </div>
+    {:else}
+      <div class="cards_grid" transition:fade={{ duration: 300 }}>
+        {#each filteredIntegrationTypes as integrationInfo (getIntegrationKey(integrationInfo))}
+          {#if integrationInfo.integrationType !== undefined}
+            <IntegrationCard
+              integration={integrationInfo.integration}
+              integrationType={integrationInfo.integrationType}
+            />
+          {/if}
+        {/each}
+      </div>
+    {/if}
 </div>
 
 <style lang="scss">
@@ -175,5 +191,13 @@
     grid-gap: 1.5rem;
     padding: 1.5rem;
     overflow: auto;
+  }
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
   }
 </style>

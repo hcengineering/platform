@@ -59,7 +59,7 @@
     if (integration !== undefined && integrationType.onDisconnect !== undefined) {
       Analytics.handleEvent(`Disconnect integration: ${await translate(integrationType.label, {}, 'en')}`)
       const disconnect = await getResource(integrationType.onDisconnect)
-      await disconnect('Fix me')
+      await disconnect(integration)
     }
   }
   const handleConfigure = async (component?: AnyComponent): Promise<void> => {
@@ -87,17 +87,13 @@
     </div>
   </div>
   <div class="content scroll-divider-color">
-    {#if integrationType.stateComponent}
-      <Component is={integrationType.stateComponent} />
+    {#if integration !== undefined && integrationType.stateComponent}
+      <Component is={integrationType.stateComponent} props={{ integration }} />
     {:else if integration !== undefined && integration.kind === 'gmail'}
       <span class="text-normal content-color">
         Synchronization in progress for account:
         <br />
         artyom.savchenko@xored.com
-      </span>
-    {:else if integration !== undefined && integration.workspaceUuid == null}
-      <span class="text-normal content-color">
-        The account +79628346735 is not integrated with the workspace.
       </span>
     {:else if integrationType.descriptionComponent}
       <Component is={integrationType.descriptionComponent} />
@@ -114,12 +110,12 @@
   </div>
   <div class="divider"/>
   <div class="footer">
-    {#if integration !== undefined && integration.workspaceUuid == null}
+    {#if integration !== undefined && integration.workspaceUuid == null && integrationType.configureComponent !== undefined}
       <Button
         minWidth={'5rem'}
         label={setting.string.Integrate}
         kind={'primary'}
-        on:click={(ev) => handleConfigure(integrationType.createComponent)}
+        on:click={(ev) => handleConfigure(integrationType.configureComponent)}
       />
     {/if}
     {#if integrationType.createComponent !== undefined && integration === undefined}
@@ -130,7 +126,7 @@
         on:click={(ev) => handleConfigure(integrationType.createComponent)}
       />
     {:else if integration !== undefined}
-      {#if integrationType.configureComponent !== undefined}
+      {#if integrationType.configureComponent !== undefined && integration.workspaceUuid != null}
         <Button
           label={setting.string.Configure}
           minWidth={'5rem'}

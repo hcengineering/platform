@@ -13,6 +13,11 @@
 // limitations under the License.
 //
 
-export * from './account'
-export * from './types'
-export * from './utils'
+import { Integration } from '@hcengineering/account-client'
+
+export function isWorkspaceIntegration (integration: Integration): boolean {
+  return integration.workspaceUuid != null
+}
+export function isConnection (integration: Integration): boolean {
+  return integration.workspaceUuid == null
+}

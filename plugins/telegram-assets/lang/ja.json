@@ -71,6 +71,8 @@
     "DisableSync": "同期を無効にする",
     "SelectAccess": "アクセスを選択",
     "ConfigureIntegration": "統合を構成",
-    "Apply": "適用"
+    "Apply": "適用",
+    "SyncedChannels": "同期されたチャンネル",
+    "NotConnectedIntegration": "アカウント {phone} はワークスペースと統合されていません"
   }
 }

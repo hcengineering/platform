@@ -61,7 +61,7 @@
     "SyncStarredChannels": "Sync starred channels",
     "Public": "Public",
     "Private": "Private",
-    "TotalChannels": "Total cChannels",
+    "TotalChannels": "Total Channels",
     "SyncEnabled": "Sync enabled",
     "SyncDisabled": "Sync disabled",
     "SelectAll": "Select all",
@@ -70,6 +70,8 @@
     "DisableSync": "Disable sync",
     "SelectAccess": "Select access",
     "ConfigureIntegration": "Configure integration",
-    "Apply": "Apply"
+    "Apply": "Apply",
+    "SyncedChannels": "Synchronized channels",
+    "NotConnectedIntegration": "The account {phone} is not integrated with the workspace"
   }
 }

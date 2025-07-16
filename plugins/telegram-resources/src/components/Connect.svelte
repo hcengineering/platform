@@ -18,8 +18,9 @@
   import { createEventDispatcher } from 'svelte'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
-  import { command, list, type Integration } from '../api'
-  import ChannelsConfig from './config/ChannelsConfig.svelte'
+  import { command, getState, type Integration } from '../api'
+
+  export let integration: any
 
   let phone: string = ''
   let code: string = ''
@@ -42,14 +43,14 @@
     }
   }
 
-  let integration: Integration = 'Loading'
+  let integrationState: Integration = 'Loading'
   let state: UIState = { mode: 'Loading' }
 
   function h (handler: () => Promise<Integration>) {
     return () => {
       handler()
         .then((i) => {
-          integration = i
+          integrationState = i
         })
         .catch((error) => {
           state = {
@@ -64,9 +65,9 @@
   }
 
   $: {
-    if (integration === 'Loading') {
+    if (integrationState === 'Loading') {
       state = { mode: 'Loading' }
-    } else if (integration === 'Missing') {
+    } else if (integrationState === 'Missing') {
       state = {
         mode: 'WantPhone',
         buttons: {
@@ -79,11 +80,11 @@
         }
       }
     } else {
-      switch (integration.status) {
+      switch (integrationState.status) {
         case 'authorized': {
           state = {
             mode: 'Authorized',
-            hint: integration.number,
+            hint: integrationState.number,
             buttons: {
               primary: { label: ui.string.Ok, handler: close }
               // secondary: { label: telegram.string.Disconnect }
@@ -93,7 +94,7 @@
         }
 
         case 'wantcode': {
-          const number = integration.number
+          const number = integrationState.number
 
           state = {
             mode: 'WantCode',
@@ -111,7 +112,7 @@
         }
 
         case 'wantpassword': {
-          const number = integration.number
+          const number = integrationState.number
 
           state = {
             mode: 'WantPassword',
@@ -133,12 +134,11 @@
 
   async function init (): Promise<void> {
     try {
-      const integrations = await list()
-
-      if (integrations.length === 0) {
-        integration = 'Missing'
+      const phone = integration?.data?.phone
+      if (phone !== undefined && phone !== '') {
+        integrationState = await getState(phone)
       } else {
-        integration = integrations[0]
+        integrationState = 'Missing'
       }
     } catch (ex: any) {
       console.error(ex)
@@ -156,9 +156,6 @@
   void init()
 </script>
 
-{#if state.mode === 'Authorized'}
-<ChannelsConfig/>
-{:else}
 <div class="card">
   <div class="flex-between header">
     <div class="overflow-label fs-title"><Label label={telegram.string.ConnectFull} /></div>
@@ -213,7 +210,6 @@
     </div>
   </div>
 </div>
-{/if}
 
 <style lang="scss">
   .card {

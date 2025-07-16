@@ -71,6 +71,8 @@
     "DisableSync": "Zakázat synchronizaci",
     "SelectAccess": "Vybrat přístup",
     "ConfigureIntegration": "Konfigurovat integraci",
-    "Apply": "Použít"
+    "Apply": "Použít",
+    "SyncedChannels": "Synchronizované kanály",
+    "NotConnectedIntegration": "Účet {phone} není integrován s pracovním prostorem"
   }
 }

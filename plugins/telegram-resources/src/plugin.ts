@@ -48,6 +48,7 @@ export default mergeIds(telegramId, telegram, {
     Public: '' as IntlString,
     Private: '' as IntlString,
     TotalChannels: '' as IntlString,
+    SyncedChannels: '' as IntlString,
     SyncEnabled: '' as IntlString,
     SyncDisabled: '' as IntlString,
     SelectAll: '' as IntlString,
@@ -56,7 +57,8 @@ export default mergeIds(telegramId, telegram, {
     DisableSync: '' as IntlString,
     SelectAccess: '' as IntlString,
     ConfigureIntegration: '' as IntlString,
-    Apply: '' as IntlString
+    Apply: '' as IntlString,
+    NotConnectedIntegration: '' as IntlString
   },
   component: {
     MessagePresenter: '' as AnyComponent

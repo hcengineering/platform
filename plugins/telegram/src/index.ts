@@ -61,7 +61,7 @@ export interface SharedTelegramMessages extends AttachedDoc {
 /**
  * @public
  */
-export const telegramIntegrationKind = 'telegram-bot' as IntegrationKind
+export const telegramIntegrationKind = 'hulygram' as IntegrationKind
 
 /**
  * @public
@@ -73,8 +73,10 @@ export default plugin(telegramId, {
     Chat: '' as AnyComponent,
     Connect: '' as AnyComponent,
     Reconnect: '' as AnyComponent,
+    Configure: '' as AnyComponent,
     IconTelegram: '' as AnyComponent,
-    SharedMessages: '' as AnyComponent
+    SharedMessages: '' as AnyComponent,
+    StateComponent: '' as AnyComponent
   },
   integrationType: {
     Telegram: '' as Ref<IntegrationType>
