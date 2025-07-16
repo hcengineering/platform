@@ -1,0 +1,271 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// packages/integration/src/account.ts
+
+import {
+  getClient as getAccountClientRaw,
+  Integration,
+  IntegrationKey,
+  type AccountClient
+} from '@hcengineering/account-client'
+import { AccountUuid, IntegrationKind, PersonId, SocialId, WorkspaceUuid } from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
+import { v4 as uuid } from 'uuid'
+
+import { IntegrationClient, IntegrationEventData, IntegrationUpdatedData, IntegrationErrorData } from './types'
+import { isConnection } from './utils'
+import { type EventCallback, getIntegrationEventBus } from './events'
+
+export class IntegrationClientImpl implements IntegrationClient {
+  private readonly client: AccountClient
+  private readonly events = getIntegrationEventBus()
+
+  constructor (
+    accountsUrl: string,
+    token: string,
+    private readonly integrationKind: IntegrationKind,
+    private readonly serviceName: string
+  ) {
+    this.client = getAccountClientRaw(accountsUrl, token)
+  }
+
+  // Event methods
+  on<T = any>(event: string, callback: EventCallback<T>): () => void {
+    return this.events.on(event, callback)
+  }
+
+  off (event: string, callback?: EventCallback): void {
+    this.events.off(event, callback)
+  }
+
+  private emit<T = any>(event: string, data: T): void {
+    this.events.emit(event, data)
+  }
+
+  async getIntegrationsByAccount (account: AccountUuid, workspaceUuid?: WorkspaceUuid): Promise<Integration | null> {
+    try {
+      const integrations = await this.client.listIntegrations({
+        kind: this.integrationKind,
+        workspaceUuid: workspaceUuid ?? null
+      })
+
+      if (integrations.length === 0) return null
+
+      const socialIds = await this.getAccountSocialIds(account)
+
+      for (const integration of integrations) {
+        if (integration.workspaceUuid == null) continue
+        const socialId = socialIds.find((it) => it._id === integration.socialId)
+        if (socialId !== undefined) {
+          const eventData: IntegrationEventData = {
+            integration,
+            timestamp: Date.now()
+          }
+          this.emit('integration:found', eventData)
+          return integration
+        }
+      }
+
+      return null
+    } catch (error) {
+      const errorData: IntegrationErrorData = {
+        operation: 'getIntegrationsByAccount',
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: Date.now()
+      }
+      this.emit('integration:error', errorData)
+      throw error
+    }
+  }
+
+  async getConnection (integration: Integration): Promise<Integration | null> {
+    try {
+      if (isConnection(integration)) {
+        return integration
+      }
+      const connectionKey = {
+        socialId: integration.socialId,
+        kind: integration.kind,
+        workspaceUuid: null
+      }
+      return await this.client.getIntegration(connectionKey)
+    } catch (error) {
+      const errorData: IntegrationErrorData = {
+        operation: 'connect',
+        error: error instanceof Error ? error.message : String(error),
+        socialId: integration.socialId,
+        timestamp: Date.now()
+      }
+      this.emit('integration:error', errorData)
+      throw error
+    }
+  }
+
+  async integrate (connection: Integration, workspace: WorkspaceUuid, data?: Record<string, any>): Promise<Integration> {
+    try {
+      const existingData = data ?? connection.data ?? {}
+      const integration = {
+        socialId: connection.socialId,
+        kind: connection.kind ?? this.integrationKind,
+        workspaceUuid: workspace,
+        data: {
+          ...existingData,
+          _id: uuid(),
+          connectionId: connection.data?._id
+        }
+      }
+
+      const existingIntegration = await this.client.getIntegration(integration)
+      if (existingIntegration != null) {
+        return existingIntegration
+      }
+
+      await this.client.createIntegration(integration)
+
+      const eventData: IntegrationEventData = {
+        integration,
+        timestamp: Date.now()
+      }
+      this.emit('integration:created', eventData)
+
+      return integration
+    } catch (error) {
+      const errorData: IntegrationErrorData = {
+        operation: 'integrate',
+        error: error instanceof Error ? error.message : String(error),
+        workspaceUuid: workspace,
+        timestamp: Date.now()
+      }
+      this.emit('integration:error', errorData)
+      throw error
+    }
+  }
+
+  async connect (socialId: PersonId): Promise<Integration> {
+    try {
+      const connection = {
+        socialId,
+        kind: this.integrationKind,
+        workspaceUuid: null
+      }
+      const existingConnection = await this.client.getIntegration(connection)
+      if (existingConnection != null) {
+        return existingConnection
+      }
+
+      await this.client.createIntegration(connection)
+
+      const eventData: IntegrationEventData = {
+        integration: connection,
+        timestamp: Date.now()
+      }
+      this.emit('connection:created', eventData)
+
+      return connection
+    } catch (error) {
+      const errorData: IntegrationErrorData = {
+        operation: 'connect',
+        error: error instanceof Error ? error.message : String(error),
+        socialId,
+        timestamp: Date.now()
+      }
+      this.emit('integration:error', errorData)
+      throw error
+    }
+  }
+
+  async updateConfig (integrationKey: IntegrationKey, config: Record<string, any>): Promise<void> {
+    try {
+      const integration = await this.client.getIntegration(integrationKey)
+      if (integration == null) {
+        throw new Error(`Integration not found: ${JSON.stringify(integrationKey)}`)
+      }
+
+      const oldConfig = integration.data?.config
+      const data = {
+        ...integration.data,
+        config
+      }
+
+      await this.client.updateIntegration({
+        ...integration,
+        data
+      })
+
+      const eventData: IntegrationUpdatedData = {
+        integration,
+        oldConfig,
+        newConfig: config,
+        timestamp: Date.now()
+      }
+      this.emit('integration:updated', eventData)
+    } catch (error) {
+      const errorData: IntegrationErrorData = {
+        operation: 'updateConfig',
+        error: error instanceof Error ? error.message : String(error),
+        integrationKey,
+        timestamp: Date.now()
+      }
+      this.emit('integration:error', errorData)
+      throw error
+    }
+  }
+
+  async removeIntegration (socialId: PersonId | undefined | null, workspaceUuid: WorkspaceUuid): Promise<void> {
+    if (socialId == null) return
+
+    try {
+      const integrations = await this.client.listIntegrations({
+        kind: this.integrationKind,
+        socialId,
+        workspaceUuid
+      })
+
+      for (const integration of integrations) {
+        await this.client.deleteIntegration({
+          socialId,
+          kind: this.integrationKind,
+          workspaceUuid: integration.workspaceUuid
+        })
+
+        const eventData: IntegrationEventData = {
+          integration,
+          timestamp: Date.now()
+        }
+        this.emit('integration:deleted', eventData)
+      }
+    } catch (error) {
+      const errorData: IntegrationErrorData = {
+        operation: 'removeIntegration',
+        error: error instanceof Error ? error.message : String(error),
+        socialId,
+        workspaceUuid,
+        timestamp: Date.now()
+      }
+      this.emit('integration:error', errorData)
+      throw error
+    }
+  }
+
+  private async getAccountSocialIds (account: AccountUuid): Promise<SocialId[]> {
+    try {
+      const accountClient = getAccountClientRaw(generateToken(account, undefined, { service: this.serviceName }))
+      return await accountClient.getSocialIds(false)
+    } catch (e) {
+      console.error(e)
+    }
+    return []
+  }
+}

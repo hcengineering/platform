@@ -73,6 +73,7 @@
     "ConfigureIntegration": "Configura integrazione",
     "Apply": "Applica",
     "SyncedChannels": "Canali sincronizzati",
-    "NotConnectedIntegration": "L'account {phone} non è integrato con lo spazio di lavoro"
+    "NotConnectedIntegration": "L'account {phone} non è integrato con lo spazio di lavoro",
+    "FailedToLoadState": "Impossibile caricare lo stato dell'integrazione"
   }
 }

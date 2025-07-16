@@ -73,6 +73,7 @@
     "ConfigureIntegration": "Настроить интеграцию",
     "Apply": "Применить",
     "SyncedChannels": "Синхронизированные каналы",
-    "NotConnectedIntegration": "Аккаунт {phone} не интегрирован с пространством"
+    "NotConnectedIntegration": "Аккаунт {phone} не интегрирован с пространством",
+    "FailedToLoadState": "Не удалось загрузить состояние интеграции"
   }
 }

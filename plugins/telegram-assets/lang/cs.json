@@ -73,6 +73,7 @@
     "ConfigureIntegration": "Konfigurovat integraci",
     "Apply": "Použít",
     "SyncedChannels": "Synchronizované kanály",
-    "NotConnectedIntegration": "Účet {phone} není integrován s pracovním prostorem"
+    "NotConnectedIntegration": "Účet {phone} není integrován s pracovním prostorem",
+    "FailedToLoadState": "Nepodařilo se načíst stav integrace"
   }
 }

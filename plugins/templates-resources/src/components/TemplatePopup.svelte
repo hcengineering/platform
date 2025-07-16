@@ -60,6 +60,7 @@
       title: item.title,
       message
     })
+    closePopup()
   }
 
   export function onKeyDown (ev: KeyboardEvent) {

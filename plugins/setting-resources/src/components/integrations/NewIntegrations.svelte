@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
   import { createQuery, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { type IntegrationType, IntegrationError } from '@hcengineering/setting'
@@ -21,6 +21,7 @@
   import { type Integration } from '@hcengineering/account-client'
   import { Header, Breadcrumb, NotificationSeverity, addNotification, themeStore, TabItem, Switcher, Loading } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
+  import { onAnyIntegrationEvent } from '@hcengineering/integration'
 
   import IntegrationCard from './IntegrationCard.svelte'
   import IntegrationErrorNotification from '../IntegrationErrorNotification.svelte'
@@ -34,6 +35,7 @@
   let integrations: Integration[] = []
   let integrationTypes: IntegrationType[] = []
   let isLoading = true
+  let unsubscribers: (() => void)[] = []
 
   const viewslist: TabItem[] = [
     { id: 'all', labelIntl: setting.string.AllIntegrations },
@@ -70,6 +72,7 @@
           window.location.pathname + (newParams != null && newParams !== '' ? `?${newParams}` : '') + window.location.hash
         window.history.replaceState({}, document.title, newUrl)
       }
+      subscribe()
     } catch (err) {
       console.error('Error loading integrations:', err)
       await showErrorNotification('Failed to load integrations')
@@ -77,6 +80,23 @@
       isLoading = false
     }
   })
+
+  onDestroy(() => {
+    unsubscribers.forEach(unsubscribe => { unsubscribe() })
+  })
+
+  function subscribe (): void {
+    unsubscribers.push(
+      onAnyIntegrationEvent('integration:updated', refreshIntegrations),
+      onAnyIntegrationEvent('integration:created', refreshIntegrations),
+      onAnyIntegrationEvent('integration:deleted', refreshIntegrations)
+    )
+  }
+
+  async function refreshIntegrations (data: any) {
+    console.log('Refreshing integrations due to:', data.integrationKind, data.operation)
+    // await loadIntegrations()
+  }
 
   async function showErrorNotification (error: string): Promise<void> {
     const errorMessage =

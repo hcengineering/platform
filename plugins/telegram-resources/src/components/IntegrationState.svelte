@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { Label, Loading } from '@hcengineering/ui'
+  import { IconError, Label, Loading } from '@hcengineering/ui'
   import type { Integration } from '@hcengineering/account-client'
 
   import telegram from '../plugin'
@@ -49,10 +49,8 @@
       </div>
     {:else if error}
       <div class="error-container" transition:fade={{ duration: 300 }}>
-        <span class="error-icon">⚠️</span>
-        <div class="error-content">
-          <span class="error-title">Failed to load integration state</span>
-        </div>
+        <IconError size={'medium'} />
+        <Label label={telegram.string.FailedToLoadState} />
       </div>
     {:else if integration.workspaceUuid == null}
       <div class="flex-center" transition:fade={{ duration: 300 }}>
@@ -101,28 +99,8 @@
 
   .error-container {
     display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    background: var(--theme-error-bg-color, #fef2f2);
-    border: 1px solid var(--theme-error-border-color, #fecaca);
-    border-radius: 0.375rem;
-  }
-
-  .error-icon {
-    font-size: 1.25rem;
-    flex-shrink: 0;
-  }
-
-  .error-content {
-    display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 0.25rem;
-  }
-
-  .error-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--theme-error-color, #dc2626);
   }
 
   .stats-list {

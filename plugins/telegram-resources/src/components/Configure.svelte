@@ -1,9 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { CheckBox, Toggle, DropdownLabelsIntl, SearchEdit, Label, ListView, Modal, Loading, closePopup } from '@hcengineering/ui'
+  import { CheckBox, Toggle, DropdownLabelsIntl, SearchEdit, Label, ListView, Modal, Loading, closePopup, Icon } from '@hcengineering/ui'
   import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { isWorkspaceIntegration } from '@hcengineering/integration'
+  import ui from '@hcengineering/ui'
 
   import TelegramIcon from './icons/TelegramColor.svelte'
   import telegram from '../plugin'
@@ -47,6 +48,20 @@
     isLoading = false
     console.log('Initial channels:', channels)
   })
+
+  // Get channel icon based on type
+  function getChannelIcon (channel: TelegramChannelConfig) {
+    switch (channel.type) {
+      case 'user':
+        return telegram.icon.User
+      case 'group':
+        return telegram.icon.Group
+      case 'channel':
+        return telegram.icon.Channel
+      default:
+        return undefined
+    }
+  }
 
   // Filter channels based on search query
   $: filteredChannels = channels.filter(channel => {
@@ -237,6 +252,7 @@
           <ListView bind:this={list} count={filteredChannels.length} bind:selection on:changeContent={() => dispatch('changeContent')}>
             <svelte:fragment slot="item" let:item={itemId}>
               {@const item = filteredChannels[itemId]}
+              {@const icon = getChannelIcon(item)}
               <div class="channel-item" class:selected={selectedChannels.has(item.id)}>
                 <div class="channel-select">
                   <CheckBox
@@ -247,7 +263,12 @@
                   />
                 </div>
                 <div class="channel-info">
-                  <span class="text-normal font-semi-bold">{item.name}</span>
+                  <div class="channel-name">
+                    {#if icon !== undefined}
+                      <Icon icon={icon} size={'small'} />
+                    {/if}
+                    <span class="text-normal font-medium">{item.name}</span>
+                  </div>
                 </div>
 
                 <div class="channel-sync">
@@ -418,6 +439,12 @@
     flex-direction: column;
     gap: 0.25rem;
     min-width: 0;
+  }
+
+  .channel-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .channel-sync {

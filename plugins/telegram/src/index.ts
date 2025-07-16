@@ -133,6 +133,9 @@ export default plugin(telegramId, {
   },
   icon: {
     Shared: '' as Asset,
-    Locked: '' as Asset
+    Locked: '' as Asset,
+    User: '' as Asset,
+    Channel: '' as Asset,
+    Group: '' as Asset
   }
 })

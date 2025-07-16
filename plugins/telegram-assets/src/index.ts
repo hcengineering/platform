@@ -20,5 +20,8 @@ import telegram from '@hcengineering/telegram'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(telegram.icon, {
   Shared: `${icons}#shared`,
-  Locked: `${icons}#locked`
+  Locked: `${icons}#locked`,
+  User: `${icons}#user`,
+  Channel: `${icons}#channel`,
+  Group: `${icons}#group`,
 })

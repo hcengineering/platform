@@ -24,26 +24,17 @@ export interface IntegrationClient {
   /**
    * Get integrations for a specific account and optional workspace
    */
-  getIntegrationsByAccount: (
-    account: AccountUuid,
-    workspaceUuid?: WorkspaceUuid
-  ) => Promise<Integration | null>
+  getIntegrationsByAccount: (account: AccountUuid, workspaceUuid?: WorkspaceUuid) => Promise<Integration | null>
 
   /**
    * Get the connection details for a specific integration
    */
-  getConnection: (
-    integration: Integration
-  ) => Promise<Integration | null>
+  getConnection: (integration: Integration) => Promise<Integration | null>
 
   /**
    * Integrate a social ID with a workspace
    */
-  integrate: (
-    connection: Integration,
-    workspace: WorkspaceUuid,
-    data?: Record<string, any>
-  ) => Promise<Integration>
+  integrate: (connection: Integration, workspace: WorkspaceUuid, data?: Record<string, any>) => Promise<Integration>
 
   /**
    * Create a connection for a social ID (without workspace integration)
@@ -53,18 +44,31 @@ export interface IntegrationClient {
   /**
    * Update configuration for an existing integration
    */
-  updateConfig: (
-    integrationKey: IntegrationKey,
-    config: Record<string, any>
-  ) => Promise<void>
+  updateConfig: (integrationKey: IntegrationKey, config: Record<string, any>) => Promise<void>
 
   /**
    * Remove integration for a social ID and workspace
    */
-  removeIntegration: (
-    socialId: PersonId | undefined | null,
-    workspaceUuid: WorkspaceUuid
-  ) => Promise<void>
+  removeIntegration: (socialId: PersonId | undefined | null, workspaceUuid: WorkspaceUuid) => Promise<void>
+}
+
+export interface IntegrationEventData {
+  integration: Integration
+  timestamp: number
+}
+
+export interface IntegrationUpdatedData extends IntegrationEventData {
+  oldConfig?: Record<string, any>
+  newConfig: Record<string, any>
+}
+
+export interface IntegrationErrorData {
+  operation: string
+  error: string
+  integrationKey?: IntegrationKey
+  socialId?: PersonId
+  workspaceUuid?: WorkspaceUuid
+  timestamp: number
 }
 
 export interface IntegrationData {

@@ -58,7 +58,8 @@ export default mergeIds(telegramId, telegram, {
     SelectAccess: '' as IntlString,
     ConfigureIntegration: '' as IntlString,
     Apply: '' as IntlString,
-    NotConnectedIntegration: '' as IntlString
+    NotConnectedIntegration: '' as IntlString,
+    FailedToLoadState: '' as IntlString
   },
   component: {
     MessagePresenter: '' as AnyComponent
