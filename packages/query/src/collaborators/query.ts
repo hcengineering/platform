@@ -178,6 +178,9 @@ export class CollaboratorsQuery implements Query<Collaborator, FindCollaborators
 
   public async refresh (): Promise<void> {
     this.result = new QueryResult([] as Collaborator[], (c) => c.account)
-    await this.initResult()
+    this.result = this.initResult()
+    void this.result.then(() => {
+      void this.notify()
+    })
   }
 }

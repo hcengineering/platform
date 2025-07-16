@@ -880,9 +880,13 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     this.tmpMessages.clear()
 
     this.result = new QueryResult([] as Message[], (x) => x.id)
-    this.result.setTail(this.params.from == null)
-    this.result.setHead(this.params.from == null)
     this.initialized = false
+
+    if (this.isInitLoadingForward()) {
+      this.result.setHead(this.params.from == null)
+    } else {
+      this.result.setTail(this.params.from == null)
+    }
 
     for (let i = 0; i < nextPagesCount; i++) {
       const { isDone } = await this.requestLoadNextPage(false)

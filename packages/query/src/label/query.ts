@@ -254,6 +254,9 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
 
   async refresh (): Promise<void> {
     this.result = new QueryResult([] as Label[], getId)
-    await this.initResult()
+    this.result = this.initResult()
+    void this.result.then(() => {
+      void this.notify()
+    })
   }
 }
