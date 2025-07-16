@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { type IntlString, Severity, Status } from '@hcengineering/platform'
-  import { signupStore } from '@hcengineering/analytics'
+  import { signupStore } from '@hcengineering/analytics-providers'
   import { onMount } from 'svelte'
 
   import { type BottomAction, doLoginAsGuest, doLoginNavigate, LoginMethods } from '../index'

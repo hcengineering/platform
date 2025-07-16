@@ -16,7 +16,7 @@
 <script lang="ts">
   import { OK, Severity, Status } from '@hcengineering/platform'
   import { logIn } from '@hcengineering/workbench'
-  import { signupStore } from '@hcengineering/analytics'
+  import { signupStore } from '@hcengineering/analytics-providers'
 
   import BottomActionComponent from './BottomAction.svelte'
   import login from '../plugin'
