@@ -5,6 +5,7 @@
     "Stop": "Stop",
     "Resume": "Resume",
     "Record": "Record",
+    "Done": "Done",
     "CancelRecording": "Cancel recording",
     "CancelRecordingConfirm": "Are you sure you want to cancel recording?",
     "RestartRecording": "Restart recording",

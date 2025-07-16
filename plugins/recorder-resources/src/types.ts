@@ -21,6 +21,7 @@ export interface RecordingState {
   options: RecordingOptions
   stream: MediaStream
   state: 'recording' | 'paused' | 'stopping' | 'stopped'
+  result: RecordingResult | null
 }
 
 export interface RecordingOptions {

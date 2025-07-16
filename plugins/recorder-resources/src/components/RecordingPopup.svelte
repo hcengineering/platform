@@ -13,17 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import {
-    enumerateDevices,
-    getDisplayMedia,
-    getSelectedCamId,
-    getSelectedMicId,
-    getMediaStream,
-    getMicrophoneStream
-  } from '@hcengineering/media'
+  import { enumerateDevices, getDisplayMedia, getSelectedCamId, getSelectedMicId } from '@hcengineering/media'
   import { micAccess, camAccess } from '@hcengineering/media-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { MessageBox } from '@hcengineering/presentation'
+  import { FilePreview, MessageBox } from '@hcengineering/presentation'
   import {
     IconUpOutline,
     Label,
@@ -39,14 +32,7 @@
 
   import { DefaultOptions } from '../const'
   import plugin from '../plugin'
-  import {
-    cancelRecording,
-    pauseRecording,
-    restartRecording,
-    resumeRecording,
-    startRecording,
-    stopRecording
-  } from '../recording'
+  import { cancelRecording, pauseRecording, resumeRecording, startRecording, stopRecording } from '../recording'
   import {
     recording,
     recordingCameraPosition,
@@ -100,7 +86,7 @@
   $: hasMicAccess = $micAccess.state !== 'denied'
 
   $: if (state !== null && state.state === 'stopped') {
-    dispatch('close')
+    // dispatch('close')
     recording.set(null)
   }
 
@@ -292,25 +278,6 @@
     micEnabled = false
   }
 
-  async function handleRestartRecording (): Promise<void> {
-    await pauseRecording()
-    showPopup(
-      MessageBox,
-      {
-        label: plugin.string.RestartRecording,
-        message: plugin.string.RestartRecordingConfirm
-      },
-      undefined,
-      async (restart: boolean) => {
-        if (restart) {
-          await restartRecording()
-        } else {
-          await resumeRecording()
-        }
-      }
-    )
-  }
-
   async function handleCancelRecording (): Promise<void> {
     if (state === null) {
       dispatch('close')
@@ -476,14 +443,25 @@
   onCancel={handleCancelRecording}
   hideFooter
 >
-  <div class="container p-3">
-    {#if state !== null && state.state === 'stopped'}
-      <!-- Maybe show recording result -->
-    {:else if mainStream === null}
+  <div class="container p-3 flex-col-center justify-center">
+    {#if state == null && mainStream === null}
       <div class="placeholder flex-col-center justify-center">
         {#if streamPromise === null}
           <Label label={plugin.string.SelectVideoToRecord} />
         {/if}
+      </div>
+    {:else if state !== null && state.state === 'stopped' && state.result != null}
+      <div class="preview-container w-full h-full flex-col-center justify-center">
+        <FilePreview
+          file={state.result.uuid}
+          name={state.result.name}
+          contentType={state.result.type}
+          metadata={{
+            originalWidth: state.result.width,
+            originalHeight: state.result.height
+          }}
+          fit
+        />
       </div>
     {:else}
       <div
@@ -599,8 +577,6 @@
           <ModernButton
             size={'small'}
             kind={'primary'}
-            icon={IconStop}
-            iconProps={{ size: 'small' }}
             label={plugin.string.Done}
             noFocus
             on:click={handleClose}
@@ -673,7 +649,8 @@
     height: 100%;
   }
 
-  .canvas-container {
+  .canvas-container,
+  .preview-container {
     border-radius: 0.75rem;
   }
 

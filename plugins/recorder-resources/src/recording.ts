@@ -69,7 +69,7 @@ export async function startRecording (options: RecordingOptions): Promise<void> 
   const recorder = await createScreenRecorder(options)
   await recorder.start()
 
-  recording.set({ recorder, options, stream: options.stream, state: 'recording' })
+  recording.set({ recorder, options, stream: options.stream, state: 'recording', result: null })
 }
 
 export async function stopRecording (): Promise<void> {
@@ -80,7 +80,7 @@ export async function stopRecording (): Promise<void> {
     const result = await current.recorder.stop()
     await current.options.onSuccess?.(result)
 
-    recording.set({ ...current, state: 'stopped' })
+    recording.set({ ...current, state: 'stopped', result })
     popup?.close()
   } else {
     console.warn('Recording is not in `recording` state', current)
