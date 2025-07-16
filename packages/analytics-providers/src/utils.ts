@@ -118,11 +118,22 @@ function getProviderFromUrl (): string | null {
   const location = getCurrentLocation()
   const referrer = document.referrer
 
-  if (referrer.includes('accounts.google.com')) {
-    return 'google'
-  } else if (referrer.includes('github.com')) {
-    return 'github'
-  } else if (location.query?.provider != null && location.query.provider !== '') {
+  if (referrer !== '') {
+    try {
+      const referrerUrl = new URL(referrer)
+      const hostname = referrerUrl.hostname
+
+      if (hostname === 'accounts.google.com') {
+        return 'google'
+      } else if (hostname === 'github.com') {
+        return 'github'
+      }
+    } catch (error) {
+      // Invalid URL, ignored
+    }
+  }
+
+  if (location.query?.provider != null && location.query.provider !== '') {
     return location.query.provider
   }
 
