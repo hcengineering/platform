@@ -127,12 +127,7 @@
       />
     </div>
     <div class="mt-4" />
-    <MessagePresenter
-      {card}
-      message={{ ..._message, reactions: [], linkPreviews: [], thread: undefined }}
-      readonly={true}
-      padding="0"
-    />
+    <MessagePresenter {card} message={{ ..._message, reactions: [], thread: undefined }} readonly={true} padding="0" />
   </div>
   <svelte:fragment slot="footer">
     {#if _message.thread != null && !inProgress}

@@ -24,7 +24,15 @@
     getFileMetadata,
     isLinkPreviewEnabled
   } from '@hcengineering/presentation'
-  import { Message, MessageID, BlobData, LinkPreviewData } from '@hcengineering/communication-types'
+  import {
+    Message,
+    MessageID,
+    LinkPreviewParams,
+    BlobParams,
+    AttachmentID,
+    linkPreviewType,
+    BlobAttachment
+  } from '@hcengineering/communication-types'
   import { AttachmentPresenter, LinkPreviewCard } from '@hcengineering/attachment-resources'
   import { areEqualMarkups, isEmptyMarkup } from '@hcengineering/text'
   import { updateMyPresence } from '@hcengineering/presence-resources'
@@ -32,10 +40,11 @@
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { Card } from '@hcengineering/card'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
 
   import TextInput from '../TextInput.svelte'
   import IconAttach from '../icons/Attach.svelte'
-  import { defaultMessageInputActions, toMarkdown, toMarkup, loadLinkPreviewData } from '../../utils'
+  import { defaultMessageInputActions, toMarkdown, toMarkup, loadLinkPreviewParams } from '../../utils'
   import communication from '../../plugin'
   import { type TextInputAction, type PresenceTyping, MessageDraft } from '../../types'
   import TypingPresenter from '../TypingPresenter.svelte'
@@ -45,7 +54,7 @@
   export let message: Message | undefined = undefined
   export let title: string = ''
   export let onCancel: (() => void) | undefined = undefined
-  export let onSubmit: ((markdown: string, blobs: BlobData[]) => Promise<void>) | undefined = undefined
+  export let onSubmit: ((markdown: string, blobs: BlobParams[]) => Promise<void>) | undefined = undefined
 
   const throttle = new ThrottledCaller(500)
   const dispatch = createEventDispatcher()
@@ -55,7 +64,7 @@
 
   const maxLinkPreviewCount = 4
   const previewUrls = new Map<string, boolean>()
-  const linksData = new Map<string, LinkPreviewData | null>()
+  const linksData = new Map<string, LinkPreviewParams | null>()
 
   let prevCard: Ref<Card> | undefined = card._id
   let prevMessage: MessageID | undefined = message?.id
@@ -124,22 +133,29 @@
 
   async function createMessage (
     markdown: string,
-    blobs: BlobData[],
-    links: LinkPreviewData[],
+    blobs: BlobParams[],
+    links: LinkPreviewParams[],
     urlsToLoad: string[]
   ): Promise<void> {
     const { messageId } = await communicationClient.createMessage(card._id, card._class, markdown)
     void client.update(card, {}, false, Date.now())
 
     if (blobs.length > 0) {
-      void communicationClient.blobPatch(card._id, messageId, {
-        attach: blobs
+      void communicationClient.attachmentPatch<BlobParams>(card._id, messageId, {
+        add: blobs.map((it) => ({
+          id: it.blobId as any as AttachmentID,
+          type: it.mimeType,
+          params: it
+        }))
       })
     }
 
     if (links.length > 0) {
-      void communicationClient.linkPreviewPatch(card._id, messageId, {
-        attach: links
+      void communicationClient.attachmentPatch<LinkPreviewParams>(card._id, messageId, {
+        add: links.map((it) => ({
+          type: linkPreviewType,
+          params: it
+        }))
       })
     }
 
@@ -147,10 +163,15 @@
       if (links.some((it) => it.url === url)) continue
       const fetchedData = linksData.get(url)
       if (fetchedData === null) continue
-      const data = fetchedData ?? (await loadLinkPreviewData(url))
-      if (data === undefined) continue
-      void communicationClient.linkPreviewPatch(card._id, messageId, {
-        attach: [data]
+      const params = fetchedData ?? (await loadLinkPreviewParams(url))
+      if (params === undefined) continue
+      void communicationClient.attachmentPatch<LinkPreviewParams>(card._id, messageId, {
+        add: [
+          {
+            type: linkPreviewType,
+            params
+          }
+        ]
       })
     }
   }
@@ -158,31 +179,46 @@
   async function editMessage (
     message: Message,
     markdown: string,
-    blobs: BlobData[],
-    links: LinkPreviewData[]
+    blobs: BlobParams[],
+    links: LinkPreviewParams[]
   ): Promise<void> {
     await communicationClient.updateMessage(card._id, message.id, markdown)
 
-    const attachBlobs = blobs.filter((it) => !message.blobs.some((b) => b.blobId === it.blobId))
+    const attachBlobs = blobs.filter(
+      (b) => !message.attachments.some((it) => isBlobAttachment(it) && it.params.blobId === b.blobId)
+    )
 
     if (attachBlobs.length > 0) {
-      void communicationClient.blobPatch(card._id, message.id, {
-        attach: attachBlobs
+      void communicationClient.attachmentPatch<BlobParams>(card._id, message.id, {
+        add: attachBlobs.map((it) => ({
+          id: it.blobId as any as AttachmentID,
+          type: it.mimeType,
+          params: it
+        }))
       })
     }
-    const detachBlobs = message.blobs.filter((it) => !blobs.some((b) => b.blobId === it.blobId))
+
+    const detachBlobs = message.attachments.filter(
+      (it) => isBlobAttachment(it) && !blobs.some((b) => b.blobId === it.params.blobId)
+    ) as BlobAttachment[]
     if (detachBlobs.length > 0) {
       detachBlobs.forEach((it) => {
-        void deleteFile(it.blobId)
+        void deleteFile(it.params.blobId)
       })
-      void communicationClient.blobPatch(card._id, message.id, {
-        detach: detachBlobs.map((it) => it.blobId)
+      void communicationClient.attachmentPatch(card._id, message.id, {
+        remove: detachBlobs.map((it) => it.id)
       })
     }
-    const attachLinks = links.filter((it) => !message.linkPreviews.some((b) => b.url === it.url))
 
-    void communicationClient.linkPreviewPatch(card._id, message.id, {
-      attach: attachLinks
+    const attachLinks = links.filter(
+      (l) => !message.attachments.some((it) => isLinkPreviewAttachment(it) && it.params.url === l.url)
+    )
+
+    void communicationClient.attachmentPatch(card._id, message.id, {
+      add: attachLinks.map((it) => ({
+        type: linkPreviewType,
+        params: it
+      }))
     })
 
     dispatch('edited')
@@ -237,7 +273,8 @@
   async function handleCancel (): Promise<void> {
     onCancel?.()
     for (const blob of draft.blobs) {
-      const fromMessage = message?.blobs.some((it) => it.blobId === blob.blobId)
+      const fromMessage =
+        message?.attachments.some((it) => isBlobAttachment(it) && it.params.blobId === blob.blobId) ?? false
       if (!fromMessage) {
         void deleteFile(blob.blobId)
       }
@@ -342,7 +379,7 @@
 
     for (const url of urls) {
       try {
-        const data = linksData.get(url) ?? (await loadLinkPreviewData(url))
+        const data = linksData.get(url) ?? (await loadLinkPreviewParams(url))
         linksData.set(url, data ?? null)
         if (data === undefined || !previewUrls.has(url)) continue
         if (draftId !== draft._id) return
@@ -379,11 +416,12 @@
     return isEmptyMarkup(draft.content) && draft.blobs.length === 0
   }
 
-  function hasChanges (blobs: BlobData[], message: Message | undefined): boolean {
+  function hasChanges (blobs: BlobParams[], message: Message | undefined): boolean {
     if (isEmptyDraft()) return false
+    const messageBlobs = message?.attachments.filter(isBlobAttachment) ?? []
     if (message === undefined) return blobs.length > 0 || !isEmptyMarkup(draft.content)
-    if (message.blobs.length !== blobs.length) return true
-    if (message.blobs.some((it) => !blobs.some((f) => f.blobId === it.blobId))) return true
+    if (messageBlobs.length !== blobs.length) return true
+    if (messageBlobs.some((it) => !blobs.some((b) => b.blobId === it.params.blobId))) return true
 
     return !areEqualMarkups(draft.content, toMarkup(message.content))
   }
@@ -442,7 +480,11 @@
                       blobs: draft.blobs.filter((it) => it.blobId !== attachedBlob.blobId)
                     }
 
-                    if (!message?.blobs?.some((it) => it.blobId === attachedBlob.blobId)) {
+                    if (
+                      !message?.attachments?.some(
+                        (it) => isBlobAttachment(it) && it.params.blobId === attachedBlob.blobId
+                      )
+                    ) {
                       void deleteFile(attachedBlob.blobId)
                     }
                   }

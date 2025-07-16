@@ -23,7 +23,7 @@
   import { jsonToMarkup, markupToText } from '@hcengineering/text'
   import { ActivityMessageViewer, isActivityMessage } from '@hcengineering/communication-resources'
 
-  import FilesPreview from './FilesPreview.svelte'
+  import AttachmentPreview from './AttachmentPreview.svelte'
   import PreviewTemplate from './PreviewTemplate.svelte'
 
   export let card: Card
@@ -69,6 +69,6 @@
   {/if}
 
   <svelte:fragment slot="after">
-    <FilesPreview {message} />
+    <AttachmentPreview {message} />
   </svelte:fragment>
 </PreviewTemplate>

@@ -17,6 +17,7 @@ import { type Location, location } from '@hcengineering/ui'
 import { type Card } from '@hcengineering/card'
 import { EmptyMarkup } from '@hcengineering/text'
 import { type Message } from '@hcengineering/communication-types'
+import { isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
 
 import { type MessageDraft } from './types'
 import { toMarkup } from './utils'
@@ -87,13 +88,7 @@ export function messageToDraft (message: Message): MessageDraft {
   return {
     _id: message.id,
     content: toMarkup(message.content),
-    links: [...message.linkPreviews],
-    blobs: message.blobs.map((it) => ({
-      blobId: it.blobId,
-      mimeType: it.mimeType,
-      fileName: it.fileName,
-      size: it.size,
-      metadata: it.metadata
-    }))
+    blobs: message.attachments.filter(isBlobAttachment).map((it) => it.params),
+    links: message.attachments.filter(isLinkPreviewAttachment).map((it) => it.params)
   }
 }

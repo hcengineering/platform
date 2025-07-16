@@ -229,7 +229,7 @@ async function newMessages2file (
         limit: config.MessagesPerFile,
         reactions: true,
         replies: true,
-        files: true
+        attachments: true
       })
     ).map(deserializeMessage)
 
@@ -291,7 +291,7 @@ async function createNewGroup (
       created: lastCreated,
       reactions: true,
       replies: true,
-      files: true
+      attachments: true
     })
   )
     .filter((it) => it.id !== lastMessage.id)

@@ -15,7 +15,7 @@
 
 import { type IntlString } from '@hcengineering/platform'
 import { type TextEditorHandler } from '@hcengineering/text-editor'
-import { type LinkPreviewData, type BlobData } from '@hcengineering/communication-types'
+import type { LinkPreviewParams, BlobParams } from '@hcengineering/communication-types'
 import type { Markup, Ref, Timestamp } from '@hcengineering/core'
 import type { Person } from '@hcengineering/contact'
 import type { IconComponent } from '@hcengineering/ui'
@@ -47,6 +47,6 @@ export interface PresenceTyping {
 export interface MessageDraft {
   _id: string
   content: Markup
-  blobs: BlobData[]
-  links: LinkPreviewData[]
+  blobs: BlobParams[]
+  links: LinkPreviewParams[]
 }

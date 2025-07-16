@@ -14,27 +14,23 @@
 //
 import { initLiveQueries, refreshLiveQueries } from '@hcengineering/communication-client-query'
 import {
+  type AddAttachmentsOperation,
   type AddCollaboratorsEvent,
-  type AttachBlobsOperation,
-  type AttachLinkPreviewsOperation,
-  type BlobPatchEvent,
+  type AttachmentPatchEvent,
   type CreateMessageEvent,
   type CreateMessageResult,
-  type DetachBlobsOperation,
-  type UpdateBlobsOperation,
-  type DetachLinkPreviewsOperation,
   type Event,
   type EventResult,
-  type LinkPreviewPatchEvent,
   MessageEventType,
   NotificationEventType,
   type ReactionPatchEvent,
+  type RemoveAttachmentsOperation,
   type RemoveCollaboratorsEvent,
   type RemoveNotificationContextEvent,
   type RemovePatchEvent,
-  type SetBlobsOperation,
-  type SetLinkPreviewsOperation,
+  type SetAttachmentsOperation,
   type ThreadPatchEvent,
+  type UpdateAttachmentsOperation,
   type UpdateNotificationContextEvent,
   type UpdateNotificationEvent,
   type UpdateNotificationQuery,
@@ -42,8 +38,6 @@ import {
 } from '@hcengineering/communication-sdk-types'
 import {
   type AccountID,
-  type BlobData,
-  type BlobID,
   type CardID,
   type CardType,
   type Collaborator,
@@ -55,8 +49,6 @@ import {
   type FindNotificationContextParams,
   type FindNotificationsParams,
   type Label,
-  type LinkPreviewData,
-  type LinkPreviewID,
   type Markdown,
   type Message,
   type MessageID,
@@ -65,7 +57,10 @@ import {
   type Notification,
   type NotificationContext,
   type SocialID,
-  type BlobUpdateData
+  type AttachmentID,
+  type AttachmentData,
+  type AttachmentParams,
+  type AttachmentUpdateData
 } from '@hcengineering/communication-types'
 import core, {
   generateId,
@@ -78,10 +73,10 @@ import core, {
   AccountRole
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
-import { generateLinkPreviewId } from '@hcengineering/communication-shared'
 import { addNotification, NotificationSeverity, languageStore } from '@hcengineering/ui'
 import { translate } from '@hcengineering/platform'
 import view from '@hcengineering/view'
+import { v4 as uuid } from 'uuid'
 
 import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
 import { addTxListener, removeTxListener, type TxListener } from './utils'
@@ -115,6 +110,13 @@ export async function setCommunicationClient (platformClient: PlatformClient): P
   onClientListeners.forEach((fn) => {
     fn()
   })
+}
+
+export type AttachmentDataWithOptionalId<P extends AttachmentParams = AttachmentParams> = Omit<
+AttachmentData<P>,
+'id'
+> & {
+  id?: AttachmentID
 }
 
 const COMMUNICATION = 'communication' as OperationDomain
@@ -222,100 +224,58 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async blobPatch (
+  async attachmentPatch<P extends AttachmentParams>(
     cardId: CardID,
     messageId: MessageID,
     ops: {
-      attach?: BlobData[]
-      detach?: BlobID[]
-      set?: BlobData[]
-      update?: BlobUpdateData[]
+      add?: Array<AttachmentDataWithOptionalId<P>>
+      remove?: AttachmentID[]
+      set?: Array<AttachmentDataWithOptionalId<P>>
+      update?: Array<AttachmentUpdateData<P>>
     }
   ): Promise<void> {
-    const operations: Array<AttachBlobsOperation | DetachBlobsOperation | SetBlobsOperation | UpdateBlobsOperation> = []
+    const operations: Array<
+    AddAttachmentsOperation | RemoveAttachmentsOperation | SetAttachmentsOperation | UpdateAttachmentsOperation
+    > = []
 
-    if (ops.attach != null && ops.attach.length > 0) {
+    if (ops.add != null && ops.add.length > 0) {
       operations.push({
-        opcode: 'attach',
-        blobs: ops.attach
+        opcode: 'add',
+        attachments: ops.add.map((it) => ({
+          ...it,
+          id: it.id ?? (uuid() as AttachmentID)
+        }))
       })
     }
 
-    if (ops.detach != null && ops.detach.length > 0) {
+    if (ops.remove != null && ops.remove.length > 0) {
       operations.push({
-        opcode: 'detach',
-        blobIds: ops.detach
+        opcode: 'remove',
+        ids: ops.remove
       })
     }
 
     if (ops.set != null && ops.set.length > 0) {
       operations.push({
         opcode: 'set',
-        blobs: ops.set
+        attachments: ops.set.map((it) => ({
+          ...it,
+          id: it.id ?? (uuid() as AttachmentID)
+        }))
       })
     }
 
     if (ops.update != null && ops.update.length > 0) {
       operations.push({
         opcode: 'update',
-        blobs: ops.update
+        attachments: ops.update
       })
     }
 
     if (operations.length === 0) return
 
-    const event: BlobPatchEvent = {
-      type: MessageEventType.BlobPatch,
-      cardId,
-      messageId,
-      operations,
-      socialId: this.getSocialId()
-    }
-    await this.sendEvent(event)
-  }
-
-  async linkPreviewPatch (
-    cardId: CardID,
-    messageId: MessageID,
-    ops: {
-      attach?: LinkPreviewData[]
-      detach?: LinkPreviewID[]
-      set?: LinkPreviewData[]
-    }
-  ): Promise<void> {
-    const operations: Array<AttachLinkPreviewsOperation | DetachLinkPreviewsOperation | SetLinkPreviewsOperation> = []
-
-    if (ops.attach != null && ops.attach.length > 0) {
-      operations.push({
-        opcode: 'attach',
-        previews: ops.attach.map((it) => ({
-          ...it,
-          previewId: generateLinkPreviewId()
-        }))
-      })
-    }
-
-    if (ops.detach != null && ops.detach.length > 0) {
-      operations.push({
-        opcode: 'detach',
-        previewIds: ops.detach
-      })
-    }
-
-    if (ops.set != null && ops.set.length > 0) {
-      operations.push({
-        opcode: 'set',
-        previews: ops.set.map((it) => ({
-          ...it,
-          previewId: generateLinkPreviewId()
-        }))
-      })
-    }
-
-    if (operations.length === 0) return
-
-    const event: LinkPreviewPatchEvent = {
-      type: MessageEventType.LinkPreviewPatch,
+    const event: AttachmentPatchEvent = {
+      type: MessageEventType.AttachmentPatch,
       cardId,
       messageId,
       operations,
