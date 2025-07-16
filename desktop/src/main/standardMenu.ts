@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
-import { Menu, MenuItemConstructorOptions, type BrowserWindow } from 'electron'
+import { Menu, MenuItemConstructorOptions } from 'electron'
+import { StandardMenuCommand, StandardMenuCommandOpenSettings, StandardMenuCommandSelectWorkspace, StandardMenuCommandLogout, } from '../ui/types'
 
 const isMac = process.platform === 'darwin'
 const isLinux = process.platform === 'linux'
 
-export const addMenus = (getWindow: () => BrowserWindow, sendCommand: (cmd: string, ...args: any[]) => void): void => {
+export const addMenus = (sendCommand: (cmd: StandardMenuCommand, ...args: any[]) => void): void => {
   const template: MenuItemConstructorOptions[] = [
     {
       label: 'File',
@@ -26,15 +27,15 @@ export const addMenus = (getWindow: () => BrowserWindow, sendCommand: (cmd: stri
         {
           label: 'Settings',
           accelerator: isLinux ? 'Ctrl+,' : 'Meta+,',
-          click: () => { sendCommand('open-settings') }
+          click: () => { sendCommand(StandardMenuCommandOpenSettings) }
         },
         {
           label: 'Select workspace',
-          click: () => { sendCommand('select-workspace') }
+          click: () => { sendCommand(StandardMenuCommandSelectWorkspace) }
         },
         {
           label: 'Logout',
-          click: () => { sendCommand('logout') }
+          click: () => { sendCommand(StandardMenuCommandLogout) }
         },
         { role: isMac ? 'close' : 'quit' }
       ]

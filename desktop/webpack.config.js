@@ -318,6 +318,17 @@ module.exports = [
         },
         publicPath: ''
       }),
+      new HtmlWebpackPlugin({
+        template: './src/ui/index.ejs',
+        filename: 'index.windows.html',
+        meta: {
+          viewport: 'width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=1'
+        },
+        publicPath: '',
+        templateParameters: {
+          isWindows: true
+        }
+      }),
       ...(!dev ? [new CompressionPlugin()] : []),
       // new MiniCssExtractPlugin({
       //   filename: '[name].[id][contenthash].css'

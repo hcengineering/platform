@@ -1,10 +1,8 @@
 import { DownloadItem } from '@hcengineering/desktop-downloads'
 import { ScreenSource } from '@hcengineering/love'
 import { Plugin } from '@hcengineering/platform'
+import { IpcRendererEvent } from 'electron'
 
-/**
- * @public
- */
 export interface Config {
   ACCOUNTS_URL: string
   AI_URL?: string
@@ -75,9 +73,11 @@ export interface Branding {
 
 export type BrandingMap = Record<string, Branding>
 
-/**
- * @public
- */
+export const StandardMenuCommandOpenSettings = 'open-settings' as const
+export const StandardMenuCommandSelectWorkspace = 'select-workspace' as const
+export const StandardMenuCommandLogout = 'logout' as const
+export type StandardMenuCommand = typeof StandardMenuCommandOpenSettings | typeof StandardMenuCommandSelectWorkspace | typeof StandardMenuCommandLogout
+
 export interface NotificationParams {
   title: string
   body: string
@@ -85,9 +85,11 @@ export interface NotificationParams {
   application: Plugin
 }
 
-/**
- * @public
- */
+export const MenuBarActions = ['settings', 'select-workspace', 'logout', 'exit', 'undo', 'redo', 'cut', 'copy', 'paste', 'delete', 'select-all', 'reload', 'force-reload', 'toggle-devtools'
+  , 'zoom-in', 'zoom-out', 'restore-size', 'toggle-fullscreen'] as const;
+
+export type MenuBarAction = typeof MenuBarActions[number];
+
 export interface IPCMainExposed {
   setBadge: (badge: number) => void
   setTitle: (title: string) => void
@@ -107,4 +109,11 @@ export interface IPCMainExposed {
 
   cancelBackup: () => void
   startBackup: (token: string, endpoint: string, workspace: string) => void
+
+  minimizeWindow: () => void
+  maximizeWindow: () => void
+  closeWindow: () => void
+  onWindowStateChange: (callback: (event: IpcRendererEvent, newState: string) => void) => void
+  isOsUsingDarkTheme: () => Promise<boolean>
+  executeMenuBarAction: (action: MenuBarAction) => void
 }
