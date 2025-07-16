@@ -286,6 +286,8 @@ export async function connect (title: string): Promise<Client | undefined> {
                 await refreshCommunicationClient()
               })
               tokenChanged = false
+            } else if (event === ClientConnectEvent.Reconnected) {
+              await refreshCommunicationClient()
             }
 
             if (event === ClientConnectEvent.Upgraded) {
