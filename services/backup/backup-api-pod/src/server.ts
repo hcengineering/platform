@@ -164,6 +164,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
     }
 
     let workspaceId: WorkspaceUuid | undefined
+    let isAdmin: boolean = false
 
     try {
       const decoded = decodeTokenVerbose(ctx, token)
@@ -172,6 +173,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
         return
       }
       workspaceId = decoded.workspace
+      isAdmin = decoded.extra?.admin === 'true'
     } catch (err: any) {
       res.status(401).end('Unauthorized')
       return
@@ -183,17 +185,20 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
       try {
         const info = await accountClient.getLoginWithWorkspaceInfo()
         const winfo = info.workspaces[workspaceId]
-        if (winfo === undefined) {
-          res.status(401).end('Invalid workspace')
-          return
-        }
-        if (winfo.role !== AccountRole.Owner) {
-          res.status(401).end('Not an owner of workspace')
-          return
+        if (!isAdmin) {
+          if (winfo === undefined) {
+            res.status(401).end('Invalid workspace')
+            return
+          } else {
+            if (winfo.role !== AccountRole.Owner) {
+              res.status(401).end('Not an owner of workspace')
+              return
+            }
+          }
         }
         const wssInfo = await accountClient.getWorkspaceInfo()
         wsInfo = {
-          url: winfo.url,
+          url: wssInfo.url,
           dataId: wssInfo.dataId,
           uuid: workspaceId
         }

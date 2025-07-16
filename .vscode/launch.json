@@ -928,9 +928,7 @@
         "PORT": "4009",
         "SECRET": "secret",
         "ACCOUNTS_URL": "http://localhost:3000",
-        "MINIO_ENDPOINT": "localhost",
-        "MINIO_ACCESS_KEY": "minioadmin",
-        "MINIO_SECRET_KEY": "minioadmin",
+        "STORAGE_CONFIG": "datalake|http://huly.local:4030",
         "TRANSACTOR_URL": "ws://localhost:3333",
         "SERVICE_ID": "export-service"
       },
