@@ -32,7 +32,7 @@ import { translate } from '@hcengineering/platform'
 import view from '@hcengineering/view'
 import { getCurrentLanguage } from '@hcengineering/theme'
 
-export async function record({ onFileUploaded }: FileUploadOptions): Promise<void> {
+export async function record ({ onFileUploaded }: FileUploadOptions): Promise<void> {
   const onSuccess = async (result: RecordingResult): Promise<void> => {
     const file = new Blob([], { type: result.type })
     await onFileUploaded?.({

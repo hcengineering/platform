@@ -153,43 +153,37 @@
       })
     }
 
-    actions.push(
-      {
-        icon: setting.icon.Support,
-        label: workbench.string.HelpAndSupport,
-        action: async () => {
-          helpAndSupport()
-        },
-        group: 'end'
-      }
-    )
+    actions.push({
+      icon: setting.icon.Support,
+      label: workbench.string.HelpAndSupport,
+      action: async () => {
+        helpAndSupport()
+      },
+      group: 'end'
+    })
 
     if (account.role === AccountRole.ReadOnlyGuest && $allowGuestSignUpStore) {
-      actions.push(
-        {
-          icon: setting.icon.InviteWorkspace,
-          label: view.string.ReadOnlyJoinWorkspace,
-          action: async () => {
-            navigate({ path: ['login', 'join'], query: { workspace: getCurrentWorkspaceUrl() } })
-          },
-          group: 'end'
-        }
-      )
-    }
-
-    actions.push(
-      {
-        icon: setting.icon.Signout,
-        label: hasAccountRole(account, AccountRole.DocGuest) ? setting.string.Signout : login.string.LogIn,
+      actions.push({
+        icon: setting.icon.InviteWorkspace,
+        label: view.string.ReadOnlyJoinWorkspace,
         action: async () => {
-          await logOut()
-          navigate({ path: [loginId] })
-          Analytics.handleEvent('workbench.SignOut')
-          Analytics.logout()
+          navigate({ path: ['login', 'join'], query: { workspace: getCurrentWorkspaceUrl() } })
         },
         group: 'end'
-      }
-    )
+      })
+    }
+
+    actions.push({
+      icon: setting.icon.Signout,
+      label: hasAccountRole(account, AccountRole.DocGuest) ? setting.string.Signout : login.string.LogIn,
+      action: async () => {
+        await logOut()
+        navigate({ path: [loginId] })
+        Analytics.handleEvent('workbench.SignOut')
+        Analytics.logout()
+      },
+      group: 'end'
+    })
   }
   let menu: Menu
   $: addClass = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'self-end' : undefined
