@@ -149,47 +149,49 @@ export class CalendarController {
 
   // TODO: Subscribe to workspace queue istead of using setTimeout
   async recheckOutdatedWorkspaces (outdatedGroups: Map<WorkspaceUuid, Integration[]>): Promise<void> {
-    await new Promise<void>((resolve) => {
-      setTimeout(
-        () => {
-          resolve()
-        },
-        10 * 60 * 1000
-      ) // Wait 10 minutes
-    })
+    try {
+      await new Promise<void>((resolve) => {
+        setTimeout(
+          () => {
+            resolve()
+          },
+          10 * 60 * 1000
+        ) // Wait 10 minutes
+      })
 
-    const ids = [...outdatedGroups.keys()]
-    const limiter = new RateLimiter(config.InitLimit)
-    const infos = await this.accountClient.getWorkspacesInfo(ids)
-    const stillOutdatedGroups = new Map<WorkspaceUuid, Integration[]>()
+      const ids = [...outdatedGroups.keys()]
+      const limiter = new RateLimiter(config.InitLimit)
+      const infos = await this.accountClient.getWorkspacesInfo(ids)
+      const stillOutdatedGroups = new Map<WorkspaceUuid, Integration[]>()
 
-    for (let index = 0; index < infos.length; index++) {
-      const info = infos[index]
-      const integrations = outdatedGroups.get(info.uuid) ?? []
-      const { shouldStart, needRecheck } = await this.checkWorkspace(info, integrations)
+      for (let index = 0; index < infos.length; index++) {
+        const info = infos[index]
+        const integrations = outdatedGroups.get(info.uuid) ?? []
+        const { shouldStart, needRecheck } = await this.checkWorkspace(info, integrations)
 
-      if (shouldStart) {
-        await limiter.add(async () => {
-          try {
-            this.ctx.info('restarting previously outdated workspace', { workspace: info.uuid })
-            await WorkspaceClient.run(this.ctx, this.accountClient, info.uuid)
-          } catch (err) {
-            this.ctx.error('Failed to restart workspace', { workspace: info.uuid, error: err })
-          }
-        })
-      } else if (needRecheck) {
-        // Keep this workspace for future recheck
-        stillOutdatedGroups.set(info.uuid, integrations)
+        if (shouldStart) {
+          await limiter.add(async () => {
+            try {
+              this.ctx.info('restarting previously outdated workspace', { workspace: info.uuid })
+              await WorkspaceClient.run(this.ctx, this.accountClient, info.uuid)
+            } catch (err) {
+              this.ctx.error('Failed to restart workspace', { workspace: info.uuid, error: err })
+            }
+          })
+        } else if (needRecheck) {
+          // Keep this workspace for future recheck
+          stillOutdatedGroups.set(info.uuid, integrations)
+        }
       }
-    }
 
-    await limiter.waitProcessing()
+      await limiter.waitProcessing()
 
-    if (stillOutdatedGroups.size > 0) {
-      this.ctx.info('Still outdated workspaces, scheduling next recheck', { count: stillOutdatedGroups.size })
-      void this.recheckOutdatedWorkspaces(stillOutdatedGroups)
-    } else {
-      this.ctx.info('All outdated workspaces have been processed')
+      if (stillOutdatedGroups.size > 0) {
+        this.ctx.info('Still outdated workspaces, scheduling next recheck', { count: stillOutdatedGroups.size })
+        void this.recheckOutdatedWorkspaces(stillOutdatedGroups)
+      }
+    } catch (err: any) {
+      this.ctx.error('Failed to recheck outdated workspaces', { error: err })
     }
   }
 }
