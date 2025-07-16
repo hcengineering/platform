@@ -17,16 +17,16 @@
   import { myEmployeeStore } from '@hcengineering/contact-resources'
   import core, { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
-  import { createQuery } from '@hcengineering/presentation'
-  import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
+  import { createQuery, getCurrentWorkspaceUrl } from '@hcengineering/presentation'
+  import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
   import {
     Action,
-    Component,
-    Menu,
     closePopup,
+    Component,
     deviceOptionsStore as deviceInfo,
     getCurrentResolvedLocation,
     locationToUrl,
+    Menu,
     navigate,
     showPopup
   } from '@hcengineering/ui'
@@ -35,6 +35,7 @@
   import { logOut } from '../utils'
   import HelpAndSupport from './HelpAndSupport.svelte'
   import { Analytics } from '@hcengineering/analytics'
+  import { allowGuestSignUpStore } from '@hcengineering/view-resources'
 
   let items: SettingsCategory[] = []
 
@@ -160,7 +161,23 @@
           helpAndSupport()
         },
         group: 'end'
-      },
+      }
+    )
+
+    if (account.role === AccountRole.ReadOnlyGuest && $allowGuestSignUpStore) {
+      actions.push(
+        {
+          icon: setting.icon.InviteWorkspace,
+          label: view.string.ReadOnlyJoinWorkspace,
+          action: async () => {
+            navigate({ path: ['login', 'join'], query: { workspace: getCurrentWorkspaceUrl() } })
+          },
+          group: 'end'
+        }
+      )
+    }
+
+    actions.push(
       {
         icon: setting.icon.Signout,
         label: hasAccountRole(account, AccountRole.DocGuest) ? setting.string.Signout : login.string.LogIn,
