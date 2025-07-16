@@ -99,6 +99,7 @@
             icon={app.icon}
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
+            notify={app.alias === inboxId && hasNewInboxNotifications}
             on:click={() => {
               if (app._id === active) dispatch('toggleNav')
             }}
