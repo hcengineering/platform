@@ -75,6 +75,7 @@ export class CalendarController {
     for (let index = 0; index < infos.length; index++) {
       const info = infos[index]
       const integrations = groups.get(info.uuid) ?? []
+      // TODO: Recheck outdated/migrating workspaces
       if (await this.checkWorkspace(info, integrations)) {
         await limiter.add(async () => {
           try {
@@ -104,6 +105,11 @@ export class CalendarController {
     }
     if (!isActiveMode(info.mode)) {
       this.ctx.info('workspace is not active', { workspaceUuid: info.uuid })
+      return false
+    }
+    const lastVisit = (Date.now() - (info.lastVisit ?? 0)) / (3600 * 24 * 1000) // In days
+
+    if (lastVisit > config.WorkspaceInactivityInterval) {
       return false
     }
     return true
