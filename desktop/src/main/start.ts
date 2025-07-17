@@ -267,12 +267,26 @@ const createWindow = async (): Promise<void> => {
     }
   })
 
+  function sendWindowMaximizedMessage(maximized: boolean): void {
+    mainWindow?.webContents.send('window-state-changed', maximized ? 'maximized' : 'unmaximized')
+  }
+
   mainWindow.on('maximize', () => {
-    mainWindow?.webContents.send('window-state-changed', 'maximized');
+    sendWindowMaximizedMessage(true)
   });
 
   mainWindow.on('unmaximize', () => {
-    mainWindow?.webContents.send('window-state-changed', 'unmaximized');
+    sendWindowMaximizedMessage(false)
+  });
+
+  mainWindow.on('enter-full-screen', () => {
+    sendWindowMaximizedMessage(true)
+  });
+
+  mainWindow.on('leave-full-screen', () => {
+    if (mainWindow) {
+        sendWindowMaximizedMessage(mainWindow.isMaximized())
+    }
   });
 
   if (isMac) {
