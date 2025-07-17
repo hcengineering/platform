@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
+import { getClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import client, { ClientSocket } from '@hcengineering/client'
 import core, {
+  AccountRole,
   AccountUuid,
   Blob,
   Class,
@@ -27,16 +28,18 @@ import core, {
   type PersonId,
   Ref,
   Space,
+  systemAccountUuid,
   TxOperations,
   WorkspaceIds
 } from '@hcengineering/core'
 import drive, { createFile, Drive } from '@hcengineering/drive'
+import exportPlugin, { type TransformConfig } from '@hcengineering/export'
 import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
 import { createClient, getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { initStatisticsContext, StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { decodeToken } from '@hcengineering/server-token'
+import { decodeToken, generateToken } from '@hcengineering/server-token'
 import archiver from 'archiver'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
@@ -47,9 +50,9 @@ import { tmpdir } from 'os'
 import { basename, join } from 'path'
 import { v4 as uuid } from 'uuid'
 import WebSocket from 'ws'
+import envConfig from './config'
 import { ApiError } from './error'
 import { ExportFormat, WorkspaceExporter } from './exporter'
-import exportPlugin, { type TransformConfig } from '@hcengineering/export'
 
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
@@ -185,8 +188,34 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
       if (decodedToken.extra?.readonly !== undefined) {
         throw new ApiError(403, 'Forbidden')
       }
+      const isAdmin: boolean = decodedToken.extra?.admin === 'true'
 
-      const platformClient = await createPlatformClient(token)
+      const accountClient = getClient(envConfig.AccountsUrl, token)
+
+      try {
+        const info = await accountClient.getLoginWithWorkspaceInfo()
+        const winfo = info.workspaces[decodedToken.workspace]
+        if (!isAdmin) {
+          if (winfo === undefined) {
+            res.status(401).end('Invalid workspace')
+            return
+          } else {
+            if (winfo.role !== AccountRole.Owner) {
+              res.status(401).end('Not an owner of workspace')
+              return
+            }
+          }
+        }
+      } catch (err: any) {
+        res.status(401).end('Invalid workspace')
+        return
+      }
+
+      const sysToken = generateToken(systemAccountUuid, decodedToken.workspace, {
+        service: 'export'
+      })
+
+      const platformClient = await createPlatformClient(sysToken)
       const account = decodedToken.account
 
       const txOperations = new TxOperations(platformClient, socialId)
@@ -343,13 +372,13 @@ async function saveToDrive (
 
   const fileContent = await fs.readFile(archivePath)
   const blobId = uuid() as Ref<Blob>
-  await storage.put(ctx, wsIds, blobId, fileContent, 'application/gzip', fileContent.length)
+  await storage.put(ctx, wsIds, blobId, fileContent, 'application/zip', fileContent.length)
 
   await createFile(client, exportDrive, drive.ids.Root, {
     title: basename(archivePath),
     file: blobId,
     size: fileContent.length,
-    type: 'application/gzip',
+    type: 'application/zip',
     lastModified: Date.now()
   })
   return exportDrive

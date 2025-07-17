@@ -16,8 +16,7 @@ import { activePreferences } from '@hcengineering/desktop-preferences-resources'
 import { getDisplayInboxData, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 import { inboxId } from '@hcengineering/inbox'
 import communication from '@hcengineering/communication'
-
-import { IPCMainExposed } from './types'
+import { ipcMainExposed } from './typesUtils'
 
 let client: TxOperations
 
@@ -126,7 +125,7 @@ export function configureNotifications (): void {
 
   addEventListener(workbench.event.NotifyConnection, async () => {
     client = getClient()
-    const electronAPI: IPCMainExposed = (window as any).electron
+    const electronAPI = ipcMainExposed()
 
     const inboxClient = InboxNotificationsClientImpl.getClient()
     const notificationsQuery = createNotificationsQuery(true)
@@ -247,13 +246,13 @@ export function configureNotifications (): void {
   })
 
   addEventListener(workbench.event.NotifyTitle, async (event, title: string) => {
-    ;((window as any).electron as IPCMainExposed).setTitle(title)
+    ipcMainExposed().setTitle(title)
   })
 
   location.subscribe((location) => {
     if (!(location.path[0] === workbenchId || location.path[0] === workbench.component.WorkbenchApp)) {
       // We need to clear badge
-      ;((window as any).electron as IPCMainExposed).setBadge(0)
+      ipcMainExposed().setBadge(0)
     }
   })
 }

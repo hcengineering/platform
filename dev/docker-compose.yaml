@@ -252,7 +252,8 @@ services:
       - BRANDING_URL=http://huly.local:8087/branding.json
       - STREAM_URL=http://huly.local:1080/recording
       - COMMUNICATION_API_ENABLED=true
-      - BACKUP_URL=http://huly.local:4039/api/backup
+      - BACKUP_URL=http://huly.local:4039/api/backup,
+      - EXCLUDED_APPLICATIONS_FOR_ANONYMOUS=["chunter", "notification"]
       # - DISABLE_SIGNUP=true
     restart: unless-stopped
   transactor_cockroach:

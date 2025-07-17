@@ -1,7 +1,7 @@
 // preload.js
 
 import { contextBridge, ipcRenderer } from 'electron'
-import { BrandingMap, Config, IPCMainExposed, NotificationParams } from './types'
+import { BrandingMap, Config, IPCMainExposed, MenuBarAction, NotificationParams } from './types'
 
 /**
  * @public
@@ -60,6 +60,30 @@ const expose: IPCMainExposed = {
   },
   sendNotification: (notificationParams: NotificationParams) => {
     ipcRenderer.send('send-notification', notificationParams)
+  },
+
+  minimizeWindow: () => {
+    ipcRenderer.invoke('window-minimize')
+  },
+  
+  maximizeWindow: () => {
+    ipcRenderer.invoke('window-maximize')
+  },
+  
+  closeWindow: () => {
+    ipcRenderer.invoke('window-close')
+  },
+
+  onWindowStateChange: (callback) => {
+    ipcRenderer.on('window-state-changed', callback)
+  },
+
+  isOsUsingDarkTheme: async ()  =>  { 
+    return await ipcRenderer.invoke('get-is-os-using-dark-theme')
+  },
+
+  executeMenuBarAction: (action: MenuBarAction) => {
+    ipcRenderer.invoke('menu-action', action)
   },
 
   config: async () => {

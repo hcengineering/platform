@@ -450,6 +450,7 @@ export class TSessionManager implements SessionManager {
       token.extra?.mode !== 'backup'
     ) {
       ctx.warn('Model version mismatch', {
+        source: token.extra?.service ?? 'user',
         version: this.modelVersion,
         workspaceVersion: versionToString(wsVersion),
         workspace: workspaceUuid
