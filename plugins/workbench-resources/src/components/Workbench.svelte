@@ -1122,6 +1122,7 @@
   }
 
   .hamburger-container {
+    position: relative;
     display: flex;
     align-items: center;
     z-index: 1;
