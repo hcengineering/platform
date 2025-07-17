@@ -728,7 +728,7 @@ export function createModel (builder: Builder): void {
         baseMenuClass: process.class.Execution
       },
       viewOptions: {
-        groupBy: ['process', 'status', 'card'],
+        groupBy: ['process', 'currentState', 'card'],
         orderBy: [
           ['modifiedOn', SortingOrder.Descending],
           ['createdOn', SortingOrder.Descending]
@@ -753,12 +753,12 @@ export function createModel (builder: Builder): void {
           key: 'card'
         },
         {
-          key: '',
+          key: 'process',
           label: process.string.Process,
           presenter: process.component.ExecutonPresenter
         },
         {
-          key: '',
+          key: 'currentState',
           label: process.string.Step,
           presenter: process.component.ExecutonProgressPresenter
         },
