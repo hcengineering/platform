@@ -626,7 +626,7 @@ function migrationV2 (): [string, string] {
     FROM global_account.workspace w
     WHERE workspace = w.data_id;
 
-    ALTER TABLE blob.meta ADD CONSTRAINT fk_blob FOREIGN KEY (workspace, name) REFERENCES blob.blob (workspace, name);
+    ALTER TABLE blob.meta ADD CONSTRAINT fk_blob_meta FOREIGN KEY (workspace, name) REFERENCES blob.blob (workspace, name);
   `
   return ['migrate_workspaces_02', sql]
 }
