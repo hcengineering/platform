@@ -19,6 +19,7 @@ import presentation from '@hcengineering/presentation'
 import login from '@hcengineering/login'
 import { telegramIntegrationKind } from '@hcengineering/telegram'
 import { getIntegrationClient as getIntegrationClientRaw, type IntegrationClient } from '@hcengineering/integration'
+import { withRetry } from '@hcengineering/retry'
 
 export type Integration = { status: 'authorized' | 'wantcode' | 'wantpassword', number: string } | 'Loading' | 'Missing'
 
@@ -36,7 +37,7 @@ export interface TelegramChannelConfig extends TelegramChannel {
 
 const url = getMetadata(telegram.metadata.TelegramURL) ?? ''
 
-async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?: any): Promise<any> {
+async function _request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?: any): Promise<any> {
   const base = concatLink(url, 'api/integrations')
 
   const response = await fetch(concatLink(base, path ?? ''), {
@@ -55,6 +56,10 @@ async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?:
   } else {
     throw new Error(`Unexpected response: ${response.status}`)
   }
+}
+
+async function request (method: 'GET' | 'POST' | 'DELETE', path?: string, body?: any): Promise<any> {
+  return await withRetry(async () => await _request(method, path, body))
 }
 
 export async function getState (phone: string): Promise<Integration> {

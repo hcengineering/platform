@@ -44,7 +44,7 @@ export interface IntegrationClient {
   /**
    * Update configuration for an existing integration
    */
-  updateConfig: (integrationKey: IntegrationKey, config: Record<string, any>) => Promise<void>
+  updateConfig: (integrationKey: IntegrationKey, config: Record<string, any>, refresh?: () => Promise<void>) => Promise<void>
 
   /**
    * Remove integration for a social ID and workspace

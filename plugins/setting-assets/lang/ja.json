@@ -182,6 +182,9 @@
     "ConnectedIntegrations": "接続されたインテグレーション",
     "AvailableIntegrations": "利用可能なインテグレーション",
     "Connect": "接続",
-    "Integrate": "統合"
+    "Integrate": "統合",
+    "FailedToLoadIntegrations": "インテグレーションの読み込みに失敗しました",
+    "FailedToDisconnect": "インテグレーションの切断に失敗しました",
+    "ServiceIsUnavailable": "サービスは利用できません"
   }
 }

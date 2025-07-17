@@ -18,9 +18,10 @@
   import { getResource, translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import type { IntegrationType } from '@hcengineering/setting'
-  import { AnyComponent, Button, Component, Label, Icon, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, Label, Icon, addNotification, eventToHTMLElement, showPopup, NotificationSeverity, themeStore } from '@hcengineering/ui'
   import { Analytics } from '@hcengineering/analytics'
   import { type Integration } from '@hcengineering/account-client'
+  import IntegrationErrorNotification from '../IntegrationErrorNotification.svelte'
 
   import IntegrationLabel from './IntegrationLabel.svelte'
   import setting from '../../plugin'
@@ -56,10 +57,23 @@
   }
 
   async function disconnect (): Promise<void> {
-    if (integration !== undefined && integrationType.onDisconnect !== undefined) {
-      Analytics.handleEvent(`Disconnect integration: ${await translate(integrationType.label, {}, 'en')}`)
-      const disconnect = await getResource(integrationType.onDisconnect)
-      await disconnect(integration)
+    try {
+      if (integration !== undefined && integrationType.onDisconnect !== undefined) {
+        Analytics.handleEvent(`Disconnect integration: ${await translate(integrationType.label, {}, 'en')}`)
+        const disconnect = await getResource(integrationType.onDisconnect)
+        await disconnect(integration)
+      }
+    } catch (err: any) {
+      console.error('Error disconnecting integration:', err)
+      const errorMessage: string = err.message ?? 'Unknown error'
+      const integrationError = errorMessage.includes('Failed to fetch') ? setting.string.ServiceIsUnavailable : setting.string.IntegrationError
+      addNotification(
+        await translate(setting.string.FailedToDisconnect, {}, $themeStore.language),
+        await translate(integrationError, {}, $themeStore.language),
+        IntegrationErrorNotification,
+        undefined,
+        NotificationSeverity.Error
+      )
     }
   }
   const handleConfigure = async (component?: AnyComponent): Promise<void> => {

@@ -180,6 +180,9 @@
     "ConnectedIntegrations": "Připojené",
     "AvailableIntegrations": "Dostupné",
     "Connect": "Připojit",
-    "Integrate": "Integrace"
+    "Integrate": "Integrace",
+    "FailedToLoadIntegrations": "Nepodařilo se načíst integrace",
+    "FailedToDisconnect": "Nepodařilo se odpojit integraci",
+    "ServiceIsUnavailable": "Služba není k dispozici"
   }
 }

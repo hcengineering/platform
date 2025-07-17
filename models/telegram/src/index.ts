@@ -159,7 +159,7 @@ export function createModel (builder: Builder): void {
       description: telegram.string.TelegramIntegrationDesc,
       descriptionComponent: telegram.component.TelegramIntegrationDescription,
       icon: telegram.component.IconTelegram,
-      allowMultiple: false,
+      allowMultiple: true,
       createComponent: telegram.component.Connect,
       reconnectComponent: telegram.component.Reconnect,
       configureComponent: telegram.component.Configure,

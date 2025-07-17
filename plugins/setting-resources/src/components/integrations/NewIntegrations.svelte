@@ -21,7 +21,7 @@
   import { type Integration } from '@hcengineering/account-client'
   import { Header, Breadcrumb, NotificationSeverity, addNotification, themeStore, TabItem, Switcher, Loading } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
-  import { onAnyIntegrationEvent } from '@hcengineering/integration'
+  import { onIntegrationEvent } from '@hcengineering/integration'
 
   import IntegrationCard from './IntegrationCard.svelte'
   import IntegrationErrorNotification from '../IntegrationErrorNotification.svelte'
@@ -36,6 +36,8 @@
   let integrationTypes: IntegrationType[] = []
   let isLoading = true
   let unsubscribers: (() => void)[] = []
+
+  let loadIntegrationsPromise: Promise<void> | null = null
 
   const viewslist: TabItem[] = [
     { id: 'all', labelIntl: setting.string.AllIntegrations },
@@ -75,7 +77,9 @@
       subscribe()
     } catch (err) {
       console.error('Error loading integrations:', err)
-      await showErrorNotification('Failed to load integrations')
+      await showLoadErrorNotification()
+      connections = []
+      integrations = []
     } finally {
       isLoading = false
     }
@@ -87,15 +91,37 @@
 
   function subscribe (): void {
     unsubscribers.push(
-      onAnyIntegrationEvent('integration:updated', refreshIntegrations),
-      onAnyIntegrationEvent('integration:created', refreshIntegrations),
-      onAnyIntegrationEvent('integration:deleted', refreshIntegrations)
+      onIntegrationEvent('integration:updated', onRefreshIntegrations),
+      onIntegrationEvent('integration:created', onRefreshIntegrations),
+      onIntegrationEvent('integration:deleted', onRefreshIntegrations)
     )
   }
 
-  async function refreshIntegrations (data: any) {
+  function onRefreshIntegrations (data: any): void {
     console.log('Refreshing integrations due to:', data.integrationKind, data.operation)
-    // await loadIntegrations()
+    void refreshIntegrations()
+  }
+
+  async function refreshIntegrations (): Promise<void> {
+    // If there's already a promise, return it to avoid concurrent calls
+    if (loadIntegrationsPromise !== null) {
+      await loadIntegrationsPromise
+      return
+    }
+
+    loadIntegrationsPromise = (async () => {
+      try {
+        const workspace = getCurrentWorkspaceUuid()
+        connections = await accountClient.listIntegrations({ workspaceUuid: null })
+        integrations = await accountClient.listIntegrations({ workspaceUuid: workspace })
+      } catch (err) {
+        console.error('Error refreshing integrations:', err)
+        showErrorNotification(err instanceof Error ? err.message : 'Unknown error')
+      }
+    })()
+
+    await loadIntegrationsPromise
+    loadIntegrationsPromise = null
   }
 
   async function showErrorNotification (error: string): Promise<void> {
@@ -112,6 +138,15 @@
     )
   }
 
+  async function showLoadErrorNotification (): Promise<void> {
+    addNotification(
+      await translate(setting.string.FailedToLoadIntegrations, {}, $themeStore.language),
+      await translate(setting.string.IntegrationError, {}, $themeStore.language),
+      IntegrationErrorNotification,
+      undefined,
+      NotificationSeverity.Error
+    )
+  }
   interface IntegrationInfo {
     integrationType?: IntegrationType
     integration?: Integration
@@ -147,7 +182,7 @@
         integrationType,
         integration
       }))
-      if (integrationInfo.length === 0 || integrationType.allowMultiple || integrationType.kind === 'telegram-bot') { // TODO: Fix it
+      if (integrationInfo.length === 0 || integrationType.allowMultiple) {
         return [...integrationInfo, { integrationType }]
       }
       return integrationInfo

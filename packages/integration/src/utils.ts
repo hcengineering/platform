@@ -14,10 +14,16 @@
 //
 
 import { Integration } from '@hcengineering/account-client'
+import { IntegrationEventData } from './types'
 
 export function isWorkspaceIntegration (integration: Integration): boolean {
   return integration.workspaceUuid != null
 }
+
 export function isConnection (integration: Integration): boolean {
   return integration.workspaceUuid == null
+}
+
+export function isSameIntegrationEvent (event: IntegrationEventData, integration: Integration): boolean {
+  return event.integration?.socialId === integration.socialId && event.integration?.workspaceUuid === integration.workspaceUuid
 }

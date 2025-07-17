@@ -28,6 +28,15 @@ import { IntegrationClient, IntegrationEventData, IntegrationUpdatedData, Integr
 import { isConnection } from './utils'
 import { type EventCallback, getIntegrationEventBus } from './events'
 
+export function getIntegrationClient (
+  accountsUrl: string,
+  token: string,
+  integrationKind: IntegrationKind,
+  serviceName: string
+): IntegrationClient {
+  return new IntegrationClientImpl(accountsUrl, token, integrationKind, serviceName)
+}
+
 export class IntegrationClientImpl implements IntegrationClient {
   private readonly client: AccountClient
   private readonly events = getIntegrationEventBus()
@@ -186,7 +195,7 @@ export class IntegrationClientImpl implements IntegrationClient {
     }
   }
 
-  async updateConfig (integrationKey: IntegrationKey, config: Record<string, any>): Promise<void> {
+  async updateConfig (integrationKey: IntegrationKey, config: Record<string, any>, refresh?: () => Promise<void>): Promise<void> {
     try {
       const integration = await this.client.getIntegration(integrationKey)
       if (integration == null) {
@@ -203,6 +212,9 @@ export class IntegrationClientImpl implements IntegrationClient {
         ...integration,
         data
       })
+      if (refresh != null) {
+        await refresh()
+      }
 
       const eventData: IntegrationUpdatedData = {
         integration,

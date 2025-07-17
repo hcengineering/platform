@@ -182,6 +182,9 @@
     "ConnectedIntegrations": "已连接的集成",
     "AvailableIntegrations": "可用的集成  ",
     "Connect": "连接",
-    "Integrate": "集成"
+    "Integrate": "集成",
+    "FailedToLoadIntegrations": "加载集成失败",
+    "FailedToDisconnect": "断开集成失败",
+    "ServiceIsUnavailable": "服务不可用"
   }
 }

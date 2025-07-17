@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { CheckBox, Toggle, DropdownLabelsIntl, SearchEdit, Label, ListView, Modal, Loading, closePopup, Icon } from '@hcengineering/ui'
+  import { CheckBox, Toggle, DropdownLabelsIntl, SearchEdit, Label, ListView, Modal, Loading, closePopup, Icon, IconError } from '@hcengineering/ui'
   import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { isWorkspaceIntegration } from '@hcengineering/integration'
   import ui from '@hcengineering/ui'
@@ -30,6 +30,7 @@
   let selection = 0
   let list: ListView
   let isLoading = true
+  let error: string | null = null
 
   const accessOptions = [
     { id: 'public', label: telegram.string.Public, icon: telegram.string.Shared },
@@ -37,16 +38,22 @@
   ]
 
   onMount(async () => {
-    // Initialize selected channels based on existing data
-    const integrationClient = await getIntegrationClient()
-    connection = await integrationClient.getConnection(integration)
-    channels = (await listChannels(connection.data.phone)).map((channel) => ({
-      ...channel,
-      access: channel.access ?? 'private',
-      syncEnabled: channel.mode === 'sync'
-    }))
-    isLoading = false
-    console.log('Initial channels:', channels)
+    try {
+      // Initialize selected channels based on existing data
+      error = null
+      const integrationClient = await getIntegrationClient()
+      connection = await integrationClient.getConnection(integration)
+      channels = (await listChannels(connection.data.phone)).map((channel) => ({
+        ...channel,
+        access: channel.access ?? 'private',
+        syncEnabled: channel.mode === 'sync'
+      }))
+      isLoading = false
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to load channels'
+      isLoading = false
+      console.error('Error loading channels:', err)
+    }
   })
 
   // Get channel icon based on type
@@ -172,11 +179,14 @@
       integration,
       {
         channels: channelsConfig
+      },
+      async () => {
+        await restart(connection.data.phone)
       }
     )
-    await restart(connection.data.phone)
 
     dispatch('applyChanges', { channels: Array.from(selectedChannels) })
+    close()
   }
 
   // Clear search
@@ -199,7 +209,7 @@
   okLabel={telegram.string.Apply}
   okAction={applyChanges}
   onCancel={close}
-  canSave={true}
+  canSave={error == null}
   scrollableContent={false}
   on:close={close}
 >
@@ -232,6 +242,13 @@
           <div class="p-5">
             <Loading/>
           </div>
+        </div>
+      {:else if error}
+        <div class="error-container" transition:fade={{ duration: 300 }}>
+          <IconError size={'medium'} />
+          <span class="text-normal font-medium">
+            <Label label={telegram.string.FailedToLoadState} />
+          </span>
         </div>
       {:else if filteredChannels.length === 0}
         <div class="no-results" transition:fade>
@@ -390,6 +407,14 @@
     font-size: 0.875rem;
     color: var(--theme-content-color);
     font-weight: 500;
+  }
+
+  .error-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 2rem 1rem;
   }
 
   .channels-list {

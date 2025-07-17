@@ -182,6 +182,9 @@
     "ConnectedIntegrations": "Integrated",
     "AvailableIntegrations": "Available",
     "Connect": "Connect",
-    "Integrate": "Integrate"
+    "Integrate": "Integrate",
+    "FailedToLoadIntegrations": "Failed to load integrations",
+    "FailedToDisconnect": "Failed to disconnect integration",
+    "ServiceIsUnavailable": "Service is unavailable"
   }
 }

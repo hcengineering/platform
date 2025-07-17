@@ -24,6 +24,8 @@
 
 <NotificationToast title={notification.title} severity={notification.severity} onClose={onRemove}>
   <svelte:fragment slot="content">
-    {notification.subTitle}
+    <div class="pl-1">
+      {notification.subTitle}
+    </div>
   </svelte:fragment>
 </NotificationToast>

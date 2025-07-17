@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
   import { IconError, Label, Loading } from '@hcengineering/ui'
   import type { Integration } from '@hcengineering/account-client'
+  import { IntegrationClient, IntegrationEventData, onIntegrationEvent } from '@hcengineering/integration'
 
   import telegram from '../plugin'
   import { type TelegramChannelConfig, getIntegrationClient, listChannels } from '../api'
@@ -13,10 +14,14 @@
   let channels: TelegramChannelConfig[] = []
   let isLoading = true
   let error: string | null = null
+  let isRefreshing = false
+
+  let integrationClient: IntegrationClient | undefined
+  const unsubscribers: (() => void)[] = []
 
   onMount(async () => {
     try {
-      const integrationClient = await getIntegrationClient()
+      integrationClient = await getIntegrationClient()
       const connectionResult = await integrationClient.getConnection(integration)
 
       if (connectionResult?.data == null) {
@@ -30,12 +35,50 @@
         syncEnabled: channel.mode === 'sync'
       }))
       isLoading = false
+      subscribe()
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load channels'
       isLoading = false
       console.error('Error loading channels:', err)
     }
   })
+
+  onDestroy(() => {
+    unsubscribers.forEach(unsubscribe => { unsubscribe() })
+  })
+
+  function subscribe (): void {
+    unsubscribers.push(
+      onIntegrationEvent<IntegrationEventData>('integration:updated', onUpdateIntegration)
+    )
+  }
+
+  function onUpdateIntegration (data: IntegrationEventData): void {
+    if (data.integration?.socialId === integration.socialId && data.integration?.workspaceUuid === integration.workspaceUuid) {
+      void refresh()
+    }
+  }
+
+  async function refresh (): Promise<void> {
+    try {
+      isRefreshing = true
+      if (integrationClient === undefined) {
+        integrationClient = await getIntegrationClient()
+      }
+      if (connection?.data == null) {
+        throw new Error('No connection data found')
+      }
+      channels = (await listChannels(connection.data.phone)).map((channel) => ({
+        ...channel,
+        access: 'private', // Default access since access property doesn't exist on TelegramChannel
+        syncEnabled: channel.mode === 'sync'
+      }))
+    } catch (err: any) {
+      console.error('Error refresh channels:', err.message)
+    } finally {
+      isRefreshing = false
+    }
+  }
 
   $: totalChannels = channels.length
   $: syncEnabledChannels = channels.filter(channel => channel.syncEnabled).length
@@ -66,7 +109,12 @@
         </div>
         <div class="stat-row">
           <span class="text-normal content-color"><Label label={telegram.string.SyncedChannels} /></span>
-          <span class="text-normal content-color font-medium">{syncEnabledChannels}</span>
+          <div class="flex justify-between">
+            {#if isRefreshing}
+              <Loading size="small" />
+            {/if}
+            <span class="text-normal content-color font-medium">{syncEnabledChannels}</span>
+          </div>
         </div>
         <div class="stat-row">
           <span class="text-normal content-color"><Label label={telegram.string.TotalChannels} /></span>

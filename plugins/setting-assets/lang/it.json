@@ -182,6 +182,9 @@
     "ConnectedIntegrations": "Connesse",
     "AvailableIntegrations": "Disponibili",
     "Connect": "Connetti",
-    "Integrate": "Integra"
+    "Integrate": "Integra",
+    "FailedToLoadIntegrations": "Impossibile caricare le integrazioni",
+    "FailedToDisconnect": "Impossibile disconnettere l'integrazione",
+    "ServiceIsUnavailable": "Il servizio non è disponibile"
   }
 }
