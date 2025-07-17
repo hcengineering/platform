@@ -404,7 +404,7 @@ class MenuBarManager {
             this.altPressed = true
         }
 
-        if (e.shiftKey || e.ctrlKey) {
+        if (e.shiftKey || e.ctrlKey || e.metaKey) {
             if (this.altPressed) {
                 this.controlKeysActivated = true
                 return
