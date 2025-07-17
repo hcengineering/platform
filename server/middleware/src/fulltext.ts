@@ -36,6 +36,7 @@ import core, {
 } from '@hcengineering/core'
 import type { IndexedDoc, Middleware, MiddlewareCreator, PipelineContext } from '@hcengineering/server-core'
 import { BaseMiddleware } from '@hcengineering/server-core'
+import card from '@hcengineering/card'
 /**
  * @public
  */
@@ -162,6 +163,10 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
             childClasses.add(d)
           }
         }
+      }
+      if (this.context.hierarchy.isDerived(baseClass, card.class.Card)) {
+        // Using Card as base class because messages are the same for any card subclass
+        childClasses.add(`${card.class.Card}%message` as Ref<Class<Doc>>)
       }
     } catch (err: any) {
       Analytics.handleError(err)

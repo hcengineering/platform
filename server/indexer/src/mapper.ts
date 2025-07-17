@@ -139,7 +139,10 @@ export function mapSearchResultDoc (hierarchy: Hierarchy, raw: IndexedDoc): Sear
     shortTitle: raw.searchShortTitle,
     doc: {
       _id: raw.id,
-      _class: raw._class[0]
+      _class: raw._class[0],
+      createdOn: raw.createdOn,
+      attachedTo: raw.attachedTo,
+      attachedToClass: raw.attachedToClass
     },
     score: raw._score
   }
