@@ -1124,6 +1124,7 @@
   .hamburger-container {
     display: flex;
     align-items: center;
+    z-index: 1;
 
     &.portrait {
       margin-left: 1rem;
