@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/integration",
+  "name": "@hcengineering/integration-client",
   "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",

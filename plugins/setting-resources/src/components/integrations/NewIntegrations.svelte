@@ -21,7 +21,7 @@
   import { type Integration } from '@hcengineering/account-client'
   import { Header, Breadcrumb, NotificationSeverity, addNotification, themeStore, TabItem, Switcher, Loading } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
-  import { onIntegrationEvent } from '@hcengineering/integration'
+  import { onIntegrationEvent } from '@hcengineering/integration-client'
 
   import IntegrationCard from './IntegrationCard.svelte'
   import IntegrationErrorNotification from '../IntegrationErrorNotification.svelte'

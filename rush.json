@@ -2619,8 +2619,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/integration",
-      "projectFolder": "packages/integration",
+      "packageName": "@hcengineering/integration-client",
+      "projectFolder": "packages/integration-client",
       "shouldPublish": false
     }
   ]

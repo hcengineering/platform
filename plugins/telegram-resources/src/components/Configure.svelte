@@ -3,7 +3,7 @@
   import { fade } from 'svelte/transition'
   import { CheckBox, Toggle, DropdownLabelsIntl, SearchEdit, Label, ListView, Modal, Loading, closePopup, Icon, IconError } from '@hcengineering/ui'
   import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
-  import { isWorkspaceIntegration } from '@hcengineering/integration'
+  import { isWorkspaceIntegration } from '@hcengineering/integration-client'
   import ui from '@hcengineering/ui'
 
   import TelegramIcon from './icons/TelegramColor.svelte'

@@ -3,7 +3,7 @@
   import { fade } from 'svelte/transition'
   import { IconError, Label, Loading } from '@hcengineering/ui'
   import type { Integration } from '@hcengineering/account-client'
-  import { IntegrationClient, IntegrationEventData, onIntegrationEvent } from '@hcengineering/integration'
+  import { IntegrationClient, IntegrationEventData, onIntegrationEvent } from '@hcengineering/integration-client'
 
   import telegram from '../plugin'
   import { type TelegramChannelConfig, getIntegrationClient, listChannels } from '../api'

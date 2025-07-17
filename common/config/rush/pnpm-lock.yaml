@@ -412,9 +412,9 @@ importers:
       '@rush-temp/inbox-resources':
         specifier: file:./projects/inbox-resources.tgz
         version: file:projects/inbox-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3)))(postcss@8.5.3)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
-      '@rush-temp/integration':
-        specifier: file:./projects/integration.tgz
-        version: file:projects/integration.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
+      '@rush-temp/integration-client':
+        specifier: file:./projects/integration-client.tgz
+        version: file:projects/integration-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
       '@rush-temp/inventory':
         specifier: file:./projects/inventory.tgz
         version: file:projects/inventory.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@22.15.29)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))
@@ -4318,8 +4318,8 @@ packages:
     resolution: {integrity: sha512-Qv3JD4silIEc3DbDzvxoBF+bW3a5/+oZXYBudlOu0Rjl83i4Rq5XOV9wWSa74ob9XlyVPvEl80OuqcEEydbS/g==, tarball: file:projects/inbox.tgz}
     version: 0.0.0
 
-  '@rush-temp/integration@file:projects/integration.tgz':
-    resolution: {integrity: sha512-9IPMZpNsI2XCs1VE3fnHighB4/KMMqjkzDa7Xj8KdpO0A7VqtpAyg4aXTrk4oLLFFhQYs6u4adsqqV7qBTYHxA==, tarball: file:projects/integration.tgz}
+  '@rush-temp/integration-client@file:projects/integration-client.tgz':
+    resolution: {integrity: sha512-r46KMTTe/Xy/8c7L81e3fmLX/ESI5ChiCmz+KTBVnHqeuM788FYZVdJhb+JebbXoi+lSHhqE0kWm825RhPiUEA==, tarball: file:projects/integration-client.tgz}
     version: 0.0.0
 
   '@rush-temp/inventory-assets@file:projects/inventory-assets.tgz':
@@ -4879,7 +4879,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
-    resolution: {integrity: sha512-Goqn/50VaRx1ZZJ7nUaVxvDu4tHpV18Rbr/n7ttinZILqcucYslZAcP5j/qCyoIZQxFa2G7WovS3TpLLMQ/D/Q==, tarball: file:projects/pod-gmail.tgz}
+    resolution: {integrity: sha512-HAat9sFoOjj5Shx3UlRU9ACh2mH4gLlp8CEkxv3gbuoQwVQsgJ0VLCe4FwUjj9DPHP8cpBTek6h75DOXbbvN3g==, tarball: file:projects/pod-gmail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
@@ -5391,7 +5391,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/setting-resources@file:projects/setting-resources.tgz':
-    resolution: {integrity: sha512-/qbe18xseHtct6fHvQHpTgJYgnq2LeDo5yahEBcFtcrjx0ljTbK2bLEOAkjbtZ7bJhgE1IaPf7LmLq+x/pN9QA==, tarball: file:projects/setting-resources.tgz}
+    resolution: {integrity: sha512-q0J+/pf9aKbEXpKUFY6uMd/uvP9YTmfWIsvL/Wxtu9vGSEjVvc+64mTAphRSZUYbcPg1S9A6PWaSAuemeyh1EQ==, tarball: file:projects/setting-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/setting@file:projects/setting.tgz':
@@ -5459,7 +5459,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/telegram-resources@file:projects/telegram-resources.tgz':
-    resolution: {integrity: sha512-MjU1BcazNCAtARtTDiDwsae5frHcC9XxlP3AwKJXRkOP0ehjbbny8jkZJUUNfLzU7bmRbEnY3ZK3OPM2VmHX8A==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-oNF++UNPuNik4Ak7sGISighoWJtiPGG+x9+Bop7xHYpPk+j4QTobQlqDKBSAXJdXYE2fe4U64QL5vvIeZT/dDQ==, tarball: file:projects/telegram-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/telegram@file:projects/telegram.tgz':
@@ -19618,7 +19618,7 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/integration@file:projects/integration.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
+  '@rush-temp/integration-client@file:projects/integration-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(encoding@0.1.13)(ts-node@10.9.2(@types/node@22.15.29)(typescript@5.8.3))':
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 22.15.29

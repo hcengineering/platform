@@ -18,7 +18,7 @@ import telegram from './plugin'
 import presentation from '@hcengineering/presentation'
 import login from '@hcengineering/login'
 import { telegramIntegrationKind } from '@hcengineering/telegram'
-import { getIntegrationClient as getIntegrationClientRaw, type IntegrationClient } from '@hcengineering/integration'
+import { getIntegrationClient as getIntegrationClientRaw, type IntegrationClient } from '@hcengineering/integration-client'
 import { withRetry } from '@hcengineering/retry'
 
 export type Integration = { status: 'authorized' | 'wantcode' | 'wantpassword', number: string } | 'Loading' | 'Missing'
