@@ -657,8 +657,7 @@ export class PlatformWorker {
                       key: buildSocialIdString({
                         type: SocialIdType.GITHUB,
                         value: dta._id.toLowerCase()
-                      }),
-                      verifiedOn: Date.now()
+                      })
                     },
                     githubSocialId as SocialIdentityRef
                   )
