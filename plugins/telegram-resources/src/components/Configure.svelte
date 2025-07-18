@@ -259,6 +259,7 @@
   $: filteredSelectedCount = Array.from(selectedChannels).filter(id =>
     filteredChannels.some(c => c.id === id)
   ).length
+  $: syncedChannelsCount = channels.filter(channel => channel.syncEnabled).length
 </script>
 
 <Modal
@@ -371,6 +372,13 @@
       {/if}
     </div>
   </div>
+  <svelte:fragment slot="footer">
+    <div class="footer-container">
+      <span class="synced-count">
+        <Label label={telegram.string.SyncedChannels} />: {syncedChannelsCount}
+      </span>
+    </div>
+  </svelte:fragment>
 </Modal>
 
 <style lang="scss">
@@ -556,5 +564,19 @@
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--theme-content-color);
+  }
+
+  .footer-container {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 0.5rem;
+  }
+
+  .synced-count {
+    font-size: 0.875rem;
+    color: var(--theme-content-trans-color);
+    font-weight: 500;
   }
 </style>
