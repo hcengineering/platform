@@ -74,9 +74,13 @@ export async function listChannels (phone: string): Promise<TelegramChannel[]> {
   return await request('GET', `${phone}/chats`)
 }
 
+export async function disconnect (phone: string): Promise<void> {
+  await request('DELETE', phone)
+}
+
 export async function command (
   phone: string,
-  command: 'start' | 'next' | 'disconnect',
+  command: 'start' | 'next',
   input?: string
 ): Promise<Integration> {
   return await request('POST', phone, { command, input })

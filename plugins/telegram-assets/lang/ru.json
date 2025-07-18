@@ -80,6 +80,13 @@
     "Access": "Доступ",
     "User": "Пользователь",
     "Group": "Группа",
-    "Channel": "Канал"
+    "Channel": "Канал",
+    "Actions": "Действия",
+    "SelectAllAction": "Выбрать все",
+    "UnselectAllAction": "Снять выделение",
+    "EnableSynchronization": "Включить синхронизацию",
+    "DisableSynchronization": "Отключить синхронизацию",
+    "SetPublicAccess": "Установить публичный доступ",
+    "SetPrivateAccess": "Установить приватный доступ"
   }
 }

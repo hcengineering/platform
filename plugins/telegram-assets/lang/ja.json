@@ -80,6 +80,13 @@
     "Access": "アクセス",
     "User": "ユーザー",
     "Group": "グループ",
-    "Channel": "チャンネル"
+    "Channel": "チャンネル",
+    "Actions": "アクション",
+    "SelectAllAction": "すべて選択",
+    "UnselectAllAction": "すべて選択解除",
+    "EnableSynchronization": "同期を有効にする",
+    "DisableSynchronization": "同期を無効にする",
+    "SetPublicAccess": "パブリックアクセスに設定",
+    "SetPrivateAccess": "プライベートアクセスに設定"
   }
 }

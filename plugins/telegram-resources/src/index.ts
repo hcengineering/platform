@@ -30,7 +30,7 @@ import StateComponent from './components/IntegrationState.svelte'
 
 import { getCurrentEmployeeTG, getIntegrationOwnerTG, isTelegramNotificationsAvailable } from './utils'
 import SharedMessages from './components/SharedMessages.svelte'
-import { command, getIntegrationClient } from './api'
+import { getIntegrationClient, disconnect } from './api'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -55,13 +55,11 @@ export default async (): Promise<Resources> => ({
   },
   handler: {
     DisconnectHandler: async (integration: Integration) => {
-      let phone = integration.data?.phone
-      if (phone === undefined) {
-        const integrationClient = await getIntegrationClient()
-        const connection = await integrationClient.getConnection(integration)
-        phone = connection?.data?.phone
-      }
-      await command(phone, 'disconnect')
+      const integrationClient = await getIntegrationClient()
+      const connection = await integrationClient.getConnection(integration)
+      const phone = integration.data?.phone ?? connection?.data?.phone
+      await disconnect(phone)
+      return integrationClient.removeConnection(connection)
     }
   }
 })

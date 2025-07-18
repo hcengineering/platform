@@ -80,6 +80,13 @@
     "Access": "Acceso",
     "User": "Usuario",
     "Group": "Grupo",
-    "Channel": "Canal"
+    "Channel": "Canal",
+    "Actions": "Acciones",
+    "SelectAllAction": "Seleccionar todo",
+    "UnselectAllAction": "Deseleccionar todo",
+    "EnableSynchronization": "Habilitar sincronización",
+    "DisableSynchronization": "Deshabilitar sincronización",
+    "SetPublicAccess": "Establecer acceso público",
+    "SetPrivateAccess": "Establecer acceso privado"
   }
 }

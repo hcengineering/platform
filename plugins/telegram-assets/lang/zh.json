@@ -80,6 +80,13 @@
     "Access": "访问权限",
     "User": "用户",
     "Group": "群组",
-    "Channel": "频道"
+    "Channel": "频道",
+    "Actions": "操作",
+    "SelectAllAction": "选择全部",
+    "UnselectAllAction": "取消选择全部",
+    "EnableSynchronization": "启用同步",
+    "DisableSynchronization": "禁用同步",
+    "SetPublicAccess": "设置公开访问",
+    "SetPrivateAccess": "设置私有访问"
   }
 }

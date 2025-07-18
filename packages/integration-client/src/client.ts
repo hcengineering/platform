@@ -273,6 +273,37 @@ export class IntegrationClientImpl implements IntegrationClient {
     }
   }
 
+  async removeConnection (connection: Integration): Promise<void> {
+    try {
+      const integrations = await this.client.listIntegrations({
+        kind: connection.kind,
+        socialId: connection.socialId
+      })
+
+      for (const integration of integrations) {
+        await this.client.deleteIntegration({
+          socialId: integration.socialId,
+          kind: integration.kind,
+          workspaceUuid: integration.workspaceUuid
+        })
+
+        const eventData: IntegrationEventData = {
+          integration,
+          timestamp: Date.now()
+        }
+        this.emit('integration:deleted', eventData)
+      }
+    } catch (error) {
+      const errorData: IntegrationErrorData = {
+        operation: 'removeConnection',
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: Date.now()
+      }
+      this.emit('integration:error', errorData)
+      throw error
+    }
+  }
+
   private async getAccountSocialIds (account: AccountUuid): Promise<SocialId[]> {
     try {
       const accountClient = getAccountClientRaw(generateToken(account, undefined, { service: this.serviceName }))

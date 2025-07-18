@@ -80,6 +80,13 @@
     "User": "Uživatel",
     "Group": "Skupina",
     "Channel": "Kanál",
+    "Actions": "Akce",
+    "SelectAllAction": "Vybrat vše",
+    "UnselectAllAction": "Zrušit výběr",
+    "EnableSynchronization": "Povolit synchronizaci",
+    "DisableSynchronization": "Zakázat synchronizaci",
+    "SetPublicAccess": "Nastavit veřejný přístup",
+    "SetPrivateAccess": "Nastavit soukromý přístup",
     "Disconnect": "Odpojit"
   }
 }

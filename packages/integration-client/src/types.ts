@@ -50,6 +50,11 @@ export interface IntegrationClient {
    * Remove integration for a social ID and workspace
    */
   removeIntegration: (socialId: PersonId | undefined | null, workspaceUuid: WorkspaceUuid) => Promise<void>
+
+  /**
+   * Remove connection and all associated integrations
+   */
+  removeConnection: (connection: Integration) => Promise<void>
 }
 
 export interface IntegrationEventData {

@@ -60,16 +60,25 @@ export default mergeIds(telegramId, telegram, {
     Apply: '' as IntlString,
     NotConnectedIntegration: '' as IntlString,
     FailedToLoadState: '' as IntlString,
-    
+
     // Filter categories
     Type: '' as IntlString,
     SyncMode: '' as IntlString,
     Access: '' as IntlString,
-    
+
     // Filter options
     User: '' as IntlString,
     Group: '' as IntlString,
-    Channel: '' as IntlString
+    Channel: '' as IntlString,
+
+    // Actions
+    Actions: '' as IntlString,
+    SelectAllAction: '' as IntlString,
+    UnselectAllAction: '' as IntlString,
+    EnableSynchronization: '' as IntlString,
+    DisableSynchronization: '' as IntlString,
+    SetPublicAccess: '' as IntlString,
+    SetPrivateAccess: '' as IntlString
   },
   component: {
     MessagePresenter: '' as AnyComponent

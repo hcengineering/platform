@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { CheckBox, Toggle, DropdownLabelsIntl, SearchInput, Label, ListView, Modal, Loading, closePopup, Icon, IconError, FilterButton, type FilterCategory, type ActiveFilter } from '@hcengineering/ui'
+  import { CheckBox, Toggle, DropdownLabelsIntl, DropdownLabelsPopupIntl, SearchInput, Label, ListView, Modal, Loading, closePopup, Icon, IconMoreV, IconError, FilterButton, Button, showPopup, type FilterCategory, type ActiveFilter } from '@hcengineering/ui'
   import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { isWorkspaceIntegration } from '@hcengineering/integration-client'
 
@@ -217,6 +217,108 @@
     dispatch('bulkUpdate', { action: 'access', value: access, channels: Array.from(selectedChannels) })
   }
 
+  // Action button functions
+  function selectAllFiltered (): void {
+    filteredChannels.forEach(channel => {
+      selectedChannels.add(channel.id)
+    })
+    selectedChannels = selectedChannels
+    updateSelectAllForFiltered(filteredChannels, selectedChannels)
+  }
+
+  function unselectAllFiltered (): void {
+    filteredChannels.forEach(channel => {
+      selectedChannels.delete(channel.id)
+    })
+    selectedChannels = selectedChannels
+    updateSelectAllForFiltered(filteredChannels, selectedChannels)
+  }
+
+  function enableSelectedChannels (): void {
+    selectedChannels.forEach(channelId => {
+      updateChannelSync(channelId, true)
+    })
+  }
+
+  function disableSelectedChannels (): void {
+    selectedChannels.forEach(channelId => {
+      updateChannelSync(channelId, false)
+    })
+  }
+
+  function setSelectedPublic (): void {
+    selectedChannels.forEach(channelId => {
+      updateChannelAccess(channelId, 'public')
+    })
+  }
+
+  function setSelectedPrivate (): void {
+    selectedChannels.forEach(channelId => {
+      updateChannelAccess(channelId, 'private')
+    })
+  }
+
+  function showActionsPopup (event: MouseEvent): void {
+    const actionItems = [
+      {
+        id: 'select-all',
+        label: telegram.string.SelectAllAction,
+        action: selectAllFiltered,
+        disabled: filteredChannels.length === 0 || filteredChannels.every(c => selectedChannels.has(c.id))
+      },
+      {
+        id: 'unselect-all',
+        label: telegram.string.UnselectAllAction,
+        action: unselectAllFiltered,
+        disabled: filteredChannels.length === 0 || !filteredChannels.some(c => selectedChannels.has(c.id))
+      },
+      {
+        id: 'enable-selected',
+        label: telegram.string.EnableSynchronization,
+        action: enableSelectedChannels,
+        disabled: selectedChannels.size === 0 || readonly
+      },
+      {
+        id: 'disable-selected',
+        label: telegram.string.DisableSynchronization,
+        action: disableSelectedChannels,
+        disabled: selectedChannels.size === 0 || readonly
+      },
+      {
+        id: 'set-public',
+        label: telegram.string.SetPublicAccess,
+        action: setSelectedPublic,
+        disabled: selectedChannels.size === 0 || readonly
+      },
+      {
+        id: 'set-private',
+        label: telegram.string.SetPrivateAccess,
+        action: setSelectedPrivate,
+        disabled: selectedChannels.size === 0 || readonly
+      }
+    ]
+    const enabledActions = actionItems.filter(item => !item.disabled)
+
+    showPopup(DropdownLabelsPopupIntl, {
+      items: enabledActions,
+      onSelected: (item: any) => { item.action() }
+    }, event.target as HTMLElement, (result) => {
+      if (result != null) {
+        const actionItem = actionItems.find(i => i.id === result)
+        if (actionItem !== undefined) {
+          actionItem.action()
+        } else {
+          console.warn('Action not found:', result)
+        }
+      }
+    })
+  }
+
+  function handleRightClick (event: MouseEvent): void {
+    event.preventDefault()
+    showActionsPopup(event)
+  }
+
   async function applyChanges (): Promise<void> {
     // Dispatch event to apply changes
     const integrationClient = await getIntegrationClient()
@@ -267,7 +369,7 @@
   okLabel={telegram.string.Apply}
   okAction={applyChanges}
   onCancel={close}
-  canSave={error == null}
+  canSave={error == null && !isLoading}
   scrollableContent={false}
   on:close={close}
 >
@@ -282,18 +384,30 @@
     </span>
   </svelte:fragment>
   <svelte:fragment slot="actions">
-    <div class="search-container">
-      <FilterButton
-        categories={filterCategories}
-        {activeFilters}
-        on:change={handleFilterChange}
-        size="medium"
+    <div class="actions-container">
+      <Button
+        icon={IconMoreV}
+        title={telegram.string.Actions}
         kind={'regular'}
+        disabled={filteredChannels.length === 0 || isLoading}
+        on:click={showActionsPopup}
       />
-      <SearchInput bind:value={searchQuery} collapsed />
+      <div class="hulyHeader-divider" />
+      <div class="search-container">
+        <FilterButton
+          categories={filterCategories}
+          {activeFilters}
+          on:change={handleFilterChange}
+          size="medium"
+          disabled={isLoading}
+          kind={'regular'}
+        />
+        <SearchInput bind:value={searchQuery} collapsed />
+      </div>
+      <div class="hulyHeader-divider" />
     </div>
   </svelte:fragment>
-  <div class="channels-config">
+  <div class="channels-config" on:contextmenu={handleRightClick} role="region">
     <!-- Channels list -->
     <div class="channels-list">
       {#if isLoading}
@@ -338,7 +452,7 @@
                     {readonly}
                   />
                 </div>
-                <div class="channel-info">
+                <div class="channel-info content-color">
                   <div class="channel-name">
                     {#if icon !== undefined}
                       <Icon icon={icon} size={'small'} />
@@ -374,7 +488,7 @@
   </div>
   <svelte:fragment slot="footer">
     <div class="footer-container">
-      <span class="synced-count">
+      <span class="text-normal font-medium content-color">
         <Label label={telegram.string.SyncedChannels} />: {syncedChannelsCount}
       </span>
     </div>
@@ -396,11 +510,15 @@
     gap: 0.5rem;
   }
 
+  .actions-container {
+    display: flex;
+    align-items: center;
+  }
+
   .search-container {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding-right: 1rem;
   }
 
   .search-results {
@@ -548,22 +666,11 @@
 
   .sync-label {
     font-size: 0.875rem;
-    color: var(--theme-content-color);
+    color: var(--theme-dark-color);
   }
 
   .channel-access {
     min-width: 100px;
-  }
-
-  .label {
-    font-size: 0.875rem;
-    color: var(--theme-content-trans-color);
-  }
-
-  .value {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--theme-content-color);
   }
 
   .footer-container {
@@ -572,11 +679,5 @@
     align-items: center;
     justify-content: flex-start;
     padding: 0 0.5rem;
-  }
-
-  .synced-count {
-    font-size: 0.875rem;
-    color: var(--theme-content-trans-color);
-    font-weight: 500;
   }
 </style>

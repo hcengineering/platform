@@ -79,6 +79,13 @@
     "Access": "Access",
     "User": "User",
     "Group": "Group",
-    "Channel": "Channel"
+    "Channel": "Channel",
+    "Actions": "Actions",
+    "SelectAllAction": "Select all",
+    "UnselectAllAction": "Unselect all",
+    "EnableSynchronization": "Enable synchronization",
+    "DisableSynchronization": "Disable synchronization",
+    "SetPublicAccess": "Set public access",
+    "SetPrivateAccess": "Set private access"
   }
 }
