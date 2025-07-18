@@ -173,7 +173,7 @@
   {/if}
   {#if loading}
     <div
-      class="btn-icon pointer-events-none spinner"
+      class="btn-icon pointer-events-none spinner pl-2"
       class:resetIconSize={resetIconSize === 'icon'}
       style:color={primary ? 'var(--primary-button-color)' : 'var(--theme-caption-color)'}
     >

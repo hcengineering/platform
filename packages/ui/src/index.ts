@@ -48,6 +48,7 @@ export type {
   IHeaderState,
   IPanelState
 } from './types'
+export type { FilterCategory, FilterOption, ActiveFilter } from './components/FilterButton.svelte'
 
 export { themeStore, languageStore } from '@hcengineering/theme'
 // export { applicationShortcutKey } from './utils'
@@ -58,6 +59,9 @@ export { default as Label } from './components/Label.svelte'
 export { default as Button } from './components/Button.svelte'
 export { default as ButtonWithDropdown } from './components/ButtonWithDropdown.svelte'
 export { default as ButtonGroup } from './components/ButtonGroup.svelte'
+export { default as FilterButton } from './components/FilterButton.svelte'
+export { default as FilterCategoryPopup } from './components/FilterCategoryPopup.svelte'
+export { default as FilterOptionPopup } from './components/FilterOptionPopup.svelte'
 export { default as Status } from './components/Status.svelte'
 export { default as StateTag } from './components/StateTag.svelte'
 export { default as Component } from './components/Component.svelte'

@@ -1,10 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { CheckBox, Toggle, DropdownLabelsIntl, SearchEdit, Label, ListView, Modal, Loading, closePopup, Icon, IconError } from '@hcengineering/ui'
+  import { CheckBox, Toggle, DropdownLabelsIntl, SearchEdit, Label, ListView, Modal, Loading, closePopup, Icon, IconError, FilterButton, type FilterCategory, type ActiveFilter } from '@hcengineering/ui'
   import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { isWorkspaceIntegration } from '@hcengineering/integration-client'
-  import ui from '@hcengineering/ui'
 
   import TelegramIcon from './icons/TelegramColor.svelte'
   import telegram from '../plugin'
@@ -31,6 +30,37 @@
   let list: ListView
   let isLoading = true
   let error: string | null = null
+
+  // Filter state
+  let activeFilters: ActiveFilter[] = []
+
+  const filterCategories: FilterCategory[] = [
+    {
+      id: 'type',
+      label: 'Type',
+      options: [
+        { id: 'user', label: 'User' },
+        { id: 'group', label: 'Group' },
+        { id: 'channel', label: 'Channel' }
+      ]
+    },
+    {
+      id: 'mode',
+      label: 'Sync Mode',
+      options: [
+        { id: 'enabled', label: 'Sync Enabled' },
+        { id: 'disabled', label: 'Sync Disabled' }
+      ]
+    },
+    {
+      id: 'access',
+      label: 'Access',
+      options: [
+        { id: 'public', label: 'Public' },
+        { id: 'private', label: 'Private' }
+      ]
+    }
+  ]
 
   const accessOptions = [
     { id: 'public', label: telegram.string.Public, icon: telegram.string.Shared },
@@ -70,16 +100,43 @@
     }
   }
 
-  // Filter channels based on search query
+  // Filter channels based on search query and active filters
   $: filteredChannels = channels.filter(channel => {
-    if (!searchQuery.trim()) return true
+    // Search filter
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase().trim()
+      if (!(
+        channel.name.toLowerCase().includes(query) ||
+        channel.id.toLowerCase().includes(query)
+      )) {
+        return false
+      }
+    }
 
-    const query = searchQuery.toLowerCase().trim()
-    return (
-      channel.name.toLowerCase().includes(query) ||
-      channel.id.toLowerCase().includes(query)
-    )
+    // Active filters
+    for (const filter of activeFilters) {
+      if (filter.categoryId === 'type' && channel.type !== filter.optionId) {
+        return false
+      }
+      if (filter.categoryId === 'mode') {
+        const isSyncEnabled = channel.syncEnabled
+        if ((filter.optionId === 'enabled' && !isSyncEnabled) ||
+            (filter.optionId === 'disabled' && isSyncEnabled)) {
+          return false
+        }
+      }
+      if (filter.categoryId === 'access' && channel.access !== filter.optionId) {
+        return false
+      }
+    }
+
+    return true
   })
+
+  // Handle filter changes
+  function handleFilterChange (event: CustomEvent<ActiveFilter[]>): void {
+    activeFilters = event.detail
+  }
 
   // Update select all state when filtered channels change
   $: {
@@ -105,7 +162,7 @@
       selectedChannels.add(channelId)
     }
     selectedChannels = selectedChannels
-    updateSelectAllForFiltered()
+    updateSelectAllForFiltered(filteredChannels, selectedChannels)
   }
 
   // Handle select all (only for filtered channels)
@@ -199,7 +256,7 @@
   }
 
   $: hasSelection = selectedChannels.size > 0
-  $: filteredSelectedCount = Array.from(selectedChannels).filter(id => 
+  $: filteredSelectedCount = Array.from(selectedChannels).filter(id =>
     filteredChannels.some(c => c.id === id)
   ).length
 </script>
@@ -229,12 +286,16 @@
         bind:value={searchQuery}
         width="100%"
       />
+      <FilterButton
+        categories={filterCategories}
+        {activeFilters}
+        on:change={handleFilterChange}
+        size="medium"
+        kind="ghost"
+      />
     </div>
   </svelte:fragment>
   <div class="channels-config">
-    <!-- Header with bulk actions -->
-
-
     <!-- Channels list -->
     <div class="channels-list">
       {#if isLoading}
@@ -256,7 +317,7 @@
             <div class="no-results-content">
               <span class="no-results-title">No channels found</span>
               <span class="no-results-subtitle">
-                Try adjusting your search query or 
+                Try adjusting your search query or
                 <button class="link-button" on:click={clearSearch}>clear search</button>
               </span>
             </div>

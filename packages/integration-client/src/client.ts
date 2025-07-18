@@ -34,20 +34,18 @@ export function getIntegrationClient (
   integrationKind: IntegrationKind,
   serviceName: string
 ): IntegrationClient {
-  return new IntegrationClientImpl(accountsUrl, token, integrationKind, serviceName)
+  const client = getAccountClientRaw(accountsUrl, token)
+  return new IntegrationClientImpl(client, integrationKind, serviceName)
 }
 
 export class IntegrationClientImpl implements IntegrationClient {
-  private readonly client: AccountClient
   private readonly events = getIntegrationEventBus()
 
   constructor (
-    accountsUrl: string,
-    token: string,
+    private readonly client: AccountClient,
     private readonly integrationKind: IntegrationKind,
     private readonly serviceName: string
   ) {
-    this.client = getAccountClientRaw(accountsUrl, token)
   }
 
   // Event methods
@@ -61,6 +59,10 @@ export class IntegrationClientImpl implements IntegrationClient {
 
   private emit<T = any>(event: string, data: T): void {
     this.events.emit(event, data)
+  }
+
+  async getIntegrations (): Promise<Integration[]> {
+    return (await this.client.listIntegrations({ kind: this.integrationKind })) ?? []
   }
 
   async getIntegrationsByAccount (account: AccountUuid, workspaceUuid?: WorkspaceUuid): Promise<Integration | null> {

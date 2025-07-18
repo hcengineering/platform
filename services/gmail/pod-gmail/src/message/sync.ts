@@ -207,7 +207,7 @@ export class SyncManager {
       }
     } catch (err) {
       if (this.isClosing) return
-      this.ctx.error('Sync error', { workspace: this.workspace, userId, err })
+      this.ctx.error('Sync error', { workspace: this.workspace, userId, userEmail, err })
     } finally {
       releaseLock()
     }

@@ -21,6 +21,19 @@ import setting from '@hcengineering/setting'
 
 import { serviceToken } from './utils'
 import { getAccountSocialIds } from './accounts'
+import { IntegrationClient, IntegrationClientImpl } from '@hcengineering/integration-client'
+
+let integrationClient: IntegrationClient | undefined
+export function getIntegrationClient (): IntegrationClient {
+  if (integrationClient === undefined) {
+    integrationClient = new IntegrationClientImpl(
+      getAccountClient(serviceToken()),
+      gmailIntegrationKind,
+      'gmail'
+    )
+  }
+  return integrationClient
+}
 
 export async function getIntegration (socialId: PersonId, workspaceUuid?: WorkspaceUuid): Promise<Integration | null> {
   const client = getAccountClient(serviceToken())

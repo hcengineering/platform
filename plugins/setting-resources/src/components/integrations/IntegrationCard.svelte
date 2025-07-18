@@ -32,6 +32,8 @@
   const client = getClient()
   const accountClient = getAccountClient()
 
+  let isDisconnecting = false
+
   async function close (res: any): Promise<void> {
     /* TODO: if (res?.value && integration !== undefined) {
       await client.update(integration, {
@@ -58,6 +60,7 @@
 
   async function disconnect (): Promise<void> {
     try {
+      isDisconnecting = true
       if (integration !== undefined && integrationType.onDisconnect !== undefined) {
         Analytics.handleEvent(`Disconnect integration: ${await translate(integrationType.label, {}, 'en')}`)
         const disconnect = await getResource(integrationType.onDisconnect)
@@ -74,6 +77,8 @@
         undefined,
         NotificationSeverity.Error
       )
+    } finally {
+      isDisconnecting = false
     }
   }
   const handleConfigure = async (component?: AnyComponent): Promise<void> => {
@@ -145,6 +150,7 @@
           label={setting.string.Configure}
           minWidth={'5rem'}
           kind={'primary'}
+          disabled={isDisconnecting}
           on:click={(ev) => handleConfigure(integrationType.configureComponent)}
         >
           <svelte:fragment slot="icon">
@@ -158,6 +164,7 @@
         <Button
           label={setting.string.Disconnect}
           minWidth={'5rem'}
+          loading={isDisconnecting}
           on:click={disconnect}
           />
       {/if}

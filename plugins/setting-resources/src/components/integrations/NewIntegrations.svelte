@@ -234,6 +234,9 @@
             />
           {/if}
         {/each}
+        {#if filteredIntegrationTypes.length === 1}
+          <div class="flex"/> <!-- Spacer to fill the grid -->
+        {/if}
       </div>
     {/if}
 </div>
