@@ -22,8 +22,10 @@
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { createEventDispatcher, onMount } from 'svelte'
   import hr from '../plugin'
+  import Members from './Members.svelte'
 
   export let object: Department
+  export let readonly: boolean = false
 
   let avatarEditor: EditableAvatar
 
@@ -65,12 +67,14 @@
       collectionArrays: ['members']
     })
   })
+
+  $: members = object.members ?? []
 </script>
 
 <FocusHandler {manager} />
 
 {#if object !== undefined}
-  <div class="flex-row-stretch flex-grow">
+  <div class="flex-row-stretch flex-grow step-tb-6">
     <div class="mr-8">
       {#key object}
         <EditableAvatar
@@ -92,6 +96,8 @@
       </div>
     </div>
   </div>
+
+  <Members department={object} {members} {readonly} />
 {/if}
 
 <style lang="scss">

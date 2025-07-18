@@ -121,6 +121,7 @@ const hr = plugin(hrId, {
     HR: '' as Asset,
     Department: '' as Asset,
     Structure: '' as Asset,
+    Members: '' as Asset,
     Vacation: '' as Asset,
     Sick: '' as Asset,
     PTO: '' as Asset,
