@@ -118,6 +118,7 @@ export interface MigrationClient {
 
   wsIds: WorkspaceIds
 
+  fullReindex: () => Promise<void>
   reindex: (domain: Domain, classes: Ref<Class<Doc>>[]) => Promise<void>
   readonly logger: ModelLogger
   readonly ctx: MeasureContext
