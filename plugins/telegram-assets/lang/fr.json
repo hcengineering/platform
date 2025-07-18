@@ -73,7 +73,13 @@
     "ConfigureIntegration": "Configurer l'intégration",
     "Apply": "Appliquer",
     "SyncedChannels": "Canaux synchronisés",
-    "NotConnectedIntegration": "Le compte {phone} n'est pas intégré à l'espace de travail",
-    "FailedToLoadState": "Échec du chargement de l'état de l'intégration"
+    "NotConnectedIntegration": "Le compte {phone} n'est pas intégré avec l'espace de travail",
+    "FailedToLoadState": "Échec du chargement de l'état d'intégration",
+    "Type": "Type",
+    "SyncMode": "Mode de Synchronisation",
+    "Access": "Accès",
+    "User": "Utilisateur",
+    "Group": "Groupe",
+    "Channel": "Canal"
   }
 }

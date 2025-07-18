@@ -13,23 +13,6 @@
 // limitations under the License.
 -->
 <script context="module" lang="ts">
-  export interface FilterOption {
-    id: string
-    label: string
-  }
-
-  export interface FilterCategory {
-    id: string
-    label: string
-    options: FilterOption[]
-  }
-
-  export interface ActiveFilter {
-    categoryId: string
-    optionId: string
-    categoryLabel: string
-    optionLabel: string
-  }
 </script>
 
 <script lang="ts">
@@ -39,13 +22,15 @@
   import IconClose from './icons/Close.svelte'
   import { eventToHTMLElement, showPopup } from '../popups'
   import FilterCategoryPopup from './FilterCategoryPopup.svelte'
-  import type { ButtonKind } from '../types'
+  import type { ButtonKind, ActiveFilter, FilterCategory } from '../types'
+  import ui from '../plugin'
 
   export let categories: FilterCategory[] = []
   export let activeFilters: ActiveFilter[] = []
   export let disabled: boolean = false
   export let size: 'x-small' | 'small' | 'medium' | 'large' = 'medium'
   export let kind: ButtonKind = 'regular'
+  export let showLabel: boolean = true
 
   const dispatch = createEventDispatcher<{
     change: ActiveFilter[]
@@ -84,6 +69,7 @@
 
 <Button
   icon={hasFilters ? IconClose : IconFilter}
+  label={showLabel ? (hasFilters ? ui.string.Clear : ui.string.Filter) : undefined}
   {kind}
   {size}
   pressed={hasFilters}
@@ -96,4 +82,3 @@
     }
   }}
 />
-

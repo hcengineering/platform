@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { CheckBox, Toggle, DropdownLabelsIntl, SearchEdit, Label, ListView, Modal, Loading, closePopup, Icon, IconError, FilterButton, type FilterCategory, type ActiveFilter } from '@hcengineering/ui'
+  import { CheckBox, Toggle, DropdownLabelsIntl, SearchInput, Label, ListView, Modal, Loading, closePopup, Icon, IconError, FilterButton, type FilterCategory, type ActiveFilter } from '@hcengineering/ui'
   import { getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { isWorkspaceIntegration } from '@hcengineering/integration-client'
 
@@ -37,27 +37,27 @@
   const filterCategories: FilterCategory[] = [
     {
       id: 'type',
-      label: 'Type',
+      label: telegram.string.Type,
       options: [
-        { id: 'user', label: 'User' },
-        { id: 'group', label: 'Group' },
-        { id: 'channel', label: 'Channel' }
+        { id: 'user', label: telegram.string.User },
+        { id: 'group', label: telegram.string.Group },
+        { id: 'channel', label: telegram.string.Channel }
       ]
     },
     {
       id: 'mode',
-      label: 'Sync Mode',
+      label: telegram.string.SyncMode,
       options: [
-        { id: 'enabled', label: 'Sync Enabled' },
-        { id: 'disabled', label: 'Sync Disabled' }
+        { id: 'enabled', label: telegram.string.SyncEnabled },
+        { id: 'disabled', label: telegram.string.SyncDisabled }
       ]
     },
     {
       id: 'access',
-      label: 'Access',
+      label: telegram.string.Access,
       options: [
-        { id: 'public', label: 'Public' },
-        { id: 'private', label: 'Private' }
+        { id: 'public', label: telegram.string.Public },
+        { id: 'private', label: telegram.string.Private }
       ]
     }
   ]
@@ -282,17 +282,14 @@
   </svelte:fragment>
   <svelte:fragment slot="actions">
     <div class="search-container">
-      <SearchEdit
-        bind:value={searchQuery}
-        width="100%"
-      />
       <FilterButton
         categories={filterCategories}
         {activeFilters}
         on:change={handleFilterChange}
         size="medium"
-        kind="ghost"
+        kind={'regular'}
       />
+      <SearchInput bind:value={searchQuery} collapsed />
     </div>
   </svelte:fragment>
   <div class="channels-config">
@@ -394,7 +391,8 @@
   .search-container {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    padding-right: 1rem;
   }
 
   .search-results {

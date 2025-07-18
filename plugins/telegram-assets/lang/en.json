@@ -73,6 +73,12 @@
     "Apply": "Apply",
     "SyncedChannels": "Synchronized channels",
     "NotConnectedIntegration": "The account {phone} is not integrated with the workspace",
-    "FailedToLoadState": "Failed to load integration state"
+    "FailedToLoadState": "Failed to load integration state",
+    "Type": "Type",
+    "SyncMode": "Sync Mode",
+    "Access": "Access",
+    "User": "User",
+    "Group": "Group",
+    "Channel": "Channel"
   }
 }

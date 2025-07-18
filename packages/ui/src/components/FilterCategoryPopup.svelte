@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { FilterCategory, FilterOption, ActiveFilter } from './FilterButton.svelte'
-  import { eventToHTMLElement, showPopup } from '../popups'
-  import FilterOptionPopup from './FilterOptionPopup.svelte'
+  import type { FilterCategory, FilterOption, ActiveFilter } from '../types'
+  import IconChevronLeft from './icons/ChevronLeft.svelte'
+  import IconCheck from './icons/Check.svelte'
+  import Label from './Label.svelte'
 
   export let categories: FilterCategory[]
   export let activeFilters: ActiveFilter[]
@@ -25,58 +26,112 @@
 
   const dispatch = createEventDispatcher()
 
-  function showOptionPopup (category: FilterCategory, e: MouseEvent): void {
-    const target = eventToHTMLElement(e)
-    showPopup(
-      FilterOptionPopup,
-      {
-        category,
-        activeFilters,
-        onFilterChange: (filter: ActiveFilter) => {
-          onFilterChange(filter)
-          dispatch('close')
-        },
-        onFilterRemove: (categoryId: string) => {
-          onFilterRemove(categoryId)
-          dispatch('close')
-        }
-      },
-      target
-    )
+  // Navigation state
+  let selectedCategory: FilterCategory | null = null
+  let view: 'categories' | 'options' = 'categories'
+
+  function selectCategory (category: FilterCategory): void {
+    selectedCategory = category
+    view = 'options'
+  }
+
+  function goBackToCategories (): void {
+    selectedCategory = null
+    view = 'categories'
+  }
+
+  function selectOption (option: FilterOption): void {
+    if (selectedCategory === null) return
+
+    const filter: ActiveFilter = {
+      categoryId: selectedCategory.id,
+      optionId: option.id,
+      categoryLabel: selectedCategory.label,
+      optionLabel: option.label
+    }
+    onFilterChange(filter)
+    dispatch('close')
+  }
+
+  function clearCategoryFilter (): void {
+    if (selectedCategory === null) return
+    onFilterRemove(selectedCategory.id)
+    dispatch('close')
   }
 
   function isActive (categoryId: string): boolean {
     return activeFilters.some(f => f.categoryId === categoryId)
   }
 
+  function isOptionSelected (optionId: string): boolean {
+    if (selectedCategory === null) return false
+    return activeFilters.some(f => f.categoryId === selectedCategory.id && f.optionId === optionId)
+  }
+
   function getActiveOption (categoryId: string): string {
     const filter = activeFilters.find(f => f.categoryId === categoryId)
     return filter !== undefined ? filter.optionLabel : ''
   }
+
+  $: currentActiveFilter = (() => {
+    if (selectedCategory === null) return null
+    return activeFilters.find(f => f.categoryId === selectedCategory.id) ?? null
+  })()
 </script>
 
-<div class="filter-category-popup">
-  <div class="popup-header">
-    <span class="popup-title">Filter by</span>
-  </div>
-  <div class="category-list">
-    {#each categories as category (category.id)}
-      <button
-        class="category-item"
-        class:active={isActive(category.id)}
-        on:click={(e) => { showOptionPopup(category, e) }}
-      >
-        <span class="category-label">{category.label}</span>
-        {#if isActive(category.id)}
-          <span class="active-value">{getActiveOption(category.id)}</span>
-        {/if}
+<div class="filter-popup">
+  {#if view === 'categories'}
+    <!-- Categories View -->
+    <div class="popup-header">
+      <span class="popup-title">Filter by</span>
+    </div>
+    <div class="category-list">
+      {#each categories as category (category.id)}
+        <button
+          class="category-item"
+          class:active={isActive(category.id)}
+          on:click={() => { selectCategory(category) }}
+        >
+          <span class="category-label"><Label label={category.label} /></span>
+          {#if isActive(category.id)}
+            <span class="active-value">{getActiveOption(category.id)}</span>
+          {/if}
+        </button>
+      {/each}
+    </div>
+  {:else if view === 'options' && selectedCategory !== null}
+    <!-- Options View -->
+    <div class="popup-header">
+      <button class="back-button" on:click={goBackToCategories}>
+        <IconChevronLeft size={'small'} />
       </button>
-    {/each}
-  </div>
+      <span class="popup-title"><Label label={selectedCategory.label} /></span>
+    </div>
+    <div class="option-list">
+      {#each selectedCategory.options as option (option.id)}
+        <button
+          class="option-item"
+          class:selected={isOptionSelected(option.id)}
+          on:click={() => { selectOption(option) }}
+        >
+          <span class="option-label"><Label label={option.label} /></span>
+          {#if isOptionSelected(option.id)}
+            <IconCheck size={'small'} />
+          {/if}
+        </button>
+      {/each}
+      {#if currentActiveFilter !== null}
+        <div class="divider"></div>
+        <button class="option-item clear-option" on:click={clearCategoryFilter}>
+          <span class="option-label">Clear filter</span>
+        </button>
+      {/if}
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
-  .filter-category-popup {
+  .filter-popup {
     display: flex;
     flex-direction: column;
     background: var(--theme-popup-color);
@@ -89,9 +144,29 @@
   }
 
   .popup-header {
+    display: flex;
+    align-items: center;
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--theme-popup-divider);
     background: var(--theme-bg-accent-color);
+    gap: 0.5rem;
+  }
+
+  .back-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    border: none;
+    background: none;
+    color: var(--theme-content-color);
+    cursor: pointer;
+    border-radius: 0.25rem;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background: var(--theme-bg-accent-hover);
+    }
   }
 
   .popup-title {
@@ -100,13 +175,13 @@
     color: var(--theme-content-color);
   }
 
-  .category-list {
+  .category-list, .option-list {
     display: flex;
     flex-direction: column;
     padding: 0.25rem 0;
   }
 
-  .category-item {
+  .category-item, .option-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -122,13 +197,22 @@
       background: var(--theme-bg-accent-hover);
     }
 
-    &.active {
+    &.active,
+    &.selected {
       background: var(--theme-primary-bg-color);
       color: var(--theme-primary-color);
     }
   }
 
-  .category-label {
+  .option-item.clear-option {
+    color: var(--theme-warning-color);
+
+    &:hover {
+      background: var(--theme-warning-bg-hover);
+    }
+  }
+
+  .category-label, .option-label {
     font-size: 0.875rem;
     font-weight: 400;
   }
@@ -137,5 +221,11 @@
     font-size: 0.75rem;
     opacity: 0.8;
     margin-left: 0.5rem;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--theme-popup-divider);
+    margin: 0.25rem 0;
   }
 </style>

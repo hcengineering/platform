@@ -563,3 +563,21 @@ export interface IPanelState extends IHeaderState {
   panelWidth: number
   innerWidth: number
 }
+
+export interface FilterOption {
+  id: string
+  label: IntlString
+}
+
+export interface FilterCategory {
+  id: string
+  label: IntlString
+  options: FilterOption[]
+}
+
+export interface ActiveFilter {
+  categoryId: string
+  optionId: string
+  categoryLabel: IntlString
+  optionLabel: IntlString
+}

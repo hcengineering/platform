@@ -74,6 +74,12 @@
     "Apply": "Applica",
     "SyncedChannels": "Canali sincronizzati",
     "NotConnectedIntegration": "L'account {phone} non è integrato con lo spazio di lavoro",
-    "FailedToLoadState": "Impossibile caricare lo stato dell'integrazione"
+    "FailedToLoadState": "Impossibile caricare lo stato dell'integrazione",
+    "Type": "Tipo",
+    "SyncMode": "Modalità di Sincronizzazione",
+    "Access": "Accesso",
+    "User": "Utente",
+    "Group": "Gruppo",
+    "Channel": "Canale"
   }
 }

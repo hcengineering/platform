@@ -2,7 +2,6 @@
   "string": {
     "Loading": "Načítání...",
     "IntegrationConnected": "Připojeno jako {phone}",
-    "Disconnect": "Odpojit",
     "SharedMessages": "Sdílené zprávy Telegramu",
     "Next": "Další",
     "Back": "Zpět",
@@ -74,6 +73,13 @@
     "Apply": "Použít",
     "SyncedChannels": "Synchronizované kanály",
     "NotConnectedIntegration": "Účet {phone} není integrován s pracovním prostorem",
-    "FailedToLoadState": "Nepodařilo se načíst stav integrace"
+    "FailedToLoadState": "Nepodařilo se načíst stav integrace",
+    "Type": "Typ",
+    "SyncMode": "Režim synchronizace",
+    "Access": "Přístup",
+    "User": "Uživatel",
+    "Group": "Skupina",
+    "Channel": "Kanál",
+    "Disconnect": "Odpojit"
   }
 }

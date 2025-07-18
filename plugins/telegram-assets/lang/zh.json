@@ -74,6 +74,12 @@
     "Apply": "应用",
     "SyncedChannels": "已同步的频道",
     "NotConnectedIntegration": "帐户 {phone} 未与工作区集成",
-    "FailedToLoadState": "加载集成状态失败"
+    "FailedToLoadState": "加载集成状态失败",
+    "Type": "类型",
+    "SyncMode": "同步模式",
+    "Access": "访问权限",
+    "User": "用户",
+    "Group": "群组",
+    "Channel": "频道"
   }
 }

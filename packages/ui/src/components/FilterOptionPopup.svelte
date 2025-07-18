@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { FilterCategory, FilterOption, ActiveFilter } from './FilterButton.svelte'
+  import type { FilterCategory, FilterOption, ActiveFilter } from '../types'
   import IconCheck from './icons/Check.svelte'
 
   export let category: FilterCategory
@@ -122,7 +122,7 @@
 
     &.clear-option {
       color: var(--theme-warning-color);
-      
+
       &:hover {
         background: var(--theme-warning-bg-color);
       }
