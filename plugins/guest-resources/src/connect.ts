@@ -178,8 +178,6 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
   })
   console.log('logging in as guest')
-  Analytics.handleEvent('GUEST LOGIN')
-  // Analytics.setWorkspace(wsUrl)
 
   const account = workspaceLoginInfo.account
 
@@ -191,9 +189,16 @@ export async function connect (title: string): Promise<Client | undefined> {
     fullSocialIds: []
   }
 
+  const data: Record<string, any> = {
+    guest_uuid: account,
+    visited_workspace: wsUrl,
+    visited_workspace_uuid: workspaceLoginInfo.workspace
+  }
+  Analytics.handleEvent('GUEST LOGIN', data)
+
   if (me !== undefined) {
-    Analytics.setUser(account, { account })
-    Analytics.setWorkspace(wsUrl)
+    Analytics.setUser(data.guest_uuid, data)
+    Analytics.setWorkspace(wsUrl, true)
     console.log('login: employee account', me)
     setCurrentAccount(me)
     setCurrentEmployee('' as Ref<Employee>)

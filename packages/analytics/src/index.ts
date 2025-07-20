@@ -10,7 +10,7 @@ export interface AnalyticProvider {
   setUser: (email: string, data: any) => void
   setAlias: (distinctId: string, alias: string) => void
   setTag: (key: string, value: string) => void
-  setWorkspace: (ws: string) => void
+  setWorkspace: (ws: string, guest: boolean) => void
   handleEvent: (event: string, params: Record<string, string>) => void
   handleError: (error: Error) => void
   navigate: (path: string) => void
@@ -45,9 +45,9 @@ export const Analytics = {
     })
   },
 
-  setWorkspace (ws: string): void {
+  setWorkspace (ws: string, guest: boolean): void {
     providers.forEach((provider) => {
-      provider.setWorkspace(ws)
+      provider.setWorkspace(ws, guest)
     })
   },
 

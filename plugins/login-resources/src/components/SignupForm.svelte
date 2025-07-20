@@ -16,15 +16,17 @@
 <script lang="ts">
   import { OK, Severity, Status } from '@hcengineering/platform'
   import { logIn } from '@hcengineering/workbench'
+  import { signupStore } from '@hcengineering/analytics-providers'
 
   import BottomActionComponent from './BottomAction.svelte'
   import login from '../plugin'
   import { getPasswordValidationRules } from '../validations'
   import { goTo } from '../utils'
   import Form from './Form.svelte'
-  import { OtpLoginSteps, signUp, signUpOtp } from '../index'
+  import { OtpLoginSteps, signUp, signUpOtp, type BottomAction } from '../index'
   import type { Field } from '../types'
   import OtpForm from './OtpForm.svelte'
+  import { onMount } from 'svelte'
 
   export let signUpDisabled = false
   export let localLoginHidden = false
@@ -69,6 +71,10 @@
   if (signUpDisabled || localLoginHidden) {
     goTo('login')
   }
+
+  onMount(() => {
+    signupStore.setSignUpFlow(true)
+  })
 
   const action = {
     i18n: login.string.SignUp,

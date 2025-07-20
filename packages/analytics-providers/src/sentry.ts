@@ -59,8 +59,9 @@ export class SentryAnalyticProvider implements AnalyticProvider {
     Sentry.setTag(key, value)
   }
 
-  setWorkspace (ws: string): void {
-    this.setTag('workspace', ws)
+  setWorkspace (ws: string, guest: boolean): void {
+    const prop: string = guest ? 'visited-workspace' : 'workspace'
+    this.setTag(prop, ws)
   }
 
   handleEvent (event: string): void {
