@@ -974,6 +974,13 @@ export const coreOperation: MigrateOperation = {
         state: 'clean-old-model',
         mode: 'upgrade',
         func: cleanOldModel
+      },
+      {
+        state: 'reindex-after-elastic-mapping-change',
+        mode: 'upgrade',
+        func: async (client) => {
+          await client.fullReindex()
+        }
       }
       // ,
       // {

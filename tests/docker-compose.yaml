@@ -104,7 +104,7 @@ services:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
     healthcheck:
-      interval: 20s
+      interval: 5s
       retries: 10
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
   account:
@@ -257,6 +257,8 @@ services:
         condition: service_started
       cockroach:
         condition: service_started
+      elastic:
+        condition: service_healthy
     links:
       - elastic
       - mongodb

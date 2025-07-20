@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Loading } from '@hcengineering/ui'
   import { logIn } from '@hcengineering/workbench'
+  import { trackOAuthCompletion } from '@hcengineering/analytics-providers'
   import { onMount } from 'svelte'
 
   import {
@@ -20,6 +21,8 @@
     }
 
     const result = await getLoginInfoFromQuery()
+
+    trackOAuthCompletion(result)
 
     if (result != null) {
       await logIn(result)

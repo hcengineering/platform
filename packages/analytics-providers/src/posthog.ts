@@ -44,11 +44,10 @@ export class PosthogAnalyticProvider implements AnalyticProvider {
     posthog.setPersonProperties({ [key]: value })
   }
 
-  setWorkspace (ws: string): void {
-    this.setTag('workspace', ws)
-    posthog.group('workspace', ws, {
-      name: `${ws}`
-    })
+  setWorkspace (ws: string, guest: boolean): void {
+    const prop: string = guest ? 'visited-workspace' : 'workspace'
+    this.setTag(prop, ws)
+    if (!guest) posthog.group(prop, ws, { name: `${ws}` })
   }
 
   logout (): void {

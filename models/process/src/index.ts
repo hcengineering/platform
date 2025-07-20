@@ -697,23 +697,21 @@ export function createModel (builder: Builder): void {
         {
           key: '',
           label: process.string.Process,
-          presenter: process.component.ExecutonPresenter,
-          displayProps: { key: 'process', fixed: 'left' }
+          presenter: process.component.ExecutonPresenter
         },
         {
           key: '',
           label: process.string.Step,
-          presenter: process.component.ExecutonProgressPresenter,
-          displayProps: { key: 'state', fixed: 'left' }
+          presenter: process.component.ExecutonProgressPresenter
         },
         { key: '', presenter: process.component.ExecutonPresenter, displayProps: { grow: true } },
         {
           key: 'modifiedOn',
-          displayProps: { fixed: 'right' }
+          displayProps: { fixed: 'right', dividerBefore: true }
         },
         {
           key: 'createdOn',
-          displayProps: { fixed: 'right' }
+          displayProps: { fixed: 'right', dividerBefore: true }
         }
       ]
     },
@@ -730,7 +728,7 @@ export function createModel (builder: Builder): void {
         baseMenuClass: process.class.Execution
       },
       viewOptions: {
-        groupBy: ['process', 'status', 'card'],
+        groupBy: ['process', 'currentState', 'card'],
         orderBy: [
           ['modifiedOn', SortingOrder.Descending],
           ['createdOn', SortingOrder.Descending]
@@ -752,29 +750,26 @@ export function createModel (builder: Builder): void {
       },
       config: [
         {
-          key: 'card',
-          displayProps: { key: 'card', fixed: 'left' }
+          key: 'card'
         },
         {
-          key: '',
+          key: 'process',
           label: process.string.Process,
-          presenter: process.component.ExecutonPresenter,
-          displayProps: { key: 'process', fixed: 'left' }
+          presenter: process.component.ExecutonPresenter
         },
         {
-          key: '',
+          key: 'currentState',
           label: process.string.Step,
-          presenter: process.component.ExecutonProgressPresenter,
-          displayProps: { key: 'state', fixed: 'left' }
+          presenter: process.component.ExecutonProgressPresenter
         },
         { key: '', presenter: process.component.ExecutonPresenter, displayProps: { grow: true } },
         {
           key: 'modifiedOn',
-          displayProps: { fixed: 'right' }
+          displayProps: { fixed: 'right', dividerBefore: true }
         },
         {
           key: 'createdOn',
-          displayProps: { fixed: 'right' }
+          displayProps: { fixed: 'right', dividerBefore: true }
         }
       ]
     },
@@ -810,14 +805,12 @@ export function createModel (builder: Builder): void {
       config: [
         {
           key: 'action',
-          presenter: process.component.LogActionPresenter,
-          displayProps: { key: 'action', fixed: 'left' }
+          presenter: process.component.LogActionPresenter
         },
         {
           key: 'transition',
           label: process.string.Transition,
-          presenter: process.component.TransitionRefPresenter,
-          displayProps: { key: 'transition', fixed: 'left' }
+          presenter: process.component.TransitionRefPresenter
         },
         {
           key: '',
@@ -830,7 +823,7 @@ export function createModel (builder: Builder): void {
         },
         {
           key: 'createdOn',
-          displayProps: { fixed: 'right' }
+          displayProps: { fixed: 'right', dividerBefore: true }
         }
       ]
     },

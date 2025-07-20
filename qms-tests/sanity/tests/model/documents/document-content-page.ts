@@ -762,6 +762,13 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.page.getByText(text).click()
     await this.page.getByText(text).dblclick()
 
+    // NOTE: without the resize the menu popup might be placed in a wrong place initially
+    // and only update its position on the button click (MouseDown) which leads
+    // to the MouseUp land not on the button and the click handler is not triggered
+    // Resize event ensures that the menu popup is placed correctly before clicking
+    await this.page.evaluate(() => {
+      window.dispatchEvent(new Event('resize'))
+    })
     await this.buttonAddMessageToText.click()
     await this.addMessage(message)
 

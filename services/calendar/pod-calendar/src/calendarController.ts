@@ -27,6 +27,11 @@ import { getIntegrations } from './integrations'
 import { WorkspaceClient } from './workspaceClient'
 import { cleanUserByEmail } from './kvsUtils'
 
+interface WorkspaceStateInfo {
+  shouldStart: boolean
+  needRecheck: boolean
+}
+
 export class CalendarController {
   protected static _instance: CalendarController
 
@@ -72,10 +77,13 @@ export class CalendarController {
     if (ids.length === 0) return
     const limiter = new RateLimiter(config.InitLimit)
     const infos = await this.accountClient.getWorkspacesInfo(ids)
+    const outdatedWorkspaces = new Set<WorkspaceUuid>()
     for (let index = 0; index < infos.length; index++) {
       const info = infos[index]
       const integrations = groups.get(info.uuid) ?? []
-      if (await this.checkWorkspace(info, integrations)) {
+      const { shouldStart, needRecheck } = await this.checkWorkspace(info, integrations)
+
+      if (shouldStart) {
         await limiter.add(async () => {
           try {
             this.ctx.info('start workspace', { workspace: info.uuid })
@@ -85,27 +93,105 @@ export class CalendarController {
           }
         })
       }
+
+      if (needRecheck) {
+        outdatedWorkspaces.add(info.uuid)
+      }
+
       if (index % 10 === 0) {
         this.ctx.info('starting progress', { value: index + 1, total: infos.length })
       }
     }
     await limiter.waitProcessing()
     this.ctx.info('Started all workspaces', { count: infos.length })
+
+    if (outdatedWorkspaces.size > 0) {
+      this.ctx.info('Found outdated workspaces for future recheck', { count: outdatedWorkspaces.size })
+      // Schedule recheck for outdated workspaces
+      const outdatedGroups = new Map<WorkspaceUuid, Integration[]>()
+      for (const workspaceId of outdatedWorkspaces) {
+        const integrations = groups.get(workspaceId)
+        if (integrations !== undefined) {
+          outdatedGroups.set(workspaceId, integrations)
+        }
+      }
+      void this.recheckOutdatedWorkspaces(outdatedGroups)
+    }
   }
 
-  private async checkWorkspace (info: WorkspaceInfoWithStatus, integrations: Integration[]): Promise<boolean> {
+  private async checkWorkspace (
+    info: WorkspaceInfoWithStatus,
+    integrations: Integration[]
+  ): Promise<WorkspaceStateInfo> {
     if (isDeletingMode(info.mode)) {
       if (integrations !== undefined) {
         for (const int of integrations) {
           await this.accountClient.deleteIntegration(int)
         }
       }
-      return false
+      return { shouldStart: false, needRecheck: false }
     }
     if (!isActiveMode(info.mode)) {
       this.ctx.info('workspace is not active', { workspaceUuid: info.uuid })
-      return false
+      return { shouldStart: false, needRecheck: false }
     }
-    return true
+    const lastVisit = (Date.now() - (info.lastVisit ?? 0)) / (3600 * 24 * 1000) // In days
+
+    if (lastVisit > config.WorkspaceInactivityInterval) {
+      this.ctx.info('workspace is outdated, needs recheck', {
+        workspaceUuid: info.uuid,
+        lastVisitDays: lastVisit.toFixed(1)
+      })
+      return { shouldStart: false, needRecheck: true }
+    }
+    return { shouldStart: true, needRecheck: false }
+  }
+
+  // TODO: Subscribe to workspace queue istead of using setTimeout
+  async recheckOutdatedWorkspaces (outdatedGroups: Map<WorkspaceUuid, Integration[]>): Promise<void> {
+    try {
+      await new Promise<void>((resolve) => {
+        setTimeout(
+          () => {
+            resolve()
+          },
+          10 * 60 * 1000
+        ) // Wait 10 minutes
+      })
+
+      const ids = [...outdatedGroups.keys()]
+      const limiter = new RateLimiter(config.InitLimit)
+      const infos = await this.accountClient.getWorkspacesInfo(ids)
+      const stillOutdatedGroups = new Map<WorkspaceUuid, Integration[]>()
+
+      for (let index = 0; index < infos.length; index++) {
+        const info = infos[index]
+        const integrations = outdatedGroups.get(info.uuid) ?? []
+        const { shouldStart, needRecheck } = await this.checkWorkspace(info, integrations)
+
+        if (shouldStart) {
+          await limiter.add(async () => {
+            try {
+              this.ctx.info('restarting previously outdated workspace', { workspace: info.uuid })
+              await WorkspaceClient.run(this.ctx, this.accountClient, info.uuid)
+            } catch (err) {
+              this.ctx.error('Failed to restart workspace', { workspace: info.uuid, error: err })
+            }
+          })
+        } else if (needRecheck) {
+          // Keep this workspace for future recheck
+          stillOutdatedGroups.set(info.uuid, integrations)
+        }
+      }
+
+      await limiter.waitProcessing()
+
+      if (stillOutdatedGroups.size > 0) {
+        this.ctx.info('Still outdated workspaces, scheduling next recheck', { count: stillOutdatedGroups.size })
+        void this.recheckOutdatedWorkspaces(stillOutdatedGroups)
+      }
+    } catch (err: any) {
+      this.ctx.error('Failed to recheck outdated workspaces', { error: err })
+    }
   }
 }

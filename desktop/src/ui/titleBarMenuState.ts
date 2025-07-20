@@ -49,6 +49,10 @@ export class TitleBarMenuState {
         }
     }
 
+    public exitAltMode(): void {
+        this.altModeActive = false
+    }
+
     public enterAltMode(topLevelMenuIndex: number | null): void {
         this.altModeActive = true
         
