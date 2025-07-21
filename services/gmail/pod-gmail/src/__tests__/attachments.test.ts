@@ -28,6 +28,7 @@ describe('AttachmentHandler', () => {
     with: jest.fn(),
     withSync: jest.fn(),
     withLog: jest.fn(),
+    withoutTracing: jest.fn(),
     logger: {
       info: jest.fn(),
       error: jest.fn(),

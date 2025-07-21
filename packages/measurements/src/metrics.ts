@@ -1,7 +1,6 @@
 // Basic performance metrics suite.
 
-import { type MetricsData } from '.'
-import { platformNow } from '../utils'
+import { platformNow, type MetricsData } from '.'
 import { type FullParamsType, type Metrics, type ParamsType } from './types'
 
 /**

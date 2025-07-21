@@ -14,7 +14,7 @@
 //
 
 import type { Account, AccountRole, AccountUuid, Doc, Domain, PersonId, Ref } from './classes'
-import { type MeasureContext } from './measurements'
+import { type MeasureContext } from '@hcengineering/measurements'
 import { type DocumentQuery, type FindOptions } from './storage'
 import type { DocumentUpdate, Tx } from './tx'
 import { type WorkspaceIds } from './utils'

@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/analytics-service",
+  "name": "@hcengineering/measurements",
   "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
@@ -37,17 +37,16 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5"
   },
-  "dependencies": {
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/measurements-otlp": "^0.6.0",
-    "winston": "^3.11.0",
-    "winston-daily-rotate-file": "^5.0.0",
-    "@sentry/node": "^9.22.0"
-  },
+  "dependencies": {},
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/index.js",
+      "import": "./lib/index.js"
+    }
   }
 }

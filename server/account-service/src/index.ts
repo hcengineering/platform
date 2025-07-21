@@ -385,7 +385,9 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       // Ignore
     }
 
-    const result = await measureCtx.with(request.method, { source }, (mctx) => {
+    const userCtx = measureCtx.newChild(request.method, { source })
+
+    try {
       if (method === undefined || typeof method !== 'function') {
         const response = {
           id: request.id,
@@ -396,12 +398,14 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
         return
       }
 
-      return method(mctx, db, branding, request, token, meta)
-    })
+      const result = await method(userCtx, db, branding, request, token, meta)
 
-    const body = JSON.stringify(result)
-    ctx.res.writeHead(200, KEEP_ALIVE_HEADERS)
-    ctx.res.end(body)
+      const body = JSON.stringify(result)
+      ctx.res.writeHead(200, KEEP_ALIVE_HEADERS)
+      ctx.res.end(body)
+    } finally {
+      userCtx.end()
+    }
   })
 
   app.use(router.routes()).use(router.allowedMethods())

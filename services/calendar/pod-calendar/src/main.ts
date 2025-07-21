@@ -14,7 +14,8 @@
 //
 
 import { SplitLogger } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { createOpenTelemetryMetricsContext } from '@hcengineering/analytics-service/src'
+import { newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient, { getAccountClient } from '@hcengineering/server-client'
 import { initStatisticsContext } from '@hcengineering/server-core'
@@ -43,7 +44,7 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 export const main = async (): Promise<void> => {
   const ctx = initStatisticsContext(CALENDAR_INTEGRATION, {
     factory: () =>
-      new MeasureMetricsContext(
+      createOpenTelemetryMetricsContext(
         'calendar',
         {},
         {},

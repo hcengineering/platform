@@ -3,8 +3,8 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
+import { newMetrics } from '@hcengineering/core'
 import { startFront } from '@hcengineering/front/src/starter'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import { join } from 'path'
@@ -14,7 +14,7 @@ Analytics.setTag('application', 'front')
 
 const metricsContext = initStatisticsContext('front', {
   factory: () =>
-    new MeasureMetricsContext(
+    createOpenTelemetryMetricsContext(
       'front',
       {},
       {},
