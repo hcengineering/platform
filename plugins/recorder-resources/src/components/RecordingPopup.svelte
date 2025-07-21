@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { enumerateDevices, getDisplayMedia, getSelectedCamId, getSelectedMicId } from '@hcengineering/media'
+  import { enumerateDevices } from '@hcengineering/media'
   import { micAccess, camAccess } from '@hcengineering/media-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { FilePreview, MessageBox } from '@hcengineering/presentation'
@@ -32,16 +32,34 @@
 
   import { DefaultOptions } from '../const'
   import plugin from '../plugin'
-  import { cancelRecording, pauseRecording, resumeRecording, startRecording, stopRecording } from '../recording'
   import {
+    cancelRecording,
+    pauseRecording,
+    recordingPopupClosed,
+    recordingPopupOpened,
+    resumeRecording,
+    setCam,
+    setMic,
+    startRecording,
+    stopRecording,
+    toggleCam,
+    toggleMic
+  } from '../recording'
+  import {
+    canShareScreen,
+    camEnabled as camEnabledStore,
+    micEnabled as micEnabledStore,
+    camDeviceId as camDeviceIdStore,
+    micDeviceId as micDeviceIdStore,
+    camStream as camStreamStore,
+    micStream as micStreamStore,
+    screenStream as screenStreamStore,
+    loading as loadingStore,
     recording,
-    recordingCameraPosition,
-    recordingCameraSize,
-    recordingResolution,
-    useScreenShareSound
+    recorder
   } from '../stores'
   import { type RecordingResult } from '../types'
-  import { formatElapsedTime, formatRecordingName, whenStreamEnded } from '../utils'
+  import { formatElapsedTime, formatRecordingName } from '../utils'
 
   import IconCamOn from './icons/CamOn.svelte'
   import IconCamOff from './icons/CamOff.svelte'
@@ -60,178 +78,43 @@
 
   const dispatch = createEventDispatcher()
 
-  let camDeviceId = getSelectedCamId()
-  let micDeviceId = getSelectedMicId()
+  $: loading = $loadingStore
+  $: camEnabled = $camEnabledStore
+  $: micEnabled = $micEnabledStore
+  $: camDeviceId = $camDeviceIdStore
+  $: micDeviceId = $micDeviceIdStore
+  $: cameraStream = $camStreamStore
+  $: micStream = $micStreamStore
+  $: screenStream = $screenStreamStore
 
-  $: videoRes = $recordingResolution
-  $: cameraSize = $recordingCameraSize
-  $: cameraPos = $recordingCameraPosition
+  $: cameraSize = $recorder.recordingCameraSize
+  $: cameraPos = $recorder.recordingCameraPosition
   $: state = $recording
 
-  let cameraStream: MediaStream | null = null
-  let screenStream: MediaStream | null = null
-  let micStream: MediaStream | null = null
-  let streamPromise: Promise<void> | null = null
-
-  let camEnabled = true
-  let micEnabled = true
-
-  let mainStream: MediaStream | null = null
   $: mainStream = screenStream ?? cameraStream
   $: mirrored = screenStream === null
-
-  $: streamPromise = updateMediaStreams(camEnabled, micEnabled, camDeviceId, micDeviceId, videoRes, screenStream)
 
   $: hasCamAccess = $camAccess.state !== 'denied'
   $: hasMicAccess = $micAccess.state !== 'denied'
 
   $: if (state !== null && state.state === 'stopped') {
-    // dispatch('close')
     recording.set(null)
   }
 
-  async function updateMediaStreams (
-    camEnabled: boolean,
-    micEnabled: boolean,
-    camDeviceId: string | undefined,
-    micDeviceId: string | undefined,
-    videoRes: number,
-    screenStream: MediaStream | null
-  ): Promise<void> {
-    if (streamPromise != null) {
-      await streamPromise
-    }
+  onMount(() => {
+    recordingPopupOpened()
+  })
 
-    const oldCameraStream = cameraStream
-    const oldMicStream = micStream
-
-    try {
-      if (camEnabled || micEnabled) {
-        const { videoStream, audioStream } = await getCombinedStream(
-          camEnabled,
-          micEnabled,
-          camDeviceId,
-          micDeviceId,
-          videoRes,
-          screenStream
-        )
-
-        cameraStream = videoStream
-        micStream = audioStream
-      } else {
-        cameraStream = null
-        micStream = null
-      }
-
-      // Release old streams
-      await Promise.all([releaseStream(oldCameraStream), releaseStream(oldMicStream)])
-    } catch (err) {
-      console.error('Failed to update media streams:', err)
-      // Restore old streams on error
-      cameraStream = oldCameraStream
-      micStream = oldMicStream
-    }
-  }
-
-  async function getCombinedStream (
-    camEnabled: boolean,
-    micEnabled: boolean,
-    camDeviceId: string | undefined,
-    micDeviceId: string | undefined,
-    videoRes: number,
-    screenStream: MediaStream | null
-  ): Promise<{ videoStream: MediaStream | null, audioStream: MediaStream | null }> {
-    if (!camEnabled && !micEnabled) {
-      return { videoStream: null, audioStream: null }
-    }
-
-    const constraints = {
-      video: camEnabled
-        ? {
-            deviceId: camDeviceId != null ? { exact: camDeviceId } : undefined,
-            facingMode: 'user',
-            aspectRatio: { ideal: 16 / 9 },
-            height: screenStream === null ? { ideal: videoRes } : undefined
-          }
-        : false,
-      audio: micEnabled
-        ? {
-            deviceId: micDeviceId != null ? { exact: micDeviceId } : undefined
-          }
-        : false
-    }
-
-    try {
-      const combinedStream = await navigator.mediaDevices.getUserMedia(constraints)
-
-      // Split the combined stream into separate video and audio streams
-      const videoStream = camEnabled ? new MediaStream(combinedStream.getVideoTracks()) : null
-      const audioStream = micEnabled ? new MediaStream(combinedStream.getAudioTracks()) : null
-
-      return { videoStream, audioStream }
-    } catch (err) {
-      console.error('Error getting media stream:', err)
-      throw err
-    }
-  }
-
-  $: if (screenStream !== null) {
-    const cleanup = whenStreamEnded(screenStream, () => {
-      if (state !== null) {
-        void stopRecording()
-      }
-      screenStream = null
-      cleanup()
-    })
-  }
-
-  $: if (cameraStream !== null) {
-    const cleanup = whenStreamEnded(cameraStream, () => {
-      if (state !== null) {
-        void stopRecording()
-      }
-      cameraStream = null
-      cleanup()
-    })
-  }
-
-  async function releaseStream (stream: MediaStream | null): Promise<void> {
-    if (stream !== null) {
-      stream.getTracks().forEach((track) => {
-        track.stop()
-      })
-    }
-  }
-
-  onDestroy(async () => {
-    await Promise.all([
-      streamPromise ?? Promise.resolve(),
-      releaseStream(cameraStream),
-      releaseStream(screenStream),
-      releaseStream(micStream)
-    ])
+  onDestroy(() => {
+    recordingPopupClosed()
   })
 
   async function handleShareScreen (): Promise<void> {
-    try {
-      screenStream = await getDisplayMedia({
-        video: {
-          frameRate: { ideal: DefaultOptions.fps }
-        },
-        audio: $useScreenShareSound
-      })
-    } catch (err: any) {
-      if (err.name === 'NotAllowedError') {
-        console.debug('User denied screen capture permission', err)
-      } else {
-        console.error('Failed to get display media', err)
-      }
-    }
+    await recorder.shareScreen()
   }
 
   async function handleStopSharing (): Promise<void> {
-    await releaseStream(screenStream)
-    screenStream = null
+    await recorder.stopScreenShare()
   }
 
   async function handleStartRecording (): Promise<void> {
@@ -240,9 +123,8 @@
       return
     }
 
-    if (streamPromise !== null) {
-      await streamPromise
-    }
+    // TODO
+    // await waitForStreams()
 
     const name = await formatRecordingName(
       screenStream !== null ? plugin.string.ScreenRecordingName : plugin.string.CameraRecordingName,
@@ -314,11 +196,11 @@
   }
 
   function handleToggleCam (): void {
-    camEnabled = !camEnabled
+    toggleCam()
   }
 
   function handleToggleMic (): void {
-    micEnabled = !micEnabled
+    toggleMic()
   }
 
   async function handleCamSetting (e: MouseEvent): Promise<void> {
@@ -336,7 +218,7 @@
 
     showPopup(SelectPopup, { value: items }, eventToHTMLElement(e), (deviceId: string) => {
       if (deviceId != null && deviceId !== camDeviceId) {
-        camDeviceId = deviceId
+        setCam(deviceId)
       }
     })
   }
@@ -355,8 +237,8 @@
     }))
 
     showPopup(SelectPopup, { value: items }, eventToHTMLElement(e), (deviceId: string) => {
-      if (deviceId != null && deviceId !== camDeviceId) {
-        micDeviceId = deviceId
+      if (deviceId != null && deviceId !== micDeviceId) {
+        setMic(deviceId)
       }
     })
   }
@@ -444,11 +326,9 @@
   hideFooter
 >
   <div class="container p-3 flex-col-center justify-center">
-    {#if state == null && mainStream === null}
+    {#if state == null && cameraStream === null && screenStream === null && !loading}
       <div class="placeholder flex-col-center justify-center">
-        {#if streamPromise === null}
-          <Label label={plugin.string.SelectVideoToRecord} />
-        {/if}
+        <Label label={plugin.string.SelectVideoToRecord} />
       </div>
     {:else if state !== null && state.state === 'stopped' && state.result != null}
       <div class="preview-container w-full h-full flex-col-center justify-center">
@@ -527,6 +407,7 @@
           secondIconProps={{ size: 'small' }}
           secondAction={handleShareSettings}
           action={screenStream === null ? handleShareScreen : handleStopSharing}
+          disabled={!$canShareScreen}
           accent={false}
           separate
           noFocus
@@ -574,13 +455,7 @@
       {:else}
         {#if state.state === 'stopped'}
           <!-- Recording completed -->
-          <ModernButton
-            size={'small'}
-            kind={'primary'}
-            label={plugin.string.Done}
-            noFocus
-            on:click={handleClose}
-          />
+          <ModernButton size={'small'} kind={'primary'} label={plugin.string.Done} noFocus on:click={handleClose} />
         {:else}
           <!-- Recording in progress -->
           <ModernButton

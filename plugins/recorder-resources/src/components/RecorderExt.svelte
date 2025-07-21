@@ -14,24 +14,24 @@
 -->
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
-  import { Icon, showPopup } from '@hcengineering/ui'
+  import { Icon } from '@hcengineering/ui'
 
   import IconRec from './icons/Rec.svelte'
   import IconRecordOn from './icons/RecordOn.svelte'
-  import RecordingPopup from './RecordingPopup.svelte'
 
   import plugin from '../plugin'
+  import { stopRecording } from '../recording'
   import { recording } from '../stores'
 
   const endpoint = getMetadata(plugin.metadata.StreamUrl) ?? ''
 
   function handleClick (): void {
-    showPopup(RecordingPopup, {}, 'centered')
+    void stopRecording()
   }
 </script>
 
 {#if endpoint !== ''}
-  {#if $recording !== null}
+  {#if $recording !== null && $recording.state === 'recording'}
     <button
       class="antiButton ghost jf-center bs-none no-focus statusButton negative"
       style="padding-left: 0.25rem"
@@ -39,15 +39,6 @@
     >
       <Icon icon={IconRecordOn} iconProps={{ fill: 'var(--primary-button-color)' }} size="small" />
       <Icon icon={IconRec} iconProps={{ fill: 'var(--primary-button-color)' }} size="small" />
-    </button>
-  {:else}
-    <button
-      class="antiButton ghost jf-center bs-none no-focus statusButton"
-      style="padding-left: 0.25rem"
-      on:click={handleClick}
-    >
-      <Icon icon={IconRecordOn} iconProps={{ fill: 'var(--theme-dark-color)' }} size="small" />
-      <Icon icon={IconRec} iconProps={{ fill: 'var(--theme-dark-color)' }} size="small" />
     </button>
   {/if}
 {/if}

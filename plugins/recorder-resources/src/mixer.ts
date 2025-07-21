@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { releaseStream } from '@hcengineering/media'
 import { combineMediaStreams } from './utils'
 
 export interface CanvasMixerOptions {
@@ -125,9 +126,7 @@ export class CanvasStreamMixer implements StreamMixer {
     this.screenVideo.srcObject = null
 
     if (this.mixedStream !== null) {
-      this.mixedStream.getTracks().forEach((track) => {
-        track.stop()
-      })
+      releaseStream(this.mixedStream)
       this.mixedStream = null
     }
   }

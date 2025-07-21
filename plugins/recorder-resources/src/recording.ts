@@ -24,13 +24,56 @@ import { addNotification, NotificationSeverity, showPopup } from '@hcengineering
 import { type FileUploadOptions } from '@hcengineering/uploader'
 import { get } from 'svelte/store'
 
-import RecordingPopup from './components/RecordingPopup.svelte'
 import { recorder, recording } from './stores'
 import { createScreenRecorder } from './screen-recorder'
 import { type RecordingOptions, type RecordingResult } from './types'
 import { translate } from '@hcengineering/platform'
 import view from '@hcengineering/view'
 import { getCurrentLanguage } from '@hcengineering/theme'
+
+import RecordingPopup from './components/RecordingPopup.svelte'
+
+export function recordingPopupClosed (): void {
+  recorder.cleanup()
+}
+
+export function recordingPopupOpened (): void {
+  recorder.initialize()
+}
+
+export function toggleCam (): void {
+  recorder.toggleCam()
+}
+
+export function toggleMic (): void {
+  recorder.toggleMic()
+}
+
+export function setCam (deviceId: string | undefined): void {
+  recorder.setCamDeviceId(deviceId)
+}
+
+export function setMic (deviceId: string | undefined): void {
+  recorder.setMicDeviceId(deviceId)
+}
+
+export async function setScreenShareEnabled (enabled: boolean): Promise<void> {
+  // if (manager !== null) {
+  //   if (enabled) {
+  //     try {
+  //       await manager.shareScreen()
+  //     } catch (err: any) {
+  //       if (err.name === 'NotAllowedError') {
+  //         console.debug('User denied screen capture permission', err)
+  //       } else {
+  //         console.error('Failed to get display media', err)
+  //       }
+  //     }
+  //   } else {
+  //     await manager.stopScreenShare()
+  //   }
+  // }
+}
 
 export async function record ({ onFileUploaded }: FileUploadOptions): Promise<void> {
   const onSuccess = async (result: RecordingResult): Promise<void> => {
@@ -74,14 +117,14 @@ export async function startRecording (options: RecordingOptions): Promise<void> 
 
 export async function stopRecording (): Promise<void> {
   const current = get(recording)
-  const popup = get(recorder)
+  // const popup = get(recorder)
   if (current !== null && current.state === 'recording') {
     recording.set({ ...current, state: 'stopping' })
     const result = await current.recorder.stop()
     await current.options.onSuccess?.(result)
 
     recording.set({ ...current, state: 'stopped', result })
-    popup?.close()
+    // popup?.close()
   } else {
     console.warn('Recording is not in `recording` state', current)
   }

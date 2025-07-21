@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { getMetadata } from '@hcengineering/platform'
   import { pushRootBarComponent } from '@hcengineering/ui'
   import { onMount } from 'svelte'
 
@@ -7,7 +8,10 @@
   let parentElement: HTMLDivElement
 
   onMount(() => {
-    // pushRootBarComponent('right', recorder.component.RecorderExt, 1300)
+    const endpoint = getMetadata(recorder.metadata.StreamUrl) ?? ''
+    if (endpoint !== '') {
+      pushRootBarComponent('right', recorder.component.RecorderExt, 1300)
+    }
   })
 </script>
 
