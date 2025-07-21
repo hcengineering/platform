@@ -151,7 +151,9 @@
               }}
             >
               {#if action.icon}<div class="icon mr-2"><Icon icon={action.icon} size={'small'} /></div>{/if}
-              <span class="overflow-label pr-4 flex-grow"><Label label={action.label} /></span>
+              <span class="overflow-label pr-4 flex-grow"
+                ><Label label={action.label} params={action.labelParams ?? {}} /></span
+              >
             </button>
           </a>
         {:else if action.component !== undefined && !action.isSubmenuRightClicking}
@@ -170,7 +172,9 @@
             {#if action.icon}
               <div class="icon mr-2"><Icon icon={action.icon} size={'small'} /></div>
             {/if}
-            <span class="overflow-label pr-4 flex-grow"><Label label={action.label} /></span>
+            <span class="overflow-label pr-4 flex-grow"
+              ><Label label={action.label} params={action.labelParams ?? {}} /></span
+            >
           </button>
         {:else}
           <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -195,7 +199,9 @@
             {#if action.icon}
               <div class="icon mr-2"><Icon icon={action.icon} size={'small'} /></div>
             {/if}
-            <span class="overflow-label pr-4 flex-grow"><Label label={action.label} /></span>
+            <span class="overflow-label pr-4 flex-grow"
+              ><Label label={action.label} params={action.labelParams ?? {}} /></span
+            >
           </button>
         {/if}
       {/each}

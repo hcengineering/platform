@@ -18,12 +18,17 @@
   </svelte:fragment>
   <svelte:fragment slot="buttons">
     {#if $allowGuestSignUpStore}
-      <Button label={view.string.ReadOnlyJoinWorkspace} stopPropagation={false} on:click={joinWorkspace} />
+      <Button
+        label={view.string.ReadOnlyJoinWorkspace}
+        labelParams={{ icon: ' 👥' }}
+        stopPropagation={false}
+        on:click={joinWorkspace}
+      />
     {:else}
       <div style="width: auto" />
     {/if}
     <a href="https://huly.io/signup" target="_blank">
-      <Button label={view.string.ReadOnlySignUp} stopPropagation={false} />
+      <Button label={view.string.ReadOnlySignUp} labelParams={{ icon: ' 🚀' }} stopPropagation={false} />
     </a>
   </svelte:fragment>
 </NotificationToast>

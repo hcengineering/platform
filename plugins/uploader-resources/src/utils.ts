@@ -20,10 +20,22 @@ import {
   toFileWithPath,
   type UploadHandlerDefinition
 } from '@hcengineering/uploader'
-import { type DocumentQuery, type Blob, type Ref, RateLimiter } from '@hcengineering/core'
+import {
+  type DocumentQuery,
+  type Blob,
+  type Ref,
+  RateLimiter,
+  hasAccountRole,
+  getCurrentAccount,
+  AccountRole
+} from '@hcengineering/core'
 import { type FileUpload, type Upload, trackUpload, untrackUpload, updateUploads } from './store'
 import uploader from './plugin'
 import { generateFileId, getFileUploadParams, getClient } from '@hcengineering/presentation'
+import { addNotification, NotificationSeverity } from '@hcengineering/ui'
+import { translate } from '@hcengineering/platform'
+import view from '@hcengineering/view'
+import { getCurrentLanguage } from '@hcengineering/theme'
 
 export async function showFilesUploadPopup (
   options: FileUploadOptions,
@@ -111,6 +123,17 @@ export async function uploadFile (
   options: FileUploadOptions,
   xhr = new XMLHttpRequest()
 ): Promise<void> {
+  if (!hasAccountRole(getCurrentAccount(), AccountRole.Guest)) {
+    addNotification(
+      await translate(view.string.ReadOnlyWarningTitle, {}, getCurrentLanguage()),
+      await translate(view.string.ReadOnlyWarningMessage, {}, getCurrentLanguage()),
+      view.component.ReadOnlyNotification,
+      undefined,
+      NotificationSeverity.Info,
+      'readOnlyNotification'
+    )
+    return
+  }
   await new Promise<void>((resolve) => {
     const fileUpload: FileUpload = {
       name: metadata.name,
