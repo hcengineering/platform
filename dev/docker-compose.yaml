@@ -127,7 +127,7 @@ services:
     healthcheck:
       interval: 20s
       retries: 10
-      test: curl -f http://localhost:9000/minio/health/live
+      test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     restart: unless-stopped
   account:
     image: hardcoreeng/account
