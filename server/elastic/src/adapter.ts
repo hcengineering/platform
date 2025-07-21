@@ -127,15 +127,29 @@ class ElasticAdapter implements FullTextAdapter {
       )
       const allIndexes = Object.keys(existingVersions.body)
       const existingOldVersionIndices = allIndexes.filter((name) => name !== indexName)
-      if (existingOldVersionIndices.length > 0) {
+      const existsIndex = allIndexes.find((it) => it === indexName) !== undefined
+      let shouldDropExistingIndex = false
+      if (existsIndex) {
+        const mapping = await ctx.with('get-mapping', { indexName }, () =>
+          this.client.indices.getMapping({
+            index: indexName
+          })
+        )
+        for (const [propName, propType] of Object.entries(mappings.properties)) {
+          if (mapping.body[indexName]?.mappings.properties?.[propName]?.type !== propType.type) {
+            shouldDropExistingIndex = true
+            break
+          }
+        }
+      }
+      if (existingOldVersionIndices.length > 0 || shouldDropExistingIndex) {
         await ctx.with('delete-old-index', {}, () =>
           this.client.indices.delete({
-            index: existingOldVersionIndices
+            index: shouldDropExistingIndex ? allIndexes : existingOldVersionIndices
           })
         )
       }
-      const existsIndex = allIndexes.find((it) => it === indexName) !== undefined
-      if (!existsIndex) {
+      if (!existsIndex || shouldDropExistingIndex) {
         await ctx.with('create-index', { indexName }, () =>
           this.client.indices.create({
             index: indexName,
