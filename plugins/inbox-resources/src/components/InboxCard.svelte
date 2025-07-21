@@ -84,7 +84,7 @@
     flex-direction: column;
     position: relative;
     cursor: pointer;
-    padding: 1rem 0.5rem 0.5rem;
+    padding: 0.5rem;
     border-bottom: 1px solid var(--global-ui-BorderColor);
     min-height: 5.625rem;
 

@@ -52,8 +52,10 @@
 
   const scrollToNewThreshold = 50
 
-  const initialLastView = context?.lastView
-  const initialLastUpdate = context?.lastUpdate
+  let initialLastView = context?.lastView
+  let initialLastUpdate = context?.lastUpdate
+
+  let shouldScrollToEnd = false
 
   let separatorDiv: HTMLDivElement | null | undefined = undefined
 
@@ -76,9 +78,18 @@
   let topOffset: number = 0
 
   const limit = $deviceInfo.isMobile ? 25 : 50
-  const unread = initialLastView != null && initialLastUpdate != null && initialLastUpdate > initialLastView
   let queryDef = getBaseQuery()
 
+  export function scrollDown (): void {
+    shouldScrollToEnd = true
+    position = MessagesNavigationAnchors.LatestMessages
+
+    reinit(position, true)
+  }
+
+  export function canScrollDown (): boolean {
+    return window !== undefined && window.hasNextPage()
+  }
   $: if (
     (context?.lastView?.getTime() ?? 0) >= (context?.lastUpdate?.getTime() ?? 0) &&
     (notifications?.length ?? 0) > 0 &&
@@ -156,8 +167,8 @@
     }
   }
 
-  function reinit (position: MessagesNavigationAnchors): void {
-    if (prevPosition === position) {
+  function reinit (position: MessagesNavigationAnchors, force = false): void {
+    if (prevPosition === position && !force) {
       return
     }
     prevPosition = position
@@ -191,7 +202,10 @@
         limit
       }
     }
-    const order = unread ? SortingOrder.Ascending : SortingOrder.Descending
+    initialLastView = context?.lastView
+    initialLastUpdate = context?.lastUpdate
+    const unread = initialLastView != null && initialLastUpdate != null && initialLastUpdate > initialLastView
+    const order = unread && !shouldScrollToEnd ? SortingOrder.Ascending : SortingOrder.Descending
     return {
       card: card._id,
       replies: true,
@@ -200,7 +214,7 @@
       links: true,
       order,
       limit,
-      from: unread && initialLastView != null ? initialLastView : undefined
+      from: unread && !shouldScrollToEnd && initialLastView != null ? initialLastView : undefined
     }
   }
 
@@ -231,12 +245,12 @@
     return bottomOffset <= 200
   }
 
-  function loadMore (): void {
+  function loadMore (direction: 'up' | 'down'): void {
     if (window === undefined || !isScrollInitialized) return
 
-    if (shouldLoadPrevPage() && window.hasPrevPage()) {
+    if (shouldLoadPrevPage() && window.hasPrevPage() && direction === 'up') {
       void loadPrevPage()
-    } else if (shouldLoadNextPage() && window.hasNextPage()) {
+    } else if (shouldLoadNextPage() && window.hasNextPage() && direction === 'down') {
       void loadNextPage()
     }
   }
@@ -312,13 +326,19 @@
     }
   }
   let rafId: any | null = null
+  let lastScrollTop: number = 0
+
   function handleScroll (): void {
     if (rafId !== null) return
     rafId = requestAnimationFrame(() => {
+      const top = scrollDiv.scrollTop
+      const direction = top > lastScrollTop ? 'down' : 'up'
+
+      lastScrollTop = top
       bottomOffset = getBottomOffset()
       topOffset = getTopOffset()
       updateShouldScrollToNew()
-      loadMore()
+      loadMore(direction)
       checkPositionOnScroll()
       void readAll()
       rafId = null
@@ -531,11 +551,15 @@
 
     const separatorIndex =
       initialLastView !== undefined
-        ? messages.findIndex(({ created, creator }) => !me.socialIds.includes(creator) && created > initialLastView)
+        ? messages.findIndex(
+          ({ created, creator }) =>
+            initialLastView != null && !me.socialIds.includes(creator) && created > initialLastView
+        )
         : -1
 
-    if (separatorIndex === -1) {
+    if (separatorIndex === -1 || shouldScrollToEnd) {
       await tick() // Wait for the DOM to update
+      shouldScrollToEnd = false
       scrollToBottom(true)
       shouldScrollToNew = true
       atBottom = true
@@ -551,7 +575,9 @@
     if (separatorDiv != null) {
       await tick() // Wait for the DOM to update
       scrollToWithOffset(scrollDiv, separatorDiv, 80)
-      isScrollInitialized = true
+      setTimeout(() => {
+        isScrollInitialized = true
+      }, 10)
       updateShouldScrollToNew()
       bottomOffset = getBottomOffset()
       topOffset = getTopOffset()

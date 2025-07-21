@@ -23,25 +23,20 @@
     Location,
     restoreLocation,
     Component,
-    Label,
-    ModernButton,
-    IconDelete,
     closePanel,
     getCurrentLocation
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { getClient, getCommunicationClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { inboxId } from '@hcengineering/inbox'
   import view from '@hcengineering/view'
   import { NotificationContext } from '@hcengineering/communication-types'
-  import { SortingOrder } from '@hcengineering/core'
 
   import InboxNavigation from './InboxNavigation.svelte'
   import { getCardIdFromLocation, navigateToCard } from '../location'
-  import inbox from '../plugin'
+  import InboxHeader from './InboxHeader.svelte'
 
   const client = getClient()
-  const communicationClient = getCommunicationClient()
 
   let replacedPanelElement: HTMLElement
   let card: Card | undefined = undefined
@@ -95,20 +90,6 @@
 
   $: $deviceInfo.replacedPanel = replacedPanelElement
   onDestroy(() => ($deviceInfo.replacedPanel = undefined))
-
-  let clearing = false
-  async function clearInbox (): Promise<void> {
-    if (clearing) return
-    try {
-      clearing = true
-      const contexts = await communicationClient.findNotificationContexts({ order: SortingOrder.Ascending })
-      await Promise.all(contexts.map((context) => communicationClient.removeNotificationContext(context.id)))
-      clearing = false
-    } catch (e) {
-      clearing = false
-      console.error(e)
-    }
-  }
 </script>
 
 <div class="hulyPanels-container inbox">
@@ -120,19 +101,7 @@
       class:fly={$deviceInfo.navigator.float}
     >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
-        <div class="hulyNavPanel-header withButton small inbox-header">
-          <span class="overflow-label"><Label label={inbox.string.Inbox} /></span>
-          <div class="flex-row-center flex-gap-2">
-            <ModernButton
-              label={inbox.string.ClearAll}
-              icon={IconDelete}
-              size="small"
-              iconSize="small"
-              on:click={clearInbox}
-              loading={clearing}
-            />
-          </div>
-        </div>
+        <InboxHeader />
         <div class="antiPanel-wrap__content hulyNavPanel-container">
           <InboxNavigation {card} on:select={selectCard} />
         </div>
@@ -174,9 +143,5 @@
     &__panel {
       position: relative;
     }
-  }
-
-  .inbox-header {
-    border-bottom: 1px solid var(--theme-navpanel-border);
   }
 </style>
