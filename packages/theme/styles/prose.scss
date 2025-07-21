@@ -479,12 +479,6 @@ pre.proseCodeBlock>pre.proseCode {
   p div {
     cursor: auto;
   }
-
-  hr {
-    margin: 1rem 0;
-    border-top: 0;
-    border-bottom: 1px solid var(--text-edtior-hr-border-color);
-  }
 }
 
 .proseMermaidDiagram {
