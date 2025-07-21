@@ -119,10 +119,9 @@
       }
     }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-
     // Draw the screen video
     if (screenVideo.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.drawImage(screenVideo, 0, 0, canvas.width, canvas.height)
     }
 
