@@ -162,12 +162,24 @@
       group: 'end'
     })
 
-    if (account.role === AccountRole.ReadOnlyGuest && $allowGuestSignUpStore) {
+    if (account.role === AccountRole.ReadOnlyGuest) {
+      if ($allowGuestSignUpStore) {
+        actions.push({
+          icon: setting.icon.InviteWorkspace,
+          label: view.string.ReadOnlyJoinWorkspace,
+          labelParams: { icon: '' },
+          action: async () => {
+            navigate({ path: ['login', 'join'], query: { workspace: getCurrentWorkspaceUrl() } })
+          },
+          group: 'end'
+        })
+      }
       actions.push({
         icon: setting.icon.InviteWorkspace,
-        label: view.string.ReadOnlyJoinWorkspace,
+        label: view.string.ReadOnlySignUp,
+        labelParams: { icon: '' },
         action: async () => {
-          navigate({ path: ['login', 'join'], query: { workspace: getCurrentWorkspaceUrl() } })
+          open('https://huly.io/signup')
         },
         group: 'end'
       })
