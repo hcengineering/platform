@@ -108,12 +108,6 @@
   <div class="content scroll-divider-color">
     {#if integration !== undefined && integrationType.stateComponent}
       <Component is={integrationType.stateComponent} props={{ integration }} />
-    {:else if integration !== undefined && integration.kind === 'gmail'}
-      <span class="text-normal content-color">
-        Synchronization in progress for account:
-        <br />
-        artyom.savchenko@xored.com
-      </span>
     {:else if integrationType.descriptionComponent}
       <Component is={integrationType.descriptionComponent} />
     {:else}

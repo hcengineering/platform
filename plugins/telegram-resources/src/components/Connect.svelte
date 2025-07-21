@@ -16,9 +16,10 @@
   import { IntlString } from '@hcengineering/platform'
   import ui, { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { getIntegrationEventBus } from '@hcengineering/integration-client'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
-  import { command, getState, type Integration } from '../api'
+  import { command, getState, type Integration, getIntegrationClient } from '../api'
 
   export let integration: any
 
@@ -26,11 +27,26 @@
   let code: string = ''
   let password: string = ''
   let error: string = ''
+  let isLoading: boolean = false
 
   const dispatch = createEventDispatcher()
 
   function close (): void {
     dispatch('close')
+  }
+
+  // Wrapper for command API with loading state management
+  async function commandWithLoading (phone: string, action: string, data?: string): Promise<Integration> {
+    if (isLoading) {
+      throw new Error('Already processing request')
+    }
+    
+    try {
+      isLoading = true
+      return await command(phone, action, data)
+    } finally {
+      isLoading = false
+    }
   }
 
   interface UIState {
@@ -73,8 +89,8 @@
         buttons: {
           primary: {
             label: ui.string.Next,
-            handler: h(() => command(phone, 'start')),
-            disabled: phone.match(/^\+\d{9,15}$/) == null
+            handler: h(() => commandWithLoading(phone, 'start')),
+            disabled: phone.match(/^\+\d{9,15}$/) == null || isLoading
           },
           secondary: { label: telegram.string.Cancel, handler: close }
         }
@@ -90,6 +106,10 @@
               // secondary: { label: telegram.string.Disconnect }
             }
           }
+
+          getIntegrationEventBus().emit('integration:created', {
+            integration: integrationState
+          })
           break
         }
 
@@ -101,8 +121,8 @@
             buttons: {
               primary: {
                 label: ui.string.Next,
-                handler: h(() => command(number, 'next', code)),
-                disabled: code.match(/^\d{5}$/) == null
+                handler: h(() => commandWithLoading(number, 'next', code)),
+                disabled: code.match(/^\d{5}$/) == null || isLoading
               },
               secondary: { label: telegram.string.Cancel, handler: close }
             }
@@ -119,8 +139,8 @@
             buttons: {
               primary: {
                 label: ui.string.Next,
-                handler: h(() => command(number, 'next', password)),
-                disabled: password.length === 0
+                handler: h(() => commandWithLoading(number, 'next', password)),
+                disabled: password.length === 0 || isLoading
               },
               secondary: { label: telegram.string.Cancel, handler: close }
             }
@@ -196,6 +216,7 @@
         <Button
           label={state.buttons.primary.label}
           kind={'primary'}
+          loading={isLoading}
           disabled={state.buttons.primary.disabled}
           on:click={state.buttons.primary.handler}
         />
