@@ -63,7 +63,7 @@ export class SyncManager {
       } catch (err: any) {
         this.ctx.error('Part sync get history error', { workspaceUuid: this.workspace, userId, error: err.message })
         await this.stateManager.clearHistory(userId)
-        void this.sync(userId, options)
+        void this.sync(userId, options, userEmail)
         return
       }
       const nextPageToken = histories.data.nextPageToken
@@ -207,7 +207,7 @@ export class SyncManager {
       }
     } catch (err) {
       if (this.isClosing) return
-      this.ctx.error('Sync error', { workspace: this.workspace, userId, err })
+      this.ctx.error('Sync error', { workspace: this.workspace, userId, userEmail, err })
     } finally {
       releaseLock()
     }
