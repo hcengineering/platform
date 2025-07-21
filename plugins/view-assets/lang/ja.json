@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "含む",
+    "NotContains": "含まない",
     "MoveClass": "{class} を移動",
     "SelectToMove": "移動先の {classLabel} を選択してください。",
     "Delete": "削除",
@@ -46,6 +47,8 @@
     "CustomizeView": "ビューをカスタマイズ",
     "Filter": "フィルター",
     "ClearFilters": "フィルターをクリア",
+    "FilterLessThan": "未満",
+    "FilterGreaterThan": "より大きい",
     "FilterIsNot": "ではない",
     "FilterIsEither": "である",
     "FilterIsEitherPlural": "である",

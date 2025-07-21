@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "содержит",
+    "NotContains": "не содержит",
     "MoveClass": "Переместить {class}",
     "SelectToMove": "Выберите {classLabel}, в который вы хотите переместить {class}.",
     "Delete": "Удалить",
@@ -46,6 +47,8 @@
     "CustomizeView": "Настроить отображение",
     "Filter": "Фильтр",
     "ClearFilters": "Очистить",
+    "FilterLessThan": "Меньше чем",
+    "FilterGreaterThan": "Больше чем",
     "FilterIsNot": "не равен",
     "FilterIsEither": "равен",
     "FilterIsEitherPlural": "{value, plural, =1 {равен} other {один из}}",

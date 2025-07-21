@@ -90,7 +90,8 @@
     "LogAction": "Evento",
     "Started": "Avviato",
     "Each": "Ogni",
-    "CreateCard": "Crea scheda"
+    "CreateCard": "Crea scheda",
+    "OnCardUpdate": "Alla modifica della scheda"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",
@@ -105,6 +106,7 @@
     "ResultNotProvided": "Risultato non fornito",
     "EmptyFunctionResult": "Risultato funzione vuoto {func}",
     "ContextValueNotProvided": "Valore di contesto non fornito: {name}",
-    "RequiredParamsNotProvided": "Parametri richiesti non forniti: {params}"
+    "RequiredParamsNotProvided": "Parametri richiesti non forniti: {params}",
+    "TooDeepTransitionRecursion": "Ricorsione di transizione troppo profonda"
   }
 }

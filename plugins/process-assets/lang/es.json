@@ -90,7 +90,8 @@
     "LogAction": "Evento",
     "Started": "Iniciado",
     "Each": "Cada",
-    "CreateCard": "Crear tarjeta"
+    "CreateCard": "Crear tarjeta",
+    "OnCardUpdate": "Al actualizar la tarjeta"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",
@@ -105,6 +106,7 @@
     "ResultNotProvided": "Resultado no proporcionado",
     "EmptyFunctionResult": "Resultado de función vacío {func}",
     "ContextValueNotProvided": "Valor de contexto no proporcionado: {name}",
-    "RequiredParamsNotProvided": "Faltan parámetros requeridos: {params}"
+    "RequiredParamsNotProvided": "Faltan parámetros requeridos: {params}",
+    "TooDeepTransitionRecursion": "Demasiada recursión de transición"
   }
 }

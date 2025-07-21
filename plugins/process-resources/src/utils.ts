@@ -14,6 +14,8 @@
 import { type Card, type MasterTag } from '@hcengineering/card'
 import core, {
   generateId,
+  type Hierarchy,
+  matchQuery,
   type AnyAttribute,
   type ArrOf,
   type Association,
@@ -50,7 +52,7 @@ import {
   type StepId,
   type Transition
 } from '@hcengineering/process'
-import { showPopup } from '@hcengineering/ui'
+import { type AnyComponent, showPopup } from '@hcengineering/ui'
 import { type AttributeCategory } from '@hcengineering/view'
 import process from './plugin'
 
@@ -101,6 +103,7 @@ export function getContextMasterTag (
 
 export async function pickTransition (
   model: ModelDb,
+  hierarchy: Hierarchy,
   execution: Execution,
   transitions: Transition[],
   doc: Doc
@@ -112,7 +115,7 @@ export async function pickTransition (
     const filled = fillParams(tr.triggerParams, execution)
     const checkFunc = await getResource(trigger.checkFunction)
     if (checkFunc === undefined) continue
-    const res = await checkFunc(filled, doc)
+    const res = await checkFunc(filled, doc, hierarchy)
     if (res) return tr
   }
 }
@@ -149,7 +152,7 @@ export async function initState<T extends Doc> (methodId: Ref<Method<T>>): Promi
           }
         : null,
     methodId,
-    params: {}
+    params: method.defaultParams ?? {}
   }
   return step
 }
@@ -208,7 +211,7 @@ export function getContext (
         direction: 'B',
         attributes: refAttributes
       }
-    } else if (category === 'object' && client.getHierarchy().isDerived(rel.classB, target)) {
+    } else if (['object', 'array'].includes(category) && client.getHierarchy().isDerived(rel.classB, target)) {
       relations[rel.nameB] = {
         name: rel.nameB,
         association: rel._id,
@@ -228,7 +231,7 @@ export function getContext (
         direction: 'A',
         attributes: refAttributes
       }
-    } else if (category === 'object' && client.getHierarchy().isDerived(rel.classA, target)) {
+    } else if (['object', 'array'].includes(category) && client.getHierarchy().isDerived(rel.classA, target)) {
       relations[rel.nameA] = {
         name: rel.nameA,
         association: rel._id,
@@ -569,4 +572,24 @@ export async function requestResult (
 export function todoTranstionCheck (params: Record<string, any>, doc: Doc): boolean {
   if (params._id === undefined) return false
   return doc._id === params._id
+}
+
+export function updateCardTranstionCheck (params: Record<string, any>, doc: Doc, hierarchy: Hierarchy): boolean {
+  const res = matchQuery([doc], params, doc._class, hierarchy, true)
+  return res.length > 0
+}
+
+export function getCirteriaEditor (of: Ref<Class<Doc>>, category: AttributeCategory): AnyComponent | undefined {
+  const client = getClient()
+  if (category !== 'attribute') {
+    const res = client.getModel().findAllSync(process.class.UpdateCriteriaComponent, {
+      category
+    })[0]
+    return res?.editor
+  }
+  const res = client.getModel().findAllSync(process.class.UpdateCriteriaComponent, {
+    category,
+    of
+  })[0]
+  return res?.editor
 }

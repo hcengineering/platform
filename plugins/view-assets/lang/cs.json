@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "Obsahuje",
+    "NotContains": "Neobsahuje",
     "MoveClass": "Přesunout {class}",
     "SelectToMove": "Vyberte {classLabel}, kam chcete přesunout {class}.",
     "Delete": "Smazat",
@@ -49,6 +50,8 @@
     "CustomizeView": "Přizpůsobit zobrazení",
     "Filter": "Filtr",
     "ClearFilters": "Vymazat filtry",
+    "FilterLessThan": "Méně než",
+    "FilterGreaterThan": "Více než",
     "FilterIsNot": "není",
     "FilterIsEither": "je",
     "FilterIsEitherPlural": "jsou",

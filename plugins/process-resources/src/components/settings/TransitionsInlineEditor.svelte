@@ -19,6 +19,7 @@
   import plugin from '../../plugin'
   import AddTransitionPopup from './AddTransitionPopup.svelte'
   import TransitionPresenter from './TransitionPresenter.svelte'
+  import TriggerPresenter from './TriggerPresenter.svelte'
 
   export let process: Process
   export let transitions: Transition[]
@@ -38,7 +39,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="hulyTableAttr-container flex-col-center box">
+<div class="hulyTableAttr-container box">
   <div class="header w-full p-4">
     <Label label={plugin.string.Transitions} />
   </div>
@@ -46,12 +47,16 @@
     <Button
       width={'100%'}
       kind={'ghost'}
+      justify={'left'}
       on:click={() => {
         handleSelect(transition._id)
       }}
     >
       <svelte:fragment slot="content">
-        <TransitionPresenter {transition} />
+        <div class="flex-row-center flex-gap-4">
+          <TransitionPresenter {transition} />
+          <TriggerPresenter value={transition.trigger} {process} params={transition.triggerParams} withLabel={true} />
+        </div>
       </svelte:fragment>
     </Button>
   {/each}

@@ -89,7 +89,8 @@
     "LogAction": "イベント",
     "Started": "開始",
     "Each": "各",
-    "CreateCard": "カードを作成"
+    "CreateCard": "カードを作成",
+    "OnCardUpdate": "カード更新時"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
@@ -103,6 +104,8 @@
     "InternalServerError": "内部サーバーエラー。サポートにお問い合わせください。エラーID: {errorId}",
     "EmptyFunctionResult": "関数結果が空です {func}",
     "ContextValueNotProvided": "コンテキスト値が提供されていません: {name}",
-    "RequiredParamsNotProvided": "必須パラメータが提供されていません: {params}"
+    "RequiredParamsNotProvided": "必須パラメータが提供されていません: {params}",
+    "ResultNotProvided": "結果が提供されていません",
+    "TooDeepTransitionRecursion": "遷移の再帰が深すぎます"
   }
 }

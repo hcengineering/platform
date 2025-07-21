@@ -14,29 +14,45 @@
 -->
 
 <script lang="ts">
+  import { Doc, DocumentQuery } from '@hcengineering/core'
   import { Process } from '@hcengineering/process'
-  import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import plugin from '../../plugin'
-  import ToDoContextSelector from '../contextEditors/ToDoContextSelector.svelte'
+  import AttributeCriteria from './AttributeCriteria.svelte'
 
   export let readonly: boolean
   export let process: Process
-  export let params: Record<string, any>
-  export let skipRollback: boolean = false
+  export let keys: string[]
+  export let params: DocumentQuery<Doc>
 
   const dispatch = createEventDispatcher()
 
-  function change (e: CustomEvent<string>): void {
-    if (readonly || e.detail == null) return
-    params._id = e.detail
+  function change (e: CustomEvent<any>, key: string): void {
+    if (e.detail?.value != null && e.detail.value !== '') {
+      ;(params as any)[key] = e.detail.value
+    } else if (Object.hasOwn(params, key)) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete (params as any)[key]
+    }
+    params = params
     dispatch('change', params)
   }
 </script>
 
 <div class="grid">
-  <Label label={plugin.string.ToDo} />
-  <ToDoContextSelector {readonly} {skipRollback} {process} value={params._id} on:change={change} />
+  {#each keys as key}
+    <AttributeCriteria
+      {process}
+      {key}
+      {params}
+      {readonly}
+      on:change={(e) => {
+        change(e, key)
+      }}
+      on:delete={() => {
+        dispatch('remove', { key })
+      }}
+    />
+  {/each}
 </div>
 
 <style lang="scss">
