@@ -23,7 +23,7 @@
     "InvalidOtp": "Código inválido",
     "InviteNotFound": "Convite com email:{email} não encontrado.",
     "WorkspaceLimitReached": "Você atingiu o limite de espaço de trabalho. Entre em contato conosco...",
-    "ReadOnlyAccount": "Demonstração para Convidados",
+    "ReadOnlyAccount": "Demonstração anônima de convidado",
     "SystemAccount": "Conta do sistema",
     "SocialIdAlreadyExists": "ID social já existe"
   }
