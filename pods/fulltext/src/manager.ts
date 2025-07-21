@@ -92,7 +92,14 @@ export class WorkspaceManager {
     )
     this.fulltextAdapter = await this.opt.config.fulltextAdapter.factory(this.opt.config.fulltextAdapter.url)
 
-    await this.fulltextAdapter.initMapping(this.ctx)
+    let adapterInitialized = false
+    while (!adapterInitialized) {
+      adapterInitialized = await this.fulltextAdapter.initMapping(this.ctx)
+      if (!adapterInitialized) {
+        this.ctx.warn("Failed to initialize indexer mapping, retrying in 5 s")
+        await new Promise((resolve) => setTimeout(resolve, 5000))
+      }
+    }
 
     this.shutdownInterval = setInterval(() => {
       for (const [k, v] of [...this.indexers.entries()]) {
