@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "包含",
+    "NotContains": "不包含",
     "MoveClass": "移动 {class}",
     "SelectToMove": "选择要将 {class} 移动到的 {classLabel}。",
     "Delete": "删除",
@@ -49,6 +50,8 @@
     "CustomizeView": "自定义视图",
     "Filter": "筛选",
     "ClearFilters": "清除筛选",
+    "FilterLessThan": "小于",
+    "FilterGreaterThan": "大于",
     "FilterIsNot": "不是",
     "FilterIsEither": "是",
     "FilterIsEitherPlural": "是",

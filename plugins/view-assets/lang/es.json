@@ -1,6 +1,7 @@
 {
   "string": {
     "Contains": "Contiene",
+    "NotContains": "No contiene",
     "MoveClass": "Mover {class}",
     "SelectToMove": "Seleccione el {classLabel} que desea mover a {class}.",
     "Delete": "Eliminar",
@@ -46,6 +47,8 @@
     "CustomizeView": "Personalizar vista",
     "Filter": "Filtrar",
     "ClearFilters": "Borrar filtros",
+    "FilterLessThan": "Menos que",
+    "FilterGreaterThan": "Más que",
     "FilterIsNot": "no es",
     "FilterIsEither": "es",
     "FilterIsEitherPlural": "son",

@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { Card, MasterTag, Tag } from '@hcengineering/card'
-import { Association, Class, Doc, DocumentUpdate, ObjQueryType, Ref, Tx, Type } from '@hcengineering/core'
+import { Association, Class, Doc, DocumentUpdate, Hierarchy, ObjQueryType, Ref, Tx, Type } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, plugin, Resource } from '@hcengineering/platform'
 import { ToDo } from '@hcengineering/time'
 import { AnyComponent } from '@hcengineering/ui'
@@ -53,6 +53,7 @@ export interface Trigger extends Doc {
   label: IntlString
   requiredParams: string[]
   editor?: AnyComponent
+  presenter?: AnyComponent
   checkFunction?: Resource<CheckFunc>
   init: boolean
 }
@@ -80,7 +81,7 @@ export enum ExecutionLogAction {
   Rollback = 'rollback'
 }
 
-export type CheckFunc = (params: Record<string, any>, doc: Doc) => Promise<boolean>
+export type CheckFunc = (params: Record<string, any>, doc: Doc, hierarchy: Hierarchy) => Promise<boolean>
 
 export enum ExecutionStatus {
   Active = 'active',
@@ -154,6 +155,7 @@ export interface Method<T extends Doc> extends Doc {
   editor?: AnyComponent
   presenter?: AnyComponent
   contextClass: Ref<Class<Doc>> | null
+  defaultParams?: MethodParams<T>
 }
 
 export interface ProcessFunction extends Doc {
@@ -163,6 +165,12 @@ export interface ProcessFunction extends Doc {
   category: AttributeCategory | undefined
   allowMany?: boolean
   label: IntlString
+}
+
+export interface UpdateCriteriaComponent extends Doc {
+  category: AttributeCategory
+  editor: AnyComponent
+  of: Ref<Class<Doc>>
 }
 
 export * from './errors'
@@ -179,7 +187,8 @@ export default plugin(processId, {
     ProcessFunction: '' as Ref<Class<ProcessFunction>>,
     Transition: '' as Ref<Class<Transition>>,
     Trigger: '' as Ref<Class<Trigger>>,
-    ExecutionLog: '' as Ref<Class<ExecutionLog>>
+    ExecutionLog: '' as Ref<Class<ExecutionLog>>,
+    UpdateCriteriaComponent: '' as Ref<Class<UpdateCriteriaComponent>>
   },
   method: {
     RunSubProcess: '' as Ref<Method<Process>>,
@@ -189,13 +198,15 @@ export default plugin(processId, {
     AddRelation: '' as Ref<Method<Association>>
   },
   trigger: {
+    OnCardUpdate: '' as Ref<Trigger>,
     OnSubProcessesDone: '' as Ref<Trigger>,
     OnToDoClose: '' as Ref<Trigger>,
     OnToDoRemove: '' as Ref<Trigger>,
     OnExecutionStart: '' as Ref<Trigger>
   },
   triggerCheck: {
-    ToDo: '' as Resource<CheckFunc>
+    ToDo: '' as Resource<CheckFunc>,
+    UpdateCheck: '' as Resource<CheckFunc>
   },
   string: {
     Method: '' as IntlString,
@@ -221,13 +232,15 @@ export default plugin(processId, {
     ResultNotProvided: '' as IntlString,
     EmptyFunctionResult: '' as IntlString,
     ContextValueNotProvided: '' as IntlString,
-    RequiredParamsNotProvided: '' as IntlString
+    RequiredParamsNotProvided: '' as IntlString,
+    TooDeepTransitionRecursion: '' as IntlString
   },
   icon: {
     Process: '' as Asset,
     Steps: '' as Asset,
     States: '' as Asset,
     ToDo: '' as Asset,
+    OnCardUpdate: '' as Asset,
     WaitSubprocesses: '' as Asset,
     ToDoRemove: '' as Asset,
     Start: '' as Asset
