@@ -33,6 +33,8 @@
 
   const dispatch = createEventDispatcher()
 
+  let list: MessagesList | undefined = undefined
+
   let position: MessagesNavigationAnchors =
     navigation === MessagesNavigationAnchors.LatestMessages
       ? MessagesNavigationAnchors.LatestMessages
@@ -49,6 +51,16 @@
     position = id
   }
 
+  export function scrollDown (): void {
+    shouldScrollToStart = false
+    position = MessagesNavigationAnchors.LatestMessages
+    list?.scrollDown()
+  }
+
+  export function canScrollDown (): boolean {
+    return list?.canScrollDown() ?? false
+  }
+
   onMount(() => {
     if (active && navigation === MessagesNavigationAnchors.LatestMessages) {
       position = MessagesNavigationAnchors.LatestMessages
@@ -60,6 +72,7 @@
 {#if scrollDiv != null && isContextLoaded && contentDiv != null}
   <div class="section-messages">
     <MessagesList
+      bind:this={list}
       card={doc}
       {readonly}
       context={notificationContext}

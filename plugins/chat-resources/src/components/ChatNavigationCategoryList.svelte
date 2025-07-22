@@ -54,9 +54,9 @@
       },
       key: '',
       label: card.string.Tags,
-      presenter: view.component.RolePresenter,
+      presenter: card.component.CardTagsColored,
       props: {
-        fullSize: true
+        showType: false
       }
     },
     {
