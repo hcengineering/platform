@@ -21,7 +21,7 @@ Pick<RecordingOptions, 'fps' | 'audioBps' | 'videoBps' | 'videoRes' | 'chunkInte
   fps: 30,
   audioBps: 128000,
   videoBps: 4000000,
-  videoRes: 720,
+  videoRes: 1080,
   chunkIntervalMs: 1000,
   cameraSize: 'medium'
 }

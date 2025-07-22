@@ -32,6 +32,7 @@
 
   import { DefaultOptions } from '../const'
   import plugin from '../plugin'
+  import { CanvasStreamComposer, canvasWidth as canvasWidthStore, canvasHeight as canvasHeightStore } from '../composer'
   import {
     cancelRecording,
     pauseRecording,
@@ -40,8 +41,10 @@
     resumeRecording,
     setCam,
     setMic,
+    shareScreen,
     startRecording,
     stopRecording,
+    stopScreenShare,
     toggleCam,
     toggleMic
   } from '../recording'
@@ -70,7 +73,6 @@
   import IconSettings from './icons/Settings.svelte'
   import IconShare from './icons/Share.svelte'
   import IconStop from './icons/Stop.svelte'
-  import RecordingCanvas from './RecordingCanvas.svelte'
   import ShareSettingsPopup from './ShareSettingsPopup.svelte'
   import SettingsPopup from './SettingsPopup.svelte'
 
@@ -97,24 +99,58 @@
   $: hasCamAccess = $camAccess.state !== 'denied'
   $: hasMicAccess = $micAccess.state !== 'denied'
 
+  $: canvasWidth = $canvasWidthStore
+  $: canvasHeight = $canvasHeightStore
+
   $: if (state !== null && state.state === 'stopped') {
     recording.set(null)
   }
 
+  let video: HTMLVideoElement | null = null
+
+  const composer = new CanvasStreamComposer(null, null, {
+    fps: DefaultOptions.fps,
+    canvasWidth,
+    canvasHeight,
+    cameraSize,
+    cameraPos
+  })
+
+  $: if (video != null) {
+    const stream = composer.getStream()
+    if (video.srcObject !== stream) {
+      video.srcObject = stream
+    }
+  }
+
   onMount(() => {
+    const stream = composer.getStream()
+    void composer.start()
+
+    stream.addEventListener('resize', (e) => {
+      console.log('resize', e)
+    })
+
     recordingPopupOpened()
   })
 
   onDestroy(() => {
+    void composer.stop()
     recordingPopupClosed()
   })
 
+  $: composer.updateConfig({ cameraSize })
+  $: composer.updateConfig({ cameraPos })
+
+  $: void composer.updateCameraStream(cameraStream)
+  $: void composer.updateScreenStream(screenStream)
+
   async function handleShareScreen (): Promise<void> {
-    await recorder.shareScreen()
+    await shareScreen()
   }
 
   async function handleStopSharing (): Promise<void> {
-    await recorder.stopScreenShare()
+    await stopScreenShare()
   }
 
   async function handleStartRecording (): Promise<void> {
@@ -123,15 +159,12 @@
       return
     }
 
-    // TODO
-    // await waitForStreams()
-
     const name = await formatRecordingName(
       screenStream !== null ? plugin.string.ScreenRecordingName : plugin.string.CameraRecordingName,
       new Date()
     )
 
-    const canvasStream = canvas.captureStream(DefaultOptions.fps)
+    const canvasStream = composer.getStream()
 
     const tracks: MediaStreamTrack[] = []
     tracks.push(...canvasStream.getVideoTracks())
@@ -144,6 +177,10 @@
 
     const stream = new MediaStream(tracks)
     await startRecording({ name, stream, fps: DefaultOptions.fps, onSuccess })
+
+    if (canMinimize) {
+      dispatch('close')
+    }
   }
 
   async function handleResumeRecording (): Promise<void> {
@@ -156,17 +193,21 @@
 
   async function handleStopRecording (): Promise<void> {
     await stopRecording()
-    camEnabled = false
-    micEnabled = false
+    recorder.setCamEnabled(false)
+    recorder.setMicEnabled(false)
   }
 
   async function handleCancelRecording (): Promise<void> {
-    if (state === null) {
+    if (state === null || state.state === 'stopped') {
       dispatch('close')
       return
     }
 
-    await pauseRecording()
+    const wasPaused = state.state === 'paused'
+    if (!wasPaused) {
+      await pauseRecording()
+    }
+
     showPopup(
       MessageBox,
       {
@@ -179,7 +220,9 @@
           await cancelRecording()
           dispatch('close')
         } else {
-          await resumeRecording()
+          if (wasPaused) {
+            await resumeRecording()
+          }
         }
       }
     )
@@ -251,14 +294,9 @@
     showPopup(SettingsPopup, { value: [] }, eventToHTMLElement(e))
   }
 
-  let canvas: HTMLCanvasElement
-
   // main container size
   let rootWidth = 640
   let rootHeight = 480
-  // canvas original size
-  let canvasWidth = 1280
-  let canvasHeight = 720
   // canvas container size and scale factor
   let containerWidth = 640
   let containerHeight = 480
@@ -349,22 +387,9 @@
         class="w-full h-full flex-col-center justify-center"
         style:transform={mirrored ? 'scaleX(-1)' : ''}
       >
-        <div
-          class="canvas-container"
-          style:width={containerWidth + 'px'}
-          style:height={containerHeight + 'px'}
-          style:transform={`scale(${containerScaleFactor})`}
-          style:transform-origin="0 0"
-        >
-          <RecordingCanvas
-            bind:canvas
-            bind:canvasWidth
-            bind:canvasHeight
-            {screenStream}
-            {cameraStream}
-            {cameraSize}
-            {cameraPos}
-          />
+        <div class="canvas-container" style:width={containerWidth + 'px'} style:height={containerHeight + 'px'}>
+          <!-- svelte-ignore a11y-media-has-caption -->
+          <video bind:this={video} autoplay playsinline muted />
         </div>
       </div>
     {/if}
@@ -527,6 +552,14 @@
   .canvas-container,
   .preview-container {
     border-radius: 0.75rem;
+
+    video {
+      border-radius: inherit;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+    }
   }
 
   .timer {

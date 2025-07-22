@@ -25,7 +25,8 @@ import {
   setRecordingCameraPosition,
   setRecordingCameraSize,
   setRecordingResolution,
-  setUseScreenShareSound
+  setUseScreenShareSound,
+  whenStreamEnded
 } from './utils'
 import { DefaultOptions } from './const'
 
@@ -204,6 +205,7 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
 
     async shareScreen (): Promise<void> {
       const state = get({ subscribe })
+      const oldScreenStream = state.screenStream
 
       try {
         const stream = await getDisplayMedia({
@@ -218,7 +220,14 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
           screenStream: stream
         }))
 
-        releaseStream(state.screenStream)
+        whenStreamEnded(stream, () => {
+          update((state) => ({
+            ...state,
+            screenStream: null
+          }))
+        })
+
+        releaseStream(oldScreenStream)
       } catch (err: any) {
         if (err.name === 'NotAllowedError') {
           console.debug('User denied screen capture permission', err)
@@ -283,6 +292,10 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
     }))
 
     const doUpdate = async (): Promise<void> => {
+      if (requestVersion !== currentVersion) {
+        return
+      }
+
       try {
         const { camStream, micStream } = await getCombinedStream(
           state.camEnabled,
@@ -317,6 +330,13 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
 
     await currentRequest
   }
+
+  window.addEventListener('beforeunload', () => {
+    const { camStream, micStream, screenStream } = get({ subscribe })
+    releaseStream(camStream)
+    releaseStream(micStream)
+    releaseStream(screenStream)
+  })
 
   return store
 }

@@ -57,22 +57,12 @@ export function setMic (deviceId: string | undefined): void {
   recorder.setMicDeviceId(deviceId)
 }
 
-export async function setScreenShareEnabled (enabled: boolean): Promise<void> {
-  // if (manager !== null) {
-  //   if (enabled) {
-  //     try {
-  //       await manager.shareScreen()
-  //     } catch (err: any) {
-  //       if (err.name === 'NotAllowedError') {
-  //         console.debug('User denied screen capture permission', err)
-  //       } else {
-  //         console.error('Failed to get display media', err)
-  //       }
-  //     }
-  //   } else {
-  //     await manager.stopScreenShare()
-  //   }
-  // }
+export async function shareScreen (): Promise<void> {
+  await recorder.shareScreen()
+}
+
+export async function stopScreenShare (): Promise<void> {
+  await recorder.stopScreenShare()
 }
 
 export async function record ({ onFileUploaded }: FileUploadOptions): Promise<void> {
