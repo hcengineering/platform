@@ -62,7 +62,12 @@ export class SyncManager {
           pageToken
         })
       } catch (err: any) {
-        this.ctx.error('Part sync get history error', { workspaceUuid: this.workspace, userId, error: err.message, historyId })
+        this.ctx.error('Part sync get history error', {
+          workspaceUuid: this.workspace,
+          userId,
+          error: err.message,
+          historyId
+        })
         void this.syncNewMessages(userId, userEmail)
         return
       }
@@ -89,7 +94,7 @@ export class SyncManager {
             }
           }
           if (history.id != null) {
-            if (maxHistoryId == null || Number(maxHistoryId) < Number(history.id)) {
+            if (maxHistoryId == null || BigInt(maxHistoryId) < BigInt(history.id)) {
               maxHistoryId = history.id
             }
           }
@@ -99,7 +104,7 @@ export class SyncManager {
           if (maxHistoryId != null) {
             const currentHistory = await this.stateManager.getHistory(userId)
             const currentHistoryId = currentHistory?.historyId
-            if (currentHistoryId == null || Number(maxHistoryId) > Number(currentHistoryId)) {
+            if (currentHistoryId == null || BigInt(maxHistoryId) > BigInt(currentHistoryId)) {
               await this.stateManager.setHistoryId(userId, maxHistoryId)
               this.ctx.info('Updated history ID', {
                 userId,
@@ -169,7 +174,7 @@ export class SyncManager {
             await this.messageManager.saveMessage(message, userEmail)
 
             if (historyId != null && q === undefined) {
-              if (currentHistoryId == null || Number(currentHistoryId) < Number(historyId)) {
+              if (currentHistoryId == null || BigInt(currentHistoryId) < BigInt(historyId)) {
                 currentHistoryId = historyId
               }
             }
@@ -236,7 +241,7 @@ export class SyncManager {
     let pageToken: string | undefined
     let totalProcessedMessages = 0
     let maxHistoryId: string | undefined
-    let foundNewerMessage = false
+    let continueOuterLoop = true
 
     const query: gmail_v1.Params$Resource$Users$Messages$List = {
       userId: 'me'
@@ -244,7 +249,7 @@ export class SyncManager {
 
     try {
       // Process messages until we find one with historyId > storedHistoryId
-      while (true) {
+      while (continueOuterLoop) {
         query.pageToken = pageToken
         await this.rateLimiter.take(5)
         const messages = await this.gmail.messages.list(query)
@@ -268,13 +273,12 @@ export class SyncManager {
 
             // If message has a history ID, check if it's newer than stored
             if (messageHistoryId != null) {
-              if (Number(messageHistoryId) > Number(storedHistoryId)) {
-                foundNewerMessage = true
+              if (BigInt(messageHistoryId) > BigInt(storedHistoryId)) {
                 await this.messageManager.saveMessage(message, userEmail)
                 totalProcessedMessages++
 
                 // Track the maximum history ID found
-                if (maxHistoryId == null || Number(messageHistoryId) > Number(maxHistoryId)) {
+                if (maxHistoryId == null || BigInt(messageHistoryId) > BigInt(maxHistoryId)) {
                   maxHistoryId = messageHistoryId
                 }
               } else {
@@ -284,7 +288,7 @@ export class SyncManager {
                   messageHistoryId,
                   storedHistoryId
                 })
-                foundNewerMessage = false
+                continueOuterLoop = false
                 break
               }
             } else {
@@ -303,8 +307,8 @@ export class SyncManager {
           }
         }
 
-        // If we didn't find any newer messages on this page, stop
-        if (!foundNewerMessage || messages.data.nextPageToken == null) {
+        // If we should stop processing or no more pages, stop
+        if (!continueOuterLoop || messages.data.nextPageToken == null) {
           this.ctx.info('Completed new messages sync', {
             workspace: this.workspace,
             userId,
@@ -317,7 +321,7 @@ export class SyncManager {
       }
 
       // Update stored history ID with the maximum found, only if we found newer messages
-      if (maxHistoryId != null && Number(maxHistoryId) > Number(storedHistoryId)) {
+      if (maxHistoryId != null && BigInt(maxHistoryId) > BigInt(storedHistoryId)) {
         await this.stateManager.setHistoryId(userId, maxHistoryId)
         this.ctx.info('Updated history ID after new messages sync', {
           userId,
