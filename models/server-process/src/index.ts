@@ -11,6 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import cardPlugin from '@hcengineering/card'
 import core, { type Doc } from '@hcengineering/core'
 import { Mixin, type Builder } from '@hcengineering/model'
 import { TMethod, TProcessFunction, TTrigger } from '@hcengineering/model-process'
@@ -28,7 +29,7 @@ import serverProcess, {
 export { serverProcessId } from '@hcengineering/server-process'
 
 @Mixin(serverProcess.mixin.MethodImpl, process.class.Method)
-export class TMethodImpl<T extends Doc> extends TMethod implements MethodImpl<T> {
+export class TMethodImpl extends TMethod implements MethodImpl<Doc> {
   func!: Resource<ExecuteFunc>
 }
 
@@ -51,6 +52,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(process.trigger.OnToDoRemove, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
     serverCheckFunc: serverProcess.func.CheckToDo
+  })
+
+  builder.mixin(process.trigger.OnCardUpdate, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    serverCheckFunc: serverProcess.func.OnCardUpdateCheck
   })
 
   builder.mixin(process.method.RunSubProcess, process.class.Method, serverProcess.mixin.MethodImpl, {
@@ -210,6 +215,24 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: process.class.ProcessToDo
+    },
+    isAsync: true
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnCardUpdate,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: cardPlugin.class.Card
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnExecutionTransition,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: process.class.Execution,
+      'operations.currentState': { $exists: true }
     },
     isAsync: true
   })

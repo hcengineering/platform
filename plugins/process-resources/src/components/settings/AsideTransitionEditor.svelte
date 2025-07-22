@@ -19,7 +19,7 @@
   export let process: Process
   export let transition: Transition
 
-  let params = transition.triggerParams
+  let params = transition.triggerParams ?? {}
 
   const client = getClient()
 
@@ -65,8 +65,8 @@
         <TransitionPresenter {transition} />
       </div>
     </div>
-    <div class="grid">
-      {#if trigger !== undefined}
+    {#if trigger !== undefined}
+      <div class="grid">
         <Label label={plugin.string.Trigger} />
         <DropdownLabelsIntl
           items={triggersItems}
@@ -76,11 +76,13 @@
           width={'100%'}
           kind={'no-border'}
         />
-        {#if trigger.editor !== undefined}
+      </div>
+      {#if trigger.editor !== undefined}
+        <div class="editor">
           <Component is={trigger.editor} props={{ process, params, readonly }} on:change={change} />
-        {/if}
+        </div>
       {/if}
-    </div>
+    {/if}
   </div>
 </Modal>
 
@@ -89,16 +91,19 @@
     padding: 1rem 1.25rem 2rem 1.25rem;
   }
 
+  .editor {
+    margin: 0.25rem 2rem 0;
+  }
+
   .grid {
     display: grid;
-    grid-template-columns: 1fr 1.5fr;
+    grid-template-columns: 1fr 3fr;
     grid-auto-rows: minmax(2rem, max-content);
     justify-content: start;
     align-items: center;
     row-gap: 0.25rem;
     column-gap: 1rem;
     margin: 0.25rem 2rem 0;
-    width: calc(100% - 4rem);
     height: min-content;
   }
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import card, { Card, MasterTag } from '@hcengineering/card'
+import cardPlugin, { Card, MasterTag } from '@hcengineering/card'
 import contact, { Employee } from '@hcengineering/contact'
 import core, {
   ArrOf,
@@ -22,6 +22,8 @@ import core, {
   Doc,
   generateId,
   getObjectValue,
+  Hierarchy,
+  matchQuery,
   Ref,
   RefTo,
   Relation,
@@ -59,7 +61,7 @@ import process, {
   Transition
 } from '@hcengineering/process'
 import { TriggerControl } from '@hcengineering/server-core'
-import serverProcess, { ExecuteResult } from '@hcengineering/server-process'
+import serverProcess, { ExecuteResult, MethodImpl } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
 import { isError } from './errors'
 import {
@@ -128,6 +130,16 @@ async function executeTransition (
   rollback: Tx[],
   disableRollback = false
 ): Promise<Tx[]> {
+  let deep = control.contextCache.get(execution._id + 'transition') ?? 1
+  deep++
+  control.contextCache.set(execution._id + 'transition', deep)
+  if (deep > 100) {
+    const error = parseError(
+      processError(process.error.TooDeepTransitionRecursion, undefined, undefined, true),
+      transition._id
+    )
+    return [control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, { error: [error] })]
+  }
   const res: Tx[] = []
   const _process = control.modelDb.findObject(execution.process)
   if (_process === undefined) return res
@@ -150,12 +162,6 @@ async function executeTransition (
   } else {
     rollback.push(control.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
   }
-  if (isDone && execution.parentId !== undefined) {
-    const parentWaitTxes = await checkParent(execution, control)
-    if (parentWaitTxes !== undefined) {
-      res.push(...parentWaitTxes)
-    }
-  }
   for (const action of transition.actions) {
     const actionResult = await executeAction(action, transition._id, execution, control)
     if (isError(actionResult)) {
@@ -169,6 +175,12 @@ async function executeTransition (
   }
   if (!disableRollback) {
     execution.rollback.push(rollback)
+  }
+  if (isDone && execution.parentId !== undefined) {
+    const parentWaitTxes = await checkParent(execution, control)
+    if (parentWaitTxes !== undefined) {
+      res.push(...parentWaitTxes)
+    }
   }
   res.push(
     control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
@@ -203,7 +215,7 @@ async function executeAction<T extends Doc> (
   try {
     const method = control.modelDb.findObject(action.methodId)
     if (method === undefined) throw processError(process.error.MethodNotFound, { methodId: action.methodId }, {}, true)
-    const impl = control.hierarchy.as(method, serverProcess.mixin.MethodImpl)
+    const impl = control.hierarchy.as(method, serverProcess.mixin.MethodImpl) as MethodImpl<T>
     if (impl === undefined) throw processError(process.error.MethodNotFound, { methodId: action.methodId }, {}, true)
     const params = await fillParams(action.params, execution, control)
     const f = await getResource(impl.func)
@@ -250,7 +262,7 @@ async function getNestedValue (
   execution: Execution,
   context: SelectedNested
 ): Promise<any | ExecutionError> {
-  const cardValue = await control.findAll(control.ctx, card.class.Card, { _id: execution.card }, { limit: 1 })
+  const cardValue = await control.findAll(control.ctx, cardPlugin.class.Card, { _id: execution.card }, { limit: 1 })
   if (cardValue.length === 0) throw processError(process.error.ObjectNotFound, { _id: execution.card }, {}, true)
   const attr = control.hierarchy.findAttribute(cardValue[0]._class, context.path)
   if (attr === undefined) throw processError(process.error.AttributeNotExists, { key: context.path })
@@ -524,6 +536,54 @@ async function checkParent (execution: Execution, control: TriggerControl): Prom
   return res
 }
 
+export async function OnExecutionTransition (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxUpdateDoc) continue
+    const updateTx = tx as TxUpdateDoc<Execution>
+    if (!control.hierarchy.isDerived(updateTx.objectClass, process.class.Execution)) continue
+    if (updateTx.operations.currentState === undefined) continue
+    const execution = (
+      await control.findAll(control.ctx, process.class.Execution, { _id: updateTx.objectId }, { limit: 1 })
+    )[0]
+    const cardUpdateTransitions = control.modelDb.findAllSync(process.class.Transition, {
+      from: execution.currentState,
+      process: execution.process,
+      trigger: process.trigger.OnCardUpdate
+    })
+    if (cardUpdateTransitions.length > 0) {
+      const doc = (await control.findAll(control.ctx, cardPlugin.class.Card, { _id: execution.card }, { limit: 1 }))[0]
+      if (doc !== undefined) {
+        const transition = await pickTransition(control, execution, cardUpdateTransitions, doc)
+        if (transition !== undefined) {
+          res.push(...(await executeTransition(execution, transition, control, [])))
+          continue
+        }
+      }
+    } else {
+      const subProcessesTransitions = control.modelDb.findAllSync(process.class.Transition, {
+        from: execution.currentState,
+        process: execution.process,
+        trigger: process.trigger.OnSubProcessesDone
+      })
+      if (subProcessesTransitions.length > 0) {
+        const subProcesses = await control.findAll(control.ctx, process.class.Execution, {
+          parentId: execution._id,
+          status: ExecutionStatus.Active
+        })
+        if (subProcesses.length === 0) {
+          const transition = await pickTransition(control, execution, subProcessesTransitions, execution)
+          if (transition !== undefined) {
+            res.push(...(await executeTransition(execution, transition, control, [])))
+            continue
+          }
+        }
+      }
+    }
+  }
+  return res
+}
+
 export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   for (const tx of txes) {
@@ -609,7 +669,7 @@ export async function CreateToDo (
       time.space.ToDos,
       {
         attachedTo: execution.card,
-        attachedToClass: card.class.Card,
+        attachedToClass: cardPlugin.class.Card,
         collection: 'todos',
         workslots: 0,
         execution: execution._id,
@@ -686,7 +746,7 @@ export async function UpdateCard (
   control: TriggerControl
 ): Promise<ExecuteResult | undefined> {
   if (Object.keys(params).length === 0) return
-  const target = (await control.findAll(control.ctx, card.class.Card, { _id: execution.card }, { limit: 1 }))[0]
+  const target = (await control.findAll(control.ctx, cardPlugin.class.Card, { _id: execution.card }, { limit: 1 }))[0]
   if (target === undefined) return
   const update: Record<string, any> = {}
   const prevValue: Record<string, any> = {}
@@ -829,6 +889,11 @@ export function CheckToDo (params: Record<string, any>, doc: Doc): boolean {
   return doc._id === params._id
 }
 
+export function OnCardUpdateCheck (params: Record<string, any>, doc: Doc, hierarchy: Hierarchy): boolean {
+  const res = matchQuery([doc], params, doc._class, hierarchy, true)
+  return res.length > 0
+}
+
 export async function OnTransition (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   for (const tx of txes) {
@@ -843,6 +908,33 @@ export async function OnTransition (txes: Tx[], control: TriggerControl): Promis
     const syncTx = await syncContext(control, _process)
     if (syncTx !== undefined) {
       res.push(syncTx)
+    }
+  }
+  return res
+}
+
+export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (!control.hierarchy.isDerived(tx._class, core.class.TxCUD)) continue
+    const cudTx = tx as TxCUD<Card>
+    if (!control.hierarchy.isDerived(cudTx.objectClass, cardPlugin.class.Card)) continue
+    const executions = await control.findAll(control.ctx, process.class.Execution, {
+      card: cudTx.objectId,
+      status: ExecutionStatus.Active
+    })
+    if (executions.length === 0) continue
+    const card = await control.findAll(control.ctx, cardPlugin.class.Card, { _id: cudTx.objectId }, { limit: 1 })
+    if (card.length === 0) continue
+    for (const execution of executions) {
+      const transitions = control.modelDb.findAllSync(process.class.Transition, {
+        from: execution.currentState,
+        process: execution.process,
+        trigger: process.trigger.OnCardUpdate
+      })
+      const transition = await pickTransition(control, execution, transitions, card[0])
+      if (transition === undefined) continue
+      res.push(...(await executeTransition(execution, transition, control, [])))
     }
   }
   return res
@@ -925,7 +1017,8 @@ export default async () => ({
     UpdateCard,
     CreateCard,
     AddRelation,
-    CheckToDo
+    CheckToDo,
+    OnCardUpdateCheck
   },
   transform: {
     FirstValue,
@@ -959,7 +1052,9 @@ export default async () => ({
     OnProcessRemove,
     OnStateRemove,
     OnTransition,
+    OnCardUpdate,
     OnExecutionCreate,
+    OnExecutionTransition,
     OnProcessToDoClose,
     OnProcessToDoRemove,
     OnExecutionContinue

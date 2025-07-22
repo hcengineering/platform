@@ -90,7 +90,8 @@
     "LogAction": "Событие",
     "Started": "Начат",
     "Each": "Каждый",
-    "CreateCard": "Создать карточку"
+    "CreateCard": "Создать карточку",
+    "OnCardUpdate": "При обновлении карточки"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
@@ -105,6 +106,7 @@
     "ResultNotProvided": "Результат не предоставлен",
     "EmptyFunctionResult": "Отсутствуют результат функции {func}",
     "ContextValueNotProvided": "Значение контекста не предоставлено: {name}",
-    "RequiredParamsNotProvided": "Отсутствуют обязательные параметры: {params}"
+    "RequiredParamsNotProvided": "Отсутствуют обязательные параметры: {params}",
+    "TooDeepTransitionRecursion": "Слишком глубокая рекурсия переходов"
   }
 }

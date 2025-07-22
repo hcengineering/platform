@@ -40,7 +40,8 @@ export default plugin(serverProcessId, {
     CreateCard: '' as Resource<ExecuteFunc>,
     AddRelation: '' as Resource<ExecuteFunc>,
     WaitSubProcess: '' as Resource<ExecuteFunc>,
-    CheckToDo: '' as Resource<CheckFunc>
+    CheckToDo: '' as Resource<CheckFunc>,
+    OnCardUpdateCheck: '' as Resource<CheckFunc>
   },
   transform: {
     FirstValue: '' as Resource<TransformFunc>,
@@ -72,9 +73,11 @@ export default plugin(serverProcessId, {
   },
   trigger: {
     OnTransition: '' as Resource<TriggerFunc>,
+    OnCardUpdate: '' as Resource<TriggerFunc>,
     OnProcessRemove: '' as Resource<TriggerFunc>,
     OnStateRemove: '' as Resource<TriggerFunc>,
     OnExecutionCreate: '' as Resource<TriggerFunc>,
+    OnExecutionTransition: '' as Resource<TriggerFunc>,
     OnProcessToDoClose: '' as Resource<TriggerFunc>,
     OnProcessToDoRemove: '' as Resource<TriggerFunc>,
     OnExecutionContinue: '' as Resource<TriggerFunc>

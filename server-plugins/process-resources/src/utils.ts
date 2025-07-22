@@ -35,7 +35,7 @@ export async function pickTransition (
     const filled = fillParams(tr.triggerParams, execution)
     const checkFunc = await getResource(impl.serverCheckFunc)
     if (checkFunc === undefined) continue
-    const res = await checkFunc(filled, doc)
+    const res = await checkFunc(filled, doc, control.hierarchy)
     if (res) return tr
   }
 }

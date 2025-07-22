@@ -16,7 +16,7 @@
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { parseContext, Process, Trigger } from '@hcengineering/process'
-  import { Icon, IconError, Label, tooltip } from '@hcengineering/ui'
+  import { Component, Icon, IconError, Label, tooltip } from '@hcengineering/ui'
 
   export let value: Ref<Trigger>
   export let process: Process
@@ -57,6 +57,9 @@
     <Icon icon={error ? IconError : trigger.icon} size={'medium'} />
     {#if withLabel}
       <Label label={trigger.label} />
+      {#if trigger.presenter}
+        <Component is={trigger.presenter} props={{ value, process, params }} />
+      {/if}
     {/if}
   </div>
 {/if}

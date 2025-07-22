@@ -175,9 +175,11 @@ const listConfig: (BuildModelKey | string)[] = [
   { key: '', displayProps: { grow: true } },
   {
     key: '',
-    presenter: view.component.RolePresenter,
+    presenter: card.component.CardTagsColored,
     label: card.string.Tags,
-    props: { fullSize: true },
+    props: {
+      showType: false
+    },
     displayProps: { key: 'tags', fixed: 'right' }
   },
   {
@@ -230,10 +232,10 @@ const favoritesViewletConfig: (BuildModelKey | string)[] = [
     },
     key: '$lookup.attachedTo',
     label: card.string.Tags,
-    presenter: view.component.RolePresenter,
     props: {
-      fullSize: true
-    }
+      showType: false
+    },
+    presenter: card.component.CardTagsColored
   },
   {
     key: '$lookup.attachedTo',
@@ -285,7 +287,14 @@ export function createSystemType (
     config: [
       { key: '', props: { shrink: true } },
       '_class',
-      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+      {
+        key: '',
+        presenter: card.component.CardTagsColored,
+        label: card.string.Tags,
+        props: {
+          showType: false
+        }
+      },
       {
         key: '',
         presenter: card.component.LabelsPresenter,
@@ -519,7 +528,14 @@ export function createModel (builder: Builder): void {
       config: [
         '',
         '_class',
-        { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+        {
+          key: '',
+          presenter: card.component.CardTagsColored,
+          label: card.string.Tags,
+          props: {
+            showType: false
+          }
+        },
         'modifiedOn'
       ]
     },

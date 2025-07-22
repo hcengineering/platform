@@ -20,10 +20,11 @@ import core, {
   type Tx,
   type TxApplyIf,
   type TxResult,
-  type TxUpdateDoc
+  type TxUpdateDoc,
+  TxProcessor
 } from '@hcengineering/core'
 import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
-import process, { type ProcessToDo } from '@hcengineering/process'
+import process, { ExecutionStatus, type ProcessToDo } from '@hcengineering/process'
 import { createExecution, getNextStateUserInput, requestResult, pickTransition } from './utils'
 import cardPlugin, { type Card } from '@hcengineering/card'
 
@@ -60,8 +61,48 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
       }
 
       await this.handleCardCreate(etx)
+      await this.handleCardUpdate(etx)
       await this.handleTagAdd(etx)
       await this.handleToDoDone(etx)
+    }
+  }
+
+  private async handleCardUpdate (etx: Tx): Promise<void> {
+    if (etx._class === core.class.TxUpdateDoc) {
+      const updateTx = etx as TxUpdateDoc<Card>
+      const hierarchy = this.client.getHierarchy()
+      if (!hierarchy.isDerived(updateTx.objectClass, cardPlugin.class.Card)) return
+      const executions = await this.client.findAll(process.class.Execution, {
+        card: updateTx.objectId,
+        status: ExecutionStatus.Active
+      })
+      if (executions.length === 0) return
+      const card = await this.client.findOne(cardPlugin.class.Card, {
+        _id: updateTx.objectId
+      })
+      if (card === undefined) return
+      const updated = TxProcessor.updateDoc2Doc(hierarchy.clone(card), updateTx)
+      for (const execution of executions) {
+        const transitions = this.client.getModel().findAllSync(process.class.Transition, {
+          process: execution.process,
+          from: execution.currentState,
+          trigger: process.trigger.OnCardUpdate
+        })
+        const transition = await pickTransition(
+          this.client.getModel(),
+          this.client.getHierarchy(),
+          execution,
+          transitions,
+          updated
+        )
+        if (transition === undefined) return
+        const context = await getNextStateUserInput(execution, transition, execution.context)
+        const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
+        await txop.update(execution, {
+          context
+        })
+        await requestResult(txop, execution, transition, execution.context)
+      }
     }
   }
 
@@ -117,7 +158,13 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         from: execution.currentState,
         trigger: process.trigger.OnToDoClose
       })
-      const transition = await pickTransition(this.client.getModel(), execution, transitions, todo)
+      const transition = await pickTransition(
+        this.client.getModel(),
+        this.client.getHierarchy(),
+        execution,
+        transitions,
+        todo
+      )
       if (transition === undefined) return
       const context = await getNextStateUserInput(execution, transition, execution.context)
       const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
