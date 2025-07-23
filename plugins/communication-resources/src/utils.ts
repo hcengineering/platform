@@ -145,6 +145,10 @@ export async function isCardAllowedForCommunications (card: Card): Promise<boole
   for (const parentInfoElement of card.parentInfo) {
     if (allowedCards.includes(parentInfoElement._id)) return true
   }
+  return false
+}
+
+export async function showForbidden (): Promise<void> {
   const lang = get(languageStore)
   addNotification(
     await translate(view.string.PermissionWarningTitle, {}, lang),
@@ -155,5 +159,4 @@ export async function isCardAllowedForCommunications (card: Card): Promise<boole
     },
     NotificationSeverity.Info
   )
-  return false
 }
