@@ -24,6 +24,7 @@
     type Doc,
     generateId,
     getCurrentAccount,
+    hasAccountRole,
     makeDocCollabId,
     type Ref
   } from '@hcengineering/core'
@@ -129,7 +130,7 @@
   let remoteSynced = false
 
   $: loading = !localSynced && !remoteSynced
-  $: editable = !readonly && !contentError && remoteSynced && account.role !== AccountRole.ReadOnlyGuest
+  $: editable = !readonly && !contentError && remoteSynced && hasAccountRole(account, AccountRole.User)
 
   void localProvider.loaded.then(() => (localSynced = true))
   void remoteProvider.loaded.then(() => (remoteSynced = true))

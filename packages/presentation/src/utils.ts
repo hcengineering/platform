@@ -31,6 +31,7 @@ import core, {
   type FindOptions,
   type FindResult,
   getCurrentAccount,
+  hasAccountRole,
   type Hierarchy,
   MeasureMetricsContext,
   type Mixin,
@@ -180,7 +181,7 @@ class UIClient extends TxOperations implements Client {
   }
 
   private async notifyEarly (tx: Tx): Promise<void> {
-    if (getCurrentAccount().role === AccountRole.ReadOnlyGuest) return
+    if (!hasAccountRole(getCurrentAccount(), AccountRole.User)) return
     if (tx._class === core.class.TxApplyIf) {
       const applyTx = tx as TxApplyIf
 
