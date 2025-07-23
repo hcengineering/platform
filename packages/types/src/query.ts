@@ -44,10 +44,9 @@ interface FindParams {
 export interface FindMessagesParams extends FindParams {
   id?: MessageID
   card?: CardID
-  files?: boolean
+  attachments?: boolean
   reactions?: boolean
   replies?: boolean
-  links?: boolean
   created?: Partial<Record<ComparisonOperator, Date>> | Date
 }
 

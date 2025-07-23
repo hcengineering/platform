@@ -33,11 +33,12 @@ import type {
   Markdown,
   SocialID,
   MessageType,
-  BlobID,
   CardID,
   CardType,
   MessageExtra,
-  BlobData
+  AttachmentData,
+  AttachmentParams,
+  AttachmentID
 } from '@hcengineering/communication-types'
 
 export interface RestClient {
@@ -70,19 +71,25 @@ export interface RestClient {
   ) => Promise<void>
   removeMessage: (cardId: CardID, messageId: MessageID, socialId: SocialID, date?: Date) => Promise<void>
 
-  attachBlobs: (
+  addAttachments: <P extends AttachmentParams>(
     cardId: CardID,
     messageId: MessageID,
-    blobs: BlobData[],
+    data: AttachmentData<P>[],
     socialId: SocialID,
     date?: Date
   ) => Promise<void>
-  detachBlobs: (
+  removeAttachments: (
     cardId: CardID,
     messageId: MessageID,
-    blobIds: BlobID[],
+    ids: AttachmentID[],
     socialId: SocialID,
     date?: Date
   ) => Promise<void>
-  setBlobs: (cardId: CardID, messageId: MessageID, blobs: BlobData[], socialId: SocialID, date?: Date) => Promise<void>
+  setAttachments: <P extends AttachmentParams>(
+    cardId: CardID,
+    messageId: MessageID,
+    data: AttachmentData<P>[],
+    socialId: SocialID,
+    date?: Date
+  ) => Promise<void>
 }

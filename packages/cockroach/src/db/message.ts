@@ -14,21 +14,17 @@
 //
 
 import {
+  AddAttachmentsPatchData,
   AddReactionPatchData,
-  AttachBlobsPatchData,
-  AttachLinkPreviewsPatchData,
+  AttachmentData,
+  AttachmentID,
+  AttachmentUpdateData,
   AttachThreadPatchData,
-  type BlobData,
   type BlobID,
-  BlobUpdateData,
   type CardID,
   type CardType,
-  DetachBlobsPatchData,
-  DetachLinkPreviewsPatchData,
   type FindMessagesGroupsParams,
   type FindMessagesParams,
-  type LinkPreviewData,
-  type LinkPreviewID,
   type Markdown,
   type Message,
   type MessageExtra,
@@ -36,82 +32,82 @@ import {
   type MessagesGroup,
   type MessageType,
   PatchType,
+  RemoveAttachmentsPatchData,
   RemoveReactionPatchData,
-  SetLinkPreviewsPatchData,
+  SetAttachmentsPatchData,
   type SocialID,
   SortingOrder,
   type Thread,
-  UpdateBlobsPatchData,
+  UpdateAttachmentsPatchData,
   UpdateThreadPatchData
 } from '@hcengineering/communication-types'
-import type { ThreadUpdates, ThreadQuery } from '@hcengineering/communication-sdk-types'
+import { Domain, type ThreadQuery, type ThreadUpdates } from '@hcengineering/communication-sdk-types'
 import postgres from 'postgres'
 
 import { BaseDb } from './base'
-import {
-  type MessageDb,
-  messageSchema,
-  type MessagesGroupDb,
-  type PatchDb,
-  type ReactionDb,
-  TableName,
-  type ThreadDb
-} from '../schema'
+import { DbModel, DbModelColumn, DbModelFilter, schemas } from '../schema'
 import { getCondition } from './utils'
 import { toMessage, toMessagesGroup, toThread } from './mapping'
 
 export class MessagesDb extends BaseDb {
   // Message
   async createMessage (
-    id: MessageID,
     cardId: CardID,
+    id: MessageID,
     type: MessageType,
     content: Markdown,
     extra: MessageExtra | undefined,
     creator: SocialID,
     created: Date
   ): Promise<boolean> {
-    const db: MessageDb = {
-      type,
+    const messageDbModel: DbModel<Domain.Message> = {
       workspace_id: this.workspace,
       card_id: cardId,
+      id,
+      type,
       content,
       creator,
       created,
-      data: extra,
-      id
+      data: extra
     }
-
-    const values: any[] = []
-    const keys: string[] = []
-
-    for (const key in db) {
-      const value: any = (db as any)[key]
-      if (value == null) continue
-      keys.push(key)
-      values.push(value)
+    const messageCreatedDbModel: DbModel<Domain.MessageCreated> = {
+      workspace_id: this.workspace,
+      card_id: cardId,
+      message_id: id,
+      created
     }
-
-    const placeholders = keys.map((key, i) => `$${i + 1}::${(messageSchema as any)[key]}`)
-
-    const insertSql = `INSERT INTO ${TableName.Message} (${keys.join(', ')})
-                   VALUES (${placeholders.join(', ')})
-                   RETURNING id::text, created`
+    const insertMessageCreatedSql = this.getInsertSql(Domain.MessageCreated, messageCreatedDbModel, [], {
+      conflictColumns: ['workspace_id', 'card_id', 'message_id'],
+      conflictAction: 'DO NOTHING'
+    })
+    const insertMessageSql = this.getInsertSql(Domain.Message, messageDbModel, [
+      {
+        column: 'id',
+        cast: 'text'
+      },
+      {
+        column: 'created',
+        cast: 'timestamptz'
+      }
+    ])
 
     return await this.getRowClient().begin(async (s) => {
-      const sql = `INSERT INTO ${TableName.MessageCreated} (workspace_id, card_id, message_id, created)
-                     VALUES ($1::uuid, $2::varchar, $3::varchar, $4::timestamptz)
-                     ON CONFLICT (workspace_id, card_id, message_id) DO NOTHING`
-      const result = await s.unsafe(sql, [this.workspace, cardId, db.id, created])
+      const result = await this.execute(
+        insertMessageCreatedSql.sql,
+        insertMessageCreatedSql.values,
+        'insert message created',
+        s
+      )
       if (result.count === 0) {
         return false
       }
 
-      await s.unsafe(insertSql, values)
+      await this.execute(insertMessageSql.sql, insertMessageSql.values, 'insert message', s)
       return true
     })
   }
 
+  // Patch
   async createPatch (
     cardId: CardID,
     messageId: MessageID,
@@ -121,7 +117,7 @@ export class MessagesDb extends BaseDb {
     created: Date,
     client?: postgres.TransactionSql
   ): Promise<void> {
-    const db: Omit<PatchDb, 'message_created'> = {
+    const dbModel: Omit<DbModel<Domain.Patch>, 'message_created'> = {
       workspace_id: this.workspace,
       card_id: cardId,
       message_id: messageId,
@@ -131,407 +127,211 @@ export class MessagesDb extends BaseDb {
       created
     }
 
-    const sql = `
-        INSERT INTO ${TableName.Patch} (
-            workspace_id, card_id, message_id,
-            type, data, creator, created, message_created
-        )
-        SELECT
-            $1::uuid, $2::varchar, $3::varchar,
-            $4::varchar, $5::jsonb, $6::varchar, $7::timestamptz,
-            mc.created
-        FROM ${TableName.MessageCreated} mc
-        WHERE mc.workspace_id = $1::uuid
-          AND mc.card_id = $2::varchar
-          AND mc.message_id = $3::varchar
-    `
+    const schema = schemas[Domain.Patch]
+    const columns = Object.keys(dbModel) as Array<keyof Omit<DbModel<Domain.Patch>, 'message_created'>>
 
-    await this.execute(
-      sql,
-      [this.workspace, db.card_id, db.message_id, db.type, db.data, db.creator, db.created],
-      'insert patch',
-      client
-    )
-  }
-
-  // Blob
-  async attachBlobs (
-    cardId: CardID,
-    messageId: MessageID,
-    blobs: BlobData[],
-    socialId: SocialID,
-    date: Date
-  ): Promise<void> {
-    if (blobs.length === 0) return
-
-    const values: any[] = []
-    const placeholders: string[] = []
-
-    blobs.forEach((blob, i) => {
-      const baseIndex = i * 10
-      placeholders.push(`($${baseIndex + 1}::uuid, $${baseIndex + 2}::varchar, $${baseIndex + 3}::varchar, $${baseIndex + 4}::uuid,
-                        $${baseIndex + 5}::varchar, $${baseIndex + 6}::varchar, $${baseIndex + 7}::varchar,
-                        $${baseIndex + 8}::timestamptz, $${baseIndex + 9}::int8, $${baseIndex + 10}::jsonb)`)
-
-      values.push(
-        this.workspace,
-        cardId,
-        messageId,
-        blob.blobId,
-        blob.mimeType,
-        blob.fileName,
-        socialId,
-        date,
-        blob.size,
-        blob.metadata ?? {}
-      )
+    const values = columns.map((c) => dbModel[c])
+    const placeholders = columns.map((c, i) => {
+      const sqlType = (schema as any)[c]
+      return `$${i + 1}::${sqlType}`
     })
-
-    const insertSql = `
-            INSERT INTO ${TableName.File} (workspace_id, card_id, message_id, blob_id,
-                                           type, filename, creator, created, size, meta)
-            VALUES ${placeholders.join(', ')}`
-
-    const inDb = await this.isMessageInDb(cardId, messageId)
-    if (!inDb) {
-      await this.getRowClient().begin(async (s) => {
-        await this.execute(insertSql, values, 'insert files', s)
-
-        const data: AttachBlobsPatchData = {
-          operation: 'attach',
-          blobs
-        }
-        await this.createPatch(cardId, messageId, PatchType.blob, data, socialId, date, s)
-        return true
-      })
-    } else {
-      await this.execute(insertSql, values, 'insert files')
-    }
-  }
-
-  async detachBlobs (
-    cardId: CardID,
-    messageId: MessageID,
-    blobIds: BlobID[],
-    socialId: SocialID,
-    date: Date
-  ): Promise<void> {
-    if (blobIds.length === 0) return
 
     const sql = `
-        DELETE FROM ${TableName.File}
-        WHERE workspace_id = $1::uuid
-          AND card_id = $2::varchar
-          AND message_id = $3::varchar
-          AND blob_id = ANY($4::uuid[])
+        INSERT INTO ${Domain.Patch} (${columns.join(', ')}, message_created)
+        SELECT ${placeholders.join(', ')}, mc.created
+        FROM ${Domain.MessageCreated} mc
+        WHERE mc.workspace_id = $1::${schema.workspace_id}
+          AND mc.card_id = $2::${schema.card_id}
+          AND mc.message_id = $3::${schema.message_id}
     `
+
+    await this.execute(sql, values, 'insert patch', client)
+  }
+
+  // Attachment
+  async addAttachments (
+    cardId: CardID,
+    messageId: MessageID,
+    attachments: AttachmentData[],
+    socialId: SocialID,
+    date: Date
+  ): Promise<void> {
+    if (attachments.length === 0) return
+
+    const models: DbModel<Domain.Attachment>[] = attachments.map((att) => ({
+      workspace_id: this.workspace,
+      card_id: cardId,
+      message_id: messageId,
+      id: att.id,
+      type: att.type,
+      params: att.params,
+      creator: socialId,
+      created: date
+    }))
+
+    const { sql, values } = this.getBatchInsertSql(Domain.Attachment, models)
 
     const inDb = await this.isMessageInDb(cardId, messageId)
     if (!inDb) {
       await this.getRowClient().begin(async (s) => {
-        await this.execute(sql, [this.workspace, cardId, messageId, blobIds], 'remove files', s)
+        await this.execute(sql, values, 'insert attachments', s)
 
-        const data: DetachBlobsPatchData = {
-          operation: 'detach',
-          blobIds
+        const data: AddAttachmentsPatchData = {
+          operation: 'add',
+          attachments
         }
-        await this.createPatch(cardId, messageId, PatchType.blob, data, socialId, date, s)
+        await this.createPatch(cardId, messageId, PatchType.attachment, data, socialId, date, s)
         return true
       })
     } else {
-      await this.execute(sql, [this.workspace, cardId, messageId, blobIds], 'remove files')
+      await this.execute(sql, values, 'insert attachments')
     }
   }
 
-  async setBlobs (
+  async removeAttachments (
     cardId: CardID,
     messageId: MessageID,
-    blobs: BlobData[],
+    ids: AttachmentID[],
     socialId: SocialID,
     date: Date
   ): Promise<void> {
-    if (blobs.length === 0) return
+    if (ids.length === 0) return
 
-    const values: any[] = []
-    const placeholders: string[] = []
-
-    blobs.forEach((blob, i) => {
-      const baseIndex = i * 10
-      placeholders.push(`($${baseIndex + 1}::uuid, $${baseIndex + 2}::varchar, $${baseIndex + 3}::varchar, $${baseIndex + 4}::uuid,
-                        $${baseIndex + 5}::varchar, $${baseIndex + 6}::varchar, $${baseIndex + 7}::varchar,
-                        $${baseIndex + 8}::timestamptz, $${baseIndex + 9}::int8, $${baseIndex + 10}::jsonb)`)
-
-      values.push(
-        this.workspace,
-        cardId,
-        messageId,
-        blob.blobId,
-        blob.mimeType,
-        blob.fileName,
-        socialId,
-        date,
-        blob.size,
-        blob.metadata ?? {}
-      )
-    })
-
-    const insertSql = `
-            INSERT INTO ${TableName.File} (workspace_id, card_id, message_id, blob_id,
-                                           type, filename, creator, created, size, meta)
-            VALUES ${placeholders.join(', ')}`
-    const deleteSql = `
-        DELETE FROM ${TableName.File}
-        WHERE workspace_id = $1::uuid
-          AND card_id = $2::varchar
-          AND message_id = $3::varchar
-    `
-    await this.getRowClient().begin(async (s) => {
-      await this.execute(deleteSql, [this.workspace, cardId, messageId], 'delete blobs', s)
-      await this.execute(insertSql, values, 'insert blobs', s)
-
-      const data: AttachBlobsPatchData = {
-        operation: 'attach',
-        blobs
-      }
-
-      await this.createPatch(cardId, messageId, PatchType.blob, data, socialId, date, s)
-
-      return true
-    })
-  }
-
-  async updateBlobs (
-    cardId: CardID,
-    messageId: MessageID,
-    blobs: BlobUpdateData[],
-    socialId: SocialID,
-    date: Date
-  ): Promise<void> {
-    if (blobs.length === 0) return
-
-    const colMap = {
-      mimeType: { col: 'type', cast: '::varchar' },
-      fileName: { col: 'filename', cast: '::varchar' },
-      size: { col: 'size', cast: '::int8' },
-      metadata: { col: 'meta', cast: '::jsonb' }
-    } as const
-    type UpdateKey = keyof typeof colMap
-    const updateKeys = Object.keys(colMap) as UpdateKey[]
-
-    const params: any[] = [this.workspace, cardId, messageId]
-
-    const rowLen = 1 + updateKeys.length
-
-    const tuples = blobs.map((blob, i) => {
-      params.push(blob.blobId)
-      updateKeys.forEach((k) => params.push(blob[k] ?? null))
-
-      const offset = 3 + i * rowLen
-      const casts = ['::uuid', ...updateKeys.map((k) => colMap[k].cast)]
-      const placeholders = casts.map((cast, idx) => `$${offset + idx + 1}${cast}`)
-      return `(${placeholders.join(', ')})`
-    })
-
-    const setClauses = updateKeys.map((k) => {
-      const col = colMap[k].col
-      return `${col} = COALESCE(v.${col}, f.${col})`
-    })
-
-    const updateSql = `
-        UPDATE ${TableName.File} AS f
-        SET ${setClauses.join(',\n  ')}
-        FROM (VALUES ${tuples.join(',\n    ')}) AS v(blob_id, ${updateKeys.map((k) => colMap[k].col).join(', ')})
-        WHERE f.workspace_id = $1::uuid
-          AND f.card_id = $2::varchar
-          AND f.message_id = $3::varchar
-          AND f.blob_id = v.blob_id;
-    `
-
-    const inDb = await this.isMessageInDb(cardId, messageId)
-    if (!inDb) {
-      await this.getRowClient().begin(async (txn) => {
-        await this.execute(updateSql, params, 'update blobs', txn)
-        const data: UpdateBlobsPatchData = { operation: 'update', blobs }
-        await this.createPatch(cardId, messageId, PatchType.blob, data, socialId, date, txn)
-      })
-    } else {
-      await this.execute(updateSql, params, 'update blobs')
-    }
-  }
-
-  async attachLinkPreviews (
-    cardId: CardID,
-    messageId: MessageID,
-    previews: (LinkPreviewData & { previewId: LinkPreviewID })[],
-    socialId: SocialID,
-    date: Date
-  ): Promise<void> {
-    if (previews.length === 0) return
-
-    const values: any[] = []
-    const placeholders: string[] = []
-
-    previews.forEach((preview, i) => {
-      const base = i * 12
-      placeholders.push(`($${base + 1}::uuid, $${base + 2}::varchar, $${base + 3}::varchar, $${base + 4}::varchar,
-                        $${base + 5}::varchar, $${base + 6}::varchar, $${base + 7}::varchar,
-                        $${base + 8}::varchar, $${base + 9}::varchar, $${base + 10}::jsonb,
-                        $${base + 11}::varchar, $${base + 12}::timestamptz, $${base + 13}::int8)`)
-
-      values.push(
-        this.workspace,
-        cardId,
-        messageId,
-        preview.url,
-        preview.host,
-        preview.title ?? null,
-        preview.description ?? null,
-        preview.iconUrl ?? null,
-        preview.siteName ?? null,
-        preview.previewImage ?? null,
-        socialId,
-        date,
-        preview.previewId
-      )
-    })
-
-    const insertSql = `
-    INSERT INTO ${TableName.LinkPreview} (
-      workspace_id, card_id, message_id, url, host, title, description,
-      favicon, hostname, image, creator, created, id
-    ) VALUES ${placeholders.join(', ')}`
+    const { sql, values } = this.getDeleteSql(Domain.Attachment, [
+      { column: 'workspace_id', value: this.workspace },
+      { column: 'card_id', value: cardId },
+      { column: 'message_id', value: messageId },
+      { column: 'id', value: ids.length === 1 ? ids[0] : ids }
+    ])
 
     const inDb = await this.isMessageInDb(cardId, messageId)
     if (!inDb) {
       await this.getRowClient().begin(async (s) => {
-        await this.execute(insertSql, values, 'insert link previews', s)
+        await this.execute(sql, values, 'remove attachments', s)
 
-        const data: AttachLinkPreviewsPatchData = {
-          operation: 'attach',
-          previews
+        const data: RemoveAttachmentsPatchData = {
+          operation: 'remove',
+          ids
         }
-        await this.createPatch(cardId, messageId, PatchType.linkPreview, data, socialId, date, s)
-      })
-    } else {
-      await this.execute(insertSql, values, 'insert link previews')
-    }
-  }
-
-  async detachLinkPreviews (
-    cardId: CardID,
-    messageId: MessageID,
-    previewIds: LinkPreviewID[],
-    socialId: SocialID,
-    date: Date
-  ): Promise<void> {
-    if (previewIds.length === 0) return
-
-    const sql =
-      previewIds.length > 1
-        ? `
-        DELETE FROM ${TableName.LinkPreview}
-        WHERE workspace_id = $1::uuid
-          AND card_id = $2::varchar
-          AND message_id = $3::varchar
-          AND id = ANY($4::int8[])
-      `
-        : `
-        DELETE FROM ${TableName.LinkPreview}
-        WHERE workspace_id = $1::uuid
-          AND card_id = $2::varchar
-          AND message_id = $3::varchar
-          AND id = $4::int8
-    `
-
-    const inDb = await this.isMessageInDb(cardId, messageId)
-
-    if (!inDb) {
-      await this.getRowClient().begin(async (s) => {
-        await this.execute(
-          sql,
-          [this.workspace, cardId, messageId, previewIds.length === 1 ? previewIds[0] : previewIds],
-          'remove link previews',
-          s
-        )
-
-        const data: DetachLinkPreviewsPatchData = {
-          operation: 'detach',
-          previewIds
-        }
-
-        await this.createPatch(cardId, messageId, PatchType.linkPreview, data, socialId, date, s)
-
+        await this.createPatch(cardId, messageId, PatchType.attachment, data, socialId, date, s)
         return true
       })
     } else {
-      await this.execute(
-        sql,
-        [this.workspace, cardId, messageId, previewIds.length === 1 ? previewIds[0] : previewIds],
-        'remove link previews'
-      )
+      await this.execute(sql, values, 'delete attachments')
     }
   }
 
-  public async setLinkPreviews (
+  async setAttachments (
     cardId: CardID,
     messageId: MessageID,
-    previews: (LinkPreviewData & { previewId: LinkPreviewID })[],
+    attachments: AttachmentData[],
     socialId: SocialID,
     date: Date
   ): Promise<void> {
-    if (previews.length === 0) return
-    const deleteSql = `
-    DELETE FROM ${TableName.LinkPreview}
-    WHERE workspace_id = $1::uuid
-      AND card_id = $2::varchar
-      AND message_id = $3::varchar
-  `
+    if (attachments.length === 0) return
+    const { sql: deleteSql, values: deleteValues } = this.getDeleteSql(Domain.Attachment, [
+      { column: 'workspace_id', value: this.workspace },
+      { column: 'card_id', value: cardId },
+      { column: 'message_id', value: messageId }
+    ])
 
-    const values: any[] = []
-    const placeholders: string[] = []
+    const models: DbModel<Domain.Attachment>[] = attachments.map((att) => ({
+      workspace_id: this.workspace,
+      card_id: cardId,
+      message_id: messageId,
+      id: att.id,
+      type: att.type,
+      params: att.params,
+      creator: socialId,
+      created: date
+    }))
 
-    previews.forEach((preview, i) => {
-      const base = i * 12
-      placeholders.push(`($${base + 1}::uuid, $${base + 2}::varchar, $${base + 3}::varchar, $${base + 4}::varchar,
-                        $${base + 5}::varchar, $${base + 6}::varchar, $${base + 7}::varchar,
-                        $${base + 8}::varchar, $${base + 9}::varchar, $${base + 10}::jsonb,
-                        $${base + 11}::varchar, $${base + 12}::timestamptz, $${base + 13}::int8)`)
+    const { sql: insertSql, values: insertValues } = this.getBatchInsertSql(Domain.Attachment, models)
 
-      values.push(
-        this.workspace,
-        cardId,
-        messageId,
-        preview.url,
-        preview.host,
-        preview.title ?? null,
-        preview.description ?? null,
-        preview.iconUrl ?? null,
-        preview.siteName ?? null,
-        preview.previewImage ?? null,
-        socialId,
-        date,
-        preview.previewId
-      )
-    })
-
-    const insertSql = `INSERT INTO ${TableName.LinkPreview} (
-      workspace_id, card_id, message_id, url, host, title, description,
-      favicon, hostname, image, creator, created, id
-    ) VALUES ${placeholders.join(', ')} `
+    const inDb = await this.isMessageInDb(cardId, messageId)
 
     await this.getRowClient().begin(async (s) => {
-      await this.execute(deleteSql, [this.workspace, cardId, messageId], 'delete link previews', s)
-      await this.execute(insertSql, values, 'insert new link previews', s)
+      await this.execute(deleteSql, deleteValues, 'delete attachments', s)
+      await this.execute(insertSql, insertValues, 'insert attachments', s)
 
-      const data: SetLinkPreviewsPatchData = {
-        operation: 'set',
-        previews
+      if (!inDb) {
+        const data: SetAttachmentsPatchData = {
+          operation: 'set',
+          attachments
+        }
+        await this.createPatch(cardId, messageId, PatchType.attachment, data, socialId, date, s)
       }
-
-      await this.createPatch(cardId, messageId, PatchType.linkPreview, data, socialId, date, s)
-
-      return true
     })
+  }
+
+  async updateAttachments (
+    cardId: CardID,
+    messageId: MessageID,
+    attachments: AttachmentUpdateData[],
+    socialId: SocialID,
+    date: Date
+  ): Promise<void> {
+    if (attachments.length === 0) return
+
+    const filter: DbModelFilter<Domain.Attachment> = [
+      { column: 'workspace_id', value: this.workspace },
+      { column: 'card_id', value: cardId },
+      { column: 'message_id', value: messageId }
+    ]
+
+    const updates: Array<{
+      key: AttachmentID
+      column: DbModelColumn<Domain.Attachment>
+      innerKey?: string
+      value: any
+    }> = []
+
+    for (const att of attachments) {
+      if (Object.keys(att.params).length > 0) {
+        const attachmentUpdates: Array<{
+          key: AttachmentID
+          column: DbModelColumn<Domain.Attachment>
+          innerKey?: string
+          value: any
+        }> = []
+        for (const [innerKey, val] of Object.entries(att.params)) {
+          attachmentUpdates.push({
+            key: att.id,
+            column: 'params',
+            innerKey,
+            value: val
+          })
+        }
+
+        if (attachmentUpdates.length > 0) {
+          attachmentUpdates.push({
+            key: att.id,
+            column: 'modified',
+            value: date
+          })
+          updates.push(...attachmentUpdates)
+        }
+      }
+    }
+
+    if (updates.length === 0) return
+
+    const { sql, values } = this.getBatchUpdateSql(Domain.Attachment, 'id', filter, updates)
+
+    const inDb = await this.isMessageInDb(cardId, messageId)
+    if (!inDb) {
+      await this.getRowClient().begin(async (s) => {
+        await this.execute(sql, values, 'update attachments', s)
+
+        const data: UpdateAttachmentsPatchData = {
+          operation: 'update',
+          attachments
+        }
+        await this.createPatch(cardId, messageId, PatchType.attachment, data, socialId, date, s)
+      })
+    } else {
+      await this.execute(sql, values, 'update attachments')
+    }
   }
 
   // Reaction
@@ -544,7 +344,7 @@ export class MessagesDb extends BaseDb {
   ): Promise<void> {
     const inDb = await this.isMessageInDb(cardId, messageId)
     if (inDb) {
-      const db: ReactionDb = {
+      const db: DbModel<Domain.Reaction> = {
         workspace_id: this.workspace,
         card_id: cardId,
         message_id: messageId,
@@ -552,15 +352,13 @@ export class MessagesDb extends BaseDb {
         creator,
         created
       }
-      const sql = `INSERT INTO ${TableName.Reaction} (workspace_id, card_id, message_id, reaction, creator, created)
-                   VALUES ($1::uuid, $2::varchar, $3::varchar, $4::varchar, $5::varchar, $6::timestamptz)
-                   ON CONFLICT DO NOTHING`
 
-      await this.execute(
-        sql,
-        [db.workspace_id, db.card_id, db.message_id, db.reaction, db.creator, db.created],
-        'insert reaction'
-      )
+      const { sql, values } = this.getInsertSql(Domain.Reaction, db, [], {
+        conflictColumns: ['workspace_id', 'card_id', 'message_id', 'reaction', 'creator'],
+        conflictAction: 'DO NOTHING'
+      })
+
+      await this.execute(sql, values, 'insert reaction')
     } else {
       const data: AddReactionPatchData = {
         operation: 'add',
@@ -579,14 +377,14 @@ export class MessagesDb extends BaseDb {
   ): Promise<void> {
     const inDb = await this.isMessageInDb(cardId, messageId)
     if (inDb) {
-      const sql = `DELETE
-                   FROM ${TableName.Reaction}
-                   WHERE workspace_id = $1::uuid
-                     AND card_id = $2::varchar
-                     AND message_id = $3::varchar
-                     AND reaction = $4::varchar
-                     AND creator = $5::varchar`
-      await this.execute(sql, [this.workspace, cardId, messageId, reaction, socialId], 'remove reaction')
+      const { sql, values } = this.getDeleteSql(Domain.Reaction, [
+        { column: 'workspace_id', value: this.workspace },
+        { column: 'card_id', value: cardId },
+        { column: 'message_id', value: messageId },
+        { column: 'reaction', value: reaction },
+        { column: 'creator', value: socialId }
+      ])
+      await this.execute(sql, values, 'remove reaction')
     } else {
       const data: RemoveReactionPatchData = {
         operation: 'remove',
@@ -605,7 +403,7 @@ export class MessagesDb extends BaseDb {
     socialId: SocialID,
     date: Date
   ): Promise<void> {
-    const db: ThreadDb = {
+    const db: DbModel<Domain.Thread> = {
       workspace_id: this.workspace,
       card_id: cardId,
       message_id: messageId,
@@ -614,20 +412,13 @@ export class MessagesDb extends BaseDb {
       replies_count: 0,
       last_reply: date
     }
-    const sql = `INSERT INTO ${TableName.Thread} (workspace_id, card_id, message_id, thread_id, thread_type,
-                                                  replies_count,
-                                                  last_reply)
-                 VALUES ($1::uuid, $2::varchar, $3::varchar, $4::varchar, $5::varchar, $6::int, $7::timestamptz)`
+
+    const { sql, values } = this.getInsertSql(Domain.Thread, db)
 
     const inDb = await this.isMessageInDb(cardId, messageId)
     if (!inDb) {
       await this.getRowClient().begin(async (s) => {
-        await this.execute(
-          sql,
-          [db.workspace_id, db.card_id, db.message_id, db.thread_id, db.thread_type, db.replies_count, db.last_reply],
-          'insert thread',
-          s
-        )
+        await this.execute(sql, values, 'insert thread', s)
 
         const data: AttachThreadPatchData = {
           operation: 'attach',
@@ -677,7 +468,7 @@ export class MessagesDb extends BaseDb {
 
     if (set.length === 0) return
 
-    const updateSql = `UPDATE ${TableName.Thread}`
+    const updateSql = `UPDATE ${Domain.Thread}`
     const setSql = 'SET ' + set.join(', ')
     const where = `WHERE workspace_id = $${index++}::uuid AND thread_id = $${index++}::varchar AND card_id = $${index++}::varchar AND message_id = $${index++}::varchar`
     const sql = [updateSql, setSql, where].join(' ')
@@ -714,31 +505,25 @@ export class MessagesDb extends BaseDb {
   }
 
   async removeThreads (query: ThreadQuery): Promise<void> {
-    const db: Partial<ThreadDb> = {
-      card_id: query.cardId,
-      message_id: query.messageId,
-      thread_id: query.threadId
-    }
+    const filter: DbModelFilter<Domain.Thread> = [
+      {
+        column: 'workspace_id',
+        value: this.workspace
+      }
+    ]
 
-    const entries = Object.entries(db).filter(([_, value]) => value !== undefined)
+    if (query.cardId != null) filter.push({ column: 'card_id', value: query.cardId })
+    if (query.messageId != null) filter.push({ column: 'message_id', value: query.messageId })
+    if (query.threadId != null) filter.push({ column: 'thread_id', value: query.threadId })
 
-    if (entries.length === 0) return
+    const { sql, values } = this.getDeleteSql(Domain.Thread, filter)
 
-    entries.unshift(['workspace_id', this.workspace])
-
-    const whereClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
-    const whereValues = entries.map(([_, value]) => value)
-
-    const sql = `DELETE
-                 FROM ${TableName.Thread}
-                 WHERE ${whereClauses.join(' AND ')}`
-
-    await this.execute(sql, whereValues, 'remove threads')
+    await this.execute(sql, values, 'remove threads')
   }
 
   // MessagesGroup
   async createMessagesGroup (card: CardID, blobId: BlobID, fromDate: Date, toDate: Date, count: number): Promise<void> {
-    const db: MessagesGroupDb = {
+    const db: DbModel<Domain.MessagesGroup> = {
       workspace_id: this.workspace,
       card_id: card,
       blob_id: blobId,
@@ -747,22 +532,26 @@ export class MessagesDb extends BaseDb {
       count
     }
 
-    const sql = `INSERT INTO ${TableName.MessagesGroup} (workspace_id, card_id, blob_id, from_date, to_date, count)
-                 VALUES ($1::uuid, $2::varchar, $3::uuid, $4::timestamptz, $5::timestamptz, $6::int)`
-    await this.execute(
-      sql,
-      [db.workspace_id, db.card_id, db.blob_id, db.from_date, db.to_date, db.count],
-      'insert messages group'
-    )
+    const { sql, values } = this.getInsertSql(Domain.MessagesGroup, db)
+    await this.execute(sql, values, 'insert messages group')
   }
 
   async removeMessagesGroup (card: CardID, blobId: BlobID): Promise<void> {
-    const sql = `DELETE
-                 FROM ${TableName.MessagesGroup}
-                 WHERE workspace_id = $1::uuid
-                   AND card_id = $2::varchar
-                   AND blob_id = $3::uuid`
-    await this.execute(sql, [this.workspace, card, blobId], 'remove messages group')
+    const { sql, values } = this.getDeleteSql(Domain.MessagesGroup, [
+      {
+        column: 'workspace_id',
+        value: this.workspace
+      },
+      {
+        column: 'card_id',
+        value: card
+      },
+      {
+        column: 'blob_id',
+        value: blobId
+      }
+    ])
+    await this.execute(sql, values, 'remove messages group')
   }
 
   async find (params: FindMessagesParams): Promise<Message[]> {
@@ -773,8 +562,7 @@ export class MessagesDb extends BaseDb {
     const sql = `
     WITH
     ${this.buildCteLimitedMessages(where, orderBy, limit)}
-    ${this.buildCteAggregatedFiles(params)}
-    ${this.buildCteAggregatedLinkPreviews(params)}
+    ${this.buildCteAggregatedAttachments(params)}
     ${this.buildCteAggregatedReactions(params)}
     ${this.buildCteAggregatedPatches()}
     ${this.buildMainSelect(params)}
@@ -796,7 +584,7 @@ export class MessagesDb extends BaseDb {
     return `
     limited_messages AS (
       SELECT *
-      FROM ${TableName.Message} m
+      FROM ${Domain.Message} m
       ${where}
       ${orderBy}
       ${limit}
@@ -804,59 +592,28 @@ export class MessagesDb extends BaseDb {
   `
   }
 
-  private buildCteAggregatedFiles (params: FindMessagesParams): string {
-    if (params.files !== true) return ''
+  private buildCteAggregatedAttachments (params: FindMessagesParams): string {
+    if (params.attachments !== true) return ''
     return `,
-    agg_files AS (
+    agg_attachments AS (
       SELECT
-        f.workspace_id,
-        f.card_id,
-        f.message_id,
+        a.workspace_id,
+        a.card_id,
+        a.message_id,
         jsonb_agg(jsonb_build_object(
-          'blob_id', f.blob_id,
-          'type', f.type,
-          'size', f.size,
-          'filename', f.filename,
-          'meta', f.meta,
-          'creator', f.creator,
-          'created', f.created
-        )) AS files
-      FROM ${TableName.File} f
+          'id', a.id,
+          'type', a.type,
+          'params', a.params,
+          'creator', a.creator,
+          'created', a.created,
+          'modified', a.modified
+        )) AS attachments
+      FROM ${Domain.Attachment} a
       INNER JOIN limited_messages m
-        ON m.workspace_id = f.workspace_id
-        AND m.card_id = f.card_id
-        AND m.id = f.message_id
-      GROUP BY f.workspace_id, f.card_id, f.message_id
-    )
-  `
-  }
-
-  private buildCteAggregatedLinkPreviews (params: FindMessagesParams): string {
-    if (params.links !== true) return ''
-    return `,
-    agg_link_previews AS (
-      SELECT
-        l.workspace_id,
-        l.card_id,
-        l.message_id,
-        jsonb_agg(jsonb_build_object(
-          'id', l.id::text,
-          'url', l.url,
-          'host', l.host,
-          'title', l.title,
-          'description', l.description,
-          'favicon', l.favicon,
-          'hostname', l.hostname,
-          'image', l.image,
-          'creator', l.creator,
-          'created', l.created
-      )) AS link_previews
-      FROM ${TableName.LinkPreview} l
-      INNER JOIN limited_messages m
-        ON m.workspace_id = l.workspace_id
-        AND m.card_id = l.card_id
-        AND m.id = l.message_id
-      GROUP BY l.workspace_id, l.card_id, l.message_id
+        ON m.workspace_id = a.workspace_id
+        AND m.card_id = a.card_id
+        AND m.id = a.message_id
+      GROUP BY a.workspace_id, a.card_id, a.message_id
     )
   `
   }
@@ -874,7 +631,7 @@ export class MessagesDb extends BaseDb {
           'creator', r.creator,
           'created', r.created
         )) AS reactions
-      FROM ${TableName.Reaction} r
+      FROM ${Domain.Reaction} r
       INNER JOIN limited_messages m
         ON m.workspace_id = r.workspace_id
         AND m.card_id = r.card_id
@@ -899,7 +656,7 @@ export class MessagesDb extends BaseDb {
             'created', p.created
           ) ORDER BY p.created ASC
         ) AS patches
-      FROM ${TableName.Patch} p
+      FROM ${Domain.Patch} p
       INNER JOIN limited_messages m
         ON m.workspace_id = p.workspace_id
         AND m.card_id = p.card_id
@@ -916,31 +673,21 @@ export class MessagesDb extends BaseDb {
         ? 't.thread_id as thread_id, t.thread_type as thread_type, t.replies_count::int as replies_count, t.last_reply as last_reply,'
         : ''
 
-    const selectFiles = params.files === true ? "COALESCE(f.files, '[]'::jsonb) AS files," : "'[]'::jsonb AS files,"
-    const selectLinks =
-      params.links === true
-        ? "COALESCE(l.link_previews, '[]'::jsonb) AS link_previews,"
-        : "'[]'::jsonb AS link_previews,"
+    const selectAttachments =
+      params.attachments === true
+        ? "COALESCE(a.attachments, '[]'::jsonb) AS attachments,"
+        : "'[]'::jsonb AS attachments,"
 
     const selectReactions =
       params.reactions === true ? "COALESCE(r.reactions, '[]'::jsonb) AS reactions," : "'[]'::jsonb AS reactions,"
 
-    const joinFiles =
-      params.files === true
+    const joinAttachments =
+      params.attachments === true
         ? `
-    LEFT JOIN agg_files f
-      ON f.workspace_id = m.workspace_id
-      AND f.card_id = m.card_id
-      AND f.message_id = m.id`
-        : ''
-
-    const joinLinks =
-      params.links === true
-        ? `
-    LEFT JOIN agg_link_previews l
-      ON l.workspace_id = m.workspace_id
-      AND l.card_id = m.card_id
-      AND l.message_id = m.id`
+    LEFT JOIN agg_attachments a
+      ON a.workspace_id = m.workspace_id
+      AND a.card_id = m.card_id
+      AND a.message_id = m.id`
         : ''
 
     const joinReactions =
@@ -961,18 +708,16 @@ export class MessagesDb extends BaseDb {
                m.created,
                m.data,
                ${selectReplies}
-                   ${selectFiles}
-                   ${selectLinks}
+                   ${selectAttachments}
                    ${selectReactions}
                    COALESCE(p.patches, '[]'::jsonb) AS patches
         FROM limited_messages m
-                 LEFT JOIN ${TableName.Thread} t
+                 LEFT JOIN ${Domain.Thread} t
                            ON t.workspace_id = m.workspace_id
                                AND t.card_id = m.card_id
                                AND t.message_id = m.id
-                                   ${joinFiles}
-                                       ${joinLinks}
-                                       ${joinReactions}
+                                   ${joinAttachments}
+                                   ${joinReactions}
                  LEFT JOIN agg_patches p
                            ON p.workspace_id = m.workspace_id
                                AND p.card_id = m.card_id
@@ -1016,7 +761,7 @@ export class MessagesDb extends BaseDb {
                         t.thread_type,
                         t.replies_count::int,
                         t.last_reply
-                 FROM ${TableName.Thread} t
+                 FROM ${Domain.Thread} t
                  WHERE t.workspace_id = $1::uuid
                    AND t.thread_id = $2::varchar
                  LIMIT 1;`
@@ -1035,7 +780,7 @@ export class MessagesDb extends BaseDb {
       ? `
       WITH msg_created AS (
         SELECT card_id, created
-        FROM ${TableName.MessageCreated}
+        FROM ${Domain.MessageCreated}
         WHERE workspace_id = $1::uuid
           AND message_id = $2::varchar
       )
@@ -1050,7 +795,7 @@ export class MessagesDb extends BaseDb {
            mg.to_date,
            mg.count,
            patches
-    FROM ${TableName.MessagesGroup} mg
+    FROM ${Domain.MessagesGroup} mg
     ${useMessageIdCte ? 'JOIN msg_created mc ON mg.card_id = mc.card_id AND mc.created BETWEEN mg.from_date AND mg.to_date' : ''}
     CROSS JOIN LATERAL (
       SELECT jsonb_agg(jsonb_build_object(
@@ -1060,7 +805,7 @@ export class MessagesDb extends BaseDb {
         'creator', p.creator,
         'created', p.created
       )) AS patches
-      FROM ${TableName.Patch} p
+      FROM ${Domain.Patch} p
       WHERE p.workspace_id = mg.workspace_id
         AND p.card_id = mg.card_id
         AND p.message_created BETWEEN mg.from_date AND mg.to_date
@@ -1131,7 +876,7 @@ export class MessagesDb extends BaseDb {
   public async isMessageInDb (cardId: CardID, messageId: MessageID): Promise<boolean> {
     const sql = `
         SELECT 1
-        FROM ${TableName.Message} m
+        FROM ${Domain.Message} m
         WHERE m.workspace_id = $1::uuid
           AND m.card_id = $2::varchar
           AND m.id = $3::varchar
@@ -1144,7 +889,7 @@ export class MessagesDb extends BaseDb {
 
   public async getMessageCreated (cardId: CardID, messageId: MessageID): Promise<Date | undefined> {
     const select = `SELECT mc.created
-                      FROM ${TableName.MessageCreated} mc
+                      FROM ${Domain.MessageCreated} mc
                       WHERE mc.workspace_id = $1::uuid
                         AND mc.card_id = $2::varchar
                         AND mc.message_id = $3::varchar

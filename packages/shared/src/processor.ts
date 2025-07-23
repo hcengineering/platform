@@ -12,12 +12,10 @@
 // limitations under the License.
 
 import {
-  AttachBlobsPatchData,
-  AttachLinkPreviewsPatchData,
+  AddAttachmentsPatchData,
+  AttachmentID,
   AttachThreadPatchData,
   ContextID,
-  DetachBlobsPatchData,
-  DetachLinkPreviewsPatchData,
   Message,
   MessageID,
   Notification,
@@ -25,25 +23,26 @@ import {
   NotificationID,
   Patch,
   PatchType,
-  SetBlobsPatchData,
-  SetLinkPreviewsPatchData,
-  UpdateBlobsPatchData,
+  RemoveAttachmentsPatchData,
+  SetAttachmentsPatchData,
+  UpdateAttachmentsPatchData,
   UpdateThreadPatchData
 } from '@hcengineering/communication-types'
 import {
+  AddAttachmentsOperation,
   AttachBlobsOperation,
-  AttachLinkPreviewsOperation,
   AttachThreadOperation,
   CreateMessageEvent,
   CreateNotificationContextEvent,
   CreateNotificationEvent,
   DetachBlobsOperation,
-  DetachLinkPreviewsOperation,
   MessageEventType,
   PatchEvent,
+  RemoveAttachmentsOperation,
   RemoveNotificationContextEvent,
+  SetAttachmentsOperation,
   SetBlobsOperation,
-  SetLinkPreviewsOperation,
+  UpdateAttachmentsOperation,
   UpdateBlobsOperation,
   UpdateNotificationContextEvent,
   UpdateThreadOperation
@@ -66,8 +65,7 @@ export class MessageProcessor {
       created: event.date ?? new Date(),
       removed: false,
       reactions: [],
-      blobs: [],
-      linkPreviews: []
+      attachments: []
     }
   }
 
@@ -121,19 +119,19 @@ export class MessageProcessor {
           .filter((x) => x != null)
           .map((it) => ({
             messageId: event.messageId,
-            type: PatchType.blob,
+            type: PatchType.attachment,
             creator: event.socialId,
             created: event.date ?? new Date(),
             data: it
           }))
 
-      case MessageEventType.LinkPreviewPatch:
+      case MessageEventType.AttachmentPatch:
         return event.operations
-          .map((it) => linkPreviewOperationToPatchData(it))
+          .map((it) => attachmentOperationToPatchData(it))
           .filter((x) => x != null)
           .map((it) => ({
             messageId: event.messageId,
-            type: PatchType.linkPreview,
+            type: PatchType.attachment,
             creator: event.socialId,
             created: event.date ?? new Date(),
             data: it
@@ -219,49 +217,75 @@ export class NotificationProcessor {
 
 function blobOperationToPatchData (
   operation: AttachBlobsOperation | DetachBlobsOperation | SetBlobsOperation | UpdateBlobsOperation
-): AttachBlobsPatchData | DetachBlobsPatchData | SetBlobsPatchData | UpdateBlobsPatchData | undefined {
+):
+  | AddAttachmentsPatchData
+  | RemoveAttachmentsPatchData
+  | SetAttachmentsPatchData
+  | UpdateAttachmentsPatchData
+  | undefined {
   if (operation.opcode === 'attach') {
     return {
-      operation: 'attach',
-      blobs: operation.blobs
+      operation: 'add',
+      attachments: operation.blobs.map((it) => ({
+        id: it.blobId as any as AttachmentID,
+        type: it.mimeType,
+        params: it
+      }))
     }
   } else if (operation.opcode === 'detach') {
     return {
-      operation: 'detach',
-      blobIds: operation.blobIds
+      operation: 'remove',
+      ids: operation.blobIds as any as AttachmentID[]
     }
   } else if (operation.opcode === 'set') {
     return {
       operation: 'set',
-      blobs: operation.blobs
+      attachments: operation.blobs.map((it) => ({
+        id: it.blobId as any as AttachmentID,
+        type: it.mimeType,
+        params: it
+      }))
     }
   } else if (operation.opcode === 'update') {
     return {
       operation: 'update',
-      blobs: operation.blobs
+      attachments: operation.blobs.map((it) => ({
+        id: it.blobId as any as AttachmentID,
+        params: it
+      }))
     }
   }
 
   return undefined
 }
 
-function linkPreviewOperationToPatchData (
-  operation: AttachLinkPreviewsOperation | DetachLinkPreviewsOperation | SetLinkPreviewsOperation
-): AttachLinkPreviewsPatchData | DetachLinkPreviewsPatchData | SetLinkPreviewsPatchData | undefined {
-  if (operation.opcode === 'attach') {
+function attachmentOperationToPatchData (
+  operation: AddAttachmentsOperation | RemoveAttachmentsOperation | SetAttachmentsOperation | UpdateAttachmentsOperation
+):
+  | AddAttachmentsPatchData
+  | RemoveAttachmentsPatchData
+  | SetAttachmentsPatchData
+  | UpdateAttachmentsPatchData
+  | undefined {
+  if (operation.opcode === 'add') {
     return {
-      operation: 'attach',
-      previews: operation.previews
+      operation: 'add',
+      attachments: operation.attachments
     }
-  } else if (operation.opcode === 'detach') {
+  } else if (operation.opcode === 'remove') {
     return {
-      operation: 'detach',
-      previewIds: operation.previewIds
+      operation: 'remove',
+      ids: operation.ids
     }
   } else if (operation.opcode === 'set') {
     return {
       operation: 'set',
-      previews: operation.previews
+      attachments: operation.attachments
+    }
+  } else if (operation.opcode === 'update') {
+    return {
+      operation: 'update',
+      attachments: operation.attachments
     }
   }
 

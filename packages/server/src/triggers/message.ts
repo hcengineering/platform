@@ -152,7 +152,7 @@ async function addThreadReply (ctx: TriggerCtx, event: Enriched<CreateMessageEve
 async function onThreadAttached (ctx: TriggerCtx, event: Enriched<ThreadPatchEvent>): Promise<Event[]> {
   if (event.operation.opcode !== 'attach') return []
   const { message } = await findMessage(ctx.db, ctx.metadata.filesUrl, ctx.workspace, event.cardId, event.messageId, {
-    files: true
+    attachments: true
   })
 
   if (message === undefined) return []
@@ -181,13 +181,17 @@ async function onThreadAttached (ctx: TriggerCtx, event: Enriched<ThreadPatchEve
   })
 
   result.push({
-    type: MessageEventType.BlobPatch,
+    type: MessageEventType.AttachmentPatch,
     cardId: event.operation.threadId,
     messageId,
     operations: [
       {
-        opcode: 'attach',
-        blobs: message.blobs
+        opcode: 'add',
+        attachments: message.attachments.map((it) => ({
+          id: it.id,
+          type: it.type,
+          params: it.params
+        }))
       }
     ],
     socialId: message.creator,
@@ -205,7 +209,7 @@ const triggers: Triggers = [
   ['register_card_on_remove_patch', MessageEventType.RemovePatch, registerCard as TriggerFn],
   ['register_card_on_reaction_patch', MessageEventType.ReactionPatch, registerCard as TriggerFn],
   ['register_card_on_blob_patch', MessageEventType.BlobPatch, registerCard as TriggerFn],
-  ['register_card_on_link_preview_patch', MessageEventType.LinkPreviewPatch, registerCard as TriggerFn],
+  ['register_card_on_attachment_patch', MessageEventType.AttachmentPatch, registerCard as TriggerFn],
   ['register_card_on_thread_patch', MessageEventType.ThreadPatch, registerCard as TriggerFn],
 
   ['on_messages_group_created', MessageEventType.CreateMessagesGroup, onMessagesGroupCreated as TriggerFn],

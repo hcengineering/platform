@@ -14,7 +14,7 @@
 //
 
 import type { CardID, CardType, Markdown, SocialID } from './core'
-import type { Message, MessageID, MessageType, MessageExtra, LinkPreview, Reaction, AttachedBlob } from './message'
+import type { Message, MessageID, MessageType, MessageExtra, Reaction, Attachment } from './message'
 
 export interface FileMetadata {
   cardId: CardID
@@ -36,8 +36,7 @@ export interface FileMessage {
   edited?: Date
 
   reactions: Reaction[]
-  blobs: AttachedBlob[]
-  linkPreviews: LinkPreview[]
+  attachments: Attachment[]
   thread?: FileThread
 }
 

@@ -1,4 +1,3 @@
-//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,12 +10,23 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
-export type * from './core'
-export type * from './file'
-export * from './message'
-export * from './notification'
-export * from './query'
-export * from './label'
-export * from './patch'
+export enum Domain {
+  Message = 'communication.message',
+  MessageCreated = 'communication.message_created',
+  MessagesGroup = 'communication.messages_group',
+
+  Attachment = 'communication.attachment',
+  Patch = 'communication.patch',
+  Reaction = 'communication.reaction',
+  Thread = 'communication.thread',
+
+  Notification = 'communication.notification',
+  NotificationContext = 'communication.notification_context',
+
+  Collaborator = 'communication.collaborator',
+  Label = 'communication.label',
+  // LinkPreview = 'communication.link_preview'
+}
+
+export const Domains = Object.values(Domain)

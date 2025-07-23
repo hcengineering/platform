@@ -56,7 +56,7 @@ import { QueryResult } from '../result'
 import { WindowImpl } from '../window'
 import { findMessage, loadMessageFromGroup, matchNotification } from '../utils'
 
-const allowedPatchTypes = [PatchType.update, PatchType.remove, PatchType.blob]
+const allowedPatchTypes = [PatchType.update, PatchType.remove, PatchType.attachment]
 export class NotificationContextsQuery implements PagedQuery<NotificationContext, FindNotificationContextParams> {
   private result: QueryResult<NotificationContext> | Promise<QueryResult<NotificationContext>>
   private forward: Promise<{ isDone: boolean }> | { isDone: boolean } = { isDone: false }

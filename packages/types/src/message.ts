@@ -14,11 +14,13 @@
 //
 
 import type { Attribute, BlobMetadata, Class, Mixin, Ref } from '@hcengineering/core'
-import type { AccountID, BlobID, CardID, CardType, ID, Markdown, SocialID } from './core'
 import type { Card, Tag } from '@hcengineering/card'
 
+import type { AccountID, BlobID, CardID, CardType, ID, Markdown, SocialID } from './core'
+import { Patch } from './patch'
+
+// Message
 export type MessageID = ID & { message: true }
-export type LinkPreviewID = string & { __linkPreviewId: true }
 
 export enum MessageType {
   Message = 'message',
@@ -40,8 +42,7 @@ export interface Message {
   edited?: Date
 
   reactions: Reaction[]
-  blobs: AttachedBlob[]
-  linkPreviews: LinkPreview[]
+  attachments: Attachment[]
   thread?: Thread
 }
 
@@ -97,161 +98,17 @@ export interface ActivityAttributeUpdate {
   removed?: AttributeValue[]
 }
 
-export interface MessagesGroup {
-  cardId: CardID
-  blobId: BlobID
-  fromDate: Date
-  toDate: Date
-  count: number
-  patches?: Patch[]
-}
-
-interface BasePatch {
-  messageId: MessageID
-  type: PatchType
-  creator: SocialID
-  created: Date
-
-  data: Record<string, any>
-}
-
-export interface UpdatePatch extends BasePatch {
-  type: PatchType.update
-  data: UpdatePatchData
-}
-
-export interface UpdatePatchData {
-  type?: MessageType
-  content?: Markdown
-  extra?: MessageExtra
-}
-
-export interface RemovePatch extends BasePatch {
-  type: PatchType.remove
-  data: RemovePatchData
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface RemovePatchData {}
-
-export interface ReactionPatch extends BasePatch {
-  type: PatchType.reaction
-  data: AddReactionPatchData | RemoveReactionPatchData
-}
-
-export interface AddReactionPatchData {
-  operation: 'add'
-  reaction: string
-}
-
-export interface RemoveReactionPatchData {
-  operation: 'remove'
-  reaction: string
-}
-
-export interface BlobPatch extends BasePatch {
-  type: PatchType.blob
-  data: AttachBlobsPatchData | DetachBlobsPatchData | SetBlobsPatchData | UpdateBlobsPatchData
-}
-
-export interface AttachBlobsPatchData {
-  operation: 'attach'
-  blobs: BlobData[]
-}
-
-export interface DetachBlobsPatchData {
-  operation: 'detach'
-  blobIds: BlobID[]
-}
-
-export interface SetBlobsPatchData {
-  operation: 'set'
-  blobs: BlobData[]
-}
-
-export interface UpdateBlobsPatchData {
-  operation: 'update'
-  blobs: BlobUpdateData[]
-}
-
-export interface LinkPreviewPatch extends BasePatch {
-  type: PatchType.linkPreview
-  data: AttachLinkPreviewsPatchData | DetachLinkPreviewsPatchData | SetLinkPreviewsPatchData
-}
-
-export interface AttachLinkPreviewsPatchData {
-  operation: 'attach'
-  previews: (LinkPreviewData & { previewId: LinkPreviewID })[]
-}
-
-export interface DetachLinkPreviewsPatchData {
-  operation: 'detach'
-  previewIds: LinkPreviewID[]
-}
-
-export interface SetLinkPreviewsPatchData {
-  operation: 'set'
-  previews: (LinkPreviewData & { previewId: LinkPreviewID })[]
-}
-
-export interface ThreadPatch extends BasePatch {
-  type: PatchType.thread
-  data: AttachThreadPatchData | UpdateThreadPatchData
-}
-
-export interface AttachThreadPatchData {
-  operation: 'attach'
-  threadId: CardID
-  threadType: CardType
-}
-
-export interface UpdateThreadPatchData {
-  operation: 'update'
-  threadId: CardID
-  threadType?: CardType
-  repliesCountOp?: 'increment' | 'decrement'
-  lastReply?: Date
-}
-
-export type Patch = UpdatePatch | RemovePatch | ReactionPatch | BlobPatch | LinkPreviewPatch | ThreadPatch
-
-export enum PatchType {
-  update = 'update',
-  remove = 'remove',
-  reaction = 'reaction',
-  blob = 'blob',
-  linkPreview = 'linkPreview',
-  thread = 'thread'
-}
-
+// Reaction
 export interface Reaction {
   reaction: string
   creator: SocialID
   created: Date
 }
 
-export interface BlobData {
-  blobId: BlobID
-  mimeType: string
-  fileName: string
-  size: number
-  metadata?: BlobMetadata
-}
+// LinkPreview
+export const linkPreviewType = 'application/vnd.huly.link-preview' as const
 
-export type BlobUpdateData = { blobId: BlobID } & Partial<BlobData>
-
-export interface AttachedBlob extends BlobData {
-  creator: SocialID
-  created: Date
-}
-
-export interface LinkPreviewImage {
-  url: string
-  width?: number
-  height?: number
-}
-
-export interface LinkPreviewData {
+export interface LinkPreviewParams {
   url: string
   host: string
 
@@ -263,12 +120,57 @@ export interface LinkPreviewData {
   previewImage?: LinkPreviewImage
 }
 
-export interface LinkPreview extends LinkPreviewData {
-  id: LinkPreviewID
-  creator: SocialID
-  created: Date
+export interface LinkPreviewImage {
+  url: string
+  width?: number
+  height?: number
 }
 
+export interface BlobParams {
+  blobId: BlobID
+  mimeType: string
+  fileName: string
+  size: number
+  metadata?: BlobMetadata
+}
+
+// Attachment
+export type AttachmentID = string & { __attachmentId: true }
+
+export type Attachment = BlobAttachment | LinkPreviewAttachment | AppletAttachment
+interface BaseAttachment<D extends AttachmentParams = AttachmentParams> extends AttachmentData<D> {
+  creator: SocialID
+  created: Date
+  modified?: Date
+}
+
+export interface LinkPreviewAttachment extends BaseAttachment<LinkPreviewParams> {
+  type: typeof linkPreviewType
+}
+
+export interface BlobAttachment extends BaseAttachment<BlobParams> {}
+
+export type AppletParams = Record<string, any>
+export type AppletType = `application/vnd.huly.applet.${string}`
+
+export interface AppletAttachment<T extends AppletParams = AppletParams> extends BaseAttachment<T> {
+  type: AppletType
+}
+
+export interface AttachmentData<P extends AttachmentParams = AttachmentParams> {
+  id: AttachmentID
+  type: string
+  params: P
+}
+
+export type AttachmentParams = Record<string, any>
+
+export interface AttachmentUpdateData<P extends AttachmentParams = AttachmentParams> {
+  id: AttachmentID
+  params: Partial<P>
+}
+
+// Thread
 export interface Thread {
   cardId: CardID
   messageId: MessageID
@@ -276,4 +178,14 @@ export interface Thread {
   threadType: CardType
   repliesCount: number
   lastReply: Date
+}
+
+// MessagesGroup
+export interface MessagesGroup {
+  cardId: CardID
+  blobId: BlobID
+  fromDate: Date
+  toDate: Date
+  count: number
+  patches?: Patch[]
 }

@@ -6,12 +6,12 @@ import type {
   BlobID,
   MessageType,
   CardType,
-  LinkPreviewID,
   MessagesGroup,
   MessageExtra,
-  BlobData,
-  LinkPreviewData,
-  BlobUpdateData
+  BlobParams,
+  AttachmentData,
+  AttachmentID,
+  AttachmentUpdateData
 } from '@hcengineering/communication-types'
 
 import type { BaseEvent } from './common'
@@ -22,8 +22,11 @@ export enum MessageEventType {
   UpdatePatch = 'updatePatch',
   RemovePatch = 'removePatch',
   ReactionPatch = 'reactionPatch',
+  /**
+   * @deprecated Use AttachmentPatch instead
+   */
   BlobPatch = 'blobPatch',
-  LinkPreviewPatch = 'linkPreviewPatch',
+  AttachmentPatch = 'attachmentPatch',
   ThreadPatch = 'threadPatch',
 
   // Internal events
@@ -36,7 +39,7 @@ export type PatchEvent =
   | RemovePatchEvent
   | ReactionPatchEvent
   | BlobPatchEvent
-  | LinkPreviewPatchEvent
+  | AttachmentPatchEvent
   | ThreadPatchEvent
 
 export type MessageEvent = CreateMessageEvent | PatchEvent | CreateMessagesGroupEvent | RemoveMessagesGroupEvent
@@ -122,7 +125,7 @@ export interface ReactionPatchEvent extends BaseEvent {
 
 export interface AttachBlobsOperation {
   opcode: 'attach'
-  blobs: BlobData[]
+  blobs: BlobParams[]
 }
 
 export interface DetachBlobsOperation {
@@ -132,7 +135,7 @@ export interface DetachBlobsOperation {
 
 export interface SetBlobsOperation {
   opcode: 'set'
-  blobs: BlobData[]
+  blobs: BlobParams[]
 }
 
 export interface UpdateBlobsOperation {
@@ -140,7 +143,11 @@ export interface UpdateBlobsOperation {
   blobs: BlobUpdateData[]
 }
 
-// For system and message author
+export type BlobUpdateData = { blobId: BlobID } & Partial<BlobParams>
+
+/**
+ * @deprecated Use AttachmentPatch instead
+ */
 export interface BlobPatchEvent extends BaseEvent {
   type: MessageEventType.BlobPatch
 
@@ -148,6 +155,44 @@ export interface BlobPatchEvent extends BaseEvent {
   messageId: MessageID
 
   operations: (AttachBlobsOperation | DetachBlobsOperation | SetBlobsOperation | UpdateBlobsOperation)[]
+
+  socialId: SocialID
+  date?: Date
+}
+
+export interface AddAttachmentsOperation {
+  opcode: 'add'
+  attachments: AttachmentData[]
+}
+
+export interface RemoveAttachmentsOperation {
+  opcode: 'remove'
+  ids: AttachmentID[]
+}
+
+export interface SetAttachmentsOperation {
+  opcode: 'set'
+  attachments: AttachmentData[]
+}
+
+export interface UpdateAttachmentsOperation {
+  opcode: 'update'
+  attachments: AttachmentUpdateData[]
+}
+
+// For system and message author
+export interface AttachmentPatchEvent extends BaseEvent {
+  type: MessageEventType.AttachmentPatch
+
+  cardId: CardID
+  messageId: MessageID
+
+  operations: (
+    | AddAttachmentsOperation
+    | RemoveAttachmentsOperation
+    | SetAttachmentsOperation
+    | UpdateAttachmentsOperation
+  )[]
 
   socialId: SocialID
   date?: Date
@@ -178,33 +223,6 @@ export interface ThreadPatchEvent extends BaseEvent {
   messageId: MessageID
 
   operation: AttachThreadOperation | UpdateThreadOperation
-
-  socialId: SocialID
-  date?: Date
-}
-
-export interface AttachLinkPreviewsOperation {
-  opcode: 'attach'
-  previews: (LinkPreviewData & { previewId: LinkPreviewID })[]
-}
-
-export interface DetachLinkPreviewsOperation {
-  opcode: 'detach'
-  previewIds: LinkPreviewID[]
-}
-
-export interface SetLinkPreviewsOperation {
-  opcode: 'set'
-  previews: (LinkPreviewData & { previewId: LinkPreviewID })[]
-}
-
-// For system and message author
-export interface LinkPreviewPatchEvent extends BaseEvent {
-  type: MessageEventType.LinkPreviewPatch
-  cardId: CardID
-  messageId: MessageID
-
-  operations: (AttachLinkPreviewsOperation | DetachLinkPreviewsOperation | SetLinkPreviewsOperation)[]
 
   socialId: SocialID
   date?: Date

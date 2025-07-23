@@ -52,7 +52,7 @@ export class PermissionsMiddleware extends BaseMiddleware implements Middleware 
       case MessageEventType.RemovePatch:
       case MessageEventType.UpdatePatch:
       case MessageEventType.BlobPatch:
-      case MessageEventType.LinkPreviewPatch:
+      case MessageEventType.AttachmentPatch:
       case MessageEventType.ReactionPatch:
       case MessageEventType.ThreadPatch:
       case NotificationEventType.AddCollaborators:

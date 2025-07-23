@@ -38,9 +38,8 @@ export async function findMessage (
   card: CardID,
   id: MessageID,
   ops?: {
-    files?: boolean
+    attachments?: boolean
     replies?: boolean
-    links?: boolean
     reactions?: boolean
   }
 ): Promise<{

@@ -34,8 +34,7 @@ export function deserializeMessage (message: Message): FileMessage {
             lastReply: message.thread.lastReply
           }
         : undefined,
-    blobs: message.blobs,
-    reactions: message.reactions,
-    linkPreviews: message.linkPreviews
+    attachments: message.attachments,
+    reactions: message.reactions
   }
 }

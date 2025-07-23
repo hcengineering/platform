@@ -14,7 +14,15 @@
 //
 
 import { retry, type RetryOptions } from '@hcengineering/communication-shared'
-import type { BlobID, FileMessage, FileMetadata, ParsedFile, WorkspaceID } from '@hcengineering/communication-types'
+import {
+  type Attachment,
+  type BlobID,
+  type FileMessage,
+  type FileMetadata,
+  type ParsedFile,
+  type WorkspaceID,
+  linkPreviewType
+} from '@hcengineering/communication-types'
 import yaml from 'js-yaml'
 
 export async function loadGroupFile (
@@ -76,18 +84,66 @@ export function parseYaml (data: string): ParsedFile {
               lastReply: message.thread.lastReply
             }
           : undefined,
-      blobs:
-        message.blobs?.map((it) => ({ ...it, mimeType: it.mimeType ?? (it as any).contentType })) ??
-        (message as any).files?.map((it: any) => ({
+      attachments: parseAttachments(message),
+      reactions: message.reactions ?? []
+    }))
+  }
+}
+
+function parseAttachments (message: FileMessage): Attachment[] {
+  if (message.attachments != null) {
+    return message.attachments
+  }
+
+  const oldMessage = message as any
+
+  const attachments: Attachment[] = []
+
+  if ('files' in oldMessage && Array.isArray(oldMessage.files)) {
+    attachments.push(
+      ...oldMessage.files.map((it: any) => ({
+        id: it.blobId,
+        type: it.type,
+        params: {
           blobId: it.blobId,
           mimeType: it.type,
           fileName: it.filename,
           size: it.size,
           metadata: it.meta
-        })) ??
-        [],
-      reactions: message.reactions ?? [],
-      linkPreviews: message.linkPreviews ?? []
-    }))
+        },
+        creator: it.creator,
+        created: new Date(it.created)
+      }))
+    )
+  } else if ('blobs' in oldMessage && Array.isArray(oldMessage.blobs)) {
+    attachments.push(
+      ...oldMessage.blobs.map((it: any) => ({
+        id: it.blobId,
+        type: it.mimeType ?? it.contentType,
+        params: {
+          blobId: it.blobId,
+          mimeType: it.mimeType ?? it.contentType,
+          fileName: it.fileName,
+          size: it.size,
+          metadata: it.metadata
+        },
+        creator: it.creator,
+        created: new Date(it.created)
+      }))
+    )
   }
+
+  if ('linkPreviews' in oldMessage && Array.isArray(oldMessage.linkPreviews)) {
+    attachments.push(
+      ...oldMessage.linkPreviews.map((it: any) => ({
+        id: it.previewId,
+        type: linkPreviewType,
+        params: it,
+        creator: it.creator,
+        created: new Date(it.created)
+      }))
+    )
+  }
+
+  return attachments
 }

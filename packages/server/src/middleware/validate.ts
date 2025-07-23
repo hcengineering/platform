@@ -40,6 +40,7 @@ import { z } from 'zod'
 import type { Enriched, Middleware, QueryId } from '../types'
 import { BaseMiddleware } from './base'
 import { ApiError } from '../error'
+import { isBlobAttachmentType, isLinkPreviewAttachmentType } from '@hcengineering/communication-shared'
 
 export class ValidateMiddleware extends BaseMiddleware implements Middleware {
   private validate<T>(data: unknown, schema: z.ZodType<T>): T {
@@ -112,8 +113,19 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
       case MessageEventType.BlobPatch:
         this.validate(event, BlobPatchEventSchema)
         break
-      case MessageEventType.LinkPreviewPatch:
-        this.validate(event, LinkPreviewPatchEventSchema)
+      case MessageEventType.AttachmentPatch:
+        this.validate(event, AttachmentPatchEventSchema)
+        event.operations.forEach((op) => {
+          if (op.opcode === 'add' || op.opcode === 'set') {
+            op.attachments.forEach((att) => {
+              if (isLinkPreviewAttachmentType(att.type)) {
+                this.validate(att.params, LinkPreviewParamsSchema)
+              } else if (isBlobAttachmentType(att.type)) {
+                this.validate(att.params, BlobParamsSchema)
+              }
+            })
+          }
+        })
         break
       case MessageEventType.ThreadPatch:
         this.validate(event, ThreadPatchEventSchema)
@@ -145,13 +157,13 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
 }
 
 const AccountIDSchema = z.string()
-const BlobIDSchema = z.string()
+const BlobIDSchema = z.string().uuid()
+const AttachmentIDSchema = z.string().uuid()
 const CardIDSchema = z.string()
 const CardTypeSchema = z.string()
 const ContextIDSchema = z.string()
 const DateSchema = z.coerce.date()
 const LabelIDSchema = z.string()
-const LinkPreviewIDSchema = z.string()
 const MarkdownSchema = z.string()
 const MessageExtraSchema = z.any()
 const MessageIDSchema = z.string()
@@ -160,7 +172,7 @@ const MessagesGroupSchema = z.any()
 const SocialIDSchema = z.string()
 const SortingOrderSchema = z.union([z.literal(SortingOrder.Ascending), z.literal(SortingOrder.Descending)])
 
-const BlobDataSchema = z.object({
+const BlobParamsSchema = z.object({
   blobId: BlobIDSchema,
   mimeType: z.string(),
   fileName: z.string(),
@@ -168,17 +180,8 @@ const BlobDataSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional()
 })
 
-const UpdateBlobDataSchema = z.object({
-  blobId: BlobIDSchema,
-  mimeType: z.string().optional(),
-  fileName: z.string().optional(),
-  size: z.number().optional(),
-  metadata: z.record(z.string(), z.any()).optional()
-})
-
-const LinkPreviewDataSchema = z
+const LinkPreviewParamsSchema = z
   .object({
-    previewId: LinkPreviewIDSchema,
     url: z.string(),
     host: z.string(),
     title: z.string().optional(),
@@ -195,6 +198,25 @@ const LinkPreviewDataSchema = z
   })
   .strict()
 
+const UpdateBlobDataSchema = z.object({
+  blobId: BlobIDSchema,
+  mimeType: z.string().optional(),
+  fileName: z.string().optional(),
+  size: z.number().optional(),
+  metadata: z.record(z.string(), z.any()).optional()
+})
+
+const AttachmentDataSchema = z.object({
+  id: AttachmentIDSchema,
+  type: z.string(),
+  params: z.record(z.string(), z.any())
+})
+
+const AttachmentUpdateDataSchema = z.object({
+  id: AttachmentIDSchema,
+  params: z.record(z.string(), z.any())
+})
+
 // Find params
 const DateOrRecordSchema = z.union([DateSchema, z.record(DateSchema)])
 
@@ -208,10 +230,9 @@ const FindParamsSchema = z
 const FindMessagesParamsSchema = FindParamsSchema.extend({
   id: MessageIDSchema.optional(),
   card: CardIDSchema.optional(),
-  files: z.boolean().optional(),
+  attachments: z.boolean().optional(),
   reactions: z.boolean().optional(),
   replies: z.boolean().optional(),
-  links: z.boolean().optional(),
   created: DateOrRecordSchema.optional()
 }).strict()
 
@@ -336,13 +357,19 @@ const ReactionPatchEventSchema = BaseEventSchema.extend({
   date: DateSchema
 }).strict()
 
+/**
+ * @deprecated
+ */
 const BlobOperationSchema = z.union([
-  z.object({ opcode: z.literal('attach'), blobs: z.array(BlobDataSchema).nonempty() }),
+  z.object({ opcode: z.literal('attach'), blobs: z.array(BlobParamsSchema).nonempty() }),
   z.object({ opcode: z.literal('detach'), blobIds: z.array(BlobIDSchema).nonempty() }),
-  z.object({ opcode: z.literal('set'), blobs: z.array(BlobDataSchema).nonempty() }),
+  z.object({ opcode: z.literal('set'), blobs: z.array(BlobParamsSchema).nonempty() }),
   z.object({ opcode: z.literal('update'), blobs: z.array(UpdateBlobDataSchema).nonempty() })
 ])
 
+/**
+ * @deprecated
+ */
 const BlobPatchEventSchema = BaseEventSchema.extend({
   type: z.literal(MessageEventType.BlobPatch),
   cardId: CardIDSchema,
@@ -352,26 +379,27 @@ const BlobPatchEventSchema = BaseEventSchema.extend({
   date: DateSchema
 }).strict()
 
+const AttachmentOperationSchema = z.union([
+  z.object({ opcode: z.literal('add'), attachments: z.array(AttachmentDataSchema).nonempty() }),
+  z.object({ opcode: z.literal('remove'), ids: z.array(AttachmentIDSchema).nonempty() }),
+  z.object({ opcode: z.literal('set'), attachments: z.array(AttachmentDataSchema).nonempty() }),
+  z.object({ opcode: z.literal('update'), attachments: z.array(AttachmentUpdateDataSchema).nonempty() })
+])
+
+const AttachmentPatchEventSchema = BaseEventSchema.extend({
+  type: z.literal(MessageEventType.AttachmentPatch),
+  cardId: CardIDSchema,
+  messageId: MessageIDSchema,
+  operations: z.array(AttachmentOperationSchema).nonempty(),
+  socialId: SocialIDSchema,
+  date: DateSchema
+}).strict()
+
 const ThreadPatchEventSchema = BaseEventSchema.extend({
   type: z.literal(MessageEventType.ThreadPatch),
   cardId: CardIDSchema,
   messageId: MessageIDSchema,
   operation: z.object({ opcode: z.literal('attach'), threadId: CardIDSchema, threadType: CardTypeSchema }),
-  socialId: SocialIDSchema,
-  date: DateSchema
-}).strict()
-
-const LinkPreviewOperationSchema = z.union([
-  z.object({ opcode: z.literal('attach'), previews: z.array(LinkPreviewDataSchema).nonempty() }),
-  z.object({ opcode: z.literal('detach'), previewIds: z.array(LinkPreviewIDSchema).nonempty() }),
-  z.object({ opcode: z.literal('set'), previews: z.array(LinkPreviewDataSchema).nonempty() })
-])
-
-const LinkPreviewPatchEventSchema = BaseEventSchema.extend({
-  type: z.literal(MessageEventType.LinkPreviewPatch),
-  cardId: CardIDSchema,
-  messageId: MessageIDSchema.optional(),
-  operations: z.array(LinkPreviewOperationSchema).nonempty(),
   socialId: SocialIDSchema,
   date: DateSchema
 }).strict()

@@ -27,61 +27,174 @@ import {
   type NotificationID,
   type LabelID,
   type CardType,
-  type BlobMetadata,
-  type LinkPreviewImage,
-  type LinkPreviewID,
   NotificationContent,
-  NotificationType
+  NotificationType, AttachmentID
 } from '@hcengineering/communication-types'
+import { Domain } from '@hcengineering/communication-sdk-types'
 
-export enum TableName {
-  File = 'communication.files',
-  Message = 'communication.messages',
-  MessageCreated = 'communication.message_created',
-  MessagesGroup = 'communication.messages_groups',
-  Notification = 'communication.notifications',
-  NotificationContext = 'communication.notification_context',
-  Patch = 'communication.patch',
-  Reaction = 'communication.reactions',
-  Thread = 'communication.thread',
-  Collaborators = 'communication.collaborators',
-  Label = 'communication.label',
-  LinkPreview = 'communication.link_preview'
+export const schemas = {
+  [Domain.Message]: {
+    workspace_id: 'uuid',
+    card_id: 'varchar',
+    id: 'varchar',
+    type: 'varchar',
+    content: 'string',
+    creator: 'varchar',
+    created: 'timestamptz',
+    data: 'jsonb'
+  },
+  [Domain.MessageCreated]: {
+    workspace_id: 'uuid',
+    card_id: 'varchar',
+    created: 'timestamptz',
+    message_id: 'varchar'
+  },
+  [Domain.MessagesGroup]: {
+    workspace_id: 'uuid',
+    card_id: 'varchar',
+    blob_id: 'uuid',
+    from_date: 'timestamptz',
+    to_date: 'timestamptz',
+    count: 'int8'
+  },
+  [Domain.Patch]: {
+    id: 'int',
+    workspace_id: 'uuid',
+    card_id: 'varchar',
+    message_id: 'varchar',
+    type: 'varchar',
+    creator: 'varchar',
+    created: 'timestamptz',
+    message_created: 'timestamptz',
+    data: 'jsonb'
+  },
+  [Domain.Reaction]: {
+    workspace_id: 'uuid',
+    card_id: 'varchar',
+    message_id: 'varchar',
+    reaction: 'varchar',
+    creator: 'varchar',
+    created: 'timestamptz'
+  },
+  [Domain.Thread]: {
+    workspace_id: 'uuid',
+    card_id: 'varchar',
+    message_id: 'varchar',
+    thread_id: 'varchar',
+    thread_type: 'varchar',
+    replies_count: 'int',
+    last_reply: 'timestamptz'
+  },
+  [Domain.Attachment]: {
+    workspace_id: 'uuid',
+    card_id: 'varchar',
+    message_id: 'varchar',
+    id: 'uuid',
+    type: 'text',
+    params: 'jsonb',
+    creator: 'varchar',
+    created: 'timestamptz',
+    modified: 'timestamptz'
+  },
+  [Domain.Notification]: {
+    id: 'int8',
+    context_id: 'int8',
+    message_created: 'timestamptz',
+    message_id: 'varchar',
+    blob_id: 'uuid',
+    created: 'timestamptz',
+    content: 'jsonb',
+    type: 'varchar',
+    read: 'bool'
+  },
+  [Domain.Collaborator]: {
+    workspace_id: 'uuid',
+    card_id: 'varchar',
+    account: 'uuid',
+    date: 'timestamptz',
+    card_type: 'varchar'
+  },
+  [Domain.Label]: {
+    workspace_id: 'uuid',
+    card_id: 'varchar',
+    card_type: 'varchar',
+    label_id: 'varchar',
+    account: 'uuid',
+    created: 'timestamptz'
+  },
+  [Domain.NotificationContext]: {
+    workspace_id: 'uuid',
+    card_id: 'varchar',
+    id: 'int8',
+    account: 'uuid',
+    last_view: 'timestamptz',
+    last_update: 'timestamptz',
+    last_notify: 'timestamptz'
+  }
+} as const
+
+export interface DomainDbModel {
+  [Domain.Message]: MessageDbModel
+  [Domain.MessageCreated]: MessageCreatedDbModel
+  [Domain.MessagesGroup]: MessagesGroupDbModel
+  [Domain.Patch]: PatchDbModel
+  [Domain.Reaction]: ReactionDbModel
+  [Domain.Thread]: ThreadDbModel
+  [Domain.Attachment]: AttachmentDbModel
+  // [Domain.LinkPreview]: LinkPreviewDbModel
+  [Domain.Notification]: NotificationDbModel
+  [Domain.NotificationContext]: ContextDbModel
+  [Domain.Collaborator]: CollaboratorDbModel
+  [Domain.Label]: LabelDbModel
 }
 
-export interface MessageDb {
-  id: MessageID
-  type: MessageType
+export type DbModel<D extends keyof DomainDbModel> = DomainDbModel[D]
+
+export type DbModelColumn<D extends Domain> = keyof DomainDbModel[D] & string
+
+export type DbModelColumnType<D extends Domain> = DomainDbModel[D][DbModelColumn<D>]
+
+export type DbModelFilter<D extends Domain> = Array<{ column: DbModelColumn<D>, value: DbModelColumnType<D> | DbModelColumnType<D>[] }>
+export type DbModelUpdate<D extends Domain> = Array<{
+  column: DbModelColumn<D>
+  innerKey?: string
+  value: any
+}>
+export type DbModelBatchUpdate<D extends Domain> = Array<{
+  key: DbModelColumnType<D>
+  column: DbModelColumn<D>
+  innerKey?: string
+  value: any
+}>
+
+interface MessageDbModel {
   workspace_id: WorkspaceID
   card_id: CardID
+  id: MessageID
+  type: MessageType
   content: Markdown
   creator: SocialID
   created: Date
   data?: Record<string, any>
 }
 
-export const messageSchema: Record<keyof MessageDb, string> = {
-  workspace_id: 'uuid',
-  card_id: 'varchar',
-  id: 'varchar',
-  created: 'timestamptz',
-  content: 'text',
-  creator: 'varchar',
-  type: 'varchar',
-  data: 'jsonb'
+interface MessageCreatedDbModel {
+  workspace_id: WorkspaceID
+  card_id: CardID
+  message_id: MessageID
+  created: Date
 }
 
-export interface MessagesGroupDb {
+interface MessagesGroupDbModel {
   workspace_id: WorkspaceID
   card_id: CardID
   blob_id: BlobID
   from_date: Date
   to_date: Date
   count: number
-  patches?: PatchDb[]
 }
 
-export interface PatchDb {
+interface PatchDbModel {
   workspace_id: WorkspaceID
   card_id: CardID
   message_id: MessageID
@@ -92,7 +205,19 @@ export interface PatchDb {
   message_created: Date
 }
 
-export interface ReactionDb {
+interface AttachmentDbModel {
+  workspace_id: WorkspaceID
+  card_id: CardID
+  message_id: MessageID
+  id: AttachmentID
+  type: string
+  params: Record<string, any>
+  creator: SocialID
+  created: Date
+  modified?: Date
+}
+
+interface ReactionDbModel {
   workspace_id: WorkspaceID
   card_id: CardID
   message_id: MessageID
@@ -101,35 +226,7 @@ export interface ReactionDb {
   created: Date
 }
 
-export interface FileDb {
-  workspace_id: WorkspaceID
-  card_id: CardID
-  message_id: MessageID
-  blob_id: BlobID
-  filename: string
-  size: number
-  type: string
-  meta?: BlobMetadata
-  creator: SocialID
-  created: Date
-}
-
-export interface LinkPreviewDb {
-  workspace_id: WorkspaceID
-  id: LinkPreviewID
-  card_id: CardID
-  message_id: MessageID
-  url: string
-  host: string
-  title: string | null
-  description: string | null
-  favicon: string | null
-  hostname: string | null
-  image: LinkPreviewImage | null
-  creator: SocialID
-  created: Date
-}
-export interface ThreadDb {
+interface ThreadDbModel {
   workspace_id: WorkspaceID
   card_id: CardID
   message_id: MessageID
@@ -139,7 +236,7 @@ export interface ThreadDb {
   last_reply: Date
 }
 
-export interface NotificationDb {
+interface NotificationDbModel {
   id: NotificationID
   type: NotificationType
   read: boolean
@@ -151,7 +248,8 @@ export interface NotificationDb {
   content: NotificationContent
 }
 
-export interface ContextDb {
+interface ContextDbModel {
+  id: ContextID
   workspace_id: WorkspaceID
   card_id: CardID
   account: AccountID
@@ -160,7 +258,7 @@ export interface ContextDb {
   last_notify: Date
 }
 
-export interface CollaboratorDb {
+interface CollaboratorDbModel {
   workspace_id: WorkspaceID
   card_id: CardID
   card_type: CardType
@@ -168,7 +266,7 @@ export interface CollaboratorDb {
   date: Date
 }
 
-export interface LabelDb {
+interface LabelDbModel {
   workspace_id: WorkspaceID
   label_id: LabelID
   card_id: CardID

@@ -32,34 +32,35 @@ import {
 } from '@hcengineering/communication-types'
 
 import { BaseDb } from './base'
-import { type CollaboratorDb, type ContextDb, type NotificationDb, TableName } from '../schema'
 import { getCondition } from './utils'
 import { toCollaborator, toNotification, toNotificationContext } from './mapping'
-import type {
-  NotificationContextUpdates,
-  NotificationUpdates,
-  UpdateNotificationQuery
+import {
+  Domain,
+  type NotificationContextUpdates,
+  type NotificationUpdates,
+  type UpdateNotificationQuery
 } from '@hcengineering/communication-sdk-types'
+import { DbModel, DbModelFilter, DbModelUpdate } from '../schema'
 
 export class NotificationsDb extends BaseDb {
   async addCollaborators (
     card: CardID,
     cardType: CardType,
     collaborators: AccountID[],
-    date?: Date
+    date: Date
   ): Promise<AccountID[]> {
     if (collaborators.length === 0) return []
-    const values: any[] = []
-
-    const sqlValues = collaborators
-      .map((account, index) => {
-        const i = index * 5
-        values.push(this.workspace, card, account, date ?? new Date(), cardType)
-        return `($${i + 1}::uuid, $${i + 2}::varchar, $${i + 3}::uuid, $${i + 4}::timestamptz, $${i + 5}::varchar)`
-      })
-      .join(', ')
-
-    const sql = `INSERT INTO ${TableName.Collaborators} (workspace_id, card_id, account, date, card_type) VALUES ${sqlValues} ON CONFLICT DO NOTHING RETURNING account`
+    const models: DbModel<Domain.Collaborator>[] = collaborators.map((account, index) => ({
+      workspace_id: this.workspace,
+      card_id: card,
+      account,
+      date,
+      card_type: cardType
+    }))
+    const { sql, values } = this.getBatchInsertSql(Domain.Collaborator, models, [{ column: 'account', cast: 'text' }], {
+      conflictColumns: ['workspace_id', 'card_id', 'account'],
+      conflictAction: 'DO NOTHING'
+    })
 
     const result = await this.execute(sql, values, 'insert collaborators')
     return result.map((it: any) => it.account)
@@ -67,24 +68,15 @@ export class NotificationsDb extends BaseDb {
 
   async removeCollaborators (card: CardID, accounts: AccountID[], unsafe = false): Promise<void> {
     if (accounts.length === 0 && unsafe) {
-      const sql = `DELETE FROM ${TableName.Collaborators} WHERE workspace_id = $1::uuid AND card_id = $2::varchar`
+      const sql = `DELETE FROM ${Domain.Collaborator} WHERE workspace_id = $1::uuid AND card_id = $2::varchar`
       await this.execute(sql, [this.workspace, card], 'remove collaborators')
-    } else if (accounts.length === 1) {
-      const sql = `DELETE
-                         FROM ${TableName.Collaborators}
-                         WHERE workspace_id = $1::uuid
-                           AND card_id = $2::varchar
-                           AND account = $3::uuid`
-      await this.execute(sql, [this.workspace, card, accounts[0]], 'remove collaborator')
     } else {
-      const inValues = accounts.map((_, index) => `$${index + 3}`).join(', ')
-      const sql = `DELETE
-                         FROM ${TableName.Collaborators}
-                         WHERE workspace_id = $1::uuid
-                           AND card_id = $2::varchar
-                           AND account IN (${inValues})`
-
-      await this.execute(sql, [this.workspace, card, accounts], 'remove collaborators')
+      const { sql, values } = this.getDeleteSql(Domain.Collaborator, [
+        { column: 'workspace_id', value: this.workspace },
+        { column: 'card_id', value: card },
+        { column: 'account', value: accounts }
+      ])
+      await this.execute(sql, values, 'remove collaborator')
     }
   }
 
@@ -95,7 +87,7 @@ export class NotificationsDb extends BaseDb {
   ): AsyncIterable<NonNullable<Collaborator[][number]>[]> {
     const sql = `
             SELECT *
-            FROM ${TableName.Collaborators}
+            FROM ${Domain.Collaborator}
             WHERE workspace_id = $1::uuid
               AND card_id = $2::varchar
               AND date <= $3::timestamptz
@@ -113,23 +105,19 @@ export class NotificationsDb extends BaseDb {
     content: NotificationContent,
     created: Date
   ): Promise<NotificationID> {
-    const db: Omit<NotificationDb, 'id'> = {
+    const db: Omit<DbModel<Domain.Notification>, 'id'> = {
+      context_id: context,
       type,
       message_id: message,
       message_created: messageCreated,
       read,
-      context_id: context,
       created,
       content
     }
-    const sql = `INSERT INTO ${TableName.Notification} (message_id, message_created, context_id, read, created, type, content)
-                     VALUES ($1::varchar, $2::timestamptz, $3::int8, $4::boolean, $5::timestamptz, $6::varchar, $7::jsonb)
-                     RETURNING id::text`
-    const result = await this.execute(
-      sql,
-      [db.message_id, db.message_created, db.context_id, db.read, db.created, db.type, db.content],
-      'insert notification'
-    )
+    const { sql, values } = this.getInsertSql(Domain.Notification, db as DbModel<Domain.Notification>, [
+      { column: 'id', cast: 'text' }
+    ])
+    const result = await this.execute(sql, values, 'insert notification')
     return result[0].id as NotificationID
   }
 
@@ -170,9 +158,9 @@ export class NotificationsDb extends BaseDb {
     const whereClause = `WHERE ${where.join(' AND ')}`
 
     const sql = `
-        UPDATE ${TableName.Notification} n
+        UPDATE ${Domain.Notification} n
         SET read = $${index++}::boolean
-        FROM ${TableName.NotificationContext} nc ${whereClause}`
+        FROM ${Domain.NotificationContext} nc ${whereClause}`
 
     await this.execute(sql, [...values, updates.read], 'update notification')
   }
@@ -200,8 +188,8 @@ export class NotificationsDb extends BaseDb {
       values.push(ids)
     }
 
-    const sql = `DELETE FROM ${TableName.Notification} n
-                USING ${TableName.NotificationContext} nc
+    const sql = `DELETE FROM ${Domain.Notification} n
+                USING ${Domain.NotificationContext} nc
                  WHERE ${where.join(' AND ')}
                  RETURNING n.id::text`
 
@@ -217,7 +205,7 @@ export class NotificationsDb extends BaseDb {
     lastView: Date,
     lastNotify: Date
   ): Promise<ContextID> {
-    const db: ContextDb = {
+    const db: Omit<DbModel<Domain.NotificationContext>, 'id'> = {
       workspace_id: this.workspace,
       card_id: card,
       account,
@@ -225,20 +213,17 @@ export class NotificationsDb extends BaseDb {
       last_update: lastUpdate,
       last_notify: lastNotify
     }
-    const sql = `INSERT INTO ${TableName.NotificationContext} (workspace_id, card_id, account, last_view, last_update, last_notify)
-                     VALUES ($1::uuid, $2::varchar, $3::uuid, $4::timestamptz, $5::timestamptz, $6::timestamptz)
-                     RETURNING id::text`
-    const result = await this.execute(
-      sql,
-      [db.workspace_id, db.card_id, db.account, db.last_view, db.last_update, db.last_notify ?? null],
-      'insert notification context'
-    )
+    const { sql, values } = this.getInsertSql(Domain.NotificationContext, db as DbModel<Domain.NotificationContext>, [
+      { column: 'id', cast: 'text' }
+    ])
+
+    const result = await this.execute(sql, values, 'insert notification context')
     return result[0].id as ContextID
   }
 
   async removeContext (contextId: ContextID, account: AccountID): Promise<ContextID | undefined> {
     const sql = `DELETE
-                 FROM ${TableName.NotificationContext}
+                 FROM ${Domain.NotificationContext}
                  WHERE workspace_id = $1::uuid
                    AND id = $2::int8
                    AND account = $3::uuid
@@ -250,31 +235,47 @@ export class NotificationsDb extends BaseDb {
   }
 
   async updateContext (context: ContextID, account: AccountID, updates: NotificationContextUpdates): Promise<void> {
-    const dbData: Partial<ContextDb> = {}
+    const update: DbModelUpdate<Domain.NotificationContext> = []
 
     if (updates.lastView != null) {
-      dbData.last_view = updates.lastView
+      update.push({
+        column: 'last_view',
+        value: updates.lastView
+      })
     }
     if (updates.lastUpdate != null) {
-      dbData.last_update = updates.lastUpdate
+      update.push({
+        column: 'last_update',
+        value: updates.lastUpdate
+      })
     }
-
     if (updates.lastNotify != null) {
-      dbData.last_notify = updates.lastNotify
+      update.push({
+        column: 'last_notify',
+        value: updates.lastNotify
+      })
     }
 
-    if (Object.keys(dbData).length === 0) {
-      return
-    }
+    if (update.length === 0) return
 
-    const keys = Object.keys(dbData)
-    const values = Object.values(dbData)
+    const filter: DbModelFilter<Domain.NotificationContext> = [
+      {
+        column: 'workspace_id',
+        value: this.workspace
+      },
+      {
+        column: 'id',
+        value: context
+      },
+      {
+        column: 'account',
+        value: account
+      }
+    ]
 
-    const sql = `UPDATE ${TableName.NotificationContext}
-                     SET ${keys.map((k, idx) => `"${k}" = $${idx + 4}::timestamptz`).join(', ')}
-                     WHERE workspace_id = $1::uuid AND id = $2::int8 AND account = $3::uuid;`
+    const { sql, values } = this.getUpdateSql(Domain.NotificationContext, filter, update)
 
-    await this.execute(sql, [this.workspace, context, account, ...values], 'update notification context')
+    await this.execute(sql, values, 'update notification context')
   }
 
   async findContexts (params: FindNotificationContextParams): Promise<NotificationContext[]> {
@@ -304,7 +305,7 @@ export class NotificationsDb extends BaseDb {
       notificationsJoin = `
       LEFT JOIN LATERAL (
         SELECT *
-        FROM ${TableName.Notification} n
+        FROM ${Domain.Notification} n
         ${whereNotifications} ${whereNotifications.length > 1 ? 'AND' : 'WHERE'} n.context_id = nc.id
         ORDER BY n.created ${notificationOrder}
         LIMIT ${notificationLimit}
@@ -313,7 +314,7 @@ export class NotificationsDb extends BaseDb {
       ${
         withMessages
           ? `
-      LEFT JOIN ${TableName.Message} m 
+      LEFT JOIN ${Domain.Message} m 
         ON m.workspace_id = nc.workspace_id 
         AND m.card_id = nc.card_id
         AND m.id = n.message_id
@@ -333,27 +334,30 @@ export class NotificationsDb extends BaseDb {
             ) ORDER BY p.created DESC
           ), '[]'::JSONB
         ) AS patches
-        FROM ${TableName.Patch} p
+        FROM ${Domain.Patch} p
         WHERE p.workspace_id = nc.workspace_id AND p.card_id = nc.card_id AND p.message_id = n.message_id
       ) p ON TRUE
 
       LEFT JOIN LATERAL (
-        SELECT COALESCE(
-          JSON_AGG(
-            JSONB_BUILD_OBJECT(
-              'blob_id', f.blob_id,
-              'type', f.type,
-              'size', f.size,
-              'filename', f.filename,
-              'meta', f.meta,
-              'creator', f.creator,
-              'created', f.created
-            ) ORDER BY f.created ASC
-          ), '[]'::JSONB
-        ) AS files
-        FROM ${TableName.File} f
-        WHERE f.workspace_id = nc.workspace_id AND f.card_id = nc.card_id AND f.message_id = n.message_id
-      ) f ON TRUE
+        SELECT
+          COALESCE(
+            JSON_AGG(
+              JSONB_BUILD_OBJECT(
+                'id',      a.id,
+                'type',    a.type,
+                'params',  a.params,
+                'creator', a.creator,
+                'created', a.created,
+                'modified',a.modified
+              )
+            ),
+            '[]'::JSONB
+          ) AS attachments
+        FROM communication.attachment AS a
+        WHERE  a.workspace_id = nc.workspace_id
+          AND a.card_id      = nc.card_id
+          AND a.message_id   = n.message_id
+      ) AS a ON TRUE
     `
 
       notificationsSelect = `,
@@ -378,7 +382,7 @@ export class NotificationsDb extends BaseDb {
             }
             'blob_id', n.blob_id,
             'patches', p.patches,
-            'files', f.files
+            'attachments', a.attachments
           )
           ORDER BY n.created ${notificationOrder}
         ), '[]'::JSONB
@@ -397,7 +401,7 @@ export class NotificationsDb extends BaseDb {
                nc.last_update,
                nc.last_notify
                    ${notificationsSelect}
-        FROM ${TableName.NotificationContext} nc
+        FROM ${Domain.NotificationContext} nc
             ${notificationsJoin} ${where}
             ${groupBy}
             ${orderBy}
@@ -430,31 +434,30 @@ export class NotificationsDb extends BaseDb {
           'created', p.created
         )
       )
-      FROM ${TableName.Patch} p
+      FROM ${Domain.Patch} p
       WHERE p.workspace_id = m.workspace_id AND p.card_id = m.card_id AND p.message_id = m.id) AS message_patches,
       (SELECT json_agg(
         jsonb_build_object(
-            'blob_id', f.blob_id,
-            'type', f.type,
-            'size', f.size,
-            'filename', f.filename,
-            'meta', f.meta,
-            'creator', f.creator,
-            'created', f.created
+            'id', a.id,
+            'type', a.type,
+            'params', a.params,
+            'creator', a.creator,
+            'created', a.created,
+            'modified', a.modified
         )
       )
-      FROM ${TableName.File} f
-      WHERE f.workspace_id = m.workspace_id AND f.card_id = m.card_id AND f.message_id = m.id) AS message_files
+      FROM ${Domain.Attachment} a
+      WHERE a.workspace_id = m.workspace_id AND a.card_id = m.card_id AND a.message_id = m.id) AS message_attachments
     `
       joinMessages = `
-      LEFT JOIN ${TableName.Message} m 
+      LEFT JOIN ${Domain.Message} m 
         ON nc.workspace_id = m.workspace_id
         AND nc.card_id = m.card_id
         AND n.message_id = m.id `
     }
 
-    select += ` FROM ${TableName.Notification} n
-    JOIN ${TableName.NotificationContext} nc  ON n.context_id = nc.id`
+    select += ` FROM ${Domain.Notification} n
+    JOIN ${Domain.NotificationContext} nc  ON n.context_id = nc.id`
 
     const { where, values } = this.buildNotificationWhere(params)
     const orderBy =
@@ -469,13 +472,13 @@ export class NotificationsDb extends BaseDb {
   }
 
   async updateCollaborators (params: FindCollaboratorsParams, data: Partial<Collaborator>): Promise<void> {
-    const dbData: Partial<CollaboratorDb> = {
+    const update: Partial<DbModel<Domain.Collaborator>> = {
       account: data.account,
       card_id: data.cardId,
       card_type: data.cardType
     }
 
-    const entries = Object.entries(dbData).filter(([_, value]) => value != null)
+    const entries = Object.entries(update).filter(([_, value]) => value != null)
     if (entries.length === 0) return
 
     entries.unshift(['workspace_id', this.workspace])
@@ -484,7 +487,7 @@ export class NotificationsDb extends BaseDb {
 
     const { where, values: whereValues } = this.buildCollaboratorsWhere(params, setValues.length, '')
 
-    const sql = `UPDATE ${TableName.Collaborators}
+    const sql = `UPDATE ${Domain.Collaborator}
              SET ${setClauses.join(', ')}
              ${where}`
 
@@ -495,7 +498,7 @@ export class NotificationsDb extends BaseDb {
     const { where, values } = this.buildCollaboratorsWhere(params)
     const select = `
             SELECT *
-            FROM ${TableName.Collaborators} c
+            FROM ${Domain.Collaborator} c
         `
 
     const limit = params.limit != null ? ` LIMIT ${params.limit}` : ''
@@ -646,9 +649,9 @@ export class NotificationsDb extends BaseDb {
 
   public async updateNotificationsBlobId (cardId: CardID, blobId: string, from: Date, to: Date): Promise<void> {
     const sql = `
-        UPDATE ${TableName.Notification} AS n
+        UPDATE ${Domain.Notification} AS n
         SET blob_id = $3::uuid
-        FROM ${TableName.NotificationContext} AS nc
+        FROM ${Domain.NotificationContext} AS nc
         WHERE
             n.context_id = nc.id
           AND nc.workspace_id = $1::uuid
@@ -661,9 +664,9 @@ export class NotificationsDb extends BaseDb {
 
   public async removeNotificationsBlobId (cardId: CardID, blobId: string): Promise<void> {
     const sql = `
-        UPDATE ${TableName.Notification} AS n
+        UPDATE ${Domain.Notification} AS n
         SET blob_id = NULL
-        FROM ${TableName.NotificationContext} AS nc
+        FROM ${Domain.NotificationContext} AS nc
         WHERE
             n.context_id    = nc.id
           AND nc.workspace_id = $1::uuid

@@ -14,22 +14,19 @@
 //
 
 import {
-  BlobData,
-  BlobID,
-  BlobPatch,
   CardID,
   CardType,
-  LinkPreview,
-  LinkPreviewData,
-  LinkPreviewID,
-  LinkPreviewPatch,
   type Message,
   type Patch,
   PatchType,
   ReactionPatch,
   SocialID,
   ThreadPatch,
-  BlobUpdateData
+  AttachmentData,
+  AttachmentPatch,
+  AttachmentUpdateData,
+  AttachmentID,
+  Attachment
 } from '@hcengineering/communication-types'
 
 export function applyPatches (message: Message, patches: Patch[], allowedPatchTypes: PatchType[] = []): Message {
@@ -62,43 +59,29 @@ export function applyPatch (message: Message, patch: Patch, allowedPatchTypes: P
       return {
         ...message,
         content: '',
-        blobs: [],
-        linkPreviews: [],
+        attachments: [],
         reactions: [],
         removed: true
       }
     }
     case PatchType.reaction:
       return patchReactions(message, patch)
-    case PatchType.blob:
-      return patchBlobs(message, patch)
-    case PatchType.linkPreview:
-      return patchLinkPreviews(message, patch)
+    case PatchType.attachment:
+      return patchAttachments(message, patch)
     case PatchType.thread:
       return patchThread(message, patch)
   }
 }
 
-function patchBlobs (message: Message, patch: BlobPatch): Message {
-  if (patch.data.operation === 'attach') {
-    return attachBlobs(message, patch.data.blobs, patch.created, patch.creator)
-  } else if (patch.data.operation === 'detach') {
-    return detachBlobs(message, patch.data.blobIds)
+function patchAttachments (message: Message, patch: AttachmentPatch): Message {
+  if (patch.data.operation === 'add') {
+    return addAttachments(message, patch.data.attachments, patch.created, patch.creator)
+  } else if (patch.data.operation === 'remove') {
+    return removeAttachments(message, patch.data.ids)
   } else if (patch.data.operation === 'set') {
-    return setBlobs(message, patch.data.blobs, patch.created, patch.creator)
+    return setAttachments(message, patch.data.attachments, patch.created, patch.creator)
   } else if (patch.data.operation === 'update') {
-    return updateBlobs(message, patch.data.blobs)
-  }
-  return message
-}
-
-function patchLinkPreviews (message: Message, patch: LinkPreviewPatch): Message {
-  if (patch.data.operation === 'attach') {
-    return attachLinkPreviews(message, patch.data.previews, patch.created, patch.creator)
-  } else if (patch.data.operation === 'detach') {
-    return detachLinkPreviews(message, patch.data.previewIds)
-  } else if (patch.data.operation === 'set') {
-    return setLinkPreviews(message, patch.data.previews, patch.created, patch.creator)
+    return updateAttachments(message, patch.data.attachments, patch.created)
   }
   return message
 }
@@ -133,123 +116,73 @@ function removeReaction (message: Message, reaction: string, creator: SocialID):
   }
 }
 
-function attachBlobs (message: Message, data: BlobData[], created: Date, creator: SocialID): Message {
-  const newBlobs = []
-  for (const blob of data) {
-    const isExists = message.blobs.some((it) => it.blobId === blob.blobId)
+function addAttachments (message: Message, data: AttachmentData[], created: Date, creator: SocialID): Message {
+  const newAttachments: Attachment[] = []
+  for (const attach of data) {
+    const isExists = message.attachments.some((it) => it.id === attach.id)
     if (isExists === undefined) continue
-    newBlobs.push({
-      ...blob,
+    const attachment: Attachment = {
+      ...attach,
       created,
       creator
-    })
+    } as any
+    newAttachments.push(attachment)
   }
 
-  if (newBlobs.length === 0) return message
+  if (newAttachments.length === 0) return message
   return {
     ...message,
-    blobs: [...message.blobs, ...newBlobs]
+    attachments: [...message.attachments, ...newAttachments]
   }
 }
 
-function updateBlobs (message: Message, updates: BlobUpdateData[]): Message {
+function updateAttachments (message: Message, updates: AttachmentUpdateData[], date: Date): Message {
   if (updates.length === 0) return message
-  const updatedBlobs = []
-  for (const blob of message.blobs) {
-    const update = updates.find((it) => it.blobId === blob.blobId)
+  const updatedAttachments: Attachment[] = []
+  for (const attachment of message.attachments) {
+    const update = updates.find((it) => it.id === attachment.id)
     if (update === undefined) {
-      updatedBlobs.push(blob)
+      updatedAttachments.push(attachment)
     } else {
-      updatedBlobs.push({
-        ...blob,
-        ...update
-      })
+      updatedAttachments.push({
+        ...attachment,
+        params: {
+          ...attachment.params,
+          ...update.params
+        },
+        modified: date.getTime() > (attachment.modified?.getTime() ?? 0) ? date : attachment.modified
+      } as any)
     }
   }
 
   return {
     ...message,
-    blobs: updatedBlobs
+    attachments: updatedAttachments
   }
 }
 
-function detachBlobs (message: Message, blobIds: BlobID[]): Message {
-  const blobs = message.blobs.filter((it) => !blobIds.includes(it.blobId))
-  if (blobs.length === message.blobs.length) return message
+function removeAttachments (message: Message, ids: AttachmentID[]): Message {
+  const attachments = message.attachments.filter((it) => !ids.includes(it.id))
+  if (attachments.length === message.attachments.length) return message
 
   return {
     ...message,
-    blobs
+    attachments
   }
 }
 
-function setBlobs (message: Message, data: BlobData[], created: Date, creator: SocialID): Message {
+function setAttachments (message: Message, data: AttachmentData[], created: Date, creator: SocialID): Message {
   if (data.length === 0) return message
   return {
     ...message,
-    blobs: data.map((it) => ({
-      ...it,
-      created,
-      creator
-    }))
-  }
-}
-
-function attachLinkPreviews (
-  message: Message,
-  previews: (LinkPreviewData & { previewId: LinkPreviewID })[],
-  created: Date,
-  creator: SocialID
-): Message {
-  const newPreviews: LinkPreview[] = []
-  for (const preview of previews) {
-    if (message.linkPreviews.some((it) => it.id === preview.previewId)) continue
-    newPreviews.push({
-      id: preview.previewId,
-      ...preview,
-      created,
-      creator
-    })
-  }
-
-  if (newPreviews.length === 0) return message
-  return {
-    ...message,
-    linkPreviews: [...message.linkPreviews, ...newPreviews]
-  }
-}
-
-function detachLinkPreviews (message: Message, previewIds: LinkPreviewID[]): Message {
-  const previews = message.linkPreviews.filter((it) => !previewIds.includes(it.id))
-  if (previews.length === message.linkPreviews.length) return message
-
-  return {
-    ...message,
-    linkPreviews: previews
-  }
-}
-
-function setLinkPreviews (
-  message: Message,
-  previews: (LinkPreviewData & { previewId: LinkPreviewID })[],
-  created: Date,
-  creator: SocialID
-): Message {
-  if (previews.length === 0) return message
-  const newPreviews: LinkPreview[] = []
-  for (const preview of previews) {
-    if (message.linkPreviews.some((it) => it.id === preview.previewId)) continue
-    newPreviews.push({
-      id: preview.previewId,
-      ...preview,
-      created,
-      creator
-    })
-  }
-
-  return {
-    ...message,
-    linkPreviews: newPreviews
+    attachments: data.map(
+      (it) =>
+        ({
+          ...it,
+          created,
+          creator
+        }) as any
+    )
   }
 }
 

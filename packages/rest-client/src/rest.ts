@@ -37,9 +37,9 @@ import {
   type SocialID,
   type CardType,
   type MessageType,
-  type BlobID,
   type MessageExtra,
-  type BlobData
+  AttachmentData,
+  AttachmentID
 } from '@hcengineering/communication-types'
 import { retry } from '@hcengineering/communication-shared'
 
@@ -195,22 +195,22 @@ class RestClientImpl implements RestClient {
     )
   }
 
-  async attachBlobs (
+  async addAttachments (
     cardId: CardID,
     messageId: MessageID,
-    blobs: BlobData[],
+    data: AttachmentData[],
     socialId: SocialID,
     date?: Date
   ): Promise<void> {
     await this.event(
       {
-        type: MessageEventType.BlobPatch,
+        type: MessageEventType.AttachmentPatch,
         cardId,
         messageId,
         operations: [
           {
-            opcode: 'attach',
-            blobs
+            opcode: 'add',
+            attachments: data
           }
         ],
         socialId,
@@ -220,22 +220,22 @@ class RestClientImpl implements RestClient {
     )
   }
 
-  async detachBlobs (
+  async removeAttachments (
     cardId: CardID,
     messageId: MessageID,
-    blobIds: BlobID[],
+    ids: AttachmentID[],
     socialId: SocialID,
     date?: Date
   ): Promise<void> {
     await this.event(
       {
-        type: MessageEventType.BlobPatch,
+        type: MessageEventType.AttachmentPatch,
         cardId,
         messageId,
         operations: [
           {
-            opcode: 'detach',
-            blobIds
+            opcode: 'remove',
+            ids
           }
         ],
         socialId,
@@ -245,22 +245,22 @@ class RestClientImpl implements RestClient {
     )
   }
 
-  async setBlobs (
+  async setAttachments (
     cardId: CardID,
     messageId: MessageID,
-    blobs: BlobData[],
+    data: AttachmentData[],
     socialId: SocialID,
     date?: Date
   ): Promise<void> {
     await this.event(
       {
-        type: MessageEventType.BlobPatch,
+        type: MessageEventType.AttachmentPatch,
         cardId,
         messageId,
         operations: [
           {
             opcode: 'set',
-            blobs
+            attachments: data
           }
         ],
         socialId,

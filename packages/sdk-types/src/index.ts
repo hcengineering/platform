@@ -14,7 +14,8 @@
 //
 
 export type * from './client'
-export type * from './db'
+export * from './db'
 export type * from './query'
 export * from './events/event'
 export type * from './serverApi'
+export * from './domain'

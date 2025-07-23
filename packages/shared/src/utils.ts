@@ -13,7 +13,14 @@
 // limitations under the License.
 //
 
-import type { LinkPreviewID, MessageID } from '@hcengineering/communication-types'
+import {
+  MessageID,
+  AppletAttachment,
+  Attachment,
+  BlobAttachment,
+  LinkPreviewAttachment,
+  linkPreviewType
+} from '@hcengineering/communication-types'
 
 const COUNTER_BITS = 10n
 const RANDOM_BITS = 10n
@@ -42,6 +49,26 @@ export function generateMessageId (): MessageID {
   return toBase64Url(buf) as MessageID
 }
 
-export function generateLinkPreviewId (): LinkPreviewID {
-  return makeBigIntId().toString() as LinkPreviewID
+export function isAppletAttachment (attachment: Attachment): attachment is AppletAttachment {
+  return attachment.type.startsWith('application/vnd.huly.applet.')
+}
+
+export function isLinkPreviewAttachmentType (type: string): boolean {
+  return type === linkPreviewType
+}
+
+export function isAppletAttachmentType (type: string): boolean {
+  return type.startsWith('application/vnd.huly.applet.')
+}
+
+export function isBlobAttachmentType (type: string): boolean {
+  return !isLinkPreviewAttachmentType(type) && !isAppletAttachmentType(type)
+}
+
+export function isLinkPreviewAttachment (attachment: Attachment): attachment is LinkPreviewAttachment {
+  return attachment.type === linkPreviewType
+}
+
+export function isBlobAttachment (attachment: Attachment): attachment is BlobAttachment {
+  return !isLinkPreviewAttachment(attachment) && !isAppletAttachment(attachment) && 'blobId' in attachment.params
 }

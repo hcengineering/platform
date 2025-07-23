@@ -16,7 +16,6 @@
 import {
   type FindCollaboratorsParams,
   type AccountID,
-  type BlobID,
   type CardID,
   type Collaborator,
   type ContextID,
@@ -42,16 +41,19 @@ import {
   type CardType,
   NotificationType,
   type NotificationContent,
-  type LinkPreviewData,
-  type LinkPreviewID,
   type MessageExtra,
-  type BlobData, BlobUpdateData
+  type BlobID,
+  type AttachmentData,
+  type AttachmentID,
+  type AttachmentUpdateData
 } from '@hcengineering/communication-types'
 import type {
   DbAdapter,
   LabelUpdates,
   NotificationContextUpdates,
-  NotificationUpdates, RemoveLabelQuery, ThreadQuery,
+  NotificationUpdates,
+  RemoveLabelQuery,
+  ThreadQuery,
   ThreadUpdates,
   UpdateNotificationQuery
 } from '@hcengineering/communication-sdk-types'
@@ -82,15 +84,15 @@ export class CockroachAdapter implements DbAdapter {
   }
 
   async createMessage (
-    id: MessageID,
     cardId: CardID,
+    id: MessageID,
     type: MessageType,
     content: Markdown,
     extra: MessageExtra | undefined,
     creator: SocialID,
     created: Date
   ): Promise<boolean> {
-    return await this.message.createMessage(id, cardId, type, content, extra, creator, created)
+    return await this.message.createMessage(cardId, id, type, content, extra, creator, created)
   }
 
   async createPatch (
@@ -138,62 +140,38 @@ export class CockroachAdapter implements DbAdapter {
     await this.message.removeReaction(cardId, messageId, reaction, socialId, date)
   }
 
-  async attachBlobs (
+  async addAttachments (
     cardId: CardID,
     messageId: MessageID,
-    blobs: BlobData[],
+    data: AttachmentData[],
     socialId: SocialID,
     date: Date
   ): Promise<void> {
-    await this.message.attachBlobs(cardId, messageId, blobs, socialId, date)
+    await this.message.addAttachments(cardId, messageId, data, socialId, date)
   }
 
-  async detachBlobs (cardId: CardID, messageId: MessageID, blobIds: BlobID[], socialId: SocialID, date: Date): Promise<void> {
-    await this.message.detachBlobs(cardId, messageId, blobIds, socialId, date)
+  async removeAttachments (cardId: CardID, messageId: MessageID, ids: AttachmentID[], socialId: SocialID, date: Date): Promise<void> {
+    await this.message.removeAttachments(cardId, messageId, ids, socialId, date)
   }
 
-  async setBlobs (
+  async setAttachments (
     cardId: CardID,
     messageId: MessageID,
-    blobs: BlobData[],
+    data: AttachmentData[],
     socialId: SocialID,
     date: Date
   ): Promise<void> {
-    await this.message.setBlobs(cardId, messageId, blobs, socialId, date)
+    await this.message.setAttachments(cardId, messageId, data, socialId, date)
   }
 
-  async updateBlobs (
+  async updateAttachments (
     cardId: CardID,
     messageId: MessageID,
-    blobs: BlobUpdateData[],
+    data: AttachmentUpdateData[],
     socialId: SocialID,
     date: Date
   ): Promise<void> {
-    await this.message.updateBlobs(cardId, messageId, blobs, socialId, date)
-  }
-
-  async attachLinkPreviews (
-    cardId: CardID,
-    messageId: MessageID,
-    data: (LinkPreviewData & { previewId: LinkPreviewID })[],
-    socialId: SocialID,
-    date: Date
-  ): Promise<void> {
-    await this.message.attachLinkPreviews(cardId, messageId, data, socialId, date)
-  }
-
-  async setLinkPreviews (
-    cardId: CardID,
-    messageId: MessageID,
-    data: (LinkPreviewData & { previewId: LinkPreviewID })[],
-    socialId: SocialID,
-    date: Date
-  ): Promise<void> {
-    await this.message.setLinkPreviews(cardId, messageId, data, socialId, date)
-  }
-
-  async detachLinkPreviews (cardId: CardID, messageId: MessageID, previewIds: LinkPreviewID[], socialId: SocialID, date: Date): Promise<void> {
-    await this.message.detachLinkPreviews(cardId, messageId, previewIds, socialId, date)
+    await this.message.updateAttachments(cardId, messageId, data, socialId, date)
   }
 
   async attachThread (
@@ -231,7 +209,7 @@ export class CockroachAdapter implements DbAdapter {
     card: CardID,
     cardType: CardType,
     collaborators: AccountID[],
-    date?: Date
+    date: Date
   ): Promise<AccountID[]> {
     return await this.notification.addCollaborators(card, cardType, collaborators, date)
   }

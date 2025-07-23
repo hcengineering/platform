@@ -147,8 +147,8 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
       case MessageEventType.UpdatePatch:
       case MessageEventType.RemovePatch:
       case MessageEventType.ThreadPatch:
-      case MessageEventType.LinkPreviewPatch:
       case MessageEventType.BlobPatch:
+      case MessageEventType.AttachmentPatch:
       case MessageEventType.ReactionPatch: {
         await this.onPatchEvent(event)
         break
@@ -840,14 +840,11 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
     if (this.params.reactions === true) {
       result.push(PatchType.reaction)
     }
-    if (this.params.files === true) {
-      result.push(PatchType.blob)
+    if (this.params.attachments === true) {
+      result.push(PatchType.attachment)
     }
     if (this.params.replies === true) {
       result.push(PatchType.thread)
-    }
-    if (this.params.links === true) {
-      result.push(PatchType.linkPreview)
     }
 
     return result

@@ -22,11 +22,11 @@ import {
   type LabelID,
   type Label
 } from '@hcengineering/communication-types'
+import { Domain, type LabelUpdates, type RemoveLabelQuery } from '@hcengineering/communication-sdk-types'
 
 import { BaseDb } from './base'
-import { type LabelDb, TableName } from '../schema'
 import { toLabel } from './mapping'
-import type { LabelUpdates, RemoveLabelQuery } from '@hcengineering/communication-sdk-types'
+import { DbModel, DbModelFilter, DbModelUpdate } from '../schema'
 
 export class LabelsDb extends BaseDb {
   async createLabel (
@@ -36,7 +36,7 @@ export class LabelsDb extends BaseDb {
     account: AccountID,
     created: Date
   ): Promise<void> {
-    const db: LabelDb = {
+    const db: DbModel<Domain.Label> = {
       workspace_id: this.workspace,
       label_id: label,
       card_id: card,
@@ -44,60 +44,78 @@ export class LabelsDb extends BaseDb {
       account,
       created
     }
-    const sql = `INSERT INTO ${TableName.Label} (workspace_id, label_id, card_id, card_type, account, created)
-                 VALUES ($1::uuid, $2::varchar, $3::varchar, $4::varchar, $5::uuid, $6::timestamptz)
-                 ON CONFLICT DO NOTHING`
-    await this.execute(
-      sql,
-      [db.workspace_id, db.label_id, db.card_id, db.card_type, db.account, db.created],
-      'insert label'
-    )
+    const { sql, values } = this.getInsertSql(Domain.Label, db, [], {
+      conflictColumns: ['workspace_id', 'label_id', 'card_id', 'account'],
+      conflictAction: 'DO NOTHING'
+    })
+    await this.execute(sql, values, 'insert label')
   }
 
   async removeLabels (query: RemoveLabelQuery): Promise<void> {
-    const db: Partial<LabelDb> = {
-      label_id: query.labelId,
-      card_id: query.cardId,
-      account: query.account
+    const filter: DbModelFilter<Domain.Label> = []
+
+    if (query.labelId != null) {
+      filter.push({
+        column: 'label_id',
+        value: query.labelId
+      })
+    }
+    if (query.cardId != null) {
+      filter.push({
+        column: 'card_id',
+        value: query.cardId
+      })
+    }
+    if (query.account != null) {
+      filter.push({
+        column: 'account',
+        value: query.account
+      })
     }
 
-    const entries = Object.entries(db).filter(([_, value]) => value !== undefined)
+    if (filter.length === 0) return
 
-    if (entries.length === 0) return
+    filter.unshift({
+      column: 'workspace_id',
+      value: this.workspace
+    })
 
-    entries.unshift(['workspace_id', this.workspace])
+    const { sql, values } = this.getDeleteSql(Domain.Label, filter)
 
-    const whereClauses = entries.map(([key], index) => `${key} = $${index + 1}`)
-    const whereValues = entries.map(([_, value]) => value)
-
-    const sql = `DELETE
-                 FROM ${TableName.Label}
-                 WHERE ${whereClauses.join(' AND ')}`
-
-    await this.execute(sql, whereValues, 'remove labels')
+    await this.execute(sql, values, 'remove labels')
   }
 
   async updateLabels (card: CardID, updates: LabelUpdates): Promise<void> {
-    const dbData: Partial<LabelDb> = {
-      card_type: updates.cardType
+    const update: DbModelUpdate<Domain.Label> = []
+
+    const filter: DbModelFilter<Domain.Label> = [
+      {
+        column: 'workspace_id',
+        value: this.workspace
+      },
+      {
+        column: 'card_id',
+        value: card
+      }
+    ]
+
+    if (updates.cardType != null) {
+      update.push({
+        column: 'card_type',
+        value: updates.cardType
+      })
     }
 
-    const entries = Object.entries(dbData).filter(([_, value]) => value !== undefined)
-    if (entries.length === 0) return
+    if (update.length === 0) return
 
-    const setClauses = entries.map(([key], index) => `${key} = $${index + 3}`)
-    const setValues = entries.map(([_, value]) => value)
+    const { sql, values } = this.getUpdateSql(Domain.Label, filter, update)
 
-    const sql = `UPDATE ${TableName.Label}
-             SET ${setClauses.join(', ')}
-             WHERE workspace_id = $1::uuid AND card_id = $2::varchar`
-
-    await this.execute(sql, [this.workspace, card, ...setValues], 'update labels')
+    await this.execute(sql, values, 'update labels')
   }
 
   async findLabels (params: FindLabelsParams): Promise<Label[]> {
     const select = `SELECT *
-                    FROM ${TableName.Label} l`
+                    FROM ${Domain.Label} l`
 
     const { where, values } = this.buildWhere(params)
 

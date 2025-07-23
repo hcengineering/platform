@@ -46,7 +46,7 @@ import { QueryResult } from '../result'
 import { WindowImpl } from '../window'
 import { loadMessageFromGroup, matchNotification } from '../utils'
 
-const allowedPatchTypes = [PatchType.update, PatchType.remove, PatchType.blob]
+const allowedPatchTypes = [PatchType.update, PatchType.remove, PatchType.attachment]
 
 export class NotificationQuery implements PagedQuery<Notification, NotificationQueryParams> {
   private result: QueryResult<Notification> | Promise<QueryResult<Notification>>
@@ -247,7 +247,7 @@ export class NotificationQuery implements PagedQuery<Notification, NotificationQ
         card: notification.cardId,
         id: notification.messageId,
         limit: 1,
-        files: true
+        attachments: true
       })
       notification.message = message[0]
     }

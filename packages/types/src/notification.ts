@@ -14,7 +14,8 @@
 //
 
 import type { AccountID, BlobID, CardID, CardType, ID, SocialID } from './core'
-import type { Message, MessageID, Patch } from './message'
+import type { Message, MessageID } from './message'
+import { Patch } from './patch'
 
 export type ContextID = ID & { context: true }
 export type NotificationID = ID & { notification: true }

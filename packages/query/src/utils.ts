@@ -37,10 +37,10 @@ export async function findMessage (
   id: MessageID,
   created: Date,
   reactions?: boolean,
-  files?: boolean,
+  attachments?: boolean,
   replies?: boolean
 ): Promise<Message | undefined> {
-  const message = (await client.findMessages({ card, id, limit: 1, files, reactions, replies }))[0]
+  const message = (await client.findMessages({ card, id, limit: 1, attachments, reactions, replies }))[0]
   if (message !== undefined) {
     return message
   }

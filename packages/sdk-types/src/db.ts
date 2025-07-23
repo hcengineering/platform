@@ -42,15 +42,15 @@ import {
   CardType,
   NotificationContent,
   NotificationType,
-  BlobData,
-  LinkPreviewData,
-  LinkPreviewID, BlobUpdateData
+  AttachmentData,
+  AttachmentID,
+  AttachmentUpdateData
 } from '@hcengineering/communication-types'
 
 export interface DbAdapter {
   createMessage: (
-    id: MessageID,
     cardId: CardID,
+    id: MessageID,
     type: MessageType,
     content: Markdown,
     extra: MessageExtra | undefined,
@@ -73,20 +73,10 @@ export interface DbAdapter {
   addReaction: (cardId: CardID, messageId: MessageID, reaction: string, socialId: SocialID, date: Date) => Promise<void>
   removeReaction: (cardId: CardID, message: MessageID, reaction: string, socialId: SocialID, date: Date) => Promise<void>
 
-  attachBlobs: (cardId: CardID, messageId: MessageID, data: BlobData[], socialId: SocialID, date: Date) => Promise<void>
-  detachBlobs: (card: CardID, messageId: MessageID, blobId: BlobID[], socialId: SocialID, date: Date) => Promise<void>
-  setBlobs: (cardId: CardID, messageId: MessageID, data: BlobData[], socialId: SocialID, date: Date) => Promise<void>
-  updateBlobs: (cardId: CardID, messageId: MessageID, data: BlobUpdateData[], socialId: SocialID, date: Date) => Promise<void>
-
-  attachLinkPreviews: (
-    cardId: CardID,
-    messageId: MessageID,
-    data: (LinkPreviewData & { previewId: LinkPreviewID })[],
-    socialId: SocialID,
-    date: Date
-  ) => Promise<void>
-  detachLinkPreviews: (cardId: CardID, messageId: MessageID, ids: LinkPreviewID[], socialId: SocialID, date: Date) => Promise<void>
-  setLinkPreviews: (cardId: CardID, messageId: MessageID, data: (LinkPreviewData & { previewId: LinkPreviewID })[], socialId: SocialID, date: Date) => Promise<void>
+  addAttachments: (cardId: CardID, messageId: MessageID, data: AttachmentData[], socialId: SocialID, date: Date) => Promise<void>
+  removeAttachments: (card: CardID, messageId: MessageID, ids: AttachmentID[], socialId: SocialID, date: Date) => Promise<void>
+  setAttachments: (cardId: CardID, messageId: MessageID, data: AttachmentData[], socialId: SocialID, date: Date) => Promise<void>
+  updateAttachments: (cardId: CardID, messageId: MessageID, data: AttachmentUpdateData[], socialId: SocialID, date: Date) => Promise<void>
 
   attachThread: (cardId: CardID, messageId: MessageID, threadId: CardID, threadType: CardType, socialId: SocialID, date: Date) => Promise<void>
   removeThreads: (query: ThreadQuery) => Promise<void>

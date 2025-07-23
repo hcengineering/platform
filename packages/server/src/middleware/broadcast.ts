@@ -194,9 +194,9 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
           new Set(Array.from(info.contextQueries.values()).flatMap((it) => Array.from(it)))
         )
       case MessageEventType.ThreadPatch:
-      case MessageEventType.LinkPreviewPatch:
       case MessageEventType.ReactionPatch:
       case MessageEventType.BlobPatch:
+      case MessageEventType.AttachmentPatch:
       case MessageEventType.RemovePatch:
       case MessageEventType.UpdatePatch:
         return this.matchMessagesQuery(

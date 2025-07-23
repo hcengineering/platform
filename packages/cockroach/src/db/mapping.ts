@@ -14,8 +14,6 @@
 //
 
 import {
-  type AttachedBlob,
-  type BlobID,
   type CardID,
   type Collaborator,
   type ContextID,
@@ -34,40 +32,30 @@ import {
   type Thread,
   type Label,
   type CardType,
-  type BlobMetadata,
   type AccountID,
-  type LinkPreview,
-  type LinkPreviewID,
-  type MessageExtra
+  type MessageExtra,
+  AttachmentID,
+  Attachment
 } from '@hcengineering/communication-types'
+import { Domain } from '@hcengineering/communication-sdk-types'
 import { applyPatches } from '@hcengineering/communication-shared'
+import { DbModel } from '../schema'
 
-import {
-  type FileDb,
-  type CollaboratorDb,
-  type ContextDb,
-  type MessageDb,
-  type MessagesGroupDb,
-  type NotificationDb,
-  type PatchDb,
-  type ReactionDb,
-  type ThreadDb,
-  type LabelDb,
-  type LinkPreviewDb
-} from '../schema'
-
-interface RawMessage extends MessageDb {
+interface RawMessage extends DbModel<Domain.Message> {
   thread_id?: CardID
   thread_type?: CardType
   replies_count?: number
   last_reply?: Date
-  patches?: PatchDb[]
-  files?: FileDb[]
-  reactions?: ReactionDb[]
-  link_previews?: LinkPreviewDb[]
+  patches?: DbModel<Domain.Patch>[]
+  attachments?: DbModel<Domain.Attachment>[]
+  reactions?: DbModel<Domain.Reaction>[]
 }
 
-interface RawNotification extends NotificationDb {
+interface RawMessageGroup extends DbModel<Domain.MessagesGroup> {
+  patches?: DbModel<Domain.Patch>[]
+}
+
+interface RawNotification extends DbModel<Domain.Notification> {
   account: AccountID
   message_id: MessageID
   message_type?: MessageType
@@ -80,18 +68,17 @@ interface RawNotification extends NotificationDb {
     creator: SocialID
     created: Date
   }[]
-  message_files?: {
-    blob_id: BlobID
+  message_attachments?: {
+    id: AttachmentID
     type: string
-    size: number
-    filename: string
-    meta?: BlobMetadata
+    params: Record<string, any>
     creator: SocialID
     created: Date
+    modified?: Date
   }[]
 }
 
-type RawContext = ContextDb & { id: ContextID } & {
+type RawContext = DbModel<Domain.NotificationContext> & { id: ContextID } & {
   notifications?: RawNotification[]
 }
 
@@ -118,8 +105,7 @@ export function toMessage (raw: RawMessage): Message {
           }
         : undefined,
     reactions: (raw.reactions ?? []).map(toReaction),
-    blobs: (raw.files ?? []).map(toBlob),
-    linkPreviews: (raw.link_previews ?? []).map(toLinkPreview)
+    attachments: (raw.attachments ?? []).map(toAttachment)
   }
 
   if (patches.length === 0) {
@@ -129,7 +115,7 @@ export function toMessage (raw: RawMessage): Message {
   return applyPatches(rawMessage, patches, [PatchType.update, PatchType.remove])
 }
 
-export function toReaction (raw: ReactionDb): Reaction {
+export function toReaction (raw: DbModel<Domain.Reaction>): Reaction {
   return {
     reaction: raw.reaction,
     creator: raw.creator,
@@ -137,34 +123,18 @@ export function toReaction (raw: ReactionDb): Reaction {
   }
 }
 
-export function toBlob (raw: Omit<FileDb, 'workspace_id'>): AttachedBlob {
+export function toAttachment (raw: Omit<DbModel<Domain.Attachment>, 'workspace_id'>): Attachment {
   return {
-    blobId: raw.blob_id,
-    mimeType: raw.type,
-    fileName: raw.filename,
-    size: Number(raw.size),
-    metadata: raw.meta,
+    id: String(raw.id) as AttachmentID,
+    type: raw.type,
+    params: raw.params,
     creator: raw.creator,
-    created: new Date(raw.created)
-  }
-}
-
-export function toLinkPreview (raw: LinkPreviewDb): LinkPreview {
-  return {
-    id: String(raw.id) as LinkPreviewID,
-    url: raw.url,
-    host: raw.host,
-    title: raw.title ?? undefined,
-    description: raw.description ?? undefined,
-    iconUrl: raw.favicon ?? undefined,
-    siteName: raw.hostname ?? undefined,
-    previewImage: raw.image ?? undefined,
     created: new Date(raw.created),
-    creator: raw.creator
-  }
+    modified: raw.modified != null ? new Date(raw.modified) : undefined
+  } as any as Attachment
 }
 
-export function toMessagesGroup (raw: MessagesGroupDb): MessagesGroup {
+export function toMessagesGroup (raw: RawMessageGroup): MessagesGroup {
   const patches =
     raw.patches == null
       ? []
@@ -183,7 +153,7 @@ export function toMessagesGroup (raw: MessagesGroupDb): MessagesGroup {
   }
 }
 
-export function toPatch (raw: Omit<PatchDb, 'workspace_id' | 'message_created'>): Patch {
+export function toPatch (raw: Omit<DbModel<Domain.Patch>, 'workspace_id' | 'message_created'>): Patch {
   return {
     type: raw.type,
     messageId: String(raw.message_id) as MessageID,
@@ -193,7 +163,7 @@ export function toPatch (raw: Omit<PatchDb, 'workspace_id' | 'message_created'>)
   }
 }
 
-export function toThread (raw: ThreadDb): Thread {
+export function toThread (raw: DbModel<Domain.Thread>): Thread {
   return {
     cardId: raw.card_id,
     messageId: String(raw.message_id) as MessageID,
@@ -242,9 +212,9 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
     raw.message_created != null &&
     raw.message_type != null
   ) {
-    const messageBlobs = raw.message_files
+    const attachments = raw.message_attachments
       ?.map((it) =>
-        toBlob({
+        toAttachment({
           card_id: card,
           message_id: raw.message_id,
           ...it
@@ -263,8 +233,7 @@ function toNotificationRaw (id: ContextID, card: CardID, raw: RawNotification): 
       created: new Date(raw.message_created),
       edited: undefined,
       reactions: [],
-      blobs: messageBlobs ?? [],
-      linkPreviews: []
+      attachments: attachments ?? []
     }
 
     if (patches.length > 0) {
@@ -308,7 +277,7 @@ export function toNotification (raw: RawNotification & { card_id: CardID }): Not
   return toNotificationRaw(raw.context_id, raw.card_id, raw)
 }
 
-export function toCollaborator (raw: CollaboratorDb): Collaborator {
+export function toCollaborator (raw: DbModel<Domain.Collaborator>): Collaborator {
   return {
     account: raw.account,
     cardType: raw.card_type,
@@ -316,7 +285,7 @@ export function toCollaborator (raw: CollaboratorDb): Collaborator {
   }
 }
 
-export function toLabel (raw: LabelDb): Label {
+export function toLabel (raw: DbModel<Domain.Label>): Label {
   return {
     labelId: raw.label_id,
     cardId: raw.card_id,

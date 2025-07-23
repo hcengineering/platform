@@ -14,6 +14,7 @@
 //
 
 import {
+  AttachmentID,
   CardID,
   type Collaborator,
   type FindCollaboratorsParams,
@@ -34,7 +35,6 @@ import {
 } from '@hcengineering/communication-types'
 import {
   type AddCollaboratorsEvent,
-  BlobPatchEvent,
   CardEventType,
   type CreateLabelEvent,
   type CreateMessageEvent,
@@ -44,7 +44,6 @@ import {
   type DbAdapter,
   type Event,
   LabelEventType,
-  LinkPreviewPatchEvent,
   MessageEventType,
   NotificationEventType,
   ReactionPatchEvent,
@@ -61,7 +60,9 @@ import {
   type UpdateNotificationEvent,
   UpdatePatchEvent,
   ThreadPatchEvent,
-  EventResult
+  EventResult,
+  AttachmentPatchEvent,
+  BlobPatchEvent
 } from '@hcengineering/communication-sdk-types'
 
 import type { Enriched, Middleware, MiddlewareContext } from '../types'
@@ -131,8 +132,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         return await this.reactionPatch(event)
       case MessageEventType.BlobPatch:
         return await this.blobPatch(event)
-      case MessageEventType.LinkPreviewPatch:
-        return await this.linkPreviewPatch(event)
+      case MessageEventType.AttachmentPatch:
+        return await this.attachmentPatch(event)
       case MessageEventType.ThreadPatch:
         return await this.threadPatch(event)
       case MessageEventType.CreateMessagesGroup:
@@ -196,8 +197,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     }
 
     const created = await this.db.createMessage(
-      event.messageId,
       event.cardId,
+      event.messageId,
       event.messageType,
       event.content,
       event.extra,
@@ -266,33 +267,74 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
 
     for (const operation of operations) {
       if (operation.opcode === 'attach') {
-        await this.db.attachBlobs(event.cardId, event.messageId, operation.blobs, event.socialId, event.date)
+        await this.db.addAttachments(
+          event.cardId,
+          event.messageId,
+          operation.blobs.map((b) => ({
+            id: b.blobId as any as AttachmentID,
+            type: b.mimeType,
+            params: b
+          })),
+          event.socialId,
+          event.date
+        )
       } else if (operation.opcode === 'detach') {
-        await this.db.detachBlobs(event.cardId, event.messageId, operation.blobIds, event.socialId, event.date)
+        await this.db.removeAttachments(
+          event.cardId,
+          event.messageId,
+          operation.blobIds as any as AttachmentID[],
+          event.socialId,
+          event.date
+        )
       } else if (operation.opcode === 'set') {
-        await this.db.setBlobs(event.cardId, event.messageId, operation.blobs, event.socialId, event.date)
+        await this.db.setAttachments(
+          event.cardId,
+          event.messageId,
+          operation.blobs.map((b) => ({
+            id: b.blobId as any as AttachmentID,
+            type: b.mimeType,
+            params: b
+          })),
+          event.socialId,
+          event.date
+        )
       } else if (operation.opcode === 'update') {
-        await this.db.updateBlobs(event.cardId, event.messageId, operation.blobs, event.socialId, event.date)
+        await this.db.updateAttachments(
+          event.cardId,
+          event.messageId,
+          operation.blobs.map((b) => ({
+            id: b.blobId as any as AttachmentID,
+            params: {
+              ...b
+            }
+          })),
+          event.socialId,
+          event.date
+        )
       }
     }
 
     return {}
   }
 
-  private async linkPreviewPatch (event: Enriched<LinkPreviewPatchEvent>): Promise<Result> {
-    for (const operation of event.operations) {
-      if (operation.opcode === 'attach') {
-        await this.db.attachLinkPreviews(event.cardId, event.messageId, operation.previews, event.socialId, event.date)
-      } else if (operation.opcode === 'detach') {
-        await this.db.detachLinkPreviews(
+  private async attachmentPatch (event: Enriched<AttachmentPatchEvent>): Promise<Result> {
+    const { operations } = event
+
+    for (const operation of operations) {
+      if (operation.opcode === 'add') {
+        await this.db.addAttachments(event.cardId, event.messageId, operation.attachments, event.socialId, event.date)
+      } else if (operation.opcode === 'remove') {
+        await this.db.removeAttachments(event.cardId, event.messageId, operation.ids, event.socialId, event.date)
+      } else if (operation.opcode === 'set') {
+        await this.db.setAttachments(event.cardId, event.messageId, operation.attachments, event.socialId, event.date)
+      } else if (operation.opcode === 'update') {
+        await this.db.updateAttachments(
           event.cardId,
           event.messageId,
-          operation.previewIds,
+          operation.attachments,
           event.socialId,
           event.date
         )
-      } else if (operation.opcode === 'set') {
-        await this.db.setLinkPreviews(event.cardId, event.messageId, operation.previews, event.socialId, event.date)
       }
     }
 

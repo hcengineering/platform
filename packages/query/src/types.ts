@@ -90,10 +90,9 @@ interface BaseMessageQueryParams {
   limit?: number
   order?: SortingOrder
 
-  files?: boolean
+  attachments?: boolean
   reactions?: boolean
   replies?: boolean
-  links?: boolean
 }
 
 export interface ManyMessagesQueryParams extends BaseMessageQueryParams {
