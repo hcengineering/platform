@@ -17,11 +17,10 @@
   import { Icon } from '@hcengineering/ui'
 
   import IconRec from './icons/Rec.svelte'
-  import IconRecordOn from './icons/RecordOn.svelte'
 
   import plugin from '../plugin'
   import { stopRecording } from '../recording'
-  import { recording } from '../stores'
+  import { recording } from '../stores/recording'
 
   const endpoint = getMetadata(plugin.metadata.StreamUrl) ?? ''
 
@@ -37,8 +36,34 @@
       style="padding-left: 0.25rem"
       on:click={handleClick}
     >
-      <Icon icon={IconRecordOn} iconProps={{ fill: 'var(--primary-button-color)' }} size="small" />
+      <div class="dot pulse" />
       <Icon icon={IconRec} iconProps={{ fill: 'var(--primary-button-color)' }} size="small" />
     </button>
   {/if}
 {/if}
+
+<style lang="scss">
+  .dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    margin: 0.25rem;
+    border-radius: 50%;
+    background: var(--primary-button-color);
+  }
+
+  .pulse {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+</style>

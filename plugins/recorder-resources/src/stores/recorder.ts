@@ -16,7 +16,7 @@
 import { getDisplayMedia, getSelectedCamId, getSelectedMicId, releaseStream } from '@hcengineering/media'
 import { type Readable, derived, get, readable, writable } from 'svelte/store'
 
-import { type CameraPosition, type CameraSize, type RecordingState } from './types'
+import { type CameraPosition, type CameraSize } from '../types'
 import {
   getRecordingCameraPosition,
   getRecordingCameraSize,
@@ -27,19 +27,21 @@ import {
   setRecordingResolution,
   setUseScreenShareSound,
   whenStreamEnded
-} from './utils'
-import { DefaultOptions } from './const'
+} from '../utils'
+import { DefaultOptions } from '../const'
 
-export interface RecorderStore {
-  camEnabled: boolean
-  micEnabled: boolean
-  camDeviceId: string | undefined
-  micDeviceId: string | undefined
-
+export interface RecorderConfig {
   useScreenShareSound: boolean
   recordingResolution: number
   recordingCameraSize: CameraSize
   recordingCameraPosition: CameraPosition
+}
+
+export interface RecorderState {
+  camEnabled: boolean
+  micEnabled: boolean
+  camDeviceId: string | undefined
+  micDeviceId: string | undefined
 
   loading: boolean
   camStream: MediaStream | null
@@ -47,7 +49,9 @@ export interface RecorderStore {
   screenStream: MediaStream | null
 }
 
-export interface RecorderStoreMethods {
+export type RecorderStore = RecorderConfig & RecorderState
+
+export interface RecorderMethods {
   initialize: () => void
   toggleCam: () => void
   toggleMic: () => void
@@ -67,17 +71,19 @@ export interface RecorderStoreMethods {
   cleanup: () => void
 }
 
-function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods {
-  const { subscribe, update } = writable<RecorderStore>({
+function createRecorderStore (): Readable<RecorderStore> & RecorderMethods {
+  const $config = writable<RecorderConfig>({
+    useScreenShareSound: getUseScreenShareSound(),
+    recordingResolution: getRecordingResolution(),
+    recordingCameraSize: getRecordingCameraSize(),
+    recordingCameraPosition: getRecordingCameraPosition()
+  })
+
+  const $state = writable<RecorderState>({
     camEnabled: true,
     micEnabled: true,
     camDeviceId: undefined,
     micDeviceId: undefined,
-
-    useScreenShareSound: getUseScreenShareSound(),
-    recordingResolution: getRecordingResolution(),
-    recordingCameraSize: getRecordingCameraSize(),
-    recordingCameraPosition: getRecordingCameraPosition(),
 
     loading: false,
     camStream: null,
@@ -85,8 +91,10 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
     screenStream: null
   })
 
+  const $combined = derived([$config, $state], ([$config, $state]) => ({ ...$config, ...$state }))
+
   const store = {
-    subscribe,
+    subscribe: $combined.subscribe,
 
     initialize (): void {
       const camDeviceId = getSelectedCamId()
@@ -96,17 +104,20 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
       const recordingCameraSize = getRecordingCameraSize()
       const recordingCameraPosition = getRecordingCameraPosition()
 
-      update((state) => ({
+      $config.update((config) => ({
+        ...config,
+        useScreenShareSound,
+        recordingResolution,
+        recordingCameraSize,
+        recordingCameraPosition
+      }))
+
+      $state.update((state) => ({
         ...state,
         camEnabled: true,
         micEnabled: true,
         camDeviceId,
         micDeviceId,
-
-        useScreenShareSound,
-        recordingResolution,
-        recordingCameraSize,
-        recordingCameraPosition,
 
         loading: false,
         camStream: null,
@@ -118,7 +129,7 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
     },
 
     toggleCam (): void {
-      update((state) => ({
+      $state.update((state) => ({
         ...state,
         camEnabled: !state.camEnabled
       }))
@@ -127,7 +138,7 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
     },
 
     toggleMic (): void {
-      update((state) => ({
+      $state.update((state) => ({
         ...state,
         micEnabled: !state.micEnabled
       }))
@@ -136,7 +147,7 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
     },
 
     setCamEnabled (enabled: boolean): void {
-      update((state) => ({
+      $state.update((state) => ({
         ...state,
         camEnabled: enabled
       }))
@@ -145,7 +156,7 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
     },
 
     setMicEnabled (enabled: boolean): void {
-      update((state) => ({
+      $state.update((state) => ({
         ...state,
         micEnabled: enabled
       }))
@@ -154,7 +165,7 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
     },
 
     setCamDeviceId (camDeviceId: string | undefined): void {
-      update((state) => ({
+      $state.update((state) => ({
         ...state,
         camDeviceId
       }))
@@ -163,7 +174,7 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
     },
 
     setMicDeviceId (micDeviceId: string | undefined): void {
-      update((state) => ({
+      $state.update((state) => ({
         ...state,
         micDeviceId
       }))
@@ -173,38 +184,39 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
 
     setUseScreenShareSound (useScreenShareSound: boolean): void {
       setUseScreenShareSound(useScreenShareSound)
-      update((state) => ({
-        ...state,
+      $config.update((config) => ({
+        ...config,
         useScreenShareSound
       }))
     },
 
     setRecordingResolution (resolution: number): void {
       setRecordingResolution(resolution)
-      update((state) => ({
-        ...state,
+      $config.update((config) => ({
+        ...config,
         recordingResolution: resolution
       }))
     },
 
     setRecordingCameraSize (size: CameraSize): void {
       setRecordingCameraSize(size)
-      update((state) => ({
-        ...state,
+      $config.update((config) => ({
+        ...config,
         recordingCameraSize: size
       }))
     },
 
     setRecordingCameraPosition (pos: CameraPosition): void {
       setRecordingCameraPosition(pos)
-      update((state) => ({
-        ...state,
+      $config.update((config) => ({
+        ...config,
         recordingCameraPosition: pos
       }))
     },
 
     async shareScreen (): Promise<void> {
-      const state = get({ subscribe })
+      const state = get($state)
+      const config = get($config)
       const oldScreenStream = state.screenStream
 
       try {
@@ -212,16 +224,16 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
           video: {
             frameRate: { ideal: DefaultOptions.fps }
           },
-          audio: state.useScreenShareSound
+          audio: config.useScreenShareSound
         })
 
-        update((state) => ({
+        $state.update((state) => ({
           ...state,
           screenStream: stream
         }))
 
         whenStreamEnded(stream, () => {
-          update((state) => ({
+          $state.update((state) => ({
             ...state,
             screenStream: null
           }))
@@ -238,11 +250,11 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
     },
 
     async stopScreenShare (): Promise<void> {
-      const state = get({ subscribe })
+      const state = get($state)
 
       releaseStream(state.screenStream)
 
-      update((state) => ({
+      $state.update((state) => ({
         ...state,
         screenStream: null
       }))
@@ -252,7 +264,7 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
       // Cancel any pending media stream updates
       requestVersion++
 
-      update((state) => {
+      $state.update((state) => {
         releaseStream(state.camStream)
         releaseStream(state.micStream)
         releaseStream(state.screenStream)
@@ -282,11 +294,12 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
       console.warn('previous media stream update failed')
     })
 
-    const state = get({ subscribe })
+    const state = get($state)
+    const config = get($config)
     const oldCamStream = state.camStream
     const oldMicStream = state.micStream
 
-    update((state) => ({
+    $state.update((state) => ({
       ...state,
       loading: true
     }))
@@ -302,7 +315,7 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
           state.micEnabled,
           state.camDeviceId,
           state.micDeviceId,
-          state.screenStream == null ? undefined : state.recordingResolution
+          state.screenStream == null ? undefined : config.recordingResolution
         )
 
         // Check if the request is still valid
@@ -312,7 +325,7 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
           return
         }
 
-        update((state) => ({
+        $state.update((state) => ({
           ...state,
           camStream,
           micStream,
@@ -332,7 +345,7 @@ function createRecorderStore (): Readable<RecorderStore> & RecorderStoreMethods 
   }
 
   window.addEventListener('beforeunload', () => {
-    const { camStream, micStream, screenStream } = get({ subscribe })
+    const { camStream, micStream, screenStream } = get($state)
     releaseStream(camStream)
     releaseStream(micStream)
     releaseStream(screenStream)
@@ -356,9 +369,6 @@ export const screenStream = derived(recorder, ($recorder) => $recorder.screenStr
 export const canShareScreen = readable(false, (set) => {
   set(navigator?.mediaDevices?.getDisplayMedia != null)
 })
-
-// export const recorder = writable<PopupResult | null>(null)
-export const recording = writable<RecordingState | null>(null)
 
 async function getCombinedStream (
   camEnabled: boolean,

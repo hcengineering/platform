@@ -58,9 +58,9 @@
     micStream as micStreamStore,
     screenStream as screenStreamStore,
     loading as loadingStore,
-    recording,
     recorder
-  } from '../stores'
+  } from '../stores/recorder'
+  import { recording } from '../stores/recording'
   import { type RecordingResult } from '../types'
   import { formatElapsedTime, formatRecordingName } from '../utils'
 
@@ -102,8 +102,10 @@
   $: canvasWidth = $canvasWidthStore
   $: canvasHeight = $canvasHeightStore
 
+  $: canMinimize = screenStream != null
+
   $: if (state !== null && state.state === 'stopped') {
-    recording.set(null)
+    recording.clear()
   }
 
   let video: HTMLVideoElement | null = null

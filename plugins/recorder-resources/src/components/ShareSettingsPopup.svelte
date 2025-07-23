@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Label, Toggle } from '@hcengineering/ui'
   import plugin from '../plugin'
-  import { recorder } from '../stores'
+  import { recorder } from '../stores/recorder'
 
   $: useScreenShareSound = $recorder.useScreenShareSound
 </script>

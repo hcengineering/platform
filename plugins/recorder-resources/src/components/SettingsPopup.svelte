@@ -1,7 +1,7 @@
 <script lang="ts">
   import { DropdownLabelsIntl, DropdownIntlItem, Label } from '@hcengineering/ui'
   import plugin from '../plugin'
-  import { recorder } from '../stores'
+  import { recorder } from '../stores/recorder'
 
   $: recordingCameraPosition = $recorder.recordingCameraPosition
   $: recordingCameraSize = $recorder.recordingCameraSize
