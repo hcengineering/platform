@@ -11,15 +11,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Builder, Model } from '@hcengineering/model'
-import core, { TDoc } from '@hcengineering/model-core'
-import { DOMAIN_MODEL } from '@hcengineering/core'
+import { type Builder, Model, TypeAny, TypeNumber } from '@hcengineering/model'
+import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
+import { type Class, type Domain, DOMAIN_MODEL, type Ref } from '@hcengineering/core'
 import { type Asset, type IntlString } from '@hcengineering/platform'
-import communication, {
+import {
+  type Applet,
   type MessageAction,
   type MessageActionFunctionResource,
-  type MessageActionVisibilityTesterResource
+  type MessageActionVisibilityTesterResource,
+  type AppletCreateFnResource,
+  type PollAnswer,
+  type Poll,
+  type CustomActivityPresenter
 } from '@hcengineering/communication'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import { type AppletType } from '@hcengineering/communication-types'
+import { createSystemType } from '@hcengineering/model-card'
+import type { AnyComponent } from '@hcengineering/ui'
+import { type PersonSpace } from '@hcengineering/contact'
+
+import communication from './plugin'
+import { type MasterTag } from '@hcengineering/card'
+
+export const DOMAIN_POLL = 'poll' as Domain
 
 @Model(communication.class.MessageAction, core.class.Doc, DOMAIN_MODEL)
 class TMessageAction extends TDoc implements MessageAction {
@@ -32,6 +47,74 @@ class TMessageAction extends TDoc implements MessageAction {
   menu?: boolean
 }
 
+@Model(communication.class.Applet, core.class.Doc, DOMAIN_MODEL)
+class TApplet extends TDoc implements Applet {
+  type!: AppletType
+  icon!: Asset
+  label!: IntlString
+  component!: AnyComponent
+  createLabel!: IntlString
+  createComponent!: AnyComponent
+  previewComponent!: AnyComponent
+  createFn?: AppletCreateFnResource
+}
+
+@Model(communication.class.PollAnswer, core.class.Doc, DOMAIN_POLL)
+class TPollAnswer extends TAttachedDoc implements PollAnswer {
+  options!: string[]
+  declare attachedTo: Ref<Poll>
+  declare attachedToClass: Ref<Class<Poll>>
+  declare space: Ref<PersonSpace>
+}
+
+@Model(communication.class.CustomActivityPresenter, core.class.Doc, DOMAIN_MODEL)
+class TCustomActivityPresenter extends TDoc implements CustomActivityPresenter {
+  attribute!: string
+  component!: AnyComponent
+  type!: Ref<MasterTag>
+}
+
 export function buildTypes (builder: Builder): void {
-  builder.createModel(TMessageAction)
+  builder.createModel(TMessageAction, TApplet, TPollAnswer, TCustomActivityPresenter)
+
+  createSystemType(
+    builder,
+    communication.type.Poll,
+    communication.icon.Poll,
+    communication.string.Poll,
+    communication.string.Polls,
+    undefined,
+    PaletteColorIndexes.Cerulean
+  )
+
+  builder.createDoc(core.class.Attribute, core.space.Model, {
+    name: 'totalVotes',
+    attributeOf: communication.type.Poll,
+    type: TypeNumber(),
+    label: communication.string.TotalVotes,
+    readonly: true
+  })
+
+  builder.createDoc(
+    core.class.Attribute,
+    core.space.Model,
+    {
+      name: 'userVotes',
+      attributeOf: communication.type.Poll,
+      type: TypeAny(
+        communication.poll.UserVotesPresenter,
+        communication.string.Voted,
+        communication.poll.UserVotesPresenter
+      ),
+      label: communication.string.Voted,
+      readonly: true
+    },
+    communication.ids.UserVotesAttribute
+  )
+
+  builder.createDoc(communication.class.CustomActivityPresenter, core.space.Model, {
+    attribute: 'userVotes',
+    type: communication.type.Poll,
+    component: communication.poll.UserVoteActivityPresenter
+  })
 }

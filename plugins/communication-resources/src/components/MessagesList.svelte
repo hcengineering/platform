@@ -195,9 +195,8 @@
       return {
         card: card._id,
         replies: true,
-        files: true,
+        attachments: true,
         reactions: true,
-        links: true,
         order: SortingOrder.Ascending,
         limit
       }
@@ -209,9 +208,8 @@
     return {
       card: card._id,
       replies: true,
-      files: true,
+      attachments: true,
       reactions: true,
-      links: true,
       order,
       limit,
       from: unread && !shouldScrollToEnd && initialLastView != null ? initialLastView : undefined

@@ -15,6 +15,7 @@
 
 import postgres from 'postgres'
 import { MessageID, type CardID, type WorkspaceID } from '@hcengineering/communication-types'
+import { Domain } from '@hcengineering/communication-sdk-types'
 
 import config from './config'
 
@@ -39,8 +40,6 @@ export async function getDb (): Promise<PostgresDB> {
 
 export class PostgresDB {
   private readonly syncTable = 'msg2file.sync_record'
-  private readonly messagesTable = 'communication.messages'
-  private readonly patchesTable = 'communication.patch'
 
   constructor (private readonly client: postgres.Sql) {}
 
@@ -114,7 +113,7 @@ export class PostgresDB {
     if (ids.length === 0) return
     const sql = `
         DELETE
-        FROM ${this.messagesTable}
+        FROM ${Domain.Message}
         WHERE workspace_id = $1::uuid
           AND card_id = $2::varchar
           AND id = ANY ($3::varchar[]);`
@@ -126,7 +125,7 @@ export class PostgresDB {
     if (ids.length === 0) return
     const sql = `
         DELETE
-        FROM ${this.patchesTable}
+        FROM ${Domain.Patch}
         WHERE workspace_id = $1::uuid
           AND card_id = $2::varchar
           AND message_id = ANY ($3::varchar[]);`

@@ -19,6 +19,7 @@ import { MessagesNavigationAnchors } from '@hcengineering/communication'
 import communication from './plugin'
 import { buildTypes } from './types'
 import { buildCardActions, buildMessageActions } from './actions'
+import { buildApplets } from './applets'
 
 export { communicationId } from '@hcengineering/communication'
 export * from './migration'
@@ -27,6 +28,7 @@ export function createModel (builder: Builder): void {
   buildTypes(builder)
   buildMessageActions(builder)
   buildCardActions(builder)
+  buildApplets(builder)
 
   builder.createDoc(
     card.class.CardSection,

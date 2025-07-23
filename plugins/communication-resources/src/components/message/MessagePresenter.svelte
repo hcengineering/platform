@@ -35,6 +35,8 @@
   } from '../../stores'
   import { getMessageActions } from '../../actions'
   import communication from '../../plugin'
+  import { isBlobAttachment } from '@hcengineering/communication-shared'
+  import { getCommunicationClient } from '@hcengineering/presentation'
 
   export let card: Card
   export let message: Message

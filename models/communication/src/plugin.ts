@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { communicationId } from '@hcengineering/communication'
+import { communicationId, type Poll } from '@hcengineering/communication'
 import communication from '@hcengineering/communication-resources/src/plugin'
-import {} from '@hcengineering/core'
+import { type Attribute, type Ref } from '@hcengineering/core'
 import {} from '@hcengineering/ui'
 import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type ViewAction } from '@hcengineering/model-view'
@@ -29,5 +29,8 @@ export default mergeIds(communicationId, communication, {
   function: {
     CanSubscribe: '' as Resource<(doc: Card | Card[] | undefined) => Promise<boolean>>,
     CanUnsubscribe: '' as Resource<(doc: Card | Card[] | undefined) => Promise<boolean>>
+  },
+  ids: {
+    UserVotesAttribute: '' as Ref<Attribute<Poll>>
   }
 })
