@@ -241,11 +241,12 @@ export class GmailClient {
         value: this.email
       })
 
-      const activeIntegration = integrations.find((p) => p.value === this.email && !p.disabled)
-      const existingIntegration = activeIntegration ?? (integrations.length > 0 ? integrations[0] : undefined)
+      const sortedIntegrations = integrations.sort((a, b) => (b.createdOn ?? 0) - (a.createdOn ?? 0))
+      const activeIntegration = sortedIntegrations.find((p) => !p.disabled)
+      const existingIntegration = activeIntegration ?? (sortedIntegrations.length > 0 ? sortedIntegrations[0] : undefined)
 
       // Disable all other integrations for this social ID except the one we want to keep/update
-      for (const integration of integrations.filter((p) => p._id !== existingIntegration?._id)) {
+      for (const integration of sortedIntegrations.filter((p) => p._id !== existingIntegration?._id)) {
         if (!integration.disabled) {
           this.ctx.warn('Found several active integrations for the same email, disabling one', {
             email: this.email,
