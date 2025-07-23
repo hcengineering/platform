@@ -91,7 +91,12 @@
     "Started": "Iniciado",
     "Each": "Cada",
     "CreateCard": "Crear tarjeta",
-    "OnCardUpdate": "Al actualizar la tarjeta"
+    "OnCardUpdate": "Al actualizar la tarjeta",
+    "ArraySizeEquals": "Tamaño igual a",
+    "ArraySizeGt": "Tamaño mayor que",
+    "ArraySizeGte": "Tamaño mayor o igual que",
+    "ArraySizeLt": "Tamaño menor que",
+    "ArraySizeLte": "Tamaño menor o igual que"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",
