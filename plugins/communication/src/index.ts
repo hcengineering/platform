@@ -15,7 +15,7 @@ import { Asset, IntlString, Metadata, plugin, Plugin } from '@hcengineering/plat
 import { CardSection } from '@hcengineering/card'
 import { Class, Ref } from '@hcengineering/core'
 
-import { MessageAction } from './types'
+import { GuestCommunicationSettings, MessageAction } from './types'
 
 export * from './types'
 
@@ -26,7 +26,8 @@ export const communicationId = 'communication' as Plugin
 
 export default plugin(communicationId, {
   class: {
-    MessageAction: '' as Ref<Class<MessageAction>>
+    MessageAction: '' as Ref<Class<MessageAction>>,
+    GuestCommunicationSettings: '' as Ref<Class<GuestCommunicationSettings>>
   },
   icon: {
     Bell: '' as Asset,

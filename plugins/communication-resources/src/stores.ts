@@ -12,15 +12,19 @@
 // limitations under the License.
 
 import { get, writable } from 'svelte/store'
-import { createLabelsQuery, onCommunicationClient } from '@hcengineering/presentation'
+import { createLabelsQuery, createQuery, onClient, onCommunicationClient } from '@hcengineering/presentation'
 import type { Label, Message, MessageID } from '@hcengineering/communication-types'
-import type { Markup } from '@hcengineering/core'
+import type { Markup, Ref } from '@hcengineering/core'
 import { languageStore } from '@hcengineering/ui'
+import { type Card } from '@hcengineering/card'
+import communication from '@hcengineering/communication'
+import core from '@hcengineering/core'
 
 export const labelsStore = writable<Label[]>([])
 export const messageEditingStore = writable<MessageID | undefined>(undefined)
 export const translateMessagesStore = writable<Map<MessageID, TranslateMessagesStatus>>(new Map())
 export const threadCreateMessageStore = writable<Message | undefined>(undefined)
+export const guestCommunicationAllowedCards = writable<Array<Ref<Card>>>([])
 
 export interface TranslateMessagesStatus {
   inProgress: boolean
@@ -55,4 +59,17 @@ onCommunicationClient(() => {
   query.query({}, (res) => {
     labelsStore.set(res)
   })
+})
+
+const guestCommunicationSettingsQuery = createQuery(true)
+
+onClient(() => {
+  guestCommunicationSettingsQuery.query(
+    communication.class.GuestCommunicationSettings,
+    { space: core.space.Workspace },
+    (res) => {
+      if (res.length === 0) return
+      guestCommunicationAllowedCards.set(res[0].allowedCards)
+    }
+  )
 })

@@ -33,7 +33,7 @@ import { translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 import aiBot from '@hcengineering/ai-bot'
 import CreateCardFromMessagePopup from './components/CreateCardFromMessagePopup.svelte'
 
-import { toggleReaction, toMarkup } from './utils'
+import { isCardAllowedForCommunications, toggleReaction, toMarkup } from './utils'
 import { isMessageTranslating, messageEditingStore, threadCreateMessageStore, translateMessagesStore } from './stores'
 
 export const addReaction: MessageActionFunction = async (message, _: Card, evt, onOpen, onClose) => {
@@ -55,6 +55,9 @@ export const addReaction: MessageActionFunction = async (message, _: Card, evt, 
 }
 
 export const replyInThread: MessageActionFunction = async (message: Message, parentCard: Card): Promise<void> => {
+  if (!await isCardAllowedForCommunications(parentCard)) {
+    return
+  }
   await attachCardToMessage(message, parentCard, createThreadTitle(message, parentCard), chat.masterTag.Thread)
 }
 

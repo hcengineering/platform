@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { Message } from '@hcengineering/communication-types'
-import { Doc } from '@hcengineering/core'
+import { Configuration, Doc, Ref } from '@hcengineering/core'
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { Card } from '@hcengineering/card'
 
@@ -41,4 +41,8 @@ export interface MessageAction extends Doc {
 
   order: number
   menu?: boolean
+}
+
+export interface GuestCommunicationSettings extends Configuration {
+  allowedCards: Ref<Card>[]
 }

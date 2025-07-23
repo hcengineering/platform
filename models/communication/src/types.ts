@@ -12,14 +12,17 @@
 // limitations under the License.
 
 import { type Builder, Model } from '@hcengineering/model'
-import core, { TDoc } from '@hcengineering/model-core'
-import { DOMAIN_MODEL } from '@hcengineering/core'
+import core, { TConfiguration, TDoc } from '@hcengineering/model-core'
+import { DOMAIN_MODEL, type Ref } from '@hcengineering/core'
+import { DOMAIN_SETTING } from '@hcengineering/setting'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import communication, {
   type MessageAction,
   type MessageActionFunctionResource,
-  type MessageActionVisibilityTesterResource
+  type MessageActionVisibilityTesterResource,
+  type GuestCommunicationSettings
 } from '@hcengineering/communication'
+import { type Card } from '@hcengineering/card'
 
 @Model(communication.class.MessageAction, core.class.Doc, DOMAIN_MODEL)
 class TMessageAction extends TDoc implements MessageAction {
@@ -32,6 +35,11 @@ class TMessageAction extends TDoc implements MessageAction {
   menu?: boolean
 }
 
+@Model(communication.class.GuestCommunicationSettings, core.class.Configuration, DOMAIN_SETTING)
+export class TGuestCommunicationSettings extends TConfiguration implements GuestCommunicationSettings {
+  allowedCards!: Ref<Card>[]
+}
+
 export function buildTypes (builder: Builder): void {
-  builder.createModel(TMessageAction)
+  builder.createModel(TMessageAction, TGuestCommunicationSettings)
 }
