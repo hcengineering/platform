@@ -354,12 +354,15 @@ export class GmailClient {
     await this.disableIntegration(byError)
     const integrations = await this.client.findAll(setting.class.Integration, {
       createdBy: this.socialId._id,
-      type: gmail.integrationType.Gmail
+      type: gmail.integrationType.Gmail,
+      value: this.email
     })
     for (const integration of integrations) {
       if (byError) {
+        this.ctx.info('Disable integration', { integrationId: integration._id, email: integration.value })
         await this.client.update(integration, { disabled: true })
       } else {
+        this.ctx.info('Remove integration', { integrationId: integration._id, email: integration.value })
         await this.client.remove(integration)
       }
     }
