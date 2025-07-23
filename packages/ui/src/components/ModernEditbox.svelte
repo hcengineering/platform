@@ -119,6 +119,7 @@
       }}
     />
   {/if}
+  <slot name="after" />
   {#if labeled}<div class="font-regular-14 label"><Label {label} /></div>{/if}
 </svelte:element>
 

@@ -1,7 +1,7 @@
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
-import { ensureEmployee, setCurrentEmployee } from '@hcengineering/contact'
+import contact, { ensureEmployee, setCurrentEmployee, setCurrentEmployeeSpace } from '@hcengineering/contact'
 import core, {
   type Account,
   AccountRole,
@@ -382,7 +382,15 @@ export async function connect (title: string): Promise<Client | undefined> {
       })
       return
     }
+
+    const space = await newClient.findOne(contact.class.PersonSpace, { person: employee }, { projection: { _id: 1 } })
+
     setCurrentEmployee(employee)
+    if (space !== undefined) {
+      setCurrentEmployeeSpace(space._id)
+    } else {
+      console.error('Failed to find space for employee')
+    }
     await setPlatformStatus(OK)
   } else {
     setCurrentEmployee(core.employee.System)

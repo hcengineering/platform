@@ -16,6 +16,12 @@
 import { type Resources } from '@hcengineering/platform'
 
 import CardMessagesSection from './components/CardMessagesSection.svelte'
+import PollPresenter from './components/poll/PollPresenter.svelte'
+import CreatePoll from './components/poll/CreatePoll.svelte'
+import PollPreview from './components/poll/PollPreview.svelte'
+import UserVoteActivityPresenter from './components/poll/UserVoteActivityPresenter.svelte'
+import UserVotesPresenter from './components/poll/UserVotesPresenter.svelte'
+
 import { unsubscribe, subscribe, canSubscribe, canUnsubscribe } from './utils'
 import {
   addReaction,
@@ -32,6 +38,7 @@ import {
   showOriginalMessage,
   translateMessage
 } from './actions'
+import { createPoll } from './poll'
 
 export { isActivityMessage } from './activity'
 export * from './stores'
@@ -43,6 +50,14 @@ export { default as ActivityMessageViewer } from './components/message/ActivityM
 export default async (): Promise<Resources> => ({
   component: {
     CardMessagesSection
+  },
+  poll: {
+    PollPresenter,
+    CreatePoll,
+    PollPreview,
+    CreatePollFn: createPoll,
+    UserVoteActivityPresenter,
+    UserVotesPresenter
   },
   messageActionImpl: {
     AddReaction: addReaction,

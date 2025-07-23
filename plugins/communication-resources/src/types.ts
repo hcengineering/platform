@@ -15,10 +15,11 @@
 
 import { type IntlString } from '@hcengineering/platform'
 import { type TextEditorHandler } from '@hcengineering/text-editor'
-import type { LinkPreviewParams, BlobParams } from '@hcengineering/communication-types'
+import { type LinkPreviewParams, type BlobParams, type AppletType } from '@hcengineering/communication-types'
 import type { Markup, Ref, Timestamp } from '@hcengineering/core'
 import type { Person } from '@hcengineering/contact'
 import type { IconComponent } from '@hcengineering/ui'
+import { type Applet } from '@hcengineering/communication'
 
 export type TextInputActionFn = (element: HTMLElement, editor: TextEditorHandler, event?: MouseEvent) => void
 
@@ -44,9 +45,17 @@ export interface PresenceTyping {
   lastTyping: Timestamp
 }
 
+export interface AppletDraft {
+  id: string
+  type: AppletType
+  appletId: Ref<Applet>
+  params: Record<string, any>
+}
+
 export interface MessageDraft {
   _id: string
   content: Markup
   blobs: BlobParams[]
   links: LinkPreviewParams[]
+  applets: AppletDraft[]
 }

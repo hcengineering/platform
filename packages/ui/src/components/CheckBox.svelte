@@ -22,6 +22,7 @@
   export let kind: 'default' | 'primary' | 'positive' | 'negative' | 'todo' = 'default'
   export let color: string | undefined = undefined
   export let readonly: boolean = false
+  export let disabled: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -50,9 +51,16 @@
   class:circle
   class:readonly
   class:checked
+  class:disabled
   on:click|stopPropagation
 >
-  <input class="chBox" disabled={readonly} type="checkbox" bind:checked on:change|capture={handleValueChanged} />
+  <input
+    class="chBox"
+    disabled={readonly || disabled}
+    type="checkbox"
+    bind:checked
+    on:change|capture={handleValueChanged}
+  />
   <div class="checkSVG" />
 </label>
 
@@ -62,6 +70,11 @@
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
+
+    &.disabled {
+      pointer-events: none;
+      cursor: default;
+    }
 
     .checkSVG {
       position: relative;

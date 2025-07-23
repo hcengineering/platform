@@ -20,16 +20,19 @@
   import { AttachmentPreview, LinkPreview } from '@hcengineering/attachment-resources'
   import { AttachmentID, Message, MessageType } from '@hcengineering/communication-types'
   import { getResource } from '@hcengineering/platform'
-  import { isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
+  import { isAppletAttachment, isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
+  import { Component } from '@hcengineering/ui'
 
   import ReactionsList from '../ReactionsList.svelte'
   import MessageThread from '../thread/Thread.svelte'
   import { toggleReaction } from '../../utils'
+  import communication from '../../plugin'
 
   export let message: Message
 
   const me = getCurrentAccount()
   const communicationClient = getCommunicationClient()
+  const client = getClient()
 
   function canReply (): boolean {
     return message.type !== MessageType.Activity && message.extra?.threadRoot !== true
@@ -60,12 +63,29 @@
     })
   }
 
+  const appletsModels = client.getModel().findAllSync(communication.class.Applet, {})
   $: blobs = message.attachments.filter(isBlobAttachment) ?? []
   $: links = message.attachments.filter(isLinkPreviewAttachment) ?? []
+  $: applets = message.attachments.filter(isAppletAttachment) ?? []
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+{#if applets.length > 0 && !message.removed}
+  <div class="message__applets">
+    {#each applets as applet (applet.id)}
+      {@const appletModel = appletsModels.find((it) => it.type === applet.type)}
+      {#if appletModel}
+        <Component
+          is={appletModel.component}
+          props={{
+            applet: appletModel,
+            attachment: applet
+          }}
+        />
+      {/if}
+    {/each}
+  </div>
+{/if}
+
 {#if blobs.length > 0 && !message.removed}
   <div class="message__files">
     {#each blobs as blob (blob.id)}
